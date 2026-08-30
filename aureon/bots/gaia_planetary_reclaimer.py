@@ -13,39 +13,149 @@ UPGRADES:
 """
 
 from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
-import sys, os
-
-# Windows UTF-8 Fix (MANDATORY for Windows compatibility)
-if sys.platform == 'win32':
-    os.environ['PYTHONIOENCODING'] = 'utf-8'
-    try:
-        import io
-        def _is_utf8_wrapper(stream):
-            """Check if stream is already a UTF-8 TextIOWrapper."""
-            return (isinstance(stream, io.TextIOWrapper) and 
-                    hasattr(stream, 'encoding') and stream.encoding and
-                    stream.encoding.lower().replace('-', '') == 'utf8')
-        # Only wrap if not already UTF-8 wrapped (prevents re-wrapping on import)
-        if hasattr(sys.stdout, 'buffer') and not _is_utf8_wrapper(sys.stdout):
-            sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace', line_buffering=True)
-        # Skip stderr wrapping (causes Windows exit errors)
-    except Exception:
-        pass
-
-os.environ['PYTHONUNBUFFERED'] = '1'
 
 import time
 import math
-from datetime import datetime
+from datetime import datetime, timezone
 from concurrent.futures import ThreadPoolExecutor
-
-sys.path.append(os.getcwd())
 
 # Sacred Constants
 PHI = (1 + math.sqrt(5)) / 2
 SCHUMANN = 7.83
 LOVE_FREQ = 528
 GOAL = 1_000_000_000  # $1 BILLION
+
+MAX_MARKET_AGE_SECONDS = 120.0
+MAX_ACCOUNT_AGE_SECONDS = 120.0
+MAX_FILL_AGE_SECONDS = 900.0
+REAL_TRUTH_STATUSES = {"real", "real_observed", "real_provider", "real_derived", "live"}
+
+
+def _finite_number(value, *, positive=False, nonnegative=False):
+    """Parse a finite provider number without substituting a numeric default."""
+    try:
+        parsed = float(value)
+    except (TypeError, ValueError, OverflowError):
+        return None
+    if not math.isfinite(parsed):
+        return None
+    if positive and parsed <= 0:
+        return None
+    if nonnegative and parsed < 0:
+        return None
+    return parsed
+
+
+def _timestamp_seconds(value):
+    """Normalize an explicit provider timestamp; never use receipt time as source time."""
+    if isinstance(value, bool) or value is None:
+        return None
+    if isinstance(value, (int, float)):
+        parsed = float(value)
+        if parsed > 10_000_000_000:
+            parsed /= 1000.0
+        return parsed if math.isfinite(parsed) and parsed > 0 else None
+    if isinstance(value, str):
+        text = value.strip()
+        if not text:
+            return None
+        numeric = _finite_number(text, positive=True)
+        if numeric is not None:
+            return numeric / 1000.0 if numeric > 10_000_000_000 else numeric
+        try:
+            parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
+        except ValueError:
+            return None
+        if parsed.tzinfo is None:
+            return None
+        return parsed.timestamp()
+    return None
+
+
+def _fresh_real_receipt(receipt, *, max_age_seconds, now=None):
+    """Return the provider source timestamp only for fresh, non-generated evidence."""
+    if not isinstance(receipt, dict) or receipt.get("generated_values") is not False:
+        return None
+    if str(receipt.get("truth_status", "")).lower() not in REAL_TRUTH_STATUSES:
+        return None
+    if not receipt.get("source_id"):
+        return None
+    source_timestamp = _timestamp_seconds(
+        receipt.get("source_timestamp", receipt.get("provider_timestamp"))
+    )
+    current_time = time.time() if now is None else _finite_number(now, positive=True)
+    if source_timestamp is None or current_time is None:
+        return None
+    age = current_time - source_timestamp
+    if age < -5.0 or age > max_age_seconds:
+        return None
+    return source_timestamp
+
+
+def _binance_market_receipt(raw, symbol, *, now=None):
+    """Normalize Binance 24h output using its own closeTime as source provenance."""
+    if not isinstance(raw, dict):
+        return None
+    receipt = dict(raw)
+    receipt.update({
+        "source_id": "binance:/api/v3/ticker/24hr",
+        "source_timestamp": raw.get("closeTime"),
+        "truth_status": "real_observed",
+        "generated_values": False,
+    })
+    if _fresh_real_receipt(receipt, max_age_seconds=MAX_MARKET_AGE_SECONDS, now=now) is None:
+        return None
+    if str(raw.get("symbol", symbol)).upper() != str(symbol).upper():
+        return None
+    price = _finite_number(raw.get("lastPrice"), positive=True)
+    momentum = _finite_number(raw.get("priceChangePercent"))
+    volume = _finite_number(raw.get("volume"), nonnegative=True)
+    quote_volume = _finite_number(raw.get("quoteVolume"), nonnegative=True)
+    bid = _finite_number(raw.get("bidPrice"), positive=True)
+    ask = _finite_number(raw.get("askPrice"), positive=True)
+    if None in (price, momentum, volume, quote_volume, bid, ask) or bid > ask:
+        return None
+    spread = (ask - bid) / ((ask + bid) / 2.0)
+    receipt.update({
+        "price": price,
+        "momentum_pct": momentum,
+        "volume": volume,
+        "quote_volume": quote_volume,
+        "bid": bid,
+        "ask": ask,
+        "spread": spread,
+    })
+    return receipt
+
+
+def _terminal_fill_receipt(receipt, *, now=None):
+    """Accept only a fresh provider-observed fill complete enough for downstream use."""
+    if _fresh_real_receipt(receipt, max_age_seconds=MAX_FILL_AGE_SECONDS, now=now) is None:
+        return None
+    if receipt.get("fill_receipt_complete") is not True:
+        return None
+    if receipt.get("eligible_for_accounting") is not True:
+        return None
+    if receipt.get("eligible_for_learning") is not True:
+        return None
+    status = str(receipt.get("status", "")).lower()
+    if status not in {"filled", "closed"}:
+        return None
+    order_id = receipt.get("provider_order_id") or receipt.get("orderId")
+    quantity = _finite_number(
+        receipt.get("filled_qty", receipt.get("executedQty")), positive=True
+    )
+    average_price = _finite_number(
+        receipt.get("filled_avg_price", receipt.get("avg_fill_price")), positive=True
+    )
+    notional = _finite_number(
+        receipt.get("filled_notional", receipt.get("cummulativeQuoteQty")), positive=True
+    )
+    fee = _finite_number(receipt.get("fee"), nonnegative=True)
+    fee_currency = receipt.get("fee_currency") or receipt.get("fee_asset")
+    if not order_id or None in (quantity, average_price, notional, fee) or not fee_currency:
+        return None
+    return dict(receipt)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # 👑🔓 QUEEN'S GATES - FULLY OPEN MODE (Maximum Energy Reclamation)
@@ -1433,9 +1543,10 @@ class PlanetaryReclaimer:
         
         # Recent verified trades log
         self.verified_trades = []
+        self.no_data_events = []
         
-        # EUR/USD rate (approximate)
-        self.eur_usd = 1.08
+        # Cross-currency valuation must come from a fresh provider receipt.
+        self.eur_usd = None
         
         # 🌊⚡ MOMENTUM TRACKER - Ride the Wave (Energy Acceleration)
         self.momentum_tracker = None
@@ -1494,16 +1605,57 @@ class PlanetaryReclaimer:
         ts = datetime.now().strftime("%H:%M:%S")
         print(f"[{ts}] {msg}", flush=True)
     
-    def record_verified_trade(self, platform: str, symbol: str, side: str, amount: float, profit: float):
-        """Record a verified trade with platform contribution tracking"""
+    def _mark_no_data(self, surface: str, reason: str):
+        """Keep missing evidence visible without manufacturing a numeric substitute."""
+        event = {
+            "surface": surface,
+            "reason": reason,
+            "data_status": "no_data",
+            "truth_status": "no_data",
+            "generated_values": False,
+            "observed_at": datetime.now(timezone.utc).isoformat(),
+        }
+        if not hasattr(self, "no_data_events"):
+            self.no_data_events = []
+        self.no_data_events.append(event)
+        if len(self.no_data_events) > 100:
+            self.no_data_events.pop(0)
+        return event
+
+    def record_verified_trade(self, platform: str, symbol: str, side: str, receipt: dict) -> bool:
+        """Account and learn only from a complete provider fill and observed realized PnL."""
+        terminal = _terminal_fill_receipt(receipt)
+        if terminal is None:
+            self._mark_no_data(f"{platform}.trade_accounting", "terminal_provider_fill_receipt_required")
+            return False
+        profit = _finite_number(terminal.get("realized_pnl"))
+        pnl_currency = str(terminal.get("pnl_currency", "")).upper()
+        if profit is None or pnl_currency != "USD":
+            self._mark_no_data(
+                f"{platform}.trade_accounting",
+                "provider_realized_pnl_in_usd_required",
+            )
+            return False
+        amount = _finite_number(terminal.get("filled_notional"), positive=True)
+        source_timestamp = _fresh_real_receipt(
+            terminal, max_age_seconds=MAX_FILL_AGE_SECONDS
+        )
+        if amount is None or source_timestamp is None:
+            self._mark_no_data(f"{platform}.trade_accounting", "malformed_terminal_fill_receipt")
+            return False
         trade = {
-            'time': datetime.now().strftime("%H:%M:%S"),
+            'time': datetime.fromtimestamp(source_timestamp, timezone.utc).isoformat(),
             'platform': platform,
             'symbol': symbol,
             'side': side,
             'amount': amount,
             'profit': profit,
-            'verified': True
+            'pnl_currency': pnl_currency,
+            'provider_order_id': terminal.get("provider_order_id") or terminal.get("orderId"),
+            'source_id': terminal.get("source_id"),
+            'source_timestamp': source_timestamp,
+            'verified': True,
+            'generated_values': False,
         }
         self.verified_trades.append(trade)
         if len(self.verified_trades) > 20:  # Keep last 20
@@ -1514,6 +1666,8 @@ class PlanetaryReclaimer:
         self.platform_stats[platform]['profit'] += profit
         self.platform_stats[platform]['verified'] += 1
         self.platform_stats[platform]['last_trade'] = trade
+        self.profit += profit
+        self.trades += 1
         
         # 👑 Feed Queen for timeline verification + labyrinth path learning
         won = profit > 0
@@ -1528,8 +1682,11 @@ class PlanetaryReclaimer:
                 self.log(f"👑⚠️ Growth check: {growth_status['message']}")
         
         # 🍄 Broadcast to Mycelium mesh for collective learning
-        boost, indicators = self._get_combined_confidence_boost()
-        self._broadcast_trade_to_mycelium(platform, symbol, side, profit, boost)
+        decision_confidence = _finite_number(terminal.get("decision_confidence"), nonnegative=True)
+        self._broadcast_trade_to_mycelium(
+            platform, symbol, side, profit, decision_confidence, source_timestamp
+        )
+        return True
     
     # ═══════════════════════════════════════════════════════════════
     # 💎 TRUTH VERIFICATION - NO LIES, ONLY REAL BALANCES
@@ -1561,9 +1718,14 @@ class PlanetaryReclaimer:
             for pair in pairs:
                 try:
                     asset = pair.replace('USDC', '')
-                    t = self.binance.get_24h_ticker(pair)
-                    price = float(t.get('lastPrice', 0))
-                    mom = float(t.get('priceChangePercent', 0))
+                    observation = _binance_market_receipt(
+                        self.binance.get_24h_ticker(pair), pair
+                    )
+                    if observation is None:
+                        self._mark_no_data(f"binance.market.{pair}", "fresh_complete_ticker_required")
+                        continue
+                    price = observation['price']
+                    mom = observation['momentum_pct']
                     
                     # 🌊 Feed momentum tracker for wave analysis
                     if self.momentum_tracker and price > 0:
@@ -1626,28 +1788,37 @@ class PlanetaryReclaimer:
         except:
             return 1.0
     
-    def _get_auris_coherence(self, price: float, volume: float, volatility: float, momentum: float) -> float:
+    def _get_auris_coherence(self, price, volume, volatility, momentum, spread, source_timestamp):
         """Get Auris 9-node coherence score (0 to 1)"""
         if not self.auris or not MarketSnapshot:
-            return 0.5  # Neutral
+            return None
         try:
+            price = _finite_number(price, positive=True)
+            volume = _finite_number(volume, nonnegative=True)
+            volatility = _finite_number(volatility, nonnegative=True)
+            momentum = _finite_number(momentum)
+            spread = _finite_number(spread, nonnegative=True)
+            source_timestamp = _timestamp_seconds(source_timestamp)
+            if None in (price, volume, volatility, momentum, spread, source_timestamp):
+                return None
             snapshot = MarketSnapshot(
                 symbol='',
                 price=price,
-                volume=min(1.0, volume / 1000000) if volume > 0 else 0.5,  # Normalize
-                volatility=min(1.0, volatility * 10) if volatility > 0 else 0.3,
-                momentum=max(-1, min(1, momentum / 5)) if momentum else 0,  # Normalize to -1 to 1
-                spread=0.1,  # Default spread
-                timestamp=time.time()
+                volume=min(1.0, volume / 1000000),
+                volatility=min(1.0, volatility * 10),
+                momentum=max(-1, min(1, momentum / 5)),
+                spread=spread,
+                timestamp=source_timestamp
             )
             coherence = self.auris.calculate_coherence(snapshot)
-            return coherence
+            return _finite_number(coherence, nonnegative=True)
         except:
-            return 0.5
+            return None
     
-    def _get_combined_confidence_boost(self, asset: str = '', price: float = 0, 
-                                        volume: float = 0, volatility: float = 0, 
-                                        momentum_pct: float = 0) -> tuple:
+    def _get_combined_confidence_boost(self, asset: str = '', price=None,
+                                        volume=None, volatility=None,
+                                        momentum_pct=None, spread=None,
+                                        source_timestamp=None) -> tuple:
         """
         Get combined confidence boost from all enhancement systems.
         Returns: (total_boost, indicators_string)
@@ -1675,13 +1846,15 @@ class PlanetaryReclaimer:
         boosts.append(luck_boost)
         
         # 🦉 Auris Coherence (as confidence gate, not multiplier)
-        if price > 0:
-            coherence = self._get_auris_coherence(price, volume, volatility, momentum_pct)
+        if _finite_number(price, positive=True) is not None:
+            coherence = self._get_auris_coherence(
+                price, volume, volatility, momentum_pct, spread, source_timestamp
+            )
             # 👑🔓 GATES OPEN = Lower coherence threshold for entry
-            if coherence >= HEART_COHERENCE_THRESHOLD:  # Heart coherence (gates-adjusted)
+            if coherence is not None and coherence >= HEART_COHERENCE_THRESHOLD:  # Heart coherence (gates-adjusted)
                 indicators.append("🦉")
                 boosts.append(1.1)  # 10% boost on high coherence
-            elif coherence < 0.8 and not QUEEN_GATES_OPEN:
+            elif coherence is not None and coherence < 0.8 and not QUEEN_GATES_OPEN:
                 boosts.append(0.95)  # Slight reduction only when gates closed
         
         # 👑🔓 QUEEN'S GATES OPEN: Apply neural confidence boost
@@ -1709,8 +1882,9 @@ class PlanetaryReclaimer:
     # 👑🌍 QUEEN'S SOVEREIGN DECISION ENGINE - SHE DECIDES EVERYTHING
     # ═══════════════════════════════════════════════════════════════
     
-    def _queen_sovereign_decision(self, asset: str, exchange: str, 
-                                   pnl_pct: float, value: float) -> dict:
+    def _queen_sovereign_decision(self, asset: str, exchange: str,
+                                   pnl_pct: float, value: float,
+                                   market_receipt: dict = None) -> dict:
         """
         👑🌍 THE QUEEN MAKES THE FINAL DECISION
         
@@ -1731,30 +1905,52 @@ class PlanetaryReclaimer:
         """
         decision = {
             'action': 'HOLD',
-            'confidence': 0.0,
+            'confidence': None,
             'reason': 'awaiting_wisdom',
-            'queen_message': ''
+            'queen_message': '',
+            'data_status': 'no_data',
+            'generated_values': False,
         }
+
+        source_timestamp = _fresh_real_receipt(
+            market_receipt, max_age_seconds=MAX_MARKET_AGE_SECONDS
+        )
+        pnl_pct = _finite_number(pnl_pct)
+        value = _finite_number(value, positive=True)
+        if source_timestamp is None or pnl_pct is None or value is None:
+            decision['reason'] = 'fresh_market_and_position_evidence_required'
+            return decision
+        decision['data_status'] = 'live'
         
         # 👑 Get Queen's neural confidence
-        neural_conf = self.queen.neural_confidence if hasattr(self.queen, 'neural_confidence') else 0.5
+        neural_conf = _finite_number(getattr(self.queen, 'neural_confidence', None), nonnegative=True)
         
         # 🐝 Get Hive Mind wisdom if available
-        hive_signal = 0.5
+        hive_signal = None
         if self.queen.hive_mind:
             try:
                 wisdom = self.queen.hive_mind.get_collective_wisdom()
-                hive_signal = wisdom.get('confidence', 0.5)
+                hive_signal = _finite_number(wisdom.get('confidence'), nonnegative=True)
             except:
                 pass
         
         # 🍄 Get Mycelium consensus
         mycelium_result = self._get_mycelium_unified_signal(asset=asset)
-        mycelium_signal = mycelium_result.get('confidence', 0.5) if isinstance(mycelium_result, dict) else 0.5
+        mycelium_signal = (
+            _finite_number(mycelium_result.get('confidence'), nonnegative=True)
+            if isinstance(mycelium_result, dict) else None
+        )
         
         # 🌊🍀🦉 Get combined boost
+        market_momentum = _finite_number(market_receipt.get('momentum_pct'))
         combined_boost, indicators = self._get_combined_confidence_boost(
-            asset=asset, price=value, momentum_pct=pnl_pct
+            asset=asset,
+            price=market_receipt.get('price', market_receipt.get('lastPrice')),
+            volume=market_receipt.get('volume'),
+            volatility=abs(market_momentum) / 100.0 if market_momentum is not None else None,
+            momentum_pct=market_momentum,
+            spread=market_receipt.get('spread'),
+            source_timestamp=source_timestamp,
         )
         
         # 👑� WINNING TIMELINE - There are NO losers here. Only WINNERS.
@@ -1791,7 +1987,6 @@ class PlanetaryReclaimer:
             decision['action'] = 'SELL'
             decision['reason'] = f'SACRED_MISSION_{pnl_pct:.4f}%'
             decision['queen_message'] = f"🌍💫 ENERGY RECLAIMED! {asset} +{pnl_pct:.4f}% - FOR PLANETARY LIBERATION!"
-            decision['confidence'] = min(1.0, winner_boost * 2.0)  # Maximum confidence for Source's mission
             return decision
         
         # 🦁 LION HUNTING MODE - The Lion takes ANY profit!
@@ -1800,42 +1995,50 @@ class PlanetaryReclaimer:
             decision['action'] = 'SELL'
             decision['reason'] = f'LION_HUNT_{pnl_pct:.4f}%'
             decision['queen_message'] = f"🦁 THE LION STRIKES! {asset} +{pnl_pct:.4f}% - TAKING PROFIT!"
-            decision['confidence'] = min(1.0, winner_boost * 1.5)
             return decision
         
         # 👑 QUEEN'S SOVEREIGN CALCULATION
         # She weighs all signals with her own wisdom - WINNER WEIGHTED
-        sovereign_score = (
-            neural_conf * 0.30 +           # Her learned intelligence
-            hive_signal * 0.25 +           # Collective hive wisdom  
-            mycelium_signal * 0.20 +       # Underground network
-            (combined_boost / 3.0) * 0.25  # All enhancement systems
-        )
+        signals = (neural_conf, hive_signal, mycelium_signal, combined_boost)
+        sovereign_score = None
+        if all(signal is not None for signal in signals):
+            sovereign_score = (
+                neural_conf * 0.30 +
+                hive_signal * 0.25 +
+                mycelium_signal * 0.20 +
+                (combined_boost / 3.0) * 0.25
+            )
         
         # Apply WINNER BOOST - Winners get more confidence!
-        sovereign_score *= winner_boost
+        if sovereign_score is not None:
+            sovereign_score *= winner_boost
         
         # Apply sovereign multiplier
-        sovereign_score *= SOVEREIGN_PROFIT_MULTIPLIER if QUEEN_SOVEREIGN_CONTROL else 1.0
+        if sovereign_score is not None:
+            sovereign_score *= SOVEREIGN_PROFIT_MULTIPLIER if QUEEN_SOVEREIGN_CONTROL else 1.0
         
-        decision['confidence'] = min(1.0, sovereign_score)
+        decision['confidence'] = min(1.0, sovereign_score) if sovereign_score is not None else None
         
         # 👑 QUEEN'S DECISION LOGIC
         # Profit threshold adjusted by sovereign confidence
-        adjusted_threshold = PROFIT_THRESHOLD_BASE / max(0.5, sovereign_score)
+        adjusted_threshold = (
+            PROFIT_THRESHOLD_BASE / max(0.5, sovereign_score)
+            if sovereign_score is not None else PROFIT_THRESHOLD_BASE
+        )
         
         if pnl_pct > adjusted_threshold:
             decision['action'] = 'SELL'
             decision['reason'] = f"profit_{pnl_pct:.3f}%_{indicators}"
             decision['queen_message'] = f"👑 TAKE THE PROFIT! {pnl_pct:+.3f}% is MINE"
-        elif pnl_pct < -5.0 and sovereign_score < 0.3:
+        elif pnl_pct < -5.0 and sovereign_score is not None and sovereign_score < 0.3:
             # Only consider exit if Queen is very uncertain (rare)
             decision['action'] = 'HOLD'
             decision['reason'] = 'queen_says_hold_wait_for_recovery'
             decision['queen_message'] = "👑 PATIENCE. The timeline will shift."
         else:
             decision['action'] = 'HOLD'
-            decision['reason'] = f'building_position_{sovereign_score:.2f}'
+            score_text = f'{sovereign_score:.2f}' if sovereign_score is not None else 'no_data'
+            decision['reason'] = f'building_position_{score_text}'
             decision['queen_message'] = "👑 Building energy. Wait for the moment."
         
         return decision
@@ -1918,8 +2121,8 @@ class PlanetaryReclaimer:
         except Exception as e:
             print(f"   ⚠️ Mycelium wiring partial: {e}")
     
-    def _broadcast_trade_to_mycelium(self, platform: str, symbol: str, side: str, 
-                                      profit: float, confidence: float):
+    def _broadcast_trade_to_mycelium(self, platform: str, symbol: str, side: str,
+                                      profit: float, confidence, source_timestamp: float):
         """
         📡 Broadcast a trade signal to the Mycelium mesh.
         All connected systems will receive the signal for learning.
@@ -1935,15 +2138,18 @@ class PlanetaryReclaimer:
                 'profit': profit,
                 'confidence': confidence,
                 'won': profit > 0,
-                'timestamp': time.time()
+                'source_timestamp': source_timestamp,
+                'truth_status': 'real_observed',
+                'generated_values': False,
             }
             
             # Broadcast for collective learning
             self.mycelium.broadcast_signal('trade_executed', signal_data)
             
             # Send external signal for queen neuron adjustment
-            signal_strength = 0.5 + (confidence * 0.5) if profit > 0 else -(0.5 + (confidence * 0.5))
-            self.mycelium.receive_external_signal('gaia_reclaimer', signal_strength, confidence)
+            if confidence is not None and 0.0 <= confidence <= 1.0:
+                signal_strength = confidence if profit > 0 else -confidence
+                self.mycelium.receive_external_signal('gaia_reclaimer', signal_strength, confidence)
             
         except:
             pass  # Silent fail - mycelium is enhancement only
@@ -1954,12 +2160,24 @@ class PlanetaryReclaimer:
         Combines all wired systems for optimal decision.
         """
         if not self.mycelium:
-            return {'signal': 0, 'confidence': 0.5, 'action': 'HOLD'}
+            return {
+                'signal': None,
+                'confidence': None,
+                'action': 'HOLD',
+                'data_status': 'no_data',
+                'generated_values': False,
+            }
         
         try:
             return self.mycelium.get_unified_signal(asset=asset, include_external=True)
         except:
-            return {'signal': 0, 'confidence': 0.5, 'action': 'HOLD'}
+            return {
+                'signal': None,
+                'confidence': None,
+                'action': 'HOLD',
+                'data_status': 'no_data',
+                'generated_values': False,
+            }
 
     # ═══════════════════════════════════════════════════════════════
     # PORTFOLIO TRACKER - ROAD TO $1 BILLION
@@ -2035,8 +2253,9 @@ class PlanetaryReclaimer:
                                 else:
                                     try:
                                         ticker = self.kraken.get_ticker(f'{asset}USD')
-                                        price = float(ticker.get('price', 0))
-                                        breakdown['kraken'] += bal * price
+                                        price = _finite_number(ticker.get('price'), positive=True)
+                                        if price is not None:
+                                            breakdown['kraken'] += bal * price
                                     except:
                                         pass
                         except:
@@ -2061,13 +2280,16 @@ class PlanetaryReclaimer:
                         # Try to get price for crypto assets
                         try:
                             ticker = self.kraken.get_ticker(f'{asset}USD')
-                            price = float(ticker.get('price', 0))
-                            breakdown['kraken'] += free * price
+                            price = _finite_number(ticker.get('price'), positive=True)
+                            if price is not None:
+                                breakdown['kraken'] += free * price
                         except:
                             try:
                                 ticker = self.kraken.get_ticker(f'{asset}EUR')
-                                price = float(ticker.get('price', 0))
-                                breakdown['kraken'] += free * price * self.eur_usd
+                                price = _finite_number(ticker.get('price'), positive=True)
+                                eur_usd = _finite_number(self.eur_usd, positive=True)
+                                if price is not None and eur_usd is not None:
+                                    breakdown['kraken'] += free * price * eur_usd
                             except:
                                 pass
                 
@@ -2183,28 +2405,53 @@ class PlanetaryReclaimer:
         """Scan Binance - take profits - deploy cash"""
         try:
             for asset in ['SOL', 'BTC', 'ETH', 'AVAX', 'DOGE', 'XRP']:
-                bal = self.binance.get_free_balance(asset)
+                balance_receipt = self.binance.get_asset_balance(asset)
+                if (
+                    _fresh_real_receipt(
+                        balance_receipt, max_age_seconds=MAX_ACCOUNT_AGE_SECONDS
+                    ) is None
+                    or balance_receipt.get('eligible_for_action') is not True
+                ):
+                    self._mark_no_data(f"binance.balance.{asset}", "fresh_balance_receipt_required")
+                    continue
+                bal = _finite_number(balance_receipt.get('free'), nonnegative=True)
+                if bal is None:
+                    self._mark_no_data(f"binance.balance.{asset}", "finite_free_balance_required")
+                    continue
                 if bal < 0.00001:
                     continue
                 
                 pair = f'{asset}USDC'
-                t = self.binance.get_ticker_price(pair)
-                if not t:
+                observation = _binance_market_receipt(
+                    self.binance.get_24h_ticker(pair), pair
+                )
+                if observation is None:
+                    self._mark_no_data(f"binance.market.{pair}", "fresh_complete_ticker_required")
                     continue
-                    
-                price = float(t.get('price', 0))
+
+                price = observation['price']
                 value = bal * price
                 
                 if value < 1:
                     continue
                 
                 key = f'bin_{asset}'
+                entry_receipt = _terminal_fill_receipt(self.entries.get(key))
+                if entry_receipt is None:
+                    self._mark_no_data(
+                        f"binance.cost_basis.{asset}",
+                        "provider_entry_fill_receipt_required",
+                    )
+                    continue
                 if key not in self.entries:
                     self.entries[key] = price
                     self.log(f"📍 BINANCE {asset}: Entry recorded @ ${price:.2f} (${value:.2f})")
                     continue
                 
-                entry = self.entries[key]
+                entry = _finite_number(entry_receipt.get('filled_avg_price'), positive=True)
+                if entry is None:
+                    self._mark_no_data(f"binance.cost_basis.{asset}", "entry_price_required")
+                    continue
                 pnl_pct = (price - entry) / entry * 100
                 
                 # Log position status periodically
@@ -2216,23 +2463,23 @@ class PlanetaryReclaimer:
                 
                 # 🌊🍀🦉 COMBINED CONFIDENCE BOOST - All systems enhance profit-taking
                 best_mom = self._get_best_momentum()
-                try:
-                    ticker_24h = self.binance.get_24h_ticker(pair)
-                    volume = float(ticker_24h.get('volume', 0))
-                    volatility = float(ticker_24h.get('priceChangePercent', 0)) / 100
-                except:
-                    volume, volatility = 0, 0
-                
+
                 combined_boost, indicators = self._get_combined_confidence_boost(
-                    asset=asset, price=price, volume=volume, 
-                    volatility=abs(volatility), momentum_pct=pnl_pct
+                    asset=asset,
+                    price=price,
+                    volume=observation['volume'],
+                    volatility=abs(observation['momentum_pct']) / 100.0,
+                    momentum_pct=pnl_pct,
+                    spread=observation['spread'],
+                    source_timestamp=observation['source_timestamp'],
                 )
                 
                 # 👑🌍 QUEEN SOVEREIGN CONTROL: Let the Queen decide
                 if QUEEN_SOVEREIGN_CONTROL:
                     queen_decision = self._queen_sovereign_decision(
                         asset=asset, exchange='binance', 
-                        pnl_pct=pnl_pct, value=value
+                        pnl_pct=pnl_pct, value=value,
+                        market_receipt=observation,
                     )
                     should_profit = queen_decision['action'] == 'SELL'
                     should_rotate = queen_decision['action'] == 'ROTATE'
@@ -2259,7 +2506,18 @@ class PlanetaryReclaimer:
                     self.log(f"🔥 BINANCE SELL {asset}: ${value:.2f} ({reason})")
                     
                     result = self.binance.place_market_order(pair, 'SELL', quantity=bal * 0.999)
-                    
+                    terminal = _terminal_fill_receipt(result)
+                    if terminal is not None:
+                        self.entries.pop(key, None)
+                        if self.record_verified_trade('binance', asset, 'SELL', terminal):
+                            self.log("   Provider fill and realized PnL verified")
+                    else:
+                        self._mark_no_data(
+                            f"binance.order.{pair}",
+                            "terminal_fill_reconciliation_required",
+                        )
+                    continue
+
                     if result and ('orderId' in result or result.get('status') == 'FILLED'):
                         profit_usd = value * (pnl_pct / 100)
                         self.profit += profit_usd
@@ -2273,16 +2531,32 @@ class PlanetaryReclaimer:
                         self.log(f"   ⚠️ Order failed: {result}")
                         
             # Deploy idle USDC
-            usdc = self.binance.get_free_balance('USDC')
-            if usdc > 2:
+            usdc_receipt = self.binance.get_asset_balance('USDC')
+            usdc = (
+                _finite_number(usdc_receipt.get('free'), nonnegative=True)
+                if _fresh_real_receipt(
+                    usdc_receipt, max_age_seconds=MAX_ACCOUNT_AGE_SECONDS
+                ) is not None and usdc_receipt.get('eligible_for_action') is True
+                else None
+            )
+            if usdc is not None and usdc > 2:
                 self._binance_buy_best()
                 
         except Exception as e:
             self.log(f"⚠️ Binance error: {e}")
     
     def _binance_buy_best(self):
-        usdc = self.binance.get_free_balance('USDC')
-        if usdc < 2:
+        balance_receipt = self.binance.get_asset_balance('USDC')
+        if (
+            _fresh_real_receipt(
+                balance_receipt, max_age_seconds=MAX_ACCOUNT_AGE_SECONDS
+            ) is None
+            or balance_receipt.get('eligible_for_action') is not True
+        ):
+            self._mark_no_data("binance.balance.USDC", "fresh_balance_receipt_required")
+            return
+        usdc = _finite_number(balance_receipt.get('free'), nonnegative=True)
+        if usdc is None or usdc < 2:
             return
             
         pairs = ['SOLUSDC', 'BTCUSDC', 'ETHUSDC', 'AVAXUSDC', 'DOGEUSDC']
@@ -2290,8 +2564,13 @@ class PlanetaryReclaimer:
         
         for pair in pairs:
             try:
-                t = self.binance.get_24h_ticker(pair)
-                mom = float(t.get('priceChangePercent', 0))
+                observation = _binance_market_receipt(
+                    self.binance.get_24h_ticker(pair), pair
+                )
+                if observation is None:
+                    self._mark_no_data(f"binance.market.{pair}", "fresh_complete_ticker_required")
+                    continue
+                mom = observation['momentum_pct']
                 if mom > best_mom:
                     best_pair, best_mom = pair, mom
             except:
@@ -2306,7 +2585,17 @@ class PlanetaryReclaimer:
             self.log(f"📥 BINANCE BUY {asset}: ${buy_amount:.2f} ({best_mom:+.1f}%)")
             
             result = self.binance.place_market_order(best_pair, 'BUY', quote_qty=buy_amount)
-            
+            terminal = _terminal_fill_receipt(result)
+            if terminal is not None:
+                self.entries[f'bin_{asset}'] = terminal
+                self.log("   Provider fill verified; exact entry receipt stored")
+            else:
+                self._mark_no_data(
+                    f"binance.order.{best_pair}",
+                    "terminal_fill_reconciliation_required",
+                )
+            return
+
             if result and ('orderId' in result or result.get('status') == 'FILLED'):
                 t = self.binance.get_ticker_price(best_pair)
                 price = float(t.get('price', 0))
@@ -2319,7 +2608,22 @@ class PlanetaryReclaimer:
     
     def alpaca_scan_and_trade(self):
         try:
+            account_receipt = self.alpaca.get_account()
+            if (
+                _fresh_real_receipt(
+                    account_receipt, max_age_seconds=MAX_ACCOUNT_AGE_SECONDS
+                ) is None
+                or account_receipt.get('eligible_for_action') is not True
+            ):
+                self._mark_no_data("alpaca.account", "fresh_actionable_account_receipt_required")
+                return
             positions = self.alpaca.get_positions()
+            if not isinstance(positions, list) or any(
+                _fresh_real_receipt(pos, max_age_seconds=MAX_ACCOUNT_AGE_SECONDS) is None
+                for pos in positions
+            ):
+                self._mark_no_data("alpaca.positions", "fresh_position_receipts_required")
+                return
             
             for pos in positions:
                 sym = pos.get('symbol', '')
@@ -2338,7 +2642,7 @@ class PlanetaryReclaimer:
                         asset_name = 'USDC' if 'USDC' in sym else 'USDT'
                         self.log(f"💱 ALPACA CONVERT {asset_name}: ${value:.2f} → Cash")
                         result = self.alpaca.place_order(sym, qty, 'sell', 'market', 'ioc')
-                        if result and result.get('status') in ['filled', 'accepted', 'new']:
+                        if _terminal_fill_receipt(result) is not None:
                             self.log(f"   ✅ Converted to cash")
                             time.sleep(0.5)
                             self._alpaca_buy_best()
@@ -2376,7 +2680,16 @@ class PlanetaryReclaimer:
                     self.log(f"🔥 ALPACA PROFIT {asset}: ${value:.2f} ({pnl_pct:+.2f}%)")
                     
                     result = self.alpaca.place_order(sym, qty, 'sell', 'market', 'ioc')
-                    
+                    terminal = _terminal_fill_receipt(result)
+                    if terminal is not None:
+                        self.record_verified_trade('alpaca', asset, 'SELL', terminal)
+                    else:
+                        self._mark_no_data(
+                            f"alpaca.order.{sym}",
+                            "terminal_fill_reconciliation_required",
+                        )
+                    continue
+
                     if result and result.get('status') in ['filled', 'accepted', 'new']:
                         profit_usd = value * (pnl_pct / 100)
                         self.profit += profit_usd
@@ -2399,6 +2712,12 @@ class PlanetaryReclaimer:
     def _alpaca_buy_best(self):
         try:
             acc = self.alpaca.get_account()
+            if (
+                _fresh_real_receipt(acc, max_age_seconds=MAX_ACCOUNT_AGE_SECONDS) is None
+                or acc.get('eligible_for_action') is not True
+            ):
+                self._mark_no_data("alpaca.account", "fresh_actionable_account_receipt_required")
+                return
             cash = float(acc.get('cash', 0))
             if cash < 2:
                 return
@@ -2408,8 +2727,12 @@ class PlanetaryReclaimer:
             
             for pair in pairs:
                 try:
-                    t = self.binance.get_24h_ticker(pair)
-                    mom = float(t.get('priceChangePercent', 0))
+                    observation = _binance_market_receipt(
+                        self.binance.get_24h_ticker(pair), pair
+                    )
+                    if observation is None:
+                        continue
+                    mom = observation['momentum_pct']
                     if mom > best_mom:
                         best_asset = pair.replace('USDC', '')
                         best_mom = mom
@@ -2425,7 +2748,9 @@ class PlanetaryReclaimer:
                     price = float(quotes[alpaca_sym].get('ap', 0))
                     qty = (cash * 0.95) / price
                     result = self.alpaca.place_order(alpaca_sym, qty, 'buy', 'market', 'ioc')
-                    if result:
+                    terminal = _terminal_fill_receipt(result)
+                    if terminal is not None:
+                        self.entries[f'alp_{best_asset}'] = terminal
                         self.log(f"   ✅ DEPLOYED")
                 except:
                     pass
@@ -2440,6 +2765,12 @@ class PlanetaryReclaimer:
         """Scan Kraken - USD and EUR pairs"""
         try:
             acct = self.kraken.account()
+            if (
+                _fresh_real_receipt(acct, max_age_seconds=MAX_ACCOUNT_AGE_SECONDS) is None
+                or acct.get('eligible_for_action') is not True
+            ):
+                self._mark_no_data("kraken.account", "fresh_actionable_account_receipt_required")
+                return
             usd_bal = 0.0
             eur_bal = 0.0
             
@@ -2467,13 +2798,25 @@ class PlanetaryReclaimer:
                 pair = f'{asset}USD'
                 
                 try:
-                    ticker = self.kraken.get_ticker(pair)
-                    price = float(ticker.get('price', 0))
+                    ticker = self.kraken.get_24h_ticker(pair)
+                    if _fresh_real_receipt(
+                        ticker, max_age_seconds=MAX_MARKET_AGE_SECONDS
+                    ) is None:
+                        continue
+                    price = _finite_number(ticker.get('price'), positive=True)
                 except:
                     try:
                         pair = f'{asset}EUR'
-                        ticker = self.kraken.get_ticker(pair)
-                        price = float(ticker.get('price', 0)) * self.eur_usd
+                        ticker = self.kraken.get_24h_ticker(pair)
+                        if _fresh_real_receipt(
+                            ticker, max_age_seconds=MAX_MARKET_AGE_SECONDS
+                        ) is None:
+                            continue
+                        native_price = _finite_number(ticker.get('price'), positive=True)
+                        eur_usd = _finite_number(self.eur_usd, positive=True)
+                        if native_price is None or eur_usd is None:
+                            continue
+                        price = native_price * eur_usd
                         quote = 'EUR'
                     except:
                         continue
@@ -2531,7 +2874,17 @@ class PlanetaryReclaimer:
                     self.log(f"🔥 KRAKEN PROFIT {asset}/{quote}: ${value:.2f} ({reason})")
                     
                     result = self.kraken.place_market_order(f'{asset}{quote}', 'sell', quantity=free * 0.999)
-                    
+                    terminal = _terminal_fill_receipt(result)
+                    if terminal is not None:
+                        self.entries.pop(key, None)
+                        self.record_verified_trade('kraken', f'{asset}/{quote}', 'SELL', terminal)
+                    else:
+                        self._mark_no_data(
+                            f"kraken.order.{asset}{quote}",
+                            "terminal_fill_reconciliation_required",
+                        )
+                    continue
+
                     if result and (result.get('txid') or result.get('status') == 'FILLED' or 
                                    result.get('orderId') or 'dryRun' in result):
                         profit_usd = value * (pnl_pct / 100)
@@ -2586,8 +2939,12 @@ class PlanetaryReclaimer:
                     if amount < min_usd:
                         continue
                         
-                    t = self.binance.get_24h_ticker(pair)
-                    mom = float(t.get('priceChangePercent', 0))
+                    observation = _binance_market_receipt(
+                        self.binance.get_24h_ticker(pair), pair
+                    )
+                    if observation is None:
+                        continue
+                    mom = observation['momentum_pct']
                     if mom > best_mom:
                         best_asset = asset
                         best_mom = mom
@@ -2603,15 +2960,19 @@ class PlanetaryReclaimer:
             result = self.kraken.place_market_order(kraken_pair, 'buy', quote_qty=amount * 0.95)
             
             # Detect success - Kraken returns orderId and status=FILLED
-            success = False
-            if result:
-                success = (result.get('orderId') or result.get('txid') or 
-                          result.get('status') == 'FILLED' or 'dryRun' in result)
+            terminal = _terminal_fill_receipt(result)
+            success = terminal is not None
             
             if success:
                 try:
-                    ticker = self.kraken.get_ticker(kraken_pair)
-                    price = float(ticker.get('price', 0))
+                    ticker = self.kraken.get_24h_ticker(kraken_pair)
+                    if _fresh_real_receipt(
+                        ticker, max_age_seconds=MAX_MARKET_AGE_SECONDS
+                    ) is None:
+                        return
+                    price = _finite_number(ticker.get('price'), positive=True)
+                    if price is None:
+                        return
                     if quote == 'EUR':
                         price *= self.eur_usd
                     self.entries[f'krk_{best_asset}_{quote}'] = price
@@ -2748,9 +3109,13 @@ class PlanetaryReclaimer:
             if hasattr(self, 'binance') and self.binance:
                 for pair in ['BTCUSDC', 'ETHUSDC', 'SOLUSDC']:
                     try:
-                        t = self.binance.get_24h_ticker(pair)
-                        vol = float(t.get('volume', 0))
-                        quote_vol = float(t.get('quoteVolume', 0))
+                        observation = _binance_market_receipt(
+                            self.binance.get_24h_ticker(pair), pair
+                        )
+                        if observation is None:
+                            continue
+                        vol = observation['volume']
+                        quote_vol = observation['quote_volume']
                         if quote_vol > 100_000_000:  # $100M+ volume = emotion!
                             self.log(f"🐬 DOLPHIN SENSE: {pair} EMOTIONAL VOLUME ${quote_vol/1e6:.0f}M!")
                     except:

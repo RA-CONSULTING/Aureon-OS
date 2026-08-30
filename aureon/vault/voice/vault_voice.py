@@ -63,7 +63,7 @@ class VaultVoice:
             # Use the voice-safe adapter selector: prefers local LLM (Ollama / OpenAI-compatible),
             # falls back to Anthropic if configured, otherwise returns a fast stub with instructions.
             from aureon.inhouse_ai.llm_adapter import build_voice_adapter
-            self.adapter = build_voice_adapter()
+            self.adapter = build_voice_adapter(lane="general")
         except Exception as e:
             logger.debug("Voice %s: adapter unavailable: %s", self.NAME, e)
             self.adapter = None
@@ -389,7 +389,7 @@ def build_all_voices(adapter: Any = None) -> Dict[str, VaultVoice]:
     if adapter is None:
         try:
             from aureon.inhouse_ai.llm_adapter import build_voice_adapter
-            adapter = build_voice_adapter()
+            adapter = build_voice_adapter(lane="general")
         except Exception:
             adapter = None
     return {name: cls(adapter=adapter) for name, cls in VOICE_REGISTRY.items()}

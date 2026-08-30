@@ -32,6 +32,7 @@ State persists to state/organism_connectome.json so the body-map survives sleep.
 
 from __future__ import annotations
 
+import ast
 import importlib
 import json
 import logging
@@ -75,6 +76,171 @@ _DENY_EXPLICIT = frozenset({
 def _denied(module: str) -> bool:
     return module in _DENY_EXPLICIT or any(rx.search(module) for rx in _DENY_RE)
 
+
+class _ImportTimeMutationScanner(ast.NodeVisitor):
+    """Find process-wide mutations that would run while a module is imported.
+
+    Function and lambda bodies are deliberately not traversed: defining them is
+    import-safe. Class bodies and top-level control-flow *are* traversed because
+    Python executes them during import. A conventional ``__main__`` branch is
+    skipped while its import-time ``else`` branch is still inspected.
+    """
+
+    def __init__(self) -> None:
+        self.aliases: Dict[str, str] = {}
+        self.hazards: List[tuple[int, str]] = []
+
+    def _qualified(self, node: ast.AST) -> str:
+        if isinstance(node, ast.Name):
+            return self.aliases.get(node.id, node.id)
+        if isinstance(node, ast.Attribute):
+            base = self._qualified(node.value)
+            return f"{base}.{node.attr}" if base else node.attr
+        return ""
+
+    def _add(self, node: ast.AST, description: str) -> None:
+        item = (int(getattr(node, "lineno", 0) or 0), description)
+        if item not in self.hazards:
+            self.hazards.append(item)
+
+    def visit_Import(self, node: ast.Import) -> None:  # noqa: N802 - AST API
+        for alias in node.names:
+            local = alias.asname or alias.name.split(".", 1)[0]
+            self.aliases[local] = alias.name if alias.asname else local
+
+    def visit_ImportFrom(self, node: ast.ImportFrom) -> None:  # noqa: N802 - AST API
+        if not node.module:
+            return
+        for alias in node.names:
+            if alias.name == "*":
+                continue
+            self.aliases[alias.asname or alias.name] = f"{node.module}.{alias.name}"
+
+    def _check_target(self, node: ast.AST) -> None:
+        target = self._qualified(node)
+        if target in ("sys.stdout", "sys.stderr"):
+            self._add(node, f"{target} assignment")
+        if isinstance(node, (ast.Tuple, ast.List)):
+            for child in node.elts:
+                self._check_target(child)
+
+    def visit_Assign(self, node: ast.Assign) -> None:  # noqa: N802 - AST API
+        for target in node.targets:
+            self._check_target(target)
+        self.generic_visit(node)
+
+    def visit_AnnAssign(self, node: ast.AnnAssign) -> None:  # noqa: N802 - AST API
+        self._check_target(node.target)
+        self.generic_visit(node)
+
+    def visit_AugAssign(self, node: ast.AugAssign) -> None:  # noqa: N802 - AST API
+        self._check_target(node.target)
+        self.generic_visit(node)
+
+    def visit_Delete(self, node: ast.Delete) -> None:  # noqa: N802 - AST API
+        for target in node.targets:
+            target_name = self._qualified(target)
+            if target_name in ("sys.stdout", "sys.stderr"):
+                self._add(target, f"{target_name} deletion")
+        self.generic_visit(node)
+
+    def visit_Call(self, node: ast.Call) -> None:  # noqa: N802 - AST API
+        function = self._qualified(node.func)
+        descriptions = {
+            "sys.stdout.reconfigure": "sys.stdout.reconfigure call",
+            "sys.stderr.reconfigure": "sys.stderr.reconfigure call",
+            "os.chdir": "os.chdir call",
+            "sys.exit": "sys.exit call",
+            "io.TextIOWrapper": "io.TextIOWrapper call",
+            "matplotlib.pyplot.subplots": "matplotlib GUI construction",
+            "matplotlib.pyplot.figure": "matplotlib GUI construction",
+            "matplotlib.pyplot.show": "matplotlib GUI display",
+            "tkinter.Tk": "tkinter GUI construction",
+        }
+        if function in descriptions:
+            self._add(node, descriptions[function])
+        self.generic_visit(node)
+
+    def visit_Raise(self, node: ast.Raise) -> None:  # noqa: N802 - AST API
+        raised = node.exc.func if isinstance(node.exc, ast.Call) else node.exc
+        if raised is not None and self._qualified(raised) in ("SystemExit", "builtins.SystemExit"):
+            self._add(node, "SystemExit raise")
+        self.generic_visit(node)
+
+    @staticmethod
+    def _main_guard(node: ast.If) -> str | None:
+        test = node.test
+        if not isinstance(test, ast.Compare) or len(test.ops) != 1 or len(test.comparators) != 1:
+            return None
+        left, right = test.left, test.comparators[0]
+        pair = ((left, right), (right, left))
+        if not any(isinstance(a, ast.Name) and a.id == "__name__"
+                   and isinstance(b, ast.Constant) and b.value == "__main__"
+                   for a, b in pair):
+            return None
+        if isinstance(test.ops[0], ast.Eq):
+            return "main_body"
+        if isinstance(test.ops[0], ast.NotEq):
+            return "import_body"
+        return None
+
+    def visit_If(self, node: ast.If) -> None:  # noqa: N802 - AST API
+        guard = self._main_guard(node)
+        if guard == "main_body":
+            for statement in node.orelse:
+                self.visit(statement)
+            return
+        if guard == "import_body":
+            for statement in node.body:
+                self.visit(statement)
+            return
+        self.generic_visit(node)
+
+    def _visit_signature(self, node: ast.FunctionDef | ast.AsyncFunctionDef) -> None:
+        for decorator in node.decorator_list:
+            self.visit(decorator)
+        for default in (*node.args.defaults, *[d for d in node.args.kw_defaults if d is not None]):
+            self.visit(default)
+        if node.returns is not None:
+            self.visit(node.returns)
+
+    def visit_FunctionDef(self, node: ast.FunctionDef) -> None:  # noqa: N802 - AST API
+        self._visit_signature(node)
+
+    def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef) -> None:  # noqa: N802 - AST API
+        self._visit_signature(node)
+
+    def visit_Lambda(self, node: ast.Lambda) -> None:  # noqa: N802 - AST API
+        for default in (*node.args.defaults, *[d for d in node.args.kw_defaults if d is not None]):
+            self.visit(default)
+
+
+def _source_import_hazards(path: Path) -> List[str]:
+    """Return static import-time process mutations without executing ``path``."""
+    try:
+        source = path.read_text(encoding="utf-8", errors="replace")
+        tree = ast.parse(source, filename=str(path))
+    except (OSError, SyntaxError, ValueError):
+        return []
+    scanner = _ImportTimeMutationScanner()
+    scanner.visit(tree)
+    return [f"{description} at line {line}" for line, description in sorted(scanner.hazards)]
+
+
+def _node_import_hazards(node: Any) -> List[str]:
+    """Resolve a manifest node to repo source and inspect it without importing it."""
+    relative = str(getattr(node, "path", "") or "")
+    if not relative:
+        return []
+    try:
+        root = _REPO_ROOT.resolve()
+        source_path = (_REPO_ROOT / relative).resolve()
+        source_path.relative_to(root)
+    except (OSError, RuntimeError, ValueError):
+        return []
+    if source_path.suffix.lower() != ".py" or not source_path.is_file():
+        return []
+    return _source_import_hazards(source_path)
 
 _PATHS_READY = False
 
@@ -231,14 +397,15 @@ class Connectome:
     # ── touch: wake a part and feel its shape ────────────────────────────────
 
     def touch(self, module: str) -> Dict[str, Any]:
-        _ensure_import_paths()   # heal the import context so intra-repo imports resolve
         node = self.manifest().by_module().get(module)
         if node is None:
             return {"module": module, "status": "unknown", "error": "not in the organism manifest"}
-        if _denied(module):
-            self._record(module, "denied")
-            return {"module": module, "status": "denied",
-                    "reason": "runs loops/sockets at import — sensed, not woken"}
+        denial_reason = self._denial_reason(module, node)
+        if denial_reason is not None:
+            self._record(module, "denied", reason=denial_reason)
+            return {"module": module, "status": "denied", "reason": denial_reason}
+
+        _ensure_import_paths()   # heal the import context so intra-repo imports resolve
 
         prior = os.environ.get(_SUPPRESS_ENV)
         os.environ[_SUPPRESS_ENV] = "1"   # the baton's live-mode env flips must never fire from here
@@ -259,6 +426,15 @@ class Connectome:
         shape = self._feel(mod)
         self._record(module, "touched", **{k: shape[k] for k in ("classes", "functions", "singletons")})
         return {"module": module, "status": "touched", **shape}
+
+    def _denial_reason(self, module: str, node: Any | None = None) -> str | None:
+        if _denied(module):
+            return "runs loops/sockets at import - sensed, not woken"
+        resolved = node or self.manifest().by_module().get(module)
+        hazards = _node_import_hazards(resolved) if resolved is not None else []
+        if hazards:
+            return "static import-time process mutation - " + "; ".join(hazards[:6])
+        return None
 
     def _import_guarded(self, module: str, timeout: float) -> tuple[Any, str | None]:
         """Import ``module`` behaviourally hang-safe: if the import takes longer than
@@ -394,8 +570,10 @@ class Connectome:
         ``_denied()`` no longer matches, so the sweep re-touches it (behaviour, via the
         timeout-guarded touch, then decides — weave / fail / re-deny). Bounded by
         ``limit``, guarded, saves once. Returns ``{re_evaluated, freed, still_denied}``."""
+        by_module = self.manifest().by_module()
         stale = [m for m, rec in list(self._records.items())
-                 if rec.get("status") == "denied" and not _denied(m)]
+                 if rec.get("status") == "denied"
+                 and self._denial_reason(m, by_module.get(m)) is None]
         freed = 0
         for module in stale:
             if limit is not None and freed >= limit:

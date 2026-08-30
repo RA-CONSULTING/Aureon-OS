@@ -172,12 +172,23 @@ def test_computed_adapter_unknown_smiles_returns_empty():
     assert fetcher.ComputedXtbAdapter().fetch("not-a-real-molecule") == []
 
 
-def test_computed_rows_carry_theoretical_marker():
+def test_computed_rows_carry_theoretical_marker(monkeypatch):
     """Computed provenance must be clearly labeled and kept separable."""
-    pytest.importorskip("rdkit")
-    pytest.importorskip("tblite")
-    freqs = fetcher.compute_xtb_frequencies("O", seed=1)  # water: fast
-    assert len(freqs) >= 3
-    assert all(f > 100 for f in freqs)
-    # provenance marker is the theoretical lane, not an experimental source
-    assert "COMPUTED" in fetcher.COMPUTED_SOURCE and "theoretical" in fetcher.COMPUTED_SOURCE
+    observed = {}
+
+    def _frequencies(smiles, *, seed=42, **_kwargs):
+        observed.update(smiles=smiles, seed=seed)
+        return [123.4, 567.8, 901.2]
+
+    monkeypatch.setattr(fetcher, "computed_toolchain_available", lambda: True)
+    monkeypatch.setattr(fetcher, "compute_xtb_frequencies", _frequencies)
+
+    rows = fetcher.ComputedXtbAdapter(seed=1).fetch("caffeic acid")
+    assert observed == {"smiles": fetcher.SMILES["caffeic acid"], "seed": 1}
+    assert [row["peak_value"] for row in rows] == [123.4, 567.8, 901.2]
+    assert all(row["unit"] == "cm^-1" for row in rows)
+    assert all(row["source"] == fetcher.COMPUTED_SOURCE for row in rows)
+    assert fetcher.ComputedXtbAdapter.kind == "computed"
+    assert "COMPUTED" in fetcher.COMPUTED_SOURCE
+    assert "theoretical" in fetcher.COMPUTED_SOURCE
+    assert "non-experimental" in fetcher.COMPUTED_SOURCE

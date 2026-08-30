@@ -1,35 +1,10 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { decryptCredential } from '../_shared/credential_crypto.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-// Decrypt credentials using the same key as create-aureon-session
-async function decrypt(encrypted: string, iv: string): Promise<string> {
-  // Must match the key used in create-aureon-session
-  const encryptionKey = 'aureon-default-key-32chars!!';
-  
-  const encoder = new TextEncoder();
-  const keyData = encoder.encode(encryptionKey.padEnd(32, '0').slice(0, 32));
-  const cryptoKey = await crypto.subtle.importKey(
-    'raw',
-    keyData,
-    { name: 'AES-GCM' },
-    false,
-    ['decrypt']
-  );
-  
-  const encryptedData = Uint8Array.from(atob(encrypted), c => c.charCodeAt(0));
-  const ivData = Uint8Array.from(atob(iv), c => c.charCodeAt(0));
-  
-  const decrypted = await crypto.subtle.decrypt(
-    { name: 'AES-GCM', iv: ivData },
-    cryptoKey,
-    encryptedData
-  );
-  return new TextDecoder().decode(decrypted);
-}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -98,8 +73,8 @@ Deno.serve(async (req) => {
           break;
         }
 
-        const apiKey = await decrypt(session.binance_api_key_encrypted, session.binance_iv);
-        const apiSecret = await decrypt(session.binance_api_secret_encrypted, session.binance_iv);
+        const apiKey = await decryptCredential(session.binance_api_key_encrypted, session.binance_iv);
+        const apiSecret = await decryptCredential(session.binance_api_secret_encrypted, session.binance_iv);
 
         const timestamp = Date.now();
         const queryString = `timestamp=${timestamp}`;
@@ -155,8 +130,8 @@ Deno.serve(async (req) => {
           break;
         }
 
-        const apiKey = await decrypt(session.kraken_api_key_encrypted, session.kraken_iv);
-        const apiSecret = await decrypt(session.kraken_api_secret_encrypted, session.kraken_iv);
+        const apiKey = await decryptCredential(session.kraken_api_key_encrypted, session.kraken_iv);
+        const apiSecret = await decryptCredential(session.kraken_api_secret_encrypted, session.kraken_iv);
 
         const nonce = Date.now() * 1000;
         const postData = `nonce=${nonce}`;
@@ -208,8 +183,8 @@ Deno.serve(async (req) => {
           break;
         }
 
-        const apiKey = await decrypt(session.alpaca_api_key_encrypted, session.alpaca_iv);
-        const apiSecret = await decrypt(session.alpaca_secret_key_encrypted, session.alpaca_iv);
+        const apiKey = await decryptCredential(session.alpaca_api_key_encrypted, session.alpaca_iv);
+        const apiSecret = await decryptCredential(session.alpaca_secret_key_encrypted, session.alpaca_iv);
 
         const response = await fetch('https://api.alpaca.markets/v2/account', {
           headers: {
@@ -241,9 +216,9 @@ Deno.serve(async (req) => {
           break;
         }
 
-        const apiKey = await decrypt(session.capital_api_key_encrypted, session.capital_iv);
-        const identifier = await decrypt(session.capital_identifier_encrypted, session.capital_iv);
-        const password = await decrypt(session.capital_password_encrypted, session.capital_iv);
+        const apiKey = await decryptCredential(session.capital_api_key_encrypted, session.capital_iv);
+        const identifier = await decryptCredential(session.capital_identifier_encrypted, session.capital_iv);
+        const password = await decryptCredential(session.capital_password_encrypted, session.capital_iv);
 
         const response = await fetch('https://api-capital.backend-capital.com/api/v1/session', {
           method: 'POST',

@@ -105,6 +105,31 @@ export AUREON_OLLAMA_EMBED_MODEL=nomic-embed-text
 export AUREON_OLLAMA_KEEP_ALIVE=5m
 ```
 
+For direct Ollama Cloud access, use the official key name and hosted URLs:
+
+```bash
+export OLLAMA_API_KEY=your_api_key
+export AUREON_LLM_BASE_URL=https://ollama.com/v1
+export AUREON_OLLAMA_BASE_URL=https://ollama.com
+export AUREON_LLM_MODEL=gpt-oss:120b
+export AUREON_OLLAMA_MODEL=gpt-oss:120b
+export AUREON_EXTERNAL_LLM_FALLBACK=ollama
+export AUREON_OLLAMA_REASONING_EFFORT=none
+```
+
+The native bridge sends the key as a Bearer token to `ollama.com/api/*`; the
+OpenAI-compatible adapter sends it to `ollama.com/v1/*`. The compatibility
+names `AUREON_OLLAMA_API_KEY` and `AUREON_LLM_API_KEY` remain accepted. Cloud
+keys are not sent to loopback Ollama endpoints unless local authentication is
+explicitly requested.
+
+The fallback setting makes this cloud profile available to standalone subsystem
+constructors as well as the operator switchboard. Explicitly configured provider
+routes keep precedence, while offline/audit flags still prohibit outbound calls.
+The default `none` reasoning effort keeps short JSON and classification calls
+from exhausting their output allowance on a hidden reasoning trace; select
+`low`, `medium`, or `high` for workloads that intentionally need it.
+
 ### 3. Verify
 
 ```python
@@ -164,6 +189,23 @@ Two transport modes — **pick one**.
 ```bash
 export AUREON_OBSIDIAN_VAULT_PATH=~/AureonObsidianVault
 ```
+
+`~/AureonObsidianVault` is the canonical default even when the environment
+variable is not set.  The path is resolved in this order:
+
+1. An explicit path supplied by the caller.
+2. `AUREON_OBSIDIAN_VAULT_PATH`.
+3. `~/AureonObsidianVault`.
+
+Repo tools that still expose legacy `.obsidian/...` note arguments route
+those defaults into the same dedicated vault when they run from a real Git
+checkout. Explicit absolute output paths remain explicit overrides. This
+keeps generated knowledge notes out of the source worktree and prevents
+different Aureon subsystems from silently writing to different vaults.
+
+`scripts/ask_aureon.py` mirrors conversation turns into the canonical vault
+by default. Pass `--no-obsidian` for a deliberately isolated session, or use
+`--obsidian <path>` for an explicit alternate vault.
 
 The bridge will create the directory, write `.md` files directly, and
 the files behave exactly like an Obsidian vault once you open the folder

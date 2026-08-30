@@ -109,20 +109,70 @@ def _resolve_auto_observer_coherence() -> Optional[float]:
         _scaling_active = False
         _obs_audit = None
 
+    # HNC direction: read the ONE canonical field's coherence (Γ from symbolic.life.pulse) so the
+    # safety buffer is directed by the same shared field the rest of the organism uses, not only the
+    # observer's local rock-stability score. Reconciled conservatively (the lower of the two widens
+    # the buffer more). Guarded/offline-safe; a missing field leaves the observer path unchanged.
+    canonical_gamma: Optional[float] = None
+    try:
+        from aureon.core.hnc_field import read_canonical_field
+
+        _field = read_canonical_field()
+        if getattr(_field, "available", False) and _field.coherence_gamma is not None:
+            g = float(_field.coherence_gamma)
+            canonical_gamma = max(0.0, min(1.0, g))
+    except Exception:  # noqa: BLE001 — the canonical field is best-effort, never breaks the hot path
+        canonical_gamma = None
+
+    # P4: the volatility sentinel's PREDICTED risk joins as a third candidate,
+    # vol_safety = 1 − risk. min() over a superset of candidates can only be
+    # ≤ the previous min — provably tighten-only (b46). Only a fresh, measured
+    # assessment with enough factor coverage counts; stale / no_data / thin
+    # coverage → no candidate, never a substituted value.
+    vol_safety: float | None = None
+    vol_risk: float | None = None
+    try:
+        from aureon.intelligence.volatility_sentinel import (
+            VOL_MIN_CONFIDENCE_KELLY,
+            read_latest_assessment,
+        )
+
+        _vol = read_latest_assessment()
+        if (_vol is not None and _vol.status == "ok"
+                and _vol.volatility_risk is not None
+                and _vol.confidence >= VOL_MIN_CONFIDENCE_KELLY):
+            vol_risk = max(0.0, min(1.0, float(_vol.volatility_risk)))
+            vol_safety = 1.0 - vol_risk
+    except Exception:  # noqa: BLE001 — the sentinel is best-effort, never breaks the hot path
+        vol_safety = None
+
     try:
         from aureon.observer import get_observer
         obs = get_observer()
-        if obs is None:
+        obs_score: Optional[float] = None
+        if obs is not None:
+            s = float(obs.coherence_score())
+            if s != s:  # NaN
+                s = 0.0
+            obs_score = max(0.0, min(1.0, s))
+
+        # Reconcile: the most conservative (lowest) of the observer's rock coherence, the canonical
+        # field's Γ, and the sentinel's predicted vol-safety. Whichever are available are used;
+        # None when none are.
+        candidates = [c for c in (obs_score, canonical_gamma, vol_safety) if c is not None]
+        if not candidates:
             return None
-        score = float(obs.coherence_score())
-        if score != score or score < 0.0 or score > 1.0:  # NaN-safe clamp
-            score = max(0.0, min(1.0, score))
+        score = min(candidates)
 
         if _obs_audit is not None:
             try:
                 _obs_audit(
                     "kelly_buffer_evaluation",
                     {"coherence_score": score,
+                     "observer_rock_score": obs_score,
+                     "canonical_field_gamma": canonical_gamma,
+                     "volatility_sentinel_risk": vol_risk,
+                     "volatility_sentinel_safety": vol_safety,
                      "scaling_active_in_mode": _scaling_active},
                     decision="kelly_buffer",
                     would_have_blocked=None,
@@ -132,7 +182,7 @@ def _resolve_auto_observer_coherence() -> Optional[float]:
                 pass
 
         # In non-LIVE modes return None so calculate_gates uses the
-        # pre-observer multiplier of 1.0.
+        # pre-observer multiplier of 1.0 (bit-identical position sizing).
         return score if _scaling_active else None
     except Exception:
         return None

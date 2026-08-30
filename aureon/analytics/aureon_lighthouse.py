@@ -140,6 +140,21 @@ class LighthousePatternDetector:
     
     def _emit_event(self, event: LighthouseEvent):
         """Emit an event to all subscribers"""
+        # P6: Γ-aware severity — the same anomaly matters MORE when the
+        # organism's shared coherence is already low. When the canonical HNC
+        # field is live, severity is amplified by up to 1.5× as Γ falls
+        # (never reduced — caution is the conservative direction); with no
+        # field flowing the detector's own measured severity passes unchanged.
+        try:
+            from aureon.core.hnc_field import read_canonical_field
+            _cf = read_canonical_field()
+            if getattr(_cf, "available", False) and _cf.coherence_gamma is not None:
+                _g = max(0.0, min(1.0, float(_cf.coherence_gamma)))
+                event.severity = min(1.0, event.severity * (1.0 + 0.5 * (1.0 - _g)))
+                event.data["canonical_gamma"] = _g
+        except Exception:  # noqa: BLE001 — the field edge is optional
+            pass
+
         self.recent_events.append(event)
 
         for callback in self._subscribers:

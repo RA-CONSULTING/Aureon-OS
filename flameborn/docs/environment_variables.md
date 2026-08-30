@@ -13,6 +13,11 @@ It does not include secret values.
 - `GOOGLE_API_KEY`
 - `HF_TOKEN`
 - `HUGGINGFACE_API_KEY`
+- `OLLAMA_API_KEY`
+- `AUREON_EXTERNAL_LLM_FALLBACK`
+- `AUREON_LLM_BASE_URL`
+- `AUREON_LLM_MODEL`
+- `AUREON_OLLAMA_REASONING_EFFORT`
 - `AUREON_API_BASE_URL`
 - `AUREON_API_KEY`
 - `AUREON_CHAT_PATH`
@@ -49,7 +54,19 @@ It does not include secret values.
 ## Cloudflare / workers
 
 - `CLOUDFLARE_API_TOKEN`
-- worker env secrets for provider API keys as needed during deploy
+- `OLLAMA_API_KEY` must be stored as a Worker secret, never a plain `vars` value
+- the non-secret Ollama routing variables above may be Worker environment variables
+- other provider API keys remain optional; Ollama is the final external fallback
+
+## Supabase Edge Functions
+
+- store `OLLAMA_API_KEY` in Supabase project secrets
+- set `AUREON_EXTERNAL_LLM_FALLBACK=ollama`
+- set `AUREON_LLM_BASE_URL=https://ollama.com/v1`
+- set `AUREON_LLM_MODEL` to the approved cloud model
+- set `AUREON_OLLAMA_REASONING_EFFORT=none` for short structured calls
+- never expose these values through a `VITE_` variable; the browser calls the
+  authenticated `auris-classify` Edge Function instead
 
 ## Local Aureon launcher
 

@@ -14,17 +14,17 @@ import { useMultiExchangeBalances } from '@/hooks/useMultiExchangeBalances';
 import { ExchangeType, EXCHANGE_FEES } from '@/core/unifiedExchangeClient';
 
 const EXCHANGE_COLORS: Record<ExchangeType, string> = {
-  binance: 'text-yellow-400',
-  kraken: 'text-purple-400',
-  alpaca: 'text-green-400',
-  capital: 'text-blue-400',
+  binance: 'text-warning',
+  kraken: 'text-primary',
+  alpaca: 'text-success',
+  capital: 'text-primary',
 };
 
 const EXCHANGE_ICONS: Record<ExchangeType, string> = {
-  binance: '🔶',
-  kraken: '🦑',
-  alpaca: '🦙',
-  capital: '📈',
+  binance: '',
+  kraken: '',
+  alpaca: '',
+  capital: '',
 };
 
 export function MultiExchangePanel() {
@@ -67,9 +67,9 @@ export function MultiExchangePanel() {
           <div className="flex items-center gap-4 mb-4">
             <div className="flex items-center gap-2">
               {connectedCount === totalExchanges ? (
-                <CheckCircle2 className="h-5 w-5 text-green-500" />
+                <CheckCircle2 className="h-5 w-5 text-success" />
               ) : (
-                <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                <AlertTriangle className="h-5 w-5 text-warning" />
               )}
               <span className="text-sm">
                 {connectedCount}/{totalExchanges} Exchanges Active
@@ -87,8 +87,8 @@ export function MultiExchangePanel() {
                 key={status.exchange}
                 className={`p-3 rounded-lg border ${
                   status.connected 
-                    ? 'bg-green-500/10 border-green-500/30' 
-                    : 'bg-red-500/10 border-red-500/30'
+                    ? 'bg-success/10 border-success/30' 
+                    : 'bg-destructive/10 border-destructive/30'
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
@@ -122,8 +122,8 @@ export function MultiExchangePanel() {
           </div>
 
           {error && (
-            <div className="mt-3 p-2 rounded bg-red-500/10 border border-red-500/30">
-              <p className="text-xs text-red-400">{error}</p>
+            <div className="mt-3 p-2 rounded bg-destructive/10 border border-destructive/30">
+              <p className="text-xs text-destructive">{error}</p>
             </div>
           )}
         </CardContent>
@@ -185,7 +185,7 @@ export function MultiExchangePanel() {
         <Card className="bg-card/50 border-primary/20">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg font-bold flex items-center gap-2">
-              <Zap className="h-5 w-5 text-yellow-400" />
+              <Zap className="h-5 w-5 text-warning" />
               Last Routing Decision
             </CardTitle>
           </CardHeader>
@@ -204,7 +204,7 @@ export function MultiExchangePanel() {
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Best Price:</span>
-                <span className="font-mono text-green-400">
+                <span className="font-mono text-success">
                   ${lastRoutingDecision.bestQuote.price.toFixed(4)}
                 </span>
               </div>

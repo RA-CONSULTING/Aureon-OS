@@ -65,6 +65,9 @@ export class AQTSOrchestrator {
     this.qgita.register(snapshot);
     const lighthouseEvent = this.qgita.evaluate();
     const decision = this.decisionLayer.decide(snapshot, lighthouseEvent);
+    if (decision.sentimentScore === null) {
+      throw new Error('NO_LIVE_SENTIMENT_OBSERVATION');
+    }
     const order = this.riskManager.evaluate(decision, snapshot);
 
     let executionReport: ExecutionReport | null = null;

@@ -273,7 +273,7 @@ def _get_llm_adapter() -> Optional[Any]:
     construction cost once per terminal session. Order of preference:
         1. adapter already wired on the authoring loop
         2. adapter on the architect's SkillWriter
-        3. fresh OllamaLLMAdapter(model=AUREON_OLLAMA_MODEL)
+        3. live-catalog Ollama adapter on the fast nerve lane
     """
     if "adapter" in _LLM_ADAPTER_CACHE:
         return _LLM_ADAPTER_CACHE["adapter"]
@@ -289,9 +289,10 @@ def _get_llm_adapter() -> Optional[Any]:
         logger.debug("loop adapter probe: %s", e)
     if adapter is None:
         try:
-            from aureon.integrations.ollama.ollama_adapter import OllamaLLMAdapter
-            model = os.getenv("AUREON_OLLAMA_MODEL", "llama3.2:1b")
-            adapter = OllamaLLMAdapter(model=model)
+            from aureon.integrations.ollama import OllamaModelSwitchboard
+
+            adapter, selection = OllamaModelSwitchboard().adapter_for("fast")
+            logger.debug("intent parser routed to Ollama fast nerve: %s", selection.model)
             # Health probe
             try:
                 healthy = adapter.bridge.health_check()

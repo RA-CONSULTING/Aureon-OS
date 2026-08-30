@@ -1,506 +1,275 @@
-"""
-💎🔥 AUREON NUCLEAR MODE - £100,000 TODAY 🔥💎
+"""Nuclear Today: high-tempo opportunity observer over live market receipts.
 
-🟡 STANDALONE SIMULATOR — NuclearDayTrader scans random fake opportunities
-   (random.uniform momentum / price / volume) and "trades" them against an
-   in-memory account. The class is not imported by production code; only the
-   __main__ block calls main(). All scan/trade/manage methods are gated
-   behind AUREON_ALLOW_SIM_FALLBACK so calling them in production raises.
-
-"THEY SAID IT CAN'T BE DONE.
- FUCK THEM.
- THE MATH SAYS OTHERWISE.
- TODAY, WE MAKE HISTORY."
-
-Target: £76 → £100,000 in 24 HOURS
-Required: 131,478% return
-Strategy: MAXIMUM LEVERAGE + LIQUIDATION HUNTING + VOLATILITY HARVESTING
-
-THIS IS NOT A DRILL. THIS IS WAR.
+This module does not generate prices, volume, momentum, fills, or P&L. It emits
+order intentions derived from fresh provider observations. Submission and
+account mutation belong to an authenticated execution adapter and require the
+owner-controlled execution workflow.
 """
 
-from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
-import os
-import sys
-import time
-import json
+from __future__ import annotations
+
 import asyncio
+import hashlib
+import json
 import logging
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Tuple
-from decimal import Decimal
 import math
+import time
+from dataclasses import dataclass
+from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional
 
-# Suppress warnings for MAXIMUM SPEED
-import warnings
-warnings.filterwarnings('ignore')
+from aureon.core.aureon_baton_link import link_system as _baton_link
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(message)s'
-)
+_baton_link(__name__)
 logger = logging.getLogger(__name__)
 
 
 class NuclearConfig:
-    """NUCLEAR SETTINGS - £100K TODAY"""
-    
-    # INSANE LEVERAGE
-    MAX_LEVERAGE = 20  # Use 20x leverage (Binance/Kraken max)
-    EFFECTIVE_CAPITAL_MULTIPLIER = 20
-    
-    # ULTRA-AGGRESSIVE THRESHOLDS
-    MIN_PROFIT_PCT = 0.0005      # 0.05% minimum (scalping)
-    ENTRY_CONFIDENCE = 0.30      # 30% confidence (take everything)
-    SCAN_INTERVAL_MS = 50        # 20 scans per second
-    
-    # POSITION MANAGEMENT
-    MAX_CONCURRENT_POSITIONS = 50   # 50 at once
-    POSITION_SIZE_PCT = 0.90        # 90% of capital per trade (YOLO)
-    MAX_POSITION_TIME_SEC = 30      # 30 second max hold (rapid-fire)
-    
-    # PROFIT TARGETS (TIGHT)
-    TAKE_PROFIT_PCT = 0.003         # 0.3% TP
-    STOP_LOSS_PCT = 0.002           # 0.2% SL (tight as fuck)
-    TRAILING_STOP_ENABLED = True
-    
-    # COMPOUND LIKE CRAZY
-    COMPOUND_FREQUENCY_SEC = 1      # Recalculate capital every second
-    REINVEST_PCT = 1.0              # 100% reinvestment
-    
-    # RISK? WHAT RISK?
-    MAX_DAILY_LOSS_PCT = 0.50       # 50% max loss (we're going BIG)
-    CIRCUIT_BREAKER_DISABLED = True # NO CIRCUIT BREAKER
-    
-    # HUNT MODE
-    LIQUIDATION_HUNTING = True      # Hunt liquidations
-    FLASH_CRASH_TRADING = True      # Trade flash crashes
-    VOLATILITY_THRESHOLD = 0.02     # 2% moves = GO
-    
-    # BYPASS EVERYTHING
-    BYPASS_ALL_GATES = True
+    """Reference strategy settings; these are not observed performance."""
+
+    MAX_LEVERAGE = 20
+    MIN_PROFIT_PCT = 0.0005
+    ENTRY_CONFIDENCE = 0.30
+    MAX_CONCURRENT_POSITIONS = 50
+    POSITION_SIZE_PCT = 0.90
+    TAKE_PROFIT_PCT = 0.003
+    STOP_LOSS_PCT = 0.002
+    MAX_OBSERVATION_AGE_SECONDS = 30.0
+
+
+@dataclass(frozen=True)
+class MarketObservation:
+    symbol: str
+    exchange: str
+    price: float
+    volume: float
+    momentum: float
+    source_id: str
+    source_event_id: str
+    source_timestamp: str
+    truth_status: str = "live"
+    generated_values: bool = False
 
 
 class NuclearDayTrader:
-    """
-    💎 THE NUCLEAR OPTION 💎
-    
-    £76 → £100,000 in 24 hours
-    
-    Math:
-    - Need 131,478% return
-    - = 1.095x compounding per minute for 24 hours
-    - With 20x leverage: need 5.5% actual return (achievable!)
-    - Strategy: Catch 200+ micro-moves of 0.3% each
-    
-    "THE IMPOSSIBLE IS JUST MATH WAITING TO HAPPEN"
-    """
-    
-    def __init__(self, starting_capital: float = 76.0):
-        self.config = NuclearConfig()
-        self.starting_capital = starting_capital
-        self.current_capital = starting_capital
-        self.effective_capital = starting_capital * self.config.EFFECTIVE_CAPITAL_MULTIPLIER
-        self.available_capital = self.effective_capital
-        
-        # MISSION
-        self.target_capital = 100000.0
-        self.target_multiplier = self.target_capital / self.starting_capital  # 1315x
-        
-        # Trading state
-        self.active_positions: Dict[str, dict] = {}
-        self.trades_executed = 0
-        self.wins = 0
-        self.losses = 0
-        
-        # Performance
-        self.start_time = datetime.now()
-        self.total_pnl = 0.0
-        self.peak_capital = starting_capital
-        
-        # Speed metrics
-        self.opportunities_per_second = 0
-        self.trades_per_minute = 0
-        self.last_minute_trades = 0
-        self.minute_marker = time.time()
-        
-        logger.info(f"""
-╔════════════════════════════════════════════════════════════════════════════╗
-║                                                                            ║
-║  💎🔥 NUCLEAR DAY TRADER ACTIVATED 🔥💎                                    ║
-║                                                                            ║
-║  "£76 → £100,000 TODAY. NO EXCUSES. NO LIMITS."                          ║
-║                                                                            ║
-╠════════════════════════════════════════════════════════════════════════════╣
-║                                                                            ║
-║  STARTING CAPITAL: £{starting_capital:.2f}                                           ║
-║  TARGET (24H): £{self.target_capital:,.2f}                                         ║
-║  REQUIRED RETURN: {(self.target_multiplier-1)*100:.0f}%                                      ║
-║                                                                            ║
-║  WITH 20X LEVERAGE:                                                        ║
-║  • Effective Capital: £{self.effective_capital:,.2f}                                   ║
-║  • Actual Return Needed: {((self.target_multiplier-1)/20)*100:.1f}%                               ║
-║  • PER HOUR: {((self.target_multiplier-1)/20/24)*100:.2f}%                                        ║
-║                                                                            ║
-║  STRATEGY: NUCLEAR SCALPING                                               ║
-║  • Position Size: 90% of capital                                          ║
-║  • Min Profit: 0.05% per trade                                            ║
-║  • Max Hold: 30 seconds                                                   ║
-║  • Leverage: 20x                                                           ║
-║  • Scan Speed: 20 Hz                                                      ║
-║                                                                            ║
-║  TARGET: 500+ trades today, 60%+ win rate                                 ║
-║                                                                            ║
-║  "THEY SAID IT'S IMPOSSIBLE. WATCH US."                                   ║
-║                                                                            ║
-╚════════════════════════════════════════════════════════════════════════════╝
-        """)
-    
-    def calculate_required_performance(self) -> dict:
-        """Calculate what we need to hit target"""
-        elapsed_hours = (datetime.now() - self.start_time).total_seconds() / 3600
-        remaining_hours = 24 - elapsed_hours
-        
-        if remaining_hours <= 0:
-            remaining_hours = 0.001
-        
-        current_multiplier = self.current_capital / self.starting_capital
-        remaining_multiplier = self.target_multiplier / current_multiplier
-        
-        # Required compound rate per hour
-        required_hourly_return = (remaining_multiplier ** (1/remaining_hours) - 1) * 100
-        
-        # With leverage
-        actual_hourly_return = required_hourly_return / self.config.EFFECTIVE_CAPITAL_MULTIPLIER
-        
-        # Trades needed
-        avg_trade_profit = 0.003  # 0.3%
-        trades_per_hour = actual_hourly_return / (avg_trade_profit * 100)
-        
-        return {
-            'elapsed_hours': elapsed_hours,
-            'remaining_hours': remaining_hours,
-            'current_multiplier': current_multiplier,
-            'remaining_multiplier': remaining_multiplier,
-            'required_hourly_return': required_hourly_return,
-            'actual_hourly_return': actual_hourly_return,
-            'trades_per_hour': trades_per_hour,
-            'on_track': current_multiplier >= (self.target_multiplier ** (elapsed_hours / 24))
-        }
-    
-    def _require_sim_fallback(self, op: str) -> None:
-        """Raise unless AUREON_ALLOW_SIM_FALLBACK is set; this whole class is a
-        synthetic-data simulator and must not run in production."""
-        from aureon.observer.live_data_policy import (
-            simulation_fallback_allowed, log_blocked_fallback,
-        )
-        if not simulation_fallback_allowed():
-            log_blocked_fallback(f"aureon_nuclear_today.{op}", "synthetic_simulator")
-            raise RuntimeError(
-                f"NuclearDayTrader.{op}() uses random.uniform momentum / price / "
-                "volume — it's a simulator, not a live trader. Set "
-                "AUREON_ALLOW_SIM_FALLBACK=1 for dev runs, or wire a real "
-                "exchange feed before invoking in production."
-            )
+    """Observe fresh opportunities and form auditable order intentions."""
 
-    async def scan_nuclear_opportunities(self) -> List[dict]:
-        """
-        NUCLEAR SCANNING
-        Find ANYTHING that moves
-        """
-        self._require_sim_fallback("scan_nuclear_opportunities")
-        opportunities = []
-        
-        # Simulate finding opportunities (replace with real scanning)
-        import random
-        
-        # High-liquidity pairs that ALWAYS move
-        symbols = [
-            'BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT',
-            'ADAUSDT', 'DOGEUSDT', 'MATICUSDT', 'DOTUSDT', 'AVAXUSDT',
-            'LINKUSDT', 'ATOMUSDT', 'UNIUSDT', 'LTCUSDT', 'ETCUSDT'
-        ]
-        
-        for symbol in symbols:
-            # Random momentum (simulate price checking)
-            momentum = random.uniform(-0.01, 0.01)  # ±1%
-            
-            if abs(momentum) >= self.config.MIN_PROFIT_PCT:
-                opportunities.append({
-                    'symbol': symbol,
-                    'exchange': 'binance',
-                    'momentum': momentum,
-                    'price': random.uniform(100, 90000),
-                    'direction': 'BUY' if momentum > 0 else 'SELL',
-                    'confidence': min(0.99, abs(momentum) / self.config.MIN_PROFIT_PCT),
-                    'volume': random.uniform(1000000, 10000000),
-                })
-        
-        self.opportunities_per_second = len(opportunities) / (self.config.SCAN_INTERVAL_MS / 1000)
-        
+    def __init__(self, starting_capital: Optional[float] = None):
+        if starting_capital is not None and (
+            not math.isfinite(float(starting_capital)) or float(starting_capital) < 0
+        ):
+            raise ValueError("starting_capital must be an observed finite balance")
+        self.config = NuclearConfig()
+        self.starting_capital = (
+            float(starting_capital) if starting_capital is not None else None
+        )
+        self.current_capital = self.starting_capital
+        self.observations: Dict[str, MarketObservation] = {}
+        self.order_intents: List[Dict[str, Any]] = []
+        self.execution_receipts: List[Dict[str, Any]] = []
+
+    @staticmethod
+    def _timestamp(value: str) -> datetime:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        if parsed.tzinfo is None:
+            raise ValueError("source_timestamp must include a timezone")
+        return parsed.astimezone(timezone.utc)
+
+    def ingest_market_observation(self, payload: Dict[str, Any]) -> MarketObservation:
+        required = (
+            "symbol",
+            "exchange",
+            "price",
+            "volume",
+            "momentum",
+            "source_id",
+            "source_event_id",
+            "source_timestamp",
+            "truth_status",
+            "generated_values",
+        )
+        missing = [name for name in required if payload.get(name) is None]
+        if missing:
+            raise ValueError(f"missing observation fields: {', '.join(missing)}")
+        if payload["truth_status"] not in {"live", "provider_observed"}:
+            raise ValueError("market observation must be provider-observed")
+        if payload["generated_values"] is not False:
+            raise ValueError("generated market observations are prohibited")
+        timestamp = self._timestamp(str(payload["source_timestamp"]))
+        age = (datetime.now(timezone.utc) - timestamp).total_seconds()
+        if age < -30 or age > self.config.MAX_OBSERVATION_AGE_SECONDS:
+            raise ValueError(f"stale market observation: age_seconds={age:.3f}")
+        price = float(payload["price"])
+        volume = float(payload["volume"])
+        momentum = float(payload["momentum"])
+        if not all(math.isfinite(value) for value in (price, volume, momentum)):
+            raise ValueError("market metrics must be finite")
+        if price <= 0 or volume < 0:
+            raise ValueError("price must be positive and volume non-negative")
+        observation = MarketObservation(
+            symbol=str(payload["symbol"]),
+            exchange=str(payload["exchange"]),
+            price=price,
+            volume=volume,
+            momentum=momentum,
+            source_id=str(payload["source_id"]),
+            source_event_id=str(payload["source_event_id"]),
+            source_timestamp=str(payload["source_timestamp"]),
+            truth_status=str(payload["truth_status"]),
+        )
+        self.observations[observation.symbol] = observation
+        return observation
+
+    async def scan_nuclear_opportunities(self) -> List[Dict[str, Any]]:
+        """Derive candidates only from the current fresh observation set."""
+        opportunities: List[Dict[str, Any]] = []
+        now = datetime.now(timezone.utc)
+        for observation in self.observations.values():
+            age = (now - self._timestamp(observation.source_timestamp)).total_seconds()
+            if age > self.config.MAX_OBSERVATION_AGE_SECONDS:
+                continue
+            if abs(observation.momentum) < self.config.MIN_PROFIT_PCT:
+                continue
+            opportunities.append(
+                {
+                    "symbol": observation.symbol,
+                    "exchange": observation.exchange,
+                    "momentum": observation.momentum,
+                    "price": observation.price,
+                    "direction": "BUY" if observation.momentum > 0 else "SELL",
+                    "confidence": min(
+                        0.99,
+                        abs(observation.momentum) / self.config.MIN_PROFIT_PCT,
+                    ),
+                    "volume": observation.volume,
+                    "truth_status": "real_derived",
+                    "generated_values": False,
+                    "source_id": observation.source_id,
+                    "source_event_id": observation.source_event_id,
+                    "source_timestamp": observation.source_timestamp,
+                }
+            )
         return opportunities
-    
+
     def can_trade(self) -> bool:
-        """Check if we can open new position"""
-        if len(self.active_positions) >= self.config.MAX_CONCURRENT_POSITIONS:
-            return False
-        
-        position_size = self.effective_capital * self.config.POSITION_SIZE_PCT
-        if self.available_capital < position_size:
-            return False
-        
-        return True
-    
-    async def execute_nuclear_trade(self, opp: dict) -> bool:
-        """EXECUTE WITH EXTREME PREJUDICE"""
+        """Report whether an observed balance is available for intent sizing."""
+        return self.current_capital is not None and self.current_capital > 0
+
+    async def execute_nuclear_trade(self, opportunity: Dict[str, Any]) -> bool:
+        """Create an intention; never claim exchange execution."""
         if not self.can_trade():
             return False
-        
-        # Calculate position with MAXIMUM SIZE
-        position_size = self.effective_capital * self.config.POSITION_SIZE_PCT
-        
-        pos_id = f"{opp['symbol']}:{int(time.time() * 1000)}"
-        
-        position = {
-            'id': pos_id,
-            'symbol': opp['symbol'],
-            'exchange': opp['exchange'],
-            'direction': opp['direction'],
-            'entry_price': opp['price'],
-            'position_size': position_size,
-            'leverage': self.config.MAX_LEVERAGE,
-            'real_capital': position_size / self.config.EFFECTIVE_CAPITAL_MULTIPLIER,
-            'entry_time': time.time(),
-            'target': opp['price'] * (1 + self.config.TAKE_PROFIT_PCT if opp['direction'] == 'BUY' else 1 - self.config.TAKE_PROFIT_PCT),
-            'stop': opp['price'] * (1 - self.config.STOP_LOSS_PCT if opp['direction'] == 'BUY' else 1 + self.config.STOP_LOSS_PCT),
+        required = (
+            "symbol",
+            "exchange",
+            "direction",
+            "price",
+            "source_event_id",
+            "source_timestamp",
+        )
+        if any(opportunity.get(name) is None for name in required):
+            return False
+        canonical = json.dumps(
+            {name: opportunity[name] for name in required},
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+        intent = {
+            "intent_id": "nuclear_intent_"
+            + hashlib.sha256(canonical.encode("utf-8")).hexdigest()[:20],
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "symbol": opportunity["symbol"],
+            "exchange": opportunity["exchange"],
+            "direction": opportunity["direction"],
+            "reference_price": float(opportunity["price"]),
+            "truth_status": "real_derived",
+            "generated_values": False,
+            "source_event_id": opportunity["source_event_id"],
+            "source_timestamp": opportunity["source_timestamp"],
+            "execution_status": "not_submitted",
         }
-        
-        self.active_positions[pos_id] = position
-        self.available_capital -= position_size
-        self.trades_executed += 1
-        self.last_minute_trades += 1
-        
+        self.order_intents.append(intent)
         return True
-    
-    async def manage_positions_nuclear(self):
-        """CLOSE POSITIONS INSTANTLY AT TARGET"""
-        self._require_sim_fallback("manage_positions_nuclear")
-        to_close = []
 
-        for pos_id, pos in list(self.active_positions.items()):
-            # Simulate current price (sim-fallback already enforced above)
-            import random
-            noise = random.uniform(-0.005, 0.005)
-            current_price = pos['entry_price'] * (1 + noise)
-            
-            # Calculate P&L
-            if pos['direction'] == 'BUY':
-                pnl_pct = (current_price - pos['entry_price']) / pos['entry_price']
-            else:
-                pnl_pct = (pos['entry_price'] - current_price) / pos['entry_price']
-            
-            # Apply leverage to P&L
-            leveraged_pnl_pct = pnl_pct * pos['leverage']
-            pnl_usd = leveraged_pnl_pct * pos['real_capital']
-            
-            should_close = False
-            reason = ""
-            
-            # Target/Stop (TIGHT)
-            if pos['direction'] == 'BUY':
-                if current_price >= pos['target']:
-                    should_close, reason = True, "🎯 TARGET"
-                elif current_price <= pos['stop']:
-                    should_close, reason = True, "⛔ STOP"
-            else:
-                if current_price <= pos['target']:
-                    should_close, reason = True, "🎯 TARGET"
-                elif current_price >= pos['stop']:
-                    should_close, reason = True, "⛔ STOP"
-            
-            # Time-based (FAST EXIT)
-            if time.time() - pos['entry_time'] > self.config.MAX_POSITION_TIME_SEC:
-                should_close = True
-                reason = "⏱️ TIMEOUT"
-            
-            if should_close:
-                to_close.append((pos_id, pnl_usd, reason))
-        
-        # Close positions
-        for pos_id, pnl, reason in to_close:
-            pos = self.active_positions.pop(pos_id)
-            
-            self.available_capital += pos['position_size']
-            self.current_capital += pnl
-            self.effective_capital = self.current_capital * self.config.EFFECTIVE_CAPITAL_MULTIPLIER
-            self.total_pnl += pnl
-            
-            if pnl > 0:
-                self.wins += 1
-            else:
-                self.losses += 1
-            
-            if self.current_capital > self.peak_capital:
-                self.peak_capital = self.current_capital
-    
-    def print_nuclear_stats(self):
-        """Print LIVE stats"""
-        perf = self.calculate_required_performance()
-        
-        win_rate = self.wins / max(1, self.wins + self.losses) * 100
-        current_return = ((self.current_capital / self.starting_capital) - 1) * 100
-        progress_pct = (self.current_capital / self.target_capital) * 100
-        
-        on_track_emoji = "🟢" if perf['on_track'] else "🔴"
-        
-        # Calculate ETA
-        if perf['current_multiplier'] > 1.01:
-            elapsed = (datetime.now() - self.start_time).total_seconds() / 3600
-            rate = math.log(perf['current_multiplier']) / elapsed
-            hours_to_target = math.log(self.target_multiplier) / rate
-            eta = self.start_time + timedelta(hours=hours_to_target)
-            eta_str = eta.strftime('%H:%M:%S')
-        else:
-            eta_str = "Calculating..."
-        
-        logger.info(f"""
-╔════════════════════════════════════════════════════════════════════════════╗
-║  💎 NUCLEAR STATUS - {datetime.now().strftime('%H:%M:%S')} {on_track_emoji}                                         ║
-╠════════════════════════════════════════════════════════════════════════════╣
-║                                                                            ║
-║  💰 CAPITAL:                                                               ║
-║  • Current: £{self.current_capital:,.2f} ({current_return:+.1f}%)                                  ║
-║  • Target: £{self.target_capital:,.2f}                                                    ║
-║  • Progress: {progress_pct:.1f}%                                                       ║
-║  • With Leverage: £{self.effective_capital:,.2f}                                       ║
-║                                                                            ║
-║  ⚡ PERFORMANCE:                                                           ║
-║  • Trades: {self.trades_executed} ({self.trades_per_minute:.0f}/min)                                      ║
-║  • Win Rate: {win_rate:.1f}% ({self.wins}W / {self.losses}L)                                        ║
-║  • Total P&L: £{self.total_pnl:+,.2f}                                                   ║
-║                                                                            ║
-║  🎯 TARGET TRACKING:                                                       ║
-║  • Elapsed: {perf['elapsed_hours']:.1f}h / Remaining: {perf['remaining_hours']:.1f}h                         ║
-║  • Need/Hour: {perf['actual_hourly_return']:+.2f}%                                             ║
-║  • Trades/Hour: {perf['trades_per_hour']:.0f} needed                                       ║
-║  • ETA: {eta_str}                                                         ║
-║                                                                            ║
-║  🔥 LIVE METRICS:                                                          ║
-║  • Active Positions: {len(self.active_positions)}/{self.config.MAX_CONCURRENT_POSITIONS}                                    ║
-║  • Opps/Second: {self.opportunities_per_second:.1f}                                            ║
-║                                                                            ║
-║  "£{self.current_capital:.0f} → £100,000. LET'S FUCKING GO!"                              ║
-║                                                                            ║
-╚════════════════════════════════════════════════════════════════════════════╝
-        """)
-    
-    async def nuclear_loop(self):
-        """MAIN NUCLEAR LOOP - MAXIMUM SPEED"""
-        logger.info("💎 NUCLEAR MODE ENGAGED - FULL THROTTLE\n")
-        
-        last_stats = time.time()
-        
-        try:
-            while self.current_capital < self.target_capital:
-                # Scan for opportunities
-                opportunities = await self.scan_nuclear_opportunities()
-                
-                # Sort by confidence
-                opportunities.sort(key=lambda x: x['confidence'], reverse=True)
-                
-                # Execute TOP opportunities
-                for opp in opportunities[:10]:
-                    await self.execute_nuclear_trade(opp)
-                
-                # Manage positions (RAPID)
-                await self.manage_positions_nuclear()
-                
-                # Update trades per minute
-                if time.time() - self.minute_marker >= 60:
-                    self.trades_per_minute = self.last_minute_trades
-                    self.last_minute_trades = 0
-                    self.minute_marker = time.time()
-                
-                # Print stats every 10 seconds
-                if time.time() - last_stats >= 10:
-                    self.print_nuclear_stats()
-                    last_stats = time.time()
-                
-                # ULTRA-FAST SCAN INTERVAL
-                await asyncio.sleep(self.config.SCAN_INTERVAL_MS / 1000)
-                
-            # TARGET HIT!
-            logger.info(f"""
-╔════════════════════════════════════════════════════════════════════════════╗
-║                                                                            ║
-║  🎉🎉🎉 TARGET ACHIEVED! 🎉🎉🎉                                           ║
-║                                                                            ║
-║  £{self.starting_capital:.2f} → £{self.current_capital:,.2f} in {(datetime.now() - self.start_time).total_seconds()/3600:.1f} hours!                    ║
-║                                                                            ║
-║  WE FUCKING DID IT! 💎🔥                                                   ║
-║                                                                            ║
-╚════════════════════════════════════════════════════════════════════════════╝
-            """)
-            
-        except KeyboardInterrupt:
-            logger.info("\n💎 PAUSED\n")
-            self.print_nuclear_stats()
+    async def manage_positions_nuclear(
+        self, execution_receipts: Optional[List[Dict[str, Any]]] = None
+    ) -> Dict[str, Any]:
+        """Adopt provider execution receipts; absent receipts remain no_data."""
+        if not execution_receipts:
+            return {
+                "truth_status": "no_data",
+                "generated_values": False,
+                "reason": "no_provider_execution_receipts",
+            }
+        adopted = 0
+        for receipt in execution_receipts:
+            required = (
+                "source_id",
+                "source_event_id",
+                "source_timestamp",
+                "truth_status",
+                "generated_values",
+                "realized_pnl",
+                "balance_after",
+            )
+            if any(receipt.get(name) is None for name in required):
+                continue
+            if (
+                receipt["truth_status"] not in {"live", "provider_observed"}
+                or receipt["generated_values"] is not False
+            ):
+                continue
+            self._timestamp(str(receipt["source_timestamp"]))
+            balance = float(receipt["balance_after"])
+            if not math.isfinite(balance) or balance < 0:
+                continue
+            self.current_capital = balance
+            self.execution_receipts.append(dict(receipt))
+            adopted += 1
+        return {
+            "truth_status": "provider_observed" if adopted else "no_data",
+            "generated_values": False,
+            "adopted_receipt_count": adopted,
+        }
+
+    def calculate_required_performance(self) -> Dict[str, Any]:
+        if self.starting_capital is None or self.current_capital is None:
+            return {
+                "truth_status": "no_data",
+                "generated_values": False,
+                "reason": "no_provider_balance",
+            }
+        return {
+            "truth_status": "real_derived",
+            "generated_values": False,
+            "starting_capital": self.starting_capital,
+            "current_capital": self.current_capital,
+            "return_pct": (
+                (self.current_capital - self.starting_capital)
+                / self.starting_capital
+                * 100.0
+            ),
+            "source_event_ids": [
+                receipt["source_event_id"] for receipt in self.execution_receipts
+            ],
+        }
+
+    def print_nuclear_stats(self) -> None:
+        logger.info("%s", self.calculate_required_performance())
 
 
-async def main():
-    """
-    💎🔥 NUCLEAR MAIN 🔥💎
-    
-    £76 → £100,000 TODAY
-    
-    "THE ONLY LIMIT IS THE ONE YOU ACCEPT."
-    """
-    
-    print("""
-╔════════════════════════════════════════════════════════════════════════════╗
-║                                                                            ║
-║  💎🔥 NUCLEAR DAY TRADER - £100,000 TODAY 🔥💎                            ║
-║                                                                            ║
-╠════════════════════════════════════════════════════════════════════════════╣
-║                                                                            ║
-║  THE MISSION:                                                              ║
-║  Starting Capital: £76                                                     ║
-║  Target: £100,000                                                          ║
-║  Timeframe: 24 HOURS                                                       ║
-║  Return Needed: 131,478%                                                   ║
-║                                                                            ║
-║  THE STRATEGY:                                                             ║
-║  • 20x Leverage (maximizes buying power)                                  ║
-║  • 500+ trades today (rapid-fire scalping)                                ║
-║  • 0.3% average profit per trade                                          ║
-║  • 60% win rate required                                                  ║
-║  • Instant compound (every £1 profit → more capital)                      ║
-║                                                                            ║
-║  THE MATH:                                                                 ║
-║  £76 × 20 leverage = £1,520 effective capital                             ║
-║  Need to 65.7x the effective capital (6,570% actual return)               ║
-║  = 273% per hour = 4.5% per minute                                        ║
-║  500 trades × 0.3% × 60% win rate × 20x leverage = 1,800% return          ║
-║  CUSHION: 1,800% > 6,570% needed ✅ ACHIEVABLE!                           ║
-║                                                                            ║
-║  "THEY LAUGH BECAUSE THEY DON'T UNDERSTAND THE MATH.                      ║
-║   WE LAUGH BECAUSE WE DO."                                                ║
-║                                                                            ║
-║  Ready to make history? Press ENTER...                                    ║
-║                                                                            ║
-╚════════════════════════════════════════════════════════════════════════════╝
-    """)
-    
-    input()
-    
-    capital = float(os.getenv('STARTING_CAPITAL', '76'))
-    
-    trader = NuclearDayTrader(starting_capital=capital)
-    await trader.nuclear_loop()
+async def main() -> None:
+    trader = NuclearDayTrader()
+    result = await trader.scan_nuclear_opportunities()
+    print(
+        {
+            "truth_status": "no_data",
+            "generated_values": False,
+            "opportunities": result,
+            "reason": "no_live_market_observations_ingested",
+        }
+    )
 
 
 if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-    except KeyboardInterrupt:
-        print("\n\n💎 UNTIL NEXT TIME 💎\n")
+    asyncio.run(main())

@@ -15,8 +15,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LiveDataNotice } from "@/shell/Page";
+import { type TruthStatus } from "../truthStatus";
 
-type TruthStatus = "live" | "real_derived" | "cached_real" | "no_data" | "test_fixture";
 
 interface Pursuit {
   available: boolean;

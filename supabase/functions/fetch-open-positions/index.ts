@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { createHmac } from "node:crypto";
+import { decryptCredential } from "../_shared/credential_crypto.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,7 +19,8 @@ interface SpotPosition {
   free: number;
   locked: number;
   total: number;
-  usdValue: number;
+  usdValue: number | null;
+  valuationTruthStatus: "real_derived" | "no_data";
   exchange: string;
 }
 
@@ -66,56 +68,24 @@ serve(async (req) => {
       });
     }
 
-    // Decryption setup
-    const primaryKeyString = "aureon-default-key-32chars!!";
-    const fallbackKeyString = Deno.env.get("MASTER_ENCRYPTION_KEY") || "";
-    const encoder = new TextEncoder();
-    const keyBytes1 = encoder.encode(primaryKeyString.padEnd(32, "0").slice(0, 32));
-    const keyBytes2 = encoder.encode(fallbackKeyString.padEnd(32, "0").slice(0, 32));
-
-    const cryptoKey1 = await crypto.subtle.importKey("raw", keyBytes1, { name: "AES-GCM" }, false, ["decrypt"]);
-    const cryptoKey2 = fallbackKeyString
-      ? await crypto.subtle.importKey("raw", keyBytes2, { name: "AES-GCM" }, false, ["decrypt"])
-      : null;
-
-    const decodeIvFromB64 = (ivB64: string) => Uint8Array.from(atob(ivB64), (c) => c.charCodeAt(0));
-
-    async function decryptWithKey(encrypted: string, key: CryptoKey, iv: Uint8Array): Promise<string> {
-      const encryptedBytes = Uint8Array.from(atob(encrypted), (c) => c.charCodeAt(0));
-      const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv as unknown as BufferSource }, key, encryptedBytes);
-      return new TextDecoder().decode(decrypted);
-    }
-
-    async function decryptCredential(encrypted: string, iv: Uint8Array): Promise<string> {
-      try {
-        return await decryptWithKey(encrypted, cryptoKey1, iv);
-      } catch {
-        if (cryptoKey2) {
-          try {
-            return await decryptWithKey(encrypted, cryptoKey2, iv);
-          } catch { /* continue */ }
-        }
-        try {
-          return atob(encrypted);
-        } catch {
-          throw new Error("Credential decryption failed");
-        }
-      }
-    }
-
     // Fetch prices for USD conversion
     const pricesRes = await fetch("https://api.binance.com/api/v3/ticker/price");
     const allPrices = pricesRes.ok ? await pricesRes.json() : [];
+    const tetherRes = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=usd");
+    const tetherPayload = tetherRes.ok ? await tetherRes.json() : {};
+    const tetherUsd = Number(tetherPayload?.tether?.usd);
     const priceMap: Record<string, number> = {};
     for (const p of allPrices) priceMap[p.symbol] = parseFloat(p.price);
 
-    function getUsdValue(asset: string, total: number): number {
-      if (asset === "USDT" || asset === "USDC" || asset === "BUSD" || asset === "USD") return total;
+    function getUsdValue(asset: string, total: number): number | null {
+      if (asset === "USD") return total;
+      if (!Number.isFinite(tetherUsd) || tetherUsd <= 0) return null;
+      if (asset === "USDT") return total * tetherUsd;
       const usdtPair = `${asset}USDT`;
       const btcPair = `${asset}BTC`;
-      if (priceMap[usdtPair]) return total * priceMap[usdtPair];
-      if (priceMap[btcPair] && priceMap["BTCUSDT"]) return total * priceMap[btcPair] * priceMap["BTCUSDT"];
-      return 0;
+      if (priceMap[usdtPair]) return total * priceMap[usdtPair] * tetherUsd;
+      if (priceMap[btcPair] && priceMap["BTCUSDT"]) return total * priceMap[btcPair] * priceMap["BTCUSDT"] * tetherUsd;
+      return null;
     }
 
     const allPositions: SpotPosition[] = [];
@@ -124,9 +94,8 @@ serve(async (req) => {
     // ========== BINANCE ==========
     if (session.binance_api_key_encrypted && session.binance_api_secret_encrypted && session.binance_iv) {
       try {
-        const binanceIv = decodeIvFromB64(session.binance_iv);
-        const binanceApiKey = (await decryptCredential(session.binance_api_key_encrypted, binanceIv)).trim();
-        const binanceApiSecret = (await decryptCredential(session.binance_api_secret_encrypted, binanceIv)).trim();
+        const binanceApiKey = (await decryptCredential(session.binance_api_key_encrypted, session.binance_iv)).trim();
+        const binanceApiSecret = (await decryptCredential(session.binance_api_secret_encrypted, session.binance_iv)).trim();
 
         if (isPrintableAscii(binanceApiKey) && isPrintableAscii(binanceApiSecret) && binanceApiKey.length >= 16) {
           const timestamp = Date.now();
@@ -145,12 +114,14 @@ serve(async (req) => {
               const locked = parseFloat(b.locked || "0");
               const total = free + locked;
               if (total > 0) {
+                const usdValue = getUsdValue(b.asset, total);
                 allPositions.push({
                   asset: b.asset,
                   free,
                   locked,
                   total,
-                  usdValue: getUsdValue(b.asset, total),
+                  usdValue,
+                  valuationTruthStatus: usdValue === null ? "no_data" : "real_derived",
                   exchange: "binance",
                 });
               }
@@ -183,18 +154,20 @@ serve(async (req) => {
         const isFresh = cachedAt > 0 && Date.now() - cachedAt < 5 * 60 * 1000; // 5 minutes
         const cachedBalance = cachedRow?.balance_data as any;
 
-        if (isFresh && cachedBalance?.assets && Array.isArray(cachedBalance.assets)) {
+        if (isFresh && cachedBalance?.truthStatus === "live" && cachedBalance?.generatedValues === false && Array.isArray(cachedBalance?.assets)) {
           for (const a of cachedBalance.assets) {
             const free = parseFloat(String(a.free ?? 0));
             const locked = parseFloat(String(a.locked ?? 0));
             const total = free + locked;
             if (total > 0) {
+              const usdValue = Number(a.usdValue);
               allPositions.push({
                 asset: String(a.asset),
                 free,
                 locked,
                 total,
-                usdValue: parseFloat(String(a.usdValue ?? 0)) || 0,
+                usdValue: Number.isFinite(usdValue) ? usdValue : null,
+                valuationTruthStatus: Number.isFinite(usdValue) ? "real_derived" : "no_data",
                 exchange: "kraken",
               });
             }
@@ -209,8 +182,11 @@ serve(async (req) => {
     }
 
     // Sort by USD value descending
-    allPositions.sort((a, b) => b.usdValue - a.usdValue);
-    const totalUsdValue = allPositions.reduce((sum, p) => sum + p.usdValue, 0);
+    allPositions.sort((a, b) => (b.usdValue ?? -1) - (a.usdValue ?? -1));
+    const valuedPositions = allPositions.filter((p) => p.usdValue !== null);
+    const totalUsdValue = valuedPositions.length === allPositions.length
+      ? valuedPositions.reduce((sum, p) => sum + (p.usdValue as number), 0)
+      : null;
 
     return new Response(
       JSON.stringify({
@@ -218,6 +194,10 @@ serve(async (req) => {
         positions: allPositions,
         totalUsdValue,
         positionCount: allPositions.length,
+        truthStatus: "live",
+        valuationTruthStatus: totalUsdValue === null ? "no_data" : "real_derived",
+        sourceTimestamp: new Date().toISOString(),
+        generatedValues: false,
         exchanges: {
           binance: allPositions.filter((p) => p.exchange === "binance").length > 0,
           kraken: allPositions.filter((p) => p.exchange === "kraken").length > 0,

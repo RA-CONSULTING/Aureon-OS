@@ -41,7 +41,7 @@ from aiohttp import web
 import json
 import logging
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Set, Optional
 from collections import deque, defaultdict
 from dataclasses import dataclass, field, asdict
@@ -600,12 +600,15 @@ class AureonCommandCenterEnhanced:
         
         # Portfolio state
         self.portfolio = {
-            'total_value_usd': 0.0,
-            'cash_available': 0.0,
+            'total_value_usd': None,
+            'cash_available': None,
             'positions': [],
             'balances': {},
-            'pnl_today': 0.0,
-            'pnl_total': 0.0
+            'pnl_today': None,
+            'pnl_total': None,
+            'truth_status': 'no_data',
+            'generated_values': False,
+            'reason': 'NO_FRESH_ACCOUNT_PROVIDER_OBSERVATION',
         }
         
         # Initialize systems
@@ -622,75 +625,87 @@ class AureonCommandCenterEnhanced:
     def _init_systems(self):
         """Initialize all available systems."""
         print("\n🚀 Initializing systems...")
+
+        def initialized_status():
+            """Instantiation is not proof that a provider is online or accurate."""
+            return {
+                'status': 'INITIALIZED_NOT_VERIFIED',
+                'confidence': None,
+                'accuracy': None,
+                'signals_sent': 0,
+                'truth_status': 'no_data',
+                'generated_values': False,
+                'metadata': {'reason': 'NO_FRESH_HEALTH_OR_VALIDATION_RECEIPT'},
+            }
         
         # Initialize exchange clients
         if SYSTEMS.get('Kraken'):
             try:
                 self.systems_instances['Kraken'] = SYSTEMS['Kraken']()
-                self.systems_status['Kraken'] = {'status': 'ONLINE', 'confidence': 1.0, 'accuracy': 0.0, 'signals_sent': 0, 'metadata': {}}
+                self.systems_status['Kraken'] = initialized_status()
             except: pass
         
         if SYSTEMS.get('Binance'):
             try:
                 self.systems_instances['Binance'] = SYSTEMS['Binance']()
-                self.systems_status['Binance'] = {'status': 'ONLINE', 'confidence': 1.0, 'accuracy': 0.0, 'signals_sent': 0, 'metadata': {}}
+                self.systems_status['Binance'] = initialized_status()
             except: pass
         
         if SYSTEMS.get('Alpaca'):
             try:
                 self.systems_instances['Alpaca'] = SYSTEMS['Alpaca']()
-                self.systems_status['Alpaca'] = {'status': 'ONLINE', 'confidence': 1.0, 'accuracy': 0.0, 'signals_sent': 0, 'metadata': {}}
+                self.systems_status['Alpaca'] = initialized_status()
             except: pass
         
         # Initialize Queen systems
         if SYSTEMS.get('QueenHive'):
             try:
                 self.systems_instances['QueenHive'] = SYSTEMS['QueenHive']()
-                self.systems_status['QueenHive'] = {'status': 'ONLINE', 'confidence': 0.95, 'accuracy': 0.85, 'signals_sent': 0, 'metadata': {'patterns': 229}}
+                self.systems_status['QueenHive'] = initialized_status()
             except: pass
         
         if SYSTEMS.get('ThoughtBus'):
             try:
                 self.systems_instances['ThoughtBus'] = SYSTEMS['ThoughtBus']()
-                self.systems_status['ThoughtBus'] = {'status': 'ONLINE', 'confidence': 1.0, 'accuracy': 0.0, 'signals_sent': 0, 'metadata': {'channels': 12}}
+                self.systems_status['ThoughtBus'] = initialized_status()
             except: pass
         
         # Initialize intelligence systems
         if SYSTEMS.get('UltimateIntel'):
             try:
                 self.systems_instances['UltimateIntel'] = SYSTEMS['UltimateIntel']()
-                self.systems_status['UltimateIntel'] = {'status': 'ONLINE', 'confidence': 0.95, 'accuracy': 0.95, 'signals_sent': 0, 'metadata': {'patterns': 57}}
+                self.systems_status['UltimateIntel'] = initialized_status()
             except: pass
         
         if SYSTEMS.get('ProbabilityNexus'):
             try:
                 self.systems_instances['ProbabilityNexus'] = SYSTEMS['ProbabilityNexus']()
-                self.systems_status['ProbabilityNexus'] = {'status': 'ONLINE', 'confidence': 0.80, 'accuracy': 0.796, 'signals_sent': 0, 'metadata': {'coherence': 0.82}}
+                self.systems_status['ProbabilityNexus'] = initialized_status()
             except: pass
         
         if SYSTEMS.get('TimelineOracle'):
             try:
                 self.systems_instances['TimelineOracle'] = SYSTEMS['TimelineOracle']()
-                self.systems_status['TimelineOracle'] = {'status': 'ONLINE', 'confidence': 0.75, 'accuracy': 0.0, 'signals_sent': 0, 'metadata': {'vision_days': 7}}
+                self.systems_status['TimelineOracle'] = initialized_status()
             except: pass
         
         if SYSTEMS.get('QuantumMirror'):
             try:
                 self.systems_instances['QuantumMirror'] = SYSTEMS['QuantumMirror']()
-                self.systems_status['QuantumMirror'] = {'status': 'ONLINE', 'confidence': 0.70, 'accuracy': 0.0, 'signals_sent': 0, 'metadata': {'mirrors': 5}}
+                self.systems_status['QuantumMirror'] = initialized_status()
             except: pass
         
         # Initialize harmonic systems
         if SYSTEMS.get('HarmonicFusion'):
             try:
                 self.systems_instances['HarmonicFusion'] = SYSTEMS['HarmonicFusion']()
-                self.systems_status['HarmonicFusion'] = {'status': 'ONLINE', 'confidence': 0.85, 'accuracy': 0.0, 'signals_sent': 0, 'metadata': {'freq': 432}}
+                self.systems_status['HarmonicFusion'] = initialized_status()
             except: pass
         
         if SYSTEMS.get('WaveScanner'):
             try:
                 self.systems_instances['WaveScanner'] = SYSTEMS['WaveScanner']()
-                self.systems_status['WaveScanner'] = {'status': 'ONLINE', 'confidence': 0.78, 'accuracy': 0.0, 'signals_sent': 0, 'metadata': {'waves': 12}}
+                self.systems_status['WaveScanner'] = initialized_status()
             except: pass
         
         print(f"✅ Initialized {len(self.systems_instances)} systems\n")
@@ -769,12 +784,6 @@ class AureonCommandCenterEnhanced:
                 # Update portfolio from exchanges
                 await self._update_portfolio()
                 
-                # Generate mock signals (in real implementation, these come from systems)
-                await self._generate_mock_signals()
-                
-                # Generate Queen commentary
-                await self._queen_commentary()
-                
                 # Broadcast updates
                 await self.broadcast({
                     'type': 'systems_update',
@@ -795,106 +804,76 @@ class AureonCommandCenterEnhanced:
     async def _update_portfolio(self):
         """Update portfolio data from exchanges."""
         try:
-            total_value = 0.0
             balances = {}
+            cash_observations = []
+            receipts = []
+
+            def record_balance(exchange: str, payload: object, usd_keys: tuple[str, ...]) -> None:
+                if not isinstance(payload, dict):
+                    raise ValueError(f'{exchange} balance response is not a mapping')
+                observed_at = datetime.now(timezone.utc).isoformat()
+                balances[exchange] = payload
+                receipt = {
+                    'source_id': f'{exchange}:get_balance',
+                    'source_timestamp': observed_at,
+                    'collected_at': observed_at,
+                    'truth_status': 'live',
+                    'generated_values': False,
+                }
+                receipts.append(receipt)
+                for key in usd_keys:
+                    if key in payload and payload[key] is not None:
+                        cash_observations.append(float(payload[key]))
+                self.systems_status[exchange.capitalize()] = {
+                    'status': 'ONLINE',
+                    'confidence': None,
+                    'accuracy': None,
+                    'signals_sent': 0,
+                    'truth_status': 'live',
+                    'generated_values': False,
+                    'metadata': receipt,
+                }
             
             # Kraken
             if 'Kraken' in self.systems_instances:
                 try:
                     kraken_bal = self.systems_instances['Kraken'].get_balance()
-                    balances['kraken'] = kraken_bal
-                    # Simple USD value estimation
-                    total_value += kraken_bal.get('ZUSD', 0) + kraken_bal.get('USD', 0)
-                except: pass
+                    record_balance('kraken', kraken_bal, ('ZUSD', 'USD'))
+                except Exception as exc:
+                    self.systems_status['Kraken'].update({
+                        'status': 'ERROR',
+                        'truth_status': 'no_data',
+                        'metadata': {'reason': f'BALANCE_PROVIDER_ERROR: {exc}'},
+                    })
             
             # Alpaca
             if 'Alpaca' in self.systems_instances:
                 try:
                     alpaca_bal = self.systems_instances['Alpaca'].get_balance()
-                    balances['alpaca'] = alpaca_bal
-                    total_value += alpaca_bal.get('USD', 0)
-                except: pass
+                    record_balance('alpaca', alpaca_bal, ('USD',))
+                except Exception as exc:
+                    self.systems_status['Alpaca'].update({
+                        'status': 'ERROR',
+                        'truth_status': 'no_data',
+                        'metadata': {'reason': f'BALANCE_PROVIDER_ERROR: {exc}'},
+                    })
             
-            self.portfolio['total_value_usd'] = total_value
-            self.portfolio['cash_available'] = total_value
+            # Cash is not total equity. Keep equity unknown until positions and
+            # non-USD assets have provider valuations.
+            self.portfolio['total_value_usd'] = None
+            self.portfolio['cash_available'] = (
+                sum(cash_observations) if cash_observations else None
+            )
             self.portfolio['balances'] = balances
+            self.portfolio['truth_status'] = 'live' if receipts else 'no_data'
+            self.portfolio['generated_values'] = False
+            self.portfolio['source_receipts'] = receipts
+            self.portfolio['reason'] = (
+                None if receipts else 'NO_FRESH_ACCOUNT_PROVIDER_OBSERVATION'
+            )
             
         except Exception as e:
             logger.debug(f"Error updating portfolio: {e}")
-    
-    async def _generate_mock_signals(self):
-        """Generate mock signals (replace with real system signals).
-
-        ⚠ Synthetic signal source — emits BUY/SELL signals with random
-        confidence/score from a fixed source list. Gated behind
-        AUREON_ALLOW_SIM_FALLBACK so production refuses to inject mock
-        signals into self.signals (where they could surface in operator UI).
-        """
-        from aureon.observer.live_data_policy import simulation_fallback_allowed
-        if not simulation_fallback_allowed():
-            return
-        # In real implementation, listen to ThoughtBus or system outputs
-        if len(self.signals) < 5 and time.time() % 10 < 1:  # Add signal every 10s
-            import random
-            symbols = ['BTC/USD', 'ETH/USD', 'SOL/USD', 'MATIC/USD', 'AVAX/USD']
-            types = ['BUY', 'SELL', 'HOLD']
-            sources = ['QueenHive', 'UltimateIntel', 'ProbabilityNexus', 'HarmonicFusion']
-            
-            signal = {
-                'source': random.choice(sources),
-                'signal_type': random.choice(types),
-                'symbol': random.choice(symbols),
-                'confidence': random.uniform(0.7, 0.98),
-                'score': random.uniform(0.5, 1.0),
-                'reason': 'Strong momentum detected with harmonic convergence',
-                'timestamp': time.time(),
-                'exchange': 'kraken'
-            }
-            
-            self.signals.append(signal)
-            
-            # Increment signal count for source
-            if signal['source'] in self.systems_status:
-                self.systems_status[signal['source']]['signals_sent'] += 1
-            
-            await self.broadcast({
-                'type': 'signal',
-                'signal': signal
-            })
-    
-    async def _queen_commentary(self):
-        """Generate Queen's commentary.
-
-        ⚠ Synthetic Queen voice — picks from a hardcoded message list.
-        Gated behind AUREON_ALLOW_SIM_FALLBACK so production does not
-        broadcast canned Queen quotes ("Quantum coherence at 82%", etc.)
-        as if they were real readings.
-        """
-        from aureon.observer.live_data_policy import simulation_fallback_allowed
-        if not simulation_fallback_allowed():
-            return
-        if time.time() % 15 < 1:  # Commentary every 15 seconds
-            messages = [
-                "I am observing massive bot activity across multiple exchanges.",
-                "Multiple hives detected. Coordinated trading patterns emerging.",
-                "Whale activity increasing on major pairs.",
-                "Quantum coherence analysis complete. Sacred patterns detected.",
-                "Timeline oracle predicts bullish trend in next 7 days.",
-                "Harmonic fusion at 432 Hz - optimal trading conditions.",
-                "Probability nexus coherence: 82% - high confidence zone.",
-                "All systems operational. Trading conditions favorable.",
-                "Market volatility detected. Adjusting risk parameters.",
-                "Neural pathways converging on opportunity."
-            ]
-            
-            import random
-            message = random.choice(messages)
-            self.queen_messages.append({'time': time.time(), 'text': message})
-            
-            await self.broadcast({
-                'type': 'queen_message',
-                'message': message
-            })
     
     async def start(self):
         """Start the command center."""
@@ -916,9 +895,9 @@ class AureonCommandCenterEnhanced:
         print(f"   👑 Queen's voice commentary")
         print(f"   💹 Market data streaming")
         print(f"   🧠 All intelligence systems integrated")
-        print(f"\n📈 SYSTEMS ONLINE: {len(self.systems_instances)}")
+        print(f"\n📈 SYSTEMS INITIALIZED: {len(self.systems_instances)} (health requires provider receipts)")
         for name in self.systems_instances:
-            print(f"   ✅ {name}")
+            print(f"   ◌ {name}: awaiting fresh health observation")
         print(f"{'='*80}\n")
         
         # Start live data stream

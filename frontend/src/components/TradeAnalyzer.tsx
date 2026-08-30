@@ -195,10 +195,10 @@ export function TradeAnalyzer({ trades: externalTrades }: TradeAnalyzerProps) {
 
   const getExitReasonColor = (reason: string) => {
     switch (reason) {
-      case 'TAKE_PROFIT': return 'text-green-500';
+      case 'TAKE_PROFIT': return 'text-success';
       case 'STOP_LOSS': return 'text-destructive';
-      case 'SIGNAL_EXIT': return 'text-yellow-500';
-      case 'COHERENCE_DROP': return 'text-orange-500';
+      case 'SIGNAL_EXIT': return 'text-warning';
+      case 'COHERENCE_DROP': return 'text-warning';
       default: return 'text-muted-foreground';
     }
   };
@@ -305,7 +305,7 @@ export function TradeAnalyzer({ trades: externalTrades }: TradeAnalyzerProps) {
                       <TableCell>
                         <Badge 
                           variant={trade.side === 'LONG' ? 'default' : 'secondary'}
-                          className={trade.side === 'LONG' ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'}
+                          className={trade.side === 'LONG' ? 'bg-success/20 text-success' : 'bg-destructive/20 text-destructive'}
                         >
                           {trade.side}
                         </Badge>
@@ -318,10 +318,10 @@ export function TradeAnalyzer({ trades: externalTrades }: TradeAnalyzerProps) {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex flex-col items-end">
-                          <span className={`font-mono font-semibold ${trade.pnl > 0 ? 'text-green-500' : 'text-destructive'}`}>
+                          <span className={`font-mono font-semibold ${trade.pnl > 0 ? 'text-success' : 'text-destructive'}`}>
                             {trade.pnl > 0 ? '+' : ''}${trade.pnl.toFixed(2)}
                           </span>
-                          <span className={`text-xs ${trade.pnl > 0 ? 'text-green-500/70' : 'text-destructive/70'}`}>
+                          <span className={`text-xs ${trade.pnl > 0 ? 'text-success/70' : 'text-destructive/70'}`}>
                             {trade.pnl > 0 ? '+' : ''}{trade.pnlPercent.toFixed(2)}%
                           </span>
                         </div>
@@ -332,7 +332,7 @@ export function TradeAnalyzer({ trades: externalTrades }: TradeAnalyzerProps) {
                             <TooltipTrigger>
                               <Badge 
                                 variant="outline" 
-                                className={trade.entryCoherence >= 0.95 ? 'text-green-500' : 'text-yellow-500'}
+                                className={trade.entryCoherence >= 0.95 ? 'text-success' : 'text-warning'}
                               >
                                 {trade.entryCoherence.toFixed(3)}
                               </Badge>
@@ -397,18 +397,18 @@ export function TradeAnalyzer({ trades: externalTrades }: TradeAnalyzerProps) {
                       Level {selectedTrade.prismLevel}
                     </p>
                   </div>
-                  <div className={`p-4 rounded-lg border ${selectedTrade.pnl > 0 ? 'bg-green-500/10 border-green-500/30' : 'bg-destructive/10 border-destructive/30'}`}>
+                  <div className={`p-4 rounded-lg border ${selectedTrade.pnl > 0 ? 'bg-success/10 border-success/30' : 'bg-destructive/10 border-destructive/30'}`}>
                     <p className="text-xs text-muted-foreground mb-1">Final P&L</p>
-                    <p className={`text-lg font-bold font-mono ${selectedTrade.pnl > 0 ? 'text-green-500' : 'text-destructive'}`}>
+                    <p className={`text-lg font-bold font-mono ${selectedTrade.pnl > 0 ? 'text-success' : 'text-destructive'}`}>
                       {selectedTrade.pnl > 0 ? '+' : ''}${selectedTrade.pnl.toFixed(2)}
                     </p>
                   </div>
                 </div>
 
                 {/* Entry Analysis */}
-                <div className="p-6 bg-gradient-to-br from-green-500/10 to-primary/10 rounded-lg border border-green-500/30">
+                <div className="p-6 bg-gradient-to-br from-success/10 to-primary/10 rounded-lg border border-success/30">
                   <h3 className="text-lg font-bold mb-4 flex items-center gap-2 text-foreground">
-                    <TrendingUp className="h-5 w-5 text-green-500" />
+                    <TrendingUp className="h-5 w-5 text-success" />
                     Entry Analysis
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -440,7 +440,7 @@ export function TradeAnalyzer({ trades: externalTrades }: TradeAnalyzerProps) {
                       <div className="space-y-2">
                         <div className="flex items-center justify-between p-2 bg-background/50 rounded">
                           <span className="text-sm">Coherence (Γ)</span>
-                          <Badge variant="outline" className="text-green-500 font-mono">
+                          <Badge variant="outline" className="text-success font-mono">
                             {selectedTrade.entryCoherence.toFixed(3)}
                           </Badge>
                         </div>
@@ -479,7 +479,7 @@ export function TradeAnalyzer({ trades: externalTrades }: TradeAnalyzerProps) {
                       <div key={node}>
                         <div className="flex items-center justify-between mb-1">
                           <span className="text-sm font-semibold text-foreground">{node}</span>
-                          <span className={`text-sm font-mono ${vote >= 0.8 ? 'text-green-500' : 'text-yellow-500'}`}>
+                          <span className={`text-sm font-mono ${vote >= 0.8 ? 'text-success' : 'text-warning'}`}>
                             {vote.toFixed(3)}
                           </span>
                         </div>
@@ -505,7 +505,7 @@ export function TradeAnalyzer({ trades: externalTrades }: TradeAnalyzerProps) {
                 </div>
 
                 {/* Exit Analysis */}
-                <div className="p-6 bg-gradient-to-br from-destructive/10 to-orange-500/10 rounded-lg border border-destructive/30">
+                <div className="p-6 bg-gradient-to-br from-destructive/10 to-warning/10 rounded-lg border border-destructive/30">
                   <h3 className="text-lg font-bold mb-4 flex items-center gap-2 text-foreground">
                     <TrendingDown className="h-5 w-5 text-destructive" />
                     Exit Analysis
@@ -542,7 +542,7 @@ export function TradeAnalyzer({ trades: externalTrades }: TradeAnalyzerProps) {
                       <div className="space-y-2">
                         <div className="flex items-center justify-between p-2 bg-background/50 rounded">
                           <span className="text-sm">Price Change</span>
-                          <span className={`font-mono text-sm ${selectedTrade.pnl > 0 ? 'text-green-500' : 'text-destructive'}`}>
+                          <span className={`font-mono text-sm ${selectedTrade.pnl > 0 ? 'text-success' : 'text-destructive'}`}>
                             {selectedTrade.pnl > 0 ? '+' : ''}{selectedTrade.pnlPercent.toFixed(2)}%
                           </span>
                         </div>
@@ -554,7 +554,7 @@ export function TradeAnalyzer({ trades: externalTrades }: TradeAnalyzerProps) {
                         </div>
                         <div className="flex items-center justify-between p-2 bg-background/50 rounded">
                           <span className="text-sm">Coherence Change</span>
-                          <span className={`font-mono text-sm ${selectedTrade.exitCoherence >= selectedTrade.entryCoherence ? 'text-green-500' : 'text-yellow-500'}`}>
+                          <span className={`font-mono text-sm ${selectedTrade.exitCoherence >= selectedTrade.entryCoherence ? 'text-success' : 'text-warning'}`}>
                             {selectedTrade.exitCoherence >= selectedTrade.entryCoherence ? '+' : ''}
                             {((selectedTrade.exitCoherence - selectedTrade.entryCoherence) * 100).toFixed(1)}%
                           </span>

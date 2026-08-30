@@ -121,6 +121,8 @@ CONFIG = {
     'TAKER_FEE_PCT': 0.001,       # Approximate taker fee (0.10%)
     'BUSINESS_GREEN_THRESHOLD': 0.0,  # Net profit needed before closing trades
     'BUSINESS_GREEN_TOLERANCE': 0.25,  # Allow small negative realized PnL before gating exits
+    'EXECUTION_RECEIPT_MAX_AGE_SEC': 300.0,  # Provider-time freshness gate
+    'EXECUTION_RECEIPT_FUTURE_SKEW_SEC': 30.0,
     
     # Decision Fusion Weights (from Quackers)
     'ENSEMBLE_WEIGHT': 0.6,
@@ -563,6 +565,9 @@ class Position:
     field_distortion: float = 0.0 # Lighthouse distortion index at entry
     field_coherence: float = 0.0  # Lighthouse coherence baseline at entry
     field_maker_bias: float = 0.5 # Maker/taker bias snapshot
+    entry_order_id: Optional[str] = None
+    entry_source_timestamp: Optional[float] = None
+    entry_truth_status: str = "real_observed"
 
 # ═══════════════════════════════════════════════════════════════════════════
 # PIANO SIGNAL GENERATION
@@ -674,62 +679,25 @@ class QueenHive:
 
 class DecisionFusion:
     """
-    Decision Fusion (4-model ensemble) from Quantum Quackers decisionFusion.ts
-    Simulates ensemble model outputs based on market data heuristics.
+    Deterministic fusion over observed market inputs.
+
+    External model scores must arrive through a provider-receipted integration;
+    this local layer never impersonates LSTM, RF, XGBoost, or transformer output.
     """
-    def __init__(self):
-        self.models = ['lstm', 'randomForest', 'xgboost', 'transformer']
+    def __init__(self, allow_simulated_models: bool = False):
         # Weights for final decision
         self.weights = {'ensemble': 0.6, 'sentiment': 0.2, 'qgita': 0.2}
 
     def generate_signal(self, change: float, volatility: float, volume: float) -> Tuple[float, float]:
         """
-        Generate ensemble signal score (-1 to 1) and confidence (0 to 1).
+        Derive a signal score from observed change, volatility, and volume.
         """
-        # Normalize inputs
         vol = max(0.01, volatility)
         normalized_trend = math.tanh(change / vol)
-        
-        signals = []
-        for model in self.models:
-            # Add "personality" bias to each model to simulate diversity
-            bias = 0.0
-            if model == 'lstm': bias = 0.2       # Optimistic
-            elif model == 'randomForest': bias = -0.1 # Conservative
-            elif model == 'xgboost': bias = 0.1  # Aggressive
-            
-            # Noise factor
-            noise = (random.random() - 0.5) * 0.1
-            
-            # Model score
-            score = normalized_trend + bias + noise
-            
-            # Confidence based on signal strength (extreme signals = lower confidence usually, but here we invert for simplicity)
-            # Actually, let's say confidence is higher when trend matches bias
-            confidence = 0.5 + (random.random() * 0.4)
-            
-            signals.append({'score': score, 'confidence': confidence})
-            
-        # Aggregate ensemble
-        total_weighted_score = sum(s['score'] * s['confidence'] for s in signals)
-        total_confidence = sum(s['confidence'] for s in signals)
-        
-        ensemble_score = total_weighted_score / total_confidence if total_confidence > 0 else 0
-        
-        # Simulate Sentiment and QGITA (using volume and trend as proxies)
-        sentiment_score = math.tanh(volume / 100000) * (1 if change > 0 else -1)
-        qgita_score = normalized_trend # Proxy
-        
-        final_score = (
-            ensemble_score * self.weights['ensemble'] +
-            sentiment_score * self.weights['sentiment'] +
-            qgita_score * self.weights['qgita']
-        )
-        
-        # Normalize final score to -1 to 1
-        final_score = max(-1.0, min(1.0, final_score))
-        
-        return final_score, total_confidence / len(self.models)
+        volume_support = math.tanh(max(0.0, volume) / 100000.0)
+        final_score = max(-1.0, min(1.0, normalized_trend * volume_support))
+        confidence = min(1.0, abs(normalized_trend) * volume_support)
+        return final_score, confidence
 
 class AureonUltimate:
     """The ONE trader with ALL systems"""
@@ -799,6 +767,12 @@ class AureonUltimate:
         self.last_lighthouse_compute = 0.0
         
         self.positions: Dict[str, Position] = {}
+        # A provider acknowledgement is not a fill. One unresolved execution per
+        # symbol/side is retained here so later cycles reconcile instead of
+        # submitting a duplicate order.
+        self.pending_executions: Dict[str, Dict[str, Any]] = {}
+        self.execution_quarantine: Dict[str, Dict[str, Any]] = {}
+        self.last_execution_result: Optional[Dict[str, Any]] = None
         self.ticker_cache = {}
         self.last_ticker_update = 0
         self.commando_cache = None  # Cache commando targets
@@ -939,10 +913,12 @@ class AureonUltimate:
         total = 0.0
         details: Dict[str, Dict[str, float]] = {}
         try:
-            usdt_usdc = 1.0
+            usdt_usdc: Optional[float] = None
             try:
                 quote = self.client.best_price('USDTUSDC')
-                usdt_usdc = float(quote.get('price', 1.0)) or 1.0
+                observed_cross = float(quote['price'])
+                if math.isfinite(observed_cross) and observed_cross > 0:
+                    usdt_usdc = observed_cross
             except Exception:
                 pass
 
@@ -963,6 +939,8 @@ class AureonUltimate:
                     price_usdc = 1.0
                     ref = self.primary_quote
                 elif asset == 'USDT':
+                    if usdt_usdc is None:
+                        continue
                     price_usdc = usdt_usdc
                     ref = 'USDTUSDC'
                 else:
@@ -979,7 +957,7 @@ class AureonUltimate:
                         try:
                             info = self.client.best_price(pair)
                             price_tmp = float(info.get('price', 0))
-                            if price_tmp > 0:
+                            if price_tmp > 0 and usdt_usdc is not None:
                                 price_usdc = price_tmp * usdt_usdc
                                 ref = f"{pair}*USDTUSDC"
                         except Exception:
@@ -998,7 +976,7 @@ class AureonUltimate:
                 }
         except Exception as exc:
             if self.client.dry_run:
-                return 10000.0, {}
+                raise RuntimeError("Live account equity is unavailable when no provider request is submitted") from exc
             raise RuntimeError(f"Failed to compute Binance equity: {exc}")
 
         return total, details
@@ -1069,7 +1047,9 @@ class AureonUltimate:
         except Exception as e:
             logger.warning(f"⚠️ Error fetching balance for {quote}: {e}")
             if self.client.dry_run:
-                return 10000.0  # Mock balance for dry-run
+                raise RuntimeError(
+                    f"Live {quote} balance is unavailable when no provider request is submitted"
+                ) from e
             return 0.0
 
     def current_realized_net(self) -> float:
@@ -1092,6 +1072,530 @@ class AureonUltimate:
             f"{action} would realize ${expected_net:+.2f}."
         )
         return False
+
+    @staticmethod
+    def _finite_decimal(value: Any, *, positive: bool = False, nonnegative: bool = False) -> Optional[Decimal]:
+        """Parse provider numerics without accepting booleans, NaN, or infinity."""
+        if value is None or isinstance(value, bool):
+            return None
+        try:
+            parsed = Decimal(str(value))
+        except Exception:
+            return None
+        if not parsed.is_finite():
+            return None
+        if positive and parsed <= 0:
+            return None
+        if nonnegative and parsed < 0:
+            return None
+        return parsed
+
+    @staticmethod
+    def _valid_provider_order_id(value: Any) -> Optional[str]:
+        if value is None or isinstance(value, bool):
+            return None
+        order_id = str(value).strip()
+        if not order_id or order_id in {"0", "-1"}:
+            return None
+        return order_id
+
+    @staticmethod
+    def _canonical_provider_symbol(value: Any) -> str:
+        symbol = str(value or "").upper().replace("/", "").replace("-", "")
+        for provider_code, canonical_code in (
+            ("XXBT", "BTC"), ("XBT", "BTC"),
+            ("XXDG", "DOGE"), ("XDG", "DOGE"),
+            ("ZUSD", "USD"), ("ZEUR", "EUR"), ("ZGBP", "GBP"),
+            ("ZCAD", "CAD"), ("ZJPY", "JPY"), ("ZAUD", "AUD"),
+        ):
+            symbol = symbol.replace(provider_code, canonical_code)
+        return symbol
+
+    def _execution_key(self, symbol: str, side: str) -> str:
+        return f"{str(symbol).upper()}:{str(side).upper()}"
+
+    def _execution_receipt(
+        self,
+        *,
+        symbol: str,
+        side: str,
+        purpose: str,
+        status: str,
+        reason: Optional[str],
+        provider_order_id: Optional[str] = None,
+        reconciliation_required: bool = False,
+    ) -> Dict[str, Any]:
+        data_status = "not_submitted" if status == "not_submitted" else status
+        return {
+            "status": status,
+            "data_status": data_status,
+            "truth_status": "dry_run" if status == "not_submitted" else "no_data",
+            "symbol": str(symbol).upper(),
+            "side": str(side).upper(),
+            "purpose": purpose,
+            "provider_order_id": provider_order_id,
+            "provider_timestamp": None,
+            "fill": None,
+            "actual_pnl": None,
+            "executed_qty": None,
+            "net_base_qty": None,
+            "cumulative_quote_qty": None,
+            "average_price": None,
+            "fee_quote": None,
+            "fill_receipt_complete": False,
+            "eligible_for_accounting": False,
+            "eligible_for_learning": False,
+            "reconciliation_required": reconciliation_required,
+            "generated_values": False,
+            "reason": reason,
+            "recorded_at": time.time(),
+        }
+
+    def _normalise_terminal_fill(
+        self,
+        result: Any,
+        *,
+        symbol: str,
+        side: str,
+        purpose: str,
+        quote_asset: str,
+        requested_qty: Optional[float] = None,
+        now: Optional[float] = None,
+    ) -> Dict[str, Any]:
+        """Accept only a fresh, terminal provider fill with complete accounting fields."""
+        symbol = str(symbol).upper()
+        side = str(side).upper()
+        now = time.time() if now is None else float(now)
+        if not isinstance(result, dict):
+            return self._execution_receipt(
+                symbol=symbol, side=side, purpose=purpose, status="no_data",
+                reason="malformed_provider_order_receipt", reconciliation_required=True,
+            )
+        if (
+            result.get("dryRun") is True
+            or result.get("dry_run") is True
+            or result.get("data_status") == "not_submitted"
+        ):
+            return self._execution_receipt(
+                symbol=symbol, side=side, purpose=purpose, status="not_submitted",
+                reason="dry_run_order_not_submitted",
+            )
+
+        provider_order_id = self._valid_provider_order_id(
+            result.get("provider_order_id") or result.get("orderId") or result.get("txid")
+        )
+        if result.get("rejected") is True or str(result.get("decision_status") or "").lower() == "denied":
+            return self._execution_receipt(
+                symbol=symbol, side=side, purpose=purpose, status="rejected",
+                reason=str(result.get("reason") or result.get("error") or "provider_rejected_order"),
+                provider_order_id=provider_order_id,
+            )
+        if provider_order_id is None:
+            return self._execution_receipt(
+                symbol=symbol, side=side, purpose=purpose, status="no_data",
+                reason="missing_or_sentinel_provider_order_id", reconciliation_required=True,
+            )
+
+        provider_status = str(result.get("status") or result.get("provider_status") or "").upper()
+        if provider_status not in {"FILLED", "PARTIALLY_FILLED"}:
+            return self._execution_receipt(
+                symbol=symbol, side=side, purpose=purpose, status="pending_reconciliation",
+                reason="terminal_provider_fill_receipt_required",
+                provider_order_id=provider_order_id, reconciliation_required=True,
+            )
+        if provider_status == "PARTIALLY_FILLED" and not (
+            result.get("data_status") == "live"
+            and result.get("fill_receipt_complete") is True
+            and result.get("reconciliation_required") is False
+        ):
+            return self._execution_receipt(
+                symbol=symbol, side=side, purpose=purpose, status="pending_reconciliation",
+                reason="nonterminal_partial_fill_requires_reconciliation",
+                provider_order_id=provider_order_id, reconciliation_required=True,
+            )
+        if result.get("fill_receipt_complete") is False or result.get("eligible_for_accounting") is False:
+            return self._execution_receipt(
+                symbol=symbol, side=side, purpose=purpose, status="no_data",
+                reason="provider_fill_receipt_not_accounting_complete",
+                provider_order_id=provider_order_id, reconciliation_required=True,
+            )
+        if result.get("generated_values") is True:
+            return self._execution_receipt(
+                symbol=symbol, side=side, purpose=purpose, status="no_data",
+                reason="generated_execution_values_forbidden",
+                provider_order_id=provider_order_id, reconciliation_required=True,
+            )
+
+        receipt_symbol = self._canonical_provider_symbol(result.get("symbol") or symbol)
+        if receipt_symbol != self._canonical_provider_symbol(symbol):
+            return self._execution_receipt(
+                symbol=symbol, side=side, purpose=purpose, status="no_data",
+                reason="provider_receipt_symbol_mismatch",
+                provider_order_id=provider_order_id, reconciliation_required=True,
+            )
+        receipt_side = str(result.get("side") or side).upper()
+        if receipt_side != side:
+            return self._execution_receipt(
+                symbol=symbol, side=side, purpose=purpose, status="no_data",
+                reason="provider_receipt_side_mismatch",
+                provider_order_id=provider_order_id, reconciliation_required=True,
+            )
+
+        provider_timestamp = None
+        for field_name in ("source_timestamp", "provider_timestamp", "transactTime", "closedTime", "updateTime"):
+            candidate = self._finite_decimal(result.get(field_name), positive=True)
+            if candidate is None:
+                continue
+            candidate_float = float(candidate)
+            if candidate_float > 100_000_000_000:
+                candidate_float /= 1000.0
+            provider_timestamp = candidate_float
+            break
+        max_age = float(CONFIG.get("EXECUTION_RECEIPT_MAX_AGE_SEC", 300.0))
+        future_skew = float(CONFIG.get("EXECUTION_RECEIPT_FUTURE_SKEW_SEC", 30.0))
+        if (
+            provider_timestamp is None
+            or provider_timestamp < now - max_age
+            or provider_timestamp > now + future_skew
+        ):
+            return self._execution_receipt(
+                symbol=symbol, side=side, purpose=purpose, status="no_data",
+                reason="missing_stale_or_future_provider_fill_timestamp",
+                provider_order_id=provider_order_id, reconciliation_required=True,
+            )
+
+        executed_qty = self._finite_decimal(
+            result.get("executedQty", result.get("filled_qty")), positive=True
+        )
+        cumulative_quote = self._finite_decimal(
+            result.get("cummulativeQuoteQty", result.get("filled_notional")), positive=True
+        )
+        if executed_qty is None or cumulative_quote is None:
+            return self._execution_receipt(
+                symbol=symbol, side=side, purpose=purpose, status="no_data",
+                reason="missing_or_nonpositive_provider_fill_quantity_or_cost",
+                provider_order_id=provider_order_id, reconciliation_required=True,
+            )
+        requested = self._finite_decimal(requested_qty, positive=True)
+        if requested is not None:
+            qty_tolerance = max(Decimal("0.00000001"), requested * Decimal("0.001"))
+            if executed_qty > requested + qty_tolerance:
+                return self._execution_receipt(
+                    symbol=symbol, side=side, purpose=purpose, status="no_data",
+                    reason="provider_fill_quantity_exceeds_requested_quantity",
+                    provider_order_id=provider_order_id, reconciliation_required=True,
+                )
+        average_price = cumulative_quote / executed_qty
+        reported_average = self._finite_decimal(
+            result.get("avgPrice", result.get("filled_avg_price", result.get("avg_fill_price"))),
+            positive=True,
+        )
+        if reported_average is not None:
+            price_tolerance = max(Decimal("0.00000001"), average_price * Decimal("0.001"))
+            if abs(reported_average - average_price) > price_tolerance:
+                return self._execution_receipt(
+                    symbol=symbol, side=side, purpose=purpose, status="no_data",
+                    reason="inconsistent_provider_fill_price_and_cost",
+                    provider_order_id=provider_order_id, reconciliation_required=True,
+                )
+
+        base_asset = self.get_base_asset(symbol)
+        if not base_asset or not quote_asset:
+            return self._execution_receipt(
+                symbol=symbol, side=side, purpose=purpose, status="no_data",
+                reason="missing_provider_pair_asset_metadata",
+                provider_order_id=provider_order_id, reconciliation_required=True,
+            )
+        base_asset = str(base_asset).upper()
+        quote_asset = str(quote_asset).upper()
+        fee_quote = Decimal("0")
+        base_commission = Decimal("0")
+        top_fee = self._finite_decimal(result.get("fee"), nonnegative=True)
+        top_fee_asset = str(result.get("fee_asset") or result.get("fee_currency") or "").upper()
+        if top_fee is not None and top_fee_asset:
+            if top_fee_asset != quote_asset:
+                return self._execution_receipt(
+                    symbol=symbol, side=side, purpose=purpose, status="no_data",
+                    reason="provider_fee_conversion_receipt_required",
+                    provider_order_id=provider_order_id, reconciliation_required=True,
+                )
+            fee_quote = top_fee
+        else:
+            fills = result.get("fills")
+            if not isinstance(fills, list) or not fills:
+                return self._execution_receipt(
+                    symbol=symbol, side=side, purpose=purpose, status="no_data",
+                    reason="missing_provider_fill_rows_and_fee",
+                    provider_order_id=provider_order_id, reconciliation_required=True,
+                )
+            fills_qty = Decimal("0")
+            fills_cost = Decimal("0")
+            for fill in fills:
+                if not isinstance(fill, dict) or self._valid_provider_order_id(fill.get("tradeId")) is None:
+                    return self._execution_receipt(
+                        symbol=symbol, side=side, purpose=purpose, status="no_data",
+                        reason="missing_provider_fill_identity",
+                        provider_order_id=provider_order_id, reconciliation_required=True,
+                    )
+                fill_qty = self._finite_decimal(fill.get("qty"), positive=True)
+                fill_price = self._finite_decimal(fill.get("price"), positive=True)
+                commission = self._finite_decimal(fill.get("commission"), nonnegative=True)
+                commission_asset = str(fill.get("commissionAsset") or "").upper()
+                if fill_qty is None or fill_price is None or commission is None or not commission_asset:
+                    return self._execution_receipt(
+                        symbol=symbol, side=side, purpose=purpose, status="no_data",
+                        reason="malformed_provider_fill_row",
+                        provider_order_id=provider_order_id, reconciliation_required=True,
+                    )
+                fills_qty += fill_qty
+                fills_cost += fill_qty * fill_price
+                if commission_asset == quote_asset:
+                    fee_quote += commission
+                elif commission_asset == base_asset and side == "BUY":
+                    base_commission += commission
+                    fee_quote += commission * fill_price
+                else:
+                    return self._execution_receipt(
+                        symbol=symbol, side=side, purpose=purpose, status="no_data",
+                        reason="provider_fee_conversion_receipt_required",
+                        provider_order_id=provider_order_id, reconciliation_required=True,
+                    )
+            qty_tolerance = max(Decimal("0.00000001"), executed_qty * Decimal("0.001"))
+            cost_tolerance = max(Decimal("0.00000001"), cumulative_quote * Decimal("0.001"))
+            if abs(fills_qty - executed_qty) > qty_tolerance or abs(fills_cost - cumulative_quote) > cost_tolerance:
+                return self._execution_receipt(
+                    symbol=symbol, side=side, purpose=purpose, status="no_data",
+                    reason="inconsistent_provider_fill_rows_and_totals",
+                    provider_order_id=provider_order_id, reconciliation_required=True,
+                )
+
+        net_base_qty = executed_qty - base_commission if side == "BUY" else executed_qty
+        if net_base_qty <= 0:
+            return self._execution_receipt(
+                symbol=symbol, side=side, purpose=purpose, status="no_data",
+                reason="nonpositive_provider_net_base_quantity",
+                provider_order_id=provider_order_id, reconciliation_required=True,
+            )
+        return {
+            "status": provider_status.lower(),
+            "provider_status": provider_status,
+            "data_status": "live",
+            "truth_status": "real_observed",
+            "symbol": symbol,
+            "side": side,
+            "purpose": purpose,
+            "provider_order_id": provider_order_id,
+            "provider_timestamp": provider_timestamp,
+            "executed_qty": float(executed_qty),
+            "net_base_qty": float(net_base_qty),
+            "cumulative_quote_qty": float(cumulative_quote),
+            "average_price": float(average_price),
+            "fee_quote": float(fee_quote),
+            "fee_asset": quote_asset,
+            "fill_receipt_complete": True,
+            "eligible_for_accounting": True,
+            "eligible_for_learning": True,
+            "reconciliation_required": False,
+            "generated_values": False,
+            "reason": None,
+            "recorded_at": time.time(),
+        }
+
+    def _submit_or_reconcile_market_order(
+        self,
+        *,
+        symbol: str,
+        side: str,
+        quantity: float,
+        purpose: str,
+        quote_asset: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Submit once, then reconcile the same provider order until terminal."""
+        symbol = str(symbol).upper()
+        side = str(side).upper()
+        quote_asset = str(quote_asset or self.match_quote_asset(symbol) or self.primary_quote).upper()
+        if not hasattr(self, "pending_executions"):
+            self.pending_executions = {}
+        if not hasattr(self, "execution_quarantine"):
+            self.execution_quarantine = {}
+        key = self._execution_key(symbol, side)
+        pending = self.pending_executions.get(key)
+        if pending is not None:
+            order_id = self._valid_provider_order_id(pending.get("provider_order_id"))
+            if order_id and callable(getattr(self.client, "get_order_status", None)):
+                try:
+                    provider_result = self.client.get_order_status(order_id)
+                except Exception as exc:
+                    pending["reason"] = "provider_reconciliation_unavailable"
+                    pending["reconciliation_error_type"] = type(exc).__name__
+                    self.last_execution_result = pending
+                    return pending
+                normalised = self._normalise_terminal_fill(
+                    provider_result,
+                    symbol=symbol,
+                    side=side,
+                    purpose=str(pending.get("purpose") or purpose),
+                    quote_asset=str(pending.get("quote_asset") or quote_asset),
+                    requested_qty=pending.get("requested_qty"),
+                )
+                if normalised.get("eligible_for_accounting") is True:
+                    self.pending_executions.pop(key, None)
+                    self.execution_quarantine.pop(key, None)
+                    self.last_execution_result = normalised
+                    return normalised
+                pending.update({
+                    "status": normalised.get("status"),
+                    "data_status": normalised.get("data_status"),
+                    "truth_status": normalised.get("truth_status"),
+                    "reason": normalised.get("reason"),
+                    "reconciliation_required": True,
+                    "recorded_at": time.time(),
+                })
+            self.last_execution_result = pending
+            return pending
+
+        if getattr(self.client, "dry_run", False):
+            receipt = self._execution_receipt(
+                symbol=symbol, side=side, purpose=purpose, status="not_submitted",
+                reason="dry_run_order_not_submitted",
+            )
+            self.last_execution_result = receipt
+            return receipt
+
+        try:
+            provider_result = self.client.place_market_order(symbol, side, quantity=quantity)
+        except Exception as exc:
+            pending = self._execution_receipt(
+                symbol=symbol, side=side, purpose=purpose, status="pending_reconciliation",
+                reason="submission_outcome_ambiguous", reconciliation_required=True,
+            )
+            pending["requested_qty"] = quantity
+            pending["quote_asset"] = quote_asset
+            pending["submission_error_type"] = type(exc).__name__
+            self.pending_executions[key] = pending
+            self.last_execution_result = pending
+            return pending
+
+        normalised = self._normalise_terminal_fill(
+            provider_result,
+            symbol=symbol,
+            side=side,
+            purpose=purpose,
+            quote_asset=quote_asset,
+            requested_qty=quantity,
+        )
+        if normalised.get("eligible_for_accounting") is True or normalised.get("status") in {"not_submitted", "rejected"}:
+            self.last_execution_result = normalised
+            return normalised
+
+        pending = dict(normalised)
+        pending["status"] = "pending_reconciliation"
+        pending["data_status"] = "pending_reconciliation"
+        pending["requested_qty"] = quantity
+        pending["quote_asset"] = quote_asset
+        pending["provider_order_id"] = self._valid_provider_order_id(
+            provider_result.get("provider_order_id")
+            or provider_result.get("orderId")
+            or provider_result.get("txid")
+        )
+        pending["reconciliation_required"] = True
+        self.pending_executions[key] = pending
+        if pending.get("reason") not in {"terminal_provider_fill_receipt_required", "nonterminal_partial_fill_requires_reconciliation"}:
+            self.execution_quarantine[key] = dict(pending)
+        self.last_execution_result = pending
+        return pending
+
+    def _apply_verified_exit_fill(
+        self,
+        *,
+        symbol: str,
+        position: Position,
+        receipt: Dict[str, Any],
+        reason: str,
+        mark_partial: bool = False,
+        count_trade: bool = False,
+        add_harvest_total: bool = False,
+        record_win: bool = True,
+        publish_bridge: bool = False,
+    ) -> Optional[Dict[str, Any]]:
+        """Mutate accounting and learning only from a validated terminal fill."""
+        if not isinstance(receipt, dict) or receipt.get("eligible_for_accounting") is not True:
+            return None
+        filled_qty_dec = self._finite_decimal(receipt.get("executed_qty"), positive=True)
+        quote_received_dec = self._finite_decimal(receipt.get("cumulative_quote_qty"), positive=True)
+        exit_fee_dec = self._finite_decimal(receipt.get("fee_quote"), nonnegative=True)
+        tracked_qty_dec = self._finite_decimal(position.quantity, positive=True)
+        entry_price_dec = self._finite_decimal(position.entry_price, positive=True)
+        entry_fee_dec = self._finite_decimal(position.fees_quote, nonnegative=True)
+        if None in (filled_qty_dec, quote_received_dec, exit_fee_dec, tracked_qty_dec, entry_price_dec, entry_fee_dec):
+            return None
+        assert filled_qty_dec is not None
+        assert quote_received_dec is not None
+        assert exit_fee_dec is not None
+        assert tracked_qty_dec is not None
+        assert entry_price_dec is not None
+        assert entry_fee_dec is not None
+        if filled_qty_dec > tracked_qty_dec:
+            key = self._execution_key(symbol, "SELL")
+            quarantined = dict(receipt)
+            quarantined["reason"] = "provider_exit_fill_exceeds_tracked_position"
+            self.execution_quarantine[key] = quarantined
+            return None
+
+        qty_fraction = filled_qty_dec / tracked_qty_dec
+        entry_fee_allocated = entry_fee_dec * qty_fraction
+        entry_cost = filled_qty_dec * entry_price_dec
+        gross_pnl = quote_received_dec - entry_cost
+        realised_net = gross_pnl - exit_fee_dec - entry_fee_allocated
+        remaining_qty = tracked_qty_dec - filled_qty_dec
+        remaining_entry_fee = entry_fee_dec - entry_fee_allocated
+
+        # Every mutation below is downstream of the terminal provider receipt.
+        self.total_gross_pnl += float(gross_pnl)
+        self.total_fees += float(exit_fee_dec)
+        compound, harvest = self.hive.process_profit(float(realised_net))
+        self.memory.record(symbol, float(realised_net))
+        if record_win and realised_net >= 0:
+            self.wins += 1
+            position.bounces += 1
+        if count_trade:
+            self.trades += 1
+        if add_harvest_total:
+            self.harvest_total += float(realised_net)
+
+        position.quantity = float(max(Decimal("0"), remaining_qty))
+        position.fees_quote = float(max(Decimal("0"), remaining_entry_fee))
+        position.notional_usd = position.quantity * position.entry_price
+        if mark_partial:
+            position.partial_taken = True
+
+        fully_closed = remaining_qty == Decimal("0")
+        if fully_closed and symbol in self.positions:
+            self.commandos.record_exit(symbol, float(realised_net))
+            del self.positions[symbol]
+
+        if publish_bridge and BRIDGE_AVAILABLE and self.bridge:
+            self.bridge.record_trade(
+                profit=float(gross_pnl),
+                fee=float(entry_fee_allocated + exit_fee_dec),
+                success=(realised_net > 0),
+            )
+            if fully_closed:
+                self.bridge.unregister_position("binance", symbol)
+
+        applied = dict(receipt)
+        applied.update({
+            "reason": reason,
+            "gross_pnl_quote": float(gross_pnl),
+            "realised_net_quote": float(realised_net),
+            "entry_fee_allocated_quote": float(entry_fee_allocated),
+            "remaining_position_qty": float(max(Decimal("0"), remaining_qty)),
+            "fully_closed": fully_closed,
+            "compound_quote": compound,
+            "harvest_quote": harvest,
+        })
+        self.last_execution_result = applied
+        return applied
 
     def consolidate_balances(self, min_notional: float = 3.0):
         """Convert stray assets into the primary quote asset."""
@@ -1144,11 +1648,22 @@ class AureonUltimate:
                 logger.info(
                     f"♻️ Converting {asset} -> {self.primary_quote}: {qty_str} via {symbol} (~{notional:.2f})"
                 )
-                result = self.client.place_market_order(symbol, 'SELL', quantity=qty_float)
-                logger.info(
-                    f"✅ Consolidated {asset}: order #{result.get('orderId', 'dry-run')}"
+                receipt = self._submit_or_reconcile_market_order(
+                    symbol=symbol,
+                    side='SELL',
+                    quantity=qty_float,
+                    purpose=f"consolidation:{asset}",
+                    quote_asset=self.primary_quote,
                 )
-                conversions += 1
+                if receipt.get('eligible_for_accounting') is True:
+                    logger.info(
+                        f"✅ Consolidated {asset}: terminal provider fill #{receipt.get('provider_order_id')}"
+                    )
+                    conversions += 1
+                else:
+                    logger.warning(
+                        f"⏳ Consolidation {symbol} not accounted: {receipt.get('status')} / {receipt.get('reason')}"
+                    )
             except Exception as exc:
                 logger.error(f"❌ Conversion failed for {symbol}: {exc}")
 
@@ -1214,9 +1729,7 @@ class AureonUltimate:
                 continue
             
             try:
-                # 💰 BEFORE HARVEST BALANCE
-                balance_before = self.get_quote_balance()
-                
+                # Ticker-derived P&L is a decision preview only.
                 gross = qty_to_sell * current_price
                 fee = gross * fee_pct
                 net_proceeds = gross - fee
@@ -1226,41 +1739,36 @@ class AureonUltimate:
 
                 if not self.business_can_execute(net_pnl, f"floor harvest {symbol}"):
                     continue
-                
-                order = self.client.place_market_order(
+
+                receipt = self._submit_or_reconcile_market_order(
                     symbol=symbol,
                     side='SELL',
-                    quantity=qty_str
+                    quantity=qty_to_sell,
+                    purpose='floor_harvest',
+                    quote_asset=self.match_quote_asset(symbol) or self.primary_quote,
                 )
-                
-                if order:
-                    actual_fee = self.client.compute_order_fees_in_quote(order, self.primary_quote)
-                    if actual_fee and actual_fee > 0:
-                        fee = actual_fee
-                        net_proceeds = gross - fee
-                        net_pnl = net_proceeds - entry_cost - entry_fee_actual
-                    self.total_gross_pnl += (qty_to_sell * (current_price - pos.entry_price))
-                    self.total_fees += fee
-                    
-                    # 💰 AFTER HARVEST BALANCE
-                    balance_after = self.get_quote_balance()
-                    received = balance_after - balance_before
-                    
-                    harvested += 1
-                    self.wins += 1
-                    self.trades += 1
-                    self.harvest_total += net_pnl
-                    
-                    logger.info(
-                        f"🌾 FLOOR HARVEST! {symbol} @ {current_price:.4f} | "
-                        f"+{pnl_pct*100:.2f}% | Net ${net_pnl:+.4f}"
+                if receipt.get('eligible_for_accounting') is not True:
+                    logger.warning(
+                        f"⏳ Floor harvest {symbol} awaits terminal fill: "
+                        f"{receipt.get('status')} / {receipt.get('reason')}"
                     )
-                    logger.info(f"💰 BALANCE: Before=${balance_before:.4f} → After=${balance_after:.4f} | Received=${received:.4f}")
-                    
-                    # Remove from positions and notify commandos
-                    if symbol in self.positions:
-                        self.commandos.record_exit(symbol, net_pnl)
-                        del self.positions[symbol]
+                    continue
+                applied = self._apply_verified_exit_fill(
+                    symbol=symbol,
+                    position=pos,
+                    receipt=receipt,
+                    reason='floor_harvest',
+                    count_trade=True,
+                    add_harvest_total=True,
+                )
+                if applied is None:
+                    logger.error(f"❌ Floor harvest receipt quarantined for {symbol}; position unchanged")
+                    continue
+                harvested += 1
+                logger.info(
+                    f"🌾 FLOOR HARVEST! {symbol} @ {receipt['average_price']:.4f} | "
+                    f"provider net ${applied['realised_net_quote']:+.4f}"
+                )
                         
             except Exception as e:
                 logger.error(f"❌ Floor harvest failed for {symbol}: {e}")
@@ -1326,10 +1834,13 @@ class AureonUltimate:
             )
             return False
 
-        # Keep tracked quantity aligned with wallet to avoid over-selling after fees.
+        # Wallet availability constrains the request but does not rewrite the
+        # tracked position before a terminal provider fill is observed.
         if available_qty < best_position.quantity:
-            best_position.quantity = available_qty
-            best_position.notional_usd = best_position.quantity * best_position.entry_price
+            logger.warning(
+                f"⚠️ {best_symbol} wallet quantity is below tracked quantity; "
+                "requesting only the provider-observed available amount"
+            )
 
         min_qty = self.lot_mgr.get_min_qty(best_symbol)
         desired_cash = max(0.0, target_cash - self.get_quote_balance())
@@ -1364,99 +1875,36 @@ class AureonUltimate:
             f"💎 Harvesting {best_symbol}: selling {qty_str} to free {self.primary_quote} liquidity"
         )
 
-        def attempt_sell(quantity: float, context: str = "primary") -> Tuple[Optional[Dict], float]:
-            sell_str = self.lot_mgr.format_qty(best_symbol, quantity)
-            sell_float = float(sell_str)
-            if sell_float <= 0:
-                return None, 0.0
-            try:
-                return self.client.place_market_order(best_symbol, 'SELL', quantity=sell_float), sell_float
-            except Exception as exc:
-                if "-2010" in str(exc):
-                    logger.warning(
-                        f"⚠️ Harvest {context} sell insufficient balance for {best_symbol} @ {sell_str}; "
-                        "rechecking wallet"
-                    )
-                    return None, 0.0
-                raise
-
-        try:
-            result, executed_qty = attempt_sell(qty_float)
-        except Exception as exc:
-            logger.error(f"❌ Harvest sell failed for {best_symbol}: {exc}")
-            return False
-
-        if result is None:
-            refreshed_qty = self.get_available_position_quantity(best_symbol)
-            if refreshed_qty <= 0:
-                logger.warning(
-                    f"⚠️ Harvest fallback blocked: still no free {base_asset} for {best_symbol}"
-                )
-                return False
-            fallback_qty = min(best_position.quantity, refreshed_qty)
-            fallback_str = self.lot_mgr.format_qty(best_symbol, fallback_qty)
-            fallback_float = float(fallback_str)
-            fallback_notional = fallback_float * best_price
-            if fallback_float <= 0 or fallback_notional < min_notional:
-                logger.warning(
-                    f"⚠️ Harvest fallback size invalid for {best_symbol}: qty={fallback_float} notional={fallback_notional:.4f}"
-                )
-                return False
-            logger.info(
-                f"💎 Harvest fallback: selling AVAILABLE {best_symbol} position ({fallback_str})"
-            )
-            try:
-                result, executed_qty = attempt_sell(fallback_float, context="fallback")
-            except Exception as exc:
-                logger.error(f"❌ Harvest fallback sell failed for {best_symbol}: {exc}")
-                return False
-            if result is None:
-                logger.error(
-                    f"❌ Harvest fallback could not free liquidity for {best_symbol} (insufficient balance)"
-                )
-                return False
-            qty_float = executed_qty
-        else:
-            qty_float = executed_qty
-
-        fee_pct = CONFIG.get('TAKER_FEE_PCT', 0.0)
-        freed_cash = qty_float * best_price
-        realized = qty_float * (best_price - best_position.entry_price)
-        
-        # Use proportional share of tracked entry fees (actual from order response)
-        qty_fraction = qty_float / best_position.quantity if best_position.quantity > 0 else 0.0
-        entry_fee_actual = best_position.fees_quote * qty_fraction
-        
-        # Approximate exit fee before order; actual commission processed after order
-        exit_fee_approx = best_price * qty_float * fee_pct
-        realized_net = realized - exit_fee_approx - entry_fee_actual
-        freed_cash_net = freed_cash * (1 - fee_pct)
-        compound, harvest = self.hive.process_profit(realized_net)
-        self.memory.record(best_symbol, realized_net)
-
-        best_position.quantity -= qty_float
-        best_position.notional_usd = best_position.quantity * best_position.entry_price
-        if best_position.quantity <= min_qty:
-            self.commandos.record_exit(best_symbol, realized_net)  # 🦆 Notify commandos
-            del self.positions[best_symbol]
-
-        # Try to replace exit fee with actual commission from order fills
-        actual_exit_fee = 0.0
-        try:
-            actual_exit_fee = self.client.compute_order_fees_in_quote(result or {}, self.primary_quote)
-        except Exception:
-            actual_exit_fee = 0.0
-        total_fees = (actual_exit_fee if actual_exit_fee > 0 else exit_fee_approx) + entry_fee_actual
-        # Recompute net values using actual sell fee when available
-        if actual_exit_fee > 0:
-            freed_cash_net = freed_cash - actual_exit_fee
-            realized_net = realized - actual_exit_fee - entry_fee_actual
-        logger.info(
-            f"✅ Harvested {best_symbol}: freed {self.primary_quote} {freed_cash_net:.4f} | "
-            f"Realized Net PnL {realized_net:+.2f} (fees={total_fees:.4f} {self.primary_quote}) | "
-            f"Hive ➜ Compound ${compound:.2f} / Harvest ${harvest:.2f}"
+        receipt = self._submit_or_reconcile_market_order(
+            symbol=best_symbol,
+            side='SELL',
+            quantity=qty_float,
+            purpose='liquidity_harvest',
+            quote_asset=self.match_quote_asset(best_symbol) or self.primary_quote,
         )
-        logger.info(f"✅ Harvest order #{result.get('orderId', 'dry-run')}")
+        if receipt.get('eligible_for_accounting') is not True:
+            logger.warning(
+                f"⏳ Liquidity harvest {best_symbol} awaits terminal fill: "
+                f"{receipt.get('status')} / {receipt.get('reason')}"
+            )
+            return False
+        applied = self._apply_verified_exit_fill(
+            symbol=best_symbol,
+            position=best_position,
+            receipt=receipt,
+            reason='liquidity_harvest',
+            record_win=False,
+        )
+        if applied is None:
+            logger.error(f"❌ Liquidity harvest receipt quarantined for {best_symbol}; position unchanged")
+            return False
+        logger.info(
+            f"✅ Harvested {best_symbol}: provider proceeds {receipt['cumulative_quote_qty']:.4f} "
+            f"{self.match_quote_asset(best_symbol) or self.primary_quote} | "
+            f"Realized Net PnL {applied['realised_net_quote']:+.2f} | "
+            f"Hive ➜ Compound ${applied['compound_quote']:.2f} / Harvest ${applied['harvest_quote']:.2f}"
+        )
+        logger.info(f"✅ Harvest terminal fill #{receipt.get('provider_order_id')}")
         return True
 
     # ─────────────────────────────────────────────────────────
@@ -1505,8 +1953,12 @@ class AureonUltimate:
             
             # 2. Register Open Positions
             for symbol, pos in self.positions.items():
-                ticker = self.ticker_cache.get(symbol, {})
-                current_price = float(ticker.get('lastPrice', 0)) if ticker else pos.entry_price
+                ticker = self.ticker_cache.get(symbol)
+                if not ticker:
+                    continue
+                current_price = float(ticker['lastPrice'])
+                if not math.isfinite(current_price) or current_price <= 0:
+                    continue
                 
                 bridge_pos = BridgePosition(
                     symbol=symbol,
@@ -1746,10 +2198,6 @@ class AureonUltimate:
                 # Get emotional state
                 emotion, freq = get_emotional_state(coherence)
                 
-                # Debug log for random symbols to diagnose filtering
-                if random.random() < 0.002:
-                     logger.info(f"🔍 DEBUG {symbol}: Coh={coherence:.3f} Prism(res={prism_state.get('resonance', 0):.2f}, love={prism_state.get('is_love', False)}) Fusion={fusion_score:.2f}")
-
                 # 🦆💎 BIG PLUMS MODE: Enter on coherence alone!
                 if coherence >= CONFIG['ENTRY_COHERENCE']:
                     score = abs(change) * coherence * (volume / 10000)
@@ -1799,10 +2247,10 @@ class AureonUltimate:
         
         try:
             price = float(ticker['lastPrice'])
-            change = float(ticker.get('priceChangePercent', eco_pick.get('change', 0)))
-            volume = float(ticker.get('quoteVolume', 0))
-            high = float(ticker.get('highPrice', price))
-            low = float(ticker.get('lowPrice', price))
+            change = float(ticker['priceChangePercent'])
+            volume = float(ticker['quoteVolume'])
+            high = float(ticker['highPrice'])
+            low = float(ticker['lowPrice'])
             
             volatility = ((high - low) / low * 100) if low > 0 else 0
             coherence = calculate_coherence(change, volume, volatility)
@@ -1849,7 +2297,7 @@ class AureonUltimate:
             logger.error(f"❌ Error building opportunity for {symbol}: {e}")
             return None
     
-    def enter_position(self, opp: Dict, quote_balance: float, commando: str = 'lion') -> bool:
+    def enter_position(self, opp: Dict, quote_balance: float, commando: str = 'lion') -> Any:
         """PING - Enter position with PRIME SCALING (commando-aware)"""
         symbol = opp['symbol']
         quote_asset = self.match_quote_asset(symbol) or self.primary_quote
@@ -1858,6 +2306,37 @@ class AureonUltimate:
         if quote_asset not in self.allowed_quotes:
             logger.warning(f"⚠️ Skipping {symbol}: requires {quote_asset} which is not in allowed quotes {self.allowed_quotes}")
             return False
+
+        if getattr(getattr(self, 'client', None), 'dry_run', False):
+            # Keep this branch self-contained so the safety contract remains
+            # testable without constructing the full organism.
+            receipt = {
+                'status': 'not_submitted',
+                'data_status': 'not_submitted',
+                'truth_status': 'dry_run',
+                'symbol': str(symbol).upper(),
+                'side': 'BUY',
+                'purpose': 'strategy_entry',
+                'provider_order_id': None,
+                'provider_timestamp': None,
+                'fill': None,
+                'actual_pnl': None,
+                'executed_qty': None,
+                'net_base_qty': None,
+                'cumulative_quote_qty': None,
+                'average_price': None,
+                'fee_quote': None,
+                'fill_receipt_complete': False,
+                'eligible_for_accounting': False,
+                'eligible_for_learning': False,
+                'reconciliation_required': False,
+                'generated_values': False,
+                'reason': 'dry_run_order_not_submitted',
+                'recorded_at': time.time(),
+            }
+            self.last_execution_result = receipt
+            logger.info("🧪 DRY-RUN INTENT: no order submitted; excluded from positions and memory")
+            return receipt
             
         # If using a non-primary quote, ensure we check THAT balance, not just the passed quote_balance (which is usually primary)
         if quote_asset != self.primary_quote:
@@ -1938,65 +2417,51 @@ class AureonUltimate:
 """)
         
         try:
-            # 💰 BEFORE TRADE BALANCE
-            balance_before = self.get_quote_balance()
-            
-            result = self.client.place_market_order(
-                symbol, 'BUY', quantity=float(qty_str)
+            receipt = self._submit_or_reconcile_market_order(
+                symbol=symbol,
+                side='BUY',
+                quantity=float(qty_str),
+                purpose='strategy_entry',
+                quote_asset=quote_asset,
             )
-            
-            # 💰 AFTER TRADE BALANCE
-            balance_after = self.get_quote_balance()
-            spent = balance_before - balance_after
-            logger.info(f"💰 BALANCE: Before=${balance_before:.4f} → After=${balance_after:.4f} | Spent=${spent:.4f}")
-
-            # 🦆 DRY-RUN SIMULATION MODE: Simulate trade for paper trading
-            if result.get('dryRun'):
-                logger.info("🧪 DRY-RUN MODE: Simulating trade execution...")
-                # Simulate as if the trade went through
-                spent = notional  # Pretend we spent the notional amount
-                result['orderId'] = f"DRY-{int(time.time()*1000)}"
-                result['fills'] = [{'price': str(opp['price']), 'qty': qty_str, 'commission': '0', 'commissionAsset': self.primary_quote}]
-            elif result.get('orderId') is None:
-                logger.error("❌ Order not confirmed on Binance (missing orderId); aborting entry.")
-                return False
-            elif spent <= 0:
-                # Guard against false positives from simulation or rounding noise (live mode only)
-                logger.error("❌ No spend detected after BUY; aborting entry.")
-                return False
-            elif spent < (min_notional * 0.5):
+            if receipt.get('eligible_for_accounting') is not True:
                 logger.warning(
-                    f"⚠️ Spend ${spent:.4f} below verification threshold (${min_notional*0.5:.2f}); treating as failed entry."
+                    f"⏳ Entry {symbol} not account-ready: "
+                    f"{receipt.get('status')} / {receipt.get('reason')}"
                 )
-                return False
-            
+                return receipt
+
+            entry_price = float(receipt['average_price'])
+            entry_quantity = float(receipt['net_base_qty'])
+            filled_notional = float(receipt['cumulative_quote_qty'])
+            entry_fee = float(receipt['fee_quote'])
             # Calculate Quackers-style volatility-based stops
             ticker = self.ticker_cache.get(symbol, {})
-            high_24h = float(ticker.get('highPrice', opp['price']))
-            low_24h = float(ticker.get('lowPrice', opp['price']))
-            volatility = (high_24h - low_24h) / opp['price'] if opp['price'] > 0 else 0.01
+            high_24h = float(ticker.get('highPrice', entry_price))
+            low_24h = float(ticker.get('lowPrice', entry_price))
+            volatility = (high_24h - low_24h) / entry_price if entry_price > 0 else 0.01
             normalized_vol = max(0.001, volatility)
             
             # Dynamic stop loss = entry - (price * volatility * multiplier)
-            stop_distance = opp['price'] * normalized_vol * CONFIG.get('STOP_LOSS_MULTIPLIER', 1.2)
+            stop_distance = entry_price * normalized_vol * CONFIG.get('STOP_LOSS_MULTIPLIER', 1.2)
             reward_risk_ratio = CONFIG.get('REWARD_RISK_BASE', 2.0) + opp['coherence']
             tp_distance = stop_distance * reward_risk_ratio
             
-            stop_loss_price = opp['price'] - stop_distance
-            take_profit_price = opp['price'] + tp_distance
+            stop_loss_price = entry_price - stop_distance
+            take_profit_price = entry_price + tp_distance
             
             # 🐝 Hummingbird uses tighter TP/SL
             if commando == 'hummingbird' and 'tp_override' in opp:
-                take_profit_price = opp['price'] * (1 + opp['tp_override'])
-                stop_loss_price = opp['price'] * (1 + opp['sl_override'])
+                take_profit_price = entry_price * (1 + opp['tp_override'])
+                stop_loss_price = entry_price * (1 + opp['sl_override'])
             
             self.positions[symbol] = Position(
                 symbol=symbol,
-                entry_price=opp['price'],
-                quantity=float(qty_str),
-                entry_time=time.time(),
+                entry_price=entry_price,
+                quantity=entry_quantity,
+                entry_time=float(receipt['provider_timestamp']),
                 coherence=opp['coherence'],
-                notional_usd=notional,
+                notional_usd=filled_notional,
                 stop_loss_price=stop_loss_price,
                 take_profit_price=take_profit_price,
                 commando=commando,  # 🦆 Track which commando owns this
@@ -2004,20 +2469,18 @@ class AureonUltimate:
                 field_distortion=env_distortion,
                 field_coherence=env_coherence,
                 field_maker_bias=env_maker_bias,
+                entry_order_id=str(receipt['provider_order_id']),
+                entry_source_timestamp=float(receipt['provider_timestamp']),
+                entry_truth_status=str(receipt['truth_status']),
             )
-            # Record actual entry fee from fills if available; fallback to approx
-            actual_fee = self.client.compute_order_fees_in_quote(result, self.primary_quote)
-            if actual_fee and actual_fee > 0:
-                self.positions[symbol].fees_quote += actual_fee
-                self.total_fees += actual_fee  # Business 101: Track expense
-                logger.info(f"💸 Entry fee (actual): {self.primary_quote} {actual_fee:.6f}")
-            else:
-                entry_fee = notional * CONFIG.get('TAKER_FEE_PCT', 0.0)
-                self.positions[symbol].fees_quote += entry_fee
-                self.total_fees += entry_fee  # Business 101: Track expense
-                logger.info(f"💸 Entry fee (approx): {self.primary_quote} {entry_fee:.6f}")
+            self.positions[symbol].fees_quote = entry_fee
+            self.total_fees += entry_fee
+            logger.info(f"💸 Entry fee (provider): {quote_asset} {entry_fee:.6f}")
             
-            logger.info(f"✅ Filled: Order #{result.get('orderId')}")
+            logger.info(
+                f"✅ Terminal fill #{receipt.get('provider_order_id')}: "
+                f"{entry_quantity:.12g} @ {entry_price:.12g}"
+            )
             self.trades += 1
             
             # Record the successful hunt (Quackers ElephantMemory)
@@ -2101,27 +2564,34 @@ class AureonUltimate:
                 logger.info(f"💎 PARTIAL TP CHECK {symbol}: pnl={pnl_pct*100:.2f}% qty={qty_float} min_qty={min_qty} notional={notional:.2f} min_notional={min_notional}")
                 if qty_float > 0 and qty_float >= min_qty and qty_float < pos.quantity and notional >= min_notional:
                     try:
-                        result = self.client.place_market_order(symbol, 'SELL', quantity=qty_float)
-                        fee_pct = CONFIG.get('TAKER_FEE_PCT', 0.0)
-                        sell_fee_actual = self.client.compute_order_fees_in_quote(result, self.primary_quote)
-                        sell_fee = sell_fee_actual if sell_fee_actual and sell_fee_actual > 0 else price * qty_float * fee_pct
-                        # Use proportional share of tracked entry fees (actual from order response)
-                        qty_fraction = qty_float / pos.quantity if pos.quantity > 0 else 0.0
-                        entry_fee_actual = pos.fees_quote * qty_fraction
-                        realized_partial = qty_float * (price - pos.entry_price)
-                        realized_net = realized_partial - sell_fee - entry_fee_actual
-                        self.total_gross_pnl += realized_partial
-                        self.total_fees += sell_fee
-                        compound, harvest = self.hive.process_profit(realized_net)
-                        self.memory.record(symbol, realized_net)
-                        pos.fees_quote -= entry_fee_actual
-                        pos.fees_quote = max(pos.fees_quote, 0.0)
-                        pos.quantity -= qty_float
-                        pos.notional_usd = pos.quantity * pos.entry_price
-                        pos.partial_taken = True
+                        receipt = self._submit_or_reconcile_market_order(
+                            symbol=symbol,
+                            side='SELL',
+                            quantity=qty_float,
+                            purpose='partial_take_profit',
+                            quote_asset=self.match_quote_asset(symbol) or self.primary_quote,
+                        )
+                        if receipt.get('eligible_for_accounting') is not True:
+                            logger.warning(
+                                f"⏳ Partial TP {symbol} awaits terminal fill: "
+                                f"{receipt.get('status')} / {receipt.get('reason')}"
+                            )
+                            continue
+                        applied = self._apply_verified_exit_fill(
+                            symbol=symbol,
+                            position=pos,
+                            receipt=receipt,
+                            reason='partial_take_profit',
+                            mark_partial=True,
+                            record_win=False,
+                        )
+                        if applied is None:
+                            logger.error(f"❌ Partial TP receipt quarantined for {symbol}; position unchanged")
+                            continue
                         logger.info(
-                            f"💠 Partial TP {symbol}: sold {qty_str} @ ${price:.4f} | Net ${realized_net:+.2f} "
-                            f"(fees={sell_fee+entry_fee_actual:.4f} {self.primary_quote}) | Hive ➜ Compound ${compound:.2f} / Harvest ${harvest:.2f}"
+                            f"💠 Partial TP {symbol}: provider sold {receipt['executed_qty']:.12g} "
+                            f"@ ${receipt['average_price']:.4f} | Net ${applied['realised_net_quote']:+.2f} | "
+                            f"Hive ➜ Compound ${applied['compound_quote']:.2f} / Harvest ${applied['harvest_quote']:.2f}"
                         )
                         # Move to next position after partial trim
                         continue
@@ -2181,71 +2651,38 @@ class AureonUltimate:
 """)
                 
                 try:
-                    # 💰 BEFORE SELL BALANCE
-                    balance_before = self.get_quote_balance()
-                    
-                    # Net PnL and fees: use actual tracked entry fees
-                    fee_pct = CONFIG.get('TAKER_FEE_PCT', 0.0)
-                    result = self.client.place_market_order(
-                        symbol, 'SELL', quantity=float(qty_str)
+                    receipt = self._submit_or_reconcile_market_order(
+                        symbol=symbol,
+                        side='SELL',
+                        quantity=float(qty_str),
+                        purpose='strategy_exit',
+                        quote_asset=self.match_quote_asset(symbol) or self.primary_quote,
                     )
-                    
-                    # 💰 AFTER SELL BALANCE
-                    balance_after = self.get_quote_balance()
-                    received = balance_after - balance_before
-                    # Verify live execution and sufficient receipt
-                    min_notional = self.lot_mgr.get_min_notional(symbol)
-                    if result.get('dryRun') or (result.get('orderId') is None):
-                        logger.error("❌ Sell not confirmed on Binance (dryRun or missing orderId); keeping position open.")
-                        continue
-                    if received <= 0:
-                        logger.error("❌ No quote received after SELL; keeping position open.")
-                        continue
-                    if received < (min_notional * 0.5):
+                    if receipt.get('eligible_for_accounting') is not True:
                         logger.warning(
-                            f"⚠️ Received ${received:.4f} below verification threshold (${min_notional*0.5:.2f}); keeping position open."
+                            f"⏳ Exit {symbol} awaits terminal fill: "
+                            f"{receipt.get('status')} / {receipt.get('reason')}"
                         )
                         continue
-                    
-                    # Prefer actual commission from order; fallback to approx
-                    actual_sell_fee = self.client.compute_order_fees_in_quote(result, self.primary_quote)
-                    entry_fee_actual = pos.fees_quote  # Full tracked entry fee
-                    sell_fee = actual_sell_fee if actual_sell_fee and actual_sell_fee > 0 else (price * pos.quantity * fee_pct)
-                    
-                    # Business 101: Track Gross vs Fees
-                    self.total_gross_pnl += pnl_usd
-                    self.total_fees += sell_fee
-                    
-                    realized_net = pnl_usd - sell_fee - entry_fee_actual
-                    
-                    logger.info(f"💰 BALANCE: Before=${balance_before:.4f} → After=${balance_after:.4f} | Received=${received:.4f}")
-                    logger.info(f"✅ Sold: Order #{result.get('orderId')} | Fees: entry={entry_fee_actual:.4f} {self.primary_quote}, sell={(sell_fee):.4f} {self.primary_quote}")
-                    logger.info(f"📊 NET PROFIT CHECK: Gross=${pnl_usd:+.4f} - Fees=${(entry_fee_actual+sell_fee):.4f} = Net=${realized_net:+.4f}")
-                    
-                    # Queen Hive processing on net PnL
-                    compound, harvest = self.hive.process_profit(realized_net)
-                    logger.info(f"👑 Hive: Compound ${compound:.2f} | Harvest ${harvest:.2f} | Net PnL ${realized_net:+.2f}")
-                    
-                    # Memory recording
-                    self.memory.record(symbol, realized_net)
-                    
-                    if realized_net >= 0:
-                        self.wins += 1
-                        pos.bounces += 1
-                    
-                    # 🦆 Notify commandos of exit
-                    self.commandos.record_exit(symbol, realized_net)
-                    
-                    # 🌉 Record trade in bridge
-                    if BRIDGE_AVAILABLE and self.bridge:
-                        self.bridge.record_trade(
-                            profit=pnl_usd,
-                            fee=entry_fee_actual + sell_fee,
-                            success=(realized_net > 0)
-                        )
-                        self.bridge.unregister_position('binance', symbol)
-                    
-                    del self.positions[symbol]
+                    applied = self._apply_verified_exit_fill(
+                        symbol=symbol,
+                        position=pos,
+                        receipt=receipt,
+                        reason=reason,
+                        publish_bridge=True,
+                    )
+                    if applied is None:
+                        logger.error(f"❌ Exit receipt quarantined for {symbol}; position unchanged")
+                        continue
+                    logger.info(
+                        f"✅ Provider terminal fill #{receipt.get('provider_order_id')} | "
+                        f"Gross={applied['gross_pnl_quote']:+.4f} | "
+                        f"Net={applied['realised_net_quote']:+.4f}"
+                    )
+                    logger.info(
+                        f"👑 Hive: Compound ${applied['compound_quote']:.2f} | "
+                        f"Harvest ${applied['harvest_quote']:.2f}"
+                    )
                     
                 except Exception as e:
                     logger.error(f"❌ Sell failed: {e}")
@@ -2376,9 +2813,19 @@ class AureonUltimate:
         if self.positions:
             logger.info("📊 ACTIVE POSITIONS:")
             for sym, pos in self.positions.items():
-                ticker = self.ticker_cache.get(sym, {})
-                price = float(ticker.get('lastPrice', 0))
-                pnl_pct = ((price - pos.entry_price) / pos.entry_price * 100) if price > 0 else 0
+                ticker = self.ticker_cache.get(sym)
+                if not ticker:
+                    logger.warning(f"  {sym:12} | current provider price: NO DATA")
+                    continue
+                try:
+                    price = float(ticker['lastPrice'])
+                except (KeyError, TypeError, ValueError):
+                    logger.warning(f"  {sym:12} | current provider price: NO DATA")
+                    continue
+                if not math.isfinite(price) or price <= 0:
+                    logger.warning(f"  {sym:12} | current provider price: NO DATA")
+                    continue
+                pnl_pct = (price - pos.entry_price) / pos.entry_price * 100
                 age_min = (time.time() - pos.entry_time) / 60
                 
                 logger.info(
@@ -2456,12 +2903,23 @@ class AureonUltimate:
         try:
             bridge_opps = []
             for symbol, target_data in list(self.commando_cache.items())[:10]:  # Top 10
-                ticker = self.ticker_cache.get(symbol, {})
-                price = float(ticker.get('lastPrice', 0))
-                volume = float(ticker.get('quoteVolume', 0))
-                change = float(ticker.get('priceChangePercent', 0))
+                ticker = self.ticker_cache.get(symbol)
+                if not ticker:
+                    continue
+                try:
+                    price = float(ticker['lastPrice'])
+                    volume = float(ticker['quoteVolume'])
+                    change = float(ticker['priceChangePercent'])
+                except (KeyError, TypeError, ValueError):
+                    continue
                 
-                if price == 0:
+                if (
+                    not math.isfinite(price)
+                    or not math.isfinite(volume)
+                    or not math.isfinite(change)
+                    or price <= 0
+                    or volume < 0
+                ):
                     continue
                 
                 # Get coherence from advanced intelligence
@@ -2543,51 +3001,57 @@ class AureonUltimate:
         except Exception as e:
             logger.warning(f"⚠️ Bridge command processing error: {e}")
     
-    def force_exit_position(self, symbol: str, reason: str):
+    def force_exit_position(self, symbol: str, reason: str) -> Any:
         """Force exit a position (used by bridge commands)"""
         if symbol not in self.positions:
-            return
+            return False
         
         pos = self.positions[symbol]
         ticker = self.ticker_cache.get(symbol)
         if not ticker:
-            return
+            return False
         
         price = float(ticker['lastPrice'])
         try:
             qty_str = self.lot_mgr.format_qty(symbol, pos.quantity)
-            result = self.client.place_market_order(symbol, 'SELL', quantity=float(qty_str))
-            
-            # Calculate P&L
-            fee_pct = CONFIG.get('TAKER_FEE_PCT', 0.001)
-            actual_sell_fee = self.client.compute_order_fees_in_quote(result, self.primary_quote)
-            sell_fee = actual_sell_fee if actual_sell_fee and actual_sell_fee > 0 else (price * pos.quantity * fee_pct)
-            realized = pos.quantity * (price - pos.entry_price)
-            realized_net = realized - sell_fee - pos.fees_quote
-            
-            self.total_gross_pnl += realized
-            self.total_fees += sell_fee
-            
-            # Record in bridge
-            if self.bridge_enabled and self.bridge:
-                self.bridge.record_trade(
-                    profit=realized,
-                    fee=sell_fee,
-                    success=(realized_net >= 0)
+            receipt = self._submit_or_reconcile_market_order(
+                symbol=symbol,
+                side='SELL',
+                quantity=float(qty_str),
+                purpose=f'force_exit:{reason}',
+                quote_asset=self.match_quote_asset(symbol) or self.primary_quote,
+            )
+            if receipt.get('eligible_for_accounting') is not True:
+                logger.warning(
+                    f"⏳ Force exit {symbol} awaits terminal fill: "
+                    f"{receipt.get('status')} / {receipt.get('reason')}"
                 )
-                self.bridge.unregister_position('binance', symbol)
-            
-            compound, harvest = self.hive.process_profit(realized_net)
-            self.memory.record(symbol, realized_net)
-            if realized_net >= 0:
-                self.wins += 1
-            self.commandos.record_exit(symbol, realized_net)
-            del self.positions[symbol]
-            
-            logger.info(f"✅ Force exit complete: {symbol} | Net ${realized_net:+.2f}")
+                return receipt
+            applied = self._apply_verified_exit_fill(
+                symbol=symbol,
+                position=pos,
+                receipt=receipt,
+                reason=reason,
+                publish_bridge=True,
+            )
+            if applied is None:
+                logger.error(f"❌ Force exit receipt quarantined for {symbol}; position unchanged")
+                return False
+            if applied.get("fully_closed") is not True:
+                logger.warning(
+                    f"⏳ Force exit {symbol} received a terminal partial fill; "
+                    f"{applied['remaining_position_qty']:.12g} remains tracked"
+                )
+                return applied
+            logger.info(
+                f"✅ Force exit complete: {symbol} | provider net "
+                f"${applied['realised_net_quote']:+.2f}"
+            )
+            return True
             
         except Exception as e:
             logger.error(f"❌ Force exit failed for {symbol}: {e}")
+            return False
     
     def run(self, duration_sec: int = 3600):
         """Run the ultimate trader"""
@@ -2676,13 +3140,15 @@ class AureonUltimate:
                             if quote_balance >= CONFIG['MIN_TRADE_NOTIONAL']:
                                 logger.info(f"🦆💎 {eco_pick['commando'].upper()} ENTERING {opp['symbol']}!")
                                 entered = self.enter_position(opp, quote_balance, commando=eco_pick['commando'])
-                                if entered:
+                                if entered is True:
                                     self.commandos.record_entry(opp['symbol'], eco_pick['commando'])
                                     
                                     # 🌉 Publish opportunity to bridge for Unified system awareness
                                     if BRIDGE_AVAILABLE and self.bridge:
                                         # Convert to list of opportunities
                                         self.publish_opportunities_to_bridge()
+                                elif isinstance(entered, dict) and entered.get('status') == 'not_submitted':
+                                    logger.info(f"🧪 Entry intent not submitted for {opp['symbol']}")
                                 else:
                                     logger.warning(f"⚠️ Entry failed for {opp['symbol']}")
                         else:
@@ -2718,14 +3184,15 @@ class AureonUltimate:
                                             min_move = move
                                             flattest = sym
                                 
-                                # Clean up any ghost positions found
+                                # Balance mismatches require reconciliation; they
+                                # never authorise deleting a tracked position.
                                 ghost_positions = [sym for sym, pos in self.positions.items() 
                                                    if self.client.get_free_balance(self.get_base_asset(sym) or '') <= 0]
                                 for ghost in ghost_positions:
-                                    logger.info(f"🧹 Removing ghost position: {ghost}")
-                                    self.commandos.record_exit(ghost, 0.0)  # 🦆 Notify commandos
-                                    del self.positions[ghost]
-                                    deadlock_cycles = 0
+                                    logger.warning(
+                                        f"⏳ Position/balance mismatch for {ghost}; "
+                                        "retaining position until provider execution reconciliation"
+                                    )
                                 
                                 if flattest:
                                     if not self.business_green_light:
@@ -2745,29 +3212,16 @@ class AureonUltimate:
                                         qty_str = self.lot_mgr.format_qty(flattest, sell_qty)
                                         try:
                                             logger.info(f"🔓 Emergency exit: {flattest} @ ${price:.4f} (qty={qty_str}) to break deadlock")
-                                            result = self.client.place_market_order(flattest, 'SELL', quantity=float(qty_str))
-                                            fee_pct = CONFIG.get('TAKER_FEE_PCT', 0.0)
-                                            actual_sell_fee = self.client.compute_order_fees_in_quote(result, self.primary_quote)
-                                            sell_fee = actual_sell_fee if actual_sell_fee and actual_sell_fee > 0 else (price * sell_qty * fee_pct)
-                                            entry_fee_actual = pos.fees_quote
-                                            realized = sell_qty * (price - pos.entry_price)
-                                            realized_net = realized - sell_fee - entry_fee_actual
-                                            self.total_gross_pnl += realized
-                                            self.total_fees += sell_fee
-                                            compound, harvest = self.hive.process_profit(realized_net)
-                                            self.memory.record(flattest, realized_net)
-                                            if realized_net >= 0:
-                                                self.wins += 1
-                                            self.commandos.record_exit(flattest, realized_net)  # 🦆 Notify commandos
-                                            del self.positions[flattest]
-                                            logger.info(f"✅ Emergency exit complete: Net ${realized_net:+.2f}")
-                                            deadlock_cycles = 0  # Reset after breaking deadlock
+                                            exited = self.force_exit_position(flattest, "deadlock_liquidity")
+                                            if exited is True:
+                                                deadlock_cycles = 0
+                                            elif isinstance(exited, dict):
+                                                logger.warning(
+                                                    f"⏳ Emergency exit {flattest} awaits terminal fill: "
+                                                    f"{exited.get('status')} / {exited.get('reason')}"
+                                                )
                                         except Exception as exc:
                                             logger.error(f"❌ Emergency exit failed: {exc}")
-                                            # If failed, remove from tracking anyway to prevent infinite loop
-                                            self.commandos.record_exit(flattest, 0.0)  # 🦆 Notify commandos
-                                            del self.positions[flattest]
-                                            deadlock_cycles = 0
                     else:
                         logger.info(f"🦆 NO ECOSYSTEM PICKS (commandos have no targets)")
             

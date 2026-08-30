@@ -14,7 +14,8 @@
     "check": "node --check server.mjs && node --check runtime/server.mjs && bash -n scripts/setup_sandbox_runtime.sh && bash -n scripts/fix_docker_sandbox_access.sh && bash -n scripts/start_aureon_brain_local.sh && bash -n scripts/start_flameborn_runtime.sh",
     "cf:build": "bash scripts/build_workers_assets.sh",
     "cf:dev": "npm run cf:build && wrangler dev",
-    "cf:deploy": "npm run cf:build && wrangler deploy",
+    "cf:preflight": "node scripts/validate_workers_deploy_config.mjs wrangler.jsonc",
+    "cf:deploy": "npm run cf:preflight && npm run cf:build && wrangler deploy",
     "cf:check": "wrangler whoami"
   },
   "devDependencies": {

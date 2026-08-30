@@ -1,50 +1,28 @@
-#!/usr/bin/env python3
-"""
-🧪 Windows Cleanup Test
-=======================
+"""Portable, network-free checks for the Windows cleanup primitives."""
 
-Quick test to verify the Windows stderr fix is working.
-"""
+from __future__ import annotations
 
-from aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
-import sys
+import asyncio
 import os
+import sys
 
-if sys.platform != 'win32':
-    print("⚠️  This test is designed for Windows")
-    sys.exit(1)
 
-# Test 1: Check Python version
-print(f"✅ Python {sys.version.split()[0]} on {os.name}")
+def test_runtime_exposes_text_encoding_and_platform_identity() -> None:
+    assert sys.version_info >= (3, 10)
+    assert os.name in {"nt", "posix"}
+    assert sys.stdout.encoding
 
-# Test 2: Check encoding
-print(f"✅ Encoding: {sys.stdout.encoding}")
 
-# Test 3: Import check
-print("✅ Testing imports...")
-try:
-    import asyncio
-    print("   ✅ asyncio imported")
-except ImportError as e:
-    print(f"   ❌ asyncio failed: {e}")
+def test_pure_coroutine_completes_without_opening_an_event_loop() -> None:
+    async def pure_async() -> str:
+        return "async works"
 
-# Test 4: Simple async test
-print("✅ Testing async operations...")
-async def test_async():
-    await asyncio.sleep(0.1)
-    return "✅ Async works"
+    coroutine = pure_async()
+    try:
+        coroutine.send(None)
+    except StopIteration as completed:
+        assert completed.value == "async works"
+    else:  # pragma: no cover - a pure coroutine must finish on its first step
+        raise AssertionError("pure coroutine unexpectedly suspended")
 
-try:
-    result = asyncio.run(test_async())
-    print(f"   {result}")
-except Exception as e:
-    print(f"   ❌ Async failed: {e}")
-
-print("\n" + "="*60)
-print("✅ WINDOWS CLEANUP TEST PASSED!")
-print("="*60)
-print("\nYou can now run:")
-print("  python run_aureon_windows.py --dry-run")
-print("\nOR pull and run the full system:")
-print("  git pull origin main")
-print("  python run_aureon_windows.py")
+    assert asyncio.iscoroutinefunction(pure_async)

@@ -8,17 +8,17 @@ export interface SystemState {
   systemName: string;
   timestamp: number;
   ready: boolean;
-  coherence: number;
-  confidence: number;
-  signal: SignalType;
+  coherence: number | null;
+  confidence: number | null;
+  signal: SignalType | null;
   data: Record<string, any>;
 }
 
 export interface BusSnapshot {
   states: Record<string, SystemState>;
   timestamp: number;
-  consensusSignal: SignalType;
-  consensusConfidence: number;
+  consensusSignal: SignalType | null;
+  consensusConfidence: number | null;
   systemsReady: number;
   totalSystems: number;
 }
@@ -66,9 +66,32 @@ class UnifiedBus {
    * Publish a system's state to the bus
    */
   publish(state: SystemState): void {
-    this.states.set(state.systemName, {
+    const truthStatus = state.data?.truthStatus ?? state.data?.truth_status;
+    const sourceId = state.data?.sourceId ?? state.data?.source_id;
+    const sourceTimestamp = state.data?.sourceTimestamp ?? state.data?.source_timestamp;
+    const generatedValues = state.data?.generatedValues ?? state.data?.generated_values;
+    const sourceTime = Date.parse(String(sourceTimestamp || ''));
+    const sourceAge = Date.now() - sourceTime;
+    const hasEvidence = ['live', 'real_derived'].includes(String(truthStatus)) &&
+      generatedValues === false && Boolean(sourceId) && Number.isFinite(sourceTime) &&
+      sourceAge >= -5 * 60 * 1000 && sourceAge <= 5 * 60 * 1000 && Number.isFinite(state.coherence) &&
+      Number.isFinite(state.confidence) && state.signal !== null;
+
+    this.states.set(state.systemName, hasEvidence ? {
       ...state,
-      timestamp: Date.now(),
+      timestamp: sourceTime,
+    } : {
+      systemName: state.systemName,
+      timestamp: Number.isFinite(sourceTime) ? sourceTime : Date.now(),
+      ready: false,
+      coherence: null,
+      confidence: null,
+      signal: null,
+      data: {
+        truthStatus: 'no_data',
+        generatedValues: false,
+        blocker: 'FRESH_PRODUCTION_PROVENANCE_REQUIRED',
+      },
     });
     this.notifyListeners();
   }
@@ -112,10 +135,10 @@ class UnifiedBus {
   /**
    * Check if all required systems are ready and compute consensus
    */
-  checkConsensus(): { ready: boolean; signal: SignalType; confidence: number } {
+  checkConsensus(): { ready: boolean; signal: SignalType | null; confidence: number | null } {
     const allReady = REQUIRED_SYSTEMS.every(name => {
       const state = this.states.get(name);
-      return state?.ready && state.coherence > 0.7;
+      return state?.ready && Number.isFinite(state.coherence) && (state.coherence as number) > 0.7;
     });
     
     const { signal, confidence } = this.computeConsensus();
@@ -131,7 +154,7 @@ class UnifiedBus {
    * Compute 10-9-1 weighted consensus from all systems
    * Unity systems (10x), Flow systems (9x), Anchor systems (1x)
    */
-  private computeConsensus(): { signal: SignalType; confidence: number } {
+  private computeConsensus(): { signal: SignalType | null; confidence: number | null } {
     // Compute tier-weighted scores
     let unityBuy = 0, unitySell = 0, unityTotal = 0;
     let flowBuy = 0, flowSell = 0, flowTotal = 0;
@@ -140,31 +163,31 @@ class UnifiedBus {
     // Process Unity systems (10x weight)
     for (const name of UNITY_SYSTEMS) {
       const state = this.states.get(name);
-      if (!state?.ready) continue;
-      const subWeight = SYSTEM_WEIGHTS[name] || 0.5;
+      if (!state?.ready || !Number.isFinite(state.confidence)) continue;
+      const subWeight = SYSTEM_WEIGHTS[name] ?? 0.5;
       unityTotal += subWeight;
-      if (state.signal === 'BUY') unityBuy += subWeight * state.confidence;
-      else if (state.signal === 'SELL') unitySell += subWeight * state.confidence;
+      if (state.signal === 'BUY') unityBuy += subWeight * (state.confidence as number);
+      else if (state.signal === 'SELL') unitySell += subWeight * (state.confidence as number);
     }
     
     // Process Flow systems (9x weight)
     for (const name of FLOW_SYSTEMS) {
       const state = this.states.get(name);
-      if (!state?.ready) continue;
-      const subWeight = SYSTEM_WEIGHTS[name] || 0.2;
+      if (!state?.ready || !Number.isFinite(state.confidence)) continue;
+      const subWeight = SYSTEM_WEIGHTS[name] ?? 0.2;
       flowTotal += subWeight;
-      if (state.signal === 'BUY') flowBuy += subWeight * state.confidence;
-      else if (state.signal === 'SELL') flowSell += subWeight * state.confidence;
+      if (state.signal === 'BUY') flowBuy += subWeight * (state.confidence as number);
+      else if (state.signal === 'SELL') flowSell += subWeight * (state.confidence as number);
     }
     
     // Process Anchor systems (1x weight)
     for (const name of ANCHOR_SYSTEMS) {
       const state = this.states.get(name);
-      if (!state?.ready) continue;
-      const subWeight = SYSTEM_WEIGHTS[name] || 0.33;
+      if (!state?.ready || !Number.isFinite(state.confidence)) continue;
+      const subWeight = SYSTEM_WEIGHTS[name] ?? 0.33;
       anchorTotal += subWeight;
-      if (state.signal === 'BUY') anchorBuy += subWeight * state.confidence;
-      else if (state.signal === 'SELL') anchorSell += subWeight * state.confidence;
+      if (state.signal === 'BUY') anchorBuy += subWeight * (state.confidence as number);
+      else if (state.signal === 'SELL') anchorSell += subWeight * (state.confidence as number);
     }
     
     // Normalize within each tier
@@ -185,15 +208,15 @@ class UnifiedBus {
     let confWeight = 0;
     for (const name of [...UNITY_SYSTEMS, ...FLOW_SYSTEMS, ...ANCHOR_SYSTEMS]) {
       const state = this.states.get(name);
-      if (!state?.ready) continue;
+      if (!state?.ready || !Number.isFinite(state.confidence)) continue;
       const tierWeight = UNITY_SYSTEMS.includes(name) ? 10 : FLOW_SYSTEMS.includes(name) ? 9 : 1;
-      totalConfidence += state.confidence * tierWeight;
+      totalConfidence += (state.confidence as number) * tierWeight;
       confWeight += tierWeight;
     }
-    const confidence = confWeight > 0 ? totalConfidence / confWeight : 0;
+    const confidence = confWeight > 0 ? totalConfidence / confWeight : null;
     
     // Determine signal
-    let signal: SignalType = 'NEUTRAL';
+    let signal: SignalType | null = confWeight > 0 ? 'NEUTRAL' : null;
     if (buyScore > sellScore && buyScore > 0.3) {
       signal = 'BUY';
     } else if (sellScore > buyScore && sellScore > 0.3) {
@@ -229,8 +252,8 @@ class UnifiedBus {
   /**
    * Get system health status
    */
-  getSystemHealth(): Array<{ name: string; ready: boolean; coherence: number; lastUpdate: number }> {
-    const health: Array<{ name: string; ready: boolean; coherence: number; lastUpdate: number }> = [];
+  getSystemHealth(): Array<{ name: string; ready: boolean; coherence: number | null; lastUpdate: number | null }> {
+    const health: Array<{ name: string; ready: boolean; coherence: number | null; lastUpdate: number | null }> = [];
     
     const allSystems = [...REQUIRED_SYSTEMS, 'ElephantMemory', 'ZeroPoint', 'Dimensional', 'Akashic'];
     
@@ -239,8 +262,8 @@ class UnifiedBus {
       health.push({
         name,
         ready: state?.ready ?? false,
-        coherence: state?.coherence ?? 0,
-        lastUpdate: state?.timestamp ?? 0,
+        coherence: state?.coherence ?? null,
+        lastUpdate: state?.timestamp ?? null,
       });
     }
     

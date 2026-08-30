@@ -3,6 +3,13 @@ from __future__ import annotations
 from datetime import date
 from pathlib import Path
 
+import pytest
+
+pytest.importorskip(
+    "reportlab",
+    reason="these suites assert rendered PDF artifacts; reportlab is the renderer",
+)
+
 from Kings_Accounting_Suite.tools import end_user_accounting_automation as automation
 
 

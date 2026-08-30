@@ -28,6 +28,11 @@ from aureon.integrations.obsidian.obsidian_sink import (
     ObsidianSink,
     ObsidianSinkConfig,
 )
+from aureon.obsidian_paths import (
+    default_obsidian_vault_path,
+    resolve_obsidian_note_path,
+    resolve_obsidian_vault_path,
+)
 
 __all__ = [
     "ObsidianBridge",
@@ -36,4 +41,7 @@ __all__ = [
     "ObsidianNote",
     "ObsidianSink",
     "ObsidianSinkConfig",
+    "default_obsidian_vault_path",
+    "resolve_obsidian_note_path",
+    "resolve_obsidian_vault_path",
 ]

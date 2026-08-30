@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { fetchExternalLlm, parseExternalLlmJson } from "../_shared/external_llm_fallback.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -15,10 +16,6 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
-    
-    if (!lovableApiKey) {
-      throw new Error("LOVABLE_API_KEY not configured");
-    }
     
     const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -74,13 +71,9 @@ serve(async (req) => {
     };
 
     // Call Lovable AI for pattern analysis
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${lovableApiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
+    const aiResponse = await fetchExternalLlm({
+      primaryApiKey: lovableApiKey,
+      primaryBody: {
         model: "google/gemini-2.5-flash",
         messages: [
           {
@@ -142,7 +135,7 @@ Focus on identifying patterns in network strength and coherence that correlate w
           }
         ],
         temperature: 0.3,
-      }),
+      },
     });
 
     if (!aiResponse.ok) {
@@ -175,22 +168,23 @@ Focus on identifying patterns in network strength and coherence that correlate w
 
     console.log("🤖 AI Analysis Complete");
 
-    // Parse AI response
-    let analysis;
-    try {
-      // Extract JSON from markdown code blocks if present
-      const jsonMatch = analysisContent.match(/```(?:json)?\s*(\{[\s\S]*\})\s*```/);
-      const jsonContent = jsonMatch ? jsonMatch[1] : analysisContent;
-      analysis = JSON.parse(jsonContent);
-    } catch (e) {
-      console.error("Failed to parse AI response:", analysisContent);
-      analysis = {
-        patterns: [],
-        predictions: [],
-        recommendation: analysisContent.substring(0, 500),
-        riskFactors: ["Unable to parse structured predictions"],
-      };
-    }
+    // Parse plain, fenced, or prose-wrapped JSON consistently across providers.
+    type StargateAnalysis = {
+      patterns?: unknown[];
+      predictions?: Array<{
+        expectedNetworkStrength?: number;
+        expectedCoherence?: number;
+        confidence?: number;
+      }>;
+      recommendation?: string;
+      riskFactors?: unknown[];
+    };
+    const analysis = parseExternalLlmJson<StargateAnalysis | null>(analysisContent, null) || {
+      patterns: [],
+      predictions: [],
+      recommendation: analysisContent.substring(0, 500),
+      riskFactors: ["Unable to parse structured predictions"],
+    };
 
     // Store analysis result
     const { error: insertError } = await supabase

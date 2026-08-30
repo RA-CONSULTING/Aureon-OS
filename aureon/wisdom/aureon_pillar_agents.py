@@ -56,20 +56,23 @@ logger = logging.getLogger(__name__)
 
 def _build_default_adapter() -> LLMAdapter:
     """Build the default in-house LLM adapter with automatic fallback."""
+    from aureon.integrations.ollama import OllamaModelSwitchboard
+
+    switchboard = OllamaModelSwitchboard()
     # Try hybrid first (local LLM + AureonBrain)
     try:
-        adapter = AureonHybridAdapter()
+        adapter, selection = switchboard.hybrid_adapter_for("general")
         if adapter.health_check():
-            logger.info("Pillar agents using AureonHybridAdapter")
+            logger.info("Pillar agents using AureonHybridAdapter (%s)", selection.model)
             return adapter
     except Exception:
         pass
 
     # Try local LLM only
     try:
-        adapter = AureonLocalAdapter()
+        adapter, selection = switchboard.compatible_adapter_for("general")
         if adapter.health_check():
-            logger.info("Pillar agents using AureonLocalAdapter")
+            logger.info("Pillar agents using AureonLocalAdapter (%s)", selection.model)
             return adapter
     except Exception:
         pass
@@ -871,7 +874,9 @@ if __name__ == "__main__":
 
     # Build adapter based on mode
     if args.mode == "local":
-        adapter = AureonLocalAdapter()
+        from aureon.integrations.ollama import OllamaModelSwitchboard
+
+        adapter, _selection = OllamaModelSwitchboard().compatible_adapter_for("general")
     elif args.mode == "brain":
         adapter = AureonBrainAdapter()
     else:

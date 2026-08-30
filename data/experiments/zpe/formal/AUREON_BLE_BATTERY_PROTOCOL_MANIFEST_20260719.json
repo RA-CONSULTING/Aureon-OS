@@ -1,0 +1,211 @@
+{
+  "claim_boundary": "The payload label is not proof of a physical field at that frequency. Measured radio cadence, battery energy, workload, and environmental controls are required.",
+  "protocol": {
+    "hypothesis": "A controlled BLE treatment changes mean laptop battery discharge power relative to matched baseline and sham segments.",
+    "max_cpu_mean_delta_pct": 5.0,
+    "max_temperature_mean_delta_c": 2.0,
+    "minimum_complete_blocks": 10,
+    "minimum_devices_for_replication": 3,
+    "minimum_independent_operators": 2,
+    "minimum_samples_per_run": 1500,
+    "practical_effect_pct": 5.0,
+    "primary_metric": "battery_capacity_slope_mw",
+    "protocol_id": "AUREON-BLE-BATTERY-RCT-V1",
+    "require_blinded_analysis": true,
+    "require_cpu_telemetry": true,
+    "require_randomization": true,
+    "require_remaining_mwh": true,
+    "require_sham": true,
+    "sample_interval_s": 1.0,
+    "segment_duration_s": 1800.0,
+    "target_payload_label_hz": 12.669206131911677,
+    "warmup_s": 300.0,
+    "washout_s": 300.0
+  },
+  "randomization": {
+    "schedule": [
+      {
+        "arm": "baseline",
+        "block_index": 1,
+        "block_randomization_id": "f8f1ac10a9598aeb",
+        "sequence_position": 1
+      },
+      {
+        "arm": "sham",
+        "block_index": 1,
+        "block_randomization_id": "f8f1ac10a9598aeb",
+        "sequence_position": 2
+      },
+      {
+        "arm": "ble_active",
+        "block_index": 1,
+        "block_randomization_id": "f8f1ac10a9598aeb",
+        "sequence_position": 3
+      },
+      {
+        "arm": "sham",
+        "block_index": 2,
+        "block_randomization_id": "bbeb9ed48725eb18",
+        "sequence_position": 1
+      },
+      {
+        "arm": "ble_active",
+        "block_index": 2,
+        "block_randomization_id": "bbeb9ed48725eb18",
+        "sequence_position": 2
+      },
+      {
+        "arm": "baseline",
+        "block_index": 2,
+        "block_randomization_id": "bbeb9ed48725eb18",
+        "sequence_position": 3
+      },
+      {
+        "arm": "sham",
+        "block_index": 3,
+        "block_randomization_id": "9af2ad70bb6458b9",
+        "sequence_position": 1
+      },
+      {
+        "arm": "baseline",
+        "block_index": 3,
+        "block_randomization_id": "9af2ad70bb6458b9",
+        "sequence_position": 2
+      },
+      {
+        "arm": "ble_active",
+        "block_index": 3,
+        "block_randomization_id": "9af2ad70bb6458b9",
+        "sequence_position": 3
+      },
+      {
+        "arm": "baseline",
+        "block_index": 4,
+        "block_randomization_id": "675d4194111a8251",
+        "sequence_position": 1
+      },
+      {
+        "arm": "sham",
+        "block_index": 4,
+        "block_randomization_id": "675d4194111a8251",
+        "sequence_position": 2
+      },
+      {
+        "arm": "ble_active",
+        "block_index": 4,
+        "block_randomization_id": "675d4194111a8251",
+        "sequence_position": 3
+      },
+      {
+        "arm": "sham",
+        "block_index": 5,
+        "block_randomization_id": "0c40b6ac054520e3",
+        "sequence_position": 1
+      },
+      {
+        "arm": "baseline",
+        "block_index": 5,
+        "block_randomization_id": "0c40b6ac054520e3",
+        "sequence_position": 2
+      },
+      {
+        "arm": "ble_active",
+        "block_index": 5,
+        "block_randomization_id": "0c40b6ac054520e3",
+        "sequence_position": 3
+      },
+      {
+        "arm": "baseline",
+        "block_index": 6,
+        "block_randomization_id": "bf85140a56444760",
+        "sequence_position": 1
+      },
+      {
+        "arm": "ble_active",
+        "block_index": 6,
+        "block_randomization_id": "bf85140a56444760",
+        "sequence_position": 2
+      },
+      {
+        "arm": "sham",
+        "block_index": 6,
+        "block_randomization_id": "bf85140a56444760",
+        "sequence_position": 3
+      },
+      {
+        "arm": "sham",
+        "block_index": 7,
+        "block_randomization_id": "eac8a534f02896fe",
+        "sequence_position": 1
+      },
+      {
+        "arm": "baseline",
+        "block_index": 7,
+        "block_randomization_id": "eac8a534f02896fe",
+        "sequence_position": 2
+      },
+      {
+        "arm": "ble_active",
+        "block_index": 7,
+        "block_randomization_id": "eac8a534f02896fe",
+        "sequence_position": 3
+      },
+      {
+        "arm": "sham",
+        "block_index": 8,
+        "block_randomization_id": "3d5b59909cf0e4dc",
+        "sequence_position": 1
+      },
+      {
+        "arm": "baseline",
+        "block_index": 8,
+        "block_randomization_id": "3d5b59909cf0e4dc",
+        "sequence_position": 2
+      },
+      {
+        "arm": "ble_active",
+        "block_index": 8,
+        "block_randomization_id": "3d5b59909cf0e4dc",
+        "sequence_position": 3
+      },
+      {
+        "arm": "sham",
+        "block_index": 9,
+        "block_randomization_id": "403fd65030eda2f3",
+        "sequence_position": 1
+      },
+      {
+        "arm": "baseline",
+        "block_index": 9,
+        "block_randomization_id": "403fd65030eda2f3",
+        "sequence_position": 2
+      },
+      {
+        "arm": "ble_active",
+        "block_index": 9,
+        "block_randomization_id": "403fd65030eda2f3",
+        "sequence_position": 3
+      },
+      {
+        "arm": "ble_active",
+        "block_index": 10,
+        "block_randomization_id": "011149f3c3db7531",
+        "sequence_position": 1
+      },
+      {
+        "arm": "baseline",
+        "block_index": 10,
+        "block_randomization_id": "011149f3c3db7531",
+        "sequence_position": 2
+      },
+      {
+        "arm": "sham",
+        "block_index": 10,
+        "block_randomization_id": "011149f3c3db7531",
+        "sequence_position": 3
+      }
+    ],
+    "seed_sha256": "5a72f3d571b00fca3bdbad3003c07416f539c9d3c7a8934ea6bc251f75b20d97"
+  },
+  "schema_version": "aureon-bluetooth-battery-experiment-v1"
+}

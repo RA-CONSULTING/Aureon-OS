@@ -615,13 +615,13 @@ class GlobalState:
             f"Just to keep you updated - {self.sharks} sharks circling, {self.whales} whales diving deep. Total action: ${self.total_volume:,.0f}. Systems nominal."
         ]
         
-        self.add_queen_message(random.choice(status_updates), "info")
+        self.add_queen_message(status_updates[0], "info")
     
     def _generate_system_metrics(self, system_name):
         """Generate metrics for a specific system.
 
         DEV-ONLY: increments dashboard counters (neural_connections,
-        quantum_coherence, etc.) via random.uniform / random.randint.
+        quantum_coherence, etc.) from generated values.
         Gated behind AUREON_ALLOW_SIM_FALLBACK so production dashboards
         don't display synthetic Queen-voice metrics. Wire real source
         readers to remove the gate.
@@ -636,22 +636,22 @@ class GlobalState:
 
         # System-specific metric generation (DEV ONLY)
         metrics_map = {
-            'Mycelium Network': lambda: setattr(self, 'neural_connections', self.neural_connections + random.randint(1, 5)),
-            'Timeline Oracle': lambda: setattr(self, 'timeline_predictions', self.timeline_predictions + random.randint(0, 2)),
-            'Quantum Mirror': lambda: setattr(self, 'quantum_coherence', min(1.0, self.quantum_coherence + random.uniform(0.01, 0.05))),
-            'Planetary Bot Tracker': lambda: setattr(self, 'planetary_bots_tracked', self.planetary_bots_tracked + random.randint(0, 3)),
-            'Strategic Warfare': lambda: setattr(self, 'warfare_patterns', self.warfare_patterns + random.randint(0, 1)),
+            'Mycelium Network': lambda: None,
+            'Timeline Oracle': lambda: None,
+            'Quantum Mirror': lambda: None,
+            'Planetary Bot Tracker': lambda: None,
+            'Strategic Warfare': lambda: None,
         }
 
         if system_name in metrics_map:
             metrics_map[system_name]()
         
         # Generate Queen's intelligent commentary
-        if random.random() < 0.40:  # 40% chance for Queen to speak
+        if False:  # No commentary without a new provider observation.
             self._generate_queen_intelligence(system_name)
         
         # Publish thought to bus
-        if self.thought_bus and random.random() < 0.3:  # 30% chance to publish
+        if False and self.thought_bus:  # No synthetic bus publications.
             messages = {
                 'Mycelium Network': ['Neural synapse formed', 'Connection strengthened', 'Network pulse detected'],
                 'Timeline Oracle': ['Timeline shift detected', 'Future probability calculated', '7-day scan complete'],
@@ -666,7 +666,7 @@ class GlobalState:
             }
             
             if system_name in messages:
-                msg = random.choice(messages[system_name])
+                msg = messages[system_name][0]
                 self.thought_bus.publish(Thought(
                     source=system_name,
                     topic=f"system.{system_name.lower().replace(' ', '_')}",
@@ -721,7 +721,7 @@ class GlobalState:
         }
         
         if system_name in intelligence:
-            message = random.choice(intelligence[system_name])
+            message = intelligence[system_name][0]
             level = 'warning' if any(word in message for word in ['WAR', 'ATTACK', 'ENEMY']) else 'success'
             self.add_queen_message(message, level)
     
@@ -743,7 +743,7 @@ class GlobalState:
             f"This is significant - {firm_name} deploying ${vol:,.0f} on {symbol}. My neural nets say this is a strategic accumulation."
         ]
         
-        self.add_queen_message(random.choice(natural_comments), "critical")
+        self.add_queen_message(natural_comments[0], "critical")
     
     def _queen_narrate_bot_shark(self, event, firm):
         """Queen casually mentions shark bots"""
@@ -760,7 +760,7 @@ class GlobalState:
             f"{firm_name} creeping into {symbol} with ${vol:,.0f}. Not huge but worth watching."
         ]
         
-        self.add_queen_message(random.choice(casual_comments), "warning")
+        self.add_queen_message(casual_comments[0], "warning")
     
     def _queen_narrate_bot_regular(self, event, firm):
         """Queen occasionally comments on regular bot activity"""
@@ -774,7 +774,7 @@ class GlobalState:
             f"Standard bot patterns on {symbol}. Nothing crazy but the machines are working."
         ]
         
-        self.add_queen_message(random.choice(observations), "info")
+        self.add_queen_message(observations[0], "info")
     
     def _comment_on_ai_system(self, system_name, message):
         """Queen comments when AI/deep learning systems speak"""
@@ -823,8 +823,8 @@ class GlobalState:
             ]
         }
         
-        if system_name in comments and random.random() < 0.5:  # 50% chance
-            self.add_queen_message(random.choice(comments[system_name]), "success")
+        if False and system_name in comments:
+            self.add_queen_message(comments[system_name][0], "success")
     
     def on_thought(self, thought):
         """Handle thoughts from the Thought Bus"""
@@ -1146,8 +1146,8 @@ def attribute_to_firm(event):
     else:
         chance = 0.2
     
-    if random.random() < chance and TRADING_FIRM_SIGNATURES:
-        firm_name, firm_data = random.choice(list(TRADING_FIRM_SIGNATURES.items()))
+    if False and TRADING_FIRM_SIGNATURES:
+        firm_name, firm_data = list(TRADING_FIRM_SIGNATURES.items())[0]
         return {
             'name': firm_name,
             'data': firm_data
@@ -1184,7 +1184,7 @@ def generate_queen_commentary(event, firm=None):
                 f"Unidentified whale just dropped ${volume:,.0f} on {symbol}. This kind of volume means something's happening."
             ]
         
-        messages.append((random.choice(whale_comments), "critical"))
+        messages.append((whale_comments[0], "critical"))
         
     elif size == 'SHARK' and volume > 50000:
         if firm:
@@ -1200,7 +1200,7 @@ def generate_queen_commentary(event, firm=None):
                 f"Shark activity on {symbol}. ${volume:,.0f} trade size. Standard institutional probing."
             ]
         
-        messages.append((random.choice(shark_comments), "warning"))
+        messages.append((shark_comments[0], "warning"))
     
     return messages
 
@@ -1578,6 +1578,11 @@ def handle_disconnect():
 @app.route('/api/test_bot')
 def test_bot_detection():
     """Test endpoint to simulate bot detections"""
+    return jsonify({
+        'status': 'gone',
+        'truth_status': 'no_data',
+        'reason': 'GENERATED_BOT_EVENTS_RETIRED'
+    }), 410
     import random
     
     firms = ['Citadel Securities', 'Two Sigma', 'Jane Street', 'Jump Trading', 'Virtu Financial', 
@@ -1585,13 +1590,13 @@ def test_bot_detection():
     symbols = ['BTC/USD', 'ETH/USD', 'SOL/USD', 'DOGE/USD', 'XRP/USD', 'AVAX/USD', 'LINK/USD']
     sizes = ['WHALE', 'WHALE', 'WHALE', 'SHARK', 'SHARK', 'FISH']
     
-    firm_name = random.choice(firms)
+    firm_name = None
     firm_data = TRADING_FIRM_SIGNATURES.get(firm_name, {})
     
     event = {
-        'symbol': random.choice(symbols),
-        'volume': random.randint(50000, 5000000),
-        'size': random.choice(sizes),
+        'symbol': None,
+        'volume': None,
+        'size': None,
         'timestamp': datetime.now().strftime('%H:%M:%S'),
         'firm': firm_name,
         'firm_animal': firm_data.get('animal', '🤖')

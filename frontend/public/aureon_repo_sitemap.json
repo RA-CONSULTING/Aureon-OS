@@ -45,7 +45,7 @@
   ],
   "zones": [
     {"id": "front_door", "label": "Front door and diligence", "paths": ["README.md", "docs/INDEX.md", "docs/investor/", "docs/archive/"]},
-    {"id": "operator_runtime", "label": "Operator runtime", "paths": ["AUREON_PRODUCTION_LIVE.cmd", "AUREON_DATA_OCEAN.cmd", "aureon/", "scripts/", "cli/"]},
+    {"id": "operator_runtime", "label": "Operator runtime", "paths": ["scripts/launchers/AUREON_PRODUCTION_LIVE.cmd", "scripts/launchers/AUREON_DATA_OCEAN.cmd", "aureon/", "scripts/", "cli/"]},
     {"id": "product_surfaces", "label": "Product surfaces", "paths": ["frontend/", "public/", "flameborn/", "api/", "server/", "functions/", "netlify/", "supabase/"]},
     {"id": "evidence_research", "label": "Evidence and research", "paths": ["data/", "docs/research/", "VERIFICATION AND VALIDATION/", "imports/", "archive/"]},
     {"id": "operations_packaging", "label": "Operations and packaging", "paths": ["Kings_Accounting_Suite/", "deploy/", "production/", "packaging/", "tests/", ".github/", "templates/"]}

@@ -120,13 +120,14 @@ def test_autonomous_jobs_status_endpoint_returns_current_payload(monkeypatch):
 def test_coding_prompt_wakes_autonomous_self_run_loop(monkeypatch):
     monkeypatch.setattr(MindThoughtActionHub, "_init_systems", lambda self: None)
 
-    import aureon.autonomous.aureon_coding_organism_bridge as coding_bridge
     import aureon.autonomous.aureon_autonomous_job_executor as job_executor
+    import aureon.autonomous.aureon_coding_organism_bridge as coding_bridge
 
+    bridge_calls = []
     monkeypatch.setattr(
         coding_bridge,
         "submit_coding_prompt",
-        lambda prompt, **kwargs: {
+        lambda prompt, **kwargs: bridge_calls.append((prompt, kwargs)) or {
             "ok": True,
             "status": "coding_organism_ready",
             "summary": {},
@@ -177,6 +178,7 @@ def test_coding_prompt_wakes_autonomous_self_run_loop(monkeypatch):
     assert payload["summary"]["autonomous_self_run_prompt_wake"] == "self_run_autonomous_safe"
     assert payload["work_journal"]["stages"][-1]["step"] == "Autonomous self-run prompt wake"
     assert payload["work_journal"]["stages"][-2]["step"] == "Durable autonomous job executor"
+    assert bridge_calls[0][1]["require_internal_workforce"] is True
 
 
 def test_flight_test_defers_reboot_outside_downtime_with_open_positions(monkeypatch):

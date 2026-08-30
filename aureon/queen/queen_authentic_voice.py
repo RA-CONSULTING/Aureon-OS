@@ -17,7 +17,7 @@ This is the Queen speaking her ACTUAL mind, not pre-written responses.
 from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
 import sys
 import os
-if sys.platform == 'win32':
+if sys.platform == 'win32' and sys.stdout.isatty() and sys.stderr.isatty():
     os.environ['PYTHONIOENCODING'] = 'utf-8'
     try:
         import io
@@ -222,10 +222,13 @@ class QueenAuthenticVoice:
         logger.info("🎤 Queen Authentic Voice starting... (REAL thoughts → REAL speech)")
         
         if self.bus:
-            self.bus.emit(Thought(
+            # ThoughtBus has publish(), not emit(); Thought carries topic/payload —
+            # the old emit(Thought(type=, data=)) raised on both counts, so this
+            # announcement had never actually reached the bus.
+            self.bus.publish(Thought(
                 source="QueenAuthenticVoice",
-                type="voice_started",
-                data={"filter": {
+                topic="queen.voice.started",
+                payload={"filter": {
                     "min_intensity": self.speech_filter.min_intensity,
                     "min_interval": self.speech_filter.min_interval,
                     "types": [t.value for t in self.speech_filter.vocalize_types]
@@ -342,10 +345,10 @@ class QueenAuthenticVoice:
             
             # Emit to thought bus
             if self.bus:
-                self.bus.emit(Thought(
+                self.bus.publish(Thought(
                     source="QueenAuthenticVoice",
-                    type="thought_vocalized",
-                    data={
+                    topic="queen.voice.vocalized",
+                    payload={
                         "thought_type": thought.get('type'),
                         "intensity": thought.get('intensity'),
                         "priority": priority.value,

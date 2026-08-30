@@ -25,8 +25,10 @@ Pure stdlib: urllib + json. No aiohttp, no requests. No API keys.
 
 from __future__ import annotations
 
+import datetime as _dt
 import json
 import logging
+import math
 import os
 import socket
 import threading
@@ -89,12 +91,38 @@ class WorldDataItem:
     title: str
     text: str
     url: str = ""
-    timestamp: float = field(default_factory=time.time)
+    source_timestamp: Optional[float] = None
+    received_at: float = field(default_factory=time.time)
+    source_id: str = ""
+    receipt_id: str = ""
+    truth_status: str = "real_observed"
+    generated_values: bool = False
+    action_enabled: bool = False
+    accounting_enabled: bool = False
+    learning_enabled: bool = False
     raw: Dict[str, Any] = field(default_factory=dict)
     category: str = "knowledge"   # for the interpreter
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
+
+
+MAX_SOURCE_AGE_S = 300.0
+
+
+def _finite_timestamp(value: Any) -> Optional[float]:
+    """Return a finite provider timestamp without substituting local time."""
+    try:
+        if isinstance(value, str):
+            parsed = _dt.datetime.fromisoformat(value.replace("Z", "+00:00"))
+            if parsed.tzinfo is None:
+                return None
+            stamp = parsed.timestamp()
+        else:
+            stamp = float(value)
+    except (TypeError, ValueError, OverflowError):
+        return None
+    return stamp if math.isfinite(stamp) and stamp > 0 else None
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -369,10 +397,25 @@ class WorldDataIngester:
             return None
         try:
             market = data.get("market_data", {})
-            price = market.get("current_price", {}).get("usd", 0)
-            change_24h = market.get("price_change_percentage_24h", 0)
-            mcap = market.get("market_cap", {}).get("usd", 0)
-            vol = market.get("total_volume", {}).get("usd", 0)
+            values = {
+                "price": market.get("current_price", {}).get("usd"),
+                "change_24h": market.get("price_change_percentage_24h"),
+                "mcap": market.get("market_cap", {}).get("usd"),
+                "volume": market.get("total_volume", {}).get("usd"),
+            }
+            numeric = {key: float(value) for key, value in values.items()}
+            if not all(math.isfinite(value) for value in numeric.values()):
+                return None
+            if any(numeric[key] < 0 for key in ("price", "mcap", "volume")):
+                return None
+            source_timestamp = _finite_timestamp(data.get("last_updated"))
+            provider_id = str(data.get("id") or "").strip()
+            if source_timestamp is None or not provider_id:
+                return None
+            price = numeric["price"]
+            change_24h = numeric["change_24h"]
+            mcap = numeric["mcap"]
+            vol = numeric["volume"]
             text = (
                 f"{coin_id} ${price:,.2f} "
                 f"({'+' if change_24h >= 0 else ''}{change_24h:.2f}% 24h) "
@@ -384,6 +427,10 @@ class WorldDataIngester:
                 title=data.get("name", coin_id),
                 text=text,
                 url=f"https://www.coingecko.com/en/coins/{coin_id}",
+                source_timestamp=source_timestamp,
+                received_at=time.time(),
+                source_id="coingecko",
+                receipt_id=f"{provider_id}:{source_timestamp:.6f}",
                 raw={"price": price, "change_24h": change_24h, "mcap": mcap, "volume": vol},
                 category="market",
             )
@@ -1004,12 +1051,40 @@ class WorldDataIngester:
     # Vault ingestion + ThoughtBus publishing
     # ─────────────────────────────────────────────────────────────────────
     def ingest_to_vault(self, items: List[WorldDataItem]) -> int:
-        """Write items as cards into the vault and publish to ThoughtBus."""
+        """Publish only fresh, complete real-provider observations."""
         if not items:
             return 0
         ingested = 0
         for item in items:
             try:
+                source_timestamp = _finite_timestamp(item.source_timestamp)
+                received_at = _finite_timestamp(item.received_at)
+                if (
+                    not item.source
+                    or not item.source_id
+                    or not item.receipt_id
+                    or source_timestamp is None
+                    or received_at is None
+                    or source_timestamp > received_at
+                    or received_at - source_timestamp > MAX_SOURCE_AGE_S
+                    or item.truth_status != "real_observed"
+                    or item.generated_values
+                    or item.action_enabled
+                    or item.accounting_enabled
+                    or item.learning_enabled
+                ):
+                    continue
+                provenance = {
+                    "source_id": item.source_id,
+                    "source_timestamp": source_timestamp,
+                    "received_at": received_at,
+                    "receipt_id": item.receipt_id,
+                    "truth_status": "real_observed",
+                    "generated_values": False,
+                    "action_enabled": False,
+                    "accounting_enabled": False,
+                    "learning_enabled": False,
+                }
                 if self.vault is not None:
                     self.vault.ingest(
                         topic=f"world_data.{item.source}",
@@ -1020,6 +1095,7 @@ class WorldDataIngester:
                             "topic": item.topic,
                             "category": item.category,
                             "raw": item.raw,
+                            **provenance,
                         },
                         category=item.category,
                     )
@@ -1032,6 +1108,7 @@ class WorldDataIngester:
                                 "text": item.text[:200],
                                 "url": item.url,
                                 "topic": item.topic,
+                                **provenance,
                             },
                             source="world_data_ingester",
                         )

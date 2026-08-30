@@ -16,9 +16,14 @@ const corsHeaders = {
 
 interface TerminalState {
   user_id: string;
+  truth_status: 'live' | 'real_derived';
+  source_id: string;
+  source_timestamp: string;
+  generated_values: false;
   
   // Portfolio
   portfolio_value: number;
+  portfolio_currency: 'USD';
   peak_equity: number;
   current_drawdown: number;
   max_drawdown: number;
@@ -29,13 +34,13 @@ interface TerminalState {
     side: string;
     price: number;
     quantity: number;
-    fee?: number;
-    fee_asset?: string;
+    fee: number;
+    fee_asset: string;
     timestamp: string;
-    transaction_id?: string;
+    transaction_id: string;
     pnl?: number;
     is_win?: boolean;
-    exchange?: string;
+    exchange: string;
   }>;
   recent_trades?: Array<{
     time: string;
@@ -50,7 +55,7 @@ interface TerminalState {
   total_trades: number;
   wins: number;
   win_rate: number;
-  avg_hold_time?: number;
+  avg_hold_time: number;
   
   // Positions
   positions?: Array<{
@@ -58,53 +63,54 @@ interface TerminalState {
     side: string;
     entry_price: number;
     quantity: number;
-    current_price?: number;
-    unrealized_pnl?: number;
-    exchange?: string;
+    current_price: number;
+    unrealized_pnl: number;
+    exchange: string;
   }>;
   
   // Coherence/HNC/Gaia
   coherence: number;
-  lambda?: number;
+  lambda: number;
   gaia_state: string;
   gaia_frequency: number;
-  gaia_purity?: number;
-  gaia_carrier_phi?: number;
-  gaia_432_lock?: number;
+  gaia_purity: number;
+  gaia_carrier_phi: number;
+  gaia_432_lock: number;
   hnc_frequency: number;
   hnc_market_state: string;
-  hnc_coherence_percent?: number;
-  hnc_modifier?: number;
+  hnc_coherence_percent: number;
+  hnc_modifier: number;
   
   // Mycelium
   mycelium_hives: number;
   mycelium_agents: number;
   mycelium_generation: number;
-  max_generation?: number;
+  max_generation: number;
   queen_state: string;
-  queen_pnl?: number;
+  queen_pnl: number;
   
   // Capital
   compounded: number;
   harvested: number;
   pool_total?: number;
   pool_available: number;
-  scout_count?: number;
-  split_count?: number;
+  scout_count: number;
+  split_count: number;
   
   // Trading Mode
   trading_mode: string;
-  entry_threshold?: number;
-  exit_threshold?: number;
-  risk_multiplier?: number;
-  tp_multiplier?: number;
+  is_trading_active: boolean;
+  entry_threshold: number;
+  exit_threshold: number;
+  risk_multiplier: number;
+  tp_multiplier: number;
   
   // Meta
   runtime_minutes: number;
-  ws_connected?: boolean;
-  ws_message_count?: number;
-  latest_monitor_line?: string;
-  status_lines?: string[];
+  ws_connected: boolean;
+  ws_message_count: number;
+  latest_monitor_line: string;
+  status_lines: string[];
 }
 
 serve(async (req) => {
@@ -118,11 +124,68 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const state: TerminalState = await req.json();
+
+    const configuredIngestToken = Deno.env.get('AUREON_INGEST_TOKEN')?.trim();
+    const suppliedIngestToken = req.headers.get('x-aureon-ingest-token')?.trim();
+    if (!configuredIngestToken) throw new Error('AUREON_INGEST_TOKEN_NOT_CONFIGURED');
+    if (!suppliedIngestToken || suppliedIngestToken !== configuredIngestToken) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
     
     if (!state.user_id) {
       return new Response(JSON.stringify({ error: 'user_id required' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+    const sourceAgeMs = Date.now() - Date.parse(state.source_timestamp);
+    const requiredNumbers = [
+      state.portfolio_value,
+      state.peak_equity,
+      state.current_drawdown,
+      state.max_drawdown,
+      state.total_trades,
+      state.wins,
+      state.win_rate,
+      state.avg_hold_time,
+      state.coherence,
+      state.lambda,
+      state.gaia_frequency,
+      state.gaia_432_lock,
+      state.hnc_frequency,
+      state.hnc_coherence_percent,
+      state.hnc_modifier,
+      state.mycelium_hives,
+      state.mycelium_agents,
+      state.mycelium_generation,
+      state.max_generation,
+      state.queen_pnl,
+      state.compounded,
+      state.harvested,
+      state.pool_available,
+      state.scout_count,
+      state.split_count,
+      state.entry_threshold,
+      state.exit_threshold,
+      state.risk_multiplier,
+      state.tp_multiplier,
+      state.runtime_minutes,
+      state.ws_message_count,
+      state.gaia_purity,
+      state.gaia_carrier_phi,
+    ];
+    if (!['live', 'real_derived'].includes(state.truth_status) || state.generated_values !== false ||
+        !state.source_id || !Number.isFinite(sourceAgeMs) || sourceAgeMs < -300000 || sourceAgeMs > 300000 ||
+        state.portfolio_currency !== 'USD' || state.trading_mode !== 'live' ||
+        typeof state.is_trading_active !== 'boolean' || typeof state.ws_connected !== 'boolean' ||
+        typeof state.latest_monitor_line !== 'string' || !Array.isArray(state.status_lines) ||
+        requiredNumbers.some((value) => !Number.isFinite(Number(value)))) {
+      return new Response(JSON.stringify({ error: 'REAL_FRESH_TERMINAL_STATE_REQUIRED' }), {
+        status: 409,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
@@ -139,27 +202,31 @@ serve(async (req) => {
     const results: Record<string, any> = {};
 
     // 1. Update aureon_user_sessions with all metrics
+    const sessionPayload: Record<string, unknown> = {
+      user_id: state.user_id,
+      total_equity_usd: state.portfolio_value,
+      current_coherence: state.coherence,
+      current_lighthouse_signal: state.hnc_frequency,
+      prism_state: state.gaia_state,
+      prism_level: state.gaia_frequency,
+      dominant_node: state.queen_state,
+      total_trades: state.total_trades,
+      winning_trades: state.wins,
+      trading_mode: state.trading_mode,
+      is_trading_active: state.is_trading_active,
+      measurement_truth_status: state.truth_status,
+      measurement_source_id: state.source_id,
+      measurement_source_timestamp: state.source_timestamp,
+      measurement_collected_at: now,
+      measurement_generated_values: false,
+      updated_at: now,
+    };
+    if (Number.isFinite(Number(state.lambda))) sessionPayload.current_lambda = state.lambda;
+    if (Array.isArray(state.recent_trades)) sessionPayload.recent_trades = state.recent_trades;
+
     const { error: sessionError } = await supabase
       .from('aureon_user_sessions')
-      .upsert({
-        user_id: state.user_id,
-        total_equity_usdt: state.portfolio_value,
-        available_balance_usdt: state.pool_available,
-        total_pnl_usdt: state.compounded,
-        gas_tank_balance: state.harvested,
-        current_coherence: state.coherence,
-        current_lambda: state.lambda || 0,
-        current_lighthouse_signal: state.hnc_frequency,
-        prism_state: state.gaia_state,
-        prism_level: state.gaia_frequency,
-        dominant_node: state.queen_state,
-        total_trades: state.total_trades,
-        winning_trades: state.wins,
-        recent_trades: state.recent_trades || [],
-        trading_mode: state.trading_mode,
-        is_trading_active: true,
-        updated_at: now,
-      }, { onConflict: 'user_id' });
+      .upsert(sessionPayload, { onConflict: 'user_id' });
 
     if (sessionError) {
       console.error('[IngestTerminalState] Session update error:', sessionError);
@@ -170,6 +237,14 @@ serve(async (req) => {
 
     // 2. Upsert trades if provided
     if (state.trades && state.trades.length > 0) {
+      const invalidTrade = state.trades.find((trade) =>
+        !trade.transaction_id || !trade.exchange || !trade.symbol || !trade.timestamp ||
+        !['BUY', 'SELL'].includes(trade.side.toUpperCase()) ||
+        !Number.isFinite(Number(trade.price)) || Number(trade.price) <= 0 ||
+        !Number.isFinite(Number(trade.quantity)) || Number(trade.quantity) <= 0 ||
+        !Number.isFinite(Number(trade.fee)) || !trade.fee_asset
+      );
+      if (invalidTrade) throw new Error('INCOMPLETE_PROVIDER_TRADE_RECEIPT');
       const tradeRecords = state.trades.map(t => ({
         user_id: state.user_id,
         symbol: t.symbol,
@@ -177,13 +252,17 @@ serve(async (req) => {
         price: t.price,
         quantity: t.quantity,
         quote_qty: t.price * t.quantity,
-        fee: t.fee || 0,
-        fee_asset: t.fee_asset || 'USDT',
-        exchange: t.exchange || 'binance',
+        fee: t.fee,
+        fee_asset: t.fee_asset,
+        exchange: t.exchange,
         timestamp: t.timestamp,
-        transaction_id: t.transaction_id || `py_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        pnl: t.pnl || null,
-        is_win: t.is_win || null,
+        transaction_id: t.transaction_id,
+        pnl: t.pnl ?? null,
+        is_win: t.is_win ?? null,
+        truth_status: state.truth_status,
+        source_id: state.source_id,
+        source_timestamp: state.source_timestamp,
+        generated_values: false,
       }));
 
       const { error: tradesError, count } = await supabase
@@ -202,16 +281,26 @@ serve(async (req) => {
     }
 
     // 3. Upsert positions if provided
-    if (state.positions && state.positions.length > 0) {
-      // First, close any positions not in the current list
+    if (Array.isArray(state.positions)) {
+      const invalidPosition = state.positions.find((position) =>
+        !position.exchange || !position.symbol || !['LONG', 'SHORT', 'BUY', 'SELL'].includes(position.side.toUpperCase()) ||
+        !Number.isFinite(Number(position.entry_price)) || Number(position.entry_price) <= 0 ||
+        !Number.isFinite(Number(position.current_price)) || Number(position.current_price) <= 0 ||
+        !Number.isFinite(Number(position.quantity)) || Number(position.quantity) <= 0 ||
+        !Number.isFinite(Number(position.unrealized_pnl))
+      );
+      if (invalidPosition) throw new Error('INCOMPLETE_PROVIDER_POSITION_SNAPSHOT');
+
       const currentSymbols = state.positions.map(p => p.symbol);
-      
-      await supabase
+      let closeQuery = supabase
         .from('trading_positions')
         .update({ status: 'closed', updated_at: now })
         .eq('user_id', state.user_id)
-        .eq('status', 'open')
-        .not('symbol', 'in', `(${currentSymbols.join(',')})`);
+        .eq('status', 'open');
+      if (currentSymbols.length > 0) {
+        closeQuery = closeQuery.not('symbol', 'in', `(${currentSymbols.join(',')})`);
+      }
+      await closeQuery;
 
       // Upsert current positions
       for (const pos of state.positions) {
@@ -223,10 +312,15 @@ serve(async (req) => {
             side: pos.side.toUpperCase(),
             entry_price: pos.entry_price,
             quantity: pos.quantity,
-            current_price: pos.current_price || pos.entry_price,
-            unrealized_pnl: pos.unrealized_pnl || 0,
+            position_value_usdt: Number(pos.current_price) * Number(pos.quantity),
+            current_price: pos.current_price,
+            unrealized_pnl: pos.unrealized_pnl,
             status: 'open',
-            exchange: pos.exchange || 'binance',
+            exchange: pos.exchange,
+            truth_status: state.truth_status,
+            source_id: state.source_id,
+            source_timestamp: state.source_timestamp,
+            generated_values: false,
             updated_at: now,
           }, { 
             onConflict: 'user_id,symbol',
@@ -243,17 +337,22 @@ serve(async (req) => {
     const { error: hncError } = await supabase
       .from('hnc_detection_states')
       .insert({
-        temporal_id: `python_${state.user_id}_${Date.now()}`,
-        harmonic_fidelity: state.hnc_coherence_percent || state.coherence * 100,
-        imperial_yield: state.hnc_modifier || 1.0,
+        user_id: state.user_id,
+        temporal_id: `terminal_${state.user_id}_${Date.parse(state.source_timestamp)}`,
+        harmonic_fidelity: state.hnc_coherence_percent,
+        imperial_yield: state.hnc_modifier,
         bridge_status: state.hnc_market_state,
         schumann_power: state.gaia_frequency,
-        love_power: state.gaia_432_lock || 0,
+        love_power: state.gaia_432_lock,
         anchor_power: state.coherence,
-        unity_power: state.lambda || 0,
+        unity_power: state.lambda,
         distortion_power: state.gaia_state === 'DISTORTION' ? 1 : 0,
         is_lighthouse_detected: state.coherence > 0.45,
-        timestamp: now,
+        timestamp: state.source_timestamp,
+        truth_status: state.truth_status,
+        source_id: state.source_id,
+        source_timestamp: state.source_timestamp,
+        generated_values: false,
       });
 
     if (hncError) {
@@ -270,38 +369,41 @@ serve(async (req) => {
       peak_equity: state.peak_equity,
       current_drawdown: state.current_drawdown,
       max_drawdown: state.max_drawdown,
-      avg_hold_time_minutes: state.avg_hold_time || 0,
+      avg_hold_time_minutes: state.avg_hold_time,
       mycelium_hives: state.mycelium_hives,
       mycelium_agents: state.mycelium_agents,
       mycelium_generation: state.mycelium_generation,
-      max_generation: state.max_generation || 0,
+      max_generation: state.max_generation,
       queen_state: state.queen_state,
-      queen_pnl: state.queen_pnl || 0,
-      scout_count: state.scout_count || 0,
-      split_count: state.split_count || 0,
-      entry_threshold: state.entry_threshold || 0.2,
-      exit_threshold: state.exit_threshold || 0.15,
-      risk_multiplier: state.risk_multiplier || 0.5,
-      tp_multiplier: state.tp_multiplier || 0.8,
-      ws_connected: state.ws_connected || false,
-      ws_message_count: state.ws_message_count || 0,
-      gaia_purity: state.gaia_purity || 0,
-      gaia_carrier_phi: state.gaia_carrier_phi || 0,
-      latest_monitor_line: state.latest_monitor_line || '',
-      status_lines: state.status_lines || [],
-      timestamp: now,
+      queen_pnl: state.queen_pnl,
+      scout_count: state.scout_count,
+      split_count: state.split_count,
+      entry_threshold: state.entry_threshold,
+      exit_threshold: state.exit_threshold,
+      risk_multiplier: state.risk_multiplier,
+      tp_multiplier: state.tp_multiplier,
+      ws_connected: state.ws_connected,
+      ws_message_count: state.ws_message_count,
+      gaia_purity: state.gaia_purity,
+      gaia_carrier_phi: state.gaia_carrier_phi,
+      latest_monitor_line: state.latest_monitor_line,
+      status_lines: state.status_lines,
+      source_timestamp: state.source_timestamp,
+      truth_status: state.truth_status,
+      generated_values: false,
     };
 
     // Store in local_system_logs as JSON for now (can create dedicated table later)
     const { error: statsError } = await supabase
-      .from('local_system_logs')
+      .from('aureon_runtime_observations')
       .insert({
-        module: 'terminal_state',
-        log_type: 'runtime_stats',
-        level: 'INFO',
-        message: JSON.stringify(runtimeStats),
-        parsed_data: runtimeStats,
-        timestamp: now,
+        user_id: state.user_id,
+        payload: runtimeStats,
+        truth_status: state.truth_status,
+        source_id: state.source_id,
+        source_timestamp: state.source_timestamp,
+        collected_at: now,
+        generated_values: false,
       });
 
     if (statsError) {
@@ -313,11 +415,21 @@ serve(async (req) => {
 
     console.log('[IngestTerminalState] Completed:', results);
 
+    const failedComponents = Object.entries(results)
+      .filter(([, value]) => Boolean((value as any)?.error))
+      .map(([name]) => name);
+
     return new Response(JSON.stringify({
-      success: true,
+      success: failedComponents.length === 0,
       timestamp: now,
       results,
+      failedComponents,
+      truthStatus: state.truth_status,
+      sourceId: state.source_id,
+      sourceTimestamp: state.source_timestamp,
+      generatedValues: false,
     }), {
+      status: failedComponents.length === 0 ? 200 : 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
 
@@ -325,7 +437,9 @@ serve(async (req) => {
     console.error('[IngestTerminalState] Error:', error);
     return new Response(JSON.stringify({
       success: false,
-      error: error instanceof Error ? error.message : String(error)
+      error: error instanceof Error ? error.message : String(error),
+      truthStatus: 'no_data',
+      generatedValues: false,
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }

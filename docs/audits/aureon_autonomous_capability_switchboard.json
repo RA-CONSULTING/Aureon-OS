@@ -22,20 +22,6 @@
       "severity": "medium"
     },
     {
-      "domain": "self_improvement",
-      "id": "capability.app_generation",
-      "next_action": "Keep generated code behind audit, benchmark, patch, retest, and explicit apply records.",
-      "reason": "App Generation And Local Tool Builder is blocked_missing_manifest.",
-      "severity": "medium"
-    },
-    {
-      "domain": "research",
-      "id": "capability.research_search_and_vault",
-      "next_action": "Keep research outputs source-linked and visible in the vault/research tab.",
-      "reason": "Research, Search, And Vault Memory is blocked_missing_manifest.",
-      "severity": "medium"
-    },
-    {
       "domain": "accounting",
       "id": "capability.accounting_document_brain",
       "next_action": "Refresh the accounting registry and show every missing evidence item before final-ready claims.",
@@ -215,7 +201,7 @@
         "Run compile/tests/build/lint.",
         "Queue restart/apply handoff when needed."
       ],
-      "status": "blocked_missing_manifest",
+      "status": "ready_for_validated_generation",
       "systems": [
         "AureonCapabilityGrowthLoop",
         "SelfEnhancementEngine",
@@ -333,7 +319,7 @@
         "Ingest source-linked summaries.",
         "Flag missing/uncertain evidence."
       ],
-      "status": "blocked_missing_manifest",
+      "status": "ready_with_attention",
       "systems": [
         "ObsidianBridge",
         "ResearchCorpusIndex",
@@ -610,8 +596,8 @@
       ]
     }
   ],
-  "generated_at": "2026-07-12T23:26:05.925278+00:00",
-  "goal": "repo-wide SaaS navigation and end-user integration readiness",
+  "generated_at": "2026-08-10T16:44:12.741159+00:00",
+  "goal": "Select the best Aureon capability, presentation surface, generated artifact, search/research route, or conversation turn while preventing hallucination and drift.",
   "hnc_control_contract": {
     "anti_hallucination_gates": [
       "source_evidence_required",
@@ -1462,7 +1448,7 @@
       "title": "Surface security blockers before interactive controls"
     }
   ],
-  "repo_root": "C:\\Users\\user\\aureon-trading-nav-contract-20260712",
+  "repo_root": "C:\\Users\\user\\Aureon-OS-github-latest-20260810_091213",
   "route_map": {
     "accounting_capabilities": {
       "artifact_count": 4,
@@ -1502,10 +1488,12 @@
     },
     "audit_mode": false,
     "capability_status_counts": {
-      "blocked_missing_manifest": 4,
+      "blocked_missing_manifest": 2,
       "blocked_security_review": 1,
       "ready": 1,
       "ready_for_prompt_contract": 1,
+      "ready_for_validated_generation": 1,
+      "ready_with_attention": 1,
       "ready_with_backlog": 1,
       "runtime_feed_offline": 1
     },
@@ -1520,7 +1508,7 @@
         "directive",
         "result"
       ],
-      "queue_count": 0,
+      "queue_count": 14,
       "topics": {
         "blocked": "organism.contract.blocked",
         "claimed": "organism.contract.work_order.claimed",
@@ -1532,16 +1520,14 @@
         "result": "organism.contract.result",
         "skill": "organism.contract.skill.registered",
         "status": "organism.contract.status",
+        "superseded": "organism.contract.work_order.superseded",
         "task": "organism.contract.task.created",
         "work_order": "organism.contract.work_order.queued"
       }
     },
     "directive": "For every goal, Aureon must consider and safely use all relevant available skills, tools, logic modules, code systems, memory, and ThoughtBus routes as one connected organism.",
     "directive_version": "goal-capability-v1",
-    "errors": [
-      "azyra operator tool snapshot failed: No module named 'aureon.integrations.azyra'",
-      "office logistics tool snapshot failed: No module named 'aureon.integrations.office'"
-    ],
+    "errors": [],
     "goal_loop": [
       "understand_goal",
       "recall_obsidian_memory",
@@ -1561,43 +1547,49 @@
       "domains": {
         "__init__": 1,
         "_path_setup": 1,
-        "accounting": 235,
+        "accounting": 250,
         "alignment": 3,
-        "analytics": 29,
+        "analytics": 33,
         "atn": 4,
-        "autonomous": 87,
-        "brain": 9,
+        "autonomous": 90,
+        "bio": 35,
+        "brain": 10,
         "bridges": 17,
         "code_architect": 9,
-        "cognition": 30,
+        "cognition": 38,
         "command_centers": 16,
-        "contract_stack": 9,
+        "contract_stack": 11,
         "conversion": 11,
-        "core": 49,
-        "counter_intel": 34,
+        "core": 59,
+        "counter_intel": 36,
         "decoders": 12,
         "exchanges": 25,
         "generated": 2,
-        "harmonic": 29,
+        "harmonic": 30,
         "inhouse_ai": 3,
-        "integrations": 11,
-        "intelligence": 24,
-        "market_data": 39,
+        "integrations": 20,
+        "intelligence": 25,
+        "market_data": 42,
         "miner": 2,
         "monitors": 20,
         "observer": 14,
+        "obsidian_paths": 1,
+        "ollama_config": 1,
+        "operator": 29,
         "portfolio": 25,
         "probability": 42,
-        "queen": 111,
-        "registry": 9,
+        "queen": 113,
+        "registry": 10,
         "s51": 6,
+        "saas": 13,
         "scanners": 18,
         "search": 4,
         "simulation": 25,
         "status": 1,
         "strategies": 18,
+        "swarm": 6,
         "swarm_motion": 4,
-        "thought_bus": 6,
+        "thought_bus": 8,
         "trading": 64,
         "trading_decision": 48,
         "utils": 25,
@@ -1605,7 +1597,7 @@
         "whale_tracking": 34,
         "wisdom": 30
       },
-      "node_count": 1209
+      "node_count": 1358
     },
     "presentation_intent_status_counts": {
       "blocked_security_review": 9,
@@ -1636,47 +1628,34 @@
         ]
       },
       {
-        "authorized_self_attack_required": true,
-        "public_unhackable_claim_allowed": false,
-        "reason": "SaaS security goals require an HNC-led blueprint, historical defensive tactic memory, authorized self-attacks, tenant isolation, identity and policy controls, LLM/tool governance, release-blocking tests, and auditable implementation work orders.",
-        "requires_validation": true,
-        "risk": "high",
-        "route": "hnc_saas_security_architect",
+        "reason": "Research goals should retrieve repo evidence, vault memory, and source-linked snippets before answering or writing new notes.",
+        "risk": "low",
+        "route": "safe_research_corpus",
         "systems": [
-          "HNCSaaSSecurityArchitect",
-          "HNCAuthorizedAttackLab",
-          "HNC system inventory",
-          "OrganismContractStack",
-          "AureonCapabilityGrowthLoop",
-          "AureonSystemReadinessAudit",
-          "OWASP ASVS",
-          "OWASP Top 10",
-          "NIST zero-trust model"
-        ],
-        "unhackable_internal_goal_active": true
-      },
-      {
-        "reason": "Frontend/SaaS product goals need every UI, API, dashboard, generated output, and safety boundary counted before the canonical observation shell is wired.",
-        "requires_validation": true,
-        "risk": "medium",
-        "route": "saas_product_inventory",
-        "systems": [
-          "AureonSaaSSystemInventory",
-          "AureonFrontendUnificationPlan",
-          "React/Vite unified observation shell",
-          "Supabase function inventory",
-          "legacy dashboard transition map",
-          "frontend public manifest mirror"
+          "ResearchCorpusIndex",
+          "Queen meaning resolver research context",
+          "docs/**/*.md corpus",
+          "docs/research index",
+          "ObsidianBridge",
+          "ThoughtBus research intents"
         ]
       },
       {
-        "reason": "Code goals should become auditable proposals, tests, and safe patches.",
+        "reason": "Capability-growth goals need the organism to audit, benchmark, score domains, detect gaps, author safe improvement skills, queue work, retest, and repeat.",
+        "requires_validation": true,
         "risk": "medium",
-        "route": "safe_code_repair",
+        "route": "capability_growth_loop",
         "systems": [
-          "repo task bridge",
-          "safe code control",
-          "cognitive authoring loop"
+          "AureonCapabilityGrowthLoop",
+          "AureonSystemReadinessAudit",
+          "AureonRepoSelfCatalog",
+          "MindWiringAudit",
+          "CodeArchitect",
+          "SkillLibrary",
+          "SkillValidator",
+          "OrganismContractStack",
+          "pytest/compileall safe checks",
+          "Obsidian capability growth memory"
         ]
       }
     ],
@@ -1853,6 +1832,17 @@
       "SaaS security goals must pursue unhackable as an internal benchmark loop through authorized self-attack, stress tests, repair, retest, and release gates."
     ],
     "tool_registry": {
+      "azyra_operator_tools": [
+        "azyra_operator_status",
+        "azyra_operator_capabilities",
+        "azyra_operator_diagnostics",
+        "azyra_operator_focus",
+        "azyra_operator_click",
+        "azyra_operator_type_text",
+        "azyra_operator_hotkey",
+        "azyra_operator_capture_screen",
+        "azyra_operator_run_workflow"
+      ],
       "builtin_tools": [
         "read_state",
         "read_positions",
@@ -1864,14 +1854,18 @@
         "repo_search",
         "skill_base_status"
       ],
-      "count": 42,
+      "count": 54,
       "external_skill_routes": [
         "news_search",
         "stock_price",
         "crypto_price",
         "paper_search"
       ],
-      "office_logistics_tools": [],
+      "office_logistics_tools": [
+        "logistics_admin_capability_matrix",
+        "logistics_office_solo_cycle",
+        "logistics_office_self_audit"
+      ],
       "vm_tools": [
         "vm_create_session",
         "vm_list_sessions",
@@ -1906,8 +1900,8 @@
   "summary": {
     "action_mode": "safe_observation",
     "autonomous_capability_count": 9,
-    "blocked_capability_count": 5,
-    "blocker_count": 8,
+    "blocked_capability_count": 3,
+    "blocker_count": 6,
     "canonical_screen_count": 7,
     "capability_count": 9,
     "frontend_work_order_count": 563,

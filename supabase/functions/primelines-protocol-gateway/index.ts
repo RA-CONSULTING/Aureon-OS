@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { fetchExternalLlm, parseExternalLlmJson } from "../_shared/external_llm_fallback.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -52,14 +53,10 @@ serve(async (req) => {
 
     // AI-powered protocol routing and validation
     let aiValidation = null;
-    if (lovableApiKey && requireValidation) {
-      const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${lovableApiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
+    if (requireValidation) {
+      const aiResponse = await fetchExternalLlm({
+        primaryApiKey: lovableApiKey,
+        primaryBody: {
           model: "google/gemini-2.5-flash",
           messages: [
             {
@@ -88,17 +85,23 @@ Return JSON with: { valid: boolean, coherence: number, resonance: number, recomm
             }
           ],
           temperature: 0.3,
-        }),
+        },
       });
 
       if (aiResponse.ok) {
         const aiResult = await aiResponse.json();
         const content = aiResult.choices?.[0]?.message?.content;
         
-        try {
-          aiValidation = JSON.parse(content);
+        const parsedValidation = parseExternalLlmJson<{
+          valid?: boolean;
+          coherence?: number;
+          resonance?: number;
+          recommendation?: string;
+        } | null>(content, null);
+        if (parsedValidation) {
+          aiValidation = parsedValidation;
           console.log("🤖 AI Validation:", aiValidation);
-        } catch (e) {
+        } else {
           console.log("📝 AI Response:", content);
           aiValidation = { 
             valid: true, 

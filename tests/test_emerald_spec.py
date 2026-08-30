@@ -3,6 +3,7 @@ import json
 import math
 import sys
 import unittest
+from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import patch
 
@@ -467,7 +468,26 @@ class TestProjectDruidManifest(unittest.TestCase):
 
     def setUp(self):
         self.seer = em.EmeraldSeer()
-        self.manifest = self.seer.project_druid_manifest()
+        self.manifest = self.seer.project_druid_manifest(self._receipt(
+            layer1_field_score=0.646,
+            layer2_score=0.500,
+            layer3_score=0.508,
+            shield_integrity=0.545,
+            radar_score=0.728,
+        ))
+
+    @staticmethod
+    def _receipt(**scores):
+        now = datetime.now(timezone.utc).isoformat()
+        return {
+            'source_id': 'test.epas.receipt',
+            'source_timestamp': now,
+            'received_at': now,
+            'receipt_id': 'test-epas-receipt',
+            'truth_status': 'real_observed',
+            'generated_values': False,
+            **scores,
+        }
 
     # ── Dataclass surface ──────────────────────────────────────────────────
 
@@ -539,7 +559,7 @@ class TestProjectDruidManifest(unittest.TestCase):
             'shield_integrity': 1.0,
             'radar_score': 1.0,
         }
-        m = self.seer.project_druid_manifest(perfect)
+        m = self.seer.project_druid_manifest(self._receipt(**perfect))
         self.assertEqual(m.plasma_status, 'IGNITED')
         self.assertTrue(m.device_ready)
 
@@ -552,7 +572,7 @@ class TestProjectDruidManifest(unittest.TestCase):
             'shield_integrity': 0.0,
             'radar_score': 0.0,
         }
-        m = self.seer.project_druid_manifest(zeroed)
+        m = self.seer.project_druid_manifest(self._receipt(**zeroed))
         self.assertEqual(m.plasma_status, 'DORMANT')
         self.assertFalse(m.device_ready)
 
@@ -569,6 +589,36 @@ class TestProjectDruidManifest(unittest.TestCase):
         self.assertEqual(self.manifest.plasma_status, 'DORMANT')
         self.assertFalse(self.manifest.device_ready)
 
+    def test_unproven_epas_state_is_numeric_free_no_data(self):
+        """Missing, stale, malformed, or generated input cannot yield readiness."""
+        cases = (
+            None,
+            self._receipt(layer1_field_score=1.0, layer2_score=1.0,
+                          layer3_score=1.0, shield_integrity=1.0),
+            self._receipt(layer1_field_score=1.0, layer2_score=1.0,
+                          layer3_score=1.0, shield_integrity=1.0, radar_score=1.0,
+                          generated_values=True),
+            {
+                **self._receipt(layer1_field_score=1.0, layer2_score=1.0,
+                                layer3_score=1.0, shield_integrity=1.0, radar_score=1.0),
+                'source_timestamp': '2000-01-01T00:00:00+00:00',
+                'received_at': '2000-01-01T00:00:00+00:00',
+            },
+        )
+        for state in cases:
+            manifest = self.seer.project_druid_manifest(state)
+            payload = manifest.to_dict()
+            self.assertEqual(manifest.status, 'no_data')
+            self.assertFalse(manifest.device_ready)
+            self.assertIsNone(manifest.timestamp)
+            self.assertEqual(manifest.phase_scores, ())
+            self.assertEqual(payload['truth_status'], 'no_data')
+            self.assertFalse(payload['controls']['operational_eligible'])
+            self.assertFalse(payload['controls']['actionable'])
+            self.assertFalse(payload['controls']['accounting_eligible'])
+            self.assertFalse(payload['controls']['learning_eligible'])
+            self.assertIsNone(payload['evidence']['source_timestamp'])
+
     def test_with_live_equity_reaches_primed(self):
         """Injecting real L2 equity score (≥0.85) lifts Γ past the PHI gate → PRIMED."""
         live = {
@@ -578,7 +628,7 @@ class TestProjectDruidManifest(unittest.TestCase):
             'shield_integrity': 0.545,
             'radar_score': 0.728,
         }
-        m = self.seer.project_druid_manifest(live)
+        m = self.seer.project_druid_manifest(self._receipt(**live))
         self.assertIn(m.plasma_status, ('PRIMED', 'IGNITED'))
         self.assertTrue(m.device_ready)
 
@@ -600,8 +650,8 @@ class TestProjectDruidManifest(unittest.TestCase):
     def test_full_decode_includes_project_druid(self):
         decoded = self.seer.full_decode()
         self.assertIn('project_druid', decoded)
-        self.assertIn('illumination_phases', decoded['project_druid'])
-        self.assertEqual(len(decoded['project_druid']['illumination_phases']), 6)
+        self.assertEqual(decoded['project_druid']['status'], 'no_data')
+        self.assertFalse(decoded['project_druid']['device_ready'])
 
     # ── CLI ────────────────────────────────────────────────────────────────
 

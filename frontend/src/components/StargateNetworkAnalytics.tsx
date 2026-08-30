@@ -345,13 +345,13 @@ export function StargateNetworkAnalytics() {
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
           <div className="flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full ${stats && stats.avgNetworkStrength > 0.85 ? 'bg-green-500' : 'bg-yellow-500'}`} />
+            <div className={`w-2 h-2 rounded-full ${stats && stats.avgNetworkStrength > 0.85 ? 'bg-success' : 'bg-warning'}`} />
             <span className="text-muted-foreground">
               Network is {stats && stats.avgNetworkStrength > 0.85 ? 'performing optimally' : 'stable'}
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full ${stats && stats.peakPeriods > 10 ? 'bg-green-500' : 'bg-blue-500'}`} />
+            <div className={`w-2 h-2 rounded-full ${stats && stats.peakPeriods > 10 ? 'bg-success' : 'bg-primary'}`} />
             <span className="text-muted-foreground">
               {stats?.peakPeriods || 0} high-coherence periods detected
             </span>

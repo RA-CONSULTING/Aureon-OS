@@ -102,6 +102,20 @@ def test_env_vars():
     print("\n🔐 ENVIRONMENT VARIABLES")
     print("=" * 50)
     
+    # Pytest is the credential-scrubbed audit plane. Never reload a checkout
+    # .env here: either the complete required set was injected explicitly, or
+    # every live route must be visibly dormant. A partial set is always invalid.
+    if os.getenv("PYTEST_CURRENT_TEST"):
+        present = [name for name in REQUIRED_ENV_VARS if os.environ.get(name)]
+        assert len(present) in {0, len(REQUIRED_ENV_VARS)}, (
+            "partial exchange credential set in the pytest audit plane"
+        )
+        if not present:
+            assert os.environ.get("AUREON_LIVE", "0") == "0"
+            assert os.environ.get("AUREON_LIVE_TRADING", "0") == "0"
+            assert os.environ.get("AUREON_DRY_RUN", "0") == "1"
+        return None
+
     # Load .env if exists
     try:
         from dotenv import load_dotenv
@@ -167,7 +181,15 @@ def test_env_vars():
 
     if failed:
         print("\n  💡 Tip: set missing keys in .env or disable that battlefield in CONFIG['BATTLEFIELDS'].")
-    
+        # This is a live-credentials preflight: on a machine that simply has no
+        # keys (CI, a fresh clone), missing credentials are the HONEST state,
+        # not a defect — the venue reports no_data and stays dormant. Skip
+        # visibly instead of failing; the check still fails hard wherever keys
+        # are expected (any one credential present ⇒ the rest must be too).
+        if passed == 0:
+            import pytest
+            pytest.skip("no exchange credentials in this environment — venues dormant by design")
+
     return _finish_check(passed, failed)
 
 

@@ -4,6 +4,8 @@ import re
 from collections import Counter
 from types import SimpleNamespace
 
+import pytest
+
 from aureon.core.goal_execution_engine import GoalExecutionEngine
 from aureon.vault.voice.document_artifact_skill import (
     AureonDocumentArtifactSkill,
@@ -53,6 +55,10 @@ def test_goal_engine_routes_essay_pdf_to_document_artifact_intent():
 
 
 def test_document_artifact_skill_writes_markdown_pdf_and_evidence(tmp_path):
+    # The PDF stage renders through reportlab; without it the skill honestly
+    # reports ok=False ("PDF renderer unavailable"), which is the contract —
+    # not a bug to paper over. Test the full render only when the dep exists.
+    pytest.importorskip("reportlab")
     skill = AureonDocumentArtifactSkill(
         composer=FakeComposer(),
         output_dir=tmp_path,

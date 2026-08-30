@@ -73,6 +73,10 @@ DEFAULT_SLOW_WINDOW_MIN = 20160     # 14 days
 # Lighthouse uses (aureon/analytics/aureon_lighthouse.py:101).
 ANOMALY_Z_THRESHOLD = 2.5
 
+#: publish_field() throttle: one symbolic.life.subfield row per this many
+#: seconds, so the daemon's 5 s compute cadence doesn't flood the trace.
+_SUBFIELD_MIN_INTERVAL_S = 30.0
+
 # Plateau detection: how flat (max stddev) and how long (samples) a
 # region must be to count as a plateau.
 PLATEAU_STD_RATIO = 0.05
@@ -147,6 +151,11 @@ class HarmonicObserver:
         self._lock = threading.RLock()
         self._publish = publish_to_bus
         self._bus = bus  # late-bound below
+        self._last_subfield_ts = 0.0
+        # The FFT frequency grid must use the CONFIGURED sampling interval —
+        # using the module default regardless of configuration scaled every
+        # reported dominant_hz by default/actual (5× off for a 1s trace).
+        self._trace_interval_s = float(trace_interval_s) or DEFAULT_TRACE_INTERVAL_S
 
         # Compute buffer caps from window minutes / interval.
         fast_cap = max(8, int((fast_window_minutes * 60) / trace_interval_s))
@@ -277,6 +286,35 @@ class HarmonicObserver:
         """
         with self._lock:
             return dict(self._latest_field)
+
+    def publish_field(self) -> None:
+        """Publish this observer's LOCAL field as a ``symbolic.life.subfield``.
+
+        The observer computes a real local field (rock-stability coherence
+        over the Λ(t) trace) yet was pinned in the logic-train audit as a
+        producer that never publishes — the whole body could not see it.
+        Throttled to one row per _SUBFIELD_MIN_INTERVAL_S; publishes NOTHING
+        before data arrives (an unmeasured field is not reported).
+        """
+        lf = self.latest_field()
+        if lf.get("lambda_t") is None:
+            return
+        now = time.time()
+        with self._lock:
+            if now - self._last_subfield_ts < _SUBFIELD_MIN_INTERVAL_S:
+                return
+            self._last_subfield_ts = now
+        try:
+            from types import SimpleNamespace
+
+            from aureon.core.hnc_field import publish_subfield
+            publish_subfield("harmonic_observer", SimpleNamespace(
+                symbolic_life_score=self.coherence_score(),
+                coherence_gamma=lf.get("coherence_gamma"),
+                consciousness_level=lf.get("consciousness_level"),
+            ))
+        except Exception as exc:  # noqa: BLE001 - telemetry must never break ingest
+            logger.debug("harmonic_observer subfield publish failed: %s", exc)
 
     # ─── public read API ───────────────────────────────────────
 
@@ -412,9 +450,13 @@ class HarmonicObserver:
 
         # ── Band rock — dominant FFT frequency
         try:
-            windowed = arr * np.hanning(arr.size)
+            # Demean before windowing: Λ traces carry a large DC offset, and
+            # Hanning leakage from that DC component otherwise dominates bin 1
+            # and buries the true oscillation (every detection reported the
+            # lowest non-DC bin as "dominant").
+            windowed = (arr - arr.mean()) * np.hanning(arr.size)
             spec = np.abs(np.fft.rfft(windowed))
-            freqs = np.fft.rfftfreq(arr.size, d=DEFAULT_TRACE_INTERVAL_S)
+            freqs = np.fft.rfftfreq(arr.size, d=self._trace_interval_s)
             # Drop DC.
             if spec.size > 1:
                 spec[0] = 0.0
@@ -572,11 +614,16 @@ class HarmonicObserver:
     # ─── internal: ThoughtBus emission ─────────────────────────
 
     def _bus_lazy(self):
-        """Resolve and cache the ThoughtBus singleton on first publish."""
-        if self._bus is not None:
-            return self._bus
+        """Resolve and cache the ThoughtBus singleton on first publish.
+
+        The publish flag is checked FIRST: publish_to_bus=False must silence
+        the observer even when a bus instance was injected at construction —
+        the old order let the injected bus bypass the disable switch.
+        """
         if not self._publish:
             return None
+        if self._bus is not None:
+            return self._bus
         try:
             from aureon.core.aureon_thought_bus import get_thought_bus
             self._bus = get_thought_bus()

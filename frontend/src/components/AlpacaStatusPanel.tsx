@@ -60,7 +60,7 @@ export const AlpacaStatusPanel: React.FC = () => {
         </div>
         <div className="flex items-center gap-2">
           {data?.connected ? (
-            <Badge className="bg-green-500/20 text-green-400 text-xs">Connected</Badge>
+            <Badge className="bg-success/20 text-success text-xs">Connected</Badge>
           ) : (
             <Badge variant="outline" className="text-xs">Offline</Badge>
           )}
@@ -99,7 +99,7 @@ export const AlpacaStatusPanel: React.FC = () => {
             <div className="grid grid-cols-2 gap-2">
               <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
                 <p className="text-xs text-muted-foreground mb-1">Buying Power</p>
-                <p className="text-lg font-bold text-green-500">${data.account.buyingPower.toFixed(2)}</p>
+                <p className="text-lg font-bold text-success">${data.account.buyingPower.toFixed(2)}</p>
               </div>
               <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
                 <p className="text-xs text-muted-foreground mb-1">Equity</p>

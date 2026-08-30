@@ -82,9 +82,9 @@ const EnhancedAngelOracleReader = () => {
     <div className="space-y-6">
       <div className="text-center">
         <h2 className="text-2xl font-bold text-white flex items-center justify-center gap-2">
-          <Sparkles className="w-6 h-6 text-yellow-400" />
+          <Sparkles className="w-6 h-6 text-warning" />
           Enhanced Angel Oracle
-          <Heart className="w-6 h-6 text-pink-400" />
+          <Heart className="w-6 h-6 text-primary" />
         </h2>
       </div>
 
@@ -109,7 +109,7 @@ const EnhancedAngelOracleReader = () => {
             <Button
               onClick={drawCards}
               disabled={isShuffling || !question.trim()}
-              className="bg-gradient-to-r from-blue-600 to-purple-600"
+              className="bg-gradient-to-r from-primary to-primary"
             >
               {isShuffling ? <Shuffle className="w-4 h-4 animate-spin" /> : 'Draw Cards'}
             </Button>
@@ -132,8 +132,8 @@ const EnhancedAngelOracleReader = () => {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
                   <div className="absolute bottom-4 left-4 right-4 text-center">
                     <h3 className="text-white font-bold text-lg mb-1">{card.name}</h3>
-                    <Badge className={`${card.border_color === 'blue' ? 'bg-blue-500' : 
-                                      card.border_color === 'gold' ? 'bg-yellow-500' : 'bg-purple-500'}`}>
+                    <Badge className={`${card.border_color === 'blue' ? 'bg-primary' : 
+                                      card.border_color === 'gold' ? 'bg-warning' : 'bg-primary'}`}>
                       {card.category.replace('_', ' ')}
                     </Badge>
                   </div>

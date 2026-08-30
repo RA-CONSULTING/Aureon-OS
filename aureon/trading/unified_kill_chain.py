@@ -5,7 +5,443 @@ import sys
 import logging
 import json
 import asyncio
+import math
 from datetime import datetime, timedelta, timezone
+
+EXECUTION_RECEIPT_MAX_AGE_SECONDS = 300.0
+EXECUTION_RECEIPT_FUTURE_SKEW_SECONDS = 30.0
+ACTION_EVIDENCE_MAX_AGE_SECONDS = 300.0
+ACTION_EVIDENCE_FUTURE_SKEW_SECONDS = 30.0
+
+
+def _finite_provider_number(value, *, positive=False, nonnegative=False):
+    """Parse an observed provider number without substituting a default."""
+    if value is None or isinstance(value, bool):
+        return None
+    try:
+        parsed = float(value)
+    except (TypeError, ValueError, OverflowError):
+        return None
+    if not math.isfinite(parsed):
+        return None
+    if positive and parsed <= 0:
+        return None
+    if nonnegative and parsed < 0:
+        return None
+    return parsed
+
+
+def _parse_provider_timestamp(value):
+    """Return a provider timestamp in seconds, or None when it is unproven."""
+    if value is None or isinstance(value, bool):
+        return None
+    parsed = None
+    if isinstance(value, (int, float)):
+        parsed = _finite_provider_number(value, positive=True)
+    elif isinstance(value, str):
+        text = value.strip()
+        if not text:
+            return None
+        parsed = _finite_provider_number(text, positive=True)
+        if parsed is None:
+            try:
+                normalized = text[:-1] + "+00:00" if text.endswith("Z") else text
+                observed = datetime.fromisoformat(normalized)
+                if observed.tzinfo is None:
+                    return None
+                parsed = observed.timestamp()
+            except (TypeError, ValueError, OverflowError):
+                return None
+    if parsed is None:
+        return None
+    while parsed > 100_000_000_000:
+        parsed /= 1000.0
+    return parsed if parsed > 0 and math.isfinite(parsed) else None
+
+
+def _valid_provider_identifier(value):
+    """Reject blank, local-only, and sentinel identifiers."""
+    if value is None or isinstance(value, bool):
+        return None
+    if isinstance(value, float) and (not math.isfinite(value) or not value.is_integer()):
+        return None
+    identifier = str(value).strip()
+    if not identifier:
+        return None
+    lowered = identifier.casefold()
+    if lowered in {"0", "none", "null", "unknown", "n/a", "na", "pending"}:
+        return None
+    if lowered.startswith(("dry-", "dry_", "test-", "test_", "fake-", "fake_", "demo-", "demo_", "mock-", "mock_", "sim-", "sim_", "synthetic-", "placeholder")):  # sentinel rejected as no_data
+        return None
+    return identifier
+
+
+def _first_present(mapping, names):
+    for name in names:
+        if name in mapping:
+            return mapping[name]
+    return None
+
+
+def _provider_order_identifier(receipt):
+    raw = _first_present(
+        receipt,
+        ("orderId", "provider_order_id", "dealReference", "id", "txid"),
+    )
+    if isinstance(raw, (list, tuple)):
+        if len(raw) != 1:
+            return None
+        raw = raw[0]
+    return _valid_provider_identifier(raw)
+
+
+def _provider_trade_identifiers(receipt):
+    fills = receipt.get("fills")
+    if not isinstance(fills, (list, tuple)) or not fills:
+        return []
+    identifiers = []
+    for fill in fills:
+        if not isinstance(fill, dict):
+            return []
+        trade_id = _valid_provider_identifier(
+            _first_present(fill, ("tradeId", "trade_id", "fill_id", "id"))
+        )
+        if trade_id is None or trade_id in identifiers:
+            return []
+        identifiers.append(trade_id)
+    return identifiers
+
+
+def _execution_result(
+    *,
+    venue,
+    status,
+    reason,
+    receipt=None,
+    order_id=None,
+    trade_ids=None,
+    filled_qty=None,
+    filled_price=None,
+    fee=None,
+    fee_currency=None,
+    provider_timestamp=None,
+    receipt_id=None,
+    symbol=None,
+    side=None,
+):
+    success = status == "filled"
+    return {
+        "success": success,
+        "status": status,
+        "data_status": "live" if success else status,
+        "reason": reason,
+        "venue": venue,
+        "order_id": order_id,
+        "trade_ids": list(trade_ids or []),
+        "filled_qty": filled_qty,
+        "filled_price": filled_price,
+        "fee": fee,
+        "fee_currency": fee_currency,
+        "provider_timestamp": provider_timestamp,
+        "receipt_id": receipt_id,
+        "symbol": symbol,
+        "side": side,
+        "fill_receipt_complete": success,
+        "eligible_for_accounting": success,
+        "eligible_for_learning": success,
+        "receipt": receipt,
+    }
+
+
+def _normalized_venue(value):
+    return str(value or "").strip().lower()
+
+
+def _normalized_symbol(value):
+    if not isinstance(value, str):
+        return ""
+    return "".join(character for character in value.upper() if character.isalnum())
+
+
+def _same_observed_number(left, right):
+    left_number = _finite_provider_number(left)
+    right_number = _finite_provider_number(right)
+    if left_number is None or right_number is None:
+        return False
+    return math.isclose(left_number, right_number, rel_tol=1e-12, abs_tol=1e-12)
+
+
+def _classify_action_evidence(
+    position_receipt,
+    opportunity_receipt,
+    *,
+    venue,
+    symbol,
+    position_id,
+    quantity,
+    pnl,
+    entry_price,
+    current_price,
+    now=None,
+):
+    """Require linked, fresh account-position and market-opportunity receipts."""
+    venue_name = _normalized_venue(venue)
+    symbol_name = _normalized_symbol(symbol)
+    expected_position_id = _valid_provider_identifier(position_id)
+    current_time = _finite_provider_number(time.time() if now is None else now, positive=True)
+
+    def no_data(reason):
+        return {
+            "eligible_for_action": False,
+            "data_status": "no_data",
+            "truth_status": "no_data",
+            "generated_values": False,
+            "reason": reason,
+            "venue": venue_name,
+            "symbol": symbol_name or None,
+            "position_receipt_id": None,
+            "opportunity_receipt_id": None,
+        }
+
+    if not venue_name or not symbol_name or expected_position_id is None:
+        return no_data("canonical_venue_symbol_and_position_id_required")
+    if current_time is None:
+        return no_data("current_time_unavailable")
+    if not isinstance(position_receipt, dict):
+        return no_data("fresh_position_receipt_required")
+    if not isinstance(opportunity_receipt, dict):
+        return no_data("fresh_opportunity_receipt_required")
+
+    receipt_ids = {}
+    timestamps = {}
+    for label, receipt, allowed_truth in (
+        ("position", position_receipt, {"real_observed"}),
+        ("opportunity", opportunity_receipt, {"real_observed", "real_derived"}),
+    ):
+        if receipt.get("data_status") != "live":
+            return no_data(f"{label}_receipt_not_live")
+        if str(receipt.get("truth_status") or "").strip().lower() not in allowed_truth:
+            return no_data(f"{label}_receipt_truth_unproven")
+        if receipt.get("generated_values") is not False:
+            return no_data(f"{label}_receipt_generated_values_unproven")
+        if receipt.get("eligible_for_action") is not True:
+            return no_data(f"{label}_receipt_not_actionable")
+        observed_venue = _normalized_venue(
+            _first_present(receipt, ("venue", "exchange", "provider"))
+        )
+        if observed_venue != venue_name:
+            return no_data(f"{label}_receipt_venue_mismatch")
+        if _normalized_symbol(receipt.get("symbol")) != symbol_name:
+            return no_data(f"{label}_receipt_symbol_mismatch")
+        source_id = _valid_provider_identifier(receipt.get("source_id"))
+        receipt_id = _valid_provider_identifier(receipt.get("receipt_id"))
+        if source_id is None or receipt_id is None:
+            return no_data(f"{label}_receipt_provenance_ids_required")
+        source_timestamp = _parse_provider_timestamp(receipt.get("source_timestamp"))
+        received_at = _parse_provider_timestamp(receipt.get("received_at"))
+        if source_timestamp is None or received_at is None:
+            return no_data(f"{label}_receipt_timestamps_required")
+        if (
+            source_timestamp < current_time - ACTION_EVIDENCE_MAX_AGE_SECONDS
+            or source_timestamp > current_time + ACTION_EVIDENCE_FUTURE_SKEW_SECONDS
+            or received_at < current_time - ACTION_EVIDENCE_MAX_AGE_SECONDS
+            or received_at > current_time + ACTION_EVIDENCE_FUTURE_SKEW_SECONDS
+            or source_timestamp > received_at + ACTION_EVIDENCE_FUTURE_SKEW_SECONDS
+        ):
+            return no_data(f"fresh_{label}_receipt_required")
+        receipt_ids[label] = receipt_id
+        timestamps[label] = source_timestamp
+
+    observed_position_id = _valid_provider_identifier(position_receipt.get("position_id"))
+    if observed_position_id != expected_position_id:
+        return no_data("position_receipt_id_mismatch")
+    observed_quantity = _finite_provider_number(position_receipt.get("quantity"), positive=True)
+    if observed_quantity is None or not _same_observed_number(observed_quantity, quantity):
+        return no_data("position_receipt_quantity_mismatch")
+
+    if opportunity_receipt.get("position_receipt_id") != receipt_ids["position"]:
+        return no_data("opportunity_receipt_not_linked_to_position_receipt")
+    observed_pnl = _finite_provider_number(opportunity_receipt.get("pnl"), positive=True)
+    observed_entry = _finite_provider_number(opportunity_receipt.get("entry_price"), positive=True)
+    observed_current = _finite_provider_number(opportunity_receipt.get("current_price"), positive=True)
+    if observed_pnl is None or not _same_observed_number(observed_pnl, pnl):
+        return no_data("opportunity_receipt_pnl_mismatch")
+    if observed_entry is None or not _same_observed_number(observed_entry, entry_price):
+        return no_data("opportunity_receipt_entry_price_mismatch")
+    if observed_current is None or not _same_observed_number(observed_current, current_price):
+        return no_data("opportunity_receipt_current_price_mismatch")
+
+    return {
+        "eligible_for_action": True,
+        "data_status": "live",
+        "truth_status": "real_derived",
+        "generated_values": False,
+        "reason": "fresh_linked_position_and_opportunity_receipts",
+        "venue": venue_name,
+        "symbol": symbol_name,
+        "position_receipt_id": receipt_ids["position"],
+        "opportunity_receipt_id": receipt_ids["opportunity"],
+        "source_timestamps": timestamps,
+    }
+
+
+def _classify_terminal_fill_receipt(
+    receipt,
+    venue,
+    *,
+    now=None,
+    submission_attempted=False,
+    expected_symbol=None,
+    expected_side=None,
+    expected_quantity=None,
+):
+    """Accept only a fresh, complete, provider-observed terminal fill receipt."""
+    venue_name = str(venue or "unknown").strip().lower()
+    if not isinstance(receipt, dict):
+        status = "pending_reconciliation" if submission_attempted else "no_data"
+        return _execution_result(
+            venue=venue_name,
+            status=status,
+            reason="provider_submission_outcome_unproven" if submission_attempted else "provider_receipt_missing",
+            receipt=receipt,
+        )
+
+    raw_status = str(receipt.get("status") or "").strip().lower()
+    data_status = str(receipt.get("data_status") or "").strip().lower()
+    order_id = _provider_order_identifier(receipt)
+
+    if (
+        receipt.get("dryRun") is True
+        or receipt.get("submitted") is False
+        or raw_status == "not_submitted"
+        or data_status == "not_submitted"
+    ):
+        return _execution_result(
+            venue=venue_name,
+            status="not_submitted",
+            reason=str(receipt.get("reason") or "provider_order_not_submitted"),
+            receipt=receipt,
+            order_id=order_id,
+        )
+
+    if raw_status in {"rejected", "denied"} and order_id is None:
+        return _execution_result(
+            venue=venue_name,
+            status="not_submitted",
+            reason=str(receipt.get("reason") or "provider_submission_rejected"),
+            receipt=receipt,
+        )
+
+    submission_is_known = bool(
+        submission_attempted
+        or order_id is not None
+        or receipt.get("submission_acknowledged") is True
+        or receipt.get("reconciliation_required") is True
+    )
+
+    def incomplete(reason):
+        return _execution_result(
+            venue=venue_name,
+            status="pending_reconciliation" if submission_is_known else "no_data",
+            reason=reason,
+            receipt=receipt,
+            order_id=order_id,
+        )
+
+    if data_status != "live":
+        return incomplete("terminal_live_provider_receipt_required")
+    if raw_status != "filled":
+        return incomplete("terminal_filled_provider_status_required")
+    if receipt.get("fill_receipt_complete") is not True:
+        return incomplete("complete_fill_receipt_required")
+    if receipt.get("eligible_for_accounting") is not True:
+        return incomplete("provider_receipt_not_eligible_for_accounting")
+    if receipt.get("eligible_for_learning") is not True:
+        return incomplete("provider_receipt_not_eligible_for_learning")
+    if receipt.get("generated_values") is not False:
+        return incomplete("provider_receipt_contains_unproven_values")
+    if str(receipt.get("truth_status") or "").strip().lower() not in {
+        "real_observed",
+        "real_provider",
+    }:
+        return incomplete("provider_receipt_truth_unproven")
+    if order_id is None:
+        return incomplete("non_sentinel_provider_order_id_required")
+    receipt_id = _valid_provider_identifier(receipt.get("receipt_id"))
+    if receipt_id is None:
+        return incomplete("terminal_provider_receipt_id_required")
+    provider_receipt_type = _valid_provider_identifier(receipt.get("provider_receipt_type"))
+    if provider_receipt_type is None:
+        return incomplete("terminal_provider_receipt_type_required")
+    if venue_name == "kraken" and receipt.get("provider_receipt_type") not in {"QueryOrders", "ClosedOrders"}:
+        return incomplete("kraken_query_or_closed_orders_receipt_required")
+
+    observed_venue = _normalized_venue(
+        _first_present(receipt, ("venue", "exchange", "provider"))
+    )
+    if observed_venue != venue_name:
+        return incomplete("terminal_provider_receipt_venue_mismatch")
+    observed_symbol = _normalized_symbol(receipt.get("symbol"))
+    required_symbol = _normalized_symbol(expected_symbol)
+    if not observed_symbol or (required_symbol and observed_symbol != required_symbol):
+        return incomplete("terminal_provider_receipt_symbol_mismatch")
+    observed_side = str(receipt.get("side") or "").strip().upper()
+    required_side = str(expected_side or "").strip().upper()
+    if not observed_side or (required_side and observed_side != required_side):
+        return incomplete("terminal_provider_receipt_side_mismatch")
+
+    trade_ids = _provider_trade_identifiers(receipt)
+    if not trade_ids:
+        return incomplete("non_sentinel_provider_trade_ids_required")
+
+    filled_qty = _finite_provider_number(
+        _first_present(receipt, ("filled_qty", "executedQty", "filledQty")),
+        positive=True,
+    )
+    filled_price = _finite_provider_number(
+        _first_present(receipt, ("filled_avg_price", "avgPrice", "avg_fill_price")),
+        positive=True,
+    )
+    fee = _finite_provider_number(
+        _first_present(receipt, ("fee", "fee_amount", "fees")),
+        nonnegative=True,
+    )
+    fee_currency = str(receipt.get("fee_currency") or receipt.get("fee_asset") or "").strip()
+    if filled_qty is None:
+        return incomplete("observed_provider_filled_quantity_required")
+    if expected_quantity is not None and not _same_observed_number(filled_qty, expected_quantity):
+        return incomplete("exact_provider_filled_quantity_required")
+    if filled_price is None:
+        return incomplete("observed_provider_fill_price_required")
+    if fee is None or not fee_currency:
+        return incomplete("observed_provider_fee_and_currency_required")
+
+    provider_timestamp = _parse_provider_timestamp(receipt.get("provider_timestamp"))
+    current_time = _finite_provider_number(time.time() if now is None else now, positive=True)
+    if provider_timestamp is None or current_time is None:
+        return incomplete("provider_fill_timestamp_required")
+    if (
+        provider_timestamp < current_time - EXECUTION_RECEIPT_MAX_AGE_SECONDS
+        or provider_timestamp > current_time + EXECUTION_RECEIPT_FUTURE_SKEW_SECONDS
+    ):
+        return incomplete("fresh_provider_fill_timestamp_required")
+
+    return _execution_result(
+        venue=venue_name,
+        status="filled",
+        reason="complete_fresh_terminal_provider_fill_receipt",
+        receipt=receipt,
+        order_id=order_id,
+        trade_ids=trade_ids,
+        filled_qty=filled_qty,
+        filled_price=filled_price,
+        fee=fee,
+        fee_currency=fee_currency,
+        provider_timestamp=provider_timestamp,
+        receipt_id=receipt_id,
+        symbol=observed_symbol,
+        side=observed_side,
+    )
 
 # Import Clients
 from aureon.exchanges.capital_client import CapitalClient
@@ -18,11 +454,16 @@ from aureon.utils.aureon_sero_client import SeroClient
 # 🔩 HARMONIC LIQUID ALUMINIUM FIELD - Live Streaming Integration
 # ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════
 try:
-    from aureon.harmonic.aureon_harmonic_liquid_aluminium import HarmonicLiquidAluminiumField, FieldSnapshot
+    from aureon.harmonic.aureon_harmonic_liquid_aluminium import (
+        FieldSnapshot,
+        HarmonicLiquidAluminiumField,
+        harmonic_streaming_runtime,
+    )
     HARMONIC_FIELD_AVAILABLE = True
 except ImportError:
     HARMONIC_FIELD_AVAILABLE = False
     HarmonicLiquidAluminiumField = None
+    harmonic_streaming_runtime = lambda method: method
 
 # Setup fancy logging
 def log_queen(msg):
@@ -50,6 +491,7 @@ def log_harmonic(msg):
 class UnifiedKillChain:
     def __init__(self):
         self.running = True
+        self._pending_reconciliations = {}
         log_system("Initializing Exchange Uplinks...")
         
         # ═══════════════════════════════════════════════════════════════════════════════════════════════════════
@@ -59,8 +501,7 @@ class UnifiedKillChain:
         if HARMONIC_FIELD_AVAILABLE:
             try:
                 self.harmonic_field = HarmonicLiquidAluminiumField(stream_interval_ms=100)
-                self.harmonic_field.start_streaming()
-                log_harmonic("Liquid Aluminium Field ACTIVE - Dancing on frequencies!")
+                log_harmonic("Liquid Aluminium Field WIRED - runtime start pending")
             except Exception as e:
                 log_warn(f"Harmonic Field init failed: {e}")
                 self.harmonic_field = None
@@ -87,7 +528,7 @@ class UnifiedKillChain:
         log_system(f"Kraken:        {'✅' if self.kraken.api_key else '❌'}")
         log_system(f"Dr. Auris API: {'✅' if self.dr_auris.enabled else '❌ (AI validation DISABLED)'}")
         if self.harmonic_field:
-            log_harmonic("Liquid Aluminium Field: ✅ STREAMING")
+            log_harmonic("Liquid Aluminium Field: ✅ WIRED")
 
     def _print_harmonic_summary(self):
         """Print the harmonic liquid aluminium field summary."""
@@ -124,6 +565,7 @@ class UnifiedKillChain:
         log_harmonic("═══════════════════════════════════════════════════════════════")
         print()
 
+    @harmonic_streaming_runtime
     def run_loop(self):
         log_queen("System fully online. Entering dormant stalking mode.")
         while self.running:
@@ -478,8 +920,11 @@ class UnifiedKillChain:
                     for quote in ['USDT', 'USDC']:
                         try:
                             ticker = self.binance.get_ticker(f"{asset}{quote}")
-                            price = float(ticker.get('price', 0))
-                            if price > 0:
+                            price = _finite_provider_number(
+                                ticker.get('price') if isinstance(ticker, dict) else None,
+                                positive=True,
+                            )
+                            if price is not None:
                                 current_price = price
                                 found_pair = f"{asset}{quote}"
                                 break
@@ -657,8 +1102,13 @@ class UnifiedKillChain:
                 if current_price == 0:
                     try:
                         ticker = self.kraken.get_ticker(f"{clean_asset}USD")
-                        current_price = float(ticker.get('price', 0))
-                        found_pair = f"{clean_asset}USD"
+                        observed_price = _finite_provider_number(
+                            ticker.get('price') if isinstance(ticker, dict) else None,
+                            positive=True,
+                        )
+                        if observed_price is not None:
+                            current_price = observed_price
+                            found_pair = f"{clean_asset}USD"
                     except:
                         pass
                 
@@ -843,7 +1293,23 @@ class UnifiedKillChain:
         return total_cost / total_qty
 
 
-    def _evaluate_and_kill(self, exchange, symbol, pnl, position_id, qty, client_ref, close_func, entry_price=0, current_price=0, asset_class=""):
+    def _evaluate_and_kill(
+        self,
+        exchange,
+        symbol,
+        pnl,
+        position_id,
+        qty,
+        client_ref,
+        close_func,
+        entry_price=0,
+        current_price=0,
+        asset_class="",
+        *,
+        position_receipt=None,
+        opportunity_receipt=None,
+        now=None,
+    ):
         # Format qty to avoid scientific notation if it's a float
         qty_display = f"{qty:.8f}".rstrip('0').rstrip('.') if isinstance(qty, float) else str(qty)
         if qty_display == "": qty_display = "0"
@@ -856,6 +1322,45 @@ class UnifiedKillChain:
         if pnl <= 0:
             log_queen(f"Assessment: NEGATIVE ({pnl:.2f}). The hive advises patience.")
             return
+
+        pending_key = (str(exchange).strip().lower(), str(position_id).strip())
+        pending_store = getattr(self, "_pending_reconciliations", None)
+        if not isinstance(pending_store, dict):
+            pending_store = {}
+            self._pending_reconciliations = pending_store
+        if pending_key in pending_store:
+            pending = pending_store[pending_key]
+            log_warn(
+                f"[{exchange}] {symbol}: provider submission remains pending reconciliation; "
+                "duplicate close suppressed"
+            )
+            return pending
+
+        action_evidence = _classify_action_evidence(
+            position_receipt,
+            opportunity_receipt,
+            venue=exchange,
+            symbol=symbol,
+            position_id=position_id,
+            quantity=qty,
+            pnl=pnl,
+            entry_price=entry_price,
+            current_price=current_price,
+            now=now,
+        )
+        if action_evidence["eligible_for_action"] is not True:
+            log_warn(
+                f"[{exchange}] {symbol}: autonomous close withheld "
+                f"({action_evidence['reason']})"
+            )
+            return _execution_result(
+                venue=_normalized_venue(exchange),
+                status="no_data",
+                reason=action_evidence["reason"],
+                receipt=action_evidence,
+                symbol=_normalized_symbol(symbol) or None,
+                side="SELL",
+            )
 
         log_queen("Assessment: PROFITABLE. The hive demands harvest.")
         
@@ -893,13 +1398,43 @@ class UnifiedKillChain:
         log_sniper(f"Target Acquired: {symbol}. Safety DISENGAGED.")
         log_sniper("TAKING THE SHOT... (No Confirmation Required)")
         
-        success = close_func(position_id, qty, symbol)
+        try:
+            provider_receipt = close_func(position_id, qty, symbol)
+            execution = _classify_terminal_fill_receipt(
+                provider_receipt,
+                exchange,
+                now=now,
+                submission_attempted=True,
+                expected_symbol=symbol,
+                expected_side="SELL",
+                expected_quantity=qty,
+            )
+        except Exception:
+            execution = _execution_result(
+                venue=str(exchange).strip().lower(),
+                status="pending_reconciliation",
+                reason="provider_submission_outcome_unproven",
+            )
+
+        if execution["status"] == "pending_reconciliation":
+            pending_store[pending_key] = execution
+        elif execution["success"]:
+            pending_store.pop(pending_key, None)
         
-        if success:
+        if execution["success"]:
             log_sniper(f"💥 BOOM. {symbol} Eliminated. Profit Realized.")
             log_queen("Harvest complete.")
+            return execution
+        if execution["status"] == "pending_reconciliation":
+            log_warn(
+                f"[{exchange}] {symbol}: close submitted or ambiguous; "
+                f"pending provider reconciliation ({execution['reason']})"
+            )
+        elif execution["status"] == "not_submitted":
+            log_warn(f"[{exchange}] {symbol}: close not submitted ({execution['reason']})")
         else:
             log_sniper(f"❌ MISSED SHOT on {symbol}.")
+        return execution
 
     def _validate_with_dr_auris(self, exchange, symbol, pnl, entry_price, current_price, qty, side="SELL"):
         """
@@ -1031,27 +1566,54 @@ class UnifiedKillChain:
     
     # --- Close Functions ---
     def _close_capital(self, deal_id, qty, symbol):
-        res = self.capital._request('DELETE', f'/positions/{deal_id}')
-        return res.status_code == 200
+        close_position = getattr(self.capital, "close_position", None)
+        if callable(close_position):
+            return close_position(deal_id)
+        return self.capital._request('DELETE', f'/positions/{deal_id}')
 
     def _close_alpaca(self, symbol, qty, _unused):
         # Close entire position for symbol
-        res = self.alpaca._request('DELETE', f'/v2/positions/{symbol}')
-        return res is not None
+        return self.alpaca._request('DELETE', f'/v2/positions/{symbol}')
 
     def _close_binance(self, asset, qty, symbol):
         # Sell entire balance of Asset into USDT
         # symbol is like 'BTCUSDT'
-        res = self.binance.place_market_order(symbol, "SELL", quantity=qty)
-        return bool(res and res.get('orderId'))
+        return self.binance.place_market_order(symbol, "SELL", quantity=qty)
 
     def _close_kraken(self, asset, qty, symbol):
         # Need to construct sell order for pair
         # symbol here is 'XXRPUSD' or similar
         # Kraken quantity must be string often? Client handles it.
         # Use place_market_order directly as execute_trade is async wrapper
-        res = self.kraken.place_market_order(symbol, "sell", qty)
-        return bool(res.get('orderId') or res.get('txid'))
+        submission = self.kraken.place_market_order(symbol, "sell", qty)
+        submitted_state = _classify_terminal_fill_receipt(
+            submission,
+            "kraken",
+            submission_attempted=True,
+        )
+        order_id = submitted_state.get("order_id")
+        if submitted_state["status"] != "pending_reconciliation" or order_id is None:
+            return submission
+
+        # One read-back is reconciliation, not an order retry. Never poll or
+        # resubmit from this path; an unfilled result is latched by the caller.
+        get_order_status = getattr(self.kraken, "get_order_status", None)
+        if not callable(get_order_status):
+            return submission
+        try:
+            reconciliation = get_order_status(order_id)
+        except Exception:
+            return submission
+        if not isinstance(reconciliation, dict):
+            return submission
+        reconciled_state = _classify_terminal_fill_receipt(
+            reconciliation,
+            "kraken",
+            submission_attempted=True,
+        )
+        if reconciled_state["success"] or reconciled_state.get("order_id") is not None:
+            return reconciliation
+        return submission
 
 if __name__ == "__main__":
     chain = UnifiedKillChain()

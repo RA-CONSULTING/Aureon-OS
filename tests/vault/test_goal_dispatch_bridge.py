@@ -10,11 +10,8 @@ What's being proved:
   - Happy path: SLS ≥ drift → conscience approves → engine called
   - VETO path: SLS < danger → conscience vetoes → goal.abandoned
     published with the HNC substrate-coherence reason; engine NOT called
-  - Dry-run path: synthetic goal.submitted + goal.completed published;
-    engine NOT called (so the TemporalCausalityLaw still sees an ack
-    and doesn't orphan the lighthouse)
-  - No engine configured: same as dry-run except the payload's
-    has_engine=False flag is audited
+  - No engine configured: goal.dispatch.unavailable carries no-data
+    provenance and cannot acknowledge the TemporalCausalityLaw
   - Engine raises → goal.abandoned with engine error as reason
   - Idempotent per goal_id: second request for same id is ignored
   - Empty text → goal.abandoned
@@ -41,6 +38,10 @@ from aureon.vault.voice.goal_dispatch_bridge import (  # noqa: E402
     GoalDispatchBridge,
     get_goal_dispatch_bridge,
     reset_goal_dispatch_bridge,
+)
+from aureon.vault.voice.temporal_causality import (  # noqa: E402
+    GoalState,
+    TemporalCausalityLaw,
 )
 
 
@@ -261,18 +262,37 @@ def test_veto_updates_stats():
     assert s["abandoned"] == 1
 
 
-def test_no_engine_publishes_submitted_without_completion():
-    """No engine configured → synthetic ack so temporal law sees it,
-    but NO synthetic completion — the operator sees the broken lighthouse
-    (goal stuck at ACKNOWLEDGED → eventually orphans)."""
+def test_no_engine_publishes_unavailable_without_temporal_acknowledgement():
+    """An unavailable dispatch remains PROPOSED; it is not an engine receipt."""
     conscience = _StubConscience(verdict="APPROVED")
-    b, bus, _, _ = _bridge(conscience=conscience, engine=None)
+    bus = _StubBus()
+    law = TemporalCausalityLaw(thought_bus=bus)
+    law.start()
+    b, _, _, _ = _bridge(bus=bus, conscience=conscience, engine=None)
     bus.published.clear()
     _submit(bus, text="unclaimed goal")
+    unavailable = [t for t in bus.published if t.topic == "goal.dispatch.unavailable"]
     submitted = [t for t in bus.published if t.topic == "goal.submitted"]
     completed = [t for t in bus.published if t.topic == "goal.completed"]
-    assert len(submitted) == 1
-    assert submitted[0].payload.get("has_engine") is False
+    assert len(unavailable) == 1
+    assert unavailable[0].payload == {
+        "goal_id": "g1",
+        "text": "unclaimed goal",
+        "source": "goal_dispatch_bridge",
+        "source_id": "goal_dispatch_bridge",
+        "request_id": "g1",
+        "receipt_id": None,
+        "has_engine": False,
+        "received_at": pytest.approx(unavailable[0].payload["received_at"]),
+        "source_timestamp": None,
+        "truth_status": "no_data",
+        "generated_values": False,
+        "action_enabled": False,
+        "accounting_enabled": False,
+        "learning_enabled": False,
+    }
+    assert law.get("g1").state == GoalState.PROPOSED
+    assert submitted == []
     assert len(completed) == 0
 
 

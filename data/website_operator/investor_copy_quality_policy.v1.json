@@ -1,0 +1,146 @@
+{
+  "schema": "aureon.investor-copy-quality-policy.v1",
+  "policy_id": "aureon-investor-copy-quality-20260730",
+  "issued_at": "2026-07-30T00:00:00Z",
+  "refresh_by": "2026-08-13T23:59:59Z",
+  "authority": {
+    "scope": "read-only local investor-copy quality audit",
+    "canonical_website_mutation": "never",
+    "candidate_staging": "never",
+    "claim_register_mutation": "never",
+    "release_eligible": false,
+    "package_authority": "none",
+    "deployment_authority": "none",
+    "credential_access": "none",
+    "network_access": "none",
+    "human_review": "required before public copy changes"
+  },
+  "snapshot_max_age_days": 14,
+  "routes": [
+    {
+      "route": "/",
+      "path": "index.html",
+      "rule_ids": [
+        "category-language",
+        "claim-boundary",
+        "financial-figure",
+        "hype-language",
+        "meta-description",
+        "page-title",
+        "single-h1",
+        "snapshot-date",
+        "static-operating-count",
+        "static-research-count",
+        "static-traction-count"
+      ],
+      "required_concept_groups": [
+        {
+          "concept_id": "company-category",
+          "severity": "blocker",
+          "alternatives": [
+            "research-led systems company",
+            "research and systems company"
+          ]
+        },
+        {
+          "concept_id": "shared-core",
+          "severity": "blocker",
+          "alternatives": [
+            "Harmonic Nexus Core",
+            "HNC"
+          ]
+        },
+        {
+          "concept_id": "delivery-system",
+          "severity": "blocker",
+          "alternatives": [
+            "Aureon OS"
+          ]
+        }
+      ]
+    },
+    {
+      "route": "/funding/investor-deck/",
+      "path": "funding/investor-deck/index.html",
+      "rule_ids": [
+        "category-language",
+        "claim-boundary",
+        "financial-figure",
+        "hype-language",
+        "meta-description",
+        "page-title",
+        "single-h1",
+        "snapshot-date",
+        "static-operating-count",
+        "static-research-count",
+        "static-traction-count"
+      ],
+      "required_concept_groups": [
+        {
+          "concept_id": "company-category",
+          "severity": "blocker",
+          "alternatives": [
+            "research-led systems company",
+            "research and systems company"
+          ]
+        },
+        {
+          "concept_id": "commercial-wedge",
+          "severity": "blocker",
+          "alternatives": [
+            "Evidence OS",
+            "evidence infrastructure",
+            "first wedge"
+          ]
+        },
+        {
+          "concept_id": "human-control",
+          "severity": "blocker",
+          "alternatives": [
+            "human gate",
+            "human-gated",
+            "accountable approval"
+          ]
+        }
+      ]
+    },
+    {
+      "route": "/research/",
+      "path": "research/index.html",
+      "rule_ids": [
+        "category-language",
+        "claim-boundary",
+        "financial-figure",
+        "hype-language",
+        "meta-description",
+        "page-title",
+        "single-h1",
+        "snapshot-date",
+        "static-operating-count",
+        "static-research-count",
+        "static-traction-count"
+      ],
+      "required_concept_groups": [
+        {
+          "concept_id": "source-trail",
+          "severity": "blocker",
+          "alternatives": [
+            "source-linked",
+            "public research trail",
+            "public record"
+          ]
+        },
+        {
+          "concept_id": "validation-boundary",
+          "severity": "blocker",
+          "alternatives": [
+            "not independent validation",
+            "not independently validated",
+            "does not establish peer review",
+            "not peer-reviewed"
+          ]
+        }
+      ]
+    }
+  ]
+}

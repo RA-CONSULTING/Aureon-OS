@@ -22,6 +22,12 @@ from aureon.saas.gateway import verify_supabase_jwt  # noqa: E402
 
 
 def _app(**env):
+    # Save-and-restore, never pop-blind: the suite exports AUREON_LLM_OFFLINE=1
+    # process-wide, and popping it here deleted it for every LATER test module —
+    # the soul's deterministic self-authorship (and anything else reading the
+    # flag) silently switched to the live-LLM path mid-suite. Measured breaking
+    # tests/test_soul.py from tests/test_saas_gateway.py::test_catalog_route.
+    previous = {k: os.environ.get(k) for k in env}
     for k, v in env.items():
         os.environ[k] = v
     try:
@@ -30,8 +36,11 @@ def _app(**env):
         importlib.reload(srv)
         return srv.create_app().test_client()
     finally:
-        for k in env:
-            os.environ.pop(k, None)
+        for k, v in previous.items():
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v
 
 
 def _mk_jwt(claims, secret):

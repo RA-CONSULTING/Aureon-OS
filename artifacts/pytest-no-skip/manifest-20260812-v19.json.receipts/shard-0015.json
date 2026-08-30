@@ -1,0 +1,231 @@
+{
+  "collection_errors": [],
+  "collection_skip_count": 0,
+  "credential_keys_scrubbed": [],
+  "expected_item_count": 192,
+  "manifest_sha256": "6e08dda58af2b9999147f8c5101434e359789d4e2e5006fac2703122fcc383b3",
+  "operational_state_after": {
+    "aureon/exchanges/.kraken_nonce": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786471546530884800,
+      "sha256": "a97a71e52e16718818803a4ffcf2a23d5bd6bdef8019065923a411e3faeee96c",
+      "size": 16
+    },
+    "real_portfolio_state.json": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786471546579579900,
+      "sha256": "b7819aec57f9754e8059bf4ec0a52aaeb47dc802fc5c7954103dee5120d3c5ac",
+      "size": 69296
+    },
+    "state/aureon_capital_tradable_asset_registry.json": {
+      "exists": false
+    },
+    "state/capital_cfd_last_exchange_trace.json": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786475496169071800,
+      "sha256": "0ae124cf632cd4c7560ba6c1bf47b663a53ffac123409c32e50fbc4a34b201ef",
+      "size": 13582
+    },
+    "state/capital_cfd_pending_execution.json": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786475497232595400,
+      "sha256": "81ae63fa1b35c7c3c582cf1a997bd0caba7fe19f5be198167261af930b121b30",
+      "size": 15935
+    },
+    "state/capital_shadow_promotions.jsonl": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786475494283161800,
+      "sha256": "11a6de8f3dd6cc88837f8c9fb06d5f04f30f15b4a1a02538e5379df135f81eef",
+      "size": 2039
+    },
+    "state/lambda_history.json": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786463161436582000,
+      "sha256": "8464f55b4d3102ad163101863849557aa64cc063e66e84ca51f04624b929f20a",
+      "size": 1695
+    },
+    "state/lighthouse_event.jsonl": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786473931255436200,
+      "sha256": "7b34d1c1f5ec106662d27b5fb7b7a6916c4d3528e3eea3a4854856590b07cd40",
+      "size": 803
+    },
+    "state/unified_order_lifecycle_events.jsonl": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786475697922839600,
+      "sha256": "acc4aa2a6eac44ca9ac74d78f37b9afb07a899241a525572910b988b5bff8764",
+      "size": 140105
+    },
+    "state/unified_order_lifecycle_latest.json": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786475697953779500,
+      "sha256": "0758a12c9df7bda15b315294e160692dc809865e66a0a3e49324f708fefc54c6",
+      "size": 274970
+    },
+    "thoughts.jsonl": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786526404870307500,
+      "sha256": "5d9f70677d43359cba95033aa361ff2e718bf0d4a9bcd1e054367ff89bb42eaa",
+      "size": 11451141
+    },
+    "trade_logger.log": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786471530121968800,
+      "sha256": "416792f420ffd21a7ca8da7656bee8f94f666f48ddab11d3034dac51aee547ac",
+      "size": 18954
+    }
+  },
+  "operational_state_before": {
+    "aureon/exchanges/.kraken_nonce": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786471546530884800,
+      "sha256": "a97a71e52e16718818803a4ffcf2a23d5bd6bdef8019065923a411e3faeee96c",
+      "size": 16
+    },
+    "real_portfolio_state.json": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786471546579579900,
+      "sha256": "b7819aec57f9754e8059bf4ec0a52aaeb47dc802fc5c7954103dee5120d3c5ac",
+      "size": 69296
+    },
+    "state/aureon_capital_tradable_asset_registry.json": {
+      "exists": false
+    },
+    "state/capital_cfd_last_exchange_trace.json": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786475496169071800,
+      "sha256": "0ae124cf632cd4c7560ba6c1bf47b663a53ffac123409c32e50fbc4a34b201ef",
+      "size": 13582
+    },
+    "state/capital_cfd_pending_execution.json": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786475497232595400,
+      "sha256": "81ae63fa1b35c7c3c582cf1a997bd0caba7fe19f5be198167261af930b121b30",
+      "size": 15935
+    },
+    "state/capital_shadow_promotions.jsonl": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786475494283161800,
+      "sha256": "11a6de8f3dd6cc88837f8c9fb06d5f04f30f15b4a1a02538e5379df135f81eef",
+      "size": 2039
+    },
+    "state/lambda_history.json": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786463161436582000,
+      "sha256": "8464f55b4d3102ad163101863849557aa64cc063e66e84ca51f04624b929f20a",
+      "size": 1695
+    },
+    "state/lighthouse_event.jsonl": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786473931255436200,
+      "sha256": "7b34d1c1f5ec106662d27b5fb7b7a6916c4d3528e3eea3a4854856590b07cd40",
+      "size": 803
+    },
+    "state/unified_order_lifecycle_events.jsonl": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786475697922839600,
+      "sha256": "acc4aa2a6eac44ca9ac74d78f37b9afb07a899241a525572910b988b5bff8764",
+      "size": 140105
+    },
+    "state/unified_order_lifecycle_latest.json": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786475697953779500,
+      "sha256": "0758a12c9df7bda15b315294e160692dc809865e66a0a3e49324f708fefc54c6",
+      "size": 274970
+    },
+    "thoughts.jsonl": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786526404870307500,
+      "sha256": "5d9f70677d43359cba95033aa361ff2e718bf0d4a9bcd1e054367ff89bb42eaa",
+      "size": 11451141
+    },
+    "trade_logger.log": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786471530121968800,
+      "sha256": "416792f420ffd21a7ca8da7656bee8f94f666f48ddab11d3034dac51aee547ac",
+      "size": 18954
+    }
+  },
+  "operational_state_changes": [],
+  "process": {
+    "argv": [
+      "C:\\Users\\user\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+      "-m",
+      "pytest",
+      "--rootdir",
+      "C:\\Users\\user\\Aureon-OS-github-latest-20260810_091213",
+      "-c",
+      "C:\\Users\\user\\Aureon-OS-github-latest-20260810_091213\\pyproject.toml",
+      "-p",
+      "scripts.validation.pytest_no_skip_shards",
+      "--disable-socket",
+      "--strict-config",
+      "-o",
+      "cache_dir=C:\\Users\\user\\AppData\\Local\\Temp\\aureon-pytest-shard-0015-uoq37tu7\\pytest-cache",
+      "--aureon-shard-report=C:\\Users\\user\\AppData\\Local\\Temp\\aureon-pytest-shard-0015-uoq37tu7\\pytest-report.json",
+      "tests/bio/test_audio_signal_adapter.py",
+      "tests/bio/test_null_calibration.py",
+      "tests/bio/test_proxy_suite.py",
+      "tests/test_accounting_report_enrichment.py",
+      "tests/test_alpaca_quote.py",
+      "tests/test_aureon_env.py",
+      "tests/test_baton_link_import_safety.py",
+      "tests/test_connector_lighthouse_fields.py",
+      "tests/test_economic_governance_boundary.py",
+      "tests/test_goal_execution_engine_self_ui.py",
+      "tests/test_net_profit_after_fees_smoke.py",
+      "tests/test_ollama_cognitive_bridge.py",
+      "tests/test_operator_join_organism_lazy_queen.py",
+      "tests/test_operator_server.py",
+      "tests/test_organism_contract_stack.py",
+      "tests/test_queen_options_scanner_receipts.py",
+      "tests/test_s5_economic_governance_boundary.py",
+      "tests/test_saas_gateway.py",
+      "tests/test_sacred_waveform_visualizer_receipts.py",
+      "tests/test_unified_ws_feed_real_data.py",
+      "tests/test_visualize_market_patterns_real_data.py",
+      "tests/vault/test_meta_cognition_observer.py",
+      "tests/vault/test_obsidian_adapter.py"
+    ],
+    "duration_seconds": 240.125,
+    "returncode": 124,
+    "stderr": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout": "................................FF.....F................................ [ 37%]\n..........F..................................................",
+    "stdout_sha256": "b939d8404524bdaa6b2a72f333089555f524e0ed4c0ad79756730f340321ef37",
+    "timed_out": true
+  },
+  "pytest_report_error": "",
+  "pytest_results": null,
+  "runtime_skip_count": 0,
+  "schema": "aureon.pytest-no-skip-shards.v1",
+  "selection_changes": {
+    "missing": [],
+    "unexpected": []
+  },
+  "shard": 15,
+  "state_mutation_detected": false,
+  "status": "timed_out"
+}

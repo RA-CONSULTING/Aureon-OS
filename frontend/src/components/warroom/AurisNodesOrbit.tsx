@@ -10,18 +10,34 @@ const NODE_NAMES = [
   'Owl', 'Panda', 'CargoShip', 'Clownfish'
 ];
 
-const NODE_EMOJIS = ['🐯', '🦅', '🐦', '🐬', '🦌', '🦉', '🐼', '🚢', '🐠'];
+const NODE_EMOJIS = ['', '', '', '', '', '', '', '', ''];
 
 export function AurisNodesOrbit({ quantumState }: Props) {
-  const maxWeight = Math.max(...quantumState.waveFunction);
+  const waveFunction = quantumState.waveFunction;
+
+  if (!Array.isArray(waveFunction) || waveFunction.length === 0) {
+    return (
+      <Card className="bg-card/50 backdrop-blur border-primary/20">
+        <CardHeader>
+          <CardTitle>9 Auris Nodes (Real-time)</CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground">
+          No provider-backed Auris node weights are available.
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const weights = waveFunction.map((weight) => (Number.isFinite(weight) ? weight : 0));
+  const maxWeight = Math.max(...weights);
 
   return (
     <Card className="bg-card/50 backdrop-blur border-primary/20">
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          <span>🌟 9 Auris Nodes (Real-time)</span>
+          <span> 9 Auris Nodes (Real-time)</span>
           {quantumState.dominantNode && (
-            <span className="text-sm text-yellow-500">
+            <span className="text-sm text-warning">
               Dominant: {quantumState.dominantNode}
             </span>
           )}
@@ -38,9 +54,9 @@ export function AurisNodesOrbit({ quantumState }: Props) {
             const radius = 100;
             const x = Math.cos(angle) * radius;
             const y = Math.sin(angle) * radius;
-            const weight = quantumState.waveFunction[idx] || 0;
+            const weight = weights[idx] || 0;
             const isDominant = name.toLowerCase() === quantumState.dominantNode?.toLowerCase();
-            const scale = 0.8 + (weight / maxWeight) * 0.7;
+            const scale = maxWeight > 0 ? 0.8 + (weight / maxWeight) * 0.7 : 0.8;
 
             return (
               <div
@@ -59,7 +75,7 @@ export function AurisNodesOrbit({ quantumState }: Props) {
                   <div
                     className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl transition-all
                       ${isDominant 
-                        ? 'bg-yellow-500/30 border-2 border-yellow-500 animate-pulse shadow-lg shadow-yellow-500/50' 
+                        ? 'bg-warning/30 border-2 border-warning animate-pulse shadow-lg shadow-warning/50' 
                         : 'bg-primary/20 border border-primary/50'
                       }`}
                   >
@@ -94,7 +110,7 @@ export function AurisNodesOrbit({ quantumState }: Props) {
         {/* Legend */}
         <div className="mt-4 flex flex-wrap gap-2 justify-center">
           {NODE_NAMES.map((name, idx) => {
-            const weight = quantumState.waveFunction[idx] || 0;
+            const weight = weights[idx] || 0;
             const isDominant = name.toLowerCase() === quantumState.dominantNode?.toLowerCase();
             
             return (
@@ -102,7 +118,7 @@ export function AurisNodesOrbit({ quantumState }: Props) {
                 key={name}
                 className={`text-xs px-2 py-1 rounded border ${
                   isDominant
-                    ? 'bg-yellow-500/20 border-yellow-500 text-yellow-500'
+                    ? 'bg-warning/20 border-warning text-warning'
                     : 'bg-primary/10 border-primary/30'
                 }`}
               >

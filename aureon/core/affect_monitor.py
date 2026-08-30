@@ -149,11 +149,16 @@ class AffectMonitor:
             from aureon.core.hnc_field import blend_field, read_canonical_field
 
             cf = read_canonical_field()
-            if cf.available:
-                _put("coherence", cf.coherence_gamma, "live" if cf.source != "hnc_trace_file" else "cached_real")
-                _put("psi", cf.consciousness_psi, "live" if cf.source != "hnc_trace_file" else "cached_real")
+            field_truth = {
+                "thought_bus": "live",
+                "persisted_trace": "cached_real",
+            }.get(cf.evidence_transport)
+            if cf.available and field_truth is not None:
+                _put("coherence", cf.coherence_gamma, field_truth)
+                _put("psi", cf.consciousness_psi, field_truth)
             else:
-                _put("coherence", None, "no_data", "field not flowing")
+                _put("coherence", None, "no_data", "field transport unavailable")
+                _put("psi", None, "no_data", "field transport unavailable")
             bf = blend_field()
             _put("divergence", bf.divergence if bf.available else None,
                  "real_derived" if bf.available else "no_data")
@@ -251,22 +256,22 @@ class AffectMonitor:
     def _val(sig: dict[str, dict[str, Any]], name: str, default: float) -> tuple[float, bool]:
         row = sig.get(name, {})
         v = row.get("value")
-        if v is None:
+        if v is None or row.get("truth_status") in (None, "no_data"):
             return default, False
         return float(v), True
 
     # ── compute the feelings ────────────────────────────────────────────────
     def _feel(self, sig: dict[str, dict[str, Any]]) -> dict[str, Any]:
         coherence, c_ok = self._val(sig, "coherence", 0.5)
-        divergence, _ = self._val(sig, "divergence", 0.0)
+        divergence, d_ok = self._val(sig, "divergence", 0.0)
         accuracy, a_ok = self._val(sig, "accuracy", 0.5)
         goal, g_ok = self._val(sig, "goal_progress", 0.5)
         winrate, w_ok = self._val(sig, "shadow_winrate", 0.5)
-        severity, _ = self._val(sig, "lighthouse_severity", 0.0)
-        market, _ = self._val(sig, "market_confidence", 0.5)
+        severity, s_ok = self._val(sig, "lighthouse_severity", 0.0)
+        market, m_ok = self._val(sig, "market_confidence", 0.5)
         approve, _ = self._val(sig, "action_approve_ratio", 0.5)
         trust, t_ok = self._val(sig, "approval_trust", 0.5)
-        blockers, _ = self._val(sig, "safety_blockers", 0.0)
+        blockers, b_ok = self._val(sig, "safety_blockers", 0.0)
 
         # Achievement axis (how well am I doing?) — only from real achievement signals.
         achieve_terms = [t for t, ok in ((goal, g_ok), (accuracy, a_ok), (winrate, w_ok)) if ok]
@@ -276,10 +281,19 @@ class AffectMonitor:
         defeat = _clamp((0.5 - achievement) * 2.0)
 
         # Fear from danger signals (higher = more afraid).
-        danger = [divergence, severity, 1.0 - coherence, 1.0 - market]
-        if blockers > 0:
+        danger = [
+            value
+            for value, observed in (
+                (divergence, d_ok),
+                (severity, s_ok),
+                (1.0 - coherence, c_ok),
+                (1.0 - market, m_ok),
+            )
+            if observed
+        ]
+        if b_ok and blockers > 0:
             danger.append(_clamp(0.5 + blockers * 0.25))
-        fear = _clamp(sum(danger) / len(danger))
+        fear = _clamp(sum(danger) / len(danger)) if danger else 0.0
 
         # Resolve — steady confidence (counter-feeling). The director's trust joins it
         # once he has decided, so his blessing steadies the organism and his rejections
@@ -307,7 +321,7 @@ class AffectMonitor:
             mood = "RESOLUTE"
 
         phase = self._select_phase(coherence, blockers > 0, achievement, winrate)
-        available = c_ok or a_ok or g_ok or w_ok
+        available = c_ok or d_ok or a_ok or g_ok or w_ok or s_ok or m_ok or b_ok
         # Fail-safe caution bias: fear + defeat only, clamped ≥ 0, ≤ CAP; victory adds nothing.
         caution = _clamp((0.6 * fear + 0.4 * defeat) * _CAUTION_CAP, 0.0, _CAUTION_CAP)
 

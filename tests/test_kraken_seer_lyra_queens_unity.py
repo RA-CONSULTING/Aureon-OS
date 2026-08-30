@@ -36,6 +36,15 @@ try:
 except ImportError:
     print("❌ ERROR: Could not import KrakenUnifiedSignalBridge")
     print("   Make sure aureon_kraken_unified_signal_bridge.py exists")
+    # Under pytest, a module-level sys.exit kills the whole session with
+    # INTERNALERROR (it only ever "worked" while test_crash.py had disarmed
+    # sys.exit process-wide — see conftest.py). Skip honestly instead; the
+    # script path (python tests/test_kraken_seer_lyra_queens_unity.py) is
+    # unchanged.
+    if "pytest" in sys.modules:
+        import pytest
+        pytest.skip("KrakenUnifiedSignalBridge unavailable in this environment",
+                    allow_module_level=True)
     sys.exit(1)
 
 

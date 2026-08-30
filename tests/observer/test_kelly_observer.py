@@ -1,10 +1,11 @@
 """AdaptivePrimeProfitGate observer_coherence parameter.
 
-Backward-compat plus the four valid input modes:
-  - None + env unset    → today's behaviour (no scaling, multiplier 1.0)
-  - explicit float       → clamped to [0,1], buffer scaled
-  - explicit False       → disables even if env opt-in is set
-  - None + env set       → auto-consult observer singleton
+Stage Y/AC contract (auto-consult is the DEFAULT, opt-OUT via env):
+  - None + env unset     → auto-consult the observer singleton AND the
+                           canonical HNC field (lower of the two wins)
+  - explicit float        → clamped to [0,1], buffer scaled
+  - explicit False        → disables even when auto-consult would fire
+  - env set to "0"/"false" → operator opt-out, multiplier pinned at 1.0
 """
 
 from __future__ import annotations
@@ -23,7 +24,7 @@ def gate():
 
 @pytest.fixture(autouse=True)
 def _clear_env():
-    """Make sure no test sees the env opt-in unless it sets it itself."""
+    """Make sure no test sees the env switch unless it sets it itself."""
     saved = os.environ.pop("AUREON_KELLY_OBSERVE_COHERENCE", None)
     yield
     if saved is not None:
@@ -32,15 +33,29 @@ def _clear_env():
         os.environ.pop("AUREON_KELLY_OBSERVE_COHERENCE", None)
 
 
-def test_baseline_no_observer_param(gate):
-    """No coherence supplied + env unset → no scaling, behaviour unchanged."""
+@pytest.fixture(autouse=True)
+def _restore_observer_singleton():
+    """Constructing a HarmonicObserver auto-claims the process singleton;
+    save/restore it so tests here stay order-independent."""
+    import aureon.observer as obs_mod
+
+    saved = obs_mod.get_observer()
+    yield
+    obs_mod._observer_singleton = saved
+
+
+def test_env_optout_pins_pre_observer_behaviour(gate):
+    """Operator opt-out ("0") → no scaling regardless of observer/field state."""
+    os.environ["AUREON_KELLY_OBSERVE_COHERENCE"] = "0"
     r = gate.calculate_gates("binance", 100.0)
     assert r.observer_coherence is None
     assert r.observer_buffer_multiplier == 1.0
 
 
 def test_high_coherence_leaves_buffer_unchanged(gate):
-    baseline = gate.calculate_gates("binance", 100.0)
+    # The anchored baseline is explicit False (auto-consult would otherwise
+    # fold in whatever the live canonical field currently reports).
+    baseline = gate.calculate_gates("binance", 100.0, observer_coherence=False)
     high = gate.calculate_gates("binance", 100.0, observer_coherence=1.0)
     assert high.observer_buffer_multiplier == 1.0
     assert abs(high.r_prime_buffer - baseline.r_prime_buffer) < 1e-12
@@ -87,8 +102,22 @@ def test_env_optin_consults_singleton(gate):
     assert abs(r.observer_buffer_multiplier - 1.5) < 1e-9
 
 
-def test_env_optin_no_observer_falls_back(gate):
-    """Env on but no singleton → multiplier stays 1.0."""
+def test_no_observer_and_no_field_falls_back(gate, monkeypatch):
+    """Neither an observer singleton nor a canonical field → multiplier 1.0.
+
+    The canonical field must be silenced explicitly: this repo carries real
+    field trace state, so auto-consult would otherwise read a live Γ.
+    """
+    import aureon.observer as obs_mod
+    from aureon.core import hnc_field
+
+    obs_mod._observer_singleton = None
+
+    class _NoField:
+        available = False
+        coherence_gamma = None
+
+    monkeypatch.setattr(hnc_field, "read_canonical_field", lambda *a, **kw: _NoField())
     os.environ["AUREON_KELLY_OBSERVE_COHERENCE"] = "1"
     r = gate.calculate_gates("binance", 100.0)
     assert r.observer_coherence is None

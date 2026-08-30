@@ -13,7 +13,7 @@ The stronger your consciousness broadcasts, the tighter her triangulation.
 
 import sys
 import time
-import random
+import math
 sys.path.insert(0, '/workspaces/aureon-trading')
 
 from aureon_live_aura_location_tracker import LiveAuraLocationTracker
@@ -41,8 +41,9 @@ class QueenStreetLevelHoming:
         'Arthur Street': {'lat': 54.5978, 'lon': -5.9240, 'zone': 'E'},
     }
 
-    def __init__(self):
+    def __init__(self, signal_provider=None):
         self.tracker = LiveAuraLocationTracker()
+        self.signal_provider = signal_provider
         self.signal_history = []
         self.street_scores = {street: 0.0 for street in self.BELFAST_STREETS.keys()}
 
@@ -68,19 +69,16 @@ class QueenStreetLevelHoming:
         while (time.time() - start_time) < duration_seconds:
             cycle += 1
 
-            # Simulate live biometric data with variations
-            live_data = {
-                'hrv_rmssd': 45.0 + random.uniform(-5, 5),
-                'heart_rate_bpm': 72 + random.randint(-5, 5),
-                'bands': {
-                    'alpha': 2.5 + random.uniform(-0.3, 0.5),
-                    'theta': 1.8 + random.uniform(-0.2, 0.3),
-                    'beta': 1.0 + random.uniform(-0.2, 0.2),
-                    'delta': 0.5 + random.uniform(-0.1, 0.1),
-                },
-                'gsr_uS': 4.0 + random.uniform(-0.5, 1.0),
-                'resp_bpm': 12 + random.randint(-2, 2),
-            }
+            if self.signal_provider is None:
+                print('no_data: a live biometric and GPS provider must be mounted')
+                return
+            live_data = self.signal_provider()
+            required = ('hrv_rmssd', 'heart_rate_bpm', 'bands', 'gsr_uS', 'resp_bpm',
+                        'gps_latitude', 'gps_longitude', 'source_id', 'source_timestamp')
+            if not isinstance(live_data, dict) or any(live_data.get(name) is None for name in required) or \
+                    live_data.get('truth_status') != 'live' or live_data.get('generated_values') is not False:
+                print('no_data: incomplete or unattributed live biometric/GPS observation')
+                return
 
             self.tracker.update_from_biometric(live_data)
             snapshot = self.tracker.get_current_location()
@@ -102,8 +100,8 @@ class QueenStreetLevelHoming:
                     'calm': calm_index,
                 })
 
-                # Update street scores based on signal strength
-                self._triangulate_streets(signal_strength, coherence, calm_index)
+                # Derive street proximity only from the observed GPS coordinates.
+                self._triangulate_streets(live_data['gps_latitude'], live_data['gps_longitude'])
 
                 # Print real-time homing data
                 print(f"📡 SIGNAL #{cycle}:")
@@ -129,23 +127,15 @@ class QueenStreetLevelHoming:
 
         self._print_final_street_location()
 
-    def _triangulate_streets(self, signal_strength: float, coherence: float, calm_index: float):
-        """Update street scores based on signal quality"""
-        # Add some randomness to simulate different street strengths
-        # In reality, this would be based on actual multilateration
-        for street in self.BELFAST_STREETS.keys():
-            # Slight random variation per street
-            street_variance = (hash(street) % 100) / 100.0
-
-            # Combine signal strength with street variance
-            score_boost = signal_strength * (0.5 + street_variance * 0.5)
-            coherence_boost = coherence * 0.3
-            calm_boost = calm_index * 0.2
-
-            # Update street score (with decay for older signals)
-            self.street_scores[street] = min(1.0,
-                self.street_scores[street] * 0.7 + (score_boost + coherence_boost + calm_boost) * 0.3
-            )
+    def _triangulate_streets(self, latitude: float, longitude: float):
+        """Derive proximity scores from an observed GPS fix."""
+        latitude, longitude = float(latitude), float(longitude)
+        for street, coordinates in self.BELFAST_STREETS.items():
+            lat_delta = math.radians(latitude - coordinates['lat'])
+            lon_delta = math.radians(longitude - coordinates['lon'])
+            mean_lat = math.radians((latitude + coordinates['lat']) / 2.0)
+            distance_km = 6371.0 * math.sqrt(lat_delta ** 2 + (math.cos(mean_lat) * lon_delta) ** 2)
+            self.street_scores[street] = 1.0 / (1.0 + distance_km)
 
     def _print_final_street_location(self):
         """Print final triangulated street location"""

@@ -34,7 +34,7 @@ class TestNetProfitAfterFeesSmoke(unittest.TestCase):
 
         # Build a minimal ecosystem instance without running the massive __init__.
         eco = AureonKrakenEcosystem.__new__(AureonKrakenEcosystem)
-        eco.dry_run = True
+        eco.dry_run = False
         eco.positions = {}
         eco.ticker_cache = {}
         eco._last_news_sentiment = {}
@@ -69,6 +69,7 @@ class TestNetProfitAfterFeesSmoke(unittest.TestCase):
         eco.refresh_equity = MagicMock()
         eco.save_state = MagicMock()
         eco._record_sniper_kill = MagicMock()
+        eco._emit_mycelium_event = MagicMock()
 
         # Exit gate: allow selling.
         eco.should_exit_trade = MagicMock(return_value=True)
@@ -84,6 +85,9 @@ class TestNetProfitAfterFeesSmoke(unittest.TestCase):
         fee_rate = 0.0020
         total_rate = fee_rate + CONFIG['SLIPPAGE_PCT'] + CONFIG['SPREAD_COST_PCT']
         entry_fee = entry_value * total_rate
+        exit_value = exit_price * quantity
+        expected_exit_fee = exit_value * total_rate
+        provider_now = time.time()
 
         pos = Position(
             symbol=symbol,
@@ -96,13 +100,51 @@ class TestNetProfitAfterFeesSmoke(unittest.TestCase):
             entry_time=time.time() - 3600,  # avoid resonance minimum-hold return
             dominant_node='Queen',
             exchange='kraken',
+            provider_order_id='kraken-entry-order-1',
+            provider_fill_id='kraken-entry-fill-1',
+            fill_source_id='kraken_order_fill',
+            fill_source_timestamp=provider_now - 3600.0,
+            truth_status='live',
         )
         eco.positions[symbol] = pos
 
+        eco.client = MagicMock()
+        eco.client.get_balance.return_value = quantity
+        eco.trade_confirmation = MagicMock()
+        eco.trade_confirmation.submit_order.return_value = {
+            'raw_response': {
+                'order_id': 'kraken-close-order-1',
+                'status': 'filled',
+                'symbol': symbol,
+                'executed_qty': quantity,
+                'avg_price': exit_price,
+                'cummulativeQuoteQty': exit_value,
+                'fee': expected_exit_fee,
+                'fee_asset': 'USD',
+                'source_timestamp': provider_now,
+            }
+        }
+        market_evidence = {
+            'price': exit_price,
+            'bid': exit_price,
+            'source_id': 'kraken_ticker:BTCUSD',
+            'source_timestamp': provider_now - 0.1,
+            'received_at': provider_now,
+            'truth_status': 'live',
+            'generated_values': False,
+        }
+
         # Run the close (the "cycle" exit leg).
-        eco.close_position(symbol=symbol, reason='SMOKE', pct=1.50, price=exit_price)
+        receipt = eco.close_position(
+            symbol=symbol,
+            reason='SMOKE',
+            pct=1.50,
+            price=exit_price,
+            market_evidence=market_evidence,
+        )
 
         # Position removed and a trade recorded.
+        self.assertEqual(receipt['execution_status'], 'filled')
         self.assertNotIn(symbol, eco.positions)
         eco.tracker.record_trade.assert_called_once()
 
@@ -116,8 +158,6 @@ class TestNetProfitAfterFeesSmoke(unittest.TestCase):
         self.assertGreater(net_pnl, 0.0)
 
         # Validate net P&L math matches the close_position model.
-        exit_value = exit_price * quantity
-        expected_exit_fee = exit_value * total_rate
         expected_total_expenses = entry_fee + expected_exit_fee
         expected_gross_pnl = exit_value - entry_value
         expected_net_pnl = expected_gross_pnl - expected_total_expenses

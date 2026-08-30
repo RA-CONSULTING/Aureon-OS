@@ -12,8 +12,11 @@ services:
       dockerfile: deploy/operator.Dockerfile
     image: aureon-operator:latest
     environment:
+      AUREON_OPERATOR_ENV: "production"
       AUREON_OPERATOR_PORT: "8790"
       AUREON_OPERATOR_THREADS: "8"
+      AUREON_OPERATOR_HTTP_PROCESSES: "1"
+      AUREON_OPERATOR_REPLICAS: "1"
       # Server-side tenancy bridge (recommended in production):
       AUREON_SUPABASE_JWT_SECRET: "${AUREON_SUPABASE_JWT_SECRET:-}"
       # Billing / metering (record-only unless CHARGE explicitly enabled):
@@ -21,14 +24,20 @@ services:
       SUPABASE_SERVICE_ROLE_KEY: "${SUPABASE_SERVICE_ROLE_KEY:-}"
       AUREON_BILLING_METERING: "${AUREON_BILLING_METERING:-}"
       AUREON_BILLING_CHARGE_ENABLED: "${AUREON_BILLING_CHARGE_ENABLED:-}"
-      # Inbound service auth / rate-limit (optional, layered):
-      AUREON_OPERATOR_API_KEY: "${AUREON_OPERATOR_API_KEY:-}"
-      AUREON_OPERATOR_RATE_RPS: "${AUREON_OPERATOR_RATE_RPS:-}"
+      # Inbound service auth / rate-limit (mandatory in production):
+      AUREON_OPERATOR_API_KEY: "${AUREON_OPERATOR_API_KEY:?set a nonempty operator secret}"
+      AUREON_OPERATOR_RATE_RPS: "${AUREON_OPERATOR_RATE_RPS:-10}"
+      AUREON_OPERATOR_RATE_BURST: "${AUREON_OPERATOR_RATE_BURST:-20}"
+      AUREON_OPERATOR_MAX_BODY: "${AUREON_OPERATOR_MAX_BODY:-262144}"
+      # Empty means X-Forwarded-For is ignored. Set only to the exact ingress CIDR(s).
+      AUREON_OPERATOR_TRUSTED_PROXY_CIDRS: "${AUREON_OPERATOR_TRUSTED_PROXY_CIDRS:-}"
       # Model keys (optional — omit for offline):
       OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
       XAI_API_KEY: "${XAI_API_KEY:-}"
       GEMINI_API_KEY: "${GEMINI_API_KEY:-}"
     restart: unless-stopped
+    deploy:
+      replicas: 1
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://localhost:8790/healthz"]
       interval: 30s

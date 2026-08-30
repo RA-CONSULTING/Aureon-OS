@@ -19,7 +19,6 @@ temporal probabilities and energetic layers.
 from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
 import logging
 import math
-import random
 import time
 from dataclasses import dataclass, field, asdict
 from typing import Dict, List, Optional, Any, Tuple
@@ -96,7 +95,7 @@ class TemporalDialer:
         logger.info("   🔧 Calibrating Temporal Dialer...")
         # ⚡ TURBO: Minimal calibration delay (was 0.5)
         time.sleep(0.05)
-        self.calibration_offset = (random.random() - 0.5) * 0.01
+        self.calibration_offset = 0.0
         self.state.frequency = SCHUMANN_RESONANCE
         self.state.mode = DialMode.STANDBY
         logger.info(f"   ✅ Calibration Complete. Offset: {self.calibration_offset:.6f}")
@@ -141,11 +140,14 @@ class TemporalDialer:
             logger.warning("   ⚠️ Cannot pull data in STANDBY mode. Tune frequency first.")
             return None
             
+        if self.field_connection is None:
+            logger.warning("   ⚠️ No live Global Harmonic Field connection; no_data")
+            return None
         payload = {}
-        source = "Simulated_Quantum_Flux"
-        field_omega = 0.5
-        field_coherence = self.state.resonance
-        field_direction = "NEUTRAL"
+        source = "Global_Harmonic_Field_LIVE"
+        field_omega = None
+        field_coherence = None
+        field_direction = None
         
         # === LIVE DATA FROM GLOBAL HARMONIC FIELD ===
         if self.field_connection is not None:
@@ -218,18 +220,16 @@ class TemporalDialer:
                 logger.debug(f"   🌐 LIVE Field Ω={field_omega:.4f} Dir={field_direction}")
                 
             except Exception as e:
-                logger.warning(f"   ⚠️ Field read error: {e} - falling back to simulation")
-                source = "Simulated_Quantum_Flux"
+                logger.warning(f"   ⚠️ Field read error: {e}; no_data")
+                return None
         
-        # Calculate noise based on resonance lock quality
-        noise = random.random() * (1.0 - self.state.resonance) * 0.5
+        # Deterministic uncertainty derived from lock quality.
+        noise = max(0.0, 1.0 - self.state.resonance)
         self.state.quantum_noise_level = noise
         
         # Intensity combines resonance with field omega
         intensity = self.state.resonance * (1.0 - noise)
-        if source == "Global_Harmonic_Field_LIVE":
-            # Boost intensity based on field confidence
-            intensity = max(intensity, field_omega * (1.0 - noise))
+        intensity = max(intensity, float(field_omega) * (1.0 - noise))
         
         packet = QuantumPacket(
             timestamp=time.time(),
@@ -237,11 +237,11 @@ class TemporalDialer:
             intensity=intensity,
             coherence=field_coherence,
             payload={
-                "data": "Quantum Flux Snapshot", 
-                "vector": [random.random() for _ in range(3)],
+                "data": "Global Harmonic Field observation",
+                "vector": [field_omega, field_coherence, self.state.resonance],
                 "noise": noise,
-                "field_omega": field_omega if source == "Global_Harmonic_Field_LIVE" else None,
-                "field_direction": field_direction if source == "Global_Harmonic_Field_LIVE" else None,
+                "field_omega": field_omega,
+                "field_direction": field_direction,
                 **payload
             },
             source_layer=source

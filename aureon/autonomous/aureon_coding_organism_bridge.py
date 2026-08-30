@@ -29,10 +29,15 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence
 
+from aureon.autonomous.aureon_internal_coding_workforce import (
+    PROCESS_BRAIN_BINDINGS,
+    ROLE_BRAIN_LANES,
+    ROLE_PROCESS_BINDINGS,
+)
+from aureon.autonomous.aureon_internal_work_ledger import DurableInternalWorkLedger
 from aureon.autonomous.aureon_local_task_queue import LocalTask, LocalTaskQueue
 from aureon.autonomous.aureon_safe_code_control import CodeProposal, SafeCodeControl
 from aureon.autonomous.aureon_safe_desktop_control import DesktopAction, SafeDesktopControl
-
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_STATE_PATH = Path("state/aureon_coding_organism_last_run.json")
@@ -40,6 +45,7 @@ DEFAULT_AUDIT_JSON = Path("docs/audits/aureon_coding_organism_bridge.json")
 DEFAULT_AUDIT_MD = Path("docs/audits/aureon_coding_organism_bridge.md")
 DEFAULT_PUBLIC_JSON = Path("frontend/public/aureon_coding_organism_bridge.json")
 DEFAULT_TASK_QUEUE_PATH = Path("state/aureon_coding_organism_task_queue.json")
+DEFAULT_INTERNAL_WORK_LEDGER_PATH = Path("state/aureon_internal_coding_work_ledger.json")
 DEFAULT_CODE_STATE_PATH = Path("state/aureon_coding_organism_safe_code_state.json")
 DEFAULT_DESKTOP_STATE_PATH = Path("state/aureon_coding_organism_desktop_state.json")
 DEFAULT_DESKTOP_STOP_PATH = Path("state/aureon_coding_organism_desktop.stop")
@@ -454,6 +460,10 @@ def _build_agent_team(scope_status: str) -> List[Dict[str, Any]]:
                 "day_to_day": duty,
                 "uses_whole_organism": True,
                 "temporary_assignment": True,
+                "brain_required": True,
+                "brain_lane": ROLE_BRAIN_LANES[role],
+                "brain_process": ROLE_PROCESS_BINDINGS[role],
+                "decision_authority": "aureon_internal",
                 "status": "active" if active else "waiting_for_scope_lock",
                 "hire_fire_policy": "temporary contractor memory archived after handover; no core code deleted",
             }
@@ -471,6 +481,7 @@ def _build_phase_timers(scope_status: str, generated_at: str) -> List[Dict[str, 
     timers: List[Dict[str, Any]] = []
     for phase, label, estimate in PHASE_TIMER_BLUEPRINT:
         status = "completed" if phase in completed else "waiting_client" if phase in active else "not_started"
+        brain_lane, brain_owner = PROCESS_BRAIN_BINDINGS.get(phase, ("general", "Release Manager"))
         timers.append(
             {
                 "phase": phase,
@@ -481,6 +492,9 @@ def _build_phase_timers(scope_status: str, generated_at: str) -> List[Dict[str, 
                 "estimated_sec": estimate,
                 "elapsed_sec": 0,
                 "overdue": False,
+                "brain_required": True,
+                "brain_lane": brain_lane,
+                "brain_owner": brain_owner,
             }
         )
     return timers
@@ -496,6 +510,8 @@ def _build_proof_checklist(
     hnc_drift_proof: Dict[str, Any],
     artifact_quality_report: Optional[Dict[str, Any]] = None,
     creative_process_guardian: Optional[Dict[str, Any]] = None,
+    internal_workforce_report: Optional[Dict[str, Any]] = None,
+    require_internal_workforce: bool = False,
     evidence_publish_planned: bool = True,
 ) -> List[Dict[str, Any]]:
     tests_ok = bool(tests.get("ok")) or bool(tests.get("skipped"))
@@ -580,6 +596,22 @@ def _build_proof_checklist(
                     f"{summary.get('role_count', 0)} guarded; HNC/Auris {summary.get('hnc_auris_ready')}"
                 ),
                 "details": creative_process_guardian,
+            }
+        )
+    if require_internal_workforce:
+        workforce = internal_workforce_report if isinstance(internal_workforce_report, dict) else {}
+        checklist.append(
+            {
+                "id": "internal_coding_workforce",
+                "label": "Aureon internal coding workforce passed",
+                "ok": bool(workforce.get("ready")),
+                "blocking": True,
+                "evidence": (
+                    f"brain fabric {workforce.get('brain_fabric_ready')}; "
+                    f"internal share ppm {workforce.get('internal_share_ppm')}; "
+                    f"Codex role {workforce.get('codex_role', 'not_evidenced')}"
+                ),
+                "details": workforce,
             }
         )
     return checklist
@@ -1462,6 +1494,9 @@ def submit_coding_prompt(
     scope_answers: Optional[Dict[str, Any]] = None,
     scope_approved: bool = False,
     base_job_id: str = "",
+    internal_workforce: Any = None,
+    internal_deliberation: Optional[Dict[str, Any]] = None,
+    require_internal_workforce: bool = False,
 ) -> Dict[str, Any]:
     root = Path(root or REPO_ROOT).resolve()
     prompt_text = str(prompt or "").strip()
@@ -1486,7 +1521,86 @@ def submit_coding_prompt(
         scope_answers=scope_answers or {},
         base_job_id=base_job_id,
     )
+    workforce = internal_workforce
+    workforce_ledger: Optional[DurableInternalWorkLedger] = None
+    workforce_ledger_status: Dict[str, Any] = {}
+    workforce_report: Dict[str, Any] = {}
+    deliberation: Dict[str, Any] = dict(internal_deliberation or {})
+    if require_internal_workforce and workforce is None:
+        try:
+            workforce_ledger = DurableInternalWorkLedger(
+                _rooted(root, DEFAULT_INTERNAL_WORK_LEDGER_PATH)
+            )
+            workforce = workforce_ledger.bind_workforce()
+        except Exception as exc:
+            workforce_report = {
+                "schema_version": "aureon-internal-coding-workforce-v1",
+                "status": "no_data",
+                "ready": False,
+                "brain_fabric_ready": False,
+                "error_code": type(exc).__name__,
+                "codex_role": "senior_review_and_veto_only",
+                "codex_implementation_allowed": False,
+                "cloud_fallback_used": False,
+                "action_eligible": False,
+                "economic_eligible": False,
+            }
+    if workforce is not None:
+        try:
+            if not deliberation:
+                deliberation = workforce.deliberate_coding_goal(prompt_text, scope_locked=scope_locked)
+            if deliberation.get("schema_version") != "aureon-internal-coding-deliberation-v1":
+                raise ValueError("internal_deliberation_schema_invalid")
+            workforce_report = workforce.report()
+        except Exception as exc:
+            deliberation = {
+                "schema_version": "aureon-internal-coding-deliberation-v1",
+                "status": "hold",
+                "decision_count": 0,
+                "error_code": type(exc).__name__,
+                "action_eligible": False,
+                "economic_eligible": False,
+            }
+            workforce_report = {
+                "schema_version": "aureon-internal-coding-workforce-v1",
+                "status": "hold",
+                "ready": False,
+                "brain_fabric_ready": False,
+                "error_code": type(exc).__name__,
+                "codex_role": "senior_review_and_veto_only",
+                "codex_implementation_allowed": False,
+                "cloud_fallback_used": False,
+                "action_eligible": False,
+                "economic_eligible": False,
+            }
+    if workforce_ledger is not None:
+        try:
+            workforce_ledger_status = workforce_ledger.status()
+        except Exception as exc:
+            workforce_ledger_status = {
+                "schema_version": "aureon-internal-work-ledger-v1",
+                "healthy": False,
+                "error_code": type(exc).__name__,
+                "action_eligible": False,
+                "economic_eligible": False,
+            }
+            workforce_report = {**workforce_report, "ready": False, "status": "hold"}
+    client_job["internal_coding_workforce_required"] = require_internal_workforce
+    client_job["internal_coding_workforce"] = workforce_report
+    client_job["internal_coding_deliberation"] = deliberation
+    client_job["internal_coding_work_ledger"] = workforce_ledger_status
     execution_prompt = _compose_execution_prompt(prompt_text, scope_answers if scope_locked else None)
+    decisions = deliberation.get("decisions") if isinstance(deliberation.get("decisions"), list) else []
+    if decisions:
+        internal_lines = ["Aureon internal seat/process deliberation (advisory; all existing gates still apply):"]
+        for item in decisions:
+            if not isinstance(item, dict):
+                continue
+            process_decision = str(item.get("process_decision") or "").strip()[:4000]
+            internal_lines.append(
+                f"- {item.get('role')} / {item.get('process_id')}: {process_decision}"
+            )
+        execution_prompt = f"{execution_prompt}\n\n" + "\n".join(internal_lines)
 
     task = queue.enqueue(
         LocalTask(
@@ -1569,6 +1683,8 @@ def submit_coding_prompt(
                 "ScopeOfWorks detector",
                 "client questions when scope is incomplete",
                 "agent team handoff only after scope lock",
+                "verified Ollama brain passport for every coding seat and workflow process",
+                "Aureon seat/process deliberation before the existing goal route",
                 "agent creative process guardian reads metacognitive, sensory, HNC/Auris, and sentient-style evidence",
                 "coding capability unblocker converts missing tools, skills, dependencies, and proof gaps into autonomous gates",
                 "GoalExecutionEngine.submit_goal",
@@ -1585,6 +1701,7 @@ def submit_coding_prompt(
                 "state/docs/frontend evidence publish",
             ],
             "review_contract": "code proposals remain reviewable; env AUREON_CODE_AUTO_APPROVE can mark trusted local proposals approved but does not apply patches by itself",
+            "work_origin_contract": "Aureon owns implementation decisions; Codex is restricted to final architecture, contract, security, and release review",
         },
         "act": {
             "task_enqueued": True,
@@ -1704,6 +1821,8 @@ def submit_coding_prompt(
         hnc_drift_proof=hnc_drift_proof,
         artifact_quality_report=artifact_quality_report,
         creative_process_guardian=creative_process_guardian,
+        internal_workforce_report=workforce_report,
+        require_internal_workforce=require_internal_workforce,
     )
     snagging_list = _build_snagging_list(proof_checklist)
     client_job["proof_checklist"] = proof_checklist
@@ -1767,6 +1886,14 @@ def submit_coding_prompt(
             "scope_status": client_job.get("scope_status"),
             "scope_locked": bool(client_job.get("scope_locked")),
             "client_question_count": len(client_job.get("client_questions", [])),
+            "internal_coding_workforce_required": require_internal_workforce,
+            "internal_coding_workforce_ready": bool(workforce_report.get("ready")),
+            "internal_brain_fabric_ready": bool(workforce_report.get("brain_fabric_ready")),
+            "internal_work_share_ppm": workforce_report.get("internal_share_ppm"),
+            "internal_work_ledger_healthy": workforce_ledger_status.get("healthy"),
+            "internal_work_ledger_generation": workforce_ledger_status.get("generation", 0),
+            "internal_deliberation_decision_count": deliberation.get("decision_count", 0),
+            "codex_role": workforce_report.get("codex_role", "senior_review_and_veto_only"),
             "blocking_snag_count": _blocking_snag_count(client_job.get("snagging_list", [])),
             "hnc_auris_drift_proof_ok": bool(hnc_drift_proof.get("ok")),
             "hnc_auris_drift_warnings": hnc_drift_proof.get("runtime_drift_warnings", []),
@@ -1844,6 +1971,8 @@ def submit_coding_prompt(
         },
         "task": task,
         "client_job": client_job,
+        "internal_coding_workforce": workforce_report,
+        "internal_coding_deliberation": deliberation,
         "hnc_auris_drift_proof": hnc_drift_proof,
         "goal_route": route,
         "safe_code_proposal": _jsonify(proposal),
@@ -1925,6 +2054,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--no-tests", action="store_true", help="Route and publish evidence without running pytest.")
     parser.add_argument("--no-desktop", action="store_true", help="Skip desktop/run handoff evidence.")
     parser.add_argument("--scope-approved", action="store_true", help="Treat the supplied prompt as a locked client scope.")
+    parser.add_argument(
+        "--require-internal-workforce",
+        action="store_true",
+        help=argparse.SUPPRESS,
+    )
     parser.add_argument("--status", action="store_true", help="Print current coding organism status.")
     args = parser.parse_args(argv)
 
@@ -1944,6 +2078,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         run_tests=not args.no_tests,
         include_desktop=not args.no_desktop,
         scope_approved=args.scope_approved,
+        require_internal_workforce=True,
     )
     print(json.dumps(result, indent=2))
     return 0 if result.get("ok") else 1

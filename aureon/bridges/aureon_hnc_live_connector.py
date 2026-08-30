@@ -19,10 +19,13 @@ if sys.platform == 'win32':
 
 import time
 import json
+import hashlib
+import math
 import argparse
 import logging
 from pathlib import Path
-from typing import List
+from collections import deque
+from typing import Any, Dict, List, Optional
 
 from aureon.bridges.aureon_hnc_surge_detector import HncSurgeDetector, SurgeWindow
 from aureon.data_feeds.aureon_real_data_feed_hub import get_feed_hub
@@ -46,6 +49,8 @@ except Exception:
 logger = logging.getLogger(__name__)
 
 DEFAULT_WS_CACHE = Path(os.getenv('WS_PRICE_CACHE_PATH', 'ws_cache/ws_prices.json'))
+MAX_RECEIPT_AGE_SECONDS = 120.0
+FUTURE_SKEW_SECONDS = 30.0
 
 
 class HncLiveConnector:
@@ -59,6 +64,9 @@ class HncLiveConnector:
         analysis_window_secs = 20
         analysis_window_size = max(32, min(2048, sample_rate * analysis_window_secs))
         self.detector = HncSurgeDetector(sample_rate=sample_rate, analysis_window_size=analysis_window_size)
+        self._source_timestamp_history: Dict[str, deque] = {}
+        self._receipt_id_history: Dict[str, deque] = {}
+        self._last_receipt: Dict[str, Dict[str, Any]] = {}
         self._last_read_ts = 0.0
         self.hub = get_feed_hub()
 
@@ -103,8 +111,73 @@ class HncLiveConnector:
         except Exception as e:
             logger.debug(f'Failed to subscribe to hub market topics: {e}')
 
-    def _load_prices_from_cache(self):
-        """Load prices and normalize to symbol->price mapping (e.g., 'BTC/USD')."""
+    @staticmethod
+    def _normalize_symbol(symbol: Any) -> Optional[str]:
+        if not isinstance(symbol, str) or not symbol.strip():
+            return None
+        normalized = symbol.strip().upper()
+        if '/' in normalized:
+            return normalized
+        for quote in ('USDT', 'USD'):
+            if normalized.endswith(quote) and len(normalized) > len(quote):
+                return f"{normalized[:-len(quote)]}/USD"
+        return f"{normalized}/USD"
+
+    @staticmethod
+    def _positive_finite(value: Any) -> Optional[float]:
+        try:
+            number = float(value)
+        except (TypeError, ValueError):
+            return None
+        return number if math.isfinite(number) and number > 0 else None
+
+    def _complete_input_receipt(self, symbol: str, data: Any) -> Optional[Dict[str, Any]]:
+        """Accept only fresh provider observations; never turn local time into source time."""
+        if not isinstance(data, dict):
+            return None
+        source_id = data.get('source_id')
+        receipt_id = data.get('receipt_id')
+        if (
+            data.get('data_status') != 'live'
+            or data.get('truth_status') != 'real_observed'
+            or data.get('generated_values') is not False
+            or not isinstance(source_id, str) or not source_id.strip()
+            or not isinstance(receipt_id, str) or not receipt_id.strip()
+        ):
+            return None
+        source_timestamp = self._positive_finite(data.get('source_timestamp'))
+        received_at = self._positive_finite(data.get('received_at'))
+        price = self._positive_finite(
+            data.get('price', data.get('lastPrice', data.get('last', data.get('p')))))
+        now = time.time()
+        if (
+            source_timestamp is None or received_at is None or price is None
+            or source_timestamp > now + FUTURE_SKEW_SECONDS
+            or received_at > now + FUTURE_SKEW_SECONDS
+            or received_at < source_timestamp - FUTURE_SKEW_SECONDS
+            or now - source_timestamp > MAX_RECEIPT_AGE_SECONDS
+        ):
+            return None
+        return {
+            'symbol': symbol,
+            'price': price,
+            'source_id': source_id,
+            'source_timestamp': source_timestamp,
+            'received_at': received_at,
+            'receipt_id': receipt_id,
+        }
+
+    def _record_price_receipt(self, receipt: Dict[str, Any]) -> None:
+        """Mutate the detector only after receipt validation succeeds."""
+        symbol = receipt['symbol']
+        self.detector.add_price_tick(symbol, receipt['price'])
+        limit = getattr(self.detector, 'analysis_window_size', 2048)
+        self._source_timestamp_history.setdefault(symbol, deque(maxlen=limit)).append(receipt['source_timestamp'])
+        self._receipt_id_history.setdefault(symbol, deque(maxlen=limit)).append(receipt['receipt_id'])
+        self._last_receipt[symbol] = dict(receipt)
+
+    def _load_prices_from_cache(self) -> Dict[str, Dict[str, Any]]:
+        """Load only complete provider receipts and normalize keys once to BASE/USD."""
         if not self.ws_cache_path.exists():
             return {}
         try:
@@ -113,22 +186,26 @@ class HncLiveConnector:
             logger.debug(f"Failed to read ws cache: {e}")
             return {}
 
-        normalized = {}
-        # 1) If payload has 'prices' (binance style), map BASE -> BASE/USD
+        normalized: Dict[str, Dict[str, Any]] = {}
+        # 1) Cache receipts keyed by BASE or BASE/USD.
         prices = payload.get('prices', {}) or {}
-        for base, price in prices.items():
-            try:
-                normalized[f"{base}/USD"] = float(price)
-            except Exception:
+        for base, entry in prices.items():
+            symbol = self._normalize_symbol(entry.get('symbol') if isinstance(entry, dict) else base)
+            if symbol is None:
                 continue
+            receipt = self._complete_input_receipt(symbol, entry)
+            if receipt is not None:
+                normalized[symbol] = receipt
 
-        # 2) If payload has 'ticker_cache' (coingecko style), map PAIR -> price
+        # 2) Alternative cache uses the same complete receipt contract.
         ticker_cache = payload.get('ticker_cache', {}) or {}
         for pair, entry in ticker_cache.items():
-            try:
-                normalized[pair.upper()] = float(entry.get('price', 0) or 0)
-            except Exception:
+            symbol = self._normalize_symbol(entry.get('symbol') if isinstance(entry, dict) else pair)
+            if symbol is None:
                 continue
+            receipt = self._complete_input_receipt(symbol, entry)
+            if receipt is not None:
+                normalized[symbol] = receipt
 
         return normalized
 
@@ -136,8 +213,40 @@ class HncLiveConnector:
         """Map cache base like 'BTC' to symbol 'BTC/USD'"""
         return f"{base}/USD"
 
+    def _derived_envelope(self, symbol: str, fields: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        receipt = self._last_receipt.get(symbol)
+        if not isinstance(receipt, dict):
+            return None
+        input_receipt_ids = sorted(set(self._receipt_id_history.get(symbol, ())))
+        if not input_receipt_ids:
+            return None
+        digest = hashlib.sha256(
+            f"hnc|{symbol}|{'|'.join(input_receipt_ids)}".encode('utf-8')
+        ).hexdigest()[:24]
+        return {
+            **fields,
+            'data_status': 'live',
+            'truth_status': 'real_derived',
+            'source_id': 'aureon.hnc_live_connector',
+            'source_timestamp': receipt['source_timestamp'],
+            'received_at': time.time(),
+            'receipt_id': f'hnc:{symbol}:{digest}',
+            'input_receipt_ids': input_receipt_ids,
+            'freshness_status': 'fresh',
+            'provider_observation': False,
+            'input_provider_observation': True,
+            'generated_values': False,
+            'operational_eligible': False,
+            'actionable': False,
+            'accounting_eligible': False,
+            'learning_eligible': False,
+            'eligible_for_action': False,
+            'eligible_for_accounting': False,
+            'eligible_for_learning': False,
+        }
+
     def _publish_surge(self, surge: SurgeWindow):
-        data = {
+        data = self._derived_envelope(surge.symbol, {
             'symbol': surge.symbol,
             'start_time': surge.start_time,
             'end_time': surge.end_time,
@@ -145,14 +254,18 @@ class HncLiveConnector:
             'intensity': surge.intensity,
             'primary_harmonic': surge.primary_harmonic,
             'contributing_count': len(surge.contributing_events),
-            'detected_at': time.time()
-        }
+        })
+        if data is None:
+            return False
         # Publish to real feed hub
         try:
-            self.hub._publish_to_bus('intelligence.surge.hnc', data)
+            accepted = self.hub._publish_to_bus('intelligence.surge.hnc', data)
+            if accepted is not True:
+                return False
             logger.info(f"Published HNC surge: {surge.symbol} intensity={surge.intensity:.2f}")
         except Exception as e:
             logger.warning(f"Failed to publish surge to hub: {e}")
+            return False
 
         # Also emit a Thought for cross-system listeners (scanners, Queen, UI)
         try:
@@ -170,10 +283,10 @@ class HncLiveConnector:
                 if buf and len(buf) >= 20:
                     import numpy as _np
                     values = _np.array(list(buf))
-                    # Create synthetic times based on sample_rate
-                    dt = 1.0 / max(1, self.detector.sample_rate)
-                    n = len(values)
-                    times = _np.array([time.time() - (n - i) * dt for i in range(n)])
+                    timestamps = list(self._source_timestamp_history.get(surge.symbol, ()))
+                    if len(timestamps) != len(values):
+                        return True
+                    times = _np.array(timestamps)
 
                     # Stage 1: detect FTCPs
                     ftcps = self.qgita.ftcp_detector.detect_ftcps(times, values)
@@ -183,16 +296,40 @@ class HncLiveConnector:
                             # Stage 2: Lighthouse validation
                             lhe = self.qgita.lighthouse.validate_ftcp(strongest, values)
                             if lhe:
-                                lhe_payload = {
+                                # Forward the FULL LighthouseEvent — the payload
+                                # used to carry only 4 of its 12 fields, dropping
+                                # the structural signature (c_linear/c_nonlinear/
+                                # c_phi/g_eff/q_anomaly/regimes) every downstream
+                                # volatility consumer needs. Original keys are
+                                # unchanged; the additions are purely additive.
+                                _ftcp = getattr(lhe, 'ftcp', None)
+                                lhe_payload = self._derived_envelope(surge.symbol, {
                                     'symbol': surge.symbol,
                                     'lighthouse_intensity': lhe.lighthouse_intensity,
                                     'confidence': lhe.confidence,
                                     'event_type': lhe.event_type.value,
-                                    'timestamp': lhe.timestamp
-                                }
+                                    'timestamp': lhe.timestamp,
+                                    'c_linear': lhe.c_linear,
+                                    'c_nonlinear': lhe.c_nonlinear,
+                                    'c_phi': lhe.c_phi,
+                                    'g_eff': lhe.g_eff,
+                                    'q_anomaly': lhe.q_anomaly,
+                                    'regime_before': lhe.regime_before,
+                                    'regime_after': lhe.regime_after,
+                                    'ftcp': {
+                                        'timestamp': getattr(_ftcp, 'timestamp', None),
+                                        'curvature': getattr(_ftcp, 'curvature', None),
+                                        'g_eff': getattr(_ftcp, 'g_eff', None),
+                                        'phi_match': getattr(_ftcp, 'phi_match', None),
+                                    } if _ftcp is not None else None,
+                                })
+                                if lhe_payload is None:
+                                    return True
                                 # Publish validated Lighthouse event
                                 try:
-                                    self.hub._publish_to_bus('intelligence.lighthouse.event', lhe_payload)
+                                    lighthouse_accepted = self.hub._publish_to_bus('intelligence.lighthouse.event', lhe_payload)
+                                    if lighthouse_accepted is not True:
+                                        return True
                                     logger.info(f"Published Lighthouse event for {surge.symbol}: L={lhe.lighthouse_intensity:.3f}")
                                 except Exception:
                                     logger.debug("Failed to publish Lighthouse event to hub")
@@ -216,6 +353,7 @@ class HncLiveConnector:
                                         logger.debug('BotShapeScanner probe failed')
         except Exception as e:
             logger.debug(f"QGITA validation error: {e}")
+        return True
 
     def run_once(self):
         prices = self._load_prices_from_cache()
@@ -223,15 +361,10 @@ class HncLiveConnector:
             logger.debug("No prices in cache")
             return
 
-        # For each requested symbol, get the base price and feed into detector
-        for base in prices.keys():
-            symbol = self._map_base_to_symbol(base)
+        for symbol, receipt in prices.items():
             if symbol not in self.symbols:
                 continue
-            price = prices.get(base)
-            if price is None:
-                continue
-            self.detector.add_price_tick(symbol, float(price))
+            self._record_price_receipt(receipt)
 
             surge = self.detector.detect_surge(symbol)
             if surge:
@@ -256,22 +389,18 @@ class HncLiveConnector:
 
             # Common fields used by various producers
             symbol = data.get('symbol') or data.get('s') or data.get('pair')
-            price = data.get('price') or data.get('lastPrice') or data.get('last') or data.get('p')
 
-            if not symbol or price is None:
+            symbol = self._normalize_symbol(symbol)
+            if symbol is None:
                 return
-
-            # Normalize symbol to form 'BTC/USD'
-            if isinstance(symbol, str) and '/' not in symbol:
-                symbol = f"{symbol.upper()}/USD"
-            else:
-                symbol = symbol.upper()
 
             if symbol not in self.symbols:
                 return
 
-            # Feed into detector
-            self.detector.add_price_tick(symbol, float(price))
+            receipt = self._complete_input_receipt(symbol, data)
+            if receipt is None:
+                return
+            self._record_price_receipt(receipt)
             surge = self.detector.detect_surge(symbol)
             if surge:
                 print(f"🔔 HNC Surge detected (live hub): {symbol} intensity={surge.intensity:.2f}")

@@ -1,4 +1,4 @@
-project_id = "owfeyxrfyhprpcgqwxqh"
+project_id = "siihxcwetdjdsrfdexmb"
 
 # Kraken public market data (no auth needed)
 [functions.fetch-kraken-market-data]
@@ -8,7 +8,7 @@ verify_jwt = false
 verify_jwt = true
 
 [functions.sync-exchange-assets]
-verify_jwt = false
+verify_jwt = true
 
 [functions.confirm-trade]
 verify_jwt = true
@@ -22,7 +22,7 @@ verify_jwt = false
 
 # Quantum Telescope state ingestion
 [functions.ingest-telescope-state]
-verify_jwt = false
+verify_jwt = true
 
 # Critical endpoints - require authentication
 [functions.execute-trade]
@@ -86,6 +86,9 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.analyze-lighthouse-event]
+verify_jwt = true
+
+[functions.auris-classify]
 verify_jwt = true
 
 [functions.forecast-coherence]
@@ -222,7 +225,7 @@ verify_jwt = false
 
 # 10-9-1 Prime Seal packet ingestion
 [functions.ingest-10-9-1-packet]
-verify_jwt = false
+verify_jwt = true
 
 # Force Validated Trade - ignition button
 [functions.force-validated-trade]
@@ -236,9 +239,9 @@ verify_jwt = true
 [functions.test-exchange-connection]
 verify_jwt = true
 
-# Backend health check (public for monitoring)
+# Backend health check (authenticated; exercises service-role Edge routes)
 [functions.backend-health-check]
-verify_jwt = false
+verify_jwt = true
 
 # Training/Learning data ingestion
 [functions.ingest-calibration-trade]
@@ -252,7 +255,7 @@ verify_jwt = true
 
 # Auris nodes state ingestion (9 animal totems)
 [functions.ingest-auris-state]
-verify_jwt = false
+verify_jwt = true
 
 # Dynamic Kelly computation from calibration trades
 [functions.ingest-kelly-computation]
@@ -287,4 +290,40 @@ verify_jwt = true
 
 # Brain cognitive state ingestion from Python
 [functions.ingest-brain-state]
+verify_jwt = true
+
+# Legacy live-only endpoints are retained as inert quarantine stubs.
+# The provider snapshots are archived under docs/evidence and MUST NOT
+# be restored to the deploy tree without a new authorization and RLS review.
+[functions.client-portal-api]
+verify_jwt = true
+
+[functions.chronicle-data-manager]
+verify_jwt = true
+
+[functions.nexus-api-gateway]
+verify_jwt = true
+
+[functions.spiritual-data-manager]
+verify_jwt = true
+
+[functions.realtime-data-stream]
+verify_jwt = true
+
+[functions.data-ingestion-pipeline]
+verify_jwt = true
+
+[functions.backend-health-monitor]
+verify_jwt = true
+
+[functions.distributed-health-monitor]
+verify_jwt = true
+
+[functions.realtime-session-manager]
+verify_jwt = true
+
+[functions.realtime-sessions-api]
+verify_jwt = true
+
+[functions.nexus-database-api]
 verify_jwt = true

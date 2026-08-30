@@ -11,7 +11,9 @@ serve(async (req) => {
   }
 
   try {
-    const { symbol = 'BTCUSDT' } = await req.json();
+    const { symbol: rawSymbol } = await req.json();
+    const symbol = String(rawSymbol || '').trim().toUpperCase();
+    if (!/^[A-Z0-9]{5,20}$/.test(symbol)) throw new Error('VALID_MARKET_SYMBOL_REQUIRED');
 
     // Fetch real market data from Binance public API
     const tickerResponse = await fetch(
@@ -19,7 +21,7 @@ serve(async (req) => {
     );
 
     if (!tickerResponse.ok) {
-      throw new Error('Failed to fetch ticker data');
+      throw new Error(`BINANCE_TICKER_HTTP_${tickerResponse.status}`);
     }
 
     const ticker = await tickerResponse.json();
@@ -40,6 +42,14 @@ serve(async (req) => {
     // Spread approximation
     const spread = parseFloat(ticker.askPrice) - parseFloat(ticker.bidPrice);
     const spreadPercent = spread / price;
+    const providerTimestamp = Number(ticker.closeTime);
+    const providerAgeMs = Date.now() - providerTimestamp;
+    const observedNumbers = [price, volume, priceChange, highPrice, lowPrice, volatility, momentum, spread, spreadPercent];
+    if (observedNumbers.some((value) => !Number.isFinite(value)) || price <= 0 || volume < 0 ||
+        !Number.isFinite(providerTimestamp) || providerAgeMs < -300000 || providerAgeMs > 300000) {
+      throw new Error('INVALID_OR_STALE_BINANCE_TICKER');
+    }
+    const sourceTimestamp = new Date(providerTimestamp).toISOString();
 
     const marketData = {
       symbol,
@@ -51,7 +61,11 @@ serve(async (req) => {
       priceChange,
       highPrice,
       lowPrice,
-      timestamp: Date.now(),
+      timestamp: providerTimestamp,
+      truthStatus: 'real_derived',
+      sourceId: 'binance:/api/v3/ticker/24hr',
+      sourceTimestamp,
+      generatedValues: false,
     };
 
     console.log(`[get-user-market-data] ${symbol}: $${price.toFixed(2)}, vol: ${volatility.toFixed(4)}, mom: ${momentum.toFixed(4)}`);
@@ -64,7 +78,11 @@ serve(async (req) => {
     console.error('[get-user-market-data] Error:', errorMessage);
     
     return new Response(
-      JSON.stringify({ error: errorMessage }),
+      JSON.stringify({
+        error: errorMessage,
+        truthStatus: 'no_data',
+        generatedValues: false,
+      }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

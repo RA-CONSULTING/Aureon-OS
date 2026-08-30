@@ -796,6 +796,12 @@ class QueenMetacognition:
                     SubsystemReading("meta_pattern_pressure", 1.0 - pattern_pressure, 0.8, "pressure"),
                     SubsystemReading("meta_health", health, 0.9, "health"),
                 ]
+                # P5 Pattern A: the shared field enters the local Λ inputs —
+                # the read half of the loop this producer only ever published.
+                from aureon.core.hnc_field import canonical_field_reading
+                _cfr = canonical_field_reading()
+                if _cfr is not None:
+                    readings.append(_cfr)
                 _ls = self._lambda_engine.step(readings, volatility=0.03)
                 from aureon.core.hnc_field import publish_subfield
                 publish_subfield("queen_metacognition", _ls)

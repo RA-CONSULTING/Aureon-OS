@@ -16,10 +16,10 @@ export const EckoushicCascadeVisualization = ({ state }: EckoushicCascadeVisuali
   
   const getCascadeIcon = (level: number) => {
     switch (level) {
-      case 1: return <Waves className="h-5 w-5 text-orange-500" />;
-      case 2: return <Zap className="h-5 w-5 text-blue-500" />;
-      case 3: return <Radio className="h-5 w-5 text-cyan-500" />;
-      case 4: return <Heart className="h-5 w-5 text-pink-500" />;
+      case 1: return <Waves className="h-5 w-5 text-warning" />;
+      case 2: return <Zap className="h-5 w-5 text-primary" />;
+      case 3: return <Radio className="h-5 w-5 text-primary" />;
+      case 4: return <Heart className="h-5 w-5 text-primary" />;
       default: return null;
     }
   };
@@ -88,52 +88,52 @@ export const EckoushicCascadeVisualization = ({ state }: EckoushicCascadeVisuali
         {/* Cascade Metrics */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className={`p-4 rounded-lg border-2 ${
-            state.cascadeLevel >= 1 ? 'border-orange-500/50 bg-orange-500/10' : 'border-border/50 bg-muted/50'
+            state.cascadeLevel >= 1 ? 'border-warning/50 bg-warning/10' : 'border-border/50 bg-muted/50'
           }`}>
             <div className="flex items-center gap-2 mb-2">
-              <Waves className="h-4 w-4 text-orange-500" />
+              <Waves className="h-4 w-4 text-warning" />
               <div className="text-xs font-medium">Eckoushic</div>
             </div>
-            <div className="text-2xl font-bold text-orange-500">
+            <div className="text-2xl font-bold text-warning">
               {state.eckoushic.toFixed(3)}
             </div>
             <div className="text-xs text-muted-foreground">Sound (dΨ/dt)</div>
           </div>
           
           <div className={`p-4 rounded-lg border-2 ${
-            state.cascadeLevel >= 2 ? 'border-blue-500/50 bg-blue-500/10' : 'border-border/50 bg-muted/50'
+            state.cascadeLevel >= 2 ? 'border-primary/50 bg-primary/10' : 'border-border/50 bg-muted/50'
           }`}>
             <div className="flex items-center gap-2 mb-2">
-              <Zap className="h-4 w-4 text-blue-500" />
+              <Zap className="h-4 w-4 text-primary" />
               <div className="text-xs font-medium">Akashic</div>
             </div>
-            <div className="text-2xl font-bold text-blue-500">
+            <div className="text-2xl font-bold text-primary">
               {state.akashic.toFixed(3)}
             </div>
             <div className="text-xs text-muted-foreground">Light (∫dt)</div>
           </div>
           
           <div className={`p-4 rounded-lg border-2 ${
-            state.cascadeLevel >= 3 ? 'border-cyan-500/50 bg-cyan-500/10' : 'border-border/50 bg-muted/50'
+            state.cascadeLevel >= 3 ? 'border-primary/50 bg-primary/10' : 'border-border/50 bg-muted/50'
           }`}>
             <div className="flex items-center gap-2 mb-2">
-              <Radio className="h-4 w-4 text-cyan-500" />
+              <Radio className="h-4 w-4 text-primary" />
               <div className="text-xs font-medium">Nexus</div>
             </div>
-            <div className="text-2xl font-bold text-cyan-500">
+            <div className="text-2xl font-bold text-primary">
               {state.harmonicNexus.toFixed(3)}
             </div>
             <div className="text-xs text-muted-foreground">Resonance</div>
           </div>
           
           <div className={`p-4 rounded-lg border-2 ${
-            state.cascadeLevel >= 4 ? 'border-pink-500/50 bg-pink-500/10' : 'border-border/50 bg-muted/50'
+            state.cascadeLevel >= 4 ? 'border-primary/50 bg-primary/10' : 'border-border/50 bg-muted/50'
           }`}>
             <div className="flex items-center gap-2 mb-2">
-              <Heart className="h-4 w-4 text-pink-500" />
+              <Heart className="h-4 w-4 text-primary" />
               <div className="text-xs font-medium">Heart Wave</div>
             </div>
-            <div className="text-2xl font-bold text-pink-500">
+            <div className="text-2xl font-bold text-primary">
               {state.heartWave.toFixed(1)} Hz
             </div>
             <div className="text-xs text-muted-foreground">Love Output</div>

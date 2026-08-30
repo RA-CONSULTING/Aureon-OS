@@ -1,3 +1,7 @@
+import os
+
+import pytest
+
 from aureon.core.aureon_env import (
     KRAKEN_REQUIRED_ENV,
     MASTER_KEY_ENV,
@@ -10,7 +14,21 @@ from aureon.core.aureon_env import (
 from aureon.harmonic.hnc_quantum_packet_crypto import encode_env_packet
 
 
+@pytest.fixture(autouse=True)
+def _restore_environ():
+    """load_aureon_environment WRITES os.environ — that is its job — and
+    monkeypatch.delenv on an absent var registers no undo, so the credentials this
+    module loads from its tmp .env files were leaking into every later test
+    (test_system_health then saw phantom partial credentials — found by the B5
+    sentinel run). Snapshot and restore the whole environment around each test."""
+    saved = dict(os.environ)
+    yield
+    os.environ.clear()
+    os.environ.update(saved)
+
+
 def test_load_aureon_environment_from_explicit_file(tmp_path, monkeypatch):
+    monkeypatch.delenv("PYTHON_DOTENV_DISABLED", raising=False)
     env_path = tmp_path / ".env"
     env_path.write_text(
         "\n".join(
@@ -43,6 +61,29 @@ def test_load_aureon_environment_from_explicit_file(tmp_path, monkeypatch):
     assert env_presence(KRAKEN_REQUIRED_ENV)["KRAKEN_API_SECRET"]["set"] is True
 
 
+def test_disabled_dotenv_never_reloads_scrubbed_credentials(tmp_path, monkeypatch):
+    env_path = tmp_path / ".env"
+    env_path.write_text(
+        "KRAKEN_API_KEY=must-not-load\n"
+        "KRAKEN_API_SECRET=must-not-load\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("AUREON_ENV_FILE", str(env_path))
+    monkeypatch.setenv("PYTHON_DOTENV_DISABLED", "1")
+    monkeypatch.delenv("KRAKEN_API_KEY", raising=False)
+    monkeypatch.delenv("KRAKEN_API_SECRET", raising=False)
+
+    report = load_aureon_environment(tmp_path, override=False)
+
+    assert report.loaded is False
+    assert report.loaded_paths == []
+    assert str(env_path) in report.candidate_paths
+    assert missing_env(KRAKEN_REQUIRED_ENV) == [
+        "KRAKEN_API_KEY",
+        "KRAKEN_API_SECRET",
+    ]
+
+
 def test_missing_env_reports_names_without_values(monkeypatch):
     monkeypatch.delenv("KRAKEN_API_KEY", raising=False)
     monkeypatch.delenv("KRAKEN_API_SECRET", raising=False)
@@ -52,6 +93,7 @@ def test_missing_env_reports_names_without_values(monkeypatch):
 
 
 def test_load_aureon_environment_decodes_hnc_env_packets(tmp_path, monkeypatch):
+    monkeypatch.delenv("PYTHON_DOTENV_DISABLED", raising=False)
     master_key = "local-hnc-master-key-for-tests-32-bytes"
     token = encode_env_packet("packet-secret-from-file", master_key, env_key="KRAKEN_API_SECRET")
     env_path = tmp_path / ".env"

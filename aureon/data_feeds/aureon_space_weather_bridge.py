@@ -17,7 +17,9 @@ import requests
 import json
 import time
 import logging
-from datetime import datetime, timedelta
+import math
+from datetime import datetime, timedelta, timezone
+from email.utils import parsedate_to_datetime
 from typing import Dict, Tuple, Optional, Any
 from dataclasses import dataclass
 
@@ -26,7 +28,7 @@ logger = logging.getLogger(__name__)
 # NOAA SWPC API Endpoints (no API key required - public data!)
 NOAA_SOLAR_WIND_MAG_URL = 'https://services.swpc.noaa.gov/json/rtsw/rtsw_mag_1m.json'
 NOAA_SOLAR_WIND_PLASMA_URL = 'https://services.swpc.noaa.gov/json/rtsw/rtsw_wind_1m.json'
-NOAA_KP_INDEX_URL = 'https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json'
+NOAA_KP_INDEX_URL = 'https://services.swpc.noaa.gov/json/planetary_k_index_1m.json'
 NOAA_KP_FORECAST_URL = 'https://services.swpc.noaa.gov/products/noaa-planetary-k-index-forecast.json'
 NOAA_3DAY_FORECAST_URL = NOAA_KP_FORECAST_URL
 
@@ -36,13 +38,27 @@ NASA_DONKI_CME_URL = 'https://api.nasa.gov/DONKI/CME'
 
 # Cache settings
 CACHE_LIFETIME_SECONDS = 300  # Refresh every 5 minutes
-FALLBACK_VALUES = {
-    'kp_index': 3.0,
-    'solar_wind_speed': 400.0,
-    'solar_wind_density': 5.0,
-    'bz_component': 0.0,
-    'solar_flares': [],
-}
+SOURCE_MAX_AGE_SECONDS = 20 * 60
+
+
+def _require_fresh_source_timestamp(value: Any, label: str) -> str:
+    text = str(value or '').strip()
+    if not text:
+        raise ValueError(f'{label} missing source timestamp')
+    normalized = text[:-1] + '+00:00' if text.endswith('Z') else text
+    try:
+        parsed = datetime.fromisoformat(normalized)
+    except ValueError:
+        # HTTP Date is still a provider clock receipt, not the local receipt
+        # clock.  NOAA forecast payloads do not consistently expose an issue
+        # timestamp, so the response Date header is the honest fallback.
+        parsed = parsedate_to_datetime(text)
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    age = time.time() - parsed.timestamp()
+    if age < -300 or age > SOURCE_MAX_AGE_SECONDS:
+        raise ValueError(f'{label} stale source timestamp age={age:.0f}s')
+    return text
 
 @dataclass
 class SpaceWeatherReading:
@@ -53,9 +69,11 @@ class SpaceWeatherReading:
     solar_wind_speed: float  # km/s
     solar_wind_density: float  # protons/cm³
     bz_component: float  # nT - critical for auroras
-    solar_flares_24h: int
-    geomagnetic_storm_3day: str
+    solar_flares_24h: Optional[int]
+    geomagnetic_storm_3day: Optional[str]
     active_sources: list
+    source_timestamps: Dict[str, str]
+    truth_status: str = 'live'
     
     def to_dict(self) -> Dict:
         return {
@@ -68,6 +86,9 @@ class SpaceWeatherReading:
             'solar_flares_24h': self.solar_flares_24h,
             'geomagnetic_storm_3day': self.geomagnetic_storm_3day,
             'active_sources': self.active_sources,
+            'source_timestamps': self.source_timestamps,
+            'truth_status': self.truth_status,
+            'generated_values': False,
         }
 
 class SpaceWeatherBridge:
@@ -79,12 +100,12 @@ class SpaceWeatherBridge:
         self.error_count = 0
         logger.info("🌍☀️ Space Weather Bridge initialized")
     
-    def get_live_data(self, force_refresh: bool = False) -> SpaceWeatherReading:
+    def get_live_data(self, force_refresh: bool = False) -> Optional[SpaceWeatherReading]:
         """
         Get LIVE space weather data from NOAA/NASA APIs
         
         Returns cached data if fresh (<5min old), otherwise fetches new data.
-        Falls back to defaults if APIs unavailable.
+        Returns no reading if required live NOAA fields are unavailable.
         """
         now = time.time()
         
@@ -94,18 +115,20 @@ class SpaceWeatherBridge:
         
         # Fetch fresh data
         active_sources = []
-        kp_index = FALLBACK_VALUES['kp_index']
-        solar_wind_speed = FALLBACK_VALUES['solar_wind_speed']
-        solar_wind_density = FALLBACK_VALUES['solar_wind_density']
-        bz_component = FALLBACK_VALUES['bz_component']
-        solar_flares_24h = 0
-        geomagnetic_storm_3day = 'NONE'
+        source_timestamps: Dict[str, str] = {}
+        kp_index: Optional[float] = None
+        solar_wind_speed: Optional[float] = None
+        solar_wind_density: Optional[float] = None
+        bz_component: Optional[float] = None
+        solar_flares_24h: Optional[int] = None
+        geomagnetic_storm_3day: Optional[str] = None
         
         # 1️⃣ Fetch Kp Index (most critical - geomagnetic activity)
         try:
             kp_data = self._fetch_kp_index()
             if kp_data:
                 kp_index = kp_data['current_kp']
+                source_timestamps['NOAA-KP'] = str(kp_data['source_timestamp'])
                 active_sources.append('NOAA-KP')
                 logger.debug(f"✅ Kp Index: {kp_index:.1f}")
         except Exception as e:
@@ -118,6 +141,7 @@ class SpaceWeatherBridge:
                 solar_wind_speed = wind_data['speed']
                 bz_component = wind_data['bz']
                 solar_wind_density = wind_data['density']
+                source_timestamps['NOAA-SolarWind'] = str(wind_data['source_timestamp'])
                 active_sources.append('NOAA-SolarWind')
                 logger.debug(f"✅ Solar Wind: {solar_wind_speed:.0f} km/s, Bz={bz_component:.1f} nT")
         except Exception as e:
@@ -128,6 +152,7 @@ class SpaceWeatherBridge:
             forecast = self._fetch_3day_forecast()
             if forecast:
                 geomagnetic_storm_3day = forecast['highest_kp_category']
+                source_timestamps['NOAA-Forecast'] = str(forecast['source_timestamp'])
                 active_sources.append('NOAA-Forecast')
                 logger.debug(f"✅ 3-Day Forecast: {geomagnetic_storm_3day}")
         except Exception as e:
@@ -137,32 +162,17 @@ class SpaceWeatherBridge:
         try:
             flare_count = self._fetch_solar_flares()
             solar_flares_24h = flare_count
-            if flare_count > 0:
+            if flare_count is not None:
                 active_sources.append('NASA-Flares')
                 logger.debug(f"✅ Solar Flares (24h): {flare_count}")
         except Exception as e:
             logger.debug(f"NASA flares unavailable: {e}")
         
-        # Stage AE: if NO live source supplied any value, every field
-        # would be from FALLBACK_VALUES — fully synthetic. Production
-        # posture: return the previously-cached reading (stale-but-real)
-        # if available, else None, so consumers can detect "no live
-        # space weather" rather than receive Kp=3.0 baseline as if it
-        # were real. AUREON_ALLOW_SIM_FALLBACK=1 restores the old
-        # behaviour for dev / test / backtest. We check BEFORE
-        # constructing + caching the synthetic reading, otherwise we'd
-        # poison the cache with the fallback values.
-        if not active_sources:
-            from aureon.observer.live_data_policy import (
-                simulation_fallback_allowed, log_blocked_fallback,
-            )
-            if not simulation_fallback_allowed():
-                log_blocked_fallback("space_weather_bridge",
-                                     "all_noaa_fetches_failed")
-                # Return PREVIOUS cache (which holds a real reading
-                # from the last successful fetch); do NOT update cache
-                # with synthetic values.
-                return self.cache  # may be None on first call
+        # Kp and solar wind/IMF are the minimum complete operational row.
+        # A partial provider response is no-data, never an instruction to fill gaps.
+        if None in (kp_index, solar_wind_speed, solar_wind_density, bz_component):
+            logger.warning("Space weather core sources incomplete; no reading emitted")
+            return None
 
         # Create reading
         kp_category = self._categorize_kp(kp_index)
@@ -176,6 +186,7 @@ class SpaceWeatherBridge:
             solar_flares_24h=solar_flares_24h,
             geomagnetic_storm_3day=geomagnetic_storm_3day,
             active_sources=active_sources,
+            source_timestamps=source_timestamps,
         )
 
         # Cache and return
@@ -183,7 +194,7 @@ class SpaceWeatherBridge:
         self.last_update = now
         self.error_count = 0
 
-        logger.info(f"🌍☀️ Space Weather Update: Kp={kp_index:.1f} ({kp_category}), Wind={solar_wind_speed:.0f}km/s, Sources={', '.join(active_sources) or 'FALLBACK_VALUES'}")
+        logger.info(f"🌍☀️ Space Weather Update: Kp={kp_index:.1f} ({kp_category}), Wind={solar_wind_speed:.0f}km/s, Sources={', '.join(active_sources)}")
         return reading
     
     def _fetch_kp_index(self) -> Optional[Dict]:
@@ -195,30 +206,39 @@ class SpaceWeatherBridge:
 
             if isinstance(data, list) and data and isinstance(data[-1], dict):
                 latest = data[-1]
-                kp = latest.get('Kp', latest.get('kp'))
+                kp = latest.get('estimated_kp', latest.get('Kp', latest.get('kp')))
                 if kp is not None:
-                    return {'current_kp': float(kp)}
+                    source_timestamp = _require_fresh_source_timestamp(
+                        latest.get('time_tag', latest.get('timestamp')), 'NOAA-KP')
+                    return {
+                        'current_kp': float(kp),
+                        'source_timestamp': source_timestamp,
+                    }
 
             # Format: ['time_tag', 'Kp', 'a_running', 'station_count']
             # Kp is column 1 (NOT column 2 which is a_running)
             if len(data) > 1:
                 latest = data[-1]
-                kp = float(latest[1]) if len(latest) > 1 else 3.0
-                return {'current_kp': kp}
+                if len(latest) > 1 and latest[1] not in (None, ''):
+                    return {
+                        'current_kp': float(latest[1]),
+                        'source_timestamp': _require_fresh_source_timestamp(latest[0], 'NOAA-KP'),
+                    }
         except Exception as e:
             logger.debug(f"Kp fetch error: {e}")
         return None
     
     def _fetch_solar_wind(self) -> Optional[Dict]:
         """Fetch solar wind data from NOAA (plasma + magnetometer)"""
-        result = {'density': 5.0, 'speed': 400.0, 'bz': 0.0}
-        got_data = False
+        result: Dict[str, Any] = {}
+        plasma_timestamp: Optional[str] = None
+        mag_timestamp: Optional[str] = None
 
         def latest_dict_row(rows: Any, required_key: str) -> Optional[Dict]:
             if not isinstance(rows, list):
                 return None
             for row in rows:
-                if isinstance(row, dict) and row.get(required_key) is not None:
+                if isinstance(row, dict) and row.get('active') is not False and row.get(required_key) is not None:
                     return row
             return None
 
@@ -239,19 +259,22 @@ class SpaceWeatherBridge:
             data = resp.json()
             latest = latest_dict_row(data, 'proton_speed')
             if latest:
-                result['density'] = float(latest.get('proton_density') or 5.0)
-                result['speed'] = float(latest.get('proton_speed') or 400.0)
-                got_data = True
+                if latest.get('proton_density') is None:
+                    raise ValueError('NOAA plasma row missing proton_density')
+                result['density'] = float(latest['proton_density'])
+                result['speed'] = float(latest['proton_speed'])
+                plasma_timestamp = str(latest.get('time_tag') or '')
             else:
                 header, latest_list = latest_header_row(data)
                 if header and latest_list:
                     density_idx = header.get('density')
                     speed_idx = header.get('speed')
-                    if density_idx is not None and density_idx < len(latest_list):
-                        result['density'] = float(latest_list[density_idx] or 5.0)
-                    if speed_idx is not None and speed_idx < len(latest_list):
-                        result['speed'] = float(latest_list[speed_idx] or 400.0)
-                    got_data = True
+                    if density_idx is not None and density_idx < len(latest_list) and latest_list[density_idx] not in (None, ''):
+                        result['density'] = float(latest_list[density_idx])
+                    if speed_idx is not None and speed_idx < len(latest_list) and latest_list[speed_idx] not in (None, ''):
+                        result['speed'] = float(latest_list[speed_idx])
+                    time_idx = header.get('time_tag')
+                    plasma_timestamp = str(latest_list[time_idx]) if time_idx is not None else ''
         except Exception as e:
             logger.debug(f"Plasma data fetch error: {e}")
         
@@ -263,19 +286,25 @@ class SpaceWeatherBridge:
             data = resp.json()
             latest = latest_dict_row(data, 'bz_gsm')
             if latest:
-                result['bz'] = float(latest.get('bz_gsm') or 0.0)
-                got_data = True
+                result['bz'] = float(latest['bz_gsm'])
+                mag_timestamp = str(latest.get('time_tag') or '')
             else:
                 header, latest_list = latest_header_row(data)
                 if header and latest_list:
                     bz_idx = header.get('bz_gsm')
-                    if bz_idx is not None and bz_idx < len(latest_list):
-                        result['bz'] = float(latest_list[bz_idx] or 0.0)
-                    got_data = True
+                    if bz_idx is not None and bz_idx < len(latest_list) and latest_list[bz_idx] not in (None, ''):
+                        result['bz'] = float(latest_list[bz_idx])
+                    time_idx = header.get('time_tag')
+                    mag_timestamp = str(latest_list[time_idx]) if time_idx is not None else ''
         except Exception as e:
             logger.debug(f"Mag data fetch error: {e}")
         
-        return result if got_data else None
+        if {'density', 'speed', 'bz'} <= result.keys() and plasma_timestamp and mag_timestamp:
+            _require_fresh_source_timestamp(plasma_timestamp, 'NOAA-SolarWind-Plasma')
+            _require_fresh_source_timestamp(mag_timestamp, 'NOAA-SolarWind-IMF')
+            result['source_timestamp'] = max(plasma_timestamp, mag_timestamp)
+            return result
+        return None
     
     def _fetch_3day_forecast(self) -> Optional[Dict]:
         """Fetch 3-day forecast from NOAA"""
@@ -284,34 +313,70 @@ class SpaceWeatherBridge:
             resp.raise_for_status()
             data = resp.json()
 
-            if isinstance(data, list):
-                kp_values = [
-                    float(row.get('kp'))
-                    for row in data
-                    if isinstance(row, dict) and row.get('kp') is not None
-                ]
-                if kp_values:
-                    return {'highest_kp_category': self._categorize_kp(max(kp_values))}
+            response_headers = getattr(resp, 'headers', {}) or {}
+            response_date = response_headers.get('Date') or response_headers.get('date')
 
-            if data and '3dayforecast' in data:
+            def provider_issue_timestamp(payload: Any) -> Optional[str]:
+                candidates = []
+                if isinstance(payload, dict):
+                    candidates.extend(
+                        payload.get(key)
+                        for key in ('issue_time', 'issued', 'source_timestamp', 'product_timestamp')
+                    )
+                candidates.append(response_date)
+                for candidate in candidates:
+                    if candidate in (None, ''):
+                        continue
+                    try:
+                        return _require_fresh_source_timestamp(candidate, 'NOAA-Forecast')
+                    except (TypeError, ValueError):
+                        continue
+                return None
+
+            if isinstance(data, list):
+                kp_values = []
+                for row in data:
+                    if not isinstance(row, dict) or row.get('kp') is None:
+                        continue
+                    value = float(row['kp'])
+                    if math.isfinite(value):
+                        kp_values.append(value)
+                source_timestamp = provider_issue_timestamp({})
+                if kp_values and source_timestamp:
+                    return {
+                        'highest_kp_category': self._categorize_kp(max(kp_values)),
+                        'source_timestamp': source_timestamp,
+                    }
+
+            if isinstance(data, dict) and isinstance(data.get('3dayforecast'), list):
                 forecast = data['3dayforecast']
-                # Find highest Kp expected
-                max_kp = 0
+                kp_values = []
                 for day in forecast:
-                    for kp_val in [float(day.get(k, 0)) for k in ['kp_1', 'kp_2', 'kp_3']]:
-                        max_kp = max(max_kp, kp_val)
-                
-                return {'highest_kp_category': self._categorize_kp(max_kp)}
+                    if not isinstance(day, dict):
+                        continue
+                    for key in ('kp_1', 'kp_2', 'kp_3'):
+                        raw_value = day.get(key)
+                        if raw_value is None:
+                            continue
+                        value = float(raw_value)
+                        if math.isfinite(value):
+                            kp_values.append(value)
+                source_timestamp = provider_issue_timestamp(data)
+                if kp_values and source_timestamp:
+                    return {
+                        'highest_kp_category': self._categorize_kp(max(kp_values)),
+                        'source_timestamp': source_timestamp,
+                    }
         except Exception as e:
             logger.debug(f"Forecast fetch error: {e}")
         return None
     
-    def _fetch_solar_flares(self) -> int:
+    def _fetch_solar_flares(self) -> Optional[int]:
         """Fetch solar flares from NASA (requires API key)"""
         try:
             api_key = self._get_nasa_api_key()
             if not api_key:
-                return 0
+                return None
             
             yesterday = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
             today = datetime.now().strftime('%Y-%m-%d')
@@ -324,7 +389,7 @@ class SpaceWeatherBridge:
             return len(data) if isinstance(data, list) else 0
         except Exception as e:
             logger.debug(f"NASA flares fetch error: {e}")
-        return 0
+        return None
     
     def _categorize_kp(self, kp: float) -> str:
         """Categorize Kp index into trading-relevant categories"""
@@ -392,7 +457,7 @@ class SpaceWeatherBridge:
             score -= 0.15  # Strong south component = substorm risk
         
         # Solar flares (count impacts confidence)
-        if reading.solar_flares_24h > 2:
+        if reading.solar_flares_24h is not None and reading.solar_flares_24h > 2:
             score -= 0.1  # Multiple flares = unpredictable
         
         # Clamp to 0-1
@@ -412,7 +477,7 @@ def get_space_weather_bridge() -> SpaceWeatherBridge:
         _bridge_instance = SpaceWeatherBridge()
     return _bridge_instance
 
-def get_live_space_weather(force_refresh: bool = False) -> SpaceWeatherReading:
+def get_live_space_weather(force_refresh: bool = False) -> Optional[SpaceWeatherReading]:
     """Get live space weather data"""
     bridge = get_space_weather_bridge()
     return bridge.get_live_data(force_refresh=force_refresh)
@@ -424,6 +489,8 @@ def get_cosmic_alignment_from_space_weather(force_refresh: bool = False) -> floa
     """
     bridge = get_space_weather_bridge()
     reading = bridge.get_live_data(force_refresh=force_refresh)
+    if reading is None:
+        raise RuntimeError("No fresh live space-weather reading is available")
     return bridge.get_cosmic_score(reading)
 
 
@@ -435,6 +502,8 @@ if __name__ == '__main__':
     print("\n🌍☀️ TESTING SPACE WEATHER BRIDGE 🌍☀️\n")
     
     reading = get_live_space_weather(force_refresh=True)
+    if reading is None:
+        raise SystemExit("No fresh live space-weather reading is available")
     print(f"Kp Index: {reading.kp_index:.1f} ({reading.kp_category})")
     print(f"Solar Wind: {reading.solar_wind_speed:.0f} km/s")
     print(f"Bz Component: {reading.bz_component:.1f} nT")

@@ -30,7 +30,7 @@ from typing import Dict, List, Optional, Tuple, Set
 from datetime import datetime, time as dt_time
 
 # UTF-8 fix
-if sys.platform == 'win32':
+if sys.platform == 'win32' and sys.stdout.isatty() and sys.stderr.isatty():
     os.environ['PYTHONIOENCODING'] = 'utf-8'
     try:
         import io

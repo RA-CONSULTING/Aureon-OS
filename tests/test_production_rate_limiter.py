@@ -2,7 +2,6 @@
 """
 Test Production API Rate Limiting & Data Source Management
 """
-import asyncio
 import logging
 from aureon_production_rate_limiter import (
     get_rate_limiter,
@@ -15,7 +14,18 @@ from aureon_production_rate_limiter import (
 logging.basicConfig(level=logging.INFO, format='%(message)s')
 logger = logging.getLogger(__name__)
 
-async def test_rate_limiter():
+
+def _complete_without_event_loop(coroutine):
+    """Complete a no-wait limiter coroutine without opening loop sockets."""
+    try:
+        yielded = coroutine.send(None)
+    except StopIteration as completed:
+        return completed.value
+    coroutine.close()
+    raise AssertionError(f"rate limiter unexpectedly suspended: {yielded!r}")
+
+
+def test_rate_limiter():
     """Test the production rate limiter."""
     print("\n" + "=" * 100)
     print("🚀 PRODUCTION API RATE LIMITER TEST")
@@ -31,7 +41,7 @@ async def test_rate_limiter():
     print("\n2️⃣ SIMULATING API REQUESTS:")
     test_apis = ['coingecko', 'binance_public', 'kraken', 'alpaca']
     for api in test_apis:
-        await limiter.wait_if_needed(api)
+        _complete_without_event_loop(limiter.wait_if_needed(api))
         print(f"   ✅ Can request {api}")
     
     # Test 3: Show API limits
@@ -67,6 +77,12 @@ async def test_rate_limiter():
     # Test 7: Rate limit utilization
     print("\n7️⃣ RATE LIMIT UTILIZATION:")
     status = limiter.check_status()
+    assert all(status[api]["recent_requests"] >= 1 for api in test_apis)
+    assert BatchRequestOptimizer.estimate_api_calls(101, "binance_public") >= 1
+    assert all(
+        limiter.get_best_source(kind) in sources
+        for kind, sources in DATA_SOURCE_PRIORITY.items()
+    )
     for api_name, api_status in sorted(status.items(), key=lambda x: x[1]['utilization'], reverse=True):
         util_bar = '█' * int(api_status['utilization'] / 5) + '░' * (20 - int(api_status['utilization'] / 5))
         print(f"   {api_name:17} │ {util_bar} │ {api_status['utilization']:5.1f}%")
@@ -76,4 +92,4 @@ async def test_rate_limiter():
     print("=" * 100 + "\n")
 
 if __name__ == '__main__':
-    asyncio.run(test_rate_limiter())
+    test_rate_limiter()

@@ -151,11 +151,11 @@ export const CoherenceHeatmap = ({ symbol = 'BTCUSDT' }: CoherenceHeatmapProps) 
 
   const getColorForCoherence = (coherence: number, count: number): string => {
     if (count === 0) return 'bg-gray-900/30';
-    if (coherence >= 0.945) return 'bg-green-500';
-    if (coherence >= 0.92) return 'bg-yellow-500';
-    if (coherence >= 0.85) return 'bg-blue-500';
-    if (coherence >= 0.75) return 'bg-blue-400';
-    if (coherence >= 0.65) return 'bg-blue-300';
+    if (coherence >= 0.945) return 'bg-success';
+    if (coherence >= 0.92) return 'bg-warning';
+    if (coherence >= 0.85) return 'bg-primary';
+    if (coherence >= 0.75) return 'bg-primary';
+    if (coherence >= 0.65) return 'bg-primary';
     return 'bg-gray-600';
   };
 
@@ -239,7 +239,7 @@ export const CoherenceHeatmap = ({ symbol = 'BTCUSDT' }: CoherenceHeatmapProps) 
             <CardContent className="p-4">
               <div className="text-center">
                 <p className="text-xs text-muted-foreground mb-1">Optimal Windows</p>
-                <p className="text-2xl font-bold text-green-500">{optimalWindows.length}</p>
+                <p className="text-2xl font-bold text-success">{optimalWindows.length}</p>
               </div>
             </CardContent>
           </Card>
@@ -306,23 +306,23 @@ export const CoherenceHeatmap = ({ symbol = 'BTCUSDT' }: CoherenceHeatmapProps) 
                     <span>{'<'}0.65</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 bg-blue-300 rounded"></div>
+                    <div className="w-4 h-4 bg-primary rounded"></div>
                     <span>0.65-0.75</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 bg-blue-400 rounded"></div>
+                    <div className="w-4 h-4 bg-primary rounded"></div>
                     <span>0.75-0.85</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 bg-blue-500 rounded"></div>
+                    <div className="w-4 h-4 bg-primary rounded"></div>
                     <span>0.85-0.92</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 bg-yellow-500 rounded"></div>
+                    <div className="w-4 h-4 bg-warning rounded"></div>
                     <span className="font-semibold">0.92-0.945 (High)</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 bg-green-500 rounded"></div>
+                    <div className="w-4 h-4 bg-success rounded"></div>
                     <span className="font-semibold">≥0.945 (Optimal)</span>
                   </div>
                 </div>
@@ -344,7 +344,7 @@ export const CoherenceHeatmap = ({ symbol = 'BTCUSDT' }: CoherenceHeatmapProps) 
           <Card className="bg-background/50">
             <CardHeader>
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-green-500" />
+                <TrendingUp className="h-4 w-4 text-success" />
                 Optimal Trading Windows (C ≥ 0.92)
               </CardTitle>
             </CardHeader>
@@ -362,7 +362,7 @@ export const CoherenceHeatmap = ({ symbol = 'BTCUSDT' }: CoherenceHeatmapProps) 
                     </div>
                     <div className="text-right">
                       <p className="text-xs text-muted-foreground">Avg C(t)</p>
-                      <p className="text-lg font-bold text-green-500">
+                      <p className="text-lg font-bold text-success">
                         {window.avgCoherence.toFixed(3)}
                       </p>
                     </div>

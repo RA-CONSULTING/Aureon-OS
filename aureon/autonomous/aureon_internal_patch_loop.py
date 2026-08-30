@@ -1,0 +1,715 @@
+"""Aureon-authored patch loop built on the existing guarded self-fix path.
+
+The internal coding workforce observes a bounded source file, deliberates,
+authors one unified diff, submits it to SafeCodeControl, and delegates the
+actual mutation to GuardedPatchApplier.  The applier remains responsible for
+allowlisting, secret scanning, ``git apply --check``, tests, and rollback.
+
+No Codex implementation receipt is created here.  A successful patch remains
+``pending_senior_review`` until a separate release review consumes the exact
+evidence digest.
+"""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import re
+import subprocess
+import time
+from dataclasses import asdict, dataclass
+from pathlib import Path, PurePosixPath
+from typing import Any, Sequence
+
+from aureon.autonomous.aureon_agent_company_brain_fabric import (
+    CANONICAL_AGENT_COMPANY_ROLE_COUNT,
+)
+from aureon.autonomous.aureon_autonomous_self_fix_director import GuardedPatchApplier
+from aureon.autonomous.aureon_internal_coding_workforce import (
+    INTERNAL_AUTHOR_MAX_TOKENS,
+    InternalCodingWorkforce,
+)
+from aureon.autonomous.aureon_safe_code_control import CodeProposal, SafeCodeControl
+
+SCHEMA_VERSION = "aureon-internal-patch-cycle-v1"
+MAX_SOURCE_BYTES = 512 * 1024
+MAX_PATCH_BYTES = 128 * 1024
+MAX_CHANGED_LINES = 500
+MAX_WORKFORCE_PROMPT_CHARS = 65_536
+MAX_COUNCIL_EXCERPT_CHARS = 1_500
+MAX_PRE_APPLY_PROPOSAL_CHARS = 48_000
+BLOCKED_PATH_TOKENS = (
+    ".env",
+    "credential",
+    "credentials",
+    "secret",
+    "secrets",
+    "private_key",
+    "live_order",
+    "order_router",
+    "payment",
+    "filing",
+    "hmrc",
+    "companies_house",
+)
+SECRET_SOURCE_PATTERNS = (
+    re.compile(r"BEGIN (?:RSA |OPENSSH |EC )?PRIVATE KEY", re.I),
+    re.compile(r"\bsk_(?:live|proj)_[A-Za-z0-9_-]{12,}", re.I),
+    re.compile(r"\bAKIA[0-9A-Z]{16}\b"),
+    re.compile(r"(?i)(api[_-]?secret|password|private[_-]?key)\s*=\s*['\"][^'\"]{6,}"),
+)
+REPAIRABLE_AUTHORING_HOLDS = frozenset(
+    {
+        "authored_diff_git_apply_check_failed",
+        "model_response_did_not_contain_unified_diff",
+        "unified_diff_shape_required",
+    }
+)
+PRE_APPLY_COUNCIL_ROLES = (
+    "Code Architect",
+    "Test Pilot",
+    "CISO Secret Keeper",
+    "Security Auditor",
+    "Release Manager",
+    "Risk Governor",
+    "Evidence Clerk",
+    "Archive Librarian",
+)
+PRE_APPLY_COUNCIL_REVIEWER = "aureon:pre_apply_council"
+
+
+class InternalPatchHold(RuntimeError):
+    """Raised when an internally authored patch cannot safely proceed."""
+
+
+def _sha256_bytes(value: bytes) -> str:
+    return hashlib.sha256(value).hexdigest()
+
+
+def _canonical_json(payload: Any) -> str:
+    return json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False)
+
+
+def _evidence_digest(payload: dict[str, Any]) -> str:
+    return _sha256_bytes(_canonical_json(payload).encode("utf-8"))
+
+
+def _exact_pre_apply_council_accepted(council: dict[str, Any]) -> bool:
+    decisions = council.get("decisions")
+    if not isinstance(decisions, list) or len(decisions) != len(PRE_APPLY_COUNCIL_ROLES):
+        return False
+    if tuple(item.get("role") for item in decisions if isinstance(item, dict)) != PRE_APPLY_COUNCIL_ROLES:
+        return False
+    receipt_ids: list[str] = []
+    for item in decisions:
+        if not isinstance(item, dict):
+            return False
+        if item.get("agent_verdict") != "ACCEPT" or item.get("process_verdict") != "ACCEPT":
+            return False
+        if not str(item.get("process_id") or "").strip():
+            return False
+        for key in ("agent_work_receipt_id", "process_work_receipt_id"):
+            receipt_id = str(item.get(key) or "").strip()
+            if not receipt_id:
+                return False
+            receipt_ids.append(receipt_id)
+    return (
+        council.get("schema_version") == "aureon-internal-coding-deliberation-v1"
+        and council.get("status") == "complete"
+        and council.get("scope_locked") is True
+        and council.get("decision_mode") == "accept_hold"
+        and council.get("accepted") is True
+        and council.get("hold_count") == 0
+        and council.get("active_agent_count") == len(PRE_APPLY_COUNCIL_ROLES)
+        and council.get("decision_count") == len(PRE_APPLY_COUNCIL_ROLES) * 2
+        and len(receipt_ids) == len(PRE_APPLY_COUNCIL_ROLES) * 2
+        and len(set(receipt_ids)) == len(receipt_ids)
+    )
+
+
+def _approve_exact_council_proposal(
+    controller: SafeCodeControl,
+    proposal: dict[str, Any],
+) -> dict[str, Any]:
+    pending_matches = [item for item in controller.pending_proposals if item is proposal]
+    if proposal.get("status") != "pending_review" or len(pending_matches) != 1:
+        raise InternalPatchHold("pre_apply_proposal_queue_binding_invalid")
+
+    original_proposal = dict(proposal)
+    original_pending = list(controller.pending_proposals)
+    original_recent = list(controller.recent_reviews)
+    try:
+        controller.pending_proposals = [
+            item for item in controller.pending_proposals if item is not proposal
+        ]
+        proposal["status"] = "approved"
+        proposal["reviewed_at"] = time.time()
+        proposal["reviewer"] = PRE_APPLY_COUNCIL_REVIEWER
+        controller.recent_reviews.append(proposal)
+        controller.recent_reviews = controller.recent_reviews[-controller.max_recent :]
+        controller._persist()
+    except Exception as exc:
+        proposal.clear()
+        proposal.update(original_proposal)
+        controller.pending_proposals = original_pending
+        controller.recent_reviews = original_recent
+        try:
+            controller._persist()
+        except Exception:
+            pass
+        raise InternalPatchHold("pre_apply_proposal_approval_persist_failed") from exc
+    return proposal
+
+
+def _bounded_council_context(
+    deliberation: dict[str, Any],
+    *,
+    prompt_prefix: str,
+    prompt_suffix: str,
+) -> tuple[str, dict[str, Any]]:
+    """Fit useful council excerpts without truncating source or causal hashes."""
+
+    decisions = [item for item in deliberation.get("decisions", []) if isinstance(item, dict)]
+    if not decisions:
+        raise InternalPatchHold("council_decisions_required_for_author_prompt")
+
+    def render(excerpt_chars: int) -> str:
+        context = [
+            {
+                "role": str(item.get("role") or ""),
+                "process_id": str(item.get("process_id") or ""),
+                "process_decision_sha256": _sha256_bytes(
+                    str(item.get("process_decision") or "").encode("utf-8")
+                ),
+                "process_decision_excerpt": str(item.get("process_decision") or "")[:excerpt_chars],
+            }
+            for item in decisions
+        ]
+        return _canonical_json(context)
+
+    minimum = render(0)
+    if len(prompt_prefix) + len(minimum) + len(prompt_suffix) > MAX_WORKFORCE_PROMPT_CHARS:
+        raise InternalPatchHold("author_prompt_minimum_context_exceeds_limit")
+
+    low, high = 0, MAX_COUNCIL_EXCERPT_CHARS
+    while low < high:
+        candidate = (low + high + 1) // 2
+        if len(prompt_prefix) + len(render(candidate)) + len(prompt_suffix) <= MAX_WORKFORCE_PROMPT_CHARS:
+            low = candidate
+        else:
+            high = candidate - 1
+    context_json = render(low)
+    prompt_chars = len(prompt_prefix) + len(context_json) + len(prompt_suffix)
+    if prompt_chars > MAX_WORKFORCE_PROMPT_CHARS:
+        raise InternalPatchHold("author_prompt_limit_proof_failed")
+    return context_json, {
+        "schema_version": "aureon-author-prompt-context-v1",
+        "decision_count": len(decisions),
+        "excerpt_char_limit": low,
+        "context_digest": _sha256_bytes(context_json.encode("utf-8")),
+        "prompt_char_count": prompt_chars,
+        "prompt_char_limit": MAX_WORKFORCE_PROMPT_CHARS,
+        "full_source_preserved": True,
+        "all_decisions_digest_bound": True,
+    }
+
+
+def _normalize_target(value: str) -> str:
+    raw = str(value or "").strip().replace("\\", "/")
+    path = PurePosixPath(raw)
+    if not raw or path.is_absolute() or ".." in path.parts or raw.startswith("/"):
+        raise InternalPatchHold("target_path_must_be_repo_relative")
+    normalized = path.as_posix()
+    if any(token in normalized.lower() for token in BLOCKED_PATH_TOKENS):
+        raise InternalPatchHold("target_path_is_authority_or_secret_bearing")
+    return normalized
+
+
+def _extract_diff(text: str) -> str:
+    value = str(text or "").strip()
+    fenced = re.search(r"```(?:diff|patch)?\s*\n(.*?)```", value, flags=re.I | re.S)
+    if fenced:
+        value = fenced.group(1).strip()
+    start_candidates = [offset for token in ("diff --git ", "--- ") if (offset := value.find(token)) >= 0]
+    if not start_candidates:
+        raise InternalPatchHold("model_response_did_not_contain_unified_diff")
+    value = value[min(start_candidates) :].strip() + "\n"
+    if len(value.encode("utf-8")) > MAX_PATCH_BYTES:
+        raise InternalPatchHold("patch_exceeds_size_limit")
+    if "\x00" in value or "GIT binary patch" in value:
+        raise InternalPatchHold("binary_patch_forbidden")
+    return value
+
+
+def _diff_targets(patch_text: str) -> list[str]:
+    targets: list[str] = []
+    for line in patch_text.splitlines():
+        if not (line.startswith("--- ") or line.startswith("+++ ")):
+            continue
+        raw = line[4:].strip().split("\t", 1)[0]
+        if raw == "/dev/null":
+            continue
+        raw = re.sub(r"^[ab]/", "", raw)
+        target = _normalize_target(raw)
+        if target not in targets:
+            targets.append(target)
+    return targets
+
+
+def _validate_authored_diff(patch_text: str, *, target_path: str) -> dict[str, Any]:
+    if "--- " not in patch_text or "+++ " not in patch_text or "@@" not in patch_text:
+        raise InternalPatchHold("unified_diff_shape_required")
+    targets = _diff_targets(patch_text)
+    if targets != [target_path]:
+        raise InternalPatchHold("patch_target_mismatch")
+    changed_lines = sum(
+        1
+        for line in patch_text.splitlines()
+        if (line.startswith("+") and not line.startswith("+++"))
+        or (line.startswith("-") and not line.startswith("---"))
+    )
+    if changed_lines < 1 or changed_lines > MAX_CHANGED_LINES:
+        raise InternalPatchHold("patch_changed_line_limit_failed")
+    return {
+        "target_paths": targets,
+        "changed_line_count": changed_lines,
+        "patch_sha256": _sha256_bytes(patch_text.encode("utf-8")),
+        "patch_bytes": len(patch_text.encode("utf-8")),
+    }
+
+
+def _git_apply_check(root: Path, patch_text: str) -> dict[str, Any]:
+    command = ["git", "apply", "--whitespace=nowarn", "--check"]
+    try:
+        proc = subprocess.run(
+            command,
+            cwd=root,
+            input=patch_text,
+            text=True,
+            encoding="utf-8",
+            errors="strict",
+            capture_output=True,
+            timeout=30,
+        )
+    except Exception as exc:
+        return {
+            "ok": False,
+            "command": command,
+            "error_type": type(exc).__name__,
+        }
+    return {
+        "ok": proc.returncode == 0,
+        "command": command,
+        "returncode": proc.returncode,
+        "stdout": proc.stdout[-2_000:],
+        "stderr": proc.stderr[-2_000:],
+    }
+
+
+def _canonicalize_full_replacement_diff(
+    *,
+    source: str,
+    patch_text: str,
+    target_path: str,
+) -> tuple[str, dict[str, Any]]:
+    """Mechanically repair hunk counts for one exact full-file replacement.
+
+    This is deliberately narrower than a general diff repairer. It accepts no
+    metadata, second hunk, or partial source coverage. Context and removal lines
+    must replay the immutable source in exact order, so model-authored content
+    cannot gain scope or silently change while its structural counts are
+    canonicalized.
+    """
+
+    newline = chr(10)
+    lines = patch_text.rstrip(newline).split(newline)
+    expected_old = source.splitlines()
+    expected_from = f"--- a/{target_path}"
+    expected_to = f"+++ b/{target_path}"
+    if len(lines) < 4 or lines[0] != expected_from or lines[1] != expected_to:
+        raise InternalPatchHold("full_replacement_canonicalization_headers_invalid")
+    if not lines[2].startswith("@@ ") or "@@" not in lines[2][3:]:
+        raise InternalPatchHold("full_replacement_canonicalization_hunk_invalid")
+    body = lines[3:]
+    if not body or any(line.startswith(("@@", "diff --git ", "--- ", "+++ ")) for line in body):
+        raise InternalPatchHold("full_replacement_canonicalization_multiple_sections")
+    if any(not line.startswith(("-", "+", " ")) for line in body):
+        raise InternalPatchHold("full_replacement_canonicalization_body_invalid")
+    source_index = 0
+    result_lines: list[str] = []
+    model_additions: list[str] = []
+    removed_line_count = 0
+    context_line_count = 0
+    for line in body:
+        prefix, content = line[0], line[1:]
+        if prefix in {"-", " "}:
+            if source_index >= len(expected_old) or content != expected_old[source_index]:
+                raise InternalPatchHold("full_replacement_canonicalization_source_mismatch")
+            source_index += 1
+            if prefix == " ":
+                context_line_count += 1
+                result_lines.append(content)
+            else:
+                removed_line_count += 1
+        else:
+            model_additions.append(content)
+            result_lines.append(content)
+    if source_index != len(expected_old):
+        raise InternalPatchHold("full_replacement_canonicalization_source_mismatch")
+    if not model_additions or not result_lines:
+        raise InternalPatchHold("full_replacement_canonicalization_empty_result")
+    model_additions_text = newline.join(model_additions) + newline
+    candidate_text = newline.join(result_lines) + newline
+    if any(pattern.search(candidate_text) for pattern in SECRET_SOURCE_PATTERNS):
+        raise InternalPatchHold("full_replacement_canonicalization_secret_scan_failed")
+    canonical_lines = [
+        expected_from,
+        expected_to,
+        f"@@ -1,{len(expected_old)} +1,{len(result_lines)} @@",
+        *[f"-{line}" for line in expected_old],
+        *[f"+{line}" for line in result_lines],
+    ]
+    canonical = newline.join(canonical_lines) + newline
+    if len(canonical.encode("utf-8")) > MAX_PATCH_BYTES:
+        raise InternalPatchHold("full_replacement_canonicalization_size_limit_failed")
+    original_digest = _sha256_bytes(patch_text.encode("utf-8"))
+    canonical_digest = _sha256_bytes(canonical.encode("utf-8"))
+    return canonical, {
+        "schema_version": "aureon-full-replacement-canonicalization-v1",
+        "used": True,
+        "target_path": target_path,
+        "immutable_source_sha256": _sha256_bytes(source.encode("utf-8")),
+        "source_line_count": len(expected_old),
+        "source_lines_consumed": source_index,
+        "removed_line_count": removed_line_count,
+        "context_line_count": context_line_count,
+        "added_line_count": len(result_lines),
+        "model_addition_line_count": len(model_additions),
+        "model_additions_sha256": _sha256_bytes(model_additions_text.encode("utf-8")),
+        "candidate_source_sha256": _sha256_bytes(candidate_text.encode("utf-8")),
+        "original_patch_sha256": original_digest,
+        "canonical_patch_sha256": canonical_digest,
+        "model_additions_preserved": True,
+        "source_coverage_complete": True,
+        "action_eligible": False,
+        "economic_eligible": False,
+    }
+
+
+def _build_pre_apply_council_prompt(
+    *,
+    binding: dict[str, Any],
+    patch_text: str,
+) -> str:
+    prompt = (
+        "PRE-APPLY COUNCIL. Review this complete exact digest-bound coding proposal. "
+        "Do not request tools and do not claim execution. The expected_source_sha256 "
+        "identifies the unchanged input file; patch_sha256 identifies this unified diff, "
+        "so those distinct hashes are not expected to be equal.\n"
+        f"Binding: {_canonical_json(binding)}\n"
+        "FULL VALIDATED UNIFIED DIFF (no bytes omitted):\n"
+        f"{patch_text}"
+    )
+    if len(prompt) > MAX_PRE_APPLY_PROPOSAL_CHARS:
+        raise InternalPatchHold("pre_apply_full_patch_prompt_exceeds_limit")
+    return prompt
+
+
+@dataclass(frozen=True)
+class InternalPatchRequest:
+    goal: str
+    target_path: str
+    expected_source_sha256: str
+    test_commands: tuple[tuple[str, ...], ...]
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            **asdict(self),
+            "test_commands": [list(command) for command in self.test_commands],
+        }
+
+
+def build_patch_request(
+    *,
+    root: Path,
+    goal: str,
+    target_path: str,
+    test_commands: Sequence[Sequence[str]],
+) -> InternalPatchRequest:
+    target = _normalize_target(target_path)
+    source_path = Path(root).resolve() / target
+    if not source_path.is_file():
+        raise InternalPatchHold("target_file_missing")
+    source = source_path.read_bytes()
+    if not source or len(source) > MAX_SOURCE_BYTES:
+        raise InternalPatchHold("source_size_limit_failed")
+    goal_text = str(goal or "").strip()
+    if not goal_text or len(goal_text) > 8192:
+        raise InternalPatchHold("goal_size_limit_failed")
+    commands = tuple(tuple(str(part) for part in command) for command in test_commands)
+    if not commands or any(not command or not all(command) for command in commands):
+        raise InternalPatchHold("test_commands_required")
+    return InternalPatchRequest(
+        goal=goal_text,
+        target_path=target,
+        expected_source_sha256=_sha256_bytes(source),
+        test_commands=commands,
+    )
+
+
+def _source_for_authoring(root: Path, request: InternalPatchRequest) -> str:
+    source_path = root / request.target_path
+    source = source_path.read_bytes()
+    if _sha256_bytes(source) != request.expected_source_sha256:
+        raise InternalPatchHold("source_changed_since_request")
+    try:
+        text = source.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise InternalPatchHold("source_must_be_utf8_text") from exc
+    if any(pattern.search(text) for pattern in SECRET_SOURCE_PATTERNS):
+        raise InternalPatchHold("source_secret_scan_failed_before_model")
+    return text
+
+
+def run_internal_patch_cycle(
+    *,
+    root: Path,
+    request: InternalPatchRequest,
+    workforce: InternalCodingWorkforce,
+    controller: SafeCodeControl | None = None,
+) -> dict[str, Any]:
+    """Run one Aureon-authored, guarded, rollback-capable patch cycle."""
+
+    repo_root = Path(root).resolve()
+    target = _normalize_target(request.target_path)
+    if target != request.target_path:
+        raise InternalPatchHold("request_target_not_canonical")
+    source = _source_for_authoring(repo_root, request)
+    initial_report = workforce.report()
+    expected = CANONICAL_AGENT_COMPANY_ROLE_COUNT
+    if (
+        not initial_report.get("brain_fabric_ready")
+        or initial_report.get("agent_brain_count") != expected
+        or initial_report.get("process_brain_count") != expected
+        or len(initial_report.get("passports") or ()) != expected * 2
+    ):
+        raise InternalPatchHold("full_agent_company_brain_fabric_required")
+
+    deliberation = workforce.deliberate_coding_goal(request.goal, scope_locked=True)
+    deliberation_digest = _evidence_digest(deliberation)
+    author_prompt_prefix = (
+        "AUTHOR ONE UNIFIED DIFF ONLY. Do not use Markdown commentary outside the diff.\n"
+        f"Goal: {request.goal}\n"
+        f"Exact target: {target}\n"
+        f"Expected source SHA-256: {request.expected_source_sha256}\n"
+        f"Full Aureon deliberation SHA-256: {deliberation_digest}\n"
+        "Aureon bounded council context: "
+    )
+    author_prompt_suffix = (
+        "\n"
+        "Rules: modify only the exact target; preserve unrelated behavior; do not add secrets, network calls, "
+        "economic actions, deployment, or authority bypasses; keep the patch minimal and testable.\n"
+        f"CURRENT FILE {target}:\n{source}"
+    )
+    council_context, author_prompt_context = _bounded_council_context(
+        deliberation,
+        prompt_prefix=author_prompt_prefix,
+        prompt_suffix=author_prompt_suffix,
+    )
+    author_prompt = author_prompt_prefix + council_context + author_prompt_suffix
+    model_output, author_receipt = workforce.decide(
+        subject_type="agent",
+        subject_id="Implementation Worker",
+        process_id=workforce.process_id_for_role("Implementation Worker"),
+        prompt=author_prompt,
+        stage="patch_authoring",
+        work_kind="unified_diff_authoring",
+        max_tokens=INTERNAL_AUTHOR_MAX_TOKENS,
+    )
+    author_receipts = [author_receipt]
+    correction_attempted = False
+    authoring_failure_reason = ""
+    git_apply_check: dict[str, Any] = {}
+    structural_canonicalization: dict[str, Any] = {"used": False}
+    try:
+        patch_text = _extract_diff(model_output)
+        patch_validation = _validate_authored_diff(patch_text, target_path=target)
+        git_apply_check = _git_apply_check(repo_root, patch_text)
+        if git_apply_check.get("ok") is not True:
+            raise InternalPatchHold("authored_diff_git_apply_check_failed")
+    except InternalPatchHold as exc:
+        if str(exc) not in REPAIRABLE_AUTHORING_HOLDS:
+            raise
+        correction_attempted = True
+        authoring_failure_reason = str(exc)
+        failure_detail = str(
+            git_apply_check.get("stderr")
+            or git_apply_check.get("stdout")
+            or git_apply_check.get("error_type")
+            or authoring_failure_reason
+        )[:1_000]
+        repair_prompt = (
+            "CORRECT THE PREVIOUS FORMAT FAILURE. Return exactly one unified diff and nothing else.\n"
+            f"Goal: {request.goal}\n"
+            f"Exact target: {target}\n"
+            f"Expected source SHA-256: {request.expected_source_sha256}\n"
+            f"Previous bounded failure: {authoring_failure_reason}. Detail: {failure_detail}\n"
+            "The response must contain --- a/<target>, +++ b/<target>, and at least one @@ hunk. "
+            "Modify only the exact target; preserve unrelated behavior; do not add secrets, network calls, "
+            "economic actions, deployment, or authority bypasses.\n"
+            f"CURRENT FILE {target}:\n{source}"
+        )
+        repair_prompt = repair_prompt.replace(
+            "Goal: ",
+            (
+                f"Exact immutable source line count: {len(source.splitlines())}. "
+                "The @@ old count must equal that count and the new count must exactly equal the emitted '+' lines."
+                " For a complete replacement, emit only the --- and +++ headers, one @@ hunk, every original "
+                "line prefixed with '-', then every replacement line prefixed with '+'; use no diff --git, "
+                "index metadata, or context lines."
+                + chr(10)
+                + "Goal: "
+            ),
+            1,
+        )
+        model_output, repair_receipt = workforce.decide(
+            subject_type="agent",
+            subject_id="Implementation Worker",
+            process_id=workforce.process_id_for_role("Implementation Worker"),
+            prompt=repair_prompt,
+            stage="patch_authoring_correction",
+            work_kind="unified_diff_format_correction",
+            max_tokens=INTERNAL_AUTHOR_MAX_TOKENS,
+        )
+        author_receipts.append(repair_receipt)
+        patch_text = _extract_diff(model_output)
+        patch_validation = _validate_authored_diff(patch_text, target_path=target)
+        git_apply_check = _git_apply_check(repo_root, patch_text)
+        if git_apply_check.get("ok") is not True:
+            patch_text, structural_canonicalization = _canonicalize_full_replacement_diff(
+                source=source,
+                patch_text=patch_text,
+                target_path=target,
+            )
+            patch_validation = _validate_authored_diff(patch_text, target_path=target)
+            git_apply_check = _git_apply_check(repo_root, patch_text)
+            if git_apply_check.get("ok") is not True:
+                raise InternalPatchHold("canonicalized_diff_git_apply_check_failed") from exc
+
+    council_binding = {
+        "goal_digest": _sha256_bytes(request.goal.encode("utf-8")),
+        "target_path": target,
+        "expected_source_sha256": request.expected_source_sha256,
+        "patch_sha256": patch_validation["patch_sha256"],
+        "test_commands_digest": _evidence_digest(
+            {"test_commands": [list(command) for command in request.test_commands]}
+        ),
+        "deliberation_digest": deliberation_digest,
+        "author_prompt_context_digest": author_prompt_context["context_digest"],
+        "git_apply_check_digest": _evidence_digest(git_apply_check),
+        "git_apply_check_ok": True,
+        "structural_canonicalization_digest": _evidence_digest(structural_canonicalization),
+    }
+    pre_apply_prompt = _build_pre_apply_council_prompt(
+        binding=council_binding,
+        patch_text=patch_text,
+    )
+    pre_apply_council = workforce.deliberate_coding_goal(
+        pre_apply_prompt,
+        selected_roles=PRE_APPLY_COUNCIL_ROLES,
+        require_accept=True,
+    )
+    pre_apply_council_digest = _evidence_digest(pre_apply_council)
+    if not _exact_pre_apply_council_accepted(pre_apply_council):
+        raise InternalPatchHold("pre_apply_council_held")
+
+    proposal_controller = controller or SafeCodeControl(
+        state_path=repo_root / "state" / "aureon_internal_patch_proposals.json"
+    )
+    proposal_spec = CodeProposal(
+        kind="aureon_internal_unified_diff",
+        title=request.goal[:120],
+        summary="Aureon's Ollama-backed workforce authored this exact-source-bound unified diff.",
+        target_files=[target],
+        patch_text=patch_text,
+        metadata={
+            "request": request.to_dict(),
+            "deliberation_digest": deliberation_digest,
+            "author_prompt_context": author_prompt_context,
+            "author_work_receipt_id": author_receipts[-1].receipt_id,
+            "author_work_receipt_ids": [receipt.receipt_id for receipt in author_receipts],
+            "authoring_correction_attempted": correction_attempted,
+            "authoring_failure_reason": authoring_failure_reason,
+            "patch_validation": patch_validation,
+            "git_apply_check": git_apply_check,
+            "structural_canonicalization": structural_canonicalization,
+            "pre_apply_council_digest": pre_apply_council_digest,
+            "pre_apply_council_receipt_ids": [
+                receipt_id
+                for item in pre_apply_council["decisions"]
+                for receipt_id in (
+                    item["agent_work_receipt_id"],
+                    item["process_work_receipt_id"],
+                )
+            ],
+            "brain_fabric_ready": True,
+            "codex_implementation": False,
+        },
+        source="aureon_internal_coding_workforce",
+    )
+    prior_auto_approve = proposal_controller.auto_approve
+    proposal_controller.auto_approve = False
+    try:
+        proposal = proposal_controller.propose(proposal_spec)
+    finally:
+        proposal_controller.auto_approve = prior_auto_approve
+    proposal = _approve_exact_council_proposal(proposal_controller, proposal)
+    applier = GuardedPatchApplier(
+        root=repo_root,
+        allowlist=[target],
+        test_commands=[list(command) for command in request.test_commands],
+        required_test_layers=["focused"],
+        review_cycles=1,
+    )
+    apply_evidence = applier.apply_proposal(proposal)
+    workforce_report = workforce.report()
+    applied = bool(apply_evidence.get("applied")) and apply_evidence.get("status") == "applied"
+    cycle = {
+        "schema_version": SCHEMA_VERSION,
+        "status": "internal_patch_applied_pending_senior_review"
+        if applied
+        else "internal_patch_held_or_rolled_back",
+        "applied": applied,
+        "pending_senior_review": applied,
+        "request": request.to_dict(),
+        "source_sha256": request.expected_source_sha256,
+        "deliberation": deliberation,
+        "deliberation_digest": deliberation_digest,
+        "author_prompt_context": author_prompt_context,
+        "proposal": proposal,
+        "patch_validation": patch_validation,
+        "pre_apply_council": pre_apply_council,
+        "pre_apply_council_digest": pre_apply_council_digest,
+        "authoring_correction_attempted": correction_attempted,
+        "authoring_failure_reason": authoring_failure_reason,
+        "author_work_receipt_ids": [receipt.receipt_id for receipt in author_receipts],
+        "git_apply_check": git_apply_check,
+        "structural_canonicalization": structural_canonicalization,
+        "apply_evidence": apply_evidence,
+        "workforce_report": workforce_report,
+        "codex_role": "senior_review_and_veto_only",
+        "codex_implementation": False,
+        "action_eligible": False,
+        "economic_eligible": False,
+    }
+    cycle["evidence_digest"] = _evidence_digest(cycle)
+    return cycle
+
+
+__all__ = [
+    "InternalPatchHold",
+    "InternalPatchRequest",
+    "SCHEMA_VERSION",
+    "build_patch_request",
+    "run_internal_patch_cycle",
+]

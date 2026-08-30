@@ -57,6 +57,11 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 from dataclasses import dataclass, field, asdict
 
+from aureon.accounting.hmrc_mutation_boundary import (
+    HMRCMutationHold,
+    HMRCMutationRegistry,
+)
+
 logger = logging.getLogger("hnc_hmrc_api")
 
 
@@ -241,10 +246,20 @@ class HMRCApiClient:
     and all MTD API calls.
     """
 
-    def __init__(self, config: HMRCConfig):
+    def __init__(
+        self,
+        config: HMRCConfig,
+        mutation_registry: Optional[HMRCMutationRegistry] = None,
+    ):
+        if (
+            mutation_registry is not None
+            and not isinstance(mutation_registry, HMRCMutationRegistry)
+        ):
+            raise TypeError("hmrc_mutation_registry_required")
         self.config = config
         self.token: Optional[OAuthToken] = None
         self._device_id = str(uuid.uuid4())
+        self._mutation_registry = mutation_registry
 
         # Load persisted token if available
         if config.token_file:
@@ -402,15 +417,27 @@ class HMRCApiClient:
         """HTTP POST to HMRC API."""
         import requests
 
-        url = f"{self.config.base_url}{path}"
-        resp = requests.post(
-            url,
-            json=body or {},
-            headers=self._headers(version, content_type=True,
-                                  client_ip=client_ip,
-                                  test_scenario=test_scenario),
+        if self._mutation_registry is None:
+            raise HMRCMutationHold("canonical_hmrc_mutation_registry_required")
+        payload = body or {}
+        return self._mutation_registry.execute(
+            environment=self.config.environment,
+            method="POST",
+            path=path,
+            body=payload,
+            transport=lambda: self._handle_response(
+                requests.post(
+                    f"{self.config.base_url}{path}",
+                    json=payload,
+                    headers=self._headers(
+                        version,
+                        content_type=True,
+                        client_ip=client_ip,
+                        test_scenario=test_scenario,
+                    ),
+                )
+            ),
         )
-        return self._handle_response(resp)
 
     def _put(self, path: str, body: Dict = None,
              version: str = "1.0", test_scenario: str = "",
@@ -418,28 +445,51 @@ class HMRCApiClient:
         """HTTP PUT to HMRC API."""
         import requests
 
-        url = f"{self.config.base_url}{path}"
-        resp = requests.put(
-            url,
-            json=body or {},
-            headers=self._headers(version, content_type=True,
-                                  client_ip=client_ip,
-                                  test_scenario=test_scenario),
+        if self._mutation_registry is None:
+            raise HMRCMutationHold("canonical_hmrc_mutation_registry_required")
+        payload = body or {}
+        return self._mutation_registry.execute(
+            environment=self.config.environment,
+            method="PUT",
+            path=path,
+            body=payload,
+            transport=lambda: self._handle_response(
+                requests.put(
+                    f"{self.config.base_url}{path}",
+                    json=payload,
+                    headers=self._headers(
+                        version,
+                        content_type=True,
+                        client_ip=client_ip,
+                        test_scenario=test_scenario,
+                    ),
+                )
+            ),
         )
-        return self._handle_response(resp)
 
     def _delete(self, path: str, version: str = "1.0",
                 test_scenario: str = "", client_ip: str = "") -> Dict:
         """HTTP DELETE to HMRC API."""
         import requests
 
-        url = f"{self.config.base_url}{path}"
-        resp = requests.delete(
-            url,
-            headers=self._headers(version, client_ip=client_ip,
-                                  test_scenario=test_scenario),
+        if self._mutation_registry is None:
+            raise HMRCMutationHold("canonical_hmrc_mutation_registry_required")
+        return self._mutation_registry.execute(
+            environment=self.config.environment,
+            method="DELETE",
+            path=path,
+            body={},
+            transport=lambda: self._handle_response(
+                requests.delete(
+                    f"{self.config.base_url}{path}",
+                    headers=self._headers(
+                        version,
+                        client_ip=client_ip,
+                        test_scenario=test_scenario,
+                    ),
+                )
+            ),
         )
-        return self._handle_response(resp)
 
     def _handle_response(self, resp) -> Dict:
         """Parse HMRC API response."""

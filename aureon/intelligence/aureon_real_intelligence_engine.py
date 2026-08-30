@@ -15,24 +15,6 @@ All validated data flows to Queen for REAL trade decisions.
 Gary Leckey & Tina Brown | January 2026 | REAL INTELLIGENCE
 """
 
-from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
-import sys
-import os
-
-# Windows UTF-8 fix
-if sys.platform == 'win32':
-    os.environ['PYTHONIOENCODING'] = 'utf-8'
-    try:
-        import io
-        def _is_utf8_wrapper(stream):
-            return (isinstance(stream, io.TextIOWrapper) and 
-                    hasattr(stream, 'encoding') and stream.encoding and
-                    stream.encoding.lower().replace('-', '') == 'utf8')
-        if hasattr(sys.stdout, 'buffer') and not _is_utf8_wrapper(sys.stdout):
-            sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace', line_buffering=True)
-    except Exception:
-        pass
-
 import time
 import json
 import math
@@ -255,12 +237,14 @@ class RealBotProfiler:
         detected_bots = []
         
         for symbol, price in prices.items():
-            # Simulate trade data extraction (would be real orderbook analysis)
+            volume = self._get_volume(symbol, orderbook_data)
+            if volume is None:
+                continue
             trade_data = {
                 'hft_frequency': self._estimate_hft_frequency(symbol, orderbook_data),
                 'order_size_consistency': self._estimate_order_consistency(orderbook_data),
                 'latency_ms': self._estimate_latency(orderbook_data),
-                'volume': self._get_volume(symbol, orderbook_data),
+                'volume': volume,
                 'layering_score': self._detect_layering(orderbook_data)
             }
             
@@ -360,11 +344,18 @@ class RealBotProfiler:
             logger.debug("_estimate_latency unexpected error: %s", exc)
             return -1
 
-    def _get_volume(self, symbol: str, orderbook: Dict) -> float:
-        """Get trading volume"""
-        if orderbook and symbol in orderbook:
-            return orderbook[symbol].get('volume', 0)
-        return 0
+    def _get_volume(self, symbol: str, orderbook: Dict) -> Optional[float]:
+        """Return an observed finite volume, or None when it is absent."""
+        if not isinstance(orderbook, dict):
+            return None
+        symbol_book = orderbook.get(symbol)
+        if not isinstance(symbol_book, dict) or "volume" not in symbol_book:
+            return None
+        try:
+            volume = float(symbol_book["volume"])
+        except (TypeError, ValueError):
+            return None
+        return volume if math.isfinite(volume) and volume >= 0.0 else None
 
     def _detect_layering(self, orderbook: Dict) -> float:
         """Detect L2 orderbook layering (multi-level bid/ask wall stacking).
@@ -839,47 +830,3 @@ def get_intelligence_engine() -> RealIntelligenceEngine:
     if _global_engine is None:
         _global_engine = RealIntelligenceEngine()
     return _global_engine
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# STANDALONE TEST
-# ═══════════════════════════════════════════════════════════════════════════════
-
-if __name__ == "__main__":
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s | %(message)s'
-    )
-    
-    print("\n" + "=" * 60)
-    print("🧠 REAL INTELLIGENCE ENGINE - STANDALONE TEST")
-    print("=" * 60)
-    
-    engine = get_intelligence_engine()
-    
-    # Test with sample prices
-    test_prices = {
-        "BTC/USD": 97500.0,
-        "ETH/USD": 3400.0,
-        "SOL/USD": 195.0,
-        "DOGE/USD": 0.35
-    }
-    
-    print("\n📊 Gathering intelligence for test symbols...")
-    intel = engine.gather_all_intelligence(test_prices)
-    
-    print(f"\n📈 Results:")
-    print(f"   Bots detected: {intel['stats']['bots_detected']}")
-    print(f"   Whale predictions: {intel['stats']['whales_predicted']}")
-    print(f"   Validated predictions: {intel['stats']['validated_predictions']}")
-    print(f"   Momentum opportunities: {intel['stats']['momentum_opportunities']}")
-    print(f"   Total intelligence: {intel['stats']['intelligence_generated']}")
-    print(f"   Validated signals: {intel['stats']['validated_signals']}")
-    
-    if intel['validated_intelligence']:
-        print("\n🎯 Top validated intelligence:")
-        for vi in sorted(intel['validated_intelligence'], key=lambda x: -x['composite_score'])[:3]:
-            print(f"   {vi['symbol']}: {vi['recommended_action']} (score={vi['composite_score']:.3f})")
-            print(f"      Reasoning: {vi['reasoning']}")
-    
-    print("\n✅ Test complete!")

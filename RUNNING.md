@@ -12,9 +12,9 @@ The launcher starts the production supervisor, market runtime, status/telemetry 
 
 | Purpose | Command |
 |---|---|
-| Full Windows production supervisor | `.\AUREON_PRODUCTION_LIVE.cmd -WaitForRefresh -MarketStatusPort 8791` |
-| Validate launcher and flags without opening services | `.\AUREON_PRODUCTION_LIVE.cmd -ValidateOnly -NoOpen -MarketStatusPort 8791` |
-| Low-priority data ocean supervisor | `.\AUREON_DATA_OCEAN.cmd -Adaptive -CoverageProfile LicensedReachable` |
+| Full Windows production supervisor | `.\scripts\launchers\AUREON_PRODUCTION_LIVE.cmd -WaitForRefresh -MarketStatusPort 8791` |
+| Validate launcher and flags without opening services | `.\scripts\launchers\AUREON_PRODUCTION_LIVE.cmd -ValidateOnly -NoOpen -MarketStatusPort 8791` |
+| Low-priority data ocean supervisor | `.\scripts\launchers\AUREON_DATA_OCEAN.cmd -Adaptive -CoverageProfile LicensedReachable` |
 | Prompt Aureon coding organism | `.\.venv\Scripts\python.exe -m aureon.autonomous.aureon_coding_organism_bridge --prompt "Aureon, inspect this coding goal and run the focused tests."` |
 | Director capability bridge | `.\.venv\Scripts\python.exe -m aureon.autonomous.aureon_coding_organism_bridge --prompt "Aureon director mode must create a Codex-class capability list, marry it to Aureon capabilities, bridge the gaps, and publish exact code work orders."` |
 | Dev/audit ignition path | `python scripts/aureon_ignition.py --audit-only` |
@@ -29,7 +29,7 @@ Open PowerShell:
 
 ```powershell
 cd C:\path\to\aureon-trading
-.\AUREON_PRODUCTION_LIVE.cmd -WaitForRefresh -MarketStatusPort 8791
+.\scripts\launchers\AUREON_PRODUCTION_LIVE.cmd -WaitForRefresh -MarketStatusPort 8791
 ```
 
 Leave this terminal open. It is the production supervisor. A healthy launch prints:
@@ -66,7 +66,7 @@ Invoke-RestMethod http://127.0.0.1:13002/api/phi-bridge/reload -Method Post | Co
 Run this before a live session, after pulling updates, or after editing launch docs:
 
 ```powershell
-.\AUREON_PRODUCTION_LIVE.cmd -ValidateOnly -NoOpen -MarketStatusPort 8791
+.\scripts\launchers\AUREON_PRODUCTION_LIVE.cmd -ValidateOnly -NoOpen -MarketStatusPort 8791
 ```
 
 Validation checks the launcher profile and command wiring without starting the full console stack.
@@ -102,7 +102,7 @@ frontend/public/aureon_wake_up_manifest.json
 Use a second PowerShell terminal for wide market mapping and historical/context refresh:
 
 ```powershell
-.\AUREON_DATA_OCEAN.cmd -Adaptive -CoverageProfile LicensedReachable
+.\scripts\launchers\AUREON_DATA_OCEAN.cmd -Adaptive -CoverageProfile LicensedReachable
 ```
 
 This supervisor runs below normal priority and keeps heavy ingestion/backfill separate from live trading. Its reports are:
@@ -119,7 +119,7 @@ frontend/public/aureon_exchange_data_capability_matrix.json
 Private account-history sync is budgeted so it does not overload Kraken or other account APIs while the live runtime is active. The default Kraken private trade-history cap is `50` records per cycle. To run only public/context/history ingestion for a cycle, use:
 
 ```powershell
-.\AUREON_DATA_OCEAN.cmd -Adaptive -CoverageProfile LicensedReachable -SkipAccountSync
+.\scripts\launchers\AUREON_DATA_OCEAN.cmd -Adaptive -CoverageProfile LicensedReachable -SkipAccountSync
 ```
 
 The data ocean report includes the official exchange rate-limit registry from `aureon/core/exchange_rate_limit_registry.py`. Live exchange rows expose `official_rate_limit` and `cash_aware_call_plan`: venues with active cash or positions reserve calls for execution, balances, positions, and recovery; idle/no-cash venues can use more of their safe provider budget for streams, quote probes, and candidate discovery.
@@ -185,16 +185,16 @@ The data ocean calls this automatically with `-KrakenAssetRegistryTickers`. The 
 For a no-ingest validation pass:
 
 ```powershell
-.\AUREON_DATA_OCEAN.cmd -ValidateOnly -DryRun -RunOnce -NoIngest
+.\scripts\launchers\AUREON_DATA_OCEAN.cmd -ValidateOnly -DryRun -RunOnce -NoIngest
 ```
 
 ## What The Launcher Starts
 
 | Surface | Active path |
 |---|---|
-| Production wrapper | `AUREON_PRODUCTION_LIVE.cmd` |
-| Full wake-up launcher | `AUREON_WAKE_UP_FULL_AUTONOMOUS.ps1` |
-| Data ocean supervisor | `AUREON_DATA_OCEAN.cmd`, `AUREON_DATA_OCEAN.ps1` |
+| Production wrapper | `scripts/launchers/AUREON_PRODUCTION_LIVE.cmd` |
+| Full wake-up launcher | `scripts/launchers/AUREON_WAKE_UP_FULL_AUTONOMOUS.ps1` |
+| Data ocean supervisor | `scripts/launchers/AUREON_DATA_OCEAN.cmd`, `scripts/launchers/AUREON_DATA_OCEAN.ps1` |
 | Official exchange rate budgets | `aureon/core/exchange_rate_limit_registry.py` |
 | Exchange data capability matrix | `aureon/autonomous/aureon_exchange_data_capability_matrix.py` |
 | Market runtime | `aureon/exchanges/unified_market_trader.py` |
@@ -284,7 +284,7 @@ Use the production launcher for full operation and `scripts/aureon_ignition.py -
 ## Verification
 
 ```powershell
-.\AUREON_PRODUCTION_LIVE.cmd -ValidateOnly -NoOpen -MarketStatusPort 8791
+.\scripts\launchers\AUREON_PRODUCTION_LIVE.cmd -ValidateOnly -NoOpen -MarketStatusPort 8791
 .\.venv\Scripts\python.exe -m pytest tests/test_ignition_live_profile.py tests/test_unified_market_status_server.py tests/test_aureon_organism_runtime_observer.py -q
 ```
 

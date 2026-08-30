@@ -20,6 +20,7 @@ Author: Aureon Trading System  |  March 2026
 
 import contextlib
 import io
+import math
 import os
 import sys
 import time
@@ -28,7 +29,7 @@ import json
 import importlib
 import threading
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -49,6 +50,8 @@ CAPITAL_TRACE_PATH = Path(os.getenv("CAPITAL_TRACE_PATH", os.path.join(os.path.d
 CAPITAL_PROMOTION_LOG_PATH = Path(os.getenv("CAPITAL_PROMOTION_LOG_PATH", os.path.join(os.path.dirname(__file__), "..", "..", "state", "capital_shadow_promotions.jsonl"))).resolve()
 CAPITAL_ASSET_REGISTRY_PATH = Path(os.getenv("CAPITAL_ASSET_REGISTRY_PATH", os.path.join(os.path.dirname(__file__), "..", "..", "state", "aureon_capital_tradable_asset_registry.json"))).resolve()
 CAPITAL_ASSET_REGISTRY_AUDIT_PATH = Path(os.getenv("CAPITAL_ASSET_REGISTRY_AUDIT_PATH", os.path.join(os.path.dirname(__file__), "..", "..", "docs", "audits", "aureon_capital_tradable_asset_registry.json"))).resolve()
+
+CAPITAL_EXECUTION_JOURNAL_PATH = Path(os.getenv("CAPITAL_EXECUTION_JOURNAL_PATH", os.path.join(os.path.dirname(__file__), "..", "..", "state", "capital_cfd_pending_execution.json"))).resolve()
 
 try:
     from aureon.trading.order_lifecycle import (
@@ -289,6 +292,10 @@ CFD_FLAGS = {
 CAPITAL_REJECTION_COOLDOWN_SECS = _env_float("CAPITAL_REJECTION_COOLDOWN_SECS", 60.0)
 CAPITAL_RISK_REJECTION_COOLDOWN_SECS = _env_float("CAPITAL_RISK_REJECTION_COOLDOWN_SECS", 180.0)
 
+CAPITAL_EXECUTION_RECEIPT_MAX_AGE_SECS = _env_float("CAPITAL_EXECUTION_RECEIPT_MAX_AGE_SECS", 300.0)
+CAPITAL_EXECUTION_FUTURE_SKEW_SECS = _env_float("CAPITAL_EXECUTION_FUTURE_SKEW_SECS", 5.0)
+CAPITAL_EXECUTION_RECONCILE_INTERVAL_SECS = _env_float("CAPITAL_EXECUTION_RECONCILE_INTERVAL_SECS", 5.0)
+
 CAPITAL_MIN_PROFIT_GBP = 0.01
 CAPITAL_DTP_TRIGGER_GBP = 0.01
 CAPITAL_SHADOW_MIN_VALIDATE_SECS = _env_float("CAPITAL_SHADOW_MIN_VALIDATE_SECS", 3.0)
@@ -396,6 +403,8 @@ class CFDPosition:
     opened_at:     float = field(default_factory=time.time)
     current_price: float = 0.0
     lifecycle_id:  str = ""
+    entry_fill_receipt: Dict[str, Any] = field(default_factory=dict)
+    entry_fill_receipt_complete: bool = False
 
     @property
     def age_secs(self) -> float:
@@ -507,6 +516,7 @@ class CapitalCFDTrader:
 
         # Open position tracking
         self.positions: List[CFDPosition] = []
+        self._unsettled_provider_positions: Dict[str, Dict[str, Any]] = {}
         self.shadow_trades: List[CFDShadowTrade] = []
 
         # Price cache
@@ -652,6 +662,17 @@ class CapitalCFDTrader:
             "best_trade":     0.0,
             "worst_trade":    0.0,
         }
+
+        # Provider submissions remain economically inert until a durable,
+        # fee-complete terminal confirmation is reconciled.  The journal is
+        # loaded before the client can sync or submit so restarts cannot issue
+        # a second order for an unresolved intent.
+        self._execution_journal_loaded = False
+        self._execution_journal_blocked = False
+        self._execution_journal_error = ""
+        self._pending_executions: Dict[str, Dict[str, Any]] = {}
+        self._completed_executions: Dict[str, Dict[str, Any]] = {}
+        self._ensure_execution_journal_state()
 
         # Init Capital.com client
         self.init_error = ""
@@ -802,6 +823,992 @@ class CapitalCFDTrader:
         except Exception as exc:
             logger.debug("Capital order lifecycle write failed: %s", exc)
 
+    @staticmethod
+    def _execution_number(
+        value: Any,
+        *,
+        positive: bool = False,
+        nonnegative: bool = False,
+    ) -> Optional[float]:
+        if isinstance(value, bool) or value is None:
+            return None
+        try:
+            number = float(value)
+        except (TypeError, ValueError, OverflowError):
+            return None
+        if not math.isfinite(number):
+            return None
+        if positive and number <= 0:
+            return None
+        if nonnegative and number < 0:
+            return None
+        return number
+
+    @classmethod
+    def _execution_timestamp(cls, value: Any) -> Optional[float]:
+        timestamp = cls._execution_number(value, positive=True)
+        if timestamp is not None:
+            while timestamp > 100_000_000_000:
+                timestamp /= 1000.0
+            return timestamp
+        if not isinstance(value, str) or not value.strip():
+            return None
+        try:
+            parsed = datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
+        except ValueError:
+            return None
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
+        try:
+            timestamp = parsed.astimezone(timezone.utc).timestamp()
+        except (OverflowError, OSError, ValueError):
+            return None
+        return timestamp if math.isfinite(timestamp) and timestamp > 0 else None
+
+    @classmethod
+    def _execution_timestamps_are_fresh(
+        cls,
+        source_timestamp: Any,
+        received_at: Any,
+        *,
+        now: Optional[float] = None,
+    ) -> bool:
+        source = cls._execution_timestamp(source_timestamp)
+        received = cls._execution_timestamp(received_at)
+        reference = time.time() if now is None else now
+        if source is None or received is None or not math.isfinite(reference):
+            return False
+        if math.isclose(source, received, rel_tol=0.0, abs_tol=1e-9):
+            return False
+        if source > received + CAPITAL_EXECUTION_FUTURE_SKEW_SECS:
+            return False
+        if source > reference + CAPITAL_EXECUTION_FUTURE_SKEW_SECS:
+            return False
+        if received > reference + CAPITAL_EXECUTION_FUTURE_SKEW_SECS:
+            return False
+        if reference - source > CAPITAL_EXECUTION_RECEIPT_MAX_AGE_SECS:
+            return False
+        if reference - received > CAPITAL_EXECUTION_RECEIPT_MAX_AGE_SECS:
+            return False
+        return True
+
+    def _ensure_execution_journal_state(self) -> None:
+        if getattr(self, "_execution_journal_loaded", False):
+            return
+        self._execution_journal_loaded = True
+        self._execution_journal_blocked = False
+        self._execution_journal_error = ""
+        self._pending_executions = {}
+        self._completed_executions = {}
+        path = Path(CAPITAL_EXECUTION_JOURNAL_PATH)
+        if not path.exists():
+            return
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            if not isinstance(payload, dict) or payload.get("schema_version") != 1:
+                raise ValueError("execution_journal_schema_invalid")
+            pending = payload.get("pending")
+            completed = payload.get("completed")
+            if not isinstance(pending, dict) or not isinstance(completed, dict):
+                raise ValueError("execution_journal_sections_invalid")
+            if not all(isinstance(key, str) and isinstance(value, dict) for key, value in pending.items()):
+                raise ValueError("execution_journal_pending_invalid")
+            if not all(isinstance(key, str) and isinstance(value, dict) for key, value in completed.items()):
+                raise ValueError("execution_journal_completed_invalid")
+            self._pending_executions = {key: dict(value) for key, value in pending.items()}
+            self._completed_executions = {key: dict(value) for key, value in completed.items()}
+        except Exception as exc:
+            self._execution_journal_blocked = True
+            self._execution_journal_error = f"execution_journal_unreadable:{exc}"
+            logger.error("Capital execution journal blocked: %s", exc)
+
+    def _write_execution_journal(self) -> bool:
+        self._ensure_execution_journal_state()
+        if self._execution_journal_blocked:
+            return False
+        path = Path(CAPITAL_EXECUTION_JOURNAL_PATH)
+        temporary = path.with_name(
+            f".{path.name}.{os.getpid()}.{threading.get_ident()}.tmp"
+        )
+        payload = {
+            "schema_version": 1,
+            "updated_at": time.time(),
+            "truth_status": "real_observed",
+            "generated_values": False,
+            "pending": dict(self._pending_executions),
+            "completed": dict(self._completed_executions),
+        }
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            with temporary.open("w", encoding="utf-8", newline="\n") as handle:
+                json.dump(payload, handle, sort_keys=True, indent=2, allow_nan=False)
+                handle.write("\n")
+                handle.flush()
+                os.fsync(handle.fileno())
+            os.replace(temporary, path)
+            return True
+        except Exception as exc:
+            self._execution_journal_error = f"execution_journal_write_failed:{exc}"
+            logger.error("Capital execution journal write failed: %s", exc)
+            try:
+                if temporary.exists():
+                    temporary.unlink()
+            except OSError:
+                pass
+            return False
+
+    @staticmethod
+    def _pending_execution_key(record: Dict[str, Any]) -> str:
+        deal_reference = str(record.get("deal_reference") or "").strip()
+        if deal_reference:
+            return deal_reference
+        lifecycle_id = str(record.get("lifecycle_id") or "").strip()
+        return f"unidentified:{lifecycle_id or 'unknown'}"
+
+    def _store_pending_execution(self, record: Dict[str, Any]) -> Dict[str, Any]:
+        self._ensure_execution_journal_state()
+        pending = dict(record)
+        pending["status"] = "pending_reconciliation"
+        pending["generated_values"] = False
+        pending["eligible_for_state"] = False
+        pending["eligible_for_pnl"] = False
+        pending["eligible_for_learning"] = False
+        pending.setdefault("submitted_at", time.time())
+        pending.setdefault("last_attempt_at", None)
+        key = self._pending_execution_key(pending)
+        current = self._pending_executions.get(key)
+        if isinstance(current, dict):
+            current.update(pending)
+            pending = current
+        self._pending_executions[key] = pending
+        self._write_execution_journal()
+        return pending
+
+    def _pending_execution_for(
+        self,
+        purpose: str,
+        *,
+        symbol: str = "",
+        deal_id: str = "",
+    ) -> Optional[Dict[str, Any]]:
+        self._ensure_execution_journal_state()
+        wanted_symbol = self._canonical_symbol(symbol) if symbol else ""
+        for pending in self._pending_executions.values():
+            if str(pending.get("purpose") or "") != purpose:
+                continue
+            if deal_id and str(pending.get("requested_deal_id") or "") == deal_id:
+                return pending
+            if wanted_symbol and self._canonical_symbol(pending.get("symbol")) == wanted_symbol:
+                return pending
+        return None
+
+    def _completed_close_for_deal(self, deal_id: str) -> Optional[Dict[str, Any]]:
+        self._ensure_execution_journal_state()
+        for completed in self._completed_executions.values():
+            if (
+                completed.get("purpose") == "close_position"
+                and completed.get("status") == "filled"
+                and str(completed.get("requested_deal_id") or "") == deal_id
+            ):
+                result = completed.get("result")
+                return dict(result) if isinstance(result, dict) else None
+        return None
+
+    def _archived_entry_receipt(self, deal_id: str) -> Dict[str, Any]:
+        self._ensure_execution_journal_state()
+        for completed in reversed(list(self._completed_executions.values())):
+            if completed.get("purpose") != "open_position" or completed.get("status") != "filled":
+                continue
+            receipt = completed.get("terminal_receipt")
+            if isinstance(receipt, dict) and str(receipt.get("provider_deal_id") or "") == deal_id:
+                return dict(receipt)
+        return {}
+
+    def _pending_execution_result(self, pending: Dict[str, Any]) -> Dict[str, Any]:
+        return {
+            "status": "pending_reconciliation",
+            "truth_status": str(pending.get("truth_status") or "incomplete"),
+            "reason": str(pending.get("reason") or "terminal_provider_receipt_required"),
+            "error": "pending_reconciliation",
+            "purpose": pending.get("purpose"),
+            "symbol": pending.get("symbol"),
+            "deal_id": pending.get("requested_deal_id"),
+            "deal_reference": pending.get("deal_reference"),
+            "lifecycle_id": pending.get("lifecycle_id"),
+            "source_timestamp": pending.get("source_timestamp"),
+            "received_at": pending.get("received_at"),
+            "generated_values": False,
+            "eligible_for_state": False,
+            "eligible_for_pnl": False,
+            "eligible_for_learning": False,
+        }
+
+    def _submission_ack_is_durable(self, receipt: Any) -> Tuple[bool, str, str]:
+        if not isinstance(receipt, dict):
+            return False, "", "provider_submission_receipt_missing"
+        deal_reference = str(
+            receipt.get("provider_order_id") or receipt.get("dealReference") or ""
+        ).strip()
+        if not deal_reference:
+            return False, "", "provider_deal_reference_missing"
+        if (
+            receipt.get("status") != "submitted"
+            or receipt.get("truth_status") != "real_observed"
+            or receipt.get("generated_values") is not False
+            or receipt.get("submission_acknowledged") is not True
+            or receipt.get("terminal_fill") is not False
+            or receipt.get("terminal_fill_receipt_complete") is not False
+            or receipt.get("eligible_for_state") is not False
+            or not self._execution_timestamps_are_fresh(
+                receipt.get("source_timestamp"), receipt.get("received_at")
+            )
+        ):
+            return False, deal_reference, "provider_submission_receipt_incomplete_or_stale"
+        return True, deal_reference, "terminal_provider_confirmation_required"
+
+    def _validate_terminal_execution_receipt(
+        self,
+        receipt: Any,
+        pending: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        if not isinstance(receipt, dict):
+            return {
+                "kind": "pending",
+                "truth_status": "no_data",
+                "reason": "terminal_provider_confirmation_missing",
+            }
+        deal_reference = str(
+            receipt.get("provider_order_id") or receipt.get("dealReference") or ""
+        ).strip()
+        expected_reference = str(pending.get("deal_reference") or "").strip()
+        source_id = str(receipt.get("source_id") or "").strip()
+        timestamps_fresh = self._execution_timestamps_are_fresh(
+            receipt.get("source_timestamp"), receipt.get("received_at")
+        )
+        identity_complete = bool(
+            deal_reference
+            and deal_reference == expected_reference
+            and source_id
+            and receipt.get("truth_status") == "real_observed"
+            and receipt.get("generated_values") is False
+            and timestamps_fresh
+        )
+        if receipt.get("status") == "rejected":
+            if not identity_complete or receipt.get("terminal_fill") is not False:
+                return {
+                    "kind": "pending",
+                    "truth_status": "incomplete",
+                    "reason": "terminal_rejection_receipt_incomplete_or_stale",
+                }
+            return {
+                "kind": "rejected",
+                "truth_status": "real_observed",
+                "reason": str(receipt.get("reason") or "provider_rejected"),
+                "receipt": {
+                    "status": "rejected",
+                    "provider_order_id": deal_reference,
+                    "source_id": source_id,
+                    "source_timestamp": self._execution_timestamp(receipt.get("source_timestamp")),
+                    "received_at": self._execution_timestamp(receipt.get("received_at")),
+                    "truth_status": "real_observed",
+                    "generated_values": False,
+                    "terminal_fill": False,
+                },
+            }
+        if not identity_complete:
+            return {
+                "kind": "pending",
+                "truth_status": "incomplete",
+                "reason": "terminal_provider_identity_or_timestamp_incomplete",
+            }
+        if (
+            receipt.get("status") != "filled"
+            or receipt.get("terminal_fill") is not True
+            or receipt.get("terminal_fill_receipt_complete") is not True
+            or receipt.get("eligible_for_state") is not True
+            or receipt.get("eligible_for_pnl") is not True
+            or receipt.get("eligible_for_learning") is not True
+        ):
+            return {
+                "kind": "pending",
+                "truth_status": str(receipt.get("truth_status") or "incomplete"),
+                "reason": str(
+                    receipt.get("reason")
+                    or "terminal_provider_fill_receipt_pending_or_incomplete"
+                ),
+            }
+
+        provider_deal_id = str(receipt.get("provider_deal_id") or "").strip()
+        epic = str(receipt.get("epic") or "").strip().upper()
+        side = str(receipt.get("side") or "").strip().upper()
+        quantity = self._execution_number(receipt.get("filled_qty"), positive=True)
+        price = self._execution_number(receipt.get("filled_avg_price"), positive=True)
+        expected_side = str(pending.get("expected_fill_side") or "").strip().upper()
+        expected_quantity = self._execution_number(pending.get("requested_qty"), positive=True)
+        expected_epic = str(pending.get("epic") or pending.get("symbol") or "").strip().upper()
+        affected = receipt.get("affected_deals")
+        affected_rows = affected if isinstance(affected, list) else []
+        terminal_status = "OPENED" if pending.get("purpose") == "open_position" else "CLOSED"
+        if len(affected_rows) != 1 or not isinstance(affected_rows[0], dict):
+            return {
+                "kind": "pending",
+                "truth_status": "incomplete",
+                "reason": "terminal_provider_affected_deal_ambiguous",
+            }
+        affected_id = str(affected_rows[0].get("dealId") or "").strip()
+        affected_status = str(affected_rows[0].get("status") or "").strip().upper()
+        requested_deal_id = str(pending.get("requested_deal_id") or "").strip()
+        if (
+            not provider_deal_id
+            or provider_deal_id != affected_id
+            or affected_status != terminal_status
+            or not epic
+            or side not in {"BUY", "SELL"}
+            or side != expected_side
+            or quantity is None
+            or price is None
+            or expected_quantity is None
+            or not math.isclose(quantity, expected_quantity, rel_tol=1e-9, abs_tol=1e-12)
+            or (expected_epic and self._canonical_symbol(epic) != self._canonical_symbol(expected_epic))
+            or (
+                pending.get("purpose") == "close_position"
+                and provider_deal_id != requested_deal_id
+            )
+        ):
+            return {
+                "kind": "pending",
+                "truth_status": "incomplete",
+                "reason": "terminal_provider_fill_identity_or_quantity_mismatch",
+            }
+
+        fee = receipt.get("fee_receipt")
+        if not isinstance(fee, dict):
+            return {
+                "kind": "pending",
+                "truth_status": "incomplete",
+                "reason": "provider_fee_receipt_required",
+            }
+        fee_amount = self._execution_number(fee.get("amount"), nonnegative=True)
+        fee_currency = str(fee.get("currency") or "").strip().upper()
+        fee_source_id = str(fee.get("source_id") or "").strip()
+        if (
+            fee.get("truth_status") != "real_observed"
+            or fee.get("generated_values") is not False
+            or fee_amount is None
+            or not fee_currency
+            or not fee_source_id
+            or not self._execution_timestamps_are_fresh(
+                fee.get("source_timestamp"), fee.get("received_at")
+            )
+        ):
+            return {
+                "kind": "pending",
+                "truth_status": "incomplete",
+                "reason": "provider_fee_receipt_incomplete_or_stale",
+            }
+        normalized = {
+            "status": "filled",
+            "provider_order_id": deal_reference,
+            "provider_deal_id": provider_deal_id,
+            "epic": epic,
+            "side": side,
+            "filled_qty": quantity,
+            "filled_avg_price": price,
+            "affected_deals": [{"dealId": affected_id, "status": affected_status}],
+            "source_id": source_id,
+            "source_timestamp": self._execution_timestamp(receipt.get("source_timestamp")),
+            "received_at": self._execution_timestamp(receipt.get("received_at")),
+            "truth_status": "real_observed",
+            "generated_values": False,
+            "terminal_fill": True,
+            "terminal_fill_receipt_complete": True,
+            "eligible_for_state": True,
+            "eligible_for_pnl": True,
+            "eligible_for_learning": True,
+            "fee_amount": fee_amount,
+            "fee_currency": fee_currency,
+            "fee_receipt": {
+                "amount": fee_amount,
+                "currency": fee_currency,
+                "source_id": fee_source_id,
+                "source_timestamp": self._execution_timestamp(fee.get("source_timestamp")),
+                "received_at": self._execution_timestamp(fee.get("received_at")),
+                "truth_status": "real_observed",
+                "generated_values": False,
+            },
+        }
+        return {
+            "kind": "filled",
+            "truth_status": "real_observed",
+            "reason": "complete_terminal_provider_fill_receipt",
+            "receipt": normalized,
+        }
+
+    def _archived_entry_receipt_is_complete(
+        self,
+        receipt: Any,
+        *,
+        deal_id: str,
+        quantity: float,
+        direction: str,
+    ) -> bool:
+        if not isinstance(receipt, dict):
+            return False
+        fee = receipt.get("fee_receipt")
+        entry_quantity = self._execution_number(receipt.get("filled_qty"), positive=True)
+        entry_price = self._execution_number(receipt.get("filled_avg_price"), positive=True)
+        source_timestamp = self._execution_timestamp(receipt.get("source_timestamp"))
+        received_at = self._execution_timestamp(receipt.get("received_at"))
+        if not isinstance(fee, dict):
+            return False
+        affected = receipt.get("affected_deals")
+        affected_rows = affected if isinstance(affected, list) else []
+        if len(affected_rows) != 1 or not isinstance(affected_rows[0], dict):
+            return False
+        affected_id = str(affected_rows[0].get("dealId") or "").strip()
+        affected_status = str(affected_rows[0].get("status") or "").strip().upper()
+        fee_source_timestamp = self._execution_timestamp(fee.get("source_timestamp"))
+        fee_received_at = self._execution_timestamp(fee.get("received_at"))
+        return bool(
+            receipt.get("status") == "filled"
+            and receipt.get("truth_status") == "real_observed"
+            and receipt.get("generated_values") is False
+            and receipt.get("terminal_fill_receipt_complete") is True
+            and receipt.get("terminal_fill") is True
+            and receipt.get("eligible_for_state") is True
+            and receipt.get("eligible_for_pnl") is True
+            and receipt.get("eligible_for_learning") is True
+            and str(receipt.get("provider_order_id") or "").strip()
+            and str(receipt.get("provider_deal_id") or "").strip() == deal_id
+            and affected_id == deal_id
+            and affected_status == "OPENED"
+            and str(receipt.get("side") or "").strip().upper() == direction
+            and str(receipt.get("source_id") or "").strip()
+            and entry_quantity is not None
+            and math.isclose(entry_quantity, quantity, rel_tol=1e-9, abs_tol=1e-12)
+            and entry_price is not None
+            and source_timestamp is not None
+            and received_at is not None
+            and not math.isclose(source_timestamp, received_at, rel_tol=0.0, abs_tol=1e-9)
+            and source_timestamp <= received_at + CAPITAL_EXECUTION_FUTURE_SKEW_SECS
+            and fee.get("truth_status") == "real_observed"
+            and fee.get("generated_values") is False
+            and self._execution_number(fee.get("amount"), nonnegative=True) is not None
+            and str(fee.get("currency") or "").strip()
+            and str(fee.get("source_id") or "").strip()
+            and fee_source_timestamp is not None
+            and fee_received_at is not None
+            and not math.isclose(fee_source_timestamp, fee_received_at, rel_tol=0.0, abs_tol=1e-9)
+            and fee_source_timestamp <= fee_received_at + CAPITAL_EXECUTION_FUTURE_SKEW_SECS
+        )
+
+    def _complete_execution_journal(
+        self,
+        pending: Dict[str, Any],
+        *,
+        status: str,
+        terminal_receipt: Dict[str, Any],
+        result: Dict[str, Any],
+    ) -> bool:
+        self._ensure_execution_journal_state()
+        key = self._pending_execution_key(pending)
+        previous_pending = self._pending_executions.pop(key, None)
+        previous_completed = self._completed_executions.get(key)
+        self._completed_executions[key] = {
+            "purpose": pending.get("purpose"),
+            "status": status,
+            "completed_at": time.time(),
+            "deal_reference": pending.get("deal_reference"),
+            "requested_deal_id": pending.get("requested_deal_id"),
+            "lifecycle_id": pending.get("lifecycle_id"),
+            "terminal_receipt": dict(terminal_receipt),
+            "result": dict(result),
+            "generated_values": False,
+        }
+        if self._write_execution_journal():
+            return True
+        self._completed_executions.pop(key, None)
+        if previous_completed is not None:
+            self._completed_executions[key] = previous_completed
+        if previous_pending is not None:
+            self._pending_executions[key] = previous_pending
+        return False
+
+    def _reconcile_pending_record(
+        self,
+        pending: Dict[str, Any],
+        *,
+        fee_receipt: Optional[Dict[str, Any]] = None,
+        force: bool = False,
+    ) -> Dict[str, Any]:
+        deal_reference = str(pending.get("deal_reference") or "").strip()
+        if not deal_reference:
+            pending["truth_status"] = "no_data"
+            pending["reason"] = "provider_deal_reference_missing_after_submission"
+            self._store_pending_execution(pending)
+            return self._pending_execution_result(pending)
+        terminal_receipt = pending.get("terminal_receipt")
+        validation = self._validate_terminal_execution_receipt(terminal_receipt, pending)
+        if validation.get("kind") != "filled":
+            last_attempt = self._execution_number(pending.get("last_attempt_at"))
+            now = time.time()
+            if (
+                not force
+                and last_attempt is not None
+                and now - last_attempt < CAPITAL_EXECUTION_RECONCILE_INTERVAL_SECS
+            ):
+                return self._pending_execution_result(pending)
+            client = getattr(self, "client", None)
+            if client is None or not hasattr(client, "confirm_order"):
+                pending["truth_status"] = "no_data"
+                pending["reason"] = "capital_confirmation_reader_unavailable"
+                self._store_pending_execution(pending)
+                return self._pending_execution_result(pending)
+            pending["last_attempt_at"] = now
+            try:
+                terminal_receipt = client.confirm_order(
+                    deal_reference,
+                    fee_receipt=fee_receipt,
+                )
+            except TypeError:
+                pending["truth_status"] = "no_data"
+                pending["reason"] = "capital_confirmation_fee_receipt_contract_unavailable"
+                self._store_pending_execution(pending)
+                return self._pending_execution_result(pending)
+            except Exception as exc:
+                pending["truth_status"] = "no_data"
+                pending["reason"] = f"capital_confirmation_read_failed:{exc}"
+                self._store_pending_execution(pending)
+                return self._pending_execution_result(pending)
+            validation = self._validate_terminal_execution_receipt(terminal_receipt, pending)
+
+        if validation.get("kind") == "rejected":
+            rejection = {
+                "status": "rejected",
+                "truth_status": "real_observed",
+                "error": "order_rejected",
+                "reason": validation.get("reason"),
+                "deal_reference": deal_reference,
+                "lifecycle_id": pending.get("lifecycle_id"),
+                "generated_values": False,
+                "eligible_for_state": False,
+                "eligible_for_pnl": False,
+                "eligible_for_learning": False,
+            }
+            if not self._complete_execution_journal(
+                pending,
+                status="rejected",
+                terminal_receipt=dict(validation.get("receipt") or {}),
+                result=rejection,
+            ):
+                pending["truth_status"] = "incomplete"
+                pending["reason"] = "terminal_rejection_not_durably_recorded"
+                return self._pending_execution_result(pending)
+            self._record_order_lifecycle(
+                "order_rejected",
+                "order_rejected",
+                str(pending.get("lifecycle_id") or ""),
+                deal_reference=deal_reference,
+                deal_id=pending.get("requested_deal_id"),
+                venue="capital",
+                market_type="cfd",
+                symbol=pending.get("symbol"),
+                side=pending.get("expected_fill_side"),
+                reason=validation.get("reason"),
+                source="capital_cfd_trader.reconcile_pending",
+            )
+            return rejection
+        if validation.get("kind") != "filled":
+            pending["truth_status"] = str(validation.get("truth_status") or "incomplete")
+            pending["reason"] = str(
+                validation.get("reason")
+                or "terminal_provider_fill_receipt_pending_or_incomplete"
+            )
+            if isinstance(terminal_receipt, dict):
+                pending["last_confirmation_status"] = terminal_receipt.get("status")
+                pending["last_confirmation_source_timestamp"] = terminal_receipt.get("source_timestamp")
+                pending["last_confirmation_received_at"] = terminal_receipt.get("received_at")
+            self._store_pending_execution(pending)
+            return self._pending_execution_result(pending)
+
+        normalized = dict(validation.get("receipt") or {})
+        pending["terminal_receipt"] = normalized
+        if pending.get("purpose") == "open_position":
+            return self._settle_terminal_open(pending, normalized)
+        if pending.get("purpose") == "close_position":
+            return self._settle_terminal_close(pending, normalized)
+        pending["truth_status"] = "incomplete"
+        pending["reason"] = "pending_execution_purpose_invalid"
+        self._store_pending_execution(pending)
+        return self._pending_execution_result(pending)
+
+    def reconcile_pending_executions(
+        self,
+        fee_receipts: Optional[Dict[str, Dict[str, Any]]] = None,
+        *,
+        force: bool = False,
+    ) -> List[Dict[str, Any]]:
+        self._ensure_execution_journal_state()
+        receipts = fee_receipts if isinstance(fee_receipts, dict) else {}
+        outcomes: List[Dict[str, Any]] = []
+        for pending in list(self._pending_executions.values()):
+            deal_reference = str(pending.get("deal_reference") or "").strip()
+            outcomes.append(
+                self._reconcile_pending_record(
+                    pending,
+                    fee_receipt=receipts.get(deal_reference),
+                    force=force,
+                )
+            )
+        return outcomes
+
+    def _settle_terminal_open(
+        self,
+        pending: Dict[str, Any],
+        receipt: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        symbol = str(pending.get("symbol") or "").strip().upper()
+        direction = str(pending.get("expected_fill_side") or "").strip().upper()
+        deal_id = str(receipt.get("provider_deal_id") or "").strip()
+        epic = str(receipt.get("epic") or pending.get("epic") or "").strip().upper()
+        size = self._execution_number(receipt.get("filled_qty"), positive=True)
+        entry_price = self._execution_number(receipt.get("filled_avg_price"), positive=True)
+        source_timestamp = self._execution_timestamp(receipt.get("source_timestamp"))
+        tp_pct = self._execution_number(pending.get("tp_pct"), positive=True)
+        sl_pct = self._execution_number(pending.get("sl_pct"), positive=True)
+        if (
+            not symbol
+            or direction not in {"BUY", "SELL"}
+            or not deal_id
+            or not epic
+            or size is None
+            or entry_price is None
+            or source_timestamp is None
+            or tp_pct is None
+            or sl_pct is None
+        ):
+            pending["truth_status"] = "incomplete"
+            pending["reason"] = "open_terminal_receipt_or_controls_incomplete"
+            self._store_pending_execution(pending)
+            return self._pending_execution_result(pending)
+        tp_pct = self._effective_tp_pct(
+            entry_price,
+            size,
+            {"tp_pct": tp_pct},
+        )
+        if direction == "BUY":
+            tp_price = entry_price * (1.0 + tp_pct / 100.0)
+            sl_price = entry_price * (1.0 - sl_pct / 100.0)
+        else:
+            tp_price = entry_price * (1.0 - tp_pct / 100.0)
+            sl_price = entry_price * (1.0 + sl_pct / 100.0)
+        position = CFDPosition(
+            symbol=symbol,
+            deal_id=deal_id,
+            epic=epic,
+            direction=direction,
+            size=size,
+            entry_price=entry_price,
+            tp_price=tp_price,
+            sl_price=sl_price,
+            asset_class=str(pending.get("asset_class") or "unknown"),
+            opened_at=source_timestamp,
+            current_price=entry_price,
+            lifecycle_id=str(pending.get("lifecycle_id") or ""),
+            entry_fill_receipt=dict(receipt),
+            entry_fill_receipt_complete=True,
+        )
+        journal_result = {
+            "status": "filled",
+            "truth_status": "real_observed",
+            "purpose": "open_position",
+            "symbol": symbol,
+            "deal_id": deal_id,
+            "deal_reference": pending.get("deal_reference"),
+            "lifecycle_id": position.lifecycle_id,
+            "entry_price": entry_price,
+            "size": size,
+            "source_timestamp": source_timestamp,
+            "received_at": receipt.get("received_at"),
+            "generated_values": False,
+            "eligible_for_state": True,
+            "eligible_for_pnl": True,
+            "eligible_for_learning": True,
+        }
+        if not self._complete_execution_journal(
+            pending,
+            status="filled",
+            terminal_receipt=receipt,
+            result=journal_result,
+        ):
+            pending["truth_status"] = "incomplete"
+            pending["reason"] = "terminal_open_receipt_not_durably_recorded"
+            return self._pending_execution_result(pending)
+
+        positions = getattr(self, "positions", None)
+        if not isinstance(positions, list):
+            self.positions = []
+        self.positions = [item for item in self.positions if item.deal_id != deal_id]
+        self.positions.append(position)
+        unsettled = getattr(self, "_unsettled_provider_positions", None)
+        if isinstance(unsettled, dict):
+            unsettled.pop(deal_id, None)
+        stats = getattr(self, "stats", None)
+        if isinstance(stats, dict):
+            stats["trades_opened"] = float(stats.get("trades_opened", 0.0) or 0.0) + 1.0
+        try:
+            self._commit_confidence_ratchet(
+                dict(pending.get("quality") or {}),
+                deal_id,
+            )
+        except Exception as exc:
+            logger.debug("Capital confidence ratchet commit failed after terminal fill: %s", exc)
+        self._latest_order_error = ""
+        self._record_order_lifecycle(
+            "position_open",
+            "position_open",
+            position.lifecycle_id,
+            candidate_id=pending.get("candidate_id"),
+            intent_id=pending.get("intent_id"),
+            route_key=pending.get("route_key"),
+            venue="capital",
+            market_type="cfd",
+            symbol=symbol,
+            side=direction,
+            deal_reference=pending.get("deal_reference"),
+            deal_id=deal_id,
+            entry_price=entry_price,
+            size=size,
+            fee_receipt=dict(receipt.get("fee_receipt") or {}),
+            source_id=receipt.get("source_id"),
+            source_timestamp=source_timestamp,
+            received_at=receipt.get("received_at"),
+            truth_status="real_observed",
+            generated_values=False,
+            source="capital_cfd_trader.reconcile_pending",
+        )
+        self._latest_monitor_line = (
+            f"CAPITAL OPEN {symbol} {direction} deal={deal_id} size={size} "
+            f"entry={entry_price:.5g} tp={tp_price:.5g} sl={sl_price:.5g}"
+        )
+        return {**journal_result, "position": position}
+
+    def _settle_terminal_close(
+        self,
+        pending: Dict[str, Any],
+        receipt: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        snapshot = pending.get("position")
+        position_data = dict(snapshot) if isinstance(snapshot, dict) else {}
+        symbol = str(position_data.get("symbol") or pending.get("symbol") or "").strip().upper()
+        deal_id = str(
+            position_data.get("deal_id") or pending.get("requested_deal_id") or ""
+        ).strip()
+        direction = str(position_data.get("direction") or "").strip().upper()
+        quantity = self._execution_number(position_data.get("size"), positive=True)
+        entry_receipt = position_data.get("entry_fill_receipt")
+        if not isinstance(entry_receipt, dict) or not entry_receipt:
+            entry_receipt = self._archived_entry_receipt(deal_id)
+        if (
+            not symbol
+            or not deal_id
+            or direction not in {"BUY", "SELL"}
+            or quantity is None
+            or not self._archived_entry_receipt_is_complete(
+                entry_receipt,
+                deal_id=deal_id,
+                quantity=quantity,
+                direction=direction,
+            )
+        ):
+            pending["terminal_receipt"] = dict(receipt)
+            pending["truth_status"] = "incomplete"
+            pending["reason"] = "terminal_entry_fill_receipt_required_for_close_settlement"
+            self._store_pending_execution(pending)
+            return self._pending_execution_result(pending)
+
+        entry_price = self._execution_number(entry_receipt.get("filled_avg_price"), positive=True)
+        exit_price = self._execution_number(receipt.get("filled_avg_price"), positive=True)
+        entry_fee = self._execution_number(
+            dict(entry_receipt.get("fee_receipt") or {}).get("amount"),
+            nonnegative=True,
+        )
+        exit_fee = self._execution_number(
+            dict(receipt.get("fee_receipt") or {}).get("amount"),
+            nonnegative=True,
+        )
+        entry_currency = str(
+            dict(entry_receipt.get("fee_receipt") or {}).get("currency") or ""
+        ).strip().upper()
+        exit_currency = str(
+            dict(receipt.get("fee_receipt") or {}).get("currency") or ""
+        ).strip().upper()
+        if (
+            entry_price is None
+            or exit_price is None
+            or entry_fee is None
+            or exit_fee is None
+            or not entry_currency
+            or entry_currency != exit_currency
+        ):
+            pending["terminal_receipt"] = dict(receipt)
+            pending["truth_status"] = "incomplete"
+            pending["reason"] = "entry_exit_fee_receipts_incomplete_or_currency_mismatch"
+            self._store_pending_execution(pending)
+            return self._pending_execution_result(pending)
+        if entry_currency != "GBP":
+            pending["terminal_receipt"] = dict(receipt)
+            pending["truth_status"] = "incomplete"
+            pending["reason"] = "provider_realized_pnl_conversion_receipt_required_non_gbp"
+            self._store_pending_execution(pending)
+            return self._pending_execution_result(pending)
+
+        gross_pnl = (
+            (exit_price - entry_price) * quantity
+            if direction == "BUY"
+            else (entry_price - exit_price) * quantity
+        )
+        net_pnl = gross_pnl - entry_fee - exit_fee
+        if not math.isfinite(gross_pnl) or not math.isfinite(net_pnl):
+            pending["terminal_receipt"] = dict(receipt)
+            pending["truth_status"] = "incomplete"
+            pending["reason"] = "fill_derived_pnl_nonfinite"
+            self._store_pending_execution(pending)
+            return self._pending_execution_result(pending)
+
+        lifecycle_id = str(
+            pending.get("lifecycle_id")
+            or position_data.get("lifecycle_id")
+            or self._capital_lifecycle_id(symbol, direction, deal_id=deal_id)
+        )
+        source_timestamp = self._execution_timestamp(receipt.get("source_timestamp"))
+        opened_at = self._execution_number(position_data.get("opened_at"), positive=True)
+        age_secs = (
+            max(0.0, source_timestamp - opened_at)
+            if source_timestamp is not None and opened_at is not None
+            else None
+        )
+        record = {
+            "status": "filled",
+            "truth_status": "real_derived",
+            "symbol": symbol,
+            "deal_id": deal_id,
+            "deal_reference": pending.get("deal_reference"),
+            "provider_close_order_id": receipt.get("provider_order_id"),
+            "lifecycle_id": lifecycle_id,
+            "route_key": pending.get("route_key"),
+            "asset_class": str(position_data.get("asset_class") or "unknown"),
+            "direction": direction,
+            "entry_price": entry_price,
+            "exit_price": exit_price,
+            "size": quantity,
+            "gross_pnl": gross_pnl,
+            "entry_fee": entry_fee,
+            "exit_fee": exit_fee,
+            "net_pnl": net_pnl,
+            "net_pnl_currency": entry_currency,
+            "reason": str(pending.get("close_reason") or "terminal_provider_close"),
+            "age_secs": age_secs,
+            "closed_at": datetime.fromtimestamp(
+                source_timestamp,
+                timezone.utc,
+            ).isoformat() if source_timestamp is not None else None,
+            "source_id": receipt.get("source_id"),
+            "source_timestamp": source_timestamp,
+            "received_at": receipt.get("received_at"),
+            "entry_fill_receipt": dict(entry_receipt),
+            "exit_fill_receipt": dict(receipt),
+            "generated_values": False,
+            "eligible_for_state": True,
+            "eligible_for_pnl": True,
+            "eligible_for_learning": True,
+        }
+        if not self._complete_execution_journal(
+            pending,
+            status="filled",
+            terminal_receipt=receipt,
+            result=record,
+        ):
+            pending["truth_status"] = "incomplete"
+            pending["reason"] = "terminal_close_receipt_not_durably_recorded"
+            return self._pending_execution_result(pending)
+
+        positions = getattr(self, "positions", None)
+        if isinstance(positions, list):
+            self.positions = [item for item in positions if item.deal_id != deal_id]
+        unsettled = getattr(self, "_unsettled_provider_positions", None)
+        if isinstance(unsettled, dict):
+            unsettled.pop(deal_id, None)
+        stats = getattr(self, "stats", None)
+        if isinstance(stats, dict):
+            stats["trades_closed"] = float(stats.get("trades_closed", 0.0) or 0.0) + 1.0
+            stats["total_pnl_gbp"] = float(stats.get("total_pnl_gbp", 0.0) or 0.0) + net_pnl
+            if net_pnl > 0:
+                stats["winning_trades"] = float(stats.get("winning_trades", 0.0) or 0.0) + 1.0
+                stats["best_trade"] = max(float(stats.get("best_trade", 0.0) or 0.0), net_pnl)
+            else:
+                stats["losing_trades"] = float(stats.get("losing_trades", 0.0) or 0.0) + 1.0
+                stats["worst_trade"] = min(float(stats.get("worst_trade", 0.0) or 0.0), net_pnl)
+        self._record_order_lifecycle(
+            "position_closed",
+            "position_closed",
+            lifecycle_id,
+            deal_id=deal_id,
+            deal_reference=pending.get("deal_reference"),
+            route_key=pending.get("route_key"),
+            venue="capital",
+            market_type="cfd",
+            symbol=symbol,
+            side=direction,
+            reason=record["reason"],
+            entry_price=entry_price,
+            exit_price=exit_price,
+            size=quantity,
+            gross_pnl=gross_pnl,
+            entry_fee=entry_fee,
+            exit_fee=exit_fee,
+            net_pnl=net_pnl,
+            net_pnl_currency=entry_currency,
+            source_id=receipt.get("source_id"),
+            source_timestamp=source_timestamp,
+            received_at=receipt.get("received_at"),
+            truth_status="real_derived",
+            generated_values=False,
+            source="capital_cfd_trader.reconcile_pending",
+        )
+        brain = getattr(self, "_signal_brain", None)
+        if brain is not None and hasattr(brain, "learn_from_outcome"):
+            try:
+                confidence = 0.5
+                for candidate in getattr(self, "_latest_candidate_snapshot", []):
+                    if self._canonical_symbol(candidate.get("symbol")) == self._canonical_symbol(symbol):
+                        confidence = float(
+                            candidate.get(
+                                "brain_coherence",
+                                candidate.get("self_confidence", 0.5),
+                            )
+                            or 0.5
+                        )
+                        break
+                learning_update = brain.learn_from_outcome(
+                    symbol,
+                    net_pnl / max(abs(entry_price * quantity), 0.0001),
+                    confidence=confidence,
+                )
+                record["learning_update"] = dict(learning_update or {})
+            except Exception as exc:
+                record["learning_error"] = str(exc)
+        recent = getattr(self, "_recent_closed_trades", None)
+        if not isinstance(recent, list):
+            self._recent_closed_trades = []
+        self._recent_closed_trades.append(record)
+        self._recent_closed_trades = self._recent_closed_trades[-5:]
+        self._publish_learning_update(record)
+        self._latest_monitor_line = (
+            f"CAPITAL CLOSE {symbol} {record['reason']} pnl={net_pnl:+.4f}GBP"
+        )
+        return record
+
     # ── PROPERTIES ─────────────────────────────────────────────────────────────
     @property
     def enabled(self) -> bool:
@@ -834,6 +1841,7 @@ class CapitalCFDTrader:
             if float(getattr(self, "starting_equity_gbp", 0.0) or 0.0) <= 0 and float(snap.get("equity_gbp", 0.0) or 0.0) > 0:
                 self.starting_equity_gbp = float(snap.get("equity_gbp", 0.0) or 0.0)
             self._sync_positions_from_exchange(force=True)
+            self.reconcile_pending_executions(force=True)
             return True
         except Exception as _e:
             self.init_error = str(_e) or "client_init_exception"
@@ -2152,7 +3160,7 @@ class CapitalCFDTrader:
         margin_pct = self._fallback_margin_pct(cfg.get("class", "unknown"))
         notional = max(0.0, level * size)
         return {
-            "deal_id": str(data.get("dealId") or data.get("dealReference") or raw_dict.get("dealId") or ""),
+            "deal_id": str(data.get("dealId") or raw_dict.get("dealId") or ""),
             "symbol": symbol,
             "epic": str(data.get("epic") or market.get("epic") or raw_dict.get("epic") or ""),
             "direction": direction or "UNKNOWN",
@@ -3018,19 +4026,37 @@ class CapitalCFDTrader:
         position = raw.get("position", {}) if isinstance(raw, dict) else {}
         market = raw.get("market", {}) if isinstance(raw, dict) else {}
 
-        deal_id = str(position.get("dealId") or position.get("dealReference") or "").strip()
+        deal_id = str(position.get("dealId") or "").strip()
         direction = str(position.get("direction") or "").upper()
-        size = float(position.get("size", 0.0) or 0.0)
-        entry_price = float(position.get("level", 0.0) or 0.0)
+        size = self._execution_number(position.get("size"), positive=True)
+        entry_price = self._execution_number(position.get("level"), positive=True)
         epic = str(market.get("epic") or position.get("epic") or "").strip()
         symbol = self._symbol_from_market(market or position)
-        if not deal_id or direction not in ("BUY", "SELL") or size <= 0 or entry_price <= 0:
+        if not deal_id or direction not in ("BUY", "SELL") or size is None or entry_price is None:
             return None
 
-        price = float(market.get("price") or 0.0)
-        bid = float(market.get("bid") or 0.0)
-        ask = float(market.get("offer") or market.get("ask") or 0.0)
-        current_price = price or ((bid + ask) / 2 if bid > 0 and ask > 0 else bid or ask or entry_price)
+        entry_receipt = self._archived_entry_receipt(deal_id)
+        entry_receipt_complete = self._archived_entry_receipt_is_complete(
+            entry_receipt,
+            deal_id=deal_id,
+            quantity=size,
+            direction=direction,
+        )
+        if entry_receipt_complete:
+            receipt_size = self._execution_number(entry_receipt.get("filled_qty"), positive=True)
+            receipt_price = self._execution_number(entry_receipt.get("filled_avg_price"), positive=True)
+            if receipt_size is not None and receipt_price is not None:
+                size = receipt_size
+                entry_price = receipt_price
+
+        price = self._execution_number(market.get("price"), positive=True)
+        bid = self._execution_number(market.get("bid"), positive=True)
+        ask = self._execution_number(market.get("offer") or market.get("ask"), positive=True)
+        current_price = (
+            price
+            if price is not None
+            else ((bid + ask) / 2.0 if bid is not None and ask is not None else bid or ask or 0.0)
+        )
 
         asset_class = str(market.get("instrumentType") or market.get("marketType") or "").lower()
         if not asset_class:
@@ -3051,8 +4077,13 @@ class CapitalCFDTrader:
 
         opened_at = time.time()
         raw_created = position.get("createdDateUTC") or position.get("createdDate")
-        if isinstance(raw_created, (int, float)):
-            opened_at = float(raw_created)
+        provider_opened_at = self._execution_timestamp(raw_created)
+        if provider_opened_at is not None:
+            opened_at = provider_opened_at
+        elif entry_receipt_complete:
+            receipt_opened_at = self._execution_timestamp(entry_receipt.get("source_timestamp"))
+            if receipt_opened_at is not None:
+                opened_at = receipt_opened_at
 
         return CFDPosition(
             symbol=symbol,
@@ -3067,6 +4098,8 @@ class CapitalCFDTrader:
             opened_at=opened_at,
             current_price=current_price,
             lifecycle_id=self._capital_lifecycle_id(symbol, direction, deal_id=deal_id),
+            entry_fill_receipt=dict(entry_receipt) if entry_receipt_complete else {},
+            entry_fill_receipt_complete=entry_receipt_complete,
         )
 
     def _sync_positions_from_exchange(self, force: bool = False) -> None:
@@ -3080,34 +4113,85 @@ class CapitalCFDTrader:
 
         try:
             raw_positions = self.client.get_positions()
+            if not isinstance(raw_positions, list):
+                return
+            if str(getattr(raw_positions, "truth_status", "") or "") == "no_data":
+                return
+
+            existing_by_deal = {item.deal_id: item for item in self.positions}
+            previous_unsettled = dict(
+                getattr(self, "_unsettled_provider_positions", {}) or {}
+            )
+            unsettled: Dict[str, Dict[str, Any]] = {}
             live_positions: List[CFDPosition] = []
+            observed_deal_ids = set()
             for raw in raw_positions:
                 pos = self._position_from_exchange(raw)
-                if pos is not None:
+                if pos is None:
+                    continue
+                observed_deal_ids.add(pos.deal_id)
+                existing = existing_by_deal.get(pos.deal_id)
+                if existing is not None and existing.entry_fill_receipt_complete:
+                    if self._archived_entry_receipt_is_complete(
+                        existing.entry_fill_receipt,
+                        deal_id=existing.deal_id,
+                        quantity=existing.size,
+                        direction=existing.direction,
+                    ):
+                        pos.entry_fill_receipt = dict(existing.entry_fill_receipt)
+                        pos.entry_fill_receipt_complete = True
+                if pos.entry_fill_receipt_complete:
                     live_positions.append(pos)
+                    continue
+                raw_dict = raw if isinstance(raw, dict) else {}
+                unsettled[pos.deal_id] = {
+                    "status": "pending_reconciliation",
+                    "truth_status": str(raw_dict.get("truth_status") or "incomplete"),
+                    "reason": "broker_position_visible_terminal_fill_receipt_pending",
+                    "deal_id": pos.deal_id,
+                    "symbol": pos.symbol,
+                    "epic": pos.epic,
+                    "direction": pos.direction,
+                    "size": pos.size,
+                    "source_id": raw_dict.get("source_id"),
+                    "source_timestamp": raw_dict.get("source_timestamp"),
+                    "received_at": raw_dict.get("received_at"),
+                    "generated_values": False,
+                    "eligible_for_state": False,
+                    "eligible_for_pnl": False,
+                    "eligible_for_learning": False,
+                }
+                if pos.deal_id not in previous_unsettled:
+                    self._record_order_lifecycle(
+                        "position_recovered",
+                        "pending_reconciliation",
+                        pos.lifecycle_id,
+                        deal_id=pos.deal_id,
+                        venue="capital",
+                        market_type="cfd",
+                        symbol=pos.symbol,
+                        side=pos.direction,
+                        route_key=self._capital_route_key(pos.symbol, pos.direction),
+                        reason="broker_position_visible_terminal_fill_receipt_pending",
+                        eligible_for_state=False,
+                        eligible_for_pnl=False,
+                        eligible_for_learning=False,
+                        source="capital_cfd_trader.reconcile",
+                    )
 
-            existing_by_deal = {p.deal_id: p for p in self.positions}
             merged: List[CFDPosition] = []
             for live in live_positions:
                 existing = existing_by_deal.get(live.deal_id)
                 if existing is not None:
                     live.opened_at = existing.opened_at
                     live.lifecycle_id = existing.lifecycle_id or live.lifecycle_id
-                    # Keep live bid/ask price from Capital.com; only fall back to local if exchange gave nothing
-                    if live.current_price <= 0 and existing.current_price > 0:
-                        live.current_price = existing.current_price
-                    # Preserve locally-managed SL/TP — Capital.com doesn't track our trailing SL
-                    # Only use exchange value if we have no local value set
+                    live.entry_fill_receipt = dict(existing.entry_fill_receipt)
+                    live.entry_fill_receipt_complete = True
                     if existing.sl_price > 0:
                         live.sl_price = existing.sl_price
                     if existing.tp_price > 0:
                         live.tp_price = existing.tp_price
-                elif live.deal_id:
-                    live.lifecycle_id = live.lifecycle_id or self._capital_lifecycle_id(
-                        live.symbol,
-                        live.direction,
-                        deal_id=live.deal_id,
-                    )
+                else:
                     self._record_order_lifecycle(
                         "position_recovered",
                         "position_open",
@@ -3120,12 +4204,40 @@ class CapitalCFDTrader:
                         route_key=self._capital_route_key(live.symbol, live.direction),
                         entry_price=live.entry_price,
                         size=live.size,
-                        reason="broker_position_reconciled_on_startup",
+                        reason="terminal_fill_receipt_recovered_on_startup",
+                        eligible_for_state=True,
+                        eligible_for_pnl=True,
+                        eligible_for_learning=True,
                         source="capital_cfd_trader.reconcile",
                     )
                 merged.append(live)
 
+            for deal_id, existing in existing_by_deal.items():
+                if deal_id in observed_deal_ids:
+                    continue
+                if self._completed_close_for_deal(deal_id) is not None:
+                    continue
+                merged.append(existing)
+                unsettled[deal_id] = {
+                    "status": "pending_reconciliation",
+                    "truth_status": "no_data",
+                    "reason": "provider_position_absent_terminal_close_receipt_required",
+                    "deal_id": deal_id,
+                    "symbol": existing.symbol,
+                    "epic": existing.epic,
+                    "direction": existing.direction,
+                    "size": existing.size,
+                    "source_id": None,
+                    "source_timestamp": None,
+                    "received_at": time.time(),
+                    "generated_values": False,
+                    "eligible_for_state": False,
+                    "eligible_for_pnl": False,
+                    "eligible_for_learning": False,
+                }
+
             self.positions = merged
+            self._unsettled_provider_positions = unsettled
         except Exception as _e:
             logger.debug(f"Capital CFD sync error: {_e}")
 
@@ -3324,6 +4436,11 @@ class CapitalCFDTrader:
                     return 0.0, ""
                 lt = float(getattr(lstate, 'lambda_t', 1.0) or 1.0)
                 score *= max(0.3, min(1.5, 0.5 + abs(lt) * 0.5))
+                # The private engine's figure is reconciled against the organism's
+                # canonical field: a low shared Γ tightens the score, a missing
+                # field changes nothing (b46 order-path wiring).
+                from aureon.core.hnc_field import reconcile_gamma
+                score *= reconcile_gamma(1.0)
             except Exception:
                 pass
 
@@ -4641,6 +5758,18 @@ class CapitalCFDTrader:
         """Open a BUY or SELL CFD position on Capital.com."""
         if not self.client:
             return None
+        self._ensure_execution_journal_state()
+        if self._execution_journal_blocked:
+            self._latest_order_error = self._execution_journal_error or "execution_journal_blocked"
+            return None
+        if not self._write_execution_journal():
+            self._latest_order_error = self._execution_journal_error or "execution_journal_unwritable"
+            return None
+        if dict(getattr(self, "_unsettled_provider_positions", {}) or {}):
+            self._latest_order_error = (
+                "provider_position_inventory_pending_terminal_receipt_reconciliation"
+            )
+            return None
 
         ask   = float(ticker.get("ask") or ticker.get("price") or 0)
         bid   = float(ticker.get("bid") or ticker.get("price") or 0)
@@ -4748,11 +5877,26 @@ class CapitalCFDTrader:
                     self._write_exchange_trace(trace_payload)
                     logger.warning("CFD preflight failed for %s: %s", symbol, preflight.get("reason") or "unknown")
                     return None
-            known_deal_ids = {
-                str((raw.get("position", {}) if isinstance(raw, dict) else {}).get("dealId") or "")
-                for raw in self.client.get_positions()
-            }
-            trace_payload["known_deal_ids_before"] = sorted([d for d in known_deal_ids if d])
+            existing_pending = self._pending_execution_for(
+                "open_position",
+                symbol=symbol,
+            )
+            if existing_pending is not None:
+                outcome = self._reconcile_pending_record(existing_pending, force=True)
+                reconciled_position = outcome.get("position") if isinstance(outcome, dict) else None
+                if isinstance(reconciled_position, CFDPosition):
+                    self._latest_order_error = ""
+                elif isinstance(outcome, dict) and outcome.get("status") == "rejected":
+                    self._latest_order_error = (
+                        f"{symbol} open rejected: "
+                        f"{outcome.get('reason') or 'provider_rejected'}"
+                    )
+                else:
+                    self._latest_order_error = (
+                        f"{symbol} open pending terminal provider reconciliation"
+                    )
+                return reconciled_position if isinstance(reconciled_position, CFDPosition) else None
+
             self._record_order_lifecycle(
                 "executor_accepted",
                 "executor_accepted",
@@ -4774,9 +5918,29 @@ class CapitalCFDTrader:
                     size,
                     **dict(broker_exit_controls.get("submit_kwargs", {}) or {}),
                 )
-            except TypeError:
-                result = self.client.place_market_order(symbol, direction, size)
-                trace_payload["broker_exit_controls_fallback"] = "client_signature_without_exit_kwargs"
+            except Exception as submit_exc:
+                pending = self._store_pending_execution({
+                    "purpose": "open_position",
+                    "truth_status": "no_data",
+                    "reason": f"provider_submission_outcome_unknown:{submit_exc}",
+                    "deal_reference": "",
+                    "lifecycle_id": lifecycle_id,
+                    "candidate_id": candidate_id,
+                    "intent_id": intent_id,
+                    "route_key": route_key,
+                    "symbol": symbol,
+                    "epic": str(ticker.get("epic") or symbol).strip().upper(),
+                    "expected_fill_side": direction,
+                    "requested_qty": size,
+                    "asset_class": str(cfg.get("class") or "unknown"),
+                    "tp_pct": self._execution_number(cfg.get("tp_pct"), positive=True),
+                    "sl_pct": self._execution_number(cfg.get("sl_pct"), positive=True),
+                })
+                trace_payload["pending_execution"] = self._pending_execution_result(pending)
+                trace_payload["final_error"] = pending["reason"]
+                self._write_exchange_trace(trace_payload)
+                self._latest_order_error = str(pending["reason"])
+                return None
             trace_payload["order_response"] = dict(result) if isinstance(result, dict) else result
             self._record_order_lifecycle(
                 "order_submitted",
@@ -4793,37 +5957,36 @@ class CapitalCFDTrader:
                 broker_response=dict(result) if isinstance(result, dict) else result,
                 source="capital_cfd_trader.open_position",
             )
-            if result.get("rejected") or result.get("error"):
-                reason = result.get("reason") or result.get("error", "unknown")
-                self._record_rejection(symbol, direction, str(reason))
-                self._latest_order_error = f"{symbol} open rejected: {reason}"
-                self._record_order_lifecycle(
-                    "order_rejected",
-                    "order_rejected",
-                    lifecycle_id,
-                    candidate_id=candidate_id,
-                    intent_id=intent_id,
-                    route_key=route_key,
-                    venue="capital",
-                    market_type="cfd",
-                    symbol=symbol,
-                    side=direction,
-                    reason=reason,
-                    broker_response=dict(result) if isinstance(result, dict) else result,
-                    source="capital_cfd_trader.open_position",
-                )
-                self._write_exchange_trace(trace_payload)
-                logger.debug(f"CFD open rejected {symbol}: {reason}")
-                return None
 
-            deal_ref = result.get("dealReference", "")
-            deal_id  = result.get("dealId", deal_ref) or deal_ref
-            if deal_id:
-                lifecycle_id = self._capital_lifecycle_id(symbol, direction, deal_id=deal_id, seed=lifecycle_id)
-                trace_payload["lifecycle_id"] = lifecycle_id
+            ack_ok, deal_reference, ack_reason = self._submission_ack_is_durable(result)
+            result_dict = dict(result) if isinstance(result, dict) else {}
+            pending = self._store_pending_execution({
+                "purpose": "open_position",
+                "truth_status": "real_observed" if ack_ok else "incomplete",
+                "reason": ack_reason,
+                "deal_reference": deal_reference,
+                "lifecycle_id": lifecycle_id,
+                "candidate_id": candidate_id,
+                "intent_id": intent_id,
+                "route_key": route_key,
+                "symbol": symbol,
+                "epic": str(ticker.get("epic") or symbol).strip().upper(),
+                "expected_fill_side": direction,
+                "requested_qty": size,
+                "asset_class": str(cfg.get("class") or "unknown"),
+                "tp_pct": self._execution_number(cfg.get("tp_pct"), positive=True),
+                "sl_pct": self._execution_number(cfg.get("sl_pct"), positive=True),
+                "quality": dict(prepared.get("quality") or {}),
+                "source_id": result_dict.get("source_id"),
+                "source_timestamp": result_dict.get("source_timestamp"),
+                "received_at": result_dict.get("received_at"),
+            })
+            trace_payload["pending_execution"] = self._pending_execution_result(pending)
+            trace_payload["validated"] = False
+            trace_payload["final_error"] = "pending_reconciliation" if ack_ok else ack_reason
             self._record_order_lifecycle(
-                "broker_acknowledged",
-                "broker_acknowledged",
+                "broker_acknowledged" if ack_ok else "submission_receipt_incomplete",
+                "pending_reconciliation",
                 lifecycle_id,
                 candidate_id=candidate_id,
                 intent_id=intent_id,
@@ -4832,227 +5995,33 @@ class CapitalCFDTrader:
                 market_type="cfd",
                 symbol=symbol,
                 side=direction,
-                deal_reference=deal_ref,
-                deal_id=deal_id,
-                broker_response=dict(result) if isinstance(result, dict) else result,
-                source="capital_cfd_trader.open_position",
-            )
-            epic     = ticker.get("epic", symbol)
-            fill_price = entry_price  # Estimate; confirm_order may refine
-            confirmed_ok = False
-
-            # Attempt to confirm fill price from Capital.com confirmation
-            if deal_ref:
-                try:
-                    conf = self.client.confirm_order(deal_ref)
-                    trace_payload["confirm_response"] = dict(conf) if isinstance(conf, dict) else conf
-                    deal_status = str(conf.get("dealStatus") or "").upper()
-                    reject_reason = str(conf.get("rejectReason") or conf.get("reason") or "").strip()
-                    confirm_status = str(conf.get("status") or "").upper()
-                    if reject_reason or deal_status == "REJECTED" or confirm_status == "DELETED":
-                        self._record_rejection(symbol, direction, reject_reason or deal_status or confirm_status)
-                        self._latest_order_error = f"{symbol} rejected by Capital: {reject_reason or deal_status or confirm_status}"
-                        trace_payload["validated"] = False
-                        trace_payload["final_error"] = self._latest_order_error
-                        self._record_order_lifecycle(
-                            "order_rejected",
-                            "order_rejected",
-                            lifecycle_id,
-                            candidate_id=candidate_id,
-                            intent_id=intent_id,
-                            route_key=route_key,
-                            venue="capital",
-                            market_type="cfd",
-                            symbol=symbol,
-                            side=direction,
-                            deal_reference=deal_ref,
-                            deal_id=deal_id,
-                            reason=reject_reason or deal_status or confirm_status,
-                            broker_response=dict(conf) if isinstance(conf, dict) else conf,
-                            source="capital_cfd_trader.confirm_order",
-                        )
-                        self._write_exchange_trace(trace_payload)
-                        logger.warning("CFD open rejected by Capital for %s: %s", symbol, reject_reason or deal_status or confirm_status)
-                        return None
-                    if not conf.get("error") and not conf.get("reason"):
-                        deal_id    = conf.get("dealId", deal_id) or deal_id
-                        lifecycle_id = self._capital_lifecycle_id(symbol, direction, deal_id=deal_id, seed=lifecycle_id)
-                        trace_payload["lifecycle_id"] = lifecycle_id
-                        fill_price = float(conf.get("level", fill_price) or fill_price)
-                        effective_tp_pct = self._effective_tp_pct(fill_price, size, cfg)
-                        if direction == "BUY":
-                            tp_price = fill_price * (1 + effective_tp_pct / 100)
-                            sl_price = fill_price * (1 - cfg["sl_pct"] / 100)
-                        else:
-                            tp_price = fill_price * (1 - effective_tp_pct / 100)
-                            sl_price = fill_price * (1 + cfg["sl_pct"] / 100)
-                        confirmed_ok = bool(deal_id)
-                except Exception:
-                    pass
-
-            live_raw = None
-            for _attempt in range(4):
-                position_snapshot = self.client.get_positions()
-                trace_payload["positions_snapshots"].append(position_snapshot)
-                for raw in position_snapshot:
-                    raw_pos = raw.get("position", {}) if isinstance(raw, dict) else {}
-                    raw_market = raw.get("market", {}) if isinstance(raw, dict) else {}
-                    raw_deal_id = str(raw_pos.get("dealId") or raw_pos.get("dealReference") or "")
-                    raw_symbol = self._symbol_from_market(raw_market or raw_pos)
-                    raw_direction = str(raw_pos.get("direction") or "").upper()
-                    if deal_id and raw_deal_id == str(deal_id):
-                        live_raw = raw
-                        break
-                    if raw_deal_id and raw_deal_id not in known_deal_ids and raw_symbol == symbol and raw_direction == direction:
-                        live_raw = raw
-                        deal_id = raw_deal_id
-                        break
-                if live_raw is not None:
-                    break
-                time.sleep(0.5)
-
-            if live_raw is None:
-                self._latest_order_error = (
-                    f"{symbol} open not validated: deal_ref={deal_ref or 'none'} "
-                    f"deal_id={deal_id or 'none'} confirmed={confirmed_ok}"
-                )
-                trace_payload["validated"] = False
-                trace_payload["final_error"] = self._latest_order_error
-                self._record_order_lifecycle(
-                    "position_validation_failed",
-                    "order_failed",
-                    lifecycle_id,
-                    candidate_id=candidate_id,
-                    intent_id=intent_id,
-                    route_key=route_key,
-                    venue="capital",
-                    market_type="cfd",
-                    symbol=symbol,
-                    side=direction,
-                    deal_reference=deal_ref,
-                    deal_id=deal_id,
-                    reason="broker_position_not_found_after_submission",
-                    positions_snapshot=trace_payload.get("positions_snapshots", []),
-                    source="capital_cfd_trader.open_position",
-                )
-                self._write_exchange_trace(trace_payload)
-                logger.warning(
-                    "CFD open not validated on exchange for %s (deal_ref=%s deal_id=%s confirmed=%s)",
-                    symbol, deal_ref, deal_id, confirmed_ok
-                )
-                return None
-
-            pos = self._position_from_exchange(live_raw)
-            if pos is None:
-                logger.warning("CFD open validation returned unusable position for %s", symbol)
-                trace_payload["validated"] = False
-                trace_payload["final_error"] = f"{symbol} validated raw position could not be parsed"
-                self._record_order_lifecycle(
-                    "position_validation_failed",
-                    "order_failed",
-                    lifecycle_id,
-                    candidate_id=candidate_id,
-                    intent_id=intent_id,
-                    route_key=route_key,
-                    venue="capital",
-                    market_type="cfd",
-                    symbol=symbol,
-                    side=direction,
-                    deal_reference=deal_ref,
-                    deal_id=deal_id,
-                    reason="validated_raw_position_unusable",
-                    source="capital_cfd_trader.open_position",
-                )
-                self._write_exchange_trace(trace_payload)
-                return None
-            # Guard: Capital.com sometimes returns stopLevel ≈ fill_price (inverted SL).
-            # Detect wrong-side or zero SL and recalculate from our config.
-            _capital_sl = pos.sl_price
-            _ref_price  = fill_price if fill_price > 0 else pos.entry_price
-            _sl_inverted = (
-                (pos.direction == "BUY"  and pos.sl_price >= pos.entry_price * 0.9995) or
-                (pos.direction == "SELL" and pos.sl_price <= pos.entry_price * 1.0005) or
-                pos.sl_price <= 0
-            )
-            if _sl_inverted:
-                _sl_pct = float(cfg.get("sl_pct", 0.25) or 0.25)
-                if pos.direction == "BUY":
-                    pos.sl_price = _ref_price * (1.0 - _sl_pct / 100)
-                else:
-                    pos.sl_price = _ref_price * (1.0 + _sl_pct / 100)
-                logger.warning(
-                    "CFD SL guard: %s %s Capital sl=%.5g was inverted vs entry=%.5g → recalc sl=%.5g",
-                    symbol, pos.direction, _capital_sl, pos.entry_price, pos.sl_price,
-                )
-            pos.lifecycle_id = lifecycle_id
-            pos.epic = epic or pos.epic
-            pos.current_price = fill_price if fill_price > 0 else pos.current_price
-            if CAPITAL_BROKER_TAKE_PROFIT_ENABLED and hasattr(self.client, "update_position_limits"):
-                exact_controls = self._capital_broker_exit_controls(
-                    direction=pos.direction,
-                    entry_price=pos.entry_price,
-                    size=pos.size,
-                    cfg=cfg,
-                )
-                try:
-                    update = self.client.update_position_limits(  # type: ignore[attr-defined]
-                        pos.deal_id,
-                        **dict(exact_controls.get("submit_kwargs", {}) or {}),
-                    )
-                    trace_payload["broker_exit_update"] = dict(update) if isinstance(update, dict) else update
-                except Exception as _update_exc:
-                    trace_payload["broker_exit_update"] = {"error": str(_update_exc)}
-            self.positions = [p for p in self.positions if p.deal_id != pos.deal_id]
-            self.positions.append(pos)
-            self.stats["trades_opened"] += 1
-            self._latest_order_error = ""
-            self._commit_confidence_ratchet(dict(prepared.get("quality") or {}), pos.deal_id)
-            trace_payload["validated"] = True
-            trace_payload["validated_deal_id"] = pos.deal_id
-            trace_payload["validated_position"] = {
-                "symbol": pos.symbol,
-                "deal_id": pos.deal_id,
-                "epic": pos.epic,
-                "direction": pos.direction,
-                "entry_price": pos.entry_price,
-                "tp_price": pos.tp_price,
-                "sl_price": pos.sl_price,
-                "lifecycle_id": pos.lifecycle_id,
-            }
-            self._record_order_lifecycle(
-                "position_open",
-                "position_open",
-                lifecycle_id,
-                candidate_id=candidate_id,
-                intent_id=intent_id,
-                route_key=route_key,
-                venue="capital",
-                market_type="cfd",
-                symbol=pos.symbol,
-                side=pos.direction,
-                deal_reference=deal_ref,
-                deal_id=pos.deal_id,
-                entry_price=pos.entry_price,
-                size=pos.size,
-                positions_snapshot=[live_raw] if isinstance(live_raw, dict) else [],
+                deal_reference=deal_reference,
+                broker_response=result_dict,
+                reason=ack_reason,
+                eligible_for_state=False,
+                eligible_for_pnl=False,
+                eligible_for_learning=False,
                 source="capital_cfd_trader.open_position",
             )
             self._write_exchange_trace(trace_payload)
-            self._latest_monitor_line = (
-                f"CAPITAL OPEN {symbol} {direction} deal={pos.deal_id} size={size} entry={pos.entry_price:.5g} "
-                f"tp={pos.tp_price:.5g} sl={pos.sl_price:.5g}"
-            )
+            if not ack_ok:
+                self._latest_order_error = f"{symbol} open submission incomplete: {ack_reason}"
+                return None
 
-            open_line = (
-                f"  CAPITAL CFD OPEN:  {symbol:12} [{cfg['class'].upper():9}] "
-                f"{direction} {size} @ {pos.entry_price:.5g} | "
-                f"TP:{pos.tp_price:.5g}  SL:{pos.sl_price:.5g} | Deal:{pos.deal_id}"
-            )
-            try:
-                print(open_line)
-            except (ValueError, OSError):
-                logger.info(open_line.strip())
-            return pos
+            outcome = self._reconcile_pending_record(pending, force=True)
+            reconciled_position = outcome.get("position") if isinstance(outcome, dict) else None
+            if isinstance(reconciled_position, CFDPosition):
+                return reconciled_position
+            if isinstance(outcome, dict) and outcome.get("status") == "rejected":
+                self._latest_order_error = (
+                    f"{symbol} open rejected: "
+                    f"{outcome.get('reason') or 'provider_rejected'}"
+                )
+            else:
+                self._latest_order_error = (
+                    f"{symbol} open pending terminal provider reconciliation"
+                )
+            return None
 
         except Exception as _e:
             self._latest_order_error = f"{symbol} open exception: {_e}"
@@ -5085,163 +6054,70 @@ class CapitalCFDTrader:
             return None
 
     def _close_position(self, pos: CFDPosition, reason: str) -> dict:
-        """
-        Close a CFD position via Capital.com DELETE /positions/{dealId}.
-        Falls back to a reverse market order if DELETE fails.
-        Returns a closed-trade record compatible with orca session_stats.
-        """
-        close_ok = False
-        close_detail: Dict[str, Any] = {}
-        pnl_gbp = 0.0
-        lifecycle_id = pos.lifecycle_id or self._capital_lifecycle_id(pos.symbol, pos.direction, deal_id=pos.deal_id)
-        route_key = self._capital_route_key(pos.symbol, pos.direction)
-
-        if self.client and pos.deal_id:
-            try:
-                self._record_order_lifecycle(
-                    "close_requested",
-                    "close_requested",
-                    lifecycle_id,
-                    deal_id=pos.deal_id,
-                    route_key=route_key,
-                    venue="capital",
-                    market_type="cfd",
-                    symbol=pos.symbol,
-                    side=pos.direction,
-                    reason=reason,
-                    source="capital_cfd_trader.close_position",
-                )
-                result = self.client.close_position(pos.deal_id)
-                close_ok = bool(result.get("success"))
-                close_detail = dict(result)
-                if close_ok:
-                    self._record_order_lifecycle(
-                        "close_acknowledged",
-                        "close_acknowledged",
-                        lifecycle_id,
-                        deal_id=pos.deal_id,
-                        route_key=route_key,
-                        venue="capital",
-                        market_type="cfd",
-                        symbol=pos.symbol,
-                        side=pos.direction,
-                        reason=reason,
-                        broker_response=dict(result) if isinstance(result, dict) else result,
-                        source="capital_cfd_trader.close_position",
-                    )
-                if not close_ok:
-                    # Fallback: reverse market order to flatten the position
-                    opposite = "SELL" if pos.direction == "BUY" else "BUY"
-                    fallback = self.client.place_market_order(pos.symbol, opposite, pos.size)
-                    close_detail["fallback"] = fallback
-                    close_ok = not bool(fallback.get("rejected") or fallback.get("error"))
-                    if close_ok:
-                        self._record_order_lifecycle(
-                            "close_acknowledged",
-                            "close_acknowledged",
-                            lifecycle_id,
-                            deal_id=pos.deal_id,
-                            route_key=route_key,
-                            venue="capital",
-                            market_type="cfd",
-                            symbol=pos.symbol,
-                            side=pos.direction,
-                            reason=reason,
-                            broker_response=close_detail,
-                            source="capital_cfd_trader.close_position",
-                        )
-            except Exception as _e:
-                logger.debug(f"CFD close error {pos.symbol}: {_e}")
-                close_detail = {"error": str(_e)}
-
-        if self.client and pos.deal_id:
-            try:
-                still_open = False
-                for raw in self.client.get_positions():
-                    raw_pos = raw.get("position", {}) if isinstance(raw, dict) else {}
-                    if str(raw_pos.get("dealId") or raw_pos.get("dealReference") or "") == pos.deal_id:
-                        still_open = True
-                        break
-                if still_open:
-                    close_ok = False
-            except Exception as _e:
-                logger.debug(f"CFD close verification skipped {pos.symbol}: {_e}")
-
-        # Estimate PnL from tracked prices
-        cp = pos.current_price if pos.current_price > 0 else pos.entry_price
-        if pos.entry_price > 0 and cp > 0:
-            if pos.direction == "BUY":
-                pnl_pct = (cp - pos.entry_price) / pos.entry_price
-            else:
-                pnl_pct = (pos.entry_price - cp) / pos.entry_price
-            pnl_gbp = pnl_pct * pos.entry_price * pos.size
-
-        if not close_ok:
-            self._record_order_lifecycle(
-                "close_failed",
-                "close_failed",
-                lifecycle_id,
-                deal_id=pos.deal_id,
-                route_key=route_key,
-                venue="capital",
-                market_type="cfd",
-                symbol=pos.symbol,
-                side=pos.direction,
-                reason=reason,
-                error=close_detail.get("error") if isinstance(close_detail, dict) else "",
-                broker_response=close_detail,
-                source="capital_cfd_trader.close_position",
-            )
+        """Submit one close intent and settle only a terminal provider receipt."""
+        self._ensure_execution_journal_state()
+        if self._execution_journal_blocked:
             return {
-                "error": "close_failed",
+                "status": "no_data",
+                "truth_status": "no_data",
+                "error": "execution_journal_blocked",
+                "reason": self._execution_journal_error or "execution_journal_blocked",
+                "symbol": pos.symbol,
+                "deal_id": pos.deal_id,
+                "generated_values": False,
+                "eligible_for_state": False,
+                "eligible_for_pnl": False,
+                "eligible_for_learning": False,
+            }
+        if not self._write_execution_journal():
+            return {
+                "status": "no_data",
+                "truth_status": "no_data",
+                "error": "execution_journal_unwritable",
+                "reason": self._execution_journal_error or "execution_journal_unwritable",
+                "symbol": pos.symbol,
+                "deal_id": pos.deal_id,
+                "generated_values": False,
+                "eligible_for_state": False,
+                "eligible_for_pnl": False,
+                "eligible_for_learning": False,
+            }
+
+        completed = self._completed_close_for_deal(pos.deal_id)
+        if completed is not None:
+            completed["already_reconciled"] = True
+            return completed
+        existing_pending = self._pending_execution_for(
+            "close_position",
+            deal_id=pos.deal_id,
+        )
+        if existing_pending is not None:
+            return self._reconcile_pending_record(existing_pending, force=True)
+
+        lifecycle_id = pos.lifecycle_id or self._capital_lifecycle_id(
+            pos.symbol,
+            pos.direction,
+            deal_id=pos.deal_id,
+        )
+        route_key = self._capital_route_key(pos.symbol, pos.direction)
+        if not self.client or not pos.deal_id:
+            return {
+                "status": "no_data",
+                "truth_status": "no_data",
+                "error": "close_not_submitted",
+                "reason": "capital_client_or_provider_deal_id_missing",
                 "symbol": pos.symbol,
                 "deal_id": pos.deal_id,
                 "lifecycle_id": lifecycle_id,
-                "reason": reason,
-                "detail": close_detail,
+                "generated_values": False,
+                "eligible_for_state": False,
+                "eligible_for_pnl": False,
+                "eligible_for_learning": False,
             }
 
-        # Update session stats
-        self.stats["trades_closed"]  += 1
-        self.stats["total_pnl_gbp"]  += pnl_gbp
-        if pnl_gbp > 0:
-            self.stats["winning_trades"] += 1
-            self.stats["best_trade"] = max(self.stats["best_trade"], pnl_gbp)
-        else:
-            self.stats["losing_trades"] += 1
-            self.stats["worst_trade"] = min(self.stats["worst_trade"], pnl_gbp)
-
-        close_line = (
-            f"  CAPITAL CFD CLOSE: {pos.symbol:12} [{pos.asset_class.upper():9}] "
-            f"{reason}  |  PnL: {pnl_gbp:+.4f} GBP  age:{pos.age_secs/60:.1f}m"
-        )
-        try:
-            print(close_line)
-        except (ValueError, OSError):
-            logger.info(close_line.strip())
-        self._latest_monitor_line = (
-            f"CAPITAL CLOSE {pos.symbol} {reason} pnl={pnl_gbp:+.4f}GBP age={pos.age_secs/60:.1f}m"
-        )
-
-        record = {
-            "symbol":           pos.symbol,
-            "deal_id":          pos.deal_id,
-            "lifecycle_id":     lifecycle_id,
-            "route_key":        route_key,
-            "asset_class":      pos.asset_class,
-            "direction":        pos.direction,
-            "entry_price":      pos.entry_price,
-            "exit_price":       cp,
-            "size":             pos.size,
-            "net_pnl":          pnl_gbp,
-            "net_pnl_currency": "GBP",
-            "reason":           reason,
-            "age_secs":         pos.age_secs,
-            "closed_at":        datetime.now().isoformat(),
-        }
         self._record_order_lifecycle(
-            "position_closed",
-            "position_closed",
+            "close_requested",
+            "close_requested",
             lifecycle_id,
             deal_id=pos.deal_id,
             route_key=route_key,
@@ -5250,37 +6126,69 @@ class CapitalCFDTrader:
             symbol=pos.symbol,
             side=pos.direction,
             reason=reason,
-            entry_price=pos.entry_price,
-            exit_price=cp,
-            size=pos.size,
-            net_pnl=pnl_gbp,
-            net_pnl_currency="GBP",
-            close_detail=close_detail,
             source="capital_cfd_trader.close_position",
         )
-        fast_capture = dict(getattr(self, "_fast_profit_capture_by_deal", {}).get(pos.deal_id, {}) or {})
-        if fast_capture:
-            record["fast_profit_capture"] = fast_capture
-        brain = getattr(self, "_signal_brain", None)
-        if brain is not None and hasattr(brain, "learn_from_outcome"):
-            try:
-                confidence = 0.5
-                for candidate in getattr(self, "_latest_candidate_snapshot", []):
-                    if self._canonical_symbol(candidate.get("symbol")) == self._canonical_symbol(pos.symbol):
-                        confidence = float(candidate.get("brain_coherence", candidate.get("self_confidence", 0.5)) or 0.5)
-                        break
-                learning_update = brain.learn_from_outcome(
-                    pos.symbol,
-                    pnl_gbp / max(abs(pos.entry_price * pos.size), 0.0001),
-                    confidence=confidence,
-                )
-                record["learning_update"] = dict(learning_update or {})
-            except Exception as e:
-                record["learning_error"] = str(e)
-        self._recent_closed_trades.append(record)
-        self._recent_closed_trades = self._recent_closed_trades[-5:]
-        self._publish_learning_update(record)
-        return record
+        try:
+            result = self.client.close_position(pos.deal_id)
+        except Exception as submit_exc:
+            pending = self._store_pending_execution({
+                "purpose": "close_position",
+                "truth_status": "no_data",
+                "reason": f"provider_close_submission_outcome_unknown:{submit_exc}",
+                "deal_reference": "",
+                "requested_deal_id": pos.deal_id,
+                "lifecycle_id": lifecycle_id,
+                "route_key": route_key,
+                "symbol": pos.symbol,
+                "epic": pos.epic,
+                "expected_fill_side": "SELL" if pos.direction == "BUY" else "BUY",
+                "requested_qty": pos.size,
+                "close_reason": reason,
+                "position": dict(pos.__dict__),
+            })
+            return self._pending_execution_result(pending)
+
+        ack_ok, deal_reference, ack_reason = self._submission_ack_is_durable(result)
+        result_dict = dict(result) if isinstance(result, dict) else {}
+        pending = self._store_pending_execution({
+            "purpose": "close_position",
+            "truth_status": "real_observed" if ack_ok else "incomplete",
+            "reason": ack_reason,
+            "deal_reference": deal_reference,
+            "requested_deal_id": pos.deal_id,
+            "lifecycle_id": lifecycle_id,
+            "route_key": route_key,
+            "symbol": pos.symbol,
+            "epic": pos.epic,
+            "expected_fill_side": "SELL" if pos.direction == "BUY" else "BUY",
+            "requested_qty": pos.size,
+            "close_reason": reason,
+            "position": dict(pos.__dict__),
+            "source_id": result_dict.get("source_id"),
+            "source_timestamp": result_dict.get("source_timestamp"),
+            "received_at": result_dict.get("received_at"),
+        })
+        self._record_order_lifecycle(
+            "close_acknowledged" if ack_ok else "close_submission_receipt_incomplete",
+            "pending_reconciliation",
+            lifecycle_id,
+            deal_id=pos.deal_id,
+            deal_reference=deal_reference,
+            route_key=route_key,
+            venue="capital",
+            market_type="cfd",
+            symbol=pos.symbol,
+            side=pos.direction,
+            reason=ack_reason,
+            broker_response=result_dict,
+            eligible_for_state=False,
+            eligible_for_pnl=False,
+            eligible_for_learning=False,
+            source="capital_cfd_trader.close_position",
+        )
+        if not ack_ok:
+            return self._pending_execution_result(pending)
+        return self._reconcile_pending_record(pending, force=True)
 
     def _update_position_prices(self) -> None:
         """Refresh current_price on all tracked positions from the price cache."""
@@ -5421,21 +6329,10 @@ class CapitalCFDTrader:
         return decision
 
     def _get_capital_dtp(self, pos: CFDPosition):
-        if not HAS_CAPITAL_DTP or DynamicTakeProfit is None or not pos.deal_id:
-            return None
-        tracker = self._dtp_trackers.get(pos.deal_id)
-        if tracker is None:
-            tracker = DynamicTakeProfit(
-                position_size_usd=float(pos.entry_price * pos.size),
-                entry_fee_usd=0.0,
-                fee_rate=0.0,
-                gbp_usd_rate=1.0,
-                activation_threshold_gbp=CAPITAL_DTP_TRIGGER_GBP,
-                trailing_distance_pct=0.02,
-                thought_bus=getattr(self, 'thought_bus', None),
-            )
-            self._dtp_trackers[pos.deal_id] = tracker
-        return tracker
+        # DynamicTakeProfit currently requires USD-denominated fee and FX inputs.
+        # This trader has no provider transaction/FX receipt for that conversion,
+        # so activating it would fabricate entry fees or a GBP/USD rate.
+        return None
 
     def _monitor_positions(self) -> List[dict]:
         """
@@ -5577,6 +6474,7 @@ class CapitalCFDTrader:
         # Expensive API calls happen OUTSIDE the lock so the background
         # _continuous_price_refresh_loop() thread never starves.
         self._sync_positions_from_exchange()
+        self.reconcile_pending_executions()
         self._refresh_prices()
         # 👁 Feed Seer + Lyra with live market context so predictions are real
         try:

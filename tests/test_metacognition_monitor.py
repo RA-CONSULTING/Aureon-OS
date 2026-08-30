@@ -9,6 +9,9 @@ loop by publishing the ``metacognition_monitor`` sub-field back into the field.
 
 from __future__ import annotations
 
+import json
+import time
+
 import pytest
 
 from aureon.core.aureon_thought_bus import Thought, get_thought_bus
@@ -22,14 +25,55 @@ from aureon.observer.real_data_contract import TRUTH_STATUSES
 def _isolate(tmp_path, monkeypatch):
     monkeypatch.setenv("AUREON_BUS_TRACE_DIR", str(tmp_path))
     monkeypatch.setenv("AUREON_METACOG_LAMBDA_PATH", str(tmp_path / "metacog_lambda.json"))
+    monkeypatch.setenv("AUREON_HNC_TRACE_PATH", str(tmp_path / "hnc_trace.jsonl"))
+    import aureon.core.aureon_thought_bus as tb
+
+    monkeypatch.setattr(tb, "_thought_bus_instance", None, raising=False)
     return tmp_path
+
+
+def _hnc_envelope(symbolic_life_score, coherence_gamma, consciousness_psi=None):
+    received_at = time.time()
+    psi = coherence_gamma if consciousness_psi is None else consciousness_psi
+    return {
+        "data_status": "live",
+        "source": "hnc_live_daemon",
+        "source_id": "aureon:hnc:live_daemon",
+        "source_timestamp": received_at,
+        "received_at": received_at,
+        "ts": received_at,
+        "receipt_id": "hnc:live_field:test-metacognition",
+        "receipt_type": "hnc_live_field",
+        "provider_receipt_type": "hnc_live_field",
+        "truth_status": "real_derived",
+        "generated_values": False,
+        "input_receipt_ids": ["test.provider:metacognition"],
+        "freshness_status": "fresh",
+        "symbolic_life_score": symbolic_life_score,
+        "coherence_gamma": coherence_gamma,
+        "consciousness_psi": psi,
+        "consciousness_level": "AWARE",
+        "lambda_t": symbolic_life_score,
+        "source_count": 1,
+        "operational_eligible": False,
+        "provider_eligible": False,
+        "action_eligible": False,
+        "actionable": False,
+        "accounting_eligible": False,
+        "learning_eligible": False,
+        "eligible_for_action": False,
+        "eligible_for_accounting": False,
+        "eligible_for_learning": False,
+        "equation_inputs_complete": True,
+        "action_gate_passed": False,
+        "action_gate_reason": "route_specific_market_link_required",
+    }
 
 
 def _seed_signals():
     b = get_thought_bus()
-    b.publish(Thought(source="hnc", topic="symbolic.life.pulse",
-                      payload={"symbolic_life_score": 0.6, "coherence_gamma": 1.1,
-                               "consciousness_psi": 0.4, "source": "live"}))
+    b.publish(Thought(source="hnc_live_daemon", topic="symbolic.life.pulse",
+                      payload=_hnc_envelope(0.6, 0.9, 0.4)))
     append_trace("auris_cosmic_state", {"cosmic_score": 0.7, "gate_open": True, "_ts": 1.0})
     append_trace("lighthouse_event", {"type": "PHASE_RESET", "severity": 0.2, "_ts": 1.0})
     append_trace("local_action_verdict", {"approved": True, "verdict": "APPROVED"})
@@ -75,6 +119,15 @@ def test_no_signals_is_no_data_never_fabricated(monkeypatch, tmp_path):
     # With nothing flowing the monitor reports no_data — no invented coherence.
     assert a.truth_status == "no_data"
     assert a.available is False or a.self_coherence is None
+
+
+def test_trace_field_is_classified_as_cached_real(tmp_path):
+    (tmp_path / "hnc_trace.jsonl").write_text(
+        json.dumps(_hnc_envelope(0.61, 0.59)) + "\n",
+        encoding="utf-8",
+    )
+    a = MetacognitionMonitor().assess()
+    assert a.signals["field"]["truth_status"] == "cached_real"
 
 
 def test_self_term_persists_across_ticks():

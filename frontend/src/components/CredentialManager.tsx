@@ -42,14 +42,14 @@ export function CredentialManager() {
             <div className="text-xs text-muted-foreground">Total Accounts</div>
           </div>
           <div className="p-4 rounded-lg bg-muted/50">
-            <div className="text-2xl font-bold text-green-500">{activeCount}</div>
+            <div className="text-2xl font-bold text-success">{activeCount}</div>
             <div className="text-xs text-muted-foreground">Active Accounts</div>
           </div>
         </div>
 
         {credentialsCount > 0 && (
           <div className="flex items-center gap-2">
-            <Badge className="bg-green-500">
+            <Badge className="bg-success">
               <Upload className="h-3 w-3 mr-1" />
               {credentialsCount} Accounts Loaded
             </Badge>

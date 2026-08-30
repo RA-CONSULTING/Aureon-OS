@@ -45,7 +45,142 @@ if sys.platform == 'win32':
 
 import time
 import argparse
+import json
+import math
+from collections.abc import Callable, Mapping
 from datetime import datetime, timedelta
+from decimal import Decimal, InvalidOperation
+from typing import Any
+
+
+def _profit_sell_hold(reason: str, *, symbol: str = "") -> dict[str, Any]:
+    """Return a non-authoritative refusal for an unseated profit exit."""
+
+    return {
+        "schema": "aureon.queen-profit-dashboard-sell.v1",
+        "status": "HOLD",
+        "data_status": "no_data",
+        "truth_status": "no_data",
+        "reason": reason,
+        "exchange": "kraken",
+        "symbol": str(symbol or "").upper(),
+        "generated_values": False,
+        "actionable": False,
+        "action_eligible": False,
+        "accounting_eligible": False,
+        "learning_eligible": False,
+        "economic_mutation": False,
+    }
+
+
+def _canonical_dashboard_symbol(value: Any) -> str:
+    symbol = str(value or "").upper().replace("/", "").replace("-", "")
+    if symbol.startswith("XBT"):
+        symbol = "BTC" + symbol[3:]
+    if symbol.startswith("XDG"):
+        symbol = "DOGE" + symbol[3:]
+    return symbol
+
+
+def execute_governed_profit_sell(
+    *,
+    mutation_client: object | None,
+    unity_plan_supplier: Callable[[str, float], object] | None,
+    symbol: str,
+    quantity: float,
+) -> dict[str, Any]:
+    """Submit one Kraken profit exit through the canonical unity boundary."""
+
+    try:
+        quantity_value = float(quantity)
+    except (TypeError, ValueError):
+        return _profit_sell_hold("positive_finite_profit_exit_quantity_required", symbol=symbol)
+    if not math.isfinite(quantity_value) or quantity_value <= 0.0:
+        return _profit_sell_hold("positive_finite_profit_exit_quantity_required", symbol=symbol)
+    canonical_symbol = _canonical_dashboard_symbol(symbol)
+    if not canonical_symbol:
+        return _profit_sell_hold("canonical_profit_exit_symbol_required", symbol=symbol)
+
+    try:
+        from aureon.governance.legacy_unity_composition import LegacyUnityIntentPlan
+        from aureon.trading.unified_exchange_client import MultiExchangeClient
+    except Exception:
+        return _profit_sell_hold("canonical_profit_exit_runtime_unavailable", symbol=symbol)
+    if not isinstance(mutation_client, MultiExchangeClient):
+        return _profit_sell_hold("canonical_profit_exit_client_required", symbol=symbol)
+    if not callable(unity_plan_supplier):
+        return _profit_sell_hold("trusted_profit_exit_plan_supplier_required", symbol=symbol)
+
+    try:
+        plan = unity_plan_supplier(symbol, quantity_value)
+    except Exception:
+        return _profit_sell_hold("trusted_profit_exit_plan_resolution_failed", symbol=symbol)
+    if not isinstance(plan, LegacyUnityIntentPlan):
+        return _profit_sell_hold("canonical_profit_exit_plan_required", symbol=symbol)
+
+    try:
+        plan_quantity = Decimal(str(plan.quantity))
+        observed_exposure = Decimal(str(plan.observed_exposure_quantity))
+        requested_quantity = Decimal(str(quantity_value))
+        body = json.loads(plan.body_json)
+        body_volume = Decimal(str(body.get("volume")))
+    except (InvalidOperation, TypeError, ValueError, json.JSONDecodeError):
+        return _profit_sell_hold("canonical_profit_exit_plan_mismatch", symbol=symbol)
+    required_bindings = {
+        "order_type": "/ordertype",
+        "quantity": "/volume",
+        "side": "/type",
+        "symbol": "/pair",
+    }
+    if (
+        plan.venue != "kraken"
+        or plan.method != "POST"
+        or plan.path != "/0/private/AddOrder"
+        or plan.operation != "MARKET_ORDER"
+        or plan.purpose not in {"EXIT", "CONTAINMENT"}
+        or plan.side != "SELL"
+        or plan.order_type != "MARKET"
+        or plan.reduce_only is not True
+        or plan.quote_quantity is not None
+        or plan.position_side != "LONG"
+        or not plan.entry_receipt_id
+        or plan_quantity != requested_quantity
+        or observed_exposure < requested_quantity
+        or not isinstance(body, Mapping)
+        or _canonical_dashboard_symbol(body.get("pair")) != canonical_symbol
+        or str(body.get("type") or "").upper() != "SELL"
+        or str(body.get("ordertype") or "").upper() != "MARKET"
+        or body_volume != requested_quantity
+        or dict(plan.body_bindings) != required_bindings
+    ):
+        return _profit_sell_hold("canonical_profit_exit_plan_mismatch", symbol=symbol)
+
+    try:
+        result = mutation_client.place_market_order(
+            "kraken",
+            symbol,
+            "sell",
+            quantity=quantity_value,
+            unity_plan=plan,
+        )
+    except Exception:
+        return _profit_sell_hold("canonical_profit_exit_submission_failed", symbol=symbol)
+    if not isinstance(result, Mapping):
+        return _profit_sell_hold("canonical_profit_exit_receipt_required", symbol=symbol)
+    return dict(result)
+
+
+def _governed_profit_sell_submitted(result: Any) -> bool:
+    if not isinstance(result, Mapping):
+        return False
+    unity = result.get("aureon_legacy_unity_receipt")
+    return (
+        isinstance(unity, Mapping)
+        and unity.get("status") == "EXECUTED"
+        and result.get("submitted") is True
+        and not result.get("error")
+        and result.get("rejected") is not True
+    )
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # 📊 PROGRESS BAR HELPERS
@@ -106,7 +241,13 @@ def clear_screen():
 # 👑💰 MAIN DASHBOARD
 # ═══════════════════════════════════════════════════════════════════════════════
 
-def run_dashboard(auto_sell: bool = False, refresh_interval: float = 5.0):
+def run_dashboard(
+    auto_sell: bool = False,
+    refresh_interval: float = 5.0,
+    *,
+    mutation_client: object | None = None,
+    unity_plan_supplier: Callable[[str, float], object] | None = None,
+):
     """Run the live profit dashboard."""
 
     print("\n" + "=" * 70)
@@ -155,6 +296,8 @@ def run_dashboard(auto_sell: bool = False, refresh_interval: float = 5.0):
     print("\n" + "-" * 70)
     print("  Starting live monitoring... (Ctrl+C to exit)")
     print("-" * 70)
+    if auto_sell and (mutation_client is None or unity_plan_supplier is None):
+        print("  AUTO-SELL HOLD: canonical 10-9-1/Council/Crown composition required")
     time.sleep(2)
 
     while True:
@@ -275,13 +418,13 @@ def run_dashboard(auto_sell: bool = False, refresh_interval: float = 5.0):
                     if auto_sell and is_win and net_pnl >= 0.01:
                         print(f"\n  🔔 AUTO-SELL TRIGGERED: {symbol}")
                         try:
-                            # Execute sell
-                            result = kraken.place_market_order(
+                            result = execute_governed_profit_sell(
+                                mutation_client=mutation_client,
+                                unity_plan_supplier=unity_plan_supplier,
                                 symbol=symbol,
-                                side='sell',
-                                qty=qty
+                                quantity=qty,
                             )
-                            if result and not result.get('error'):
+                            if _governed_profit_sell_submitted(result):
                                 realized_profits += net_pnl
                                 sells_executed.append({
                                     'symbol': symbol,

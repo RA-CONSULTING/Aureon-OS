@@ -66,7 +66,7 @@ import time
 import signal
 import logging
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 from enum import Enum
 import json
 
@@ -121,6 +121,9 @@ logger = logging.getLogger('aureon_full_autonomous')
 PHI = (1 + 5**0.5) / 2  # Golden Ratio 1.618
 SCHUMANN = 7.83  # Hz - Earth's heartbeat
 LOVE_FREQ = 528  # Hz - DNA repair/transformation
+
+VALIDATION_RECEIPT_MAX_AGE_SECONDS = 30.0
+VALIDATION_RECEIPT_FUTURE_SKEW_SECONDS = 2.0
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SYSTEM STATE TRACKING
@@ -610,6 +613,307 @@ class QueenFullAutonomous:
         loop.status = SystemStatus.STOPPED
         logger.info("🔭 Scanner Loop: STOPPED")
     
+    @staticmethod
+    def _validation_no_data(reason: str) -> Dict[str, Any]:
+        """Return a numeric-free validation miss without creating system state."""
+        return {
+            "data_status": "no_data",
+            "truth_status": "no_data",
+            "reason": str(reason),
+            "receipt_id": None,
+            "input_receipt_ids": [],
+        }
+
+    @staticmethod
+    def _validation_number(
+        value: Any,
+        *,
+        positive: bool = False,
+        nonnegative: bool = False,
+    ) -> Optional[float]:
+        import math
+
+        if isinstance(value, bool):
+            return None
+        try:
+            number = float(value)
+        except (TypeError, ValueError, OverflowError):
+            return None
+        if not math.isfinite(number):
+            return None
+        if positive and number <= 0.0:
+            return None
+        if nonnegative and number < 0.0:
+            return None
+        return number
+
+    @classmethod
+    def _fresh_validation_receipt(
+        cls,
+        receipt: Any,
+        *,
+        now: float,
+        expected_type: str,
+        expected_truth: str,
+        expected_symbol: str,
+        expected_input_ids: set,
+        expected_validator: Optional[str] = None,
+        require_open_gate: bool = False,
+    ) -> Optional[Dict[str, Any]]:
+        """Validate one explicit receipt without substituting missing values."""
+        if not isinstance(receipt, dict):
+            return None
+
+        receipt_id = str(receipt.get("receipt_id") or "").strip()
+        source_id = str(receipt.get("source_id") or "").strip()
+        receipt_type = str(receipt.get("receipt_type") or "").strip().lower()
+        symbol = str(receipt.get("symbol") or "").strip().upper()
+        source_timestamp = cls._validation_number(
+            receipt.get("source_timestamp"), positive=True
+        )
+        received_at = cls._validation_number(
+            receipt.get("received_at"), positive=True
+        )
+        freshness_ttl = cls._validation_number(
+            receipt.get("freshness_ttl_sec"), positive=True
+        )
+        raw_links = receipt.get("input_receipt_ids")
+        if not isinstance(raw_links, (list, tuple)):
+            return None
+        input_ids = [str(value).strip() for value in raw_links]
+
+        if (
+            not receipt_id
+            or not source_id
+            or receipt_type != expected_type
+            or str(receipt.get("truth_status") or "").strip().lower()
+            != expected_truth
+            or receipt.get("data_status") != "real"
+            or receipt.get("generated_values") is not False
+            or receipt.get("eligible_for_action") is not True
+            or receipt.get("eligible_for_accounting") is not False
+            or receipt.get("eligible_for_learning") is not True
+            or symbol != expected_symbol
+            or source_timestamp is None
+            or received_at is None
+            or freshness_ttl is None
+            or any(not value for value in input_ids)
+            or len(input_ids) != len(set(input_ids))
+            or set(input_ids) != expected_input_ids
+            or source_timestamp
+            > received_at + VALIDATION_RECEIPT_FUTURE_SKEW_SECONDS
+            or received_at
+            > now + VALIDATION_RECEIPT_FUTURE_SKEW_SECONDS
+            or source_timestamp
+            > now + VALIDATION_RECEIPT_FUTURE_SKEW_SECONDS
+            or now - source_timestamp
+            > min(freshness_ttl, VALIDATION_RECEIPT_MAX_AGE_SECONDS)
+            or now - received_at
+            > min(freshness_ttl, VALIDATION_RECEIPT_MAX_AGE_SECONDS)
+            or (require_open_gate and receipt.get("gate_open") is not True)
+            or (
+                expected_validator is not None
+                and str(receipt.get("validator") or "").strip().lower()
+                != expected_validator
+            )
+        ):
+            return None
+
+        validated = dict(receipt)
+        validated["source_timestamp"] = source_timestamp
+        validated["received_at"] = received_at
+        validated["freshness_ttl_sec"] = freshness_ttl
+        validated["input_receipt_ids"] = input_ids
+        return validated
+
+    def _build_validation_result(
+        self,
+        opportunity: Any,
+        *,
+        now: Optional[float] = None,
+    ) -> Dict[str, Any]:
+        """Build one receipt-gated Batten result or numeric-free ``no_data``."""
+        import hashlib
+        import math
+
+        current_time = self._validation_number(
+            time.time() if now is None else now,
+            positive=True,
+        )
+        if current_time is None or not isinstance(opportunity, dict):
+            return self._validation_no_data("valid_opportunity_required")
+        data = opportunity.get("data")
+        if not isinstance(data, dict):
+            return self._validation_no_data("observed_opportunity_receipt_required")
+        symbol = str(data.get("symbol") or "").strip().upper()
+        if not symbol:
+            return self._validation_no_data("opportunity_symbol_required")
+
+        observed = self._fresh_validation_receipt(
+            data,
+            now=current_time,
+            expected_type="market_opportunity",
+            expected_truth="real_observed",
+            expected_symbol=symbol,
+            expected_input_ids=set(),
+        )
+        if observed is None:
+            return self._validation_no_data("fresh_observed_opportunity_receipt_required")
+        observed_id = str(observed["receipt_id"])
+        drift = self._validation_number(observed.get("drift"), nonnegative=True)
+        if drift is None:
+            return self._validation_no_data("observed_price_drift_required")
+
+        hnc = self._fresh_validation_receipt(
+            data.get("hnc_receipt"),
+            now=current_time,
+            expected_type="hnc_coherence",
+            expected_truth="real_derived",
+            expected_symbol=symbol,
+            expected_input_ids={observed_id},
+            require_open_gate=True,
+        )
+        if hnc is None:
+            return self._validation_no_data("fresh_linked_hnc_receipt_required")
+        hnc_id = str(hnc["receipt_id"])
+        if (
+            hnc["source_timestamp"] < observed["source_timestamp"]
+            or hnc["received_at"] < observed["received_at"]
+        ):
+            return self._validation_no_data("monotonic_hnc_receipt_required")
+
+        auris = self._fresh_validation_receipt(
+            data.get("auris_receipt"),
+            now=current_time,
+            expected_type="auris_coherence",
+            expected_truth="real_derived",
+            expected_symbol=symbol,
+            expected_input_ids={observed_id, hnc_id},
+            require_open_gate=True,
+        )
+        if auris is None:
+            return self._validation_no_data("fresh_linked_auris_receipt_required")
+        auris_id = str(auris["receipt_id"])
+        if (
+            str(auris.get("hnc_receipt_id") or "").strip() != hnc_id
+            or auris["source_timestamp"] < hnc["source_timestamp"]
+            or auris["received_at"] < hnc["received_at"]
+        ):
+            return self._validation_no_data("monotonic_auris_hnc_link_required")
+
+        validator_specs = (
+            ("miner_brain", self._miner_brain, "validate", (data,)),
+            ("mycelium", self._mycelium, "get_consensus", (symbol,)),
+            (
+                "intelligence_engine",
+                self._intelligence_engine,
+                "validate_opportunity",
+                (data,),
+            ),
+        )
+        if any(
+            component is None or not callable(getattr(component, method_name, None))
+            for _, component, method_name, _ in validator_specs
+        ):
+            return self._validation_no_data("three_receipt_validators_required")
+
+        required_links = {observed_id, hnc_id, auris_id}
+        passes: List[float] = []
+        validator_receipts: List[Dict[str, Any]] = []
+        for validator_name, component, method_name, args in validator_specs:
+            raw_receipt = getattr(component, method_name)(*args)
+            validator = self._fresh_validation_receipt(
+                raw_receipt,
+                now=current_time,
+                expected_type="validator_score",
+                expected_truth="real_derived",
+                expected_symbol=symbol,
+                expected_input_ids=required_links,
+                expected_validator=validator_name,
+            )
+            if validator is None:
+                return self._validation_no_data(
+                    f"fresh_linked_{validator_name}_receipt_required"
+                )
+            if (
+                validator["source_timestamp"] < auris["source_timestamp"]
+                or validator["received_at"] < auris["received_at"]
+            ):
+                return self._validation_no_data(
+                    f"monotonic_{validator_name}_receipt_required"
+                )
+            score = self._validation_number(validator.get("score"), nonnegative=True)
+            if score is None or score > 1.0:
+                return self._validation_no_data(
+                    f"bounded_{validator_name}_score_required"
+                )
+            passes.append(score)
+            validator_receipts.append(validator)
+
+        validator_ids = [str(receipt["receipt_id"]) for receipt in validator_receipts]
+        if len(set(validator_ids)) != len(validator_ids):
+            return self._validation_no_data("distinct_validator_receipts_required")
+
+        coherence = 1 - (max(passes) - min(passes))
+        lambda_val = math.exp(-0.5 * drift)
+        ready_for_fourth = coherence > 0.618 and lambda_val > 0.8
+        input_receipt_ids = [observed_id, hnc_id, auris_id, *validator_ids]
+        result_payload = {
+            "symbol": symbol,
+            "passes": passes,
+            "coherence": coherence,
+            "lambda": lambda_val,
+            "4th_ready": ready_for_fourth,
+            "input_receipt_ids": input_receipt_ids,
+        }
+        receipt_id = "full-autonomous-validation:" + hashlib.sha256(
+            json.dumps(
+                result_payload,
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode("utf-8")
+        ).hexdigest()
+        return {
+            **result_payload,
+            "data_status": "real",
+            "truth_status": "real_derived",
+            "generated_values": False,
+            "receipt_type": "autonomous_validation",
+            "receipt_id": receipt_id,
+            "source_id": "aureon:full-autonomous-validation:v1",
+            "source_timestamp": max(
+                receipt["source_timestamp"] for receipt in validator_receipts
+            ),
+            "received_at": current_time,
+            "freshness_ttl_sec": min(
+                receipt["freshness_ttl_sec"]
+                for receipt in (observed, hnc, auris, *validator_receipts)
+            ),
+            "eligible_for_action": ready_for_fourth,
+            "eligible_for_accounting": False,
+            "eligible_for_learning": True,
+        }
+
+    def _run_validation_cycle(self, *, now: Optional[float] = None) -> None:
+        """Evaluate one pending batch; only complete real chains reach the bus."""
+        current_time = self._validation_number(
+            time.time() if now is None else now,
+            positive=True,
+        )
+        if current_time is None or self._thought_bus is None:
+            return
+        pending = self._intel_state.get("opportunities")
+        if not isinstance(pending, list):
+            return
+        for opportunity in pending[-20:]:
+            result = self._build_validation_result(opportunity, now=current_time)
+            if result.get("data_status") != "real":
+                continue
+            self._thought_bus.think(
+                json.dumps(result),
+                topic="validation.complete",
+            )
+
     def _run_validation_loop(self):
         """
         Continuous validation loop (3-pass Batten Matrix).
@@ -621,67 +925,7 @@ class QueenFullAutonomous:
         
         while not self._shutdown_event.is_set():
             try:
-                # Get pending opportunities to validate
-                pending = self._intel_state['opportunities'][-20:]
-                
-                for opp in pending:
-                    if time.time() - opp.get('timestamp', 0) > 30:
-                        continue  # Skip stale opportunities
-                    
-                    symbol = opp.get('data', {}).get('symbol', '')
-                    if not symbol:
-                        continue
-                    
-                    # Run 3-pass validation
-                    passes = []
-                    
-                    # Pass 1: Miner Brain validation
-                    if self._miner_brain and hasattr(self._miner_brain, 'validate'):
-                        p1 = self._miner_brain.validate(opp.get('data', {}))
-                        passes.append(p1 if isinstance(p1, (int, float)) else 0.5)
-                    else:
-                        passes.append(0.5)
-                    
-                    # Pass 2: Mycelium consensus
-                    if self._mycelium and hasattr(self._mycelium, 'get_consensus'):
-                        p2 = self._mycelium.get_consensus(symbol)
-                        passes.append(p2 if isinstance(p2, (int, float)) else 0.5)
-                    else:
-                        passes.append(0.5)
-                    
-                    # Pass 3: Intelligence engine
-                    if self._intelligence_engine and hasattr(self._intelligence_engine, 'validate_opportunity'):
-                        p3 = self._intelligence_engine.validate_opportunity(opp.get('data', {}))
-                        passes.append(p3 if isinstance(p3, (int, float)) else 0.5)
-                    else:
-                        passes.append(0.5)
-                    
-                    # Calculate coherence (agreement across validators)
-                    coherence = 1 - (max(passes) - min(passes)) if passes else 0
-                    
-                    # Calculate lambda stability
-                    import math
-                    drift = 0.1  # Placeholder - would calculate from price drift
-                    lambda_val = math.exp(-0.5 * drift)
-                    
-                    # Publish validation result
-                    if self._thought_bus:
-                        validation_data = {
-                            'symbol': symbol,
-                            'passes': passes,
-                            'coherence': coherence,
-                            'lambda': lambda_val,
-                            '4th_ready': coherence > 0.618 and lambda_val > 0.8
-                        }
-                        self._thought_bus.think(
-                            json.dumps(validation_data),
-                            topic='validation.complete'
-                        )
-                        
-                        # If 4th pass ready, this contributes to goal confidence
-                        if validation_data['4th_ready'] and self._goal_tracker:
-                            # Track validation quality (not money, but system health)
-                            pass  # Validations don't directly contribute money
+                self._run_validation_cycle()
                 
                 loop.last_cycle = time.time()
                 loop.cycle_count += 1

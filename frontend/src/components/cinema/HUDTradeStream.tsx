@@ -124,7 +124,7 @@ export function HUDTradeStream({ recentTrades = [] }: HUDTradeStreamProps) {
                   >
                     {isBuy ? 'BUY' : 'SELL'}
                   </div>
-                  <div className={`text-[10px] ${trade.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                  <div className={`text-[10px] ${trade.pnl >= 0 ? 'text-success' : 'text-destructive'}`}>
                     {trade.pnl >= 0 ? '+' : ''}{trade.pnl.toFixed(2)}
                   </div>
                 </div>

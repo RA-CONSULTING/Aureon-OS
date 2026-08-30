@@ -122,18 +122,18 @@ export const CoherenceForecaster = () => {
 
   const getConfidenceColor = (confidence: string) => {
     switch (confidence.toLowerCase()) {
-      case 'high': return 'text-green-500';
-      case 'medium': return 'text-yellow-500';
-      case 'low': return 'text-orange-500';
+      case 'high': return 'text-success';
+      case 'medium': return 'text-warning';
+      case 'low': return 'text-warning';
       default: return 'text-muted-foreground';
     }
   };
 
   const getTrendIcon = (trend: string) => {
     switch (trend.toLowerCase()) {
-      case 'improving': return <TrendingUp className="h-4 w-4 text-green-500" />;
-      case 'stable': return <CheckCircle2 className="h-4 w-4 text-blue-500" />;
-      case 'declining': return <AlertTriangle className="h-4 w-4 text-orange-500" />;
+      case 'improving': return <TrendingUp className="h-4 w-4 text-success" />;
+      case 'stable': return <CheckCircle2 className="h-4 w-4 text-primary" />;
+      case 'declining': return <AlertTriangle className="h-4 w-4 text-warning" />;
       default: return null;
     }
   };
@@ -172,10 +172,10 @@ export const CoherenceForecaster = () => {
       </CardHeader>
       <CardContent className="space-y-6">
         {error && !forecastData && (
-          <Card className="bg-yellow-500/10 border-yellow-500/20">
+          <Card className="bg-warning/10 border-warning/20">
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
-                <AlertTriangle className="h-5 w-5 text-yellow-500 mt-0.5" />
+                <AlertTriangle className="h-5 w-5 text-warning mt-0.5" />
                 <div>
                   <h4 className="font-semibold text-sm mb-1">Insufficient Data</h4>
                   <p className="text-xs text-muted-foreground">{error}</p>
@@ -264,7 +264,7 @@ export const CoherenceForecaster = () => {
                   return (
                     <Card 
                       key={dayName} 
-                      className={`${isOptimal ? 'bg-green-500/10 border-green-500/20' : isHigh ? 'bg-yellow-500/10 border-yellow-500/20' : 'bg-background/50'}`}
+                      className={`${isOptimal ? 'bg-success/10 border-success/20' : isHigh ? 'bg-warning/10 border-warning/20' : 'bg-background/50'}`}
                     >
                       <CardContent className="p-4">
                         <div className="space-y-3">
@@ -278,7 +278,7 @@ export const CoherenceForecaster = () => {
                             </div>
                             <div className="text-right">
                               <p className="text-xs text-muted-foreground">Predicted C(t)</p>
-                              <p className={`text-xl font-bold ${isOptimal ? 'text-green-500' : 'text-yellow-500'}`}>
+                              <p className={`text-xl font-bold ${isOptimal ? 'text-success' : 'text-warning'}`}>
                                 {dayForecast.predictedCoherence.toFixed(3)}
                               </p>
                             </div>
@@ -326,13 +326,13 @@ export const CoherenceForecaster = () => {
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+                    <div className="p-3 rounded-lg bg-success/10 border border-success/20">
                       <p className="text-xs text-muted-foreground mb-1">Best Day</p>
-                      <p className="text-lg font-bold text-green-500">{forecastData.trends.bestDay}</p>
+                      <p className="text-lg font-bold text-success">{forecastData.trends.bestDay}</p>
                     </div>
-                    <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+                    <div className="p-3 rounded-lg bg-success/10 border border-success/20">
                       <p className="text-xs text-muted-foreground mb-1">Peak Coherence</p>
-                      <p className="text-lg font-bold text-green-500">{forecastData.trends.peakCoherence.toFixed(3)}</p>
+                      <p className="text-lg font-bold text-success">{forecastData.trends.peakCoherence.toFixed(3)}</p>
                     </div>
                   </div>
 
@@ -349,7 +349,7 @@ export const CoherenceForecaster = () => {
                 <Card key={idx} className="bg-background/50">
                   <CardContent className="p-4">
                     <div className="flex items-start gap-3">
-                      <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5" />
+                      <CheckCircle2 className="h-5 w-5 text-success mt-0.5" />
                       <p className="text-sm">{rec}</p>
                     </div>
                   </CardContent>

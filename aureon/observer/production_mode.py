@@ -201,3 +201,25 @@ def vote_addition_active() -> bool:
     audit log is diagnostic only.
     """
     return is_live()
+
+
+def phase_veto_active() -> bool:
+    """Should the SignalGate's phase-transition check actually block
+    entries (PHASE_CRITICAL / high curvature), or just record what it
+    would have done?
+
+    The check itself had never executed before the P1 repair (it called
+    methods the detector doesn't have), so arming it everywhere at once
+    would be an untested behaviour change on live paths. Same contract
+    as the other decision helpers: True only in LIVE; DRY_RUN and
+    SHADOW audit ``would_have_blocked`` and allow.
+    """
+    return is_live()
+
+
+def volatility_veto_active() -> bool:
+    """Should the SignalGate's volatility-sentinel check actually block
+    entries when predicted volatility risk crosses VOL_RISK_BLOCK, or
+    just record? True only in LIVE (b46: the prediction can only ever
+    tighten, and only once the operator runs live)."""
+    return is_live()

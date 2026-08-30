@@ -59,6 +59,19 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+
+def _finite_provider_number(value, *, positive=False):
+    """Accept an observed provider number only; never substitute a default."""
+    if value is None or isinstance(value, bool):
+        return None
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    if not math.isfinite(number) or (positive and number <= 0):
+        return None
+    return number
+
 # ═══════════════════════════════════════════════════════════════════════════
 # CONFIGURATION
 # ═══════════════════════════════════════════════════════════════════════════
@@ -418,9 +431,12 @@ class AureonBTCv2:
         except Exception as e:
             logger.error(f"❌ Ticker update: {e}")
     
-    def get_btc_price(self) -> float:
-        ticker = self.ticker_cache.get('BTCUSDT', {})
-        return float(ticker.get('lastPrice', 91000))
+    def get_btc_price(self) -> Optional[float]:
+        ticker = self.ticker_cache.get('BTCUSDT')
+        price = _finite_provider_number(ticker.get('lastPrice'), positive=True) if isinstance(ticker, dict) else None
+        if price is None:
+            logger.warning("BTC price unavailable: no complete observed ticker value")
+        return price
     
     def get_balances(self) -> Dict[str, float]:
         account = self.client.account()
@@ -438,13 +454,17 @@ class AureonBTCv2:
             if not (info.get('can_trade') and info.get('quote') == 'BTC' and info.get('status') == 'TRADING'):
                 continue
             
-            ticker = self.ticker_cache.get(symbol, {})
+            ticker = self.ticker_cache.get(symbol)
             try:
-                change = float(ticker.get('priceChangePercent', 0))
-                volume = float(ticker.get('quoteVolume', 0))
-                high = float(ticker.get('highPrice', 0))
-                low = float(ticker.get('lowPrice', 0))
-                price = float(ticker.get('lastPrice', 0))
+                if not isinstance(ticker, dict):
+                    continue
+                change = _finite_provider_number(ticker.get('priceChangePercent'))
+                volume = _finite_provider_number(ticker.get('quoteVolume'), positive=True)
+                high = _finite_provider_number(ticker.get('highPrice'), positive=True)
+                low = _finite_provider_number(ticker.get('lowPrice'), positive=True)
+                price = _finite_provider_number(ticker.get('lastPrice'), positive=True)
+                if None in (change, volume, high, low, price):
+                    continue
                 
                 if volume < 1.0 or price <= 0:  # Need at least 1 BTC volume
                     continue
@@ -541,6 +561,8 @@ class AureonBTCv2:
             return False
         
         btc_price = self.get_btc_price()
+        if btc_price is None:
+            return False
         usd_value = size_btc * btc_price
         
         logger.info(f"""
@@ -588,13 +610,15 @@ class AureonBTCv2:
     def check_exits(self):
         """Check positions for TP/SL using penny profit"""
         btc_price = self.get_btc_price()
+        if btc_price is None:
+            return
         
         for symbol in list(self.positions.keys()):
             pos = self.positions[symbol]
-            ticker = self.ticker_cache.get(symbol, {})
-            price = float(ticker.get('lastPrice', 0))
+            ticker = self.ticker_cache.get(symbol)
+            price = _finite_provider_number(ticker.get('lastPrice'), positive=True) if isinstance(ticker, dict) else None
             
-            if price <= 0:
+            if price is None:
                 continue
             
             # Track cycles for min hold time

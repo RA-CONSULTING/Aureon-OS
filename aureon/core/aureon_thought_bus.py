@@ -361,18 +361,9 @@ class ThoughtBus:
         if self._persist_path:
             os.makedirs(os.path.dirname(self._persist_path) or ".", exist_ok=True)
             
-        # Auto-wire Whale Sonar for normal runtime, but keep audit probes inert.
-        if os.getenv("AUREON_AUDIT_MODE", "").strip().lower() not in {"1", "true", "yes", "on"}:
-            try:
-                from aureon.core.mycelium_whale_sonar import ensure_sonar
-                try:
-                    ensure_sonar(self)
-                except Exception:
-                    # E.g. circular import or missing dependency during startup; proceed anyway.
-                    pass
-            except ImportError:
-                # Mycelium sonar module might not be present in all environments
-                pass
+        # Background services are lifecycle-managed by explicit launchers.
+        # Constructing or importing a ThoughtBus must remain side-effect free;
+        # master_launcher and parallel_orchestrator start WhaleSonar explicitly.
 
     def think(self, message: str, topic: str = "thought", priority: str = "normal", metadata: Dict = None) -> Thought:
         """Convenience method to publish a thought"""
@@ -396,6 +387,22 @@ class ThoughtBus:
         """
         with self._lock:
             self._subs.setdefault(topic, []).append(handler)
+
+    def unsubscribe(self, topic: str, handler: Subscriber) -> bool:
+        """Remove one handler from ``topic``; True when it was there.
+
+        Subscribing had no counterpart, so a short-lived observer — the MCP boundary's
+        publish watch, a test probe — had to leak its handler for the process's life or
+        reach into ``_subs``. Idempotent: removing an absent handler is False, not an error.
+        """
+        with self._lock:
+            handlers = self._subs.get(topic)
+            if not handlers or handler not in handlers:
+                return False
+            handlers.remove(handler)
+            if not handlers:
+                self._subs.pop(topic, None)
+            return True
 
     def list_subscribed_topics(self) -> List[str]:
         """Return the topic patterns that currently have at least one
@@ -563,8 +570,9 @@ def get_thought_bus(persist_path: Optional[str] = None) -> ThoughtBus:
     """Get or create the global ThoughtBus instance."""
     global _thought_bus_instance
     if _thought_bus_instance is None:
+        default_path = os.getenv("AUREON_THOUGHT_BUS_PATH") or "thoughts.jsonl"
         _thought_bus_instance = ThoughtBus(
-            persist_path=persist_path or "thoughts.jsonl"
+            persist_path=persist_path or default_path
         )
     return _thought_bus_instance
 

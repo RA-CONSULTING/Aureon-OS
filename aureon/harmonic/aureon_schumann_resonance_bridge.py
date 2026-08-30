@@ -61,6 +61,8 @@ class SchumannReading:
     resonance_phase: str  # stable, elevated, peak, disturbed
     active_sources: list  # Which stations are active
     earth_disturbance_level: float  # 0=calm to 1=very disturbed
+    truth_status: str = 'live'
+    source_timestamp: str = ''
     
     def to_dict(self) -> Dict:
         return {
@@ -73,6 +75,9 @@ class SchumannReading:
             'resonance_phase': self.resonance_phase,
             'active_sources': self.active_sources,
             'earth_disturbance_level': self.earth_disturbance_level,
+            'truth_status': self.truth_status,
+            'source_timestamp': self.source_timestamp,
+            'generated_values': False,
         }
 
 class SchumannResonanceBridge:
@@ -93,10 +98,9 @@ class SchumannResonanceBridge:
         }
         logger.info("🌍📡 Schumann Resonance Bridge initialized")
     
-    def get_live_data(self, force_refresh: bool = False) -> SchumannReading:
+    def get_live_data(self, force_refresh: bool = False) -> Optional[SchumannReading]:
         """
-        Get LIVE Schumann resonance data from Barcelona station
-        Falls back to simulation if stations unavailable.
+        Get direct or explicitly real-derived Schumann data.
         """
         now = time.time()
         
@@ -108,10 +112,12 @@ class SchumannResonanceBridge:
         active_sources = []
         fundamental = None
         harmonics = {}
-        amplitude = 0.65
-        quality = 0.70
-        coherence_boost = 0.0
-        earth_disturbance = 0.3
+        amplitude = None
+        quality = None
+        coherence_boost = None
+        earth_disturbance = None
+        source_timestamp = ''
+        truth_status = 'live'
         
         # 1️⃣ Try Barcelona station data
         barcelona_data = self._fetch_barcelona_data()
@@ -122,6 +128,7 @@ class SchumannResonanceBridge:
             quality = barcelona_data['quality']
             coherence_boost = barcelona_data['coherence_boost']
             earth_disturbance = barcelona_data['disturbance']
+            source_timestamp = str(barcelona_data['source_timestamp'])
             active_sources.append('Barcelona-EM')
             logger.debug(f"✅ Barcelona: {fundamental:.3f}Hz, Q={quality:.2f}, Phase={barcelona_data['phase']}")
         
@@ -133,7 +140,9 @@ class SchumannResonanceBridge:
                 harmonics = usgs_data['harmonics']
                 amplitude = usgs_data['amplitude']
                 quality = usgs_data['quality']
+                coherence_boost = usgs_data['coherence_boost']
                 earth_disturbance = usgs_data['disturbance']
+                source_timestamp = str(usgs_data['source_timestamp'])
                 active_sources.append('USGS-Magnetometer')
                 logger.debug(f"✅ USGS: {fundamental:.3f}Hz, Disturbance={earth_disturbance:.0%}")
         
@@ -152,34 +161,28 @@ class SchumannResonanceBridge:
                 quality = noaa_data['quality']
                 coherence_boost = noaa_data['coherence_boost']
                 earth_disturbance = noaa_data['disturbance']
+                source_timestamp = str(noaa_data['source_timestamp'])
+                truth_status = 'real_derived'
                 active_sources.append('NOAA-Kp-Derived')
                 logger.debug(
                     "NOAA Kp derived Schumann: %.3fHz, Disturbance=%.0f%%",
                     fundamental, earth_disturbance,
                 )
 
-        if not fundamental:
-            from aureon.observer.live_data_policy import (
-                simulation_fallback_allowed, log_blocked_fallback,
-            )
-            if simulation_fallback_allowed():
-                sim_data = self._simulate_schumann()
-                fundamental = sim_data['fundamental']
-                harmonics = sim_data['harmonics']
-                amplitude = sim_data['amplitude']
-                quality = sim_data['quality']
-                coherence_boost = sim_data['coherence_boost']
-                earth_disturbance = sim_data['disturbance']
-                active_sources.append('Simulation')
-                logger.debug(f"📊 Simulation: {fundamental:.3f}Hz (using diurnal patterns)")
-            else:
-                log_blocked_fallback("schumann_resonance_bridge",
-                                     "no_live_source_available")
-                # Return the cached reading if it's still in the cache
-                # window (stale-but-real beats synthetic), else None.
-                if self.cache is not None:
-                    return self.cache
-                return None  # type: ignore[return-value]
+        if fundamental is None or any(value is None for value in (amplitude, quality, coherence_boost, earth_disturbance)):
+            logger.warning("Schumann sources unavailable; no reading emitted")
+            return None
+        try:
+            normalized_timestamp = source_timestamp[:-1] + '+00:00' if source_timestamp.endswith('Z') else source_timestamp
+            source_dt = datetime.fromisoformat(normalized_timestamp)
+            if source_dt.tzinfo is None:
+                source_dt = source_dt.replace(tzinfo=timezone.utc)
+            source_age = now - source_dt.timestamp()
+            if source_age < -300 or source_age > 20 * 60:
+                raise ValueError(f'source age {source_age:.0f}s')
+        except Exception as exc:
+            logger.warning("Schumann source timestamp missing or stale: %s", exc)
+            return None
         
         # Categorize resonance phase
         resonance_phase = self._categorize_phase(amplitude, quality, earth_disturbance)
@@ -195,6 +198,8 @@ class SchumannResonanceBridge:
             resonance_phase=resonance_phase,
             active_sources=active_sources,
             earth_disturbance_level=earth_disturbance,
+            truth_status=truth_status,
+            source_timestamp=source_timestamp,
         )
         
         # Cache and return
@@ -243,7 +248,9 @@ class SchumannResonanceBridge:
                     },
                     'amplitude': 0.65 * coherence,
                     'quality': 0.70 * coherence,
+                    'coherence_boost': max(0.0, (coherence - 0.5) * 0.1),
                     'disturbance': disturbance,
+                    'source_timestamp': str(data.get('timestamp') or data.get('time') or ''),
                 }
         except Exception as e:
             logger.debug(f"USGS fetch error: {e}")
@@ -257,9 +264,25 @@ class SchumannResonanceBridge:
         output is labelled as NOAA-Kp-Derived by ``get_live_data``.
         """
         try:
-            from aureon.data_feeds.aureon_space_weather_bridge import SpaceWeatherBridge
+            from aureon.data_feeds.aureon_space_weather_bridge import (
+                SpaceWeatherBridge,
+                get_space_weather_bridge,
+            )
 
-            kp_data = SpaceWeatherBridge()._fetch_kp_index()
+            shared_bridge = get_space_weather_bridge()
+            if isinstance(shared_bridge, SpaceWeatherBridge) and hasattr(
+                shared_bridge, "get_live_data"
+            ):
+                weather = shared_bridge.get_live_data()
+                if weather is None or "NOAA-KP" not in weather.active_sources:
+                    return None
+                kp_data = {
+                    "current_kp": weather.kp_index,
+                    "source_timestamp": weather.source_timestamps.get("NOAA-KP", ""),
+                }
+            else:
+                # Compatibility for explicitly injected legacy adapters in tests.
+                kp_data = SpaceWeatherBridge()._fetch_kp_index()
             if not kp_data:
                 return None
             kp = float(kp_data.get('current_kp'))
@@ -280,58 +303,11 @@ class SchumannResonanceBridge:
                 'quality': coherence,
                 'coherence_boost': max(0.0, (coherence - 0.5) * 0.1),
                 'disturbance': disturbance,
+                'source_timestamp': str(kp_data.get('source_timestamp') or ''),
             }
         except Exception as e:
             logger.debug(f"NOAA Kp derived Schumann fetch error: {e}")
         return None
-    
-    def _simulate_schumann(self) -> Dict:
-        """
-        Deterministic development fallback with natural diurnal variation.
-
-        This is never treated as operational telemetry; production returns
-        no-data when real station/proxy sources are unavailable.
-        """
-        now = time.time()
-        hour_utc = (now % 86400) / 3600
-        
-        # Natural diurnal variation peaks at noon UTC
-        diurnal = math.sin((hour_utc - 6) * math.pi / 12) * 0.08
-        
-        fundamental = 7.83 + diurnal
-        
-        # Build harmonics based on fundamental
-        harmonics = {
-            'mode2': 14.3 + diurnal * 2,
-            'mode3': 20.8 + diurnal * 3,
-            'mode4': 27.3 + diurnal * 4,
-            'mode5': 33.8 + diurnal * 5,
-            'mode6': 39.0 + diurnal * 6,
-            'mode7': 45.0 + diurnal * 7,
-        }
-        
-        # Amplitude follows diurnal pattern
-        base_amplitude = 0.65
-        amplitude = base_amplitude + diurnal * 0.2
-        
-        # Quality factor
-        quality = 0.70 + diurnal * 0.15
-        
-        # Earth disturbance is lower when noon (more stable)
-        earth_disturbance = 0.4 - diurnal * 0.2
-        earth_disturbance = max(0.0, min(1.0, earth_disturbance))
-        
-        # Coherence boost when aligned
-        coherence_boost = 0.1 if abs(fundamental - 7.83) < 0.05 else 0.0
-        
-        return {
-            'fundamental': fundamental,
-            'harmonics': harmonics,
-            'amplitude': amplitude,
-            'quality': quality,
-            'coherence_boost': coherence_boost,
-            'disturbance': earth_disturbance,
-        }
     
     def _categorize_phase(self, amplitude: float, quality: float, disturbance: float) -> str:
         """Categorize Schumann resonance phase"""

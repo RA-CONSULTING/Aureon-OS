@@ -110,15 +110,32 @@ def test_stats_shape():
     pump.prime()
     st = pump.stats()
     assert set(st) == {"running", "published", "routes", "high_water"}
-    assert st["routes"] == ["auris.throne.cosmic_state", "lighthouse.event"]
+    # every default route must be reported, in declaration order
+    assert st["routes"] == [r.topic for r in DEFAULT_ROUTES]
+    assert "auris.throne.cosmic_state" in st["routes"]
+    assert "lighthouse.event" in st["routes"]
 
 
-# ── the default routes are the two subscribe-based signals ────────────────────
+# ── the default routes cover the subscribe-based signals ──────────────────────
 
 def test_default_routes_cover_auris_and_lighthouse():
     names = {r.trace_name for r in DEFAULT_ROUTES}
-    assert names == {"auris_cosmic_state", "lighthouse_event"}
+    # The original two cross-process signals, plus the bio immune layer that was
+    # deliberately un-siloed onto the bus (integrity guard, swarm defense,
+    # immune memory, immune regulation — b35/b38/b39).
+    assert names == {
+        "auris_cosmic_state",
+        "lighthouse_event",
+        "integrity_guard",
+        "swarm_defense",
+        "immune_memory",
+        "immune_regulation",
+    }
     auris = next(r for r in DEFAULT_ROUTES if r.trace_name == "auris_cosmic_state")
     lh = next(r for r in DEFAULT_ROUTES if r.trace_name == "lighthouse_event")
     assert auris.seed_latest is True and lh.seed_latest is False  # state vs event
+    # bio immune runs are events, not state — never seeded from backlog
+    for r in DEFAULT_ROUTES:
+        if r.trace_name.startswith(("integrity", "swarm", "immune")):
+            assert r.seed_latest is False
     assert isinstance(auris, PumpRoute)

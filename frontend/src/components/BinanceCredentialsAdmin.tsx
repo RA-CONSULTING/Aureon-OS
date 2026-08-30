@@ -179,9 +179,9 @@ export function BinanceCredentialsAdmin() {
 
         {/* Error Alert */}
         {credentials.some(c => c.hasError) && (
-          <Alert className="bg-red-500/10 border-red-500/20">
-            <AlertCircle className="h-4 w-4 text-red-500" />
-            <AlertDescription className="text-red-500">
+          <Alert className="bg-destructive/10 border-destructive/20">
+            <AlertCircle className="h-4 w-4 text-destructive" />
+            <AlertDescription className="text-destructive">
               <strong>⚠️ Signature Errors Detected</strong> - Some credentials are failing validation.
               Update any bot below to sync new credentials to all bots.
             </AlertDescription>
@@ -204,7 +204,7 @@ export function BinanceCredentialsAdmin() {
                 key={cred.id}
                 className={`p-4 rounded-lg border transition-all ${
                   cred.hasError
-                    ? 'bg-red-500/5 border-red-500/30 hover:border-red-500/50'
+                    ? 'bg-destructive/5 border-destructive/30 hover:border-destructive/50'
                     : 'bg-muted/30 border-border/30 hover:border-primary/30'
                 }`}
               >
@@ -218,7 +218,7 @@ export function BinanceCredentialsAdmin() {
                           Invalid Signature
                         </Badge>
                       ) : cred.is_active ? (
-                        <Badge className="bg-green-500 text-xs">
+                        <Badge className="bg-success text-xs">
                           <CheckCircle2 className="h-3 w-3 mr-1" />
                           Active
                         </Badge>

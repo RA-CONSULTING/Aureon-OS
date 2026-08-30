@@ -27,7 +27,6 @@
 
 from __future__ import annotations
 
-import sys
 import os
 import math
 import json
@@ -39,16 +38,6 @@ from typing import Dict, List, Optional, Any, Tuple
 from datetime import datetime
 from pathlib import Path
 from enum import Enum, auto
-
-# UTF-8 Windows fix
-if sys.platform == 'win32':
-    os.environ['PYTHONIOENCODING'] = 'utf-8'
-    try:
-        import io
-        if hasattr(sys.stdout, 'buffer'):
-            sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
-    except Exception:
-        pass
 
 # Optional: Ocean Wave Scanner for whale detection
 try:
@@ -467,7 +456,9 @@ class QueenEternalMachine:
         state_file: str = "queen_eternal_state.json",
         exchange: str = "binance",
         fee_structure: Optional[FeeStructure] = None,
-        cost_basis_file: str = "cost_basis_history.json"
+        cost_basis_file: str = "cost_basis_history.json",
+        prediction_engine: Optional[Any] = None,
+        prediction_observation_supplier: Optional[Any] = None,
     ):
         self.breadcrumb_percent = breadcrumb_percent
         self.min_dip_advantage = min_dip_advantage
@@ -554,14 +545,10 @@ class QueenEternalMachine:
             except Exception as e:
                 logger.warning(f"⚠️ Bot Intelligence Profiler unavailable: {e}")
 
-        # 📺 LIVE TV STATION - Truth Prediction Engine
-        self.prediction_engine: Optional[TruthPredictionEngine] = None
-        if LIVE_TV_AVAILABLE:
-            try:
-                self.prediction_engine = TruthPredictionEngine()
-                logger.info("📺 LIVE TV STATION WIRED - Truth Prediction Engine active!")
-            except Exception as e:
-                logger.warning(f"⚠️ Live TV Station unavailable: {e}")
+        # Truth prediction is inert until a composition root supplies both the
+        # engine and an observation bundle carrying complete linked receipts.
+        self.prediction_engine: Optional[TruthPredictionEngine] = prediction_engine
+        self.prediction_observation_supplier = prediction_observation_supplier
 
         # ⛰️ MOUNTAIN CLIMBER - Learn Optimal Climbing Strategies
         self.mountain_climber: Optional[MountainClimber] = None
@@ -2535,28 +2522,24 @@ class QueenEternalMachine:
 
         # 📺 LIVE TV STATION - Validate Predictions & Collect Feedback
         tv_validations = []
-        if self.prediction_engine and self.main_position:
+        if self.prediction_engine and callable(self.prediction_observation_supplier):
             try:
-                # Create market snapshot for current position
-                if self.main_position.symbol in self.market_data:
-                    coin = self.market_data[self.main_position.symbol]
-                    market_snapshot = MarketSnapshot(
-                        symbol=self.main_position.symbol,
-                        price=coin.price,
-                        change_24h=coin.change_24h,
-                        volume_24h=getattr(coin, 'volume_24h', 0.0),
-                        momentum_30s=self.main_position.change_1h,
-                        volatility_30s=abs(self.main_position.change_15m),
-                        hz_frequency=7.83,
-                        timestamp=datetime.now()
-                    )
-                    # Validate any pending predictions
-                    tv_validations = self.prediction_engine.validate_predictions(market_snapshot)
-                    if tv_validations:
-                        logger.info(f"📺 LIVE TV VALIDATION: {len(tv_validations)} predictions validated")
-                        for vp in tv_validations:
-                            status = "✅ CORRECT" if vp.correct else "❌ WRONG"
-                            logger.info(f"   {vp.symbol}: Predicted {vp.predicted_direction} {vp.predicted_change_pct:+.3f}% → Actual {vp.actual_change_pct:+.3f}% {status}")
+                observation = self.prediction_observation_supplier()
+                if isinstance(observation, dict):
+                    market_snapshot = observation.get("snapshot")
+                    market_receipt = observation.get("market_receipt")
+                    observed_at = observation.get("observed_at")
+                    if isinstance(market_snapshot, MarketSnapshot):
+                        tv_validations = self.prediction_engine.validate_predictions(
+                            market_snapshot,
+                            market_receipt=market_receipt,
+                            observed_at=observed_at,
+                        )
+                if tv_validations:
+                    logger.info(f"📺 LIVE TV VALIDATION: {len(tv_validations)} predictions validated")
+                    for vp in tv_validations:
+                        status = "✅ CORRECT" if vp.correct else "❌ WRONG"
+                        logger.info(f"   {vp.symbol}: Predicted {vp.predicted_direction} {vp.predicted_change_pct:+.3f}% → Actual {vp.actual_change_pct:+.3f}% {status}")
             except Exception as e:
                 logger.debug(f"Live TV validation failed: {e}")
 
@@ -2874,36 +2857,6 @@ def print_banner():
     """)
 
 
-async def run_demo():
-    """Run a demonstration of the Queen's machine."""
-    print_banner()
-
-    machine = QueenEternalMachine(
-        initial_vault=100.0,
-        breadcrumb_percent=0.10,
-        min_dip_advantage=0.02,
-        dry_run=False
-    )
-
-    # Start the journey
-    print("\n🟡 Starting Yellow Brick Road journey...")
-    machine.start_journey("ETH")
-
-    # Run a few cycles
-    print("\n🔄 Running 3 demonstration cycles...")
-    for _ in range(3):
-        await machine.run_cycle()
-        await asyncio.sleep(2)
-
-    # Print final report
-    print("\n" + "="*60)
-    print("📊 FINAL REPORT")
-    print("="*60)
-
-    report = machine.get_full_report()
-    print(json.dumps(report, indent=2, default=str))
-
-
 async def run_live(vault: float = 100.0, interval: int = 60, start_symbol: str = "ETH"):
     """Run the machine in live mode."""
     print_banner()
@@ -2931,7 +2884,6 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description="The Queen's Eternal Machine")
-    parser.add_argument("--demo", action="store_true", help="Run demo mode")
     parser.add_argument("--live", action="store_true", help="Run live 24/7 mode")
     parser.add_argument("--vault", type=float, default=100.0, help="Initial vault amount")
     parser.add_argument("--interval", type=int, default=60, help="Scan interval in seconds")
@@ -2945,10 +2897,7 @@ if __name__ == "__main__":
         datefmt='%H:%M:%S'
     )
 
-    if args.demo:
-        asyncio.run(run_demo())
-    elif args.live:
+    if args.live:
         asyncio.run(run_live(args.vault, args.interval, args.symbol))
     else:
-        # Default: run demo
-        asyncio.run(run_demo())
+        parser.error("no action requested; pass --live only from an authorised composition root")

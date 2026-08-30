@@ -490,9 +490,9 @@ def write_accounting_vault_memory(
     note_path = f"accounting/workflows/{_note_slug(company_number)}_{period_start}_to_{period_end}.md"
     index_path = "accounting/full_accounts_index.md"
     try:
-        from aureon.integrations.obsidian import ObsidianBridge
+        from aureon.integrations.obsidian import ObsidianBridge, resolve_obsidian_vault_path
 
-        vault_path = repo_root if (repo_root / ".obsidian").exists() else repo_root / "vault"
+        vault_path = resolve_obsidian_vault_path()
         obsidian = ObsidianBridge(vault_path=str(vault_path), prefer_filesystem=True)
         if not obsidian.health_check():
             result = {

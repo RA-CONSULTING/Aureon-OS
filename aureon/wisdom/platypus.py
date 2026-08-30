@@ -434,7 +434,7 @@ def superposed_epoch_analysis(
     return epoch_matrix, mean_epoch
 
 
-def block_shuffle(x: np.ndarray, block_len: int) -> np.ndarray:
+def block_shuffle(x: np.ndarray, block_len: int, iteration: int = 1) -> np.ndarray:
     """
     Block-shuffle to preserve autocorrelation for null hypothesis testing.
     """
@@ -443,10 +443,13 @@ def block_shuffle(x: np.ndarray, block_len: int) -> np.ndarray:
     nb = n // block_len
     
     if nb < 2:
-        return np.random.permutation(x)
+        return np.roll(x, iteration % max(1, n))
     
     blocks = x[:nb * block_len].reshape(nb, block_len)
-    order = np.random.permutation(nb)
+    step = (2 * iteration + 1) % nb
+    while math.gcd(step, nb) != 1:
+        step = (step + 1) % nb or 1
+    order = (np.arange(nb) * step + iteration) % nb
     xs = blocks[order].reshape(-1)
     
     # Append remainder
@@ -481,8 +484,8 @@ def permutation_test(
     
     # Permutation distribution
     null_stats = []
-    for _ in range(config.n_permutations):
-        gamma_shuffled = block_shuffle(gamma, block_len)
+    for iteration in range(config.n_permutations):
+        gamma_shuffled = block_shuffle(gamma, block_len, iteration + 1)
         
         if test_statistic == 'correlation':
             stat = pearsonr(gamma_shuffled, y)[0]

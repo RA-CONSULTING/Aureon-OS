@@ -88,10 +88,10 @@ export class EarthStreamsMonitor {
 export const earthStreamsMonitor = new EarthStreamsMonitor();
 
 export interface SimpleEarthStreams {
-  solarWindVelocity: number;
-  geomagneticKp: number;
-  ionosphericDensity: number;
-  fieldCoupling: number;
+  solarWindVelocity: number | null;
+  geomagneticKp: number | null;
+  ionosphericDensity: number | null;
+  fieldCoupling: number | null;
   truthStatus: 'live' | 'real_derived' | 'cached_real' | 'no_data';
   blocker?: string;
 }
@@ -102,10 +102,10 @@ export async function getEarthStreams(): Promise<SimpleEarthStreams> {
   if (!metrics) {
     earthStreamsMonitor.initialize();
     return {
-      solarWindVelocity: 0,
-      geomagneticKp: 0,
-      ionosphericDensity: 0,
-      fieldCoupling: 0,
+      solarWindVelocity: null,
+      geomagneticKp: null,
+      ionosphericDensity: null,
+      fieldCoupling: null,
       truthStatus: 'no_data',
       blocker: 'earth_stream_provider_not_mounted',
     };

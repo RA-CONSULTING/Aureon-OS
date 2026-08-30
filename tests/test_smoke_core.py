@@ -92,7 +92,25 @@ class TestSmokeCore(unittest.TestCase):
     def test_conversion_commando_scanner(self):
         """ConversionCommando.PairScanner().get_top_momentum_targets() returns expected shape."""
         from aureon_conversion_commando import PairScanner
-        
+
+        observed_at = time.time() - 0.01
+
+        def receipt(symbol, price, change24h, volume):
+            normalized = symbol.replace("/", "")
+            return {
+                "symbol": symbol,
+                "exchange": "kraken",
+                "price": price,
+                "change24h": change24h,
+                "volume": volume,
+                "source_id": f"kraken:{normalized}:24h",
+                "source_timestamp": observed_at,
+                "received_at": time.time(),
+                "receipt_id": f"ticker:{normalized}:{observed_at}",
+                "truth_status": "real_observed",
+                "generated_values": False,
+            }
+
         # Mock client
         mock_client = MagicMock()
         mock_client.get_24h_tickers.return_value = {
@@ -111,6 +129,11 @@ class TestSmokeCore(unittest.TestCase):
         
         # Populate scored_targets by running internal logic (mocking scan_all_pairs if needed or just updating cache and calling scan)
         # PairScanner.scan_all_pairs takes ticker_cache and balances
+        cache = {
+            "BTC/USD": receipt("BTC/USD", 50000, 2.04, 1000),
+            "ETH/USD": receipt("ETH/USD", 3000, 11.11, 5000),
+            "DOGE/USD": receipt("DOGE/USD", 0.1, -9.09, 20000),
+        }
         scanner.scan_all_pairs(ticker_cache=cache)
         
         targets = scanner.get_top_momentum_targets(n=2)

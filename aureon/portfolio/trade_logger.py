@@ -70,21 +70,22 @@ import sys
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+_TRUE_VALUES = {"1", "true", "yes", "on"}
+
+
+def _operational_writes_suppressed() -> bool:
+    """Return True for audit/import probes that must not create runtime files."""
+    return any(
+        os.getenv(name, "").strip().lower() in _TRUE_VALUES
+        for name in ("AUREON_AUDIT_MODE", "AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS")
+    )
+
 # Configure handlers if not already set
 if not logger.handlers:
     # Console Handler (Safe for Windows)
     stream_handler = SafeStreamHandler(sys.stdout)
     stream_handler.setFormatter(SafeUTF8Formatter('%(asctime)s [%(levelname)s] %(message)s'))
     logger.addHandler(stream_handler)
-
-    # File Handler
-    try:
-        file_handler = logging.FileHandler('trade_logger.log', encoding='utf-8')
-        file_handler.setFormatter(SafeUTF8Formatter('%(asctime)s [%(levelname)s] %(message)s'))
-        logger.addHandler(file_handler)
-    except Exception as e:
-        # Fallback if file cannot be written
-        sys.stderr.write(f"Warning: Could not set up file logging: {e}\n")
 
 # Prevent propagation to root to avoid double logging or using unsafe root handlers
 logger.propagate = False
@@ -166,11 +167,20 @@ class MarketSweepRecord:
 class TradeLogger:
     """Comprehensive trade logging system"""
     
-    def __init__(self, output_dir: Optional[str] = None):
+    def __init__(
+        self,
+        output_dir: Optional[str] = None,
+        log_path: Optional[str] = None,
+    ):
         if output_dir is None:
-            output_dir = os.path.join(tempfile.gettempdir(), 'aureon_trade_logs')
+            output_dir = os.getenv("AUREON_TRADE_LOG_DIR") or os.path.join(
+                tempfile.gettempdir(), "aureon_trade_logs"
+            )
         self.output_dir = Path(output_dir)
-        self.output_dir.mkdir(parents=True, exist_ok=True)
+        configured_log_path = log_path or os.getenv("AUREON_TRADE_LOG_PATH")
+        self.log_path = Path(configured_log_path) if configured_log_path else self.output_dir / "trade_logger.log"
+        self._persistence_suppressed = _operational_writes_suppressed()
+        self._persistence_active = False
         
         # Initialize output files
         self.trades_file = self.output_dir / f"trades_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jsonl"
@@ -188,6 +198,37 @@ class TradeLogger:
         logger.info(f"📊 Trade Logger initialized")
         logger.info(f"   Output directory: {self.output_dir}")
         logger.info(f"   Trades file: {self.trades_file.name}")
+
+    def _activate_persistence(self) -> bool:
+        """Create runtime paths and the file handler only on the first real write."""
+        if self._persistence_suppressed:
+            return False
+        if self._persistence_active:
+            return True
+
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+        self.log_path.parent.mkdir(parents=True, exist_ok=True)
+        resolved = str(self.log_path.resolve())
+        if not any(
+            isinstance(handler, logging.FileHandler)
+            and getattr(handler, "_aureon_trade_log_path", None) == resolved
+            for handler in logger.handlers
+        ):
+            file_handler = logging.FileHandler(self.log_path, encoding="utf-8")
+            file_handler._aureon_trade_log_path = resolved
+            file_handler.setFormatter(
+                SafeUTF8Formatter("%(asctime)s [%(levelname)s] %(message)s")
+            )
+            logger.addHandler(file_handler)
+        self._persistence_active = True
+        return True
+
+    def _append_jsonl(self, path: Path, payload: Dict[str, Any]) -> bool:
+        if not self._activate_persistence():
+            return False
+        with open(path, "a", encoding="utf-8") as handle:
+            handle.write(json.dumps(payload) + "\n")
+        return True
         
     def log_trade_entry(self, trade_data: Dict[str, Any]) -> str:
         """Log a trade entry and return trade_id"""
@@ -219,12 +260,10 @@ class TradeLogger:
         with self.lock:
             self.active_trades[trade_id] = asdict(entry)
         
-        # Write to file
-        with open(self.trades_file, 'a', encoding='utf-8') as f:
-            f.write(json.dumps({
-                'trade_id': trade_id,
-                **asdict(entry)
-            }) + '\n')
+        self._append_jsonl(self.trades_file, {
+            'trade_id': trade_id,
+            **asdict(entry),
+        })
         
         logger.info(f"📝 Trade Entry: {trade_id} | {entry.symbol} @ {entry.entry_price:.6f} | Γ={entry.coherence:.2f}")
         
@@ -248,9 +287,7 @@ class TradeLogger:
             hold_time_minutes=exit_data.get('hold_time_seconds', 0.0) / 60.0,
         )
         
-        # Write to file
-        with open(self.exits_file, 'a', encoding='utf-8') as f:
-            f.write(json.dumps(asdict(exit_record)) + '\n')
+        self._append_jsonl(self.exits_file, asdict(exit_record))
         
         # Remove from active trades
         with self.lock:
@@ -326,13 +363,8 @@ class TradeLogger:
                            if k not in ['api_key', 'signature', 'secret']}
             execution_record["raw_response"] = safe_response
         
-        # Write to executions file
-        with open(self.executions_file, 'a', encoding='utf-8') as f:
-            f.write(json.dumps(execution_record) + '\n')
-        
-        # Also write to general trades file for unified view
-        with open(self.trades_file, 'a', encoding='utf-8') as f:
-            f.write(json.dumps(execution_record) + '\n')
+        self._append_jsonl(self.executions_file, execution_record)
+        self._append_jsonl(self.trades_file, execution_record)
         
         # Log to console with clear visibility
         status_icon = "✅" if status in ["executed", "filled"] else "⚠️" if status == "partial" else "❌"
@@ -388,9 +420,7 @@ class TradeLogger:
             coherence_level=validation_data.get('coherence_level', ''),
         )
         
-        # Write to file
-        with open(self.validations_file, 'a', encoding='utf-8') as f:
-            f.write(json.dumps(asdict(validation)) + '\n')
+        self._append_jsonl(self.validations_file, asdict(validation))
         
         accuracy = "✅" if (validation.predicted_action == 'BUY' and validation.actual_outcome == 'WIN') else "❌"
         logger.info(f"📈 Validation: {accuracy} {validation.symbol} | Pred: {validation.predicted_action} | Actual: {validation.actual_outcome} ({validation.outcome_pct:+.2f}%)")
@@ -410,16 +440,14 @@ class TradeLogger:
             dominant_node_distribution=sweep_data.get('dominant_node_distribution', {}),
         )
         
-        # Write to file
-        with open(self.market_sweep_file, 'a', encoding='utf-8') as f:
-            f.write(json.dumps(asdict(sweep)) + '\n')
+        self._append_jsonl(self.market_sweep_file, asdict(sweep))
         
         logger.info(f"🌍 Market Sweep: Found {sweep.total_opportunities_found} opp | Entered {sweep.opportunities_entered} | Γ_avg={sweep.average_coherence:.2f} | Flux: {sweep.system_flux}")
     
     def get_trade_summary(self) -> Dict[str, Any]:
         """Get summary statistics of logged trades"""
         # Count files
-        trade_count = sum(1 for line in open(self.trades_file, encoding='utf-8'))
+        trade_count = sum(1 for line in open(self.trades_file, encoding='utf-8')) if self.trades_file.exists() else 0
         exit_count = sum(1 for line in open(self.exits_file, encoding='utf-8')) if self.exits_file.exists() else 0
         validation_count = sum(1 for line in open(self.validations_file, encoding='utf-8')) if self.validations_file.exists() else 0
         
@@ -471,10 +499,10 @@ class TradeLogger:
             
             training_records.append(record)
         
-        # Write export
-        with open(output_file, 'w') as f:
-            for record in training_records:
-                f.write(json.dumps(record) + '\n')
+        if self._activate_persistence():
+            with open(output_file, 'w', encoding='utf-8') as f:
+                for record in training_records:
+                    f.write(json.dumps(record) + '\n')
         
         logger.info(f"💾 Exported {len(training_records)} training records to {output_file}")
         return str(output_file)

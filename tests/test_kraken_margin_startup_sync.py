@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import time
 import unittest
 from unittest.mock import patch
 
@@ -6,6 +7,31 @@ from aureon.exchanges.kraken_client import KrakenClient
 from aureon.exchanges.kraken_margin_penny_trader import ActiveTrade, KrakenMarginArmyTrader, MarginPairInfo
 from aureon.trading.dynamic_margin_sizer import DynamicMarginConfig, DynamicMarginSizer
 from aureon.trading.temporal_trade_cognition import TemporalTradeCognition
+
+
+def _trade_balance_receipt(
+    *,
+    equity: float,
+    free_margin: float,
+    margin_amount: float = 0.0,
+    unrealized_pnl: float = 0.0,
+    margin_level: float = 0.0,
+):
+    return {
+        "data_status": "live",
+        "truth_status": "real_observed",
+        "generated_values": False,
+        "source_id": "kraken:trade_balance:test",
+        "received_at": time.time(),
+        "equity_value": str(equity),
+        "trade_balance": str(equity),
+        "margin_amount": str(margin_amount),
+        "unrealized_pnl": str(unrealized_pnl),
+        "cost_basis": str(margin_amount),
+        "floating_valuation": str(margin_amount + unrealized_pnl),
+        "free_margin": str(free_margin),
+        "margin_level": str(margin_level),
+    }
 
 
 class TestKrakenMarginStartupSync(unittest.TestCase):
@@ -20,13 +46,21 @@ class TestKrakenMarginStartupSync(unittest.TestCase):
         trader._last_spot_balance_snapshot = {}
         trader._last_spot_balance_snapshot_at = 0.0
         trader.client = type("ClientStub", (), {
-            "get_trade_balance": staticmethod(lambda: {
-                "equity_value": "0.0",
-                "free_margin": "0.0",
-                "margin_amount": "0.0",
-                "unrealized_pnl": "0.0",
-            }),
+            "get_trade_balance": staticmethod(
+                lambda: _trade_balance_receipt(equity=0.0, free_margin=0.0)
+            ),
             "get_account_balance": staticmethod(lambda: {"GBP": 100.0, "USDT": 5.0}),
+            "get_24h_ticker": staticmethod(
+                lambda pair: {
+                    "symbol": pair,
+                    "price": 1.27 if pair == "GBPUSD" else 1.0,
+                    "source_id": f"kraken:ticker:{pair}",
+                    "source_timestamp": time.time(),
+                    "received_at": time.time(),
+                    "truth_status": "real_observed",
+                    "generated_values": False,
+                }
+            ),
         })()
 
         snapshot = trader._get_capital_snapshot()
@@ -43,13 +77,15 @@ class TestKrakenMarginStartupSync(unittest.TestCase):
         trader._last_fast_profit_capture = {}
         trader._fast_profit_capture_by_order = {}
         trader.client = type("ClientStub", (), {
-            "get_trade_balance": staticmethod(lambda: {
-                "equity_value": "100.0",
-                "free_margin": "72.0",
-                "margin_amount": "20.0",
-                "margin_level": "360.0",
-                "unrealized_pnl": "0.05",
-            })
+            "get_trade_balance": staticmethod(
+                lambda: _trade_balance_receipt(
+                    equity=100.0,
+                    free_margin=72.0,
+                    margin_amount=20.0,
+                    unrealized_pnl=0.05,
+                    margin_level=360.0,
+                )
+            )
         })()
         trade = ActiveTrade(
             pair="BTC/USD",
@@ -193,11 +229,9 @@ class TestKrakenMarginStartupSync(unittest.TestCase):
         trader.dry_run = False
         trader.dynamic_sizer = DynamicMarginSizer(DynamicMarginConfig())
         trader.client = type("ClientStub", (), {
-            "get_trade_balance": staticmethod(lambda: {
-                "equity_value": "10.0",
-                "free_margin": "10.0",
-                "margin_amount": "0.0",
-            })
+            "get_trade_balance": staticmethod(
+                lambda: _trade_balance_receipt(equity=10.0, free_margin=10.0)
+            )
         })()
         pair = MarginPairInfo(
             pair="DOGE/USD",

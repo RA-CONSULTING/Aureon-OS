@@ -28,12 +28,26 @@ import { globalSystemsManager } from '@/core/globalSystemsManager';
 function SystemIndicator({ name, active, icon: Icon }: { name: string; active: boolean; icon: React.ElementType }) {
   return (
     <div className="flex items-center gap-2 text-xs">
-      <div className={cn("h-2 w-2 rounded-full", active ? "bg-green-400" : "bg-muted-foreground")} />
+      <div className={cn("h-2 w-2 rounded-full", active ? "bg-success" : "bg-muted-foreground")} />
       <Icon className="h-3 w-3 text-muted-foreground" />
       <span className={cn(active ? "text-foreground" : "text-muted-foreground")}>{name}</span>
     </div>
   );
 }
+
+const formatNumber = (value: number | null | undefined, decimals = 2): string =>
+  typeof value === 'number' && Number.isFinite(value) ? value.toFixed(decimals) : 'Unavailable';
+
+const formatMoney = (value: number | null | undefined, currency = '$'): string =>
+  typeof value === 'number' && Number.isFinite(value)
+    ? `${currency}${value.toFixed(2)}`
+    : 'Unavailable';
+
+const formatPercent = (value: number | null | undefined, signed = false): string => {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return 'Unavailable';
+  const rendered = (value * 100).toFixed(2);
+  return `${signed && value >= 0 ? '+' : ''}${rendered}%`;
+};
 
 export default function AureonDashboard() {
   const navigate = useNavigate();
@@ -83,14 +97,14 @@ export default function AureonDashboard() {
   }, [isInitialized, isAuthenticated, navigate]);
 
 
-  const winRate = totalTrades > 0 
-    ? ((winningTrades / totalTrades) * 100).toFixed(0)
-    : '0';
+  const winRate = typeof totalTrades === 'number' && totalTrades > 0 && typeof winningTrades === 'number'
+    ? `${((winningTrades / totalTrades) * 100).toFixed(0)}%`
+    : 'Unavailable';
 
   const getPrismColor = () => {
     switch (prismState) {
-      case 'MANIFEST': return 'text-green-400';
-      case 'CONVERGING': return 'text-yellow-400';
+      case 'MANIFEST': return 'text-success';
+      case 'CONVERGING': return 'text-warning';
       default: return 'text-muted-foreground';
     }
   };
@@ -113,7 +127,7 @@ export default function AureonDashboard() {
       {/* Navigation */}
       <Navbar />
       
-      {/* Demo Mode Warning Banner */}
+      {/* Production data warning banner */}
       <DemoModeWarningBanner />
       
       {/* Smart Alert Banner - only shows when there are issues */}
@@ -141,13 +155,13 @@ export default function AureonDashboard() {
             </Badge>
             
             <Badge variant={isActive ? "default" : "secondary"} className="gap-1">
-              <div className={cn("h-1.5 w-1.5 rounded-full", isActive ? "bg-green-400 animate-pulse" : "bg-muted-foreground")} />
+              <div className={cn("h-1.5 w-1.5 rounded-full", isActive ? "bg-success animate-pulse" : "bg-muted-foreground")} />
               {isActive ? 'ACTIVE' : 'IDLE'}
             </Badge>
             
             {/* Live coherence indicator */}
             <Badge variant="outline" className="gap-1 font-mono">
-              Γ {coherence.toFixed(3)}
+              Γ {formatNumber(coherence, 3)}
             </Badge>
           </div>
           
@@ -202,19 +216,19 @@ export default function AureonDashboard() {
                 <CardContent className="space-y-1">
                   <div className="flex justify-between">
                     <span className="text-xs text-muted-foreground">Γ (Coherence)</span>
-                    <span className="text-sm font-mono font-bold">{coherence.toFixed(3)}</span>
+                    <span className="text-sm font-mono font-bold">{formatNumber(coherence, 3)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-xs text-muted-foreground">Λ (Lambda)</span>
-                    <span className="text-sm font-mono">{lambda.toFixed(3)}</span>
+                    <span className="text-sm font-mono">{formatNumber(lambda, 3)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-xs text-muted-foreground">Prism</span>
-                    <span className={cn("text-sm font-medium", getPrismColor())}>{prismState}</span>
+                    <span className={cn("text-sm font-medium", getPrismColor())}>{prismState ?? 'Unavailable'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-xs text-muted-foreground">Node</span>
-                    <span className="text-sm">{dominantNode}</span>
+                    <span className="text-sm">{dominantNode ?? 'Unavailable'}</span>
                   </div>
                 </CardContent>
               </Card>
@@ -229,21 +243,25 @@ export default function AureonDashboard() {
                 <CardContent className="space-y-1">
                   <div className="flex justify-between">
                     <span className="text-xs text-muted-foreground">Balance</span>
-                    <span className="text-sm font-mono font-bold">${totalEquity.toFixed(2)}</span>
+                    <span className="text-sm font-mono font-bold">{formatMoney(totalEquity)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-xs text-muted-foreground">P/L</span>
-                    <span className={cn("text-sm font-mono", totalPnl >= 0 ? "text-green-400" : "text-red-400")}>
-                      {totalPnl >= 0 ? '+' : ''}${totalPnl.toFixed(2)}
+                    <span className={cn("text-sm font-mono", typeof totalPnl === 'number' && (totalPnl >= 0 ? "text-success" : "text-destructive"))}>
+                      {typeof totalPnl === 'number' && Number.isFinite(totalPnl)
+                        ? `${totalPnl >= 0 ? '+' : ''}$${totalPnl.toFixed(2)}`
+                        : 'Unavailable'}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-xs text-muted-foreground">Trades</span>
-                    <span className="text-sm font-mono">{totalTrades} ({winRate}% win)</span>
+                    <span className="text-sm font-mono">
+                      {typeof totalTrades === 'number' ? totalTrades : 'Unavailable'} ({winRate} win)
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-xs text-muted-foreground">Gas Tank</span>
-                    <span className="text-sm font-mono">£{gasTankBalance.toFixed(2)}</span>
+                    <span className="text-sm font-mono">{formatMoney(gasTankBalance, '£')}</span>
                   </div>
                 </CardContent>
               </Card>
@@ -258,21 +276,27 @@ export default function AureonDashboard() {
                 <CardContent className="space-y-1">
                   <div className="flex justify-between">
                     <span className="text-xs text-muted-foreground">Price</span>
-                    <span className="text-sm font-mono font-bold">${marketData.price.toLocaleString()}</span>
+                    <span className="text-sm font-mono font-bold">
+                      {typeof marketData.price === 'number' && Number.isFinite(marketData.price)
+                        ? `$${marketData.price.toLocaleString()}`
+                        : 'Unavailable'}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-xs text-muted-foreground">Volatility</span>
-                    <span className="text-sm font-mono">{(marketData.volatility * 100).toFixed(2)}%</span>
+                    <span className="text-sm font-mono">{formatPercent(marketData.volatility)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-xs text-muted-foreground">Momentum</span>
-                    <span className={cn("text-sm font-mono", marketData.momentum >= 0 ? "text-green-400" : "text-red-400")}>
-                      {marketData.momentum >= 0 ? '+' : ''}{(marketData.momentum * 100).toFixed(2)}%
+                    <span className={cn("text-sm font-mono", typeof marketData.momentum === 'number' && (marketData.momentum >= 0 ? "text-success" : "text-destructive"))}>
+                      {formatPercent(marketData.momentum, true)}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-xs text-muted-foreground">Next Check</span>
-                    <span className="text-sm font-mono">{nextCheckIn}s</span>
+                    <span className="text-sm font-mono">
+                      {typeof nextCheckIn === 'number' ? `${nextCheckIn}s` : 'Unavailable'}
+                    </span>
                   </div>
                 </CardContent>
               </Card>
@@ -317,7 +341,11 @@ export default function AureonDashboard() {
                           </p>
                           <div className="flex gap-2">
                             <Badge variant="outline">Consensus: {consensusSignal}</Badge>
-                            <Badge variant="outline">Confidence: {(consensusConfidence * 100).toFixed(0)}%</Badge>
+                            <Badge variant="outline">
+                              Confidence: {typeof consensusConfidence === 'number' && Number.isFinite(consensusConfidence)
+                                ? `${(consensusConfidence * 100).toFixed(0)}%`
+                                : 'Unavailable'}
+                            </Badge>
                           </div>
                         </>
                       )}
@@ -352,7 +380,7 @@ export default function AureonDashboard() {
                           </div>
                           <div className="flex items-center gap-3">
                             <span className="text-muted-foreground">{trade.quantity}</span>
-                            <span className={cn("font-mono", trade.pnl >= 0 ? "text-green-400" : "text-red-400")}>
+                            <span className={cn("font-mono", trade.pnl >= 0 ? "text-success" : "text-destructive")}>
                               {trade.pnl >= 0 ? '+' : ''}{trade.pnl.toFixed(2)}
                             </span>
                           </div>

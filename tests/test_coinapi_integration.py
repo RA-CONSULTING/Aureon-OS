@@ -21,8 +21,23 @@ from datetime import datetime
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from aureon_unified_ecosystem import AureonKrakenEcosystem, CONFIG
+from aureon_unified_ecosystem import AureonKrakenEcosystem, AurisEngine, CONFIG
 from coinapi_anomaly_detector import MarketAnomaly, AnomalyType
+
+
+def _offline_ecosystem():
+    ecosystem = AureonKrakenEcosystem.__new__(AureonKrakenEcosystem)
+    auris = AurisEngine.__new__(AurisEngine)
+    auris.hnc = None
+    auris.prob_matrix = None
+    auris.coinapi_detector = None
+    auris.anomaly_blacklist = {}
+    auris.coherence_adjustments = {}
+    auris.last_anomaly_scan = 0.0
+    ecosystem.auris = auris
+    ecosystem.ticker_cache = {}
+    return ecosystem
+
 
 def print_section(title: str):
     """Print formatted section header"""
@@ -34,7 +49,7 @@ def test_anomaly_detection():
     """Test anomaly detection methods"""
     print_section("🔍 TESTING ANOMALY DETECTION METHODS")
     
-    eco = AureonKrakenEcosystem(initial_balance=200.0, dry_run=True)
+    eco = _offline_ecosystem()
     
     # Test 1: Blacklist functionality
     print("\n1. Blacklist Functionality:")
@@ -85,7 +100,7 @@ def test_opportunity_filtering():
     # Create fake ticker data
     from aureon_unified_ecosystem import AureonKrakenEcosystem
     
-    eco = AureonKrakenEcosystem(initial_balance=200.0, dry_run=True)
+    eco = _offline_ecosystem()
     
     # Add some fake tickers
     eco.ticker_cache = {
@@ -133,7 +148,7 @@ def test_full_integration():
     """Test complete HNC + Probability + CoinAPI integration"""
     print_section("🌍⚡ TESTING FULL SYSTEM INTEGRATION ⚡🌍")
     
-    eco = AureonKrakenEcosystem(initial_balance=200.0, dry_run=True)
+    eco = _offline_ecosystem()
     
     print("\n📊 System Components:")
     print(f"   HNC Frequency: {'✅ ACTIVE' if eco.auris.hnc else '❌ DISABLED'}")

@@ -50,6 +50,7 @@ from __future__ import annotations
 
 import json
 import logging
+import math
 import os
 import time
 from pathlib import Path
@@ -60,6 +61,8 @@ logger = logging.getLogger(__name__)
 DEFAULT_CHAIN = "unified_cache,coingecko_cache,kraken,binance,coingecko_live"
 DEFAULT_MAX_CACHE_AGE_SEC = 60.0
 DEFAULT_TIMEOUT_SEC = 5.0
+# Keep the same small provider-clock skew tolerated by receipt validators.
+MAX_FUTURE_SOURCE_SKEW_SEC = 5.0
 
 # Quote currencies to try when a caller passes a bare base symbol like "BTC".
 # Order matters: longer suffixes first so XXBTZUSD strips ZUSD (4 chars), not USD (3).
@@ -179,15 +182,41 @@ def _src_coingecko_cache(symbols: List[str], max_age: float) -> Dict[str, float]
         except Exception as exc:
             logger.warning("[real-price-fallback] coingecko_cache %s parse error: %s", p, exc)
             continue
-        # Cache age check
-        ts = data.get("timestamp") or data.get("updated_at") or 0
+        # Cache provenance must be explicit. Receipt time / file-write time is
+        # not a provider source timestamp and must never be promoted into one.
+        source_timestamp = data.get("source_timestamp")
+        received_at = data.get("received_at")
+        if data.get("generated_values") is not False:
+            logger.warning(
+                "[real-price-fallback] coingecko_cache %s no_data/non_actionable: "
+                "generated_values must be false",
+                p,
+            )
+            continue
         try:
-            ts_float = float(ts) if isinstance(ts, (int, float)) else 0.0
-        except Exception:
-            ts_float = 0.0
-        if ts_float and (time.time() - ts_float) > max_age * 60:
-            # Allow a generous 60× max_age for disk caches (they refresh slowly)
-            logger.debug("coingecko_cache %s stale (%.0fs old)", p, time.time() - ts_float)
+            source_ts = float(source_timestamp)
+            receipt_ts = float(received_at)
+        except (TypeError, ValueError):
+            logger.warning(
+                "[real-price-fallback] coingecko_cache %s no_data/non_actionable: "
+                "source_timestamp and received_at are required",
+                p,
+            )
+            continue
+        if not (math.isfinite(source_ts) and source_ts > 0 and math.isfinite(receipt_ts) and receipt_ts > 0):
+            logger.warning(
+                "[real-price-fallback] coingecko_cache %s no_data/non_actionable: "
+                "malformed source or receipt timestamp",
+                p,
+            )
+            continue
+        age = time.time() - source_ts
+        if age < -MAX_FUTURE_SOURCE_SKEW_SEC or age > max_age:
+            logger.warning(
+                "[real-price-fallback] coingecko_cache %s no_data/non_actionable: "
+                "source timestamp is stale or too far in the future",
+                p,
+            )
             continue
         out: Dict[str, float] = {}
         for entry in data.get("data", []):

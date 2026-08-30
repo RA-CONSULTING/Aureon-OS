@@ -1,0 +1,448 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aureonzorzatechnologies.pl/schemas/aureon-design-research-refresh-v1.json",
+  "title": "Aureon local design research refresh source-control contract",
+  "description": "Schema for a redacted local source declaration and its immutable local review receipt. Neither record authorises website mutation, claim-register mutation, artwork use, package construction, release, credentials, network access, connectors or deployment.",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/declaration"
+    },
+    {
+      "$ref": "#/$defs/receipt"
+    }
+  ],
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[A-F0-9]{64}$"
+    },
+    "identifier": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{2,63}$"
+    },
+    "snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^(?:docs/research/|website/data/).+"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scope",
+        "declaration_mutation",
+        "canonical_website_mutation",
+        "claim_register_mutation",
+        "release_eligible",
+        "package_authority",
+        "deployment_authority",
+        "credential_access",
+        "network_access",
+        "connector_access",
+        "research_refresh_authority"
+      ],
+      "properties": {
+        "scope": {
+          "const": "local redacted research and design source freshness review only"
+        },
+        "declaration_mutation": {
+          "const": "never by this validator"
+        },
+        "canonical_website_mutation": {
+          "const": "never"
+        },
+        "claim_register_mutation": {
+          "const": "never"
+        },
+        "release_eligible": {
+          "const": false
+        },
+        "package_authority": {
+          "const": "none"
+        },
+        "deployment_authority": {
+          "const": "none"
+        },
+        "credential_access": {
+          "const": "none"
+        },
+        "network_access": {
+          "const": "none"
+        },
+        "connector_access": {
+          "const": "none"
+        },
+        "research_refresh_authority": {
+          "const": "human review of local public-source evidence only"
+        }
+      }
+    },
+    "publicReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "value"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "https-url",
+            "record-id"
+          ]
+        },
+        "value": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 256
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "public_reference",
+        "observed_at",
+        "expires_at",
+        "snapshot",
+        "claim_ids",
+        "purpose",
+        "boundary"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "kind": {
+          "enum": [
+            "public-research-record",
+            "public-website-data",
+            "public-design-pattern"
+          ]
+        },
+        "public_reference": {
+          "$ref": "#/$defs/publicReference"
+        },
+        "observed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "snapshot": {
+          "$ref": "#/$defs/snapshot"
+        },
+        "claim_ids": {
+          "type": "array",
+          "maxItems": 32,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]{2,127}$"
+          }
+        },
+        "purpose": {
+          "type": "string",
+          "minLength": 12,
+          "maxLength": 500
+        },
+        "boundary": {
+          "type": "string",
+          "minLength": 20,
+          "maxLength": 700
+        }
+      }
+    },
+    "artworkPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state",
+        "confirmed_local_provenance",
+        "source_artwork_included",
+        "boundary",
+        "evidence_snapshot"
+      ],
+      "properties": {
+        "state": {
+          "const": "not-cleared"
+        },
+        "confirmed_local_provenance": {
+          "const": false
+        },
+        "source_artwork_included": {
+          "const": false
+        },
+        "boundary": {
+          "type": "string",
+          "minLength": 20,
+          "maxLength": 700
+        },
+        "evidence_snapshot": {
+          "$ref": "#/$defs/snapshot"
+        }
+      }
+    },
+    "declaration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "declaration_id",
+        "issued_at",
+        "refresh_due_within_days",
+        "authority",
+        "sources",
+        "artwork_policy"
+      ],
+      "properties": {
+        "schema": {
+          "const": "aureon.design-research-sources.v1"
+        },
+        "declaration_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "issued_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "refresh_due_within_days": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 90
+        },
+        "authority": {
+          "$ref": "#/$defs/authority"
+        },
+        "sources": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 32,
+          "items": {
+            "$ref": "#/$defs/source"
+          }
+        },
+        "artwork_policy": {
+          "$ref": "#/$defs/artworkPolicy"
+        }
+      }
+    },
+    "auditedSnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "declared_sha256",
+        "observed_sha256",
+        "state"
+      ],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "declared_sha256": {
+          "type": "string"
+        },
+        "observed_sha256": {
+          "type": "string"
+        },
+        "state": {
+          "enum": [
+            "verified",
+            "missing",
+            "hash-mismatch",
+            "invalid"
+          ]
+        }
+      }
+    },
+    "auditedSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "public_reference",
+        "observed_at",
+        "expires_at",
+        "snapshot",
+        "claim_ids",
+        "purpose",
+        "boundary",
+        "integrity",
+        "freshness",
+        "errors"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "public_reference": {
+          "$ref": "#/$defs/publicReference"
+        },
+        "observed_at": {
+          "type": "string"
+        },
+        "expires_at": {
+          "type": "string"
+        },
+        "snapshot": {
+          "$ref": "#/$defs/auditedSnapshot"
+        },
+        "claim_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "purpose": {
+          "type": "string"
+        },
+        "boundary": {
+          "type": "string"
+        },
+        "integrity": {
+          "type": "string"
+        },
+        "freshness": {
+          "enum": [
+            "fresh",
+            "due",
+            "stale",
+            "missing",
+            "invalid"
+          ]
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "passed",
+        "message",
+        "evidence"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "message": {
+          "type": "string"
+        },
+        "evidence": {
+          "type": "object"
+        }
+      }
+    },
+    "receipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "reviewed_at",
+        "state",
+        "passed",
+        "release_eligible",
+        "package_authority",
+        "deployment_authority",
+        "authority",
+        "declaration",
+        "claim_register",
+        "sources",
+        "artwork",
+        "summary",
+        "checks",
+        "next_gate"
+      ],
+      "properties": {
+        "schema": {
+          "const": "aureon.design-research-refresh.v1"
+        },
+        "reviewed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "state": {
+          "enum": [
+            "current",
+            "refresh-due",
+            "blocked"
+          ]
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "release_eligible": {
+          "const": false
+        },
+        "package_authority": {
+          "const": "none"
+        },
+        "deployment_authority": {
+          "const": "none"
+        },
+        "authority": {
+          "$ref": "#/$defs/authority"
+        },
+        "declaration": {
+          "type": "object"
+        },
+        "claim_register": {
+          "type": "object"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/auditedSource"
+          }
+        },
+        "artwork": {
+          "type": "object"
+        },
+        "summary": {
+          "type": "object"
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/check"
+          }
+        },
+        "next_gate": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

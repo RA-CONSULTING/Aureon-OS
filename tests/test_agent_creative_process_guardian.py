@@ -96,7 +96,7 @@ def test_creative_process_guardian_binds_all_roles_to_mind_systems(tmp_path: Pat
     assert all(first_role[key] for key in ["who", "what", "where", "when", "how", "act"])
     assert first_role["mind_bindings"]["hnc_auris_systems"]
     assert first_role["mind_bindings"]["metacognitive_systems"]
-    assert first_role["mind_bindings"]["sentience_boundary"].startswith("synthetic state")
+    assert first_role["mind_bindings"]["sentience_boundary"].startswith("computational state")
     assert any(check["id"] == "hnc_auris_sources_passing" and check["ok"] for check in report["proof_checklist"])
 
 

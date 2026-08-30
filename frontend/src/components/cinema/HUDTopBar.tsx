@@ -42,7 +42,7 @@ function AnimatedNumber({ value, prefix = '', suffix = '', decimals = 2, colorBy
   }, [value]);
 
   const colorClass = colorBySign
-    ? display >= 0 ? 'text-emerald-400' : 'text-red-400'
+    ? display >= 0 ? 'text-success' : 'text-destructive'
     : 'text-white';
 
   return (
@@ -60,8 +60,8 @@ function StatusDot({ connected, label }: { connected: boolean; label: string }) 
     <div className="flex items-center gap-1.5">
       <div className={`w-1.5 h-1.5 rounded-full ${
         connected
-          ? 'bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]'
-          : 'bg-red-400 shadow-[0_0_6px_rgba(248,113,113,0.6)]'
+          ? 'bg-success shadow-[0_0_6px_rgba(52,211,153,0.8)]'
+          : 'bg-destructive shadow-[0_0_6px_rgba(248,113,113,0.6)]'
       }`} />
       <span className="text-[10px] text-white/40 uppercase tracking-wider">{label}</span>
     </div>
@@ -159,7 +159,7 @@ export function HUDTopBar({
           <div className="flex items-center gap-1.5 ml-2">
             <div className={`w-2 h-2 rounded-full ${
               isActive
-                ? 'bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]'
+                ? 'bg-success animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]'
                 : 'bg-white/20'
             }`} />
             <span className="text-[10px] text-white/40 uppercase tracking-wider">

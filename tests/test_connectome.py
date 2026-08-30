@@ -50,25 +50,77 @@ def test_touch_feels_a_safe_module(tmp_path):
     assert "build_organism_manifest" in (r["functions"] + r["singletons"])
 
 
-def test_touch_enforces_suppression_and_restores(tmp_path):
+def test_touch_enforces_suppression_and_restores(tmp_path, monkeypatch):
+    # monkeypatch (not raw pop) so the suite-wide flag is restored afterwards:
+    # the raw pop deleted AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS=1 for every LATER
+    # test module, silently un-gating every daemon-thread suppress check.
     c = _fresh(tmp_path)
-    os.environ.pop("AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS", None)
+    monkeypatch.delenv("AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS", raising=False)
     c.touch("aureon.core.aureon_organism_spine")
     # env restored to absent after the touch
     assert "AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS" not in os.environ
 
-    os.environ["AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS"] = "keep"
-    try:
-        c.touch("aureon.core.hnc_params")
-        assert os.environ["AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS"] == "keep"
-    finally:
-        os.environ.pop("AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS", None)
+    monkeypatch.setenv("AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS", "keep")
+    c.touch("aureon.core.hnc_params")
+    assert os.environ["AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS"] == "keep"
 
 
 def test_touch_denies_loop_at_import_modules(tmp_path):
     c = _fresh(tmp_path)
     r = c.touch("aureon.core.hnc_live_daemon")   # matches _daemon deny pattern
     assert r["status"] == "denied"
+
+
+def test_touch_static_stdio_mutator_never_owns_parent_streams(tmp_path):
+    import sys
+
+    c = _fresh(tmp_path)
+    module = "Kings_Accounting_Suite.cash_flow.aureon_deep_money_flow_analyzer"
+    stdout_before, stderr_before = sys.stdout, sys.stderr
+
+    r = c.touch(module)
+
+    assert r["status"] == "denied"
+    assert "static import-time process mutation" in r["reason"]
+    assert "sys.stdout assignment" in r["reason"]
+    assert sys.stdout is stdout_before and sys.stderr is stderr_before
+    assert module not in sys.modules
+    assert c.reconcile_denied()["freed"] == 0
+    assert c._records[module]["status"] == "denied"
+
+
+def test_static_import_gate_covers_process_mutations_but_not_deferred_code(tmp_path):
+    from aureon.core.aureon_connectome import _source_import_hazards
+
+    unsafe = tmp_path / "unsafe.py"
+    unsafe.write_text(
+        "import io, os, sys\n"
+        "import matplotlib.pyplot as plt\n"
+        "sys.stdout = io.TextIOWrapper(sys.stdout.buffer)\n"
+        "sys.stderr.reconfigure(encoding='utf-8')\n"
+        "os.chdir('.')\n"
+        "sys.exit(1)\n"
+        "plt.subplots()\n",
+        encoding="utf-8",
+    )
+    hazards = _source_import_hazards(unsafe)
+    assert any("sys.stdout assignment" in item for item in hazards)
+    assert any("io.TextIOWrapper call" in item for item in hazards)
+    assert any("sys.stderr.reconfigure call" in item for item in hazards)
+    assert any("os.chdir call" in item for item in hazards)
+    assert any("sys.exit call" in item for item in hazards)
+    assert any("matplotlib GUI construction" in item for item in hazards)
+
+    deferred = tmp_path / "deferred.py"
+    deferred.write_text(
+        "import os, sys\n"
+        "def later():\n"
+        "    os.chdir('.')\n"
+        "if __name__ == '__main__':\n"
+        "    sys.exit(1)\n",
+        encoding="utf-8",
+    )
+    assert _source_import_hazards(deferred) == []
 
 
 def test_touch_records_failure_without_raising(tmp_path):
@@ -142,18 +194,23 @@ def test_reconcile_denied_respects_limit(tmp_path):
 
 
 def test_sweep_reconciles_stale_denials(tmp_path):
+    import sys
+
     c = _fresh(tmp_path)
     stale = "aureon.core.hnc_params"     # importable, and not denied by the current gate
     c._records[stale] = {"status": "denied", "ts": 0.0}
+    stdout_before, stderr_before = sys.stdout, sys.stderr
     c.sweep_once(batch_size=50, weave_batch=0)   # reconcile runs first → stale unstuck
     # no longer frozen as denied: either freed to unfelt (record gone) or already re-touched
     assert c._records.get(stale, {}).get("status") != "denied"
+    assert sys.stdout is stdout_before and sys.stderr is stderr_before
 
 
 # ── failures aren't forever: import-context heal + bounded retry ──────────────
 
 def test_ensure_import_paths_is_idempotent():
     import sys
+
     import aureon.core.aureon_connectome as cm
 
     cm._PATHS_READY = False
@@ -276,7 +333,7 @@ def test_cognition_tools_expose_the_organism(tmp_path):
     reset_connectome_for_tests()
     from aureon.operator.tools import build_operator_tools
 
-    reg = build_operator_tools()
+    reg = build_operator_tools(hnc_coherence_required=False)
     assert "sense_organism" in reg and "list_organism" in reg and "touch_module" in reg
 
     sense = json.loads(reg.execute("sense_organism", {}))

@@ -1,0 +1,69 @@
+{
+  "schema": "aureon.appliance.inputs.v1",
+  "source": {
+    "commit": "f5fb1916c07ac26eb7fc38c34ff2dc9bd029e21d",
+    "tree": "adb85cc57284947d84520d28b8dc5472c317f9e2",
+    "source_date_epoch": 1786688033
+  },
+  "base_tree": {
+    "path": "/var/lib/aureon-build/inputs/debian-bookworm-x86_64-rootfs.tar",
+    "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "size": 1
+  },
+  "tools_tree": {
+    "path": "/var/lib/aureon-build/inputs/mkosi-tools-x86_64.raw",
+    "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "size": 1
+  },
+  "requirements_lock": {
+    "path": "/var/lib/aureon-build/inputs/requirements-core-linux-x86_64.lock",
+    "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "size": 1
+  },
+  "wheelhouse": {
+    "path": "/var/lib/aureon-build/inputs/wheelhouse",
+    "manifest": {
+      "path": "/var/lib/aureon-build/inputs/wheelhouse-manifest.json",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "size": 1
+    }
+  },
+  "tools": {
+    "git": {
+      "path": "/usr/bin/git",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "size": 1,
+      "version_output_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "mkosi": {
+      "path": "/usr/bin/mkosi",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "size": 1,
+      "version_output_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "qemu_img": {
+      "path": "/usr/bin/qemu-img",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "size": 1,
+      "version_output_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  },
+  "boot_test": {
+    "qemu_system": {
+      "path": "/usr/bin/qemu-system-x86_64",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "size": 1
+    },
+    "ovmf_code": {
+      "path": "/usr/share/OVMF/OVMF_CODE.fd",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "size": 1
+    },
+    "ovmf_vars": {
+      "path": "/usr/share/OVMF/OVMF_VARS.fd",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "size": 1
+    },
+    "timeout_seconds": 180
+  }
+}

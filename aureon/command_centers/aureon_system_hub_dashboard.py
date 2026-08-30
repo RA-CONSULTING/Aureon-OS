@@ -310,7 +310,19 @@ def _safe_load_json(path: str) -> dict:
         return {}
 
 
-THOUGHTS_FILE = Path(__file__).parent / "thoughts.jsonl"
+def _resolve_thoughts_file() -> Path:
+    """The shared cross-process thought stream.
+
+    This dashboard read ``aureon/command_centers/thoughts.jsonl`` while the live runner it
+    spawns wrote ``aureon/trading/thoughts.jsonl`` — two different files, so the panels fed
+    by the runner were permanently empty. Both now resolve the same path, overridable with
+    ``AUREON_THOUGHTS_FILE``.
+    """
+    override = os.getenv("AUREON_THOUGHTS_FILE", "").strip()
+    return Path(override) if override else Path(__file__).resolve().parents[2] / "thoughts.jsonl"
+
+
+THOUGHTS_FILE = _resolve_thoughts_file()
 
 DASHBOARD_LINKS = [
     {
@@ -345,7 +357,10 @@ DASHBOARD_LINKS = [
     },
 ]
 
-LIVE_RUNNER_SCRIPT = Path(__file__).parent / "aureon_queen_live_runner.py"
+# The runner lives in aureon/trading/, not next to this dashboard — the old
+# Path(__file__).parent path never existed, so _ensure_live_runner() always failed
+# silently and reported "not detected".
+LIVE_RUNNER_SCRIPT = Path(__file__).resolve().parents[1] / "trading" / "aureon_queen_live_runner.py"
 
 
 def _check_port_open(port: int, host: str = "127.0.0.1", timeout: float = 0.25) -> bool:
@@ -381,15 +396,25 @@ def _is_process_running(match: str) -> bool:
     return False
 
 
+def _autostart_live_runner_allowed() -> bool:
+    """Spawning a data producer from a dashboard is opt-in.
+
+    With the path bug above fixed this function would suddenly start launching a
+    background process on every dashboard boot, which nobody asked for. Opening a
+    dashboard stays a read-only act unless the operator says otherwise.
+    """
+    return os.getenv("AUREON_AUTOSTART_LIVE_RUNNER", "").strip().lower() in {"1", "true", "yes", "on"}
+
+
 def _ensure_live_runner() -> bool:
     if _is_process_running("aureon_queen_live_runner.py"):
         return True
-    if not LIVE_RUNNER_SCRIPT.exists():
+    if not LIVE_RUNNER_SCRIPT.exists() or not _autostart_live_runner_allowed():
         return False
     try:
         subprocess.Popen(
             [sys.executable, str(LIVE_RUNNER_SCRIPT)],
-            cwd=str(Path(__file__).parent),
+            cwd=str(Path(__file__).resolve().parents[2]),
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
@@ -2138,7 +2163,7 @@ def get_scanners():
         pass
     
     # 2. Read from persisted thoughts.jsonl file (captures external process telemetry)
-    thoughts_file = Path(__file__).parent / "thoughts.jsonl"
+    thoughts_file = THOUGHTS_FILE
     if thoughts_file.exists():
         try:
             # Read last 500 lines efficiently
@@ -2617,7 +2642,7 @@ def get_bots():
     """API endpoint for detected bot activity (from bot_hunter_dashboard)."""
     # Read bot activity from thoughts
     all_thoughts = []
-    thoughts_file = Path(__file__).parent / "thoughts.jsonl"
+    thoughts_file = THOUGHTS_FILE
     if thoughts_file.exists():
         try:
             with open(thoughts_file, "r", encoding="utf-8", errors="ignore") as f:
@@ -2678,7 +2703,7 @@ def get_bots():
 def get_whales():
     """API endpoint for whale activity (from surveillance_dashboard)."""
     all_thoughts = []
-    thoughts_file = Path(__file__).parent / "thoughts.jsonl"
+    thoughts_file = THOUGHTS_FILE
     if thoughts_file.exists():
         try:
             with open(thoughts_file, "r", encoding="utf-8", errors="ignore") as f:
@@ -2746,7 +2771,7 @@ def get_whales():
 def get_waves():
     """API endpoint for wave scanner data (from unified_dashboard)."""
     all_thoughts = []
-    thoughts_file = Path(__file__).parent / "thoughts.jsonl"
+    thoughts_file = THOUGHTS_FILE
     if thoughts_file.exists():
         try:
             with open(thoughts_file, "r", encoding="utf-8", errors="ignore") as f:
@@ -2787,7 +2812,7 @@ def get_waves():
 def get_unified_feed():
     """API endpoint for ALL feeds unified (market, whales, bots, waves, queen)."""
     all_thoughts = []
-    thoughts_file = Path(__file__).parent / "thoughts.jsonl"
+    thoughts_file = THOUGHTS_FILE
     if thoughts_file.exists():
         try:
             with open(thoughts_file, "r", encoding="utf-8", errors="ignore") as f:
@@ -2869,7 +2894,11 @@ def main():
     if runner_ok:
         print("✅ Live runner active")
     else:
-        print("⚠️ Live runner not detected; start aureon_queen_live_runner.py for live data")
+        print("⚠️ Live runner not running. Start it with:")
+        print(f"      python {LIVE_RUNNER_SCRIPT.relative_to(Path(__file__).resolve().parents[2])}")
+        print("   It streams real provider readings only; unavailable sources report no_data.")
+        print("   Set AUREON_AUTOSTART_LIVE_RUNNER=1 to have this dashboard launch it.")
+    print(f"🧠 Thought stream: {THOUGHTS_FILE}")
     
     # Add startup Queen message
     dashboard_state.add_queen_message(

@@ -80,14 +80,17 @@ except ImportError:
     CAPITAL_AVAILABLE = False
     CapitalClient = None
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s [%(levelname)s] %(message)s',
-    handlers=[
-        logging.FileHandler('aureon_multi_exchange.log'),
-        logging.StreamHandler(sys.stdout)
-    ]
-)
+if os.getenv("AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS", "").strip().lower() not in {
+    "1", "true", "yes", "on",
+}:
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s [%(levelname)s] %(message)s',
+        handlers=[
+            logging.FileHandler('aureon_multi_exchange.log'),
+            logging.StreamHandler(sys.stdout)
+        ]
+    )
 logger = logging.getLogger(__name__)
 
 # ═══════════════════════════════════════════════════════════════════════════

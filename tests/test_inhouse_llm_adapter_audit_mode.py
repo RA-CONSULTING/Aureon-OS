@@ -49,6 +49,10 @@ def test_default_voice_adapter_prefers_hybrid_when_local_llm_is_allowed(monkeypa
     monkeypatch.delenv("AUREON_VOICE_BACKEND", raising=False)
     monkeypatch.setenv("AUREON_AUDIT_MODE", "1")
     monkeypatch.setenv("AUREON_LLM_ALLOW_HTTP_IN_AUDIT", "1")
+    # the suite exports AUREON_LLM_OFFLINE=1, which (correctly) trumps the
+    # audit-allow flag; these tests patch every HTTP seam, so clear it here
+    monkeypatch.delenv("AUREON_LLM_OFFLINE", raising=False)
+    monkeypatch.delenv("AUREON_DISABLE_LLM_HTTP", raising=False)
     monkeypatch.setattr(AureonLocalAdapter, "health_check", lambda self: True)
 
     adapter = build_voice_adapter()
@@ -60,6 +64,10 @@ def test_default_voice_adapter_prefers_hybrid_when_local_llm_is_allowed(monkeypa
 def test_hybrid_adapter_weaves_small_ollama_shards(monkeypatch):
     monkeypatch.setenv("AUREON_AUDIT_MODE", "1")
     monkeypatch.setenv("AUREON_LLM_ALLOW_HTTP_IN_AUDIT", "1")
+    # the suite exports AUREON_LLM_OFFLINE=1, which (correctly) trumps the
+    # audit-allow flag; these tests patch every HTTP seam, so clear it here
+    monkeypatch.delenv("AUREON_LLM_OFFLINE", raising=False)
+    monkeypatch.delenv("AUREON_DISABLE_LLM_HTTP", raising=False)
     monkeypatch.setenv("AUREON_OLLAMA_CONTEXT_WEAVER", "1")
     monkeypatch.setenv("AUREON_OLLAMA_WEAVER_SHARD_TOKENS", "64")
     monkeypatch.setenv("AUREON_OLLAMA_WEAVER_SHARD_LIMIT", "3")
@@ -97,6 +105,10 @@ def test_hybrid_adapter_weaves_small_ollama_shards(monkeypatch):
 def test_hybrid_adapter_compiles_weaver_shards_without_leaking_packet_scaffold(monkeypatch):
     monkeypatch.setenv("AUREON_AUDIT_MODE", "1")
     monkeypatch.setenv("AUREON_LLM_ALLOW_HTTP_IN_AUDIT", "1")
+    # the suite exports AUREON_LLM_OFFLINE=1, which (correctly) trumps the
+    # audit-allow flag; these tests patch every HTTP seam, so clear it here
+    monkeypatch.delenv("AUREON_LLM_OFFLINE", raising=False)
+    monkeypatch.delenv("AUREON_DISABLE_LLM_HTTP", raising=False)
     monkeypatch.setenv("AUREON_OLLAMA_CONTEXT_WEAVER", "1")
     monkeypatch.setenv("AUREON_OLLAMA_WEAVER_SHARD_LIMIT", "3")
     monkeypatch.setattr(AureonLocalAdapter, "health_check", lambda self: True)
@@ -139,6 +151,10 @@ def test_hybrid_adapter_compiles_weaver_shards_without_leaking_packet_scaffold(m
 def test_hybrid_adapter_rejects_boilerplate_weaver_draft_for_cockpit_status(monkeypatch):
     monkeypatch.setenv("AUREON_AUDIT_MODE", "1")
     monkeypatch.setenv("AUREON_LLM_ALLOW_HTTP_IN_AUDIT", "1")
+    # the suite exports AUREON_LLM_OFFLINE=1, which (correctly) trumps the
+    # audit-allow flag; these tests patch every HTTP seam, so clear it here
+    monkeypatch.delenv("AUREON_LLM_OFFLINE", raising=False)
+    monkeypatch.delenv("AUREON_DISABLE_LLM_HTTP", raising=False)
     monkeypatch.setenv("AUREON_OLLAMA_CONTEXT_WEAVER", "1")
     monkeypatch.setenv("AUREON_OLLAMA_WEAVER_SHARD_LIMIT", "3")
     monkeypatch.setattr(AureonLocalAdapter, "health_check", lambda self: True)
@@ -180,6 +196,10 @@ def test_hybrid_adapter_rejects_boilerplate_weaver_draft_for_cockpit_status(monk
 def test_hybrid_adapter_can_disable_context_weaver(monkeypatch):
     monkeypatch.setenv("AUREON_AUDIT_MODE", "1")
     monkeypatch.setenv("AUREON_LLM_ALLOW_HTTP_IN_AUDIT", "1")
+    # the suite exports AUREON_LLM_OFFLINE=1, which (correctly) trumps the
+    # audit-allow flag; these tests patch every HTTP seam, so clear it here
+    monkeypatch.delenv("AUREON_LLM_OFFLINE", raising=False)
+    monkeypatch.delenv("AUREON_DISABLE_LLM_HTTP", raising=False)
     monkeypatch.setenv("AUREON_OLLAMA_CONTEXT_WEAVER", "0")
     monkeypatch.setattr(AureonLocalAdapter, "health_check", lambda self: True)
     monkeypatch.setattr(AureonBrainAdapter, "health_check", lambda self: False)

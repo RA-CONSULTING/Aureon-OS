@@ -55,30 +55,7 @@ Gary Leckey | Prime Sentinel Decree | January 2026
 ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════
 """
 
-from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
-import sys
 import os
-if sys.platform == 'win32':
-    os.environ['PYTHONIOENCODING'] = 'utf-8'
-    try:
-        import io
-        def _is_utf8_wrapper(stream):
-            return (isinstance(stream, io.TextIOWrapper) and 
-                    hasattr(stream, 'encoding') and stream.encoding and
-                    stream.encoding.lower().replace('-', '') == 'utf8')
-        def _is_buffer_valid(stream):
-            if not hasattr(stream, 'buffer'):
-                return False
-            try:
-                return stream.buffer is not None and not stream.buffer.closed
-            except (ValueError, AttributeError):
-                return False
-        if _is_buffer_valid(sys.stdout) and not _is_utf8_wrapper(sys.stdout):
-            sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace', line_buffering=True)
-        if _is_buffer_valid(sys.stderr) and not _is_utf8_wrapper(sys.stderr):
-            sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace', line_buffering=True)
-    except Exception:
-        pass
 
 import json
 import time
@@ -560,9 +537,23 @@ class QueenTrueConsciousnessController:
                         continue
                     
                     ticker = ticker_map[symbol]
-                    price = float(ticker.get('lastPrice', 0))
-                    change_24h = float(ticker.get('priceChangePercent', 0))
-                    volume = float(ticker.get('quoteVolume', 0))
+                    raw_price = ticker.get('lastPrice')
+                    raw_change = ticker.get('priceChangePercent')
+                    raw_volume = ticker.get('quoteVolume')
+                    if raw_price is None or raw_change is None or raw_volume is None:
+                        continue
+                    try:
+                        price = float(raw_price)
+                        change_24h = float(raw_change)
+                        volume = float(raw_volume)
+                    except (TypeError, ValueError):
+                        continue
+                    if (
+                        not all(math.isfinite(value) for value in (price, change_24h, volume))
+                        or price <= 0
+                        or volume < 0
+                    ):
+                        continue
                     
                     if volume < 1_000_000:  # Min $1M volume
                         continue

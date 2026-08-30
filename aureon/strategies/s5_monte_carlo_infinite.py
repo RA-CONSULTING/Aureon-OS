@@ -18,7 +18,6 @@ import json
 import asyncio
 import websockets
 import signal
-import random
 import math
 from datetime import datetime, timedelta
 from typing import Dict, List, Set, Optional
@@ -408,30 +407,12 @@ class MonteCarloInfiniteLabyrinth:
         if not active:
             return []
         
-        # Exploration vs exploitation
-        if random.random() < self.exploration_rate:
-            # Explore: random selection
-            return random.sample(active, min(count, len(active)))
-        else:
-            # Exploit: weighted selection by momentum score
-            weights = [self.path_weights.get(s, 1.0) for s in active]
-            total = sum(weights)
-            if total == 0:
-                return random.sample(active, min(count, len(active)))
-            
-            probs = [w/total for w in weights]
-            selected = []
-            
-            for _ in range(min(count, len(active))):
-                r = random.random()
-                cumsum = 0
-                for i, p in enumerate(probs):
-                    cumsum += p
-                    if r <= cumsum and active[i] not in selected:
-                        selected.append(active[i])
-                        break
-            
-            return selected
+        # Deterministic ranking over observed momentum/path weights.
+        return sorted(
+            active,
+            key=lambda symbol: (self.path_weights.get(symbol, 1.0), symbol),
+            reverse=True,
+        )[: min(count, len(active))]
     
     def _evaluate_opportunity(self, node: PathNode) -> Optional[dict]:
         """Evaluate if a path has a trading opportunity"""

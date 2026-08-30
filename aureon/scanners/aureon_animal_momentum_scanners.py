@@ -25,6 +25,7 @@ import math
 import os
 import time
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Any
 
@@ -107,6 +108,163 @@ class AnimalOpportunity:
     net_pct: float
     volume: float
     reason: str = ""
+    truth_status: str = "no_data"
+    source_id: Optional[str] = None
+    source_timestamp: Optional[float] = None
+    received_at: Optional[float] = None
+    generated_values: bool = False
+    eligible_for_external_action: bool = False
+
+
+MAX_LATEST_BAR_AGE_SECONDS = 2 * 60 * 60
+MAX_HISTORICAL_BAR_AGE_SECONDS = 48 * 60 * 60
+MAX_SOURCE_CLOCK_SKEW_SECONDS = 5 * 60
+
+
+def _finite_float(value: Any, *, positive: bool = False) -> Optional[float]:
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    if not math.isfinite(number):
+        return None
+    if positive and number <= 0:
+        return None
+    return number
+
+
+def _required_number(
+    payload: Dict[str, Any],
+    *keys: str,
+    positive: bool = False,
+) -> Optional[float]:
+    for key in keys:
+        if key in payload and payload[key] is not None:
+            return _finite_float(payload[key], positive=positive)
+    return None
+
+
+def _source_timestamp(payload: Dict[str, Any]) -> Optional[float]:
+    raw = None
+    for key in ("source_timestamp", "t", "timestamp", "event_time", "E", "close_time", "C"):
+        if key in payload and payload[key] is not None:
+            raw = payload[key]
+            break
+    if raw is None:
+        return None
+    if isinstance(raw, (int, float)):
+        value = float(raw)
+        if value > 10_000_000_000:
+            value /= 1000.0
+        return value if math.isfinite(value) and value > 0 else None
+    try:
+        parsed = datetime.fromisoformat(str(raw).replace("Z", "+00:00"))
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
+        return parsed.timestamp()
+    except (TypeError, ValueError):
+        return None
+
+
+def _normalise_provider_bars(
+    bars: Any,
+    *,
+    source_id: str,
+    received_at: Optional[float] = None,
+) -> List[Dict[str, Any]]:
+    """Return only complete, timestamped provider bars.
+
+    Receipt time is kept separate and is never substituted for source time.
+    """
+    received = time.time() if received_at is None else float(received_at)
+    if not isinstance(bars, list) or not bars:
+        return []
+    normalised: List[Dict[str, Any]] = []
+    for bar in bars:
+        if not isinstance(bar, dict):
+            return []
+        opened = _required_number(bar, "o", "open", positive=True)
+        closed = _required_number(bar, "c", "close", positive=True)
+        high = _required_number(bar, "h", "high", positive=True)
+        low = _required_number(bar, "l", "low", positive=True)
+        volume = _required_number(bar, "v", "volume")
+        observed_at = _source_timestamp(bar)
+        if None in (opened, closed, high, low, volume, observed_at):
+            return []
+        assert opened is not None and closed is not None
+        assert high is not None and low is not None and volume is not None
+        assert observed_at is not None
+        age = received - observed_at
+        if (
+            volume < 0
+            or high < max(opened, closed)
+            or low > min(opened, closed)
+            or age < -MAX_SOURCE_CLOCK_SKEW_SECONDS
+            or age > MAX_HISTORICAL_BAR_AGE_SECONDS
+        ):
+            return []
+        normalised.append(
+            {
+                "o": opened,
+                "c": closed,
+                "h": high,
+                "l": low,
+                "v": volume,
+                "source_id": str(bar.get("source_id") or source_id),
+                "source_timestamp": observed_at,
+                "received_at": received,
+                "truth_status": "live",
+                "generated_values": False,
+            }
+        )
+    normalised.sort(key=lambda item: item["source_timestamp"])
+    if received - normalised[-1]["source_timestamp"] > MAX_LATEST_BAR_AGE_SECONDS:
+        return []
+    return normalised
+
+
+def _bar_series_provenance(bars: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    if not bars:
+        return None
+    latest = bars[-1]
+    source_id = latest.get("source_id")
+    source_ts = _finite_float(latest.get("source_timestamp"), positive=True)
+    received_at = _finite_float(latest.get("received_at"), positive=True)
+    if (
+        latest.get("truth_status") not in {"live", "real_derived"}
+        or not source_id
+        or source_ts is None
+        or received_at is None
+        or latest.get("generated_values") is not False
+        or received_at - source_ts > MAX_LATEST_BAR_AGE_SECONDS
+    ):
+        return None
+    return {
+        "truth_status": "real_derived",
+        "source_id": str(source_id),
+        "source_timestamp": source_ts,
+        "received_at": received_at,
+        "generated_values": False,
+        "eligible_for_external_action": True,
+    }
+
+
+def _bar_series_metrics(
+    bars: List[Dict[str, Any]],
+) -> Optional[Tuple[float, float, float, Dict[str, Any]]]:
+    provenance = _bar_series_provenance(bars)
+    if provenance is None:
+        return None
+    first_price = _required_number(bars[0], "o", "open", positive=True)
+    last_price = _required_number(bars[-1], "c", "close", positive=True)
+    volumes = [_required_number(bar, "v", "volume") for bar in bars]
+    if (
+        first_price is None
+        or last_price is None
+        or any(volume is None or volume < 0 for volume in volumes)
+    ):
+        return None
+    return first_price, last_price, sum(volume for volume in volumes if volume is not None), provenance
 
 
 def _read_external_cache(cache_file: str, max_age: float = 300) -> Optional[Dict]:
@@ -125,8 +283,11 @@ def _read_external_cache(cache_file: str, max_age: float = 300) -> Optional[Dict
                 continue
             raw = p.read_text(encoding='utf-8')
             data = json.loads(raw) if raw else {}
-            ts = float(data.get('generated_at', 0) or 0)
-            if ts > 0 and (time.time() - ts) <= max_age:
+            generated_at = data.get('generated_at')
+            if generated_at is None:
+                continue
+            ts = float(generated_at)
+            if math.isfinite(ts) and ts > 0 and 0 <= (time.time() - ts) <= max_age:
                 logger.debug(f"🎯 Found fresh cache: {p}")
                 return data
     except Exception as e:
@@ -168,12 +329,21 @@ class BaseAnimalScanner:
         """Called when Orca detects a whale movement - prioritize this symbol!"""
         try:
             symbol = signal_data.get('symbol')
-            coherence = signal_data.get('coherence', 0)
-            if symbol and coherence > 0.5:  # Only high-confidence whale signals
+            coherence = _finite_float(signal_data.get('coherence'))
+            source_timestamp = _source_timestamp(signal_data)
+            now = time.time()
+            signal_is_proven = (
+                signal_data.get('truth_status') in {'live', 'real_derived'}
+                and bool(signal_data.get('source_id'))
+                and source_timestamp is not None
+                and 0 <= now - source_timestamp <= 5 * 60
+                and signal_data.get('generated_values') is False
+            )
+            if symbol and coherence is not None and coherence > 0.5 and signal_is_proven:
                 # Add to priority target list (dedupe)
                 if symbol not in self._orca_whale_targets:
                     self._orca_whale_targets.append(symbol)
-                    self._orca_target_time = time.time()
+                    self._orca_target_time = now
                     logger.info(f"🦈→🎯 Orca detected whale on {symbol} - PRIORITY TARGET!")
                 # Keep list manageable (max 20 recent whale signals)
                 if len(self._orca_whale_targets) > 20:
@@ -244,22 +414,55 @@ class BaseAnimalScanner:
             try:
                 for symbol in symbols:
                     ticker = self.kraken_client.get_ticker(symbol)
-                    if ticker and 'c' in ticker:  # 'c' = last trade
-                        price = float(ticker['c'][0])
-                        open_price = float(ticker.get('o', [price])[0])
-                        if open_price > 0:
-                            move_pct = ((price - open_price) / open_price) * 100
-                            if abs(move_pct) > 0.5:  # 0.5%+ move
-                                volume = float(ticker.get('v', [0])[1]) * price
-                                opp = AnimalOpportunity(
-                                    symbol=symbol,
-                                    side='buy' if move_pct > 0 else 'sell',
-                                    move_pct=abs(move_pct),
-                                    net_pct=abs(move_pct) - 0.2,  # After fees
-                                    volume=volume,
-                                    reason=f"Kraken momentum: {move_pct:+.2f}%"
-                                )
-                                opportunities.append(opp)
+                    if not isinstance(ticker, dict):
+                        continue
+                    closes = ticker.get("c")
+                    opens = ticker.get("o")
+                    volumes = ticker.get("v")
+                    observed_at = _source_timestamp(ticker)
+                    if (
+                        not isinstance(closes, (list, tuple))
+                        or not closes
+                        or not isinstance(opens, (list, tuple))
+                        or not opens
+                        or not isinstance(volumes, (list, tuple))
+                        or len(volumes) < 2
+                        or observed_at is None
+                    ):
+                        continue
+                    price = _finite_float(closes[0], positive=True)
+                    open_price = _finite_float(opens[0], positive=True)
+                    base_volume = _finite_float(volumes[1])
+                    received_at = time.time()
+                    if (
+                        price is None
+                        or open_price is None
+                        or base_volume is None
+                        or base_volume < 0
+                        or received_at - observed_at > MAX_LATEST_BAR_AGE_SECONDS
+                    ):
+                        continue
+                    move_pct = ((price - open_price) / open_price) * 100
+                    if abs(move_pct) > 0.5:
+                        is_profitable, tier = self.bridge.is_move_profitable(abs(move_pct))
+                        if not is_profitable:
+                            continue
+                        opportunities.append(
+                            AnimalOpportunity(
+                                symbol=symbol,
+                                side='buy' if move_pct > 0 else 'sell',
+                                move_pct=abs(move_pct),
+                                net_pct=self.bridge.calculate_net_profit(abs(move_pct)),
+                                volume=base_volume * price,
+                                reason=f"Kraken momentum ({tier}): {move_pct:+.2f}%",
+                                truth_status="real_derived",
+                                source_id="kraken_rest_ticker",
+                                source_timestamp=observed_at,
+                                received_at=received_at,
+                                generated_values=False,
+                                eligible_for_external_action=True,
+                            )
+                        )
             except Exception as e:
                 logger.debug(f"Kraken scan error: {e}")
         
@@ -268,19 +471,40 @@ class BaseAnimalScanner:
             try:
                 for symbol in symbols:
                     ticker = self.binance_ws.get_latest_ticker(symbol)
-                    if ticker and 'priceChangePercent' in ticker:
-                        move_pct = float(ticker['priceChangePercent'])
-                        if abs(move_pct) > 0.5:
-                            volume = float(ticker.get('quoteVolume', 0))
-                            opp = AnimalOpportunity(
-                                symbol=symbol,
-                                side='buy' if move_pct > 0 else 'sell',
-                                move_pct=abs(move_pct),
-                                net_pct=abs(move_pct) - 0.2,
-                                volume=volume,
-                                reason=f"Binance momentum: {move_pct:+.2f}%"
-                            )
-                            opportunities.append(opp)
+                    if not isinstance(ticker, dict):
+                        continue
+                    move_pct = _required_number(ticker, "priceChangePercent")
+                    volume = _required_number(ticker, "quoteVolume")
+                    observed_at = _source_timestamp(ticker)
+                    received_at = time.time()
+                    if (
+                        move_pct is None
+                        or volume is None
+                        or volume < 0
+                        or observed_at is None
+                        or received_at - observed_at > MAX_LATEST_BAR_AGE_SECONDS
+                        or abs(move_pct) <= 0.5
+                    ):
+                        continue
+                    is_profitable, tier = self.bridge.is_move_profitable(abs(move_pct))
+                    if not is_profitable:
+                        continue
+                    opportunities.append(
+                        AnimalOpportunity(
+                            symbol=symbol,
+                            side='buy' if move_pct > 0 else 'sell',
+                            move_pct=abs(move_pct),
+                            net_pct=self.bridge.calculate_net_profit(abs(move_pct)),
+                            volume=volume,
+                            reason=f"Binance momentum ({tier}): {move_pct:+.2f}%",
+                            truth_status="real_derived",
+                            source_id="binance_websocket_ticker",
+                            source_timestamp=observed_at,
+                            received_at=received_at,
+                            generated_values=False,
+                            eligible_for_external_action=True,
+                        )
+                    )
             except Exception as e:
                 logger.debug(f"Binance scan error: {e}")
         
@@ -289,15 +513,43 @@ class BaseAnimalScanner:
             try:
                 wave_opps = self.wave_scanner.get_hot_opportunities(min_score=0.6)
                 for wo in wave_opps:
+                    if not isinstance(wo, dict):
+                        continue
+                    source_timestamp = _finite_float(wo.get("source_timestamp"), positive=True)
+                    received_at = _finite_float(wo.get("received_at"), positive=True)
+                    source_id = wo.get("source_id")
+                    move_pct = _finite_float(wo.get("move_pct"))
+                    net_pct = _finite_float(wo.get("net_pct"))
+                    volume = _finite_float(wo.get("volume_usd"))
+                    if (
+                        wo.get("truth_status") not in {"live", "real_derived"}
+                        or not source_id
+                        or source_timestamp is None
+                        or received_at is None
+                        or move_pct is None
+                        or net_pct is None
+                        or volume is None
+                        or volume < 0
+                        or received_at - source_timestamp > MAX_LATEST_BAR_AGE_SECONDS
+                        or wo.get("generated_values") is not False
+                    ):
+                        continue
                     opp = AnimalOpportunity(
-                        symbol=wo.get('symbol', ''),
+                        symbol=str(wo.get('symbol') or ''),
                         side='buy' if wo.get('direction') == 'up' else 'sell',
-                        move_pct=wo.get('move_pct', 0),
-                        net_pct=wo.get('net_pct', 0),
-                        volume=wo.get('volume_usd', 0),
-                        reason=f"Wave scanner: {wo.get('reason', 'multi-market signal')}"
+                        move_pct=move_pct,
+                        net_pct=net_pct,
+                        volume=volume,
+                        reason=f"Wave scanner: {wo.get('reason') or 'provider-derived signal'}",
+                        truth_status="real_derived",
+                        source_id=str(source_id),
+                        source_timestamp=source_timestamp,
+                        received_at=received_at,
+                        generated_values=False,
+                        eligible_for_external_action=True,
                     )
-                    opportunities.append(opp)
+                    if opp.symbol:
+                        opportunities.append(opp)
             except Exception as e:
                 logger.debug(f"Wave scanner error: {e}")
         
@@ -358,63 +610,17 @@ class BaseAnimalScanner:
             logger.debug(f"🎯 Using cached batch bars ({len(_BATCH_BARS_CACHE)} symbols)")
             return _BATCH_BARS_CACHE
         
-        # 🟡 TRY BINANCE CACHE FIRST (FREE, no API calls!)
+        # Ticker-only caches are useful status surfaces, but they are not OHLC
+        # receipts. The previous implementation invented high/low values at
+        # +/-1% and treated the result as a provider bar. Only an explicit
+        # provider bar series may enter momentum scoring.
         binance_cache = _read_external_cache('binance_ws_cache.json', max_age=120)
         if binance_cache:
-            ticker_cache = binance_cache.get('ticker_cache', {})
-            if len(ticker_cache) > 10:
-                logger.info(f"🟡 Using Binance WS cache ({len(ticker_cache)} tickers) - ZERO Alpaca API calls!")
-                # Convert Binance format to bars-like format
-                result = {}
-                for key, ticker in ticker_cache.items():
-                    if not isinstance(ticker, dict):
-                        continue
-                    base = ticker.get('base', '').upper()
-                    if not base:
-                        continue
-                    sym = f"{base}/USD"
-                    price = float(ticker.get('price', 0) or 0)
-                    change = float(ticker.get('change24h', 0) or 0)
-                    vol = float(ticker.get('volume', 0) or 0)
-                    if price > 0:
-                        # Simulate bars from 24h change
-                        open_price = price / (1 + change/100) if change != -100 else price
-                        result[sym] = [{
-                            'o': open_price, 'c': price, 'h': max(open_price, price) * 1.01,
-                            'l': min(open_price, price) * 0.99, 'v': vol
-                        }]
-                if result:
-                    _BATCH_BARS_CACHE = result
-                    _BATCH_CACHE_TIME = time.time()
-                    return result
-        
-        # 🐙 TRY KRAKEN CACHE SECOND (also FREE!)
+            logger.debug("Binance ticker cache is not a timestamped OHLC source; requesting provider bars")
+
         kraken_cache = _read_external_cache('kraken_market_cache.json', max_age=120)
         if kraken_cache:
-            ticker_cache = kraken_cache.get('ticker_cache', {})
-            if len(ticker_cache) > 5:
-                logger.info(f"🐙 Using Kraken cache ({len(ticker_cache)} tickers) - ZERO Alpaca API calls!")
-                result = {}
-                for key, ticker in ticker_cache.items():
-                    if not isinstance(ticker, dict):
-                        continue
-                    base = ticker.get('base', '').upper()
-                    if not base:
-                        continue
-                    sym = f"{base}/USD"
-                    price = float(ticker.get('price', 0) or 0)
-                    change = float(ticker.get('change24h', 0) or 0)
-                    vol = float(ticker.get('volume', 0) or 0)
-                    if price > 0:
-                        open_price = price / (1 + change/100) if change != -100 else price
-                        result[sym] = [{
-                            'o': open_price, 'c': price, 'h': max(open_price, price) * 1.01,
-                            'l': min(open_price, price) * 0.99, 'v': vol
-                        }]
-                if result:
-                    _BATCH_BARS_CACHE = result
-                    _BATCH_CACHE_TIME = time.time()
-                    return result
+            logger.debug("Kraken ticker cache is not a timestamped OHLC source; requesting provider bars")
         
         # 🦙 ALPACA BATCH CALL (only if external caches unavailable)
         try:
@@ -439,8 +645,12 @@ class BaseAnimalScanner:
             
             for resolved_sym, bars in bars_data.items():
                 orig_sym = resolved_map.get(resolved_sym, resolved_sym)
-                if bars:
-                    result[orig_sym] = bars
+                normalised = _normalise_provider_bars(
+                    bars,
+                    source_id="alpaca_crypto_bars_1h",
+                )
+                if normalised:
+                    result[orig_sym] = normalised
             
             # Update global cache
             _BATCH_BARS_CACHE = result
@@ -477,13 +687,12 @@ class AlpacaLoneWolf(BaseAnimalScanner):
                 if not bars or len(bars) < 1:
                     continue
 
-                first_price = float(bars[0].get('o', bars[0].get('open', 0)) or 0)
-                last_price = float(bars[-1].get('c', bars[-1].get('close', 0)) or 0)
-                if first_price <= 0 or last_price <= 0:
+                metrics = _bar_series_metrics(bars)
+                if metrics is None:
                     continue
+                first_price, last_price, vol, provenance = metrics
 
                 move_pct = ((last_price - first_price) / first_price) * 100.0
-                vol = sum(float(b.get('v', b.get('volume', 0)) or 0) for b in bars)
 
                 is_profitable, tier = self.bridge.is_move_profitable(abs(move_pct))
                 net = self.bridge.calculate_net_profit(abs(move_pct))
@@ -493,7 +702,17 @@ class AlpacaLoneWolf(BaseAnimalScanner):
 
                 side = 'buy' if move_pct < 0 else 'sell'
                 reason = f"Wolf ({tier})"
-                results.append(AnimalOpportunity(symbol=sym, side=side, move_pct=move_pct, net_pct=net, volume=vol, reason=reason))
+                results.append(
+                    AnimalOpportunity(
+                        symbol=sym,
+                        side=side,
+                        move_pct=move_pct,
+                        net_pct=net,
+                        volume=vol,
+                        reason=reason,
+                        **provenance,
+                    )
+                )
 
             except Exception:
                 continue
@@ -517,25 +736,25 @@ class AlpacaLionHunt(BaseAnimalScanner):
             if not bars or len(bars) < 1:
                 return None
 
-            first_price = float(bars[0].get('o', bars[0].get('open', 0)) or 0)
-            last_price = float(bars[-1].get('c', bars[-1].get('close', 0)) or 0)
-            if first_price <= 0 or last_price <= 0:
+            metrics = _bar_series_metrics(bars)
+            if metrics is None:
                 return None
+            first_price, last_price, vol, provenance = metrics
 
             move_pct = ((last_price - first_price) / first_price) * 100.0
-            vol = sum(float(b.get('v', b.get('volume', 0)) or 0) for b in bars)
             is_profitable, tier = self.bridge.is_move_profitable(abs(move_pct))
             net = self.bridge.calculate_net_profit(abs(move_pct))
 
             # Coherence weight from change within last 5 bars (stability)
             last5 = bars[-5:] if len(bars) >= 5 else bars
-            highs = [float(b.get('h', b.get('high', 0)) or 0) for b in last5]
-            lows = [float(b.get('l', b.get('low', 0)) or 0) for b in last5]
-            if not highs or not lows:
-                coherence = 1.0
-            else:
-                var = (max(highs) - min(lows)) or 1.0
-                coherence = 1.0 / (1.0 + var)
+            highs = [_required_number(bar, "h", "high", positive=True) for bar in last5]
+            lows = [_required_number(bar, "l", "low", positive=True) for bar in last5]
+            if any(value is None for value in highs + lows):
+                return None
+            observed_highs = [value for value in highs if value is not None]
+            observed_lows = [value for value in lows if value is not None]
+            observed_range = max(observed_highs) - min(observed_lows)
+            coherence = 1.0 if observed_range == 0 else 1.0 / (1.0 + observed_range)
 
             # Only consider profitable opportunities
             if not is_profitable:
@@ -543,7 +762,15 @@ class AlpacaLionHunt(BaseAnimalScanner):
 
             score = abs(move_pct) * math.log(1 + vol + 1.0) * (coherence * 2.0)
             side = 'buy' if move_pct < 0 else 'sell'
-            opp = AnimalOpportunity(symbol=sym, side=side, move_pct=move_pct, net_pct=net, volume=vol, reason=f"Lion ({tier})")
+            opp = AnimalOpportunity(
+                symbol=sym,
+                side=side,
+                move_pct=move_pct,
+                net_pct=net,
+                volume=vol,
+                reason=f"Lion ({tier})",
+                **provenance,
+            )
             return score, opp
         except Exception:
             return None
@@ -586,20 +813,29 @@ class AlpacaArmyAnts(BaseAnimalScanner):
                 if not bars or len(bars) < 1:
                     continue
 
-                first_price = float(bars[0].get('o', bars[0].get('open', 0)) or 0)
-                last_price = float(bars[-1].get('c', bars[-1].get('close', 0)) or 0)
-                if first_price <= 0 or last_price <= 0:
+                metrics = _bar_series_metrics(bars)
+                if metrics is None:
                     continue
+                first_price, last_price, vol, provenance = metrics
 
                 move_pct = ((last_price - first_price) / first_price) * 100.0
-                vol = sum(float(b.get('v', b.get('volume', 0)) or 0) for b in bars)
                 is_profitable, tier = self.bridge.is_move_profitable(abs(move_pct))
                 net = self.bridge.calculate_net_profit(abs(move_pct))
 
                 # Ants prefer small valid opportunities with big volume
                 if is_profitable and abs(move_pct) <= (self.bridge.get_cost_thresholds().tier_1_hot_threshold * 1.5):
                     side = 'buy' if move_pct < 0 else 'sell'
-                    results.append(AnimalOpportunity(symbol=sym, side=side, move_pct=move_pct, net_pct=net, volume=vol, reason=f"Ant (tier={tier})"))
+                    results.append(
+                        AnimalOpportunity(
+                            symbol=sym,
+                            side=side,
+                            move_pct=move_pct,
+                            net_pct=net,
+                            volume=vol,
+                            reason=f"Ant (tier={tier})",
+                            **provenance,
+                        )
+                    )
 
             except Exception:
                 continue
@@ -630,13 +866,12 @@ class AlpacaHummingbird(BaseAnimalScanner):
                 if not bars or len(bars) < 1:
                     continue
 
-                first_price = float(bars[0].get('o', bars[0].get('open', 0)) or 0)
-                last_price = float(bars[-1].get('c', bars[-1].get('close', 0)) or 0)
-                if first_price <= 0 or last_price <= 0:
+                metrics = _bar_series_metrics(bars)
+                if metrics is None:
                     continue
+                first_price, last_price, vol, provenance = metrics
 
                 move_pct = ((last_price - first_price) / first_price) * 100.0
-                vol = sum(float(b.get('v', b.get('volume', 0)) or 0) for b in bars)
 
                 is_profitable, tier = self.bridge.is_move_profitable(abs(move_pct))
                 net = self.bridge.calculate_net_profit(abs(move_pct))
@@ -648,7 +883,8 @@ class AlpacaHummingbird(BaseAnimalScanner):
                     side = 'buy' if move_pct < 0 else 'sell'
                     results.append(AnimalOpportunity(
                         symbol=s, side=side, move_pct=move_pct,
-                        net_pct=net, volume=vol, reason=f"Hummingbird ({tier})"
+                        net_pct=net, volume=vol, reason=f"Hummingbird ({tier})",
+                        **provenance,
                     ))
             except Exception:
                 continue
@@ -737,7 +973,13 @@ class AlpacaSwarmOrchestrator:
                                 'net_pct': opp.net_pct, 
                                 'reason': opp.reason,
                                 'volume': opp.volume,
-                                'agent': agent
+                                'agent': agent,
+                                'truth_status': opp.truth_status,
+                                'source_id': opp.source_id,
+                                'source_timestamp': opp.source_timestamp,
+                                'received_at': opp.received_at,
+                                'generated_values': opp.generated_values,
+                                'eligible_for_external_action': opp.eligible_for_external_action,
                             }
                         ))
                     except: pass
@@ -766,23 +1008,100 @@ class AlpacaSwarmOrchestrator:
         Returns:
             Order result dict or None if dry-run / error
         """
+        now = time.time()
+        source_timestamp = _finite_float(opp.source_timestamp, positive=True)
+        received_at = _finite_float(opp.received_at, positive=True)
+        requested_qty = _finite_float(qty, positive=True)
+        if (
+            opp.truth_status not in {"live", "real_derived"}
+            or not opp.source_id
+            or source_timestamp is None
+            or received_at is None
+            or requested_qty is None
+            or now - source_timestamp > MAX_LATEST_BAR_AGE_SECONDS
+            or source_timestamp - now > MAX_SOURCE_CLOCK_SKEW_SECONDS
+            or received_at - source_timestamp > MAX_LATEST_BAR_AGE_SECONDS
+            or opp.generated_values is not False
+            or opp.eligible_for_external_action is not True
+        ):
+            logger.warning("Blocked %s: source evidence unavailable or stale", opp.symbol)
+            return {
+                "status": "blocked",
+                "truth_status": "no_data",
+                "decision_status": "denied",
+                "reason": "signal_evidence_unavailable_or_stale",
+                "provider_order_id": None,
+                "filled_qty": None,
+                "filled_avg_price": None,
+                "eligible_for_learning": False,
+                "generated_values": False,
+            }
+
         if self.dry_run:
             logger.info(f"[DRY-RUN] Would execute {opp.side} {qty} {opp.symbol} ({opp.reason})")
-            return {'dry_run': True, 'symbol': opp.symbol, 'side': opp.side, 'qty': qty}
+            return {
+                "status": "not_submitted",
+                "truth_status": "dry_run",
+                "decision_status": "not_submitted",
+                "dry_run": True,
+                "symbol": opp.symbol,
+                "side": opp.side,
+                "requested_qty": requested_qty,
+                "provider_order_id": None,
+                "filled_qty": None,
+                "filled_avg_price": None,
+                "eligible_for_learning": False,
+                "generated_values": False,
+            }
 
         try:
             if use_trailing_stop:
                 result = self.bridge.execute_with_trailing_stop(
                     symbol=opp.symbol,
                     side=opp.side,
-                    qty=qty,
+                    qty=requested_qty,
                     trail_percent=2.0  # Default 2% trail
                 )
             else:
-                result = self.alpaca.place_market_order(opp.symbol, opp.side, qty)
+                result = self.alpaca.place_market_order(opp.symbol, opp.side, requested_qty)
 
-            logger.info(f"Executed {opp.side} {qty} {opp.symbol}: {result}")
-            return result
+            if not isinstance(result, dict):
+                return {
+                    "status": "submitted_unverified",
+                    "truth_status": "no_data",
+                    "decision_status": "reconciliation_required",
+                    "reason": "provider_response_not_mapping",
+                    "provider_order_id": None,
+                    "eligible_for_learning": False,
+                    "generated_values": False,
+                }
+            provider_order_id = (
+                result.get("id")
+                or result.get("order_id")
+                or result.get("orderId")
+                or result.get("client_order_id")
+            )
+            if not provider_order_id:
+                logger.error("Order response for %s lacks a provider order id", opp.symbol)
+                return {
+                    "status": "submitted_unverified",
+                    "truth_status": "no_data",
+                    "decision_status": "reconciliation_required",
+                    "reason": "provider_order_id_missing",
+                    "provider_order_id": None,
+                    "eligible_for_learning": False,
+                    "generated_values": False,
+                }
+            logger.info(f"Submitted {opp.side} {requested_qty} {opp.symbol}: provider_order_id={provider_order_id}")
+            return {
+                **result,
+                "status": "submitted",
+                "truth_status": "live",
+                "decision_status": "submitted",
+                "provider_order_id": str(provider_order_id),
+                "eligible_for_learning": False,
+                "generated_values": False,
+            }
         except Exception as e:
             logger.error(f"Execution failed for {opp.symbol}: {e}")
             return None

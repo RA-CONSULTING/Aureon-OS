@@ -1,265 +1,288 @@
 #!/usr/bin/env python3
-"""
-🇮🇪🎯 AUTO SNIPER - CONTINUOUS PENNY PROFIT KILLER 🎯🇮🇪
+"""Receipt-gated penny-profit screening.
 
-This runs continuously, checking all positions every 30 seconds
-and automatically executing kills when penny profit is confirmed.
-
-The boys make their kills automatically - no intervention needed.
-
-Usage: python3 auto_sniper.py
-
-Press Ctrl+C to stop.
+The legacy Auto Sniper name is retained for compatibility.  This module is
+inert on import and on a default CLI invocation; it will only submit a sell
+after complete, fresh provider receipts prove both the open position and a
+two-sided quote.  A submission acknowledgement is never accounting evidence.
 """
 
-from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
+from __future__ import annotations
+
+import argparse
+import copy
 import json
+import math
 import os
-import sys
+import tempfile
 import time
-from datetime import datetime
-from typing import Dict, List, Tuple, Optional
-
-# State file
-STATE_FILE = os.getenv('AUREON_STATE_FILE', 'aureon_kraken_state.json')
-CHECK_INTERVAL = 30  # seconds between scans
+from pathlib import Path
+from typing import Any, Dict, Mapping, Optional
 
 
-def load_state() -> Dict:
-    """Load current state file"""
+STATE_FILE = os.getenv("AUREON_STATE_FILE", "aureon_kraken_state.json")
+CHECK_INTERVAL = 30
+MAX_RECEIPT_AGE_SECONDS = 60.0
+
+
+def _finite(value: Any, *, positive: bool = False, nonnegative: bool = False) -> Optional[float]:
+    if value is None or isinstance(value, bool):
+        return None
     try:
-        with open(STATE_FILE) as f:
-            return json.load(f)
-    except Exception as e:
-        print(f"❌ Cannot load state: {e}")
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    if not math.isfinite(number) or (positive and number <= 0) or (nonnegative and number < 0):
+        return None
+    return number
+
+
+def _no_data(reason: str) -> Dict[str, Any]:
+    return {
+        "data_status": "no_data",
+        "truth_status": "no_data",
+        "generated_values": False,
+        "action": False,
+        "accounting": False,
+        "learning": False,
+        "reason": reason,
+    }
+
+
+def _fresh_receipt(receipt: Any, *, now: float, truth_status: str = "real_observed") -> Optional[str]:
+    if not isinstance(receipt, Mapping):
+        return "receipt_not_mapping"
+    if receipt.get("data_status") != "live" or receipt.get("truth_status") != truth_status:
+        return "receipt_not_real_observed"
+    if receipt.get("generated_values") is not False:
+        return "receipt_generated_or_unknown"
+    for field in ("source_id", "receipt_id"):
+        if not isinstance(receipt.get(field), str) or not receipt[field].strip():
+            return f"receipt_{field}_missing"
+    source_timestamp = _finite(receipt.get("source_timestamp"), positive=True)
+    received_at = _finite(receipt.get("received_at"), positive=True)
+    if source_timestamp is None or received_at is None:
+        return "receipt_timestamps_missing"
+    if source_timestamp > now + 5.0:
+        return "receipt_source_time_future"
+    if now - source_timestamp > MAX_RECEIPT_AGE_SECONDS:
+        return "receipt_source_time_stale"
+    if received_at + 5.0 < source_timestamp:
+        return "receipt_received_before_source"
+    return None
+
+
+def _complete_position(position: Any, *, now: float) -> Optional[str]:
+    problem = _fresh_receipt(position, now=now)
+    if problem:
+        return problem
+    if not isinstance(position, Mapping):
+        return "position_not_mapping"
+    if str(position.get("position_status") or "").upper() != "OPEN":
+        return "position_not_open"
+    if not isinstance(position.get("provider_position_id"), str) or not position["provider_position_id"].strip():
+        return "provider_position_id_missing"
+    if _finite(position.get("quantity"), positive=True) is None:
+        return "position_quantity_invalid"
+    if _finite(position.get("entry_value"), positive=True) is None:
+        return "position_entry_value_invalid"
+    if _finite(position.get("entry_fee"), nonnegative=True) is None:
+        return "position_entry_fee_invalid"
+    if not isinstance(position.get("fee_currency"), str) or not position["fee_currency"].strip():
+        return "position_fee_currency_missing"
+    return None
+
+
+def _complete_quote(quote: Any, *, now: float) -> Optional[str]:
+    problem = _fresh_receipt(quote, now=now)
+    if problem:
+        return problem
+    if not isinstance(quote, Mapping):
+        return "quote_not_mapping"
+    if quote.get("action") is not False or quote.get("accounting") is not False or quote.get("learning") is not False:
+        return "quote_controls_invalid"
+    price = _finite(quote.get("price"), positive=True)
+    bid = _finite(quote.get("bid"), positive=True)
+    ask = _finite(quote.get("ask"), positive=True)
+    if price is None or bid is None or ask is None:
+        return "quote_price_or_book_missing"
+    if ask < bid:
+        return "quote_crossed_book"
+    return None
+
+
+def _terminal_fill(receipt: Any, *, now: float, required_quantity: float) -> Optional[str]:
+    problem = _fresh_receipt(receipt, now=now)
+    if problem:
+        return problem
+    if not isinstance(receipt, Mapping):
+        return "fill_not_mapping"
+    if str(receipt.get("status") or "").upper() != "FILLED":
+        return "fill_not_terminal"
+    if receipt.get("fill_receipt_complete") is not True or receipt.get("eligible_for_accounting") is not True:
+        return "fill_not_accounting_eligible"
+    if receipt.get("reconciliation_required") is True:
+        return "fill_requires_reconciliation"
+    if not isinstance(receipt.get("provider_order_id"), str) or not receipt["provider_order_id"].strip():
+        return "provider_order_id_missing"
+    trade_ids = receipt.get("provider_trade_ids") or receipt.get("provider_fill_ids") or receipt.get("fills")
+    if not isinstance(trade_ids, (list, tuple)) or not trade_ids or not all(str(item).strip() for item in trade_ids):
+        return "provider_trade_ids_missing"
+    executed_quantity = _finite(receipt.get("executed_quantity"), positive=True)
+    average_price = _finite(receipt.get("average_price"), positive=True)
+    fee = _finite(receipt.get("total_fee"), nonnegative=True)
+    if executed_quantity is None or average_price is None or fee is None:
+        return "fill_observed_numbers_invalid"
+    if executed_quantity + 1e-12 < required_quantity:
+        return "fill_quantity_incomplete"
+    if not isinstance(receipt.get("fee_currency"), str) or not receipt["fee_currency"].strip():
+        return "fill_fee_currency_missing"
+    return None
+
+
+def load_state(state_file: str | os.PathLike[str] = STATE_FILE) -> Dict[str, Any]:
+    try:
+        with Path(state_file).open(encoding="utf-8") as handle:
+            loaded = json.load(handle)
+        return loaded if isinstance(loaded, dict) else {}
+    except (OSError, ValueError, TypeError):
         return {}
 
 
-def save_state(state: Dict):
-    """Save state file"""
+def save_state(state: Mapping[str, Any], state_file: str | os.PathLike[str] = STATE_FILE) -> bool:
+    """Atomically persist a terminally reconciled state; never write in place."""
+    destination = Path(state_file)
+    temp_name: Optional[str] = None
     try:
-        state['timestamp'] = time.time()
-        with open(STATE_FILE, 'w') as f:
-            json.dump(state, f, indent=2)
-    except Exception as e:
-        print(f"⚠️ State save error: {e}")
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        with tempfile.NamedTemporaryFile("w", encoding="utf-8", dir=destination.parent, delete=False) as handle:
+            temp_name = handle.name
+            json.dump(state, handle, indent=2, sort_keys=True)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temp_name, destination)
+        return True
+    except (OSError, TypeError, ValueError):
+        if temp_name:
+            try:
+                Path(temp_name).unlink(missing_ok=True)
+            except OSError:
+                pass
+        return False
 
 
 def get_fee_rate(exchange: str) -> float:
-    """Get total cost rate (fee + slippage + spread)"""
-    base_fees = {
-        'binance': 0.001,
-        'kraken': 0.0026,
-        'alpaca': 0.0025,
-        'capital': 0.001,
-    }
-    fee = base_fees.get(exchange.lower(), 0.002)
-    slippage = 0.002
-    spread = 0.001
-    return fee + slippage + spread
+    """Existing screening equation: fee + slippage + spread."""
+    base_fees = {"binance": 0.001, "kraken": 0.0026, "alpaca": 0.0025, "capital": 0.001}
+    return base_fees.get(exchange.lower(), 0.002) + 0.002 + 0.001
 
 
-def check_and_kill(client, state: Dict) -> Tuple[int, float]:
-    """
-    Check all positions and execute kills on confirmed penny profits.
-    Returns (kills_count, total_net_pnl)
-    """
-    positions = state.get('positions', {})
-    if not positions:
-        return 0, 0.0
-    
-    kills = 0
-    total_net = 0.0
-    to_remove = []
-    
-    for symbol, pos in positions.items():
-        exchange = pos.get('exchange', 'kraken')
-        entry_value = float(pos.get('entry_value', 0) or 0)
-        quantity = float(pos.get('quantity', 0) or 0)
-        
-        if entry_value <= 0 or quantity <= 0:
-            continue
-        
-        # Get current price
+def _deduplicated(state: Mapping[str, Any], receipt: Mapping[str, Any]) -> bool:
+    settled_receipts = set(state.get("settled_terminal_receipt_ids", []) or [])
+    settled_trades = set(state.get("settled_provider_trade_ids", []) or [])
+    receipt_id = receipt.get("receipt_id")
+    trade_ids = receipt.get("provider_trade_ids") or receipt.get("provider_fill_ids") or receipt.get("fills") or []
+    return receipt_id in settled_receipts or any(item in settled_trades for item in trade_ids)
+
+
+def check_and_kill(client: Any, state: Dict[str, Any], *, state_file: str | os.PathLike[str] = STATE_FILE, now: Optional[float] = None) -> Dict[str, Any]:
+    """Screen receipts and account only a complete, unique terminal provider fill."""
+    current = time.time() if now is None else now
+    if not math.isfinite(current):
+        return _no_data("clock_invalid")
+    positions = state.get("positions")
+    if not isinstance(positions, dict) or not positions:
+        return _no_data("positions_missing")
+
+    quotes: Dict[str, Mapping[str, Any]] = {}
+    for symbol, position in positions.items():
+        problem = _complete_position(position, now=current)
+        if problem:
+            return _no_data(f"position_{symbol}_{problem}")
         try:
-            ticker = client.get_ticker(exchange, symbol)
-            if not ticker:
-                continue
-            current_price = float(ticker.get('price', 0) or 0)
-            if current_price <= 0:
-                continue
-        except Exception as e:
-            continue
-        
-        # Calculate P&L
-        current_value = quantity * current_price
+            quote = client.get_ticker(position["exchange"], symbol)
+        except Exception:
+            return _no_data(f"quote_{symbol}_unavailable")
+        problem = _complete_quote(quote, now=current)
+        if problem:
+            return _no_data(f"quote_{symbol}_{problem}")
+        quotes[symbol] = quote
+
+    candidates: list[tuple[str, Mapping[str, Any], Mapping[str, Any], float]] = []
+    for symbol, position in positions.items():
+        quantity = float(position["quantity"])
+        entry_value = float(position["entry_value"])
+        current_value = quantity * float(quotes[symbol]["price"])
         gross_pnl = current_value - entry_value
-        
-        # Calculate net P&L after all costs
-        total_rate = get_fee_rate(exchange)
-        entry_fee = float(pos.get('entry_fee', 0) or entry_value * total_rate)
-        exit_fee = current_value * total_rate
-        net_pnl = gross_pnl - entry_fee - exit_fee
-        
-        pnl_pct = (gross_pnl / entry_value * 100) if entry_value > 0 else 0
-        
-        # 🎯 KILL CONDITION: Net profit >= $0.01 (one penny)
+        # Preserve the existing screening equation; it is not accounting evidence.
+        net_pnl = gross_pnl - float(position["entry_fee"]) - current_value * get_fee_rate(str(position["exchange"]))
         if net_pnl >= 0.0001:
-            print(f"   🎯 KILL TARGET: {exchange.upper()} {symbol}")
-            print(f"      Entry: ${entry_value:.2f} | Now: ${current_value:.2f}")
-            print(f"      Gross: ${gross_pnl:+.4f} ({pnl_pct:+.2f}%) | Net: ${net_pnl:+.4f}")
-            
-            # Execute the kill
-            try:
-                result = client.place_market_order(exchange, symbol, 'SELL', quantity=quantity)
-                
-                if result and not result.get('error') and not result.get('rejected'):
-                    order_id = result.get('txid') or result.get('orderId') or result.get('id')
-                    if order_id:
-                        print(f"      ✅ KILL CONFIRMED! Order: {order_id}")
-                        print(f"      💰 Net Profit: ${net_pnl:+.4f}")
-                        to_remove.append(symbol)
-                        kills += 1
-                        total_net += net_pnl
-                    else:
-                        print(f"      ⚠️ Order placed but no ID: {result}")
-                else:
-                    error = result.get('reason', result.get('error', 'Unknown')) if result else 'No response'
-                    print(f"      ❌ BLOCKED: {error}")
-                    
-            except Exception as e:
-                print(f"      ❌ Error: {e}")
-            
-            time.sleep(0.5)  # Rate limit
-    
-    # Remove killed positions from state
-    for symbol in to_remove:
-        if symbol in state.get('positions', {}):
-            del state['positions'][symbol]
-    
-    # Update stats
-    if kills > 0:
-        state['wins'] = state.get('wins', 0) + kills
-        state['total_trades'] = state.get('total_trades', 0) + kills
-        state['harvested'] = state.get('harvested', 0) + max(0, total_net)
-        state['balance'] = state.get('balance', 0) + max(0, total_net)
-        save_state(state)
-    
-    return kills, total_net
+            candidates.append((symbol, position, quotes[symbol], net_pnl))
 
+    if not candidates:
+        return {"data_status": "live", "truth_status": "real_derived", "generated_values": False, "action": False, "accounting": False, "learning": False, "status": "screened"}
 
-def show_status(client, state: Dict):
-    """Show current position status"""
-    positions = state.get('positions', {})
-    
-    print(f"\n{'─'*60}")
-    print(f"📊 POSITION STATUS ({len(positions)} active)")
-    print(f"{'─'*60}")
-    
-    for symbol, pos in positions.items():
-        exchange = pos.get('exchange', 'kraken')
-        entry_value = float(pos.get('entry_value', 0) or 0)
-        quantity = float(pos.get('quantity', 0) or 0)
-        
-        if entry_value <= 0:
-            continue
-        
-        # Get current price
+    fills: list[tuple[str, Mapping[str, Any]]] = []
+    for symbol, position, _quote, _screened_net in candidates:
         try:
-            ticker = client.get_ticker(exchange, symbol)
-            current_price = float(ticker.get('price', 0) or 0) if ticker else 0
-        except:
-            current_price = 0
-        
-        if current_price > 0:
-            current_value = quantity * current_price
-            gross_pnl = current_value - entry_value
-            
-            total_rate = get_fee_rate(exchange)
-            entry_fee = float(pos.get('entry_fee', 0) or entry_value * total_rate)
-            exit_fee = current_value * total_rate
-            net_pnl = gross_pnl - entry_fee - exit_fee
-            
-            if net_pnl >= 0.0001:
-                status = "🎯 KILL READY"
-            elif gross_pnl > 0:
-                status = "⏳ Waiting"
-            else:
-                status = "🛡️ Holding"
-            
-            print(f"   {exchange.upper():8s} {symbol:12s} | Net: ${net_pnl:+.4f} | {status}")
-        else:
-            print(f"   {exchange.upper():8s} {symbol:12s} | ❓ No price")
-    
-    print(f"{'─'*60}\n")
+            receipt = client.place_market_order(str(position["exchange"]), symbol, "SELL", quantity=float(position["quantity"]))
+        except Exception:
+            return _no_data(f"terminal_fill_{symbol}_unavailable")
+        problem = _terminal_fill(receipt, now=current, required_quantity=float(position["quantity"]))
+        if problem:
+            return _no_data(f"terminal_fill_{symbol}_{problem}")
+        if _deduplicated(state, receipt):
+            return _no_data(f"terminal_fill_{symbol}_duplicate")
+        fills.append((symbol, receipt))
+
+    updated = copy.deepcopy(state)
+    updated_positions = updated.get("positions", {})
+    total_net = 0.0
+    receipt_ids = list(updated.get("settled_terminal_receipt_ids", []) or [])
+    trade_ids = list(updated.get("settled_provider_trade_ids", []) or [])
+    for symbol, receipt in fills:
+        position = positions[symbol]
+        realized = float(receipt["executed_quantity"]) * float(receipt["average_price"]) - float(position["entry_value"]) - float(position["entry_fee"]) - float(receipt["total_fee"])
+        total_net += realized
+        del updated_positions[symbol]
+        receipt_ids.append(receipt["receipt_id"])
+        trade_ids.extend(receipt.get("provider_trade_ids") or receipt.get("provider_fill_ids") or receipt.get("fills") or [])
+    updated["settled_terminal_receipt_ids"] = receipt_ids[-1000:]
+    updated["settled_provider_trade_ids"] = trade_ids[-5000:]
+    updated["wins"] = int(updated.get("wins", 0)) + len(fills)
+    updated["total_trades"] = int(updated.get("total_trades", 0)) + len(fills)
+    updated["harvested"] = float(updated.get("harvested", 0.0)) + total_net
+    updated["balance"] = float(updated.get("balance", 0.0)) + total_net
+    if not save_state(updated, state_file):
+        return _no_data("atomic_state_write_failed")
+    state.clear()
+    state.update(updated)
+    return {"data_status": "live", "truth_status": "real_derived", "generated_values": False, "action": True, "accounting": True, "learning": False, "status": "terminal_fills_accounted", "kills": len(fills), "total_net_pnl": total_net}
 
 
-def main():
-    print("=" * 60)
-    print("🇮🇪🎯 AUTO SNIPER - THE BOYS MAKE THEIR KILLS 🎯🇮🇪")
-    print("=" * 60)
-    print()
-    print(f"State File: {STATE_FILE}")
-    print(f"Check Interval: {CHECK_INTERVAL}s")
-    print()
-    print("☘️ \"The sniper never sleeps. Every penny will be taken.\"")
-    print()
-    print("Press Ctrl+C to stop")
-    print("=" * 60)
-    print()
-    
-    # Import exchange client
+def main(argv: Optional[list[str]] = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--run", action="store_true", help="explicitly enable the receipt-gated scan loop")
+    parser.add_argument("--state-file", default=STATE_FILE)
+    args = parser.parse_args(argv)
+    if not args.run:
+        print("Auto Sniper is inert by default; pass --run to enable receipt-gated scanning.")
+        return 0
     try:
         from aureon.trading.unified_exchange_client import MultiExchangeClient
-        client = MultiExchangeClient()
-    except ImportError as e:
-        print(f"❌ Cannot import MultiExchangeClient: {e}")
-        sys.exit(1)
-    
-    # Stats
-    total_kills = 0
-    total_profit = 0.0
-    start_time = time.time()
-    
+    except ImportError as exc:
+        print(f"Cannot import MultiExchangeClient: {exc}")
+        return 1
+    client = MultiExchangeClient()
     try:
         while True:
-            now = datetime.now().strftime("%H:%M:%S")
-            
-            # Load fresh state
-            state = load_state()
-            if not state:
-                print(f"[{now}] ⚠️ No state file")
-                time.sleep(CHECK_INTERVAL)
-                continue
-            
-            positions = state.get('positions', {})
-            print(f"[{now}] 🔍 Scanning {len(positions)} positions...")
-            
-            # Check and execute kills
-            kills, net_pnl = check_and_kill(client, state)
-            
-            if kills > 0:
-                total_kills += kills
-                total_profit += net_pnl
-                print(f"\n   🎯 SESSION: {total_kills} kills | ${total_profit:+.4f} total")
-            
-            # Show status every 5 minutes
-            elapsed = time.time() - start_time
-            if int(elapsed) % 300 < CHECK_INTERVAL:
-                show_status(client, state)
-            
-            # Wait for next scan
+            state = load_state(args.state_file)
+            outcome = check_and_kill(client, state, state_file=args.state_file)
+            print(json.dumps(outcome, sort_keys=True))
             time.sleep(CHECK_INTERVAL)
-            
     except KeyboardInterrupt:
-        print("\n")
-        print("=" * 60)
-        print("🇮🇪 AUTO SNIPER STOOD DOWN")
-        print(f"   Total Kills: {total_kills}")
-        print(f"   Total Profit: ${total_profit:+.4f}")
-        print(f"   Runtime: {(time.time() - start_time) / 60:.1f} minutes")
-        print("=" * 60)
+        return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

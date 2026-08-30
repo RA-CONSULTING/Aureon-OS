@@ -1,13 +1,25 @@
-import os
-import sys
-import requests
-import time
 import logging
+import math
+import os
+import re
+import sys
+import threading
+import time
+import uuid
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, Any, Iterable, List, Optional
+from typing import Any, Dict, Iterable, List, Optional
+
+import requests
+
+from aureon.governance.economic_boundary import (
+    EconomicGovernanceBlocked,
+    _claim_economic_transport_context,
+    _economic_transport_body_digest,
+)
 
 # Windows UTF-8 fix (MANDATORY - must be early)
-if sys.platform == 'win32':
+if sys.platform == 'win32' and sys.stdout is sys.__stdout__ and sys.stdout.isatty():
     os.environ['PYTHONIOENCODING'] = 'utf-8'
     try:
         import io
@@ -71,6 +83,40 @@ except Exception:
 
 logger = logging.getLogger(__name__)
 
+ALPACA_LIVE_BASE = "https://api.alpaca.markets"
+ALPACA_PAPER_BASE = "https://paper-api.alpaca.markets"
+_ALPACA_MUTATION_SEGMENT_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:-]{0,127}")
+
+
+def _is_alpaca_economic_mutation_path(method: str, endpoint: str) -> bool:
+    """Return whether an exact Alpaca trading route mutates economic state."""
+
+    normalized_method = str(method).strip().upper()
+    if not isinstance(endpoint, str) or not endpoint.startswith("/"):
+        return False
+    if "?" in endpoint or "#" in endpoint or "//" in endpoint:
+        return False
+    if endpoint == "/v2/orders":
+        return normalized_method in {"POST", "DELETE"}
+    if endpoint == "/v2/positions":
+        return normalized_method == "DELETE"
+    parts = endpoint.split("/")
+    if (
+        len(parts) == 4
+        and parts[:3] == ["", "v2", "orders"]
+        and normalized_method in {"DELETE", "PATCH"}
+        and _ALPACA_MUTATION_SEGMENT_RE.fullmatch(parts[3]) is not None
+        and parts[3] not in {".", ".."}
+    ):
+        return True
+    return bool(
+        len(parts) == 4
+        and parts[:3] == ["", "v2", "positions"]
+        and normalized_method == "DELETE"
+        and _ALPACA_MUTATION_SEGMENT_RE.fullmatch(parts[3]) is not None
+        and parts[3] not in {".", ".."}
+    )
+
 
 def _env_float(name: str, default: float) -> float:
     raw = os.getenv(name)
@@ -110,24 +156,21 @@ class AlpacaClient:
         self.use_paper = os.getenv('ALPACA_PAPER', 'false').lower() == 'true'
         self.dry_run = os.getenv('ALPACA_DRY_RUN', 'false').lower() == 'true'
         
-        # Telemetry: Start Prometheus server if configured
-        prom_port = os.getenv('PROMETHEUS_METRICS_PORT')
-        if prom_port:
-            try:
-                try:
-                    from aureon.monitors.telemetry_server import start_telemetry_server
-                except ImportError:
-                    from aureon.monitors.telemetry_server import start_telemetry_server
-                start_telemetry_server(int(prom_port))
-            except Exception as e:
-                logger.warning(f"Failed to start telemetry server: {e}")
-
         self.timeout_seconds = 10.0
         try:
             self.timeout_seconds = float(os.getenv("ALPACA_TIMEOUT", "10") or 10)
         except (TypeError, ValueError):
             self.timeout_seconds = 10.0
         self.auth_probe_timeout_seconds = max(3.0, _env_float("ALPACA_AUTH_TIMEOUT", min(self.timeout_seconds, 8.0)))
+        self.quote_max_age_seconds = max(1.0, _env_float("ALPACA_QUOTE_MAX_AGE_SECONDS", 120.0))
+        self.order_receipt_max_age_seconds = max(
+            1.0,
+            _env_float("ALPACA_ORDER_RECEIPT_MAX_AGE_SECONDS", 300.0),
+        )
+        self.provider_future_skew_seconds = max(
+            0.0,
+            _env_float("ALPACA_PROVIDER_FUTURE_SKEW_SECONDS", 30.0),
+        )
         self.max_retries = 3  # 🛡️ Increased for rate limit retries
         try:
             self.max_retries = max(0, int(os.getenv("ALPACA_RETRY_COUNT", "3") or 3))
@@ -135,9 +178,9 @@ class AlpacaClient:
             self.max_retries = 3
 
         if self.use_paper:
-            self.base_url = "https://paper-api.alpaca.markets"
+            self.base_url = ALPACA_PAPER_BASE
         else:
-            self.base_url = "https://api.alpaca.markets"
+            self.base_url = ALPACA_LIVE_BASE
             
         # Data API URL (Crypto)
         self.data_url = "https://data.alpaca.markets"
@@ -145,6 +188,15 @@ class AlpacaClient:
         self.session = requests.Session()
         self.last_error: Optional[Dict[str, Any]] = None
         self.init_error: str = ""
+        self.auth_probe_warning = ""
+        self.auth_verified = False
+        self._auth_probe_thread: Optional[threading.Thread] = None
+        self._auth_probe_lock = threading.Lock()
+        self._closed = False
+        self._telemetry_owner = f"alpaca-client:{id(self)}"
+        self._telemetry_started = False
+        self._economic_dispatch_lock = threading.RLock()
+        self._economic_dispatches: Dict[object, tuple[str, str, str]] = {}
 
         # Rate limiting and in-memory TTL caching for market data
         try:
@@ -282,41 +334,253 @@ class AlpacaClient:
                 "APCA-API-SECRET-KEY": self.secret_key
             })
             self.is_authenticated = True
-            self.auth_probe_warning = ""
-            # Run auth probe in daemon thread — real API call, but never blocks boot.
-            import threading as _threading
-            _t = _threading.Thread(target=self._probe_initial_auth, daemon=True, name="alpaca-auth-probe")
-            _t.start()
         else:
             logger.warning("Alpaca API keys not found in environment variables.")
             self.init_error = "credentials_missing"
             self.is_authenticated = False
-            self.auth_probe_warning = ""
 
     def _probe_initial_auth(self) -> None:
         """Probe auth once without disabling the client on transient network issues."""
+        if self._closed:
+            return
         try:
             test_url = f"{self.base_url}/v2/account"
             auth_resp = self.session.get(test_url, timeout=self.auth_probe_timeout_seconds)
+            if self._closed:
+                return
             if auth_resp.status_code in (401, 403):
                 logger.warning(f"⚠️ Alpaca authentication failed ({auth_resp.status_code}). Disabling client.")
                 self.init_error = f"auth_failed_{auth_resp.status_code}"
                 self.is_authenticated = False
+                self.auth_verified = False
                 return
-            self.init_error = ""
+            if 200 <= auth_resp.status_code < 300:
+                self.init_error = ""
+                self.auth_probe_warning = ""
+                self.auth_verified = True
+            else:
+                self.auth_probe_warning = f"http_status_{auth_resp.status_code}"
+                self.auth_verified = False
         except Exception as e:
             error_text = str(e)
             if "WinError 10013" in error_text:
                 logger.warning(f"⚠️ Alpaca initial auth check blocked by local socket policy: {e}")
                 self.init_error = "socket_blocked"
                 self.is_authenticated = False
+                self.auth_verified = False
                 return
             self.auth_probe_warning = error_text
+            self.auth_verified = False
             logger.warning(
                 "⚠️ Alpaca initial auth probe failed (%s). Keeping client enabled and retrying on demand.",
                 e,
             )
             self.init_error = ""
+
+    def start_auth_probe(self, *, background: bool = True) -> bool:
+        """Explicitly validate configured credentials.
+
+        Construction never performs network I/O. Dry-run and credential-free
+        clients remain inert even when this method is called.
+        """
+        if self._closed:
+            self.auth_probe_warning = "client_closed"
+            return False
+        if self.dry_run:
+            self.auth_probe_warning = "dry_run"
+            return False
+        if not self.api_key or not self.secret_key:
+            self.init_error = "credentials_missing"
+            self.is_authenticated = False
+            return False
+
+        if not background:
+            self._probe_initial_auth()
+            return self.auth_verified
+
+        with self._auth_probe_lock:
+            if self._auth_probe_thread is not None and self._auth_probe_thread.is_alive():
+                return True
+            self._auth_probe_thread = threading.Thread(
+                target=self._probe_initial_auth,
+                daemon=True,
+                name="alpaca-auth-probe",
+            )
+            self._auth_probe_thread.start()
+        return True
+
+    def start_telemetry(self) -> bool:
+        """Explicitly start this runtime's configured Prometheus exporter."""
+        if self._closed:
+            return False
+        raw_port = os.getenv("PROMETHEUS_METRICS_PORT")
+        if not raw_port:
+            return False
+        try:
+            port = int(raw_port)
+            from aureon.monitors.telemetry_server import start_telemetry_server
+
+            started = start_telemetry_server(
+                port,
+                owner=self._telemetry_owner,
+            )
+            self._telemetry_started = bool(started)
+            return self._telemetry_started
+        except (TypeError, ValueError) as exc:
+            logger.warning("Invalid PROMETHEUS_METRICS_PORT %r: %s", raw_port, exc)
+        except Exception as exc:
+            logger.warning("Failed to start telemetry server: %s", exc)
+        self._telemetry_started = False
+        return False
+
+    def stop_telemetry(self, timeout: float = 2.0) -> bool:
+        """Release this client's telemetry ownership and join if it is last."""
+        if not self._telemetry_started:
+            return True
+        try:
+            from aureon.monitors.telemetry_server import stop_telemetry_server
+
+            stopped = stop_telemetry_server(
+                timeout=timeout,
+                owner=self._telemetry_owner,
+            )
+        except Exception as exc:
+            logger.warning("Failed to stop telemetry server: %s", exc)
+            return False
+        finally:
+            self._telemetry_started = False
+        return bool(stopped)
+
+    def start(self) -> bool:
+        """Start optional runtime services; construction remains inert."""
+        telemetry_started = self.start_telemetry()
+        auth_started = self.start_auth_probe(background=True)
+        return bool(telemetry_started or auth_started)
+
+    def close(self, timeout: float = 2.0) -> bool:
+        """Close the HTTP session and join the owned auth-probe thread."""
+        self._closed = True
+        self.is_authenticated = False
+        self.auth_verified = False
+        self.init_error = "client_closed"
+        telemetry_stopped = self.stop_telemetry(timeout=timeout)
+        try:
+            self.session.close()
+        finally:
+            thread = self._auth_probe_thread
+            if thread is not None and thread is not threading.current_thread():
+                thread.join(timeout=max(0.0, float(timeout)))
+        auth_stopped = thread is None or not thread.is_alive()
+        return bool(auth_stopped and telemetry_stopped)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
+        return False
+
+    def _ensure_economic_dispatch_store(self) -> None:
+        if not hasattr(self, "_economic_dispatch_lock"):
+            self._economic_dispatch_lock = threading.RLock()
+        if not hasattr(self, "_economic_dispatches"):
+            self._economic_dispatches = {}
+
+    def _register_economic_dispatch(
+        self,
+        *,
+        method: str,
+        endpoint: str,
+        body_digest: str,
+    ) -> object:
+        self._ensure_economic_dispatch_store()
+        dispatch = object()
+        with self._economic_dispatch_lock:
+            self._economic_dispatches[dispatch] = (method, endpoint, body_digest)
+        return dispatch
+
+    def _discard_economic_dispatch(self, dispatch: object | None) -> None:
+        if dispatch is None:
+            return
+        self._ensure_economic_dispatch_store()
+        with self._economic_dispatch_lock:
+            self._economic_dispatches.pop(dispatch, None)
+
+    def _consume_economic_dispatch(
+        self,
+        dispatch: object | None,
+        *,
+        method: str,
+        endpoint: str,
+        body: Dict[str, Any],
+    ) -> None:
+        self._ensure_economic_dispatch_store()
+        with self._economic_dispatch_lock:
+            state = self._economic_dispatches.pop(dispatch, None)
+        if state is None:
+            raise EconomicGovernanceBlocked(
+                "alpaca_mutation_dispatch_capability_required"
+            )
+        if not isinstance(body, dict):
+            raise EconomicGovernanceBlocked("exact_alpaca_mutation_body_required")
+        try:
+            observed = (
+                str(method).strip().upper(),
+                endpoint,
+                _economic_transport_body_digest(body),
+            )
+        except (TypeError, ValueError) as exc:
+            raise EconomicGovernanceBlocked(
+                "exact_alpaca_mutation_body_required"
+            ) from exc
+        if observed != state:
+            raise EconomicGovernanceBlocked(
+                "exact_alpaca_mutation_method_path_body_required"
+            )
+
+    def _alpaca_http_request(
+        self,
+        method: str,
+        endpoint: str,
+        *,
+        request_base: str,
+        params: Optional[Dict[str, Any]],
+        body: Dict[str, Any],
+        _economic_dispatch: object | None = None,
+    ) -> requests.Response:
+        """Final HTTP seam; mutation capability is burned before the session."""
+
+        normalized_method = str(method).strip().upper()
+        is_mutation = _is_alpaca_economic_mutation_path(
+            normalized_method, endpoint
+        )
+        if is_mutation:
+            expected_base = ALPACA_PAPER_BASE if self.use_paper else ALPACA_LIVE_BASE
+            if request_base != expected_base:
+                raise EconomicGovernanceBlocked(
+                    "canonical_alpaca_environment_endpoint_required"
+                )
+            if self.dry_run:
+                raise EconomicGovernanceBlocked(
+                    "alpaca_dry_run_mutation_transport_forbidden"
+                )
+            self._consume_economic_dispatch(
+                _economic_dispatch,
+                method=normalized_method,
+                endpoint=endpoint,
+                body=body,
+            )
+        elif normalized_method != "GET" or _economic_dispatch is not None:
+            raise EconomicGovernanceBlocked(
+                "unsupported_or_misbound_alpaca_transport_operation"
+            )
+        return self.session.request(
+            normalized_method,
+            f"{request_base}{endpoint}",
+            params=params,
+            json=body or None,
+            timeout=self.timeout_seconds,
+        )
 
     def _request(self, method: str, endpoint: str, params: Dict = None, data: Dict = None, base_url: str = None, request_type: str = 'data') -> Any:
         """Make a request with adaptive rate limiting.
@@ -324,10 +588,44 @@ class AlpacaClient:
         Args:
             request_type: 'trading' or 'data' - determines which rate limit bucket to use
         """
-        if not getattr(self, 'is_authenticated', True):
+        normalized_method = str(method).strip().upper()
+        is_mutation = _is_alpaca_economic_mutation_path(
+            normalized_method, endpoint
+        )
+        if normalized_method != "GET" and not is_mutation:
+            raise EconomicGovernanceBlocked(
+                "canonical_alpaca_mutation_method_and_path_required"
+            )
+        request_base = base_url or self.base_url
+        economic_body = dict(data or {}) if isinstance(data, dict) or data is None else data
+        if is_mutation:
+            if request_type != "trading":
+                raise EconomicGovernanceBlocked(
+                    "alpaca_mutation_trading_request_type_required"
+                )
+            if params:
+                raise EconomicGovernanceBlocked(
+                    "alpaca_mutation_query_parameters_forbidden"
+                )
+            if not isinstance(economic_body, dict):
+                raise EconomicGovernanceBlocked(
+                    "exact_alpaca_mutation_body_required"
+                )
+            if self.dry_run:
+                raise EconomicGovernanceBlocked(
+                    "alpaca_dry_run_mutation_transport_forbidden"
+                )
+            expected_base = ALPACA_PAPER_BASE if self.use_paper else ALPACA_LIVE_BASE
+            if request_base != expected_base:
+                raise EconomicGovernanceBlocked(
+                    "canonical_alpaca_environment_endpoint_required"
+                )
+
+        if self._closed or not getattr(self, 'is_authenticated', True):
             return {}
-        url = f"{base_url or self.base_url}{endpoint}"
-        for attempt in range(self.max_retries + 1):
+        url = f"{request_base}{endpoint}"
+        attempt_count = 1 if is_mutation else self.max_retries + 1
+        for attempt in range(attempt_count):
             try:
                 # Short GET dedup: avoid duplicate identical GET requests within short TTL
                 cache_key = None
@@ -352,6 +650,13 @@ class AlpacaClient:
                         if not self._global_rate_budget.wait_for_slot(priority, is_trading):
                             # Request rejected due to high-priority backoff
                             logger.warning(f"Request rejected by GlobalRateBudget: {priority.name} for {endpoint}")
+                            if is_mutation:
+                                self.last_error = {
+                                    "error": "global_rate_budget_denied",
+                                    "endpoint": endpoint,
+                                    "url": url,
+                                }
+                                return {}
                             time.sleep(0.1)  # Brief delay before retry
                             continue
                     except Exception as e:
@@ -367,7 +672,32 @@ class AlpacaClient:
                     # In case rate limiter fails, don't block the call
                     pass
 
-                resp = self.session.request(method, url, params=params, json=data, timeout=self.timeout_seconds)
+                dispatch = None
+                if is_mutation:
+                    if self.use_paper:
+                        body_digest = _economic_transport_body_digest(economic_body)
+                    else:
+                        body_digest = _claim_economic_transport_context(
+                            method=normalized_method,
+                            path=endpoint,
+                            body=economic_body,
+                        )
+                    dispatch = self._register_economic_dispatch(
+                        method=normalized_method,
+                        endpoint=endpoint,
+                        body_digest=body_digest,
+                    )
+                try:
+                    resp = self._alpaca_http_request(
+                        normalized_method,
+                        endpoint,
+                        request_base=request_base,
+                        params=params,
+                        body=economic_body if isinstance(economic_body, dict) else {},
+                        _economic_dispatch=dispatch,
+                    )
+                finally:
+                    self._discard_economic_dispatch(dispatch)
 
                 # 🛡️ RATE LIMIT HANDLING - Respect Retry-After header if present
                 if resp.status_code == 429:
@@ -388,6 +718,16 @@ class AlpacaClient:
                         api_429_counter.inc(1, exchange='alpaca', endpoint=endpoint)
                     except Exception:
                         pass
+
+                    if is_mutation:
+                        body_text = (resp.text or "").strip()
+                        self.last_error = {
+                            "status_code": 429,
+                            "body": body_text[:2000],
+                            "endpoint": endpoint,
+                            "url": url,
+                        }
+                        return {}
 
                     retry_after = resp.headers.get('Retry-After')
                     if retry_after:
@@ -432,7 +772,7 @@ class AlpacaClient:
                 self.init_error = ""
                 return result_json
             except requests.exceptions.Timeout as e:
-                if attempt < self.max_retries:
+                if not is_mutation and attempt < self.max_retries:
                     time.sleep(0.5 * (attempt + 1))
                     continue
                 logger.error(f"Alpaca Request Failed: {e}")
@@ -441,6 +781,8 @@ class AlpacaClient:
                     self.init_error = "socket_blocked"
                 return {}
             except Exception as e:
+                if isinstance(e, EconomicGovernanceBlocked):
+                    raise
                 logger.error(f"Alpaca Request Failed: {e}")
                 self.last_error = {"exception": str(e), "endpoint": endpoint, "url": url}
                 if "WinError 10013" in str(e):
@@ -499,8 +841,513 @@ class AlpacaClient:
 
     @staticmethod
     def _resolve_symbol(symbol: str) -> str:
-        normalized = AlpacaClient._normalize_pair_symbol(symbol)
-        return normalized or symbol
+        cleaned = str(symbol or "").strip().upper()
+        base = cleaned.replace("-", "/").split("/")[0]
+        looks_crypto = (
+            "/" in cleaned
+            or "-" in cleaned
+            or base in CRYPTO_BASE_SYMBOLS
+            or any(
+                cleaned.endswith(quote) and len(cleaned) > len(quote)
+                for quote in ("USDT", "USDC", "USD")
+            )
+        )
+        if looks_crypto:
+            normalized = AlpacaClient._normalize_pair_symbol(cleaned)
+            if normalized:
+                return normalized
+        return cleaned
+
+    @staticmethod
+    def _finite_number(
+        value: Any,
+        *,
+        positive: bool = False,
+        nonnegative: bool = False,
+    ) -> Optional[float]:
+        if isinstance(value, bool) or value is None:
+            return None
+        try:
+            number = float(value)
+        except (TypeError, ValueError, OverflowError):
+            return None
+        if not math.isfinite(number):
+            return None
+        if positive and number <= 0.0:
+            return None
+        if nonnegative and number < 0.0:
+            return None
+        return number
+
+    @staticmethod
+    def _provider_timestamp_epoch(value: Any) -> Optional[float]:
+        if isinstance(value, bool) or value is None:
+            return None
+        if isinstance(value, (int, float)):
+            epoch = AlpacaClient._finite_number(value, positive=True)
+            if epoch is not None and epoch >= 100_000_000_000.0:
+                epoch /= 1000.0
+            return epoch
+        text = str(value).strip()
+        if not text:
+            return None
+        numeric = AlpacaClient._finite_number(text, positive=True)
+        if numeric is not None:
+            if numeric >= 100_000_000_000.0:
+                numeric /= 1000.0
+            return numeric
+        try:
+            parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
+        except (TypeError, ValueError, OverflowError):
+            return None
+        if parsed.tzinfo is None:
+            return None
+        try:
+            epoch = parsed.timestamp()
+        except (OSError, OverflowError, ValueError):
+            return None
+        return epoch if math.isfinite(epoch) and epoch > 0.0 else None
+
+    def _fresh_provider_timestamp(
+        self,
+        value: Any,
+        *,
+        max_age_seconds: float,
+        now: Optional[float] = None,
+    ) -> Optional[float]:
+        epoch = self._provider_timestamp_epoch(value)
+        current = self._finite_number(time.time() if now is None else now, positive=True)
+        if epoch is None or current is None:
+            return None
+        age = current - epoch
+        if age < -self.provider_future_skew_seconds or age > max_age_seconds:
+            return None
+        return epoch
+
+    @staticmethod
+    def _valid_provider_identifier(value: Any) -> Optional[str]:
+        if isinstance(value, bool) or value is None:
+            return None
+        identifier = str(value).strip()
+        if not identifier:
+            return None
+        candidate = identifier
+        if "::" in identifier:
+            activity_prefix, candidate = identifier.rsplit("::", 1)
+            if not activity_prefix.isdigit():
+                return None
+        try:
+            uuid.UUID(candidate)
+        except (AttributeError, TypeError, ValueError):
+            return None
+        return identifier
+
+    def _normalize_quote_observation(
+        self,
+        symbol: str,
+        payload: Any,
+        *,
+        now: Optional[float] = None,
+    ) -> Optional[Dict[str, Any]]:
+        if not isinstance(payload, dict):
+            return None
+        bid = self._finite_number(payload.get("bp"), positive=True)
+        ask = self._finite_number(payload.get("ap"), positive=True)
+        timestamp_raw = payload.get("t")
+        provider_timestamp = self._fresh_provider_timestamp(
+            timestamp_raw,
+            max_age_seconds=self.quote_max_age_seconds,
+            now=now,
+        )
+        if bid is None or ask is None or bid > ask or provider_timestamp is None:
+            return None
+        received_at = datetime.now(timezone.utc).isoformat()
+        result = dict(payload)
+        result.update(
+            {
+                "symbol": symbol,
+                "bp": bid,
+                "ap": ask,
+                "mid": (bid + ask) / 2.0,
+                "provider_timestamp": provider_timestamp,
+                "source_timestamp": provider_timestamp,
+                "provider_timestamp_raw": timestamp_raw,
+                "received_at": received_at,
+                "data_status": "live",
+                "truth_status": "real_observed",
+                "generated_values": False,
+                "action_eligible": True,
+            }
+        )
+        return result
+
+    def _normalize_bar_observation(
+        self,
+        symbol: str,
+        payload: Any,
+    ) -> Optional[Dict[str, Any]]:
+        if not isinstance(payload, dict):
+            return None
+        open_price = self._finite_number(payload.get("o"), positive=True)
+        high_price = self._finite_number(payload.get("h"), positive=True)
+        low_price = self._finite_number(payload.get("l"), positive=True)
+        close_price = self._finite_number(payload.get("c"), positive=True)
+        volume = self._finite_number(payload.get("v"), nonnegative=True)
+        timestamp_raw = payload.get("t")
+        provider_timestamp = self._provider_timestamp_epoch(timestamp_raw)
+        received_epoch = time.time()
+        if (
+            open_price is None
+            or high_price is None
+            or low_price is None
+            or close_price is None
+            or volume is None
+            or provider_timestamp is None
+            or provider_timestamp > received_epoch + self.provider_future_skew_seconds
+            or high_price < low_price
+            or not (low_price <= open_price <= high_price)
+            or not (low_price <= close_price <= high_price)
+        ):
+            return None
+        result = dict(payload)
+        result.update(
+            {
+                "symbol": symbol,
+                "o": open_price,
+                "h": high_price,
+                "l": low_price,
+                "c": close_price,
+                "v": volume,
+                "provider_timestamp": provider_timestamp,
+                "source_timestamp": provider_timestamp,
+                "provider_timestamp_raw": timestamp_raw,
+                "received_at": datetime.now(timezone.utc).isoformat(),
+                "data_status": "live",
+                "truth_status": "real_observed",
+                "generated_values": False,
+            }
+        )
+        return result
+
+    def _pending_order_receipt(
+        self,
+        order: Any,
+        reason: str,
+        *,
+        submission_attempted: bool,
+    ) -> Dict[str, Any]:
+        raw = dict(order) if isinstance(order, dict) else {}
+        provider_order_id = self._valid_provider_identifier(raw.get("id"))
+        provider_status = str(raw.get("status") or "").strip().lower() or None
+        timestamp_raw = (
+            raw.get("filled_at")
+            or raw.get("updated_at")
+            or raw.get("submitted_at")
+            or raw.get("created_at")
+        )
+        provider_timestamp = self._provider_timestamp_epoch(timestamp_raw)
+        submitted = provider_order_id is not None
+        return {
+            **raw,
+            "id": provider_order_id,
+            "provider_order_id": provider_order_id,
+            "status": "pending_reconciliation" if submission_attempted else "no_data",
+            "provider_status": provider_status,
+            "data_status": "pending_reconciliation" if submission_attempted else "no_data",
+            "truth_status": "real_observed" if raw else "no_data",
+            "reason": reason,
+            "submitted": submitted,
+            "submission_attempted": bool(submission_attempted),
+            "submission_acknowledged": submitted,
+            "reconciliation_required": bool(submission_attempted),
+            "provider_timestamp": provider_timestamp,
+            "source_timestamp": provider_timestamp,
+            "provider_timestamp_raw": timestamp_raw,
+            "received_at": datetime.now(timezone.utc).isoformat(),
+            "fills": [],
+            "filled_qty": None,
+            "filled_avg_price": None,
+            "filled_notional": None,
+            "fee": None,
+            "fee_currency": None,
+            "fill_receipt_complete": False,
+            "eligible_for_accounting": False,
+            "eligible_for_learning": False,
+            "generated_values": False,
+            "raw_receipt": raw,
+        }
+
+    @staticmethod
+    def _not_submitted_order_receipt(
+        reason: str,
+        **request: Any,
+    ) -> Dict[str, Any]:
+        return {
+            **request,
+            "id": None,
+            "provider_order_id": None,
+            "status": "not_submitted",
+            "provider_status": None,
+            "data_status": "not_submitted",
+            "truth_status": "dry_run" if reason == "dry_run" else "no_data",
+            "reason": reason,
+            "submitted": False,
+            "submission_attempted": False,
+            "submission_acknowledged": False,
+            "reconciliation_required": False,
+            "provider_timestamp": None,
+            "source_timestamp": None,
+            "fills": [],
+            "filled_qty": None,
+            "filled_avg_price": None,
+            "filled_notional": None,
+            "fee": None,
+            "fee_currency": None,
+            "fill_receipt_complete": False,
+            "eligible_for_accounting": False,
+            "eligible_for_learning": False,
+            "generated_values": False,
+        }
+
+    def _normalize_fill_activity(
+        self,
+        activity: Any,
+        *,
+        order_id: str,
+        symbol: str,
+        side: str,
+        now: Optional[float] = None,
+    ) -> Optional[Dict[str, Any]]:
+        if not isinstance(activity, dict):
+            return None
+        details = activity.get("details") if isinstance(activity.get("details"), dict) else {}
+        activity_order_id = self._valid_provider_identifier(
+            activity.get("order_id") or details.get("order_id")
+        )
+        trade_id = self._valid_provider_identifier(
+            activity.get("id") or activity.get("ref_id") or activity.get("event_id")
+        )
+        activity_type = str(
+            activity.get("activity_type")
+            or details.get("execution_type")
+            or activity.get("type")
+            or ""
+        ).strip().lower()
+        activity_symbol = str(activity.get("symbol") or details.get("symbol") or "").strip().upper()
+        activity_side = str(activity.get("side") or details.get("side") or "").strip().lower()
+        qty = self._finite_number(activity.get("qty"), positive=True)
+        price = self._finite_number(activity.get("price"), positive=True)
+        timestamp_raw = (
+            activity.get("transaction_time")
+            or activity.get("executed_at")
+            or activity.get("at")
+        )
+        provider_timestamp = self._fresh_provider_timestamp(
+            timestamp_raw,
+            max_age_seconds=self.order_receipt_max_age_seconds,
+            now=now,
+        )
+        if (
+            activity_order_id != order_id
+            or trade_id is None
+            or activity_type not in {"fill", "partial_fill", "trd"}
+            or activity_symbol.replace("/", "") != symbol.upper().replace("/", "")
+            or activity_side != side
+            or qty is None
+            or price is None
+            or provider_timestamp is None
+        ):
+            return None
+        commission = self._finite_number(
+            activity.get("commission")
+            if "commission" in activity
+            else details.get("commission"),
+            nonnegative=True,
+        )
+        fee_currency = str(
+            activity.get("fee_currency")
+            or activity.get("currency")
+            or details.get("fee_currency")
+            or details.get("currency")
+            or ""
+        ).strip()
+        return {
+            "tradeId": trade_id,
+            "trade_id": trade_id,
+            "qty": qty,
+            "price": price,
+            "commission": commission,
+            "commissionAsset": fee_currency or None,
+            "fee_currency": fee_currency or None,
+            "provider_timestamp": provider_timestamp,
+            "source_timestamp": provider_timestamp,
+            "provider_timestamp_raw": timestamp_raw,
+            "truth_status": "real_observed",
+            "generated_values": False,
+            "raw_activity": dict(activity),
+        }
+
+    def _normalize_order_receipt(
+        self,
+        order: Any,
+        *,
+        fill_activities: Optional[List[Dict[str, Any]]] = None,
+        submission_attempted: bool,
+        now: Optional[float] = None,
+    ) -> Dict[str, Any]:
+        if not isinstance(order, dict):
+            return self._pending_order_receipt(
+                order,
+                "provider_submission_outcome_unproven",
+                submission_attempted=submission_attempted,
+            )
+        provider_order_id = self._valid_provider_identifier(order.get("id"))
+        provider_status = str(order.get("status") or "").strip().lower()
+        if provider_order_id is None:
+            return self._pending_order_receipt(
+                order,
+                "non_sentinel_provider_order_id_required",
+                submission_attempted=submission_attempted,
+            )
+        if provider_status != "filled":
+            terminal_reason = (
+                f"provider_order_{provider_status}"
+                if provider_status in {"canceled", "expired", "rejected", "replaced"}
+                else "terminal_provider_fill_receipt_required"
+            )
+            return self._pending_order_receipt(
+                order,
+                terminal_reason,
+                submission_attempted=submission_attempted,
+            )
+
+        filled_qty = self._finite_number(order.get("filled_qty"), positive=True)
+        filled_avg_price = self._finite_number(order.get("filled_avg_price"), positive=True)
+        filled_at_raw = order.get("filled_at")
+        provider_timestamp = self._fresh_provider_timestamp(
+            filled_at_raw,
+            max_age_seconds=self.order_receipt_max_age_seconds,
+            now=now,
+        )
+        symbol = str(order.get("symbol") or "").strip().upper()
+        side = str(order.get("side") or "").strip().lower()
+        if (
+            filled_qty is None
+            or filled_avg_price is None
+            or provider_timestamp is None
+            or not symbol
+            or side not in {"buy", "sell"}
+        ):
+            return self._pending_order_receipt(
+                order,
+                "fresh_provider_fill_quantity_price_and_timestamp_required",
+                submission_attempted=submission_attempted,
+            )
+
+        normalized_fills: List[Dict[str, Any]] = []
+        for activity in fill_activities or []:
+            normalized = self._normalize_fill_activity(
+                activity,
+                order_id=provider_order_id,
+                symbol=symbol,
+                side=side,
+                now=now,
+            )
+            if normalized is not None:
+                normalized_fills.append(normalized)
+        trade_ids = [str(fill["trade_id"]) for fill in normalized_fills]
+        if not normalized_fills or len(trade_ids) != len(set(trade_ids)):
+            return self._pending_order_receipt(
+                order,
+                "fresh_provider_fill_activity_ids_required",
+                submission_attempted=submission_attempted,
+            )
+        activity_qty = sum(float(fill["qty"]) for fill in normalized_fills)
+        activity_notional = sum(float(fill["qty"]) * float(fill["price"]) for fill in normalized_fills)
+        activity_avg_price = activity_notional / activity_qty
+        qty_tolerance = max(1e-12, filled_qty * 1e-8)
+        price_tolerance = max(1e-8, filled_avg_price * 1e-6)
+        if (
+            abs(activity_qty - filled_qty) > qty_tolerance
+            or abs(activity_avg_price - filled_avg_price) > price_tolerance
+        ):
+            return self._pending_order_receipt(
+                order,
+                "order_and_fill_activity_totals_inconsistent",
+                submission_attempted=submission_attempted,
+            )
+
+        fee = self._finite_number(
+            order.get("commission") if "commission" in order else order.get("fee"),
+            nonnegative=True,
+        )
+        fee_currency = str(
+            order.get("commission_currency")
+            or order.get("fee_currency")
+            or order.get("currency")
+            or ""
+        ).strip()
+        if fee is None or not fee_currency:
+            commissions = [fill.get("commission") for fill in normalized_fills]
+            currencies = {
+                str(fill.get("fee_currency") or "").strip()
+                for fill in normalized_fills
+                if str(fill.get("fee_currency") or "").strip()
+            }
+            if all(value is not None for value in commissions) and len(currencies) == 1:
+                fee = sum(float(value) for value in commissions)
+                fee_currency = next(iter(currencies))
+        if fee is None or not fee_currency:
+            pending = self._pending_order_receipt(
+                order,
+                "provider_fee_receipt_and_currency_required",
+                submission_attempted=submission_attempted,
+            )
+            pending.update(
+                {
+                    "provider_status": "filled",
+                    "fills": normalized_fills,
+                    "filled_qty": filled_qty,
+                    "filled_avg_price": filled_avg_price,
+                    "filled_notional": activity_notional,
+                }
+            )
+            return pending
+
+        latest_fill_timestamp = max(
+            provider_timestamp,
+            *(float(fill["provider_timestamp"]) for fill in normalized_fills),
+        )
+        return {
+            **dict(order),
+            "id": provider_order_id,
+            "provider_order_id": provider_order_id,
+            "status": "filled",
+            "provider_status": "filled",
+            "data_status": "live",
+            "truth_status": "real_derived",
+            "reason": "complete_fresh_terminal_provider_fill_receipt",
+            "submitted": True,
+            "submission_attempted": bool(submission_attempted),
+            "submission_acknowledged": True,
+            "reconciliation_required": False,
+            "provider_timestamp": latest_fill_timestamp,
+            "source_timestamp": latest_fill_timestamp,
+            "provider_timestamp_raw": filled_at_raw,
+            "received_at": datetime.now(timezone.utc).isoformat(),
+            "fills": normalized_fills,
+            "filled_qty": filled_qty,
+            "filled_avg_price": filled_avg_price,
+            "filled_notional": activity_notional,
+            "fee": fee,
+            "fee_currency": fee_currency,
+            "fill_receipt_complete": True,
+            "eligible_for_accounting": True,
+            "eligible_for_learning": True,
+            "generated_values": False,
+            "provider_receipt_type": "AlpacaOrderAndFillActivities",
+            "raw_receipt": dict(order),
+        }
 
     # ═════════════════════════════════════════════════════════════════════=
     # CORE ACCOUNT / MARKET DATA
@@ -574,85 +1421,81 @@ class AlpacaClient:
         time_in_force: str = "gtc",
         position_intent: Optional[str] = None,
     ) -> Dict[str, Any]:
-        """Place an order with minimum notional validation."""
+        """Submit an order and return only provider-observed lifecycle evidence."""
         symbol = self._resolve_symbol(symbol)
-        
-        # Handle stock symbols (remove /USD for API)
-        asset_class = "crypto" if symbol.endswith("USD") or ("/" in symbol and not symbol.split('/')[0].isupper()) else "us_equity"
-        if asset_class == "us_equity" and "/" in symbol:
-            symbol = symbol.split('/')[0]
-        
-        # ═══════════════════════════════════════════════════════════════════
-        # 💰 ALPACA MINIMUM ORDER VALIDATION
-        # Alpaca requires minimum $1 notional value for all orders
-        # ═══════════════════════════════════════════════════════════════════
-        MIN_NOTIONAL = 1.0  # Alpaca minimum is $1
-        
-        # Try to estimate notional value
-        try:
-            # Get current price to validate notional
-            ticker = self.get_ticker(symbol)
-            if ticker:
-                current_price = float(ticker.get('last') or ticker.get('price') or ticker.get('mark_price') or 0)
-                if current_price > 0:
-                    estimated_notional = qty * current_price
-                    if estimated_notional < MIN_NOTIONAL:
-                        # Adjust quantity to meet minimum
-                        min_qty = MIN_NOTIONAL / current_price
-                        min_qty = max(min_qty * 1.05, min_qty + 0.0001)  # Add 5% buffer
-                        logger.warning(f"⚠️ Alpaca: Order notional ${estimated_notional:.2f} < ${MIN_NOTIONAL} minimum. Adjusting qty {qty:.6f} → {min_qty:.6f}")
-                        qty = min_qty
-        except Exception as e:
-            logger.debug(f"Could not validate notional for {symbol}: {e}")
-        
+        quantity = self._finite_number(qty, positive=True)
+        side_normalized = str(side or "").strip().lower()
+        order_type = str(type or "").strip().lower()
+        if quantity is None or side_normalized not in {"buy", "sell"} or not order_type:
+            return self._not_submitted_order_receipt(
+                "invalid_order_request",
+                symbol=symbol,
+                side=side_normalized,
+                requested_qty=qty,
+                type=order_type or None,
+            )
         if self.dry_run:
-            logger.info(f"[DRY RUN] Alpaca Order: {side} {qty} {symbol}")
-            return {"id": "dry_run_id", "status": "accepted"}
+            logger.info(f"[DRY RUN] Alpaca Order: {side_normalized} {quantity} {symbol}")
+            return self._not_submitted_order_receipt(
+                "dry_run",
+                symbol=symbol,
+                side=side_normalized,
+                requested_qty=quantity,
+                type=order_type,
+                time_in_force=time_in_force,
+            )
+        if not self.is_authenticated:
+            return self._not_submitted_order_receipt(
+                self.init_error or "credentials_missing",
+                symbol=symbol,
+                side=side_normalized,
+                requested_qty=quantity,
+                type=order_type,
+                time_in_force=time_in_force,
+            )
 
         data = {
             "symbol": symbol,
-            "qty": str(qty),
-            "side": side,
-            "type": type,
-            "time_in_force": time_in_force
+            "qty": str(quantity),
+            "side": side_normalized,
+            "type": order_type,
+            "time_in_force": time_in_force,
         }
         if position_intent:
             data["position_intent"] = position_intent
-        result = self._request("POST", "/v2/orders", data=data, request_type='trading')
-        
-        # 🔧 FIX: For market orders, wait and query for actual fill data
-        # Alpaca's initial response may not have filled_avg_price yet
-        if type == "market" and result.get("id"):
-            order_id = result["id"]
-            import time as time_module
-            
-            # Poll for fill status (market orders should fill quickly)
-            for attempt in range(3):  # Try up to 3 times
-                # Exponential backoff: 0.5s, 1.0s, 1.5s
-                time_module.sleep(0.5 * (attempt + 1))
-                try:
-                    order_status = self._request("GET", f"/v2/orders/{order_id}", request_type='trading')
-                    status = order_status.get("status", "")
-                    
-                    if status == "filled":
-                        # Got actual fill data!
-                        filled_qty = float(order_status.get("filled_qty", 0) or 0)
-                        filled_price = float(order_status.get("filled_avg_price", 0) or 0)
-                        if filled_price > 0:
-                            logger.info(f"   📊 Alpaca ACTUAL fill: price={filled_price:.6f}, qty={filled_qty:.6f}")
-                        return order_status
-                    elif status in ("canceled", "expired", "rejected"):
-                        logger.warning(f"   ⚠️ Alpaca order {order_id} {status}")
-                        return order_status
-                    # else: still pending, keep polling
-                except Exception as e:
-                    logger.warning(f"   ⚠️ Could not query Alpaca order {order_id}: {e}")
-            
-            # Return last known status after polling
-            return result
-        
-        return result
+        result = self._request("POST", "/v2/orders", data=data, request_type="trading")
+        if not isinstance(result, dict):
+            return self._normalize_order_receipt(
+                result,
+                submission_attempted=True,
+            )
 
+        provider_order_id = self._valid_provider_identifier(result.get("id"))
+        last_observed = result
+        if order_type == "market" and provider_order_id is not None:
+            if str(result.get("status") or "").strip().lower() == "filled":
+                return self.get_order_fills(provider_order_id, order=result)
+            for attempt in range(3):
+                time.sleep(0.5 * (attempt + 1))
+                order_status = self._request(
+                    "GET",
+                    f"/v2/orders/{provider_order_id}",
+                    request_type="trading",
+                )
+                if not isinstance(order_status, dict) or not order_status:
+                    continue
+                last_observed = order_status
+                status = str(order_status.get("status") or "").strip().lower()
+                if status == "filled":
+                    return self.get_order_fills(provider_order_id, order=order_status)
+                if status in {"canceled", "expired", "rejected", "replaced"}:
+                    break
+
+        return self._normalize_order_receipt(
+            last_observed,
+            fill_activities=[],
+            submission_attempted=True,
+        )
     # Compatibility alias for older code (create_order -> place_order)
     create_order = place_order
 
@@ -673,193 +1516,154 @@ class AlpacaClient:
         return result if isinstance(result, list) else []
 
     def get_crypto_bars(self, symbols: List[str], timeframe: str = "1Min", limit: int = 100) -> Dict[str, Any]:
-        """Get crypto bars for one or more symbols with chunking support."""
+        """Return only structurally valid provider bars with their source times."""
         all_bars: Dict[str, List[Dict[str, Any]]] = {}
-
         for chunk in self._chunk_symbols(symbols):
-            params = {
-                "symbols": ",".join(chunk),
-                "timeframe": timeframe,
-                "limit": limit
+            response = self._request(
+                "GET", "/v1beta3/crypto/us/bars",
+                params={"symbols": ",".join(chunk), "timeframe": timeframe, "limit": limit},
+                base_url=self.data_url, request_type="data",
+            )
+            payload = response.get("bars", response) if isinstance(response, dict) else {}
+            if not isinstance(payload, dict):
+                continue
+            for raw_symbol, raw_bars in payload.items():
+                normalized_symbol = self._normalize_pair_symbol(raw_symbol) or str(raw_symbol)
+                if not isinstance(raw_bars, list):
+                    continue
+                verified = [
+                    bar for item in raw_bars
+                    if (bar := self._normalize_bar_observation(normalized_symbol, item)) is not None
+                ]
+                if verified:
+                    all_bars.setdefault(normalized_symbol, []).extend(verified)
+        if not all_bars:
+            return {
+                "bars": {}, "data_status": "no_data", "truth_status": "no_data",
+                "reason": "provider_bars_missing_or_malformed", "generated_values": False,
             }
-            resp = self._request("GET", "/v1beta3/crypto/us/bars", params=params, base_url=self.data_url, request_type='data')
-            payload = resp.get('bars', resp) if isinstance(resp, dict) else {}
-
-            if isinstance(payload, dict):
-                for sym, data in payload.items():
-                    all_bars.setdefault(sym, []).extend(data or [])
-
-        return {"bars": all_bars} if all_bars else {}
+        return {
+            "bars": all_bars, "data_status": "live", "truth_status": "real_observed",
+            "received_at": datetime.now(timezone.utc).isoformat(), "generated_values": False,
+        }
 
     def get_latest_crypto_quotes(self, symbols: List[str]) -> Dict[str, Any]:
-        """Get latest crypto quotes (bid/ask).
-
-        This function will use an internal per-symbol cache to avoid making
-        API calls for symbols we've recently fetched, and will batch the
-        remaining symbols into as few requests as possible.
-        """
+        """Return fresh, two-sided crypto quotes with provider source timestamps."""
         all_quotes: Dict[str, Any] = {}
         remaining: List[str] = []
-
-        # First, try to serve from the quote cache
-        for sym in symbols:
-            # Normalize symbol to ensure proper format (BASE/QUOTE)
-            normalized = AlpacaClient._normalize_pair_symbol(sym) or sym
+        now = time.time()
+        for symbol in symbols:
+            normalized = self._normalize_pair_symbol(symbol) or str(symbol)
             cache_key = f"last_quote::{normalized}"
             try:
                 cached = self._quote_cache.get(cache_key)
             except Exception:
                 cached = None
-            if cached is not None and isinstance(cached, dict) and cached.get('raw') is not None:
-                # Store raw API payload for compatibility
-                all_quotes[normalized] = cached.get('raw')
+            raw_cached = cached.get("raw") if isinstance(cached, dict) else None
+            verified_cached = self._normalize_quote_observation(normalized, raw_cached, now=now)
+            if verified_cached is not None:
+                all_quotes[normalized] = verified_cached
             else:
                 remaining.append(normalized)
-
-        # For remaining symbols, batch requests into chunks and call API
         for chunk in self._chunk_symbols(remaining):
-            params = {
-                "symbols": ",".join(chunk)
-            }
-            resp = self._request("GET", "/v1beta3/crypto/us/latest/quotes", params=params, base_url=self.data_url, request_type='data')
-            payload = resp.get('quotes', resp) if isinstance(resp, dict) else {}
-
-            if isinstance(payload, dict):
-                # Store results and prime the quote cache for each symbol
-                for sym, q in payload.items():
-                    all_quotes[sym] = q
-                    try:
-                        bp = float(q.get('bp', 0) or 0.0)
-                        ap = float(q.get('ap', 0) or 0.0)
-                        last = (bp + ap) / 2 if (bp > 0 and ap > 0) else (bp or ap or 0.0)
-                        cache_val = {"last": {"price": last}, "raw": q}
-                        self._quote_cache.set(f"last_quote::{sym}", cache_val)
-                    except Exception:
-                        # If cache priming fails, ignore
-                        pass
-
+            response = self._request(
+                "GET", "/v1beta3/crypto/us/latest/quotes",
+                params={"symbols": ",".join(chunk)}, base_url=self.data_url, request_type="data",
+            )
+            payload = response.get("quotes", response) if isinstance(response, dict) else {}
+            if not isinstance(payload, dict):
+                continue
+            for raw_symbol, raw_quote in payload.items():
+                normalized_symbol = self._normalize_pair_symbol(raw_symbol) or str(raw_symbol)
+                quote = self._normalize_quote_observation(normalized_symbol, raw_quote, now=now)
+                if quote is None:
+                    continue
+                all_quotes[normalized_symbol] = quote
+                cache_value = {
+                    "last": {"price": quote["mid"], "source": "provider_quote_midpoint"},
+                    "raw": quote, "provider_timestamp": quote["provider_timestamp"],
+                    "source_timestamp": quote["source_timestamp"], "data_status": "live",
+                    "truth_status": "real_derived", "generated_values": False,
+                }
+                try:
+                    self._quote_cache.set(f"last_quote::{normalized_symbol}", cache_value)
+                except Exception:
+                    pass
         return all_quotes
 
     def get_crypto_snapshot(self, symbols: List[str]) -> Dict[str, Any]:
-        """
-        🚀 BATCH API: Get latest crypto prices for multiple symbols at once.
-        
-        This wraps get_latest_crypto_quotes() and returns data in a format
-        compatible with the monitoring code expectations.
-        
-        Returns: {symbol: {'latestTrade': {'p': price}, 'latestQuote': {'bp': bid}}}
-        """
-        result = {}
-        
-        # Normalize symbols (remove /, add /USD if needed)
-        normalized = []
-        symbol_map = {}  # Map normalized back to original
-        for sym in symbols:
-            norm = self._normalize_pair_symbol(sym) or sym
-            if '/' not in norm:
-                norm = norm.replace('USD', '/USD')
-            normalized.append(norm)
-            symbol_map[norm] = sym
-        
-        # Get batch quotes
-        quotes = self.get_latest_crypto_quotes(normalized)
-        
-        for norm_sym, q in quotes.items():
-            # Get original symbol
-            orig_sym = symbol_map.get(norm_sym, norm_sym.replace('/', ''))
-            
-            # Extract price from quote
-            bp = float(q.get('bp', 0) or 0)  # bid price
-            ap = float(q.get('ap', 0) or 0)  # ask price
-            mid = (bp + ap) / 2 if (bp > 0 and ap > 0) else (bp or ap or 0)
-            
-            result[orig_sym] = {
-                'latestTrade': {'p': mid},
-                'latestQuote': {'bp': bp, 'ap': ap}
+        """Return fresh provider quotes without relabelling a midpoint as a trade."""
+        normalized: List[str] = []
+        symbol_map: Dict[str, str] = {}
+        for symbol in symbols:
+            resolved = self._normalize_pair_symbol(symbol) or str(symbol)
+            normalized.append(resolved)
+            symbol_map[resolved] = symbol
+        result: Dict[str, Any] = {}
+        for resolved, quote in self.get_latest_crypto_quotes(normalized).items():
+            original = symbol_map.get(resolved, resolved)
+            result[original] = {
+                "symbol": resolved,
+                "latestQuote": {
+                    "bp": quote["bp"], "ap": quote["ap"], "t": quote.get("provider_timestamp_raw"),
+                    "provider_timestamp": quote["provider_timestamp"],
+                    "source_timestamp": quote["source_timestamp"],
+                    "truth_status": "real_observed", "generated_values": False,
+                },
+                "derivedMidpoint": {
+                    "p": quote["mid"], "source": "provider_bid_ask_midpoint",
+                    "source_timestamp": quote["source_timestamp"],
+                    "truth_status": "real_derived", "generated_values": False,
+                },
+                "data_status": "live", "truth_status": "real_derived", "generated_values": False,
             }
-        
         return result
 
     def get_last_quote(self, symbol: str) -> Dict[str, Any]:
-        """
-        Compatibility helper used by some Aureon engines.
-
-        Returns a dict shaped like:
-          {"last": {"price": <mid>}, "raw": <api_response>}
-
-        For stocks, uses Alpaca data API latest quote. For crypto pairs (e.g. BTC/USD
-        or BTCUSD) it will prefer the crypto latest quotes endpoint and fall back
-        to the stock quote endpoint when appropriate.
-
-        Phase 2: Uses MarketDataHub prefetch cache if available.
-        """
-        sym = (symbol or "").upper().strip()
-        if not sym:
-            return {}
-
-        # Phase 2: Check MarketDataHub first for prefetched quotes
-        if self._market_data_hub:
-            try:
-                hub_quote = self._market_data_hub.get_quote(sym)
-                if hub_quote:
-                    return hub_quote
-            except Exception as e:
-                logger.debug(f"MarketDataHub lookup failed for {sym}: {e}")
-
-        # Normalize to detect whether this is a crypto pair (contains '/').
-        normalized = AlpacaClient._normalize_pair_symbol(sym)
-        # Check TTL cache first
-        cache_key = f"last_quote::{sym}"
-        cached = self._quote_cache.get(cache_key)
-        if cached is not None:
-            return cached
-
+        """Return a fresh two-sided provider quote and its derived midpoint."""
+        requested = str(symbol or "").strip().upper()
+        if not requested:
+            return {"data_status": "no_data", "truth_status": "no_data", "reason": "symbol_required", "generated_values": False}
+        resolved = self._resolve_symbol(requested)
+        cache_key = f"last_quote::{resolved}"
         try:
-            # If looks like a crypto pair (e.g. BTC/USD or BTCUSD), prefer crypto API
-            if normalized and '/' in normalized:
-                try:
-                    quotes = self.get_latest_crypto_quotes([normalized])
-                    q = quotes.get(normalized)
-                    if q:
-                        bp = float(q.get('bp', 0) or 0.0)
-                        ap = float(q.get('ap', 0) or 0.0)
-                        last = (bp + ap) / 2 if (bp > 0 and ap > 0) else (bp or ap or 0.0)
-                        res = {"last": {"price": last}, "raw": q}
-                        self._quote_cache.set(cache_key, res)
-                        return res
-                except Exception:
-                    # If crypto API fails, fall through to stock endpoint as a fallback
-                    pass
-
-            # Fallback: treat as stock symbol (use ORIGINAL symbol, NOT normalized crypto pair)
-            # Stock API doesn't accept '/' in symbols - extract base for checking
-            stock_sym = sym.replace("/", "").replace("USD", "").replace("USDT", "").replace("USDC", "") if '/' in (normalized or '') else sym
-            # Also strip quote currencies from the end of stock_sym for bare symbols
-            for quote_suffix in ('USDT', 'USDC', 'USD'):
-                if stock_sym.endswith(quote_suffix) and len(stock_sym) > len(quote_suffix):
-                    stock_sym = stock_sym[:-len(quote_suffix)]
-                    break
-            # Skip stock fallback if this is clearly a crypto pair - use centralized set
-            if stock_sym.upper() in CRYPTO_BASE_SYMBOLS:
-                logger.debug(f"Skipping stock fallback for crypto symbol {sym} (detected as {stock_sym})")
-                return {}
-            resp = self._request(
-                "GET",
-                f"/v2/stocks/{stock_sym}/quotes/latest",
-                base_url=self.data_url,
-                request_type='data'
-            )
-            q = {}
-            if isinstance(resp, dict):
-                q = resp.get("quote") or resp.get("quotes", {}).get(sym) or resp
-            bp = float(q.get("bp", 0) or 0.0)
-            ap = float(q.get("ap", 0) or 0.0)
-            last = (bp + ap) / 2 if (bp > 0 and ap > 0) else (bp or ap or 0.0)
-            res = {"last": {"price": last}, "raw": resp}
-            self._quote_cache.set(cache_key, res)
-            return res
+            cached = self._quote_cache.get(cache_key)
         except Exception:
-            return {}
+            cached = None
+        if isinstance(cached, dict):
+            verified = self._normalize_quote_observation(resolved, cached.get("raw"))
+            if verified is not None:
+                return {
+                    "last": {"price": verified["mid"], "source": "provider_quote_midpoint"},
+                    "raw": verified, "provider_timestamp": verified["provider_timestamp"],
+                    "source_timestamp": verified["source_timestamp"], "data_status": "live",
+                    "truth_status": "real_derived", "generated_values": False,
+                }
+        if "/" in resolved:
+            quote = self.get_latest_crypto_quotes([resolved]).get(resolved)
+        else:
+            response = self._request(
+                "GET", f"/v2/stocks/{resolved}/quotes/latest",
+                base_url=self.data_url, request_type="data",
+            )
+            raw_quote = response.get("quote") if isinstance(response, dict) else None
+            quote = self._normalize_quote_observation(resolved, raw_quote)
+        if quote is None:
+            return {
+                "symbol": resolved, "data_status": "no_data", "truth_status": "no_data",
+                "reason": "fresh_two_sided_provider_quote_required", "generated_values": False,
+            }
+        receipt = {
+            "last": {"price": quote["mid"], "source": "provider_quote_midpoint"},
+            "raw": quote, "provider_timestamp": quote["provider_timestamp"],
+            "source_timestamp": quote["source_timestamp"], "data_status": "live",
+            "truth_status": "real_derived", "generated_values": False,
+        }
+        try:
+            self._quote_cache.set(cache_key, receipt)
+        except Exception:
+            pass
+        return receipt
 
     def get_assets(self, status: str = "active", asset_class: str = "crypto") -> List[Dict[str, Any]]:
         """Get list of assets."""
@@ -913,76 +1717,120 @@ class AlpacaClient:
         return symbols
 
     def get_order(self, order_id: str) -> Dict[str, Any]:
-        """Get order details by ID."""
-        return self._request("GET", f"/v2/orders/{order_id}", request_type='trading')
+        """Get the provider order object by its non-sentinel ID."""
+        provider_order_id = self._valid_provider_identifier(order_id)
+        if provider_order_id is None:
+            return {}
+        result = self._request(
+            "GET",
+            f"/v2/orders/{provider_order_id}",
+            request_type="trading",
+        )
+        return result if isinstance(result, dict) else {}
 
-    def get_order_fills(self, order_id: str) -> Dict[str, Any]:
-        """Get fill details for an order."""
-        order = self.get_order(order_id)
-        return order
-    
-    def compute_order_fees(self, order: Dict[str, Any], asset_class: str = "crypto") -> Dict[str, float]:
-        """
-        Calculate fees for an Alpaca order.
-        
-        Alpaca Fee Structure:
-        - Stocks: $0 commission (PFOF revenue model)
-        - Crypto: 0.15% maker / 0.25% taker (spread-based)
-        
-        Returns dict with:
-        - fee_usd: Estimated fee in USD
-        - fee_pct: Fee as percentage
-        - fee_type: 'commission' or 'spread'
-        """
-        filled_qty = float(order.get('filled_qty', 0) or 0)
-        filled_avg_price = float(order.get('filled_avg_price', 0) or 0)
-        notional = filled_qty * filled_avg_price
-        
-        if asset_class == "us_equity":
-            # Stocks are commission-free
+    def get_order_fills(
+        self,
+        order_id: str,
+        *,
+        order: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        """Reconcile an order with provider fill activities and provider fees."""
+        provider_order_id = self._valid_provider_identifier(order_id)
+        if provider_order_id is None:
+            return self._pending_order_receipt(
+                {},
+                "non_sentinel_provider_order_id_required",
+                submission_attempted=False,
+            )
+        observed_order = dict(order) if isinstance(order, dict) else self.get_order(provider_order_id)
+        if self._valid_provider_identifier(observed_order.get("id")) != provider_order_id:
+            return self._pending_order_receipt(
+                observed_order,
+                "provider_order_identity_mismatch",
+                submission_attempted=True,
+            )
+
+        activities: List[Dict[str, Any]] = []
+        if str(observed_order.get("status") or "").strip().lower() == "filled":
+            fetched = self.get_account_activities(
+                activity_types="FILL",
+                direction="desc",
+                page_size=100,
+            )
+            if isinstance(fetched, list):
+                activities = fetched
+        return self._normalize_order_receipt(
+            observed_order,
+            fill_activities=activities,
+            submission_attempted=True,
+        )
+
+    def compute_order_fees(
+        self,
+        order: Dict[str, Any],
+        asset_class: str = "crypto",
+    ) -> Dict[str, Any]:
+        """Return provider fee evidence only; never infer a fee from a rate."""
+        del asset_class
+        if not isinstance(order, dict):
             return {
-                'fee_usd': 0.0,
-                'fee_pct': 0.0,
-                'fee_type': 'commission',
-                'notional': notional
+                "fee": None,
+                "fee_currency": None,
+                "data_status": "no_data",
+                "truth_status": "no_data",
+                "reason": "provider_order_receipt_required",
+                "generated_values": False,
             }
-        else:
-            # Crypto: estimate based on taker fee (0.25%)
-            # Note: Actual spread may vary
-            taker_fee_pct = 0.0025
-            fee_usd = notional * taker_fee_pct
+        fee = self._finite_number(
+            order.get("fee") if "fee" in order else order.get("commission"),
+            nonnegative=True,
+        )
+        fee_currency = str(
+            order.get("fee_currency")
+            or order.get("commission_currency")
+            or order.get("currency")
+            or ""
+        ).strip()
+        if (
+            order.get("fill_receipt_complete") is not True
+            or order.get("generated_values") is not False
+            or fee is None
+            or not fee_currency
+        ):
             return {
-                'fee_usd': fee_usd,
-                'fee_pct': taker_fee_pct,
-                'fee_type': 'spread',
-                'notional': notional
+                "fee": None,
+                "fee_currency": None,
+                "data_status": "no_data",
+                "truth_status": "no_data",
+                "reason": "provider_fee_receipt_and_currency_required",
+                "generated_values": False,
             }
+        return {
+            "fee": fee,
+            "fee_currency": fee_currency,
+            "data_status": "live",
+            "truth_status": "real_observed",
+            "source_timestamp": order.get("source_timestamp"),
+            "generated_values": False,
+        }
 
     def get_order_with_fees(self, order_id: str) -> Dict[str, Any]:
-        """Get order with calculated fee metrics."""
-        order = self.get_order(order_id)
-        if not order:
-            return {}
-        
-        symbol = order.get('symbol', '')
-        # Determine asset class from symbol pattern
-        asset_class = "crypto" if symbol.endswith("USD") or "/" in symbol else "us_equity"
-        
-        fees = self.compute_order_fees(order, asset_class)
-        order['computed_fees'] = fees
-        return order
+        """Return a reconciled order, pending when provider fees are unavailable."""
+        return self.get_order_fills(order_id)
 
-    def compute_order_fees_in_quote(self, order: Dict[str, Any], primary_quote: str = "USD") -> float:
-        """
-        Calculate total fees for an order in the quote currency.
-        This provides a consistent interface with Binance/Kraken clients.
-        
-        Returns: Total fee in quote currency (USD)
-        """
-        symbol = order.get('symbol', '')
-        asset_class = "crypto" if symbol.endswith("USD") or "/" in symbol else "us_equity"
-        fees = self.compute_order_fees(order, asset_class)
-        return fees['fee_usd']
+    def compute_order_fees_in_quote(
+        self,
+        order: Dict[str, Any],
+        primary_quote: str = "USD",
+    ) -> Optional[float]:
+        """Return a provider-observed fee only when it is in the requested quote."""
+        fee_receipt = self.compute_order_fees(order)
+        if (
+            fee_receipt.get("data_status") != "live"
+            or str(fee_receipt.get("fee_currency") or "").upper() != str(primary_quote).upper()
+        ):
+            return None
+        return self._finite_number(fee_receipt.get("fee"), nonnegative=True)
 
     def get_all_orders(self, status: str = "closed", limit: int = 500, symbols: str = None) -> List[Dict[str, Any]]:
         """
@@ -1003,67 +1851,103 @@ class AlpacaClient:
         return result if isinstance(result, list) else []
 
     def calculate_cost_basis(self, symbol: str) -> Dict[str, Any]:
-        """
-        Calculate cost basis for a symbol from filled orders.
-        
-        Returns dict with:
-        - symbol: The symbol
-        - total_quantity: Net quantity held
-        - total_cost: Total cost of buys
-        - avg_cost: Average cost per unit
-        - trades: Number of trades
-        """
-        # Get closed (filled) orders for this symbol
+        """Calculate cost basis only from complete accounting-eligible receipts."""
         orders = self.get_all_orders(status="closed", symbols=symbol)
-        
-        if not orders:
+        verified: List[Dict[str, Any]] = []
+        for order in orders if isinstance(orders, list) else []:
+            qty = self._finite_number(order.get("filled_qty"), positive=True)
+            price = self._finite_number(order.get("filled_avg_price"), positive=True)
+            fee = self._finite_number(order.get("fee"), nonnegative=True)
+            fee_currency = str(order.get("fee_currency") or "").strip().upper()
+            if (
+                str(order.get("status") or "").lower() != "filled"
+                or order.get("fill_receipt_complete") is not True
+                or order.get("eligible_for_accounting") is not True
+                or order.get("generated_values") is not False
+                or self._valid_provider_identifier(order.get("id")) is None
+                or qty is None
+                or price is None
+                or fee is None
+                or not fee_currency
+            ):
+                continue
+            verified.append({**order, "_qty": qty, "_price": price, "_fee": fee, "_fee_currency": fee_currency})
+        if not verified:
             return {
                 "symbol": symbol,
-                "total_quantity": 0.0,
-                "total_cost": 0.0,
-                "avg_cost": 0.0,
-                "trades": 0
+                "total_quantity": None,
+                "total_cost": None,
+                "avg_cost": None,
+                "trades": None,
+                "data_status": "no_data",
+                "truth_status": "no_data",
+                "reason": "complete_provider_fill_and_fee_receipts_required",
+                "generated_values": False,
+                "eligible_for_accounting": False,
             }
-        
-        total_qty = 0.0
-        total_cost = 0.0
-        buy_qty = 0.0
+
+        normalized_symbol = self._normalize_pair_symbol(symbol)
+        base_asset, quote_asset = (
+            normalized_symbol.split("/", 1)
+            if normalized_symbol and "/" in normalized_symbol
+            else (str(symbol).upper(), "USD")
+        )
+        net_quantity = 0.0
+        buy_quantity = 0.0
         buy_cost = 0.0
-        trade_count = 0
-        
-        for order in orders:
-            if order.get('status') != 'filled':
-                continue
-                
-            filled_qty = float(order.get('filled_qty', 0) or 0)
-            filled_price = float(order.get('filled_avg_price', 0) or 0)
-            side = order.get('side', '')
-            
-            if filled_qty <= 0 or filled_price <= 0:
-                continue
-            
-            trade_count += 1
-            
-            if side == 'buy':
-                total_qty += filled_qty
-                buy_qty += filled_qty
-                buy_cost += filled_qty * filled_price
-            elif side == 'sell':
-                total_qty -= filled_qty
-        
-        avg_cost = buy_cost / buy_qty if buy_qty > 0 else 0.0
-        
+        for order in verified:
+            qty = float(order["_qty"])
+            price = float(order["_price"])
+            fee = float(order["_fee"])
+            fee_currency = str(order["_fee_currency"])
+            side = str(order.get("side") or "").lower()
+            if fee_currency not in {base_asset, quote_asset}:
+                return {
+                    "symbol": symbol,
+                    "total_quantity": None,
+                    "total_cost": None,
+                    "avg_cost": None,
+                    "trades": None,
+                    "data_status": "no_data",
+                    "truth_status": "no_data",
+                    "reason": "fee_currency_conversion_receipt_required",
+                    "generated_values": False,
+                    "eligible_for_accounting": False,
+                }
+            if side == "buy":
+                received_base = qty - fee if fee_currency == base_asset else qty
+                quote_cost = qty * price + (fee if fee_currency == quote_asset else 0.0)
+                if received_base <= 0.0:
+                    continue
+                net_quantity += received_base
+                buy_quantity += received_base
+                buy_cost += quote_cost
+            elif side == "sell":
+                net_quantity -= qty + (fee if fee_currency == base_asset else 0.0)
+        if buy_quantity <= 0.0:
+            return {
+                "symbol": symbol,
+                "total_quantity": net_quantity,
+                "total_cost": None,
+                "avg_cost": None,
+                "trades": len(verified),
+                "data_status": "no_data",
+                "truth_status": "no_data",
+                "reason": "verified_buy_receipt_required",
+                "generated_values": False,
+                "eligible_for_accounting": False,
+            }
         return {
             "symbol": symbol,
-            "total_quantity": total_qty,
+            "total_quantity": net_quantity,
             "total_cost": buy_cost,
-            "avg_cost": avg_cost,
-            "trades": trade_count
+            "avg_cost": buy_cost / buy_quantity,
+            "trades": len(verified),
+            "data_status": "live",
+            "truth_status": "real_derived",
+            "generated_values": False,
+            "eligible_for_accounting": True,
         }
-
-    # ══════════════════════════════════════════════════════════════════════
-    # ADVANCED ORDER TYPES - Limit, Stop, Trailing Stop, Bracket, OCO
-    # ══════════════════════════════════════════════════════════════════════
 
     def place_limit_order(
         self,
@@ -1093,7 +1977,9 @@ class AlpacaClient:
         symbol = self._resolve_symbol(symbol)
         if self.dry_run:
             logger.info(f"[DRY RUN] Alpaca Limit Order: {side} {qty} {symbol} @ {limit_price}")
-            return {"id": "dry_run_id", "status": "accepted", "type": "limit"}
+            return self._not_submitted_order_receipt(
+                "dry_run", symbol=symbol, side=side, requested_qty=qty, type="limit"
+            )
 
         data = {
             "symbol": symbol,
@@ -1107,7 +1993,10 @@ class AlpacaClient:
         if extended_hours:
             data["extended_hours"] = True
             
-        return self._request("POST", "/v2/orders", data=data, request_type='trading')
+        result = self._request("POST", "/v2/orders", data=data, request_type='trading')
+        return self._normalize_order_receipt(
+            result, fill_activities=[], submission_attempted=True
+        )
 
     def place_stop_order(
         self,
@@ -1135,7 +2024,9 @@ class AlpacaClient:
         symbol = self._resolve_symbol(symbol)
         if self.dry_run:
             logger.info(f"[DRY RUN] Alpaca Stop Order: {side} {qty} {symbol} @ stop={stop_price}")
-            return {"id": "dry_run_id", "status": "accepted", "type": "stop"}
+            return self._not_submitted_order_receipt(
+                "dry_run", symbol=symbol, side=side, requested_qty=qty, type="stop"
+            )
 
         data = {
             "symbol": symbol,
@@ -1145,7 +2036,10 @@ class AlpacaClient:
             "stop_price": str(stop_price),
             "time_in_force": time_in_force
         }
-        return self._request("POST", "/v2/orders", data=data, request_type='trading')
+        result = self._request("POST", "/v2/orders", data=data, request_type='trading')
+        return self._normalize_order_receipt(
+            result, fill_activities=[], submission_attempted=True
+        )
 
     def place_stop_limit_order(
         self,
@@ -1175,7 +2069,9 @@ class AlpacaClient:
         symbol = self._resolve_symbol(symbol)
         if self.dry_run:
             logger.info(f"[DRY RUN] Alpaca Stop-Limit: {side} {qty} {symbol} @ stop={stop_price} limit={limit_price}")
-            return {"id": "dry_run_id", "status": "accepted", "type": "stop_limit"}
+            return self._not_submitted_order_receipt(
+                "dry_run", symbol=symbol, side=side, requested_qty=qty, type="stop_limit"
+            )
 
         data = {
             "symbol": symbol,
@@ -1186,7 +2082,10 @@ class AlpacaClient:
             "limit_price": str(limit_price),
             "time_in_force": time_in_force
         }
-        return self._request("POST", "/v2/orders", data=data, request_type='trading')
+        result = self._request("POST", "/v2/orders", data=data, request_type='trading')
+        return self._normalize_order_receipt(
+            result, fill_activities=[], submission_attempted=True
+        )
 
     def place_trailing_stop_order(
         self,
@@ -1220,7 +2119,9 @@ class AlpacaClient:
         if self.dry_run:
             trail = f"{trail_percent}%" if trail_percent else f"${trail_price}"
             logger.info(f"[DRY RUN] Alpaca Trailing Stop: {side} {qty} {symbol} trail={trail}")
-            return {"id": "dry_run_id", "status": "accepted", "type": "trailing_stop"}
+            return self._not_submitted_order_receipt(
+                "dry_run", symbol=symbol, side=side, requested_qty=qty, type="trailing_stop"
+            )
 
         data = {
             "symbol": symbol,
@@ -1237,7 +2138,10 @@ class AlpacaClient:
         else:
             raise ValueError("Must provide either trail_percent or trail_price")
             
-        return self._request("POST", "/v2/orders", data=data, request_type='trading')
+        result = self._request("POST", "/v2/orders", data=data, request_type='trading')
+        return self._normalize_order_receipt(
+            result, fill_activities=[], submission_attempted=True
+        )
 
     def place_bracket_order(
         self,
@@ -1281,7 +2185,10 @@ class AlpacaClient:
         symbol = self._resolve_symbol(symbol)
         if self.dry_run:
             logger.info(f"[DRY RUN] Alpaca Bracket: {side} {qty} {symbol} TP={take_profit_limit} SL={stop_loss_stop}")
-            return {"id": "dry_run_id", "status": "accepted", "order_class": "bracket"}
+            return self._not_submitted_order_receipt(
+                "dry_run", symbol=symbol, side=side, requested_qty=qty,
+                type=entry_type, order_class="bracket"
+            )
 
         if take_profit_limit is None or stop_loss_stop is None:
             raise ValueError("Bracket orders require both take_profit_limit and stop_loss_stop")
@@ -1309,7 +2216,10 @@ class AlpacaClient:
         if stop_loss_limit:
             data["stop_loss"]["limit_price"] = str(stop_loss_limit)
             
-        return self._request("POST", "/v2/orders", data=data, request_type='trading')
+        result = self._request("POST", "/v2/orders", data=data, request_type='trading')
+        return self._normalize_order_receipt(
+            result, fill_activities=[], submission_attempted=True
+        )
 
     def place_oco_order(
         self,
@@ -1342,7 +2252,10 @@ class AlpacaClient:
         symbol = self._resolve_symbol(symbol)
         if self.dry_run:
             logger.info(f"[DRY RUN] Alpaca OCO: {side} {qty} {symbol} TP={take_profit_limit} SL={stop_loss_stop}")
-            return {"id": "dry_run_id", "status": "accepted", "order_class": "oco"}
+            return self._not_submitted_order_receipt(
+                "dry_run", symbol=symbol, side=side, requested_qty=qty,
+                type="limit", order_class="oco"
+            )
 
         data = {
             "symbol": symbol,
@@ -1362,7 +2275,10 @@ class AlpacaClient:
         if stop_loss_limit:
             data["stop_loss"]["limit_price"] = str(stop_loss_limit)
             
-        return self._request("POST", "/v2/orders", data=data, request_type='trading')
+        result = self._request("POST", "/v2/orders", data=data, request_type='trading')
+        return self._normalize_order_receipt(
+            result, fill_activities=[], submission_attempted=True
+        )
 
     def place_oto_order(
         self,
@@ -1401,7 +2317,10 @@ class AlpacaClient:
         if self.dry_run:
             exit_type = f"TP={take_profit_limit}" if take_profit_limit else f"SL={stop_loss_stop}"
             logger.info(f"[DRY RUN] Alpaca OTO: {side} {qty} {symbol} {exit_type}")
-            return {"id": "dry_run_id", "status": "accepted", "order_class": "oto"}
+            return self._not_submitted_order_receipt(
+                "dry_run", symbol=symbol, side=side, requested_qty=qty,
+                type=entry_type, order_class="oto"
+            )
 
         if not take_profit_limit and not stop_loss_stop:
             raise ValueError("OTO orders require either take_profit_limit or stop_loss_stop")
@@ -1427,7 +2346,10 @@ class AlpacaClient:
             if stop_loss_limit:
                 data["stop_loss"]["limit_price"] = str(stop_loss_limit)
                 
-        return self._request("POST", "/v2/orders", data=data, request_type='trading')
+        result = self._request("POST", "/v2/orders", data=data, request_type='trading')
+        return self._normalize_order_receipt(
+            result, fill_activities=[], submission_attempted=True
+        )
 
     # ══════════════════════════════════════════════════════════════════════
     # ORDER MANAGEMENT - Query, Cancel, Replace
@@ -1461,9 +2383,30 @@ class AlpacaClient:
         """
         if self.dry_run:
             logger.info(f"[DRY RUN] Cancel order: {order_id}")
-            return {"status": "canceled"}
-            
-        return self._request("DELETE", f"/v2/orders/{order_id}", request_type='trading')
+            return self._not_submitted_order_receipt(
+                "dry_run", provider_order_id=None, requested_order_id=order_id, type="cancel"
+            )
+
+        result = self._request(
+            "DELETE", f"/v2/orders/{order_id}", request_type='trading'
+        )
+        acknowledged = self.last_error is None
+        return {
+            "requested_order_id": order_id,
+            "status": "pending_reconciliation" if acknowledged else "no_data",
+            "data_status": "pending_reconciliation" if acknowledged else "no_data",
+            "reason": (
+                "cancel_request_acknowledged_position_readback_required"
+                if acknowledged
+                else "cancel_request_outcome_unproven"
+            ),
+            "cancellation_requested": acknowledged,
+            "canceled_confirmed": False,
+            "provider_response": result if isinstance(result, dict) else None,
+            "eligible_for_accounting": False,
+            "eligible_for_learning": False,
+            "generated_values": False,
+        }
 
     def cancel_all_orders(self) -> Dict[str, Any]:
         """
@@ -1474,9 +2417,27 @@ class AlpacaClient:
         """
         if self.dry_run:
             logger.info("[DRY RUN] Cancel all orders")
-            return {"status": "canceled", "count": 0}
-            
-        return self._request("DELETE", "/v2/orders", request_type='trading')
+            return self._not_submitted_order_receipt(
+                "dry_run", type="cancel_all"
+            )
+
+        result = self._request("DELETE", "/v2/orders", request_type='trading')
+        acknowledged = self.last_error is None
+        return {
+            "status": "pending_reconciliation" if acknowledged else "no_data",
+            "data_status": "pending_reconciliation" if acknowledged else "no_data",
+            "reason": (
+                "cancel_all_request_acknowledged_order_readback_required"
+                if acknowledged
+                else "cancel_all_request_outcome_unproven"
+            ),
+            "cancellation_requested": acknowledged,
+            "canceled_confirmed": False,
+            "provider_response": result,
+            "eligible_for_accounting": False,
+            "eligible_for_learning": False,
+            "generated_values": False,
+        }
 
     def replace_order(
         self,
@@ -1503,7 +2464,9 @@ class AlpacaClient:
         """
         if self.dry_run:
             logger.info(f"[DRY RUN] Replace order: {order_id}")
-            return {"id": "dry_run_replaced", "status": "accepted"}
+            return self._not_submitted_order_receipt(
+                "dry_run", replaces=order_id, type="replace"
+            )
 
         data = {}
         if qty is not None:
@@ -1517,7 +2480,12 @@ class AlpacaClient:
         if time_in_force is not None:
             data["time_in_force"] = time_in_force
             
-        return self._request("PATCH", f"/v2/orders/{order_id}", data=data, request_type='trading')
+        result = self._request(
+            "PATCH", f"/v2/orders/{order_id}", data=data, request_type='trading'
+        )
+        return self._normalize_order_receipt(
+            result, fill_activities=[], submission_attempted=True
+        )
 
     # ══════════════════════════════════════════════════════════════════════
     # CONVENIENCE METHODS - Kraken-compatible interface
@@ -1531,74 +2499,59 @@ class AlpacaClient:
         quote_qty: float = None,
         position_intent: Optional[str] = None,
     ) -> Dict[str, Any]:
-        """
-        Place a market order (Kraken-compatible interface).
-        
-        Args:
-            symbol: Trading pair
-            side: 'buy' or 'sell'
-            quantity: Amount of base asset
-            quote_qty: Amount of quote asset (converted to quantity)
-            
-        Returns:
-            Order response
-        """
-        symbol = self._resolve_symbol(symbol)
-        side_norm = (side or '').lower()
-        if quote_qty and not quantity:
-            # Need to estimate quantity from quote
-            try:
-                quotes = self.get_latest_crypto_quotes([symbol])
-                if symbol in quotes:
-                    q = quotes[symbol]
-                    mid_price = (float(q.get('bp', 0)) + float(q.get('ap', 0))) / 2
-                    if mid_price > 0:
-                        quantity = quote_qty / mid_price
-            except:
-                pass
-                
-        if not quantity:
-            logger.error(f"Cannot place market order without quantity for {symbol}")
-            return {}
+        """Submit a market order without inventing quantity from incomplete data."""
+        resolved = self._resolve_symbol(symbol)
+        side_normalized = str(side or "").strip().lower()
+        base_quantity = self._finite_number(quantity, positive=True)
+        quote_quantity = self._finite_number(quote_qty, positive=True)
 
-        # Crypto SELLs can fail if you try to sell the full filled quantity because
-        # Alpaca may reserve a small amount for fees/spread, leaving qty_available
-        # slightly below filled_qty. Clamp to available to prevent 40310000.
-        try:
-            if side_norm == 'sell' and '/' in symbol:
-                base = symbol.split('/')[0]
-                available = float(self.get_free_balance(base) or 0.0)
-                req = float(quantity or 0.0)
-                if available > 0 and req > 0:
-                    if req > available:
-                        logger.warning(
-                            f"Alpaca SELL clamped for {symbol}: requested {req:.12f} > available {available:.12f}"
-                        )
-                        req = available
-                    # Extra safety margin to avoid rounding/hold/reserve edge
-                    req = req * 0.999
-                    if req <= 0:
-                        return {}
-                    quantity = req
-        except Exception:
-            pass
-        
-        # 🆕 Alpaca crypto trading TIF rules:
-        # - For fractional orders: must be 'day' or 'ioc'  
-        # - For USDT pairs: 'gtc' works but some assets not fractionable
-        # - For regular USD crypto: 'ioc' (instant) works best
-        is_crypto = "/" in symbol or (symbol.endswith("USD") and len(symbol) > 5)
-        is_usdt = "USDT" in symbol.upper()
-        
-        # 🆕 FIX: Alpaca fractional crypto orders MUST use 'day' TIF
-        # The error "fractional orders must be DAY orders" means we need 'day' not 'gtc'
-        # For instant fills on USD pairs, 'ioc' works
-        if is_crypto:
-            tif = "day" if is_usdt else "ioc"
-        else:
-            tif = "gtc"
-        
-        return self.place_order(symbol, quantity, side, type="market", time_in_force=tif, position_intent=position_intent)
+        if base_quantity is None and quote_quantity is not None:
+            quote = self.get_latest_crypto_quotes([resolved]).get(resolved)
+            if not isinstance(quote, dict):
+                return self._not_submitted_order_receipt(
+                    "fresh_two_sided_provider_quote_required",
+                    symbol=resolved,
+                    side=side_normalized,
+                    requested_quote_qty=quote_quantity,
+                    type="market",
+                )
+            bid = self._finite_number(quote.get("bp"), positive=True)
+            ask = self._finite_number(quote.get("ap"), positive=True)
+            provider_timestamp = self._fresh_provider_timestamp(
+                quote.get("provider_timestamp") or quote.get("t"),
+                max_age_seconds=self.quote_max_age_seconds,
+            )
+            if bid is None or ask is None or bid > ask or provider_timestamp is None:
+                return self._not_submitted_order_receipt(
+                    "fresh_two_sided_provider_quote_required",
+                    symbol=resolved,
+                    side=side_normalized,
+                    requested_quote_qty=quote_quantity,
+                    type="market",
+                )
+            base_quantity = quote_quantity / ((bid + ask) / 2.0)
+
+        if base_quantity is None:
+            return self._not_submitted_order_receipt(
+                "positive_base_or_quote_quantity_required",
+                symbol=resolved,
+                side=side_normalized,
+                requested_qty=quantity,
+                requested_quote_qty=quote_qty,
+                type="market",
+            )
+
+        is_crypto = "/" in resolved
+        is_usdt = resolved.endswith("/USDT")
+        time_in_force = "day" if is_crypto and is_usdt else "ioc" if is_crypto else "gtc"
+        return self.place_order(
+            resolved,
+            base_quantity,
+            side_normalized,
+            type="market",
+            time_in_force=time_in_force,
+            position_intent=position_intent,
+        )
 
     def place_stop_loss_order(self, symbol: str, side: str, quantity: float, stop_price: float, limit_price: float = None) -> Dict[str, Any]:
         """
@@ -1854,186 +2807,183 @@ class AlpacaClient:
             return {}
 
     def get_latest_stock_quote(self, symbol: str) -> Dict[str, Any]:
-        """Return latest quote for a stock symbol."""
-        try:
-            sym = symbol.upper()
-            return self._request("GET", f"/v2/stocks/{sym}/quotes/latest", request_type='data') or {}
-        except Exception as e:
-            logger.debug(f"Stock quote endpoint unavailable for {symbol}: {e}")
-            return {}
+        """Return a fresh two-sided stock quote with its provider timestamp."""
+        resolved = str(symbol or "").strip().upper()
+        if not resolved:
+            return {
+                "quote": {}, "data_status": "no_data", "truth_status": "no_data",
+                "reason": "symbol_required", "generated_values": False,
+            }
+        response = self._request(
+            "GET", f"/v2/stocks/{resolved}/quotes/latest",
+            base_url=self.data_url, request_type="data",
+        )
+        raw_quote = response.get("quote") if isinstance(response, dict) else None
+        quote = self._normalize_quote_observation(resolved, raw_quote)
+        if quote is None:
+            return {
+                "quote": {}, "data_status": "no_data", "truth_status": "no_data",
+                "reason": "fresh_two_sided_provider_quote_required", "generated_values": False,
+            }
+        return {
+            "quote": quote, "data_status": "live", "truth_status": "real_observed",
+            "provider_timestamp": quote["provider_timestamp"],
+            "source_timestamp": quote["source_timestamp"], "generated_values": False,
+        }
 
     def get_stock_bars(self, symbols: List[str], limit: int = 1) -> Dict[str, Any]:
-        """Return latest bars (OHLCV) for stock symbols."""
-        try:
-            data = {"symbols": ",".join([s.upper() for s in symbols]), "limit": limit}
-            result = self._request("GET", "/v2/stocks/bars/latest", params=data, request_type='data')
-            return result if isinstance(result, dict) else {}
-        except Exception as e:
-            logger.debug(f"Stock bars endpoint error: {e}")
-            return {}
+        """Return valid provider stock bars without numeric substitution."""
+        requested = [str(symbol or "").strip().upper() for symbol in symbols if str(symbol or "").strip()]
+        if not requested:
+            return {
+                "bars": {}, "data_status": "no_data", "truth_status": "no_data",
+                "reason": "symbols_required", "generated_values": False,
+            }
+        response = self._request(
+            "GET", "/v2/stocks/bars/latest",
+            params={"symbols": ",".join(requested), "limit": limit},
+            base_url=self.data_url, request_type="data",
+        )
+        payload = response.get("bars") if isinstance(response, dict) else None
+        verified_bars: Dict[str, List[Dict[str, Any]]] = {}
+        if isinstance(payload, dict):
+            for symbol, raw in payload.items():
+                rows = raw if isinstance(raw, list) else [raw]
+                verified = [
+                    bar for item in rows
+                    if (bar := self._normalize_bar_observation(str(symbol), item)) is not None
+                ]
+                if verified:
+                    verified_bars[str(symbol)] = verified
+        if not verified_bars:
+            return {
+                "bars": {}, "data_status": "no_data", "truth_status": "no_data",
+                "reason": "provider_bars_missing_or_malformed", "generated_values": False,
+            }
+        return {
+            "bars": verified_bars, "data_status": "live", "truth_status": "real_observed",
+            "received_at": datetime.now(timezone.utc).isoformat(), "generated_values": False,
+        }
 
     def get_24h_tickers(self) -> List[Dict[str, Any]]:
-        """
-        Get 24h ticker data for crypto assets (Kraken-compatible interface).
-        
-        Returns:
-            List of ticker dicts with symbol, lastPrice, priceChangePercent, quoteVolume
-        """
-        try:
-            symbols = self.get_tradable_crypto_symbols()
-            if not symbols:
-                return []
-
-            bars_resp = self.get_crypto_bars(symbols, timeframe="1Day", limit=2)
-            bars = bars_resp.get('bars', bars_resp) if isinstance(bars_resp, dict) else {}
-
-            tickers = []
-            for sym in symbols:
-                data = bars.get(sym) if isinstance(bars, dict) else None
-                if not data:
-                    continue
-
-                latest = data[-1]
-                prev_close = data[-2]['c'] if len(data) > 1 else latest.get('o', 0)
-
-                close = float(latest.get('c', 0))
-                change_pct = ((close - prev_close) / prev_close * 100) if prev_close else 0
-                volume = float(latest.get('v', 0)) * close
-
-                tickers.append({
-                    'symbol': sym.replace('/', ''),  # Convert BTC/USD to BTCUSD
-                    'lastPrice': str(close),
-                    'priceChangePercent': str(change_pct),
-                    'quoteVolume': str(volume)
-                })
-
-            return tickers
-        except Exception as e:
-            logger.error(f"Error getting Alpaca tickers: {e}")
+        """Derive 24-hour crypto metrics only from two provider-timestamped bars."""
+        symbols = self.get_tradable_crypto_symbols()
+        if not symbols:
             return []
+        bars_response = self.get_crypto_bars(symbols, timeframe="1Day", limit=2)
+        bars = bars_response.get("bars") if isinstance(bars_response, dict) else None
+        if not isinstance(bars, dict):
+            return []
+        tickers: List[Dict[str, Any]] = []
+        now = time.time()
+        for symbol in symbols:
+            data = bars.get(symbol)
+            if not isinstance(data, list) or len(data) < 2:
+                continue
+            previous, latest = data[-2], data[-1]
+            previous_close = self._finite_number(previous.get("c"), positive=True)
+            close = self._finite_number(latest.get("c"), positive=True)
+            volume = self._finite_number(latest.get("v"), nonnegative=True)
+            source_timestamp = self._fresh_provider_timestamp(
+                latest.get("source_timestamp"), max_age_seconds=172800.0, now=now,
+            )
+            if previous_close is None or close is None or volume is None or source_timestamp is None:
+                continue
+            tickers.append({
+                "symbol": symbol.replace("/", ""),
+                "lastPrice": str(close),
+                "priceChangePercent": str(((close - previous_close) / previous_close) * 100.0),
+                "quoteVolume": str(volume * close),
+                "provider_timestamp": source_timestamp,
+                "source_timestamp": source_timestamp,
+                "data_status": "live",
+                "truth_status": "real_derived",
+                "generated_values": False,
+            })
+        return tickers
 
     def get_ticker(self, symbol: str) -> Dict[str, Any]:
-        """Return latest bid/ask/last for a symbol (stocks or crypto)."""
-        try:
-            norm = self._resolve_symbol(symbol)
-            
-            # Check if this is a crypto symbol by examining the base
-            base_sym = norm.split('/')[0] if '/' in norm else norm
-            # Also check for bare crypto symbols that might not have been normalized
-            for quote_suffix in ('USDT', 'USDC', 'USD'):
-                if base_sym.endswith(quote_suffix) and len(base_sym) > len(quote_suffix):
-                    base_sym = base_sym[:-len(quote_suffix)]
-                    break
-            is_crypto = base_sym.upper() in CRYPTO_BASE_SYMBOLS or '/' in norm
-
-            # Stock path - only for actual stocks, NOT crypto
-            if not is_crypto and '/' not in norm:
-                # Try quote first, then snapshot, then bars as fallback
-                quote_resp = self.get_latest_stock_quote(norm)
-                snapshot = self.get_stock_snapshot(norm)
-
-                quote = quote_resp.get('quote', {}) if isinstance(quote_resp, dict) else {}
-                bid = float(quote.get('bp', 0) or 0.0)
-                ask = float(quote.get('ap', 0) or 0.0)
-                price = float(quote.get('bp', 0) or 0.0)
-                if bid > 0 and ask > 0:
-                    price = (bid + ask) / 2
-                elif ask > 0:
-                    price = ask
-                elif bid > 0:
-                    price = bid
-
-                # Daily volume / change from snapshot
-                daily_volume = 0.0
-                todays_change_pct = 0.0
-                if snapshot:
-                    daily_bar = snapshot.get('dailyBar', {}) or snapshot.get('daily_bar', {})
-                    prev_bar = snapshot.get('prevDailyBar', {}) or snapshot.get('prev_daily_bar', {})
-                    daily_volume = float(daily_bar.get('v', 0) or 0.0)
-                    prev_close = float(prev_bar.get('c', 0) or 0.0)
-                    latest_close = float(daily_bar.get('c', price) or price)
-                    if prev_close > 0:
-                        todays_change_pct = ((latest_close - prev_close) / prev_close) * 100.0
-                    if price <= 0:
-                        price = latest_close
-
-                # Fallback to bars if no price yet
-                if price <= 0:
-                    try:
-                        bars_resp = self.get_stock_bars([norm], limit=1)
-                        bars = bars_resp.get('bars', {})
-                        bar = bars.get(norm, [{}])[0] if norm in bars else {}
-                        price = float(bar.get('c', 0) or 0.0)
-                        if daily_volume <= 0:
-                            daily_volume = float(bar.get('v', 0) or 0.0)
-                    except Exception:
-                        pass
-
-                return {
-                    'symbol': norm,
-                    'price': price,
-                    'bid': bid,
-                    'ask': ask,
-                    'last': {'price': price},
-                    'raw': {
-                        'dailyVolume': daily_volume,
-                        'todaysChangePerc': todays_change_pct,
-                        'snapshot': snapshot
-                    }
-                }
-
-            # Crypto path
-            quotes = self.get_latest_crypto_quotes([norm]) or {}
-            q = quotes.get(norm, {})
-            bid = float(q.get('bp', 0) or 0.0)
-            ask = float(q.get('ap', 0) or 0.0)
-            # Use mid if both available, otherwise fall back to bid/ask
-            if bid > 0 and ask > 0:
-                price = (bid + ask) / 2
-            else:
-                price = bid or ask or 0.0
+        """Return a fresh two-sided quote; missing evidence remains no-data."""
+        resolved = self._resolve_symbol(symbol)
+        if "/" in resolved:
+            quote = self.get_latest_crypto_quotes([resolved]).get(resolved)
+        else:
+            response = self.get_latest_stock_quote(resolved)
+            quote = response.get("quote") if isinstance(response, dict) else None
+        if not isinstance(quote, dict):
             return {
-                'symbol': norm,
-                'price': price,
-                'bid': bid,
-                'ask': ask,
+                "symbol": resolved,
+                "price": None,
+                "bid": None,
+                "ask": None,
+                "last": None,
+                "provider_timestamp": None,
+                "source_timestamp": None,
+                "data_status": "no_data",
+                "truth_status": "no_data",
+                "reason": "fresh_two_sided_provider_quote_required",
+                "generated_values": False,
+                "action_eligible": False,
             }
-        except Exception as e:
-            logger.error(f"Error getting Alpaca ticker for {symbol}: {e}")
-            return {'symbol': symbol, 'price': 0.0, 'bid': 0.0, 'ask': 0.0}
+        bid = self._finite_number(quote.get("bp"), positive=True)
+        ask = self._finite_number(quote.get("ap"), positive=True)
+        provider_timestamp = self._fresh_provider_timestamp(
+            quote.get("provider_timestamp") or quote.get("t"),
+            max_age_seconds=self.quote_max_age_seconds,
+        )
+        if bid is None or ask is None or bid > ask or provider_timestamp is None:
+            return {
+                "symbol": resolved,
+                "price": None,
+                "bid": None,
+                "ask": None,
+                "last": None,
+                "provider_timestamp": None,
+                "source_timestamp": None,
+                "data_status": "no_data",
+                "truth_status": "no_data",
+                "reason": "fresh_two_sided_provider_quote_required",
+                "generated_values": False,
+                "action_eligible": False,
+            }
+        midpoint = (bid + ask) / 2.0
+        return {
+            "symbol": resolved,
+            "price": midpoint,
+            "bid": bid,
+            "ask": ask,
+            "last": {"price": midpoint, "source": "provider_quote_midpoint"},
+            "provider_timestamp": provider_timestamp,
+            "source_timestamp": provider_timestamp,
+            "data_status": "live",
+            "truth_status": "real_derived",
+            "generated_values": False,
+            "action_eligible": True,
+            "raw": quote,
+        }
 
-    def convert_to_quote(self, asset: str, amount: float, quote: str) -> float:
-        """
-        Convert asset amount to quote currency (Kraken-compatible interface).
-        
-        Args:
-            asset: Source asset (e.g., 'BTC')
-            amount: Amount to convert
-            quote: Target currency (e.g., 'USD')
-            
-        Returns:
-            Value in quote currency
-        """
-        if asset.upper() == quote.upper():
-            return amount
-        if amount <= 0:
-            return 0.0
-        
-        try:
-            symbol = self._resolve_symbol(f"{asset}/{quote}")
-            quotes = self.get_latest_crypto_quotes([symbol])
-            if symbol in quotes:
-                q = quotes[symbol]
-                mid = (float(q.get('bp', 0)) + float(q.get('ap', 0))) / 2
-                if mid > 0:
-                    return amount * mid
-        except:
-            pass
-        return 0.0
-
-    # ══════════════════════════════════════════════════════════════════════
-    # CRYPTO CONVERSION - Convert between crypto assets via USD
-    # ══════════════════════════════════════════════════════════════════════
+    def convert_to_quote(self, asset: str, amount: float, quote: str) -> Optional[float]:
+        """Convert using a fresh two-sided provider quote, or return no value."""
+        source_asset = str(asset or "").strip().upper()
+        quote_asset = str(quote or "").strip().upper()
+        source_amount = self._finite_number(amount, nonnegative=True)
+        if source_amount is None or not source_asset or not quote_asset:
+            return None
+        if source_asset == quote_asset:
+            return source_amount
+        symbol = self._resolve_symbol(f"{source_asset}/{quote_asset}")
+        observation = self.get_latest_crypto_quotes([symbol]).get(symbol)
+        if not isinstance(observation, dict):
+            return None
+        bid = self._finite_number(observation.get("bp"), positive=True)
+        ask = self._finite_number(observation.get("ap"), positive=True)
+        source_timestamp = self._fresh_provider_timestamp(
+            observation.get("provider_timestamp") or observation.get("t"),
+            max_age_seconds=self.quote_max_age_seconds,
+        )
+        if bid is None or ask is None or bid > ask or source_timestamp is None:
+            return None
+        return source_amount * ((bid + ask) / 2.0)
 
     def get_available_pairs(self, base: str = None, quote: str = None) -> List[Dict[str, Any]]:
         """
@@ -2198,202 +3148,120 @@ class AlpacaClient:
         from_asset: str,
         to_asset: str,
         amount: float,
-        use_quote_amount: bool = False
+        use_quote_amount: bool = False,
     ) -> Dict[str, Any]:
-        """
-        Convert one crypto asset to another within Alpaca.
-        
-        Note: Alpaca supports USD pairs and select BTC-quoted pairs.
-        
-        Args:
-            from_asset: Source asset (e.g., 'BTC', 'ETH')
-            to_asset: Target asset (e.g., 'ETH', 'SOL')
-            amount: Amount of from_asset to convert
-            use_quote_amount: If True, amount is in to_asset terms
-            
-        Returns:
-            Conversion result with executed trades
-        """
-        from_asset = from_asset.upper()
-        to_asset = to_asset.upper()
-        
-        if from_asset == to_asset:
-            return {"error": "Cannot convert to same asset", "from": from_asset, "to": to_asset}
-        
-        # Find conversion path
-        path = self.find_conversion_path(from_asset, to_asset)
-        
-        if not path:
-            return {"error": f"No conversion path found from {from_asset} to {to_asset}"}
-        
-        # 👑 QUEEN MIND: Pre-flight validation for multi-step conversions
-        # Alpaca typically has ~$1 minimum and goes through USD
-        estimated_amount = amount
-        min_value_usd = 1.0  # Alpaca minimum
-        
-        for i, trade in enumerate(path):
-            pair = trade["pair"]
-            
-            # Get current price estimate
-            try:
-                quote_data = self.get_latest_crypto_quotes([pair])
-                if pair in quote_data:
-                    bp = quote_data[pair].get('bp', 0)
-                    ap = quote_data[pair].get('ap', 0)
-                    price = (float(bp or 0) + float(ap or 0)) / 2
-                else:
-                    price = 0
-            except Exception:
-                price = 0
-            
-            if trade["side"] == "sell":
-                # Selling crypto for USD
-                estimated_value = estimated_amount * price if price > 0 else 0
-                if estimated_value < min_value_usd and estimated_value > 0:
-                    return {
-                        "error": f"Multi-hop step {i+1} would yield ${estimated_value:.2f} < min ${min_value_usd:.2f}",
-                        "failed_step": i,
-                        "pair": pair
-                    }
-                # Estimate received USD
-                if price > 0:
-                    estimated_amount = estimated_amount * price
-            else:
-                # Buying crypto with USD
-                if estimated_amount < min_value_usd:
-                    return {
-                        "error": f"Multi-hop step {i+1} has ${estimated_amount:.2f} < min ${min_value_usd:.2f}",
-                        "failed_step": i,
-                        "pair": pair
-                    }
-                # Estimate received crypto
-                if price > 0:
-                    estimated_amount = estimated_amount / price
-        
-        if self.dry_run:
+        """Build a provider-grounded route without implicitly submitting its hops."""
+        source_asset = str(from_asset or "").strip().upper()
+        target_asset = str(to_asset or "").strip().upper()
+        source_amount = self._finite_number(amount, positive=True)
+        if source_amount is None or not source_asset or not target_asset:
             return {
-                "dryRun": True,
-                "from_asset": from_asset,
-                "to_asset": to_asset,
-                "amount": amount,
-                "path": path,
-                "trades": len(path)
+                "status": "not_submitted",
+                "data_status": "no_data",
+                "reason": "positive_amount_and_assets_required",
+                "submitted": False,
+                "generated_values": False,
             }
-        
-        # Execute trades
-        results = []
-        remaining_amount = amount
-        
-        for trade in path:
-            pair = trade["pair"]
-            side = trade["side"]
-            
-            try:
-                if side == "sell":
-                    # Selling crypto for USD
-                    result = self.place_market_order(pair, "sell", quantity=remaining_amount)
-                else:
-                    # Buying crypto with USD
-                    result = self.place_market_order(pair, "buy", quote_qty=remaining_amount)
-                
-                # 🔧 FIX: Check if order was actually placed (has an ID)
-                if not result or not result.get("id"):
-                    logger.warning(f"   ⚠️ Order for {pair} returned empty - no order placed!")
-                    results.append({
-                        "trade": trade,
-                        "result": result,
-                        "status": "failed",
-                        "error": "No order ID returned - order not placed"
-                    })
-                    return {
-                        "error": f"Order not placed for {pair} - empty response",
-                        "from_asset": from_asset,
-                        "to_asset": to_asset,
-                        "partial_results": results
-                    }
-                
-                # 🔧 FIX: Extract ACTUAL execution data from the filled order
-                exec_qty_raw = result.get("filled_qty", result.get("qty", result.get("executedQty", 0)))
-                exec_qty = float(exec_qty_raw) if exec_qty_raw is not None else 0.0
-                filled_price = float(result.get("filled_avg_price", 0) or 0)
-                
-                # 🔧 FIX: Check if order actually filled
-                order_status = result.get("status", "")
-                if order_status in ("rejected", "canceled", "expired"):
-                    logger.warning(f"   ⚠️ Order {result.get('id')} was {order_status}")
-                    results.append({
-                        "trade": trade,
-                        "result": result,
-                        "status": "failed",
-                        "error": f"Order {order_status}"
-                    })
-                    return {
-                        "error": f"Order {order_status} for {pair}",
-                        "from_asset": from_asset,
-                        "to_asset": to_asset,
-                        "partial_results": results
-                    }
-                
-                # Calculate actual received amount
-                received_amount = 0.0
-                if side == "sell":
-                    # SELL: We received USD (filled_qty * filled_avg_price)
-                    if filled_price > 0 and exec_qty > 0:
-                        received_amount = exec_qty * filled_price
-                        logger.info(f"   💰 Alpaca SELL: received=${received_amount:.6f} (qty={exec_qty:.6f} @ ${filled_price:.6f})")
-                    else:
-                        # Fallback: estimate from current price
-                        try:
-                            quote_data = self.get_latest_crypto_quotes([pair])
-                            if pair in quote_data:
-                                bp = quote_data[pair].get('bp', 0)
-                                ap = quote_data[pair].get('ap', 0)
-                                mid = (float(bp or 0) + float(ap or 0)) / 2
-                                if mid > 0:
-                                    received_amount = remaining_amount * mid
-                        except Exception:
-                            pass
-                else:
-                    # BUY: We received crypto (filled_qty)
-                    received_amount = exec_qty
-                    if filled_price > 0:
-                        logger.info(f"   💰 Alpaca BUY: received={exec_qty:.6f} (spent=${remaining_amount:.6f} @ ${filled_price:.6f})")
-                
-                # Store received amount in result for validation
-                result['receivedQty'] = received_amount
-                
-                results.append({
-                    "trade": trade,
-                    "result": result,
-                    "status": "success",
-                    "receivedQty": received_amount
-                })
-                
-                # Update remaining amount for next trade using ACTUAL received amount
-                remaining_amount = received_amount if received_amount > 0 else remaining_amount
-                    
-            except Exception as e:
-                results.append({
-                    "trade": trade,
-                    "error": str(e),
-                    "status": "failed"
-                })
+        if source_asset == target_asset:
+            return {
+                "status": "not_submitted",
+                "data_status": "no_data",
+                "reason": "source_and_target_assets_must_differ",
+                "submitted": False,
+                "generated_values": False,
+            }
+        path = self.find_conversion_path(source_asset, target_asset)
+        if not path:
+            return {
+                "status": "not_submitted",
+                "data_status": "no_data",
+                "reason": "provider_conversion_path_unavailable",
+                "from_asset": source_asset,
+                "to_asset": target_asset,
+                "submitted": False,
+                "generated_values": False,
+            }
+
+        projected_amount = source_amount
+        price_evidence: List[Dict[str, Any]] = []
+        for index, trade in enumerate(path):
+            pair = str(trade.get("pair") or "")
+            side = str(trade.get("side") or "").strip().lower()
+            quote = self.get_latest_crypto_quotes([pair]).get(pair)
+            if not isinstance(quote, dict):
                 return {
-                    "error": f"Trade failed: {e}",
-                    "from_asset": from_asset,
-                    "to_asset": to_asset,
-                    "partial_results": results
+                    "status": "not_submitted",
+                    "data_status": "no_data",
+                    "reason": "fresh_two_sided_provider_quote_required",
+                    "failed_step": index,
+                    "pair": pair,
+                    "submitted": False,
+                    "generated_values": False,
                 }
-        
+            bid = self._finite_number(quote.get("bp"), positive=True)
+            ask = self._finite_number(quote.get("ap"), positive=True)
+            timestamp = self._fresh_provider_timestamp(
+                quote.get("provider_timestamp") or quote.get("t"),
+                max_age_seconds=self.quote_max_age_seconds,
+            )
+            if bid is None or ask is None or bid > ask or timestamp is None:
+                return {
+                    "status": "not_submitted",
+                    "data_status": "no_data",
+                    "reason": "fresh_two_sided_provider_quote_required",
+                    "failed_step": index,
+                    "pair": pair,
+                    "submitted": False,
+                    "generated_values": False,
+                }
+            if side == "sell":
+                projected_amount *= bid
+                projected_price = bid
+            elif side == "buy":
+                projected_amount /= ask
+                projected_price = ask
+            else:
+                return {
+                    "status": "not_submitted",
+                    "data_status": "no_data",
+                    "reason": "conversion_side_invalid",
+                    "failed_step": index,
+                    "pair": pair,
+                    "submitted": False,
+                    "generated_values": False,
+                }
+            price_evidence.append({
+                "pair": pair,
+                "side": side,
+                "price": projected_price,
+                "provider_timestamp": timestamp,
+                "source_timestamp": timestamp,
+                "truth_status": "real_observed",
+                "generated_values": False,
+            })
+
         return {
-            "success": True,
-            "from_asset": from_asset,
-            "to_asset": to_asset,
-            "original_amount": amount,
-            "final_amount": remaining_amount,
+            "dryRun": bool(self.dry_run),
+            "status": "not_submitted",
+            "data_status": "not_submitted",
+            "truth_status": "real_derived",
+            "reason": (
+                "dry_run"
+                if self.dry_run
+                else "explicit_per_hop_order_authority_and_terminal_receipts_required"
+            ),
+            "from_asset": source_asset,
+            "to_asset": target_asset,
+            "requested_amount": source_amount,
+            "projected_amount": projected_amount,
             "path": path,
-            "trades": results,
-            "trade_count": len(results)
+            "price_evidence": price_evidence,
+            "use_quote_amount": bool(use_quote_amount),
+            "submitted": False,
+            "fill_receipt_complete": False,
+            "eligible_for_accounting": False,
+            "eligible_for_learning": False,
+            "generated_values": False,
         }
 
     def get_convertible_assets(self) -> Dict[str, List[str]]:
@@ -2535,50 +3403,78 @@ class AlpacaClient:
         )
 
     def get_trading_volume(self, days: int = 30) -> Dict[str, Any]:
-        """
-        Calculate trading volume over the specified period.
-        
-        Returns:
-        - total_volume_usd: Total traded value
-        - trade_count: Number of trades
-        - by_symbol: Volume breakdown by symbol
-        - fee_tier: Estimated fee tier based on volume
-        """
-        from datetime import datetime, timedelta
-        
-        after = (datetime.utcnow() - timedelta(days=days)).strftime("%Y-%m-%dT%H:%M:%SZ")
-        
+        """Aggregate provider fill activity without inferring a fee tier or currency."""
+        from datetime import timedelta
+
+        period_days = int(days) if isinstance(days, int) and days > 0 else 30
+        start = datetime.now(timezone.utc) - timedelta(days=period_days)
         fills = self.get_account_activities(
-            activity_types='FILL',
-            after=after,
-            page_size=100
+            activity_types="FILL",
+            after=start.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            page_size=100,
         )
-        
-        total_volume = 0.0
-        by_symbol: Dict[str, float] = {}
-        
-        for fill in fills:
-            qty = float(fill.get('qty', 0) or 0)
-            price = float(fill.get('price', 0) or 0)
-            symbol = fill.get('symbol', 'UNKNOWN')
-            
-            volume = qty * price
-            total_volume += volume
-            by_symbol[symbol] = by_symbol.get(symbol, 0) + volume
-        
-        # Estimate fee tier
-        fee_tier = 1
-        tier_thresholds = [0, 100_000, 500_000, 1_000_000, 10_000_000, 25_000_000, 50_000_000, 100_000_000]
-        for i, threshold in enumerate(tier_thresholds):
-            if total_volume >= threshold:
-                fee_tier = i + 1
-        
+        totals_by_currency: Dict[str, float] = {}
+        by_symbol: Dict[str, Dict[str, Any]] = {}
+        verified_count = 0
+        now = time.time()
+        for fill in fills if isinstance(fills, list) else []:
+            activity_id = self._valid_provider_identifier(fill.get("id") or fill.get("ref_id"))
+            order_id = self._valid_provider_identifier(fill.get("order_id"))
+            qty = self._finite_number(fill.get("qty"), positive=True)
+            price = self._finite_number(fill.get("price"), positive=True)
+            symbol = str(fill.get("symbol") or "").strip().upper()
+            timestamp_raw = fill.get("transaction_time") or fill.get("executed_at") or fill.get("at")
+            timestamp = self._provider_timestamp_epoch(timestamp_raw)
+            if (
+                activity_id is None
+                or order_id is None
+                or qty is None
+                or price is None
+                or not symbol
+                or timestamp is None
+                or timestamp < start.timestamp()
+                or timestamp > now + self.provider_future_skew_seconds
+            ):
+                continue
+            resolved = self._resolve_symbol(symbol)
+            currency = str(fill.get("currency") or "").strip().upper()
+            if not currency and "/" in resolved:
+                currency = resolved.split("/", 1)[1]
+            if not currency:
+                continue
+            notional = qty * price
+            totals_by_currency[currency] = totals_by_currency.get(currency, 0.0) + notional
+            row = by_symbol.setdefault(
+                symbol,
+                {"notional": 0.0, "currency": currency, "trade_count": 0},
+            )
+            if row["currency"] != currency:
+                continue
+            row["notional"] += notional
+            row["trade_count"] += 1
+            verified_count += 1
+        if verified_count == 0:
+            return {
+                "total_notional_by_currency": {},
+                "trade_count": None,
+                "by_symbol": {},
+                "fee_tier": None,
+                "period_days": period_days,
+                "data_status": "no_data",
+                "truth_status": "no_data",
+                "reason": "provider_fill_activities_with_currency_required",
+                "generated_values": False,
+            }
         return {
-            'total_volume_usd': total_volume,
-            'trade_count': len(fills),
-            'by_symbol': by_symbol,
-            'fee_tier': min(fee_tier, 8),
-            'period_days': days
+            "total_notional_by_currency": totals_by_currency,
+            "trade_count": verified_count,
+            "by_symbol": by_symbol,
+            "fee_tier": None,
+            "period_days": period_days,
+            "data_status": "live",
+            "truth_status": "real_derived",
+            "reason": "provider_fee_tier_not_supplied",
+            "generated_values": False,
         }
 
     def get_orderbook(self, symbol: str) -> Dict[str, Any]:
@@ -2636,178 +3532,231 @@ class AlpacaClient:
         out['bids'] = bids
         return out
 
-    def get_spread(self, symbol: str) -> Dict[str, float]:
-        """
-        Get current spread for a symbol.
-        
-        Returns:
-        - bid: Best bid price
-        - ask: Best ask price
-        - mid: Midpoint price
-        - spread_abs: Absolute spread (ask - bid)
-        - spread_pct: Spread as percentage of mid
-        """
-        # Try orderbook first
-        ob = self.get_orderbook(symbol)
-        
-        if ob:
-            bids = ob.get('b', [])
-            asks = ob.get('a', [])
-            
-            if bids and asks:
-                bid = float(bids[0].get('p', 0) if isinstance(bids[0], dict) else bids[0][0])
-                ask = float(asks[0].get('p', 0) if isinstance(asks[0], dict) else asks[0][0])
-                
-                if bid > 0 and ask > 0:
-                    mid = (bid + ask) / 2
-                    spread_abs = ask - bid
-                    spread_pct = (spread_abs / mid) * 100 if mid > 0 else 0
-                    
+    def get_spread(self, symbol: str) -> Dict[str, Any]:
+        """Return a spread only from fresh, two-sided provider evidence."""
+        resolved = self._normalize_pair_symbol(symbol) or str(symbol)
+        orderbook = self.get_orderbook(resolved)
+        if isinstance(orderbook, dict):
+            bids = orderbook.get("b")
+            asks = orderbook.get("a")
+            source_timestamp = self._fresh_provider_timestamp(
+                orderbook.get("t"),
+                max_age_seconds=self.quote_max_age_seconds,
+            )
+            if isinstance(bids, list) and bids and isinstance(asks, list) and asks and source_timestamp is not None:
+                raw_bid = bids[0].get("p") if isinstance(bids[0], dict) else bids[0][0] if isinstance(bids[0], (list, tuple)) and bids[0] else None
+                raw_ask = asks[0].get("p") if isinstance(asks[0], dict) else asks[0][0] if isinstance(asks[0], (list, tuple)) and asks[0] else None
+                bid = self._finite_number(raw_bid, positive=True)
+                ask = self._finite_number(raw_ask, positive=True)
+                if bid is not None and ask is not None and bid <= ask:
+                    midpoint = (bid + ask) / 2.0
+                    spread = ask - bid
                     return {
-                        'bid': bid,
-                        'ask': ask,
-                        'mid': mid,
-                        'spread_abs': spread_abs,
-                        'spread_pct': spread_pct
+                        "bid": bid,
+                        "ask": ask,
+                        "mid": midpoint,
+                        "spread_abs": spread,
+                        "spread_pct": (spread / midpoint) * 100.0,
+                        "provider_timestamp": source_timestamp,
+                        "source_timestamp": source_timestamp,
+                        "source_type": "provider_orderbook",
+                        "data_status": "live",
+                        "truth_status": "real_derived",
+                        "generated_values": False,
                     }
-        
-        # Fallback to quotes
-        symbol = self._normalize_pair_symbol(symbol) or symbol
-        quotes = self.get_latest_crypto_quotes([symbol])
-        
-        if symbol in quotes:
-            q = quotes[symbol]
-            bid = float(q.get('bp', 0) or 0)
-            ask = float(q.get('ap', 0) or 0)
-            
-            if bid > 0 and ask > 0:
-                mid = (bid + ask) / 2
-                spread_abs = ask - bid
-                spread_pct = (spread_abs / mid) * 100 if mid > 0 else 0
-                
+
+        quote = self.get_latest_crypto_quotes([resolved]).get(resolved)
+        if isinstance(quote, dict):
+            bid = self._finite_number(quote.get("bp"), positive=True)
+            ask = self._finite_number(quote.get("ap"), positive=True)
+            source_timestamp = self._fresh_provider_timestamp(
+                quote.get("provider_timestamp") or quote.get("t"),
+                max_age_seconds=self.quote_max_age_seconds,
+            )
+            if bid is not None and ask is not None and bid <= ask and source_timestamp is not None:
+                midpoint = (bid + ask) / 2.0
+                spread = ask - bid
                 return {
-                    'bid': bid,
-                    'ask': ask,
-                    'mid': mid,
-                    'spread_abs': spread_abs,
-                    'spread_pct': spread_pct
+                    "bid": bid,
+                    "ask": ask,
+                    "mid": midpoint,
+                    "spread_abs": spread,
+                    "spread_pct": (spread / midpoint) * 100.0,
+                    "provider_timestamp": source_timestamp,
+                    "source_timestamp": source_timestamp,
+                    "source_type": "provider_quote",
+                    "data_status": "live",
+                    "truth_status": "real_derived",
+                    "generated_values": False,
                 }
-        
-        return {'bid': 0, 'ask': 0, 'mid': 0, 'spread_abs': 0, 'spread_pct': 0}
+        return {
+            "bid": None,
+            "ask": None,
+            "mid": None,
+            "spread_abs": None,
+            "spread_pct": None,
+            "provider_timestamp": None,
+            "source_timestamp": None,
+            "data_status": "no_data",
+            "truth_status": "no_data",
+            "reason": "fresh_two_sided_provider_spread_required",
+            "generated_values": False,
+        }
 
     def estimate_trade_cost(
         self,
         symbol: str,
         side: str,
         quantity: float,
-        fee_tier: int = 1
+        fee_tier: int = 1,
     ) -> Dict[str, Any]:
-        """
-        Estimate total cost for a trade including fees and spread.
-        
-        Args:
-            symbol: Trading pair
-            side: 'buy' or 'sell'
-            quantity: Trade quantity
-            fee_tier: Fee tier (1-8, default 1 = 25 bps taker)
-        
-        Returns:
-            Complete cost breakdown
-        """
-        # Fee rates by tier (taker fees in bps)
-        taker_bps = {1: 25, 2: 22, 3: 20, 4: 18, 5: 15, 6: 13, 7: 12, 8: 10}
-        fee_pct = taker_bps.get(fee_tier, 25) / 10000
-        
-        spread_data = self.get_spread(symbol)
-        
-        if spread_data['mid'] <= 0:
+        """Expose quote-derived spread evidence but never invent a provider fee."""
+        del fee_tier
+        side_normalized = str(side or "").strip().lower()
+        order_quantity = self._finite_number(quantity, positive=True)
+        spread = self.get_spread(symbol)
+        if (
+            side_normalized not in {"buy", "sell"}
+            or order_quantity is None
+            or spread.get("data_status") != "live"
+        ):
             return {
-                'error': f'Could not get price for {symbol}',
-                'notional': 0,
-                'fee_pct': fee_pct,
-                'fee_usd': 0,
-                'spread_cost_pct': 0,
-                'spread_cost_usd': 0,
-                'total_cost_pct': fee_pct,
-                'total_cost_usd': 0
+                "symbol": symbol,
+                "side": side_normalized,
+                "quantity": order_quantity,
+                "exec_price": None,
+                "mid_price": None,
+                "notional": None,
+                "fee": None,
+                "fee_currency": None,
+                "spread_cost": None,
+                "total_cost": None,
+                "data_status": "no_data",
+                "truth_status": "no_data",
+                "reason": "fresh_provider_spread_and_valid_order_request_required",
+                "eligible_for_accounting": False,
+                "generated_values": False,
             }
-        
-        # Execution price depends on side
-        if side.lower() == 'buy':
-            exec_price = spread_data['ask']
-        else:
-            exec_price = spread_data['bid']
-        
-        notional = quantity * exec_price
-        fee_usd = notional * fee_pct
-        
-        # Spread cost (half spread per side)
-        spread_cost_pct = (spread_data['spread_pct'] / 2) / 100
-        spread_cost_usd = notional * spread_cost_pct
-        
-        total_cost_pct = fee_pct + spread_cost_pct
-        total_cost_usd = fee_usd + spread_cost_usd
-        
+        execution_price = spread["ask"] if side_normalized == "buy" else spread["bid"]
+        midpoint = float(spread["mid"])
+        notional = order_quantity * float(execution_price)
+        spread_cost = order_quantity * abs(float(execution_price) - midpoint)
         return {
-            'symbol': symbol,
-            'side': side,
-            'quantity': quantity,
-            'exec_price': exec_price,
-            'mid_price': spread_data['mid'],
-            'notional': notional,
-            'fee_pct': fee_pct,
-            'fee_usd': fee_usd,
-            'fee_tier': fee_tier,
-            'spread_pct': spread_data['spread_pct'],
-            'spread_cost_pct': spread_cost_pct,
-            'spread_cost_usd': spread_cost_usd,
-            'total_cost_pct': total_cost_pct,
-            'total_cost_usd': total_cost_usd
+            "symbol": symbol,
+            "side": side_normalized,
+            "quantity": order_quantity,
+            "exec_price": execution_price,
+            "mid_price": midpoint,
+            "notional": notional,
+            "fee": None,
+            "fee_currency": None,
+            "spread_cost": spread_cost,
+            "total_cost": None,
+            "provider_timestamp": spread["provider_timestamp"],
+            "source_timestamp": spread["source_timestamp"],
+            "data_status": "no_data",
+            "truth_status": "real_derived",
+            "reason": "provider_fee_receipt_required_for_total_cost",
+            "indicative_only": True,
+            "eligible_for_accounting": False,
+            "generated_values": False,
         }
 
     def get_full_account_summary(self) -> Dict[str, Any]:
-        """
-        Get comprehensive account summary with all relevant data.
-        
-        Returns complete account state for cost tracking.
-        """
+        """Return provider account data without zero or fee-tier substitution."""
         account = self.get_account()
         positions = self.get_positions()
         volume = self.get_trading_volume(days=30)
         recent_fees = self.get_crypto_fees(days=7)
-        
-        # Sum up fees
-        total_fees_7d = sum(abs(float(f.get('qty', 0) or 0) * float(f.get('price', 0) or 0)) for f in recent_fees)
-        
-        return {
-            'account': {
-                'id': account.get('id'),
-                'status': account.get('status'),
-                'cash': float(account.get('cash', 0) or 0),
-                'portfolio_value': float(account.get('portfolio_value', 0) or 0),
-                'equity': float(account.get('equity', 0) or 0),
-                'buying_power': float(account.get('buying_power', 0) or 0),
-                'crypto_buying_power': float(account.get('non_marginable_buying_power', 0) or 0)
-            },
-            'positions': [{
-                'symbol': p.get('symbol'),
-                'qty': float(p.get('qty', 0) or 0),
-                'avg_entry_price': float(p.get('avg_entry_price', 0) or 0),
-                'market_value': float(p.get('market_value', 0) or 0),
-                'unrealized_pl': float(p.get('unrealized_pl', 0) or 0),
-                'unrealized_plpc': float(p.get('unrealized_plpc', 0) or 0)
-            } for p in positions] if isinstance(positions, list) else [],
-            'trading_volume': volume,
-            'fees_7d': {
-                'total_usd': total_fees_7d,
-                'count': len(recent_fees)
-            },
-            'fee_tier': volume.get('fee_tier', 1)
-        }
+        received_at = datetime.now(timezone.utc).isoformat()
 
-    # ═════════════════════════════════════════════════════════════════════=
-    # MARKET DATA HUB INTEGRATION (Phase 2)
-    # ═════════════════════════════════════════════════════════════════════=
+        account_values = {}
+        for field in (
+            "cash",
+            "portfolio_value",
+            "equity",
+            "buying_power",
+            "non_marginable_buying_power",
+        ):
+            account_values[field] = self._finite_number(account.get(field))
+        account_live = (
+            isinstance(account, dict)
+            and self._valid_provider_identifier(account.get("id")) is not None
+            and all(value is not None for value in account_values.values())
+        )
+        normalized_positions: List[Dict[str, Any]] = []
+        for position in positions if isinstance(positions, list) else []:
+            values = {
+                "qty": self._finite_number(position.get("qty")),
+                "avg_entry_price": self._finite_number(position.get("avg_entry_price"), positive=True),
+                "market_value": self._finite_number(position.get("market_value")),
+                "unrealized_pl": self._finite_number(position.get("unrealized_pl")),
+                "unrealized_plpc": self._finite_number(position.get("unrealized_plpc")),
+            }
+            if not str(position.get("symbol") or "").strip() or any(value is None for value in values.values()):
+                continue
+            normalized_positions.append({
+                "symbol": position.get("symbol"),
+                **values,
+                "truth_status": "real_observed",
+                "generated_values": False,
+            })
+
+        verified_fee_activities = []
+        for activity in recent_fees if isinstance(recent_fees, list) else []:
+            activity_id = self._valid_provider_identifier(activity.get("id") or activity.get("ref_id"))
+            qty = self._finite_number(activity.get("qty"))
+            price = self._finite_number(activity.get("price"), positive=True)
+            if activity_id is None or qty is None or price is None:
+                continue
+            verified_fee_activities.append({
+                "id": activity_id,
+                "activity_type": activity.get("activity_type"),
+                "symbol": activity.get("symbol"),
+                "qty": qty,
+                "price": price,
+                "currency": activity.get("currency"),
+                "date": activity.get("date"),
+                "truth_status": "real_observed",
+                "generated_values": False,
+            })
+        return {
+            "account": {
+                "id": account.get("id") if account_live else None,
+                "status": account.get("status") if account_live else None,
+                "cash": account_values.get("cash") if account_live else None,
+                "portfolio_value": account_values.get("portfolio_value") if account_live else None,
+                "equity": account_values.get("equity") if account_live else None,
+                "buying_power": account_values.get("buying_power") if account_live else None,
+                "crypto_buying_power": (
+                    account_values.get("non_marginable_buying_power") if account_live else None
+                ),
+                "data_status": "live" if account_live else "no_data",
+                "truth_status": "real_observed" if account_live else "no_data",
+                "received_at": received_at,
+                "generated_values": False,
+            },
+            "positions": normalized_positions,
+            "trading_volume": volume,
+            "fees_7d": {
+                "activities": verified_fee_activities,
+                "total": None,
+                "currency": None,
+                "count": len(verified_fee_activities),
+                "data_status": "live" if verified_fee_activities else "no_data",
+                "reason": "provider_fee_currency_required_for_total",
+                "generated_values": False,
+            },
+            "fee_tier": None,
+            "data_status": (
+                "live"
+                if account_live and volume.get("data_status") == "live"
+                else "no_data"
+            ),
+            "truth_status": "real_observed" if account_live else "no_data",
+            "received_at": received_at,
+            "generated_values": False,
+        }
 
     def start_market_data_hub(self):
         """Start the MarketDataHub prefetching service."""

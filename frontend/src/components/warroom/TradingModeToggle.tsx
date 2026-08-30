@@ -36,12 +36,12 @@ export function TradingModeToggle({ userId }: TradingModeToggleProps) {
 
       const { data } = await supabase
         .from('aureon_user_sessions')
-        .select('trading_mode')
+        .select('trading_mode, is_trading_active')
         .eq('user_id', userId)
         .single();
 
       if (data) {
-        const isLive = data.trading_mode === 'live';
+        const isLive = data.trading_mode === 'live' && data.is_trading_active === true;
         setIsLiveMode(isLive);
         unifiedOrchestrator.setDryRun(!isLive);
       }
@@ -56,7 +56,7 @@ export function TradingModeToggle({ userId }: TradingModeToggleProps) {
       // Switching to LIVE - show confirmation
       setShowConfirmDialog(true);
     } else {
-      // Switching to PAPER - no confirmation needed
+      // Disable execution; no paper/demo mode is started.
       confirmModeChange(false);
     }
   };
@@ -69,15 +69,17 @@ export function TradingModeToggle({ userId }: TradingModeToggleProps) {
     if (userId) {
       await supabase
         .from('aureon_user_sessions')
-        .update({ trading_mode: toLive ? 'live' : 'paper' })
+        .update(toLive
+          ? { trading_mode: 'live', is_trading_active: true }
+          : { is_trading_active: false })
         .eq('user_id', userId);
     }
 
     toast({
-      title: toLive ? '🔴 LIVE TRADING ENABLED' : '📝 Paper Trading Mode',
+      title: toLive ? ' LIVE TRADING ENABLED' : ' Live execution disabled',
       description: toLive 
         ? 'Real orders will be executed on your exchange account!' 
-        : 'Trades will be simulated, no real money at risk.',
+        : 'No orders or simulated trades will be created.',
       variant: toLive ? 'destructive' : 'default',
       duration: 5000,
     });
@@ -105,7 +107,7 @@ export function TradingModeToggle({ userId }: TradingModeToggleProps) {
           variant={isLiveMode ? 'destructive' : 'secondary'}
           className={isLiveMode ? 'animate-pulse' : ''}
         >
-          {isLiveMode ? '🔴 LIVE' : '📝 PAPER'}
+          {isLiveMode ? ' LIVE' : ' PAPER'}
         </Badge>
       </div>
 
@@ -113,7 +115,7 @@ export function TradingModeToggle({ userId }: TradingModeToggleProps) {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="text-destructive">
-              ⚠️ Enable Live Trading?
+               Enable Live Trading?
             </AlertDialogTitle>
             <AlertDialogDescription className="space-y-2">
               <p>

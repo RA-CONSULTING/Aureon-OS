@@ -19,7 +19,7 @@ in global financial markets using warfare intelligence methodologies.
 """
 from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
 import sys, os
-if sys.platform == 'win32':
+if sys.platform == 'win32' and sys.stdout.isatty():
     os.environ['PYTHONIOENCODING'] = 'utf-8'
     try:
         import io
@@ -265,13 +265,16 @@ class StrategicWarfareScanner:
     def _publish_report(self, report: IntelligenceReport) -> None:
         """Publish intelligence report to ThoughtBus and ChirpBus."""
         try:
-            # 1. ThoughtBus
+            # 1. ThoughtBus — Thought carries topic/payload/meta; the old
+            # thought_type=/priority=/content= kwargs raised TypeError into the
+            # except below, which also killed the ChirpBus publish after it, so
+            # warfare intel had never actually reached either bus.
             if self.thought_bus:
                 self.thought_bus.publish(Thought(
                     source="STRATEGIC_WARFARE",
-                    thought_type="INTELLIGENCE_REPORT",
-                    priority=2,
-                    content=asdict(report)
+                    topic="intelligence.warfare.report",
+                    payload=asdict(report),
+                    meta={"priority": 2, "thought_type": "INTELLIGENCE_REPORT"},
                 ))
 
             # 2. ChirpBus

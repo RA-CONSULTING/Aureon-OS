@@ -30,8 +30,6 @@ is available -- offline systems are logged but never crash the boot.
 Aureon Creator & Aureon Queen Anchor | April 2026 | Queen at the Top
 """
 
-from aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
-
 import importlib
 import logging
 import threading
@@ -59,7 +57,8 @@ DOMAIN_SYSTEMS: List[tuple] = [
     ("unified_decision_engine",       "aureon_unified_decision_engine",       {"class_name": "UnifiedDecisionEngine"}),
     ("market_pulse",                  "aureon_market_pulse",                  {}),  # needs client arg — import only
     ("phase_transition_detector",     "aureon_phase_transition_detector",     {"class_name": "PhaseTransitionDetector"}),
-    ("truth_prediction_engine",       "aureon_truth_prediction_engine",       {"class_name": "TruthPredictionEngine"}),
+    # Receipt sources are supplied by an owner-controlled composition root.
+    ("truth_prediction_engine",       "aureon_truth_prediction_engine",       {}),
     ("integrated_forecast",           "aureon_integrated_forecast",           {}),  # dataclass — import only
 
     # ── harmonic/ ─────────────────────────────────────────────────────

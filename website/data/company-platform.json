@@ -1,0 +1,76 @@
+[
+  {
+    "name": "Aureon OS",
+    "slug": "aureon-trading-system",
+    "public_name": "Aureon OS",
+    "company_role": "Research-led systems and innovation company",
+    "research_framework": {
+      "name": "Harmonic Nexus Core",
+      "short_name": "HNC",
+      "role": "Aureon's evolving research and systems-method framework",
+      "evidence_state": "Company-authored and source-linked research proposition",
+      "boundary": "HNC is being developed as a field of inquiry and reusable systems method. Public records establish authorship and availability; they do not establish an accepted scientific field, universal validity or independent validation."
+    },
+    "delivery_system": {
+      "name": "Aureon OS",
+      "role": "Company-built engineering and evidence operating system",
+      "evidence_state": "Public source available",
+      "boundary": "Inspectable source and local test evidence do not establish production autonomy, customer adoption, operational safety or independently validated outcomes."
+    },
+    "application_model": {
+      "name": "Mission blades",
+      "role": "Evidence-labelled applications of the shared research and control logic",
+      "evidence_states": [
+        "Implemented core",
+        "Tested prototype",
+        "Sector programme",
+        "Open research hypothesis"
+      ],
+      "boundary": "Each application must earn its own domain evidence, qualified authority, buyer validation and retained decision record."
+    },
+    "active_company_project": true,
+    "type": "Public software repository",
+    "category": "Evidence-led operating platform",
+    "status": "Public source available",
+    "source_status": "Public GitHub repository",
+    "summary": "Aureon OS is the company-built delivery system through which Aureon applies Harmonic Nexus Core research principles to source-linked, human-gated workflows. The public architecture connects provenance, review authority and bounded action across specialist applications without exposing private runtime data or claiming production readiness, safety, trading performance, customer adoption or independent validation.",
+    "technical_summary": "The repository documents an evidence-heavy operating layer with explicit provenance, claim-state, review, authority and redaction boundaries. It is presented as inspectable company implementation and technical-diligence source material, separate from proof of autonomous production operation or validated sector outcomes.",
+    "github_url": "https://github.com/RA-CONSULTING/Aureon-OS",
+    "zenodo_url": "",
+    "secondary_zenodo_url": "",
+    "doi_url": "",
+    "page_url": "projects/aureon-trading-system/",
+    "related_projects": [],
+    "is_public": true,
+    "verification_status": "Public repository and public architecture record available; subsystem claims remain subject to technical and independent review",
+    "next_step": "Maintain public technical documentation and reproducible test evidence, seek independent review, and preserve explicit operational security boundaries.",
+    "public_safe": true,
+    "caution": "Do not claim profit, trading performance, investment suitability, autonomous authority, production readiness, or live operational safety.",
+    "exists_now": [
+      "Public RA-CONSULTING/Aureon-OS source repository",
+      "Source-linked research and operating documentation",
+      "Direct route to the public GitHub repository",
+      "Public high-level architecture record"
+    ],
+    "to_verify": [
+      "Independent security and architecture review",
+      "Reproducible subsystem and integration test coverage",
+      "Production hosting, availability, and incident-response controls",
+      "Any claimed scientific, operational, or commercial outcome"
+    ],
+    "visual_mode": "provenance",
+    "visual_label": "Source provenance / evidence gate / human authority",
+    "visual_asset": "assets/images/bees/aureon-trading-crypto-hive-wide.webp",
+    "thumbnail_asset": "assets/images/bees/aureon-trading-crypto-hive-wide.webp",
+    "supporting_visuals": [
+      {
+        "src": "assets/aureon-lux-risk-matrix.svg",
+        "alt": "Abstract review matrix separating evidence, risk, and human approval"
+      },
+      {
+        "src": "assets/images/bees/aureon-trading-cyber-bee-carrying-value.webp",
+        "alt": "Concept artwork of a mechanical cyber-bee carrying a luminous value cell toward a coordinated hive"
+      }
+    ]
+  }
+]

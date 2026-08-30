@@ -30,26 +30,33 @@ _REAL_SOURCE_PROBE_REPORTS = (
 
 # ── credential presence (keystore first, then env / aliases) ──────────────────
 
-def _key_source(conn: Connection, store: Dict[str, Any]) -> str:
+# ``allow_env`` is the tenancy switch. ``os.environ`` holds the INSTANCE's credentials, so a tenant
+# view must never consult it: otherwise a signed-in end user enumerates which of the operator's
+# exchange keys exist, where each comes from, and its last 4 characters. Default True keeps the
+# admin / single-operator view byte-for-byte unchanged.
+
+def _key_source(conn: Connection, store: Dict[str, Any], *, allow_env: bool = True) -> str:
     if store.get(conn.id, {}).get("api_key"):
         return "keystore"
-    if conn.key_env and os.environ.get(conn.key_env, "").strip():
+    if allow_env and conn.key_env and os.environ.get(conn.key_env, "").strip():
         return "env"
     return "none"
 
 
-def _key_masked(conn: Connection, store: Dict[str, Any]) -> str:
+def _key_masked(conn: Connection, store: Dict[str, Any], *, allow_env: bool = True) -> str:
     stored = store.get(conn.id, {}).get("api_key")
     if stored:
         return keystore.mask(stored)
+    if not allow_env:
+        return ""
     envv = os.environ.get(conn.key_env, "") if conn.key_env else ""
     return keystore.mask(envv) if envv else ""
 
 
-def _has_key(conn: Connection, store: Dict[str, Any]) -> bool:
+def _has_key(conn: Connection, store: Dict[str, Any], *, allow_env: bool = True) -> bool:
     if conn.requirement == "keyless":
         return True
-    return _key_source(conn, store) != "none"
+    return _key_source(conn, store, allow_env=allow_env) != "none"
 
 
 def _exchange_ready() -> Dict[str, bool]:
@@ -106,13 +113,14 @@ def _real_data_policy_summary() -> Dict[str, Any]:
     return summary
 
 
-def connection_public(conn: Connection, store: Dict[str, Any], ready: Dict[str, bool]) -> Dict[str, Any]:
+def connection_public(conn: Connection, store: Dict[str, Any], ready: Dict[str, bool],
+                      *, allow_env: bool = True) -> Dict[str, Any]:
     entry = store.get(conn.id, {})
     d = conn.to_public_dict()
     d.update({
-        "has_key": _has_key(conn, store),
-        "key_masked": _key_masked(conn, store),
-        "key_source": _key_source(conn, store),
+        "has_key": _has_key(conn, store, allow_env=allow_env),
+        "key_masked": _key_masked(conn, store, allow_env=allow_env),
+        "key_source": _key_source(conn, store, allow_env=allow_env),
         "enabled": bool(entry.get("enabled", True)) if entry else (conn.requirement == "keyless"),
         "extra_masked": {k: keystore.mask(v) for k, v in (entry.get("extra") or {}).items()},
     })
@@ -123,11 +131,18 @@ def connection_public(conn: Connection, store: Dict[str, Any], ready: Dict[str, 
 
 # ── the unified categorized view ──────────────────────────────────────────────
 
-def build_view(llm_providers: List[Dict[str, Any]]) -> Dict[str, Any]:
+def build_view(llm_providers: List[Dict[str, Any]], *, tenant: str | None = None) -> Dict[str, Any]:
     """Categorized connections. ``llm_providers`` is the operator's LLM provider
-    view (from providers_list); everything else comes from the catalog."""
-    store = keystore.load()
-    ready = _exchange_ready()
+    view (from providers_list); everything else comes from the catalog.
+
+    ``tenant`` scopes the non-LLM half to that user's isolated store. The LLM half was already
+    per-tenant via ``_provider_view(tenant)``; this closes the same gap for the exchange / data-source
+    rows, which is where the real money keys are. Under a tenant, ``os.environ`` is not consulted and
+    the instance's exchange runtime readiness is withheld — both describe the instance, not the user.
+    """
+    store = keystore.load(tenant=tenant)
+    allow_env = tenant is None
+    ready = _exchange_ready() if tenant is None else {}
     llm_rows = [{
         "id": p["id"], "label": p["label"], "category": "ai_llm",
         "requirement": "optional", "consumed_by": "operator",
@@ -142,7 +157,7 @@ def build_view(llm_providers: List[Dict[str, Any]]) -> Dict[str, Any]:
         if cat_id == "ai_llm":
             items = llm_rows
         else:
-            items = [connection_public(c, store, ready) for c in _by_cat(cat_id)]
+            items = [connection_public(c, store, ready, allow_env=allow_env) for c in _by_cat(cat_id)]
         sections.append({"category": cat_id, "label": cat_label, "connections": items})
     return {"categories": sections}
 
@@ -155,8 +170,10 @@ def _by_cat(cat_id: str) -> List[Connection]:
 
 # ── full operational-capacity readiness (presence only, no network) ───────────
 
-def readiness(llm_providers: List[Dict[str, Any]]) -> Dict[str, Any]:
-    store = keystore.load()
+def readiness(llm_providers: List[Dict[str, Any]], *, tenant: str | None = None) -> Dict[str, Any]:
+    """Presence-only readiness. ``tenant`` scopes it to that user's store (see :func:`build_view`)."""
+    store = keystore.load(tenant=tenant)
+    allow_env = tenant is None
     items: List[Dict[str, Any]] = []
 
     for p in llm_providers:
@@ -170,7 +187,7 @@ def readiness(llm_providers: List[Dict[str, Any]]) -> Dict[str, Any]:
     for c in CATALOG:
         items.append({
             "id": c.id, "label": c.label, "category": c.category,
-            "requirement": c.requirement, "present": _has_key(c, store),
+            "requirement": c.requirement, "present": _has_key(c, store, allow_env=allow_env),
             "unlocks": c.unlocks, "get_keys_url": c.get_keys_url,
         })
 

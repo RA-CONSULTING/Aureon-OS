@@ -121,11 +121,11 @@ const APIKeyManager: React.FC<APIKeyManagerProps> = ({ isApiActive, onToggleApiS
           <p className="text-sm text-gray-400 mb-4">Manage API keys for trade execution.</p>
         </div>
         <div className="flex items-center space-x-3">
-          <span className={`text-sm font-bold ${effectiveApiStatus ? 'text-green-400' : 'text-red-400'}`}>
+          <span className={`text-sm font-bold ${effectiveApiStatus ? 'text-success' : 'text-destructive'}`}>
             {keysSaved ? (effectiveApiStatus ? 'API ACTIVE' : 'API INACTIVE') : 'NO KEY SET'}
           </span>
           {keysSaved && (
-            <span className="text-xs font-semibold text-sky-300 bg-sky-700/40 border border-sky-500/60 px-2 py-1 rounded">
+            <span className="text-xs font-semibold text-primary bg-primary/40 border border-primary/60 px-2 py-1 rounded">
               {modeLabel} MODE
             </span>
           )}
@@ -134,7 +134,7 @@ const APIKeyManager: React.FC<APIKeyManagerProps> = ({ isApiActive, onToggleApiS
             aria-checked={effectiveApiStatus}
             onClick={onToggleApiStatus}
             disabled={!keysSaved}
-            className={`${effectiveApiStatus ? 'bg-green-500' : 'bg-gray-600'} relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed`}
+            className={`${effectiveApiStatus ? 'bg-success' : 'bg-gray-600'} relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-success focus:ring-offset-2 focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed`}
           >
             <span className={`${effectiveApiStatus ? 'translate-x-6' : 'translate-x-1'} inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}/>
           </button>
@@ -149,13 +149,13 @@ const APIKeyManager: React.FC<APIKeyManagerProps> = ({ isApiActive, onToggleApiS
                 <div className="flex items-center gap-3">
                   <span className="bg-gray-600 text-gray-200 text-xs font-bold px-2 py-1 rounded">HMAC</span>
                   <h4 className="text-lg font-semibold text-white">Primary Trading Key</h4>
-                  <span className="bg-sky-600/30 text-sky-200 text-xs font-bold px-2 py-1 rounded border border-sky-500/60">
+                  <span className="bg-primary/30 text-primary text-xs font-bold px-2 py-1 rounded border border-primary/60">
                     {modeLabel} MODE
                   </span>
                 </div>
                 <div className="flex items-center gap-4 text-sm font-medium">
-                  <button onClick={handleEdit} className="text-yellow-500 hover:underline">Edit</button>
-                  <button onClick={handleDelete} className="text-red-500 hover:underline">Delete</button>
+                  <button onClick={handleEdit} className="text-warning hover:underline">Edit</button>
+                  <button onClick={handleDelete} className="text-destructive hover:underline">Delete</button>
                 </div>
               </div>
 
@@ -170,7 +170,7 @@ const APIKeyManager: React.FC<APIKeyManagerProps> = ({ isApiActive, onToggleApiS
                 </div>
                 <div>
                   <p className="text-xs text-gray-400 mt-2">Trading Mode</p>
-                  <p className="text-sm font-semibold text-sky-300">
+                  <p className="text-sm font-semibold text-primary">
                     {mode === 'testnet' ? 'Binance Testnet (Paper Trading)' : 'Binance Live Trading'}
                   </p>
                 </div>
@@ -179,8 +179,8 @@ const APIKeyManager: React.FC<APIKeyManagerProps> = ({ isApiActive, onToggleApiS
               <div className="mt-4 pt-4 border-t border-gray-700 text-xs text-gray-400">
                 <p className="font-bold mb-1">Permissions:</p>
                 <div className="flex gap-4">
-                  <span className="text-green-400">✓ Read Info</span>
-                  <span className="text-green-400">✓ Enable Trading</span>
+                  <span className="text-success">✓ Read Info</span>
+                  <span className="text-success">✓ Enable Trading</span>
                   <span className="text-gray-500 line-through">✗ Enable Withdrawals</span>
                 </div>
               </div>
@@ -198,7 +198,7 @@ const APIKeyManager: React.FC<APIKeyManagerProps> = ({ isApiActive, onToggleApiS
                   value={apiKeyInput}
                   onChange={(e) => setApiKeyInput(e.target.value)}
                   placeholder="Enter your API key"
-                  className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-sky-500 text-gray-200"
+                  className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary text-gray-200"
                 />
               </div>
               <div>
@@ -211,7 +211,7 @@ const APIKeyManager: React.FC<APIKeyManagerProps> = ({ isApiActive, onToggleApiS
                   value={apiSecretInput}
                   onChange={(e) => setApiSecretInput(e.target.value)}
                   placeholder="Enter your secret key"
-                  className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-sky-500 text-gray-200"
+                  className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary text-gray-200"
                 />
               </div>
               <div>
@@ -220,7 +220,7 @@ const APIKeyManager: React.FC<APIKeyManagerProps> = ({ isApiActive, onToggleApiS
                   id="api-mode"
                   value={mode}
                   onChange={(e) => setMode(e.target.value as 'live' | 'testnet')}
-                  className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-sky-500 text-gray-200"
+                  className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary text-gray-200"
                 >
                   <option value="testnet">Paper Trading (Binance Testnet)</option>
                   <option value="live">Live Trading (Binance Production)</option>
@@ -233,7 +233,7 @@ const APIKeyManager: React.FC<APIKeyManagerProps> = ({ isApiActive, onToggleApiS
                   Cancel
                 </button>
               )}
-              <button onClick={handleSave} className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-2 px-4 rounded text-sm">
+              <button onClick={handleSave} className="bg-warning hover:bg-warning text-black font-bold py-2 px-4 rounded text-sm">
                 Save Keys
               </button>
             </div>

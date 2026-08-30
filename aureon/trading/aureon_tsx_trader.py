@@ -161,29 +161,22 @@ class DecisionSignal:
     sentiment_score: float
 
 def generate_model_signal(model: str, snapshot: MarketSnapshot) -> ModelSignal:
-    """Generate signal from a model (ported from TSX)."""
-    import random
-    
+    """Derive a transparent market signal; no model output is impersonated."""
     trend = snapshot.ohlcv.close - snapshot.ohlcv.open
     volatility = snapshot.ohlcv.high - snapshot.ohlcv.low
     normalized_trend = math.tanh(trend / max(1, volatility))
-    base_confidence = 0.4 + random.random() * 0.5
-    
-    # Model biases from TSX
-    bias_map = {'lstm': 0.2, 'randomForest': -0.1, 'xgboost': 0.1, 'transformer': 0}
-    bias = bias_map.get(model, 0)
-    
-    score = normalized_trend + bias + (random.random() - 0.5) * 0.1
-    confidence = max(0.2, min(0.95, base_confidence - abs(score) * 0.1))
-    
-    return ModelSignal(model=model, score=score, confidence=confidence)
+    return ModelSignal(
+        model='market_derived',
+        score=normalized_trend,
+        confidence=min(1.0, abs(normalized_trend)),
+    )
 
 def decide(snapshot: MarketSnapshot, config: TradingConfig, qgita_event: Optional[dict] = None) -> DecisionSignal:
     """
     Decision fusion layer (ported from decisionFusion.ts).
     Combines ensemble models, sentiment, and QGITA lighthouse.
     """
-    models = ['lstm', 'randomForest', 'xgboost', 'transformer']
+    models = ['market_derived']
     model_signals = [generate_model_signal(m, snapshot) for m in models]
     
     # Aggregate model scores

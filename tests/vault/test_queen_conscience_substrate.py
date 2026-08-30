@@ -100,8 +100,14 @@ class _SLSVault:
 
 
 @pytest.fixture
-def conscience(monkeypatch):
+def conscience(monkeypatch, tmp_path):
     """A fresh QueenConscience with a stub bus, no persisted state."""
+    # Pin the canonical field DARK: these tests feed the conscience through
+    # the stub bus/vault only. Without this redirect, any process that wrote
+    # state/hnc_live_trace.jsonl within the 300s freshness window (another
+    # test in the same run, a validator) makes the field live and the
+    # divided-field veto fires before the paths these tests assert.
+    monkeypatch.setenv("AUREON_HNC_TRACE_PATH", str(tmp_path / "hnc.jsonl"))
     bus = _StubBus()
     # Patch the module-level get_thought_bus the constructor would use.
     import aureon.queen.queen_conscience as qc_mod

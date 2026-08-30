@@ -26,7 +26,7 @@ from datetime import datetime, timedelta
 import time
 
 # --- Windows UTF-8 Fix ---
-if sys.platform == 'win32':
+if sys.platform == 'win32' and sys.stdout is sys.__stdout__ and sys.stdout.isatty():
     os.environ['PYTHONIOENCODING'] = 'utf-8'
     try:
         import io

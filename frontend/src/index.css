@@ -11,49 +11,53 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* AUREON Prism Theme - Deep Void with Rainbow Resonance */
-    --background: 60 4% 95%;
-    --foreground: 24 9% 10%;
+    /* Aureon professional theme — neutral slate surfaces with a refined gold accent.
+       Light mode: clean, high-contrast, enterprise-grade. */
+    --background: 210 20% 98%;
+    --foreground: 222 24% 12%;
 
-    --card: 60 9% 97%;
-    --card-foreground: 24 9% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 24% 12%;
 
-    --popover: 20 5% 90%;
-    --popover-foreground: 24 9% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 24% 12%;
 
-    /* 528 Hz Love Green - Primary */
-    --primary: 37 92% 50%;
-    --primary-foreground: 47 100% 96%;
-    --primary-glow: 142 80% 55%;
+    /* Brand gold — used sparingly as the single accent (gold on slate reads premium) */
+    --primary: 38 92% 46%;
+    --primary-foreground: 40 45% 10%;
+    --primary-glow: 38 90% 60%;
 
-    /* Unity Violet */
-    --secondary: 24 5% 44%;
-    --secondary-foreground: 60 9% 97%;
-    --secondary-glow: 280 90% 70%;
+    /* Neutral slate secondary surface */
+    --secondary: 210 16% 93%;
+    --secondary-foreground: 222 22% 22%;
+    --secondary-glow: 217 20% 70%;
 
-    /* Quantum Cyan Accent */
-    --accent: 47 100% 96%;
-    --accent-foreground: 37 92% 50%;
-    --accent-glow: 185 100% 60%;
+    --accent: 210 16% 92%;
+    --accent-foreground: 222 22% 20%;
+    --accent-glow: 199 89% 55%;
 
-    --muted: 23 5% 82%;
-    --muted-foreground: 24 9% 10%;
+    --muted: 210 16% 94%;
+    --muted-foreground: 215 16% 42%;
 
-    --destructive: 0 72% 50%;
-    --destructive-foreground: 0 85% 97%;
+    --destructive: 0 72% 48%;
+    --destructive-foreground: 0 0% 100%;
 
-    --success: 142 70% 45%;
-    --success-foreground: 0 0% 2%;
+    --success: 142 62% 38%;
+    --success-foreground: 0 0% 100%;
 
-    /* Love Gold for highlights */
-    --love: 45 100% 55%;
-    --love-foreground: 0 0% 2%;
+    /* Caution amber — distinct from the brand gold, completes the status triad */
+    --warning: 32 94% 44%;
+    --warning-foreground: 40 45% 10%;
 
-    --border: 23 5% 82%;
-    --input: 23 5% 82%;
-    --ring: 37 92% 50%;
+    /* Gold for highlights */
+    --love: 38 92% 46%;
+    --love-foreground: 40 45% 10%;
 
-    --radius: 1rem;
+    --border: 214 15% 88%;
+    --input: 214 15% 88%;
+    --ring: 38 92% 46%;
+
+    --radius: 0.5rem;
 
     /* Rainbow Prism Gradients */
     --gradient-rainbow: linear-gradient(135deg, hsl(0 85% 55%) 0%, hsl(45 100% 55%) 20%, hsl(142 70% 45%) 40%, hsl(185 100% 50%) 60%, hsl(280 80% 60%) 80%, hsl(320 80% 55%) 100%);
@@ -68,20 +72,22 @@ All colors MUST be HSL.
     --shadow-glow-rainbow: 0 0 30px hsla(0, 85%, 55%, 0.3), 0 0 60px hsla(142, 70%, 45%, 0.3), 0 0 90px hsla(280, 80%, 60%, 0.3);
     --shadow-card: 0 8px 32px -8px hsla(0, 0%, 0%, 0.5);
 
-    --sidebar-background: 240 15% 4%;
-    --sidebar-foreground: 24 9% 10%;
-    --sidebar-primary: 37 92% 50%;
-    --sidebar-primary-foreground: 47 100% 96%;
-    --sidebar-accent: 24 5% 44%;
-    --sidebar-accent-foreground: 60 9% 97%;
-    --sidebar-border: 23 5% 82%;
-    --sidebar-ring: 37 92% 50%;
-    --chart-1: 45 96% 64%;
-    --chart-2: 47 95% 53%;
-    --chart-3: 43 96% 56%;
-    --chart-4: 37 92% 50%;
-    --chart-5: 24 5% 44%;
-    --sidebar: 60 9% 97%;
+    /* Premium dark sidebar against the light content area (enterprise console look) */
+    --sidebar-background: 222 26% 9%;
+    --sidebar-foreground: 210 16% 80%;
+    --sidebar-primary: 38 92% 52%;
+    --sidebar-primary-foreground: 40 45% 10%;
+    --sidebar-accent: 222 20% 16%;
+    --sidebar-accent-foreground: 210 16% 92%;
+    --sidebar-border: 222 16% 18%;
+    --sidebar-ring: 38 92% 52%;
+    /* Restrained, cohesive categorical charts (gold · sky · indigo · rose · slate) */
+    --chart-1: 38 92% 50%;
+    --chart-2: 199 89% 48%;
+    --chart-3: 243 50% 60%;
+    --chart-4: 340 62% 55%;
+    --chart-5: 215 16% 55%;
+    --sidebar: 222 26% 9%;
     --font-sans: 'Source Sans Pro', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
     --font-serif: 'Source Serif Pro', ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
     --font-mono: 'Source Code Pro', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
@@ -98,44 +104,47 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 24 9% 10%;
-    --foreground: 60 9% 97%;
-    --card: 12 6% 15%;
-    --card-foreground: 60 9% 97%;
-    --popover: 30 6% 25%;
-    --popover-foreground: 60 9% 97%;
-    --primary: 43 96% 56%;
-    --primary-foreground: 20 91% 14%;
-    --primary-glow: 142 80% 55%;
-    --secondary: 24 5% 44%;
-    --secondary-foreground: 60 9% 97%;
-    --secondary-glow: 280 90% 70%;
-    --accent: 25 83% 14%;
-    --accent-foreground: 47 95% 53%;
-    --accent-glow: 185 100% 60%;
-    --muted: 24 5% 44%;
-    --muted-foreground: 60 9% 97%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 85% 97%;
-    --success: 142 70% 45%;
-    --success-foreground: 0 0% 2%;
-    --border: 33 5% 32%;
-    --input: 33 5% 32%;
-    --ring: 43 96% 56%;
-    --sidebar-background: 240 15% 4%;
-    --sidebar-foreground: 60 9% 97%;
-    --sidebar-primary: 43 96% 56%;
-    --sidebar-primary-foreground: 20 91% 14%;
-    --sidebar-accent: 47 95% 53%;
-    --sidebar-accent-foreground: 25 83% 14%;
-    --sidebar-border: 33 5% 32%;
-    --sidebar-ring: 43 96% 56%;
-    --chart-1: 45 96% 64%;
-    --chart-2: 48 96% 76%;
-    --chart-3: 43 96% 56%;
-    --chart-4: 37 92% 50%;
-    --chart-5: 33 5% 32%;
-    --sidebar: 12 6% 15%;
+    /* Dark mode: deep, neutral slate (no purple void) with the same gold accent. */
+    --background: 222 24% 8%;
+    --foreground: 210 16% 90%;
+    --card: 222 22% 11%;
+    --card-foreground: 210 16% 90%;
+    --popover: 222 22% 12%;
+    --popover-foreground: 210 16% 90%;
+    --primary: 40 92% 55%;
+    --primary-foreground: 40 45% 10%;
+    --primary-glow: 38 90% 62%;
+    --secondary: 217 18% 20%;
+    --secondary-foreground: 210 16% 88%;
+    --secondary-glow: 217 24% 40%;
+    --accent: 217 18% 18%;
+    --accent-foreground: 210 16% 90%;
+    --accent-glow: 199 89% 55%;
+    --muted: 217 16% 17%;
+    --muted-foreground: 215 14% 60%;
+    --destructive: 0 70% 52%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 142 58% 45%;
+    --success-foreground: 0 0% 100%;
+    --warning: 36 94% 52%;
+    --warning-foreground: 40 45% 10%;
+    --border: 217 16% 20%;
+    --input: 217 16% 20%;
+    --ring: 40 92% 55%;
+    --sidebar-background: 222 26% 7%;
+    --sidebar-foreground: 210 16% 80%;
+    --sidebar-primary: 40 92% 55%;
+    --sidebar-primary-foreground: 40 45% 10%;
+    --sidebar-accent: 222 20% 14%;
+    --sidebar-accent-foreground: 210 16% 92%;
+    --sidebar-border: 222 16% 15%;
+    --sidebar-ring: 40 92% 55%;
+    --chart-1: 40 92% 55%;
+    --chart-2: 199 85% 55%;
+    --chart-3: 243 55% 68%;
+    --chart-4: 340 65% 62%;
+    --chart-5: 215 16% 62%;
+    --sidebar: 222 26% 7%;
     --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
     --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
     --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
@@ -153,9 +162,10 @@ All colors MUST be HSL.
   }
 
   body {
+    /* Solid, professional surface — no always-on "void" gradient (it forced a dark
+       toy background even in light mode). The cinematic gradient/glow utilities below
+       remain available to the opt-in immersive surfaces that explicitly use them. */
     @apply bg-background text-foreground antialiased;
-    background-image: var(--gradient-void);
-    background-attachment: fixed;
   }
 
   /* AUREON Glow Effects */

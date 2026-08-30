@@ -18,12 +18,25 @@ from typing import Any, Dict, List, Optional
 logger = logging.getLogger("aureon.core.ics")
 
 # Source Law coherence thresholds for cognitive execution.
-# Defaults are set for trading (0.938/0.934). The ICS lowers them to 0.5/0.45
+# Defaults are set for trading (0.938/0.934). The ICS lowers them to 0.55/0.45
 # because we're running user-requested cognitive goals, not autonomous trades.
-# Trading subsystems that import SourceLawEngine directly still use their own
-# thresholds via the env var override pattern.
-os.environ.setdefault("AUREON_SOURCE_LAW_ENTRY", "0.55")
-os.environ.setdefault("AUREON_SOURCE_LAW_EXIT", "0.45")
+# These are passed PER-INSTANCE to this system's own SourceLawEngine — never
+# via process env: the previous os.environ.setdefault here rebound
+# queen_source_law's import-time constants for the WHOLE process, silently
+# loosening the live trading entry gate (0.938 → 0.55) whenever the cognitive
+# system was imported before the trading stack. The shared field may tighten
+# a live gate, never loosen it.
+_COGNITIVE_ENTRY_COHERENCE = 0.55
+_COGNITIVE_EXIT_COHERENCE = 0.45
+
+
+def _background_side_effects_suppressed() -> bool:
+    """Return True when callers require a deterministic, non-autonomous boot."""
+
+    return any(
+        os.getenv(name, "").strip().lower() in {"1", "true", "yes", "on"}
+        for name in ("AUREON_AUDIT_MODE", "AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS")
+    )
 
 # ---------------------------------------------------------------------------
 # Graceful imports — every subsystem wrapped in try/except
@@ -393,6 +406,7 @@ class IntegratedCognitiveSystem:
         degradation. Returns {subsystem_name: "alive"|"failed"|"skipped"}.
         """
         status: Dict[str, str] = {}
+        background_enabled = not _background_side_effects_suppressed()
 
         # Activate Queen autonomous control in background — importing
         # aureon_queen_hive_mind pulls a heavy dependency chain that can
@@ -403,7 +417,8 @@ class IntegratedCognitiveSystem:
                 activate_autonomous_control()
             except Exception:
                 pass
-        threading.Thread(target=_do_activate, daemon=True, name="ICS.auto_ctrl").start()
+        if background_enabled:
+            threading.Thread(target=_do_activate, daemon=True, name="ICS.auto_ctrl").start()
 
         def _boot_phase(name: str, fn):
             try:
@@ -509,7 +524,8 @@ class IntegratedCognitiveSystem:
             if not _HAS_CORTEX:
                 raise RuntimeError("import failed")
             self.cortex = get_cortex()
-            self.cortex.start()
+            if background_enabled:
+                self.cortex.start()
         _boot_phase("cortex", boot_cortex)
 
         # Phase 6: Self-Feedback Loop
@@ -517,7 +533,8 @@ class IntegratedCognitiveSystem:
             if not _HAS_FEEDBACK_LOOP:
                 raise RuntimeError("import failed")
             self.feedback_loop = get_self_feedback_loop(vault=self.vault)
-            self.feedback_loop.start()
+            if background_enabled:
+                self.feedback_loop.start()
         _boot_phase("feedback_loop", boot_feedback)
 
         # Phase 7: Sentient Loop
@@ -525,7 +542,8 @@ class IntegratedCognitiveSystem:
             if not _HAS_SENTIENT:
                 raise RuntimeError("import failed")
             self.sentient_loop = QueenSentientLoop(think_interval=1.0)
-            self.sentient_loop.start()
+            if background_enabled:
+                self.sentient_loop.start()
         _boot_phase("sentient_loop", boot_sentient)
 
         # Phase 8: Mycelium Mind (thought propagation + synaptic learning)
@@ -533,7 +551,8 @@ class IntegratedCognitiveSystem:
             if not _HAS_MYCELIUM:
                 raise RuntimeError("import failed")
             self.mycelium_mind = get_mycelium_mind()
-            self.mycelium_mind.start()
+            if background_enabled:
+                self.mycelium_mind.start()
         _boot_phase("mycelium_mind", boot_mycelium)
 
         # Phase 9: Queen Metacognition (5W self-reflection loop)
@@ -541,7 +560,8 @@ class IntegratedCognitiveSystem:
             if not _HAS_METACOGNITION:
                 raise RuntimeError("import failed")
             self.metacognition = _QueenMetacognition()
-            self.metacognition.start()
+            if background_enabled:
+                self.metacognition.start()
         _boot_phase("metacognition", boot_metacognition)
 
         # Phase 10: Love Stream (528 Hz love signal → vault love_amplitude)
@@ -549,7 +569,8 @@ class IntegratedCognitiveSystem:
             if not _HAS_LOVE_STREAM:
                 raise RuntimeError("import failed")
             self.love_stream = StandingWaveLoveStream(sample_rate_hz=1.0)
-            self.love_stream.start()
+            if background_enabled:
+                self.love_stream.start()
         _boot_phase("love_stream", boot_love_stream)
 
         # Phase 11: Conscience (ethical compass — Jiminy Cricket)
@@ -563,8 +584,12 @@ class IntegratedCognitiveSystem:
         def boot_source_law():
             if not _HAS_SOURCE_LAW:
                 raise RuntimeError("import failed")
-            self.source_law = SourceLawEngine()
-            self.source_law.start()
+            self.source_law = SourceLawEngine(
+                entry_coherence=_COGNITIVE_ENTRY_COHERENCE,
+                exit_coherence=_COGNITIVE_EXIT_COHERENCE,
+            )
+            if background_enabled:
+                self.source_law.start()
         _boot_phase("source_law", boot_source_law)
 
         # Phase 13: As Above So Below Mirror (Hermetic reflection)
@@ -572,7 +597,8 @@ class IntegratedCognitiveSystem:
             if not _HAS_MIRROR or self.love_stream is None:
                 raise RuntimeError("import failed or love_stream not available")
             self.mirror = AsAboveSoBelowMirror(love_stream=self.love_stream)
-            self.mirror.start()
+            if background_enabled:
+                self.mirror.start()
         _boot_phase("mirror", boot_mirror)
 
         # Phase 14: Agent Core
@@ -697,7 +723,8 @@ class IntegratedCognitiveSystem:
                 goal_engine=self.goal_engine,
                 thought_bus=self.thought_bus,
             )
-            self.cognitive_planner.start()
+            if background_enabled:
+                self.cognitive_planner.start()
         _boot_phase("cognitive_planner", boot_cognitive_planner)
 
         # Phase 16.7: Capital CFD Trader — wire Λ(t) into scoring engine.
@@ -766,7 +793,8 @@ class IntegratedCognitiveSystem:
                 interval_s=120.0,  # research every 2 minutes
                 max_questions_per_cycle=2,
             )
-            self.self_research_loop.start()
+            if background_enabled:
+                self.self_research_loop.start()
         _boot_phase("self_research_loop", boot_self_research)
 
         # Phase 22.7: Vault Knowledge Bridge — continuous vault → dataset
@@ -784,7 +812,8 @@ class IntegratedCognitiveSystem:
                 sync_interval_s=30.0,
                 self_organize_every_n_absorbs=15,
             )
-            self.vault_knowledge_bridge.start()
+            if background_enabled:
+                self.vault_knowledge_bridge.start()
         _boot_phase("vault_knowledge_bridge", boot_vault_bridge)
 
         # Phase 23: Wire integrations (Ollama + Obsidian into vault/loop)
@@ -811,7 +840,8 @@ class IntegratedCognitiveSystem:
                         self.cognitive_planner.set_ollama_adapter(result.ollama_adapter)
                 except Exception:
                     pass
-            threading.Thread(target=_do_wire, daemon=True, name="ICS.integrations").start()
+            if background_enabled:
+                threading.Thread(target=_do_wire, daemon=True, name="ICS.integrations").start()
         _boot_phase("integrations", boot_integrations)
 
         # Phase 26: Prose Composer (self-description from real state)
@@ -852,6 +882,8 @@ class IntegratedCognitiveSystem:
     # Unified cognitive tick (~1Hz background thread)
     # ------------------------------------------------------------------
     def _start_tick_thread(self) -> None:
+        if _background_side_effects_suppressed():
+            return
         self._running = True
         self._tick_thread = threading.Thread(
             target=self._tick_loop, name="ics-tick", daemon=True,
@@ -1011,6 +1043,28 @@ class IntegratedCognitiveSystem:
                         except Exception:
                             pass
 
+                    # ── THE SHARED FIELD JOINS THE LOCAL Λ (P5, Pattern A) ──
+                    # The integrator computed a private Λ that never saw the
+                    # canonical field — the exact silo the logic-train audit
+                    # pinned. The daemon's live field now enters as one
+                    # reading among the subsystem-health readings, so the
+                    # ICS's Λ is informed by the whole organism without
+                    # surrendering its per-instance computation. Only a
+                    # fresh, available field is merged — a dark field adds
+                    # nothing (never a placeholder).
+                    try:
+                        from aureon.core.hnc_field import read_canonical_field
+                        _cf = read_canonical_field()
+                        if getattr(_cf, "available", False) and _cf.symbolic_life_score is not None:
+                            readings.append(SubsystemReading(
+                                name="hnc_canonical_field",
+                                value=max(0.0, min(1.0, float(_cf.symbolic_life_score))),
+                                confidence=0.9,
+                                state=str(_cf.consciousness_level or "live"),
+                            ))
+                    except Exception:
+                        pass
+
                 ls = self.lambda_engine.step(readings=readings or None, vault=self.vault)
                 source_state = {
                     "lambda_t": ls.lambda_t,
@@ -1019,6 +1073,16 @@ class IntegratedCognitiveSystem:
                     "consciousness_level": ls.consciousness_level,
                     "symbolic_life_score": ls.symbolic_life_score,
                 }
+                # b46 tighten-only: the Γ every downstream ICS consumer reads
+                # (source-law gate, conscience, dashboard) is reconciled with
+                # the canonical field — the shared field can only TIGHTEN it,
+                # and with no field flowing the local figure passes unchanged.
+                try:
+                    from aureon.core.hnc_field import reconcile_gamma
+                    source_state["coherence_gamma"] = reconcile_gamma(
+                        source_state["coherence_gamma"])
+                except Exception:
+                    pass
             except Exception:
                 pass
         try:
@@ -1390,7 +1454,10 @@ class IntegratedCognitiveSystem:
             )
 
         if action == "next":
-            item = self.contract_stack.claim_next(worker="ics.contract_command")
+            item = self.contract_stack.claim_next_available(
+                ("organism.capability_growth", "organism.default"),
+                worker="ics.contract_command",
+            )
             if item is None:
                 return "No queued organism work orders."
             return f"Claimed {item.contract_id}: {item.title}"
@@ -1544,6 +1611,42 @@ class IntegratedCognitiveSystem:
                     f"{registry.get('module_count', 0)} modules/tools, "
                     f"{registry.get('artifact_count', 0)} artifacts"
                 )
+            accounting_control = st.get("aureon_accounting_control") or {}
+            if accounting_control:
+                journal = accounting_control.get("journal") or {}
+                projection = accounting_control.get("quickbooks_projection") or {}
+                lines.append(
+                    "  Aureon journal: "
+                    f"integrity={journal.get('integrity_verified', False)} "
+                    f"entries={journal.get('entry_count', 0)} "
+                    f"approved={journal.get('approved_entry_count', 0)} "
+                    f"QBO_queued={projection.get('queued_count', 0)} "
+                    f"readback={projection.get('readback_verified_count', 0)}"
+                )
+            reconciliation = st.get("accounting_reconciliation") or {}
+            if reconciliation:
+                reconciliation_summary = reconciliation.get("summary") or {}
+                lines.append(
+                    "  Reconciliation: "
+                    f"workstreams={reconciliation_summary.get('workstream_count', 0)} "
+                    f"critical={reconciliation_summary.get('critical_workstream_count', 0)} "
+                    f"postings_authorised={reconciliation_summary.get('posting_authorised_count', 0)} "
+                    f"external_actions_authorised={reconciliation_summary.get('external_compliance_action_authorised_count', 0)}"
+                )
+            quickbooks = st.get("quickbooks") or {}
+            if quickbooks:
+                qbo_api = quickbooks.get("api") or {}
+                qbo_bank = quickbooks.get("bank_feed") or {}
+                lines.append(
+                    "  QuickBooks: "
+                    "authority=Aureon_OS "
+                    f"{quickbooks.get('connection_state', 'unknown')} "
+                    f"api_readback={qbo_api.get('company_info_readback', 'not_verified')} "
+                    f"bank_feed={qbo_bank.get('connected', False)} "
+                    f"pending={qbo_bank.get('pending_transaction_count', 0)} "
+                    f"ownership={qbo_bank.get('ownership_status', 'unknown')} "
+                    f"aureon_posted={qbo_bank.get('aureon_posted_transaction_count', 0)}"
+                )
             readiness = st.get("accounting_readiness") or {}
             if readiness:
                 lines.append(
@@ -1665,6 +1768,104 @@ class IntegratedCognitiveSystem:
             pack = ((st.get("outputs") or {}).get("accounts_pack_pdf") or {}).get("path")
             if pack:
                 lines.append(f"  Accounts pack: {pack}")
+            return "\n".join(lines)
+
+        if action in {"reconciliation", "workstreams"}:
+            try:
+                st = self.accounting_context.status(force=True)
+            except Exception as exc:
+                return f"Accounting reconciliation status error: {exc}"
+            reconciliation = st.get("accounting_reconciliation") or {}
+            if not reconciliation:
+                return "Aureon accounting reconciliation has no generated status yet."
+            summary = reconciliation.get("summary") or {}
+            lines = ["=== AUREON ACCOUNTING RECONCILIATION ==="]
+            lines.append("  Authority: derived Aureon work queue; not a journal, filing instruction, or approval")
+            lines.append(
+                "  Controls: "
+                f"workstreams={summary.get('workstream_count', 0)} "
+                f"critical={summary.get('critical_workstream_count', 0)} "
+                f"postings_authorised={summary.get('posting_authorised_count', 0)} "
+                f"QBO_projections_authorised={summary.get('quickbooks_projection_authorised_count', 0)} "
+                f"external_actions_authorised={summary.get('external_compliance_action_authorised_count', 0)}"
+            )
+            for item in reconciliation.get("workstreams") or []:
+                if not isinstance(item, dict):
+                    continue
+                lines.append(
+                    f"  [{str(item.get('priority', 'unknown')).upper()}] "
+                    f"{item.get('id', 'unknown')}: {item.get('state', 'unknown')}"
+                )
+                if item.get("next_action"):
+                    lines.append(f"    Next evidence/action: {item['next_action']}")
+            return "\n".join(lines)
+
+        if action in {"quickbooks", "qbo"}:
+            try:
+                st = self.accounting_context.status(force=True)
+            except Exception as exc:
+                return f"QuickBooks control-plane status error: {exc}"
+            quickbooks = st.get("quickbooks") or {}
+            if not quickbooks:
+                return "QuickBooks control plane has no live status receipt yet."
+            api = quickbooks.get("api") or {}
+            bank = quickbooks.get("bank_feed") or {}
+            chart = quickbooks.get("chart_of_accounts") or {}
+            controls = quickbooks.get("controls") or {}
+            reports = quickbooks.get("reports") or {}
+            tax_features = quickbooks.get("tax_features") or {}
+            accounting_control = st.get("aureon_accounting_control") or {}
+            canonical_journal = accounting_control.get("journal") or {}
+            projection_queue = accounting_control.get("quickbooks_projection") or {}
+            lines = ["=== QUICKBOOKS CONTROL PLANE ==="]
+            lines.append("  Authority: Aureon OS is canonical; QuickBooks is projection/read-back only")
+            lines.append(
+                "  Aureon journal: "
+                f"integrity={canonical_journal.get('integrity_verified', False)} "
+                f"entries={canonical_journal.get('entry_count', 0)} "
+                f"approved={canonical_journal.get('approved_entry_count', 0)}"
+            )
+            lines.append(
+                "  Projection queue: "
+                f"queued={projection_queue.get('queued_count', 0)} "
+                f"readback={projection_queue.get('readback_verified_count', 0)} "
+                f"outstanding={projection_queue.get('outstanding_readback_count', 0)} "
+                f"observations={projection_queue.get('observation_task_count', 0)}"
+            )
+            lines.append(f"  State: {quickbooks.get('connection_state', 'unknown')}")
+            lines.append(f"  CompanyInfo API read-back: {api.get('company_info_readback', 'not_verified')}")
+            lines.append(f"  OAuth: {api.get('oauth', 'not_verified')}")
+            lines.append(
+                "  Bank feed: "
+                f"connected={bank.get('connected', False)} "
+                f"provider={bank.get('provider', 'unknown')} "
+                f"pending={bank.get('pending_transaction_count', 0)} "
+                f"ownership={bank.get('ownership_status', 'unknown')}"
+            )
+            lines.append(
+                "  Posting: "
+                f"aureon_posted={bank.get('aureon_posted_transaction_count', 0)} "
+                f"bulk_allowed={bank.get('bulk_posting_allowed', False)}"
+            )
+            lines.append(
+                "  Chart: "
+                f"accounts={chart.get('account_count', 0)} "
+                f"staged_changes_applied={chart.get('staged_changes_applied', False)}"
+            )
+            lines.append(
+                "  Reports: "
+                f"pnl_has_data={reports.get('profit_and_loss_current_period_has_data', False)} "
+                f"balance_sheet_nonzero_accounts={reports.get('balance_sheet_nonzero_account_count', 0)} "
+                f"reconciled_to_aureon={reports.get('reconciled_to_aureon_canonical_ledger', False)}"
+            )
+            lines.append(
+                "  Tax features: "
+                f"CIS={tax_features.get('cis_enabled', False)} "
+                f"VAT={tax_features.get('vat_enabled', False)} "
+                f"payroll={tax_features.get('payroll_enabled', False)}"
+            )
+            lines.append(f"  QuickBooks mutations: {controls.get('quickbooks_mutations', 'disabled')}")
+            lines.append("  Safety: no bulk posting, filing, payment, bank, VAT, PAYE, or CIS mutation is automatic.")
             return "\n".join(lines)
 
         if action in {"tools", "registry"}:
@@ -2071,7 +2272,7 @@ class IntegratedCognitiveSystem:
                         pass
                 return f"Accounting build blocked: {exc}"
 
-        return "Usage: /accounts [status|raw|tools|registry|ingest|readiness|evidence|requirements|filing|statutory build|end-user|autonomous|build]"
+        return "Usage: /accounts [status|reconciliation|quickbooks|raw|tools|registry|ingest|readiness|evidence|requirements|filing|statutory build|end-user|autonomous|build]"
 
     def _cmd_goal_status(self) -> str:
         if self.goal_engine is None:

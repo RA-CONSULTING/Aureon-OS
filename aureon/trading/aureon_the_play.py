@@ -16,7 +16,7 @@ Author: Gary Leckey / Aureon System
 Date: November 28, 2025
 """
 from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
-import os, sys, json, time, logging, argparse, random, math
+import os, sys, json, time, logging, argparse, math
 from datetime import datetime
 from typing import List, Dict, Any
 from aureon.exchanges.binance_client import BinanceClient, get_binance_client
@@ -179,6 +179,13 @@ class MasterEquation:
         
         # Coherence: Γ = normalized lambda
         coherence = min(max(lambda_t, 0.0), 1.0)
+        # Reconcile with the canonical HNC field: the shared Γ can only tighten
+        # this live gate, never loosen it (b46 order-path wiring).
+        try:
+            from aureon.core.hnc_field import reconcile_gamma
+            coherence = reconcile_gamma(coherence)
+        except Exception:
+            pass
         
         # Store coherence
         if symbol not in self.coherence_history:
@@ -204,9 +211,41 @@ class MasterEquation:
 # ═══════════════════════════════════════════════════════════════════════════
 
 class AureonThePlayTrader:
-    def __init__(self, dry_run: bool = False):
+    def __init__(
+        self,
+        dry_run: bool = False,
+        *,
+        unity_composition: Any = None,
+        unity_plan_supplier: Any = None,
+        trusted_unity_plan_supplier_ids=(),
+        thought_bus: Any = None,
+        mycelium: Any = None,
+        hive_state: Any = None,
+    ):
         self.dry_run = dry_run
         self.client = get_binance_client()
+        self.thought_bus = thought_bus
+        if self.thought_bus is None:
+            try:
+                from aureon.core.aureon_thought_bus import get_thought_bus
+
+                self.thought_bus = get_thought_bus()
+            except Exception:
+                self.thought_bus = None
+        self.mycelium = mycelium
+        if self.mycelium is None:
+            try:
+                from aureon.core.aureon_mycelium import get_mycelium
+
+                self.mycelium = get_mycelium(initial_capital=100.0)
+            except Exception:
+                self.mycelium = None
+        self._install_unity_exchange_brain(
+            unity_composition=unity_composition,
+            unity_plan_supplier=unity_plan_supplier,
+            trusted_unity_plan_supplier_ids=trusted_unity_plan_supplier_ids,
+            hive_state=hive_state,
+        )
         self.master_eq = MasterEquation()
         self.positions = {}
         self.total_profit = 0.0
@@ -214,6 +253,81 @@ class AureonThePlayTrader:
         self.ticker_cache = {}
         self.last_ticker_update = 0
         self.load_existing_positions()
+
+    def _install_unity_exchange_brain(
+        self,
+        *,
+        unity_composition: Any,
+        unity_plan_supplier: Any,
+        trusted_unity_plan_supplier_ids,
+        hive_state: Any = None,
+    ) -> None:
+        """Bind every mutation to the shared Queen/Council authority plane."""
+
+        from aureon.core.economic_sensation import OrganismEconomicSensationRouter
+        from aureon.queen.unity_exchange_brain import build_queen_exchange_brains
+
+        if hive_state is None:
+            try:
+                from aureon.core.aureon_hive_state import get_hive
+
+                hive_state = get_hive()
+            except Exception:
+                hive_state = None
+        self.hive_state = hive_state
+        self._economic_sensation_router = OrganismEconomicSensationRouter(
+            bus_getter=lambda: getattr(self, "thought_bus", None),
+            hive_getter=lambda: getattr(self, "hive_state", None),
+            mycelium_getter=lambda: getattr(self, "mycelium", None),
+        )
+        fallback_read_clients = None
+        if unity_composition is None:
+            fallback_read_clients = {"binance": self.client}
+        brains, governed, status = build_queen_exchange_brains(
+            unity_composition=unity_composition,
+            unity_plan_supplier=unity_plan_supplier,
+            trusted_unity_plan_supplier_ids=trusted_unity_plan_supplier_ids,
+            fallback_read_clients=fallback_read_clients,
+            outcome_observer=self._economic_sensation_router.observe,
+        )
+        self._queen_exchange_brains = brains
+        self._queen_governed_exchange_client = governed
+        self._queen_exchange_governance_status = status
+        self.client = brains["binance"]
+
+    def _governed_client_for(self, exchange: str):
+        """Return the canonical mutation brain, never a raw provider client."""
+
+        brain = getattr(self, "_queen_exchange_brains", {}).get(exchange)
+        if brain is None:
+            from aureon.queen.unity_exchange_brain import QueenGovernedExchangeBrain
+
+            brain = QueenGovernedExchangeBrain(
+                exchange=exchange,
+                read_client=getattr(self, "client", None),
+                governed_client=None,
+                outcome_observer=getattr(
+                    getattr(self, "_economic_sensation_router", None),
+                    "observe",
+                    None,
+                ),
+            )
+        return brain
+
+    @staticmethod
+    def _governed_execution_confirmed(result: Any) -> bool:
+        """Only a validated unity receipt may advance local position state."""
+
+        if not isinstance(result, dict):
+            return False
+        receipt = result.get("aureon_legacy_unity_receipt")
+        return isinstance(receipt, dict) and receipt.get("status") == "EXECUTED"
+
+    def recent_economic_sensations(self):
+        """Return bounded feedback receipts; never mutation authority."""
+
+        router = getattr(self, "_economic_sensation_router", None)
+        return router.recent() if router is not None else []
 
     def load_existing_positions(self):
         """Load existing balances as positions to manage."""
@@ -414,7 +528,18 @@ class AureonThePlayTrader:
                         else:
                             logger.info(f"🚀 LIVE BUY: {pair['symbol']}")
                             try:
-                                res = self.client.place_market_order(pair['symbol'], 'BUY', quote_qty=size)
+                                res = self._governed_client_for("binance").place_market_order(
+                                    pair['symbol'], 'BUY', quote_qty=size
+                                )
+                                if not self._governed_execution_confirmed(res):
+                                    logger.warning(
+                                        "Governed BUY held or unresolved for %s: %s",
+                                        pair['symbol'],
+                                        res.get("reason", "unity_execution_receipt_required")
+                                        if isinstance(res, dict)
+                                        else "unity_execution_receipt_required",
+                                    )
+                                    continue
                                 self.positions[pair['symbol']] = {
                                     'entry_price': snap['price'],
                                     'size': size,
@@ -444,8 +569,8 @@ class AureonThePlayTrader:
             coherence = self.master_eq.compute_coherence(symbol, snap)
             freq = self.master_eq.get_frequency(coherence)
             
-            # Log status occasionally
-            if random.random() < 0.05:
+            # Log every twentieth observed status check.
+            if pos['cycles'] % 20 == 0:
                 logger.info(f"📊 {symbol}: Γ={coherence:.4f} f={freq:.0f}Hz | PnL {pnl_pct*100:.2f}%")
             
             # 🪙 PENNY PROFIT EXIT LOGIC (priority over coherence)
@@ -455,30 +580,31 @@ class AureonThePlayTrader:
                 
                 if action == 'TAKE_PROFIT':
                     logger.info(f"🪙 {symbol}: PENNY TP (${gross_pnl:.4f} >= ${threshold.win_gte:.4f})")
-                    self.close_position(symbol, pos, curr_price, pnl_pct)
+                    self._exit_managed_position(symbol, pos, curr_price, pnl_pct)
                 elif action == 'STOP_LOSS' and pos['cycles'] >= 5:
                     logger.info(f"🪙 {symbol}: PENNY SL (${gross_pnl:.4f} <= ${threshold.stop_lte:.4f})")
-                    self.close_position(symbol, pos, curr_price, pnl_pct)
+                    self._exit_managed_position(symbol, pos, curr_price, pnl_pct)
                 elif coherence < CONFIG['EXIT_COHERENCE'] and pos['cycles'] >= 5:
                     logger.info(f"⚡ {symbol}: COHERENCE EXIT (Γ={coherence:.4f} < 0.934)")
-                    self.close_position(symbol, pos, curr_price, pnl_pct)
+                    self._exit_managed_position(symbol, pos, curr_price, pnl_pct)
             else:
                 # Fallback: Exit 1 - Coherence Break
                 if coherence < CONFIG['EXIT_COHERENCE'] and pos['cycles'] >= 5:
                     logger.info(f"⚡ {symbol}: COHERENCE EXIT (Γ={coherence:.4f} < 0.934)")
-                    self.close_position(symbol, pos, curr_price, pnl_pct)
+                    self._exit_managed_position(symbol, pos, curr_price, pnl_pct)
                     
                 # Exit 2: Take Profit
                 elif pnl_pct >= CONFIG['TAKE_PROFIT_PCT']:
                     logger.info(f"💰 {symbol}: TAKE PROFIT (+{pnl_pct*100:.2f}%)")
-                    self.close_position(symbol, pos, curr_price, pnl_pct)
+                    self._exit_managed_position(symbol, pos, curr_price, pnl_pct)
                     
                 # Exit 3: Stop Loss (with min hold)
                 elif pnl_pct <= -CONFIG['STOP_LOSS_PCT'] and pos['cycles'] >= 5:
                     logger.info(f"🛑 {symbol}: STOP LOSS ({pnl_pct*100:.2f}%)")
-                    self.close_position(symbol, pos, curr_price, pnl_pct)
+                    self._exit_managed_position(symbol, pos, curr_price, pnl_pct)
 
-    def close_position(self, symbol, pos, price, pnl_pct):
+    def _exit_managed_position(self, symbol, pos, price, pnl_pct):
+        result = {"status": "dry_run"}
         if self.dry_run:
             logger.info(f"📝 DRY-RUN: SELL {symbol}")
         else:
@@ -504,14 +630,29 @@ class AureonThePlayTrader:
                     logger.warning(f"⚠️ Sell value too low (${val_usd:.2f}), skipping")
                     return
 
-                self.client.place_market_order(symbol, 'SELL', quantity=bal)
+                result = self._governed_client_for("binance").place_market_order(
+                    symbol, 'SELL', quantity=bal
+                )
+                if not self._governed_execution_confirmed(result):
+                    logger.warning(
+                        "Governed SELL held or unresolved for %s: %s",
+                        symbol,
+                        result.get("reason", "unity_execution_receipt_required")
+                        if isinstance(result, dict)
+                        else "unity_execution_receipt_required",
+                    )
+                    return result
             except Exception as e:
+                result = {"status": "not_submitted", "reason": str(e)}
                 logger.error(f"❌ Sell failed: {e}")
         
+        if not self.dry_run and not self._governed_execution_confirmed(result):
+            return result
         profit = pos['size'] * pnl_pct
         self.total_profit += profit
         if symbol in self.positions:
             del self.positions[symbol]
+        return result
 
 def main():
     parser = argparse.ArgumentParser()

@@ -3,8 +3,8 @@
 🦈🔍 ORCA PREDATOR DETECTION SYSTEM - WHO'S HUNTING WHO? 🔍🦈
 ═══════════════════════════════════════════════════════════════════════════════
 🟡 The PredatorDetector class records REAL orders + REAL price reactions.
-   `simulate_hunting_scenario()` (run only under __main__) uses synthetic
-   random orders for demonstration; do not call from production paths.
+   This production module accepts observed order and reaction events only.
+   Standalone generated-order drivers have been removed.
 ═══════════════════════════════════════════════════════════════════════════════
 
 DETECTS WHEN MARKET MAKERS ARE ADAPTING TO *YOUR* PATTERNS
@@ -447,101 +447,3 @@ class OrcaPredatorDetector:
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# 🧪 SIMULATION / TESTING
-# ═══════════════════════════════════════════════════════════════════════════════
-
-def simulate_hunting_scenario():
-    """Simulate a scenario where we're being hunted."""
-    import random
-    
-    detector = OrcaPredatorDetector()
-    
-    print("\n🧪 SIMULATING HUNTING SCENARIO...")
-    print("   (Pretending Citadel is front-running us)\n")
-    
-    symbols = ["BTC/USD", "ETH/USD", "PEPE/USD", "SHIB/USD", "SOL/USD"]
-    firms = ["citadel", "jane_street", "two_sigma", "unknown", "virtu"]
-    
-    # Simulate 50 orders with some being front-run
-    for i in range(50):
-        symbol = random.choice(symbols)
-        side = random.choice(["buy", "sell"])
-        price = 100.0 + random.random() * 10
-        
-        order = OrderEvent(
-            timestamp=time.time() - random.randint(0, 86400),
-            symbol=symbol,
-            side=side,
-            price=price,
-            quantity=random.random() * 10,
-            exchange="alpaca",
-            order_id=f"order_{i}"
-        )
-        detector.record_order(order)
-        
-        # Simulate price reaction
-        # 40% chance of being front-run by citadel
-        if random.random() < 0.4:
-            firm = "citadel"
-            reaction_ms = random.randint(50, 150)  # Fast = front-run
-            if side == "buy":
-                price_after = price * 1.001  # Price went up against us
-            else:
-                price_after = price * 0.999  # Price went down against us
-        else:
-            firm = random.choice(firms)
-            reaction_ms = random.randint(200, 1000)  # Normal speed
-            price_after = price * (1 + random.uniform(-0.0005, 0.0005))
-        
-        detector.record_price_after_order(order, price_after, reaction_ms, firm)
-    
-    # Simulate strategy decay
-    detector.check_strategy_decay(
-        strategy_name="orca_momentum",
-        win_rate_7d=0.68,   # Was winning 68% last week
-        win_rate_24h=0.55,  # Down to 55% today
-        win_rate_1h=0.42    # Only 42% in last hour!
-    )
-    
-    # Print the report
-    detector.print_report()
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# 🚀 MAIN
-# ═══════════════════════════════════════════════════════════════════════════════
-
-if __name__ == "__main__":
-    import sys
-    
-    if len(sys.argv) > 1 and sys.argv[1] == "--simulate":
-        simulate_hunting_scenario()
-    else:
-        print("""
-🦈🔍 ORCA PREDATOR DETECTION SYSTEM 🔍🦈
-═══════════════════════════════════════════════════════════════
-
-Usage:
-  python orca_predator_detection.py --simulate   # Run hunting simulation
-  
-Or integrate into your trading system:
-
-  from orca_predator_detection import OrcaPredatorDetector
-  
-  detector = OrcaPredatorDetector()
-  
-  # Record every order you place
-  detector.record_order(order)
-  
-  # Record price reaction after order
-  detector.record_price_after_order(order, price_after, reaction_ms, "citadel")
-  
-  # Check if your strategy is decaying
-  detector.check_strategy_decay("my_strategy", win_7d, win_24h, win_1h)
-  
-  # Get full report
-  report = detector.generate_hunting_report()
-  detector.print_report()
-
-═══════════════════════════════════════════════════════════════
-        """)

@@ -170,8 +170,8 @@ def default_registry() -> List[ModelSpec]:
     # Turn the self-hosted / BYO-endpoint line (Ollama, vLLM, llama.cpp, Ollama
     # Cloud) live whenever a base URL is configured — read at call time so a value
     # loaded from .env after import still takes effect. Model comes from
-    # AUREON_LLM_MODEL; the optional bearer is AUREON_LLM_API_KEY (used by the
-    # adapter). Unset base URL → the line stays disabled, exactly as before.
+    # AUREON_LLM_MODEL; the optional bearer is OLLAMA_API_KEY. Legacy Aureon
+    # key aliases remain supported. Unset base URL keeps the line disabled.
     base_url = str(os.environ.get("AUREON_LLM_BASE_URL", "") or "").strip()
     if base_url:
         model = str(os.environ.get("AUREON_LLM_MODEL", "") or "").strip()

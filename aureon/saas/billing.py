@@ -89,6 +89,19 @@ def register_billing(app: Any) -> Any:
             }}), 503
         return None
 
+    def _admin_denied() -> Any:
+        """Refuse a signed-in end user (tenant) on an operator-only route.
+
+        ``g.is_admin`` is set by the operator request gate (admin bearer, or the open single-operator
+        default ⇒ True) and is absent when these routes are mounted on a bare app, so the default is
+        permissive and standalone mounts are unaffected.
+        """
+        if not getattr(g, "is_admin", True):
+            return jsonify({"error": {"code": 403,
+                                      "message": "this control-plane route is operator-only",
+                                      "plane": "admin"}}), 403
+        return None
+
     # ── metering hooks ────────────────────────────────────────────────────────
 
     @app.before_request
@@ -191,6 +204,16 @@ def register_billing(app: Any) -> Any:
 
     @app.post("/api/billing/charge-fee")
     def billing_charge_fee() -> Any:
+        # OPERATOR-ONLY, and checked FIRST. This route moves money: the charged principal is
+        # body["user_id"], and the deduct call is signed with the instance's Supabase service-role
+        # key. Without this guard any signed-in end user could debit any other user's gas tank (and
+        # fabricate audited fee events against them) using the instance's privileged credential — a
+        # counter-audit reproduced exactly that. The env gate and the audit trail were already here;
+        # the authentication the module docstring promises was not. Admin-first so a tenant also
+        # learns nothing about whether charging is enabled on this instance.
+        denied = _admin_denied()
+        if denied is not None:
+            return denied
         if not charge_enabled:
             return jsonify({"error": {
                 "code": 403,

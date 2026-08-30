@@ -41,7 +41,7 @@ from collections import deque
 from enum import Enum
 
 # Windows UTF-8 Fix
-if sys.platform == 'win32':
+if sys.platform == 'win32' and sys.stdout is sys.__stdout__ and sys.stdout.isatty():
     os.environ['PYTHONIOENCODING'] = 'utf-8'
     try:
         import io
@@ -109,12 +109,17 @@ except ImportError:
     ThoughtBus = None
 # 🌊👑 HARMONIC LIQUID ALUMINIUM FIELD - Market as Dancing Waveforms
 try:
-    from aureon.harmonic.aureon_harmonic_liquid_aluminium import HarmonicLiquidAluminiumField, FieldSnapshot
+    from aureon.harmonic.aureon_harmonic_liquid_aluminium import (
+        FieldSnapshot,
+        HarmonicLiquidAluminiumField,
+        harmonic_streaming_runtime,
+    )
     HARMONIC_FIELD_AVAILABLE = True
 except ImportError:
     HARMONIC_FIELD_AVAILABLE = False
     HarmonicLiquidAluminiumField = None
     FieldSnapshot = None
+    harmonic_streaming_runtime = lambda method: method
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # THOUGHT STREAM (Continuous Inner Dialogue)
@@ -178,8 +183,7 @@ class QueenSentienceEngine:
         if HARMONIC_FIELD_AVAILABLE and HarmonicLiquidAluminiumField:
             try:
                 self.harmonic_field = HarmonicLiquidAluminiumField(stream_interval_ms=100)
-                self.harmonic_field.start_streaming()
-                logger.info("🌊👑 Harmonic Field WIRED to Sentience - Queen sees market as dancing waveforms!")
+                logger.info("🌊👑 Harmonic Field wired to Sentience; awaiting explicit sentience start")
             except Exception as e:
                 logger.warning(f"🌊 Harmonic Field init failed: {e}")
         
@@ -224,6 +228,7 @@ class QueenSentienceEngine:
         logger.info(f"   Researcher: {'✅' if self.researcher else '❌'}")
         logger.info(f"   ThoughtBus: {'✅' if self.thought_bus else '❌'}")
     
+    @harmonic_streaming_runtime
     async def start_sentience_loop(self):
         """
         Start the continuous sentience loop.
@@ -630,6 +635,8 @@ class QueenSentienceEngine:
         """Stop all sentience loops."""
         logger.info("🛑 Stopping sentience engine...")
         self.thinking = False
+        if self.harmonic_field:
+            self.harmonic_field.stop_streaming()
 
 
 # ═══════════════════════════════════════════════════════════════════════════════

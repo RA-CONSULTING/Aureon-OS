@@ -218,8 +218,17 @@ class AurisEngine:
         # If momentum is positive and volume is high, boost coherence
         if snapshot.momentum > 0 and snapshot.volume > 0.5:
             coherence *= 1.1
-            
-        return min(1.0, coherence)
+
+        coherence = min(1.0, coherence)
+        # P5 Pattern C: reconcile with the canonical HNC field — the shared Γ
+        # can only TIGHTEN this trading coherence (b46 min); with no field
+        # flowing the node blend passes unchanged.
+        try:
+            from aureon.core.hnc_field import reconcile_gamma
+            coherence = reconcile_gamma(coherence)
+        except Exception:
+            pass
+        return coherence
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # TRADER IMPLEMENTATION

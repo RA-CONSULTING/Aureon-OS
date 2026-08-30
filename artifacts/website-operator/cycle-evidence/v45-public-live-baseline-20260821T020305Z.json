@@ -1,0 +1,103 @@
+{
+  "schema": "aureon.website-public-live-baseline.v1",
+  "captured_at": "2026-08-21T02:03:05Z",
+  "base_url": "https://aureonzorzatechnologies.pl",
+  "candidate_source_commit": "19275eb48ffa706c6dadd87a02f56bbf86776fd8",
+  "candidate_archive_sha256": "87d121383b7d07a0c2f1b04bd842bc17b4b3534570494d98938346b6c31160ce",
+  "method": "credential-free-https-get",
+  "credentials_recorded": false,
+  "cookies_recorded": false,
+  "homepl_authenticated_root_proven": false,
+  "candidate_exact_matches": 0,
+  "v45_only_routes_present": 0,
+  "publication_complete": false,
+  "routes": [
+    {
+      "route": "/",
+      "status": 200,
+      "bytes": 33529,
+      "sha256": "3eb9db388b125852d27bafc70639ddacdf91b0dd9edf5d294703640dd44615ca",
+      "candidate_path": "index.html",
+      "candidate_bytes": 35236,
+      "candidate_sha256": "40a00d5c8315273d0a8bc9060b3f12fa1c956e27487b18c217c1b32ad1045ffe",
+      "exact": false,
+      "last_modified": "2026-07-26T19:03:56Z"
+    },
+    {
+      "route": "/funding/investor-deck/",
+      "status": 200,
+      "bytes": 25420,
+      "sha256": "716e16d6e443425145084be6306e55b82046d59614db84f23b3663e753eab2fa",
+      "candidate_path": "funding/investor-deck/index.html",
+      "candidate_bytes": 38440,
+      "candidate_sha256": "12703ab79676865b1b444bc81475f73be7c733975e6f82eb4be1cb924d9a54d2",
+      "exact": false,
+      "last_modified": "2026-07-26T02:16:15Z"
+    },
+    {
+      "route": "/projects/",
+      "status": 200,
+      "bytes": 17298,
+      "sha256": "119e512ccc8e64ef795790d3b7d84c84d4285325a0669f899bd655d2613ffade",
+      "candidate_path": "projects/index.html",
+      "candidate_bytes": 32704,
+      "candidate_sha256": "6d4e7f0e8c5783023c3c933ffe4956419e8141c76f5ebc1bcb239dae08820f13",
+      "exact": false,
+      "last_modified": "2026-07-26T02:16:16Z"
+    },
+    {
+      "route": "/projects/aureon-os/",
+      "status": 404,
+      "bytes": 6546,
+      "sha256": "9664494c69d25f5322a64230f119ab0892e7702806b8ff5cb6ce6870c619ae41",
+      "candidate_path": "projects/aureon-os/index.html",
+      "candidate_bytes": 22595,
+      "candidate_sha256": "f8c64360b7440aba037ad62343e94c45503e66de3ebaf1679219e18ef95f9c54",
+      "exact": false,
+      "last_modified": "2026-07-26T19:03:56Z"
+    },
+    {
+      "route": "/research/",
+      "status": 200,
+      "bytes": 30696,
+      "sha256": "756a3d247fed721c6537d720b307d885a9b284f9cfdd2cbca5850de0b91e5e6a",
+      "candidate_path": "research/index.html",
+      "candidate_bytes": 32458,
+      "candidate_sha256": "1d60c9d690ae99e8c567de69e1e11ca2ef101d50087c9fb5a0c675399bdc4b4d",
+      "exact": false,
+      "last_modified": "2026-07-26T02:16:17Z"
+    },
+    {
+      "route": "/data/public-attention-snapshot.json",
+      "status": 404,
+      "bytes": 6546,
+      "sha256": "9664494c69d25f5322a64230f119ab0892e7702806b8ff5cb6ce6870c619ae41",
+      "candidate_path": "data/public-attention-snapshot.json",
+      "candidate_bytes": 1369,
+      "candidate_sha256": "d29929c79ce93fa25df17166bcd357cb3b087e2fb2855923c21d865d1a055684",
+      "exact": false,
+      "last_modified": "2026-07-26T19:03:56Z"
+    },
+    {
+      "route": "/sitemap.xml",
+      "status": 200,
+      "bytes": 2762,
+      "sha256": "cb4ae0928c023e79e9f5181cdf902b28cf908f37842d13d615439ae3ce4ef43e",
+      "candidate_path": "sitemap.xml",
+      "candidate_bytes": 2432,
+      "candidate_sha256": "d3fca9c4470e998507cd2d145ebfae478c23a6c6387b7b732255f1e9a133f7bb",
+      "exact": false,
+      "last_modified": "2026-07-26T19:03:56Z"
+    },
+    {
+      "route": "/aureon-v45-absent-probe",
+      "status": 404,
+      "bytes": 6546,
+      "sha256": "9664494c69d25f5322a64230f119ab0892e7702806b8ff5cb6ce6870c619ae41",
+      "candidate_path": null,
+      "exact": null,
+      "last_modified": "2026-07-26T19:03:56Z"
+    }
+  ],
+  "conclusion": "The public site remains the July mixed-era surface. V45 has not been published."
+}

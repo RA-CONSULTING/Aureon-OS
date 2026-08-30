@@ -22,17 +22,24 @@
 
 from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
 import sys
-import os
 
-# Windows UTF-8 fix
-if sys.platform == 'win32':
-    os.environ['PYTHONIOENCODING'] = 'utf-8'
-    try:
-        import io
-        if hasattr(sys.stdout, 'buffer'):
-            sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace', line_buffering=True)
-    except Exception:
-        pass
+
+def _configure_cli_stdio() -> None:
+    """Best-effort UTF-8 CLI configuration without replacing shared streams."""
+    if sys.platform != 'win32':
+        return
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, 'reconfigure', None)
+        if not callable(reconfigure):
+            continue
+        try:
+            reconfigure(
+                encoding='utf-8',
+                errors='replace',
+                line_buffering=True,
+            )
+        except (AttributeError, OSError, ValueError):
+            continue
 
 import numpy as np
 import math
@@ -43,7 +50,7 @@ import json
 from datetime import datetime
 from collections import deque
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Any
+from typing import Dict, List, Optional, Tuple, Any, Mapping
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SACRED CONSTANTS
@@ -61,6 +68,49 @@ LOVE_FREQ = 528.0
 UNITY_FREQ = 963.0
 ROOT_FREQ = 256.0
 SOLFEGGIO = [174, 285, 396, 417, 528, 639, 741, 852, 963]
+PROVIDER_RECEIPT_TTL_SECONDS = 300.0
+
+
+def _validated_market_receipt(market_data: Any) -> Optional[Dict[str, Any]]:
+    """Accept only complete, fresh provider observations for mutable views."""
+    if not isinstance(market_data, Mapping):
+        return None
+    if market_data.get('truth_status') != 'real_observed':
+        return None
+    if market_data.get('generated_values') is not False:
+        return None
+    source_id = market_data.get('source_id')
+    receipt_id = market_data.get('receipt_id')
+    if not isinstance(source_id, str) or not source_id.strip():
+        return None
+    if not isinstance(receipt_id, str) or not receipt_id.strip():
+        return None
+    values = {}
+    for name in ('price', 'source_timestamp', 'received_at'):
+        value = market_data.get(name)
+        if isinstance(value, bool):
+            return None
+        try:
+            value = float(value)
+        except (TypeError, ValueError):
+            return None
+        if not math.isfinite(value) or value <= 0:
+            return None
+        values[name] = value
+    now = time.time()
+    if values['source_timestamp'] > values['received_at']:
+        return None
+    if values['received_at'] > now + 30.0:
+        return None
+    if now - values['source_timestamp'] > PROVIDER_RECEIPT_TTL_SECONDS:
+        return None
+    return {
+        'source_id': source_id.strip(),
+        'source_timestamp': values['source_timestamp'],
+        'received_at': values['received_at'],
+        'receipt_id': receipt_id.strip(),
+        'price': values['price'],
+    }
 
 # Flower of Life geometry
 FLOWER_CIRCLES = 19  # Central + 6 inner + 12 outer
@@ -477,10 +527,13 @@ class TerminalSacredVisualizer:
     
     def update_and_render(self, market_data: Dict[str, Any]) -> str:
         """Update with new data and render full visualization."""
+        receipt = _validated_market_receipt(market_data)
+        if receipt is None:
+            return ""
         self.clear_canvas()
         
         # Extract data
-        price = market_data.get('price', 0)
+        price = receipt['price']
         clarity = market_data.get('obsidian_clarity', 1.0)
         coherence = market_data.get('coherence', 0.5)
         chaos = market_data.get('obsidian_chaos', 0.0)
@@ -649,17 +702,30 @@ class LiveSacredWaveformVisualizer:
             self._volume_telemetry = None
             print(f"⚠️ Queen's Volume Hunter not available: {e}")
             
-    def add_market_data(self, symbol: str, price: float, volume: float = 0, 
-                        volatility: float = 0.1, sentiment: float = 0.5):
+    def add_market_data(self, symbol: str, price: float, volume: float = 0,
+                        volatility: float = 0.1, sentiment: float = 0.5,
+                        receipt: Optional[Mapping[str, Any]] = None) -> bool:
         """Add new market data point."""
+        receipt_data = _validated_market_receipt({
+            **(dict(receipt) if isinstance(receipt, Mapping) else {}),
+            'price': price,
+        })
+        if receipt_data is None:
+            return False
         data = {
             'symbol': symbol,
-            'price': price,
+            'price': receipt_data['price'],
             'volume': volume,
             'volatility': volatility,
             'sentiment': sentiment,
             'coherence': 0.5,
-            'timestamp': time.time()
+            'timestamp': receipt_data['received_at'],
+            **receipt_data,
+            'truth_status': 'real_observed',
+            'generated_values': False,
+            'action_enabled': False,
+            'accounting_enabled': False,
+            'learning_enabled': False,
         }
         
         # Apply obsidian filter if available
@@ -667,6 +733,7 @@ class LiveSacredWaveformVisualizer:
             data = self.obsidian_filter.apply(symbol, data)
             
         self.data_queue.append(data)
+        return True
     
     async def _initialize_wave_scanner(self):
         """Initialize wave scanner and build universe."""
@@ -735,15 +802,23 @@ class LiveSacredWaveformVisualizer:
         """Get current wave scanner analysis data."""
         return self._current_wave_analysis if hasattr(self, '_current_wave_analysis') else None
     
-    def update_quantum_mirror_telemetry(self, symbol: str, price: float, volume: float = 0, change_pct: float = 0):
+    def update_quantum_mirror_telemetry(self, symbol: str, price: float, volume: float = 0,
+                                        change_pct: float = 0,
+                                        receipt: Optional[Mapping[str, Any]] = None):
         """Update Quantum Mirror Scanner with market data and collect telemetry."""
+        receipt_data = _validated_market_receipt({
+            **(dict(receipt) if isinstance(receipt, Mapping) else {}),
+            'price': price,
+        })
+        if receipt_data is None:
+            return
         if not self.quantum_mirror:
             return
         
         try:
             # Register/update branch
             branch_id = f"vis:{symbol}"
-            branch = self.quantum_mirror.register_branch(symbol, 'visualizer', price)
+            branch = self.quantum_mirror.register_branch(symbol, 'visualizer', receipt_data['price'])
             
             # Update branch with new data
             frequency = SCHUMANN * (1 + abs(change_pct) / 10)  # Frequency modulated by volatility
@@ -751,7 +826,7 @@ class LiveSacredWaveformVisualizer:
             
             self.quantum_mirror.update_branch(
                 branch_id=branch_id,
-                price=price,
+                price=receipt_data['price'],
                 volume=volume,
                 frequency=frequency,
                 phase=phase
@@ -787,15 +862,23 @@ class LiveSacredWaveformVisualizer:
         except Exception as e:
             pass  # Silently continue on telemetry errors
     
-    def update_quantum_telescope_telemetry(self, symbol: str, price: float, volume: float, change_pct: float):
+    def update_quantum_telescope_telemetry(self, symbol: str, price: float, volume: float,
+                                           change_pct: float,
+                                           receipt: Optional[Mapping[str, Any]] = None):
         """Update Quantum Telescope with market data and collect telemetry."""
+        receipt_data = _validated_market_receipt({
+            **(dict(receipt) if isinstance(receipt, Mapping) else {}),
+            'price': price,
+        })
+        if receipt_data is None:
+            return
         if not self.quantum_telescope:
             return
         
         try:
             observation = self.quantum_telescope.observe(
                 symbol=symbol,
-                price=price,
+                price=receipt_data['price'],
                 volume=volume,
                 change_pct=change_pct
             )
@@ -813,6 +896,9 @@ class LiveSacredWaveformVisualizer:
     
     def update_queen_telemetry(self, market_data: Dict[str, Any]):
         """Update Queen's systems with market data and collect her insights."""
+        receipt = _validated_market_receipt(market_data)
+        if receipt is None:
+            return
         if not self.queen_voice:
             return
         
@@ -837,7 +923,7 @@ class LiveSacredWaveformVisualizer:
                 telescope = qt.get('telescope', {})
                 
                 features = {
-                    'price': market_data.get('price', 0),
+                    'price': receipt['price'],
                     'coherence': market_data.get('coherence', 0.5),
                     'wave_state': market_data.get('wave_state', 'BALANCED'),
                     'wave_strength': market_data.get('wave_strength', 0.5),
@@ -1000,7 +1086,10 @@ class LiveSacredWaveformVisualizer:
     
     def render_footer(self, data: Dict[str, Any]) -> str:
         """Render visualization footer with metrics."""
-        price = data.get('price', 0)
+        receipt = _validated_market_receipt(data)
+        if receipt is None:
+            return ""
+        price = receipt['price']
         clarity = data.get('obsidian_clarity', 1.0)
         coherence = data.get('coherence', 0.5)
         chaos = data.get('obsidian_chaos', 0.0)
@@ -1359,4 +1448,5 @@ def main():
 
 
 if __name__ == "__main__":
+    _configure_cli_stdio()
     main()

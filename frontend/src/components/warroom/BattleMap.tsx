@@ -58,11 +58,11 @@ export function BattleMap({ opportunities, accounts }: BattleMapProps) {
                   <p className="font-mono">${opp.price.toFixed(4)}</p>
                   <div className="flex items-center gap-2">
                     {opp.priceChange24h >= 0 ? (
-                      <TrendingUp className="h-3 w-3 text-green-500" />
+                      <TrendingUp className="h-3 w-3 text-success" />
                     ) : (
-                      <TrendingDown className="h-3 w-3 text-red-500" />
+                      <TrendingDown className="h-3 w-3 text-destructive" />
                     )}
-                    <span className={`text-xs ${opp.priceChange24h >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                    <span className={`text-xs ${opp.priceChange24h >= 0 ? 'text-success' : 'text-destructive'}`}>
                       {opp.priceChange24h.toFixed(2)}%
                     </span>
                   </div>
@@ -108,10 +108,10 @@ export function BattleMap({ opportunities, accounts }: BattleMapProps) {
                 </div>
 
                 <div className="text-right">
-                  <p className={`font-semibold ${pos.pnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                  <p className={`font-semibold ${pos.pnl >= 0 ? 'text-success' : 'text-destructive'}`}>
                     {pos.pnl >= 0 ? '+' : ''}${pos.pnl.toFixed(2)}
                   </p>
-                  <p className={`text-xs ${pos.pnlPercent >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                  <p className={`text-xs ${pos.pnlPercent >= 0 ? 'text-success' : 'text-destructive'}`}>
                     ({pos.pnlPercent >= 0 ? '+' : ''}{pos.pnlPercent.toFixed(2)}%)
                   </p>
                 </div>

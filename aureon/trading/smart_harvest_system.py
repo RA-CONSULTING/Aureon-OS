@@ -1,40 +1,9 @@
-from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
-import sys, os
-if sys.platform == 'win32':
-    os.environ['PYTHONIOENCODING'] = 'utf-8'
-    try:
-        import io
-        def _is_utf8_wrapper(stream):
-            """Check if stream is already a UTF-8 TextIOWrapper."""
-            return (isinstance(stream, io.TextIOWrapper) and 
-                    hasattr(stream, 'encoding') and stream.encoding and
-                    stream.encoding.lower().replace('-', '') == 'utf8')
-        def _is_buffer_valid(stream):
-            """Check if stream buffer is valid and not closed."""
-            if not hasattr(stream, 'buffer'):
-                return False
-            try:
-                return stream.buffer is not None and not stream.buffer.closed
-            except (ValueError, AttributeError):
-                return False
-        # Only wrap if not already UTF-8 wrapped AND buffer is valid (prevents re-wrapping + closed buffer errors)
-        if _is_buffer_valid(sys.stdout) and not _is_utf8_wrapper(sys.stdout):
-            sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace', line_buffering=True)
-        if _is_buffer_valid(sys.stderr) and not _is_utf8_wrapper(sys.stderr):
-            sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace', line_buffering=True)
-    except Exception:
-        pass
-
-import time
 import logging
+import math
+import time
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple
-
-# Assuming these imports from the existing system. We will validate and adjust as we build.
-# from aureon.trading.aureon_barter_navigator import BarterNavigator
-# from exchange_clients import UnifiedExchangeClient # Placeholder
-# from aureon.queen.queen_loss_learning import WinOutcome 
-# from real_portfolio_tracker import RealPortfolioSnapshot
+from collections.abc import Mapping
+from typing import Any, Dict, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -45,12 +14,24 @@ PREFERRED_STABLES = ["USDC", "USDT", "ZUSD", "USD"]
 class HarvestResult:
     """Result of a single harvest operation."""
     success: bool
-    amount_harvested_usd: float
-    stablecoin_received: float
-    stablecoin_asset: str
+    amount_harvested_usd: Optional[float]
+    stablecoin_received: Optional[float]
+    stablecoin_asset: Optional[str]
     exchange: str
     message: str
     trade_id: Optional[str] = None
+    status: str = "no_data"
+    data_status: str = "no_data"
+    truth_status: str = "no_data"
+    source_id: Optional[str] = None
+    source_timestamp: Optional[float] = None
+    received_at: Optional[float] = None
+    receipt_id: Optional[str] = None
+    generated_values: bool = False
+    eligible_for_action: bool = False
+    eligible_for_external_action: bool = False
+    eligible_for_accounting: bool = False
+    eligible_for_learning: bool = False
 
 @dataclass
 class SmartHarvestManager:
@@ -77,39 +58,98 @@ class SmartHarvestManager:
             f"Reinvestment Threshold: ${self.reinvestment_threshold_usd}"
         )
 
+    @staticmethod
+    def _no_data(reason: str, *, exchange: str = "") -> HarvestResult:
+        """Return a numeric-free result that cannot be mistaken for a conversion."""
+        return HarvestResult(
+            success=False,
+            amount_harvested_usd=None,
+            stablecoin_received=None,
+            stablecoin_asset=None,
+            exchange=str(exchange or ""),
+            message=reason,
+        )
+
+    @staticmethod
+    def _field(receipt: Any, name: str, default: Any = None) -> Any:
+        if isinstance(receipt, Mapping):
+            return receipt.get(name, default)
+        return getattr(receipt, name, default)
+
+    @classmethod
+    def _verified_profit(cls, outcome: Any) -> Optional[Tuple[float, str, str]]:
+        """Accept only a fresh terminal execution/accounting receipt."""
+        try:
+            net_profit = float(cls._field(outcome, "net_profit_usd"))
+            source_timestamp = float(cls._field(outcome, "source_timestamp"))
+            received_at = float(cls._field(outcome, "received_at"))
+        except (TypeError, ValueError):
+            return None
+        now = time.time()
+        order_id = str(
+            cls._field(outcome, "provider_order_id")
+            or cls._field(outcome, "order_id")
+            or ""
+        ).strip()
+        source_id = str(cls._field(outcome, "source_id") or "").strip()
+        receipt_id = str(cls._field(outcome, "receipt_id") or "").strip()
+        from_asset = str(cls._field(outcome, "to_asset") or "").strip().upper()
+        exchange = str(cls._field(outcome, "exchange") or "").strip().lower()
+        if (
+            cls._field(outcome, "is_win") is not True
+            or cls._field(outcome, "data_status") != "live"
+            or cls._field(outcome, "truth_status") not in {"real_observed", "real_derived"}
+            or cls._field(outcome, "generated_values") is not False
+            or cls._field(outcome, "fill_receipt_complete") is not True
+            or cls._field(outcome, "eligible_for_accounting") is not True
+            or not all(math.isfinite(value) for value in (net_profit, source_timestamp, received_at, now))
+            or net_profit <= 0.01
+            or not source_id
+            or not receipt_id
+            or not order_id
+            or not from_asset
+            or not exchange
+            or source_timestamp > received_at + 5.0
+            or received_at > now + 5.0
+            or now - source_timestamp > 300.0
+            or now - received_at > 300.0
+        ):
+            return None
+        return net_profit, from_asset, exchange
+
     def process_profit(self, outcome: 'WinOutcome', portfolio: 'RealPortfolioSnapshot') -> Optional[HarvestResult]:
         """
         Processes a winning trade, harvests profit, and updates the portfolio.
         This is the primary entry point for the harvesting process.
         """
-        if not outcome.is_win or outcome.net_profit_usd <= 0.01:
+        if not self._field(outcome, "is_win", False):
             return None
 
-        profit_to_harvest = outcome.net_profit_usd * self.harvest_rate
-        profit_to_compound = outcome.net_profit_usd - profit_to_harvest
+        verified_profit = self._verified_profit(outcome)
+        if verified_profit is None:
+            return self._no_data(
+                "fresh_terminal_profit_receipt_required",
+                exchange=str(self._field(outcome, "exchange") or ""),
+            )
+        net_profit_usd, from_asset, exchange = verified_profit
+
+        profit_to_harvest = net_profit_usd * self.harvest_rate
+        profit_to_compound = net_profit_usd - profit_to_harvest
 
         logger.info(
-            f"Processing profit of ${outcome.net_profit_usd:.4f}. "
+            f"Processing receipted profit of ${net_profit_usd:.4f}. "
             f"Harvesting ${profit_to_harvest:.4f} (10%), Compounding ${profit_to_compound:.4f} (90%)."
         )
 
-        # The compound portion is implicitly left in the original asset's value pool.
-        # We now focus on converting the harvested amount to a stablecoin.
-
-        # This is a placeholder for the conversion logic.
-        # In the full implementation, this would find the best path from the profit asset to a stablecoin.
+        # The allocation equation is advisory until a conversion adapter provides
+        # a complete provider receipt. This module never submits an order itself.
         harvest_result = self._convert_to_stablecoin(
             profit_to_harvest, 
-            from_asset=outcome.to_asset, 
-            exchange=outcome.exchange
+            from_asset=from_asset,
+            exchange=exchange,
         )
 
-        if harvest_result and harvest_result.success:
-            logger.info(f"Harvest successful: {harvest_result.message}")
-            # Here we would update the RealPortfolioSnapshot with the new treasury funds.
-            # portfolio.add_to_treasury(harvest_result.stablecoin_asset, harvest_result.stablecoin_received)
-        else:
-            logger.error(f"Harvest failed: {harvest_result.message if harvest_result else 'Unknown error'}")
+        logger.info("Harvest not submitted: %s", harvest_result.message)
 
         return harvest_result
 
@@ -117,68 +157,15 @@ class SmartHarvestManager:
         """
         Finds the best path to a preferred stablecoin and executes the conversion.
         """
-        if from_asset in PREFERRED_STABLES:
-            return HarvestResult(
-                success=True,
-                amount_harvested_usd=amount_usd,
-                stablecoin_received=amount_usd, # Assuming 1:1 for stables
-                stablecoin_asset=from_asset,
-                exchange=exchange,
-                message="Profit was already in a stablecoin."
-            )
-
-        # 1. Find best stablecoin target on the given exchange
-        # target_stable = self.barter_navigator.find_best_stable_on_exchange(exchange, PREFERRED_STABLES)
-        target_stable = "USDC" # Placeholder
-
-        if not target_stable:
-            return HarvestResult(success=False, amount_harvested_usd=amount_usd, message=f"No suitable stablecoin target found on {exchange}.", exchange=exchange, stablecoin_received=0, stablecoin_asset='')
-
-        # 2. Use BarterNavigator to find the best conversion path
-        # path = self.barter_navigator.find_best_path(from_asset, target_stable, exchange)
-        
-        # 3. Execute the trade(s) via the exchange client
-        # trade_result = self.exchange_client.execute_conversion_path(path)
-
-        # This is a mock result for now.
-        logger.info(f"Mock conversion: Converting ${amount_usd:.4f} of {from_asset} to {target_stable} on {exchange}.")
-        time.sleep(0.1) # Simulate network latency
-        
-        # Simulate a small conversion fee/slippage
-        final_amount = amount_usd * 0.999
-        
-        return HarvestResult(
-            success=True,
-            amount_harvested_usd=amount_usd,
-            stablecoin_received=final_amount,
-            stablecoin_asset=target_stable,
+        return self._no_data(
+            "conversion_adapter_with_terminal_provider_receipt_required",
             exchange=exchange,
-            message=f"Successfully converted {from_asset} to {target_stable}.",
-            trade_id=f"mock_trade_{int(time.time())}"
         )
 
     def check_reinvestment_opportunities(self, portfolio: 'RealPortfolioSnapshot'):
         """
         Checks if the treasury has enough funds and if there are opportunities to deploy capital.
         """
-        if portfolio.treasury_usd < self.reinvestment_threshold_usd:
-            return
-
-        logger.info(f"Treasury balance (${portfolio.treasury_usd:.2f}) exceeds threshold. Looking for reinvestment opportunities.")
-
-        # 1. Query the Queen Hive Mind for top-rated opportunities
-        # opportunities = self.queen_hive.get_best_opportunities(count=5)
-
-        # 2. Allocate treasury funds to the best opportunity
-        # best_opp = opportunities[0]
-        # self.exchange_client.execute_trade(
-        #     symbol=best_opp.symbol,
-        #     side="buy",
-        #     amount=self.reinvestment_threshold_usd,
-        #     from_asset="USDC" # From treasury
-        # )
-
-        # portfolio.deploy_from_treasury(self.reinvestment_threshold_usd, "USDC")
-        logger.info(f"Mock deployment: Deployed ${self.reinvestment_threshold_usd} from treasury into a new opportunity.")
-
-        return
+        return self._no_data(
+            "reinvestment_requires_fresh_treasury_and_terminal_execution_receipts"
+        )

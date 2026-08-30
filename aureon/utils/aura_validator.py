@@ -20,7 +20,9 @@ class EWMA:
         self.v = None
 
     def update(self, x: float):
-        x = 0.0 if (x is None or not math.isfinite(float(x))) else float(x)
+        if x is None or not math.isfinite(float(x)):
+            raise ValueError("LIVE_EWMA_OBSERVATION_REQUIRED")
+        x = float(x)
         if self.m is None:
             self.m = x
             self.v = 1.0
@@ -42,7 +44,7 @@ def fnum(x, d=6):
     still allowed (treated as 0.0).
     """
     if x is None:
-        return 0.0
+        raise ValueError("fnum: live numeric observation required")
     try:
         x = float(x)
     except (ValueError, TypeError) as exc:
@@ -50,7 +52,7 @@ def fnum(x, d=6):
             f"fnum: cannot coerce {x!r} to float; aura input is malformed ({exc})"
         )
     if not math.isfinite(x):
-        return 0.0
+        raise ValueError("fnum: finite live observation required")
     return float(f"{x:.{d}f}")
 
 
@@ -61,7 +63,7 @@ def clamp01(x):
     feed a silent 0.0 into the calm/concordance validation thresholds.
     """
     if x is None:
-        return 0.0
+        raise ValueError("clamp01: live numeric observation required")
     try:
         v = float(x)
     except (ValueError, TypeError) as exc:
@@ -98,18 +100,18 @@ class AuraValidator:
     """
     Aura Validator - validates trade signals using biofield metrics.
     
-    Can operate in two modes:
-    1. Synthetic mode (no biofield hardware) - always passes validation
-    2. Live mode - validates against real biofield data
+    Validates only fresh, provider-attributed biofield observations.
     """
     
-    def __init__(self, synthetic_mode: bool = True):
-        self.synthetic_mode = synthetic_mode
+    def __init__(self, synthetic_mode: bool = False):
+        if synthetic_mode:
+            raise ValueError("SYNTHETIC_AURA_MODE_REMOVED")
+        self.synthetic_mode = False
         self.z_hrv = EWMA(alpha=0.02)
         self.z_gsr = EWMA(alpha=0.05)
-        self.last_calm_index = 0.5
-        self.last_aura_hue = 60.0  # Default to alpha-dominant (golden)
-        self.last_concordance = 0.5
+        self.last_calm_index = None
+        self.last_aura_hue = None
+        self.last_concordance = None
         self.validation_count = 0
         self.passed_count = 0
         
@@ -117,25 +119,30 @@ class AuraValidator:
         """
         Validate a trade signal against biofield metrics.
         
-        In synthetic mode, generates calm/positive metrics automatically.
-        Returns validation result with metrics.
+        Returns no_data until an attributed live observation is supplied.
         """
         self.validation_count += 1
         
-        if self.synthetic_mode:
-            # Synthetic mode - generate calm biofield state
-            # Simulates focused, calm trader state
-            import random
-            alpha = 2.5 + 0.3 * random.random()
-            theta = 1.5 + 0.2 * random.random()
-            beta = 0.8 + 0.1 * random.random()
-            hrv = 50 + 5 * random.random()
-            gsr = 3.5 + 0.3 * random.random()
-            resp_bpm = 6 + random.random()
-        else:
-            # TODO: Connect to real biofield hardware
-            alpha, theta, beta = 2.0, 1.5, 1.0
-            hrv, gsr, resp_bpm = 40, 4.0, 12
+        if not isinstance(signal, dict):
+            return {'valid': False, 'truth_status': 'no_data', 'generated_values': False,
+                    'blocker': 'LIVE_BIOFIELD_OBSERVATION_REQUIRED'}
+        if signal.get('truth_status') != 'live' or signal.get('generated_values') is not False:
+            return {'valid': False, 'truth_status': 'no_data', 'generated_values': False,
+                    'blocker': 'LIVE_BIOFIELD_PROVENANCE_REQUIRED'}
+        if not signal.get('source_id') or not signal.get('source_timestamp'):
+            return {'valid': False, 'truth_status': 'no_data', 'generated_values': False,
+                    'blocker': 'BIOFIELD_SOURCE_RECEIPT_REQUIRED'}
+        bands = signal.get('bands') if isinstance(signal.get('bands'), dict) else signal
+        try:
+            alpha = fnum(bands.get('alpha'))
+            theta = fnum(bands.get('theta'))
+            beta = fnum(bands.get('beta'))
+            hrv = fnum(signal.get('hrv_rmssd', signal.get('hrv')))
+            gsr = fnum(signal.get('gsr_uS', signal.get('gsr')))
+            resp_bpm = fnum(signal.get('resp_bpm', signal.get('respiration')))
+        except ValueError as exc:
+            return {'valid': False, 'truth_status': 'no_data', 'generated_values': False,
+                    'blocker': str(exc)}
         
         # Calculate metrics
         atr = alpha / (theta + EPS)
@@ -169,13 +176,17 @@ class AuraValidator:
             'hrv_norm': hrv_norm,
             'gsr_norm': gsr_norm,
             'alpha_theta_ratio': atr,
-            'mode': 'synthetic' if self.synthetic_mode else 'live'
+            'mode': 'live',
+            'truth_status': 'real_derived',
+            'source_id': signal['source_id'],
+            'source_timestamp': signal['source_timestamp'],
+            'generated_values': False,
         }
     
     def get_status(self) -> dict:
         """Get current validator status."""
         return {
-            'mode': 'synthetic' if self.synthetic_mode else 'live',
+            'mode': 'live',
             'validation_count': self.validation_count,
             'passed_count': self.passed_count,
             'pass_rate': self.passed_count / max(1, self.validation_count),
@@ -186,13 +197,13 @@ class AuraValidator:
     
     def is_calm(self) -> bool:
         """Quick check if trader state is calm enough for trading."""
-        return self.last_calm_index > 0.3
+        return self.last_calm_index is not None and self.last_calm_index > 0.3
 
 
 # Singleton instance for easy access
 _aura_validator_instance = None
 
-def get_aura_validator(synthetic_mode: bool = True) -> AuraValidator:
+def get_aura_validator(synthetic_mode: bool = False) -> AuraValidator:
     """Get or create the singleton AuraValidator instance."""
     global _aura_validator_instance
     if _aura_validator_instance is None:

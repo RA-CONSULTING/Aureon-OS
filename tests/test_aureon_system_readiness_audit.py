@@ -7,11 +7,44 @@ from aureon.autonomous.aureon_system_readiness_audit import (
     probe_contract_stack,
     probe_goal_routing,
     probe_hnc_saas_security,
+    probe_ignition,
+    probe_repo_organization,
     probe_saas_product_inventory,
     probe_trading_brain,
     render_markdown,
     write_report,
 )
+
+
+def test_dirty_repo_is_attention_not_a_blocked_capability(tmp_path):
+    audits = tmp_path / "docs" / "audits"
+    audits.mkdir(parents=True)
+    (audits / "repo_wide_organization_audit.json").write_text(
+        json.dumps(
+            {
+                "summary": {
+                    "recorded_files": 42,
+                    "stage_count": 5,
+                    "unstaged_file_count": 7,
+                    "attention_counts": {"unstaged_path": 7},
+                },
+                "contract_surfaces": [{"id": "aureon", "status": "present"}],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    proof = probe_repo_organization(tmp_path)
+
+    assert proof.status == "working_with_attention"
+    assert "Preserve existing local work" in proof.next_action
+
+
+def test_missing_internal_audit_becomes_repair_work_not_a_hard_block(tmp_path):
+    proof = probe_ignition(tmp_path)
+
+    assert proof.status == "repair_pending"
+    assert "--audit-only" in proof.next_action
 
 
 def test_trading_readiness_probe_is_simulated_and_blocks_real_orders():

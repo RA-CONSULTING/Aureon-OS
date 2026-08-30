@@ -5,9 +5,21 @@ import json
 from pathlib import Path
 from decimal import Decimal
 
-from pypdf import PdfReader
+import pytest
 
-from Kings_Accounting_Suite.tools import generate_statutory_filing_pack as statutory
+pytest.importorskip(
+    "reportlab",
+    reason="these suites assert rendered PDF artifacts; reportlab is the renderer",
+)
+
+# pypdf is declared in Kings_Accounting_Suite/requirements.txt but not the root install, and
+# the runtime imports it lazily (research_corpus_index.py) — so it is genuinely optional.
+# Skipping keeps a root-only install collecting instead of erroring on import.
+pytest.importorskip("pypdf", reason="pypdf is an optional accounting-suite dependency")
+
+from pypdf import PdfReader  # noqa: E402
+
+from Kings_Accounting_Suite.tools import generate_statutory_filing_pack as statutory  # noqa: E402
 
 
 def test_build_figures_includes_cis_suffered_before_bank_receipt() -> None:

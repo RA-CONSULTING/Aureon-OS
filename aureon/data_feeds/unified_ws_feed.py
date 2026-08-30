@@ -29,9 +29,10 @@ import sys
 import json
 import asyncio
 import logging
+import math
 import time
 from dataclasses import dataclass, field, asdict
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Callable, Dict, List, Optional, Set
 from collections import defaultdict
 
@@ -39,10 +40,8 @@ from collections import defaultdict
 if sys.platform == 'win32':
     os.environ['PYTHONIOENCODING'] = 'utf-8'
     try:
-        import io
-        if hasattr(sys.stdout, 'buffer'):
-            sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace', line_buffering=True)
-        # Skip stderr wrapping - causes Windows exit errors
+        if hasattr(sys.stdout, 'reconfigure'):
+            sys.stdout.reconfigure(encoding='utf-8', errors='replace', line_buffering=True)
     except Exception:
         pass
 
@@ -94,10 +93,42 @@ class NormalizedTick:
     bid: float
     ask: float
     last: float
-    volume_24h: float = 0.0
-    change_24h: float = 0.0
-    timestamp: float = field(default_factory=time.time)
+    volume_24h: Optional[float] = None
+    change_24h: Optional[float] = None
+    source_timestamp: Optional[float] = None
+    received_at: float = field(default_factory=time.time)
     raw_symbol: str = ""  # Original exchange symbol
+
+    def __post_init__(self) -> None:
+        values = {"bid": self.bid, "ask": self.ask, "last": self.last}
+        for name, value in values.items():
+            if not math.isfinite(value) or value <= 0:
+                raise ValueError(f"{name} must be a finite positive provider value")
+        if self.ask < self.bid:
+            raise ValueError("ask cannot be below bid")
+        if self.volume_24h is not None:
+            if not math.isfinite(self.volume_24h) or self.volume_24h < 0:
+                raise ValueError("volume_24h must be a finite non-negative provider value")
+        if self.change_24h is not None and not math.isfinite(self.change_24h):
+            raise ValueError("change_24h must be finite when supplied")
+        if self.source_timestamp is not None:
+            if not math.isfinite(self.source_timestamp) or self.source_timestamp <= 0:
+                raise ValueError("source_timestamp must be a positive provider timestamp")
+        if not math.isfinite(self.received_at) or self.received_at <= 0:
+            raise ValueError("received_at must be a positive local receipt timestamp")
+
+    @property
+    def timestamp(self) -> Optional[float]:
+        """Compatibility alias that never substitutes receipt time for source time."""
+        return self.source_timestamp
+
+    def is_source_fresh(self, max_age_seconds: float = 60.0, *, now: Optional[float] = None) -> bool:
+        """Return true only when a provider timestamp proves the tick is fresh."""
+        if self.source_timestamp is None:
+            return False
+        checked_at = time.time() if now is None else now
+        age = checked_at - self.source_timestamp
+        return -5.0 <= age <= max_age_seconds
     
     @property
     def spread(self) -> float:
@@ -110,7 +141,139 @@ class NormalizedTick:
         return (self.bid + self.ask) / 2
     
     def to_dict(self) -> Dict:
-        return asdict(self)
+        payload = asdict(self)
+        payload["timestamp"] = self.source_timestamp
+        payload["generated_values"] = False
+        return payload
+
+
+def _finite_float(value: Any, *, positive: bool = False, non_negative: bool = False) -> Optional[float]:
+    if value is None or value == "":
+        return None
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    if not math.isfinite(number):
+        return None
+    if positive and number <= 0:
+        return None
+    if non_negative and number < 0:
+        return None
+    return number
+
+
+def _source_timestamp(value: Any) -> Optional[float]:
+    """Parse provider time without ever substituting the local receipt clock."""
+    if value is None or value == "":
+        return None
+    numeric = _finite_float(value, positive=True)
+    if numeric is not None:
+        if numeric >= 1e18:  # nanoseconds
+            numeric /= 1e9
+        elif numeric >= 1e15:  # microseconds
+            numeric /= 1e6
+        elif numeric >= 1e11:  # milliseconds
+            numeric /= 1e3
+        return numeric
+    if not isinstance(value, str):
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
+        return parsed.timestamp()
+    except (TypeError, ValueError, OverflowError):
+        return None
+
+
+def _build_tick(
+    *,
+    symbol: Any,
+    exchange: str,
+    bid: Any,
+    ask: Any,
+    last: Any,
+    volume_24h: Any = None,
+    change_24h: Any = None,
+    source_timestamp: Any = None,
+    received_at: Optional[float] = None,
+) -> Optional[NormalizedTick]:
+    raw_symbol = str(symbol or "").strip()
+    parsed_bid = _finite_float(bid, positive=True)
+    parsed_ask = _finite_float(ask, positive=True)
+    parsed_last = _finite_float(last, positive=True)
+    if not raw_symbol or parsed_bid is None or parsed_ask is None or parsed_last is None:
+        return None
+    parsed_volume = _finite_float(volume_24h, non_negative=True)
+    parsed_change = _finite_float(change_24h)
+    receipt_time = time.time() if received_at is None else received_at
+    try:
+        return NormalizedTick(
+            symbol=normalize_symbol(raw_symbol, exchange),
+            exchange=exchange,
+            bid=parsed_bid,
+            ask=parsed_ask,
+            last=parsed_last,
+            volume_24h=parsed_volume,
+            change_24h=parsed_change,
+            source_timestamp=_source_timestamp(source_timestamp),
+            received_at=receipt_time,
+            raw_symbol=raw_symbol,
+        )
+    except ValueError:
+        return None
+
+
+def parse_binance_tick(data: Dict[str, Any], *, received_at: Optional[float] = None) -> Optional[NormalizedTick]:
+    return _build_tick(
+        symbol=data.get("s"), exchange="binance", bid=data.get("b"), ask=data.get("a"),
+        last=data.get("c"), volume_24h=data.get("v"), change_24h=data.get("P"),
+        source_timestamp=data.get("E"), received_at=received_at,
+    )
+
+
+def _array_value(value: Any, index: int = 0) -> Any:
+    return value[index] if isinstance(value, (list, tuple)) and len(value) > index else None
+
+
+def parse_kraken_tick(
+    ticker: Dict[str, Any], raw_symbol: Any, *, received_at: Optional[float] = None
+) -> Optional[NormalizedTick]:
+    return _build_tick(
+        symbol=raw_symbol, exchange="kraken", bid=_array_value(ticker.get("b")),
+        ask=_array_value(ticker.get("a")), last=_array_value(ticker.get("c")),
+        volume_24h=_array_value(ticker.get("v"), 1),
+        source_timestamp=ticker.get("timestamp"), received_at=received_at,
+    )
+
+
+def parse_coinbase_tick(data: Dict[str, Any], *, received_at: Optional[float] = None) -> Optional[NormalizedTick]:
+    return _build_tick(
+        symbol=data.get("product_id"), exchange="coinbase", bid=data.get("best_bid"),
+        ask=data.get("best_ask"), last=data.get("price"), volume_24h=data.get("volume_24h"),
+        source_timestamp=data.get("timestamp") or data.get("time"), received_at=received_at,
+    )
+
+
+def parse_capital_tick(data: Dict[str, Any], *, received_at: Optional[float] = None) -> Optional[NormalizedTick]:
+    return _build_tick(
+        symbol=data.get("epic"), exchange="capital", bid=data.get("bid"), ask=data.get("offer"),
+        last=data.get("mid"), volume_24h=data.get("volume"),
+        source_timestamp=data.get("timestamp"), received_at=received_at,
+    )
+
+
+def parse_coingecko_tick(
+    coin_id: str, info: Dict[str, Any], *, received_at: Optional[float] = None
+) -> Optional[NormalizedTick]:
+    """Normalize only observed CoinGecko quotes; the simple-price endpoint has no bid/ask."""
+    symbol = {"bitcoin": "BTC", "ethereum": "ETH"}.get(coin_id, coin_id.upper())
+    return _build_tick(
+        symbol=f"{symbol}/USD", exchange="coingecko", bid=info.get("bid"), ask=info.get("ask"),
+        last=info.get("usd"), change_24h=info.get("usd_24h_change"),
+        source_timestamp=info.get("last_updated_at"), received_at=received_at,
+    )
 
 
 @dataclass
@@ -251,8 +414,7 @@ class UnifiedWSFeed:
         if HARMONIC_LIQUID_ALUMINIUM_AVAILABLE and HarmonicLiquidAluminiumField:
             try:
                 self.harmonic_field = HarmonicLiquidAluminiumField(stream_interval_ms=50)  # 50ms for live flow
-                self.harmonic_field.start_streaming()
-                logger.info("🌊 Harmonic Liquid Aluminium Field FLOWING through WebSocket Feed")
+                logger.info("🌊 Harmonic Liquid Aluminium Field wired; awaiting explicit feed start")
             except Exception as e:
                 logger.warning(f"🌊 Harmonic Field initialization failed: {e}")
         
@@ -267,9 +429,11 @@ class UnifiedWSFeed:
     def _emit(self, tick: NormalizedTick):
         """Emit tick to all callbacks, ThoughtBus, HFT engine, and Harmonic Field."""
         self.ticks[tick.symbol] = tick
-        
+
+        harmonic_ready = tick.is_source_fresh() and tick.volume_24h is not None
+
         # 🦈🔪 Inject tick into HFT engine for sub-10ms processing
-        if self.hft_engine and hasattr(self.hft_engine, 'inject_tick'):
+        if harmonic_ready and self.hft_engine and hasattr(self.hft_engine, 'inject_tick'):
             try:
                 self.hft_engine.inject_tick(tick)
             except Exception as e:
@@ -277,7 +441,7 @@ class UnifiedWSFeed:
         
         # 🌊 Flow tick into Harmonic Liquid Aluminium Field
         # Each tick becomes a dancing waveform on the frequency spectrum
-        if self.harmonic_field:
+        if harmonic_ready and self.harmonic_field:
             try:
                 # Feed the harmonic field with live data
                 # Volume influences the quantity/energy of the node
@@ -286,7 +450,7 @@ class UnifiedWSFeed:
                     symbol=tick.symbol,
                     current_price=tick.last,
                     entry_price=tick.last,  # No position, use current as baseline
-                    quantity=tick.volume_24h / 1000 if tick.volume_24h > 0 else 1.0,  # Normalize volume
+                    quantity=tick.volume_24h / 1000,
                     asset_class='crypto'
                 )
             except Exception as e:
@@ -343,18 +507,13 @@ class UnifiedWSFeed:
                             if 'stream' in data:
                                 data = data.get('data', data)
                             
-                            raw_symbol = data.get('s', '')
-                            tick = NormalizedTick(
-                                symbol=normalize_symbol(raw_symbol, 'binance'),
-                                exchange='binance',
-                                bid=float(data.get('b', 0)),
-                                ask=float(data.get('a', 0)),
-                                last=float(data.get('c', 0)),
-                                volume_24h=float(data.get('v', 0)),
-                                change_24h=float(data.get('P', 0)),
-                                raw_symbol=raw_symbol,
-                            )
-                            status.last_message = time.time()
+                            received_at = time.time()
+                            tick = parse_binance_tick(data, received_at=received_at)
+                            if tick is None:
+                                status.error_count += 1
+                                logger.debug("Binance ticker omitted: missing or invalid symbol/bid/ask/last")
+                                continue
+                            status.last_message = received_at
                             status.message_count += 1
                             self._emit(tick)
                         except Exception as e:
@@ -411,17 +570,13 @@ class UnifiedWSFeed:
                             if isinstance(data, list) and len(data) >= 4 and data[2] == "ticker":
                                 ticker = data[1]
                                 raw_symbol = data[3]
-                                
-                                tick = NormalizedTick(
-                                    symbol=normalize_symbol(raw_symbol, 'kraken'),
-                                    exchange='kraken',
-                                    bid=float(ticker.get('b', [0])[0]),
-                                    ask=float(ticker.get('a', [0])[0]),
-                                    last=float(ticker.get('c', [0])[0]),
-                                    volume_24h=float(ticker.get('v', [0, 0])[1]),
-                                    raw_symbol=raw_symbol,
-                                )
-                                status.last_message = time.time()
+                                received_at = time.time()
+                                tick = parse_kraken_tick(ticker, raw_symbol, received_at=received_at)
+                                if tick is None:
+                                    status.error_count += 1
+                                    logger.debug("Kraken ticker omitted: missing or invalid symbol/bid/ask/last")
+                                    continue
+                                status.last_message = received_at
                                 status.message_count += 1
                                 self._emit(tick)
                         except Exception as e:
@@ -472,18 +627,13 @@ class UnifiedWSFeed:
                             data = json.loads(msg)
                             
                             if data.get('type') == 'ticker':
-                                raw_symbol = data.get('product_id', '')
-                                
-                                tick = NormalizedTick(
-                                    symbol=normalize_symbol(raw_symbol, 'coinbase'),
-                                    exchange='coinbase',
-                                    bid=float(data.get('best_bid', 0)),
-                                    ask=float(data.get('best_ask', 0)),
-                                    last=float(data.get('price', 0)),
-                                    volume_24h=float(data.get('volume_24h', 0)),
-                                    raw_symbol=raw_symbol,
-                                )
-                                status.last_message = time.time()
+                                received_at = time.time()
+                                tick = parse_coinbase_tick(data, received_at=received_at)
+                                if tick is None:
+                                    status.error_count += 1
+                                    logger.debug("Coinbase ticker omitted: missing or invalid symbol/bid/ask/last")
+                                    continue
+                                status.last_message = received_at
                                 status.message_count += 1
                                 self._emit(tick)
                         except Exception as e:
@@ -550,17 +700,13 @@ class UnifiedWSFeed:
                             data = json.loads(msg)
                             
                             if data.get("type") == "price":
-                                raw_symbol = data.get("epic", "")
-                                
-                                tick = NormalizedTick(
-                                    symbol=normalize_symbol(raw_symbol, 'capital'),
-                                    exchange='capital',
-                                    bid=float(data.get('bid', 0)),
-                                    ask=float(data.get('offer', 0)),
-                                    last=float(data.get('mid', 0)),
-                                    raw_symbol=raw_symbol,
-                                )
-                                status.last_message = time.time()
+                                received_at = time.time()
+                                tick = parse_capital_tick(data, received_at=received_at)
+                                if tick is None:
+                                    status.error_count += 1
+                                    logger.debug("Capital ticker omitted: missing or invalid symbol/bid/ask/last")
+                                    continue
+                                status.last_message = received_at
                                 status.message_count += 1
                                 self._emit(tick)
                         except Exception as e:
@@ -589,32 +735,20 @@ class UnifiedWSFeed:
         while self._running:
             try:
                 ids = ",".join(coin_ids[:50])
-                url = f"{COINGECKO_API}/simple/price?ids={ids}&vs_currencies=usd&include_24hr_change=true"
+                url = (
+                    f"{COINGECKO_API}/simple/price?ids={ids}"
+                    "&vs_currencies=usd&include_24hr_change=true&include_last_updated_at=true"
+                )
                 
                 req = urllib.request.Request(url, headers=headers)
                 with urllib.request.urlopen(req, timeout=10) as resp:
                     data = json.loads(resp.read().decode())
                 
+                received_at = time.time()
                 for coin_id, info in data.items():
-                    symbol = coin_id.upper()
-                    if coin_id == 'bitcoin':
-                        symbol = 'BTC'
-                    elif coin_id == 'ethereum':
-                        symbol = 'ETH'
-                    
-                    price = float(info.get('usd', 0))
-                    change = float(info.get('usd_24h_change', 0))
-                    
-                    tick = NormalizedTick(
-                        symbol=f"{symbol}/USD",
-                        exchange='coingecko',
-                        bid=price * 0.999,  # Approximate
-                        ask=price * 1.001,
-                        last=price,
-                        change_24h=change,
-                        raw_symbol=coin_id,
-                    )
-                    self._emit(tick)
+                    tick = parse_coingecko_tick(coin_id, info, received_at=received_at)
+                    if tick is not None:
+                        self._emit(tick)
                 
                 logger.debug(f"🦎 CoinGecko polled {len(data)} coins")
             
@@ -633,6 +767,12 @@ class UnifiedWSFeed:
         coingecko_ids: Optional[List[str]] = None,
     ):
         """Start all enabled WebSocket streams."""
+        if self._running:
+            return
+
+        if self.harmonic_field:
+            self.harmonic_field.start_streaming()
+
         if symbols is None:
             symbols = [
                 "BTC/USD", "ETH/USD", "SOL/USD", "XRP/USD", "DOGE/USD",
@@ -668,9 +808,16 @@ class UnifiedWSFeed:
     async def stop(self):
         """Stop all WebSocket streams."""
         self._running = False
-        for task in self._tasks:
+        tasks = list(self._tasks)
+        for task in tasks:
             task.cancel()
         self._tasks.clear()
+
+        if tasks:
+            await asyncio.gather(*tasks, return_exceptions=True)
+
+        if self.harmonic_field:
+            self.harmonic_field.stop_streaming()
         
         for status in self.status.values():
             status.connected = False
@@ -683,7 +830,10 @@ class UnifiedWSFeed:
         if '/' not in symbol:
             symbol = f"{symbol}/USD"
         
-        candidates = [t for t in self.ticks.values() if t.symbol == symbol]
+        candidates = [
+            t for t in self.ticks.values()
+            if t.symbol == symbol and t.is_source_fresh()
+        ]
         if not candidates:
             return None
         

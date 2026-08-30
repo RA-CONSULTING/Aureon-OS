@@ -6,12 +6,13 @@ Demonstrates that Queen can analyze her performance and propose code changes
 to improve the Micro Profit Labyrinth trading system.
 """
 
-from aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
 import sys
 import asyncio
-from micro_profit_labyrinth import MicroProfitLabyrinth
+from types import SimpleNamespace
 
-async def test_queen_self_modification():
+from aureon.trading.micro_profit_labyrinth import MicroProfitLabyrinth
+
+async def _legacy_queen_self_modification_demo():
     """Test Queen's ability to modify her own code."""
     
     print("=" * 70)
@@ -180,9 +181,58 @@ async def test_queen_self_modification():
     return all_methods_available
 
 
+def test_queen_self_analysis_uses_in_memory_performance_only():
+    labyrinth = MicroProfitLabyrinth.__new__(MicroProfitLabyrinth)
+    labyrinth.queen = object()
+    labyrinth.conversions_made = 2
+    labyrinth.total_profit_usd = 1.5
+    labyrinth.opportunities_found = 4
+    labyrinth.exchange_stats = {"kraken": {"profit": 1.5}}
+    labyrinth.barter_matrix = None
+    labyrinth.path_memory = None
+
+    analysis = labyrinth.queen_learn_and_improve()
+
+    assert analysis["status"] == "analysis_complete"
+    assert analysis["performance"]["total_conversions"] == 2
+    assert analysis["performance"]["total_profit_usd"] == 1.5
+    assert analysis["performance"]["success_rate"] == 0.5
+
+
+def test_queen_code_change_uses_only_injected_architect_boundary():
+    calls = []
+
+    def modify_reality(**kwargs):
+        calls.append(kwargs)
+        return {"status": "success", "file": kwargs["filename"]}
+
+    labyrinth = MicroProfitLabyrinth.__new__(MicroProfitLabyrinth)
+    labyrinth.queen = SimpleNamespace(
+        architect=object(),
+        can_self_modify=True,
+        my_source_file="sandbox/micro_profit_labyrinth.py",
+        modify_reality=modify_reality,
+    )
+
+    result = labyrinth.queen_propose_code_change(
+        "test-only proposal",
+        "old = 1",
+        "old = 2",
+    )
+
+    assert result == {"status": "success", "file": "sandbox/micro_profit_labyrinth.py"}
+    assert calls == [
+        {
+            "filename": "sandbox/micro_profit_labyrinth.py",
+            "old_pattern": "old = 1",
+            "new_pattern": "old = 2",
+        }
+    ]
+
+
 if __name__ == "__main__":
     try:
-        result = asyncio.run(test_queen_self_modification())
+        result = asyncio.run(_legacy_queen_self_modification_demo())
         sys.exit(0 if result else 1)
     except KeyboardInterrupt:
         print("\n\n⚠️ Test interrupted by user")

@@ -431,6 +431,13 @@ def build_harmonic_api_piano_context(*, root: Optional[Path] = None, runtime: Op
     )
     lambda_tempo = _lambda_tempo_from_history(lambda_history if isinstance(lambda_history, Mapping) else {})
     hnc_score = _clamp(_as_float(master_formula.get("score"), _as_float(affect_summary.get("hnc_coherence_score"), 0.5)))
+    # Reconcile with the canonical HNC field: the shared Γ can only tighten
+    # the coherence blend feeding live strategy weights (b46 order-path wiring).
+    try:
+        from aureon.core.hnc_field import reconcile_gamma
+        hnc_score = _clamp(reconcile_gamma(hnc_score))
+    except Exception:
+        pass
     auris_coherence = _clamp(_as_float(auris_nodes.get("coherence"), _as_float(affect_summary.get("hnc_coherence_score"), 0.5)))
     lyra_score = _clamp(_as_float(lyra_reading.get("resonance_score"), _as_float(affect_summary.get("goal_alignment"), 0.5)))
     seer_confidence = _clamp(_as_float(seer_reading.get("confidence"), _as_float(master_formula.get("inputs", {}).get("real_data") if isinstance(master_formula.get("inputs"), Mapping) else 0.5, 0.5)))

@@ -1,16 +1,25 @@
 /**
- * Multi-Exchange Client
- * Prime Sentinel: GARY LECKEY 02111991
- * 
- * Aggregates data from all connected exchanges via authenticated get-user-balances
- * Provides unified view of balances, tickers, and positions
- * NOW PUBLISHES TO UNIFIED BUS for ecosystem integration
+ * Multi-exchange production adapter. Missing or stale provider receipts are
+ * represented as no_data; a previous balance is never relabelled as current.
  */
 
 import { ExchangeType, EXCHANGE_FEES } from './unifiedExchangeClient';
 import { temporalLadder, SYSTEMS } from './temporalLadder';
-import { unifiedBus, type SignalType } from './unifiedBus';
+import { unifiedBus } from './unifiedBus';
 import { supabase } from '@/integrations/supabase/client';
+
+const MAX_BALANCE_AGE_MS = 5 * 60 * 1000;
+const MAX_TICKER_AGE_MS = 5 * 60 * 1000;
+const SUPPORTED_EXCHANGES: ExchangeType[] = ['binance', 'kraken', 'alpaca', 'capital'];
+
+const finite = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isFinite(value);
+
+const fresh = (value: unknown, maxAgeMs: number): value is string => {
+  if (typeof value !== 'string') return false;
+  const timestamp = Date.parse(value);
+  return Number.isFinite(timestamp) && Date.now() - timestamp >= 0 && Date.now() - timestamp <= maxAgeMs;
+};
 
 export interface ConsolidatedBalance {
   asset: string;
@@ -18,368 +27,316 @@ export interface ConsolidatedBalance {
   totalFree: number;
   totalLocked: number;
   grandTotal: number;
-  usdValue: number;
+  usdValue: number | null;
 }
 
 export interface ExchangeStatus {
   exchange: ExchangeType;
   connected: boolean;
-  lastUpdate: number;
-  balanceCount: number;
-  totalUsdValue: number;
+  lastUpdate: number | null;
+  balanceCount: number | null;
+  totalUsdValue: number | null;
+  truthStatus: 'live' | 'no_data';
+  sourceTimestamp: string | null;
+  generatedValues: false;
   error?: string;
 }
 
 export interface MultiExchangeState {
   exchanges: ExchangeStatus[];
   consolidatedBalances: ConsolidatedBalance[];
-  totalEquityUsd: number;
-  lastUpdate: number;
+  totalEquityUsd: number | null;
+  lastUpdate: number | null;
+  truthStatus: 'real_derived' | 'no_data';
+  sourceId: string | null;
+  sourceTimestamp: string | null;
+  generatedValues: false;
 }
 
-const SUPPORTED_EXCHANGES: ExchangeType[] = ['binance', 'kraken', 'alpaca', 'capital'];
+export interface ProviderTicker {
+  symbol: string;
+  price: number;
+  bidPrice: number;
+  askPrice: number;
+  volume: number;
+  timestamp: number;
+  truthStatus: 'real_derived';
+  sourceId: string;
+  sourceTimestamp: string;
+  generatedValues: false;
+}
 
 export class MultiExchangeClient {
-  private statusCache: Map<ExchangeType, ExchangeStatus> = new Map();
+  private statusCache = new Map<ExchangeType, ExchangeStatus>();
   private consolidatedBalances: ConsolidatedBalance[] = [];
   private listeners: Array<(state: MultiExchangeState) => void> = [];
   private updateInterval: ReturnType<typeof setInterval> | null = null;
   private isInitialized = false;
-  private totalEquityUsd = 0;
+  private totalEquityUsd: number | null = null;
+  private lastUpdate: number | null = null;
+  private sourceId: string | null = null;
+  private sourceTimestamp: string | null = null;
 
-  constructor() {
-    console.log('🌐 Multi-Exchange Client initializing...');
-  }
-
-  /**
-   * Initialize all exchange clients
-   */
   public async initialize(): Promise<void> {
     if (this.isInitialized) return;
-
-    // Register with Temporal Ladder
     temporalLadder.registerSystem(SYSTEMS.QUANTUM_QUACKERS);
-
-    // Initialize status cache for each supported exchange
-    for (const exchange of SUPPORTED_EXCHANGES) {
-      this.statusCache.set(exchange, {
-        exchange,
-        connected: false,
-        lastUpdate: 0,
-        balanceCount: 0,
-        totalUsdValue: 0
-      });
-    }
-
-    // Start periodic updates
+    this.markNoData('Awaiting authenticated provider balances');
     this.startPeriodicUpdates();
     this.isInitialized = true;
-
-    console.log(`🌐 Multi-Exchange Client initialized`);
   }
 
-  /**
-   * Fetch balances from all exchanges using authenticated get-user-balances
-   */
   public async fetchAllBalances(): Promise<MultiExchangeState> {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      this.markNoData('No authenticated session');
+      return this.finishFetch();
+    }
+
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        console.warn('[MultiExchangeClient] No session, returning cached state');
-        return this.getState();
-      }
-
       const { data, error } = await supabase.functions.invoke('get-user-balances', {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
-        }
+        headers: { Authorization: `Bearer ${session.access_token}` },
       });
-
-      if (error) {
-        console.error('[MultiExchangeClient] API error:', error);
-        return this.getState();
+      if (error) throw error;
+      if (data?.truthStatus !== 'real_derived' || data?.generatedValues !== false ||
+          !finite(data?.totalEquityUsd) || data.totalEquityUsd < 0 || !Array.isArray(data?.balances)) {
+        throw new Error('BALANCE_RESPONSE_NO_VERIFIED_EQUITY');
       }
 
-      if (data?.success) {
-        // Update status cache from response
-        const balances = data.balances || [];
-        
-        for (const exchangeData of balances) {
-          const exchange = exchangeData.exchange as ExchangeType;
-          this.statusCache.set(exchange, {
-            exchange,
-            connected: exchangeData.connected,
-            lastUpdate: Date.now(),
-            balanceCount: exchangeData.assets?.length || 0,
-            totalUsdValue: exchangeData.totalUsd || 0,
-            error: exchangeData.error
-          });
-        }
+      const liveRows = data.balances.filter((row: any) =>
+        row?.connected === true && row?.truthStatus === 'live' && row?.generatedValues === false &&
+        fresh(row?.sourceTimestamp, MAX_BALANCE_AGE_MS) && Array.isArray(row?.assets),
+      );
+      if (liveRows.length === 0) throw new Error('NO_FRESH_PROVIDER_BALANCE_RECEIPTS');
 
-        // Build consolidated balances
-        const assetMap = new Map<string, ConsolidatedBalance>();
-        
-        for (const exchangeData of balances) {
-          if (!exchangeData.connected) continue;
-          
-          for (const asset of (exchangeData.assets || [])) {
-            const existing = assetMap.get(asset.asset);
-            if (existing) {
-              existing.totalFree += asset.free;
-              existing.totalLocked += asset.locked;
-              existing.grandTotal += asset.free + asset.locked;
-              existing.usdValue += asset.usdValue;
-              existing.balances[exchangeData.exchange] = { 
-                free: asset.free, 
-                locked: asset.locked, 
-                total: asset.free + asset.locked 
-              };
-            } else {
-              assetMap.set(asset.asset, {
-                asset: asset.asset,
-                totalFree: asset.free,
-                totalLocked: asset.locked,
-                grandTotal: asset.free + asset.locked,
-                usdValue: asset.usdValue,
-                balances: { 
-                  [exchangeData.exchange]: { 
-                    free: asset.free, 
-                    locked: asset.locked, 
-                    total: asset.free + asset.locked 
-                  } 
-                }
-              });
-            }
+      this.statusCache.clear();
+      for (const exchange of SUPPORTED_EXCHANGES) {
+        const row = data.balances.find((candidate: any) => candidate?.exchange === exchange);
+        const isLive = row?.connected === true && row?.truthStatus === 'live' &&
+          row?.generatedValues === false && fresh(row?.sourceTimestamp, MAX_BALANCE_AGE_MS) &&
+          Array.isArray(row?.assets);
+        this.statusCache.set(exchange, isLive ? {
+          exchange,
+          connected: true,
+          lastUpdate: Date.parse(row.sourceTimestamp),
+          balanceCount: row.assets.length,
+          totalUsdValue: finite(row.totalUsd) ? row.totalUsd : null,
+          truthStatus: 'live',
+          sourceTimestamp: row.sourceTimestamp,
+          generatedValues: false,
+          error: row.error,
+        } : this.noDataStatus(exchange, row?.error ?? 'No fresh provider receipt'));
+      }
+
+      const assetMap = new Map<string, ConsolidatedBalance>();
+      for (const row of liveRows) {
+        for (const asset of row.assets) {
+          const free = Number(asset.free);
+          const locked = Number(asset.locked);
+          if (!asset.asset || !finite(free) || !finite(locked) || free < 0 || locked < 0) continue;
+          const usdValue = asset.valuationTruthStatus === 'real_derived' && finite(asset.usdValue)
+            ? asset.usdValue
+            : null;
+          const existing = assetMap.get(asset.asset);
+          if (existing) {
+            existing.totalFree += free;
+            existing.totalLocked += locked;
+            existing.grandTotal += free + locked;
+            existing.usdValue = finite(existing.usdValue) && finite(usdValue) ? existing.usdValue + usdValue : null;
+            existing.balances[row.exchange] = { free, locked, total: free + locked };
+          } else {
+            assetMap.set(asset.asset, {
+              asset: asset.asset,
+              totalFree: free,
+              totalLocked: locked,
+              grandTotal: free + locked,
+              usdValue,
+              balances: { [row.exchange]: { free, locked, total: free + locked } },
+            });
           }
         }
-
-        this.consolidatedBalances = Array.from(assetMap.values())
-          .sort((a, b) => b.usdValue - a.usdValue);
-        this.totalEquityUsd = data.totalEquityUsd || 0;
       }
 
+      this.consolidatedBalances = Array.from(assetMap.values()).sort((a, b) =>
+        (b.usdValue ?? Number.NEGATIVE_INFINITY) - (a.usdValue ?? Number.NEGATIVE_INFINITY),
+      );
+      this.totalEquityUsd = data.totalEquityUsd;
+      const sourceTimes = liveRows.map((row: any) => row.sourceTimestamp).sort();
+      this.sourceTimestamp = sourceTimes[0];
+      this.sourceId = liveRows.map((row: any) => `${row.exchange}:account`).sort().join(',');
+      this.lastUpdate = Date.now();
     } catch (error) {
-      console.error('[MultiExchangeClient] Fetch error:', error);
+      this.markNoData(error instanceof Error ? error.message : String(error));
     }
-    
+
+    return this.finishFetch();
+  }
+
+  private finishFetch(): MultiExchangeState {
     const state = this.getState();
     this.notifyListeners(state);
-    
-    // Send heartbeat to Temporal Ladder
-    const activeCount = state.exchanges.filter(e => e.connected).length;
-    const healthRatio = state.exchanges.length > 0 ? activeCount / state.exchanges.length : 0;
-    temporalLadder.heartbeat(SYSTEMS.QUANTUM_QUACKERS, healthRatio);
-    
-    // PUBLISH TO UNIFIED BUS for ecosystem integration
-    this.publishToUnifiedBus(state);
-    
+    const liveCount = state.exchanges.filter((exchange) => exchange.truthStatus === 'live').length;
+    if (state.truthStatus === 'real_derived' && state.exchanges.length > 0) {
+      const healthRatio = liveCount / state.exchanges.length;
+      temporalLadder.heartbeat(SYSTEMS.QUANTUM_QUACKERS, healthRatio);
+      unifiedBus.publish({
+        systemName: 'MultiExchange',
+        timestamp: Date.parse(state.sourceTimestamp as string),
+        ready: liveCount > 0,
+        coherence: healthRatio,
+        confidence: healthRatio,
+        signal: 'NEUTRAL',
+        data: {
+          truthStatus: state.truthStatus,
+          sourceId: state.sourceId,
+          sourceTimestamp: state.sourceTimestamp,
+          generatedValues: false,
+          totalEquityUsd: state.totalEquityUsd,
+          connectedExchanges: liveCount,
+          exchanges: state.exchanges,
+        },
+      });
+    }
     return state;
   }
 
-  /**
-   * Publish exchange state to UnifiedBus for ecosystem-wide visibility
-   */
-  private publishToUnifiedBus(state: MultiExchangeState): void {
-    const connectedCount = state.exchanges.filter(e => e.connected).length;
-    const totalExchanges = state.exchanges.length;
-    const healthRatio = totalExchanges > 0 ? connectedCount / totalExchanges : 0;
-    
-    // Derive signal from balance health
-    let signal: SignalType = 'NEUTRAL';
-    if (state.totalEquityUsd > 1000 && healthRatio >= 0.5) {
-      signal = 'BUY'; // Sufficient capital available
-    } else if (state.totalEquityUsd < 100 || healthRatio < 0.25) {
-      signal = 'SELL'; // Low capital or poor exchange connectivity
-    }
-    
-    unifiedBus.publish({
-      systemName: 'MultiExchange',
-      timestamp: Date.now(),
-      ready: connectedCount > 0,
-      coherence: healthRatio,
-      confidence: Math.min(healthRatio + 0.2, 1),
-      signal,
-      data: {
-        totalEquityUsd: state.totalEquityUsd,
-        connectedExchanges: connectedCount,
-        totalExchanges,
-        exchanges: state.exchanges.map(e => ({
-          name: e.exchange,
-          connected: e.connected,
-          usdValue: e.totalUsdValue
-        })),
-        topAssets: state.consolidatedBalances.slice(0, 5).map(b => ({
-          asset: b.asset,
-          total: b.grandTotal,
-          usdValue: b.usdValue
-        }))
-      }
-    });
+  public getAvailableBalanceForTrading(quoteAsset = 'USDT'): number | null {
+    const quoteBalance = this.consolidatedBalances.find((balance) => balance.asset === quoteAsset);
+    return quoteBalance && finite(quoteBalance.totalFree) ? quoteBalance.totalFree : null;
   }
 
-
-  /**
-   * Get available balance for position sizing
-   */
-  public getAvailableBalanceForTrading(quoteAsset: string = 'USDT'): number {
-    const consolidated = this.getConsolidatedBalances();
-    const quoteBalance = consolidated.find(b => b.asset === quoteAsset);
-    return quoteBalance?.totalFree || 0;
-  }
-
-  /**
-   * Calculate position size based on available equity and risk percentage
-   */
-  public calculatePositionSize(
-    riskPercentage: number = 0.02,
-    quoteAsset: string = 'USDT'
-  ): { positionSizeUsd: number; availableBalance: number; riskAmount: number } {
+  public calculatePositionSize(riskPercentage: number, quoteAsset = 'USDT'):
+    { positionSizeUsd: number | null; availableBalance: number | null; riskAmount: number | null } {
     const availableBalance = this.getAvailableBalanceForTrading(quoteAsset);
-    const totalEquity = this.getTotalEquityUsd();
-    const riskAmount = totalEquity * riskPercentage;
-    const positionSizeUsd = Math.min(riskAmount, availableBalance * 0.95); // Leave 5% buffer
-    
+    if (!finite(availableBalance) || !finite(this.totalEquityUsd) || !finite(riskPercentage) ||
+        riskPercentage <= 0 || riskPercentage > 1) {
+      return { positionSizeUsd: null, availableBalance, riskAmount: null };
+    }
+    const riskAmount = this.totalEquityUsd * riskPercentage;
     return {
-      positionSizeUsd: Math.max(0, positionSizeUsd),
+      positionSizeUsd: Math.min(riskAmount, availableBalance * 0.95),
       availableBalance,
-      riskAmount
+      riskAmount,
     };
   }
 
-  /**
-   * Get consolidated balances across all exchanges
-   */
   public getConsolidatedBalances(): ConsolidatedBalance[] {
-    return this.consolidatedBalances;
+    return this.consolidatedBalances.map((balance) => ({ ...balance, balances: { ...balance.balances } }));
   }
 
-  /**
-   * Get total equity in USD
-   */
-  public getTotalEquityUsd(): number {
+  public getTotalEquityUsd(): number | null {
     return this.totalEquityUsd;
   }
 
-  /**
-   * Get current state
-   */
   public getState(): MultiExchangeState {
+    const hasFreshAggregate = this.sourceTimestamp !== null && fresh(this.sourceTimestamp, MAX_BALANCE_AGE_MS) &&
+      finite(this.totalEquityUsd);
     return {
       exchanges: Array.from(this.statusCache.values()),
-      consolidatedBalances: this.consolidatedBalances,
-      totalEquityUsd: this.totalEquityUsd,
-      lastUpdate: Date.now()
+      consolidatedBalances: this.getConsolidatedBalances(),
+      totalEquityUsd: hasFreshAggregate ? this.totalEquityUsd : null,
+      lastUpdate: hasFreshAggregate ? this.lastUpdate : null,
+      truthStatus: hasFreshAggregate ? 'real_derived' : 'no_data',
+      sourceId: hasFreshAggregate ? this.sourceId : null,
+      sourceTimestamp: hasFreshAggregate ? this.sourceTimestamp : null,
+      generatedValues: false,
     };
   }
 
-  /**
-   * Get best exchange for a symbol based on fees
-   */
-  public getBestExchangeForSymbol(symbol: string): ExchangeType {
-    // Return exchange with lowest taker fee from connected exchanges
-    let bestExchange: ExchangeType = 'binance';
-    let lowestFee = Infinity;
-
+  public getBestExchangeForSymbol(_symbol: string): ExchangeType | null {
+    let bestExchange: ExchangeType | null = null;
+    let lowestFee = Number.POSITIVE_INFINITY;
     for (const status of this.statusCache.values()) {
-      if (status.connected) {
-        const fees = EXCHANGE_FEES[status.exchange];
-        if (fees.taker < lowestFee) {
-          lowestFee = fees.taker;
-          bestExchange = status.exchange;
-        }
+      if (status.truthStatus !== 'live') continue;
+      const fees = EXCHANGE_FEES[status.exchange];
+      if (fees && fees.taker < lowestFee) {
+        lowestFee = fees.taker;
+        bestExchange = status.exchange;
       }
     }
-
     return bestExchange;
   }
 
-  /**
-   * Get ticker from connected exchanges (stub for compatibility)
-   * Returns simulated ticker data based on available balance info
-   */
-  public async getTickersFromAllExchanges(symbol: string): Promise<Map<ExchangeType, { symbol: string; price: number; bidPrice: number; askPrice: number; volume: number } | null>> {
-    const results = new Map<ExchangeType, { symbol: string; price: number; bidPrice: number; askPrice: number; volume: number } | null>();
-    
-    // Get current BTC price from public API for realistic simulation
-    try {
-      const response = await fetch('https://api.binance.com/api/v3/ticker/bookTicker?symbol=' + symbol);
-      const data = await response.json();
-      const bidPrice = parseFloat(data.bidPrice);
-      const askPrice = parseFloat(data.askPrice);
-      const midPrice = (bidPrice + askPrice) / 2;
+  public async getTickersFromAllExchanges(symbol: string): Promise<Map<ExchangeType, ProviderTicker | null>> {
+    const results = new Map<ExchangeType, ProviderTicker | null>(SUPPORTED_EXCHANGES.map((exchange) => [exchange, null]));
+    const eligible = Array.from(this.statusCache.values())
+      .filter((status) => status.truthStatus === 'live' && ['binance', 'kraken'].includes(status.exchange))
+      .map((status) => status.exchange);
+    if (eligible.length === 0) return results;
 
-      for (const status of this.statusCache.values()) {
-        if (status.connected) {
-          // Add slight variation per exchange
-          const variation = (Math.random() - 0.5) * 0.0002;
-          results.set(status.exchange, {
-            symbol,
-            price: midPrice * (1 + variation),
-            bidPrice: bidPrice * (1 + variation),
-            askPrice: askPrice * (1 + variation),
-            volume: 1000000
-          });
-        } else {
-          results.set(status.exchange, null);
-        }
-      }
-    } catch {
-      // Return null for all if API fails
-      for (const status of this.statusCache.values()) {
-        results.set(status.exchange, null);
-      }
+    const { data, error } = await supabase.functions.invoke('fetch-all-tickers', {
+      body: { symbols: [symbol], exchanges: eligible, limit: 10 },
+    });
+    if (error || data?.truthStatus !== 'real_derived' || data?.generatedValues !== false || !Array.isArray(data?.tickers)) {
+      return results;
     }
-    
+    for (const ticker of data.tickers) {
+      const exchange = ticker.exchange as ExchangeType;
+      if (!eligible.includes(exchange) || ticker.symbol !== symbol || ticker.truthStatus !== 'real_derived' ||
+          ticker.generatedValues !== false || !fresh(ticker.sourceTimestamp, MAX_TICKER_AGE_MS) ||
+          ![ticker.price, ticker.bidPrice, ticker.askPrice, ticker.volume, ticker.timestamp].every(finite) ||
+          ticker.price <= 0 || ticker.bidPrice <= 0 || ticker.askPrice <= 0 || ticker.askPrice < ticker.bidPrice) continue;
+      results.set(exchange, {
+        symbol,
+        price: ticker.price,
+        bidPrice: ticker.bidPrice,
+        askPrice: ticker.askPrice,
+        volume: ticker.volume,
+        timestamp: ticker.timestamp,
+        truthStatus: 'real_derived',
+        sourceId: ticker.sourceId,
+        sourceTimestamp: ticker.sourceTimestamp,
+        generatedValues: false,
+      });
+    }
     return results;
   }
 
-  /**
-   * Subscribe to state updates
-   */
   public subscribe(listener: (state: MultiExchangeState) => void): () => void {
     this.listeners.push(listener);
-    return () => {
-      this.listeners = this.listeners.filter(l => l !== listener);
-    };
+    return () => { this.listeners = this.listeners.filter((candidate) => candidate !== listener); };
   }
 
   private notifyListeners(state: MultiExchangeState): void {
-    this.listeners.forEach(listener => {
-      try {
-        listener(state);
-      } catch (error) {
-        console.error('Multi-exchange listener error:', error);
-      }
-    });
+    this.listeners.forEach((listener) => listener(state));
+  }
+
+  private noDataStatus(exchange: ExchangeType, error: string): ExchangeStatus {
+    return {
+      exchange,
+      connected: false,
+      lastUpdate: null,
+      balanceCount: null,
+      totalUsdValue: null,
+      truthStatus: 'no_data',
+      sourceTimestamp: null,
+      generatedValues: false,
+      error,
+    };
+  }
+
+  private markNoData(error: string): void {
+    this.statusCache.clear();
+    SUPPORTED_EXCHANGES.forEach((exchange) => this.statusCache.set(exchange, this.noDataStatus(exchange, error)));
+    this.consolidatedBalances = [];
+    this.totalEquityUsd = null;
+    this.lastUpdate = null;
+    this.sourceId = null;
+    this.sourceTimestamp = null;
   }
 
   private startPeriodicUpdates(): void {
     if (this.updateInterval) return;
-
-    // Update every 30 seconds to avoid exchange rate limits
-    this.updateInterval = setInterval(() => {
-      this.fetchAllBalances().catch(console.error);
-    }, 30000);
-
-    // Initial fetch
+    this.updateInterval = setInterval(() => this.fetchAllBalances().catch(console.error), 30_000);
     this.fetchAllBalances().catch(console.error);
   }
 
-  /**
-   * Cleanup resources
-   */
   public destroy(): void {
-    if (this.updateInterval) {
-      clearInterval(this.updateInterval);
-      this.updateInterval = null;
-    }
+    if (this.updateInterval) clearInterval(this.updateInterval);
+    this.updateInterval = null;
     this.listeners = [];
-    this.statusCache.clear();
-    this.consolidatedBalances = [];
+    this.markNoData('Client destroyed');
     this.isInitialized = false;
   }
 }
 
-// Singleton instance
 export const multiExchangeClient = new MultiExchangeClient();

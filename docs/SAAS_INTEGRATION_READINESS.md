@@ -7,6 +7,11 @@ identifies source surfaces, end-user access paths, environment variables, auth
 boundaries, generated artifacts, and production gates that must stay visible for
 safe integration.
 
+> **End-user auth & per-tenant keys:** the identity model (open / admin / tenant),
+> the per-tenant encrypted keystore, and the no-cross-tenant-leak invariant are
+> documented in [`architecture/MULTI_TENANT_AUTH.md`](architecture/MULTI_TENANT_AUTH.md).
+> Turn tenancy on with `AUREON_SUPABASE_JWT_SECRET`; unset ⇒ single-operator, unchanged.
+
 Primary map: [`REPO_SITEMAP.md`](REPO_SITEMAP.md). Machine-readable map:
 [`repo_sitemap.json`](repo_sitemap.json).
 Machine-readable SaaS integration manifest:
@@ -120,7 +125,7 @@ evidence exports.
 
 | Surface | Files | Current role | Readiness note |
 |---|---|---|---|
-| Local Windows operator | `AUREON_PRODUCTION_LIVE.cmd`, `AUREON_WAKE_UP_FULL_AUTONOMOUS.ps1`, `RUNNING.md` | Current primary local run path. | Best current source of truth for operator startup. |
+| Local Windows operator | `scripts/launchers/AUREON_PRODUCTION_LIVE.cmd`, `scripts/launchers/AUREON_WAKE_UP_FULL_AUTONOMOUS.ps1`, `RUNNING.md` | Current primary local run path. | Best current source of truth for operator startup. |
 | Frontend app | `frontend/package.json`, `frontend/src/`, `frontend/public/` | React/Vite product surface. | Build with `npm run build`; confirm env values before hosted use. |
 | Supabase backend | `supabase/config.toml`, `supabase/functions/`, `supabase/migrations/` | Hosted functions, auth settings, schema migrations. | Auth matrix and hardening review below must be resolved before production. |
 | DigitalOcean App Platform | `app.yaml`, `deploy/` | App spec and startup scripts. | Already names `main` and env keys; secrets must be configured in platform. |

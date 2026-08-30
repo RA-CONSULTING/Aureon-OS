@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -44,18 +44,6 @@ export function useQueenHive() {
   const [isRunning, setIsRunning] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
   const { toast } = useToast();
-  const stepIntervalRef = useRef<number | null>(null);
-  const sessionIdRef = useRef<string | null>(null);
-
-  // Cleanup interval on unmount or when stopping
-  useEffect(() => {
-    return () => {
-      if (stepIntervalRef.current) {
-        clearInterval(stepIntervalRef.current);
-        stepIntervalRef.current = null;
-      }
-    };
-  }, []);
 
   // Fetch session status
   const fetchStatus = useCallback(async (sessionId: string) => {
@@ -70,6 +58,7 @@ export function useQueenHive() {
         setSession(data.session);
         setHives(data.hives);
         setAgents(data.agents);
+        setIsRunning(data.session.status === 'running');
       }
     } catch (error) {
       console.error('Failed to fetch hive status:', error);
@@ -77,14 +66,14 @@ export function useQueenHive() {
   }, []);
 
   // Start new hive session
-  const startHive = useCallback(async (initialCapital: number) => {
+  const startHive = useCallback(async (initialCapital: number, liveExecutionConfirmed: boolean) => {
     if (isStarting || isRunning) return;
 
     try {
       setIsStarting(true);
       
       const { data, error } = await supabase.functions.invoke('queen-hive-orchestrator', {
-        body: { action: 'start', initialCapital },
+        body: { action: 'start', initialCapital, liveExecutionConfirmed },
       });
 
       if (error) throw error;
@@ -92,19 +81,11 @@ export function useQueenHive() {
       if (data.success) {
         setSession(data.session);
         setIsRunning(true);
-        sessionIdRef.current = data.session.id;
         
         toast({
           title: "🐝 Queen-Hive Deployed",
           description: data.message,
         });
-
-        // Start auto-stepping
-        stepIntervalRef.current = window.setInterval(() => {
-          if (sessionIdRef.current) {
-            executeStep(sessionIdRef.current);
-          }
-        }, 2000); // Execute step every 2 seconds
 
         return data.session;
       } else {
@@ -136,24 +117,24 @@ export function useQueenHive() {
         // Fetch updated status
         await fetchStatus(sessionId);
 
-        console.log(`Step ${data.step}: ${data.trades} trades, $${data.equity.toFixed(2)} equity, ${data.hives} hives, ${data.agents} agents`);
+        const equityText = Number.isFinite(Number(data.equity)) ? `$${Number(data.equity).toFixed(2)}` : 'unavailable';
+        console.log(`Live step ${data.step}: ${data.trades} provider-confirmed trades, ${equityText} equity`);
+        toast({
+          title: 'Live step completed',
+          description: `${data.trades} provider-confirmed trades; ${data.skipped?.length ?? 0} routes skipped`,
+        });
+      } else {
+        throw new Error(data.error || 'LIVE_STEP_FAILED');
       }
     } catch (error) {
       console.error('Failed to execute step:', error);
     }
-  }, [fetchStatus]);
+  }, [fetchStatus, toast]);
 
   // Stop hive session
   const stopHive = useCallback(async (sessionId: string) => {
     try {
-      // Clear interval first
-      if (stepIntervalRef.current) {
-        clearInterval(stepIntervalRef.current);
-        stepIntervalRef.current = null;
-      }
-
       setIsRunning(false);
-      sessionIdRef.current = null;
 
       const { data, error } = await supabase.functions.invoke('queen-hive-orchestrator', {
         body: { action: 'stop', sessionId },
@@ -187,9 +168,9 @@ export function useQueenHive() {
   }, [session, executeStep]);
 
   // ROI calculation
-  const roi = session
+  const roi = session && Number.isFinite(session.current_equity) && session.initial_capital > 0
     ? ((session.current_equity - session.initial_capital) / session.initial_capital) * 100
-    : 0;
+    : null;
 
   return {
     session,

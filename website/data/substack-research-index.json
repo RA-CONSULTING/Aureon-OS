@@ -1,0 +1,338 @@
+{
+  "schema_version": 3,
+  "publication": "The Harmonic Nexus",
+  "publisher": "Gary Leckey",
+  "profile_url": "https://garyleckey.substack.com/",
+  "archive_url": "https://garyleckey.substack.com/archive",
+  "catalogue_scope": "A curated public reading map across the author-published archive. The provider archive remains the authority for its current listing.",
+  "verification_status": "Direct author-published Substack links. They are public research commentary, not peer-reviewed publications, independent validation, engineering proof, commercial-performance evidence, or investment evidence.",
+  "themes": [
+    {
+      "id": "orientation",
+      "label": "Orientation",
+      "description": "Start with the programme map, scope and author-stated evidence standard.",
+      "prompt": "Use this note to understand the reading order, scope or evidence language before assessing individual propositions."
+    },
+    {
+      "id": "evidence-methods",
+      "label": "Evidence methods",
+      "description": "Falsifiability, reproducibility, null models and cross-field tests.",
+      "prompt": "Ask what would reproduce, falsify or stop the claim, and whether the proposed test is independent of the model."
+    },
+    {
+      "id": "ai-data",
+      "label": "AI & data",
+      "description": "Inspectable signals, AI behaviour and data-led observatories.",
+      "prompt": "Separate an observed pattern or interface behaviour from a validated system capability or outcome."
+    },
+    {
+      "id": "frontier-systems",
+      "label": "Frontier systems",
+      "description": "Early-stage architectures spanning propulsion, photonics and protection.",
+      "prompt": "Look for the inherited engineering baseline, the missing measurement and the next bounded experiment."
+    },
+    {
+      "id": "space-sensing",
+      "label": "Space & sensing",
+      "description": "Orbital patterns, signals, debris protection and remote sensing.",
+      "prompt": "Check the reference dataset, control case and non-detection before treating a pattern as a prediction."
+    },
+    {
+      "id": "earth-history",
+      "label": "Earth & history",
+      "description": "Geology, landscape evidence and long-horizon historical interpretation.",
+      "prompt": "Keep physical evidence, chronology and cultural resemblance separate until a supported connection exists."
+    },
+    {
+      "id": "biological-coherence",
+      "label": "Biology & coherence",
+      "description": "Emerging biomolecular, fungal and biological-signal questions.",
+      "prompt": "Start with the public dataset and locked protocol; publication of a proposed signal is not evidence that the signal exists."
+    }
+  ],
+  "entries": [
+    {
+      "title": "Can One Framework Link AI, Propulsion and Protection Without Claiming One Physics?",
+      "url": "https://garyleckey.substack.com/p/can-one-framework-link-ai-propulsion",
+      "published_utc": "2026-07-19T23:34:18.813Z",
+      "topic": "frontier-systems",
+      "archive_visible": true
+    },
+    {
+      "title": "How Do You Make an Unconventional Framework Falsifiable?",
+      "url": "https://garyleckey.substack.com/p/how-do-you-make-an-unconventional",
+      "published_utc": "2026-07-19T22:52:57.157Z",
+      "topic": "evidence-methods",
+      "archive_visible": true,
+      "subtitle": "Inside the HNC audit, measurement protocol and pre-registration programme.",
+      "artwork": "assets/images/research/substack/falsifiability-1200.webp",
+      "artwork_small": "assets/images/research/substack/falsifiability-720.webp",
+      "artwork_alt": "Editorial illustration of measurement panels separating accepted and rejected test results",
+      "artwork_caption": "Editorial illustration — not experimental data"
+    },
+    {
+      "title": "Can You Replace a Laser Mirror With a Feedback Loop?",
+      "url": "https://garyleckey.substack.com/p/can-you-replace-a-laser-mirror-with",
+      "published_utc": "2026-07-19T23:28:14.522Z",
+      "topic": "frontier-systems",
+      "archive_visible": true,
+      "subtitle": "What LuminaCell inherits from diamond masers and coherent control—and what must be measured before any kilowatt claim.",
+      "artwork": "assets/images/research/substack/feedback-loop-1200.webp",
+      "artwork_small": "assets/images/research/substack/feedback-loop-720.webp",
+      "artwork_alt": "Editorial concept illustration of a closed-loop optical test bench; not company facilities or validated hardware",
+      "artwork_caption": "Concept illustration — not Aureon facilities or tested hardware"
+    },
+    {
+      "title": "When Does an AI Look Alive—and What Would Count as Evidence?",
+      "url": "https://garyleckey.substack.com/p/when-does-an-ai-look-aliveand-what",
+      "published_utc": "2026-07-19T22:58:38.365Z",
+      "topic": "ai-data",
+      "archive_visible": true,
+      "subtitle": "A professional reading of the Auris symbolic-resonance and mirror-entity papers.",
+      "artwork": "assets/images/research/substack/ai-evidence-1200.webp",
+      "artwork_small": "assets/images/research/substack/ai-evidence-720.webp",
+      "artwork_alt": "Editorial illustration of data, decision trees, models and a balance surrounding an AI system",
+      "artwork_caption": "Editorial illustration — not validated AI evidence"
+    },
+    {
+      "title": "The Antarctic “Anomaly” That Became a Geological Working Model",
+      "url": "https://garyleckey.substack.com/p/the-antarctic-anomaly-that-became",
+      "published_utc": "2026-07-19T22:49:28.664Z",
+      "topic": "earth-history",
+      "archive_visible": true,
+      "subtitle": "How three briefings moved from a storm-time signal to a natural subglacial hypothesis—and what evidence is still missing.",
+      "artwork": "assets/images/research/substack/antarctic-working-model-1200.webp",
+      "artwork_small": "assets/images/research/substack/antarctic-working-model-720.webp",
+      "artwork_alt": "Editorial cross-section of Antarctic ice, geology and remote-sensing paths",
+      "artwork_caption": "Editorial illustration — not measured satellite or subsurface data"
+    },
+    {
+      "title": "Start Here: The Harmonic Nexus",
+      "url": "https://garyleckey.substack.com/p/start-here-the-harmonic-nexus",
+      "published_utc": "2026-07-20T00:08:50.760Z",
+      "topic": "orientation",
+      "archive_visible": true,
+      "guide_rank": 1,
+      "guide_label": "Guided route"
+    },
+    {
+      "title": "About The Harmonic Nexus",
+      "url": "https://garyleckey.substack.com/p/about-the-harmonic-nexus",
+      "published_utc": "2026-07-20T00:07:39.868Z",
+      "topic": "orientation",
+      "archive_visible": true,
+      "guide_rank": 3,
+      "guide_label": "Scope & standards"
+    },
+    {
+      "title": "The Harmonic Nexus Research Index",
+      "url": "https://garyleckey.substack.com/p/the-harmonic-nexus-research-index",
+      "published_utc": "2026-07-20T00:05:33.050Z",
+      "topic": "orientation",
+      "archive_visible": true,
+      "guide_rank": 2,
+      "guide_label": "Source map",
+      "subtitle": "A source-linked research index organised by evidence type and reading path.",
+      "artwork": "assets/images/research/substack/research-index-1200.webp",
+      "artwork_small": "assets/images/research/substack/research-index-720.webp",
+      "artwork_alt": "Editorial illustration of a structured research index connected by source and evidence paths",
+      "artwork_caption": "Editorial illustration — author-published note"
+    },
+    {
+      "title": "When Does a Reproducible Pipeline Become a Physical Discovery?",
+      "url": "https://garyleckey.substack.com/p/when-does-a-reproducible-pipeline",
+      "published_utc": "2026-07-19T23:31:27.737Z",
+      "topic": "evidence-methods",
+      "archive_visible": true
+    },
+    {
+      "title": "Can a Trading System Be an Observatory Before It Is a Strategy?",
+      "url": "https://garyleckey.substack.com/p/can-a-trading-system-be-an-observatory",
+      "published_utc": "2026-07-19T23:25:31.680Z",
+      "topic": "ai-data",
+      "archive_visible": true
+    },
+    {
+      "title": "What Would It Take to Launch a Payload Without a Rocket?",
+      "url": "https://garyleckey.substack.com/p/what-would-it-take-to-launch-a-payload",
+      "published_utc": "2026-07-19T23:22:28.723Z",
+      "topic": "frontier-systems",
+      "archive_visible": true
+    },
+    {
+      "title": "Can a Terrain Filter See Below the Ground?",
+      "url": "https://garyleckey.substack.com/p/can-a-terrain-filter-see-below-the",
+      "published_utc": "2026-07-19T23:18:59.495Z",
+      "topic": "space-sensing",
+      "archive_visible": true
+    },
+    {
+      "title": "How Do You Search 109,000 Orbits Without Finding a Pattern Everywhere?",
+      "url": "https://garyleckey.substack.com/p/how-do-you-search-109000-orbits-without",
+      "published_utc": "2026-07-19T23:12:37.203Z",
+      "topic": "space-sensing",
+      "archive_visible": true,
+      "subtitle": "What the Harmonic Solar System Survey found—and why its null model matters more than its largest ratio.",
+      "artwork": "assets/images/research/substack/orbital-null-model-1200.webp",
+      "artwork_small": "assets/images/research/substack/orbital-null-model-720.webp",
+      "artwork_alt": "Editorial orbital map showing many candidate paths around a central reference point",
+      "artwork_caption": "Editorial illustration — not orbital measurement data"
+    },
+    {
+      "title": "Can a Relationship Be Turned Into a Scientific Signal?",
+      "url": "https://garyleckey.substack.com/p/can-a-relationship-be-turned-into",
+      "published_utc": "2026-07-19T23:04:11.882Z",
+      "topic": "evidence-methods",
+      "archive_visible": true
+    },
+    {
+      "title": "How Do You Test a Pattern That Crosses Six Fields?",
+      "url": "https://garyleckey.substack.com/p/how-do-you-test-a-pattern-that-crosses",
+      "published_utc": "2026-07-19T22:45:29.497Z",
+      "topic": "evidence-methods",
+      "archive_visible": true
+    },
+    {
+      "title": "Can Seven Thousand Years Be One Story?",
+      "url": "https://garyleckey.substack.com/p/can-seven-thousand-years-be-one-story",
+      "published_utc": "2026-07-19T22:39:30.532Z",
+      "topic": "earth-history",
+      "archive_visible": true
+    },
+    {
+      "title": "The Arctic Was Not the Edge of the Map",
+      "url": "https://garyleckey.substack.com/p/the-arctic-was-not-the-edge-of-the",
+      "published_utc": "2026-07-19T22:32:05.257Z",
+      "topic": "earth-history",
+      "archive_visible": true
+    },
+    {
+      "title": "Who Were the People at the Edge of the Known World?",
+      "url": "https://garyleckey.substack.com/p/who-were-the-people-at-the-edge-of",
+      "published_utc": "2026-07-19T21:11:34.701Z",
+      "topic": "earth-history",
+      "archive_visible": true
+    },
+    {
+      "title": "Did the Wow! Signal Leave a Prediction—or a Pattern Found Later?",
+      "url": "https://garyleckey.substack.com/p/did-the-wow-signal-leave-a-predictionor",
+      "published_utc": "2026-07-19T23:16:05.246Z",
+      "topic": "space-sensing",
+      "archive_visible": true
+    },
+    {
+      "title": "Can an Active Field Make Space Debris Safer Before Impact?",
+      "url": "https://garyleckey.substack.com/p/can-an-active-field-make-space-debris",
+      "published_utc": "2026-07-19T23:09:45.430Z",
+      "topic": "space-sensing",
+      "archive_visible": true
+    },
+    {
+      "title": "Can GitHub Traffic Become a Crisis Sensor?",
+      "url": "https://garyleckey.substack.com/p/can-github-traffic-become-a-crisis",
+      "published_utc": "2026-07-19T23:06:51.319Z",
+      "topic": "ai-data",
+      "archive_visible": true
+    },
+    {
+      "title": "Can Living Fungi Become an Energy Component?",
+      "url": "https://garyleckey.substack.com/p/can-living-fungi-become-an-energy",
+      "published_utc": "2026-07-19T23:01:37.079Z",
+      "topic": "biological-coherence",
+      "archive_visible": true
+    },
+    {
+      "title": "Where Does Metaphor End and a Testable Model Begin?",
+      "url": "https://garyleckey.substack.com/p/where-does-metaphor-end-and-a-testable",
+      "published_utc": "2026-07-19T22:55:32.800Z",
+      "topic": "evidence-methods",
+      "archive_visible": true
+    },
+    {
+      "title": "The Candidate That Failed the Strongest Test",
+      "url": "https://garyleckey.substack.com/p/the-candidate-that-failed-the-strongest",
+      "published_utc": "2026-07-19T12:43:56.197Z",
+      "topic": "space-sensing",
+      "archive_visible": true
+    },
+    {
+      "title": "Can a Molecule's Spectrum Become a Testable Signal?",
+      "url": "https://garyleckey.substack.com/p/can-a-molecules-spectrum-become-a",
+      "published_utc": "2026-07-19T12:43:07.547Z",
+      "topic": "biological-coherence",
+      "archive_visible": true,
+      "subtitle": "Inside the HNC biomolecule-frequency packet—and the ten-arm experiment designed to prove it wrong."
+    },
+    {
+      "title": "EPAS: From a Nine-Shell Shield Concept to a Testable Bench Experiment",
+      "url": "https://garyleckey.substack.com/p/epas-from-a-nine-shell-shield-concept",
+      "published_utc": "2026-07-19T12:16:20.070Z",
+      "topic": "frontier-systems",
+      "archive_visible": true,
+      "subtitle": "What the proposed architecture combines, what established physics supports and what has not yet been demonstrated."
+    },
+    {
+      "title": "Tandem in Unity: Can One Feedback Principle Link Physics and Symbolic AI?",
+      "url": "https://garyleckey.substack.com/p/tandem-in-unity-can-one-feedback",
+      "published_utc": "2026-07-19T12:16:00.779Z",
+      "topic": "ai-data",
+      "archive_visible": true,
+      "subtitle": "A critical reader's guide to recursive fields, memory and the Auris Conjecture."
+    },
+    {
+      "title": "The Theory of Becoming: From Potential to Experienced Reality",
+      "url": "https://garyleckey.substack.com/p/the-theory-of-becoming-from-potential",
+      "published_utc": "2026-07-19T12:15:43.321Z",
+      "topic": "evidence-methods",
+      "archive_visible": true,
+      "subtitle": "A six-stage map of the Harmonic Nexus cosmology—and the difference between philosophical coherence and physical evidence."
+    },
+    {
+      "title": "The HNC Master Formula: Oscillation, Feedback and Memory",
+      "url": "https://garyleckey.substack.com/p/the-hnc-master-formula-oscillation",
+      "published_utc": "2026-07-19T12:15:12.406Z",
+      "topic": "orientation",
+      "archive_visible": true,
+      "subtitle": "A practical reader's guide to the Harmonic Nexus Core—and a clear boundary between implemented mathematics and open physical claims."
+    },
+    {
+      "title": "The Barons' Banner: When Architecture Makes Power Feel Natural",
+      "url": "https://garyleckey.substack.com/p/the-barons-banner-when-architecture",
+      "published_utc": "2026-07-19T12:14:51.616Z",
+      "topic": "earth-history",
+      "archive_visible": true,
+      "subtitle": "A field study of proportion, symbolism and authority at Farnham Estate."
+    },
+    {
+      "title": "One Logic Across Many Domains: Mapping the Aureon Research Programme",
+      "url": "https://garyleckey.substack.com/p/one-logic-across-many-domains-mapping",
+      "published_utc": "2026-07-19T09:27:34.666Z",
+      "topic": "orientation",
+      "archive_visible": true,
+      "subtitle": "A source-linked guide separating established evidence, internal models and open hypotheses across physics, AI, engineering and historical research."
+    },
+    {
+      "title": "The φ² Chain: A Research Trail from Ancient Measurement to Modern Computation",
+      "url": "https://garyleckey.substack.com/p/the-chain-from-sumer-to-rome-to-now",
+      "published_utc": "2026-07-07T22:56:59.254Z",
+      "topic": "earth-history",
+      "archive_visible": true,
+      "subtitle": "A reading path connecting historical knowledge systems, harmonic ratios and testable modern hypotheses."
+    },
+    {
+      "title": "The Weed That Wouldn't Die — And What It Might Teach Us About Repairing DNA",
+      "url": "https://garyleckey.substack.com/p/the-weed-that-wouldnt-die-and-what",
+      "published_utc": "2026-07-07T22:56:37.347Z",
+      "topic": "biological-coherence",
+      "archive_visible": true,
+      "subtitle": "A computational experiment, a long-lived survival strategy and an open biological question."
+    },
+    {
+      "title": "The Treshold files 01",
+      "url": "https://garyleckey.substack.com/p/the-treshold-files-01",
+      "published_utc": "2026-05-09T00:17:12.919Z",
+      "topic": "orientation",
+      "archive_visible": true
+    }
+  ]
+}

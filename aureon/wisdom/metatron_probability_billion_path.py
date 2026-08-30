@@ -54,7 +54,6 @@ if sys.platform == 'win32':
 
 import json
 import math
-import random
 from dataclasses import dataclass, field
 from typing import List, Dict, Optional, Tuple
 from datetime import datetime, timedelta
@@ -137,31 +136,8 @@ class ProbabilityMatrix:
                 "AUREON_ALLOW_SIM_FALLBACK=1 for dev/training-rig use."
             )
 
-        symbols = ["BTC/USD", "ETH/USD", "SOL/USD", "LINK/USD", "MATIC/USD"]
-        symbol = random.choice(symbols)
-        
-        # High-confidence predictions (95% model)
-        confidence = random.uniform(0.85, 0.99)
-        
-        # Expected returns aligned with sacred geometry
-        fib_returns = [0.236, 0.382, 0.618, 1.0, 1.618, 2.618]  # Fibonacci %
-        expected_return = random.choice(fib_returns)
-        
-        # Sacred alignment (how well price aligns with Fib levels)
-        sacred_alignment = random.uniform(0.7, 1.0)
-        
-        # Fibonacci level detection
-        fib_level = random.choice([0.382, 0.5, 0.618, None, None])  # Sometimes at Fib level
-        
-        return ProbabilityPrediction(
-            symbol=symbol,
-            action=random.choice(["BUY", "SELL"]),
-            confidence=confidence,
-            expected_return=expected_return,
-            timeframe=random.choice(["1h", "4h", "1d"]),
-            sacred_alignment=sacred_alignment,
-            fibonacci_level=fib_level,
-            timestamp=datetime.now().timestamp()
+        raise RuntimeError(
+            "no provider-receipted probability model is connected; prediction is no_data"
         )
     
     def get_batch_predictions(self, count: int = 10) -> List[ProbabilityPrediction]:

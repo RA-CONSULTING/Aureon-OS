@@ -7,8 +7,8 @@ import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Play, RotateCcw, Download, Save, TrendingUp, AlertCircle } from "lucide-react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from "recharts";
+import { Play, RotateCcw, Download, Save, AlertCircle } from "lucide-react";
+import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from "recharts";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
@@ -162,31 +162,6 @@ export function BacktestingInterface() {
     } finally {
       setIsRunning(false);
     }
-  };
-
-  const generateEquityCurve = (initial: number, trades: number) => {
-    const curve = [{ date: config.startDate, equity: initial }];
-    let equity = initial;
-    const days = Math.floor((new Date(config.endDate).getTime() - new Date(config.startDate).getTime()) / (1000 * 60 * 60 * 24));
-    const step = Math.floor(days / trades);
-    
-    // Use coherence threshold to influence simulation quality
-    const winBias = config.coherenceThreshold * 0.15; // Higher threshold = better bias
-
-    for (let i = 1; i <= trades; i++) {
-      // Deterministic pseudo-random based on index for reproducibility
-      const seed = Math.sin(i * 12.9898) * 43758.5453;
-      const pseudoRandom = seed - Math.floor(seed);
-      const change = (pseudoRandom - 0.35 + winBias) * 0.05;
-      equity = equity * (1 + change);
-      const date = new Date(new Date(config.startDate).getTime() + (i * step * 24 * 60 * 60 * 1000));
-      curve.push({
-        date: date.toISOString().split('T')[0],
-        equity: Math.round(equity * 100) / 100
-      });
-    }
-
-    return curve;
   };
 
   const saveResults = async () => {
@@ -509,7 +484,7 @@ export function BacktestingInterface() {
                   </div>
                   <div className="p-4 bg-muted/30 rounded-lg border border-border/30">
                     <p className="text-xs text-muted-foreground mb-1">Win Rate</p>
-                    <p className="text-2xl font-bold font-mono text-green-500">{results.winRate.toFixed(1)}%</p>
+                    <p className="text-2xl font-bold font-mono text-success">{results.winRate.toFixed(1)}%</p>
                   </div>
                   <div className="p-4 bg-muted/30 rounded-lg border border-border/30">
                     <p className="text-xs text-muted-foreground mb-1">Total Return</p>
@@ -577,7 +552,7 @@ export function BacktestingInterface() {
                   </div>
                   <div className="p-3 bg-background/50 rounded border border-border/30">
                     <p className="text-xs text-muted-foreground">Avg Win</p>
-                    <p className="text-lg font-bold font-mono text-green-500">+{results.avgWin.toFixed(2)}%</p>
+                    <p className="text-lg font-bold font-mono text-success">+{results.avgWin.toFixed(2)}%</p>
                   </div>
                   <div className="p-3 bg-background/50 rounded border border-border/30">
                     <p className="text-xs text-muted-foreground">Avg Loss</p>

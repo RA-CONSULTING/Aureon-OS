@@ -36,6 +36,10 @@ htmlcov
 .tox
 .hypothesis
 
+# Historical source bundles are evidence only, never image build input.
+imports/
+archive/
+
 # Documentation
 *.md
 docs/

@@ -23,6 +23,7 @@ Routes:
   GET  /api/approvals          the director's desk: big plays prepared, awaiting Gary's decision
   POST /api/approvals/<id>     record Gary's approve/reject (the human gate; never executes the move)
   GET  /api/company            the full workforce: every role across 8 departments, crew-staffable
+  GET  /api/defense            the bio family: sensor lanes · statistical-validity dossier · immune layer
   GET  /api/manifests/<name>   a frontend manifest, rendered live (JSON)
   POST /api/manifests/refresh  rebuild catalog + rewrite frontend manifests
 
@@ -32,39 +33,18 @@ additionally require a valid Supabase JWT (HS256) — stdlib verify, no new dep.
 
 from __future__ import annotations
 
-import base64
-import hashlib
-import hmac
-import json
 import logging
 import os
-import time
 from typing import Any, Dict
+
+from aureon.operator.identity import verify_supabase_jwt
 
 logger = logging.getLogger("aureon.saas.gateway")
 
 
 # ── Supabase JWT (optional, stdlib HS256) ─────────────────────────────────────
-
-def _b64url_decode(seg: str) -> bytes:
-    pad = "=" * (-len(seg) % 4)
-    return base64.urlsafe_b64decode(seg + pad)
-
-
-def verify_supabase_jwt(token: str, secret: str) -> Dict[str, Any] | None:
-    """Verify an HS256 Supabase JWT with the project secret. Returns claims or None."""
-    try:
-        header_b64, payload_b64, sig_b64 = token.split(".")
-        signing_input = f"{header_b64}.{payload_b64}".encode("ascii")
-        expected = hmac.new(secret.encode("utf-8"), signing_input, hashlib.sha256).digest()
-        if not hmac.compare_digest(expected, _b64url_decode(sig_b64)):
-            return None
-        claims = json.loads(_b64url_decode(payload_b64))
-        if isinstance(claims.get("exp"), (int, float)) and claims["exp"] < time.time():
-            return None
-        return claims
-    except Exception:  # noqa: BLE001 — any malformed token is simply invalid
-        return None
+# The verifier now lives in ``aureon.operator.identity`` so the operator gate and this gateway share
+# one implementation; re-exported here for backward compatibility (imports + tests unchanged).
 
 
 def build_organism_payload() -> Dict[str, Any]:
@@ -185,7 +165,12 @@ def register_saas_routes(app: Any) -> Any:
 
     from aureon.saas.catalog import build_catalog, render_manifests, write_frontend_manifests
     from aureon.saas.cognitive import provenance_block
-    from aureon.saas.domains import PRODUCT_DOMAINS, domain_report, probe_domain
+    from aureon.saas.domains import (
+        PRODUCT_DOMAINS,
+        domain_health,
+        domain_report,
+        probe_domain,
+    )
     from aureon.saas.status import get_platform_status
 
     def _stamp(payload: Dict[str, Any], truth_status: str) -> Dict[str, Any]:
@@ -199,6 +184,13 @@ def register_saas_routes(app: Any) -> Any:
         """When a Supabase JWT secret is configured, require a valid tenant token."""
         if not jwt_secret:
             return True  # tenancy bridge disabled
+        # The admin/operator bearer is NOT a Supabase JWT, so it can never satisfy the check below.
+        # Without this branch, stacking @_guarded over @_admin_only 401s the operator before the
+        # admin check is even reached — locking every identity out of those control-plane routes.
+        # ``g.is_admin`` is set only by the operator gate, which has already authenticated the
+        # bearer in constant time; absent (bare-app mount) ⇒ False ⇒ the JWT path below, unchanged.
+        if getattr(g, "is_admin", False):
+            return True
         auth = request.headers.get("Authorization", "")
         if not auth.startswith("Bearer "):
             return False
@@ -216,6 +208,41 @@ def register_saas_routes(app: Any) -> Any:
         wrapper.__name__ = fn.__name__
         return wrapper
 
+    def _admin_only(fn):
+        """Operator-only control-plane route: refuse a signed-in end user (tenant).
+
+        ``g.is_admin`` is set by the operator's request gate (admin bearer or the open
+        single-operator default ⇒ True). It is absent when these routes are mounted on a bare app
+        (e.g. the compliance audit), so the default is permissive and nothing changes there.
+        """
+        def wrapper(*a, **k):
+            if not getattr(g, "is_admin", True):
+                return jsonify({"error": {"code": 403, "message": "this control-plane route is "
+                                                                  "operator-only", "plane": "admin"}}), 403
+            return fn(*a, **k)
+        wrapper.__name__ = fn.__name__
+        return wrapper
+
+    def _authenticated_admin_only(fn):
+        """Require the configured operator bearer, never the open dev plane.
+
+        This stronger boundary is reserved for decisions that may later be
+        consumed as authority. ``open`` remains useful for local read-only
+        development, but it is not an authenticated owner identity.
+        """
+        def wrapper(*a, **k):
+            if getattr(g, "identity_kind", None) != "admin":
+                return jsonify({
+                    "error": {
+                        "code": 403,
+                        "message": "authenticated operator bearer required",
+                        "plane": "admin",
+                    }
+                }), 403
+            return fn(*a, **k)
+        wrapper.__name__ = fn.__name__
+        return wrapper
+
     @app.get("/api/catalog")
     @_guarded
     def saas_catalog():
@@ -225,8 +252,12 @@ def register_saas_routes(app: Any) -> Any:
     @app.get("/api/domains")
     @_guarded
     def saas_domains():
+        # Every domain carries a real operational health rollup (module/dashboard/wiring counts,
+        # LOC, capabilities) derived from the filesystem scan — not just import-reachability.
+        catalog = build_catalog(use_cache=True)
         return jsonify(_stamp(
-            {"product_domains": PRODUCT_DOMAINS, "domains": domain_report()}, "real_derived"))
+            {"product_domains": PRODUCT_DOMAINS, "domains": domain_report(catalog=catalog)},
+            "real_derived"))
 
     @app.get("/api/domains/<domain>")
     @_guarded
@@ -238,7 +269,28 @@ def register_saas_routes(app: Any) -> Any:
         ]
         return jsonify(_stamp(
             {"domain": domain, "entry": probe_domain(domain),
+             "health": domain_health(domain, catalog),
              "system_count": len(systems), "systems": systems[:200]}, "real_derived"))
+
+    @app.get("/api/coverage")
+    @_guarded
+    def saas_coverage():
+        # Repo-wide coverage audit: reconciles the real aureon/ package tree against the SaaS
+        # taxonomy + catalog, proving every domain is surfaced (no uncovered, no phantom).
+        # Also carries the benchmark-coverage march (b63): which domains hold a
+        # Tier-A pin, the named gap roadmap, and the one-way ratchet verdict.
+        from aureon.analytics.benchmark_coverage import (
+            build_coverage,
+            load_baseline,
+            ratchet_check,
+        )
+        from aureon.saas.coverage import build_coverage_audit
+
+        payload = build_coverage_audit()
+        bc = build_coverage()
+        payload["benchmark_coverage"] = dict(bc.to_dict(),
+                                             ratchet=ratchet_check(bc, load_baseline()))
+        return jsonify(_stamp(payload, "real_derived"))
 
     @app.get("/api/status")
     @_guarded
@@ -345,6 +397,7 @@ def register_saas_routes(app: Any) -> Any:
 
     @app.post("/api/approvals/<item_id>")
     @_guarded
+    @_authenticated_admin_only
     def saas_approvals_decide(item_id: str):
         # Record Gary's approve/reject for a prepared big play. This is the human
         # gate — it records the decision and does NOT execute the irreversible move
@@ -354,14 +407,27 @@ def register_saas_routes(app: Any) -> Any:
         body = request.get_json(silent=True) or {}
         decision = str(body.get("decision") or "").strip().lower()
         note = str(body.get("note") or "")
+        if "approver" in body:
+            return jsonify(_stamp({
+                "ok": False,
+                "error": "approver identity is derived by the server",
+            }, "no_data")), 400
         if decision not in ("approve", "reject"):
             return jsonify(_stamp({"ok": False, "error": "decision must be 'approve' or 'reject'"},
                                   "no_data")), 400
         try:
             from aureon.core.approval_queue import get_approval_queue
 
-            item = get_approval_queue().decide(item_id, decision, approver=str(body.get("approver") or "gary"),
-                                               note=note)
+            item = get_approval_queue().decide(
+                item_id,
+                decision,
+                approver="gary-operator-admin",
+                note=note,
+                auth_context={
+                    "identity_kind": "admin",
+                    "authn_method": "operator_static_bearer",
+                },
+            )
         except Exception as exc:  # noqa: BLE001
             return jsonify(_stamp({"ok": False, "error": str(exc)[:200]}, "no_data")), 500
         if item is None:
@@ -397,6 +463,21 @@ def register_saas_routes(app: Any) -> Any:
             ts = "no_data"
         return jsonify(_stamp(data, ts))
 
+    @app.get("/api/org")
+    @_guarded
+    def saas_org():
+        # The organization behind Aureon OS — R&A Consulting and Brokerage Services Ltd
+        # (trading as Aureon Zorza Technologies), its company number, the Innovate NI Silver
+        # recognition, community support and contact — verifiable public facts transcribed
+        # from COMPANY.md. Distinct from /api/company, which is the agent workforce roster.
+        try:
+            from aureon.saas.company_profile import build_company_profile
+
+            profile = build_company_profile()
+            return jsonify(_stamp(profile, profile.get("truth_status", "real_derived")))
+        except Exception as exc:  # noqa: BLE001 — degrade honestly, never 500
+            return jsonify(_stamp({"available": False, "error": str(exc)[:200]}, "no_data"))
+
     @app.get("/api/consciousness")
     @_guarded
     def saas_consciousness():
@@ -412,6 +493,23 @@ def register_saas_routes(app: Any) -> Any:
         except Exception as exc:  # noqa: BLE001 — degrade honestly, never 500
             return jsonify(_stamp(
                 {"available": False, "categories": {}, "surfaces": [], "error": str(exc)[:200]},
+                "no_data"))
+
+    @app.get("/api/defense")
+    @_guarded
+    def saas_defense():
+        # The bio family — sensor lanes, the statistical-validity dossier, and the cognitive
+        # immune layer (integrity guard · swarm defense · MCP membrane) — grouped, with real
+        # passed/metrics/evidence from the committed Tier-A benchmark report and a live
+        # bus-trace overlay where a module has run. Read-only; no bio module is run on request.
+        try:
+            from aureon.saas.defense_catalog import build_defense_catalog
+
+            cat = build_defense_catalog()
+            return jsonify(_stamp(cat, cat.get("truth_status", "no_data")))
+        except Exception as exc:  # noqa: BLE001 — degrade honestly, never 500
+            return jsonify(_stamp(
+                {"groups": {}, "group_order": [], "counts": {}, "error": str(exc)[:200]},
                 "no_data"))
 
     @app.get("/api/automation")
@@ -489,6 +587,7 @@ def register_saas_routes(app: Any) -> Any:
 
     @app.post("/api/manifests/refresh")
     @_guarded
+    @_admin_only
     def saas_refresh():
         catalog = build_catalog()  # force rebuild; /api/manifests/<name> now serves fresh data
         manifests = render_manifests(catalog=catalog, status=get_platform_status())

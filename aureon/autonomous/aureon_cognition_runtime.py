@@ -38,11 +38,20 @@ class MinerModule:
         ))
 
     def compute_signal(self, symbol: str, market: Json) -> Optional[Json]:
-        # TODO: swap for your miner brain
         momentum = float(market.get("momentum", 0.0))
-        gamma = float(market.get("gamma", 0.0))
+        # P5: the bare per-snapshot ``gamma`` was an audit-invisible silo — a
+        # private coherence number gating a live signal. It is now named
+        # coherence_gamma and reconciled with the canonical HNC field: the
+        # shared Γ can only TIGHTEN this gate (b46 min), and with no field
+        # flowing the snapshot's own figure passes unchanged.
+        coherence_gamma = float(market.get("coherence_gamma", market.get("gamma", 0.0)))
+        try:
+            from aureon.core.hnc_field import reconcile_gamma
+            coherence_gamma = reconcile_gamma(coherence_gamma)
+        except Exception:
+            pass
 
-        if gamma < 0.20:
+        if coherence_gamma < 0.20:
             return None
 
         casc = momentum * 10.0
@@ -50,8 +59,9 @@ class MinerModule:
             "symbol": symbol,
             "side": "buy" if casc > 0 else "sell",
             "strength": casc,
-            "gamma": gamma,
-            "expected_edge": casc * gamma,
+            "gamma": coherence_gamma,
+            "coherence_gamma": coherence_gamma,
+            "expected_edge": casc * coherence_gamma,
             "min_hold_seconds": 50 * 60,
         }
 

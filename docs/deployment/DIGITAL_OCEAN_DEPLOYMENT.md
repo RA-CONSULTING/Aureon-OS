@@ -254,15 +254,19 @@ supervisorctl restart queen_soul_shield
 
 ## Scaling
 
-### Multiple Instances
+### Horizontal Scaling Is Blocked
 ```yaml
 # app.yaml
-instance_count: 3  # Three app instances
+instance_count: 1
 
-# Each runs its own shield + orca
-# Supervisor coordinates all processes
-# Digital Ocean load balancer routes traffic
+# Do not add autoscaling to a live-capable economic/operator service.
 ```
+
+The supervisor coordinates processes inside one instance; it does not provide
+cross-instance leader election or order idempotency. Keep one writer instance
+until leader election, distributed idempotency, and shared limiter/cache/state
+are independently implemented and proven. Read-only dashboards and metrics may
+be scaled separately only when they cannot mutate economic or operator state.
 
 ### Geographic Distribution
 - Digital Ocean LON (London) region

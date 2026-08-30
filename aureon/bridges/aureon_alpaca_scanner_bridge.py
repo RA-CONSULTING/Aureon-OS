@@ -30,7 +30,7 @@ import sys
 import os
 
 # Windows UTF-8 fix (MANDATORY)
-if sys.platform == 'win32':
+if sys.platform == 'win32' and sys.stdout.isatty():
     # Avoid re-wrapping sys.stdout.buffer directly: on CPython this can close the
     # underlying stream when the original TextIOWrapper is GC'd, causing:
     #   ValueError: I/O operation on closed file

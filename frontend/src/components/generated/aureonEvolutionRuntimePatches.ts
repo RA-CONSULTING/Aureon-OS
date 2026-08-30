@@ -15,11 +15,11 @@ export type AureonEvolutionRuntimePatch = {
 };
 
 export const AUREON_EVOLUTION_RUNTIME_PATCH_SUMMARY = {
-  "activePatchCount": 564,
-  "generatedAt": "2026-05-22T18:17:44.861587+00:00",
-  "materializedPatchCount": 564,
+  "activePatchCount": 563,
+  "generatedAt": "2026-08-20T19:50:38.479208+00:00",
+  "materializedPatchCount": 563,
   "remainingQueueCount": 0,
-  "sourceQueueCount": 564,
+  "sourceQueueCount": 563,
   "status": "frontend_work_orders_live_executed_runtime_patches_active",
   "validationFailures": 0
 } as const;
@@ -6315,19 +6315,6 @@ export const AUREON_EVOLUTION_RUNTIME_PATCHES = [
     "sourcePath": "public/taste_molecular_codex.json",
     "targetScreen": "self_improvement",
     "title": "Wire Taste Molecular Codex into Self-Improvement",
-    "validationStatus": "validated"
-  },
-  {
-    "active": true,
-    "evidenceUrl": "/aureon_frontend_work_order_execution.json#frontend_evolution.public_consciousness_state_json",
-    "executionStatus": "read_only_adapter_record_created",
-    "id": "frontend_evolution.public_consciousness_state_json",
-    "patchId": "runtime_patch_frontend_evolution_public_consciousness_state_json",
-    "patchType": "read_only_status_adapter",
-    "queueState": "completed_validated",
-    "sourcePath": "public/consciousness_state.json",
-    "targetScreen": "trading",
-    "title": "Wire Consciousness State into Trading",
     "validationStatus": "validated"
   },
   {

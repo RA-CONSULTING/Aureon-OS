@@ -24,6 +24,16 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, Generator, List, Optional
 
+from aureon.ollama_config import (
+    ensure_ollama_runtime_config,
+    is_ollama_cloud_url,
+    looks_like_ollama_url,
+    ollama_authorization_headers,
+    resolve_ollama_api_key,
+    resolve_ollama_openai_base_url,
+    resolve_ollama_reasoning_effort,
+)
+
 logger = logging.getLogger("aureon.inhouse_ai.llm")
 
 
@@ -191,10 +201,19 @@ class AureonLocalAdapter(LLMAdapter):
         model: Optional[str] = None,
         api_key: Optional[str] = None,
     ):
-        self.base_url = (
+        if base_url is None and not str(
+            os.environ.get("AUREON_LLM_BASE_URL", "") or ""
+        ).strip():
+            ensure_ollama_runtime_config(explicit_config=api_key is not None)
+        configured_base_url = (
             base_url
             or os.environ.get("AUREON_LLM_BASE_URL", "http://localhost:11434/v1")
-        ).rstrip("/")
+        )
+        self.base_url = (
+            resolve_ollama_openai_base_url(configured_base_url)
+            if looks_like_ollama_url(configured_base_url)
+            else configured_base_url.rstrip("/")
+        )
         # Track whether the caller pinned a specific model. If they didn't,
         # the health check is allowed to substitute a working installed model
         # so the voice layer doesn't silently 404 / 500 against a name that
@@ -202,7 +221,12 @@ class AureonLocalAdapter(LLMAdapter):
         env_model = os.environ.get("AUREON_LLM_MODEL")
         self._model_pinned = bool(model or env_model)
         self.model = model or env_model or "llama3"
-        self.api_key = api_key or os.environ.get("AUREON_LLM_API_KEY", "")
+        self._api_key_explicit = api_key is not None
+        self.api_key = (
+            resolve_ollama_api_key(api_key)
+            if looks_like_ollama_url(self.base_url)
+            else (api_key or os.environ.get("AUREON_LLM_API_KEY", ""))
+        )
         self._model_verified: bool = False
 
         # Ollama detection. The OpenAI /v1 shim Ollama ships with silently
@@ -235,7 +259,15 @@ class AureonLocalAdapter(LLMAdapter):
     def _headers(self) -> Dict[str, str]:
         h = {"Content-Type": "application/json"}
         if self.api_key:
-            h["Authorization"] = f"Bearer {self.api_key}"
+            if looks_like_ollama_url(self.base_url):
+                h.update(
+                    ollama_authorization_headers(
+                        self.base_url,
+                        self.api_key if self._api_key_explicit else None,
+                    )
+                )
+            else:
+                h["Authorization"] = f"Bearer {self.api_key}"
         return h
 
     def _build_payload(
@@ -246,6 +278,7 @@ class AureonLocalAdapter(LLMAdapter):
         max_tokens: int,
         temperature: float,
         stream: bool = False,
+        stop: Optional[List[str]] = None,
     ) -> Dict[str, Any]:
         """Build an OpenAI-compatible chat completion payload."""
         full_messages = []
@@ -303,8 +336,13 @@ class AureonLocalAdapter(LLMAdapter):
         if keep_alive:
             payload["keep_alive"] = keep_alive
 
+        if is_ollama_cloud_url(self.base_url):
+            payload["reasoning_effort"] = resolve_ollama_reasoning_effort()
+
         if tools:
             payload["tools"] = self._convert_tools(tools)
+        if stop:
+            payload["stop"] = list(stop)
 
         return payload
 
@@ -328,6 +366,7 @@ class AureonLocalAdapter(LLMAdapter):
         system: str,
         max_tokens: int,
         temperature: float,
+        stop: Optional[List[str]] = None,
     ) -> Dict[str, Any]:
         """
         Build an Ollama-native ``/api/chat`` payload. Differences from
@@ -370,6 +409,11 @@ class AureonLocalAdapter(LLMAdapter):
         }
         if self._keep_alive:
             payload["keep_alive"] = self._keep_alive
+        if stop:
+            payload["options"]["stop"] = list(stop)
+        if is_ollama_cloud_url(self._native_root):
+            effort = resolve_ollama_reasoning_effort()
+            payload["think"] = False if effort == "none" else effort
         return payload
 
     def _prompt_via_native(
@@ -378,11 +422,18 @@ class AureonLocalAdapter(LLMAdapter):
         system: str,
         max_tokens: int,
         temperature: float,
+        stop: Optional[List[str]] = None,
     ) -> LLMResponse:
         """Send a chat request through Ollama's native /api/chat."""
         if _llm_http_disabled():
             return LLMResponse(text="[ERROR] LLM HTTP disabled by audit/offline mode", stop_reason="error")
-        payload = self._build_native_payload(messages, system, max_tokens, temperature)
+        payload = self._build_native_payload(
+            messages,
+            system,
+            max_tokens,
+            temperature,
+            stop,
+        )
         url = f"{self._native_root}/api/chat"
         try:
             req_timeout = float(
@@ -435,10 +486,29 @@ class AureonLocalAdapter(LLMAdapter):
         # Ollama-native fast path: only used when we have no tool defs
         # (the native /api/chat doesn't emit OpenAI-style tool_calls),
         # and when auto-detected or explicitly enabled.
+        raw_stop = kwargs.get("stop")
+        stop = (
+            [str(item) for item in raw_stop]
+            if isinstance(raw_stop, (list, tuple))
+            else None
+        )
         if self._prefer_native and not tools:
-            return self._prompt_via_native(messages, system, max_tokens, temperature)
+            return self._prompt_via_native(
+                messages,
+                system,
+                max_tokens,
+                temperature,
+                stop,
+            )
 
-        payload = self._build_payload(messages, system, tools, max_tokens, temperature)
+        payload = self._build_payload(
+            messages,
+            system,
+            tools,
+            max_tokens,
+            temperature,
+            stop=stop,
+        )
         url = f"{self.base_url}/chat/completions"
 
         try:
@@ -1839,12 +1909,12 @@ class AureonAnthropicAdapter(LLMAdapter):
         return bool(self._client)
 
 
-def build_voice_adapter() -> LLMAdapter:
+def build_voice_adapter(lane: str = "general") -> LLMAdapter:
     """
     Build a safe default adapter for the Vault Voice layer.
 
     Priority:
-      1. AureonHybridAdapter (local Ollama/vLLM/llama.cpp plus AureonBrain) if reachable
+      1. AureonHybridAdapter (configured Ollama local/cloud plus AureonBrain) if reachable
       2. Explicit external backends only when requested
       3. Stub adapter with actionable configuration instructions
 
@@ -1857,17 +1927,19 @@ def build_voice_adapter() -> LLMAdapter:
         return AureonBrainAdapter()
 
     if backend in ("hybrid", "ollama_hybrid", "cognitive", "cognitive_ollama", "aureon_hybrid"):
-        return AureonHybridAdapter()
+        try:
+            from aureon.integrations.ollama import OllamaModelSwitchboard
+
+            adapter, _selection = OllamaModelSwitchboard().hybrid_adapter_for(lane)
+            return adapter
+        except Exception:
+            return AureonHybridAdapter()
 
     if backend in ("ollama", "native_ollama", "ollama_native"):
         try:
-            from aureon.integrations.ollama import OllamaLLMAdapter
+            from aureon.integrations.ollama import OllamaModelSwitchboard
 
-            adapter = OllamaLLMAdapter(
-                model=os.environ.get("AUREON_LLM_MODEL") or os.environ.get("AUREON_OLLAMA_MODEL") or None,
-                base_url=os.environ.get("AUREON_OLLAMA_BASE_URL") or None,
-                keep_alive=os.environ.get("AUREON_LLM_KEEP_ALIVE", "30m") or None,
-            )
+            adapter, _selection = OllamaModelSwitchboard().adapter_for(lane)
             if adapter.health_check():
                 return adapter
         except Exception as exc:
@@ -1890,13 +1962,21 @@ def build_voice_adapter() -> LLMAdapter:
             a = AureonAnthropicAdapter()
             if a.health_check():
                 return a
+        fallback = AureonHybridAdapter()
+        if not _llm_http_disabled() and fallback.local.health_check():
+            return fallback
         return AureonStubAdapter(
-            "No Anthropic backend configured. Set ANTHROPIC_API_KEY (and optionally AUREON_ANTHROPIC_MODEL).",
+            "No Anthropic or configured Ollama fallback backend is reachable.",
             model="anthropic-unconfigured",
         )
 
     if backend in ("", "auto", "local", "aureon_ollama", "unified_cognitive"):
-        hybrid = AureonHybridAdapter()
+        try:
+            from aureon.integrations.ollama import OllamaModelSwitchboard
+
+            hybrid, _selection = OllamaModelSwitchboard().hybrid_adapter_for(lane)
+        except Exception:
+            hybrid = AureonHybridAdapter()
         if not _llm_http_disabled() and hybrid.local.health_check():
             hybrid.model = f"aureon-ollama-hybrid:{hybrid.local.model}"
             return hybrid
@@ -1904,14 +1984,17 @@ def build_voice_adapter() -> LLMAdapter:
             return hybrid
 
     if backend in ("plain_local", "local_only"):
-        local = AureonLocalAdapter()
+        try:
+            from aureon.integrations.ollama import OllamaModelSwitchboard
+
+            local, _selection = OllamaModelSwitchboard().compatible_adapter_for(lane)
+        except Exception:
+            local = AureonLocalAdapter()
         if local.health_check():
             return local
 
-    # Explicit local fallback: external providers are never selected implicitly.
-    # Note: we intentionally do NOT auto-fall back to external providers in "auto"
-    # mode, even if API keys are present. External use must be explicit via
-    # AUREON_VOICE_BACKEND=anthropic, so tests/offline runs never hang.
+    # Offline-safe final fallback. When the configured Ollama endpoint is cloud,
+    # the hybrid branch above is the explicit repo-wide external fallback.
     return AureonStubAdapter(
         "No LLM backend is reachable.\n"
         "To enable real conversation for Vault voices:\n"

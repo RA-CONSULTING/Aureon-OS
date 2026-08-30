@@ -15,7 +15,9 @@ from typing import Dict, Any
 TESTS_PASSED = 0
 TESTS_FAILED = 0
 
-def test_result(name: str, passed: bool, details: str = ""):
+def record_result(name: str, passed: bool, details: str = ""):
+    # Reporting helper, not a test — its old ``test_result`` name made pytest try to
+    # inject ``name``/``passed`` as fixtures, erroring the whole module on every run.
     global TESTS_PASSED, TESTS_FAILED
     if passed:
         TESTS_PASSED += 1
@@ -59,31 +61,31 @@ def test_basic_net_profit():
     expected_total_fees = 0.183
     expected_net_profit = 93.0 - 90.0 - 0.183  # $2.817
     
-    test_result(
+    record_result(
         "Entry cost calculation",
         abs(entry_cost - expected_entry_cost) < 0.01,
         f"Got {entry_cost}, expected {expected_entry_cost}"
     )
     
-    test_result(
+    record_result(
         "Sell value calculation", 
         abs(sell_value - expected_sell_value) < 0.01,
         f"Got {sell_value}, expected {expected_sell_value}"
     )
     
-    test_result(
+    record_result(
         "Total fees calculation",
         abs(total_fees - expected_total_fees) < 0.01,
         f"Got {total_fees:.4f}, expected {expected_total_fees}"
     )
     
-    test_result(
+    record_result(
         "Net profit is POSITIVE (profitable trade)",
         net_profit > 0,
         f"Net profit: ${net_profit:.4f}"
     )
     
-    test_result(
+    record_result(
         "Net profit matches expected",
         abs(net_profit - expected_net_profit) < 0.01,
         f"Got ${net_profit:.4f}, expected ${expected_net_profit:.4f}"
@@ -114,7 +116,7 @@ def test_losing_trade():
     total_fees = entry_fee + sell_fee
     net_profit = current_value - entry_cost - total_fees
     
-    test_result(
+    record_result(
         "Net profit is NEGATIVE (losing trade)",
         net_profit < 0,
         f"Net profit: ${net_profit:.4f}"
@@ -122,7 +124,7 @@ def test_losing_trade():
     
     # Should NOT sell
     should_sell = net_profit > 0
-    test_result(
+    record_result(
         "System correctly BLOCKS sale of losing position",
         should_sell == False,
         f"Should sell: {should_sell}"
@@ -159,7 +161,7 @@ def test_fee_impact():
     # Naive breakeven (ignoring fees) - THIS IS WRONG
     naive_breakeven = entry_price
     
-    test_result(
+    record_result(
         "True breakeven is HIGHER than entry price",
         true_breakeven_price > entry_price,
         f"Breakeven: ${true_breakeven_price:.4f} vs Entry: ${entry_price:.2f}"
@@ -168,7 +170,7 @@ def test_fee_impact():
     # Calculate the minimum profit margin needed
     min_margin = ((true_breakeven_price - entry_price) / entry_price) * 100
     
-    test_result(
+    record_result(
         "Minimum margin to breakeven accounts for fees",
         min_margin > 0.1,  # Should be about 0.2% for 0.1% fees each way
         f"Need {min_margin:.3f}% gain just to breakeven"
@@ -198,7 +200,7 @@ def test_dust_filtering():
     
     for tc in test_cases:
         is_dust = tc["value"] < dust_threshold
-        test_result(
+        record_result(
             f"Value ${tc['value']:.2f} ({tc['desc']}) - {'DUST' if is_dust else 'TRADEABLE'}",
             is_dust == tc["should_skip"],
             f"Filtered: {is_dust}, Expected: {tc['should_skip']}"
@@ -238,7 +240,7 @@ def test_profit_gate():
         entry_fee=0.10,  # 0.1% entry fee
         current_price=105.0  # 5% gain
     )
-    test_result(
+    record_result(
         "5% gain is profitable",
         result1["is_profitable"] == True,
         f"Net profit: ${result1['net_profit']:.4f} ({result1['net_profit_pct']:.2f}%)"
@@ -251,7 +253,7 @@ def test_profit_gate():
         entry_fee=0.10,
         current_price=100.15  # 0.15% gain - borderline
     )
-    test_result(
+    record_result(
         "0.15% gain correctly calculated",
         True,  # Just checking it doesn't crash
         f"Net profit: ${result2['net_profit']:.4f} ({result2['net_profit_pct']:.2f}%)"
@@ -264,7 +266,7 @@ def test_profit_gate():
         entry_fee=0.10,
         current_price=98.0  # 2% loss
     )
-    test_result(
+    record_result(
         "2% loss is NOT profitable",
         result3["is_profitable"] == False,
         f"Net profit: ${result3['net_profit']:.4f} ({result3['net_profit_pct']:.2f}%)"
@@ -277,7 +279,7 @@ def test_profit_gate():
         entry_fee=0.0229,
         current_price=473.0  # ~1.9% gain
     )
-    test_result(
+    record_result(
         "ZEC real trade scenario",
         result4["is_profitable"] == True,
         f"Net profit: ${result4['net_profit']:.4f} ({result4['net_profit_pct']:.2f}%)"
@@ -298,11 +300,11 @@ def test_cost_basis_integration():
         from cost_basis_tracker import CostBasisTracker
         tracker = CostBasisTracker()
         
-        test_result("CostBasisTracker imports successfully", True)
+        record_result("CostBasisTracker imports successfully", True)
         
         # Check if we have position data using the actual attribute
         positions = tracker.positions
-        test_result(
+        record_result(
             f"Tracker has {len(positions)} positions loaded",
             len(positions) > 0,
             f"Positions: {len(positions)}"
@@ -311,7 +313,7 @@ def test_cost_basis_integration():
         # Test a specific position if available
         if "SOLUSDC" in positions:
             sol = positions["SOLUSDC"]
-            test_result(
+            record_result(
                 "SOLUSDC position has required fields",
                 all(k in sol for k in ["avg_entry_price", "total_quantity", "total_fees"]),
                 f"Fields: {list(sol.keys())}"
@@ -336,7 +338,7 @@ def test_cost_basis_integration():
             sample_key = list(positions.keys())[0] if positions else None
             if sample_key:
                 sample = positions[sample_key]
-                test_result(
+                record_result(
                     f"{sample_key} position has required fields",
                     all(k in sample for k in ["avg_entry_price", "total_quantity", "total_fees"]),
                     f"Fields: {list(sample.keys())}"
@@ -347,7 +349,7 @@ def test_cost_basis_integration():
                 print(f"     Tracked Fees: ${sample.get('total_fees', 0):.6f}")
         
     except Exception as e:
-        test_result("CostBasisTracker integration", False, str(e))
+        record_result("CostBasisTracker integration", False, str(e))
 
 # =============================================================================
 # TEST 7: Edge Cases
@@ -364,14 +366,14 @@ def test_edge_cases():
         sell_fee = current_value * 0.001
         return current_value - entry_cost - fee - sell_fee
     
-    test_result(
+    record_result(
         "Zero quantity returns zero profit",
         calc_profit(100, 0, 0, 110) == 0
     )
     
     # Very small quantity (dust)
     tiny_profit = calc_profit(100, 0.0001, 0.00001, 110)
-    test_result(
+    record_result(
         "Tiny position profit calculated correctly",
         tiny_profit > 0,
         f"Profit on 0.0001 units: ${tiny_profit:.6f}"
@@ -380,14 +382,14 @@ def test_edge_cases():
     # Large position
     large_profit = calc_profit(50000, 2.5, 125.0, 55000)
     expected_large = (55000 * 2.5) - (50000 * 2.5) - 125.0 - (55000 * 2.5 * 0.001)
-    test_result(
+    record_result(
         "Large position ($125k) profit calculated correctly",
         abs(large_profit - expected_large) < 0.01,
         f"Profit: ${large_profit:,.2f}"
     )
     
     # Negative current price (should never happen but let's be safe)
-    test_result(
+    record_result(
         "Handles edge cases gracefully",
         True,  # If we got here without crashing, we're good
         "No crashes on edge cases"

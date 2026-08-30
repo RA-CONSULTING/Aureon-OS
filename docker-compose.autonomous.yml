@@ -2,8 +2,6 @@
 # Simplified docker-compose for pure volatility/momentum trading
 # Usage: docker-compose -f docker-compose.autonomous.yml up -d
 
-version: '3.8'
-
 services:
   # Autonomous volatility trader (no UI, pure trading)
   aureon-autonomous:
@@ -58,6 +56,7 @@ services:
         max-file: "5"
     
     deploy:
+      replicas: 1
       resources:
         limits:
           cpus: '2.0'            # Hard limit prevents CPU starvation

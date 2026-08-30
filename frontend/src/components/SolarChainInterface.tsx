@@ -81,7 +81,7 @@ export default function SolarChainInterface({ onChainUpdate }: SolarChainInterfa
             <Button 
               onClick={playChain} 
               disabled={selectedPlanets.length === 0 || isPlaying}
-              className="bg-gradient-to-r from-purple-600 to-blue-600"
+              className="bg-gradient-to-r from-primary to-primary"
             >
               {isPlaying ? 'Playing...' : 'Play Chain'}
             </Button>
@@ -105,8 +105,8 @@ export default function SolarChainInterface({ onChainUpdate }: SolarChainInterfa
                 className={`
                   relative cursor-pointer p-3 rounded-lg border-2 transition-all duration-200
                   ${isSelected 
-                    ? 'border-purple-500 bg-purple-50 shadow-lg scale-105' 
-                    : 'border-gray-200 hover:border-purple-300 hover:shadow-md'
+                    ? 'border-primary bg-primary shadow-lg scale-105' 
+                    : 'border-gray-200 hover:border-primary hover:shadow-md'
                   }
                 `}
               >
@@ -122,7 +122,7 @@ export default function SolarChainInterface({ onChainUpdate }: SolarChainInterfa
                 </div>
                 {isSelected && (
                   <Badge 
-                    className="absolute -top-2 -right-2 bg-purple-600 text-white"
+                    className="absolute -top-2 -right-2 bg-primary text-white"
                     variant="default"
                   >
                     {chainIndex + 1}
@@ -135,16 +135,16 @@ export default function SolarChainInterface({ onChainUpdate }: SolarChainInterfa
 
         {/* Chain Display */}
         {selectedPlanets.length > 0 && (
-          <div className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg">
+          <div className="p-4 bg-gradient-to-r from-primary to-primary rounded-lg">
             <h3 className="font-semibold mb-2">Active Chain:</h3>
             <div className="flex flex-wrap gap-2">
               {selectedPlanets.map((planet, index) => (
                 <div key={`${planet}-${index}`} className="flex items-center">
-                  <Badge variant="secondary" className="bg-purple-100">
+                  <Badge variant="secondary" className="bg-primary">
                     {planet}
                   </Badge>
                   {index < selectedPlanets.length - 1 && (
-                    <span className="mx-2 text-purple-600">→</span>
+                    <span className="mx-2 text-primary">→</span>
                   )}
                 </div>
               ))}

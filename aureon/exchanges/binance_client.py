@@ -1,4 +1,4 @@
-import os, time, hmac, hashlib, requests, json, logging
+import os, time, hmac, hashlib, requests, json, logging, math, threading
 from pathlib import Path
 from decimal import Decimal, InvalidOperation, ROUND_DOWN
 from requests.adapters import HTTPAdapter
@@ -17,6 +17,12 @@ except Exception:
     pass
 from typing import Dict, Any, Set, List, Optional
 
+from aureon.governance.economic_boundary import (
+    EconomicGovernanceBlocked,
+    _claim_economic_transport_context,
+    _economic_transport_body_digest,
+)
+
 # Rate limiting utilities (TokenBucket, TTLCache)
 try:
     from aureon.core.rate_limiter import TokenBucket, TTLCache
@@ -26,6 +32,9 @@ except Exception:
 
 BINANCE_MAINNET = "https://api.binance.com"
 BINANCE_TESTNET = "https://testnet.binance.vision"
+_BINANCE_SIGNING_CONTROL_FIELDS = frozenset(
+    {"recvWindow", "signature", "timestamp"}
+)
 
 # 🇬🇧 UK Binance Restrictions (FCA regulated)
 # These are tokens/features restricted for UK retail accounts
@@ -74,7 +83,10 @@ class BinanceClient:
         retry_strategy = Retry(
             total=3,
             status_forcelist=[429, 500, 502, 503, 504],
-            allowed_methods=["GET", "POST"],
+            # Order mutations are not transport-idempotent unless the caller
+            # supplies and persists a client order id.  Never let urllib3
+            # replay a POST behind the receipt/latch layer.
+            allowed_methods=["GET"],
             backoff_factor=1
         )
         adapter = HTTPAdapter(
@@ -101,7 +113,9 @@ class BinanceClient:
         # Server time offset for clock sync (fixes Windows clock drift)
         self._time_offset_ms: int = 0
         self._time_sync_timestamp: float = 0
-        self._sync_server_time()  # Auto-sync on init
+        # Construction stays inert.  The first signed request performs the
+        # provider-clock sync; importing or instantiating this adapter must not
+        # create an undeclared network request.
 
         # Token bucket rate limiter for Binance and request/quote caching
         try:
@@ -115,6 +129,18 @@ class BinanceClient:
         self._rate_limiter = TokenBucket(rate=rate, capacity=burst) if TokenBucket else None
         self._request_cache = TTLCache(default_ttl=float(os.getenv('BINANCE_EXCHANGE_CACHE_TTL', '1.0'))) if TTLCache else None
         self.max_retries = int(os.getenv('BINANCE_RETRY_COUNT', '2'))
+        # Submission acknowledgements that have not been proven by a complete
+        # terminal provider fill block duplicate submissions in this process.
+        self._pending_orders: Dict[tuple[str, str, bool], Dict[str, Any]] = {}
+        self._pending_conversions: Dict[tuple[str, str], Dict[str, Any]] = {}
+        # A per-call opaque capability closes direct request-helper bypasses.
+        # Each capability is bound to the exact query/body digests and is
+        # removed before the session sees the mutation.
+        self._economic_dispatch_lock = threading.RLock()
+        self._economic_dispatches: dict[
+            object,
+            tuple[str, str, str, str],
+        ] = {}
 
     @staticmethod
     def _norm(symbol: str) -> str:
@@ -122,6 +148,676 @@ class BinanceClient:
         E.g. 'XRP/USDC' -> 'XRPUSDC', 'BTCUSDT' -> 'BTCUSDT'.
         """
         return symbol.replace('/', '') if symbol else symbol
+
+    @staticmethod
+    def _finite_number(value: Any, *, positive: bool = False) -> Optional[float]:
+        """Parse a provider number without manufacturing a missing value."""
+        try:
+            parsed = float(value)
+        except (TypeError, ValueError):
+            return None
+        if not math.isfinite(parsed):
+            return None
+        if positive and parsed <= 0:
+            return None
+        return parsed
+
+    @staticmethod
+    def _timestamp_seconds(value: Any) -> Optional[float]:
+        parsed = BinanceClient._finite_number(value, positive=True)
+        if parsed is None:
+            return None
+        if parsed > 10_000_000_000:
+            parsed /= 1000.0
+        return parsed
+
+    @classmethod
+    def _fresh_provider_timestamp(
+        cls,
+        value: Any,
+        *,
+        max_age_seconds: Optional[float] = None,
+    ) -> Optional[float]:
+        source_timestamp = cls._timestamp_seconds(value)
+        if source_timestamp is None:
+            return None
+        now = time.time()
+        max_age = max_age_seconds
+        if max_age is None:
+            try:
+                max_age = float(os.getenv("BINANCE_RECEIPT_MAX_AGE_SECONDS", "300"))
+            except (TypeError, ValueError):
+                max_age = 300.0
+        if source_timestamp > now + 5.0 or now - source_timestamp > max_age:
+            return None
+        return source_timestamp
+
+    @staticmethod
+    def _valid_provider_identifier(value: Any) -> Optional[str]:
+        if value is None or isinstance(value, bool):
+            return None
+        identifier = str(value).strip()
+        if identifier.lower() in {"", "none", "null", "unknown", "n/a", "0", "-1"}:
+            return None
+        return identifier
+
+    @staticmethod
+    def _valid_client_order_id(value: Any) -> Optional[str]:
+        """Accept only the conservative Binance client-order-id subset."""
+        identifier = BinanceClient._valid_provider_identifier(value)
+        if identifier is None or len(identifier) > 36:
+            return None
+        allowed = frozenset(
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-"
+        )
+        if any(character not in allowed for character in identifier):
+            return None
+        return identifier
+
+    @classmethod
+    def _order_key(cls, symbol: str, side: str, margin: bool) -> tuple[str, str, bool]:
+        return (cls._norm(symbol).upper(), str(side).strip().upper(), bool(margin))
+
+    def _order_receipt_shell(
+        self,
+        *,
+        symbol: str,
+        side: str,
+        order_id: Optional[str],
+        status: str,
+        data_status: str,
+        truth_status: str,
+        reason: str,
+        submitted: bool,
+        margin: bool,
+        client_order_id: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        received_at = time.time()
+        normalized_client_order_id = self._valid_client_order_id(client_order_id)
+        return {
+            "symbol": self._norm(symbol).upper(),
+            "side": str(side).strip().upper(),
+            "orderId": order_id,
+            "provider_order_id": order_id,
+            "clientOrderId": normalized_client_order_id,
+            "provider_client_order_id": normalized_client_order_id,
+            "status": status,
+            "provider_status": None,
+            "data_status": data_status,
+            "truth_status": truth_status,
+            "reason": reason,
+            "submitted": bool(submitted),
+            "submission_acknowledged": bool(order_id),
+            "reconciliation_required": bool(submitted),
+            "source_id": (
+                f"binance:order:{order_id}"
+                if order_id else (
+                    f"binance:client_order:{normalized_client_order_id}"
+                    if normalized_client_order_id else None
+                )
+            ),
+            "source_timestamp": None,
+            "provider_timestamp": None,
+            "received_at": received_at,
+            "receipt_id": None,
+            "fills": [],
+            "fill_receipt_complete": False,
+            "eligible_for_action": False,
+            "eligible_for_accounting": False,
+            "eligible_for_learning": False,
+            "generated_values": False,
+            "action": False,
+            "accounting": False,
+            "learning": False,
+            "margin": bool(margin),
+            "exchange": "binance",
+        }
+
+    def _not_submitted_order_receipt(
+        self,
+        reason: str,
+        *,
+        symbol: str,
+        side: str,
+        margin: bool = False,
+        **observed_request: Any,
+    ) -> Dict[str, Any]:
+        receipt = self._order_receipt_shell(
+            symbol=symbol,
+            side=side,
+            order_id=None,
+            status="not_submitted",
+            data_status="not_submitted",
+            truth_status="no_data",
+            reason=reason,
+            submitted=False,
+            margin=margin,
+        )
+        receipt.update(observed_request)
+        receipt["reconciliation_required"] = False
+        return receipt
+
+    def _pending_order_receipt(
+        self,
+        reason: str,
+        *,
+        symbol: str,
+        side: str,
+        order_id: Optional[str],
+        margin: bool,
+        provider_status: Optional[str] = None,
+        readback_performed: bool = False,
+        client_order_id: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        receipt = self._order_receipt_shell(
+            symbol=symbol,
+            side=side,
+            order_id=order_id,
+            status="pending_reconciliation",
+            data_status="pending_reconciliation",
+            truth_status="real_observed" if order_id else "no_data",
+            reason=reason,
+            submitted=True,
+            margin=margin,
+            client_order_id=client_order_id,
+        )
+        receipt["provider_status"] = provider_status
+        receipt["readback_performed"] = bool(readback_performed)
+        return receipt
+
+    def _normalize_order_receipt(
+        self,
+        order: Any,
+        *,
+        symbol: str,
+        side: str,
+        margin: bool,
+        expected_order_id: Optional[str] = None,
+        expected_client_order_id: Optional[str] = None,
+        now: Optional[float] = None,
+    ) -> Dict[str, Any]:
+        """Normalize provider order evidence without creating fill or fee values."""
+        expected_symbol = self._norm(symbol).upper()
+        expected_side = str(side).strip().upper()
+        if not isinstance(order, dict):
+            return self._pending_order_receipt(
+                "provider_submission_outcome_unproven",
+                symbol=expected_symbol,
+                side=expected_side,
+                order_id=expected_order_id,
+                margin=margin,
+            )
+
+        order_id = self._valid_provider_identifier(order.get("orderId"))
+        observed_client_order_id = self._valid_client_order_id(
+            order.get("clientOrderId")
+        )
+        provider_status = str(order.get("status") or "").strip().upper()
+        observed_symbol = self._norm(str(order.get("symbol") or "")).upper()
+        observed_side = str(order.get("side") or "").strip().upper()
+        if order_id is None:
+            return self._pending_order_receipt(
+                "non_sentinel_provider_order_id_required",
+                symbol=expected_symbol,
+                side=expected_side,
+                order_id=expected_order_id,
+                margin=margin,
+                provider_status=provider_status or None,
+                client_order_id=expected_client_order_id,
+            )
+        if expected_order_id is not None and order_id != expected_order_id:
+            return self._pending_order_receipt(
+                "provider_order_id_mismatch",
+                symbol=expected_symbol,
+                side=expected_side,
+                order_id=expected_order_id,
+                margin=margin,
+                provider_status=provider_status or None,
+                client_order_id=expected_client_order_id,
+            )
+        if (
+            expected_client_order_id is not None
+            and observed_client_order_id != expected_client_order_id
+        ):
+            return self._pending_order_receipt(
+                "provider_client_order_id_mismatch",
+                symbol=expected_symbol,
+                side=expected_side,
+                order_id=order_id,
+                margin=margin,
+                provider_status=provider_status or None,
+                client_order_id=expected_client_order_id,
+            )
+        if observed_symbol != expected_symbol or observed_side != expected_side:
+            return self._pending_order_receipt(
+                "provider_symbol_and_side_must_match_submission",
+                symbol=expected_symbol,
+                side=expected_side,
+                order_id=order_id,
+                margin=margin,
+                provider_status=provider_status or None,
+                client_order_id=expected_client_order_id,
+            )
+
+        nonterminal_statuses = {"NEW", "PENDING_NEW", "PARTIALLY_FILLED"}
+        terminal_statuses = {"FILLED", "CANCELED", "CANCELLED", "EXPIRED", "REJECTED"}
+        if provider_status in nonterminal_statuses or provider_status not in terminal_statuses:
+            return self._pending_order_receipt(
+                "terminal_provider_fill_receipt_required",
+                symbol=expected_symbol,
+                side=expected_side,
+                order_id=order_id,
+                margin=margin,
+                provider_status=provider_status or None,
+                client_order_id=expected_client_order_id,
+            )
+
+        source_timestamp_raw = (
+            order.get("updateTime")
+            or order.get("transactTime")
+            or order.get("workingTime")
+            or order.get("time")
+        )
+        source_timestamp = self._fresh_provider_timestamp(source_timestamp_raw, max_age_seconds=300.0)
+        executed_qty = self._finite_number(order.get("executedQty"))
+        if source_timestamp is None or executed_qty is None or executed_qty < 0:
+            return self._pending_order_receipt(
+                "fresh_provider_timestamp_and_executed_quantity_required",
+                symbol=expected_symbol,
+                side=expected_side,
+                order_id=order_id,
+                margin=margin,
+                provider_status=provider_status,
+                client_order_id=expected_client_order_id,
+            )
+
+        if provider_status != "FILLED" and executed_qty == 0:
+            receipt = self._order_receipt_shell(
+                symbol=expected_symbol,
+                side=expected_side,
+                order_id=order_id,
+                status="CANCELED" if provider_status == "CANCELLED" else provider_status,
+                data_status="live",
+                truth_status="real_observed",
+                reason="terminal_provider_receipt_without_fill",
+                submitted=True,
+                margin=margin,
+                client_order_id=observed_client_order_id,
+            )
+            receipt.update({
+                "provider_status": provider_status,
+                "source_timestamp": source_timestamp,
+                "provider_timestamp": source_timestamp,
+                "reconciliation_required": False,
+                "receipt_id": f"binance:order:{order_id}:{provider_status.lower()}",
+            })
+            return receipt
+
+        if executed_qty <= 0:
+            return self._pending_order_receipt(
+                "positive_provider_fill_quantity_required",
+                symbol=expected_symbol,
+                side=expected_side,
+                order_id=order_id,
+                margin=margin,
+                provider_status=provider_status,
+                client_order_id=expected_client_order_id,
+            )
+
+        filled_notional = self._finite_number(
+            order.get("cummulativeQuoteQty")
+            if "cummulativeQuoteQty" in order
+            else order.get("cumulativeQuoteQty"),
+            positive=True,
+        )
+        raw_fills = order.get("fills")
+        normalized_fills: List[Dict[str, Any]] = []
+        if isinstance(raw_fills, list):
+            for raw_fill in raw_fills:
+                if not isinstance(raw_fill, dict):
+                    normalized_fills = []
+                    break
+                fill_order_id_raw = raw_fill.get("orderId")
+                fill_order_id = self._valid_provider_identifier(fill_order_id_raw) if fill_order_id_raw is not None else order_id
+                trade_id = self._valid_provider_identifier(
+                    raw_fill.get("tradeId") if "tradeId" in raw_fill else raw_fill.get("id")
+                )
+                qty = self._finite_number(raw_fill.get("qty"), positive=True)
+                price = self._finite_number(raw_fill.get("price"), positive=True)
+                commission = self._finite_number(raw_fill.get("commission"))
+                commission_asset = str(raw_fill.get("commissionAsset") or "").strip().upper()
+                fill_timestamp_raw = raw_fill.get("time") or raw_fill.get("transactTime") or source_timestamp_raw
+                fill_timestamp = self._fresh_provider_timestamp(fill_timestamp_raw, max_age_seconds=300.0)
+                if (
+                    fill_order_id != order_id
+                    or trade_id is None
+                    or qty is None
+                    or price is None
+                    or commission is None
+                    or commission < 0
+                    or not commission_asset
+                    or fill_timestamp is None
+                ):
+                    normalized_fills = []
+                    break
+                normalized_fills.append({
+                    "orderId": order_id,
+                    "tradeId": trade_id,
+                    "qty": qty,
+                    "price": price,
+                    "commission": commission,
+                    "commissionAsset": commission_asset,
+                    "source_timestamp": fill_timestamp,
+                    "provider_timestamp": fill_timestamp,
+                    "truth_status": "real_observed",
+                    "generated_values": False,
+                })
+
+        trade_ids = [str(fill["tradeId"]) for fill in normalized_fills]
+        fee_assets = {str(fill["commissionAsset"]) for fill in normalized_fills}
+        if not normalized_fills or len(trade_ids) != len(set(trade_ids)) or len(fee_assets) != 1:
+            return self._pending_order_receipt(
+                "complete_unique_provider_trades_and_single_fee_asset_required",
+                symbol=expected_symbol,
+                side=expected_side,
+                order_id=order_id,
+                margin=margin,
+                provider_status=provider_status,
+                client_order_id=expected_client_order_id,
+            )
+        if filled_notional is None:
+            return self._pending_order_receipt(
+                "provider_executed_quote_notional_required",
+                symbol=expected_symbol,
+                side=expected_side,
+                order_id=order_id,
+                margin=margin,
+                provider_status=provider_status,
+                client_order_id=expected_client_order_id,
+            )
+
+        trades_qty = sum(float(fill["qty"]) for fill in normalized_fills)
+        trades_notional = sum(float(fill["qty"]) * float(fill["price"]) for fill in normalized_fills)
+        qty_tolerance = max(1e-12, executed_qty * 1e-8)
+        notional_tolerance = max(1e-8, filled_notional * 0.001)
+        if (
+            abs(trades_qty - executed_qty) > qty_tolerance
+            or abs(trades_notional - filled_notional) > notional_tolerance
+        ):
+            return self._pending_order_receipt(
+                "provider_order_and_trade_fill_totals_inconsistent",
+                symbol=expected_symbol,
+                side=expected_side,
+                order_id=order_id,
+                margin=margin,
+                provider_status=provider_status,
+                client_order_id=expected_client_order_id,
+            )
+
+        average_price = filled_notional / executed_qty
+        fee_asset = next(iter(fee_assets))
+        observed_fee = sum(float(fill["commission"]) for fill in normalized_fills)
+        latest_source_timestamp = max(
+            source_timestamp,
+            *(float(fill["source_timestamp"]) for fill in normalized_fills),
+        )
+        received_at = time.time() if now is None else float(now)
+        if latest_source_timestamp > received_at + 5.0:
+            return self._pending_order_receipt(
+                "provider_fill_timestamp_is_ahead_of_receipt_clock",
+                symbol=expected_symbol,
+                side=expected_side,
+                order_id=order_id,
+                margin=margin,
+                provider_status=provider_status,
+                client_order_id=expected_client_order_id,
+            )
+        digest_source = f"{order_id}|{expected_symbol}|{expected_side}|{','.join(trade_ids)}|{latest_source_timestamp}"
+        receipt_id = "binance:fill:" + hashlib.sha256(digest_source.encode("utf-8")).hexdigest()
+        normalized_status = "FILLED" if provider_status == "FILLED" else "PARTIALLY_FILLED"
+        return {
+            "symbol": expected_symbol,
+            "side": expected_side,
+            "orderId": order_id,
+            "provider_order_id": order_id,
+            "clientOrderId": observed_client_order_id,
+            "provider_client_order_id": observed_client_order_id,
+            "status": normalized_status,
+            "provider_status": provider_status,
+            "data_status": "live",
+            "truth_status": "real_observed",
+            "reason": "complete_fresh_terminal_provider_fill_receipt",
+            "submitted": True,
+            "submission_acknowledged": True,
+            "reconciliation_required": False,
+            "source_id": f"binance:order:{order_id}:trades",
+            "source_timestamp": latest_source_timestamp,
+            "provider_timestamp": latest_source_timestamp,
+            "received_at": received_at,
+            "receipt_id": receipt_id,
+            "fills": normalized_fills,
+            "executedQty": executed_qty,
+            "filled_qty": executed_qty,
+            "cummulativeQuoteQty": filled_notional,
+            "filled_notional": filled_notional,
+            "avgPrice": average_price,
+            "avg_fill_price": average_price,
+            "filled_avg_price": average_price,
+            "fee": observed_fee,
+            "fees": observed_fee,
+            "fee_asset": fee_asset,
+            "fee_currency": fee_asset,
+            "fill_receipt_complete": True,
+            "eligible_for_action": False,
+            "eligible_for_accounting": True,
+            "eligible_for_learning": True,
+            "generated_values": False,
+            "action": False,
+            "accounting": True,
+            "learning": True,
+            "margin": bool(margin),
+            "exchange": "binance",
+            "provider_receipt_type": "BinanceFullOrderAndTrades",
+        }
+
+    def _reconcile_pending_order(self, key: tuple[str, str, bool]) -> Dict[str, Any]:
+        """Perform no more than one provider readback for a latched submission."""
+        pending = self._pending_orders.get(key)
+        if not isinstance(pending, dict):
+            return self._pending_order_receipt(
+                "pending_submission_state_unavailable",
+                symbol=key[0],
+                side=key[1],
+                order_id=None,
+                margin=key[2],
+            )
+        order_id = self._valid_provider_identifier(pending.get("order_id"))
+        client_order_id = self._valid_client_order_id(
+            pending.get("client_order_id")
+        )
+        if order_id is None and client_order_id is None:
+            return self._pending_order_receipt(
+                "ambiguous_submission_requires_external_reconciliation",
+                symbol=key[0],
+                side=key[1],
+                order_id=None,
+                margin=key[2],
+                client_order_id=None,
+            )
+
+        observed = dict(pending.get("order") or {})
+        provider_status = str(observed.get("status") or "").strip().upper()
+        executed_qty = self._finite_number(observed.get("executedQty"))
+        needs_trades = (
+            order_id is not None
+            and provider_status
+            in {"FILLED", "CANCELED", "CANCELLED", "EXPIRED", "REJECTED"}
+            and executed_qty is not None
+            and executed_qty > 0
+        )
+        if needs_trades:
+            endpoint = "/sapi/v1/margin/myTrades" if key[2] else "/api/v3/myTrades"
+            params: Dict[str, Any] = {"symbol": key[0], "orderId": order_id}
+            if key[2]:
+                params["isIsolated"] = pending.get("is_isolated", "FALSE")
+            try:
+                readback = self._signed_request("GET", endpoint, params)
+            except Exception:
+                return self._pending_order_receipt(
+                    "provider_trade_readback_unavailable",
+                    symbol=key[0],
+                    side=key[1],
+                    order_id=order_id,
+                    margin=key[2],
+                    provider_status=provider_status or None,
+                    readback_performed=True,
+                    client_order_id=client_order_id,
+                )
+            rows = readback if isinstance(readback, list) else readback.get("trades") if isinstance(readback, dict) else None
+            matching_rows = [
+                row for row in rows
+                if isinstance(row, dict)
+                and self._valid_provider_identifier(row.get("orderId")) == order_id
+            ] if isinstance(rows, list) else []
+            observed["fills"] = matching_rows
+            trade_timestamps = [
+                self._timestamp_seconds(row.get("time"))
+                for row in matching_rows
+                if isinstance(row, dict)
+            ]
+            valid_trade_timestamps = [stamp for stamp in trade_timestamps if stamp is not None]
+            if valid_trade_timestamps:
+                observed["updateTime"] = max(valid_trade_timestamps)
+        else:
+            endpoint = "/sapi/v1/margin/order" if key[2] else "/api/v3/order"
+            params = {"symbol": key[0]}
+            if order_id is not None:
+                params["orderId"] = order_id
+            else:
+                params["origClientOrderId"] = client_order_id
+            if key[2]:
+                params["isIsolated"] = pending.get("is_isolated", "FALSE")
+            try:
+                readback = self._signed_request("GET", endpoint, params)
+            except Exception:
+                return self._pending_order_receipt(
+                    "provider_order_readback_unavailable",
+                    symbol=key[0],
+                    side=key[1],
+                    order_id=order_id,
+                    margin=key[2],
+                    provider_status=provider_status or None,
+                    readback_performed=True,
+                    client_order_id=client_order_id,
+                )
+            if isinstance(readback, dict):
+                observed.update(readback)
+                observed_order_id = self._valid_provider_identifier(
+                    observed.get("orderId")
+                )
+                if order_id is None and observed_order_id is not None:
+                    order_id = observed_order_id
+                    pending["order_id"] = observed_order_id
+
+        pending["order"] = observed
+        normalized = self._normalize_order_receipt(
+            observed,
+            symbol=key[0],
+            side=key[1],
+            margin=key[2],
+            expected_order_id=order_id,
+            expected_client_order_id=client_order_id,
+        )
+        metadata = pending.get("metadata")
+        if isinstance(metadata, dict):
+            normalized.update(metadata)
+        normalized["readback_performed"] = True
+        if normalized.get("reconciliation_required") is False:
+            self._pending_orders.pop(key, None)
+        return normalized
+
+    def get_order_status(
+        self,
+        order_id: Optional[str] = None,
+        client_order_id: Optional[str] = None,
+        *,
+        symbol: Optional[str] = None,
+        side: Optional[str] = None,
+        margin: bool = False,
+    ) -> Dict[str, Any]:
+        """Reconcile one known order without permitting a duplicate submission."""
+        expected = self._valid_provider_identifier(order_id)
+        expected_client = self._valid_client_order_id(client_order_id)
+        for key, pending in list(self._pending_orders.items()):
+            if not isinstance(pending, dict):
+                continue
+            pending_order_id = self._valid_provider_identifier(
+                pending.get("order_id")
+            )
+            pending_client_id = self._valid_client_order_id(
+                pending.get("client_order_id")
+            )
+            if (
+                (expected is not None and pending_order_id == expected)
+                or (
+                    expected_client is not None
+                    and pending_client_id == expected_client
+                )
+            ):
+                if self.dry_run:
+                    return self._pending_order_receipt(
+                        "readback_disabled_in_dry_run",
+                        symbol=key[0],
+                        side=key[1],
+                        order_id=expected,
+                        margin=key[2],
+                        client_order_id=expected_client,
+                    )
+                return self._reconcile_pending_order(key)
+        normalized_symbol = self._norm(symbol or "").upper()
+        normalized_side = str(side or "").strip().upper()
+        if (
+            not self.dry_run
+            and normalized_symbol
+            and normalized_side in {"BUY", "SELL"}
+            and (expected is not None or expected_client is not None)
+        ):
+            key = self._order_key(normalized_symbol, normalized_side, margin)
+            self._pending_orders[key] = {
+                "order_id": expected,
+                "client_order_id": expected_client,
+                "order": {},
+                "params": {
+                    "symbol": normalized_symbol,
+                    "side": normalized_side,
+                },
+                "is_isolated": "FALSE",
+            }
+            return self._reconcile_pending_order(key)
+        return self._order_receipt_shell(
+            symbol="",
+            side="",
+            order_id=expected,
+            status="no_data",
+            data_status="no_data",
+            truth_status="no_data",
+            reason="known_latched_order_context_required_for_readback",
+            submitted=expected is not None,
+            margin=False,
+            client_order_id=expected_client,
+        )
+
+    def get_order_with_fees(
+        self,
+        order_id: Optional[str] = None,
+        client_order_id: Optional[str] = None,
+        **context: Any,
+    ) -> Dict[str, Any]:
+        return self.get_order_status(
+            order_id,
+            client_order_id,
+            **context,
+        )
     
     def _sync_server_time(self) -> None:
         """Sync with Binance server time to handle local clock drift."""
@@ -237,8 +933,92 @@ class BinanceClient:
         
         return True, "OK"
 
-    def _do_request(self, method: str, path: str, params: Dict[str, Any] = None, data: Dict[str, Any] = None, timeout: int = 15):
+    def _register_economic_dispatch(
+        self,
+        *,
+        method: str,
+        path: str,
+        query_digest: str,
+    ) -> object:
+        dispatch = object()
+        state = (
+            method,
+            path,
+            query_digest,
+            _economic_transport_body_digest({}),
+        )
+        with self._economic_dispatch_lock:
+            self._economic_dispatches[dispatch] = state
+        return dispatch
+
+    def _discard_economic_dispatch(self, dispatch: object | None) -> None:
+        if dispatch is None:
+            return
+        with self._economic_dispatch_lock:
+            self._economic_dispatches.pop(dispatch, None)
+
+    def _consume_economic_dispatch(
+        self,
+        dispatch: object | None,
+        *,
+        method: str,
+        path: str,
+        params: Dict[str, Any] | None,
+        data: Dict[str, Any] | None,
+    ) -> None:
+        with self._economic_dispatch_lock:
+            state = self._economic_dispatches.pop(dispatch, None)
+        if state is None:
+            raise EconomicGovernanceBlocked(
+                "signed_binance_mutation_dispatch_capability_required"
+            )
+        if params is not None and not isinstance(params, dict):
+            raise EconomicGovernanceBlocked(
+                "exact_binance_mutation_query_and_body_required"
+            )
+        if data is not None and not isinstance(data, dict):
+            raise EconomicGovernanceBlocked(
+                "exact_binance_mutation_query_and_body_required"
+            )
+        economic_query = dict(params or {})
+        for field in _BINANCE_SIGNING_CONTROL_FIELDS:
+            economic_query.pop(field, None)
+        try:
+            observed = (
+                method,
+                path,
+                _economic_transport_body_digest(economic_query),
+                _economic_transport_body_digest(dict(data or {})),
+            )
+        except (TypeError, ValueError) as exc:
+            raise EconomicGovernanceBlocked(
+                "exact_binance_mutation_query_and_body_required"
+            ) from exc
+        if observed != state:
+            raise EconomicGovernanceBlocked(
+                "exact_binance_mutation_query_and_body_required"
+            )
+
+    def _do_request(
+        self,
+        method: str,
+        path: str,
+        params: Dict[str, Any] = None,
+        data: Dict[str, Any] = None,
+        timeout: int = 15,
+        *,
+        _economic_dispatch: object | None = None,
+    ):
         """Internal request helper: respects rate limiter, handles 429 Retry-After and retries."""
+        normalized_method = str(method).strip().upper()
+        if normalized_method != "GET" or _economic_dispatch is not None:
+            self._consume_economic_dispatch(
+                _economic_dispatch,
+                method=normalized_method,
+                path=path,
+                params=params,
+                data=data,
+            )
         url = f"{self.base}{path}"
         # Respect rate limiter
         if getattr(self, '_rate_limiter', None):
@@ -250,7 +1030,13 @@ class BinanceClient:
         for attempt in range(self.max_retries + 1):
             # For signed POST requests, params go in query string, not body
             try:
-                resp = self.session.request(method, url, params=params, data=data, timeout=timeout)
+                resp = self.session.request(
+                    normalized_method,
+                    url,
+                    params=params,
+                    data=data,
+                    timeout=timeout,
+                )
             except Exception as e:
                 self.last_error = str(e)
                 if "[WinError 10013]" in self.last_error:
@@ -270,7 +1056,7 @@ class BinanceClient:
                 except Exception:
                     wait_time = 2 ** attempt
                 time.sleep(min(max(wait_time, 0.1), 10))
-                if attempt < self.max_retries:
+                if method.upper() == "GET" and attempt < self.max_retries:
                     continue
             if resp.status_code != 200:
                 self.last_error = f"Binance error {resp.status_code}: {resp.text}"
@@ -296,11 +1082,59 @@ class BinanceClient:
         raise RuntimeError("Binance request failed after retries")
 
     def _signed_request(self, method: str, path: str, params: Dict[str, Any]) -> Dict[str, Any]:
-        params["timestamp"] = self._get_server_timestamp()  # Use synced timestamp
-        params["recvWindow"] = 60000  # Increased to 60 seconds for network latency
-        signature = self._sign(params)
-        params["signature"] = signature
-        return self._do_request(method, path, params=params)
+        normalized_method = str(method).strip().upper()
+        dispatch: object | None = None
+        if normalized_method != "GET":
+            if self.dry_run:
+                raise EconomicGovernanceBlocked(
+                    "dry_run_binance_provider_mutation_forbidden"
+                )
+            if self.use_testnet:
+                if self.base != BINANCE_TESTNET:
+                    raise EconomicGovernanceBlocked(
+                        "explicit_binance_testnet_endpoint_required"
+                    )
+                try:
+                    body_digest = _economic_transport_body_digest(params)
+                except (TypeError, ValueError) as exc:
+                    raise EconomicGovernanceBlocked(
+                        "exact_binance_mutation_query_required"
+                    ) from exc
+            else:
+                body_digest = _claim_economic_transport_context(
+                    method=normalized_method,
+                    path=path,
+                    body=params,
+                )
+                if self.base != BINANCE_MAINNET:
+                    raise EconomicGovernanceBlocked(
+                        "canonical_binance_live_endpoint_required"
+                    )
+            wire_params = dict(params)
+            if _BINANCE_SIGNING_CONTROL_FIELDS.intersection(wire_params):
+                raise EconomicGovernanceBlocked(
+                    "binance_signing_control_fields_are_transport_owned"
+                )
+            dispatch = self._register_economic_dispatch(
+                method=normalized_method,
+                path=path,
+                query_digest=body_digest,
+            )
+        else:
+            wire_params = dict(params)
+        try:
+            wire_params["timestamp"] = self._get_server_timestamp()
+            wire_params["recvWindow"] = 60000
+            signature = self._sign(wire_params)
+            wire_params["signature"] = signature
+            return self._do_request(
+                normalized_method,
+                path,
+                params=wire_params,
+                _economic_dispatch=dispatch,
+            )
+        finally:
+            self._discard_economic_dispatch(dispatch)
 
     def ping(self) -> bool:
         try:
@@ -372,30 +1206,287 @@ class BinanceClient:
     def account(self) -> Dict[str, Any]:
         return self._signed_request("GET", "/api/v3/account", {})
 
-    def get_free_balance(self, asset: str) -> float:
+    def api_restrictions(self) -> Dict[str, Any]:
+        """Return the provider API-key restriction document."""
+        return self._signed_request(
+            "GET", "/sapi/v1/account/apiRestrictions", {},
+        )
+
+    def api_trading_status(self) -> Dict[str, Any]:
+        """Return the provider account trading-lock document."""
+        return self._signed_request(
+            "GET", "/sapi/v1/account/apiTradingStatus", {},
+        )
+
+    def get_account_permission_receipt(self) -> Dict[str, Any]:
+        """Return a sanitized, fail-closed receipt for bounded spot BUYs."""
+        account_data: Any = None
+        restriction_data: Any = None
+        trading_status_data: Any = None
+        provider_clock: Any = None
+        try:
+            account_data = self.account()
+            restriction_data = self.api_restrictions()
+            trading_status_data = self.api_trading_status()
+            provider_clock = self.server_time()
+        except Exception:
+            # Provider errors can contain account metadata.  Do not copy them
+            # into this receipt; an incomplete four-source read is NO_DATA.
+            account_data = None
+            restriction_data = None
+            trading_status_data = None
+            provider_clock = None
+        received_at = time.time()
+
+        account = account_data if isinstance(account_data, dict) else {}
+        restrictions = (
+            restriction_data if isinstance(restriction_data, dict) else {}
+        )
+        trading_status = (
+            trading_status_data
+            if isinstance(trading_status_data, dict) else {}
+        )
+        trading_status_body = trading_status.get("data")
+        if not isinstance(trading_status_body, dict):
+            trading_status_body = {}
+
+        account_type = str(account.get("accountType") or "").strip().upper()
+        raw_permissions = account.get("permissions")
+        permissions_are_strings = (
+            isinstance(raw_permissions, list)
+            and bool(raw_permissions)
+            and all(
+                isinstance(value, str) and bool(value.strip())
+                for value in raw_permissions
+            )
+        )
+        permissions = (
+            sorted({
+                value.strip().upper()
+                for value in raw_permissions
+                if isinstance(value, str) and value.strip()
+            })
+            if isinstance(raw_permissions, list) else []
+        )
+        permissions_are_spot_only = (
+            permissions_are_strings
+            and "SPOT" in permissions
+            and all(
+                permission == "SPOT"
+                or (
+                    permission.startswith("TRD_GRP_")
+                    and len(permission) > len("TRD_GRP_")
+                )
+                for permission in permissions
+            )
+        )
+
+        raw_server_time = (
+            provider_clock.get("serverTime")
+            if isinstance(provider_clock, dict) else None
+        )
+        numeric_server_time = self._finite_number(
+            raw_server_time, positive=True,
+        )
+        server_time = (
+            int(numeric_server_time)
+            if numeric_server_time is not None
+            and numeric_server_time.is_integer()
+            else None
+        )
+        source_timestamp = self._fresh_provider_timestamp(
+            server_time, max_age_seconds=60.0,
+        )
+
+        safety_flags = {
+            "account_type_is_spot": account_type == "SPOT",
+            "account_permissions_are_spot_only": permissions_are_spot_only,
+            "account_can_trade": account.get("canTrade") is True,
+            "api_reading_enabled": (
+                restrictions.get("enableReading") is True
+            ),
+            "api_spot_trading_enabled": (
+                restrictions.get("enableSpotAndMarginTrading") is True
+            ),
+            "api_trading_unlocked": (
+                trading_status_body.get("isLocked") is False
+            ),
+            "api_ip_restricted": restrictions.get("ipRestrict") is True,
+            "api_withdrawals_disabled": (
+                restrictions.get("enableWithdrawals") is False
+            ),
+            "api_internal_transfer_disabled": (
+                restrictions.get("enableInternalTransfer") is False
+            ),
+            "api_universal_transfer_disabled": (
+                restrictions.get("permitsUniversalTransfer") is False
+            ),
+            "api_margin_disabled": restrictions.get("enableMargin") is False,
+            "api_futures_disabled": (
+                restrictions.get("enableFutures") is False
+            ),
+            "api_options_disabled": (
+                restrictions.get("enableVanillaOptions") is False
+            ),
+            "api_portfolio_margin_disabled": (
+                restrictions.get("enablePortfolioMarginTrading") is False
+            ),
+            "client_is_mainnet": self.use_testnet is False,
+            "client_is_live": self.dry_run is False,
+            "uk_guard_enabled": self.uk_mode is True,
+        }
+        eligible = (
+            source_timestamp is not None
+            and all(value is True for value in safety_flags.values())
+        )
+        receipt_material = {
+            "account_type": account_type,
+            "permissions": permissions,
+            "server_time": server_time,
+            **safety_flags,
+        }
+        receipt_id = (
+            "binance:account_permission:"
+            + hashlib.sha256(json.dumps(
+                receipt_material,
+                sort_keys=True,
+                separators=(",", ":"),
+                allow_nan=False,
+            ).encode("utf-8")).hexdigest()
+            if eligible else None
+        )
+        return {
+            "account_type": account_type,
+            "permissions": permissions,
+            "server_time": server_time,
+            **safety_flags,
+            "safe_for_bounded_spot_buy": eligible,
+            "source_id": (
+                "binance:/api/v3/account"
+                "+/sapi/v1/account/apiRestrictions"
+                "+/sapi/v1/account/apiTradingStatus"
+                "+/api/v3/time"
+            ),
+            "source_timestamp": source_timestamp if eligible else None,
+            "received_at": received_at,
+            "receipt_id": receipt_id,
+            "provider_receipt_type": (
+                "Account+ApiRestrictions+ApiTradingStatus+Time"
+            ),
+            "truth_status": "real_provider" if eligible else "no_data",
+            "data_status": "live" if eligible else "no_data",
+            "reason": (
+                "safe_spot_only_account_permissions_confirmed"
+                if eligible
+                else "complete_safe_spot_only_account_permission_receipt_required"
+            ),
+            "generated_values": False,
+            "eligible_for_action": eligible,
+            "eligible_for_accounting": False,
+            "eligible_for_learning": False,
+            "action": False,
+            "accounting": False,
+            "learning": False,
+        }
+
+    def get_asset_balance(self, asset: str) -> Optional[Dict[str, Any]]:
+        """Return an exact, timestamped account balance receipt for one asset."""
         acct = self.account()
-        for bal in acct.get("balances", []):
-            if bal["asset"] == asset:
-                return float(bal["free"])
-        return 0.0
+        try:
+            provider_clock = self.server_time()
+        except Exception:
+            provider_clock = None
+        received_at = time.time()
+        if not isinstance(acct, dict) or not isinstance(acct.get("balances"), list):
+            return None
+        account_update_time = acct.get("updateTime")
+        server_time = (
+            provider_clock.get("serverTime")
+            if isinstance(provider_clock, dict) else None
+        )
+        source_timestamp = self._fresh_provider_timestamp(
+            server_time,
+            max_age_seconds=60.0,
+        )
+        requested_asset = str(asset).upper()
+        for bal in acct["balances"]:
+            if not isinstance(bal, dict) or str(bal.get("asset", "")).upper() != requested_asset:
+                continue
+            free = self._finite_number(bal.get("free"))
+            locked = self._finite_number(bal.get("locked"))
+            if free is None or locked is None or free < 0 or locked < 0:
+                return None
+            eligible = source_timestamp is not None
+            receipt_material = json.dumps(
+                {
+                    "asset": requested_asset,
+                    "free": free,
+                    "locked": locked,
+                    "updateTime": account_update_time,
+                    "serverTime": server_time,
+                },
+                sort_keys=True,
+                separators=(",", ":"),
+                allow_nan=False,
+            )
+            receipt_id = (
+                f"binance:account:{requested_asset}:"
+                + hashlib.sha256(
+                    receipt_material.encode("utf-8")
+                ).hexdigest()
+                if source_timestamp is not None
+                else None
+            )
+            return {
+                "asset": requested_asset,
+                "free": free,
+                "locked": locked,
+                "total": free + locked,
+                "account_update_time": account_update_time,
+                "account_update_timestamp": self._timestamp_seconds(
+                    account_update_time
+                ),
+                "server_time": server_time,
+                "source_id": (
+                    "binance:/api/v3/account+/api/v3/time"
+                ),
+                "source_timestamp": source_timestamp,
+                "received_at": received_at,
+                "receipt_id": receipt_id,
+                "provider_receipt_type": "Account+Time",
+                "truth_status": "real_provider" if eligible else "no_data",
+                "data_status": "live" if eligible else "no_data",
+                "generated_values": False,
+                "eligible_for_action": eligible,
+            }
+        return None
+
+    def get_free_balance(self, asset: str) -> float:
+        receipt = self.get_asset_balance(asset)
+        if not receipt or receipt.get("eligible_for_action") is not True:
+            raise RuntimeError(f"NO_DATA: fresh Binance balance unavailable for {asset}")
+        return float(receipt["free"])
 
     def get_balance(self) -> Dict[str, float]:
         """Compatibility: return total balances (free + locked) as {asset: amount}."""
         balances: Dict[str, float] = {}
         try:
             acct = self.account()
-            for bal in acct.get("balances", []):
+            if not isinstance(acct, dict) or self._fresh_provider_timestamp(acct.get("updateTime")) is None:
+                return {}
+            raw_balances = acct.get("balances")
+            if not isinstance(raw_balances, list):
+                return {}
+            for bal in raw_balances:
+                if not isinstance(bal, dict):
+                    return {}
                 asset = bal.get("asset")
                 if not asset:
-                    continue
-                try:
-                    free_amt = float(bal.get("free", 0) or 0)
-                except Exception:
-                    free_amt = 0.0
-                try:
-                    locked_amt = float(bal.get("locked", 0) or 0)
-                except Exception:
-                    locked_amt = 0.0
+                    return {}
+                free_amt = self._finite_number(bal.get("free"))
+                locked_amt = self._finite_number(bal.get("locked"))
+                if free_amt is None or locked_amt is None or free_amt < 0 or locked_amt < 0:
+                    return {}
                 total_amt = free_amt + locked_amt
                 if total_amt > 0:
                     balances[asset] = total_amt
@@ -418,178 +1509,318 @@ class BinanceClient:
         if '.' in formatted:
             formatted = formatted.rstrip('0').rstrip('.')
         return formatted
-        return formatted or '0'
 
-    def place_market_order(self, symbol: str, side: str, quantity: float | str | Decimal | None = None, quote_qty: float | str | Decimal | None = None) -> Dict[str, Any]:
-        symbol = self._norm(symbol)
-        # 🇬🇧 UK Mode: Check restrictions before attempting trade
-        # Also check cached restricted symbols to skip known-bad symbols
+    def _place_market_order_receipt_gated(
+        self,
+        symbol: str,
+        side: str,
+        quantity: float | str | Decimal | None,
+        quote_qty: float | str | Decimal | None,
+        client_order_id: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        symbol = self._norm(symbol).upper()
+        normalized_side = str(side or "").strip().upper()
+        normalized_client_order_id = self._valid_client_order_id(
+            client_order_id
+        )
+        if (
+            client_order_id is not None
+            and normalized_client_order_id is None
+        ):
+            return self._not_submitted_order_receipt(
+                "valid_client_order_id_required",
+                symbol=symbol,
+                side=normalized_side,
+                requested_client_order_id=client_order_id,
+            )
+        quantity_value = self._finite_number(quantity, positive=True) if quantity is not None else None
+        quote_value = self._finite_number(quote_qty, positive=True) if quote_qty is not None else None
+        if (
+            not symbol
+            or normalized_side not in {"BUY", "SELL"}
+            or (quantity_value is None) == (quote_value is None)
+            or (normalized_side == "SELL" and quote_value is not None)
+        ):
+            return self._not_submitted_order_receipt(
+                "exactly_one_positive_quantity_is_required",
+                symbol=symbol,
+                side=normalized_side,
+                requested_quantity=quantity,
+                requested_quote_quantity=quote_qty,
+            )
+
+        key = self._order_key(symbol, normalized_side, False)
+        if key in self._pending_orders:
+            pending = self._pending_orders[key]
+            pending_client_order_id = (
+                self._valid_client_order_id(pending.get("client_order_id"))
+                if isinstance(pending, dict) else None
+            )
+            if (
+                normalized_client_order_id is not None
+                and pending_client_order_id is not None
+                and normalized_client_order_id != pending_client_order_id
+            ):
+                return self._pending_order_receipt(
+                    "different_pending_client_order_id_blocks_submission",
+                    symbol=symbol,
+                    side=normalized_side,
+                    order_id=self._valid_provider_identifier(
+                        pending.get("order_id")
+                    ) if isinstance(pending, dict) else None,
+                    margin=False,
+                    client_order_id=pending_client_order_id,
+                )
+            if self.dry_run:
+                return self._pending_order_receipt(
+                    "readback_disabled_in_dry_run",
+                    symbol=symbol,
+                    side=normalized_side,
+                    order_id=self._valid_provider_identifier(pending.get("order_id")),
+                    margin=False,
+                    client_order_id=pending_client_order_id,
+                )
+            return self._reconcile_pending_order(key)
+
+        if self.dry_run:
+            return self._not_submitted_order_receipt(
+                "dry_run",
+                symbol=symbol,
+                side=normalized_side,
+                requested_quantity=quantity_value,
+                requested_quote_quantity=quote_value,
+            )
+
         if self.uk_mode:
-            # Check cache — but NEVER block SELLs (if we own it, we can sell it)
-            if symbol in self._uk_restricted_symbols_cache and side.upper() != 'SELL':
-                return {
-                    "rejected": True,
-                    "symbol": symbol,
-                    "side": side,
-                    "reason": "This symbol is not permitted for this account (cached).",
-                    "uk_restricted": True
-                }
-            # For BUYs, do full validation
-            if side.upper() != 'SELL':
+            if symbol in self._uk_restricted_symbols_cache and normalized_side != "SELL":
+                receipt = self._not_submitted_order_receipt(
+                    "symbol_not_permitted_for_account",
+                    symbol=symbol,
+                    side=normalized_side,
+                )
+                receipt["uk_restricted"] = True
+                return receipt
+            if normalized_side != "SELL":
                 can_trade, reason = self.can_trade_symbol(symbol)
                 if not can_trade:
-                    # Cache this restriction
                     self._uk_restricted_symbols_cache.add(symbol)
                     self._uk_restriction_cache_timestamp = time.time()
-                    return {
-                        "rejected": True,
-                        "symbol": symbol,
-                        "side": side,
-                        "reason": reason,
-                        "uk_restricted": True
-                    }
-        
-        # 🚨 CRITICAL: Verify balance before SELL orders to prevent insufficient funds errors
-        if side.upper() == 'SELL' and quantity:
-            try:
-                # Extract base asset from symbol by stripping known quote suffix
-                # MUST use endswith() — .replace() corrupts symbols like ETHFIUSDC → FI
-                base_asset = symbol
-                for _q in ("USDT", "USDC", "BUSD", "FDUSD", "TUSD", "USD", "EUR", "GBP", "BTC", "BNB", "ETH"):
-                    if symbol.endswith(_q) and len(symbol) > len(_q):
-                        base_asset = symbol[:-len(_q)]
-                        break
-                if not base_asset or base_asset == symbol:
-                    # Fallback: guess base asset is the first 3-4 chars
-                    base_asset = symbol[:4] if len(symbol) > 4 else symbol[:3]
-                
-                # Get actual balance from account
-                actual_balance = self.get_free_balance(base_asset)
-                requested_qty = float(quantity)
-                
-                if actual_balance < requested_qty:
-                    return {
-                        "rejected": True,
-                        "symbol": symbol,
-                        "side": side,
-                        "reason": f"Insufficient funds to sell {requested_qty:.8f} {base_asset}. Have {actual_balance:.8f}",
-                        "balance_check": True,
-                        "actual_balance": actual_balance,
-                        "requested_qty": requested_qty
-                    }
-            except Exception as e:
-                # Don't block order on balance check failure, but log it
-                print(f"   ⚠️ Balance check warning: {e}")
-        
-        if self.dry_run:
-            return {"dryRun": True, "symbol": symbol, "side": side, "quantity": quantity, "quoteQty": quote_qty}
-        
-        params = {"symbol": symbol, "side": side.upper(), "type": "MARKET", "newOrderRespType": "FULL"}
-        filters = {}
+                    receipt = self._not_submitted_order_receipt(
+                        str(reason),
+                        symbol=symbol,
+                        side=normalized_side,
+                    )
+                    receipt["uk_restricted"] = True
+                    return receipt
+
+        if normalized_side == "SELL":
+            base_asset = None
+            for quote_asset in ("USDT", "USDC", "BUSD", "FDUSD", "TUSD", "USD", "EUR", "GBP", "BTC", "BNB", "ETH"):
+                if symbol.endswith(quote_asset) and len(symbol) > len(quote_asset):
+                    base_asset = symbol[:-len(quote_asset)]
+                    break
+            if not base_asset:
+                return self._not_submitted_order_receipt(
+                    "provider_symbol_metadata_required_for_balance_check",
+                    symbol=symbol,
+                    side=normalized_side,
+                    requested_quantity=quantity_value,
+                )
+            balance_receipt = self.get_asset_balance(base_asset)
+            actual_balance = self._finite_number(
+                balance_receipt.get("free") if isinstance(balance_receipt, dict) else None
+            )
+            if (
+                not isinstance(balance_receipt, dict)
+                or balance_receipt.get("eligible_for_action") is not True
+                or balance_receipt.get("truth_status") != "real_provider"
+                or balance_receipt.get("generated_values") is not False
+                or actual_balance is None
+                or actual_balance < 0
+            ):
+                return self._not_submitted_order_receipt(
+                    "fresh_provider_balance_receipt_required",
+                    symbol=symbol,
+                    side=normalized_side,
+                    requested_quantity=quantity_value,
+                )
+            if quantity_value is None or actual_balance < quantity_value:
+                return self._not_submitted_order_receipt(
+                    "insufficient_observed_free_balance",
+                    symbol=symbol,
+                    side=normalized_side,
+                    requested_quantity=quantity_value,
+                    observed_free_balance=actual_balance,
+                    balance_receipt_id=balance_receipt.get("receipt_id"),
+                )
+
         try:
             filters = self.get_symbol_filters(symbol)
         except Exception:
-            filters = {}
-        min_notional = float(filters.get('min_notional', 0.0) or 0.0)
-        if quantity:
-            # Adjust quantity to match symbol's lot size and precision
-            adjusted_qty = self.adjust_quantity(symbol, float(quantity))
-            if adjusted_qty <= 0:
-                return {
-                    "rejected": True,
-                    "symbol": symbol,
-                    "side": side,
-                    "reason": f"Quantity {quantity} adjusts to {adjusted_qty} (below min qty)",
-                    "uk_restricted": False
-                }
-            if min_notional > 0:
-                try:
-                    price_info = self.best_price(symbol)
-                    price = float(price_info.get("price", 0))
-                except Exception:
-                    price = 0.0
-                if price > 0:
-                    notional = adjusted_qty * price
-                    if notional < min_notional:
-                        return {
-                            "rejected": True,
-                            "error": "min_notional",
-                            "symbol": symbol,
-                            "side": side,
-                            "reason": f"Notional {notional:.8f} < minNotional {min_notional}",
-                            "uk_restricted": False
-                        }
-            params["quantity"] = self._format_order_value(adjusted_qty)
-        elif quote_qty:
-            # Adjust quote quantity to match symbol's quote precision
-            adjusted_quote = self.adjust_quote_qty(symbol, float(quote_qty))
-            if adjusted_quote <= 0:
-                return {
-                    "rejected": True,
-                    "error": "min_notional",
-                    "symbol": symbol,
-                    "side": side,
-                    "reason": f"Quote amount {quote_qty} adjusts to {adjusted_quote}",
-                    "uk_restricted": False
-                }
-            if min_notional > 0 and adjusted_quote < min_notional:
-                return {
-                    "rejected": True,
-                    "error": "min_notional",
-                    "symbol": symbol,
-                    "side": side,
-                    "reason": f"Notional {adjusted_quote:.8f} < minNotional {min_notional}",
-                    "uk_restricted": False
-                }
-            params["quoteOrderQty"] = self._format_order_value(adjusted_quote)
-        else:
-            raise ValueError("Must provide either quantity or quote_qty")
-            
-        response = self._signed_request("POST", "/api/v3/order", params)
+            filters = None
+        min_notional = self._finite_number(
+            filters.get("min_notional") if isinstance(filters, dict) else None,
+            positive=True,
+        )
+        if min_notional is None:
+            return self._not_submitted_order_receipt(
+                "provider_symbol_filters_and_minimum_notional_required",
+                symbol=symbol,
+                side=normalized_side,
+            )
 
-        # Attach fill-derived metadata for validation
-        fills = response.get("fills") or []
-        total_qty = 0.0
-        total_cost = 0.0
-        total_fees_quote = 0.0
-
-        # Try to infer quote asset from common suffixes
-        quote_asset = None
-        for q in ("USDT", "USDC", "BUSD", "FDUSD", "TUSD", "USD", "EUR", "GBP", "BTC", "BNB", "ETH"):
-            if symbol.endswith(q):
-                quote_asset = q
-                break
-
-        for f in fills:
+        params: Dict[str, Any] = {
+            "symbol": symbol,
+            "side": normalized_side,
+            "type": "MARKET",
+            "newOrderRespType": "FULL",
+        }
+        if normalized_client_order_id is not None:
+            params["newClientOrderId"] = normalized_client_order_id
+        if quantity_value is not None:
             try:
-                qty = float(f.get("qty", 0) or 0)
-                price = float(f.get("price", 0) or 0)
-                commission = float(f.get("commission", 0) or 0)
-                commission_asset = str(f.get("commissionAsset", "") or "").upper()
+                adjusted_qty = self.adjust_quantity(symbol, quantity_value)
             except Exception:
-                qty = 0.0
-                price = 0.0
-                commission = 0.0
-                commission_asset = ""
-            if qty > 0 and price > 0:
-                total_qty += qty
-                total_cost += qty * price
-            if commission > 0 and quote_asset and commission_asset == quote_asset:
-                total_fees_quote += commission
+                adjusted_qty = None
+            if adjusted_qty is None or adjusted_qty <= 0:
+                return self._not_submitted_order_receipt(
+                    "provider_quantity_filter_rejected_request",
+                    symbol=symbol,
+                    side=normalized_side,
+                    requested_quantity=quantity_value,
+                )
+            ticker = self.get_ticker(symbol)
+            observed_price = self._finite_number(
+                ticker.get("price") if isinstance(ticker, dict) else None,
+                positive=True,
+            )
+            if (
+                not isinstance(ticker, dict)
+                or ticker.get("data_status") != "live"
+                or ticker.get("truth_status") != "real_observed"
+                or ticker.get("generated_values") is not False
+                or observed_price is None
+            ):
+                return self._not_submitted_order_receipt(
+                    "fresh_provider_quote_required_for_notional_check",
+                    symbol=symbol,
+                    side=normalized_side,
+                    requested_quantity=quantity_value,
+                )
+            notional = adjusted_qty * observed_price
+            if notional < min_notional:
+                return self._not_submitted_order_receipt(
+                    "order_below_provider_minimum_notional",
+                    symbol=symbol,
+                    side=normalized_side,
+                    requested_quantity=quantity_value,
+                    observed_notional=notional,
+                    provider_minimum_notional=min_notional,
+                    quote_receipt_id=ticker.get("receipt_id"),
+                )
+            params["quantity"] = self._format_order_value(adjusted_qty)
+        else:
+            try:
+                adjusted_quote = self.adjust_quote_qty(symbol, quote_value)
+            except Exception:
+                adjusted_quote = None
+            if adjusted_quote is None or adjusted_quote <= 0 or adjusted_quote < min_notional:
+                return self._not_submitted_order_receipt(
+                    "quote_quantity_below_provider_minimum_notional",
+                    symbol=symbol,
+                    side=normalized_side,
+                    requested_quote_quantity=quote_value,
+                    provider_minimum_notional=min_notional,
+                )
+            params["quoteOrderQty"] = self._format_order_value(adjusted_quote)
 
-        avg_fill_price = (total_cost / total_qty) if total_qty > 0 else None
-        response["avg_fill_price"] = avg_fill_price
-        response["fees"] = total_fees_quote
-        response["fills_verified"] = True if fills else False
+        try:
+            response = self._signed_request("POST", "/api/v3/order", params)
+        except EconomicGovernanceBlocked:
+            raise
+        except Exception:
+            self._pending_orders[key] = {
+                "order_id": None,
+                "client_order_id": normalized_client_order_id,
+                "order": {},
+                "params": dict(params),
+                "is_isolated": "FALSE",
+            }
+            receipt = self._pending_order_receipt(
+                "ambiguous_submission_requires_external_reconciliation",
+                symbol=symbol,
+                side=normalized_side,
+                order_id=None,
+                margin=False,
+                client_order_id=normalized_client_order_id,
+            )
+            # The POST left this process, but provider acceptance is unknown.
+            # Preserve the reconciliation latch without inventing acceptance.
+            receipt["submitted"] = None
+            return receipt
 
-        return response
+        order_id = self._valid_provider_identifier(response.get("orderId")) if isinstance(response, dict) else None
+        normalized = self._normalize_order_receipt(
+            response,
+            symbol=symbol,
+            side=normalized_side,
+            margin=False,
+            expected_order_id=order_id,
+            expected_client_order_id=normalized_client_order_id,
+        )
+        if normalized.get("reconciliation_required") is False:
+            return normalized
+        self._pending_orders[key] = {
+            "order_id": order_id,
+            "client_order_id": normalized_client_order_id,
+            "order": dict(response) if isinstance(response, dict) else {},
+            "params": dict(params),
+            "is_isolated": "FALSE",
+        }
+        return normalized
 
-    def get_symbol_filters(self, symbol: str) -> Dict[str, float]:
+    def place_market_order(
+        self,
+        symbol: str,
+        side: str,
+        quantity: float | str | Decimal | None = None,
+        quote_qty: float | str | Decimal | None = None,
+        client_order_id: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        return self._place_market_order_receipt_gated(
+            symbol,
+            side,
+            quantity,
+            quote_qty,
+            client_order_id,
+        )
+
+    def get_symbol_filters(
+        self,
+        symbol: str,
+        force_refresh: bool = False,
+    ) -> Dict[str, Any]:
         symbol = symbol.upper()
-        if symbol in self._symbol_filters_cache:
-            return self._symbol_filters_cache[symbol]
+        if symbol in self._symbol_filters_cache and not force_refresh:
+            cached = self._symbol_filters_cache[symbol]
+            if self._fresh_provider_timestamp(
+                cached.get("source_timestamp"),
+                max_age_seconds=300.0,
+            ) is not None:
+                return cached
 
         info = self.exchange_info(symbol=symbol)
+        provider_clock = self.server_time()
+        received_at = time.time()
+        source_timestamp = self._fresh_provider_timestamp(
+            provider_clock.get("serverTime")
+            if isinstance(provider_clock, dict) else None,
+            max_age_seconds=60.0,
+        )
+        if source_timestamp is None:
+            raise RuntimeError(
+                f"Fresh provider clock required for {symbol} filters"
+            )
         entry = None
         if isinstance(info, dict):
             symbols = info.get('symbols', [])
@@ -598,7 +1829,9 @@ class BinanceClient:
         if entry is None:
             raise RuntimeError(f"Failed to load symbol info for {symbol}")
 
-        filters = entry.get('filters', [])
+        filters = entry.get('filters')
+        if not isinstance(filters, list):
+            raise RuntimeError(f"Provider symbol filters unavailable for {symbol}")
         def _find(filter_type: str) -> Dict[str, Any]:
             for f in filters:
                 if f.get('filterType') == filter_type:
@@ -609,31 +1842,29 @@ class BinanceClient:
         market_lot = _find('MARKET_LOT_SIZE')
         min_notional = _find('MIN_NOTIONAL') or _find('NOTIONAL')
 
-        def _safe_float(value: str | float | None, fallback: float) -> float:
-            try:
-                parsed = float(value)
-                if parsed > 0:
-                    return parsed
-            except (TypeError, ValueError):
-                pass
-            return fallback
+        step_size = self._finite_number(market_lot.get("stepSize"), positive=True) if market_lot else None
+        if step_size is None:
+            step_size = self._finite_number(lot.get("stepSize") if lot else None, positive=True)
+        min_qty = self._finite_number(market_lot.get("minQty"), positive=True) if market_lot else None
+        if min_qty is None:
+            min_qty = self._finite_number(lot.get("minQty") if lot else None, positive=True)
+        max_qty = self._finite_number(market_lot.get("maxQty"), positive=True) if market_lot else None
+        if max_qty is None:
+            max_qty = self._finite_number(lot.get("maxQty") if lot else None, positive=True)
+        min_notional_val = self._finite_number((min_notional or {}).get("minNotional"), positive=True)
+        if step_size is None or min_qty is None or max_qty is None or min_notional_val is None:
+            raise RuntimeError(f"Complete provider quantity and notional filters required for {symbol}")
 
-        step_size = _safe_float(market_lot.get('stepSize'), 0.0) if market_lot else 0.0
-        if step_size <= 0:
-            step_size = _safe_float(lot.get('stepSize') if lot else None, 0.0001)
-
-        min_qty = _safe_float(market_lot.get('minQty') if market_lot else None, 0.0)
-        if min_qty <= 0:
-            min_qty = _safe_float(lot.get('minQty') if lot else None, 0.0)
-
-        max_qty = _safe_float(market_lot.get('maxQty') if market_lot else None, 0.0)
-        if max_qty <= 0:
-            max_qty = _safe_float(lot.get('maxQty') if lot else None, 0.0)
-
-        min_notional_val = _safe_float((min_notional or {}).get('minNotional'), 0.0)
-
-        base_precision = int(entry.get('baseAssetPrecision', 8))
-        quote_precision = int(entry.get('quoteAssetPrecision', entry.get('quotePrecision', 8)))
+        base_precision_raw = entry.get("baseAssetPrecision")
+        quote_precision_raw = entry.get("quoteAssetPrecision")
+        if quote_precision_raw is None:
+            quote_precision_raw = entry.get("quotePrecision")
+        if base_precision_raw is None or quote_precision_raw is None:
+            raise RuntimeError(f"Provider asset precision unavailable for {symbol}")
+        base_precision = int(base_precision_raw)
+        quote_precision = int(quote_precision_raw)
+        if not 0 <= base_precision <= 20 or not 0 <= quote_precision <= 20:
+            raise RuntimeError(f"Provider asset precision invalid for {symbol}")
 
         data = {
             'step_size': step_size,
@@ -645,51 +1876,184 @@ class BinanceClient:
             'base_asset': entry.get('baseAsset'),
             'quote_asset': entry.get('quoteAsset'),
         }
+        filter_material = json.dumps(
+            {
+                "symbol": symbol,
+                "step_size": step_size,
+                "min_qty": min_qty,
+                "max_qty": max_qty,
+                "min_notional": min_notional_val,
+                "base_precision": base_precision,
+                "quote_precision": quote_precision,
+                "base_asset": entry.get("baseAsset"),
+                "quote_asset": entry.get("quoteAsset"),
+                "source_timestamp": source_timestamp,
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        )
+        data.update({
+            "source_id": "binance:/api/v3/exchangeInfo+/api/v3/time",
+            "source_timestamp": source_timestamp,
+            "received_at": received_at,
+            "receipt_id": "binance:filters:" + hashlib.sha256(
+                filter_material.encode("utf-8")
+            ).hexdigest(),
+            "provider_receipt_type": "ExchangeInfo+Time",
+            "truth_status": "real_observed",
+            "data_status": "live",
+            "generated_values": False,
+            "eligible_for_action": True,
+            "action": False,
+            "accounting": False,
+            "learning": False,
+        })
         self._symbol_filters_cache[symbol] = data
         return data
+
+    def get_trade_fee_receipt(self, symbol: str) -> Dict[str, Any]:
+        """Return exact account-specific spot fee rates plus provider time."""
+        normalized_symbol = self._norm(symbol).upper()
+        received_at = time.time()
+        try:
+            raw = self._signed_request(
+                "GET",
+                "/sapi/v1/asset/tradeFee",
+                {"symbol": normalized_symbol},
+            )
+            provider_clock = self.server_time()
+        except Exception:
+            raw = None
+            provider_clock = None
+        rows = (
+            raw
+            if isinstance(raw, list)
+            else raw.get("tradeFee")
+            if isinstance(raw, dict)
+            else None
+        )
+        matching = [
+            row for row in rows
+            if isinstance(row, dict)
+            and self._norm(str(row.get("symbol") or "")).upper()
+            == normalized_symbol
+        ] if isinstance(rows, list) else []
+        source_timestamp = self._fresh_provider_timestamp(
+            provider_clock.get("serverTime")
+            if isinstance(provider_clock, dict) else None,
+            max_age_seconds=60.0,
+        )
+        if len(matching) != 1 or source_timestamp is None:
+            return {
+                "symbol": normalized_symbol,
+                "data_status": "no_data",
+                "truth_status": "no_data",
+                "generated_values": False,
+                "eligible_for_action": False,
+                "source_timestamp": None,
+                "received_at": received_at,
+                "receipt_id": None,
+                "reason": "complete_account_trade_fee_and_provider_time_required",
+            }
+        row = matching[0]
+        maker = self._finite_number(row.get("makerCommission"))
+        taker = self._finite_number(row.get("takerCommission"))
+        if (
+            maker is None
+            or taker is None
+            or maker < 0
+            or taker < 0
+            or maker >= 1
+            or taker >= 1
+        ):
+            return {
+                "symbol": normalized_symbol,
+                "data_status": "no_data",
+                "truth_status": "no_data",
+                "generated_values": False,
+                "eligible_for_action": False,
+                "source_timestamp": None,
+                "received_at": received_at,
+                "receipt_id": None,
+                "reason": "finite_provider_fee_rates_required",
+            }
+        material = json.dumps(
+            {
+                "symbol": normalized_symbol,
+                "maker_commission": maker,
+                "taker_commission": taker,
+                "source_timestamp": source_timestamp,
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        )
+        return {
+            "symbol": normalized_symbol,
+            "maker_commission": maker,
+            "taker_commission": taker,
+            "fee_currency_policy": "provider_fill_determines_asset",
+            "source_id": (
+                "binance:/sapi/v1/asset/tradeFee+/api/v3/time"
+            ),
+            "source_timestamp": source_timestamp,
+            "received_at": received_at,
+            "receipt_id": "binance:trade_fee:" + hashlib.sha256(
+                material.encode("utf-8")
+            ).hexdigest(),
+            "provider_receipt_type": "TradeFee+Time",
+            "truth_status": "real_provider",
+            "data_status": "live",
+            "generated_values": False,
+            "eligible_for_action": True,
+            "action": False,
+            "accounting": False,
+            "learning": False,
+        }
 
     def adjust_quantity(self, symbol: str, quantity: float) -> float:
         filters = self.get_symbol_filters(symbol)
         qty_dec = Decimal(str(quantity))
-        step = Decimal(str(filters.get('step_size', 0.0))) if filters.get('step_size') else Decimal('0')
-        if step > 0:
-            qty_dec = (qty_dec // step) * step
+        step_value = self._finite_number(filters.get("step_size"), positive=True)
+        min_qty_value = self._finite_number(filters.get("min_qty"), positive=True)
+        max_qty_value = self._finite_number(filters.get("max_qty"), positive=True)
+        if step_value is None or min_qty_value is None or max_qty_value is None:
+            raise RuntimeError(f"Complete provider quantity filters required for {symbol}")
+        step = Decimal(str(step_value))
+        qty_dec = (qty_dec // step) * step
 
-        precision = int(filters.get('base_precision', 8))
+        if filters.get("base_precision") is None:
+            raise RuntimeError(f"Provider base precision unavailable for {symbol}")
+        precision = int(filters["base_precision"])
         try:
             scale = Decimal(1).scaleb(-precision)
             qty_dec = qty_dec.quantize(scale, rounding=ROUND_DOWN)
         except (InvalidOperation, ValueError):
             pass
 
-        min_qty = Decimal(str(filters.get('min_qty', 0.0)))
+        min_qty = Decimal(str(min_qty_value))
         if qty_dec < min_qty:
             return 0.0
 
-        max_qty_val = filters.get('max_qty', 0.0)
-        if max_qty_val:
-            max_qty = Decimal(str(max_qty_val))
-            if qty_dec > max_qty:
-                qty_dec = max_qty
+        max_qty = Decimal(str(max_qty_value))
+        if qty_dec > max_qty:
+            qty_dec = max_qty
 
         return float(qty_dec)
 
     def adjust_quote_qty(self, symbol: str, quote_qty: float) -> float:
         """Adjust quoteOrderQty to match the symbol's quote precision for Binance."""
-        try:
-            filters = self.get_symbol_filters(symbol)
-            precision = int(filters.get('quote_precision', 8))
-            # Binance typically accepts 2 decimal places for most quote currencies
-            # But use the exchange's quote_precision as guidance
-            # Clamp to max 8 decimals to be safe
-            precision = min(precision, 8)
-            qty_dec = Decimal(str(quote_qty))
-            scale = Decimal(1).scaleb(-precision)
-            qty_dec = qty_dec.quantize(scale, rounding=ROUND_DOWN)
-            return float(qty_dec)
-        except Exception:
-            # Fallback: round to 2 decimal places
-            return round(quote_qty, 2)
+        filters = self.get_symbol_filters(symbol)
+        if filters.get("quote_precision") is None:
+            raise RuntimeError(f"Provider quote precision unavailable for {symbol}")
+        precision = int(filters["quote_precision"])
+        if not 0 <= precision <= 20:
+            raise RuntimeError(f"Provider quote precision invalid for {symbol}")
+        qty_dec = Decimal(str(quote_qty))
+        scale = Decimal(1).scaleb(-precision)
+        qty_dec = qty_dec.quantize(scale, rounding=ROUND_DOWN)
+        return float(qty_dec)
 
     def best_price(self, symbol: str, timeout: float = 3.0) -> Dict[str, Any]:
         try:
@@ -784,27 +2148,23 @@ class BinanceClient:
         
         return 0.0
 
-    def compute_order_fees_in_quote(self, order: Dict[str, Any], primary_quote: str) -> float:
-        """Sum commissions from FULL order response into the target quote asset.
-        Falls back to 0 if fills/commission are missing.
-        """
-        fills = order.get("fills") or []
-        total_quote = 0.0
-        for f in fills:
-            try:
-                commission = float(f.get("commission", 0) or 0)
-                commission_asset = str(f.get("commissionAsset", "")).upper()
-            except Exception:
-                commission = 0.0
-                commission_asset = ""
-            if commission <= 0:
-                continue
-            if commission_asset == primary_quote.upper():
-                total_quote += commission
-            else:
-                converted = self.convert_to_quote(commission_asset, commission, primary_quote)
-                total_quote += converted
-        return total_quote
+    def compute_order_fees_in_quote(self, order: Dict[str, Any], primary_quote: str) -> Optional[float]:
+        """Return an observed fee only when its provider asset is the requested quote."""
+        if (
+            not isinstance(order, dict)
+            or order.get("fill_receipt_complete") is not True
+            or order.get("eligible_for_accounting") is not True
+            or order.get("eligible_for_learning") is not True
+            or order.get("generated_values") is not False
+            or order.get("reconciliation_required") is not False
+        ):
+            return None
+        fee = self._finite_number(order.get("fee"))
+        fee_asset = str(order.get("fee_asset") or order.get("fee_currency") or "").strip().upper()
+        quote_asset = str(primary_quote or "").strip().upper()
+        if fee is None or fee < 0 or not fee_asset or fee_asset != quote_asset:
+            return None
+        return fee
     
     def get_ticker_price(self, symbol: str) -> Optional[Dict[str, str]]:
         """Get current price for a symbol."""
@@ -818,45 +2178,22 @@ class BinanceClient:
         return None
 
     def get_ticker(self, symbol: str) -> Dict[str, Any]:
-        """Unified ticker interface (symbol, price, bid, ask, last).
-        
-        Wraps get_24h_ticker to provide a richer object, but falls back
-        to get_ticker_price if needed.
-        """
+        """Return only complete, fresh observed Binance 24-hour quote evidence."""
         symbol = self._norm(symbol)
+        received_at = time.time()
         try:
-            # get_24h_ticker provides bid/ask, which is preferred
-            ticker_24h = self.get_24h_ticker(symbol)
-            if ticker_24h and 'lastPrice' in ticker_24h:
-                price = float(ticker_24h['lastPrice'])
-                bid = float(ticker_24h.get('bidPrice', 0))
-                ask = float(ticker_24h.get('askPrice', 0))
-                return {
-                    "symbol": symbol,
-                    "price": price,
-                    "last": price,
-                    "bid": bid if bid > 0 else price,
-                    "ask": ask if ask > 0 else price,
-                }
+            raw = self.get_24h_ticker(symbol)
         except Exception:
-            # Fallback to the simpler price-only endpoint if 24h fails
-            pass
-
-        try:
-            ticker_price = self.get_ticker_price(symbol)
-            if ticker_price and 'price' in ticker_price:
-                price = float(ticker_price['price'])
-                return {
-                    "symbol": symbol,
-                    "price": price,
-                    "last": price,
-                    "bid": price,
-                    "ask": price,
-                }
-        except Exception:
-            pass
-        
-        return {}
+            raw = None
+        if not isinstance(raw, dict):
+            return {"symbol": symbol, "source_timestamp": None, "received_at": received_at, "truth_status": "no_data", "generated_values": False, "data_status": "no_data"}
+        source_timestamp = self._fresh_provider_timestamp(raw.get("closeTime"), max_age_seconds=300.0)
+        bid = self._finite_number(raw.get("bidPrice"), positive=True)
+        ask = self._finite_number(raw.get("askPrice"), positive=True)
+        last = self._finite_number(raw.get("lastPrice"), positive=True)
+        if source_timestamp is None or bid is None or ask is None or last is None or ask < bid:
+            return {"symbol": symbol, "source_timestamp": None, "received_at": received_at, "truth_status": "no_data", "generated_values": False, "data_status": "no_data"}
+        return {"symbol": symbol, "price": last, "last": last, "bid": bid, "ask": ask, "source_id": "binance:/api/v3/ticker/24hr", "source_timestamp": source_timestamp, "received_at": received_at, "receipt_id": str(raw["closeTime"]), "truth_status": "real_observed", "generated_values": False, "data_status": "live", "action_enabled": False, "accounting_enabled": False, "learning_enabled": False}
 
     def get_24h_tickers(self) -> list:
         """Get all 24h ticker stats for commando scanning 🦆⚔️
@@ -1260,173 +2597,457 @@ class BinanceClient:
         return results
 
     def find_conversion_path(self, from_asset: str, to_asset: str) -> List[Dict[str, Any]]:
-        """Find the best path to convert from one asset to another."""
-        from_asset = from_asset.upper()
-        to_asset = to_asset.upper()
-        
-        if from_asset == to_asset:
+        """Resolve a provider-listed one- or two-hop spot conversion route."""
+        source_asset = str(from_asset or "").strip().upper()
+        target_asset = str(to_asset or "").strip().upper()
+        if not source_asset or not target_asset or source_asset == target_asset:
             return []
-        
-        pairs = self.get_available_pairs()
-        pair_map = {p["pair"]: p for p in pairs}
-        
-        # Try direct pair
-        direct_pair = f"{from_asset}{to_asset}"
+        pair_map = {
+            str(row.get("pair") or "").strip().upper(): row
+            for row in self.get_available_pairs()
+            if isinstance(row, dict) and str(row.get("pair") or "").strip()
+        }
+        direct_pair = f"{source_asset}{target_asset}"
         if direct_pair in pair_map:
-            return [{"pair": direct_pair, "side": "sell", "from": from_asset, "to": to_asset}]
-        
-        # Try inverse pair
-        inverse_pair = f"{to_asset}{from_asset}"
+            return [{
+                "pair": direct_pair,
+                "side": "SELL",
+                "from": source_asset,
+                "to": target_asset,
+                "description": f"Sell {source_asset} for {target_asset}",
+            }]
+        inverse_pair = f"{target_asset}{source_asset}"
         if inverse_pair in pair_map:
-            return [{"pair": inverse_pair, "side": "buy", "from": from_asset, "to": to_asset}]
-        
-        # Route through intermediary
-        for intermediate in ['USDC', 'BTC', 'EUR']:  # UK-safe intermediaries
-            if intermediate in (from_asset, to_asset):
+            return [{
+                "pair": inverse_pair,
+                "side": "BUY",
+                "from": source_asset,
+                "to": target_asset,
+                "description": f"Buy {target_asset} with {source_asset}",
+            }]
+
+        for intermediate in ("USDT", "USDC", "BTC", "BNB", "EUR"):
+            if intermediate in {source_asset, target_asset}:
                 continue
-            
-            path1 = None
-            p1_direct = f"{from_asset}{intermediate}"
-            p1_inverse = f"{intermediate}{from_asset}"
-            
-            if p1_direct in pair_map:
-                path1 = {"pair": p1_direct, "side": "sell", "from": from_asset, "to": intermediate}
-            elif p1_inverse in pair_map:
-                path1 = {"pair": p1_inverse, "side": "buy", "from": from_asset, "to": intermediate}
-            
-            if not path1:
+            if self.uk_mode and (intermediate in UK_RESTRICTED_TOKENS or intermediate == "USDC"):
                 continue
-            
-            path2 = None
-            p2_direct = f"{intermediate}{to_asset}"
-            p2_inverse = f"{to_asset}{intermediate}"
-            
-            if p2_direct in pair_map:
-                path2 = {"pair": p2_direct, "side": "sell", "from": intermediate, "to": to_asset}
-            elif p2_inverse in pair_map:
-                path2 = {"pair": p2_inverse, "side": "buy", "from": intermediate, "to": to_asset}
-            
-            if path2:
-                return [path1, path2]
-        
+            first = None
+            first_direct = f"{source_asset}{intermediate}"
+            first_inverse = f"{intermediate}{source_asset}"
+            if first_direct in pair_map:
+                first = {
+                    "pair": first_direct,
+                    "side": "SELL",
+                    "from": source_asset,
+                    "to": intermediate,
+                    "description": f"Sell {source_asset} for {intermediate}",
+                }
+            elif first_inverse in pair_map:
+                first = {
+                    "pair": first_inverse,
+                    "side": "BUY",
+                    "from": source_asset,
+                    "to": intermediate,
+                    "description": f"Buy {intermediate} with {source_asset}",
+                }
+            if first is None:
+                continue
+
+            second = None
+            second_direct = f"{intermediate}{target_asset}"
+            second_inverse = f"{target_asset}{intermediate}"
+            if second_direct in pair_map:
+                second = {
+                    "pair": second_direct,
+                    "side": "SELL",
+                    "from": intermediate,
+                    "to": target_asset,
+                    "description": f"Sell {intermediate} for {target_asset}",
+                }
+            elif second_inverse in pair_map:
+                second = {
+                    "pair": second_inverse,
+                    "side": "BUY",
+                    "from": intermediate,
+                    "to": target_asset,
+                    "description": f"Buy {target_asset} with {intermediate}",
+                }
+            if second is not None:
+                return [first, second]
         return []
 
-    def convert_crypto(self, from_asset: str, to_asset: str, amount: float) -> Dict[str, Any]:
-        """Convert one crypto asset to another within Binance."""
-        from_asset = from_asset.upper()
-        to_asset = to_asset.upper()
-        
-        if from_asset == to_asset:
-            return {"error": "Cannot convert to same asset"}
-        
-        # 🌍✨ PLANET SAVER: Freedom! Past doesn't define future!
-        # Let the scanner and Queen decide profitability!
-        
-        path = self.find_conversion_path(from_asset, to_asset)
-        
-        if not path:
-            return {"error": f"No conversion path found from {from_asset} to {to_asset}"}
-        
-        # 👑 QUEEN MIND: Pre-flight balance check
-        # Get fresh balance BEFORE trading
-        try:
-            acct = self.account() or {}
-            actual_balance = 0.0
-            for bal in acct.get('balances', []):
-                if bal.get('asset', '').upper() == from_asset:
-                    actual_balance = float(bal.get('free', 0))
-                    break
-            
-            if actual_balance <= 0:
-                return {"error": f"No {from_asset} balance available on Binance (free: {actual_balance})"}
-            
-            # Clamp to actual balance if needed
-            if amount > actual_balance:
-                print(f"   👑 Binance pre-trade clamping: {amount:.6f} → {actual_balance * 0.98:.6f}")
-                amount = actual_balance * 0.98  # Extra 2% buffer for fees
-        except Exception as e:
-            print(f"   ⚠️ Balance check warning: {e}")
-        
-        # 👑 SERO: Pre-flight validation for multi-step conversions
-        # Binance MIN_NOTIONAL is typically $5-10 depending on pair
-        min_notional = 5.0
-        estimated_amount = amount
-        estimated_value_usd = amount  # Track USD value through the path
-        
-        # Get SOL price for initial value estimate
-        try:
-            from_ticker = self.get_ticker_price(f"{from_asset}USDC") or self.get_ticker_price(f"{from_asset}USDT")
-            if from_ticker:
-                from_price = float(from_ticker.get("price", 0))
-                estimated_value_usd = amount * from_price
-        except:
-            pass
-        
-        for i, trade in enumerate(path):
-            pair = trade["pair"]
-            side = trade["side"]
-            
-            # Get current price
-            try:
-                ticker = self.get_ticker_price(pair)
-                price = float(ticker.get("price", 0)) if ticker else 0
-            except Exception:
-                price = 0
-            
-            if side == "sell":
-                # Selling base asset - check notional value in USD terms
-                if estimated_value_usd < min_notional and estimated_value_usd > 0:
-                    return {
-                        "error": f"Multi-hop step {i+1} value ${estimated_value_usd:.2f} < min ${min_notional:.2f} for {pair}",
-                        "failed_step": i,
-                        "pair": pair
-                    }
-                # After sell, we have quote currency (usually USDC)
-                if price > 0:
-                    estimated_amount = estimated_amount * price
-                    # estimated_value_usd stays roughly the same (minus fees)
-            else:
-                # Buying with quote currency - check if we have enough USD value
-                if estimated_value_usd < min_notional:
-                    return {
-                        "error": f"Multi-hop step {i+1} value ${estimated_value_usd:.2f} < min ${min_notional:.2f} for {pair}",
-                        "failed_step": i,
-                        "pair": pair
-                    }
-                # After buy, we have base currency
-                if price > 0:
-                    estimated_amount = estimated_amount / price
-                    # estimated_value_usd stays roughly the same (minus fees)
-        
-        if self.dry_run:
-            return {"dryRun": True, "path": path, "trades": len(path)}
-        
-        results = []
-        # Reserve 2% for fees/rounding to avoid "insufficient balance" errors
-        remaining_amount = amount * 0.98
-        
-        for trade in path:
-            pair = trade["pair"]
-            side = trade["side"]
-            
-            try:
-                if side == "sell":
-                    result = self.place_market_order(pair, "SELL", quantity=remaining_amount)
-                else:
-                    result = self.place_market_order(pair, "BUY", quote_qty=remaining_amount)
-                
-                results.append({"trade": trade, "result": result, "status": "success"})
-                
-                exec_qty = float(result.get("executedQty", 0))
-                cumm_quote = float(result.get("cummulativeQuoteQty", 0))
-                remaining_amount = cumm_quote if side == "sell" else exec_qty
-                    
-            except Exception as e:
-                return {"error": f"Trade failed: {e}", "partial_results": results}
-        
-        return {"success": True, "trades": results, "final_amount": remaining_amount}
+    def _complete_conversion_hop_receipt(
+        self,
+        receipt: Any,
+        *,
+        trade: Dict[str, Any],
+    ) -> bool:
+        if not isinstance(receipt, dict):
+            return False
+        quantity = self._finite_number(receipt.get("filled_qty"), positive=True)
+        notional = self._finite_number(receipt.get("filled_notional"), positive=True)
+        average_price = self._finite_number(receipt.get("filled_avg_price"), positive=True)
+        fee = self._finite_number(receipt.get("fee"))
+        source_timestamp = self._timestamp_seconds(receipt.get("source_timestamp"))
+        received_at = self._timestamp_seconds(receipt.get("received_at"))
+        now = time.time()
+        expected_notional = quantity * average_price if quantity is not None and average_price is not None else None
+        fills = receipt.get("fills")
+        trade_ids = [
+            self._valid_provider_identifier(row.get("tradeId"))
+            for row in fills
+            if isinstance(row, dict)
+        ] if isinstance(fills, list) else []
+        return bool(
+            receipt.get("status") in {"FILLED", "PARTIALLY_FILLED"}
+            and receipt.get("data_status") == "live"
+            and receipt.get("truth_status") == "real_observed"
+            and receipt.get("generated_values") is False
+            and receipt.get("fill_receipt_complete") is True
+            and receipt.get("eligible_for_accounting") is True
+            and receipt.get("eligible_for_learning") is True
+            and receipt.get("reconciliation_required") is False
+            and self._norm(str(receipt.get("symbol") or "")).upper() == str(trade["pair"]).upper()
+            and str(receipt.get("side") or "").strip().upper() == str(trade["side"]).upper()
+            and self._valid_provider_identifier(receipt.get("orderId")) is not None
+            and self._valid_provider_identifier(receipt.get("receipt_id")) is not None
+            and quantity is not None
+            and notional is not None
+            and average_price is not None
+            and fee is not None
+            and fee >= 0
+            and bool(str(receipt.get("fee_asset") or "").strip())
+            and bool(trade_ids)
+            and all(trade_id is not None for trade_id in trade_ids)
+            and len(trade_ids) == len(set(trade_ids))
+            and expected_notional is not None
+            and math.isclose(notional, expected_notional, rel_tol=0.001, abs_tol=1e-8)
+            and source_timestamp is not None
+            and received_at is not None
+            and source_timestamp <= received_at + 5.0
+            and received_at <= now + 5.0
+            and now - source_timestamp <= 300.0
+            and now - received_at <= 300.0
+        )
 
-    # ═══════════════════════════════════════════════════════════════════════
+    @staticmethod
+    def _conversion_controls() -> Dict[str, bool]:
+        return {
+            "eligible_for_action": False,
+            "eligible_for_accounting": False,
+            "eligible_for_learning": False,
+            "generated_values": False,
+            "action": False,
+            "accounting": False,
+            "learning": False,
+        }
+
+    def convert_crypto(
+        self,
+        from_asset: str,
+        to_asset: str,
+        amount: float,
+        use_quote_amount: bool = False,
+    ) -> Dict[str, Any]:
+        """Advance at most one receipt-gated conversion hop per invocation."""
+        source_asset = str(from_asset or "").strip().upper()
+        target_asset = str(to_asset or "").strip().upper()
+        requested_amount = self._finite_number(amount, positive=True)
+        controls = self._conversion_controls()
+        if not source_asset or not target_asset or source_asset == target_asset or requested_amount is None:
+            return {
+                "success": False,
+                "status": "no_data",
+                "data_status": "no_data",
+                "truth_status": "no_data",
+                "reason": "distinct_assets_and_positive_finite_amount_required",
+                "from_asset": source_asset,
+                "to_asset": target_asset,
+                **controls,
+            }
+        if self.dry_run:
+            return {
+                "success": False,
+                "status": "not_submitted",
+                "data_status": "not_submitted",
+                "truth_status": "no_data",
+                "reason": "dry_run",
+                "from_asset": source_asset,
+                "to_asset": target_asset,
+                "original_amount": requested_amount,
+                **controls,
+            }
+
+        conversion_key = (source_asset, target_asset)
+        state = self._pending_conversions.get(conversion_key)
+        if isinstance(state, dict):
+            terminal_failure = state.get("terminal_failure")
+            if isinstance(terminal_failure, dict):
+                return {
+                    "success": False,
+                    "status": "no_data",
+                    "data_status": "no_data",
+                    "truth_status": "real_observed",
+                    "reason": str(terminal_failure.get("reason") or "terminal_conversion_failure_latched"),
+                    "from_asset": source_asset,
+                    "to_asset": target_asset,
+                    "original_amount": requested_amount,
+                    "terminal_receipt": terminal_failure.get("receipt"),
+                    **controls,
+                }
+            same_amount = math.isclose(
+                float(state["requested_amount"]),
+                requested_amount,
+                rel_tol=1e-12,
+                abs_tol=1e-12,
+            )
+            if same_amount is False or bool(state.get("use_quote_amount")) != bool(use_quote_amount):
+                return {
+                    "success": False,
+                    "status": "pending_reconciliation",
+                    "data_status": "pending_reconciliation",
+                    "truth_status": "real_observed",
+                    "reason": "existing_conversion_must_reconcile_before_new_request",
+                    "from_asset": source_asset,
+                    "to_asset": target_asset,
+                    "original_amount": requested_amount,
+                    "pending_original_amount": state.get("requested_amount"),
+                    **controls,
+                }
+        else:
+            submitted_amount = requested_amount
+            balance_receipt_id = None
+            if not use_quote_amount:
+                balance_receipt = self.get_asset_balance(source_asset)
+                available = self._finite_number(
+                    balance_receipt.get("free") if isinstance(balance_receipt, dict) else None
+                )
+                if (
+                    not isinstance(balance_receipt, dict)
+                    or balance_receipt.get("eligible_for_action") is not True
+                    or balance_receipt.get("truth_status") != "real_provider"
+                    or balance_receipt.get("generated_values") is not False
+                    or available is None
+                    or available <= 0
+                ):
+                    return {
+                        "success": False,
+                        "status": "no_data",
+                        "data_status": "no_data",
+                        "truth_status": "no_data",
+                        "reason": "fresh_positive_source_balance_receipt_required",
+                        "from_asset": source_asset,
+                        "to_asset": target_asset,
+                        "original_amount": requested_amount,
+                        **controls,
+                    }
+                balance_receipt_id = balance_receipt.get("receipt_id")
+                if submitted_amount > available * 0.99:
+                    submitted_amount = available * 0.999
+                if not math.isfinite(submitted_amount) or submitted_amount <= 0:
+                    return {
+                        "success": False,
+                        "status": "no_data",
+                        "data_status": "no_data",
+                        "truth_status": "no_data",
+                        "reason": "positive_balance_clamped_amount_required",
+                        "from_asset": source_asset,
+                        "to_asset": target_asset,
+                        "original_amount": requested_amount,
+                        **controls,
+                    }
+
+            path = self.find_conversion_path(source_asset, target_asset)
+            if not path:
+                return {
+                    "success": False,
+                    "status": "no_data",
+                    "data_status": "no_data",
+                    "truth_status": "no_data",
+                    "reason": "provider_listed_conversion_path_unavailable",
+                    "from_asset": source_asset,
+                    "to_asset": target_asset,
+                    "original_amount": requested_amount,
+                    **controls,
+                }
+            state = {
+                "requested_amount": requested_amount,
+                "submitted_amount": submitted_amount,
+                "remaining_amount": submitted_amount,
+                "use_quote_amount": bool(use_quote_amount),
+                "path": path,
+                "next_hop": 0,
+                "terminal_receipts": [],
+                "balance_receipt_id": balance_receipt_id,
+            }
+            self._pending_conversions[conversion_key] = state
+
+        path = state.get("path")
+        next_hop = state.get("next_hop")
+        remaining_amount = self._finite_number(state.get("remaining_amount"), positive=True)
+        if (
+            not isinstance(path, list)
+            or not isinstance(next_hop, int)
+            or next_hop < 0
+            or next_hop >= len(path)
+            or remaining_amount is None
+            or not isinstance(path[next_hop], dict)
+        ):
+            self._pending_conversions.pop(conversion_key, None)
+            return {
+                "success": False,
+                "status": "no_data",
+                "data_status": "no_data",
+                "truth_status": "no_data",
+                "reason": "conversion_state_incomplete",
+                "from_asset": source_asset,
+                "to_asset": target_asset,
+                **controls,
+            }
+
+        trade = path[next_hop]
+        pair = str(trade.get("pair") or "").strip().upper()
+        side = str(trade.get("side") or "").strip().upper()
+        if not pair or side not in {"BUY", "SELL"}:
+            self._pending_conversions.pop(conversion_key, None)
+            return {
+                "success": False,
+                "status": "no_data",
+                "data_status": "no_data",
+                "truth_status": "no_data",
+                "reason": "conversion_hop_pair_and_side_required",
+                "from_asset": source_asset,
+                "to_asset": target_asset,
+                **controls,
+            }
+
+        receipt = (
+            self.place_market_order(pair, side, quantity=remaining_amount)
+            if side == "SELL"
+            else self.place_market_order(pair, side, quote_qty=remaining_amount)
+        )
+        prior_receipts = list(state.get("terminal_receipts") or [])
+        if not self._complete_conversion_hop_receipt(receipt, trade=trade):
+            receipt_data_status = receipt.get("data_status") if isinstance(receipt, dict) else None
+            receipt_status = receipt.get("status") if isinstance(receipt, dict) else None
+            reconciliation_required = receipt.get("reconciliation_required") if isinstance(receipt, dict) else None
+            if receipt_data_status != "pending_reconciliation":
+                self._pending_conversions.pop(conversion_key, None)
+            return {
+                "success": False,
+                "status": "pending_reconciliation" if receipt_data_status == "pending_reconciliation" else "no_data",
+                "data_status": "pending_reconciliation" if receipt_data_status == "pending_reconciliation" else "no_data",
+                "truth_status": "real_observed" if receipt_data_status == "pending_reconciliation" else "no_data",
+                "reason": (
+                    str(receipt.get("reason") or "terminal_provider_fill_receipt_required")
+                    if isinstance(receipt, dict)
+                    else "terminal_provider_fill_receipt_required"
+                ),
+                "from_asset": source_asset,
+                "to_asset": target_asset,
+                "original_amount": requested_amount,
+                "submitted_amount": state.get("submitted_amount"),
+                "current_hop": next_hop,
+                "current_order_status": receipt_status,
+                "reconciliation_required": reconciliation_required is not False,
+                "partial_results": prior_receipts,
+                "current_receipt": receipt if isinstance(receipt, dict) else None,
+                **controls,
+            }
+
+        output_amount = self._finite_number(
+            receipt.get("filled_notional") if side == "SELL" else receipt.get("filled_qty"),
+            positive=True,
+        )
+        fee = self._finite_number(receipt.get("fee"))
+        fee_asset = str(receipt.get("fee_asset") or "").strip().upper()
+        received_asset = str(trade.get("to") or "").strip().upper()
+        if output_amount is None or fee is None or fee < 0 or not fee_asset or not received_asset:
+            state["terminal_failure"] = {
+                "reason": "terminal_hop_output_and_fee_evidence_required",
+                "receipt": dict(receipt),
+            }
+            return {
+                "success": False,
+                "status": "no_data",
+                "data_status": "no_data",
+                "truth_status": "no_data",
+                "reason": "terminal_hop_output_and_fee_evidence_required",
+                "from_asset": source_asset,
+                "to_asset": target_asset,
+                "current_receipt": receipt,
+                **controls,
+            }
+        if fee_asset == received_asset:
+            output_amount -= fee
+        if not math.isfinite(output_amount) or output_amount <= 0:
+            state["terminal_failure"] = {
+                "reason": "positive_post_fee_hop_output_required",
+                "receipt": dict(receipt),
+            }
+            return {
+                "success": False,
+                "status": "no_data",
+                "data_status": "no_data",
+                "truth_status": "no_data",
+                "reason": "positive_post_fee_hop_output_required",
+                "from_asset": source_asset,
+                "to_asset": target_asset,
+                **controls,
+            }
+
+        prior_receipts.append({"trade": dict(trade), "result": dict(receipt), "status": "terminal"})
+        state["terminal_receipts"] = prior_receipts
+        state["remaining_amount"] = output_amount
+        state["next_hop"] = next_hop + 1
+        if state["next_hop"] < len(path):
+            return {
+                "success": False,
+                "status": "pending_reconciliation",
+                "data_status": "pending_reconciliation",
+                "truth_status": "real_derived",
+                "reason": "next_conversion_hop_not_submitted",
+                "from_asset": source_asset,
+                "to_asset": target_asset,
+                "original_amount": requested_amount,
+                "intermediate_amount": output_amount,
+                "completed_hops": len(prior_receipts),
+                "trades": prior_receipts,
+                **controls,
+            }
+
+        self._pending_conversions.pop(conversion_key, None)
+        source_timestamp = max(float(row["result"]["source_timestamp"]) for row in prior_receipts)
+        receipt_ids = [str(row["result"]["receipt_id"]) for row in prior_receipts]
+        conversion_receipt_id = "binance:conversion:" + hashlib.sha256("|".join(receipt_ids).encode("utf-8")).hexdigest()
+        return {
+            "success": True,
+            "status": "FILLED",
+            "data_status": "live",
+            "truth_status": "real_derived",
+            "reason": "all_conversion_hops_have_terminal_provider_receipts",
+            "from_asset": source_asset,
+            "to_asset": target_asset,
+            "original_amount": requested_amount,
+            "submitted_amount": state.get("submitted_amount"),
+            "final_amount": output_amount,
+            "path": path,
+            "trades": prior_receipts,
+            "trade_count": len(prior_receipts),
+            "source_id": "binance:conversion:terminal_hops",
+            "source_timestamp": source_timestamp,
+            "received_at": time.time(),
+            "receipt_id": conversion_receipt_id,
+            "terminal_receipt_ids": receipt_ids,
+            "eligible_for_action": False,
+            "eligible_for_accounting": True,
+            "eligible_for_learning": True,
+            "generated_values": False,
+            "action": False,
+            "accounting": True,
+            "learning": True,
+        }
+
     # CROSS MARGIN TRADING  —  Binance SAPI /sapi/v1/margin
     # ═══════════════════════════════════════════════════════════════════════
     #
@@ -1471,12 +3092,14 @@ class BinanceClient:
         """
         if self.dry_run:
             return {
-                "marginLevel": "2.5",
-                "totalAssetOfBtc": "0.01",
-                "totalLiabilityOfBtc": "0.0",
-                "totalNetAssetOfBtc": "0.01",
-                "userAssets": [],
-                "dry_run": True,
+                "status": "not_submitted",
+                "data_status": "not_submitted",
+                "truth_status": "no_data",
+                "reason": "dry_run_provider_account_readback_disabled",
+                "generated_values": False,
+                "eligible_for_action": False,
+                "eligible_for_accounting": False,
+                "eligible_for_learning": False,
             }
         return self._signed_request("GET", "/sapi/v1/margin/account", {})
 
@@ -1495,14 +3118,7 @@ class BinanceClient:
         (5x for BTC/ETH with a higher-tier account).
         """
         if self.dry_run:
-            return [
-                {"pair": "BTCUSDT", "base": "BTC", "quote": "USDT",
-                 "leverage_buy": [3], "leverage_sell": [3], "max_leverage": 3,
-                 "is_buy_allowed": True, "is_sell_allowed": True},
-                {"pair": "ETHUSDT", "base": "ETH", "quote": "USDT",
-                 "leverage_buy": [3], "leverage_sell": [3], "max_leverage": 3,
-                 "is_buy_allowed": True, "is_sell_allowed": True},
-            ]
+            return []
         try:
             raw = self._signed_request("GET", "/sapi/v1/margin/allPairs", {})
             results = []
@@ -1534,8 +3150,7 @@ class BinanceClient:
         """
         sym = self._norm(symbol)
         if self.dry_run:
-            return {"symbol": sym, "isMarginTrade": True,
-                    "isBuyAllowed": True, "isSellAllowed": True}
+            return None
         try:
             return self._signed_request("GET", "/sapi/v1/margin/pair", {"symbol": sym})
         except Exception:
@@ -1556,26 +3171,49 @@ class BinanceClient:
         if self.dry_run:
             return []
         try:
-            acct   = self.get_margin_account()
-            assets = acct.get("userAssets", [])
+            acct = self.get_margin_account()
+            assets = acct.get("userAssets") if isinstance(acct, dict) else None
+            if not isinstance(assets, list):
+                return []
             positions = []
             for asset in assets:
-                borrowed = float(asset.get("borrowed", 0))
-                net_asset = float(asset.get("netAsset", 0))
-                free      = float(asset.get("free",     0))
-                interest  = float(asset.get("interest", 0))
+                if not isinstance(asset, dict):
+                    continue
+                borrowed = self._finite_number(asset.get("borrowed"))
+                net_asset = self._finite_number(asset.get("netAsset"))
+                free = self._finite_number(asset.get("free"))
+                interest = self._finite_number(asset.get("interest"))
+                if (
+                    borrowed is None
+                    or net_asset is None
+                    or free is None
+                    or interest is None
+                    or borrowed < 0
+                    or interest < 0
+                ):
+                    continue
                 if borrowed > 0 or net_asset < 0:
                     a_sym = str(asset.get("asset", ""))
-                    # Get current price in USDT to compute PnL
-                    try:
-                        ticker = self.get_ticker(a_sym + "USDT")
-                        price  = float(ticker.get("lastPrice", ticker.get("price", 0)))
-                    except Exception:
-                        price  = 0.0
-                    current_value = (free + net_asset) * price if price else 0.0
-                    cost          = borrowed * price if price else 0.0
+                    ticker = self.get_ticker(a_sym + "USDT")
+                    price = self._finite_number(
+                        ticker.get("price") if isinstance(ticker, dict) else None,
+                        positive=True,
+                    )
+                    if (
+                        not a_sym
+                        or not isinstance(ticker, dict)
+                        or ticker.get("data_status") != "live"
+                        or ticker.get("truth_status") != "real_observed"
+                        or ticker.get("generated_values") is not False
+                        or price is None
+                    ):
+                        continue
+                    current_value = (free + net_asset) * price
+                    cost = borrowed * price
                     unrealized    = current_value - cost
                     max_lev = int(os.getenv("BINANCE_MARGIN_MAX_LEVERAGE", "3"))
+                    if max_lev <= 0:
+                        continue
                     positions.append({
                         "symbol":        a_sym + "USDT",
                         "pair":          a_sym + "USDT",
@@ -1585,15 +3223,172 @@ class BinanceClient:
                         "current_value": current_value,
                         "unrealized_pnl": unrealized,
                         "leverage":      max_lev,
-                        "margin":        current_value / max_lev if max_lev else 0,
+                        "margin":        current_value / max_lev,
                         "borrowed":      borrowed,
                         "interest":      interest,
                         "exchange":      "binance",
+                        "source_id":     ticker.get("source_id"),
+                        "source_timestamp": ticker.get("source_timestamp"),
+                        "received_at":   ticker.get("received_at"),
+                        "receipt_id":    ticker.get("receipt_id"),
+                        "truth_status":  "real_derived",
+                        "generated_values": False,
                     })
             return positions
         except Exception as e:
             import logging; logging.getLogger(__name__).warning(f"BinanceClient.get_open_margin_positions error: {e}")
             return []
+
+    def _place_margin_order_receipt_gated(
+        self,
+        *,
+        symbol: str,
+        side: str,
+        quantity: float,
+        leverage: int,
+        order_type: str,
+        price: Optional[float],
+        take_profit: Optional[float],
+        stop_loss: Optional[float],
+        post_only: bool,
+        reduce_only: bool,
+    ) -> Dict[str, Any]:
+        sym = self._norm(symbol).upper()
+        normalized_side = str(side or "").strip().upper()
+        normalized_type = str(order_type or "").strip().upper()
+        quantity_value = self._finite_number(quantity, positive=True)
+        limit_price = self._finite_number(price, positive=True) if price is not None else None
+        if (
+            not sym
+            or normalized_side not in {"BUY", "SELL"}
+            or normalized_type not in {"MARKET", "LIMIT"}
+            or quantity_value is None
+            or (normalized_type == "LIMIT" and limit_price is None)
+        ):
+            return self._not_submitted_order_receipt(
+                "finite_quantity_side_order_type_and_limit_price_required",
+                symbol=sym,
+                side=normalized_side,
+                margin=True,
+                requested_quantity=quantity,
+                requested_price=price,
+            )
+
+        key = self._order_key(sym, normalized_side, True)
+        if key in self._pending_orders:
+            if self.dry_run:
+                pending = self._pending_orders[key]
+                return self._pending_order_receipt(
+                    "readback_disabled_in_dry_run",
+                    symbol=sym,
+                    side=normalized_side,
+                    order_id=self._valid_provider_identifier(pending.get("order_id")),
+                    margin=True,
+                )
+            return self._reconcile_pending_order(key)
+        if self.dry_run:
+            return self._not_submitted_order_receipt(
+                "dry_run",
+                symbol=sym,
+                side=normalized_side,
+                margin=True,
+                requested_quantity=quantity_value,
+                requested_price=limit_price,
+            )
+        if self.uk_mode:
+            receipt = self._not_submitted_order_receipt(
+                "binance_margin_unavailable_for_uk_account",
+                symbol=sym,
+                side=normalized_side,
+                margin=True,
+            )
+            receipt["uk_restricted"] = True
+            return receipt
+        if not self._margin_enabled():
+            return self._not_submitted_order_receipt(
+                "binance_margin_not_enabled",
+                symbol=sym,
+                side=normalized_side,
+                margin=True,
+            )
+
+        try:
+            adjusted_quantity = self.adjust_quantity(sym, quantity_value)
+        except Exception:
+            adjusted_quantity = None
+        if adjusted_quantity is None or adjusted_quantity <= 0:
+            return self._not_submitted_order_receipt(
+                "provider_margin_quantity_filter_rejected_request",
+                symbol=sym,
+                side=normalized_side,
+                margin=True,
+                requested_quantity=quantity_value,
+            )
+
+        is_isolated = "TRUE" if self._margin_isolated() else "FALSE"
+        side_effect = "AUTO_REPAY" if reduce_only else "MARGIN_BUY"
+        receipt_metadata = {
+            "leverage": str(leverage),
+            "sideEffectType": side_effect,
+            "isIsolated": is_isolated == "TRUE",
+            "reduce_only": bool(reduce_only),
+            "take_profit": take_profit,
+            "stop_loss": stop_loss,
+        }
+        params: Dict[str, Any] = {
+            "symbol": sym,
+            "side": normalized_side,
+            "type": normalized_type,
+            "quantity": self._format_order_value(adjusted_quantity),
+            "sideEffectType": side_effect,
+            "isIsolated": is_isolated,
+            "newOrderRespType": "FULL",
+        }
+        if normalized_type == "LIMIT":
+            params["price"] = self._format_order_value(limit_price)
+            params["timeInForce"] = "GTX" if post_only else "GTC"
+
+        try:
+            response = self._signed_request("POST", "/sapi/v1/margin/order", params)
+        except EconomicGovernanceBlocked:
+            raise
+        except Exception:
+            self._pending_orders[key] = {
+                "order_id": None,
+                "order": {},
+                "params": dict(params),
+                "is_isolated": is_isolated,
+                "metadata": dict(receipt_metadata),
+            }
+            pending_receipt = self._pending_order_receipt(
+                "ambiguous_submission_requires_external_reconciliation",
+                symbol=sym,
+                side=normalized_side,
+                order_id=None,
+                margin=True,
+            )
+            pending_receipt.update(receipt_metadata)
+            return pending_receipt
+
+        order_id = self._valid_provider_identifier(response.get("orderId")) if isinstance(response, dict) else None
+        normalized = self._normalize_order_receipt(
+            response,
+            symbol=sym,
+            side=normalized_side,
+            margin=True,
+            expected_order_id=order_id,
+        )
+        normalized.update(receipt_metadata)
+        if normalized.get("reconciliation_required") is False:
+            return normalized
+        self._pending_orders[key] = {
+            "order_id": order_id,
+            "order": dict(response) if isinstance(response, dict) else {},
+            "params": dict(params),
+            "is_isolated": is_isolated,
+            "metadata": dict(receipt_metadata),
+        }
+        return normalized
 
     def place_margin_order(
         self,
@@ -1631,78 +3426,18 @@ class BinanceClient:
         UK accounts (uk_mode=True) receive a rejection dict; margin is FCA-restricted.
         BINANCE_MARGIN_ENABLED must be 'true' in .env to allow live orders.
         """
-        sym = self._norm(symbol)
-
-        # ── UK restriction gate ────────────────────────────────────────────
-        if self.uk_mode:
-            return {
-                "rejected": True, "symbol": sym, "side": side.upper(),
-                "reason": ("Binance margin trading is not available for UK FCA-regulated "
-                           "accounts.  Set BINANCE_UK_MODE=false in .env to override if "
-                           "you are trading from outside the UK."),
-                "uk_restricted": True, "margin": True,
-            }
-
-        # ── Master margin switch ───────────────────────────────────────────
-        if not self._margin_enabled():
-            return {
-                "rejected": True, "symbol": sym, "side": side.upper(),
-                "reason": ("Binance margin not enabled.  Set BINANCE_MARGIN_ENABLED=true "
-                           "in .env to activate margin trading on this account."),
-                "margin": True,
-            }
-
-        b_side = side.upper()  # "BUY" or "SELL"
-        b_type = order_type.upper()  # "MARKET" or "LIMIT"
-
-        # sideEffectType: AUTO_REPAY when closing, MARGIN_BUY when opening
-        side_effect = "AUTO_REPAY" if reduce_only else "MARGIN_BUY"
-
-        # ── Dry-run simulation ─────────────────────────────────────────────
-        if self.dry_run:
-            return {
-                "symbol": sym, "orderId": f"DRY-{int(time.time())}",
-                "type": b_type, "side": b_side, "leverage": str(leverage),
-                "origQty": str(quantity), "executedQty": str(quantity),
-                "status": "FILLED", "margin": True,
-                "sideEffectType": side_effect,
-                "isIsolated": self._margin_isolated(),
-                "exchange": "binance",
-                "dry_run": True,
-            }
-
-        # ── Quantity precision ─────────────────────────────────────────────
-        try:
-            adj_qty = self.adjust_quantity(sym, quantity)
-        except Exception:
-            adj_qty = round(quantity, 6)
-
-        params: Dict[str, Any] = {
-            "symbol":         sym,
-            "side":           b_side,
-            "type":           b_type,
-            "quantity":       str(adj_qty),
-            "sideEffectType": side_effect,
-            "isIsolated":     "TRUE" if self._margin_isolated() else "FALSE",
-        }
-        if b_type == "LIMIT":
-            if price is None:
-                raise ValueError("price is required for LIMIT margin orders")
-            params["price"]       = str(round(price, 8))
-            params["timeInForce"] = "GTC"
-        if post_only and b_type == "LIMIT":
-            params["timeInForce"] = "GTX"  # Post-only (maker-or-cancel)
-
-        try:
-            result = self._signed_request("POST", "/sapi/v1/margin/order", params)
-        except Exception as e:
-            return {"error": str(e), "symbol": sym, "side": b_side, "margin": True}
-
-        # ── Normalise to Kraken-compatible shape ───────────────────────────
-        result["leverage"]  = str(leverage)
-        result["margin"]    = True
-        result["exchange"]  = "binance"
-        return result
+        return self._place_margin_order_receipt_gated(
+            symbol=symbol,
+            side=side,
+            quantity=quantity,
+            leverage=leverage,
+            order_type=order_type,
+            price=price,
+            take_profit=take_profit,
+            stop_loss=stop_loss,
+            post_only=post_only,
+            reduce_only=reduce_only,
+        )
 
     def close_margin_position(
         self,
@@ -1744,21 +3479,26 @@ class BinanceClient:
             }
 
         # Auto-detect volume from open positions if not supplied
-        qty = volume
+        qty = self._finite_number(volume, positive=True) if volume is not None else None
         if qty is None:
             try:
                 positions = self.get_open_margin_positions()
                 for pos in positions:
                     if pos.get("symbol") == sym or pos.get("pair") == sym:
-                        qty = float(pos.get("volume", 0))
+                        qty = self._finite_number(pos.get("volume"), positive=True)
                         break
             except Exception:
-                pass
+                qty = None
 
-        if not qty or qty <= 0:
+        if qty is None:
             return {
-                "error": f"No open margin position found for {sym} to close.",
-                "symbol": sym, "margin": True,
+                **self._not_submitted_order_receipt(
+                    "fresh_open_margin_position_volume_required",
+                    symbol=sym,
+                    side=side,
+                    margin=True,
+                ),
+                "error": f"No proven open margin position found for {sym} to close.",
             }
 
         return self.place_margin_order(
@@ -2090,52 +3830,7 @@ class BinancePoolClient:
         Returns:
             List of pairs with base, quote, and pair name
         """
-        try:
-            info = self._request("GET", "/api/v3/exchangeInfo")
-            symbols = info.get("symbols", [])
-            results = []
-            
-            for sym in symbols:
-                if sym.get("status") != "TRADING":
-                    continue
-                
-                pair_base = sym.get("baseAsset", "")
-                pair_quote = sym.get("quoteAsset", "")
-                
-                # Apply filters
-                if base and pair_base.upper() != base.upper():
-                    continue
-                if quote and pair_quote.upper() != quote.upper():
-                    continue
-                
-                results.append({
-                    "pair": sym.get("symbol"),
-                    "base": pair_base,
-                    "quote": pair_quote,
-                    "minNotional": self._get_min_notional(sym),
-                    "minQty": self._get_min_qty(sym)
-                })
-            
-            return results
-        except Exception as e:
-            print(f"Error getting pairs: {e}")
-            return []
-    
-    def _get_min_notional(self, sym_info: Dict) -> float:
-        """Extract minimum notional from symbol filters"""
-        for f in sym_info.get("filters", []):
-            if f.get("filterType") == "NOTIONAL":
-                return float(f.get("minNotional", 0))
-            if f.get("filterType") == "MIN_NOTIONAL":
-                return float(f.get("minNotional", 0))
-        return 0.0
-    
-    def _get_min_qty(self, sym_info: Dict) -> float:
-        """Extract minimum quantity from symbol filters"""
-        for f in sym_info.get("filters", []):
-            if f.get("filterType") == "LOT_SIZE":
-                return float(f.get("minQty", 0))
-        return 0.0
+        return self.client.get_available_pairs(base=base, quote=quote)
 
     def find_conversion_path(self, from_asset: str, to_asset: str) -> List[Dict[str, Any]]:
         """
@@ -2152,82 +3847,7 @@ class BinancePoolClient:
         Returns:
             List of {pair, side, description} for each trade needed
         """
-        from_asset = from_asset.upper()
-        to_asset = to_asset.upper()
-        
-        if from_asset == to_asset:
-            return []
-        
-        # Get all trading pairs
-        pairs = self.get_available_pairs()
-        pair_map = {p["pair"]: p for p in pairs}
-        
-        # Try direct pair: from_asset + to_asset
-        direct_pair = f"{from_asset}{to_asset}"
-        if direct_pair in pair_map:
-            return [{
-                "pair": direct_pair,
-                "side": "sell",
-                "description": f"Sell {from_asset} for {to_asset}",
-                "from": from_asset,
-                "to": to_asset
-            }]
-        
-        # Try inverse pair: to_asset + from_asset
-        inverse_pair = f"{to_asset}{from_asset}"
-        if inverse_pair in pair_map:
-            return [{
-                "pair": inverse_pair,
-                "side": "buy",
-                "description": f"Buy {to_asset} with {from_asset}",
-                "from": from_asset,
-                "to": to_asset
-            }]
-        
-        # No direct pair - route through intermediary (USDT, USDC, BTC, BNB)
-        for intermediate in ['USDT', 'USDC', 'BTC', 'BNB', 'EUR']:
-            if intermediate == from_asset or intermediate == to_asset:
-                continue
-            
-            # 🐍 MEDUSA: Skip restricted intermediaries in UK mode
-            if self.uk_mode:
-                if intermediate in UK_RESTRICTED_TOKENS:
-                    continue
-                # Explicitly block USDC for UK users (often restricted/unavailable)
-                if intermediate == 'USDC':
-                    continue
-            
-            # Check if we can go from_asset -> intermediate
-            path1 = None
-            p1_direct = f"{from_asset}{intermediate}"
-            p1_inverse = f"{intermediate}{from_asset}"
-            
-            if p1_direct in pair_map:
-                path1 = {"pair": p1_direct, "side": "sell", "from": from_asset, "to": intermediate,
-                         "description": f"Sell {from_asset} for {intermediate}"}
-            elif p1_inverse in pair_map:
-                path1 = {"pair": p1_inverse, "side": "buy", "from": from_asset, "to": intermediate,
-                         "description": f"Buy {intermediate} with {from_asset}"}
-            
-            if not path1:
-                continue
-            
-            # Check if we can go intermediate -> to_asset
-            path2 = None
-            p2_direct = f"{intermediate}{to_asset}"
-            p2_inverse = f"{to_asset}{intermediate}"
-            
-            if p2_direct in pair_map:
-                path2 = {"pair": p2_direct, "side": "sell", "from": intermediate, "to": to_asset,
-                         "description": f"Sell {intermediate} for {to_asset}"}
-            elif p2_inverse in pair_map:
-                path2 = {"pair": p2_inverse, "side": "buy", "from": intermediate, "to": to_asset,
-                         "description": f"Buy {to_asset} with {intermediate}"}
-            
-            if path2:
-                return [path1, path2]
-        
-        return []  # No path found
+        return self.client.find_conversion_path(from_asset, to_asset)
 
     def convert_crypto(
         self,
@@ -2252,108 +3872,12 @@ class BinancePoolClient:
         Returns:
             Conversion result with executed trades
         """
-        from_asset = from_asset.upper()
-        to_asset = to_asset.upper()
-        
-        if from_asset == to_asset:
-            return {"error": "Cannot convert to same asset", "from": from_asset, "to": to_asset}
-        
-        # 🌍✨ PLANET SAVER: Freedom! Past doesn't define future!
-        # Let the scanner and Queen decide profitability!
-        
-        # REFRESH BALANCE & CLAMP AMOUNT
-        # This prevents "Insufficient Balance" errors when selling 100% of an asset
-        if not use_quote_amount:
-            try:
-                # Get fresh balance
-                balance_info = self.get_asset_balance(from_asset)
-                if balance_info:
-                    available = float(balance_info.get('free', 0))
-                    
-                    # If we're trying to sell more than we have (or very close to it)
-                    # Clamp to 99.9% to cover potential rounding/fees/dust
-                    if amount > available * 0.99:
-                        print(f"   ⚠️ Clamping amount {amount} to 99.9% of available {available} {from_asset}")
-                        amount = available * 0.999
-                        
-                        # Truncate to 8 decimals to avoid precision errors
-                        amount = float(f"{amount:.8f}")
-            except Exception as e:
-                print(f"   ⚠️ Could not refresh balance for {from_asset}: {e}")
-
-        # Find conversion path
-        path = self.find_conversion_path(from_asset, to_asset)
-        
-        if not path:
-            return {"error": f"No conversion path found from {from_asset} to {to_asset}"}
-        
-        if self.dry_run:
-            return {
-                "dryRun": True,
-                "from_asset": from_asset,
-                "to_asset": to_asset,
-                "amount": amount,
-                "path": path,
-                "trades": len(path)
-            }
-        
-        # Execute trades
-        results = []
-        remaining_amount = amount
-        
-        for trade in path:
-            pair = trade["pair"]
-            side = trade["side"]
-            
-            try:
-                if side == "sell":
-                    # Selling base asset
-                    result = self.place_market_order(pair, "SELL", quantity=remaining_amount)
-                else:
-                    # Buying base asset with quote
-                    # Use quoteOrderQty to spend exact amount
-                    result = self.place_market_order(pair, "BUY", quote_qty=remaining_amount)
-                
-                results.append({
-                    "trade": trade,
-                    "result": result,
-                    "status": "success"
-                })
-                
-                # Update remaining amount for next trade
-                exec_qty = float(result.get("executedQty", 0))
-                cumm_quote = float(result.get("cummulativeQuoteQty", 0))
-                
-                if side == "sell":
-                    # We sold, received quote currency
-                    remaining_amount = cumm_quote
-                else:
-                    # We bought, received base currency
-                    remaining_amount = exec_qty
-                    
-            except Exception as e:
-                results.append({
-                    "trade": trade,
-                    "error": str(e),
-                    "status": "failed"
-                })
-                return {
-                    "error": f"Trade failed: {e}",
-                    "from_asset": from_asset,
-                    "to_asset": to_asset,
-                    "partial_results": results
-                }
-        
-        return {
-            "success": True,
-            "from_asset": from_asset,
-            "to_asset": to_asset,
-            "original_amount": amount,
-            "final_amount": remaining_amount,
-            "path": path,
-            "trades": results,
-            "trade_count": len(results)
-        }
+        return self.client.convert_crypto(
+            from_asset,
+            to_asset,
+            amount,
+            use_quote_amount=use_quote_amount,
+        )
 
     def get_convertible_assets(self) -> Dict[str, List[str]]:
         """

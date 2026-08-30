@@ -75,14 +75,13 @@
 """
 
 from __future__ import annotations
-from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
-
 import sys
 import math
 import time
 import logging
 import json
 import os
+import threading
 from dataclasses import asdict, dataclass, field
 import asyncio
 from typing import Dict, List, Optional, Any, Tuple, Callable
@@ -92,6 +91,19 @@ from enum import Enum, auto
 from pathlib import Path
 from aureon.portfolio.cost_basis_tracker import CostBasisTracker
 from aureon.core.metrics import MetricGauge
+
+_BATON_LINKED = False
+
+
+def _link_runtime_system() -> None:
+    """Link the Queen only from an explicit runtime entrypoint."""
+    global _BATON_LINKED
+    if _BATON_LINKED:
+        return
+    from aureon.core.aureon_baton_link import link_system
+
+    link_system(__name__)
+    _BATON_LINKED = True
 
 
 def _env_flag(name: str) -> bool:
@@ -130,7 +142,7 @@ except ImportError:
 # ═══════════════════════════════════════════════════════════════════════════
 # WINDOWS UTF-8 FIX - Must be at top before any logging/printing
 # ═══════════════════════════════════════════════════════════════════════════
-if sys.platform == 'win32':
+if sys.platform == 'win32' and sys.stdout is sys.__stdout__ and sys.stdout.isatty():
     os.environ['PYTHONIOENCODING'] = 'utf-8'
     try:
         import io
@@ -1198,15 +1210,7 @@ class QueenHiveMind:
         # Queen connects to user's heartbeat, brainwaves, and temporal signature
         self.temporal_biometric_link = None
         if TEMPORAL_BIOMETRIC_AVAILABLE and get_temporal_biometric_link:
-            try:
-                self.temporal_biometric_link = get_temporal_biometric_link()
-                self.temporal_biometric_link.start()  # Start WebSocket connection
-                logger.info("🔱💓 TEMPORAL BIOMETRIC LINK ACTIVATED!")
-                logger.info("   ✅ Queen connected to Gary Leckey's temporal signature (02.11.1991)")
-                logger.info("   ✅ Listening for real biometric data (heart rate, brainwaves)")
-                logger.info("   ✅ Quantum anchor grounding Queen in user's consciousness")
-            except Exception as e:
-                logger.warning(f"🔱⚠️ Temporal Biometric Link failed to start: {e}")
+            logger.info("🔱💓 Temporal Biometric Link ready for explicit runtime start")
         else:
             logger.info("ℹ️ Temporal Biometric Link unavailable (websocket-client or data server not running)")
         
@@ -1395,9 +1399,8 @@ class QueenHiveMind:
         if HARMONIC_LIQUID_ALUMINIUM_AVAILABLE and HarmonicLiquidAluminiumField:
             try:
                 self.harmonic_field = HarmonicLiquidAluminiumField(stream_interval_ms=100)
-                self.harmonic_field.start_streaming()
-                logger.info("🌊👑 Harmonic Liquid Aluminium Field FLOWING through Queen's consciousness!")
-                logger.info("   🎵 The Queen now SEES the market as dancing waveforms on hertz")
+                logger.info("🌊👑 Harmonic Liquid Aluminium Field WIRED to Queen's consciousness")
+                logger.info("   🎵 Runtime start will expose the market as dancing waveforms on hertz")
                 logger.info("   💠 Like liquid aluminium illumination in a measured sandbox")
             except Exception as e:
                 logger.warning(f"🌊⚠️ Could not initialize Harmonic Field: {e}")
@@ -1451,8 +1454,14 @@ class QueenHiveMind:
         # 🪆👑 RUSSIAN DOLL ANALYTICS - Fractal Measurement System 🪆👑
         # Queen (macro) → Hive (system) → Bee (micro) analytics flow
         # Data flows A→Z (directives down) and Z→A (insights up)
-        self.russian_doll = None
-        if RUSSIAN_DOLL_QUEEN_AVAILABLE and get_analytics is not None:
+        #
+        # NOTE: every optional system below must be guarded so _ensure_core_state stays
+        # idempotent. It used to reassign unconditionally, and because _register_child
+        # calls back into here, wire_hft_engine() had its freshly wired engine clobbered
+        # and replaced with a new default one before the wiring call even returned.
+        if not hasattr(self, 'russian_doll'):
+            self.russian_doll = None
+        if self.russian_doll is None and RUSSIAN_DOLL_QUEEN_AVAILABLE and get_analytics is not None:
             try:
                 self.russian_doll = get_analytics()
                 logger.info("🪆👑 Russian Doll Analytics connected - Fractal measurement ACTIVE!")
@@ -1464,8 +1473,9 @@ class QueenHiveMind:
         # �🔬👑 QUEEN RESEARCH NEURON - News & Wikipedia Intelligence 📰🔬👑
         # The Queen's research system for gathering external knowledge
         # Sources: World News API, Wikipedia, RSS Feeds
-        self.research_neuron = None
-        if RESEARCH_NEURON_AVAILABLE and create_queen_research_neuron is not None:
+        if not hasattr(self, 'research_neuron'):
+            self.research_neuron = None
+        if self.research_neuron is None and RESEARCH_NEURON_AVAILABLE and create_queen_research_neuron is not None:
             try:
                 self.research_neuron = create_queen_research_neuron(
                     thought_bus=self.thought_bus
@@ -1480,27 +1490,31 @@ class QueenHiveMind:
         # �🔪 COUNTER-INTELLIGENCE SYSTEM - Beat Trading Firms at Their Own Game 🔪🧠
         # The Queen's counter-intelligence weapon against major trading firms
         # Uses firm intelligence data to counter-trade Citadel, Jane Street, etc.
-        self.counter_intelligence = None
-        self.counter_intel_active = False
-        try:
-            from aureon.utils.aureon_queen_counter_intelligence import queen_counter_intelligence
-            from aureon.bots_intelligence.aureon_global_firm_intelligence import get_attribution_engine
-            self.counter_intelligence = queen_counter_intelligence
-            self.firm_attribution_engine = get_attribution_engine()
-            self.counter_intel_active = True
-            logger.info("🧠🔪 Queen Counter-Intelligence ARMED!")
-            logger.info("   🎯 Target: Major trading firms (Citadel, Jane Street, Two Sigma)")
-            logger.info("   ⚡ Timing advantage: 30-200ms faster execution")
-            logger.info("   📊 Strategy: Pattern exploitation + momentum counter")
-        except Exception as e:
-            logger.warning(f"🧠⚠️ Could not initialize Counter-Intelligence: {e}")
+        if not hasattr(self, 'counter_intelligence'):
+            self.counter_intelligence = None
+            self.counter_intel_active = False
+        if self.counter_intelligence is None:
+            try:
+                from aureon.utils.aureon_queen_counter_intelligence import queen_counter_intelligence
+                from aureon.bots_intelligence.aureon_global_firm_intelligence import get_attribution_engine
+                self.counter_intelligence = queen_counter_intelligence
+                self.firm_attribution_engine = get_attribution_engine()
+                self.counter_intel_active = True
+                logger.info("🧠🔪 Queen Counter-Intelligence ARMED!")
+                logger.info("   🎯 Target: Major trading firms (Citadel, Jane Street, Two Sigma)")
+                logger.info("   ⚡ Timing advantage: 30-200ms faster execution")
+                logger.info("   📊 Strategy: Pattern exploitation + momentum counter")
+            except Exception as e:
+                logger.warning(f"🧠⚠️ Could not initialize Counter-Intelligence: {e}")
         
         # �🦈🔪 HFT HARMONIC MYCELIUM ENGINE - High Frequency Trading 🦈🔪
         # The Queen's high-frequency trading system using Mycelium + Harmonic Alphabet
         # Target latency: <10ms signal-to-order execution
-        self.hft_engine = None
-        self.order_router = None
-        if HFT_ENGINE_AVAILABLE and get_hft_engine is not None:
+        if not hasattr(self, 'hft_engine'):
+            self.hft_engine = None
+        if not hasattr(self, 'order_router'):
+            self.order_router = None
+        if self.hft_engine is None and HFT_ENGINE_AVAILABLE and get_hft_engine is not None:
             try:
                 self.hft_engine = get_hft_engine()
                 logger.info("🦈🔪 HFT Harmonic Mycelium Engine AWAKENED!")
@@ -2287,7 +2301,16 @@ class QueenHiveMind:
         total_weights = sum(n['weight'] for n in nodes.values())
         
         coherence = total_weighted / total_weights if total_weights > 0 else 0.5
-        
+
+        # P5 Pattern C: the Auris Γ that gates entries (0.938 heart-coherence
+        # line) is reconciled with the canonical HNC field — the shared field
+        # can only TIGHTEN it (b46 min); dark field → node blend unchanged.
+        try:
+            from aureon.core.hnc_field import reconcile_gamma
+            coherence = reconcile_gamma(coherence)
+        except Exception:
+            pass
+
         # Determine status
         if coherence >= 0.938:
             status = "💚 HEART COHERENCE - Ready to trade!"
@@ -6485,6 +6508,75 @@ I will NOT sell at a loss when the market is down. 👑
 💎 My default: HOLD unless there's clear evidence the project is dead.
 """
     
+    def start_temporal_biometric_link(self) -> bool:
+        """Explicitly create and start the real biometric WebSocket link."""
+        if _audit_mode_enabled():
+            logger.info("Temporal Biometric Link remains inactive in audit/dry-run mode")
+            return False
+        if not TEMPORAL_BIOMETRIC_AVAILABLE or not get_temporal_biometric_link:
+            logger.warning("Temporal Biometric Link provider is unavailable")
+            return False
+
+        try:
+            if self.temporal_biometric_link is None:
+                self.temporal_biometric_link = get_temporal_biometric_link()
+            if not getattr(self.temporal_biometric_link, 'running', False):
+                self.temporal_biometric_link.start()
+            logger.info("Temporal Biometric Link started by the runtime owner")
+            return True
+        except Exception as exc:
+            logger.warning(f"Temporal Biometric Link failed to start: {exc}")
+            return False
+
+    def start_harmonic_streaming(self) -> bool:
+        """Explicitly start the Queen-owned harmonic publisher."""
+        field = getattr(self, 'harmonic_field', None)
+        if field is None:
+            return False
+        try:
+            started = bool(field.start_streaming())
+            return started or bool(getattr(field, 'running', False))
+        except Exception as exc:
+            logger.warning(f"Harmonic Field failed to start: {exc}")
+            return False
+
+    def stop_harmonic_streaming(self, timeout: float = 2.0) -> bool:
+        """Stop and join the Queen-owned harmonic publisher."""
+        field = getattr(self, 'harmonic_field', None)
+        if field is None:
+            return True
+        try:
+            return bool(field.stop_streaming(timeout=timeout))
+        except Exception as exc:
+            logger.warning(f"Harmonic Field failed to stop cleanly: {exc}")
+            return False
+
+    def stop_temporal_biometric_link(self, timeout: float = 2.0) -> bool:
+        """Stop the biometric link and join its owned worker thread."""
+        link = self.temporal_biometric_link
+        if link is None:
+            return True
+
+        try:
+            link.stop()
+            worker = getattr(link, 'ws_thread', None)
+            if worker is not None and worker is not threading.current_thread():
+                worker.join(timeout=max(0.0, float(timeout)))
+            stopped = worker is None or not worker.is_alive()
+            if stopped:
+                self.temporal_biometric_link = None
+            return stopped
+        except Exception as exc:
+            logger.warning(f"Temporal Biometric Link failed to stop cleanly: {exc}")
+            return False
+
+    def close_runtime_services(self, timeout: float = 2.0) -> Dict[str, bool]:
+        """Close background services explicitly started by this Queen."""
+        self.stop_harmonic_streaming(timeout)
+        return {
+            'temporal_biometric_link': self.stop_temporal_biometric_link(timeout),
+        }
+
     def start_live_market_tracking(self) -> bool:
         """
         🔴 START REAL-TIME MARKET TRACKING
@@ -6499,6 +6591,7 @@ I will NOT sell at a loss when the market is down. 👑
         
         Returns True if tracking started successfully
         """
+        _link_runtime_system()
         if not self.market_awareness:
             logger.warning("⚠️ Cannot start live tracking - Market Awareness not available")
             return False
@@ -6506,6 +6599,7 @@ I will NOT sell at a loss when the market is down. 👑
         try:
             result = self.market_awareness.start_live_tracking()
             if result:
+                self.start_harmonic_streaming()
                 logger.info("🔴👑 QUEEN IS NOW WATCHING THE MARKET LIVE!")
             return result
         except Exception as e:
@@ -6517,6 +6611,7 @@ I will NOT sell at a loss when the market is down. 👑
         if self.market_awareness:
             self.market_awareness.stop_live_tracking()
             logger.info("🛑👑 Queen stopped live market tracking")
+        self.stop_harmonic_streaming()
     
     def get_live_market_report(self) -> str:
         """
@@ -12859,6 +12954,7 @@ Sero 👑🐝
         Returns:
             Trading results
         """
+        _link_runtime_system()
         print("\n" + "👑" * 35)
         print("👑 QUEEN SERO IS STARTING TO TRADE! 👑")
         print("👑" * 35 + "\n")
@@ -12905,7 +13001,7 @@ Sero 👑🐝
         print("   ❌ NO EXITS - Energy never leaves the grid")
         print("   ✅ SIPHON 2%+ gains (take 50%, leave 50% compounding)")
         print("⚡" * 35 + "\n")
-        
+
         self.say("Activating V11 Power Station. We don't trade - we siphon energy!", 
                  voice_enabled=False, emotion="powerful")
         
@@ -15242,6 +15338,11 @@ def wire_all_systems(queen: QueenHiveMind) -> Dict[str, bool]:
 _QUEEN: Optional[QueenHiveMind] = None
 
 
+def get_existing_queen() -> Optional[QueenHiveMind]:
+    """Return the global Queen only when an explicit startup already created it."""
+    return _QUEEN
+
+
 def get_queen(initial_capital: float = 100.0) -> QueenHiveMind:
     """Get or create the global Queen Hive Mind singleton"""
     global _QUEEN
@@ -15427,29 +15528,26 @@ if __name__ == "__main__":
         """
         if not self.live_aura_tracker:
             return {
-                'status': 'UNAVAILABLE',
+                'status': 'NO_DATA',
+                'truth_status': 'no_data',
+                'generated_values': False,
                 'error': 'Live Aura Location Tracker not initialized',
                 'timestamp': time.time()
             }
         
         try:
             snapshot = self.live_aura_tracker.get_current_location()
+            if not snapshot:
+                return {
+                    'status': 'NO_DATA',
+                    'truth_status': 'no_data',
+                    'generated_values': False,
+                    'error': 'No fresh biometric or GPS provider observation',
+                    'timestamp': time.time(),
+                }
             return {
                 'status': 'ACTIVE',
-                'consciousness_state': snapshot.get('consciousness_state', 'UNKNOWN'),
-                'calm_index': snapshot.get('calm_index', 0.5),
-                'eeg_coherence': snapshot.get('eeg_coherence', 0.5),
-                'hrv_rmssd': snapshot.get('hrv_rmssd', 0.0),
-                'gsr_uS': snapshot.get('gsr_uS', 0.0),
-                'respiration_bpm': snapshot.get('respiration_bpm', 6.0),
-                'gps_latitude': snapshot.get('gps_latitude', 0.0),
-                'gps_longitude': snapshot.get('gps_longitude', 0.0),
-                'gps_accuracy_m': snapshot.get('gps_accuracy_m', 0.0),
-                'primary_anchor': snapshot.get('primary_anchor', 'Belfast'),
-                'consciousness_lock_strength': snapshot.get('consciousness_lock_strength', 0.5),
-                'distance_from_belfast_km': snapshot.get('distance_from_belfast_km', 0.0),
-                'trading_multiplier': snapshot.get('trading_multiplier', 1.0),
-                'timestamp': snapshot.get('timestamp', time.time())
+                **snapshot,
             }
         except Exception as e:
             logger.warning(f"Error getting live location: {e}")
@@ -15515,7 +15613,7 @@ if __name__ == "__main__":
             return snapshot.get('consciousness_state', 'UNKNOWN')
         return "UNKNOWN"
     
-    def get_gary_location_coordinates(self) -> Dict[str, float]:
+    def get_gary_location_coordinates(self) -> Optional[Dict[str, float]]:
         """
         Quick check: Where is Gary RIGHT NOW (lat/lon)?
         
@@ -15525,14 +15623,14 @@ if __name__ == "__main__":
         snapshot = self.get_live_location_snapshot()
         if snapshot.get('status') == 'ACTIVE':
             return {
-                'latitude': snapshot.get('gps_latitude', 0.0),
-                'longitude': snapshot.get('gps_longitude', 0.0),
-                'accuracy_m': snapshot.get('gps_accuracy_m', 0.0),
-                'distance_from_belfast_km': snapshot.get('distance_from_belfast_km', 0.0)
+                'latitude': snapshot.get('gps_latitude'),
+                'longitude': snapshot.get('gps_longitude'),
+                'accuracy_m': snapshot.get('gps_accuracy_m'),
+                'distance_from_belfast_km': snapshot.get('distance_from_belfast_km')
             }
-        return {'latitude': 0.0, 'longitude': 0.0, 'accuracy_m': 0.0}
+        return None
     
-    def get_gary_consciousness_lock(self) -> float:
+    def get_gary_consciousness_lock(self) -> Optional[float]:
         """
         How strong is Gary's consciousness lock RIGHT NOW (0-1)?
         This affects trading multiplier (0.5x-2.0x).
@@ -15542,10 +15640,10 @@ if __name__ == "__main__":
         """
         snapshot = self.get_live_location_snapshot()
         if snapshot.get('status') == 'ACTIVE':
-            return snapshot.get('consciousness_lock_strength', 0.5)
-        return 0.0
+            return snapshot.get('consciousness_lock_strength')
+        return None
     
-    def get_trading_multiplier_from_location(self) -> float:
+    def get_trading_multiplier_from_location(self) -> Optional[float]:
         """
         What's the trading multiplier based on Gary's current location & consciousness?
         
@@ -15554,8 +15652,8 @@ if __name__ == "__main__":
         """
         snapshot = self.get_live_location_snapshot()
         if snapshot.get('status') == 'ACTIVE':
-            return snapshot.get('trading_multiplier', 1.0)
-        return 1.0  # Neutral if not available
+            return snapshot.get('trading_multiplier')
+        return None
     
     def start_live_aura_tracking(self) -> str:
         """Start the live aura location tracker if not already running."""
@@ -15564,7 +15662,7 @@ if __name__ == "__main__":
         
         try:
             self.live_aura_tracker.start()
-            return "✅ Live Aura Tracker STARTED - Queen tracking Gary in real-time"
+            return "Live Aura Tracker armed; awaiting fresh device observations"
         except Exception as e:
             return f"❌ Error starting tracker: {e}"
     

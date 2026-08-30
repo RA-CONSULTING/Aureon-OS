@@ -71,7 +71,7 @@
     {
       "id": "operator_runtime",
       "label": "Operator runtime",
-      "systems": ["aureon/autonomous/", "aureon/exchanges/", "AUREON_PRODUCTION_LIVE.cmd"],
+      "systems": ["aureon/autonomous/", "aureon/exchanges/", "scripts/launchers/AUREON_PRODUCTION_LIVE.cmd"],
       "documents": ["RUNNING.md", "SYSTEM_OVERVIEW.md"],
       "integration_surfaces": ["local HTTP endpoints", "runtime manifests", "status JSON"]
     },

@@ -46,7 +46,6 @@ Gary Leckey | November 2025
 from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
 import math
 import time
-import random
 from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
 from collections import deque
@@ -452,55 +451,29 @@ class DecisionFusion:
     """
     Fuses signals from multiple models/strategies.
     Weighted voting based on model confidence.
+
+    Local heuristics are deterministic derivatives of observed market inputs.
+    External model outputs must arrive through their provider integration.
     """
-    
-    def __init__(self, 
+
+    def __init__(self,
                  ensemble_weight: float = 0.6,
                  sentiment_weight: float = 0.2,
-                 coherence_weight: float = 0.2):
+                 coherence_weight: float = 0.2,
+                 allow_simulated_models: bool = False):
         self.ensemble_weight = ensemble_weight
         self.sentiment_weight = sentiment_weight
         self.coherence_weight = coherence_weight
-        self.models = ['lstm', 'randomForest', 'xgboost', 'transformer']
 
     def generate_signal(self, change: float, volatility: float, volume: float) -> Tuple[float, float]:
         """
-        Generate ensemble signal score (-1 to 1) and confidence (0 to 1).
-        Simulates 4-model ensemble from Quantum Quackers.
+        Derive score and confidence from observed change/volatility/volume.
         """
-        # Normalize inputs
         vol = max(0.01, volatility)
         normalized_trend = math.tanh(change / vol)
-        
-        signals = []
-        for model in self.models:
-            # Add "personality" bias to each model to simulate diversity
-            bias = 0.0
-            if model == 'lstm': bias = 0.2       # Optimistic
-            elif model == 'randomForest': bias = -0.1 # Conservative
-            elif model == 'xgboost': bias = 0.1  # Aggressive
-            
-            # Noise factor
-            noise = (random.random() - 0.5) * 0.1
-            
-            # Model score
-            score = normalized_trend + bias + noise
-            
-            # Confidence based on signal strength
-            confidence = 0.5 + (random.random() * 0.4)
-            
-            signals.append({'score': score, 'confidence': confidence})
-            
-        # Aggregate ensemble
-        total_weighted_score = sum(s['score'] * s['confidence'] for s in signals)
-        total_confidence = sum(s['confidence'] for s in signals)
-        
-        if total_confidence == 0: return 0.0, 0.0
-        
-        final_score = total_weighted_score / total_confidence
-        avg_confidence = total_confidence / len(signals)
-        
-        return final_score, avg_confidence
+        volume_support = math.tanh(max(0.0, volume) / 100000.0)
+        final_score = max(-1.0, min(1.0, normalized_trend * volume_support))
+        return final_score, min(1.0, abs(normalized_trend) * volume_support)
     
     def fuse_signals(self, signals: List[ModelSignal]) -> Tuple[float, float]:
         """

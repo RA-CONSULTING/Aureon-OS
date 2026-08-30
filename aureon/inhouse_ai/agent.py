@@ -66,7 +66,9 @@ class Agent:
     ):
         self.adapter = adapter
         self.config = config or AgentConfig()
-        self.tools = tools or ToolRegistry(include_builtins=True)
+        # An explicitly empty registry is a deliberate no-tool capability
+        # boundary. Only None requests the default builtin tool belt.
+        self.tools = tools if tools is not None else ToolRegistry(include_builtins=True)
         self.id = str(uuid.uuid4())
 
         # State

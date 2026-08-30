@@ -13,6 +13,7 @@
  */
 
 import { QGITASignal, qgitaSignalGenerator } from './qgitaSignalGenerator';
+import type { DataProvenance } from './liveDataContract';
 import { LighthouseState } from './lighthouseConsensus';
 
 // Re-export types for backwards compatibility
@@ -121,10 +122,11 @@ export class QGITAEngine {
     coherence: number,
     substrate: number,
     observer: number,
-    echo: number
+    echo: number,
+    provenance: DataProvenance,
   ): LighthouseEvent | null {
     this.lastSignal = qgitaSignalGenerator.generateSignal(
-      timestamp, price, volume, lambda, coherence, substrate, observer, echo
+      timestamp, price, volume, lambda, coherence, substrate, observer, echo, provenance,
     );
     return this.lastSignal ? convertToLighthouseEvent(this.lastSignal) : null;
   }

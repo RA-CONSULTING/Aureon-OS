@@ -16,8 +16,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LiveDataNotice } from "@/shell/Page";
+import { type TruthStatus, TRUTH_STATUS_STYLE, SAFETY_POSTURE_STYLE } from "../truthStatus";
 
-type TruthStatus = "live" | "real_derived" | "cached_real" | "no_data" | "test_fixture";
 
 interface Surface {
   key: string;
@@ -63,19 +63,9 @@ interface Catalog {
   truth_status: TruthStatus;
 }
 
-const STATUS_STYLE: Record<TruthStatus, string> = {
-  live: "bg-emerald-500/15 text-emerald-600 border-emerald-500/30",
-  real_derived: "bg-sky-500/15 text-sky-600 border-sky-500/30",
-  cached_real: "bg-amber-500/15 text-amber-600 border-amber-500/30",
-  no_data: "bg-muted text-muted-foreground border-border",
-  test_fixture: "bg-purple-500/15 text-purple-600 border-purple-500/30",
-};
+const STATUS_STYLE = TRUTH_STATUS_STYLE;
 
-const POSTURE_STYLE: Record<string, string> = {
-  read_only_assess: "bg-emerald-500/15 text-emerald-600 border-emerald-500/30",
-  records_only_gated: "bg-amber-500/15 text-amber-600 border-amber-500/30",
-  reversible_ascent_gated: "bg-sky-500/15 text-sky-600 border-sky-500/30",
-};
+const POSTURE_STYLE = SAFETY_POSTURE_STYLE;
 
 const CATEGORY_LABEL: Record<string, string> = {
   self_perception: "Self-perception",

@@ -66,8 +66,8 @@ export const DimensionalDialler = ({
   const getUrgencyColor = (urgency: string) => {
     switch (urgency) {
       case 'critical': return 'text-destructive';
-      case 'high': return 'text-orange-500';
-      case 'medium': return 'text-yellow-500';
+      case 'high': return 'text-warning';
+      case 'medium': return 'text-warning';
       default: return 'text-muted-foreground';
     }
   };
@@ -117,8 +117,8 @@ export const DimensionalDialler = ({
             driftUrgency === 'critical' 
               ? 'bg-destructive/10 border-destructive/20' 
               : driftUrgency === 'high'
-              ? 'bg-orange-500/10 border-orange-500/20'
-              : 'bg-yellow-500/10 border-yellow-500/20'
+              ? 'bg-warning/10 border-warning/20'
+              : 'bg-warning/10 border-warning/20'
           }`}>
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">

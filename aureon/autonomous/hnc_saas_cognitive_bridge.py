@@ -16,6 +16,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional, Sequence
 
+from aureon.obsidian_paths import resolve_obsidian_note_path
 from aureon.autonomous.aureon_goal_capability_map import build_goal_capability_map
 from aureon.autonomous.hnc_authorized_attack_lab import build_authorized_attack_lab_report
 from aureon.autonomous.hnc_saas_security_architect import build_hnc_saas_security_blueprint, repo_root_from
@@ -221,7 +222,7 @@ class SaaSCognitiveBridge:
 
     def ingest_to_vault(self, vault: Any = None, *, force: bool = False) -> str:
         state = self.load_context(force=force) if force or self.last_state is None else self.last_state
-        note_path = self.repo_root / DEFAULT_VAULT_NOTE
+        note_path = resolve_obsidian_note_path(DEFAULT_VAULT_NOTE, repo_root=self.repo_root)
         note_path.parent.mkdir(parents=True, exist_ok=True)
         note_path.write_text(render_markdown(state), encoding="utf-8")
         target_vault = vault or self.vault
@@ -473,7 +474,7 @@ def write_report(
     root = Path(state.repo_root)
     md_path = markdown_path if markdown_path.is_absolute() else root / markdown_path
     js_path = json_path if json_path.is_absolute() else root / json_path
-    note_path = vault_path if vault_path.is_absolute() else root / vault_path
+    note_path = resolve_obsidian_note_path(vault_path, repo_root=root)
     md_path.parent.mkdir(parents=True, exist_ok=True)
     js_path.parent.mkdir(parents=True, exist_ok=True)
     note_path.parent.mkdir(parents=True, exist_ok=True)

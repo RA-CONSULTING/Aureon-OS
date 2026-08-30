@@ -122,11 +122,17 @@ class MetacognitionMonitor:
             from aureon.core.hnc_field import read_canonical_field
 
             cf = read_canonical_field()
-            if cf.available and cf.symbolic_life_score is not None:
-                ts = "cached_real" if cf.source == "hnc_trace_file" else "live"
+            ts = {
+                "thought_bus": "live",
+                "persisted_trace": "cached_real",
+            }.get(cf.evidence_transport)
+            if cf.available and cf.symbolic_life_score is not None and ts is not None:
                 _add("field", cf.symbolic_life_score, 0.9, cf.source or "field", ts)
             else:
-                signals["field"] = {"truth_status": "no_data", "blocker": "field not flowing"}
+                signals["field"] = {
+                    "truth_status": "no_data",
+                    "blocker": "field transport unavailable",
+                }
         except Exception:  # noqa: BLE001
             signals["field"] = {"truth_status": "no_data", "blocker": "field read failed"}
 

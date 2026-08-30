@@ -1,0 +1,2824 @@
+{
+  "collection_errors": [],
+  "collection_skip_count": 0,
+  "credential_keys_scrubbed": [],
+  "expected_item_count": 192,
+  "manifest_sha256": "935414c645fff93a1875eff9bc5b204ad21acad7075dfbc3c1e1b5fae2981d45",
+  "operational_state_after": {
+    "aureon/exchanges/.kraken_nonce": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786471546530884800,
+      "sha256": "a97a71e52e16718818803a4ffcf2a23d5bd6bdef8019065923a411e3faeee96c",
+      "size": 16
+    },
+    "real_portfolio_state.json": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786471546579579900,
+      "sha256": "b7819aec57f9754e8059bf4ec0a52aaeb47dc802fc5c7954103dee5120d3c5ac",
+      "size": 69296
+    },
+    "state/aureon_capital_tradable_asset_registry.json": {
+      "exists": false
+    },
+    "state/capital_cfd_last_exchange_trace.json": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786475496169071800,
+      "sha256": "0ae124cf632cd4c7560ba6c1bf47b663a53ffac123409c32e50fbc4a34b201ef",
+      "size": 13582
+    },
+    "state/capital_cfd_pending_execution.json": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786534199553991500,
+      "sha256": "7aad5105c301d279e1a74a5165543e0fd19a017ccc9ba602443ab337f8326cf3",
+      "size": 15940
+    },
+    "state/capital_shadow_promotions.jsonl": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786475494283161800,
+      "sha256": "11a6de8f3dd6cc88837f8c9fb06d5f04f30f15b4a1a02538e5379df135f81eef",
+      "size": 2039
+    },
+    "state/lambda_history.json": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786463161436582000,
+      "sha256": "8464f55b4d3102ad163101863849557aa64cc063e66e84ca51f04624b929f20a",
+      "size": 1695
+    },
+    "state/lighthouse_event.jsonl": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786473931255436200,
+      "sha256": "7b34d1c1f5ec106662d27b5fb7b7a6916c4d3528e3eea3a4854856590b07cd40",
+      "size": 803
+    },
+    "state/unified_order_lifecycle_events.jsonl": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786534195512403800,
+      "sha256": "a1e67b7310c82f3e873d4a4a40311c629dfd7b7f7dc87ad68989d09ce1ea4d6a",
+      "size": 141108
+    },
+    "state/unified_order_lifecycle_latest.json": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786534195537238000,
+      "sha256": "7cec1db4a162074fc3dd0ace72e8771fa3699885e4a71dd283fd28d7db06826f",
+      "size": 278166
+    },
+    "thoughts.jsonl": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786532925022866900,
+      "sha256": "e63d30e785f18856c1d95c39b36aef3873b99770da2b91413f380b2857993fbe",
+      "size": 11452753
+    },
+    "trade_logger.log": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786471530121968800,
+      "sha256": "416792f420ffd21a7ca8da7656bee8f94f666f48ddab11d3034dac51aee547ac",
+      "size": 18954
+    }
+  },
+  "operational_state_before": {
+    "aureon/exchanges/.kraken_nonce": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786471546530884800,
+      "sha256": "a97a71e52e16718818803a4ffcf2a23d5bd6bdef8019065923a411e3faeee96c",
+      "size": 16
+    },
+    "real_portfolio_state.json": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786471546579579900,
+      "sha256": "b7819aec57f9754e8059bf4ec0a52aaeb47dc802fc5c7954103dee5120d3c5ac",
+      "size": 69296
+    },
+    "state/aureon_capital_tradable_asset_registry.json": {
+      "exists": false
+    },
+    "state/capital_cfd_last_exchange_trace.json": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786475496169071800,
+      "sha256": "0ae124cf632cd4c7560ba6c1bf47b663a53ffac123409c32e50fbc4a34b201ef",
+      "size": 13582
+    },
+    "state/capital_cfd_pending_execution.json": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786475497232595400,
+      "sha256": "81ae63fa1b35c7c3c582cf1a997bd0caba7fe19f5be198167261af930b121b30",
+      "size": 15935
+    },
+    "state/capital_shadow_promotions.jsonl": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786475494283161800,
+      "sha256": "11a6de8f3dd6cc88837f8c9fb06d5f04f30f15b4a1a02538e5379df135f81eef",
+      "size": 2039
+    },
+    "state/lambda_history.json": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786463161436582000,
+      "sha256": "8464f55b4d3102ad163101863849557aa64cc063e66e84ca51f04624b929f20a",
+      "size": 1695
+    },
+    "state/lighthouse_event.jsonl": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786473931255436200,
+      "sha256": "7b34d1c1f5ec106662d27b5fb7b7a6916c4d3528e3eea3a4854856590b07cd40",
+      "size": 803
+    },
+    "state/unified_order_lifecycle_events.jsonl": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786475697922839600,
+      "sha256": "acc4aa2a6eac44ca9ac74d78f37b9afb07a899241a525572910b988b5bff8764",
+      "size": 140105
+    },
+    "state/unified_order_lifecycle_latest.json": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786475697953779500,
+      "sha256": "0758a12c9df7bda15b315294e160692dc809865e66a0a3e49324f708fefc54c6",
+      "size": 274970
+    },
+    "thoughts.jsonl": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786532925022866900,
+      "sha256": "e63d30e785f18856c1d95c39b36aef3873b99770da2b91413f380b2857993fbe",
+      "size": 11452753
+    },
+    "trade_logger.log": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786471530121968800,
+      "sha256": "416792f420ffd21a7ca8da7656bee8f94f666f48ddab11d3034dac51aee547ac",
+      "size": 18954
+    }
+  },
+  "operational_state_changes": [
+    {
+      "after": {
+        "exists": true,
+        "kind": "file",
+        "mtime_ns": 1786534199553991500,
+        "sha256": "7aad5105c301d279e1a74a5165543e0fd19a017ccc9ba602443ab337f8326cf3",
+        "size": 15940
+      },
+      "before": {
+        "exists": true,
+        "kind": "file",
+        "mtime_ns": 1786475497232595400,
+        "sha256": "81ae63fa1b35c7c3c582cf1a997bd0caba7fe19f5be198167261af930b121b30",
+        "size": 15935
+      },
+      "path": "state/capital_cfd_pending_execution.json"
+    },
+    {
+      "after": {
+        "exists": true,
+        "kind": "file",
+        "mtime_ns": 1786534195512403800,
+        "sha256": "a1e67b7310c82f3e873d4a4a40311c629dfd7b7f7dc87ad68989d09ce1ea4d6a",
+        "size": 141108
+      },
+      "before": {
+        "exists": true,
+        "kind": "file",
+        "mtime_ns": 1786475697922839600,
+        "sha256": "acc4aa2a6eac44ca9ac74d78f37b9afb07a899241a525572910b988b5bff8764",
+        "size": 140105
+      },
+      "path": "state/unified_order_lifecycle_events.jsonl"
+    },
+    {
+      "after": {
+        "exists": true,
+        "kind": "file",
+        "mtime_ns": 1786534195537238000,
+        "sha256": "7cec1db4a162074fc3dd0ace72e8771fa3699885e4a71dd283fd28d7db06826f",
+        "size": 278166
+      },
+      "before": {
+        "exists": true,
+        "kind": "file",
+        "mtime_ns": 1786475697953779500,
+        "sha256": "0758a12c9df7bda15b315294e160692dc809865e66a0a3e49324f708fefc54c6",
+        "size": 274970
+      },
+      "path": "state/unified_order_lifecycle_latest.json"
+    }
+  ],
+  "process": {
+    "argv": [
+      "C:\\Users\\user\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+      "-m",
+      "pytest",
+      "--rootdir",
+      "C:\\Users\\user\\Aureon-OS-github-latest-20260810_091213",
+      "-c",
+      "C:\\Users\\user\\Aureon-OS-github-latest-20260810_091213\\pyproject.toml",
+      "-p",
+      "scripts.validation.pytest_no_skip_shards",
+      "--disable-socket",
+      "--strict-config",
+      "-o",
+      "cache_dir=C:\\Users\\user\\AppData\\Local\\Temp\\aureon-pytest-shard-0017-gz56qizk\\pytest-cache",
+      "--aureon-shard-report=C:\\Users\\user\\AppData\\Local\\Temp\\aureon-pytest-shard-0017-gz56qizk\\pytest-report.json",
+      "tests/integrations/test_ollama_bridge.py",
+      "tests/test_antarctic_research_unity_bridge.py",
+      "tests/test_async_socket_isolation.py",
+      "tests/test_aureon_saas_system_inventory.py",
+      "tests/test_calibration.py",
+      "tests/test_capital_client_real_data.py",
+      "tests/test_company_raw_data_intake.py",
+      "tests/test_hft_wiring.py",
+      "tests/test_hnc_lambda_history_provenance.py",
+      "tests/test_integrated_cognitive_system.py",
+      "tests/test_metrics_api429.py",
+      "tests/test_observability_runtime_contract.py",
+      "tests/test_ollama_cognitive_bridge.py",
+      "tests/test_orca_snowball_lean_receipts.py",
+      "tests/test_rainbow_reference.py",
+      "tests/test_real_data_contract.py",
+      "tests/test_runtime_lifecycle_import_safety.py",
+      "tests/test_s5_million.py",
+      "tests/test_signal_gate_volatility.py",
+      "tests/test_unified_ecosystem_real_data_provenance.py",
+      "tests/test_whale_system.py",
+      "tests/vault/test_persona_vacuum.py",
+      "tests/vault/test_phi_bridge_mesh.py"
+    ],
+    "duration_seconds": 75.14099999997416,
+    "returncode": 1,
+    "stderr": "object address  : 000001BFAC009B40\nobject refcount : 4\nobject type     : 00007FFC5DA291B0\nobject type name: ValueError\nobject repr     : ValueError('I/O operation on closed file.')\nlost sys.stderr\n",
+    "stderr_sha256": "a07e46a91741121d7c6e6c66bf030a20dc8e76b3fb5bd806bd9942e3880a4933",
+    "stdout": "........................................................................ [ 37%]\n.2026-08-12 12:30:03,947 - aureon.queen.queen_hive_command - INFO - [HIVE COMMAND] Initialized â€” ready to SCAN â†’ VALIDATE â†’ ACT â†’ MONITOR\n2026-08-12 12:30:03,953 - aureon.queen.queen_hive_command - INFO - [HIVE COMMAND] Background thread started\n2026-08-12 12:30:03,954 - aureon.queen.sentient_loop - INFO - Hive Command operational â€” worker bees scanning\n2026-08-12 12:30:04,055 - aureon.queen.sentient_loop - INFO - [HEARTBEAT] Î›(t) Master Equation engine initialized\n",
+    "stdout_sha256": "fd7d4ae29b75a8bd8e6580bd22bca859c8a652467defffc2d38de782d3acde07",
+    "timed_out": false
+  },
+  "pytest_report_error": "",
+  "pytest_results": {
+    "collection_errors": [],
+    "collection_skips": [],
+    "items": [
+      {
+        "node_id": "tests/integrations/test_ollama_bridge.py::test_construction_defaults",
+        "source_file": "tests/integrations/test_ollama_bridge.py"
+      },
+      {
+        "node_id": "tests/integrations/test_ollama_bridge.py::test_health_check",
+        "source_file": "tests/integrations/test_ollama_bridge.py"
+      },
+      {
+        "node_id": "tests/integrations/test_ollama_bridge.py::test_model_enumeration",
+        "source_file": "tests/integrations/test_ollama_bridge.py"
+      },
+      {
+        "node_id": "tests/integrations/test_ollama_bridge.py::test_chat_generate_embed",
+        "source_file": "tests/integrations/test_ollama_bridge.py"
+      },
+      {
+        "node_id": "tests/integrations/test_ollama_bridge.py::test_adapter_interface",
+        "source_file": "tests/integrations/test_ollama_bridge.py"
+      },
+      {
+        "node_id": "tests/integrations/test_ollama_bridge.py::test_adapter_error_path",
+        "source_file": "tests/integrations/test_ollama_bridge.py"
+      },
+      {
+        "node_id": "tests/integrations/test_ollama_bridge.py::test_adapter_normalises_content_blocks",
+        "source_file": "tests/integrations/test_ollama_bridge.py"
+      },
+      {
+        "node_id": "tests/integrations/test_ollama_bridge.py::test_snapshot",
+        "source_file": "tests/integrations/test_ollama_bridge.py"
+      },
+      {
+        "node_id": "tests/test_antarctic_research_unity_bridge.py::test_research_context_maps_seer_and_lyra_without_execution_command",
+        "source_file": "tests/test_antarctic_research_unity_bridge.py"
+      },
+      {
+        "node_id": "tests/test_antarctic_research_unity_bridge.py::test_wrappers_attach_context_to_existing_summaries",
+        "source_file": "tests/test_antarctic_research_unity_bridge.py"
+      },
+      {
+        "node_id": "tests/test_antarctic_research_unity_bridge.py::test_unity_report_is_context_only_not_blocker_gate",
+        "source_file": "tests/test_antarctic_research_unity_bridge.py"
+      },
+      {
+        "node_id": "tests/test_async_socket_isolation.py::test_native_coroutine_runs_without_unblocking_test_sockets",
+        "source_file": "tests/test_async_socket_isolation.py"
+      },
+      {
+        "node_id": "tests/test_async_socket_isolation.py::test_sync_asyncio_run_uses_precreated_loop_with_sockets_blocked",
+        "source_file": "tests/test_async_socket_isolation.py"
+      },
+      {
+        "node_id": "tests/test_aureon_saas_system_inventory.py::test_saas_inventory_counts_surfaces_and_detects_gaps",
+        "source_file": "tests/test_aureon_saas_system_inventory.py"
+      },
+      {
+        "node_id": "tests/test_aureon_saas_system_inventory.py::test_saas_inventory_writes_audit_public_and_vault_artifacts",
+        "source_file": "tests/test_aureon_saas_system_inventory.py"
+      },
+      {
+        "node_id": "tests/test_aureon_saas_system_inventory.py::test_frontend_unification_plan_builds_canonical_screens",
+        "source_file": "tests/test_aureon_saas_system_inventory.py"
+      },
+      {
+        "node_id": "tests/test_aureon_saas_system_inventory.py::test_frontend_evolution_queue_turns_old_surfaces_into_work_orders",
+        "source_file": "tests/test_aureon_saas_system_inventory.py"
+      },
+      {
+        "node_id": "tests/test_aureon_saas_system_inventory.py::test_autonomous_capability_switchboard_routes_ui_app_visual_and_conversation_modes",
+        "source_file": "tests/test_aureon_saas_system_inventory.py"
+      },
+      {
+        "node_id": "tests/test_calibration.py::test_calibrate_returns_report_and_preserves_alpha",
+        "source_file": "tests/test_calibration.py"
+      },
+      {
+        "node_id": "tests/test_calibration.py::test_calibrate_deterministic",
+        "source_file": "tests/test_calibration.py"
+      },
+      {
+        "node_id": "tests/test_calibration.py::test_calibrate_requires_testable_compound",
+        "source_file": "tests/test_calibration.py"
+      },
+      {
+        "node_id": "tests/test_capital_client_real_data.py::test_ticker_requires_complete_fresh_provider_snapshot",
+        "source_file": "tests/test_capital_client_real_data.py"
+      },
+      {
+        "node_id": "tests/test_capital_client_real_data.py::test_ticker_missing_or_stale_fields_are_explicit_no_data[snapshot0-market_snapshot_incomplete_or_stale]",
+        "source_file": "tests/test_capital_client_real_data.py"
+      },
+      {
+        "node_id": "tests/test_capital_client_real_data.py::test_ticker_missing_or_stale_fields_are_explicit_no_data[snapshot1-market_snapshot_incomplete_or_stale]",
+        "source_file": "tests/test_capital_client_real_data.py"
+      },
+      {
+        "node_id": "tests/test_capital_client_real_data.py::test_monitor_cache_without_per_quote_provider_time_is_rejected",
+        "source_file": "tests/test_capital_client_real_data.py"
+      },
+      {
+        "node_id": "tests/test_capital_client_real_data.py::test_accounts_use_provider_currency_and_http_date",
+        "source_file": "tests/test_capital_client_real_data.py"
+      },
+      {
+        "node_id": "tests/test_capital_client_real_data.py::test_incomplete_account_receipts_are_no_data[payload0-True]",
+        "source_file": "tests/test_capital_client_real_data.py"
+      },
+      {
+        "node_id": "tests/test_capital_client_real_data.py::test_incomplete_account_receipts_are_no_data[payload1-False]",
+        "source_file": "tests/test_capital_client_real_data.py"
+      },
+      {
+        "node_id": "tests/test_capital_client_real_data.py::test_market_order_http_success_is_only_submission_acknowledgement",
+        "source_file": "tests/test_capital_client_real_data.py"
+      },
+      {
+        "node_id": "tests/test_capital_client_real_data.py::test_dry_run_never_emits_a_fill",
+        "source_file": "tests/test_capital_client_real_data.py"
+      },
+      {
+        "node_id": "tests/test_capital_client_real_data.py::test_pending_close_blocks_reverse_market_order_fallback",
+        "source_file": "tests/test_capital_client_real_data.py"
+      },
+      {
+        "node_id": "tests/test_capital_client_real_data.py::test_complete_close_confirmation_releases_pending_close_guard",
+        "source_file": "tests/test_capital_client_real_data.py"
+      },
+      {
+        "node_id": "tests/test_capital_client_real_data.py::test_confirmation_requires_affected_deal_and_provider_fee_receipt",
+        "source_file": "tests/test_capital_client_real_data.py"
+      },
+      {
+        "node_id": "tests/test_capital_client_real_data.py::test_accepted_without_affected_deal_remains_pending",
+        "source_file": "tests/test_capital_client_real_data.py"
+      },
+      {
+        "node_id": "tests/test_capital_client_real_data.py::test_fee_and_cost_basis_require_complete_provider_receipts",
+        "source_file": "tests/test_capital_client_real_data.py"
+      },
+      {
+        "node_id": "tests/test_capital_client_real_data.py::test_activity_acceptance_is_not_cost_basis",
+        "source_file": "tests/test_capital_client_real_data.py"
+      },
+      {
+        "node_id": "tests/test_company_raw_data_intake.py::test_company_raw_data_intake_classifies_all_company_evidence",
+        "source_file": "tests/test_company_raw_data_intake.py"
+      },
+      {
+        "node_id": "tests/test_hft_wiring.py::TestHFTWiring::test_queen_wire_hft_engine_none",
+        "source_file": "tests/test_hft_wiring.py"
+      },
+      {
+        "node_id": "tests/test_hft_wiring.py::TestHFTWiring::test_queen_wire_hft_engine_success",
+        "source_file": "tests/test_hft_wiring.py"
+      },
+      {
+        "node_id": "tests/test_hft_wiring.py::TestHFTWiring::test_router_wire_exchange_clients",
+        "source_file": "tests/test_hft_wiring.py"
+      },
+      {
+        "node_id": "tests/test_hft_wiring.py::TestHFTWiring::test_router_wire_exchange_clients_empty",
+        "source_file": "tests/test_hft_wiring.py"
+      },
+      {
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_untrusted_history_is_zero_and_logically_quarantined_until_commit[legacy_v2]",
+        "source_file": "tests/test_hnc_lambda_history_provenance.py"
+      },
+      {
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_untrusted_history_is_zero_and_logically_quarantined_until_commit[invalid_json]",
+        "source_file": "tests/test_hnc_lambda_history_provenance.py"
+      },
+      {
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_untrusted_history_is_zero_and_logically_quarantined_until_commit[nonfinite_v3]",
+        "source_file": "tests/test_hnc_lambda_history_provenance.py"
+      },
+      {
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_tampered_v3_receipt_loads_no_values_and_preserves_exact_bytes",
+        "source_file": "tests/test_hnc_lambda_history_provenance.py"
+      },
+      {
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_unreceipted_auto_or_explicit_save_never_writes",
+        "source_file": "tests/test_hnc_lambda_history_provenance.py"
+      },
+      {
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_v3_receipt_is_deterministic_finite_and_hash_chained",
+        "source_file": "tests/test_hnc_lambda_history_provenance.py"
+      },
+      {
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_default_audit_or_suppress_neither_loads_nor_writes_shared_state[AUREON_AUDIT_MODE]",
+        "source_file": "tests/test_hnc_lambda_history_provenance.py"
+      },
+      {
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_default_audit_or_suppress_neither_loads_nor_writes_shared_state[AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS]",
+        "source_file": "tests/test_hnc_lambda_history_provenance.py"
+      },
+      {
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_nonfinite_active_history_fails_closed_without_writing",
+        "source_file": "tests/test_hnc_lambda_history_provenance.py"
+      },
+      {
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_concurrent_history_writer_conflict_preserves_winner",
+        "source_file": "tests/test_hnc_lambda_history_provenance.py"
+      },
+      {
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_advisory_lock_is_os_released_after_handle_close",
+        "source_file": "tests/test_hnc_lambda_history_provenance.py"
+      },
+      {
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_advisory_lock_conflict_fails_before_state_write",
+        "source_file": "tests/test_hnc_lambda_history_provenance.py"
+      },
+      {
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_replace_failure_is_falsey_and_retry_commits",
+        "source_file": "tests/test_hnc_lambda_history_provenance.py"
+      },
+      {
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_post_replace_readback_is_required",
+        "source_file": "tests/test_hnc_lambda_history_provenance.py"
+      },
+      {
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_daemon_commits_memory_before_live_envelope_and_preserves_provider_time",
+        "source_file": "tests/test_hnc_lambda_history_provenance.py"
+      },
+      {
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_daemon_failed_commit_rolls_back_and_emits_numeric_free_no_data",
+        "source_file": "tests/test_hnc_lambda_history_provenance.py"
+      },
+      {
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_direct_live_envelope_requires_exact_memory_and_rejects_tampered_state",
+        "source_file": "tests/test_hnc_lambda_history_provenance.py"
+      },
+      {
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_memory_lineage_survives_bus_and_trace",
+        "source_file": "tests/test_hnc_lambda_history_provenance.py"
+      },
+      {
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_boot_all_subsystems",
+        "source_file": "tests/test_integrated_cognitive_system.py"
+      },
+      {
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_thought_bus_alive",
+        "source_file": "tests/test_integrated_cognitive_system.py"
+      },
+      {
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_vault_alive",
+        "source_file": "tests/test_integrated_cognitive_system.py"
+      },
+      {
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_lambda_engine_alive",
+        "source_file": "tests/test_integrated_cognitive_system.py"
+      },
+      {
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_goal_engine_alive",
+        "source_file": "tests/test_integrated_cognitive_system.py"
+      },
+      {
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_agent_core_alive",
+        "source_file": "tests/test_integrated_cognitive_system.py"
+      },
+      {
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_swarm_alive",
+        "source_file": "tests/test_integrated_cognitive_system.py"
+      },
+      {
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_temporal_ground_alive",
+        "source_file": "tests/test_integrated_cognitive_system.py"
+      },
+      {
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_self_dialogue_booted",
+        "source_file": "tests/test_integrated_cognitive_system.py"
+      },
+      {
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_mycelium_mind_booted",
+        "source_file": "tests/test_integrated_cognitive_system.py"
+      },
+      {
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_metacognition_booted",
+        "source_file": "tests/test_integrated_cognitive_system.py"
+      },
+      {
+        "node_id": "tests/test_integrated_cognitive_system.py::TestCommands::test_status",
+        "source_file": "tests/test_integrated_cognitive_system.py"
+      },
+      {
+        "node_id": "tests/test_integrated_cognitive_system.py::TestCommands::test_coherence",
+        "source_file": "tests/test_integrated_cognitive_system.py"
+      },
+      {
+        "node_id": "tests/test_integrated_cognitive_system.py::TestCommands::test_goal_status_empty",
+        "source_file": "tests/test_integrated_cognitive_system.py"
+      },
+      {
+        "node_id": "tests/test_integrated_cognitive_system.py::TestCommands::test_swarm_status",
+        "source_file": "tests/test_integrated_cognitive_system.py"
+      },
+      {
+        "node_id": "tests/test_integrated_cognitive_system.py::TestCommands::test_pause",
+        "source_file": "tests/test_integrated_cognitive_system.py"
+      },
+      {
+        "node_id": "tests/test_integrated_cognitive_system.py::TestCommands::test_resume",
+        "source_file": "tests/test_integrated_cognitive_system.py"
+      },
+      {
+        "node_id": "tests/test_integrated_cognitive_system.py::TestCommands::test_cancel",
+        "source_file": "tests/test_integrated_cognitive_system.py"
+      },
+      {
+        "node_id": "tests/test_integrated_cognitive_system.py::TestCommands::test_quit",
+        "source_file": "tests/test_integrated_cognitive_system.py"
+      },
+      {
+        "node_id": "tests/test_integrated_cognitive_system.py::TestCommands::test_empty_input",
+        "source_file": "tests/test_integrated_cognitive_system.py"
+      },
+      {
+        "node_id": "tests/test_integrated_cognitive_system.py::TestGoals::test_sequential_goal",
+        "source_file": "tests/test_integrated_cognitive_system.py"
+      },
+      {
+        "node_id": "tests/test_integrated_cognitive_system.py::TestGoals::test_search_goal",
+        "source_file": "tests/test_integrated_cognitive_system.py"
+      },
+      {
+        "node_id": "tests/test_integrated_cognitive_system.py::TestGoals::test_read_file_goal",
+        "source_file": "tests/test_integrated_cognitive_system.py"
+      },
+      {
+        "node_id": "tests/test_integrated_cognitive_system.py::TestGoals::test_goal_engine_stats",
+        "source_file": "tests/test_integrated_cognitive_system.py"
+      },
+      {
+        "node_id": "tests/test_integrated_cognitive_system.py::TestSwarm::test_swarm_goal",
+        "source_file": "tests/test_integrated_cognitive_system.py"
+      },
+      {
+        "node_id": "tests/test_integrated_cognitive_system.py::TestSwarm::test_research_swarm",
+        "source_file": "tests/test_integrated_cognitive_system.py"
+      },
+      {
+        "node_id": "tests/test_integrated_cognitive_system.py::TestCognitiveTick::test_tick_runs",
+        "source_file": "tests/test_integrated_cognitive_system.py"
+      },
+      {
+        "node_id": "tests/test_integrated_cognitive_system.py::TestCognitiveTick::test_tick_manual",
+        "source_file": "tests/test_integrated_cognitive_system.py"
+      },
+      {
+        "node_id": "tests/test_integrated_cognitive_system.py::TestCognitiveTick::test_temporal_ground_ticked",
+        "source_file": "tests/test_integrated_cognitive_system.py"
+      },
+      {
+        "node_id": "tests/test_integrated_cognitive_system.py::TestGracefulDegradation::test_boot_returns_dict",
+        "source_file": "tests/test_integrated_cognitive_system.py"
+      },
+      {
+        "node_id": "tests/test_integrated_cognitive_system.py::TestGracefulDegradation::test_all_statuses_are_strings",
+        "source_file": "tests/test_integrated_cognitive_system.py"
+      },
+      {
+        "node_id": "tests/test_metrics_api429.py::test_api_429_counter_increments_from_current_value",
+        "source_file": "tests/test_metrics_api429.py"
+      },
+      {
+        "node_id": "tests/test_observability_runtime_contract.py::test_correlation_ids_preserve_only_conservative_values",
+        "source_file": "tests/test_observability_runtime_contract.py"
+      },
+      {
+        "node_id": "tests/test_observability_runtime_contract.py::test_recursive_redaction_covers_keys_embedded_tokens_and_bounds",
+        "source_file": "tests/test_observability_runtime_contract.py"
+      },
+      {
+        "node_id": "tests/test_observability_runtime_contract.py::test_recursive_redaction_does_not_call_hostile_key_stringification",
+        "source_file": "tests/test_observability_runtime_contract.py"
+      },
+      {
+        "node_id": "tests/test_observability_runtime_contract.py::test_exception_records_expose_type_not_message_or_traceback",
+        "source_file": "tests/test_observability_runtime_contract.py"
+      },
+      {
+        "node_id": "tests/test_observability_runtime_contract.py::test_operator_metrics_uses_sanitized_local_json",
+        "source_file": "tests/test_observability_runtime_contract.py"
+      },
+      {
+        "node_id": "tests/test_observability_runtime_contract.py::test_emit_local_event_never_raises_when_handler_is_broken",
+        "source_file": "tests/test_observability_runtime_contract.py"
+      },
+      {
+        "node_id": "tests/test_observability_runtime_contract.py::test_exception_fingerprint_groups_by_safe_code_metadata_not_message",
+        "source_file": "tests/test_observability_runtime_contract.py"
+      },
+      {
+        "node_id": "tests/test_observability_runtime_contract.py::test_flask_hook_validates_propagates_and_resets_request_id",
+        "source_file": "tests/test_observability_runtime_contract.py"
+      },
+      {
+        "node_id": "tests/test_observability_runtime_contract.py::test_flask_hook_replaces_raw_framework_exception_logging",
+        "source_file": "tests/test_observability_runtime_contract.py"
+      },
+      {
+        "node_id": "tests/test_observability_runtime_contract.py::test_asgi_middleware_propagates_request_id_without_external_io",
+        "source_file": "tests/test_observability_runtime_contract.py"
+      },
+      {
+        "node_id": "tests/test_observability_runtime_contract.py::test_asgi_middleware_returns_generic_no_store_500_and_sanitizes_log",
+        "source_file": "tests/test_observability_runtime_contract.py"
+      },
+      {
+        "node_id": "tests/test_observability_runtime_contract.py::test_asgi_partial_response_exception_is_closed_without_raw_reraise",
+        "source_file": "tests/test_observability_runtime_contract.py"
+      },
+      {
+        "node_id": "tests/test_ollama_cognitive_bridge.py::test_ollama_cognitive_bridge_ready_writes_evidence",
+        "source_file": "tests/test_ollama_cognitive_bridge.py"
+      },
+      {
+        "node_id": "tests/test_ollama_cognitive_bridge.py::test_ollama_cognitive_bridge_blocks_when_ollama_offline",
+        "source_file": "tests/test_ollama_cognitive_bridge.py"
+      },
+      {
+        "node_id": "tests/test_orca_snowball_lean_receipts.py::test_import_and_zero_portfolio_are_inert_and_bounded",
+        "source_file": "tests/test_orca_snowball_lean_receipts.py"
+      },
+      {
+        "node_id": "tests/test_orca_snowball_lean_receipts.py::test_currency_mismatch_cannot_reach_submission",
+        "source_file": "tests/test_orca_snowball_lean_receipts.py"
+      },
+      {
+        "node_id": "tests/test_orca_snowball_lean_receipts.py::test_ack_and_incomplete_fill_survive_restart_then_exact_fill_commits_once",
+        "source_file": "tests/test_orca_snowball_lean_receipts.py"
+      },
+      {
+        "node_id": "tests/test_rainbow_reference.py::test_ladder_is_ordered_and_fixed",
+        "source_file": "tests/test_rainbow_reference.py"
+      },
+      {
+        "node_id": "tests/test_rainbow_reference.py::test_love_is_the_measured_center",
+        "source_file": "tests/test_rainbow_reference.py"
+      },
+      {
+        "node_id": "tests/test_rainbow_reference.py::test_the_heart_band_names_the_love_lock",
+        "source_file": "tests/test_rainbow_reference.py"
+      },
+      {
+        "node_id": "tests/test_rainbow_reference.py::test_rainbow_is_proven_from_source_zero_mismatches",
+        "source_file": "tests/test_rainbow_reference.py"
+      },
+      {
+        "node_id": "tests/test_rainbow_reference.py::test_audit_has_teeth_on_a_detuned_tree",
+        "source_file": "tests/test_rainbow_reference.py"
+      },
+      {
+        "node_id": "tests/test_rainbow_reference.py::test_rainbow_json_is_deterministic",
+        "source_file": "tests/test_rainbow_reference.py"
+      },
+      {
+        "node_id": "tests/test_real_data_contract.py::test_metric_envelopes_validate_against_source_registry",
+        "source_file": "tests/test_real_data_contract.py"
+      },
+      {
+        "node_id": "tests/test_real_data_contract.py::test_invalid_operational_fixture_is_rejected",
+        "source_file": "tests/test_real_data_contract.py"
+      },
+      {
+        "node_id": "tests/test_real_data_contract.py::test_validator_flags_runtime_random_but_allows_test_fixture",
+        "source_file": "tests/test_real_data_contract.py"
+      },
+      {
+        "node_id": "tests/test_real_data_contract.py::test_validator_treats_operational_synthetic_marker_as_error",
+        "source_file": "tests/test_real_data_contract.py"
+      },
+      {
+        "node_id": "tests/test_real_data_contract.py::test_scientific_control_exemption_requires_complete_provenance_and_seed",
+        "source_file": "tests/test_real_data_contract.py"
+      },
+      {
+        "node_id": "tests/test_real_data_contract.py::test_scientific_control_exemption_rejects_missing_contract_field",
+        "source_file": "tests/test_real_data_contract.py"
+      },
+      {
+        "node_id": "tests/test_real_data_contract.py::test_scientific_control_exemption_rejects_operational_eligibility",
+        "source_file": "tests/test_real_data_contract.py"
+      },
+      {
+        "node_id": "tests/test_real_data_contract.py::test_scientific_control_exemption_rejects_non_control_topic",
+        "source_file": "tests/test_real_data_contract.py"
+      },
+      {
+        "node_id": "tests/test_real_data_contract.py::test_scientific_control_exemption_never_hides_market_data_fabrication",
+        "source_file": "tests/test_real_data_contract.py"
+      },
+      {
+        "node_id": "tests/test_real_data_contract.py::test_scientific_control_exemption_rejects_unseeded_prng",
+        "source_file": "tests/test_real_data_contract.py"
+      },
+      {
+        "node_id": "tests/test_real_data_contract.py::test_scientific_control_exemption_is_not_a_directory_wildcard",
+        "source_file": "tests/test_real_data_contract.py"
+      },
+      {
+        "node_id": "tests/test_real_data_contract.py::test_validator_does_not_flag_its_own_marker_definitions",
+        "source_file": "tests/test_real_data_contract.py"
+      },
+      {
+        "node_id": "tests/test_real_data_contract.py::test_validator_ignores_its_numpy_detector_but_not_runtime_random",
+        "source_file": "tests/test_real_data_contract.py"
+      },
+      {
+        "node_id": "tests/test_real_data_contract.py::test_validator_ignores_ui_placeholders_but_not_assigned_placeholder_data",
+        "source_file": "tests/test_real_data_contract.py"
+      },
+      {
+        "node_id": "tests/test_real_data_contract.py::test_validator_ignores_governance_test_plan_labels_not_runtime_values",
+        "source_file": "tests/test_real_data_contract.py"
+      },
+      {
+        "node_id": "tests/test_real_data_contract.py::test_validator_distinguishes_synthetic_sweetener_category_from_fake_data",
+        "source_file": "tests/test_real_data_contract.py"
+      },
+      {
+        "node_id": "tests/test_real_data_contract.py::test_validator_distinguishes_molecular_origin_labels_from_fake_market_data",
+        "source_file": "tests/test_real_data_contract.py"
+      },
+      {
+        "node_id": "tests/test_real_data_contract.py::test_validator_distinguishes_authored_voice_from_fake_market_data",
+        "source_file": "tests/test_real_data_contract.py"
+      },
+      {
+        "node_id": "tests/test_real_data_contract.py::test_validator_allows_explicit_fail_closed_fake_data_policy",
+        "source_file": "tests/test_real_data_contract.py"
+      },
+      {
+        "node_id": "tests/test_real_data_contract.py::test_validator_flags_source_timestamp_receipt_clock_only_in_operational_code",
+        "source_file": "tests/test_real_data_contract.py"
+      },
+      {
+        "node_id": "tests/test_real_data_contract.py::test_validator_flags_precise_provider_numeric_default_but_not_config_default",
+        "source_file": "tests/test_real_data_contract.py"
+      },
+      {
+        "node_id": "tests/test_real_data_contract.py::test_live_named_simulation_import_is_promoted_without_reclassifying_other_simulations",
+        "source_file": "tests/test_real_data_contract.py"
+      },
+      {
+        "node_id": "tests/test_real_data_contract.py::test_public_json_allows_truth_status_claim_metadata",
+        "source_file": "tests/test_real_data_contract.py"
+      },
+      {
+        "node_id": "tests/test_runtime_lifecycle_import_safety.py::test_quantum_frog_import_does_not_start_health_server",
+        "source_file": "tests/test_runtime_lifecycle_import_safety.py"
+      },
+      {
+        "node_id": "tests/test_runtime_lifecycle_import_safety.py::test_quantum_frog_health_server_has_explicit_start_and_stop",
+        "source_file": "tests/test_runtime_lifecycle_import_safety.py"
+      },
+      {
+        "node_id": "tests/test_runtime_lifecycle_import_safety.py::test_queen_constructor_contains_no_biometric_factory_or_start",
+        "source_file": "tests/test_runtime_lifecycle_import_safety.py"
+      },
+      {
+        "node_id": "tests/test_runtime_lifecycle_import_safety.py::test_queen_explicit_biometric_lifecycle_owns_worker",
+        "source_file": "tests/test_runtime_lifecycle_import_safety.py"
+      },
+      {
+        "node_id": "tests/test_runtime_lifecycle_import_safety.py::test_queen_biometric_start_remains_inert_in_audit_mode",
+        "source_file": "tests/test_runtime_lifecycle_import_safety.py"
+      },
+      {
+        "node_id": "tests/test_runtime_lifecycle_import_safety.py::test_alpaca_constructor_with_credentials_performs_no_probe",
+        "source_file": "tests/test_runtime_lifecycle_import_safety.py"
+      },
+      {
+        "node_id": "tests/test_runtime_lifecycle_import_safety.py::test_alpaca_dry_run_and_credential_free_start_are_inert",
+        "source_file": "tests/test_runtime_lifecycle_import_safety.py"
+      },
+      {
+        "node_id": "tests/test_runtime_lifecycle_import_safety.py::test_alpaca_explicit_start_and_close_own_auth_probe",
+        "source_file": "tests/test_runtime_lifecycle_import_safety.py"
+      },
+      {
+        "node_id": "tests/test_s5_million.py::test_s5_system",
+        "source_file": "tests/test_s5_million.py"
+      },
+      {
+        "node_id": "tests/test_signal_gate_volatility.py::test_high_risk_blocks_when_armed",
+        "source_file": "tests/test_signal_gate_volatility.py"
+      },
+      {
+        "node_id": "tests/test_signal_gate_volatility.py::test_high_risk_audits_but_allows_when_not_armed",
+        "source_file": "tests/test_signal_gate_volatility.py"
+      },
+      {
+        "node_id": "tests/test_signal_gate_volatility.py::test_low_risk_passes_without_audit",
+        "source_file": "tests/test_signal_gate_volatility.py"
+      },
+      {
+        "node_id": "tests/test_signal_gate_volatility.py::test_no_assessment_is_honest_passthrough",
+        "source_file": "tests/test_signal_gate_volatility.py"
+      },
+      {
+        "node_id": "tests/test_signal_gate_volatility.py::test_thin_coverage_cannot_veto",
+        "source_file": "tests/test_signal_gate_volatility.py"
+      },
+      {
+        "node_id": "tests/test_signal_gate_volatility.py::test_threshold_boundary_blocks_at_exactly_vol_risk_block",
+        "source_file": "tests/test_signal_gate_volatility.py"
+      },
+      {
+        "node_id": "tests/test_signal_gate_volatility.py::test_veto_arming_follows_production_mode",
+        "source_file": "tests/test_signal_gate_volatility.py"
+      },
+      {
+        "node_id": "tests/test_unified_ecosystem_real_data_provenance.py::test_market_evidence_rejects_missing_stale_and_future_provider_time",
+        "source_file": "tests/test_unified_ecosystem_real_data_provenance.py"
+      },
+      {
+        "node_id": "tests/test_unified_ecosystem_real_data_provenance.py::test_provider_ticker_normalizer_requires_complete_real_fields",
+        "source_file": "tests/test_unified_ecosystem_real_data_provenance.py"
+      },
+      {
+        "node_id": "tests/test_unified_ecosystem_real_data_provenance.py::test_fill_receipt_separates_submission_from_quote_fee_complete_fill",
+        "source_file": "tests/test_unified_ecosystem_real_data_provenance.py"
+      },
+      {
+        "node_id": "tests/test_unified_ecosystem_real_data_provenance.py::test_protective_cancel_requires_explicit_matching_acknowledgement",
+        "source_file": "tests/test_unified_ecosystem_real_data_provenance.py"
+      },
+      {
+        "node_id": "tests/test_unified_ecosystem_real_data_provenance.py::test_unified_confirmation_withholds_provider_order_without_fresh_evidence",
+        "source_file": "tests/test_unified_ecosystem_real_data_provenance.py"
+      },
+      {
+        "node_id": "tests/test_unified_ecosystem_real_data_provenance.py::test_kraken_txid_is_submission_not_fill",
+        "source_file": "tests/test_unified_ecosystem_real_data_provenance.py"
+      },
+      {
+        "node_id": "tests/test_unified_ecosystem_real_data_provenance.py::test_router_skips_stale_quotes",
+        "source_file": "tests/test_unified_ecosystem_real_data_provenance.py"
+      },
+      {
+        "node_id": "tests/test_unified_ecosystem_real_data_provenance.py::test_router_and_arbitrage_require_fresh_account_receipts_before_orders",
+        "source_file": "tests/test_unified_ecosystem_real_data_provenance.py"
+      },
+      {
+        "node_id": "tests/test_unified_ecosystem_real_data_provenance.py::test_rebalance_dry_run_never_calls_provider_or_claims_fill",
+        "source_file": "tests/test_unified_ecosystem_real_data_provenance.py"
+      },
+      {
+        "node_id": "tests/test_unified_ecosystem_real_data_provenance.py::test_underfunded_quote_liquidity_denies_without_conversion_order",
+        "source_file": "tests/test_unified_ecosystem_real_data_provenance.py"
+      },
+      {
+        "node_id": "tests/test_unified_ecosystem_real_data_provenance.py::test_incomplete_account_conversion_makes_entire_equity_snapshot_no_data",
+        "source_file": "tests/test_unified_ecosystem_real_data_provenance.py"
+      },
+      {
+        "node_id": "tests/test_unified_ecosystem_real_data_provenance.py::test_open_and_close_dry_runs_do_not_mutate_positions_or_call_provider",
+        "source_file": "tests/test_unified_ecosystem_real_data_provenance.py"
+      },
+      {
+        "node_id": "tests/test_unified_ecosystem_real_data_provenance.py::test_capital_tickers_and_empty_historical_ranking_never_invent_rows_or_call_provider",
+        "source_file": "tests/test_unified_ecosystem_real_data_provenance.py"
+      },
+      {
+        "node_id": "tests/test_whale_system.py::test_onchain_providers",
+        "source_file": "tests/test_whale_system.py"
+      },
+      {
+        "node_id": "tests/test_whale_system.py::test_stargate_correlation",
+        "source_file": "tests/test_whale_system.py"
+      },
+      {
+        "node_id": "tests/test_whale_system.py::test_metrics",
+        "source_file": "tests/test_whale_system.py"
+      },
+      {
+        "node_id": "tests/test_whale_system.py::test_ml_pipeline",
+        "source_file": "tests/test_whale_system.py"
+      },
+      {
+        "node_id": "tests/test_whale_system.py::test_end_to_end",
+        "source_file": "tests/test_whale_system.py"
+      },
+      {
+        "node_id": "tests/vault/test_persona_vacuum.py::test_subscribes_to_three_topics",
+        "source_file": "tests/vault/test_persona_vacuum.py"
+      },
+      {
+        "node_id": "tests/vault/test_persona_vacuum.py::test_drop_and_cognition_update_internal_state",
+        "source_file": "tests/vault/test_persona_vacuum.py"
+      },
+      {
+        "node_id": "tests/vault/test_persona_vacuum.py::test_softmax_distribution_matches_manual_computation",
+        "source_file": "tests/vault/test_persona_vacuum.py"
+      },
+      {
+        "node_id": "tests/vault/test_persona_vacuum.py::test_collapse_is_deterministic_under_seeded_rng",
+        "source_file": "tests/vault/test_persona_vacuum.py"
+      },
+      {
+        "node_id": "tests/vault/test_persona_vacuum.py::test_empirical_distribution_within_3_sigma",
+        "source_file": "tests/vault/test_persona_vacuum.py"
+      },
+      {
+        "node_id": "tests/vault/test_persona_vacuum.py::test_observe_publishes_collapse_and_thought",
+        "source_file": "tests/vault/test_persona_vacuum.py"
+      },
+      {
+        "node_id": "tests/vault/test_persona_vacuum.py::test_observe_calls_vault_ingest_when_available",
+        "source_file": "tests/vault/test_persona_vacuum.py"
+      },
+      {
+        "node_id": "tests/vault/test_persona_vacuum.py::test_observe_tolerates_vault_without_ingest",
+        "source_file": "tests/vault/test_persona_vacuum.py"
+      },
+      {
+        "node_id": "tests/vault/test_persona_vacuum.py::test_observe_handles_none_vault",
+        "source_file": "tests/vault/test_persona_vacuum.py"
+      },
+      {
+        "node_id": "tests/vault/test_persona_vacuum.py::test_persona_observe_trigger_calls_observe",
+        "source_file": "tests/vault/test_persona_vacuum.py"
+      },
+      {
+        "node_id": "tests/vault/test_persona_vacuum.py::test_temperature_kwarg_is_respected",
+        "source_file": "tests/vault/test_persona_vacuum.py"
+      },
+      {
+        "node_id": "tests/vault/test_phi_bridge_mesh.py::test_build_payload_for_includes_all_cards_when_peer_unknown",
+        "source_file": "tests/vault/test_phi_bridge_mesh.py"
+      },
+      {
+        "node_id": "tests/vault/test_phi_bridge_mesh.py::test_build_payload_for_skips_known_hashes",
+        "source_file": "tests/vault/test_phi_bridge_mesh.py"
+      },
+      {
+        "node_id": "tests/vault/test_phi_bridge_mesh.py::test_apply_response_merges_cards",
+        "source_file": "tests/vault/test_phi_bridge_mesh.py"
+      },
+      {
+        "node_id": "tests/vault/test_phi_bridge_mesh.py::test_apply_response_is_idempotent",
+        "source_file": "tests/vault/test_phi_bridge_mesh.py"
+      },
+      {
+        "node_id": "tests/vault/test_phi_bridge_mesh.py::test_handle_inbound_merges_and_replies_with_missing_cards",
+        "source_file": "tests/vault/test_phi_bridge_mesh.py"
+      },
+      {
+        "node_id": "tests/vault/test_phi_bridge_mesh.py::test_gossip_to_reports_error_when_client_fails",
+        "source_file": "tests/vault/test_phi_bridge_mesh.py"
+      },
+      {
+        "node_id": "tests/vault/test_phi_bridge_mesh.py::test_gossip_once_iterates_peers",
+        "source_file": "tests/vault/test_phi_bridge_mesh.py"
+      },
+      {
+        "node_id": "tests/vault/test_phi_bridge_mesh.py::test_two_nodes_converge_after_gossip_round_trip",
+        "source_file": "tests/vault/test_phi_bridge_mesh.py"
+      },
+      {
+        "node_id": "tests/vault/test_phi_bridge_mesh.py::test_three_nodes_converge_over_two_cycles",
+        "source_file": "tests/vault/test_phi_bridge_mesh.py"
+      },
+      {
+        "node_id": "tests/vault/test_phi_bridge_mesh.py::test_info_returns_structured_report",
+        "source_file": "tests/vault/test_phi_bridge_mesh.py"
+      }
+    ],
+    "loaded_plugins": [
+      {
+        "module": "_pytest.config",
+        "registered_as": "1924111648048"
+      },
+      {
+        "distribution": "anyio",
+        "module": "anyio.pytest_plugin",
+        "registered_as": "anyio",
+        "source": "pytest_plugin.py",
+        "version": "4.12.1"
+      },
+      {
+        "module": "_pytest.assertion",
+        "registered_as": "assertion",
+        "source": "__init__.py"
+      },
+      {
+        "module": "_pytest.cacheprovider",
+        "registered_as": "cacheprovider",
+        "source": "cacheprovider.py"
+      },
+      {
+        "module": "_pytest.capture",
+        "registered_as": "capture",
+        "source": "capture.py"
+      },
+      {
+        "module": "_pytest.capture",
+        "registered_as": "capturemanager"
+      },
+      {
+        "module": "conftest",
+        "registered_as": "conftest.py",
+        "source": "conftest.py"
+      },
+      {
+        "module": "_pytest.debugging",
+        "registered_as": "debugging",
+        "source": "debugging.py"
+      },
+      {
+        "module": "_pytest.doctest",
+        "registered_as": "doctest",
+        "source": "doctest.py"
+      },
+      {
+        "module": "_pytest.faulthandler",
+        "registered_as": "faulthandler",
+        "source": "faulthandler.py"
+      },
+      {
+        "module": "_pytest.fixtures",
+        "registered_as": "fixtures",
+        "source": "fixtures.py"
+      },
+      {
+        "module": "_pytest.fixtures",
+        "registered_as": "funcmanage"
+      },
+      {
+        "module": "_pytest.helpconfig",
+        "registered_as": "helpconfig",
+        "source": "helpconfig.py"
+      },
+      {
+        "module": "_pytest.junitxml",
+        "registered_as": "junitxml",
+        "source": "junitxml.py"
+      },
+      {
+        "module": "_pytest.legacypath",
+        "registered_as": "legacypath",
+        "source": "legacypath.py"
+      },
+      {
+        "module": "LegacyTmpdirPlugin",
+        "registered_as": "legacypath-tmpdir"
+      },
+      {
+        "module": "_pytest.cacheprovider",
+        "registered_as": "lfplugin"
+      },
+      {
+        "module": "_pytest.logging",
+        "registered_as": "logging",
+        "source": "logging.py"
+      },
+      {
+        "module": "_pytest.logging",
+        "registered_as": "logging-plugin"
+      },
+      {
+        "module": "_pytest.main",
+        "registered_as": "main",
+        "source": "main.py"
+      },
+      {
+        "module": "_pytest.mark",
+        "registered_as": "mark",
+        "source": "__init__.py"
+      },
+      {
+        "module": "_pytest.monkeypatch",
+        "registered_as": "monkeypatch",
+        "source": "monkeypatch.py"
+      },
+      {
+        "module": "_pytest.cacheprovider",
+        "registered_as": "nfplugin"
+      },
+      {
+        "module": "_pytest.pastebin",
+        "registered_as": "pastebin",
+        "source": "pastebin.py"
+      },
+      {
+        "module": "_pytest.config",
+        "registered_as": "pytestconfig"
+      },
+      {
+        "module": "_pytest.python",
+        "registered_as": "python",
+        "source": "python.py"
+      },
+      {
+        "module": "_pytest.recwarn",
+        "registered_as": "recwarn",
+        "source": "recwarn.py"
+      },
+      {
+        "module": "_pytest.reports",
+        "registered_as": "reports",
+        "source": "reports.py"
+      },
+      {
+        "module": "_pytest.runner",
+        "registered_as": "runner",
+        "source": "runner.py"
+      },
+      {
+        "module": "scripts.validation.pytest_no_skip_shards",
+        "registered_as": "scripts.validation.pytest_no_skip_shards",
+        "source": "scripts/validation/pytest_no_skip_shards.py"
+      },
+      {
+        "module": "_pytest.main",
+        "registered_as": "session"
+      },
+      {
+        "module": "_pytest.setuponly",
+        "registered_as": "setuponly",
+        "source": "setuponly.py"
+      },
+      {
+        "module": "_pytest.setupplan",
+        "registered_as": "setupplan",
+        "source": "setupplan.py"
+      },
+      {
+        "module": "_pytest.skipping",
+        "registered_as": "skipping",
+        "source": "skipping.py"
+      },
+      {
+        "distribution": "pytest-socket",
+        "module": "pytest_socket",
+        "registered_as": "socket",
+        "source": "__init__.py",
+        "version": "0.8.0"
+      },
+      {
+        "module": "_pytest.stepwise",
+        "registered_as": "stepwise",
+        "source": "stepwise.py"
+      },
+      {
+        "module": "_pytest.subtests",
+        "registered_as": "subtests",
+        "source": "subtests.py"
+      },
+      {
+        "module": "_pytest.terminal",
+        "registered_as": "terminal",
+        "source": "terminal.py"
+      },
+      {
+        "module": "_pytest.terminalprogress",
+        "registered_as": "terminalprogress",
+        "source": "terminalprogress.py"
+      },
+      {
+        "module": "_pytest.terminal",
+        "registered_as": "terminalreporter"
+      },
+      {
+        "module": "_pytest.threadexception",
+        "registered_as": "threadexception",
+        "source": "threadexception.py"
+      },
+      {
+        "module": "_pytest.tmpdir",
+        "registered_as": "tmpdir",
+        "source": "tmpdir.py"
+      },
+      {
+        "module": "_pytest.unittest",
+        "registered_as": "unittest",
+        "source": "unittest.py"
+      },
+      {
+        "module": "_pytest.unraisableexception",
+        "registered_as": "unraisableexception",
+        "source": "unraisableexception.py"
+      },
+      {
+        "module": "_pytest.warnings",
+        "registered_as": "warnings",
+        "source": "warnings.py"
+      }
+    ],
+    "pytest_exitstatus": 3,
+    "runtime_phases": [
+      {
+        "duration_seconds": 0.00176760001340881,
+        "node_id": "tests/integrations/test_ollama_bridge.py::test_construction_defaults",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.0009772999910637736,
+        "node_id": "tests/integrations/test_ollama_bridge.py::test_construction_defaults",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.00026160001289099455,
+        "node_id": "tests/integrations/test_ollama_bridge.py::test_construction_defaults",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.0004936000041197985,
+        "node_id": "tests/integrations/test_ollama_bridge.py::test_health_check",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.0007357000140473247,
+        "node_id": "tests/integrations/test_ollama_bridge.py::test_health_check",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.0002361999941058457,
+        "node_id": "tests/integrations/test_ollama_bridge.py::test_health_check",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.0004641000123228878,
+        "node_id": "tests/integrations/test_ollama_bridge.py::test_model_enumeration",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.0008489999745506793,
+        "node_id": "tests/integrations/test_ollama_bridge.py::test_model_enumeration",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.00024090000079013407,
+        "node_id": "tests/integrations/test_ollama_bridge.py::test_model_enumeration",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.0007332999957725406,
+        "node_id": "tests/integrations/test_ollama_bridge.py::test_chat_generate_embed",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.001189600006910041,
+        "node_id": "tests/integrations/test_ollama_bridge.py::test_chat_generate_embed",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.00023800000781193376,
+        "node_id": "tests/integrations/test_ollama_bridge.py::test_chat_generate_embed",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.0004891999997198582,
+        "node_id": "tests/integrations/test_ollama_bridge.py::test_adapter_interface",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.0006234000029508024,
+        "node_id": "tests/integrations/test_ollama_bridge.py::test_adapter_interface",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.000222400005441159,
+        "node_id": "tests/integrations/test_ollama_bridge.py::test_adapter_interface",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.00045369999133981764,
+        "node_id": "tests/integrations/test_ollama_bridge.py::test_adapter_error_path",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.0005583000020124018,
+        "node_id": "tests/integrations/test_ollama_bridge.py::test_adapter_error_path",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.00022280000848695636,
+        "node_id": "tests/integrations/test_ollama_bridge.py::test_adapter_error_path",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.00045300001511350274,
+        "node_id": "tests/integrations/test_ollama_bridge.py::test_adapter_normalises_content_blocks",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.0005479000101331621,
+        "node_id": "tests/integrations/test_ollama_bridge.py::test_adapter_normalises_content_blocks",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.00022200000239536166,
+        "node_id": "tests/integrations/test_ollama_bridge.py::test_adapter_normalises_content_blocks",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.00045289998524822295,
+        "node_id": "tests/integrations/test_ollama_bridge.py::test_snapshot",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.0005867000145372003,
+        "node_id": "tests/integrations/test_ollama_bridge.py::test_snapshot",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.00027910000062547624,
+        "node_id": "tests/integrations/test_ollama_bridge.py::test_snapshot",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.0010101999796461314,
+        "node_id": "tests/test_antarctic_research_unity_bridge.py::test_research_context_maps_seer_and_lyra_without_execution_command",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.008509900013450533,
+        "node_id": "tests/test_antarctic_research_unity_bridge.py::test_research_context_maps_seer_and_lyra_without_execution_command",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.00027520000003278255,
+        "node_id": "tests/test_antarctic_research_unity_bridge.py::test_research_context_maps_seer_and_lyra_without_execution_command",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.0005092000064905733,
+        "node_id": "tests/test_antarctic_research_unity_bridge.py::test_wrappers_attach_context_to_existing_summaries",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.013990400009788573,
+        "node_id": "tests/test_antarctic_research_unity_bridge.py::test_wrappers_attach_context_to_existing_summaries",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.00032210000790655613,
+        "node_id": "tests/test_antarctic_research_unity_bridge.py::test_wrappers_attach_context_to_existing_summaries",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.00056900002527982,
+        "node_id": "tests/test_antarctic_research_unity_bridge.py::test_unity_report_is_context_only_not_blocker_gate",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.009792700002435595,
+        "node_id": "tests/test_antarctic_research_unity_bridge.py::test_unity_report_is_context_only_not_blocker_gate",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.00026890001026913524,
+        "node_id": "tests/test_antarctic_research_unity_bridge.py::test_unity_report_is_context_only_not_blocker_gate",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.0012642999936360866,
+        "node_id": "tests/test_async_socket_isolation.py::test_native_coroutine_runs_without_unblocking_test_sockets",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.00044919998617842793,
+        "node_id": "tests/test_async_socket_isolation.py::test_native_coroutine_runs_without_unblocking_test_sockets",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.0006602999928873032,
+        "node_id": "tests/test_async_socket_isolation.py::test_native_coroutine_runs_without_unblocking_test_sockets",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.0021655000164173543,
+        "node_id": "tests/test_async_socket_isolation.py::test_sync_asyncio_run_uses_precreated_loop_with_sockets_blocked",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.0003960999893024564,
+        "node_id": "tests/test_async_socket_isolation.py::test_sync_asyncio_run_uses_precreated_loop_with_sockets_blocked",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.0007256999961100519,
+        "node_id": "tests/test_async_socket_isolation.py::test_sync_asyncio_run_uses_precreated_loop_with_sockets_blocked",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.006588799995370209,
+        "node_id": "tests/test_aureon_saas_system_inventory.py::test_saas_inventory_counts_surfaces_and_detects_gaps",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.16216979999444447,
+        "node_id": "tests/test_aureon_saas_system_inventory.py::test_saas_inventory_counts_surfaces_and_detects_gaps",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.00030559999868273735,
+        "node_id": "tests/test_aureon_saas_system_inventory.py::test_saas_inventory_counts_surfaces_and_detects_gaps",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.002629399998113513,
+        "node_id": "tests/test_aureon_saas_system_inventory.py::test_saas_inventory_writes_audit_public_and_vault_artifacts",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.08813660001032986,
+        "node_id": "tests/test_aureon_saas_system_inventory.py::test_saas_inventory_writes_audit_public_and_vault_artifacts",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.00034329999471083283,
+        "node_id": "tests/test_aureon_saas_system_inventory.py::test_saas_inventory_writes_audit_public_and_vault_artifacts",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.0028531999851111323,
+        "node_id": "tests/test_aureon_saas_system_inventory.py::test_frontend_unification_plan_builds_canonical_screens",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.08967879999545403,
+        "node_id": "tests/test_aureon_saas_system_inventory.py::test_frontend_unification_plan_builds_canonical_screens",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.00031549998675473034,
+        "node_id": "tests/test_aureon_saas_system_inventory.py::test_frontend_unification_plan_builds_canonical_screens",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.0026599999982863665,
+        "node_id": "tests/test_aureon_saas_system_inventory.py::test_frontend_evolution_queue_turns_old_surfaces_into_work_orders",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.08699750000960194,
+        "node_id": "tests/test_aureon_saas_system_inventory.py::test_frontend_evolution_queue_turns_old_surfaces_into_work_orders",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.0003166000242345035,
+        "node_id": "tests/test_aureon_saas_system_inventory.py::test_frontend_evolution_queue_turns_old_surfaces_into_work_orders",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.0031447999936062843,
+        "node_id": "tests/test_aureon_saas_system_inventory.py::test_autonomous_capability_switchboard_routes_ui_app_visual_and_conversation_modes",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.1522560000012163,
+        "node_id": "tests/test_aureon_saas_system_inventory.py::test_autonomous_capability_switchboard_routes_ui_app_visual_and_conversation_modes",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.00033730000723153353,
+        "node_id": "tests/test_aureon_saas_system_inventory.py::test_autonomous_capability_switchboard_routes_ui_app_visual_and_conversation_modes",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.0030406999867409468,
+        "node_id": "tests/test_calibration.py::test_calibrate_returns_report_and_preserves_alpha",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.1907661999866832,
+        "node_id": "tests/test_calibration.py::test_calibrate_returns_report_and_preserves_alpha",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.0003446000046096742,
+        "node_id": "tests/test_calibration.py::test_calibrate_returns_report_and_preserves_alpha",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.003177900012815371,
+        "node_id": "tests/test_calibration.py::test_calibrate_deterministic",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.3739265000040177,
+        "node_id": "tests/test_calibration.py::test_calibrate_deterministic",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.0003178000042680651,
+        "node_id": "tests/test_calibration.py::test_calibrate_deterministic",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.005326699989382178,
+        "node_id": "tests/test_calibration.py::test_calibrate_requires_testable_compound",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.008886199997505173,
+        "node_id": "tests/test_calibration.py::test_calibrate_requires_testable_compound",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.0003502999898046255,
+        "node_id": "tests/test_calibration.py::test_calibrate_requires_testable_compound",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.000982900004601106,
+        "node_id": "tests/test_capital_client_real_data.py::test_ticker_requires_complete_fresh_provider_snapshot",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.000298700004350394,
+        "node_id": "tests/test_capital_client_real_data.py::test_ticker_requires_complete_fresh_provider_snapshot",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.00023230002261698246,
+        "node_id": "tests/test_capital_client_real_data.py::test_ticker_requires_complete_fresh_provider_snapshot",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.0006114999996498227,
+        "node_id": "tests/test_capital_client_real_data.py::test_ticker_missing_or_stale_fields_are_explicit_no_data[snapshot0-market_snapshot_incomplete_or_stale]",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.0002468999882694334,
+        "node_id": "tests/test_capital_client_real_data.py::test_ticker_missing_or_stale_fields_are_explicit_no_data[snapshot0-market_snapshot_incomplete_or_stale]",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.00024599998141638935,
+        "node_id": "tests/test_capital_client_real_data.py::test_ticker_missing_or_stale_fields_are_explicit_no_data[snapshot0-market_snapshot_incomplete_or_stale]",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.0005957999965175986,
+        "node_id": "tests/test_capital_client_real_data.py::test_ticker_missing_or_stale_fields_are_explicit_no_data[snapshot1-market_snapshot_incomplete_or_stale]",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.00024190000840462744,
+        "node_id": "tests/test_capital_client_real_data.py::test_ticker_missing_or_stale_fields_are_explicit_no_data[snapshot1-market_snapshot_incomplete_or_stale]",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.00024480000138282776,
+        "node_id": "tests/test_capital_client_real_data.py::test_ticker_missing_or_stale_fields_are_explicit_no_data[snapshot1-market_snapshot_incomplete_or_stale]",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.0026440999936312437,
+        "node_id": "tests/test_capital_client_real_data.py::test_monitor_cache_without_per_quote_provider_time_is_rejected",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.010659300023689866,
+        "node_id": "tests/test_capital_client_real_data.py::test_monitor_cache_without_per_quote_provider_time_is_rejected",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.00030529999639838934,
+        "node_id": "tests/test_capital_client_real_data.py::test_monitor_cache_without_per_quote_provider_time_is_rejected",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.0005787999834865332,
+        "node_id": "tests/test_capital_client_real_data.py::test_accounts_use_provider_currency_and_http_date",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.00041730000521056354,
+        "node_id": "tests/test_capital_client_real_data.py::test_accounts_use_provider_currency_and_http_date",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.0002550999925006181,
+        "node_id": "tests/test_capital_client_real_data.py::test_accounts_use_provider_currency_and_http_date",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.000610999995842576,
+        "node_id": "tests/test_capital_client_real_data.py::test_incomplete_account_receipts_are_no_data[payload0-True]",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.0002830999728757888,
+        "node_id": "tests/test_capital_client_real_data.py::test_incomplete_account_receipts_are_no_data[payload0-True]",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.0002455000067129731,
+        "node_id": "tests/test_capital_client_real_data.py::test_incomplete_account_receipts_are_no_data[payload0-True]",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.0006055999838281423,
+        "node_id": "tests/test_capital_client_real_data.py::test_incomplete_account_receipts_are_no_data[payload1-False]",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.00023720000172033906,
+        "node_id": "tests/test_capital_client_real_data.py::test_incomplete_account_receipts_are_no_data[payload1-False]",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.0002447000006213784,
+        "node_id": "tests/test_capital_client_real_data.py::test_incomplete_account_receipts_are_no_data[payload1-False]",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.0005010000022593886,
+        "node_id": "tests/test_capital_client_real_data.py::test_market_order_http_success_is_only_submission_acknowledgement",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.00029299999005161226,
+        "node_id": "tests/test_capital_client_real_data.py::test_market_order_http_success_is_only_submission_acknowledgement",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.00033569999504834414,
+        "node_id": "tests/test_capital_client_real_data.py::test_market_order_http_success_is_only_submission_acknowledgement",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.0012257999915163964,
+        "node_id": "tests/test_capital_client_real_data.py::test_dry_run_never_emits_a_fill",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.0012200999772176147,
+        "node_id": "tests/test_capital_client_real_data.py::test_dry_run_never_emits_a_fill",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.0005283000064082444,
+        "node_id": "tests/test_capital_client_real_data.py::test_dry_run_never_emits_a_fill",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.0010918999905698001,
+        "node_id": "tests/test_capital_client_real_data.py::test_pending_close_blocks_reverse_market_order_fallback",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.0006266999989748001,
+        "node_id": "tests/test_capital_client_real_data.py::test_pending_close_blocks_reverse_market_order_fallback",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.000509100005729124,
+        "node_id": "tests/test_capital_client_real_data.py::test_pending_close_blocks_reverse_market_order_fallback",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.001105900009861216,
+        "node_id": "tests/test_capital_client_real_data.py::test_complete_close_confirmation_releases_pending_close_guard",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.0006332999910227954,
+        "node_id": "tests/test_capital_client_real_data.py::test_complete_close_confirmation_releases_pending_close_guard",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.000510000012582168,
+        "node_id": "tests/test_capital_client_real_data.py::test_complete_close_confirmation_releases_pending_close_guard",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.001079299981938675,
+        "node_id": "tests/test_capital_client_real_data.py::test_confirmation_requires_affected_deal_and_provider_fee_receipt",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.0005868999869562685,
+        "node_id": "tests/test_capital_client_real_data.py::test_confirmation_requires_affected_deal_and_provider_fee_receipt",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.0005033999914303422,
+        "node_id": "tests/test_capital_client_real_data.py::test_confirmation_requires_affected_deal_and_provider_fee_receipt",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.0010831999825313687,
+        "node_id": "tests/test_capital_client_real_data.py::test_accepted_without_affected_deal_remains_pending",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.0005150999932084233,
+        "node_id": "tests/test_capital_client_real_data.py::test_accepted_without_affected_deal_remains_pending",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.0006291999889072031,
+        "node_id": "tests/test_capital_client_real_data.py::test_accepted_without_affected_deal_remains_pending",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.00138229998992756,
+        "node_id": "tests/test_capital_client_real_data.py::test_fee_and_cost_basis_require_complete_provider_receipts",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.0007858999888412654,
+        "node_id": "tests/test_capital_client_real_data.py::test_fee_and_cost_basis_require_complete_provider_receipts",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.0005432000034488738,
+        "node_id": "tests/test_capital_client_real_data.py::test_fee_and_cost_basis_require_complete_provider_receipts",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.0011590000067371875,
+        "node_id": "tests/test_capital_client_real_data.py::test_activity_acceptance_is_not_cost_basis",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.0005055000074207783,
+        "node_id": "tests/test_capital_client_real_data.py::test_activity_acceptance_is_not_cost_basis",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.000589400005992502,
+        "node_id": "tests/test_capital_client_real_data.py::test_activity_acceptance_is_not_cost_basis",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.005871100001968443,
+        "node_id": "tests/test_company_raw_data_intake.py::test_company_raw_data_intake_classifies_all_company_evidence",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.03802729997551069,
+        "node_id": "tests/test_company_raw_data_intake.py::test_company_raw_data_intake_classifies_all_company_evidence",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.0006245000113267452,
+        "node_id": "tests/test_company_raw_data_intake.py::test_company_raw_data_intake_classifies_all_company_evidence",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.0013089999847579747,
+        "node_id": "tests/test_hft_wiring.py::TestHFTWiring::test_queen_wire_hft_engine_none",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.018128600000636652,
+        "node_id": "tests/test_hft_wiring.py::TestHFTWiring::test_queen_wire_hft_engine_none",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.00039179998566396534,
+        "node_id": "tests/test_hft_wiring.py::TestHFTWiring::test_queen_wire_hft_engine_none",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.0011518000101204962,
+        "node_id": "tests/test_hft_wiring.py::TestHFTWiring::test_queen_wire_hft_engine_success",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.032674699992639944,
+        "node_id": "tests/test_hft_wiring.py::TestHFTWiring::test_queen_wire_hft_engine_success",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.0004478000046219677,
+        "node_id": "tests/test_hft_wiring.py::TestHFTWiring::test_queen_wire_hft_engine_success",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.0007374999986495823,
+        "node_id": "tests/test_hft_wiring.py::TestHFTWiring::test_router_wire_exchange_clients",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.018630399979883805,
+        "node_id": "tests/test_hft_wiring.py::TestHFTWiring::test_router_wire_exchange_clients",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.0004259999841451645,
+        "node_id": "tests/test_hft_wiring.py::TestHFTWiring::test_router_wire_exchange_clients",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.0007299999997485429,
+        "node_id": "tests/test_hft_wiring.py::TestHFTWiring::test_router_wire_exchange_clients_empty",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.015522600006079301,
+        "node_id": "tests/test_hft_wiring.py::TestHFTWiring::test_router_wire_exchange_clients_empty",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.00036450001061894,
+        "node_id": "tests/test_hft_wiring.py::TestHFTWiring::test_router_wire_exchange_clients_empty",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.00467449999996461,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_untrusted_history_is_zero_and_logically_quarantined_until_commit[legacy_v2]",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.07953449999331497,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_untrusted_history_is_zero_and_logically_quarantined_until_commit[legacy_v2]",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.001119199994718656,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_untrusted_history_is_zero_and_logically_quarantined_until_commit[legacy_v2]",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.005967000004602596,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_untrusted_history_is_zero_and_logically_quarantined_until_commit[invalid_json]",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.06215080001857132,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_untrusted_history_is_zero_and_logically_quarantined_until_commit[invalid_json]",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.0032284000189974904,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_untrusted_history_is_zero_and_logically_quarantined_until_commit[invalid_json]",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.011575999989872798,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_untrusted_history_is_zero_and_logically_quarantined_until_commit[nonfinite_v3]",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.08825940001406707,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_untrusted_history_is_zero_and_logically_quarantined_until_commit[nonfinite_v3]",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.0022661999973934144,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_untrusted_history_is_zero_and_logically_quarantined_until_commit[nonfinite_v3]",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.01053710002452135,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_tampered_v3_receipt_loads_no_values_and_preserves_exact_bytes",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.08499659999506548,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_tampered_v3_receipt_loads_no_values_and_preserves_exact_bytes",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.0013070999993942678,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_tampered_v3_receipt_loads_no_values_and_preserves_exact_bytes",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.007064600009471178,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_unreceipted_auto_or_explicit_save_never_writes",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.0073816000076476485,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_unreceipted_auto_or_explicit_save_never_writes",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.0013806000060867518,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_unreceipted_auto_or_explicit_save_never_writes",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.0062609000015072525,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_v3_receipt_is_deterministic_finite_and_hash_chained",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.14388160000089556,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_v3_receipt_is_deterministic_finite_and_hash_chained",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.0028295000083744526,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_v3_receipt_is_deterministic_finite_and_hash_chained",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.014107099996181205,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_default_audit_or_suppress_neither_loads_nor_writes_shared_state[AUREON_AUDIT_MODE]",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.06969190001836978,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_default_audit_or_suppress_neither_loads_nor_writes_shared_state[AUREON_AUDIT_MODE]",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.002318099985131994,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_default_audit_or_suppress_neither_loads_nor_writes_shared_state[AUREON_AUDIT_MODE]",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.01471369998762384,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_default_audit_or_suppress_neither_loads_nor_writes_shared_state[AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS]",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.04738939998787828,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_default_audit_or_suppress_neither_loads_nor_writes_shared_state[AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS]",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.001668699987931177,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_default_audit_or_suppress_neither_loads_nor_writes_shared_state[AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS]",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.00845709998975508,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_nonfinite_active_history_fails_closed_without_writing",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.004963799990946427,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_nonfinite_active_history_fails_closed_without_writing",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.0015192000137176365,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_nonfinite_active_history_fails_closed_without_writing",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.009678900009021163,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_concurrent_history_writer_conflict_preserves_winner",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.05902990000322461,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_concurrent_history_writer_conflict_preserves_winner",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.001129300013417378,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_concurrent_history_writer_conflict_preserves_winner",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.005822400009492412,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_advisory_lock_is_os_released_after_handle_close",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.024165499984519556,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_advisory_lock_is_os_released_after_handle_close",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.0010344000183977187,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_advisory_lock_is_os_released_after_handle_close",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.005784600012702867,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_advisory_lock_conflict_fails_before_state_write",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.003646700002718717,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_advisory_lock_conflict_fails_before_state_write",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.0009880999859888107,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_advisory_lock_conflict_fails_before_state_write",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.005242499988526106,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_replace_failure_is_falsey_and_retry_commits",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.030117600021185353,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_replace_failure_is_falsey_and_retry_commits",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.0008225999772548676,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_replace_failure_is_falsey_and_retry_commits",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.004354799981229007,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_post_replace_readback_is_required",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.019026399997528642,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_post_replace_readback_is_required",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.000826300005428493,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_post_replace_readback_is_required",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.004218899994157255,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_daemon_commits_memory_before_live_envelope_and_preserves_provider_time",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.04907710000406951,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_daemon_commits_memory_before_live_envelope_and_preserves_provider_time",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.0008017999934963882,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_daemon_commits_memory_before_live_envelope_and_preserves_provider_time",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.004117800010135397,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_daemon_failed_commit_rolls_back_and_emits_numeric_free_no_data",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.0021467000187840313,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_daemon_failed_commit_rolls_back_and_emits_numeric_free_no_data",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.00067120001767762,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_daemon_failed_commit_rolls_back_and_emits_numeric_free_no_data",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.004886899987468496,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_direct_live_envelope_requires_exact_memory_and_rejects_tampered_state",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.022432700003264472,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_direct_live_envelope_requires_exact_memory_and_rejects_tampered_state",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.0007854999857954681,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_direct_live_envelope_requires_exact_memory_and_rejects_tampered_state",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.00437660000170581,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_memory_lineage_survives_bus_and_trace",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.03153999999631196,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_memory_lineage_survives_bus_and_trace",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.0012559999886434525,
+        "node_id": "tests/test_hnc_lambda_history_provenance.py::test_memory_lineage_survives_bus_and_trace",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 42.591597899998305,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_boot_all_subsystems",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.029833000007783994,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_boot_all_subsystems",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.006265999982133508,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_boot_all_subsystems",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.021973099996102974,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_thought_bus_alive",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.006160899996757507,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_thought_bus_alive",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.008262299990747124,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_thought_bus_alive",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.011194699996849522,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_vault_alive",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.009787899994989857,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_vault_alive",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.0007756000268273056,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_vault_alive",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.0011184000177308917,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_lambda_engine_alive",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.012838800001190975,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_lambda_engine_alive",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.004574699996737763,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_lambda_engine_alive",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.0027817999944090843,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_goal_engine_alive",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.006403799983672798,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_goal_engine_alive",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.0004616999940481037,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_goal_engine_alive",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.010615499981213361,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_agent_core_alive",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.0036848000017926097,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_agent_core_alive",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.03288080001948401,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_agent_core_alive",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.015980299998773262,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_swarm_alive",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.01687259998288937,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_swarm_alive",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.008583899994846433,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_swarm_alive",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.022824899991974235,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_temporal_ground_alive",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.07541740001761355,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_temporal_ground_alive",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.010588600009214133,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_temporal_ground_alive",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.01647380000213161,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_self_dialogue_booted",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.00038750001112930477,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_self_dialogue_booted",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.0063590999925509095,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_self_dialogue_booted",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.016409899981226772,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_mycelium_mind_booted",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.00034339999547228217,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_mycelium_mind_booted",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.0067445999884512275,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_mycelium_mind_booted",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.3104338999837637,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_metacognition_booted",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.017701200005831197,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_metacognition_booted",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.0023284000053536147,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestBoot::test_metacognition_booted",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.007204800000181422,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestCommands::test_status",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 3.1941996999958064,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestCommands::test_status",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.0006124000065028667,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestCommands::test_status",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.018954500003019348,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestCommands::test_coherence",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 1.435496099991724,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestCommands::test_coherence",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.013378500007092953,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestCommands::test_coherence",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.023853000020608306,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestCommands::test_goal_status_empty",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      },
+      {
+        "duration_seconds": 0.1740167000098154,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestCommands::test_goal_status_empty",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "call"
+      },
+      {
+        "duration_seconds": 0.01785499998368323,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestCommands::test_goal_status_empty",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "teardown"
+      },
+      {
+        "duration_seconds": 0.03781809998326935,
+        "node_id": "tests/test_integrated_cognitive_system.py::TestCommands::test_swarm_status",
+        "outcome": "passed",
+        "was_xfail": "",
+        "when": "setup"
+      }
+    ],
+    "runtime_skip_count": 0,
+    "schema": "aureon.pytest-no-skip-shards.v1",
+    "socket_blocker_loaded": true,
+    "socket_blocking_requested": true
+  },
+  "runtime_skip_count": 0,
+  "schema": "aureon.pytest-no-skip-shards.v1",
+  "selection_changes": {
+    "missing": [],
+    "unexpected": []
+  },
+  "shard": 17,
+  "state_mutation_detected": true,
+  "status": "state_mutation_detected"
+}

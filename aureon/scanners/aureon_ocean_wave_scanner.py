@@ -21,7 +21,7 @@ Shows WHO OWNS WHO - big whales commanding smaller bot armies
 
 from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
 import sys, os
-if sys.platform == 'win32':
+if sys.platform == 'win32' and sys.stdout.isatty():
     os.environ['PYTHONIOENCODING'] = 'utf-8'
     try:
         import io

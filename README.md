@@ -10,7 +10,7 @@
 Trading research · autonomous operator · planetary/HNC research · a coding organism — one auditable system.
 
 ![Strict tier: passing](https://img.shields.io/badge/strict%20tier-passing-brightgreen.svg)
-![Tests: 92 passing](https://img.shields.io/badge/tests-92%20passing-brightgreen.svg)
+![Tests: 135 passing](https://img.shields.io/badge/tests-135%20passing-brightgreen.svg)
 ![ruff + mypy: clean](https://img.shields.io/badge/ruff%20%2B%20mypy-clean-brightgreen.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 ![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)
@@ -52,7 +52,7 @@ flowchart TB
         cognition["Agentic cognition<br/>tools · repo-wide grounding · hard boundaries"]
     end
 
-    subgraph organism["The organism (~1,200 modules)"]
+    subgraph organism["The organism (~1,100 modules)"]
         connectome["Connectome<br/>sense · touch · weave"]
         bus["Thought bus · mycelium · Queen"]
         hnc["HNC live daemon → Λ(t) field → harmonic observer"]
@@ -81,9 +81,10 @@ flowchart TB
 | **Aureon Operator** | A grounded AI switchboard — routes a prompt through many models, grounds it in the repo, reaches consensus, and applies a conscience veto before answering. | [`aureon/operator/`](aureon/operator/) · [switchboard doc](docs/architecture/AUREON_OPERATOR_SWITCHBOARD.md) |
 | **Agentic cognition** | The operator as an agent: repo-wide grounding, tool use (search / read / code / state), hard authority boundaries enforced before any action. | [`aureon/operator/cognition.py`](aureon/operator/cognition.py) |
 | **The organism connectome** | The metacognitive layer that senses, touches, and weaves every module of the body — legacy code included — into one living system. | [`aureon/core/aureon_connectome.py`](aureon/core/aureon_connectome.py) · [doc](docs/architecture/ORGANISM_CONNECTOME.md) |
-| **SaaS platform** | A categorized catalog of ~1,200 modules, honest health status, a tenancy bridge, and a billing/metering layer, served behind one gateway. | [`aureon/saas/`](aureon/saas/) · [SAAS_PLATFORM.md](docs/SAAS_PLATFORM.md) |
+| **SaaS platform** | A categorized catalog of ~1,100 modules, honest health status, a tenancy bridge, and a billing/metering layer, served behind one gateway. | [`aureon/saas/`](aureon/saas/) · [SAAS_PLATFORM.md](docs/SAAS_PLATFORM.md) |
 | **Unified console** | One professional React interface — sidebar, command palette, every dashboard as a route — over the whole repo. | [`frontend/`](frontend/) |
 | **Production hardening** | WSGI serving, `/healthz` `/readyz` `/metrics`, bearer auth + rate limiting, Docker, a two-tier lint/type gate, CI. | [PRODUCTION_GRADE.md](docs/runbooks/PRODUCTION_GRADE.md) |
+| **Multi-user platform** | End-user sign-in with **per-user encrypted keys**, each user reasoning on their own models, and a default-deny boundary between a signed-in user's account and the instance's control plane. | [`aureon/operator/identity.py`](aureon/operator/identity.py) · [MULTI_TENANT_AUTH.md](docs/architecture/MULTI_TENANT_AUTH.md) |
 
 <div align="center">
 <img src="public/hnc_dashboard.png" alt="Aureon HNC dashboard" width="48%" />
@@ -102,6 +103,74 @@ docker compose -f deploy/docker-compose.saas.yml up --build
 
 # 3 · run the strict-tier test suite (offline, no keys/network)
 AUREON_LLM_OFFLINE=1 pytest tests/test_operator_*.py tests/test_saas_*.py tests/test_connectome.py -q
+```
+
+### Full local test with live keys
+
+Everything that makes Aureon run is in this repo; the only things it cannot carry are **your**
+credentials and the optional heavy renderers. To prove the whole system on your own disk:
+
+```bash
+git clone https://github.com/RA-CONSULTING/Aureon-OS && cd Aureon-OS
+pip install -e '.[operator]'
+pip install reportlab opencv-python-headless websocket-client pypdf   # optional: PDF/video artifacts, Binance WS, statement parsing
+```
+
+Then put your keys in `.env` at the repo root (loaded via `python-dotenv`; encrypted-at-rest
+`hncqp1:` values are supported when `AUREON_HNC_PACKET_MASTER_KEY` is set):
+
+```bash
+# exchanges — each venue activates only when its pair is present
+BINANCE_API_KEY=… / BINANCE_API_SECRET=…
+KRAKEN_API_KEY=…  / KRAKEN_API_SECRET=…
+ALPACA_API_KEY=…  / ALPACA_SECRET_KEY=…
+CAPITAL_API_KEY=… / CAPITAL_IDENTIFIER=… / CAPITAL_PASSWORD=…
+
+# safety posture — the defaults keep first boot honest
+BINANCE_USE_TESTNET=true   BINANCE_DRY_RUN=true    # flip to false only when you mean it
+AUREON_OBSERVER_MODE=live                          # live is the default; dry_run/shadow for a softer first run
+```
+
+Missing keys are never guessed around: a venue without credentials reports `no_data` with a named
+blocker, dormant features stay visibly dormant, and live-mutation surfaces (Azyra desktop typing,
+outbound admin email, real orders) each sit behind their own explicit gate documented alongside the
+feature. The full boot sequence, per-daemon checklist, and every listener with the env var that
+closes it are in [`docs/QUICK_START.md`](docs/QUICK_START.md),
+[`docs/LIVE_TRADING_RUNBOOK.md`](docs/LIVE_TRADING_RUNBOOK.md), and
+[`docs/runbooks/GO_LIVE_HARDENING.md`](docs/runbooks/GO_LIVE_HARDENING.md).
+
+### Running it for more than one person
+
+Aureon starts as a **single-operator** system and stays exactly that until you configure otherwise —
+every control below is off by default, so nothing changes for a local or personal instance.
+
+Set `AUREON_SUPABASE_JWT_SECRET` and it becomes multi-user, with a hard line down the middle:
+
+| | The operator | A signed-in end user |
+|---|---|---|
+| **Keys** | the instance's own, in `os.environ` + the global keystore | **their own**, Fernet-encrypted in an isolated per-account store, masked to last-4 on read, never written into the process environment |
+| **Reasoning** | the instance engine, full toolbelt | **their own models**, on a request-scoped engine with a pure-compute toolbelt — no shell, no repo write, no network egress, no instance-state read |
+| **Memory** | the shared thought bus and mesh | isolated: their prompts and answers never enter shared instance memory |
+| **Control plane** | theirs — switchboard, host actions, approvals, manifests, MCP, instance credentials | **refused**. A tenant reaches an explicit allowlist; every other `/api` route is operator-only by omission |
+
+The boundary is enforced **once, centrally, default-deny** — not per route. That decision came from
+being wrong three times: three rounds of adversarial audit each found the same class of hole, a guard
+on a write route with the matching read route still serving. The 64 routes are mounted by five
+different registrars, so no file lists them all and no reviewer sees them all; the request gate does.
+A route added tomorrow is closed to end users by construction.
+
+Each round's findings, the reproductions, and what was deliberately *not* fixed are written up in
+[`docs/architecture/MULTI_TENANT_AUTH.md`](docs/architecture/MULTI_TENANT_AUTH.md). Before exposing an
+instance to a network, read
+[`docs/runbooks/GO_LIVE_HARDENING.md`](docs/runbooks/GO_LIVE_HARDENING.md) — it names every listener,
+what each one serves, and the env var that closes it.
+
+```bash
+# multi-user mode (all optional; unset ⇒ single-operator, unchanged)
+AUREON_OPERATOR_API_KEY=…            # the operator bearer — set this before exposing anything
+AUREON_SUPABASE_JWT_SECRET=…         # end-user sign-in; enables the per-account plane
+VITE_REQUIRE_AUTH=1                  # console requires a login (build-time)
+AUREON_DASHBOARD_PUBLIC=1            # :8080 dashboard: redact financials (for streaming it)
 ```
 
 ---
@@ -173,6 +242,9 @@ Open-source repository traffic to date (verifiable in the repo's GitHub **Insigh
 | **An investor or funder** | [`docs/investor/README.md`](docs/investor/README.md) — diligence path, capability categories, and claim discipline |
 | **A developer** | [`docs/INDEX.md`](docs/INDEX.md) · [`CAPABILITIES.md`](CAPABILITIES.md) · [`docs/SAAS_PLATFORM.md`](docs/SAAS_PLATFORM.md) |
 | **A researcher** | [`docs/THE_SYNTHESIS.md`](docs/THE_SYNTHESIS.md) · [`docs/CLAIMS_AND_EVIDENCE.md`](docs/CLAIMS_AND_EVIDENCE.md) · [`docs/research/READING_PATHS.md`](docs/research/READING_PATHS.md) |
+| **Deploying it** | [`docs/runbooks/GO_LIVE_HARDENING.md`](docs/runbooks/GO_LIVE_HARDENING.md) — every listener, what it serves, and the env var that closes it · [`docs/deployment/`](docs/deployment/) |
+| **Running it for several users** | [`docs/architecture/MULTI_TENANT_AUTH.md`](docs/architecture/MULTI_TENANT_AUTH.md) — the account/instance boundary and how it is enforced |
+| **Checking what the numbers mean** | [`docs/architecture/DATA_PROVENANCE_AUDIT.md`](docs/architecture/DATA_PROVENANCE_AUDIT.md) — which readings are live, which are withheld as `no_data`, and which generated feeds are opt-in |
 | **Browsing the whole repo** | [`docs/REPO_SITEMAP.md`](docs/REPO_SITEMAP.md) · the console's `#repo-map` tab |
 | **Contributing** | [`CONTRIBUTING.md`](CONTRIBUTING.md) · [`SECURITY.md`](SECURITY.md) · [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) |
 
@@ -182,21 +254,26 @@ Open-source repository traffic to date (verifiable in the repo's GitHub **Insigh
 
 The source of truth for quality is the **strict-tier gate**, verified on every change:
 `ruff` + `mypy` clean and the offline test suite green across `aureon/operator`,
-`aureon/saas`, and the connectome (92 tests). The badges at the top of this README reflect
-that verified state.
+`aureon/saas`, and the connectome (**232 tests**; 254 with the capability-demo and dashboard-exposure
+suites). The badges at the top of this README reflect that verified state.
 
 The hosted GitHub Actions status badges below turn green once Actions is enabled on the
 organization (they reflect hosted runs, not the local gate):
 
-[![Operator CI](https://github.com/RA-CONSULTING/aureon-trading/actions/workflows/operator-ci.yml/badge.svg)](https://github.com/RA-CONSULTING/aureon-trading/actions/workflows/operator-ci.yml)
-[![Aureon CI](https://github.com/RA-CONSULTING/aureon-trading/actions/workflows/main_ci.yml/badge.svg)](https://github.com/RA-CONSULTING/aureon-trading/actions/workflows/main_ci.yml)
-[![Nightly benchmark](https://github.com/RA-CONSULTING/aureon-trading/actions/workflows/nightly-benchmark.yml/badge.svg)](https://github.com/RA-CONSULTING/aureon-trading/actions/workflows/nightly-benchmark.yml)
+[![Operator CI](https://github.com/RA-CONSULTING/Aureon-OS/actions/workflows/operator-ci.yml/badge.svg)](https://github.com/RA-CONSULTING/Aureon-OS/actions/workflows/operator-ci.yml)
+[![Aureon CI](https://github.com/RA-CONSULTING/Aureon-OS/actions/workflows/main_ci.yml/badge.svg)](https://github.com/RA-CONSULTING/Aureon-OS/actions/workflows/main_ci.yml)
+[![Nightly benchmark](https://github.com/RA-CONSULTING/Aureon-OS/actions/workflows/nightly-benchmark.yml/badge.svg)](https://github.com/RA-CONSULTING/Aureon-OS/actions/workflows/nightly-benchmark.yml)
 
 ```bash
 # reproduce the gate locally
 pip install -e '.[operator,dev]'
 ruff check aureon/operator/ aureon/saas/ && mypy aureon/operator/ aureon/saas/
 AUREON_LLM_OFFLINE=1 pytest tests/test_operator_*.py tests/test_saas_*.py tests/test_connectome.py -q
+
+# or prove the whole system in one command — boots the app, exercises the full
+# live capability surface, and rolls up every self-test incl. the 45 Tier-A invariants
+AUREON_LLM_OFFLINE=1 AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS=1 \
+  python -m aureon.saas.capability_demo --report docs/reports/CAPABILITY_DEMO.md
 ```
 
 ## Operating boundaries

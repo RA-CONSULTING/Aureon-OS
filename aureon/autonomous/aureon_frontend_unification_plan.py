@@ -16,6 +16,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional, Sequence
 
+from aureon.obsidian_paths import resolve_obsidian_note_path
 from aureon.autonomous.aureon_saas_system_inventory import (
     DEFAULT_OUTPUT_JSON as DEFAULT_INVENTORY_JSON,
     build_saas_system_inventory,
@@ -457,7 +458,7 @@ def write_plan(
     md_path = markdown_path if markdown_path.is_absolute() else root / markdown_path
     js_path = json_path if json_path.is_absolute() else root / json_path
     public_path = public_json_path if public_json_path.is_absolute() else root / public_json_path
-    note_path = vault_path if vault_path.is_absolute() else root / vault_path
+    note_path = resolve_obsidian_note_path(vault_path, repo_root=root)
     for path in (md_path, js_path, public_path, note_path):
         path.parent.mkdir(parents=True, exist_ok=True)
     rendered = render_markdown(plan)

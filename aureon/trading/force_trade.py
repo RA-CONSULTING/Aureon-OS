@@ -62,6 +62,28 @@ def force_trade():
         print("🛑 Aborting force trade: only the unified Queen may authorize forced trades.")
         return False
 
+    # P4 bypass visibility: a Queen-authorized force trade skips every gate
+    # (SignalGate phase + volatility checks, coherence, halts) — that skip is
+    # a named audit row, never a silent door.
+    try:
+        from aureon.observer.production_mode import audit as _pm_audit
+        _pm_audit(
+            "force_trade_gate_bypass",
+            {
+                "target_symbol": target_symbol or "best_available",
+                "queen_reason": str(decision.reason),
+                "skipped_checks": (
+                    "signal_gate,phase_transition,volatility_sentinel,"
+                    "entry_coherence,min_score,halt"
+                ),
+            },
+            decision="entry_gate_bypass",
+            would_have_blocked=None,
+            actually_blocked=False,
+        )
+    except Exception:
+        pass
+
     print()
     
     # Import after setting environment

@@ -21,7 +21,7 @@ const GuardianDimensions = () => {
       name: 'ANCHOR of FORM',
       dimension: 'PRIME PHYSICAL DIMENSION',
       icon: '⚓',
-      color: 'from-orange-500 to-red-500',
+      color: 'from-warning to-destructive',
       angle: 0,
       description: 'Grounds higher dimensional energies into physical reality',
       frequency: '7.83 Hz - Schumann Base',
@@ -32,7 +32,7 @@ const GuardianDimensions = () => {
       name: 'KEEPER of CAUSALITY',
       dimension: 'CAUSAL MEMORY DIMENSION',
       icon: '⏳',
-      color: 'from-orange-400 to-yellow-500',
+      color: 'from-warning to-warning',
       angle: 60,
       description: 'Maintains timeline integrity and causal relationships',
       frequency: '14.3 Hz - Temporal Lock',
@@ -43,7 +43,7 @@ const GuardianDimensions = () => {
       name: 'CONDUCTOR of ENERGY',
       dimension: 'FRACTAL ENERGY DIMENSION',
       icon: '⚡',
-      color: 'from-blue-500 to-cyan-500',
+      color: 'from-primary to-primary',
       angle: 120,
       description: 'Channels and directs universal life force energy',
       frequency: '20.8 Hz - Energy Flow',
@@ -54,7 +54,7 @@ const GuardianDimensions = () => {
       name: 'UNIFIER of MINDS',
       dimension: 'COLLECTIVE CONSCIOUSNESS',
       icon: '🔗',
-      color: 'from-green-600 to-emerald-500',
+      color: 'from-success to-success',
       angle: 180,
       description: 'Connects individual consciousness to collective awareness',
       frequency: '27.3 Hz - Mind Bridge',
@@ -65,7 +65,7 @@ const GuardianDimensions = () => {
       name: 'WEAVER of MEANING',
       dimension: 'SYMBOLIC LATTICE DIMENSION',
       icon: '🧭',
-      color: 'from-green-500 to-teal-500',
+      color: 'from-success to-primary',
       angle: 240,
       description: 'Creates meaningful patterns from chaos and synchronicity',
       frequency: '33.8 Hz - Pattern Lock',
@@ -76,7 +76,7 @@ const GuardianDimensions = () => {
       name: 'BRIDGE of EMOTION',
       dimension: 'HARMONIC EMOTIONAL DIMENSION',
       icon: '🌊',
-      color: 'from-cyan-500 to-blue-500',
+      color: 'from-primary to-primary',
       angle: 300,
       description: 'Harmonizes emotional frequencies across dimensions',
       frequency: '40.0 Hz - Heart Sync',
@@ -92,21 +92,21 @@ const GuardianDimensions = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-blue-900 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-primary via-primary to-primary p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-5xl font-bold text-white mb-4">GUARDIAN DIMENSIONS</h1>
-          <p className="text-xl text-blue-300">Six-Fold Dimensional Architecture</p>
+          <p className="text-xl text-primary">Six-Fold Dimensional Architecture</p>
           <div className="mt-4 flex justify-center space-x-6">
             <div className="text-center">
-              <div className="text-2xl font-bold text-yellow-400">
+              <div className="text-2xl font-bold text-warning">
                 {(Math.sin(dimensionalResonance) * 50 + 50).toFixed(1)}%
               </div>
               <div className="text-xs text-gray-300">DIMENSIONAL COHERENCE</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-cyan-400">
+              <div className="text-2xl font-bold text-primary">
                 {(Math.cos(unityField) * 30 + 70).toFixed(1)}%
               </div>
               <div className="text-xs text-gray-300">UNITY FIELD STRENGTH</div>
@@ -119,7 +119,7 @@ const GuardianDimensions = () => {
           {/* Central Guardian Circle */}
           <div className="absolute inset-0 flex items-center justify-center">
             <div 
-              className="w-32 h-32 rounded-full bg-gradient-to-br from-yellow-400 to-white border-4 border-white/30 flex flex-col items-center justify-center shadow-2xl"
+              className="w-32 h-32 rounded-full bg-gradient-to-br from-warning to-white border-4 border-white/30 flex flex-col items-center justify-center shadow-2xl"
               style={{
                 transform: `scale(${1 + Math.sin(unityField) * 0.1})`,
                 boxShadow: `0 0 ${20 + Math.sin(unityField) * 10}px rgba(255, 255, 0, 0.5)`
@@ -191,7 +191,7 @@ const GuardianDimensions = () => {
             }}
           ></div>
           <div 
-            className="absolute inset-8 rounded-full border border-yellow-400/20"
+            className="absolute inset-8 rounded-full border border-warning/20"
             style={{
               transform: `rotate(${dimensionalResonance * 10}deg)`,
               borderColor: `rgba(255, 255, 0, ${0.2 + Math.sin(unityField) * 0.1})`
@@ -216,11 +216,11 @@ const GuardianDimensions = () => {
                     <div className="grid grid-cols-2 gap-4 mt-4">
                       <div className="text-center">
                         <div className="text-sm text-gray-400">FREQUENCY</div>
-                        <div className="text-lg font-bold text-cyan-400">{guardian.frequency}</div>
+                        <div className="text-lg font-bold text-primary">{guardian.frequency}</div>
                       </div>
                       <div className="text-center">
                         <div className="text-sm text-gray-400">STATUS</div>
-                        <div className="text-lg font-bold text-green-400">{guardian.activation}</div>
+                        <div className="text-lg font-bold text-success">{guardian.activation}</div>
                       </div>
                     </div>
                   </div>
@@ -232,25 +232,25 @@ const GuardianDimensions = () => {
 
         {/* Bottom Grid */}
         <div className="grid md:grid-cols-3 gap-6 mt-12">
-          <Card className="bg-black/40 border-blue-500/30 text-center">
+          <Card className="bg-black/40 border-primary/30 text-center">
             <CardContent className="p-6">
-              <div className="text-3xl font-bold text-blue-400">6</div>
+              <div className="text-3xl font-bold text-primary">6</div>
               <div className="text-sm text-gray-300">Guardian Dimensions</div>
-              <div className="text-xs text-blue-300 mt-2">Perfect Hexagonal Symmetry</div>
+              <div className="text-xs text-primary mt-2">Perfect Hexagonal Symmetry</div>
             </CardContent>
           </Card>
-          <Card className="bg-black/40 border-purple-500/30 text-center">
+          <Card className="bg-black/40 border-primary/30 text-center">
             <CardContent className="p-6">
-              <div className="text-3xl font-bold text-purple-400">∞</div>
+              <div className="text-3xl font-bold text-primary">∞</div>
               <div className="text-sm text-gray-300">Infinite Origin Layer</div>
-              <div className="text-xs text-purple-300 mt-2">Unity Consciousness Source</div>
+              <div className="text-xs text-primary mt-2">Unity Consciousness Source</div>
             </CardContent>
           </Card>
-          <Card className="bg-black/40 border-yellow-500/30 text-center">
+          <Card className="bg-black/40 border-warning/30 text-center">
             <CardContent className="p-6">
-              <div className="text-3xl font-bold text-yellow-400">🕊️</div>
+              <div className="text-3xl font-bold text-warning">🕊️</div>
               <div className="text-sm text-gray-300">Unity & Peace</div>
-              <div className="text-xs text-yellow-300 mt-2">Central Harmonizing Force</div>
+              <div className="text-xs text-warning mt-2">Central Harmonizing Force</div>
             </CardContent>
           </Card>
         </div>

@@ -32,6 +32,15 @@ def bandpass_env(x, fs, f0, bw=1.2):
     env = np.sqrt(x_f**2 + y_q**2) + EPS
     return float(np.mean(env))
 
+def measured_phase(x, fs, f0):
+    """Phase of a real input window at ``f0`` via direct complex projection."""
+    samples = np.asarray(x, dtype=float)
+    if samples.size < 8 or not np.all(np.isfinite(samples)):
+        raise ValueError("Auris phase requires a finite live sample window")
+    times = np.arange(samples.size, dtype=float) / float(fs)
+    component = np.mean((samples - samples.mean()) * np.exp(-2j * np.pi * float(f0) * times))
+    return float(np.mod(np.angle(component), 2 * np.pi))
+
 def coh_score(envelopes: List[float]):
     # scalar 'coherence' proxy from per-band envelopes (normalized covariance)
     v = np.array(envelopes, dtype=float)
@@ -83,12 +92,16 @@ class AurisValidator:
         self.csv_writer.writerow([
             'timestamp', 'epoch', 'label', 'rms', 'tsv_gain', 'coherence_score',
             'schumann_lock', 'prime_alignment', 'ten_nine_one_concordance',
-            'fund_hz', 'harmonics_json', 'gain'
+            'fund_hz', 'harmonics_json', 'gain', 'truth_status', 'source_id'
         ])
         
     def process_sample(self, data):
-        t = data.get('t', time.time())
-        sample = data.get('sample', 0.0)
+        if 't' not in data or 'sample' not in data:
+            raise ValueError("Auris live samples require t and sample; no generated fallback is allowed")
+        t = float(data['t'])
+        sample = float(data['sample'])
+        if not math.isfinite(t) or not math.isfinite(sample):
+            raise ValueError("Auris live sample and timestamp must be finite")
         fund_hz = data.get('fund_hz', 7.83)
         harmonics = data.get('harmonics', SCHUMANN[1:])
         gain = data.get('gain', 1.0)
@@ -114,12 +127,14 @@ class AurisValidator:
             coherence_score = coh_score(envelopes)
             lock = schumann_lock(envelopes)
             
-            # Mock phases for prime alignment (in real system, extract from complex envelope)
-            phases = [2 * np.pi * np.random.random() for _ in freqs]
+            # Phase is measured from this exact live window; no random substitute.
+            phases = [measured_phase(x, FS, f) for f in freqs]
             alignment = prime_alignment(phases)
-            
-            # Mock 10-9-1 concordance (in real system, compute from energy ratios)
-            unity, flow, anchor = np.random.random(3)
+
+            # The 10-9-1 inputs are real-derived energy terms from this window.
+            anchor = envelopes[0]
+            flow = float(np.mean(envelopes[1:])) if len(envelopes) > 1 else anchor
+            unity = float(np.sum(envelopes))
             concordance = ten_nine_one_concordance(unity, flow, anchor)
             
             # Write to CSV
@@ -127,11 +142,24 @@ class AurisValidator:
                 self.csv_writer.writerow([
                     t, self.epoch, label, rms, tsv_gain, coherence_score,
                     lock, alignment, concordance, fund_hz,
-                    json.dumps(harmonics), gain
+                    json.dumps(harmonics), gain, 'real_derived', data.get('source_id', 'auris_live_sample')
                 ])
                 self.csv_file.flush()
                 
             print(f"Epoch {self.epoch}: Lock={lock:.3f} Coh={coherence_score:.3f} TSV={tsv_gain:.3f}")
+            return {
+                'timestamp': t,
+                'truth_status': 'real_derived',
+                'source_id': data.get('source_id', 'auris_live_sample'),
+                'rms': rms,
+                'tsv_gain': tsv_gain,
+                'coherence_score': coherence_score,
+                'schumann_lock': lock,
+                'prime_alignment': alignment,
+                'ten_nine_one_concordance': concordance,
+                'generated_values': False,
+            }
+        return None
             
     def close(self):
         if self.csv_file:

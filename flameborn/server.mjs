@@ -30,6 +30,7 @@ if (process.env.AUREON_ENV_PATH) {
   loadEnvFile(process.env.AUREON_ENV_PATH);
 }
 
+loadEnvFile(path.resolve(__dirname, "..", ".env"));
 loadEnvFile(path.join(__dirname, ".env"));
 loadEnvFile(path.join(process.env.HOME || "", ".config/gemini/env"));
 
@@ -41,6 +42,11 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY 
 const XAI_API_KEY = process.env.XAI_API_KEY || "";
 const XAI_ALLOW_PAID = String(process.env.XAI_ALLOW_PAID || "false").toLowerCase() === "true";
 const HF_TOKEN = process.env.HF_TOKEN || process.env.HUGGINGFACE_API_KEY || "";
+const OLLAMA_API_KEY = process.env.OLLAMA_API_KEY || process.env.AUREON_OLLAMA_API_KEY || process.env.AUREON_LLM_API_KEY || "";
+const OLLAMA_BASE_URL = String(process.env.AUREON_LLM_BASE_URL || "https://ollama.com/v1").replace(/\/+$/, "");
+const OLLAMA_MODEL = process.env.AUREON_LLM_MODEL || process.env.AUREON_OLLAMA_MODEL || "kimi-k2.7-code";
+const OLLAMA_REASONING_EFFORT = process.env.AUREON_OLLAMA_REASONING_EFFORT || "none";
+const EXTERNAL_LLM_FALLBACK = String(process.env.AUREON_EXTERNAL_LLM_FALLBACK || "ollama").toLowerCase();
 const AUREON_API_BASE_URL = String(process.env.AUREON_API_BASE_URL || "").replace(/\/+$/, "");
 const AUREON_API_KEY = process.env.AUREON_API_KEY || "";
 const AUREON_PORT = Number(process.env.AUREON_PORT || 5566);
@@ -169,7 +175,7 @@ const HF_FREE_MODELS = [
   "HuggingFaceH4/zephyr-7b-beta",
   "microsoft/Phi-3-mini-4k-instruct",
 ];
-const FREE_MODE_PROVIDERS = new Set(["gemini", "openrouter", "aureon"]);
+const FREE_MODE_PROVIDERS = new Set(["gemini", "openrouter", "aureon", "ollama"]);
 const CLASSROOM_MEMORY_FILE = path.join(__dirname, "logs", "classroom-memory.json");
 const OBSERVATION_DEPTH_LIMITS = {
   shallow: 900,
@@ -782,12 +788,22 @@ async function handleAssistantCli(req, res) {
 
 async function callProvider(provider, parsed) {
   enforceAccessMode(provider, parsed);
-  if (provider === "gemini") return callGemini(parsed);
-  if (provider === "huggingface") return callHuggingFace(parsed);
-  if (provider === "grok") return callGrok(parsed);
-  if (provider === "openai") return callOpenAI(parsed);
-  if (provider === "aureon") return callAureonBrain(parsed);
-  return callOpenRouter(parsed);
+  try {
+    if (provider === "gemini") return await callGemini(parsed);
+    if (provider === "huggingface") return await callHuggingFace(parsed);
+    if (provider === "grok") return await callGrok(parsed);
+    if (provider === "openai") return await callOpenAI(parsed);
+    if (provider === "aureon") return await callAureonBrain(parsed);
+    if (provider === "ollama") return await callOllamaCloud(parsed, provider);
+    return await callOpenRouter(parsed);
+  } catch (primaryError) {
+    if (provider === "ollama") throw primaryError;
+    try {
+      return await callOllamaCloud(parsed, provider);
+    } catch (fallbackError) {
+      throw new Error(`${primaryError.message} Ollama fallback: ${fallbackError.message}`);
+    }
+  }
 }
 
 async function runLocalAureonCli(parsed) {
@@ -872,6 +888,35 @@ function commonMessages(parsed) {
     { role: "system", content: parsed.rolePrompt || "Jesteś pomocnym asystentem." },
     { role: "user", content: parsed.message || "" },
   ];
+}
+
+async function callOllamaCloud(parsed, fallbackFor = null) {
+  if (["none", "off", "disabled", "false", "0"].includes(EXTERNAL_LLM_FALLBACK)) {
+    throw new Error("Ollama fallback is disabled.");
+  }
+  if (!OLLAMA_API_KEY) throw new Error("OLLAMA_API_KEY is not configured.");
+  const endpoint = /\/chat\/completions$/i.test(OLLAMA_BASE_URL)
+    ? OLLAMA_BASE_URL
+    : `${OLLAMA_BASE_URL}/chat/completions`;
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${OLLAMA_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: OLLAMA_MODEL,
+      messages: commonMessages(parsed),
+      temperature: Number(parsed.temperature ?? 0.7),
+      max_tokens: Number(parsed.max_tokens ?? 2000),
+      reasoning_effort: OLLAMA_REASONING_EFFORT,
+    }),
+  });
+  const data = await parseJsonResponse(response);
+  if (!response.ok) throw new Error(data?.error?.message || `Ollama Cloud HTTP ${response.status}.`);
+  const reply = data?.choices?.[0]?.message?.content;
+  if (!reply) throw new Error("Ollama Cloud returned no visible response.");
+  return { provider: "ollama", model: OLLAMA_MODEL, reply, fallbackFor };
 }
 
 async function callOpenRouter(parsed) {
@@ -1225,8 +1270,8 @@ function aureonArchitectureStatus() {
       vaultPath: AUREON_API_BASE_URL ? null : AUREON_VAULT_PATH,
     },
     ollamaFallback: {
-      mode: "external-aureon-managed",
-      expectedEndpoint: "Aureon OpenMultiAgent / Ollama fallback behind Gary bridge",
+      mode: OLLAMA_API_KEY ? "ollama-cloud-ready" : "waiting-for-server-secret",
+      expectedEndpoint: "Ollama Cloud OpenAI-compatible API",
     },
     queenLayer: {
       mode: AUREON_API_BASE_URL ? "remote-available" : "waiting-for-aureon-bridge",

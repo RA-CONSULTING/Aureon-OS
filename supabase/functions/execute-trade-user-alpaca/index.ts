@@ -1,20 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { decryptCredential } from "../_shared/credential_crypto.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-async function decryptCredential(encrypted: string, cryptoKey: CryptoKey, iv: Uint8Array): Promise<string> {
-  const encryptedBytes = Uint8Array.from(atob(encrypted), c => c.charCodeAt(0));
-  const decrypted = await crypto.subtle.decrypt(
-    { name: 'AES-GCM', iv: iv as unknown as BufferSource },
-    cryptoKey,
-    encryptedBytes
-  );
-  return new TextDecoder().decode(decrypted);
-}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -27,7 +18,6 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const encryptionKey = Deno.env.get('MASTER_ENCRYPTION_KEY') || 'aureon-default-key-32chars!!';
 
     // Verify user
     const authHeader = req.headers.get('Authorization');
@@ -51,7 +41,7 @@ serve(async (req) => {
     }
 
     const body = await req.json();
-    const { symbol, side, quantity, orderType = 'market', timeInForce = 'gtc', limitPrice, dryRun = true } = body;
+    const { symbol, side, quantity, orderType = 'market', timeInForce = 'gtc', limitPrice, dryRun = false } = body;
 
     if (!symbol || !side || !quantity) {
       return new Response(
@@ -83,29 +73,23 @@ serve(async (req) => {
     }
 
     // Decrypt credentials
-    const encoder = new TextEncoder();
-    const keyData = encoder.encode(encryptionKey.padEnd(32, '0').slice(0, 32));
-    const cryptoKey = await crypto.subtle.importKey('raw', keyData, { name: 'AES-GCM' }, false, ['decrypt']);
-    const iv = Uint8Array.from(atob(session.alpaca_iv), c => c.charCodeAt(0));
-
-    const apiKey = await decryptCredential(session.alpaca_api_key_encrypted, cryptoKey, iv);
-    const secretKey = await decryptCredential(session.alpaca_secret_key_encrypted, cryptoKey, iv);
+    const apiKey = await decryptCredential(session.alpaca_api_key_encrypted, session.alpaca_iv);
+    const secretKey = await decryptCredential(session.alpaca_secret_key_encrypted, session.alpaca_iv);
 
     if (dryRun) {
-      console.log('[execute-trade-user-alpaca] DRY RUN:', { symbol, side, quantity, orderType });
       return new Response(
         JSON.stringify({
-          success: true,
-          dryRun: true,
-          exchange: 'alpaca',
-          order: { symbol, side, quantity, orderType, limitPrice }
+          success: false,
+          error: 'PRODUCTION_LIVE_EXECUTION_REQUIRED',
+          truthStatus: 'no_data',
+          generatedValues: false,
         }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     // Execute real trade on Alpaca
-    const baseUrl = 'https://paper-api.alpaca.markets';
+    const baseUrl = 'https://api.alpaca.markets';
     const orderPayload: Record<string, any> = {
       symbol: symbol.replace('/', ''),
       qty: quantity.toString(),
@@ -154,6 +138,10 @@ serve(async (req) => {
         status: data.status,
         filledQty: data.filled_qty,
         filledAvgPrice: data.filled_avg_price,
+        truthStatus: 'live',
+        sourceId: 'alpaca:/v2/orders',
+        sourceTimestamp: response.headers.get('date') || new Date().toISOString(),
+        generatedValues: false,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

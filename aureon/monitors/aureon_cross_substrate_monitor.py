@@ -631,16 +631,19 @@ def publish_solar_event_to_thoughtbus(event: CrossSubstrateEvent):
         from aureon.core.aureon_thought_bus import get_thought_bus, Thought
         bus = get_thought_bus()
         if bus is not None:
+            # payload/meta are the real Thought fields — the old data=/confidence=
+            # kwargs raised TypeError into the except below, so solar events had
+            # never actually been published.
             bus.publish(Thought(
                 source="cross_substrate_monitor",
                 topic="solar.event.detected",
-                data={
+                payload={
                     "event_type": event.event_type,
                     "event_time": event.event_time,
                     "magnitude": event.solar_magnitude,
                     "percent_changes": event.percent_changes,
                 },
-                confidence=0.7,
+                meta={"confidence": 0.7},
             ))
     except Exception:
         pass

@@ -91,7 +91,7 @@ export const MandalaCodexProcessor: React.FC<MandalaCodexProcessorProps> = ({
       
       <div className="flex flex-wrap gap-1">
         {activeSymbols.map((symbol, i) => (
-          <span key={i} className="text-yellow-400 text-lg animate-pulse">
+          <span key={i} className="text-warning text-lg animate-pulse">
             {symbol}
           </span>
         ))}

@@ -1,0 +1,143 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aureonzorzatechnologies.com/schemas/aureon-bluetooth-battery-experiment-v1.json",
+  "title": "Aureon Bluetooth Battery Experiment Run",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "protocol_id",
+    "arm",
+    "block_index",
+    "sequence_position",
+    "samples",
+    "device_id",
+    "operator_id",
+    "workload_hash",
+    "power_mode",
+    "brightness_percent",
+    "block_randomization_id",
+    "analyst_blinded"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "aureon-bluetooth-battery-experiment-v1"
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "protocol_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "arm": {
+      "enum": ["baseline", "ble_active", "sham"]
+    },
+    "block_index": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "sequence_position": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "device_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "operator_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "workload_hash": {
+      "type": "string",
+      "minLength": 1
+    },
+    "power_mode": {
+      "type": "string",
+      "minLength": 1
+    },
+    "brightness_percent": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "block_randomization_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "analyst_blinded": {
+      "type": "boolean"
+    },
+    "payload_frequency_label_hz": {
+      "type": ["number", "null"]
+    },
+    "measured_advertisement_rate_hz": {
+      "type": ["number", "null"],
+      "exclusiveMinimum": 0
+    },
+    "radio_tx_power_dbm": {
+      "type": ["number", "null"]
+    },
+    "notes": {
+      "type": "string"
+    },
+    "samples": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "elapsed_s",
+          "remaining_mwh",
+          "rate_mw",
+          "percent",
+          "ac_online",
+          "cpu_percent",
+          "temperature_c",
+          "radio_active",
+          "advertisement_count"
+        ],
+        "properties": {
+          "elapsed_s": {
+            "type": "number",
+            "minimum": 0
+          },
+          "remaining_mwh": {
+            "type": ["number", "null"],
+            "minimum": 0
+          },
+          "rate_mw": {
+            "type": ["number", "null"]
+          },
+          "percent": {
+            "type": ["number", "null"],
+            "minimum": 0,
+            "maximum": 100
+          },
+          "ac_online": {
+            "type": "boolean"
+          },
+          "cpu_percent": {
+            "type": ["number", "null"],
+            "minimum": 0,
+            "maximum": 100
+          },
+          "temperature_c": {
+            "type": ["number", "null"]
+          },
+          "radio_active": {
+            "type": "boolean"
+          },
+          "advertisement_count": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    }
+  }
+}

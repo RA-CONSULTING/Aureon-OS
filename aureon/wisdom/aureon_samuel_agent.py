@@ -83,19 +83,23 @@ logger = logging.getLogger("samuel")
 # ──────────────────────────────────────────────────────────────────────────────
 def _build_samuel_adapter(mode: str = "hybrid") -> LLMAdapter:
     """Build the in-house adapter for Samuel."""
+    from aureon.integrations.ollama import OllamaModelSwitchboard
+
+    switchboard = OllamaModelSwitchboard()
     if mode == "local":
-        return AureonLocalAdapter()
+        adapter, _selection = switchboard.compatible_adapter_for("general")
+        return adapter
     elif mode == "brain":
         return AureonBrainAdapter()
     else:
         try:
-            adapter = AureonHybridAdapter()
+            adapter, _selection = switchboard.hybrid_adapter_for("general")
             if adapter.health_check():
                 return adapter
         except Exception:
             pass
         try:
-            adapter = AureonLocalAdapter()
+            adapter, _selection = switchboard.compatible_adapter_for("general")
             if adapter.health_check():
                 return adapter
         except Exception:

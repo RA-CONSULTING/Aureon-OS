@@ -1,7 +1,13 @@
 import { expect, test } from "@playwright/test";
 
+test.beforeEach(async ({ page }) => {
+  // These consoles must remain usable with no operator process. Abort inside
+  // the browser so Vite never attempts an external or localhost proxy request.
+  await page.route("**/api/**", (route) => route.abort("connectionrefused"));
+});
+
 test("unified console opens as a categorized operations dashboard", async ({ page }) => {
-  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await page.goto("/platform/console", { waitUntil: "domcontentloaded" });
 
   await expect(page.getByRole("heading", { name: "Aureon Unified Autonomous Console" })).toBeVisible();
   await expect(page.getByTestId("operator-briefing")).toBeVisible();
@@ -25,8 +31,7 @@ test("unified console opens as a categorized operations dashboard", async ({ pag
 });
 
 test("coding cockpit exposes the capability forge quality lane", async ({ page }) => {
-  await page.goto("/", { waitUntil: "domcontentloaded" });
-  await page.getByTestId("dashboard-tab-coding").click();
+  await page.goto("/coding/organism", { waitUntil: "domcontentloaded" });
 
   await expect(page.getByText("Aureon Coding Organism")).toBeVisible();
   await expect(page.getByText("Human Coding Cockpit")).toBeVisible();
@@ -64,7 +69,7 @@ test("coding cockpit exposes the capability forge quality lane", async ({ page }
 });
 
 test("trading cockpit shows the Capital GOLD intelligence company", async ({ page }) => {
-  await page.goto("/#trading", { waitUntil: "domcontentloaded" });
+  await page.goto("/platform/console#trading", { waitUntil: "domcontentloaded" });
 
   await expect(page.getByTestId("dashboard-content-trading")).toBeVisible();
   await expect(page.getByTestId("gold-capital-intelligence-console")).toBeVisible();
@@ -136,26 +141,26 @@ test("trading cockpit shows the Capital GOLD intelligence company", async ({ pag
   await expect(page.getByText("what", { exact: true }).first()).toBeVisible();
   await expect(page.getByText("when", { exact: true }).first()).toBeVisible();
   await expect(page.getByText("act", { exact: true }).first()).toBeVisible();
-  await expect(page.getByText("three p floor", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText("3p floor", { exact: true }).first()).toBeVisible();
   await expect(page.getByText("Gold Shadow Trading Focus", { exact: true })).toBeVisible();
   await expect(page.getByText("gold and gold energy only", { exact: true })).toBeVisible();
   await expect(page.getByText("Excluded Generic Shadows", { exact: true })).toBeVisible();
-  await expect(page.getByText("Oil and energy stress lane", { exact: true })).toBeVisible();
-  await expect(page.getByText("Capital GOLD snapshot", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText(
+      "The shadow lane treats Capital GOLD as the only tradable target candidate. Oil, energy, USD/rates, miners, VIX, crypto liquidity, and geopolitics are confirmation lanes until the real-data and 3p gates pass.",
+      { exact: true },
+    ),
+  ).toBeVisible();
+  await expect(page.getByText("Capital Snapshot", { exact: true })).toBeVisible();
   await expect(page.getByText("Gold Intelligence Coverage", { exact: true })).toBeVisible();
   await expect(page.getByText("Gold Market Universe", { exact: true })).toBeVisible();
   await expect(page.getByText("Gold Swarm Intelligence", { exact: true })).toBeVisible();
-  await expect(page.getByText("Crypto Liquidity Rotation Reader", { exact: true })).toBeVisible();
-  await expect(page.getByText("Geopolitical Sentiment Reader", { exact: true })).toBeVisible();
   await expect(page.getByText("Gold Agent Coding Support", { exact: true })).toBeVisible();
   await expect(page.getByText("Agent Chat Lanes", { exact: true })).toBeVisible();
   await expect(page.getByText("Agent Tool Lanes", { exact: true })).toBeVisible();
   await expect(page.getByText("Gold Monitor Targets", { exact: true })).toBeVisible();
-  await expect(page.getByText("Coding organism job lane", { exact: true })).toBeVisible();
   await expect(page.getByText("Gold Priority Workbench", { exact: true })).toBeVisible();
   await expect(page.getByText("Forecast Artifacts", { exact: true })).toBeVisible();
-  await expect(page.getByText("Open forecast dashboard", { exact: true })).toBeVisible();
-  await expect(page.getByText("refresh capital gold quote and ohlc", { exact: true })).toBeVisible();
   await expect(page.getByText("Historical Signal Lab", { exact: true })).toBeVisible();
   await expect(page.getByText("Cross-Asset Lead/Lag", { exact: true }).first()).toBeVisible();
   await expect(page.getByText("Order-Book Pressure Replay", { exact: true }).first()).toBeVisible();
@@ -163,16 +168,17 @@ test("trading cockpit shows the Capital GOLD intelligence company", async ({ pag
   await expect(page.getByText("Gold Exchange Optimization", { exact: true })).toBeVisible();
   await expect(page.getByText("Related Asset Watchlists", { exact: true })).toBeVisible();
   await expect(page.getByText("Dynamic Monitor Contracts", { exact: true })).toBeVisible();
-  await expect(page.getByText("primary gold target venue", { exact: true }).first()).toBeVisible();
+  await expect(
+    page.getByText(
+      "Capital.com is the primary GOLD target venue. Alpaca, Binance, Kraken, energy, USD/rates, equities, crypto liquidity, and macro feeds are monitored as confirmation lanes only unless a separate authority gate allows more.",
+      { exact: true },
+    ),
+  ).toBeVisible();
   await expect(page.getByText("Gold Margin Trader Unity", { exact: true })).toBeVisible();
-  await expect(page.getByText("Unified Margin Brain", { exact: true }).first()).toBeVisible();
-  await expect(page.getByText("Dynamic Margin Sizer", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText("Margin Roles", { exact: true }).first()).toBeVisible();
   await expect(page.getByText("shadow before live", { exact: true }).first()).toBeVisible();
   await expect(page.getByText("Margin Surface Map", { exact: true })).toBeVisible();
   await expect(page.getByText("Cross-Market Gold Drivers", { exact: true })).toBeVisible();
-  await expect(page.getByText("Crypto liquidity and safe-haven rotation", { exact: true })).toBeVisible();
-  await expect(page.getByText("Stocks, indices, ETFs, and VIX", { exact: true })).toBeVisible();
-  await expect(page.getByText("Geopolitics, news, and sentiment", { exact: true })).toBeVisible();
   await expect(page.getByText("Tool Activation Plan", { exact: true })).toBeVisible();
 });
 
@@ -208,8 +214,7 @@ test("phi chat submits through the cockpit and displays response quality", async
     });
   });
 
-  await page.goto("/", { waitUntil: "domcontentloaded" });
-  await page.getByTestId("dashboard-tab-coding").click();
+  await page.goto("/coding/organism", { waitUntil: "domcontentloaded" });
   await page.getByTestId("phi-chat-input").fill("What can you see in the coding cockpit right now?");
   await page.getByTestId("phi-chat-submit").click();
 

@@ -15,9 +15,10 @@ set "PYTHONUTF8=1"
 set "PYTHONIOENCODING=utf-8"
 set "PYTHONPATH=%REPO_ROOT%;%REPO_ROOT%\aureon\core;%REPO_ROOT%\aureon\exchanges;%REPO_ROOT%\aureon\data_feeds;%REPO_ROOT%\aureon\monitors;%REPO_ROOT%\aureon\intelligence;%REPO_ROOT%\aureon\queen;%REPO_ROOT%\aureon\autonomous;%PYTHONPATH%"
 
-rem Desktop control defaults (SafeDesktopControl)
-set "AUREON_DESKTOP_LIVE=true"
-set "AUREON_DESKTOP_AUTO_ARM=true"
+rem Desktop control never auto-arms. Use the governed local GUI runner for a
+rem bounded, exact-window live lease.
+set "AUREON_DESKTOP_LIVE=false"
+set "AUREON_DESKTOP_AUTO_ARM=false"
 
 echo ============================================================
 echo  AUREON AUTONOMOUS AGENT - Interactive Console

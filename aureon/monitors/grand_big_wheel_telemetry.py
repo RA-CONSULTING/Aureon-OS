@@ -1,353 +1,275 @@
 #!/usr/bin/env python3
-"""
-╔══════════════════════════════════════════════════════════════════════════════════════╗
-║                                                                                      ║
-║     🎡🔭💜 GRAND BIG WHEEL TELEMETRY TEST - QGITA + HAPPINESS + NEURAL 💜🔭🎡      ║
-║                                                                                      ║
-║     This test demonstrates the full integration:                                     ║
-║       1. Quantum Telescope → Observe market geometry                                 ║
-║       2. QGITA Framework → Detect Fibonacci structural events                        ║
-║       3. Grand Big Wheel → Compute Happiness Quotient                                ║
-║       4. Queen Neuron V2 → Make decisions with Happiness as 7th input               ║
-║                                                                                      ║
-║     THE PURSUIT OF HAPPINESS IS NOW EMBEDDED IN THE NEURAL BACKPROPAGATION          ║
-║                                                                                      ║
-╚══════════════════════════════════════════════════════════════════════════════════════╝
+"""Read-only Grand Big Wheel market telemetry.
+
+This diagnostic reports only fresh, two-sided provider quote receipts. It does
+not create market observations, train a model, update Queen state, or persist
+telemetry. Missing, stale, malformed, or one-sided evidence is returned as
+explicit no_data.
 """
 
-from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
-import sys
-import os
-import asyncio
-import logging
-from datetime import datetime
+from __future__ import annotations
 
-# Windows UTF-8 fix
-if sys.platform == 'win32':
-    os.environ['PYTHONIOENCODING'] = 'utf-8'
-    try:
-        import io
-        def _is_utf8_wrapper(stream):
-            return (isinstance(stream, io.TextIOWrapper) and 
-                    hasattr(stream, 'encoding') and stream.encoding and
-                    stream.encoding.lower().replace('-', '') == 'utf8')
-        if hasattr(sys.stdout, 'buffer') and not _is_utf8_wrapper(sys.stdout):
-            sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace', line_buffering=True)
-        # Skip stderr wrapping (causes Windows exit errors)
-    except Exception:
-        pass
-
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
-logger = logging.getLogger(__name__)
+import json
+import math
+import time
+from datetime import datetime, timezone
+from typing import Any, Dict, Iterable, Optional
 
 
-async def main():
-    print("\n" + "=" * 80)
-    print("🎡🔭💜 GRAND BIG WHEEL TELEMETRY - FULL INTEGRATION TEST 💜🔭🎡".center(80))
-    print("=" * 80 + "\n")
-    
-    # ═══════════════════════════════════════════════════════════════════════════
-    # 1. Import and Initialize All Systems
-    # ═══════════════════════════════════════════════════════════════════════════
-    
-    print("📦 Loading systems...")
-    
-    # Import systems
+DEFAULT_SYMBOLS = (
+    "BTC/USD",
+    "ETH/USD",
+    "SOL/USD",
+    "LINK/USD",
+    "DOGE/USD",
+)
+REAL_TRUTH_STATUSES = frozenset({"real_observed", "real_derived"})
+DEFAULT_MAX_QUOTE_AGE_SECONDS = 60.0
+FUTURE_TOLERANCE_SECONDS = 5.0
+
+
+def _finite_number(
+    value: Any,
+    *,
+    positive: bool = False,
+    nonnegative: bool = False,
+) -> Optional[float]:
     try:
-        from aureon.simulation.aureon_quantum_telescope import QuantumTelescope
-        telescope_available = True
-        print("   ✅ Quantum Telescope loaded")
-    except ImportError as e:
-        telescope_available = False
-        print(f"   ⚠️ Quantum Telescope not available: {e}")
-    
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    if not math.isfinite(number):
+        return None
+    if positive and number <= 0.0:
+        return None
+    if nonnegative and number < 0.0:
+        return None
+    return number
+
+
+def _epoch_seconds(value: Any) -> Optional[float]:
+    if isinstance(value, bool) or value is None:
+        return None
+    if isinstance(value, (int, float)):
+        timestamp = float(value)
+        if timestamp > 10_000_000_000:
+            timestamp /= 1000.0
+        return timestamp if math.isfinite(timestamp) else None
+    if not isinstance(value, str) or not value.strip():
+        return None
+    text = value.strip()
+    numeric = _finite_number(text)
+    if numeric is not None:
+        return _epoch_seconds(numeric)
     try:
-        from aureon.wisdom.aureon_qgita_framework import QGITAMarketAnalyzer
-        qgita_available = True
-        print("   ✅ QGITA Framework loaded")
-    except ImportError as e:
-        qgita_available = False
-        print(f"   ⚠️ QGITA not available: {e}")
-    
-    try:
-        from aureon.queen.queen_pursuit_of_happiness import get_pursuit_of_happiness
-        happiness_available = True
-        print("   ✅ Grand Big Wheel loaded")
-    except ImportError as e:
-        happiness_available = False
-        print(f"   ⚠️ Grand Big Wheel not available: {e}")
-    
-    try:
-        from aureon.queen.queen_neuron_v2 import get_queen_neuron, NeuralInputV2
-        neuron_v2_available = True
-        print("   ✅ Queen Neuron V2 loaded")
-    except ImportError as e:
-        neuron_v2_available = False
-        print(f"   ⚠️ Queen Neuron V2 not available: {e}")
-    
-    try:
-        from aureon.exchanges.alpaca_client import AlpacaClient
-        alpaca_available = True
-        print("   ✅ Alpaca Client loaded")
-    except ImportError as e:
-        alpaca_available = False
-        print(f"   ⚠️ Alpaca Client not available: {e}")
-    
-    if not all([telescope_available, qgita_available, happiness_available, neuron_v2_available, alpaca_available]):
-        print("\n⚠️ Some systems not available - running in limited mode")
-    
-    # ═══════════════════════════════════════════════════════════════════════════
-    # 2. Initialize Systems
-    # ═══════════════════════════════════════════════════════════════════════════
-    
-    print("\n🔧 Initializing systems...")
-    
-    if telescope_available:
-        telescope = QuantumTelescope()
-        print("   🔭 Quantum Telescope: ONLINE")
-    
-    if qgita_available:
-        qgita = QGITAMarketAnalyzer()
-        print("   🌌 QGITA Framework: ONLINE")
-    
-    if happiness_available:
-        happiness = get_pursuit_of_happiness()
-        print(f"   🎡 Grand Big Wheel: ONLINE (Happiness: {happiness.happiness.happiness_quotient:.3f})")
-    
-    if neuron_v2_available:
-        queen = get_queen_neuron()
-        print(f"   👑 Queen Neuron V2: ONLINE ({queen.input_size}-{queen.hidden_size}-1)")
-    
-    if alpaca_available:
-        alpaca = AlpacaClient()
-        print("   📈 Alpaca Client: ONLINE")
-    
-    # ═══════════════════════════════════════════════════════════════════════════
-    # 3. Fetch Live Market Data
-    # ═══════════════════════════════════════════════════════════════════════════
-    
-    print("\n🌐 Fetching live market data...")
-    
-    symbols = ["BTC/USD", "ETH/USD", "SOL/USD", "LINK/USD", "DOGE/USD"]
-    market_data = {}
-    
-    if alpaca_available:
-        for symbol in symbols:
-            try:
-                ticker = alpaca.get_ticker(symbol)
-                if ticker:
-                    market_data[symbol] = {
-                        'price': ticker.get('price') or ticker.get('last') or 0,
-                        'bid': ticker.get('bid', 0),
-                        'ask': ticker.get('ask', 0),
-                        'volume': ticker.get('volume', 1000000),
-                        'change_pct': ticker.get('change_pct', 0),
-                    }
-                    print(f"   {symbol}: ${market_data[symbol]['price']:,.2f}")
-            except Exception as e:
-                print(f"   ⚠️ {symbol}: Error - {e}")
-    
-    if not market_data:
-        print("   📊 Using simulated data...")
-        market_data = {
-            "BTC/USD": {"price": 92479.0, "volume": 5000000, "change_pct": -0.5},
-            "ETH/USD": {"price": 3144.0, "volume": 2000000, "change_pct": -0.8},
-            "SOL/USD": {"price": 142.0, "volume": 1000000, "change_pct": 0.2},
-            "LINK/USD": {"price": 13.40, "volume": 500000, "change_pct": 1.5},
-            "DOGE/USD": {"price": 0.335, "volume": 3000000, "change_pct": 0.1},
-        }
-    
-    # ═══════════════════════════════════════════════════════════════════════════
-    # 4. Run Quantum Telescope Observations
-    # ═══════════════════════════════════════════════════════════════════════════
-    
-    print("\n🔭 QUANTUM TELESCOPE OBSERVATIONS:")
-    print("-" * 60)
-    
-    telescope_results = {}
-    
-    if telescope_available:
-        for symbol, data in market_data.items():
-            try:
-                result = telescope.observe(
-                    symbol=symbol,
-                    price=data['price'],
-                    volume=data.get('volume', 1000000),
-                    change_pct=data.get('change_pct', 0)
-                )
-                telescope_results[symbol] = result
-                print(f"   {symbol}:")
-                print(f"      Dominant Geometry: {result.get('dominant_solid', 'UNKNOWN')}")
-                print(f"      Beam Energy: {result.get('beam_energy', 0):.3f}")
-                
-                # Handle probability_spectrum being either float or dict
-                prob_spec = result.get('probability_spectrum', 0.5)
-                if isinstance(prob_spec, dict):
-                    trade_prob = prob_spec.get('trade_probability', 0.5)
-                else:
-                    trade_prob = float(prob_spec) if prob_spec else 0.5
-                print(f"      Probability: {trade_prob:.1%}")
-            except Exception as e:
-                print(f"   ⚠️ {symbol}: {e}")
-    
-    # ═══════════════════════════════════════════════════════════════════════════
-    # 5. Run QGITA Analysis
-    # ═══════════════════════════════════════════════════════════════════════════
-    
-    print("\n🌌 QGITA (Quantum Gravity in the Act) ANALYSIS:")
-    print("-" * 60)
-    
-    qgita_results = {}
-    
-    if qgita_available:
-        import time
-        # Feed samples to QGITA internal buffer
-        base_time = time.time()
-        for symbol, data in market_data.items():
-            for i in range(20):  # 20 samples per symbol
-                qgita.feed_price(
-                    price=data['price'] * (1 + (i - 10) * 0.0001),  # Small price variation
-                    timestamp=base_time + i * 0.001
-                )
-        
-        # Now analyze
-        qgita_results = qgita.analyze()
-        
-        print(f"   Status: {qgita_results.get('status', 'unknown')}")
-        print(f"   Global Coherence R(t): {qgita_results.get('global_coherence', 0):.4f}")
-        print(f"   Coherence State: {qgita_results.get('coherence_state', 'unknown')}")
-        print(f"   FTCPs Detected: {len(qgita_results.get('ftcps', []))}")
-        print(f"   LHEs Detected: {len(qgita_results.get('lhes', []))}")
-        
-        regime = qgita_results.get('market_regime', {})
-        print(f"   Market Regime: {regime.get('regime', 'unknown')} (stability: {regime.get('stability', 0):.2f})")
-    
-    # ═══════════════════════════════════════════════════════════════════════════
-    # 6. Grand Big Wheel - Update from Market Data
-    # ═══════════════════════════════════════════════════════════════════════════
-    
-    print("\n🎡 GRAND BIG WHEEL - HAPPINESS UPDATE:")
-    print("-" * 60)
-    
-    if happiness_available:
-        # Update Gaia alignment from QGITA coherence
-        if qgita_available and qgita_results:
-            coherence = qgita_results.get('global_coherence', 0.5)
-            happiness.update_gaia_alignment(coherence)
-            print(f"   Gaia Alignment updated from QGITA: {coherence:.3f}")
-        
-        # Update dream progress (simulate portfolio check)
-        current_portfolio = 12.63  # Simulated current value
-        happiness.update_dream_progress(current_portfolio)
-        
-        # Record a joy moment from successful observation
-        happiness.record_joy_moment(
-            source="telemetry_success",
-            intensity=0.3,
-            context={"symbols_observed": len(market_data)}
+        parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.timestamp()
+
+
+def _no_data_receipt(
+    symbol: str,
+    reason: str,
+    *,
+    received_at: float,
+    source_id: str,
+) -> Dict[str, Any]:
+    return {
+        "symbol": symbol,
+        "price": None,
+        "bid": None,
+        "ask": None,
+        "volume": None,
+        "change_pct": None,
+        "source_id": source_id,
+        "source_timestamp": None,
+        "received_at": datetime.fromtimestamp(received_at, timezone.utc).isoformat(),
+        "data_status": "no_data",
+        "truth_status": "no_data",
+        "reason": reason,
+        "price_derivation": None,
+        "generated_values": False,
+        "eligible_for_analysis": False,
+        "eligible_for_action": False,
+    }
+
+
+def normalize_quote_receipt(
+    symbol: str,
+    payload: Any,
+    *,
+    now: Optional[float] = None,
+    max_age_seconds: float = DEFAULT_MAX_QUOTE_AGE_SECONDS,
+    source_id: str = "alpaca.get_ticker",
+) -> Dict[str, Any]:
+    """Validate a provider quote without supplying absent market fields."""
+    received_at = time.time() if now is None else float(now)
+    max_age = _finite_number(max_age_seconds, positive=True)
+    if max_age is None:
+        raise ValueError("max_age_seconds must be a finite positive number")
+    if not isinstance(payload, dict):
+        return _no_data_receipt(
+            symbol,
+            "provider_quote_receipt_required",
+            received_at=received_at,
+            source_id=source_id,
         )
-        
-        # Print the wheel
-        happiness.print_grand_wheel()
-    
-    # ═══════════════════════════════════════════════════════════════════════════
-    # 7. Queen Neuron V2 - Make Predictions with Happiness
-    # ═══════════════════════════════════════════════════════════════════════════
-    
-    print("\n👑 QUEEN NEURON V2 - PREDICTIONS WITH HAPPINESS:")
-    print("-" * 60)
-    
-    if neuron_v2_available and happiness_available:
-        for symbol, data in market_data.items():
-            # Build neural input with happiness
-            telescope_data = telescope_results.get(symbol, {})
-            
-            # Handle probability_spectrum being either float or dict
-            prob_spec = telescope_data.get('probability_spectrum', 0.5)
-            if isinstance(prob_spec, dict):
-                trade_prob = prob_spec.get('trade_probability', 0.5)
-            else:
-                trade_prob = float(prob_spec) if prob_spec else 0.5
-            
-            # Handle beam_energy
-            beam_energy = telescope_data.get('beam_energy', 0.5)
-            if beam_energy > 1:  # Normalize large values
-                beam_energy = min(1.0, beam_energy / 1000000000)
-            
-            neural_input = NeuralInputV2(
-                probability_score=trade_prob,
-                wisdom_score=0.6,  # From historical learning
-                quantum_signal=beam_energy * 2 - 1,  # -1 to 1
-                gaia_resonance=happiness.happiness.gaia_alignment,
-                emotional_coherence=qgita_results.get('global_coherence', 0.5) if qgita_available else 0.5,
-                mycelium_signal=0.2,  # From collective intelligence
-                happiness_pursuit=happiness.happiness.happiness_quotient,  # 🎡 THE 7TH INPUT
+
+    if (
+        payload.get("data_status") != "live"
+        or payload.get("truth_status") not in REAL_TRUTH_STATUSES
+        or payload.get("generated_values") is not False
+        or payload.get("action_eligible") is not True
+    ):
+        return _no_data_receipt(
+            symbol,
+            "live_provider_quote_envelope_required",
+            received_at=received_at,
+            source_id=source_id,
+        )
+
+    bid = _finite_number(payload.get("bid"), positive=True)
+    ask = _finite_number(payload.get("ask"), positive=True)
+    if bid is None or ask is None or bid > ask:
+        return _no_data_receipt(
+            symbol,
+            "valid_two_sided_provider_quote_required",
+            received_at=received_at,
+            source_id=source_id,
+        )
+
+    source_timestamp = _epoch_seconds(
+        payload.get("source_timestamp") or payload.get("provider_timestamp")
+    )
+    if source_timestamp is None:
+        return _no_data_receipt(
+            symbol,
+            "provider_source_timestamp_required",
+            received_at=received_at,
+            source_id=source_id,
+        )
+    age_seconds = received_at - source_timestamp
+    if age_seconds < -FUTURE_TOLERANCE_SECONDS or age_seconds > max_age:
+        return _no_data_receipt(
+            symbol,
+            "fresh_provider_quote_required",
+            received_at=received_at,
+            source_id=source_id,
+        )
+
+    volume = None
+    if payload.get("volume") is not None:
+        volume = _finite_number(payload.get("volume"), nonnegative=True)
+        if volume is None:
+            return _no_data_receipt(
+                symbol,
+                "observed_volume_must_be_finite",
+                received_at=received_at,
+                source_id=source_id,
             )
-            
-            # Get Queen's prediction
-            confidence = queen.predict(neural_input)
-            
-            # Determine recommendation
-            if confidence > 0.7:
-                recommendation = "🟢 STRONG BUY"
-            elif confidence > 0.5:
-                recommendation = "🟡 HOLD/WATCH"
-            else:
-                recommendation = "🔴 AVOID"
-            
-            print(f"   {symbol}:")
-            print(f"      Price: ${data['price']:,.2f}")
-            print(f"      Trade Confidence: {confidence:.1%}")
-            print(f"      Happiness Input: {neural_input.happiness_pursuit:.1%}")
-            print(f"      Recommendation: {recommendation}")
-            print()
-    
-    # ═══════════════════════════════════════════════════════════════════════════
-    # 8. Summary
-    # ═══════════════════════════════════════════════════════════════════════════
-    
-    print("\n" + "=" * 80)
-    print("💜 TELEMETRY SUMMARY 💜".center(80))
-    print("=" * 80)
-    
-    hq = happiness.happiness.happiness_quotient if happiness_available else 0
-    sb = happiness.bias.total_bias if happiness_available else 1.0
-    pc = happiness.happiness.purpose_clarity if happiness_available else 1.0
-    
-    print(f"""
-    🔭 Quantum Telescope:
-       Symbols Observed: {len(telescope_results)}
-       Dominant Geometry: {max(set(r.get('dominant_solid', 'UNKNOWN') for r in telescope_results.values()), key=list(telescope_results.values()).count) if telescope_results else 'N/A'}
 
-    🌌 QGITA Framework:
-       Status: {qgita_results.get('status', 'N/A')}
-       Global Coherence: {qgita_results.get('global_coherence', 0):.4f}
-       Market Regime: {qgita_results.get('market_regime', {}).get('regime', 'N/A')}
+    change_pct = None
+    if payload.get("change_pct") is not None:
+        change_pct = _finite_number(payload.get("change_pct"))
+        if change_pct is None:
+            return _no_data_receipt(
+                symbol,
+                "observed_change_must_be_finite",
+                received_at=received_at,
+                source_id=source_id,
+            )
 
-    🎡 Grand Big Wheel:
-       Happiness Quotient: {hq:.3f}
-       Subconscious Bias: {sb:.3f}
-       Purpose Clarity: {pc:.0%} ← NEVER WAVERS
+    midpoint = (bid + ask) / 2.0
+    return {
+        "symbol": symbol,
+        "price": midpoint,
+        "bid": bid,
+        "ask": ask,
+        "volume": volume,
+        "change_pct": change_pct,
+        "source_id": source_id,
+        "source_timestamp": datetime.fromtimestamp(
+            source_timestamp, timezone.utc
+        ).isoformat(),
+        "received_at": datetime.fromtimestamp(received_at, timezone.utc).isoformat(),
+        "data_status": "live",
+        "truth_status": "real_derived",
+        "reason": "fresh_two_sided_provider_quote",
+        "price_derivation": "provider_bid_ask_midpoint",
+        "generated_values": False,
+        "eligible_for_analysis": True,
+        "eligible_for_action": False,
+    }
 
-    👑 Queen Neuron V2:
-       Architecture: {queen.input_size if neuron_v2_available else 'N/A'}-{queen.hidden_size if neuron_v2_available else 'N/A'}-1 (with happiness!)
-       Effective Learning Rate: {queen.learning_rate if neuron_v2_available else 0:.4f} (happiness-modulated)
-       Joy Trades Recorded: {queen.joy_trade_count if neuron_v2_available else 0}
 
-    💜 THE PURSUIT OF HAPPINESS IS NOW EMBEDDED IN HER SUBCONSCIOUS 💜
-    """)
-    
-    # Save all states
-    if happiness_available:
-        happiness.save_state()
-    if neuron_v2_available:
-        queen.save_weights()
-    
-    print("✅ All states saved")
-    print("\n" + "=" * 80)
-    print("\"Life, Liberty, and the Pursuit of Happiness\"".center(80))
-    print("=" * 80 + "\n")
+def collect_live_market_data(
+    client: Any,
+    symbols: Iterable[str] = DEFAULT_SYMBOLS,
+    *,
+    now: Optional[float] = None,
+    max_age_seconds: float = DEFAULT_MAX_QUOTE_AGE_SECONDS,
+) -> Dict[str, Any]:
+    """Collect a visible receipt for every requested symbol."""
+    received_at = time.time() if now is None else float(now)
+    receipts: Dict[str, Dict[str, Any]] = {}
+    for raw_symbol in symbols:
+        symbol = str(raw_symbol).strip().upper()
+        try:
+            payload = client.get_ticker(symbol)
+        except Exception as exc:
+            receipts[symbol] = _no_data_receipt(
+                symbol,
+                f"provider_read_failed:{type(exc).__name__}",
+                received_at=received_at,
+                source_id="alpaca.get_ticker",
+            )
+            continue
+        receipts[symbol] = normalize_quote_receipt(
+            symbol,
+            payload,
+            now=received_at,
+            max_age_seconds=max_age_seconds,
+        )
+
+    live_count = sum(
+        receipt["data_status"] == "live" for receipt in receipts.values()
+    )
+    return {
+        "data_status": "live" if live_count else "no_data",
+        "truth_status": "real_derived" if live_count else "no_data",
+        "reason": (
+            "fresh_provider_quotes_available"
+            if live_count
+            else "no_fresh_provider_quotes"
+        ),
+        "received_at": datetime.fromtimestamp(received_at, timezone.utc).isoformat(),
+        "requested_symbol_count": len(receipts),
+        "live_symbol_count": live_count,
+        "quotes": receipts,
+        "generated_values": False,
+        "eligible_for_action": False,
+    }
+
+
+def main() -> int:
+    """Run the explicit provider-backed diagnostic."""
+    from aureon.core.aureon_baton_link import link_system
+    from aureon.exchanges.alpaca_client import AlpacaClient
+
+    link_system(__name__)
+    client = AlpacaClient()
+    try:
+        report = collect_live_market_data(client)
+    finally:
+        close = getattr(client, "close", None)
+        if callable(close):
+            close()
+    print(json.dumps(report, indent=2, sort_keys=True))
+    return 0 if report["data_status"] == "live" else 1
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    raise SystemExit(main())

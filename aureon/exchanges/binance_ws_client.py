@@ -180,8 +180,7 @@ class BinanceWebSocketClient:
         if HARMONIC_LIQUID_ALUMINIUM_AVAILABLE and HarmonicLiquidAluminiumField:
             try:
                 self.harmonic_field = HarmonicLiquidAluminiumField(stream_interval_ms=25)  # 25ms for ultra-fast flow
-                self.harmonic_field.start_streaming()
-                logger.info("🌊 Harmonic Liquid Aluminium Field FLOWING through Binance WS")
+                logger.info("🌊 Harmonic Liquid Aluminium Field wired; awaiting explicit WebSocket start")
             except Exception as e:
                 logger.warning(f"🌊 Harmonic Field init failed: {e}")
         
@@ -202,7 +201,15 @@ class BinanceWebSocketClient:
                 self.subscriptions.add(s)
 
         self.running = True
-        self._connect()
+        if self.harmonic_field:
+            self.harmonic_field.start_streaming()
+        try:
+            self._connect()
+        except Exception:
+            self.running = False
+            if self.harmonic_field:
+                self.harmonic_field.stop_streaming()
+            raise
         
     def stop(self):
         """Stop the WebSocket connection."""
@@ -211,6 +218,8 @@ class BinanceWebSocketClient:
             self.ws.close()
         if self.wst and self.wst.is_alive():
             self.wst.join(timeout=2.0)
+        if self.harmonic_field:
+            self.harmonic_field.stop_streaming()
         logger.info("🔶 Binance WebSocket Client stopped")
         
     def subscribe(self, streams: List[str]):

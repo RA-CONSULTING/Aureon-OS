@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence
 
+from aureon.obsidian_paths import resolve_obsidian_note_path
 from aureon.autonomous.aureon_capability_forge import REPO_ROOT
 from aureon.autonomous.aureon_frontend_evolution_queue import (
     DEFAULT_OUTPUT_JSON as DEFAULT_EVOLUTION_JSON,
@@ -79,7 +80,10 @@ def _load_or_build_queue(root: Path) -> Dict[str, Any]:
         markdown_path=_rooted(root, Path("docs/audits/aureon_frontend_evolution_queue.md")),
         json_path=_rooted(root, DEFAULT_EVOLUTION_JSON),
         public_json_path=_rooted(root, DEFAULT_EVOLUTION_PUBLIC_JSON),
-        vault_path=_rooted(root, Path(".obsidian/Aureon Self Understanding/aureon_frontend_evolution_queue.md")),
+        vault_path=resolve_obsidian_note_path(
+            Path(".obsidian/Aureon Self Understanding/aureon_frontend_evolution_queue.md"),
+            repo_root=root,
+        ),
     )
     return built
 

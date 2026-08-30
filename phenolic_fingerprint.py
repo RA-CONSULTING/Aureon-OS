@@ -41,6 +41,7 @@ from pathlib import Path
 from typing import Any, Final
 
 import numpy as np
+from aureon.bio.derived_nulls import DerivedNullGenerator, derived_null_generator
 
 __all__ = [
     "Peak",
@@ -274,11 +275,12 @@ def _phi_alignment_statistic(freqs: np.ndarray) -> float:
     return float(np.mean(1.0 - 2.0 * d))
 
 
-def _null_envelope(freqs: np.ndarray, rng: np.random.Generator, nulls: int) -> np.ndarray:
-    """Draw ``nulls`` random-frequency control sets matched to the observed envelope.
+def _null_envelope(freqs: np.ndarray, rng: DerivedNullGenerator, nulls: int) -> np.ndarray:
+    """Derive deterministic null-control sets matched to the observed envelope.
 
-    Each control has the same tone count as ``freqs`` and is drawn uniformly on
-    ``[min(freqs), max(freqs)]`` — the arm-E random-frequency control idiom.
+    Each control has the same tone count as ``freqs`` and uses low-discrepancy
+    coverage of ``[min(freqs), max(freqs)]``. These are labeled statistical
+    controls, not live observations.
     """
     low, high = float(np.min(freqs)), float(np.max(freqs))
     if high <= low:
@@ -293,7 +295,7 @@ def _one_sided_p(observed: float, null_stats: np.ndarray) -> float:
     return (1.0 + exceed) / (1.0 + n)
 
 
-def test_A(freqs: np.ndarray, *, nulls: int, rng: np.random.Generator) -> float:
+def test_A(freqs: np.ndarray, *, nulls: int, rng: DerivedNullGenerator) -> float:
     """Test A (coherence clustering): p-value that tones cluster more than chance."""
     freqs = np.asarray(freqs, dtype=float)
     if freqs.size < 2:
@@ -306,7 +308,7 @@ def test_A(freqs: np.ndarray, *, nulls: int, rng: np.random.Generator) -> float:
     return _one_sided_p(observed, null_stats)
 
 
-def test_B(freqs: np.ndarray, *, nulls: int, rng: np.random.Generator) -> float:
+def test_B(freqs: np.ndarray, *, nulls: int, rng: DerivedNullGenerator) -> float:
     """Test B (golden-interval alignment): p-value that ratios align to PHI powers."""
     freqs = np.asarray(freqs, dtype=float)
     if freqs.size < 2:
@@ -322,9 +324,9 @@ def test_B(freqs: np.ndarray, *, nulls: int, rng: np.random.Generator) -> float:
 # ============================================================================
 
 
-def _rng(seed: int, tag: int) -> np.random.Generator:
-    """Independent, reproducible generator stream for a given (seed, purpose)."""
-    return np.random.default_rng([int(seed), int(tag)])
+def _rng(seed: int, tag: int) -> DerivedNullGenerator:
+    """Independent deterministic null stream for a (seed, purpose) pair."""
+    return derived_null_generator(int(seed), int(tag))
 
 
 def _structured_positive_signal() -> np.ndarray:

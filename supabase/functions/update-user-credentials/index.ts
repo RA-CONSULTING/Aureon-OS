@@ -1,19 +1,10 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { encryptCredentialPacked } from '../_shared/credential_crypto.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-async function encryptCredential(value: string, cryptoKey: CryptoKey, iv: Uint8Array): Promise<string> {
-  const encoded = new TextEncoder().encode(value);
-  const encrypted = await crypto.subtle.encrypt(
-    { name: 'AES-GCM', iv: iv as unknown as BufferSource },
-    cryptoKey,
-    encoded
-  );
-  return btoa(String.fromCharCode(...new Uint8Array(encrypted)));
-}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -57,19 +48,6 @@ Deno.serve(async (req) => {
       capitalIdentifier
     } = body;
 
-    // Use consistent text-padded encryption key (same as create-aureon-session)
-    const encryptionKey = 'aureon-default-key-32chars!!';
-    const encoder = new TextEncoder();
-    const keyData = encoder.encode(encryptionKey.padEnd(32, '0').slice(0, 32));
-    
-    const cryptoKey = await crypto.subtle.importKey(
-      'raw',
-      keyData,
-      { name: 'AES-GCM' },
-      false,
-      ['encrypt']
-    );
-
     // Build update object with only provided credentials
     const updateData: Record<string, any> = {
       updated_at: new Date().toISOString()
@@ -77,37 +55,33 @@ Deno.serve(async (req) => {
 
     // Binance
     if (binanceApiKey && binanceApiSecret) {
-      const binanceIv = crypto.getRandomValues(new Uint8Array(12));
-      updateData.binance_api_key_encrypted = await encryptCredential(binanceApiKey, cryptoKey, binanceIv);
-      updateData.binance_api_secret_encrypted = await encryptCredential(binanceApiSecret, cryptoKey, binanceIv);
-      updateData.binance_iv = btoa(String.fromCharCode(...binanceIv));
+      updateData.binance_api_key_encrypted = await encryptCredentialPacked(binanceApiKey);
+      updateData.binance_api_secret_encrypted = await encryptCredentialPacked(binanceApiSecret);
+      updateData.binance_iv = 'v2';
     }
 
     // Kraken
     if (krakenApiKey && krakenApiSecret) {
-      const krakenIv = crypto.getRandomValues(new Uint8Array(12));
-      updateData.kraken_api_key_encrypted = await encryptCredential(krakenApiKey, cryptoKey, krakenIv);
-      updateData.kraken_api_secret_encrypted = await encryptCredential(krakenApiSecret, cryptoKey, krakenIv);
-      updateData.kraken_iv = btoa(String.fromCharCode(...krakenIv));
+      updateData.kraken_api_key_encrypted = await encryptCredentialPacked(krakenApiKey);
+      updateData.kraken_api_secret_encrypted = await encryptCredentialPacked(krakenApiSecret);
+      updateData.kraken_iv = 'v2';
     }
 
     // Alpaca
     if (alpacaApiKey && alpacaSecretKey) {
-      const alpacaIv = crypto.getRandomValues(new Uint8Array(12));
-      updateData.alpaca_api_key_encrypted = await encryptCredential(alpacaApiKey, cryptoKey, alpacaIv);
-      updateData.alpaca_secret_key_encrypted = await encryptCredential(alpacaSecretKey, cryptoKey, alpacaIv);
-      updateData.alpaca_iv = btoa(String.fromCharCode(...alpacaIv));
+      updateData.alpaca_api_key_encrypted = await encryptCredentialPacked(alpacaApiKey);
+      updateData.alpaca_secret_key_encrypted = await encryptCredentialPacked(alpacaSecretKey);
+      updateData.alpaca_iv = 'v2';
     }
 
     // Capital.com
     if (capitalApiKey && capitalPassword) {
-      const capitalIv = crypto.getRandomValues(new Uint8Array(12));
-      updateData.capital_api_key_encrypted = await encryptCredential(capitalApiKey, cryptoKey, capitalIv);
-      updateData.capital_password_encrypted = await encryptCredential(capitalPassword, cryptoKey, capitalIv);
+      updateData.capital_api_key_encrypted = await encryptCredentialPacked(capitalApiKey);
+      updateData.capital_password_encrypted = await encryptCredentialPacked(capitalPassword);
       if (capitalIdentifier) {
-        updateData.capital_identifier_encrypted = await encryptCredential(capitalIdentifier, cryptoKey, capitalIv);
+        updateData.capital_identifier_encrypted = await encryptCredentialPacked(capitalIdentifier);
       }
-      updateData.capital_iv = btoa(String.fromCharCode(...capitalIv));
+      updateData.capital_iv = 'v2';
     }
 
     // Check if session exists
@@ -138,9 +112,7 @@ Deno.serve(async (req) => {
         .insert({
           user_id: user.id,
           ...updateData,
-          payment_completed: true,
-          is_trading_active: false,
-          gas_tank_balance: 100
+          is_trading_active: false
         });
 
       if (insertError) {

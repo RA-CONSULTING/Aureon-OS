@@ -493,6 +493,7 @@ class GoalCapabilityMap:
                 "count": self.tool_registry.get("count"),
                 "builtin_tools": self.tool_registry.get("builtin_tools", [])[:10],
                 "vm_tools": self.tool_registry.get("vm_tools", [])[:10],
+                "azyra_operator_tools": self.tool_registry.get("azyra_operator_tools", [])[:10],
                 "office_logistics_tools": self.tool_registry.get("office_logistics_tools", [])[:10],
                 "external_skill_routes": self.tool_registry.get("external_skill_routes", []),
             },

@@ -1,0 +1,416 @@
+{
+  "schema": "aureon.browser-acceptance-contract.v1",
+  "contractId": "AUREON-WEB-V29-OPTIMISATION-ACCEPTANCE",
+  "mode": "release-blocking",
+  "origin": "https://aureonzorzatechnologies.pl",
+  "authority": {
+    "scope": "read-only browser acceptance criteria",
+    "candidateAuthority": "none",
+    "canonicalWebsiteMutation": "none",
+    "packageAuthority": "none",
+    "releaseAuthority": "none",
+    "releaseEligible": false,
+    "deploymentAuthority": "none",
+    "networkAccess": "none",
+    "credentialAccess": "none"
+  },
+  "sourceBinding": {
+    "retainedManifestSha256": "8B1364A5489B354358EB3344338D55BCB01EFFDE682F75AFFDF23E9C9EC2B487",
+    "retainedFileCount": 89,
+    "retainedTotalBytes": 13152403,
+    "htmlDocumentCount": 20,
+    "indexableDocumentCount": 17,
+    "noindexDocumentCount": 3
+  },
+  "routes": [
+    {
+      "route": "/404.html",
+      "documentPath": "404.html",
+      "indexing": "noindex"
+    },
+    {
+      "route": "/about/",
+      "documentPath": "about/index.html",
+      "indexing": "indexable"
+    },
+    {
+      "route": "/accessibility.html",
+      "documentPath": "accessibility.html",
+      "indexing": "indexable"
+    },
+    {
+      "route": "/community/",
+      "documentPath": "community/index.html",
+      "indexing": "indexable"
+    },
+    {
+      "route": "/contact/",
+      "documentPath": "contact/index.html",
+      "indexing": "indexable"
+    },
+    {
+      "route": "/diligence/",
+      "documentPath": "diligence/index.html",
+      "indexing": "indexable"
+    },
+    {
+      "route": "/downloads/",
+      "documentPath": "downloads/index.html",
+      "indexing": "noindex"
+    },
+    {
+      "route": "/downloads/validation-metrics-ledger/",
+      "documentPath": "downloads/validation-metrics-ledger/index.html",
+      "indexing": "noindex"
+    },
+    {
+      "route": "/funding/",
+      "documentPath": "funding/index.html",
+      "indexing": "indexable"
+    },
+    {
+      "route": "/funding/investor-deck/",
+      "documentPath": "funding/investor-deck/index.html",
+      "indexing": "indexable"
+    },
+    {
+      "route": "/",
+      "documentPath": "index.html",
+      "indexing": "indexable"
+    },
+    {
+      "route": "/live/",
+      "documentPath": "live/index.html",
+      "indexing": "indexable"
+    },
+    {
+      "route": "/privacy.html",
+      "documentPath": "privacy.html",
+      "indexing": "indexable"
+    },
+    {
+      "route": "/projects/aureon-trading-system/",
+      "documentPath": "projects/aureon-trading-system/index.html",
+      "indexing": "indexable"
+    },
+    {
+      "route": "/projects/",
+      "documentPath": "projects/index.html",
+      "indexing": "indexable"
+    },
+    {
+      "route": "/publications/",
+      "documentPath": "publications/index.html",
+      "indexing": "indexable"
+    },
+    {
+      "route": "/research/",
+      "documentPath": "research/index.html",
+      "indexing": "indexable"
+    },
+    {
+      "route": "/research/journal/",
+      "documentPath": "research/journal/index.html",
+      "indexing": "indexable"
+    },
+    {
+      "route": "/updates/",
+      "documentPath": "updates/index.html",
+      "indexing": "indexable"
+    },
+    {
+      "route": "/vision/",
+      "documentPath": "vision/index.html",
+      "indexing": "indexable"
+    }
+  ],
+  "browserMatrix": {
+    "engines": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "viewports": [
+      {
+        "width": 320,
+        "height": 800
+      },
+      {
+        "width": 360,
+        "height": 800
+      },
+      {
+        "width": 390,
+        "height": 844
+      },
+      {
+        "width": 768,
+        "height": 1024
+      },
+      {
+        "width": 1280,
+        "height": 800
+      },
+      {
+        "width": 1440,
+        "height": 1000
+      },
+      {
+        "width": 1920,
+        "height": 1080
+      }
+    ],
+    "defaultProfile": {
+      "routes": "all",
+      "engines": "all",
+      "viewports": "all"
+    },
+    "noJavaScriptProfile": {
+      "routes": "all",
+      "engine": "chromium",
+      "viewports": [
+        {
+          "width": 390,
+          "height": 844
+        },
+        {
+          "width": 1440,
+          "height": 1000
+        }
+      ],
+      "javascriptEnabled": false
+    },
+    "reducedMotionProfile": {
+      "routes": "all",
+      "engine": "chromium",
+      "viewports": [
+        {
+          "width": 390,
+          "height": 844
+        },
+        {
+          "width": 1440,
+          "height": 1000
+        }
+      ],
+      "prefersReducedMotion": "reduce"
+    },
+    "zoomProfile": {
+      "routes": "all",
+      "engine": "chromium",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "percent": [
+        100,
+        200,
+        400
+      ],
+      "horizontalOverflowPixels": 0,
+      "contentLossAllowed": false
+    }
+  },
+  "releaseResultMaxima": {
+    "failures": 0,
+    "errors": 0,
+    "warnings": 0,
+    "firstPartyRequestFailures": 0
+  },
+  "evidenceRequirements": {
+    "manualVisualReviewRequired": true,
+    "browserReportRequired": true,
+    "screenshotManifestRequired": true,
+    "browserReportMustBindContractPayloadSha256": true,
+    "screenshotManifestMustBindSourceManifestSha256": true,
+    "derivativeManifestRequired": true,
+    "derivativeManifestMustBindMeasurementPayloadSha256": true
+  },
+  "globalAssertions": {
+    "dom": {
+      "expectedHttpStatus": 200,
+      "unexpectedRedirects": 0,
+      "loginWalls": 0,
+      "titleElements": 1,
+      "mainLandmarks": 1,
+      "h1Elements": 1,
+      "duplicateIds": 0,
+      "imagesWithoutAltAttribute": 0,
+      "brokenFirstPartyLinks": 0,
+      "missingInternalFragmentTargets": 0,
+      "horizontalOverflowPixels": 0
+    },
+    "accessibility": {
+      "axeCriticalViolations": 0,
+      "axeSeriousViolations": 0,
+      "unnamedInteractiveControls": 0,
+      "keyboardTraps": 0,
+      "visibleFocusRequired": true,
+      "skipLinkRequired": true,
+      "skipLinkTargetRequired": true
+    }
+  },
+  "interactionAssertions": {
+    "mobileNavigation": {
+      "maximumViewportWidth": 768,
+      "toggleRequired": true,
+      "ariaExpandedMustTrackState": true,
+      "menuHiddenWhenClosed": true,
+      "menuVisibleWhenOpen": true,
+      "escapeClosesMenu": true,
+      "keyboardOperable": true
+    },
+    "fragmentNavigation": {
+      "scope": "all-first-party-fragment-links",
+      "minimumUniqueDestinationCount": 22,
+      "missingTargetMaximum": 0,
+      "requiredDestinations": [
+        "/projects/#core",
+        "/projects/#blades"
+      ]
+    },
+    "skipLinkStacking": {
+      "focusedSkipLinkMustBeVisible": true,
+      "minimumZIndexDeltaAboveStickyHeader": 1
+    },
+    "interactiveStates": {
+      "scope": "all-interactive-controls",
+      "requiredStates": [
+        "default",
+        "keyboard-focus",
+        "activated",
+        "disabled-when-applicable"
+      ],
+      "consoleErrors": 0,
+      "uncaughtExceptions": 0
+    },
+    "dataFailureStates": {
+      "scope": "all-data-dependent-surfaces",
+      "requiredStates": [
+        "loading",
+        "success",
+        "empty",
+        "error"
+      ],
+      "fallbackVisibleOnError": true,
+      "primaryNavigationUsableOnError": true,
+      "uncaughtExceptions": 0
+    }
+  },
+  "derivativeIntegrityAssertions": {
+    "manifestRequired": true,
+    "sourceAndProjectedSha256Required": true,
+    "sourceAndProjectedByteCountsRequired": true,
+    "sourceAndProjectedDimensionsRequired": true,
+    "decodedProjectedDimensionsRequired": true,
+    "allowedDimensionChange": "explicitly-declared-no-unapproved-crop",
+    "zeroByteDerivativesMaximum": 0
+  },
+  "visualRegression": {
+    "desktop": {
+      "minimumViewportWidth": 769,
+      "maximumPixelDifferenceRatio": 0.005,
+      "minimumSsim": 0.99
+    },
+    "mobileAndTablet": {
+      "maximumViewportWidth": 768,
+      "maximumPixelDifferenceRatio": 0.01,
+      "minimumSsim": 0.985
+    },
+    "baselineMismatchIsReleaseBlocking": true,
+    "manualReviewDoesNotWaiveThresholds": true
+  },
+  "progressiveEnhancementAssertions": {
+    "noJavaScript": {
+      "everyRouteRequired": true,
+      "primaryContentVisible": true,
+      "primaryNavigationUsable": true,
+      "interactiveContentHasStaticEquivalent": true,
+      "horizontalOverflowPixels": 0
+    },
+    "reducedMotion": {
+      "everyRouteRequired": true,
+      "materialContentEquivalent": true,
+      "autoplayingMotionAllowed": false,
+      "interactionUsable": true,
+      "horizontalOverflowPixels": 0
+    }
+  },
+  "socialCrawlerAssertions": {
+    "scope": "all-17-indexable-routes",
+    "crawlerUserAgents": [
+      "facebookexternalhit",
+      "Twitterbot",
+      "LinkedInBot"
+    ],
+    "requiredMetadata": [
+      "canonical",
+      "og:title",
+      "og:description",
+      "og:url",
+      "og:image",
+      "twitter:card",
+      "twitter:title",
+      "twitter:description",
+      "twitter:image"
+    ],
+    "absoluteHttpsUrlsRequired": true,
+    "imageFetchStatus": 200,
+    "imageContentTypePrefix": "image/",
+    "crawlerRequestFailures": 0
+  },
+  "researchAndArtworkBaselines": {
+    "researchNoteMinimumCount": 34,
+    "artworkEntryMinimumCount": 6,
+    "artworkFileMinimumCount": 12,
+    "providerRecordFloors": {
+      "orcid": 74,
+      "zenodo": 73
+    },
+    "providerSnapshotMaxAgeHours": 24,
+    "providerSnapshotPayloadSha256Required": true,
+    "publicProviderReadbackRequired": true,
+    "websiteSelectedDoiSetMustEqualOrcid": true,
+    "selectedDoiCountMinimum": 12,
+    "regressionAllowed": false
+  },
+  "footprintLimitsBytes": {
+    "maximumTotal": 4500000,
+    "maximumImages": 2200000,
+    "maximumCss": 350000,
+    "maximumSingleAsset": 500000
+  },
+  "perRoutePerformanceLimits": {
+    "maximumTtfbMs": 800,
+    "maximumDomContentLoadedMs": 2500,
+    "maximumLoadMs": 3500,
+    "maximumLcpMs": 2500,
+    "maximumCls": 0.1,
+    "maximumRequestCount": 80,
+    "maximumTransferBytes": 3000000,
+    "maximumTotalLongTaskDurationMs": 300
+  },
+  "knownReleaseBlockers": [
+    {
+      "id": "projects-core-fragment-missing-live",
+      "observed": "missing /projects/#core target",
+      "required": "target exists exactly once"
+    },
+    {
+      "id": "projects-blades-fragment-missing-live",
+      "observed": "missing /projects/#blades target",
+      "required": "target exists exactly once"
+    },
+    {
+      "id": "skip-link-obscured-by-header",
+      "observed": "skip-link z-index 100 equals sticky-header z-index 100",
+      "required": "focused skip-link z-index delta above sticky header is at least 1"
+    },
+    {
+      "id": "projects-current-source-hash-stale-live",
+      "observed": "908c4c4",
+      "required": "7440c66fa812486cbbbc3ef72e5f91ae04a59039"
+    }
+  ],
+  "payloadSha256": "25C85236E40E954B9FB75B561D7EE645E3B019027D9872E71935F5CE4276E5EC"
+}

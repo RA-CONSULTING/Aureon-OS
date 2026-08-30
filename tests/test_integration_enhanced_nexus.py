@@ -55,7 +55,6 @@ def test_enhanced_nexus():
     pos_size = ce.calculate_position_size(confidence=0.15)
     print(f"   ✅ Compounding: Position size (15% conf) = ${pos_size:,.2f}")
     
-    return True
 
 
 def test_mycelium_integration():
@@ -92,7 +91,6 @@ def test_mycelium_integration():
     print(f"      Confidence: {prediction.get('confidence', 0):.2%}")
     print(f"      Is Profitable: {prediction.get('is_profitable', False)}")
     
-    return True
 
 
 def test_ecosystem_status():
@@ -118,7 +116,7 @@ def test_ecosystem_status():
         print(f"      - get_enhanced_nexus_signal(symbol)")
         print(f"      - get_enhanced_nexus_status()")
     
-    return ENHANCED_NEXUS_AVAILABLE
+    assert ENHANCED_NEXUS_AVAILABLE, "Enhanced Probability Nexus must be importable"
 
 
 def run_all_tests():
@@ -135,21 +133,24 @@ def run_all_tests():
     
     # Test 1: Enhanced Nexus
     try:
-        results.append(('Enhanced Nexus', test_enhanced_nexus()))
+        test_enhanced_nexus()
+        results.append(('Enhanced Nexus', True))
     except Exception as e:
         print(f"   ❌ Enhanced Nexus test failed: {e}")
         results.append(('Enhanced Nexus', False))
     
     # Test 2: Mycelium Integration
     try:
-        results.append(('Mycelium Integration', test_mycelium_integration()))
+        test_mycelium_integration()
+        results.append(('Mycelium Integration', True))
     except Exception as e:
         print(f"   ❌ Mycelium test failed: {e}")
         results.append(('Mycelium Integration', False))
     
     # Test 3: Ecosystem Status
     try:
-        results.append(('Ecosystem Flag', test_ecosystem_status()))
+        test_ecosystem_status()
+        results.append(('Ecosystem Flag', True))
     except Exception as e:
         print(f"   ❌ Ecosystem test failed: {e}")
         results.append(('Ecosystem Flag', False))

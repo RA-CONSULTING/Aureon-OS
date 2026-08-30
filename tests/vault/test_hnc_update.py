@@ -4,8 +4,8 @@ Tests for the HNC update:
   - BETA moved to spec-compliant stability regime (default 1.0)
   - AUREON_HNC_BETA env override works
   - LambdaState carries the 5 Auris Conjecture criteria + blended score
-  - Auto-persistence of state/lambda_history.json every N steps
-  - Backward-compatible load of persisted history
+  - Receipted v3 persistence every N steps
+  - Strict reload of canonical persisted history
   - Vault exposure of consciousness_level + symbolic_life_score
 
 These tests redirect the engine's persistence path to a throwaway
@@ -51,6 +51,7 @@ def _reimport_engine_module():
     Python — ``importlib.reload`` is the documented path.
     """
     import importlib
+
     from aureon.core import aureon_lambda_engine as mod
     return importlib.reload(mod)
 
@@ -63,12 +64,9 @@ def _fresh_engine(state_dir: str):
     os.environ["AUREON_HNC_PERSIST_EVERY"] = "3"
     mod = _reimport_engine_module()
     from pathlib import Path
-    engine = mod.LambdaEngine()
-    engine._state_path = Path(state_dir) / "lambda_history.json"
-    # Reset any auto-loaded history from the real path.
-    engine._history.clear()
-    engine._psi_history.clear()
-    engine._step_count = 0
+    engine = mod.LambdaEngine(
+        state_path=Path(state_dir) / "lambda_history.json"
+    )
     return mod, engine
 
 
@@ -152,11 +150,14 @@ def test_auto_persistence():
     mod, engine = _fresh_engine(tmp)
     # PERSIST_EVERY was set to 3. Run 6 steps -> file should exist.
     for i in range(6):
-        engine.step(_fake_readings(mod, i=i))
+        engine.step(
+            _fake_readings(mod, i=i),
+            source_receipt_ids=[f"test:provider:{i}"],
+        )
     path = engine._state_path
     check(path.exists(), f"state file written ({path})")
     data = json.loads(path.read_text(encoding="utf-8"))
-    check(data.get("version") == 2, f"persisted version == 2 (got {data.get('version')})")
+    check(data.get("version") == 3, f"persisted version == 3 (got {data.get('version')})")
     check(len(data.get("history", [])) >= 6, f"history length >= 6 (got {len(data.get('history', []))})")
     check("psi_history" in data, "psi_history saved alongside history")
     check(abs(float(data.get("beta", 0)) - mod.BETA) < 1e-9, "beta stamped in persist")
@@ -168,16 +169,10 @@ def test_history_reloads():
     mod, engine = _fresh_engine(tmp)
     for i in range(12):
         engine.step(_fake_readings(mod, i=i))
-    engine.save_history()
+    engine.save_history(["test:provider:reload"])
 
     # New engine instance pointing at the same state path.
-    engine2 = mod.LambdaEngine()
-    engine2._state_path = engine._state_path
-    # Reset in-memory state, then reload.
-    engine2._history.clear()
-    engine2._psi_history.clear()
-    engine2._step_count = 0
-    engine2._load_history()
+    engine2 = mod.LambdaEngine(state_path=engine._state_path)
 
     check(
         engine2._step_count >= 12,

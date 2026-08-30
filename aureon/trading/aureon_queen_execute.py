@@ -818,14 +818,14 @@ class QueenExecutionEngine:
             return None
         
         try:
-            # Scan a random civilization for new insights
-            import random
+            # Rotate deterministically through sources so learning is auditable.
             civilizations = [
                 "Celtic_mythology", "Aztec_mythology", "Egyptian_mythology",
                 "Pythagorean", "Chinese_philosophy", "Hindu_philosophy",
                 "Mayan_civilization", "Norse_mythology"
             ]
-            topic = random.choice(civilizations)
+            topic_index = int(time.time() // 86400) % len(civilizations)
+            topic = civilizations[topic_index]
             
             # Trigger async scan if available
             if hasattr(self.wisdom_scanner, 'scan_topic'):
@@ -1418,14 +1418,8 @@ class QueenExecutionEngine:
         # ═══════════════════════════════════════════════════════════════════════════════
         # MINER BRAIN - Deep Speculation & Critical Thinking
         # ═══════════════════════════════════════════════════════════════════════════════
-        if self.miner_brain:
-            try:
-                # Trigger periodic wisdom learning (every ~10th cycle)
-                import random
-                if random.random() < 0.1:
-                    self.trigger_wisdom_learning()
-            except Exception:
-                pass
+        # External learning scans are operator-triggered. A trading cycle does
+        # not launch an unreceipted web request on a random schedule.
         
         # ═══════════════════════════════════════════════════════════════════════════════
         # PHASE 1: SCAN - Harmonic Momentum Detection

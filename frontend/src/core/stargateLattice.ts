@@ -242,39 +242,53 @@ export class StargateLattice {
 
   // Calculate grid energy based on current planetary alignments
   // (simplified - could integrate actual astronomical data)
-  calculateGridEnergy(): number {
-    const now = new Date();
-    const dayOfYear = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / 86400000);
-    
-    // Sinusoidal variation throughout the year (peaks at solstices/equinoxes)
-    const baseEnergy = 0.5 + 0.3 * Math.sin((dayOfYear / 365.25) * 2 * Math.PI * 4);
-    
-    // Add lunar influence (simplified 28-day cycle)
-    const lunarPhase = (now.getDate() / 28) * 2 * Math.PI;
-    const lunarBoost = 0.1 * Math.sin(lunarPhase);
-    
-    return Math.max(0, Math.min(1, baseEnergy + lunarBoost));
+  calculateGridEnergy(): number | null {
+    return null;
   }
 
   /**
    * Activate all stargates with continuous pinging
    */
-  activateAllNodes(): StargateActivation[] {
-    const timestamp = Date.now();
+  activateAllNodes(observations: StargateNodeObservation[] = []): StargateActivation[] {
+    const byNode = new Map(observations.map(observation => [observation.nodeName, observation]));
     return Object.entries(this.nodes).map(([name, node]) => {
-      const pingLatency = Math.random() * 50 + 10; // 10-60ms
-      const coherence = 0.85 + Math.random() * 0.15; // 0.85-1.0
-      const energyFlow = 0.7 + Math.random() * 0.3; // 0.7-1.0
-      
+      const observation = byNode.get(name);
+      if (!observation) {
+        return {
+          nodeName: name,
+          status: 'OFFLINE' as const,
+          pingLatency: null,
+          coherence: null,
+          energyFlow: null,
+          lastPing: null,
+          frequencyLock: null,
+          connectionStrength: null,
+          truthStatus: 'no_data' as const,
+          sourceId: null,
+          sourceEventId: null,
+          generated: false as const,
+        };
+      }
+      const observedAt = observation.sourceTimestamp < 10_000_000_000
+        ? observation.sourceTimestamp * 1000
+        : observation.sourceTimestamp;
+      const fresh = observation.generated === false && Boolean(observation.sourceId) &&
+        Boolean(observation.sourceEventId) && Date.now() - observedAt <= 300_000 &&
+        observedAt - Date.now() <= 30_000;
+      if (!fresh) throw new Error(`STARGATE_NODE_OBSERVATION_INVALID:${name}`);
       return {
         nodeName: name,
         status: 'ACTIVE' as const,
-        pingLatency,
-        coherence,
-        energyFlow,
-        lastPing: timestamp,
-        frequencyLock: node.frequencies[0],
-        connectionStrength: coherence * energyFlow,
+        pingLatency: observation.pingLatency,
+        coherence: observation.coherence,
+        energyFlow: observation.energyFlow,
+        lastPing: observedAt,
+        frequencyLock: observation.frequencyLock,
+        connectionStrength: observation.coherence * observation.energyFlow,
+        truthStatus: 'live' as const,
+        sourceId: observation.sourceId,
+        sourceEventId: observation.sourceEventId,
+        generated: false as const,
       };
     });
   }
@@ -283,17 +297,17 @@ export class StargateLattice {
    * Calculate network-wide metrics
    */
   calculateNetworkMetrics(activations: StargateActivation[]): NetworkMetrics {
-    const avgCoherence = activations.reduce((sum, a) => sum + a.coherence, 0) / activations.length;
-    const avgEnergyFlow = activations.reduce((sum, a) => sum + a.energyFlow, 0) / activations.length;
-    const avgLatency = activations.reduce((sum, a) => sum + a.pingLatency, 0) / activations.length;
-    const networkStrength = activations.reduce((sum, a) => sum + a.connectionStrength, 0) / activations.length;
+    const active = activations.filter((activation) => activation.status === 'ACTIVE');
+    const values = <K extends 'coherence' | 'energyFlow' | 'pingLatency' | 'connectionStrength'>(key: K) =>
+      active.map(item => item[key]).filter((value): value is number => typeof value === 'number' && Number.isFinite(value));
+    const average = (items: number[]) => items.length ? items.reduce((sum, value) => sum + value, 0) / items.length : null;
     
     return {
-      avgCoherence,
-      avgEnergyFlow,
-      avgLatency,
-      networkStrength,
-      activeNodes: activations.filter(a => a.status === 'ACTIVE').length,
+      avgCoherence: average(values('coherence')),
+      avgEnergyFlow: average(values('energyFlow')),
+      avgLatency: average(values('pingLatency')),
+      networkStrength: average(values('connectionStrength')),
+      activeNodes: active.length,
       totalNodes: activations.length,
     };
   }
@@ -302,19 +316,35 @@ export class StargateLattice {
 export interface StargateActivation {
   nodeName: string;
   status: 'ACTIVE' | 'SYNCING' | 'OFFLINE';
+  pingLatency: number | null;
+  coherence: number | null;
+  energyFlow: number | null;
+  lastPing: number | null;
+  frequencyLock: number | null;
+  connectionStrength: number | null;
+  truthStatus: 'live' | 'no_data';
+  sourceId: string | null;
+  sourceEventId: string | null;
+  generated: false;
+}
+
+export interface StargateNodeObservation {
+  nodeName: string;
   pingLatency: number;
   coherence: number;
   energyFlow: number;
-  lastPing: number;
   frequencyLock: number;
-  connectionStrength: number;
+  sourceId: string;
+  sourceEventId: string;
+  sourceTimestamp: number;
+  generated: false;
 }
 
 export interface NetworkMetrics {
-  avgCoherence: number;
-  avgEnergyFlow: number;
-  avgLatency: number;
-  networkStrength: number;
+  avgCoherence: number | null;
+  avgEnergyFlow: number | null;
+  avgLatency: number | null;
+  networkStrength: number | null;
   activeNodes: number;
   totalNodes: number;
 }

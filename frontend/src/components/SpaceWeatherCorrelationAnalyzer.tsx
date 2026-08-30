@@ -139,9 +139,9 @@ export const SpaceWeatherCorrelationAnalyzer = () => {
           </div>
           <div className="text-2xl font-bold flex items-center gap-2">
             {data.statistics.kpCoherenceCorrelation > 0 ? (
-              <TrendingUp className="h-5 w-5 text-green-500" />
+              <TrendingUp className="h-5 w-5 text-success" />
             ) : (
-              <TrendingDown className="h-5 w-5 text-red-500" />
+              <TrendingDown className="h-5 w-5 text-destructive" />
             )}
             {(data.statistics.kpCoherenceCorrelation * 100).toFixed(1)}%
           </div>
@@ -159,9 +159,9 @@ export const SpaceWeatherCorrelationAnalyzer = () => {
           </div>
           <div className="text-2xl font-bold flex items-center gap-2">
             {data.statistics.solarWindCoherenceCorrelation > 0 ? (
-              <TrendingUp className="h-5 w-5 text-green-500" />
+              <TrendingUp className="h-5 w-5 text-success" />
             ) : (
-              <TrendingDown className="h-5 w-5 text-red-500" />
+              <TrendingDown className="h-5 w-5 text-destructive" />
             )}
             {(data.statistics.solarWindCoherenceCorrelation * 100).toFixed(1)}%
           </div>

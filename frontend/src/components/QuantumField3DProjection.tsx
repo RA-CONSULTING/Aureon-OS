@@ -171,17 +171,17 @@ export function QuantumField3DProjection() {
         {/* Real-time Stats */}
         <div className="grid grid-cols-3 gap-4 text-sm">
           <div className="text-center">
-            <div className="font-semibold text-cyan-400">Entangled</div>
-            <div className={entanglement ? "text-green-400" : "text-red-400"}>
+            <div className="font-semibold text-primary">Entangled</div>
+            <div className={entanglement ? "text-success" : "text-destructive"}>
               {entanglement ? "ACTIVE" : "INACTIVE"}
             </div>
           </div>
           <div className="text-center">
-            <div className="font-semibold text-purple-400">Coherence</div>
+            <div className="font-semibold text-primary">Coherence</div>
             <div className="text-white">{coherence.toFixed(3)}</div>
           </div>
           <div className="text-center">
-            <div className="font-semibold text-yellow-400">Superposition</div>
+            <div className="font-semibold text-warning">Superposition</div>
             <div className="text-white">{superposition.toFixed(3)}</div>
           </div>
         </div>
@@ -189,7 +189,7 @@ export function QuantumField3DProjection() {
         {/* Field Stability */}
         <div className="text-center">
           <div className="font-semibold text-lg">Field Stability</div>
-          <div className="text-2xl text-green-400">{fieldStability.toFixed(1)}%</div>
+          <div className="text-2xl text-success">{fieldStability.toFixed(1)}%</div>
         </div>
 
         {/* Matrix Dimensions */}
@@ -198,7 +198,7 @@ export function QuantumField3DProjection() {
           <div className="grid grid-cols-2 gap-2 text-xs">
             {dimensions.map((dim, index) => (
               <div key={index} className="bg-gray-800 p-2 rounded">
-                <div className="font-semibold text-blue-400">{dim.name}</div>
+                <div className="font-semibold text-primary">{dim.name}</div>
                 <div className="text-white">{dim.value.toFixed(3)}</div>
                 <div className="text-gray-400">Stability: {dim.stability}%</div>
               </div>
@@ -212,7 +212,7 @@ export function QuantumField3DProjection() {
           <div className="grid grid-cols-2 gap-2 text-xs">
             {particles.map((particle, index) => (
               <div key={index} className="bg-gray-800 p-2 rounded">
-                <div className="font-semibold text-cyan-400">
+                <div className="font-semibold text-primary">
                   {particle.id} ({particle.spin})
                 </div>
                 <div className="text-white">{particle.energy.toFixed(2)} eV</div>

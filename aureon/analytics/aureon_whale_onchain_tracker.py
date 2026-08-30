@@ -10,48 +10,58 @@ Publishes `whale.onchain.detected` for transfers >= threshold.
 Note: Uses exchange APIs instead of blockchain providers (no extra API keys needed).
 """
 from __future__ import annotations
-from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
 
 import logging
+import math
 import time
 import threading
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, Optional
 from collections import deque, defaultdict
 
 from aureon.core.aureon_thought_bus import get_thought_bus, Thought
 
 logger = logging.getLogger(__name__)
 
-# Import exchange clients
-try:
-    from aureon.exchanges.kraken_client import KrakenClient, get_kraken_client
-    KRAKEN_AVAILABLE = True
-except ImportError:
-    KRAKEN_AVAILABLE = False
+MAX_TICKER_AGE_SECONDS = 300.0
+FUTURE_SKEW_SECONDS = 5.0
 
-try:
-    from aureon.exchanges.binance_client import BinanceClient, get_binance_client
-    BINANCE_AVAILABLE = True
-except ImportError:
-    BINANCE_AVAILABLE = False
 
-try:
-    from aureon.exchanges.alpaca_client import AlpacaClient
-    ALPACA_AVAILABLE = True
-except ImportError:
-    ALPACA_AVAILABLE = False
+def _timestamp_seconds(value: Any) -> Optional[float]:
+    try:
+        parsed = float(value)
+    except (TypeError, ValueError):
+        return None
+    return parsed if math.isfinite(parsed) and parsed > 0 else None
+
+
+def _no_data(reason: str) -> Dict[str, Any]:
+    """Return an explicit, numeric-free refusal that cannot become a signal."""
+    return {
+        "status": "no_data",
+        "truth_status": "no_data",
+        "generated_values": False,
+        "eligible_for_action": False,
+        "eligible_for_accounting": False,
+        "eligible_for_learning": False,
+        "reason": reason,
+    }
 
 
 class WhaleExchangeTracker:
     """Track whale activity using exchange APIs directly"""
     
     def __init__(
-        self, 
+        self,
         threshold_usd: float = 100_000.0,
         poll_interval_seconds: float = 60.0,
-        track_balance_changes: bool = True
+        track_balance_changes: bool = True,
+        *,
+        exchanges: Optional[Dict[str, Any]] = None,
+        thought_bus: Optional[Any] = None,
     ):
-        self.thought_bus = get_thought_bus()
+        # Construction is inert: callers must explicitly supply/configure all
+        # provider clients and then call start().  No provider is touched here.
+        self.thought_bus = thought_bus
         self.threshold_usd = float(threshold_usd)
         self.poll_interval = poll_interval_seconds
         self.track_balance_changes = track_balance_changes
@@ -64,46 +74,53 @@ class WhaleExchangeTracker:
         # Track large trades
         self._seen_trades: deque = deque(maxlen=1000)
         
-        # Initialize exchange clients
-        self.exchanges = {}
-        if KRAKEN_AVAILABLE:
-            try:
-                self.exchanges['kraken'] = get_kraken_client()
-                logger.info("✅ Kraken client initialized for whale tracking")
-            except Exception as e:
-                logger.debug(f"Kraken init failed: {e}")
-        
-        if BINANCE_AVAILABLE:
-            try:
-                self.exchanges['binance'] = BinanceClient()
-                logger.info("✅ Binance client initialized for whale tracking")
-            except Exception as e:
-                logger.debug(f"Binance init failed: {e}")
-        
-        if ALPACA_AVAILABLE:
-            try:
-                self.exchanges['alpaca'] = AlpacaClient()
-                logger.info("✅ Alpaca client initialized for whale tracking")
-            except Exception as e:
-                logger.debug(f"Alpaca init failed: {e}")
-        
-        if not self.exchanges:
-            logger.warning("⚠️  No exchange clients available for whale tracking")
+        self.exchanges: Dict[str, Any] = dict(exchanges or {})
 
-    def start(self):
+    def configure(self, *, exchanges: Dict[str, Any], thought_bus: Any) -> None:
+        """Provide already-authorized clients and the publication sink explicitly."""
+        if self._running:
+            raise RuntimeError("stop tracker before reconfiguration")
+        self.exchanges = dict(exchanges)
+        self.thought_bus = thought_bus
+
+    def configure_default_exchanges(self) -> Dict[str, Any]:
+        """Explicitly construct the legacy provider clients when an operator asks."""
+        if self._running:
+            raise RuntimeError("stop tracker before reconfiguration")
+        exchanges: Dict[str, Any] = {}
+        try:
+            from aureon.exchanges.kraken_client import get_kraken_client
+            exchanges["kraken"] = get_kraken_client()
+        except Exception as exc:  # provider setup remains opt-in and best effort
+            logger.debug("Kraken configuration failed: %s", exc)
+        try:
+            from aureon.exchanges.binance_client import BinanceClient
+            exchanges["binance"] = BinanceClient()
+        except Exception as exc:
+            logger.debug("Binance configuration failed: %s", exc)
+        try:
+            from aureon.exchanges.alpaca_client import AlpacaClient
+            exchanges["alpaca"] = AlpacaClient()
+        except Exception as exc:
+            logger.debug("Alpaca configuration failed: %s", exc)
+        self.exchanges = exchanges
+        return dict(exchanges)
+
+    def start(self) -> bool:
         """Start background polling thread"""
-        if not self.exchanges:
-            logger.warning("No exchanges available; tracker disabled")
-            return
+        if not self.exchanges or self.thought_bus is None:
+            logger.warning("Tracker requires explicitly configured exchanges and ThoughtBus")
+            return False
         
         if self._running:
             logger.debug("WhaleExchangeTracker already running")
-            return
+            return True
         
         self._running = True
         self._thread = threading.Thread(target=self._polling_loop, daemon=True)
         self._thread.start()
         logger.info(f'WhaleExchangeTracker started; monitoring {len(self.exchanges)} exchanges, threshold=${self.threshold_usd:,.0f}')
+        return True
     
     def stop(self):
         """Stop polling thread"""
@@ -153,17 +170,18 @@ class WhaleExchangeTracker:
                 
                 if abs(delta) > 0:  # Any change
                     # Estimate USD value (simplified - would need price oracle)
-                    usd_value = self._estimate_usd_value(asset, abs(delta), client)
-                    
-                    if usd_value >= self.threshold_usd:
+                    valuation = self._estimate_usd_value(asset, abs(delta), client)
+                    if valuation["status"] != "real_observed":
+                        continue
+                    if valuation["amount_usd"] >= self.threshold_usd:
                         direction = 'deposit' if delta > 0 else 'withdrawal'
                         self._emit_whale_event(
                             exchange=exchange_name,
                             asset=asset,
                             amount=abs(delta),
-                            amount_usd=usd_value,
                             direction=direction,
-                            event_type='balance_change'
+                            event_type='balance_change',
+                            receipt=valuation["receipt"],
                         )
             
             # Update previous balances
@@ -187,20 +205,17 @@ class WhaleExchangeTracker:
                                 continue
                             self._seen_trades.append(trade_id)
                             
-                            # Check trade size
+                            # A raw trade is not publishable without its own
+                            # complete provider receipt.
                             volume = float(trade.get('volume', 0))
-                            price = float(trade.get('price', 0))
-                            usd_value = volume * price
-                            
-                            if usd_value >= self.threshold_usd:
-                                self._emit_whale_event(
+                            result = self._emit_whale_event(
                                     exchange=exchange_name,
                                     asset=pair,
                                     amount=volume,
-                                    amount_usd=usd_value,
                                     direction='trade',
                                     event_type='large_trade',
-                                    extra={'price': price, 'side': trade.get('type', 'unknown')}
+                                    receipt=trade,
+                                    extra={'side': trade.get('type', 'unknown')},
                                 )
                     except Exception as e:
                         logger.debug(f"Trade check error for {pair}: {e}")
@@ -218,18 +233,13 @@ class WhaleExchangeTracker:
                             self._seen_trades.append(trade_id)
                             
                             qty = float(trade.get('qty', 0))
-                            price = float(trade.get('price', 0))
-                            usd_value = qty * price
-                            
-                            if usd_value >= self.threshold_usd:
-                                self._emit_whale_event(
+                            result = self._emit_whale_event(
                                     exchange=exchange_name,
                                     asset=symbol,
                                     amount=qty,
-                                    amount_usd=usd_value,
                                     direction='trade',
                                     event_type='large_trade',
-                                    extra={'price': price}
+                                    receipt=trade,
                                 )
                     except Exception as e:
                         logger.debug(f"Trade check error for {symbol}: {e}")
@@ -237,42 +247,76 @@ class WhaleExchangeTracker:
         except Exception as e:
             logger.debug(f"Large trade check error on {exchange_name}: {e}")
     
-    def _estimate_usd_value(self, asset: str, amount: float, client) -> float:
-        """Estimate USD value of an asset amount"""
-        # Simplified USD estimation
-        if asset in ['USD', 'USDT', 'USDC', 'ZUSD']:
-            return amount
-        
-        # Try to get ticker price
+    def _estimate_usd_value(self, asset: str, amount: float, client) -> Dict[str, Any]:
+        """Derive USD value only from a fresh, complete provider ticker receipt."""
+        if not math.isfinite(amount) or amount <= 0:
+            return _no_data("invalid_amount")
         try:
-            if hasattr(client, 'get_ticker'):
-                # Map asset to trading pair
-                pair_map = {
-                    'BTC': 'XXBTZUSD',
-                    'ETH': 'XETHZUSD',
-                    'XBT': 'XXBTZUSD',
-                    'XETH': 'XETHZUSD'
-                }
-                pair = pair_map.get(asset.upper())
-                if pair:
-                    ticker = client.get_ticker(pair)
-                    price = float(ticker.get('c', [0])[0] if isinstance(ticker.get('c'), list) else ticker.get('last', 0))
-                    return amount * price
-        except Exception:
-            pass
-        
-        # Fallback estimates
-        usd_estimates = {
-            'BTC': 45000, 'XBT': 45000, 'XBTC': 45000,
-            'ETH': 2500, 'XETH': 2500,
-            'BNB': 300,
-            'SOL': 100,
+            pair = {
+                "BTC": "XXBTZUSD", "XBT": "XXBTZUSD", "XBTC": "XXBTZUSD",
+                "ETH": "XETHZUSD", "XETH": "XETHZUSD",
+            }.get(asset.upper())
+            if not pair or not hasattr(client, "get_ticker"):
+                return _no_data("ticker_unavailable")
+            return self._valuation_from_receipt(amount, client.get_ticker(pair))
+        except Exception as exc:
+            logger.debug("Ticker receipt unavailable for %s: %s", asset, exc)
+            return _no_data("ticker_unavailable")
+
+    def _valuation_from_receipt(self, amount: float, receipt: Any) -> Dict[str, Any]:
+        if not isinstance(receipt, dict):
+            return _no_data("malformed_ticker_receipt")
+        source_id = receipt.get("source_id")
+        receipt_id = receipt.get("receipt_id")
+        source_timestamp = _timestamp_seconds(receipt.get("source_timestamp"))
+        received_at = _timestamp_seconds(receipt.get("received_at"))
+        now = time.time()
+        price_value = receipt.get("price", receipt.get("last"))
+        if price_value is None and isinstance(receipt.get("c"), list) and receipt["c"]:
+            price_value = receipt["c"][0]
+        try:
+            price = float(price_value)
+        except (TypeError, ValueError):
+            return _no_data("malformed_ticker_price")
+        if (
+            not isinstance(source_id, str) or not source_id.strip()
+            or not isinstance(receipt_id, str) or not receipt_id.strip()
+            or receipt.get("truth_status") != "real_observed"
+            or receipt.get("generated_values") is not False
+            or source_timestamp is None or received_at is None
+            or not math.isfinite(price) or price <= 0
+            or source_timestamp > now + FUTURE_SKEW_SECONDS
+            or received_at < source_timestamp - FUTURE_SKEW_SECONDS
+            or received_at > now + FUTURE_SKEW_SECONDS
+            or now - source_timestamp > MAX_TICKER_AGE_SECONDS
+        ):
+            return _no_data("invalid_or_stale_ticker_receipt")
+        amount_usd = amount * price
+        if not math.isfinite(amount_usd) or amount_usd <= 0:
+            return _no_data("invalid_derived_amount")
+        return {
+            "status": "real_observed",
+            "amount_usd": amount_usd,
+            "price": price,
+            "source_id": source_id,
+            "source_timestamp": source_timestamp,
+            "received_at": received_at,
+            "receipt_id": receipt_id,
+            "truth_status": "real_observed",
+            "generated_values": False,
+            "receipt": receipt,
         }
-        return amount * usd_estimates.get(asset.upper(), 0.0)
     
-    def _emit_whale_event(self, exchange: str, asset: str, amount: float, amount_usd: float, 
-                          direction: str, event_type: str, extra: Optional[Dict] = None):
-        """Emit whale detection event"""
+    def _emit_whale_event(self, exchange: str, asset: str, amount: float,
+                          direction: str, event_type: str, receipt: Any,
+                          extra: Optional[Dict] = None) -> Dict[str, Any]:
+        """Publish only a receipt-backed derived event; otherwise publish nothing."""
+        valuation = self._valuation_from_receipt(amount, receipt)
+        if valuation["status"] != "real_observed":
+            return valuation
+        amount_usd = valuation["amount_usd"]
+        if amount_usd < self.threshold_usd or self.thought_bus is None:
+            return _no_data("below_threshold_or_unconfigured")
         payload = {
             'exchange': exchange,
             'asset': asset,
@@ -280,8 +324,16 @@ class WhaleExchangeTracker:
             'amount_usd': amount_usd,
             'direction': direction,
             'event_type': event_type,
-            'detected_at': time.time(),
-            **(extra or {})
+            **(extra or {}),
+            'source_id': valuation['source_id'],
+            'source_timestamp': valuation['source_timestamp'],
+            'received_at': valuation['received_at'],
+            'receipt_id': valuation['receipt_id'],
+            'truth_status': 'real_derived',
+            'generated_values': False,
+            'eligible_for_action': False,
+            'eligible_for_accounting': False,
+            'eligible_for_learning': False,
         }
         
         th = Thought(source='whale_exchange_tracker', topic='whale.onchain.detected', payload=payload)
@@ -290,39 +342,19 @@ class WhaleExchangeTracker:
             logger.info(f"🐋 Whale {event_type}: {exchange} {asset} ${amount_usd:,.0f} {direction}")
         except Exception as e:
             logger.debug(f'Failed to publish whale.onchain.detected: {e}')
+            return _no_data("publication_failed")
+        return {"status": "real_derived", "truth_status": "real_derived", "generated_values": False,
+                "eligible_for_action": False, "eligible_for_accounting": False,
+                "eligible_for_learning": False, "receipt_id": valuation["receipt_id"]}
     
-    def simulate_transfer(self, symbol: str, tx_hash: str, from_addr: str, to_addr: str, amount_usd: float) -> None:
-        """Simulate detection of a large transfer (for tests)"""
-        payload = {
-            'symbol': symbol,
-            'tx_hash': tx_hash,
-            'from': from_addr,
-            'to': to_addr,
-            'amount_usd': float(amount_usd),
-            'detected_at': time.time(),
-            'direction': 'simulated',
-            'exchange': 'test',
-            'event_type': 'simulated'
-        }
-        if amount_usd >= self.threshold_usd:
-            th = Thought(source='whale_exchange_tracker', topic='whale.onchain.detected', payload=payload)
-            try:
-                self.thought_bus.publish(th)
-            except Exception:
-                logger.debug('Failed to publish whale.onchain.detected')
-            logger.info('Simulated large transfer detected: %s %s', symbol, amount_usd)
+    def simulate_transfer(self, *args: Any, **kwargs: Any) -> Dict[str, Any]:
+        """Unobserved transfers are never eligible for the production event bus."""
+        return _no_data("synthetic_transfer_rejected")
 
 
-# Default instance
 _default_tracker: Optional[WhaleExchangeTracker] = None
-try:
-    _default_tracker = WhaleExchangeTracker()
-    _default_tracker.start()  # Auto-start background polling
-except Exception as e:
-    logger.debug(f"Failed to initialize default WhaleExchangeTracker: {e}")
-    _default_tracker = None
 
 
 def get_exchange_tracker() -> Optional[WhaleExchangeTracker]:
-    """Get singleton instance"""
+    """Return an explicitly configured tracker, if an owner has registered one."""
     return _default_tracker

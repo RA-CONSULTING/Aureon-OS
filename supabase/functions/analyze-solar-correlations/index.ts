@@ -6,8 +6,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const NASA_API_KEY = Deno.env.get('NASA_API_KEY') || 'DEMO_KEY';
-
 type SolarFlare = {
   flrID: string;
   beginTime: string;
@@ -37,14 +35,14 @@ function parseSolarFlareClass(classType: string): { class: string; magnitude: nu
 }
 
 async function fetchNASASolarFlares(startDate: string, endDate: string): Promise<SolarFlare[]> {
-  try {
-    const url = `https://api.nasa.gov/DONKI/FLR?startDate=${startDate}&endDate=${endDate}&api_key=${NASA_API_KEY}`;
-    const response = await fetch(url);
-    if (!response.ok) return [];
-    return await response.json();
-  } catch {
-    return [];
-  }
+  const apiKey = Deno.env.get('NASA_API_KEY')?.trim();
+  if (!apiKey) throw new Error('NASA_API_KEY_NOT_CONFIGURED');
+  const url = `https://api.nasa.gov/DONKI/FLR?startDate=${startDate}&endDate=${endDate}&api_key=${apiKey}`;
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`NASA_DONKI_HTTP_${response.status}`);
+  const payload = await response.json();
+  if (!Array.isArray(payload)) throw new Error('NASA_DONKI_INVALID_PAYLOAD');
+  return payload;
 }
 
 serve(async (req) => {
@@ -217,7 +215,11 @@ serve(async (req) => {
       avg_coherence_boost_m: avgCoherenceBoostM,
       avg_prediction_score_x: avgPredictionScoreX,
       avg_prediction_score_m: avgPredictionScoreM,
-      correlations: correlations.sort((a, b) => b.prediction_score - a.prediction_score).slice(0, 10)
+      correlations: correlations.sort((a, b) => b.prediction_score - a.prediction_score).slice(0, 10),
+      truthStatus: 'real_derived',
+      sourceId: 'NASA_DONKI_FLR_AND_AUREON_MARKET_OBSERVATIONS',
+      sourceTimestamp: now.toISOString(),
+      generatedValues: false,
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
@@ -226,9 +228,11 @@ serve(async (req) => {
     console.error('Error in analyze-solar-correlations:', error);
     return new Response(JSON.stringify({ 
       error: error instanceof Error ? error.message : 'Unknown error',
-      success: false 
+      success: false,
+      truthStatus: 'no_data',
+      generatedValues: false,
     }), {
-      status: 500,
+      status: 503,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }

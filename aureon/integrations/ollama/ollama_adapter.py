@@ -54,11 +54,15 @@ class OllamaLLMAdapter(LLMAdapter):
         bridge: Optional[OllamaBridge] = None,
         model: Optional[str] = None,
         base_url: Optional[str] = None,
+        api_key: Optional[str] = None,
         keep_alive: Optional[str] = None,
         default_options: Optional[Dict[str, Any]] = None,
     ):
         self.bridge = bridge or OllamaBridge(
-            base_url=base_url, chat_model=model, keep_alive=keep_alive
+            base_url=base_url,
+            chat_model=model,
+            keep_alive=keep_alive,
+            api_key=api_key,
         )
         if model:
             self.bridge.chat_model = model

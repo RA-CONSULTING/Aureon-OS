@@ -20,11 +20,11 @@ import asyncio
 import requests
 import statistics
 import json
-import random
 from collections import deque
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor
 import threading
+from typing import Any, Dict, Optional
 
 try:
     import websockets
@@ -136,6 +136,420 @@ sys.path.append(os.getcwd())
 # Sacred Constants
 PHI = (1 + math.sqrt(5)) / 2
 SCHUMANN = 7.83
+
+_READY_TRUTH = frozenset({"live", "observed", "real_observed", "real_derived"})
+_FINAL_FILL_STATUSES = frozenset({"filled", "closed", "executed"})
+
+
+def _finite_observation(value: Any, *, positive: bool = False,
+                        nonnegative: bool = False) -> Optional[float]:
+    """Parse a provider number without substituting zero for missing data."""
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    if not math.isfinite(number):
+        return None
+    if positive and number <= 0:
+        return None
+    if nonnegative and number < 0:
+        return None
+    return number
+
+
+def _provider_epoch(value: Any) -> Optional[float]:
+    """Parse a provider-owned clock; receipt time is never a fallback."""
+    if isinstance(value, (int, float)):
+        timestamp = float(value)
+        if timestamp > 1_000_000_000_000:
+            timestamp /= 1000.0
+        return timestamp if math.isfinite(timestamp) and timestamp > 0 else None
+    if isinstance(value, str) and value.strip():
+        try:
+            parsed = datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
+        except ValueError:
+            return None
+        if parsed.tzinfo is None:
+            return None
+        timestamp = parsed.timestamp()
+        return timestamp if math.isfinite(timestamp) and timestamp > 0 else None
+    return None
+
+
+def _fresh_provider_epoch(payload: Any, *, max_age_seconds: float = 300.0) -> Optional[float]:
+    """Return a fresh source clock from a provider payload, or explicit no-data."""
+    if not isinstance(payload, dict):
+        return None
+    truth_status = payload.get("truth_status")
+    if truth_status is not None and str(truth_status).lower() not in _READY_TRUTH:
+        return None
+    if payload.get("action_eligible") is False:
+        return None
+    timestamp = None
+    for key in (
+        "provider_timestamp",
+        "source_timestamp",
+        "filled_at",
+        "transaction_time",
+        "transactTime",
+        "closedTime",
+        "closetm",
+        "closeTime",
+        "t",
+    ):
+        if key in payload:
+            timestamp = _provider_epoch(payload.get(key))
+            break
+    if timestamp is None:
+        return None
+    age = time.time() - timestamp
+    return timestamp if -300.0 <= age <= max_age_seconds else None
+
+
+def _first_observed_number(payload: Any, keys, *, positive: bool = False,
+                           nonnegative: bool = False) -> Optional[float]:
+    if not isinstance(payload, dict):
+        return None
+    for key in keys:
+        if key in payload:
+            return _finite_observation(
+                payload.get(key), positive=positive, nonnegative=nonnegative
+            )
+    return None
+
+
+def _no_data_market_receipt(reason: str, *, source_id: Optional[str] = None) -> Dict[str, Any]:
+    return {
+        "price": None,
+        "bid": None,
+        "ask": None,
+        "change": None,
+        "volume": None,
+        "source_id": source_id,
+        "source_timestamp": None,
+        "truth_status": "no_data",
+        "decision_status": "blocked",
+        "action_eligible": False,
+        "eligible_for_learning": False,
+        "reason": reason,
+        "generated_values": False,
+    }
+
+
+def _market_receipt(
+    payload: Any,
+    *,
+    price_keys=("price", "lastPrice", "last"),
+    change_keys=(),
+    volume_keys=(),
+    require_book: bool = False,
+    source_id: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Canonicalize only fresh, finite provider market evidence."""
+    if not isinstance(payload, dict):
+        return _no_data_market_receipt("PROVIDER_PAYLOAD_MISSING", source_id=source_id)
+    source_timestamp = _fresh_provider_epoch(payload)
+    if source_timestamp is None:
+        return _no_data_market_receipt(
+            "MISSING_OR_STALE_PROVIDER_TIMESTAMP", source_id=source_id
+        )
+    bid = _first_observed_number(
+        payload, ("bp", "bid", "bidPrice"), positive=True
+    )
+    ask = _first_observed_number(
+        payload, ("ap", "ask", "askPrice"), positive=True
+    )
+    if require_book:
+        if bid is None or ask is None or ask < bid:
+            return _no_data_market_receipt(
+                "FRESH_TWO_SIDED_BOOK_REQUIRED", source_id=source_id
+            )
+        price = (bid + ask) / 2.0
+    else:
+        price = _first_observed_number(payload, price_keys, positive=True)
+    change = (
+        _first_observed_number(payload, change_keys)
+        if change_keys else None
+    )
+    volume = (
+        _first_observed_number(payload, volume_keys, nonnegative=True)
+        if volume_keys else None
+    )
+    if price is None:
+        return _no_data_market_receipt(
+            "MISSING_OR_MALFORMED_PROVIDER_PRICE", source_id=source_id
+        )
+    if change_keys and change is None:
+        return _no_data_market_receipt(
+            "MISSING_OR_MALFORMED_PROVIDER_CHANGE", source_id=source_id
+        )
+    if volume_keys and volume is None:
+        return _no_data_market_receipt(
+            "MISSING_OR_MALFORMED_PROVIDER_VOLUME", source_id=source_id
+        )
+    return {
+        "price": price,
+        "bid": bid,
+        "ask": ask,
+        "change": change,
+        "volume": volume,
+        "source_id": payload.get("source_id") or source_id,
+        "source_timestamp": source_timestamp,
+        "truth_status": "real_derived" if require_book else "real_observed",
+        "decision_status": "ready",
+        "action_eligible": True,
+        "eligible_for_learning": True,
+        "reason": None,
+        "generated_values": False,
+    }
+
+
+def _blocked_execution_receipt(reason: str, payload: Any = None) -> Dict[str, Any]:
+    payload = payload if isinstance(payload, dict) else {}
+    return {
+        "order_id": (
+            payload.get("provider_order_id")
+            or payload.get("orderId")
+            or payload.get("id")
+            or payload.get("txid")
+        ),
+        "provider_status": payload.get("provider_status") or payload.get("status"),
+        "filled_qty": None,
+        "filled_avg_price": None,
+        "filled_notional": None,
+        "fee": None,
+        "fee_asset": None,
+        "provider_timestamp": None,
+        "truth_status": "no_data",
+        "data_status": (
+            "not_submitted"
+            if reason == "ORDER_NOT_SUBMITTED"
+            else "pending_reconciliation"
+        ),
+        "decision_status": "blocked",
+        "fill_receipt_complete": False,
+        "eligible_for_accounting": False,
+        "eligible_for_learning": False,
+        "reason": reason,
+        "generated_values": False,
+    }
+
+
+def _final_fill_receipt(
+    payload: Any, *, quote_asset: Optional[str] = None
+) -> Dict[str, Any]:
+    """Accept only a fresh terminal provider fill with observed fee evidence."""
+    if not isinstance(payload, dict) or not payload:
+        return _blocked_execution_receipt("ORDER_RECEIPT_MISSING", payload)
+    status = str(payload.get("provider_status") or payload.get("status") or "").lower()
+    if (
+        payload.get("dryRun")
+        or payload.get("dry_run")
+        or status in {"not_submitted", "dry_run"}
+        or payload.get("submitted") is False
+    ):
+        return _blocked_execution_receipt("ORDER_NOT_SUBMITTED", payload)
+    if status not in _FINAL_FILL_STATUSES:
+        return _blocked_execution_receipt(
+            "ORDER_ACKNOWLEDGED_BUT_FINAL_FILL_NOT_PROVEN", payload
+        )
+    if payload.get("fill_receipt_complete") is False:
+        return _blocked_execution_receipt("FILL_RECEIPT_INCOMPLETE", payload)
+    if payload.get("eligible_for_accounting") is False:
+        return _blocked_execution_receipt("FILL_NOT_ACCOUNTING_ELIGIBLE", payload)
+    if payload.get("eligible_for_learning") is False:
+        return _blocked_execution_receipt("FILL_NOT_LEARNING_ELIGIBLE", payload)
+    provider_timestamp = _fresh_provider_epoch(payload)
+    if provider_timestamp is None:
+        return _blocked_execution_receipt(
+            "MISSING_OR_STALE_FILL_TIMESTAMP", payload
+        )
+    order_id = (
+        payload.get("provider_order_id")
+        or payload.get("orderId")
+        or payload.get("id")
+    )
+    if not order_id:
+        return _blocked_execution_receipt("PROVIDER_ORDER_ID_MISSING", payload)
+    filled_qty = _first_observed_number(
+        payload, ("filled_qty", "executedQty"), positive=True
+    )
+    filled_avg_price = _first_observed_number(
+        payload,
+        ("filled_avg_price", "avg_fill_price", "avgPrice"),
+        positive=True,
+    )
+    filled_notional = _first_observed_number(
+        payload,
+        ("filled_notional", "cummulativeQuoteQty"),
+        positive=True,
+    )
+
+    observed_fill_fee = None
+    observed_fill_asset = None
+    fills = payload.get("fills")
+    if isinstance(fills, list) and fills:
+        fill_qty = 0.0
+        fill_cost = 0.0
+        fill_fee = 0.0
+        fill_asset = None
+        complete = True
+        for fill in fills:
+            if not isinstance(fill, dict):
+                complete = False
+                break
+            qty = _first_observed_number(fill, ("qty", "filled_qty"), positive=True)
+            price = _first_observed_number(
+                fill, ("price", "filled_avg_price"), positive=True
+            )
+            commission = _first_observed_number(
+                fill, ("commission", "fee"), nonnegative=True
+            )
+            commission_asset = str(
+                fill.get("commissionAsset")
+                or fill.get("fee_asset")
+                or fill.get("fee_currency")
+                or fill.get("currency")
+                or ""
+            ).upper()
+            if qty is None or price is None or commission is None or not commission_asset:
+                complete = False
+                break
+            if fill_asset is not None and commission_asset != fill_asset:
+                complete = False
+                break
+            fill_asset = commission_asset
+            fill_qty += qty
+            fill_cost += qty * price
+            fill_fee += commission
+        if complete and fill_qty > 0:
+            if filled_qty is None:
+                filled_qty = fill_qty
+            if filled_avg_price is None:
+                filled_avg_price = fill_cost / fill_qty
+            if filled_notional is None:
+                filled_notional = fill_cost
+            observed_fill_fee = fill_fee
+            observed_fill_asset = fill_asset
+
+    fee = _first_observed_number(
+        payload, ("fee", "fees", "commission"), nonnegative=True
+    )
+    fee_asset = str(
+        payload.get("fee_asset")
+        or payload.get("fee_currency")
+        or payload.get("commissionAsset")
+        or ""
+    ).upper()
+    if fee is None:
+        fee = observed_fill_fee
+    if not fee_asset:
+        fee_asset = observed_fill_asset or ""
+    expected_quote = str(quote_asset or "").upper()
+    if (
+        filled_qty is None
+        or filled_avg_price is None
+        or fee is None
+        or not fee_asset
+        or (expected_quote and fee_asset != expected_quote)
+    ):
+        return _blocked_execution_receipt(
+            "COMPLETE_QUOTE_FEE_AND_FILL_EVIDENCE_REQUIRED", payload
+        )
+    if filled_notional is None:
+        filled_notional = filled_qty * filled_avg_price
+    return {
+        "order_id": str(order_id),
+        "provider_status": status,
+        "filled_qty": filled_qty,
+        "filled_avg_price": filled_avg_price,
+        "filled_notional": filled_notional,
+        "fee": fee,
+        "fee_asset": fee_asset,
+        "provider_timestamp": provider_timestamp,
+        "truth_status": "real_observed",
+        "data_status": "live",
+        "decision_status": "ready",
+        "fill_receipt_complete": True,
+        "eligible_for_accounting": True,
+        "eligible_for_learning": True,
+        "reason": None,
+        "generated_values": False,
+    }
+
+
+def _realized_pnl_receipt(
+    entry_receipt: Any, exit_receipt: Any
+) -> Dict[str, Any]:
+    """Calculate realized PnL only from two complete provider fill receipts."""
+    for receipt in (entry_receipt, exit_receipt):
+        if (
+            not isinstance(receipt, dict)
+            or receipt.get("decision_status") != "ready"
+            or receipt.get("fill_receipt_complete") is not True
+            or receipt.get("eligible_for_accounting") is not True
+            or receipt.get("eligible_for_learning") is not True
+        ):
+            return {
+                "truth_status": "no_data",
+                "decision_status": "blocked",
+                "eligible_for_accounting": False,
+                "eligible_for_learning": False,
+                "realized_pnl": None,
+                "reason": "COMPLETE_ENTRY_AND_EXIT_FILL_RECEIPTS_REQUIRED",
+                "generated_values": False,
+            }
+    entry_qty = _finite_observation(entry_receipt.get("filled_qty"), positive=True)
+    exit_qty = _finite_observation(exit_receipt.get("filled_qty"), positive=True)
+    entry_price = _finite_observation(
+        entry_receipt.get("filled_avg_price"), positive=True
+    )
+    exit_price = _finite_observation(
+        exit_receipt.get("filled_avg_price"), positive=True
+    )
+    entry_fee = _finite_observation(entry_receipt.get("fee"), nonnegative=True)
+    exit_fee = _finite_observation(exit_receipt.get("fee"), nonnegative=True)
+    entry_asset = str(entry_receipt.get("fee_asset") or "").upper()
+    exit_asset = str(exit_receipt.get("fee_asset") or "").upper()
+    if (
+        entry_qty is None
+        or exit_qty is None
+        or entry_price is None
+        or exit_price is None
+        or entry_fee is None
+        or exit_fee is None
+        or exit_qty > entry_qty + 1e-12
+        or not entry_asset
+        or entry_asset != exit_asset
+    ):
+        return {
+            "truth_status": "no_data",
+            "decision_status": "blocked",
+            "eligible_for_accounting": False,
+            "eligible_for_learning": False,
+            "realized_pnl": None,
+            "reason": "MALFORMED_OR_CURRENCY_MISMATCHED_FILL_RECEIPTS",
+            "generated_values": False,
+        }
+    allocated_entry_fee = entry_fee * (exit_qty / entry_qty)
+    entry_cost = entry_price * exit_qty + allocated_entry_fee
+    exit_proceeds = exit_price * exit_qty - exit_fee
+    realized_pnl = exit_proceeds - entry_cost
+    return {
+        "truth_status": "real_derived",
+        "decision_status": "ready",
+        "eligible_for_accounting": True,
+        "eligible_for_learning": True,
+        "realized_pnl": realized_pnl,
+        "entry_cost": entry_cost,
+        "exit_proceeds": exit_proceeds,
+        "total_fee": allocated_entry_fee + exit_fee,
+        "fee_asset": entry_asset,
+        "provider_timestamp": exit_receipt.get("provider_timestamp"),
+        "entry_order_id": entry_receipt.get("order_id"),
+        "exit_order_id": exit_receipt.get("order_id"),
+        "generated_values": False,
+    }
 
 class MarketRadar:
     def __init__(self, alpaca):
@@ -1272,7 +1686,14 @@ class HiveCoordinator:
         with self.lock:
             return self.target_symbol, self.target_momentum, self.target_kind
 class AggressiveReclaimer:
-    def __init__(self):
+    def __init__(
+        self,
+        *,
+        unity_composition: Any = None,
+        unity_plan_supplier: Any = None,
+        trusted_unity_plan_supplier_ids=(),
+        hive_state: Any = None,
+    ):
         print("=" * 40)
         print("   GAIA AGGRESSIVE RECLAIMER - TAKE EVERYTHING")
         print("=" * 40)
@@ -1298,6 +1719,8 @@ class AggressiveReclaimer:
         
         # Track our entry prices PER ASSET
         self.entries = {}
+        self.entry_receipts = {}
+        self.last_execution_receipt = {}
         self.state_lock = threading.Lock()
         self.log_lock = threading.Lock()
         self.log_path = os.path.join(os.getcwd(), "hive_log.csv")
@@ -1339,8 +1762,8 @@ class AggressiveReclaimer:
         self.exit_on_positive = os.getenv("HIVE_EXIT_ON_POSITIVE", "true").lower() == "true"
         self.quick_exit_pnl_pct = float(os.getenv("HIVE_QUICK_EXIT_PNL_PCT", "0.0"))
         self.exit_fee_pct = float(os.getenv("HIVE_FEE_PCT", "0.0"))
-        self.maker_fee_pct = 0.15
-        self.taker_fee_pct = 0.25
+        self.maker_fee_pct = None
+        self.taker_fee_pct = None
         self.fee_buffer_pct = 0.01
         self.exit_slippage_pct = float(os.getenv("HIVE_SLIPPAGE_PCT", "0.02"))
         self.exit_extra_pct = float(os.getenv("HIVE_EXTRA_EXIT_PCT", "0.05"))
@@ -1380,7 +1803,7 @@ class AggressiveReclaimer:
         self.last_orders = []
         self.last_bridge_status = {}
         self.last_activity_summary = {}
-        self.activity_fee_pct = 0.0
+        self.activity_fee_pct = None
         self.activity_fee_last = 0.0
         self.last_buy_blocker = ""
         self.activity_fee_interval = float(os.getenv("HIVE_ACTIVITY_FEE_INTERVAL", "30"))
@@ -1529,11 +1952,90 @@ class AggressiveReclaimer:
         self._prob_loader = None
         self.log_every = 1
         self.live_log_every = 1
+        self._install_unity_exchange_brains(
+            unity_composition=unity_composition,
+            unity_plan_supplier=unity_plan_supplier,
+            trusted_unity_plan_supplier_ids=trusted_unity_plan_supplier_ids,
+            hive_state=hive_state,
+        )
         self.coordinator.start_services()
         self._init_log()
         
         print("[OK] ALPACA ONLY - WAVE + SSE SCAN (CRYPTO+STOCKS)")
         print()
+
+    def _install_unity_exchange_brains(
+        self,
+        *,
+        unity_composition: Any,
+        unity_plan_supplier: Any,
+        trusted_unity_plan_supplier_ids,
+        hive_state: Any = None,
+    ) -> None:
+        """Bind every GAIA mutation to one Queen/Council authority plane."""
+
+        from aureon.core.economic_sensation import OrganismEconomicSensationRouter
+        from aureon.queen.unity_exchange_brain import build_queen_exchange_brains
+
+        if hive_state is None:
+            try:
+                from aureon.core.aureon_hive_state import get_hive
+
+                hive_state = get_hive()
+            except Exception:
+                hive_state = None
+        self.hive_state = hive_state
+        self._economic_sensation_router = OrganismEconomicSensationRouter(
+            bus_getter=lambda: getattr(self, "thought_bus", None),
+            hive_getter=lambda: getattr(self, "hive_state", None),
+            mycelium_getter=lambda: getattr(self, "mycelium", None),
+        )
+        fallback_read_clients = None
+        if unity_composition is None:
+            fallback_read_clients = {
+                exchange: client
+                for exchange, client in {
+                    "alpaca": getattr(self, "alpaca", None),
+                    "binance": getattr(self, "binance", None),
+                    "kraken": getattr(self, "kraken", None),
+                }.items()
+                if client is not None
+            }
+        brains, governed, status = build_queen_exchange_brains(
+            unity_composition=unity_composition,
+            unity_plan_supplier=unity_plan_supplier,
+            trusted_unity_plan_supplier_ids=trusted_unity_plan_supplier_ids,
+            fallback_read_clients=fallback_read_clients,
+            outcome_observer=self._economic_sensation_router.observe,
+        )
+        self._queen_exchange_brains = brains
+        self._queen_governed_exchange_client = governed
+        self._queen_exchange_governance_status = status
+
+    def _governed_client_for(self, exchange: str):
+        """Return GAIA's canonical mutation brain, never a raw provider client."""
+
+        brain = getattr(self, "_queen_exchange_brains", {}).get(exchange)
+        if brain is None:
+            from aureon.queen.unity_exchange_brain import QueenGovernedExchangeBrain
+
+            brain = QueenGovernedExchangeBrain(
+                exchange=exchange,
+                read_client=getattr(self, exchange, None),
+                governed_client=None,
+                outcome_observer=getattr(
+                    getattr(self, "_economic_sensation_router", None),
+                    "observe",
+                    None,
+                ),
+            )
+        return brain
+
+    def recent_economic_sensations(self):
+        """Return bounded feedback receipts; never mutation authority."""
+
+        router = getattr(self, "_economic_sensation_router", None)
+        return router.recent() if router is not None else []
         
     def log(self, msg):
         ts = datetime.now().strftime("%H:%M:%S")
@@ -1543,32 +2045,79 @@ class AggressiveReclaimer:
         with self.state_lock:
             return self.entries.get(key)
 
-    def _set_entry(self, key, price):
+    def _set_entry(self, key, price, receipt=None):
+        price_value = _finite_observation(price, positive=True)
+        if (
+            price_value is None
+            or not isinstance(receipt, dict)
+            or receipt.get("decision_status") != "ready"
+            or receipt.get("fill_receipt_complete") is not True
+            or receipt.get("eligible_for_accounting") is not True
+            or receipt.get("eligible_for_learning") is not True
+        ):
+            return False
         with self.state_lock:
-            self.entries[key] = price
+            self.entries[key] = price_value
+            self.entry_receipts[key] = dict(receipt)
+        return True
+
+    def _get_entry_receipt(self, key):
+        with self.state_lock:
+            receipt = self.entry_receipts.get(key)
+            return dict(receipt) if isinstance(receipt, dict) else None
 
     def _del_entry(self, key):
         with self.state_lock:
             if key in self.entries:
                 del self.entries[key]
+            self.entry_receipts.pop(key, None)
 
-    def _add_trade_profit(self, profit_usd):
+    def _add_trade_profit(self, pnl_receipt):
+        """Mutate accounting/learning only from a complete realized-PnL receipt."""
+        if (
+            not isinstance(pnl_receipt, dict)
+            or pnl_receipt.get("decision_status") != "ready"
+            or pnl_receipt.get("eligible_for_accounting") is not True
+            or pnl_receipt.get("eligible_for_learning") is not True
+            or pnl_receipt.get("generated_values") is not False
+        ):
+            return False
+        profit_usd = _finite_observation(pnl_receipt.get("realized_pnl"))
+        observed_fee = _finite_observation(
+            pnl_receipt.get("total_fee"), nonnegative=True
+        )
+        if profit_usd is None or observed_fee is None:
+            return False
         with self.state_lock:
             self.profit += profit_usd
             self.trades += 1
             current_profit = self.profit
         if self.bridge:
             try:
-                # Use penny-profit threshold for success (unify with QUEEN policy)
-                self.bridge.record_trade(profit=profit_usd, fee=0.0, success=(profit_usd >= 0.01))
+                self.bridge.record_trade(
+                    profit=profit_usd,
+                    fee=observed_fee,
+                    success=(profit_usd >= 0.01),
+                )
             except Exception:
                 pass
         if self.mycelium and hasattr(self.mycelium, "record_trade_profit"):
             try:
-                self.mycelium.record_trade_profit(profit_usd, {"source": "gaia"})
+                self.mycelium.record_trade_profit(
+                    profit_usd,
+                    {
+                        "source": "gaia",
+                        "truth_status": "real_derived",
+                        "entry_order_id": pnl_receipt.get("entry_order_id"),
+                        "exit_order_id": pnl_receipt.get("exit_order_id"),
+                        "provider_timestamp": pnl_receipt.get("provider_timestamp"),
+                        "generated_values": False,
+                    },
+                )
             except Exception:
                 pass
         self._check_compound_checkpoint(current_profit)
+        return True
 
     def _parse_compound_checkpoints(self, raw):
         items = []
@@ -1615,26 +2164,45 @@ class AggressiveReclaimer:
         return True, "momentum_ok"
 
     def _estimate_exit_threshold(self, symbol, kind):
-        spread_pct = 0.0
-        if self.sse_client:
-            try:
-                quote = self.sse_client.get_latest_quote(symbol)
-                spread_pct = float(quote.get("spread_pct", 0) or 0)
-            except Exception:
-                spread_pct = 0.0
-        fee_pct = self.taker_fee_pct
-        if fee_pct <= 0 and self.exit_fee_pct > 0:
-            fee_pct = self.exit_fee_pct
-        activity_component = self.activity_fee_pct
-        if self.activity_fee_pct > 0:
-            fee_pct = self.activity_fee_pct
-            activity_component = 0.0
+        self._get_latest_price(symbol, kind)
+        market_receipt = self._quote_cache.get(symbol)
+        if (
+            not isinstance(market_receipt, dict)
+            or market_receipt.get("decision_status") != "ready"
+            or _fresh_provider_epoch(market_receipt) is None
+        ):
+            return None, {
+                "truth_status": "no_data",
+                "decision_status": "blocked",
+                "reason": "NO_FRESH_TWO_SIDED_PROVIDER_QUOTE",
+                "generated_values": False,
+            }
+        bid = _finite_observation(market_receipt.get("bid"), positive=True)
+        ask = _finite_observation(market_receipt.get("ask"), positive=True)
+        if bid is None or ask is None or ask < bid:
+            return None, {
+                "truth_status": "no_data",
+                "decision_status": "blocked",
+                "reason": "NO_FRESH_TWO_SIDED_PROVIDER_QUOTE",
+                "generated_values": False,
+            }
+        midpoint = (bid + ask) / 2.0
+        spread_pct = ((ask - bid) / midpoint) * 100.0
+        fee_pct = _finite_observation(
+            self.activity_fee_pct, nonnegative=True
+        )
+        if fee_pct is None:
+            return None, {
+                "truth_status": "no_data",
+                "decision_status": "blocked",
+                "reason": "NO_FRESH_PROVIDER_FEE_RECEIPT",
+                "generated_values": False,
+            }
         total = (
             fee_pct
             + self.exit_slippage_pct
             + spread_pct
             + self.exit_extra_pct
-            + activity_component
             + self.sell_buffer_pct
             + self.fee_buffer_pct
         )
@@ -1643,7 +2211,7 @@ class AggressiveReclaimer:
             "slippage_pct": self.exit_slippage_pct,
             "spread_pct": spread_pct,
             "extra_pct": self.exit_extra_pct,
-            "activity_fee_pct": activity_component,
+            "activity_fee_pct": fee_pct,
             "buffer_pct": self.sell_buffer_pct,
             "fee_buffer_pct": self.fee_buffer_pct,
             "total_pct": total,
@@ -1951,22 +2519,18 @@ class AggressiveReclaimer:
         return remaining / slope
 
     def _should_sell(self, pnl_pct, profit_usd, symbol, kind):
-        try:
-            pnl_val = float(pnl_pct or 0.0)
-        except Exception:
-            pnl_val = 0.0
-        try:
-            profit_val = float(profit_usd or 0.0)
-        except Exception:
-            profit_val = 0.0
-        if self.fast_money_mode and profit_val > 0:
-            return True, "fast_money_profit"
+        pnl_val = _finite_observation(pnl_pct)
+        profit_val = _finite_observation(profit_usd)
+        if pnl_val is None or profit_val is None:
+            return False, "pnl_or_profit_no_data"
         if self.exit_on_positive:
             if pnl_val <= 0:
                 return False, "pnl_not_positive"
             if pnl_val < self.quick_exit_pnl_pct:
                 return False, "pnl_below_quick_exit"
             threshold, meta = self._estimate_exit_threshold(symbol, kind)
+            if threshold is None:
+                return False, meta["reason"]
             if pnl_val < threshold:
                 return False, f"pnl_below_costs({pnl_val:.2f}<{threshold:.2f})"
             value_est = 0.0
@@ -2027,29 +2591,35 @@ class AggressiveReclaimer:
             cache_ts = self._quote_cache_ts.get(symbol, 0.0)
             if now - cache_ts <= self._quote_cache_ttl:
                 cached = self._quote_cache.get(symbol)
-                if cached:
-                    return cached
+                if (
+                    isinstance(cached, dict)
+                    and cached.get("decision_status") == "ready"
+                    and _fresh_provider_epoch(cached) is not None
+                ):
+                    return cached["price"]
             if kind == 'crypto':
                 quotes = self.alpaca.get_latest_crypto_quotes([symbol]) or {}
                 q = quotes.get(symbol, {})
-                ap = float(q.get('ap', 0) or 0)
-                bp = float(q.get('bp', 0) or 0)
-                if ap > 0 and bp > 0:
-                    price = (ap + bp) / 2
-                else:
-                    price = ap or bp or 0.0
-                if price > 0:
-                    self._quote_cache[symbol] = price
-                    self._quote_cache_ts[symbol] = now
-                return price
-            quote = self.alpaca.get_last_quote(symbol)
-            price = float(quote.get('last', {}).get('price', 0) or 0)
-            if price > 0:
-                self._quote_cache[symbol] = price
+                receipt = _market_receipt(
+                    q,
+                    require_book=True,
+                    source_id="alpaca:latest_crypto_quotes",
+                )
+            else:
+                quote = self.alpaca.get_last_quote(symbol) or {}
+                raw = quote.get("raw") if isinstance(quote, dict) else None
+                receipt = _market_receipt(
+                    raw,
+                    require_book=True,
+                    source_id="alpaca:latest_stock_quote",
+                )
+            if receipt["decision_status"] == "ready":
+                self._quote_cache[symbol] = receipt
                 self._quote_cache_ts[symbol] = now
-            return price
+                return receipt["price"]
+            return None
         except Exception:
-            return 0.0
+            return None
 
     def _prime_crypto_quote_cache(self, symbols):
         if not symbols:
@@ -2060,17 +2630,13 @@ class AggressiveReclaimer:
             return
         now = time.time()
         for sym, q in quotes.items():
-            try:
-                ap = float(q.get("ap", 0) or 0)
-                bp = float(q.get("bp", 0) or 0)
-            except Exception:
-                continue
-            if ap > 0 and bp > 0:
-                price = (ap + bp) / 2
-            else:
-                price = ap or bp or 0.0
-            if price > 0:
-                self._quote_cache[sym] = price
+            receipt = _market_receipt(
+                q,
+                require_book=True,
+                source_id="alpaca:latest_crypto_quotes",
+            )
+            if receipt["decision_status"] == "ready":
+                self._quote_cache[sym] = receipt
                 self._quote_cache_ts[sym] = now
 
     def _get_positions_cached(self):
@@ -2100,19 +2666,19 @@ class AggressiveReclaimer:
     def _parse_orderbook_side(self, side):
         levels = []
         for level in side or []:
-            price = 0.0
-            size = 0.0
+            price = None
+            size = None
             if isinstance(level, dict):
-                price = float(level.get("p") or level.get("price") or level.get("bp") or 0)
-                size = float(level.get("s") or level.get("size") or level.get("q") or 0)
+                price = _first_observed_number(
+                    level, ("p", "price", "bp"), positive=True
+                )
+                size = _first_observed_number(
+                    level, ("s", "size", "q"), positive=True
+                )
             elif isinstance(level, (list, tuple)) and len(level) >= 2:
-                try:
-                    price = float(level[0])
-                    size = float(level[1])
-                except Exception:
-                    price = 0.0
-                    size = 0.0
-            if price > 0 and size > 0:
+                price = _finite_observation(level[0], positive=True)
+                size = _finite_observation(level[1], positive=True)
+            if price is not None and size is not None:
                 levels.append((price, size))
         return levels
 
@@ -2124,6 +2690,9 @@ class AggressiveReclaimer:
         try:
             book = self.alpaca.get_crypto_orderbook(symbol, depth=self.orderbook_depth_levels) or {}
         except Exception:
+            return None
+        provider_timestamp = _fresh_provider_epoch(book)
+        if provider_timestamp is None:
             return None
         bids = self._parse_orderbook_side(book.get("bids") or [])
         asks = self._parse_orderbook_side(book.get("asks") or [])
@@ -2141,19 +2710,26 @@ class AggressiveReclaimer:
             "spread_pct": spread_pct,
             "bid_depth_usd": bid_depth_usd,
             "ask_depth_usd": ask_depth_usd,
+            "provider_timestamp": provider_timestamp,
+            "truth_status": "real_derived",
+            "decision_status": "ready",
+            "generated_values": False,
         }
         self._orderbook_cache[symbol] = metrics
         self._orderbook_cache_ts[symbol] = now
         return metrics
 
     def _validate_sell_price(self, symbol, entry_price, is_target, kind, skip_delay=False):
+        entry_price = _finite_observation(entry_price, positive=True)
+        if entry_price is None:
+            return False, None
         if not skip_delay:
             time.sleep(0.0)
         price = self._get_latest_price(symbol, kind)
-        if price <= 0:
-            return False, 0.0
+        if price is None:
+            return False, None
 
-        pnl_pct = (price - entry_price) / entry_price * 100 if entry_price > 0 else 0.0
+        pnl_pct = (price - entry_price) / entry_price * 100
         if is_target and pnl_pct <= 0.0:
             return False, pnl_pct
         if not is_target and pnl_pct < 0.0:
@@ -2242,7 +2818,7 @@ class AggressiveReclaimer:
 
     def _validate_buy_price(self, symbol, kind):
         price = self._get_latest_price(symbol, kind)
-        if price <= 0:
+        if price is None:
             return False, 0, {}
 
         if not self.market_radar:
@@ -2317,10 +2893,13 @@ class AggressiveReclaimer:
                 return False, live_confirmations, live_prices
         return True, confirmations, prices
 
-    def _update_pnl_history(self, symbol, pnl_pct):
+    def _update_pnl_history(self, symbol, pnl_pct, provider_timestamp):
+        observed_at = _provider_epoch(provider_timestamp)
+        if observed_at is None:
+            return []
         now = time.time()
         history = self.pnl_history.get(symbol, [])
-        history.append((now, pnl_pct))
+        history.append((observed_at, pnl_pct))
         cutoff = now - max(self.window_seconds * 2, 30)
         history = [(ts, pnl) for ts, pnl in history if ts >= cutoff]
         self.pnl_history[symbol] = history
@@ -2563,8 +3142,9 @@ class AggressiveReclaimer:
             return None
         samples = min(self.sim_count, len(valid_pairs))
         wins = 0
-        for _ in range(samples):
-            i, j = random.choice(valid_pairs)
+        for sample_index in range(samples):
+            pair_index = int(sample_index * len(valid_pairs) / samples)
+            i, j = valid_pairs[pair_index]
             p0 = prices[i] or 0
             p1 = prices[j] or 0
             if p0 > 0 and p1 > p0:
@@ -2617,7 +3197,7 @@ class AggressiveReclaimer:
             try:
                 alpaca_price = self._get_latest_price(symbol, self._symbol_kind(symbol))
             except Exception:
-                alpaca_price = 0.0
+                alpaca_price = None
             try:
                 prices = self.market_radar.get_validation_prices(symbol, self._symbol_kind(symbol))
             except Exception:
@@ -2625,7 +3205,7 @@ class AggressiveReclaimer:
             tol = float(os.getenv("HIVE_PROB_LIVE_TOLERANCE_PCT", str(self.validation_tolerance_pct)))
             for src in ("binance", "kraken", "binance_ws", "kraken_ws"):
                 price = float(prices.get(src, 0) or 0)
-                if alpaca_price > 0 and price > 0:
+                if alpaca_price is not None and price > 0:
                     diff = abs(alpaca_price - price) / alpaca_price * 100
                     if diff <= tol:
                         live_confirmations += 1
@@ -2838,6 +3418,8 @@ class AggressiveReclaimer:
                     return float(qty or 0)
                 symbol = f"{asset}/USD"
                 price = self._outer._get_latest_price(symbol, "crypto")
+                if price is None:
+                    return None
                 return float(qty or 0) * price
 
         focus = [b for b in (bases or []) if b]
@@ -2872,79 +3454,35 @@ class AggressiveReclaimer:
         return None
 
     def _reality_sources(self, bases):
+        """Return only complete, fresh provider observations for reality branches."""
         if not bases or not self.market_radar:
             return {}
         by_base = {}
-        symbols = []
-        base_to_symbols = {}
-        for base in bases:
-            if not base:
-                continue
-            variants = [f"{base}/USD", f"{base}/USDT", f"{base}/USDC", f"{base}/BTC"]
-            base_to_symbols[base] = variants
-            symbols.extend(variants)
-        if self.alpaca and symbols:
-            try:
-                quotes = self.alpaca.get_latest_crypto_quotes(symbols) or {}
-            except Exception:
-                quotes = {}
-            for base, variants in base_to_symbols.items():
-                picked = None
-                for symbol in variants:
-                    quote = quotes.get(symbol)
-                    if not quote:
-                        continue
-                    bp = float(quote.get("bp", 0) or 0)
-                    ap = float(quote.get("ap", 0) or 0)
-                    price = 0.0
-                    if bp > 0 and ap > 0:
-                        price = (bp + ap) / 2.0
-                    elif bp > 0:
-                        price = bp
-                    elif ap > 0:
-                        price = ap
-                    if price <= 0:
-                        continue
-                    picked = (symbol, quote, price)
-                    break
-                if not picked:
-                    continue
-                symbol, quote, price = picked
-                try:
-                    self.market_radar._record_price(base, price, "alpaca_quote")
-                except Exception:
-                    pass
-                change = 0.0
-                history = self.market_radar.get_price_history(base, limit=120)
-                if len(history) >= 2:
-                    first = history[0]["price"]
-                    last = history[-1]["price"]
-                    if first > 0:
-                        change = (last - first) / first * 100.0
-                if change == 0.0 and self.sse_client:
-                    try:
-                        mom = self.sse_client.get_momentum(symbol, periods=10)
-                        if mom is not None:
-                            change = float(mom)
-                    except Exception:
-                        pass
-                by_base[base] = {
-                    "symbol": symbol,
-                    "price": price,
-                    "change": change,
-                    "volume": float(quote.get("qv", 0) or 0),
-                }
-        if by_base:
-            return by_base
         tickers = self.market_radar.get_free_tickers(bases)
         for ticker in tickers:
             base = self._normalize_base(ticker.get("symbol", ""))
             if not base:
                 continue
+            receipt = _market_receipt(
+                ticker,
+                price_keys=("lastPrice",),
+                change_keys=("priceChangePercent",),
+                volume_keys=("quoteVolume",),
+                source_id=ticker.get("source_id"),
+            )
+            if receipt["decision_status"] != "ready":
+                continue
             by_base[base] = {
-                "price": float(ticker.get("lastPrice", 0) or 0),
-                "change": float(ticker.get("priceChangePercent", 0) or 0),
-                "volume": float(ticker.get("quoteVolume", 0) or 0),
+                "symbol": ticker.get("symbol"),
+                "price": receipt["price"],
+                "change": receipt["change"],
+                "volume": receipt["volume"],
+                "source_id": receipt["source_id"],
+                "source_timestamp": receipt["source_timestamp"],
+                "truth_status": receipt["truth_status"],
+                "decision_status": receipt["decision_status"],
+                "action_eligible": receipt["action_eligible"],
+                "generated_values": False,
             }
         return by_base
 
@@ -3211,9 +3749,9 @@ class AggressiveReclaimer:
         try:
             alpaca_price = self._get_latest_price(symbol, kind)
         except Exception:
-            alpaca_price = 0.0
+            alpaca_price = None
         confirmations = 0
-        if alpaca_price > 0:
+        if alpaca_price is not None:
             for src in ("binance", "kraken", "binance_ws", "kraken_ws"):
                 price = float(prices.get(src, 0) or 0)
                 if price <= 0:
@@ -3296,16 +3834,28 @@ class AggressiveReclaimer:
         seen = set()
         for pos in positions:
             sym = pos.get("symbol")
-            if not sym:
+            if (
+                not sym
+                or pos.get("truth_status") != "real_derived"
+                or pos.get("generated_values") is not False
+                or _fresh_provider_epoch(pos) is None
+            ):
                 continue
             seen.add(sym)
-            try:
-                qty = float(pos.get("qty") or 0)
-                entry = float(pos.get("entry") or 0)
-                current = float(pos.get("current") or 0)
-                value = float(pos.get("value") or 0)
-                pnl_pct = float(pos.get("pnl_pct") or 0)
-            except Exception:
+            qty = _finite_observation(pos.get("qty"), positive=True)
+            entry = _finite_observation(pos.get("entry"), positive=True)
+            current = _finite_observation(pos.get("current"), positive=True)
+            value = _finite_observation(pos.get("value"), nonnegative=True)
+            pnl_pct = _finite_observation(pos.get("pnl_pct"))
+            entry_time = _provider_epoch(pos.get("entry_provider_timestamp"))
+            if (
+                qty is None
+                or entry is None
+                or current is None
+                or value is None
+                or pnl_pct is None
+                or entry_time is None
+            ):
                 continue
             unrealized = value * (pnl_pct / 100.0)
             bridge_pos = BridgePosition(
@@ -3316,7 +3866,7 @@ class AggressiveReclaimer:
                 entry_price=entry,
                 current_price=current,
                 unrealized_pnl=unrealized,
-                entry_time=time.time(),
+                entry_time=entry_time,
                 owner=self.bridge_owner,
             )
             try:
@@ -3379,13 +3929,77 @@ class AggressiveReclaimer:
             except Exception:
                 pass
 
+    def _reconcile_final_fill(self, result, exchange, quote_asset):
+        """Resolve a submission acknowledgement to a final provider fill when possible."""
+        receipt = _final_fill_receipt(result, quote_asset=quote_asset)
+        if receipt["decision_status"] == "ready":
+            self.last_execution_receipt = receipt
+            return receipt
+        if receipt.get("data_status") == "not_submitted":
+            self.last_execution_receipt = receipt
+            return receipt
+        order_id = receipt.get("order_id")
+        client = getattr(self, exchange, None)
+        if order_id and client and hasattr(client, "get_order_status"):
+            try:
+                reconciled = client.get_order_status(order_id)
+            except Exception:
+                reconciled = None
+            receipt = _final_fill_receipt(reconciled, quote_asset=quote_asset)
+        self.last_execution_receipt = receipt
+        return receipt
+
+    def _account_final_exit(
+        self,
+        *,
+        exchange,
+        symbol,
+        result,
+        entry_receipt,
+        quote_asset,
+        exit_reason,
+        hold_duration_mins=None,
+    ):
+        """Record a realized exit only after both provider fills reconcile."""
+        exit_receipt = self._reconcile_final_fill(
+            result, exchange, quote_asset
+        )
+        self._log_order_result("sell", symbol, exit_receipt)
+        pnl_receipt = _realized_pnl_receipt(entry_receipt, exit_receipt)
+        if not self._add_trade_profit(pnl_receipt):
+            return False, pnl_receipt, exit_receipt
+        profit_usd = pnl_receipt["realized_pnl"]
+        self._log_event(
+            "sell",
+            exchange,
+            symbol,
+            exit_receipt["filled_notional"],
+            None,
+            profit_usd,
+        )
+        if self._hnc:
+            try:
+                close_kwargs = {
+                    "symbol": symbol,
+                    "exit_price": exit_receipt["filled_avg_price"],
+                    "realized_pnl": profit_usd,
+                    "exit_reason": exit_reason,
+                }
+                if hold_duration_mins is not None:
+                    close_kwargs["hold_duration_mins"] = hold_duration_mins
+                self._hnc.feed_position_close(**close_kwargs)
+            except Exception:
+                pass
+        return True, pnl_receipt, exit_receipt
+
     def _log_order_result(self, side, symbol, result):
-        if not result:
+        if not isinstance(result, dict):
             self.log(f"[WARN] {side.upper()} order missing response: {symbol}")
             return
-        order_id = result.get("id") or result.get("order_id") or result.get("client_order_id")
-        status = result.get("status")
-        filled = result.get("filled_qty") or result.get("filled_qty")
+        order_id = result.get("order_id")
+        status = result.get("provider_status") or result.get("data_status")
+        fill_complete = result.get("fill_receipt_complete") is True
+        filled = result.get("filled_qty") if fill_complete else None
         self.log(f"[ORDER] {side.upper()} {symbol} id={order_id} status={status} filled={filled}")
         self._positions_cache_ts = 0.0
         self._account_cache_ts = 0.0
@@ -3401,6 +4015,12 @@ class AggressiveReclaimer:
                             "order_id": order_id,
                             "status": status,
                             "filled_qty": filled,
+                            "fill_receipt_complete": fill_complete,
+                            "eligible_for_learning": result.get(
+                                "eligible_for_learning"
+                            ) is True,
+                            "truth_status": result.get("truth_status"),
+                            "generated_values": False,
                         },
                     )
                 )
@@ -3409,12 +4029,21 @@ class AggressiveReclaimer:
         self._write_queen_memory(
             {
                 "ts": datetime.now().isoformat(),
-                "event": "order_ack",
+                "event": "order_receipt",
                 "side": side,
                 "symbol": symbol,
                 "order_id": order_id,
                 "status": status,
                 "filled_qty": filled,
+                "fill_receipt_complete": fill_complete,
+                "eligible_for_accounting": result.get(
+                    "eligible_for_accounting"
+                ) is True,
+                "eligible_for_learning": result.get(
+                    "eligible_for_learning"
+                ) is True,
+                "truth_status": result.get("truth_status"),
+                "generated_values": False,
             }
         )
 
@@ -3429,16 +4058,45 @@ class AggressiveReclaimer:
             orders = []
         slim = []
         for order in orders:
+            status = str(order.get("status") or "").lower()
+            is_final_fill = status in _FINAL_FILL_STATUSES
+            filled_qty = (
+                _finite_observation(order.get("filled_qty"), positive=True)
+                if is_final_fill else None
+            )
+            filled_avg_price = (
+                _finite_observation(order.get("filled_avg_price"), positive=True)
+                if is_final_fill else None
+            )
+            provider_timestamp = (
+                _provider_epoch(order.get("filled_at")) if is_final_fill else None
+            )
+            complete_observation = (
+                filled_qty is not None
+                and filled_avg_price is not None
+                and provider_timestamp is not None
+            )
             slim.append(
                 {
                     "id": order.get("id"),
                     "symbol": order.get("symbol"),
                     "side": order.get("side"),
-                    "status": order.get("status"),
-                    "filled_qty": order.get("filled_qty") or order.get("qty"),
-                    "filled_avg_price": order.get("filled_avg_price"),
+                    "status": status or None,
+                    "filled_qty": filled_qty if complete_observation else None,
+                    "filled_avg_price": (
+                        filled_avg_price if complete_observation else None
+                    ),
                     "submitted_at": order.get("submitted_at"),
-                    "filled_at": order.get("filled_at"),
+                    "filled_at": (
+                        provider_timestamp if complete_observation else None
+                    ),
+                    "truth_status": (
+                        "real_observed" if complete_observation else "no_data"
+                    ),
+                    "decision_status": "blocked",
+                    "eligible_for_accounting": False,
+                    "eligible_for_learning": False,
+                    "generated_values": False,
                 }
             )
         self.last_orders = slim
@@ -3458,30 +4116,60 @@ class AggressiveReclaimer:
         for act in activities:
             try:
                 sym = (act.get("symbol") or "").upper()
-                price = float(act.get("price") or act.get("fill_price") or 0)
-                qty = float(act.get("qty") or act.get("filled_qty") or act.get("cum_qty") or 0)
-                fee_val = act.get("commission")
-                if fee_val is None:
-                    fee_val = act.get("fee")
-                if fee_val is None:
-                    fee_val = act.get("fees")
-                fee = float(fee_val or 0)
+                provider_timestamp = _fresh_provider_epoch(act)
+                price = _first_observed_number(
+                    act, ("price", "fill_price"), positive=True
+                )
+                qty = _first_observed_number(
+                    act, ("qty", "filled_qty", "cum_qty"), positive=True
+                )
+                fee = _first_observed_number(
+                    act, ("commission", "fee", "fees"), nonnegative=True
+                )
+                fee_asset = str(
+                    act.get("currency")
+                    or act.get("fee_currency")
+                    or act.get("fee_asset")
+                    or ""
+                ).upper()
             except Exception:
                 continue
             is_crypto = "/" in sym or (sym.endswith("USD") and len(sym) > 5)
             if not is_crypto:
                 continue
-            if price > 0 and qty > 0:
+            if (
+                provider_timestamp is not None
+                and price is not None
+                and qty is not None
+                and fee is not None
+                and fee_asset == "USD"
+            ):
                 total_notional += price * qty
                 total_fee += fee
                 count += 1
-        fee_pct = (total_fee / total_notional * 100) if total_notional > 0 else 0.0
+        if count == 0 or total_notional <= 0:
+            self.activity_fee_pct = None
+            self.last_activity_summary = {
+                "count": 0,
+                "total_fee": None,
+                "notional": None,
+                "fee_pct": None,
+                "truth_status": "no_data",
+                "decision_status": "blocked",
+                "reason": "NO_FRESH_COMPLETE_PROVIDER_FEE_RECEIPTS",
+                "generated_values": False,
+            }
+            return
+        fee_pct = total_fee / total_notional * 100
         self.activity_fee_pct = fee_pct
         self.last_activity_summary = {
             "count": count,
             "total_fee": total_fee,
             "notional": total_notional,
             "fee_pct": fee_pct,
+            "truth_status": "real_derived",
+            "decision_status": "ready",
+            "generated_values": False,
         }
 
     def _init_log(self):
@@ -3559,11 +4247,15 @@ class AggressiveReclaimer:
                     continue
                 
                 pair = f'{asset}USDC'
-                t = self.binance.get_ticker_price(pair)
-                if not t:
+                t = self.binance.get_24h_ticker(pair)
+                market_receipt = _market_receipt(
+                    t,
+                    price_keys=("lastPrice",),
+                    source_id="binance:/api/v3/ticker/24hr",
+                )
+                if market_receipt["decision_status"] != "ready":
                     continue
-                    
-                price = float(t.get('price', 0))
+                price = market_receipt["price"]
                 value = bal * price
                 
                 if value < 1:
@@ -3572,8 +4264,9 @@ class AggressiveReclaimer:
                 # Get entry - if none, set it NOW
                 key = f'bin_{asset}'
                 if self._get_entry(key) is None:
-                    self._set_entry(key, price)
-                    self.log(f"[ENTRY] BINANCE {asset}: Entry set @ ${price:.4f}")
+                    self.log(
+                        f"[NO DATA] BINANCE {asset}: verified entry fill receipt unavailable"
+                    )
                     continue
                 
                 entry = self._get_entry(key)
@@ -3595,12 +4288,22 @@ class AggressiveReclaimer:
                     pnl_pct = new_pnl
                     self.log(f"[SELL] BINANCE SELL {asset}: ${value:.2f} ({pnl_pct:+.2f}%)")
                     
-                    result = self.binance.place_market_order(pair, 'SELL', quantity=bal * 0.999)
-                    
-                    if result and ('orderId' in result or result.get('status') == 'FILLED'):
-                        profit_usd = value * (pnl_pct / 100)
-                        self._add_trade_profit(profit_usd)
-                        self._log_event('sell', 'binance', asset, value, pnl_pct, profit_usd)
+                    result = self._governed_client_for("binance").place_market_order(
+                        pair, 'SELL', quantity=bal * 0.999
+                    )
+                    exit_receipt = self._reconcile_final_fill(
+                        result, "binance", "USDC"
+                    )
+                    self._log_order_result("sell", pair, exit_receipt)
+                    pnl_receipt = _realized_pnl_receipt(
+                        self._get_entry_receipt(key), exit_receipt
+                    )
+                    if self._add_trade_profit(pnl_receipt):
+                        profit_usd = pnl_receipt["realized_pnl"]
+                        self._log_event(
+                            'sell', 'binance', asset,
+                            exit_receipt["filled_notional"], None, profit_usd,
+                        )
                         self.log(f"   [OK] SOLD! +${profit_usd:.4f}")
                         
                         # Remove entry so we reset on next buy
@@ -3611,7 +4314,9 @@ class AggressiveReclaimer:
                         # Immediately buy next best
                         self._binance_buy_target()
                     else:
-                        self.log(f"   [WARN] Sell failed: {result}")
+                        self.log(
+                            f"   [NO DATA] Sell not accounted: {pnl_receipt.get('reason')}"
+                        )
                         
             # Deploy any idle USDC
             usdc = self.binance.get_free_balance('USDC')
@@ -3632,17 +4337,23 @@ class AggressiveReclaimer:
             pair = f"{target_symbol}USDC"
             self.log(f"[BUY] BINANCE BUY {target_symbol}: ${usdc:.2f} ({target_mom:+.1f}%)")
             
-            result = self.binance.place_market_order(pair, 'BUY', quote_qty=usdc * 0.98)
-            
-            if result and ('orderId' in result or result.get('status') == 'FILLED'):
-                # Record entry price
-                t = self.binance.get_ticker_price(pair)
-                price = float(t.get('price', 0))
-                self._set_entry(f'bin_{target_symbol}', price)
-                self._log_event('buy', 'binance', target_symbol, usdc, '', '')
-                self.log(f"   OK. BOUGHT @ ${price:.4f}")
+            result = self._governed_client_for("binance").place_market_order(
+                pair, 'BUY', quote_qty=usdc * 0.98
+            )
+            receipt = self._reconcile_final_fill(result, "binance", "USDC")
+            self._log_order_result("buy", pair, receipt)
+            if self._set_entry(
+                f'bin_{target_symbol}', receipt.get("filled_avg_price"), receipt
+            ):
+                self._log_event(
+                    'buy', 'binance', target_symbol,
+                    receipt["filled_notional"], None, None,
+                )
+                self.log(
+                    f"   OK. BOUGHT @ ${receipt['filled_avg_price']:.4f}"
+                )
             else:
-                self.log(f"   WARN: Buy failed: {result}")
+                self.log(f"   [NO DATA] Buy fill pending: {receipt.get('reason')}")
             return
 
         if not target_symbol:
@@ -3665,16 +4376,19 @@ class AggressiveReclaimer:
             asset = best_pair.replace('USDC', '')
             self.log(f"[BUY] BINANCE BUY {asset}: ${usdc:.2f} ({best_mom:+.1f}%)")
             
-            result = self.binance.place_market_order(best_pair, 'BUY', quote_qty=usdc * 0.98)
-            
-            if result and ('orderId' in result or result.get('status') == 'FILLED'):
-                # Record entry price
-                t = self.binance.get_ticker_price(best_pair)
-                price = float(t.get('price', 0))
-                self._set_entry(f'bin_{asset}', price)
-                self.log(f"   [OK] BOUGHT @ ${price:.4f}")
+            result = self._governed_client_for("binance").place_market_order(
+                best_pair, 'BUY', quote_qty=usdc * 0.98
+            )
+            receipt = self._reconcile_final_fill(result, "binance", "USDC")
+            self._log_order_result("buy", best_pair, receipt)
+            if self._set_entry(
+                f'bin_{asset}', receipt.get("filled_avg_price"), receipt
+            ):
+                self.log(
+                    f"   [OK] BOUGHT @ ${receipt['filled_avg_price']:.4f}"
+                )
             else:
-                self.log(f"   [WARN] Buy failed: {result}")
+                self.log(f"   [NO DATA] Buy fill pending: {receipt.get('reason')}")
 
     # ═══════════════════════════════════════════════════════════════
     # ALPACA - FAST EXECUTION
@@ -3728,12 +4442,54 @@ class AggressiveReclaimer:
             for pos in positions:
                 sym = pos.get('symbol', '')
                 pos_symbol = self._normalize_symbol(sym)
-                qty = float(pos.get('qty', 0))
-                entry = float(pos.get('avg_entry_price', 0))
-                current = float(pos.get('current_price', 0))
-                value = float(pos.get('market_value', 0))
+                qty = _finite_observation(pos.get('qty'), positive=True)
+                if not pos_symbol or qty is None:
+                    continue
+                positions_count += 1
+                kind = self._symbol_kind(pos_symbol)
+                current = self._get_latest_price(pos_symbol, kind)
+                market_receipt = self._quote_cache.get(pos_symbol)
+                window = self.last_buy.get(pos_symbol)
+                entry_receipt = (
+                    window.get("receipt") if isinstance(window, dict) else None
+                )
+                entry = _finite_observation(
+                    entry_receipt.get("filled_avg_price")
+                    if isinstance(entry_receipt, dict) else None,
+                    positive=True,
+                )
+                entry_qty = _finite_observation(
+                    entry_receipt.get("filled_qty")
+                    if isinstance(entry_receipt, dict) else None,
+                    positive=True,
+                )
+                entry_time = _provider_epoch(
+                    entry_receipt.get("provider_timestamp")
+                    if isinstance(entry_receipt, dict) else None
+                )
+                source_timestamp = (
+                    _fresh_provider_epoch(market_receipt)
+                    if isinstance(market_receipt, dict) else None
+                )
+                if (
+                    current is None
+                    or entry is None
+                    or entry_qty is None
+                    or qty > entry_qty + 1e-12
+                    or entry_time is None
+                    or source_timestamp is None
+                    or entry_receipt.get("fill_receipt_complete") is not True
+                    or entry_receipt.get("eligible_for_accounting") is not True
+                    or entry_receipt.get("eligible_for_learning") is not True
+                    or entry_receipt.get("generated_values") is not False
+                ):
+                    self.log(
+                        f"[NO DATA] ALPACA {pos_symbol}: fresh quote and verified entry fill required"
+                    )
+                    continue
 
-                pnl_pct = (current - entry) / entry * 100 if entry > 0 else 0
+                value = qty * current
+                pnl_pct = (current - entry) / entry * 100
                 positions_summary.append(
                     {
                         "symbol": pos_symbol,
@@ -3742,32 +4498,35 @@ class AggressiveReclaimer:
                         "current": current,
                         "value": value,
                         "pnl_pct": pnl_pct,
+                        "source_timestamp": source_timestamp,
+                        "entry_provider_timestamp": entry_time,
+                        "truth_status": "real_derived",
+                        "generated_values": False,
                     }
                 )
-                if qty > 0:
-                    positions_count += 1
 
                 if value < 0.5:
                     continue
 
-                pnl_history = self._update_pnl_history(pos_symbol, pnl_pct)
+                pnl_history = self._update_pnl_history(
+                    pos_symbol, pnl_pct, source_timestamp
+                )
                 if self._hnc:
                     try:
                         self._hnc.feed_position_data(
                             symbol=pos_symbol,
                             exchange="ALPACA",
                             entry_price=entry,
-                            entry_time=time.time(),
+                            entry_time=entry_time,
                             quantity=qty,
                             entry_value=entry * qty,
                             current_price=current,
-                            platform_timestamp=time.time(),
+                            platform_timestamp=source_timestamp,
                             momentum=pnl_pct,
                             coherence=min(1.0, 0.5 + abs(pnl_pct) / 10.0),
                         )
                     except Exception:
                         pass
-                window = self.last_buy.get(pos_symbol)
                 if window:
                     elapsed = time.time() - window.get("ts", 0)
                     if elapsed <= self.window_seconds and pnl_pct >= self.window_target_pct:
@@ -3787,30 +4546,31 @@ class AggressiveReclaimer:
                                 continue
                             self.log(f"[SELL] WINDOW EXIT {pos_symbol}: ${value:.2f} ({pnl_pct:+.2f}%)")
                             tif = 'ioc' if self._symbol_kind(sym) == 'crypto' else 'day'
-                            result = self.alpaca.place_order(sym, qty, 'sell', 'market', tif)
-                            if result and result.get('status') in ['filled', 'accepted', 'new']:
-                                self._log_order_result("sell", pos_symbol, result)
-                                self._add_trade_profit(profit_usd)
-                                self._log_event('sell', 'alpaca', pos_symbol, value, pnl_pct, profit_usd)
+                            result = self._governed_client_for("alpaca").place_market_order(
+                                sym, 'sell', quantity=qty
+                            )
+                            accounted, pnl_receipt, exit_receipt = self._account_final_exit(
+                                exchange="alpaca",
+                                symbol=pos_symbol,
+                                result=result,
+                                entry_receipt=window.get("receipt"),
+                                quote_asset="USD",
+                                exit_reason="window_exit",
+                                hold_duration_mins=elapsed / 60.0,
+                            )
+                            if accounted:
+                                profit_usd = pnl_receipt["realized_pnl"]
                                 self._record_window_outcome(pos_symbol, True, pnl_pct, elapsed)
-                                if self._hnc:
-                                    try:
-                                        self._hnc.feed_position_close(
-                                            symbol=pos_symbol,
-                                            exit_price=current,
-                                            realized_pnl=profit_usd,
-                                            exit_reason="window_exit",
-                                            hold_duration_mins=elapsed / 60.0,
-                                            max_hold_minutes=self.window_seconds / 60.0,
-                                        )
-                                    except Exception:
-                                        pass
                                 self.log(f"   [OK] SOLD! +${profit_usd:.4f}")
                                 if self.stop_on_first_profit and profit_usd >= 0.01:
                                     self._halt_after_profit = True
                                 self.last_buy.pop(pos_symbol, None)
                                 time.sleep(0.2)
                                 self._alpaca_buy_target()
+                            else:
+                                self.log(
+                                    f"   [NO DATA] Exit not accounted: {pnl_receipt.get('reason')}"
+                                )
                             continue
                     elif elapsed > self.window_seconds and not window.get("recorded"):
                         window["recorded"] = True
@@ -3818,30 +4578,41 @@ class AggressiveReclaimer:
 
                 profit_usd = value * (pnl_pct / 100)
                 if pnl_pct >= self.window_target_pct and pnl_pct > 0:
+                    ok_sell, reason = self._should_sell(
+                        pnl_pct, profit_usd, pos_symbol, kind
+                    )
+                    if not ok_sell:
+                        self.log(
+                            f"[HOLD] Target exit blocked ({reason}) {pos_symbol} ({pnl_pct:+.2f}%)"
+                        )
+                        continue
                     self.log(f"[FORCE SELL] TARGET HIT {pos_symbol}: ${value:.2f} ({pnl_pct:+.2f}%)")
                     tif = 'ioc' if self._symbol_kind(sym) == 'crypto' else 'day'
-                    result = self.alpaca.place_order(sym, qty, 'sell', 'market', tif)
-                    if result and result.get('status') in ['filled', 'accepted', 'new']:
-                        self._log_order_result("sell", pos_symbol, result)
-                        self._add_trade_profit(profit_usd)
-                        self._log_event('sell', 'alpaca', pos_symbol, value, pnl_pct, profit_usd)
-                        if self._hnc:
-                            try:
-                                self._hnc.feed_position_close(
-                                    symbol=pos_symbol,
-                                    exit_price=current,
-                                    realized_pnl=profit_usd,
-                                    exit_reason="target_force_exit",
-                                )
-                            except Exception:
-                                pass
+                    result = self._governed_client_for("alpaca").place_market_order(
+                        sym, 'sell', quantity=qty
+                    )
+                    entry_receipt = (
+                        self.last_buy.get(pos_symbol, {}).get("receipt")
+                    )
+                    accounted, pnl_receipt, exit_receipt = self._account_final_exit(
+                        exchange="alpaca",
+                        symbol=pos_symbol,
+                        result=result,
+                        entry_receipt=entry_receipt,
+                        quote_asset="USD",
+                        exit_reason="target_force_exit",
+                    )
+                    if accounted:
+                        profit_usd = pnl_receipt["realized_pnl"]
                         self.log(f"   [OK] SOLD! +${profit_usd:.4f}")
                         if self.stop_on_first_profit and profit_usd >= 0.01:
                             self._halt_after_profit = True
                         time.sleep(0.2)
                         self._alpaca_buy_target()
                     else:
-                        self.log(f"   [WARN] Sell failed: {result}")
+                        self.log(
+                            f"   [NO DATA] Exit not accounted: {pnl_receipt.get('reason')}"
+                        )
                     continue
 
                 cash = float(self.last_account.get("cash", 0) or 0)
@@ -3858,12 +4629,13 @@ class AggressiveReclaimer:
                 # ANY POSITIVE = SELL (break-even floor for non-target)
                 if should_sell:
                     profit_usd = value * (pnl_pct / 100)
-                    if not forced_break_even:
-                        ok_sell, reason = self._should_sell(pnl_pct, profit_usd, pos_symbol, self._symbol_kind(pos_symbol))
-                        if not ok_sell:
-                            self.log(f"[HOLD] Sell blocked ({reason}) {pos_symbol} ({pnl_pct:+.2f}%)")
-                            continue
-                    else:
+                    ok_sell, reason = self._should_sell(
+                        pnl_pct, profit_usd, pos_symbol, kind
+                    )
+                    if not ok_sell:
+                        self.log(f"[HOLD] Sell blocked ({reason}) {pos_symbol} ({pnl_pct:+.2f}%)")
+                        continue
+                    if forced_break_even:
                         self.log(f"[CASH RECOVERY] Break-even exit armed {pos_symbol} (cash ${cash:.2f})")
                     ok, new_pnl = self._validate_sell_price(pos_symbol, entry, is_target, self._symbol_kind(pos_symbol))
                     if not ok:
@@ -3874,12 +4646,18 @@ class AggressiveReclaimer:
                     if forced_break_even and pnl_pct < 0:
                         self.log(f"[HOLD] Break-even exit invalidated {pos_symbol} ({pnl_pct:+.2f}%)")
                         continue
-                    if not forced_break_even:
-                        ok_sell, reason = self._should_sell(pnl_pct, profit_usd, pos_symbol, self._symbol_kind(pos_symbol))
-                        if not ok_sell:
-                            self.log(f"[HOLD] Sell blocked ({reason}) {pos_symbol} ({pnl_pct:+.2f}%)")
-                            continue
+                    ok_sell, reason = self._should_sell(
+                        pnl_pct, profit_usd, pos_symbol, kind
+                    )
+                    if not ok_sell:
+                        self.log(f"[HOLD] Sell blocked ({reason}) {pos_symbol} ({pnl_pct:+.2f}%)")
+                        continue
                     target_pct, _ = self._estimate_exit_threshold(pos_symbol, self._symbol_kind(pos_symbol))
+                    if target_pct is None:
+                        self.log(
+                            f"[HOLD] Sell blocked (no fresh provider cost receipt) {pos_symbol}"
+                        )
+                        continue
                     target_pct = max(self.window_target_pct, target_pct)
                     eta = self._estimate_eta_from_pnl(pos_symbol, pnl_pct, target_pct)
                     eta_str = f"{eta:.1f}s" if eta is not None else "n/a"
@@ -3889,23 +4667,23 @@ class AggressiveReclaimer:
                     self.log(f"[SELL] ALPACA SELL {pos_symbol}: ${value:.2f} ({pnl_pct:+.2f}%)")
 
                     tif = 'ioc' if self._symbol_kind(sym) == 'crypto' else 'day'
-                    result = self.alpaca.place_order(sym, qty, 'sell', 'market', tif)
-
-                    if result and result.get('status') in ['filled', 'accepted', 'new']:
-                        self._log_order_result("sell", pos_symbol, result)
-                        self._add_trade_profit(profit_usd)
-                        self._log_event('sell', 'alpaca', pos_symbol, value, pnl_pct, profit_usd)
-                        if self._hnc:
-                            try:
-                                self._hnc.feed_position_close(
-                                    symbol=pos_symbol,
-                                    exit_price=current,
-                                    realized_pnl=profit_usd,
-                                    exit_reason="take_profit",
-                                )
-                            except Exception:
-                                pass
-                        order_id = result.get("id") if isinstance(result, dict) else None
+                    result = self._governed_client_for("alpaca").place_market_order(
+                        sym, 'sell', quantity=qty
+                    )
+                    entry_receipt = (
+                        self.last_buy.get(pos_symbol, {}).get("receipt")
+                    )
+                    accounted, pnl_receipt, exit_receipt = self._account_final_exit(
+                        exchange="alpaca",
+                        symbol=pos_symbol,
+                        result=result,
+                        entry_receipt=entry_receipt,
+                        quote_asset="USD",
+                        exit_reason="take_profit",
+                    )
+                    if accounted:
+                        profit_usd = pnl_receipt["realized_pnl"]
+                        order_id = exit_receipt.get("order_id")
                         self.log(
                             f"[SELL EXECUTED] {pos_symbol} pnl {pnl_pct:+.2f}% profit ${profit_usd:.4f} order {order_id}"
                         )
@@ -3915,7 +4693,9 @@ class AggressiveReclaimer:
                         time.sleep(0.5)
                         self._alpaca_buy_target()
                     else:
-                        self.log(f"   [WARN] Sell failed: {result}")
+                        self.log(
+                            f"   [NO DATA] Exit not accounted: {pnl_receipt.get('reason')}"
+                        )
 
             if positions_summary:
                 preview = []
@@ -4109,136 +4889,116 @@ class AggressiveReclaimer:
                     self.log("[WARN] Buy skipped (no reality winner)")
                     self.last_buy_blocker = "no_reality_winner"
                     return
-            if target_symbol:
-                alpaca_sym = self._normalize_symbol(target_symbol)
-                self.log(f"[BUY] ALPACA BUY {alpaca_sym}: ${trade_budget:.2f} ({target_mom:+.1f}%)")
-
-                if not self._can_open_new_position():
-                    self.log("[WARN] Buy blocked (open positions must close in profit first)")
-                    return
-
-                ready, reason = self._systems_ready()
-                if not ready:
-                    self.log(f"[WARN] Buy blocked (systems not ready): {reason}")
-                    return
-
-                if target_kind == "stock":
-                    buying_power = float(self.last_account.get("buying_power", 0) or 0)
-                    if buying_power > trade_budget:
-                        trade_budget = min(buying_power, self.max_trade_usd)
-
-                if not force_trade:
-                    ok_buy, reason = self._should_buy(target_mom or 0.0)
-                    if not ok_buy:
-                        self.log(f"[WARN] Buy blocked ({reason}): {alpaca_sym}")
-                        self.last_buy_blocker = reason
-                        return
-
-                price = self._get_latest_price(alpaca_sym, target_kind)
-                if price <= 0 and target_kind == "crypto":
-                    base = self._normalize_base(alpaca_sym)
-                    if base:
-                        fallback = f"{base}/USD"
-                        if fallback != alpaca_sym:
-                            price = self._get_latest_price(fallback, target_kind)
-                            if price > 0:
-                                self.log(f"[INFO] Fallback to {fallback} for pricing")
-                                alpaca_sym = fallback
-            if price <= 0:
-                self.log(f"[WARN] Buy skipped (no price): {alpaca_sym}")
-                self.last_buy_blocker = "no_price"
-                return
-
-                qty = (trade_budget * 0.95) / price
-                tif = 'ioc' if target_kind == 'crypto' else 'day'
-
-                pnl_history = self.pnl_history.get(alpaca_sym, [])
-                prob_score, prob_sources, prob_details = self._probability_score(
-                    alpaca_sym,
-                    target_mom or 0.0,
-                    pnl_history,
-                )
-                if self.prob_gate_required:
-                    if len(prob_sources) < self.prob_sources_min or prob_score < self.prob_min_score:
-                        self.log(
-                            f"[WARN] Buy skipped (prob {prob_score:.2f}, sources {len(prob_sources)}): {alpaca_sym}"
-                        )
-                        return
-
-                if not force_trade:
-                    ok, confirmations, prices = self._validate_buy_price(alpaca_sym, target_kind)
-                    if not ok:
-                        self.log(
-                            f"[WARN] Buy skipped (validation {confirmations}/{self.buy_confirmations}): {alpaca_sym} prices={prices}"
-                        )
-                        return
-                else:
-                    self.log("[FORCE] Scoreboard winner executing buy without extra gates")
-
-                try:
-                    if target_kind == "crypto":
-                        result = self.alpaca.place_market_order(
-                            alpaca_sym, "buy", quote_qty=trade_budget
-                        )
-                    else:
-                        result = self.alpaca.place_order(alpaca_sym, qty, 'buy', 'market', tif)
-                    if result:
-                        self._log_order_result("buy", alpaca_sym, result)
-                        self._log_event('buy', 'alpaca', alpaca_sym, trade_budget, '', '')
-                        self.log(f"   [OK] BOUGHT")
-                        self.last_buy[alpaca_sym] = {
-                            "ts": time.time(),
-                            "entry": price,
-                            "recorded": False,
-                        }
-                        self._write_queen_memory(
-                            {
-                                "ts": datetime.now().isoformat(),
-                                "event": "probability_gate",
-                                "symbol": alpaca_sym,
-                                "prob_score": prob_score,
-                                "prob_sources": prob_sources,
-                                "prob_details": prob_details,
-                            }
-                        )
-                    else:
-                        self.log(f"   [WARN] Buy failed: {result}")
-                except Exception as e:
-                    self.log(f"   [WARN] Buy error: {e}")
-                return
             if not target_symbol:
                 self.log("[WARN] Buy skipped (no target)")
                 return
 
-            # Use Binance momentum data
-            pairs = ['SOLUSDC', 'BTCUSDC', 'ETHUSDC']
-            best_asset, best_mom = None, -999
-            
-            for pair in pairs:
-                try:
-                    t = self.binance.get_24h_ticker(pair)
-                    mom = float(t.get('priceChangePercent', 0))
-                    if mom > best_mom:
-                        best_asset = pair.replace('USDC', '')
-                        best_mom = mom
-                except:
-                    pass
-            
-            if best_asset:
-                alpaca_sym = f'{best_asset}/USD'
-                self.log(f"[BUY] ALPACA BUY {best_asset}: ${trade_budget:.2f} ({best_mom:+.1f}%)")
-                
-                # Get price and calc qty
-                try:
-                    quotes = self.alpaca.get_latest_crypto_quotes([alpaca_sym])
-                    price = float(quotes[alpaca_sym].get('ap', 0))
-                    qty = (trade_budget * 0.95) / price
-                    
-                    result = self.alpaca.place_order(alpaca_sym, qty, 'buy', 'market', 'ioc')
-                    if result:
-                        self.log(f"   [OK] BOUGHT")
-                except Exception as e:
-                    self.log(f"   [WARN] Buy error: {e}")
+            alpaca_sym = self._normalize_symbol(target_symbol)
+            self.log(
+                f"[BUY] ALPACA BUY {alpaca_sym}: ${trade_budget:.2f} ({target_mom:+.1f}%)"
+            )
+            if not self._can_open_new_position():
+                self.log("[WARN] Buy blocked (open positions must close in profit first)")
+                return
+            ready, reason = self._systems_ready()
+            if not ready:
+                self.log(f"[WARN] Buy blocked (systems not ready): {reason}")
+                return
+            if target_kind == "stock":
+                buying_power = float(self.last_account.get("buying_power", 0) or 0)
+                if buying_power > trade_budget:
+                    trade_budget = min(buying_power, self.max_trade_usd)
+            if not force_trade:
+                ok_buy, reason = self._should_buy(target_mom or 0.0)
+                if not ok_buy:
+                    self.log(f"[WARN] Buy blocked ({reason}): {alpaca_sym}")
+                    self.last_buy_blocker = reason
+                    return
+
+            price = self._get_latest_price(alpaca_sym, target_kind)
+            if price is None and target_kind == "crypto":
+                base = self._normalize_base(alpaca_sym)
+                fallback = f"{base}/USD" if base else None
+                if fallback and fallback != alpaca_sym:
+                    price = self._get_latest_price(fallback, target_kind)
+                    if price is not None:
+                        self.log(f"[INFO] Fallback to {fallback} for pricing")
+                        alpaca_sym = fallback
+            if price is None:
+                self.log(f"[NO DATA] Buy skipped (no fresh provider price): {alpaca_sym}")
+                self.last_buy_blocker = "no_fresh_provider_price"
+                return
+
+            qty = (trade_budget * 0.95) / price
+            tif = 'ioc' if target_kind == 'crypto' else 'day'
+            pnl_history = self.pnl_history.get(alpaca_sym, [])
+            prob_score, prob_sources, prob_details = self._probability_score(
+                alpaca_sym,
+                target_mom or 0.0,
+                pnl_history,
+            )
+            if self.prob_gate_required:
+                if len(prob_sources) < self.prob_sources_min or prob_score < self.prob_min_score:
+                    self.log(
+                        f"[WARN] Buy skipped (prob {prob_score:.2f}, sources {len(prob_sources)}): {alpaca_sym}"
+                    )
+                    return
+            if not force_trade:
+                ok, confirmations, prices = self._validate_buy_price(
+                    alpaca_sym, target_kind
+                )
+                if not ok:
+                    self.log(
+                        f"[WARN] Buy skipped (validation {confirmations}/{self.buy_confirmations}): {alpaca_sym} prices={prices}"
+                    )
+                    return
+            else:
+                self.log("[FORCE] Scoreboard winner executing buy without extra gates")
+
+            if target_kind == "crypto":
+                result = self._governed_client_for("alpaca").place_market_order(
+                    alpaca_sym, "buy", quote_qty=trade_budget
+                )
+            else:
+                result = self._governed_client_for("alpaca").place_market_order(
+                    alpaca_sym, 'buy', quantity=qty
+                )
+            receipt = self._reconcile_final_fill(result, "alpaca", "USD")
+            self._log_order_result("buy", alpaca_sym, receipt)
+            if receipt["decision_status"] != "ready":
+                self.log(
+                    f"   [NO DATA] Buy fill pending: {receipt.get('reason')}"
+                )
+                return
+            self._log_event(
+                'buy', 'alpaca', alpaca_sym,
+                receipt["filled_notional"], None, None,
+            )
+            self.log(
+                f"   [OK] BOUGHT @ ${receipt['filled_avg_price']:.6f}"
+            )
+            self.last_buy[alpaca_sym] = {
+                "ts": receipt["provider_timestamp"],
+                "entry": receipt["filled_avg_price"],
+                "receipt": receipt,
+                "recorded": False,
+            }
+            self._write_queen_memory(
+                {
+                    "ts": datetime.now().isoformat(),
+                    "event": "probability_gate",
+                    "symbol": alpaca_sym,
+                    "prob_score": prob_score,
+                    "prob_sources": prob_sources,
+                    "prob_details": prob_details,
+                    "fill_order_id": receipt["order_id"],
+                    "fill_provider_timestamp": receipt["provider_timestamp"],
+                    "eligible_for_learning": True,
+                    "truth_status": "real_derived",
+                    "generated_values": False,
+                }
+            )
+            return
                     
         except Exception as e:
             self.log(f"[WARN] Alpaca buy error: {e}")
@@ -4258,9 +5018,8 @@ class AggressiveReclaimer:
             
             for bal in acct.get('balances', []):
                 asset = bal.get('asset', '')
-                free = float(bal.get('free', 0))
-                
-                if free <= 0:
+                free = _finite_observation(bal.get('free'), positive=True)
+                if free is None:
                     continue
                 
                 # Track USD
@@ -4274,9 +5033,20 @@ class AggressiveReclaimer:
                 # It's a crypto - check value
                 pair = f'{asset}USD'
                 try:
-                    ticker = self.kraken.get_ticker(pair)
-                    price = float(ticker.get('price', 0))
-                except:
+                    ticker = self.kraken.get_24h_ticker(pair)
+                    market_receipt = _market_receipt(
+                        ticker,
+                        price_keys=("price", "lastPrice"),
+                        source_id="kraken:/0/public/Ticker+/0/public/Time",
+                    )
+                    price = (
+                        market_receipt["price"]
+                        if market_receipt["decision_status"] == "ready"
+                        else None
+                    )
+                except Exception:
+                    price = None
+                if price is None:
                     continue
                 
                 value = free * price
@@ -4286,8 +5056,9 @@ class AggressiveReclaimer:
                 # Get entry
                 key = f'krk_{asset}'
                 if self._get_entry(key) is None:
-                    self._set_entry(key, price)
-                    self.log(f"[ENTRY] KRAKEN {asset}: Entry set @ ${price:.4f}")
+                    self.log(
+                        f"[NO DATA] KRAKEN {asset}: verified entry fill receipt unavailable"
+                    )
                     continue
                 
                 entry = self._get_entry(key)
@@ -4305,21 +5076,31 @@ class AggressiveReclaimer:
                 if should_sell:
                     self.log(f"[SELL] KRAKEN SELL {asset}: ${value:.2f} ({pnl_pct:+.2f}%)")
                     
-                    result = self.kraken.place_market_order(pair, 'sell', quantity=free * 0.999)
-                    
-                    # Check for ANY success indicator
-                    if result and (result.get('txid') or result.get('status') == 'FILLED' or 
-                                   result.get('orderId') or 'dryRun' in result):
-                        profit_usd = value * (pnl_pct / 100)
-                        self._add_trade_profit(profit_usd)
-                        self._log_event('sell', 'kraken', asset, value, pnl_pct, profit_usd)
+                    result = self._governed_client_for("kraken").place_market_order(
+                        pair, 'sell', quantity=free * 0.999
+                    )
+                    exit_receipt = self._reconcile_final_fill(
+                        result, "kraken", "USD"
+                    )
+                    self._log_order_result("sell", pair, exit_receipt)
+                    pnl_receipt = _realized_pnl_receipt(
+                        self._get_entry_receipt(key), exit_receipt
+                    )
+                    if self._add_trade_profit(pnl_receipt):
+                        profit_usd = pnl_receipt["realized_pnl"]
+                        self._log_event(
+                            'sell', 'kraken', asset,
+                            exit_receipt["filled_notional"], None, profit_usd,
+                        )
                         self.log(f"   [OK] SOLD! +${profit_usd:.4f}")
                         
                         self._del_entry(key)
                         time.sleep(0.3)
                         self._kraken_buy_target()
                     else:
-                        self.log(f"   [WARN] Sell failed: {result}")
+                        self.log(
+                            f"   [NO DATA] Sell not accounted: {pnl_receipt.get('reason')}"
+                        )
             
             # Deploy USD
             if usd_bal > 2:
@@ -4343,16 +5124,27 @@ class AggressiveReclaimer:
                 kraken_pair = f'{target_symbol}USD'
                 self.log(f"[BUY] KRAKEN BUY {target_symbol}: ${usd:.2f} ({target_mom:+.1f}%)")
                 
-                result = self.kraken.place_market_order(kraken_pair, 'buy', quote_qty=usd * 0.95)
-                
-                if result and (result.get('txid') or 'dryRun' in result):
-                    ticker = self.kraken.get_ticker(kraken_pair)
-                    price = float(ticker.get('price', 0))
-                    self._set_entry(f'krk_{target_symbol}', price)
-                    self._log_event('buy', 'kraken', target_symbol, usd, '', '')
-                    self.log(f"   OK. BOUGHT @ ${price:.4f}")
+                result = self._governed_client_for("kraken").place_market_order(
+                    kraken_pair, 'buy', quote_qty=usd * 0.95
+                )
+                receipt = self._reconcile_final_fill(result, "kraken", "USD")
+                self._log_order_result("buy", kraken_pair, receipt)
+                if self._set_entry(
+                    f'krk_{target_symbol}',
+                    receipt.get("filled_avg_price"),
+                    receipt,
+                ):
+                    self._log_event(
+                        'buy', 'kraken', target_symbol,
+                        receipt["filled_notional"], None, None,
+                    )
+                    self.log(
+                        f"   OK. BOUGHT @ ${receipt['filled_avg_price']:.4f}"
+                    )
                 else:
-                    self.log(f"   WARN: Buy failed: {result}")
+                    self.log(
+                        f"   [NO DATA] Buy fill pending: {receipt.get('reason')}"
+                    )
                 return
 
             if not target_symbol:
@@ -4376,15 +5168,23 @@ class AggressiveReclaimer:
                 kraken_pair = f'{best_asset}USD'
                 self.log(f"[BUY] KRAKEN BUY {best_asset}: ${usd:.2f} ({best_mom:+.1f}%)")
                 
-                result = self.kraken.place_market_order(kraken_pair, 'buy', quote_qty=usd * 0.95)
-                
-                if result and (result.get('txid') or 'dryRun' in result):
-                    ticker = self.kraken.get_ticker(kraken_pair)
-                    price = float(ticker.get('price', 0))
-                    self._set_entry(f'krk_{best_asset}', price)
-                    self.log(f"   [OK] BOUGHT @ ${price:.4f}")
+                result = self._governed_client_for("kraken").place_market_order(
+                    kraken_pair, 'buy', quote_qty=usd * 0.95
+                )
+                receipt = self._reconcile_final_fill(result, "kraken", "USD")
+                self._log_order_result("buy", kraken_pair, receipt)
+                if self._set_entry(
+                    f'krk_{best_asset}',
+                    receipt.get("filled_avg_price"),
+                    receipt,
+                ):
+                    self.log(
+                        f"   [OK] BOUGHT @ ${receipt['filled_avg_price']:.4f}"
+                    )
                 else:
-                    self.log(f"   [WARN] Buy failed: {result}")
+                    self.log(
+                        f"   [NO DATA] Buy fill pending: {receipt.get('reason')}"
+                    )
                     
         except Exception as e:
             self.log(f"[WARN] Kraken buy error: {e}")

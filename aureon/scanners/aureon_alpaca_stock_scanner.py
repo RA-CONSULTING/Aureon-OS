@@ -34,7 +34,8 @@ if sys.platform == 'win32':
 import logging
 import time
 import math
-from typing import Dict, List, Optional, Tuple
+from datetime import datetime, timezone
+from typing import Any, Callable, Dict, List, Optional, Tuple
 from dataclasses import asdict, dataclass, field
 from collections import deque
 
@@ -64,6 +65,11 @@ STOCK_BID_ASK_SPREAD_EST_PCT = 0.01  # 1 bps typical for liquid stocks
 STOCK_SLIPPAGE_EST_PCT = 0.01  # 1 bps for execution slippage
 STOCK_ROUND_TRIP_COST_PCT = STOCK_BROKER_FEE_PCT + STOCK_BID_ASK_SPREAD_EST_PCT + STOCK_SLIPPAGE_EST_PCT  # ~0.02%
 
+ALPACA_STOCK_SNAPSHOT_SOURCE = "alpaca:/v2/stocks/snapshots"
+DEFAULT_QUOTE_MAX_AGE_SECONDS = 300.0
+DEFAULT_BAR_MAX_AGE_SECONDS = 36.0 * 60.0 * 60.0
+MAX_PROVIDER_FUTURE_SKEW_SECONDS = 5.0
+
 
 @dataclass
 class StockOpportunity:
@@ -80,6 +86,16 @@ class StockOpportunity:
     volatility_score: float
     combined_score: float
     timestamp: float
+    source_id: str
+    source_timestamp: float
+    quote_source_timestamp: float
+    trade_source_timestamp: float
+    bar_source_timestamp: float
+    received_at: str
+    truth_status: str
+    data_status: str
+    generated_values: bool
+    eligible_for_action: bool
     signal_type: str = "MOMENTUM"  # MOMENTUM, BREAKOUT, REVERSAL, GAP
     confidence: float = 0.0
     expected_move_pct: float = 0.0
@@ -102,11 +118,24 @@ class AlpacaStockScanner:
     - Technical patterns (gaps, flags, triangles)
     """
     
-    def __init__(self, alpaca_client=None):
+    def __init__(
+        self,
+        alpaca_client=None,
+        *,
+        clock: Optional[Callable[[], float]] = None,
+        quote_max_age_seconds: float = DEFAULT_QUOTE_MAX_AGE_SECONDS,
+        bar_max_age_seconds: float = DEFAULT_BAR_MAX_AGE_SECONDS,
+    ):
         self.alpaca = alpaca_client
+        self._clock = clock or time.time
+        self.quote_max_age_seconds = float(quote_max_age_seconds)
+        self.bar_max_age_seconds = float(bar_max_age_seconds)
+        if self.quote_max_age_seconds <= 0.0 or self.bar_max_age_seconds <= 0.0:
+            raise ValueError("Alpaca freshness windows must be positive")
         self.price_history: Dict[str, deque] = {}  # Rolling price history
         self.volume_history: Dict[str, deque] = {}  # Rolling volume history
         self.history_window = 50  # Keep 50 data points for MA calculations
+        self.last_scan_receipt = self._no_data_receipt("scanner_not_run")
         
         # Bus Integration
         self.thought_bus = ThoughtBus() if THOUGHT_BUS_AVAILABLE else None
@@ -116,7 +145,224 @@ class AlpacaStockScanner:
                 self.chirp_bus = ChirpBus()
             except Exception:
                 pass
-        
+
+    @staticmethod
+    def _finite_number(
+        value: Any,
+        *,
+        positive: bool = False,
+        nonnegative: bool = False,
+    ) -> Optional[float]:
+        if value is None or isinstance(value, bool):
+            return None
+        try:
+            number = float(value)
+        except (TypeError, ValueError, OverflowError):
+            return None
+        if not math.isfinite(number):
+            return None
+        if positive and number <= 0.0:
+            return None
+        if nonnegative and number < 0.0:
+            return None
+        return number
+
+    @staticmethod
+    def _provider_timestamp_epoch(value: Any) -> Optional[float]:
+        if value is None or isinstance(value, bool):
+            return None
+        if isinstance(value, (int, float)):
+            timestamp = float(value)
+            if not math.isfinite(timestamp) or timestamp <= 0.0:
+                return None
+            if timestamp >= 1e17:
+                timestamp /= 1e9
+            elif timestamp >= 1e14:
+                timestamp /= 1e6
+            elif timestamp >= 1e11:
+                timestamp /= 1e3
+            return timestamp
+        if isinstance(value, str):
+            text = value.strip()
+            if not text:
+                return None
+            try:
+                parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
+            except ValueError:
+                return None
+            if parsed.tzinfo is None:
+                return None
+            timestamp = parsed.timestamp()
+            return timestamp if math.isfinite(timestamp) and timestamp > 0.0 else None
+        return None
+
+    @staticmethod
+    def _component_timestamp(component: Dict[str, Any]) -> Any:
+        for key in ("source_timestamp", "provider_timestamp", "t", "timestamp"):
+            if key in component:
+                return component[key]
+        return None
+
+    def _fresh_provider_timestamp(
+        self,
+        value: Any,
+        *,
+        received_epoch: float,
+        max_age_seconds: float,
+    ) -> Optional[float]:
+        timestamp = self._provider_timestamp_epoch(value)
+        if timestamp is None:
+            return None
+        if timestamp > received_epoch + MAX_PROVIDER_FUTURE_SKEW_SECONDS:
+            return None
+        if received_epoch - timestamp > max_age_seconds:
+            return None
+        return timestamp
+
+    @staticmethod
+    def _receipt_time(received_epoch: float) -> str:
+        return datetime.fromtimestamp(received_epoch, tz=timezone.utc).isoformat()
+
+    def _no_data_receipt(self, reason: str) -> Dict[str, Any]:
+        received_epoch = float(self._clock())
+        return {
+            "source_id": ALPACA_STOCK_SNAPSHOT_SOURCE,
+            "source_timestamp": None,
+            "received_at": self._receipt_time(received_epoch),
+            "data_status": "no_data",
+            "truth_status": "no_data",
+            "reason": reason,
+            "generated_values": False,
+            "eligible_for_ranking": False,
+            "eligible_for_action": False,
+            "eligible_for_accounting": False,
+            "eligible_for_learning": False,
+        }
+
+    @staticmethod
+    def _snapshot_component(snapshot: Dict[str, Any], camel: str, snake: str) -> Optional[Dict[str, Any]]:
+        component = snapshot.get(camel)
+        if component is None:
+            component = snapshot.get(snake)
+        return component if isinstance(component, dict) else None
+
+    def _normalize_stock_snapshot(
+        self,
+        symbol: str,
+        snapshot: Any,
+        *,
+        received_epoch: float,
+    ) -> Optional[Dict[str, Any]]:
+        """Validate one complete Alpaca trade, book, and daily OHLCV receipt."""
+        if not isinstance(snapshot, dict) or snapshot.get("generated_values") is True:
+            return None
+        if "data_status" in snapshot and snapshot.get("data_status") != "live":
+            return None
+        if "truth_status" in snapshot and snapshot.get("truth_status") not in {
+            "real_observed",
+            "real_derived",
+        }:
+            return None
+
+        latest_trade = self._snapshot_component(snapshot, "latestTrade", "latest_trade")
+        latest_quote = self._snapshot_component(snapshot, "latestQuote", "latest_quote")
+        daily_bar = self._snapshot_component(snapshot, "dailyBar", "daily_bar")
+        if latest_trade is None or latest_quote is None or daily_bar is None:
+            return None
+        if any(component.get("generated_values") is True for component in (latest_trade, latest_quote, daily_bar)):
+            return None
+
+        price = self._finite_number(latest_trade.get("p"), positive=True)
+        trade_size = self._finite_number(latest_trade.get("s"), positive=True)
+        bid = self._finite_number(latest_quote.get("bp"), positive=True)
+        ask = self._finite_number(latest_quote.get("ap"), positive=True)
+        bid_size = self._finite_number(latest_quote.get("bs"), positive=True)
+        ask_size = self._finite_number(latest_quote.get("as"), positive=True)
+        open_price = self._finite_number(daily_bar.get("o"), positive=True)
+        high_price = self._finite_number(daily_bar.get("h"), positive=True)
+        low_price = self._finite_number(daily_bar.get("l"), positive=True)
+        close_price = self._finite_number(daily_bar.get("c"), positive=True)
+        volume = self._finite_number(daily_bar.get("v"), nonnegative=True)
+        if any(
+            value is None
+            for value in (
+                price,
+                trade_size,
+                bid,
+                ask,
+                bid_size,
+                ask_size,
+                open_price,
+                high_price,
+                low_price,
+                close_price,
+                volume,
+            )
+        ):
+            return None
+        assert price is not None
+        assert bid is not None and ask is not None
+        assert open_price is not None and high_price is not None
+        assert low_price is not None and close_price is not None and volume is not None
+        if bid > ask:
+            return None
+        if not (
+            low_price <= open_price <= high_price
+            and low_price <= close_price <= high_price
+            and low_price <= price <= high_price
+        ):
+            return None
+
+        trade_timestamp = self._fresh_provider_timestamp(
+            self._component_timestamp(latest_trade),
+            received_epoch=received_epoch,
+            max_age_seconds=self.quote_max_age_seconds,
+        )
+        quote_timestamp = self._fresh_provider_timestamp(
+            self._component_timestamp(latest_quote),
+            received_epoch=received_epoch,
+            max_age_seconds=self.quote_max_age_seconds,
+        )
+        bar_timestamp = self._fresh_provider_timestamp(
+            self._component_timestamp(daily_bar),
+            received_epoch=received_epoch,
+            max_age_seconds=self.bar_max_age_seconds,
+        )
+        if trade_timestamp is None or quote_timestamp is None or bar_timestamp is None:
+            return None
+
+        midpoint = (bid + ask) / 2.0
+        if midpoint <= 0.0 or not math.isfinite(midpoint):
+            return None
+        spread_pct = ((ask - bid) / midpoint) * 100.0
+        change_pct = ((price - open_price) / open_price) * 100.0
+        source_timestamp = min(trade_timestamp, quote_timestamp)
+        return {
+            "symbol": str(symbol).strip().upper(),
+            "price": price,
+            "bid": bid,
+            "ask": ask,
+            "bid_size": bid_size,
+            "ask_size": ask_size,
+            "spread_pct": spread_pct,
+            "open": open_price,
+            "high": high_price,
+            "low": low_price,
+            "close": close_price,
+            "volume": volume,
+            "change_pct": change_pct,
+            "source_id": ALPACA_STOCK_SNAPSHOT_SOURCE,
+            "source_timestamp": source_timestamp,
+            "quote_source_timestamp": quote_timestamp,
+            "trade_source_timestamp": trade_timestamp,
+            "bar_source_timestamp": bar_timestamp,
+            "received_at": self._receipt_time(received_epoch),
+            "truth_status": "real_derived",
+            "data_status": "live",
+            "generated_values": False,
+            "eligible_for_action": True,
+        }
+
     def scan_stocks(
         self,
         symbols: Optional[List[str]] = None,
@@ -141,8 +387,10 @@ class AlpacaStockScanner:
         Returns:
             List of stock opportunities ranked by combined score
         """
+        self.last_scan_receipt = self._no_data_receipt("scan_has_no_verified_provider_data")
         if not self.alpaca:
             logger.warning("No Alpaca client available for stock scanning")
+            self.last_scan_receipt = self._no_data_receipt("alpaca_client_unavailable")
             return []
         
         # Get symbols to scan
@@ -152,20 +400,26 @@ class AlpacaStockScanner:
                     symbols = self.alpaca.get_tradable_stock_symbols() or []
                 else:
                     logger.warning("Alpaca client missing get_tradable_stock_symbols()")
+                    self.last_scan_receipt = self._no_data_receipt("tradable_symbols_provider_method_unavailable")
                     return []
             except Exception as e:
                 logger.error(f"Failed to get stock symbols: {e}")
+                self.last_scan_receipt = self._no_data_receipt("tradable_symbols_provider_request_failed")
                 return []
         
         if not symbols:
+            self.last_scan_receipt = self._no_data_receipt("tradable_symbols_provider_receipt_empty")
             return []
         
         # Limit to reasonable batch size using volume filter
         if len(symbols) > 500:
             symbols = self._filter_to_top_volume_stocks(symbols, limit=500)
+            if not symbols:
+                self.last_scan_receipt = self._no_data_receipt("fresh_complete_volume_snapshots_required")
+                return []
         
         opportunities = []
-        timestamp = time.time()
+        validated_receipts: List[Dict[str, Any]] = []
         
         # Fetch latest quotes in batches
         batch_size = 100
@@ -177,9 +431,10 @@ class AlpacaStockScanner:
                 quotes = self._fetch_stock_quotes(batch)
                 
                 for symbol, quote in quotes.items():
-                    price = quote.get('price', 0)
-                    volume = quote.get('volume', 0)
-                    change_pct = quote.get('change_pct', 0)
+                    price = quote['price']
+                    volume = quote['volume']
+                    change_pct = quote['change_pct']
+                    validated_receipts.append(quote)
                     
                     # Apply filters
                     if price < min_price or price > max_price:
@@ -210,7 +465,7 @@ class AlpacaStockScanner:
                     
                     # Expected move (simple heuristic) and cost/slippage
                     expected_move_pct = abs(change_pct) * (1 + volatility_score)
-                    spread_pct = quote.get('spread_pct', 0.0)
+                    spread_pct = quote['spread_pct']
                     cost_buffer_pct = 0.02  # 2 bps for fees/latency safety
                     expected_net_move_pct = expected_move_pct - spread_pct - cost_buffer_pct
                     
@@ -229,8 +484,8 @@ class AlpacaStockScanner:
                         opportunities.append(StockOpportunity(
                             symbol=symbol,
                             price=price,
-                            bid=quote.get('bid', 0.0),
-                            ask=quote.get('ask', 0.0),
+                            bid=quote['bid'],
+                            ask=quote['ask'],
                             spread_pct=spread_pct,
                             change_24h=change_pct,
                             volume=volume,
@@ -238,7 +493,17 @@ class AlpacaStockScanner:
                             volume_score=volume_score,
                             volatility_score=volatility_score,
                             combined_score=combined_score,
-                            timestamp=timestamp,
+                            timestamp=quote['source_timestamp'],
+                            source_id=quote['source_id'],
+                            source_timestamp=quote['source_timestamp'],
+                            quote_source_timestamp=quote['quote_source_timestamp'],
+                            trade_source_timestamp=quote['trade_source_timestamp'],
+                            bar_source_timestamp=quote['bar_source_timestamp'],
+                            received_at=quote['received_at'],
+                            truth_status=quote['truth_status'],
+                            data_status=quote['data_status'],
+                            generated_values=quote['generated_values'],
+                            eligible_for_action=quote['eligible_for_action'],
                             signal_type=signal_type,
                             confidence=confidence,
                             expected_move_pct=expected_move_pct,
@@ -259,6 +524,23 @@ class AlpacaStockScanner:
         
         # Publish best opportunities
         results = opportunities[:max_results]
+        if validated_receipts:
+            self.last_scan_receipt = {
+                "source_id": ALPACA_STOCK_SNAPSHOT_SOURCE,
+                "source_timestamp": min(item['source_timestamp'] for item in validated_receipts),
+                "received_at": max(item['received_at'] for item in validated_receipts),
+                "data_status": "live",
+                "truth_status": "real_derived",
+                "observed_symbols": len(validated_receipts),
+                "ranked_opportunities": len(results),
+                "generated_values": False,
+                "eligible_for_ranking": True,
+                "eligible_for_action": bool(results),
+                "eligible_for_accounting": False,
+                "eligible_for_learning": False,
+            }
+        else:
+            self.last_scan_receipt = self._no_data_receipt("fresh_complete_alpaca_snapshots_required")
         for opp in results[:3]:
             self._publish_opportunity(opp)
             
@@ -266,6 +548,14 @@ class AlpacaStockScanner:
     
     def _publish_opportunity(self, opp: StockOpportunity) -> None:
         """Publish opportunity to ThoughtBus and ChirpBus."""
+        if (
+            opp.data_status != "live"
+            or opp.truth_status not in {"real_observed", "real_derived"}
+            or opp.generated_values is not False
+            or opp.eligible_for_action is not True
+        ):
+            logger.warning("Refusing to publish an ineligible Alpaca stock opportunity")
+            return
         try:
             # 1. ThoughtBus
             if self.thought_bus:
@@ -290,7 +580,7 @@ class AlpacaStockScanner:
     def _filter_to_top_volume_stocks(self, symbols: List[str], limit: int = 500) -> List[str]:
         """Filter to highest volume stocks using BULK snapshots (Heavy Lifting)."""
         if not self.alpaca:
-            return symbols[:limit]
+            return []
 
         # Process a larger subset since we can now fetch efficiently
         subset = symbols[:2000]
@@ -300,70 +590,51 @@ class AlpacaStockScanner:
             # Use new bulk snapshot method
             if hasattr(self.alpaca, 'get_stock_snapshots'):
                 snapshots = self.alpaca.get_stock_snapshots(subset)
+                if not isinstance(snapshots, dict):
+                    return []
+                received_epoch = float(self._clock())
                 for sym, snap in snapshots.items():
-                    if not snap: continue
-                    # Handle both camelCase (API) and snake_case (Client) keys
-                    daily = snap.get('dailyBar', {}) or snap.get('daily_bar', {})
-                    vol = float(daily.get('v', 0) or 0.0)
-                    if vol > 0:
-                        volumes.append((sym, vol))
+                    normalized = self._normalize_stock_snapshot(
+                        str(sym),
+                        snap,
+                        received_epoch=received_epoch,
+                    )
+                    if normalized is not None and normalized['volume'] > 0.0:
+                        volumes.append((normalized['symbol'], normalized['volume']))
             else:
-                # Fallback if method missing (shouldn't happen with patch)
-                logger.warning("Alpaca client missing get_stock_snapshots, using slow filter")
-                return symbols[:limit]
+                logger.warning("Alpaca client missing get_stock_snapshots")
+                return []
                 
         except Exception as e:
             logger.error(f"Error in heavy lifting volume filter: {e}")
-            return symbols[:limit]
+            return []
 
         if not volumes:
-            return symbols[:limit]
+            return []
 
         volumes.sort(key=lambda x: x[1], reverse=True)
         return [sym for sym, _ in volumes[:limit]]
     
     def _fetch_stock_quotes(self, symbols: List[str]) -> Dict[str, Dict]:
-        """Fetch latest quotes using BULK snapshots (Heavy Lifting Optimized)."""
+        """Return only fresh, complete Alpaca snapshot receipts."""
         quotes = {}
         
         try:
             # Use bulk fetch instead of iterative loop
             if hasattr(self.alpaca, 'get_stock_snapshots'):
                 snapshots = self.alpaca.get_stock_snapshots(symbols)
+                if not isinstance(snapshots, dict):
+                    return {}
+                received_epoch = float(self._clock())
                 
                 for sym, snap in snapshots.items():
-                    if not snap: continue
-                    
-                    # Extract Data
-                    latest_trade = snap.get('latestTrade', {}) or snap.get('latest_trade', {})
-                    latest_quote = snap.get('latestQuote', {}) or snap.get('latest_quote', {})
-                    daily_bar = snap.get('dailyBar', {}) or snap.get('daily_bar', {})
-                    
-                    price = float(latest_trade.get('p', 0) or 0)
-                    bid = float(latest_quote.get('bp', 0) or 0)
-                    ask = float(latest_quote.get('ap', 0) or 0)
-                    volume = float(daily_bar.get('v', 0) or 0)
-                    open_price = float(daily_bar.get('o', 0) or 0)
-                    
-                    # Calculate Stats
-                    spread_pct = 0.0
-                    if bid > 0 and ask > 0:
-                        mid = (bid + ask) / 2
-                        spread_pct = ((ask - bid) / mid) * 100
-                    
-                    change_pct = 0.0
-                    if open_price > 0 and price > 0:
-                        change_pct = ((price - open_price) / open_price) * 100
-                    
-                    if price > 0:
-                        quotes[sym] = {
-                            'price': price,
-                            'bid': bid,
-                            'ask': ask,
-                            'spread_pct': spread_pct,
-                            'volume': volume,
-                            'change_pct': change_pct
-                        }
+                    normalized = self._normalize_stock_snapshot(
+                        str(sym),
+                        snap,
+                        received_epoch=received_epoch,
+                    )
+                    if normalized is not None:
+                        quotes[normalized['symbol']] = normalized
             else:
                 logger.warning("Alpaca client missing get_stock_snapshots")
                 

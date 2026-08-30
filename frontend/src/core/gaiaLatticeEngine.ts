@@ -47,18 +47,33 @@ const SOLFEGGIO: Record<string, number> = {
 };
 
 export interface LatticeState {
-  phase: 'DISTORTION' | 'NULLIFYING' | 'CARRIER_ACTIVE' | 'GAIA_RESONANCE';
-  frequency: number;
-  riskMod: number;
-  tpMod: number;
-  slMod: number;
-  fieldPurity: number;
+  phase: 'NO_DATA' | 'DISTORTION' | 'NULLIFYING' | 'CARRIER_ACTIVE' | 'GAIA_RESONANCE';
+  frequency: number | null;
+  riskMod: number | null;
+  tpMod: number | null;
+  slMod: number | null;
+  fieldPurity: number | null;
   description: string;
-  carrierStrength: number;
-  nullificationPct: number;
-  emergent432: number;
-  schumannAlignment: number;
-  lambdaValue: number;
+  carrierStrength: number | null;
+  nullificationPct: number | null;
+  emergent432: number | null;
+  schumannAlignment: number | null;
+  lambdaValue: number | null;
+  truthStatus: 'no_data' | 'real_derived';
+  sourceId: string | null;
+  sourceEventIds: string[];
+  sourceTimestamp: number | null;
+  generated: false;
+}
+
+export interface LatticeObservation {
+  coherence: number;
+  sourceId: string;
+  sourceEventIds: string[];
+  sourceTimestamp: number;
+  truthStatus: 'live' | 'real_derived';
+  generated: false;
+  schumannPower?: number | null;
 }
 
 export interface CarrierWaveState {
@@ -103,7 +118,7 @@ export class CarrierWaveDynamics {
    * E_imperial = (J² × C × R) / D
    * E_quantum = k_Q × E_imperial
    */
-  calculateImperialEnergy(marketCoherence = 0.5, schumannPower = 1.0): [number, number] {
+  calculateImperialEnergy(marketCoherence: number, schumannPower: number): [number, number] {
     const J = this.justice * (0.5 + marketCoherence);
     const C = this.compassion * schumannPower;
     const R = this.redemption * (1.0 + marketCoherence);
@@ -123,11 +138,13 @@ export class CarrierWaveDynamics {
    * II. THE CLEANING (Phase Conjugate Mirroring)
    * Λ_dist(t) = A × sin(2π × 440t) + η(t)
    */
-  generateDistortionField(amplitude = 1.0, noiseLevel = 0.1): number[] {
+  generateDistortionField(amplitude = 1.0, noiseLevel = 0): number[] {
+    if (noiseLevel !== 0) {
+      throw new Error('OBSERVED_FIELD_NOISE_REQUIRED');
+    }
     return this.t.map(t => {
       const distortion = amplitude * Math.sin(2 * Math.PI * FREQ_DISTORTION * t);
-      const noise = (Math.random() - 0.5) * 2 * noiseLevel;
-      return distortion + noise;
+      return distortion;
     });
   }
   
@@ -183,9 +200,9 @@ export class CarrierWaveDynamics {
    * SIGNAL SERO - Zero-Point Injection Protocol
    */
   executeSignalSero(
-    currentField: number[] | null = null,
-    marketCoherence = 0.5,
-    schumannPower = 1.0,
+    currentField: number[] | null,
+    marketCoherence: number,
+    schumannPower: number,
     globalPhase = 0
   ): CarrierWaveState {
     const timestamp = Date.now();
@@ -250,7 +267,8 @@ export class CarrierWaveDynamics {
   }
   
   getFieldPurity(): number {
-    return this.currentState?.fieldCoherence ?? 0.5;
+    if (!this.currentState) throw new Error('NO_LATTICE_STATE');
+    return this.currentState.fieldCoherence;
   }
 }
 
@@ -262,18 +280,23 @@ export class GaiaLatticeEngine {
   constructor() {
     this.carrierWave = new CarrierWaveDynamics();
     this.currentState = {
-      phase: 'DISTORTION',
-      frequency: FREQ_DISTORTION,
-      riskMod: 1.0,
-      tpMod: 1.0,
-      slMod: 1.0,
-      fieldPurity: 0.5,
-      description: 'Initializing Gaia Lattice',
-      carrierStrength: 0,
-      nullificationPct: 0,
-      emergent432: 0,
-      schumannAlignment: 0,
-      lambdaValue: 0
+      phase: 'NO_DATA',
+      frequency: null,
+      riskMod: null,
+      tpMod: null,
+      slMod: null,
+      fieldPurity: null,
+      description: 'No fresh lattice input observation',
+      carrierStrength: null,
+      nullificationPct: null,
+      emergent432: null,
+      schumannAlignment: null,
+      lambdaValue: null,
+      truthStatus: 'no_data',
+      sourceId: null,
+      sourceEventIds: [],
+      sourceTimestamp: null,
+      generated: false,
     };
   }
   
@@ -284,14 +307,35 @@ export class GaiaLatticeEngine {
     
     // Start heartbeat
     setInterval(() => {
-      temporalLadder.heartbeat('gaia-lattice', this.currentState.fieldPurity);
+      if (this.currentState.fieldPurity !== null) {
+        temporalLadder.heartbeat('gaia-lattice', this.currentState.fieldPurity);
+      }
     }, 2000);
     
     this.registered = true;
     console.log('🌍 Gaia Lattice Engine registered with Temporal Ladder');
   }
   
-  update(marketCoherence: number, schumannPower = 1.0): LatticeState {
+  update(observation: LatticeObservation): LatticeState {
+    if (
+      observation.generated !== false ||
+      !observation.sourceId ||
+      !observation.sourceEventIds.length ||
+      !Number.isFinite(observation.coherence)
+    ) {
+      throw new Error('FRESH_LATTICE_PROVENANCE_REQUIRED');
+    }
+    const sourceTimestamp = observation.sourceTimestamp < 10_000_000_000
+      ? observation.sourceTimestamp * 1000
+      : observation.sourceTimestamp;
+    const sourceAge = Date.now() - sourceTimestamp;
+    if (sourceAge < -30_000 || sourceAge > 300_000) {
+      throw new Error(`LATTICE_OBSERVATION_STALE:${sourceAge}`);
+    }
+    const marketCoherence = Math.max(0, Math.min(1, observation.coherence));
+    // 1.0 is the HNC reference coefficient when no measured Schumann power
+    // is available; it is not published as a Schumann observation.
+    const schumannPower = observation.schumannPower ?? 1.0;
     // Execute Signal Sero protocol
     const cwState = this.carrierWave.executeSignalSero(null, marketCoherence, schumannPower);
     
@@ -330,8 +374,13 @@ export class GaiaLatticeEngine {
       carrierStrength: cwState.carrierComposite,
       nullificationPct: cwState.nullificationAmplitude,
       emergent432: cwState.emergent432Strength,
-      schumannAlignment: schumannPower,
-      lambdaValue: marketCoherence
+      schumannAlignment: observation.schumannPower ?? null,
+      lambdaValue: marketCoherence,
+      truthStatus: 'real_derived',
+      sourceId: observation.sourceId,
+      sourceEventIds: observation.sourceEventIds,
+      sourceTimestamp,
+      generated: false,
     };
     
     // Publish to UnifiedBus
@@ -346,7 +395,12 @@ export class GaiaLatticeEngine {
         phase,
         frequency,
         fieldPurity: cwState.fieldCoherence,
-        carrierStrength: cwState.carrierComposite
+        carrierStrength: cwState.carrierComposite,
+        truthStatus: 'real_derived',
+        generatedValues: false,
+        sourceId: observation.sourceId,
+        sourceEventIds: observation.sourceEventIds,
+        sourceTimestamp: new Date(sourceTimestamp).toISOString(),
       }
     });
     
@@ -357,13 +411,13 @@ export class GaiaLatticeEngine {
     return this.currentState;
   }
   
-  getFieldPurity(): number {
+  getFieldPurity(): number | null {
     return this.currentState.fieldPurity;
   }
   
   filterSignals<T>(opportunities: T[]): T[] {
     // Filter based on field purity
-    if (this.currentState.fieldPurity < 0.3) {
+    if (this.currentState.fieldPurity === null || this.currentState.fieldPurity < 0.3) {
       console.log('⚠️ Field purity too low, filtering all signals');
       return [];
     }

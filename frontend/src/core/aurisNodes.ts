@@ -1,13 +1,15 @@
 // 9 Auris Nodes - Symbolic Taxonomy
 // Each node has unique market response curves
 
+import type { DataProvenance } from './liveDataContract';
+
 export type AurisNode = {
   name: string;
   weight: number;
   compute: (snapshot: MarketSnapshot) => number;
 };
 
-export type MarketSnapshot = {
+export type MarketSnapshot = DataProvenance & {
   price: number;
   volume: number;
   volatility: number;

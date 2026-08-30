@@ -628,6 +628,8 @@ KRAKEN_FAST_PROFIT_COLLATERAL_WARN_PCT = max(
 KRAKEN_MARGIN_CAPITAL_CACHE_TTL_SEC = max(3.0, float(os.getenv("KRAKEN_MARGIN_CAPITAL_CACHE_TTL_SEC", "20.0")))
 KRAKEN_SPOT_BALANCE_CACHE_TTL_SEC = max(5.0, float(os.getenv("KRAKEN_SPOT_BALANCE_CACHE_TTL_SEC", "30.0")))
 KRAKEN_TRUTH_CHECK_INTERVAL_SEC = max(30.0, float(os.getenv("KRAKEN_TRUTH_CHECK_INTERVAL_SEC", "120.0")))
+PROVIDER_RECEIPT_MAX_AGE_SEC = 300.0
+PROVIDER_ACCOUNT_RECEIPT_MAX_AGE_SEC = 30.0
 DYNAMIC_MIN_NOTIONAL_USD = float(os.getenv("KRAKEN_DYNAMIC_MIN_NOTIONAL_USD", "5.0"))
 DYNAMIC_MIN_PROFIT_USD = float(os.getenv("KRAKEN_DYNAMIC_MIN_PROFIT_USD", "0.05"))
 DYNAMIC_TARGET_EQUITY_FRACTION = float(os.getenv("KRAKEN_DYNAMIC_TARGET_EQUITY_FRACTION", "0.01"))
@@ -1083,6 +1085,10 @@ class ActiveTrade:
     last_rollover_check: float = 0.0
     profit_target_usd: float = 0.0
     cognition_plan: dict = field(default_factory=dict)
+    entry_source_id: str = ""
+    entry_source_timestamp: float = 0.0
+    entry_fee_asset: str = ""
+    entry_fill_receipt_complete: bool = False
 
     def to_dict(self):
         return asdict(self)
@@ -3102,7 +3108,15 @@ class KrakenMarginArmyTrader:
     Execution: Kraken API only (open/close)
     """
 
-    def __init__(self, dry_run: bool = False):
+    def __init__(
+        self,
+        dry_run: bool = False,
+        *,
+        unity_composition: Any = None,
+        unity_plan_supplier: Any = None,
+        trusted_unity_plan_supplier_ids: Tuple[str, ...] = (),
+        mycelium_network: Any = None,
+    ):
         if dry_run:
             os.environ["KRAKEN_DRY_RUN"] = "true"
         try:
@@ -3141,6 +3155,12 @@ class KrakenMarginArmyTrader:
         self.total_trades = 0
         self.winning_trades = 0
         self.completed_trades: List[dict] = []
+        # Submission acknowledgements are not fills. Keep unresolved receipts
+        # latched in memory so a subsequent invocation reconciles once instead
+        # of creating a duplicate order.
+        self._unresolved_open_submissions: Dict[str, Dict[str, Any]] = {}
+        self._unresolved_close_submissions: Dict[str, Dict[str, Any]] = {}
+        self._last_execution_receipt: Dict[str, Any] = {}
         self.start_time = time.time()
         self.starting_equity = 0.0
         self.dashboard_user_id = DASHBOARD_LIVE_FEED_USER_ID
@@ -3406,8 +3426,21 @@ class KrakenMarginArmyTrader:
             else None
         )
         self._load_state()
-        snap = self._get_capital_snapshot()
-        self.starting_equity = snap["equity"]
+        try:
+            snap = self._get_capital_snapshot()
+            self.starting_equity = snap["equity"]
+        except Exception:
+            if not self.dry_run:
+                raise
+            self.starting_equity = 0.0
+            logger.info("Dry-run account state is no_data; live submission remains disabled")
+        self._install_unity_exchange_brain(
+            raw_client=self.client,
+            unity_composition=unity_composition,
+            unity_plan_supplier=unity_plan_supplier,
+            trusted_unity_plan_supplier_ids=trusted_unity_plan_supplier_ids,
+            mycelium_network=mycelium_network,
+        )
         if os.getenv("AUREON_DISABLE_LOCAL_DASHBOARD", "0") != "1":
             self._start_local_dashboard_server()
 
@@ -3418,6 +3451,54 @@ class KrakenMarginArmyTrader:
                 logger.info("[QUEEN HIVE] Subscribed to queen.command.hunt")
             except Exception:
                 pass
+
+    def _install_unity_exchange_brain(
+        self,
+        *,
+        raw_client: Any,
+        unity_composition: Any,
+        unity_plan_supplier: Any,
+        trusted_unity_plan_supplier_ids: Tuple[str, ...],
+        mycelium_network: Any = None,
+    ) -> None:
+        """Put Kraken mutations behind the Queen while preserving read surfaces."""
+
+        from aureon.core.economic_sensation import OrganismEconomicSensationRouter
+        from aureon.queen.unity_exchange_brain import build_queen_exchange_brains
+
+        if mycelium_network is None:
+            try:
+                from aureon.core.aureon_mycelium import get_mycelium
+
+                mycelium_network = get_mycelium()
+            except Exception:
+                mycelium_network = None
+        self.mycelium_network = mycelium_network
+        self._economic_sensation_router = OrganismEconomicSensationRouter(
+            bus_getter=lambda: getattr(self, "thought_bus", None),
+            hive_getter=lambda: getattr(self, "hive_state", None),
+            mycelium_getter=lambda: getattr(self, "mycelium_network", None),
+        )
+        fallback_read_clients = (
+            None if unity_composition is not None else {"kraken": raw_client}
+        )
+        brains, governed, status = build_queen_exchange_brains(
+            unity_composition=unity_composition,
+            unity_plan_supplier=unity_plan_supplier,
+            trusted_unity_plan_supplier_ids=trusted_unity_plan_supplier_ids,
+            fallback_read_clients=fallback_read_clients,
+            outcome_observer=self._economic_sensation_router.observe,
+        )
+        self._queen_exchange_brains = brains
+        self._queen_governed_exchange_client = governed
+        self._queen_exchange_governance_status = status
+        self.client = brains["kraken"]
+
+    def recent_economic_sensations(self) -> List[Dict[str, Any]]:
+        """Return bounded feedback receipts; never mutation authority."""
+
+        router = getattr(self, "_economic_sensation_router", None)
+        return router.recent() if router is not None else []
 
     # ----------------------------------------------------------
     #  QUEEN HIVE COMMAND: Execute hunts issued by the Queen
@@ -4461,11 +4542,16 @@ class KrakenMarginArmyTrader:
             return result
         try:
             self.phase_transition_detector.ingest(current_price)
-            prediction = self.phase_transition_detector.predict()
+            # get_status() runs predict() internally — one call, not two, or the
+            # detector's state transitions fire twice per scoring pass. The real
+            # keys are state / current_prediction / navigation_signal; the old
+            # phase_state / transition_score reads left state pinned at UNKNOWN
+            # since this scorer shipped.
             status = self.phase_transition_detector.get_status()
-            state = str(status.get("phase_state", "UNKNOWN"))
-            t_score = float(status.get("transition_score", 0.0) or 0.0)
-            nav = str(status.get("navigation_signal", "hold")).lower()
+            state = str(status.get("state", "UNKNOWN"))
+            pred = status.get("current_prediction") or {}
+            t_score = float(pred.get("probability", 0.0) or 0.0)
+            nav = str(status.get("navigation_signal", "HOLD")).lower()
             bonus = 0.0
             if state == "STABLE":
                 bonus += 0.5
@@ -4475,9 +4561,12 @@ class KrakenMarginArmyTrader:
                 bonus -= 1.5
             elif state == "RECOVERY":
                 bonus += 0.25
-            if nav == side:
+            # navigation_signal speaks enter/exit; side speaks buy/sell — the
+            # old direct comparison could never match.
+            nav_side = {"enter": "buy", "exit": "sell"}.get(nav, nav)
+            if nav_side == side:
                 bonus += 0.5
-            elif nav not in {"hold", "unknown", ""}:
+            elif nav_side not in {"hold", "unknown", ""}:
                 bonus -= 0.5
             result.update({"bonus": max(-2.0, min(2.0, bonus)), "state": state, "score": t_score})
             self._phase_transition_snapshot = {"symbol": symbol, "state": state, "score": t_score, "nav": nav, "bonus": result["bonus"]}
@@ -5275,6 +5364,121 @@ class KrakenMarginArmyTrader:
         )
         return data
 
+    @staticmethod
+    def _observed_number(
+        value: Any,
+        *,
+        positive: bool = False,
+        nonnegative: bool = False,
+    ) -> Optional[float]:
+        """Return a finite provider number without substituting a default."""
+        if value is None or isinstance(value, bool):
+            return None
+        try:
+            number = float(value)
+        except (TypeError, ValueError, OverflowError):
+            return None
+        if not math.isfinite(number):
+            return None
+        if positive and number <= 0:
+            return None
+        if nonnegative and number < 0:
+            return None
+        return number
+
+    @staticmethod
+    def _fresh_receipt_timestamp(value: Any, *, max_age: float) -> Optional[float]:
+        timestamp = KrakenMarginArmyTrader._observed_number(value, positive=True)
+        if timestamp is None:
+            return None
+        age = time.time() - timestamp
+        if age < -5.0 or age > max_age:
+            return None
+        return timestamp
+
+    def _fresh_provider_quote(self, pair: str) -> Optional[Dict[str, Any]]:
+        """Fetch a timestamped Kraken quote receipt suitable for an action gate."""
+        try:
+            quote = self.client.get_24h_ticker(pair)
+        except Exception as exc:
+            logger.warning("Fresh Kraken quote unavailable for %s: %s", pair, exc)
+            return None
+        if (
+            not isinstance(quote, dict)
+            or quote.get("truth_status") not in {"real_observed", "real_derived"}
+            or quote.get("generated_values") is not False
+            or not isinstance(quote.get("source_id"), str)
+            or not quote.get("source_id")
+        ):
+            return None
+        source_timestamp = self._fresh_receipt_timestamp(
+            quote.get("source_timestamp"),
+            max_age=PROVIDER_RECEIPT_MAX_AGE_SEC,
+        )
+        price = self._observed_number(quote.get("price"), positive=True)
+        if source_timestamp is None or price is None:
+            return None
+        return {
+            "provider": "kraken",
+            "symbol": str(quote.get("symbol") or pair),
+            "price": price,
+            "source_id": quote["source_id"],
+            "source_timestamp": source_timestamp,
+            "received_at": quote.get("received_at"),
+            "truth_status": quote["truth_status"],
+            "generated_values": False,
+        }
+
+    def _validate_trade_balance_receipt(self, tb: Any) -> Dict[str, Any]:
+        """Require a complete synchronous private-account receipt."""
+        if (
+            not isinstance(tb, dict)
+            or tb.get("data_status") != "live"
+            or tb.get("truth_status") != "real_observed"
+            or tb.get("generated_values") is not False
+            or not isinstance(tb.get("source_id"), str)
+            or not tb.get("source_id")
+        ):
+            raise RuntimeError("Kraken margin account receipt is no_data or incomplete")
+        received_at = self._fresh_receipt_timestamp(
+            tb.get("received_at"),
+            max_age=PROVIDER_ACCOUNT_RECEIPT_MAX_AGE_SEC,
+        )
+        if received_at is None:
+            raise RuntimeError("Kraken margin account receipt is missing or stale")
+        observed: Dict[str, float] = {}
+        for field_name in (
+            "equity_value",
+            "trade_balance",
+            "margin_amount",
+            "unrealized_pnl",
+            "cost_basis",
+            "floating_valuation",
+            "free_margin",
+            "margin_level",
+        ):
+            value = self._observed_number(tb.get(field_name))
+            if value is None:
+                raise RuntimeError(f"Kraken margin account receipt lacks {field_name}")
+            observed[field_name] = value
+        if (
+            observed["equity_value"] < 0
+            or observed["trade_balance"] < 0
+            or observed["margin_amount"] < 0
+            or observed["free_margin"] < 0
+            or observed["margin_level"] < 0
+        ):
+            raise RuntimeError("Kraken margin account receipt contains invalid negative balances")
+        return {
+            **observed,
+            "source_id": tb["source_id"],
+            "received_at": received_at,
+            "freshness_basis": "synchronous_private_response_received_at",
+            "data_status": "live",
+            "truth_status": "real_observed",
+            "generated_values": False,
+        }
+
     def _margin_capital_from_trade_balance(self, tb: Dict[str, Any]):
         if MarginCapitalSnapshot is None:
             equity = float(tb.get("equity", tb.get("equity_value", tb.get("e", 0.0))) or 0.0)
@@ -5293,42 +5497,35 @@ class KrakenMarginArmyTrader:
         return MarginCapitalSnapshot.from_trade_balance(tb)
 
     def _get_margin_capital(self, *, force: bool = False):
-        """Return a normalized live margin snapshot, cached so private API stalls do not freeze the loop."""
+        """Return only a complete, fresh Kraken margin-account snapshot."""
         if getattr(self, "dry_run", False):
-            if MarginCapitalSnapshot is not None:
-                return MarginCapitalSnapshot(
-                    equity=10000.0,
-                    free_margin=10000.0,
-                    margin_used=0.0,
-                    unrealized_pnl=0.0,
-                    margin_level=0.0,
-                    trade_balance=10000.0,
-                )
+            raise RuntimeError("dry-run margin account is not_submitted")
         now = time.time()
         cached = getattr(self, "_last_margin_capital", None)
         cached_at = float(getattr(self, "_last_margin_capital_at", 0.0) or 0.0)
-        if cached is not None and not force and (now - cached_at) < KRAKEN_MARGIN_CAPITAL_CACHE_TTL_SEC:
+        cached_receipt = getattr(self, "_last_margin_capital_receipt", None)
+        if (
+            cached is not None
+            and isinstance(cached_receipt, dict)
+            and not force
+            and (now - cached_at) < KRAKEN_MARGIN_CAPITAL_CACHE_TTL_SEC
+            and self._fresh_receipt_timestamp(
+                cached_receipt.get("received_at"),
+                max_age=PROVIDER_ACCOUNT_RECEIPT_MAX_AGE_SEC,
+            ) is not None
+        ):
             return cached
 
         try:
-            rate_status = self.client.get_rate_limit_status() if hasattr(self.client, "get_rate_limit_status") else {}
-            if cached is not None and isinstance(rate_status, dict) and rate_status.get("in_backoff"):
-                self._last_margin_capital_error = "kraken_private_api_in_backoff_using_cached_margin_capital"
-                return cached
-        except Exception:
-            pass
-
-        try:
-            tb = self.client.get_trade_balance()
-            snapshot = self._margin_capital_from_trade_balance(tb)
+            receipt = self._validate_trade_balance_receipt(self.client.get_trade_balance())
+            snapshot = self._margin_capital_from_trade_balance(receipt)
             self._last_margin_capital = snapshot
+            self._last_margin_capital_receipt = receipt
             self._last_margin_capital_at = time.time()
             self._last_margin_capital_error = ""
             return snapshot
         except Exception as e:
             self._last_margin_capital_error = str(e)
-            if cached is not None:
-                return cached
             raise
 
     def _dynamic_profit_target_for_equity(self, equity: float) -> float:
@@ -5375,25 +5572,12 @@ class KrakenMarginArmyTrader:
         asset_norm = KRAKEN_BASE_MAP.get(str(asset or "").upper(), str(asset or "").upper())
         if amount <= 0:
             return 0.0
-        if asset_norm in {"USD", "USDT", "USDC", "DAI"}:
+        if asset_norm == "USD":
             return amount
-        if asset_norm == "GBP":
-            return amount * float(os.getenv("KRAKEN_GBP_USD_RATE", "1.27"))
-        if asset_norm == "EUR":
-            return amount * float(os.getenv("KRAKEN_EUR_USD_RATE", "1.08"))
-        price = 0.0
-        try:
-            if getattr(self, "market", None) is not None:
-                price = float(self.market.get_single_price(f"{asset_norm}USDT") or 0.0)
-        except Exception:
-            price = 0.0
-        if price <= 0:
-            try:
-                ticker = self.client.best_price(f"{asset_norm}USD")
-                price = float(ticker.get("price", 0.0) or 0.0)
-            except Exception:
-                price = 0.0
-        return amount * price if price > 0 else 0.0
+        quote = self._fresh_provider_quote(f"{asset_norm}USD")
+        if quote is None:
+            return 0.0
+        return amount * quote["price"]
 
     def _get_spot_balance_snapshot(self, *, force: bool = False) -> Dict[str, Any]:
         """Return live Kraken spot/cash balances with cached USD valuation for the runtime mirror."""
@@ -6468,311 +6652,607 @@ class KrakenMarginArmyTrader:
     # ----------------------------------------------------------
     #  EXECUTION - Kraken API (open/close only)
     # ----------------------------------------------------------
-    def open_position(self, pair_info: MarginPairInfo, side: str,
-                      volume: float, leverage: int,
-                      profit_target_usd: Optional[float] = None,
-                      cognition_context: Optional[dict] = None) -> Optional[ActiveTrade]:
-        """Open THE ONE margin position - Kraken API call."""
-        if pair_info.binance_symbol:
-            self._start_stream_for(pair_info.binance_symbol)
-        price = pair_info.last_price
-        logger.info(
-            f"OPENING {side.upper()} {volume:.6f} {pair_info.base_clean} "
-            f"@ ~${price:,.4f} ({leverage}x leverage) on {pair_info.pair}"
+    def _terminal_fill_receipt(
+        self,
+        receipt: Any,
+        *,
+        expected_order_id: str,
+        expected_side: str,
+        expected_quantity: float,
+    ) -> Optional[Dict[str, Any]]:
+        """Validate a complete, fresh terminal provider fill without defaults."""
+        required_flags = (
+            isinstance(receipt, dict)
+            and receipt.get("status") == "FILLED"
+            and receipt.get("data_status") == "live"
+            and receipt.get("truth_status") == "real_observed"
+            and receipt.get("fill_receipt_complete") is True
+            and receipt.get("eligible_for_accounting") is True
+            and receipt.get("generated_values") is False
+            and str(receipt.get("orderId") or "") == expected_order_id
+            and str(receipt.get("side") or "").upper() == expected_side.upper()
+        )
+        if not required_flags:
+            return None
+        source_timestamp = self._fresh_receipt_timestamp(
+            receipt.get("provider_timestamp"),
+            max_age=PROVIDER_RECEIPT_MAX_AGE_SEC,
+        )
+        quantity = self._observed_number(receipt.get("executedQty"), positive=True)
+        price = self._observed_number(receipt.get("filled_avg_price"), positive=True)
+        notional = self._observed_number(receipt.get("cummulativeQuoteQty"), positive=True)
+        fee = self._observed_number(receipt.get("fee"), nonnegative=True)
+        fee_asset = receipt.get("fee_asset")
+        source_id = receipt.get("source_id")
+        fills = receipt.get("fills")
+        if (
+            source_timestamp is None
+            or quantity is None
+            or price is None
+            or notional is None
+            or fee is None
+            or not isinstance(fee_asset, str)
+            or not fee_asset.strip()
+            or not isinstance(source_id, str)
+            or not source_id
+            or not isinstance(fills, list)
+            or not fills
+        ):
+            return None
+        trade_ids = [
+            str(item.get("tradeId") or "")
+            for item in fills
+            if isinstance(item, dict) and item.get("tradeId")
+        ]
+        if (
+            len(trade_ids) != len(fills)
+            or len(set(trade_ids)) != len(trade_ids)
+            or not math.isclose(quantity, expected_quantity, rel_tol=1e-8, abs_tol=1e-12)
+            or not math.isclose(notional, quantity * price, rel_tol=1e-3, abs_tol=1e-8)
+        ):
+            return None
+        return {
+            "status": "FILLED",
+            "data_status": "live",
+            "truth_status": "real_observed",
+            "order_id": expected_order_id,
+            "side": expected_side.lower(),
+            "quantity": quantity,
+            "price": price,
+            "notional": notional,
+            "fee": fee,
+            "fee_asset": fee_asset.strip().upper(),
+            "source_id": source_id,
+            "source_timestamp": source_timestamp,
+            "trade_ids": trade_ids,
+            "generated_values": False,
+            "fill_receipt_complete": True,
+            "eligible_for_accounting": True,
+        }
+
+    def _readback_terminal_fill_once(
+        self,
+        submission: Dict[str, Any],
+        *,
+        expected_side: str,
+        expected_quantity: float,
+    ) -> tuple[Optional[Dict[str, Any]], Optional[Dict[str, Any]]]:
+        """Perform at most one hardened QueryOrders readback."""
+        order_id = str(submission.get("orderId") or "")
+        if not order_id:
+            return None, None
+        try:
+            readback = self.client.get_order_status(order_id)
+        except Exception as exc:
+            logger.warning("Kraken order %s readback unavailable: %s", order_id, exc)
+            return None, None
+        fill = self._terminal_fill_receipt(
+            readback,
+            expected_order_id=order_id,
+            expected_side=expected_side,
+            expected_quantity=expected_quantity,
+        )
+        return fill, readback if isinstance(readback, dict) else None
+
+    @staticmethod
+    def _terminal_without_fill(receipt: Any) -> bool:
+        return (
+            isinstance(receipt, dict)
+            and receipt.get("data_status") == "live"
+            and str(receipt.get("status") or "").upper() in {"CANCELED", "EXPIRED"}
+            and receipt.get("generated_values") is False
         )
 
+    def _commit_open_fill(
+        self,
+        fill: Dict[str, Any],
+        pair_info: MarginPairInfo,
+        side: str,
+        leverage: int,
+        profit_target_usd: Optional[float],
+        cognition_context: Optional[dict],
+        unresolved_key: str,
+    ) -> ActiveTrade:
+        price = fill["price"]
+        volume = fill["quantity"]
+        trade_value = fill["notional"]
+        entry_fee = fill["fee"]
+        target_usd = (
+            float(profit_target_usd)
+            if profit_target_usd is not None and float(profit_target_usd) > 0
+            else self._dynamic_profit_target_for_trade(trade_value)
+        )
+        _, close_fee_rate = self._get_open_close_fee_rates(pair_info.pair)
+        projected_close_fee = trade_value * close_fee_rate
+        target_cost = entry_fee + projected_close_fee + target_usd
+        target_price = price + target_cost / volume if side == "buy" else price - target_cost / volume
+        cognition_plan = self._build_trade_cognition_plan(
+            pair_info=pair_info,
+            side=side,
+            entry_price=price,
+            target_price=target_price,
+            trade_value=trade_value,
+            profit_target_usd=target_usd,
+            cognition_context=cognition_context,
+        )
+        if not isinstance(cognition_plan, dict):
+            cognition_plan = {}
+        cognition_plan["exit_fee_projection"] = {
+            "amount": projected_close_fee,
+            "accounting_eligible": False,
+            "source": "configured_decision_policy",
+        }
+        trade = ActiveTrade(
+            pair=pair_info.pair,
+            side=side,
+            volume=volume,
+            entry_price=price,
+            leverage=leverage,
+            entry_fee=entry_fee,
+            entry_time=fill["source_timestamp"],
+            order_id=fill["order_id"],
+            cost=trade_value,
+            breakeven_price=target_price,
+            binance_symbol=pair_info.binance_symbol,
+            profit_target_usd=target_usd,
+            cognition_plan=cognition_plan,
+            entry_source_id=fill["source_id"],
+            entry_source_timestamp=fill["source_timestamp"],
+            entry_fee_asset=fill["fee_asset"],
+            entry_fill_receipt_complete=True,
+        )
+        if side == "buy":
+            self.active_long = trade
+        else:
+            self.active_short = trade
+        self.active_trade = self.active_long or self.active_short
+        self._unresolved_open_submissions.pop(unresolved_key, None)
+        self._last_execution_receipt = {
+            **fill,
+            "action": "open_margin_position",
+            "position_committed": True,
+            "accounting_status": "live",
+        }
+        if trade.binance_symbol:
+            self._start_stream_for(trade.binance_symbol)
+        self._save_state()
+        orchestrator = getattr(self, "orchestrator", None)
+        if orchestrator is not None:
+            try:
+                orchestrator.register_position(
+                    system="margin",
+                    pair=pair_info.pair,
+                    side=side,
+                    value_usd=trade_value,
+                    exchange="kraken",
+                )
+            except Exception as exc:
+                logger.debug("Position register error: %s", exc)
+        recorder = getattr(self, "_goal_recorder", None)
+        scan_id = getattr(self, "_pending_scan_id", "")
+        if recorder is not None and scan_id:
+            try:
+                recorder.link_order(scan_id, fill["order_id"])
+            except Exception:
+                pass
+            self._pending_scan_id = ""
+        return trade
+
+    def open_position(
+        self,
+        pair_info: MarginPairInfo,
+        side: str,
+        volume: float,
+        leverage: int,
+        profit_target_usd: Optional[float] = None,
+        cognition_context: Optional[dict] = None,
+    ) -> Optional[ActiveTrade]:
+        """Submit once; only a terminal provider fill may create a position."""
+        side = str(side).lower()
+        quantity = self._observed_number(volume, positive=True)
+        leverage_number = self._observed_number(leverage, positive=True)
+        if side not in {"buy", "sell"} or quantity is None or leverage_number is None:
+            self._last_execution_receipt = {
+                "status": "NOT_SUBMITTED",
+                "data_status": "not_submitted",
+                "reason": "invalid_margin_order_request",
+                "position_committed": False,
+            }
+            return None
+        leverage_value = int(leverage_number)
+        if leverage_value != leverage_number:
+            self._last_execution_receipt = {
+                "status": "NOT_SUBMITTED",
+                "data_status": "not_submitted",
+                "reason": "invalid_noninteger_leverage",
+                "position_committed": False,
+            }
+            return None
+        unresolved = getattr(self, "_unresolved_open_submissions", None)
+        if not isinstance(unresolved, dict):
+            unresolved = {}
+            self._unresolved_open_submissions = unresolved
+        unresolved_key = f"{pair_info.pair}:{side}"
+        pending = unresolved.get(unresolved_key)
+        if isinstance(pending, dict):
+            submission = pending["submission"]
+            if not submission.get("orderId"):
+                self._last_execution_receipt = {
+                    "status": "PENDING_RECONCILIATION",
+                    "data_status": "pending_reconciliation",
+                    "reason": "ambiguous_submission_without_provider_order_id",
+                    "position_committed": False,
+                }
+                return None
+            fill, readback = self._readback_terminal_fill_once(
+                submission,
+                expected_side=side,
+                expected_quantity=quantity,
+            )
+            if fill is not None:
+                return self._commit_open_fill(
+                    fill,
+                    pending["pair_info"],
+                    side,
+                    pending["leverage"],
+                    pending["profit_target_usd"],
+                    pending["cognition_context"],
+                    unresolved_key,
+                )
+            if self._terminal_without_fill(readback):
+                unresolved.pop(unresolved_key, None)
+            self._last_execution_receipt = {
+                "status": "PENDING_RECONCILIATION",
+                "data_status": "pending_reconciliation",
+                "reason": "terminal_complete_fill_not_observed",
+                "order_id": submission.get("orderId"),
+                "position_committed": False,
+            }
+            return None
+        if getattr(self, "dry_run", False):
+            self._last_execution_receipt = {
+                "status": "NOT_SUBMITTED",
+                "data_status": "not_submitted",
+                "reason": "dry_run_order_not_submitted",
+                "position_committed": False,
+            }
+            return None
+        if (self.active_long if side == "buy" else self.active_short) is not None:
+            self._last_execution_receipt = {
+                "status": "NOT_SUBMITTED",
+                "data_status": "not_submitted",
+                "reason": "margin_side_slot_already_occupied",
+                "position_committed": False,
+            }
+            return None
+        quote = self._fresh_provider_quote(pair_info.pair)
+        if quote is None:
+            self._last_execution_receipt = {
+                "status": "NOT_SUBMITTED",
+                "data_status": "no_data",
+                "reason": "fresh_provider_quote_required",
+                "position_committed": False,
+            }
+            return None
         try:
-            known_position_ids: set[str] = set()
-            if not self.dry_run:
-                try:
-                    known_position_ids = {
-                        str(p.get("position_id", ""))
-                        for p in self.client.get_open_margin_positions(do_calcs=True)
-                    }
-                except Exception as e:
-                    raise RuntimeError(f"Could not snapshot Kraken positions before open: {e}")
-            result = self.client.place_margin_order(
+            account = self._get_margin_capital(force=True)
+        except Exception as exc:
+            self._last_execution_receipt = {
+                "status": "NOT_SUBMITTED",
+                "data_status": "no_data",
+                "reason": f"fresh_provider_account_required:{exc}",
+                "position_committed": False,
+            }
+            return None
+        if quantity * quote["price"] / leverage_value > float(account.free_margin):
+            self._last_execution_receipt = {
+                "status": "NOT_SUBMITTED",
+                "data_status": "live",
+                "reason": "provider_free_margin_insufficient",
+                "position_committed": False,
+            }
+            return None
+        try:
+            submission = self.client.place_margin_order(
                 symbol=pair_info.pair,
                 side=side,
-                quantity=volume,
-                leverage=leverage,
+                quantity=quantity,
+                leverage=leverage_value,
                 order_type="market",
             )
-            if result.get("error"):
-                logger.error(f"Order REJECTED: {pair_info.pair}: {result}")
-                return None
+        except Exception as exc:
+            logger.error("FAILED to submit open for %s: %s", pair_info.pair, exc)
+            return None
+        if not isinstance(submission, dict):
+            submission = {}
+        if submission.get("data_status") == "not_submitted" or submission.get("error"):
+            self._last_execution_receipt = {**submission, "position_committed": False}
+            return None
+        pending = {
+            "submission": submission,
+            "pair_info": pair_info,
+            "leverage": leverage_value,
+            "profit_target_usd": profit_target_usd,
+            "cognition_context": cognition_context,
+        }
+        fill, readback = self._readback_terminal_fill_once(
+            submission,
+            expected_side=side,
+            expected_quantity=quantity,
+        )
+        if fill is not None:
+            return self._commit_open_fill(
+                fill,
+                pair_info,
+                side,
+                leverage_value,
+                profit_target_usd,
+                cognition_context,
+                unresolved_key,
+            )
+        if not self._terminal_without_fill(readback):
+            unresolved[unresolved_key] = pending
+        self._last_execution_receipt = {
+            "status": "PENDING_RECONCILIATION",
+            "data_status": "pending_reconciliation",
+            "reason": "terminal_complete_fill_not_observed",
+            "order_id": submission.get("orderId"),
+            "position_committed": False,
+        }
+        return None
 
-            order_id = result.get("orderId", "unknown")
+    def _clear_filled_trade(self, trade: ActiveTrade) -> None:
+        if self.active_long and self.active_long.order_id == trade.order_id:
+            self.active_long = None
+        if self.active_short and self.active_short.order_id == trade.order_id:
+            self.active_short = None
+        self.active_trade = self.active_long or self.active_short
 
-            # Get ACTUAL fill price AND actual fee from Kraken (1-2 extra API calls, CRITICAL)
-            actual_price = price  # Default to Binance estimate
-            actual_entry_fee = 0.0  # Will be set from Kraken data
+    def _deregister_filled_trade(self, trade: ActiveTrade) -> None:
+        orchestrator = getattr(self, "orchestrator", None)
+        if orchestrator is not None:
             try:
-                time.sleep(1)  # Brief wait for order to settle
-                kraken_positions = self.client.get_open_margin_positions(do_calcs=True)
-                kp = self._select_new_position(kraken_positions, known_position_ids, pair_info.pair, side)
-                if kp is not None:
-                    kp_vol = kp.get("volume", kp.get("vol", 0))
-                    kp_cost = kp.get("cost", 0)
-                    kp_fee = kp.get("fee", 0)
-                    if kp_vol > 0 and kp_cost > 0:
-                        actual_price = kp_cost / kp_vol
-                        logger.info(f"Actual Kraken fill: ${actual_price:,.4f} (Binance est: ${price:,.4f})")
-                        price = actual_price
-                    if kp_fee > 0:
-                        actual_entry_fee = kp_fee
-                        actual_rate = kp_fee / kp_cost * 100 if kp_cost > 0 else 0
-                        logger.info(f"Actual Kraken fee: ${kp_fee:.4f} ({actual_rate:.3f}% of ${kp_cost:.2f})")
-                elif not self.dry_run:
-                    raise RuntimeError("Could not uniquely identify newly opened Kraken position")
-            except Exception as e:
-                raise RuntimeError(f"Could not verify opened Kraken position: {e}")
+                orchestrator.deregister_position(
+                    system="margin",
+                    pair=trade.pair,
+                    side=trade.side,
+                )
+            except Exception as exc:
+                logger.debug("Position deregister error: %s", exc)
 
-            trade_val = volume * price
-            open_fee_rate, close_fee_rate = self._get_open_close_fee_rates(pair_info.pair)
-            # Use ACTUAL fee if we got it, otherwise conservative estimate
-            if actual_entry_fee > 0:
-                entry_fee = actual_entry_fee
-                logger.info(f"Using ACTUAL Kraken entry fee: ${entry_fee:.4f}")
-            else:
-                entry_fee = trade_val * open_fee_rate
-                logger.warning(f"Using ESTIMATED entry fee: ${entry_fee:.4f} (could not get actual)")
-            # Estimate exit fee conservatively
-            exit_fee_est = trade_val * close_fee_rate
-            total_fees = entry_fee + exit_fee_est
-            target_usd = (
-                float(profit_target_usd)
-                if profit_target_usd and profit_target_usd > 0
-                else self._dynamic_profit_target_for_trade(trade_val)
-            )
-
-            if side == "buy":
-                breakeven = price + (total_fees + target_usd) / volume
-            else:
-                breakeven = price - (total_fees + target_usd) / volume
-            cognition_plan = self._build_trade_cognition_plan(
-                pair_info=pair_info,
-                side=side,
-                entry_price=price,
-                target_price=breakeven,
-                trade_value=trade_val,
-                profit_target_usd=target_usd,
-                cognition_context=cognition_context,
-            )
-
-            trade = ActiveTrade(
-                pair=pair_info.pair,
-                side=side,
-                volume=volume,
-                entry_price=price,
-                leverage=leverage,
-                entry_fee=entry_fee,
-                entry_time=time.time(),
-                order_id=order_id,
-                cost=trade_val,
-                breakeven_price=breakeven,
-                binance_symbol=pair_info.binance_symbol,
-                profit_target_usd=target_usd,
-                cognition_plan=cognition_plan,
-            )
-            # Place into correct slot: buy→long, sell→short
-            if side == "buy":
-                self.active_long = trade
-            else:
-                self.active_short = trade
-            self.active_trade = self.active_long or self.active_short
-            if trade.binance_symbol:
-                self._start_stream_for(trade.binance_symbol)
+    def _commit_close_fill(
+        self,
+        fill: Dict[str, Any],
+        trade: ActiveTrade,
+        reason: str,
+        unresolved_key: str,
+    ) -> Dict[str, Any]:
+        """Clear a provider-closed position; account only from complete receipts."""
+        self._unresolved_close_submissions.pop(unresolved_key, None)
+        self._clear_filled_trade(trade)
+        entry_timestamp = self._observed_number(
+            getattr(trade, "entry_source_timestamp", None),
+            positive=True,
+        )
+        entry_cost = self._observed_number(getattr(trade, "cost", None), positive=True)
+        entry_fee = self._observed_number(getattr(trade, "entry_fee", None), nonnegative=True)
+        accounting_reason = None
+        if (
+            getattr(trade, "entry_fill_receipt_complete", False) is not True
+            or not getattr(trade, "entry_source_id", "")
+            or entry_timestamp is None
+            or entry_cost is None
+            or entry_fee is None
+        ):
+            accounting_reason = "complete_provider_entry_fill_receipt_required"
+        elif str(getattr(trade, "entry_fee_asset", "")).upper() != fill["fee_asset"]:
+            accounting_reason = "entry_and_exit_fee_assets_do_not_match"
+        elif fill["source_timestamp"] - entry_timestamp >= KRAKEN_ROLLOVER_INTERVAL:
+            accounting_reason = "provider_rollover_fee_receipt_unavailable"
+        if accounting_reason:
+            result = {
+                **fill,
+                "action": "close_margin_position",
+                "position_closed": True,
+                "accounting_status": "no_data",
+                "eligible_for_learning": False,
+                "reason": accounting_reason,
+            }
+            self._last_execution_receipt = result
             self._save_state()
+            self._deregister_filled_trade(trade)
+            return result
+        gross_pnl = (
+            fill["notional"] - entry_cost
+            if trade.side == "buy"
+            else entry_cost - fill["notional"]
+        )
+        total_fees = entry_fee + fill["fee"]
+        net_pnl = gross_pnl - total_fees
+        completed = {
+            "status": "FILLED",
+            "data_status": "live",
+            "truth_status": "real_derived",
+            "accounting_status": "live",
+            "pair": trade.pair,
+            "side": trade.side,
+            "volume": fill["quantity"],
+            "entry_price": trade.entry_price,
+            "exit_price": fill["price"],
+            "leverage": trade.leverage,
+            "entry_fee": entry_fee,
+            "exit_fee": fill["fee"],
+            "fee_asset": fill["fee_asset"],
+            "rollover_fees": 0.0,
+            "total_fees": total_fees,
+            "gross_pnl": gross_pnl,
+            "net_pnl": net_pnl,
+            "reason": reason,
+            "entry_time": datetime.fromtimestamp(entry_timestamp).isoformat(),
+            "exit_time": datetime.fromtimestamp(fill["source_timestamp"]).isoformat(),
+            "hold_seconds": fill["source_timestamp"] - entry_timestamp,
+            "order_id": trade.order_id,
+            "close_order_id": fill["order_id"],
+            "entry_source_id": trade.entry_source_id,
+            "close_source_id": fill["source_id"],
+            "source_timestamp": fill["source_timestamp"],
+            "generated_values": False,
+            "cognition_plan": getattr(trade, "cognition_plan", {}) or {},
+            "cognition_verification": self._verify_trade_cognition(
+                trade,
+                current_price=fill["price"],
+                validated_net_pnl=net_pnl,
+            ),
+        }
+        self.completed_trades.append(completed)
+        recorder = getattr(self, "_goal_recorder", None)
+        if recorder is not None:
+            try:
+                recorder.record_outcome(trade.order_id, completed)
+            except Exception:
+                pass
+        self.total_trades += 1
+        self.total_profit += net_pnl
+        if net_pnl > 0:
+            self.winning_trades += 1
+        getattr(self, "_fast_profit_capture_by_order", {}).pop(str(trade.order_id), None)
+        self._last_execution_receipt = {
+            **fill,
+            "action": "close_margin_position",
+            "position_closed": True,
+            "accounting_status": "live",
+        }
+        self._save_state()
+        self._deregister_filled_trade(trade)
+        self._push_dashboard_state(force=True)
+        return completed
 
-            # Register with orchestrator so spot system sees our margin position
-            if self.orchestrator is not None:
-                try:
-                    self.orchestrator.register_position(
-                        system='margin',
-                        pair=pair_info.pair,
-                        side=side,
-                        value_usd=trade_val,
-                        exchange='kraken',
-                    )
-                except Exception as e:
-                    logger.debug(f"Position register error: {e}")
-
-            logger.info(
-                f"POSITION OPENED: {pair_info.pair} {side.upper()} | "
-                f"Entry: ~${price:,.4f} | Target: ${breakeven:,.4f} | "
-                f"Profit goal: ${target_usd:.2f} | Fees: ${total_fees:.2f} | Order: {order_id}"
-            )
-            # Link this order_id to the scan that chose it
-            if self._goal_recorder is not None and self._pending_scan_id:
-                try:
-                    self._goal_recorder.link_order(self._pending_scan_id, order_id)
-                except Exception:
-                    pass
-                self._pending_scan_id = ""
-            return trade
-
-        except Exception as e:
-            logger.error(f"FAILED to open {pair_info.pair}: {e}")
-            return None
-
-    def close_position(self, reason: str = "PROFIT_TARGET", trade: Optional[ActiveTrade] = None) -> Optional[dict]:
-        """Close a specific position - Kraken API call."""
+    def close_position(
+        self,
+        reason: str = "PROFIT_TARGET",
+        trade: Optional[ActiveTrade] = None,
+    ) -> Optional[dict]:
+        """Submit once; only a terminal provider fill may close local lifecycle."""
+        trade = trade or self.active_trade
         if trade is None:
-            trade = self.active_trade
-        if not trade:
             return None
-
         close_side = "sell" if trade.side == "buy" else "buy"
-        logger.info(f"CLOSING {trade.pair} ({reason}) - {close_side} {trade.volume:.6f}")
-
+        quantity = self._observed_number(trade.volume, positive=True)
+        if quantity is None:
+            self._last_execution_receipt = {
+                "status": "NOT_SUBMITTED",
+                "data_status": "not_submitted",
+                "reason": "invalid_active_position_quantity",
+                "position_closed": False,
+            }
+            return None
+        unresolved = getattr(self, "_unresolved_close_submissions", None)
+        if not isinstance(unresolved, dict):
+            unresolved = {}
+            self._unresolved_close_submissions = unresolved
+        unresolved_key = str(trade.order_id)
+        pending = unresolved.get(unresolved_key)
+        if isinstance(pending, dict):
+            submission = pending["submission"]
+            if not submission.get("orderId"):
+                self._last_execution_receipt = {
+                    "status": "PENDING_RECONCILIATION",
+                    "data_status": "pending_reconciliation",
+                    "reason": "ambiguous_close_without_provider_order_id",
+                    "position_closed": False,
+                }
+                return None
+            fill, readback = self._readback_terminal_fill_once(
+                submission,
+                expected_side=close_side,
+                expected_quantity=quantity,
+            )
+            if fill is not None:
+                return self._commit_close_fill(
+                    fill,
+                    pending["trade"],
+                    pending["reason"],
+                    unresolved_key,
+                )
+            if self._terminal_without_fill(readback):
+                unresolved.pop(unresolved_key, None)
+            self._last_execution_receipt = {
+                "status": "PENDING_RECONCILIATION",
+                "data_status": "pending_reconciliation",
+                "reason": "terminal_complete_close_fill_not_observed",
+                "order_id": submission.get("orderId"),
+                "position_closed": False,
+            }
+            return None
+        if getattr(self, "dry_run", False):
+            self._last_execution_receipt = {
+                "status": "NOT_SUBMITTED",
+                "data_status": "not_submitted",
+                "reason": "dry_run_order_not_submitted",
+                "position_closed": False,
+            }
+            return None
+        if self._fresh_provider_quote(trade.pair) is None:
+            self._last_execution_receipt = {
+                "status": "NOT_SUBMITTED",
+                "data_status": "no_data",
+                "reason": "fresh_provider_quote_required",
+                "position_closed": False,
+            }
+            return None
         try:
-            close_started = time.time()
-            # Try with explicit leverage first, then without (Kraken leverage quirk)
-            result = self.client.close_margin_position(
+            submission = self.client.close_margin_position(
                 symbol=trade.pair,
                 side=close_side,
-                volume=trade.volume,
+                volume=quantity,
                 leverage=trade.leverage,
             )
-            if result.get("error"):
-                logger.warning(f"Close with leverage failed, retrying without: {result}")
-                result = self.client.close_margin_position(
-                    symbol=trade.pair,
-                    side=close_side,
-                    volume=trade.volume,
-                )
-                if result.get("error"):
-                    # Final attempt: still pass volume to avoid closing unrelated positions
-                    # but omit leverage (Kraken may infer it from the open position)
-                    logger.warning(f"Close without leverage failed, trying with volume=0 (close all for pair): {result}")
-                    result = self.client.close_margin_position(
-                        symbol=trade.pair,
-                        side=close_side,
-                        volume=trade.volume,  # Keep volume to avoid closing wrong positions
-                    )
-                    if result.get("error"):
-                        logger.error(f"ALL close attempts FAILED: {result}")
-                        return None
-
-            close_id = result.get("orderId", "unknown")
-            current_price = self.market.get_single_price(trade.binance_symbol)
-            if current_price <= 0:
-                current_price = trade.entry_price
-
-            if trade.side == "buy":
-                gross_pnl = (current_price - trade.entry_price) * trade.volume
-            else:
-                gross_pnl = (trade.entry_price - current_price) * trade.volume
-
-            # Try to get ACTUAL exit fee and price from Kraken trade history
-            actual_exit_fee = 0.0
-            try:
-                time.sleep(1.5)  # Wait for trade to settle on Kraken
-                recent_trades = self.client.get_trades_history(max_records=10)
-                td = self._select_close_trade(recent_trades, trade, close_side, close_started)
-                if td is not None:
-                    actual_exit_fee = td.get("fee", 0)
-                    exit_cost = td.get("cost", 0)
-                    actual_exit_price = td.get("price", 0)
-                    if actual_exit_price > 0:
-                        current_price = actual_exit_price
-                        logger.info(f"ACTUAL Kraken exit price: ${actual_exit_price:,.6f}")
-                    if actual_exit_fee > 0:
-                        rate = actual_exit_fee / exit_cost * 100 if exit_cost > 0 else 0
-                        logger.info(f"ACTUAL Kraken exit fee: ${actual_exit_fee:.4f} ({rate:.3f}% of ${exit_cost:.2f})")
-                    if trade.side == "buy":
-                        gross_pnl = (current_price - trade.entry_price) * trade.volume
-                    else:
-                        gross_pnl = (trade.entry_price - current_price) * trade.volume
-            except Exception as e:
-                logger.warning(f"Could not get actual exit data from Kraken: {e}")
-
-            if actual_exit_fee > 0:
-                exit_fee = actual_exit_fee
-            else:
-                _, close_fee_rate = self._get_open_close_fee_rates(trade.pair)
-                exit_fee = current_price * trade.volume * close_fee_rate
-                logger.warning(f"Using ESTIMATED exit fee: ${exit_fee:.4f} (could not get actual)")
-
-            # Include rollover fees in net P&L
-            rollover = getattr(trade, 'rollover_fees', 0.0)
-            net_pnl = gross_pnl - trade.entry_fee - exit_fee - rollover
-            total_fees = trade.entry_fee + exit_fee + rollover
-            cognition_verification = self._verify_trade_cognition(
-                trade,
-                current_price=current_price,
-                validated_net_pnl=net_pnl,
-            )
-
-            completed = {
-                "pair": trade.pair,
-                "side": trade.side,
-                "volume": trade.volume,
-                "entry_price": trade.entry_price,
-                "exit_price": current_price,
-                "leverage": trade.leverage,
-                "entry_fee": trade.entry_fee,
-                "exit_fee": exit_fee,
-                "rollover_fees": rollover,
-                "total_fees": total_fees,
-                "gross_pnl": gross_pnl,
-                "net_pnl": net_pnl,
-                "reason": reason,
-                "entry_time": datetime.fromtimestamp(trade.entry_time).isoformat(),
-                "exit_time": datetime.now().isoformat(),
-                "hold_seconds": time.time() - trade.entry_time,
-                "order_id": trade.order_id,
-                "close_order_id": close_id,
-                "cognition_plan": getattr(trade, "cognition_plan", {}) or {},
-                "cognition_verification": cognition_verification,
-            }
-            fast_capture = getattr(self, "_fast_profit_capture_by_order", {}).pop(str(trade.order_id), None)
-            if isinstance(fast_capture, dict) and fast_capture:
-                completed["fast_profit_capture"] = fast_capture
-            self.completed_trades.append(completed)
-            # Record outcome against the scan that selected this trade
-            if self._goal_recorder is not None:
-                try:
-                    self._goal_recorder.record_outcome(trade.order_id, completed)
-                except Exception:
-                    pass
-            self.total_trades += 1
-            self.total_profit += net_pnl
-            if net_pnl > 0:
-                self.winning_trades += 1
-            # Clear the correct position slot
-            if self.active_long and self.active_long.order_id == trade.order_id:
-                self.active_long = None
-            if self.active_short and self.active_short.order_id == trade.order_id:
-                self.active_short = None
-            self.active_trade = self.active_long or self.active_short
-            self._save_state()
-
-            # Deregister from orchestrator so spot system sees slot is free
-            if self.orchestrator is not None:
-                try:
-                    self.orchestrator.deregister_position(
-                        system='margin',
-                        pair=trade.pair,
-                        side=trade.side,
-                    )
-                except Exception as e:
-                    logger.debug(f"Position deregister error: {e}")
-
-            logger.info(
-                f"TRADE COMPLETED: {trade.pair} {trade.side.upper()} | "
-                f"Net P&L: ${net_pnl:+.2f} | Gross: ${gross_pnl:+.2f} | "
-                f"Fees: ${total_fees:.4f} (open=${trade.entry_fee:.4f} close=${exit_fee:.4f} roll=${rollover:.4f}) | "
-                f"Hold: {time.time() - trade.entry_time:.0f}s | "
-                f"Session: ${self.total_profit:+.2f}"
-            )
-            self._push_dashboard_state(force=True)
-            return completed
-
-        except Exception as e:
-            logger.error(f"FAILED to close {trade.pair}: {e}")
+        except Exception as exc:
+            logger.error("FAILED to submit close for %s: %s", trade.pair, exc)
             return None
+        if not isinstance(submission, dict):
+            submission = {}
+        if submission.get("data_status") == "not_submitted" or submission.get("error"):
+            self._last_execution_receipt = {**submission, "position_closed": False}
+            return None
+        pending = {"submission": submission, "trade": trade, "reason": reason}
+        fill, readback = self._readback_terminal_fill_once(
+            submission,
+            expected_side=close_side,
+            expected_quantity=quantity,
+        )
+        if fill is not None:
+            return self._commit_close_fill(fill, trade, reason, unresolved_key)
+        if not self._terminal_without_fill(readback):
+            unresolved[unresolved_key] = pending
+        self._last_execution_receipt = {
+            "status": "PENDING_RECONCILIATION",
+            "data_status": "pending_reconciliation",
+            "reason": "terminal_complete_close_fill_not_observed",
+            "order_id": submission.get("orderId"),
+            "position_closed": False,
+        }
+        return None
 
     # ----------------------------------------------------------
     #  MONITOR - FREE API price check + profit gate
@@ -7011,14 +7491,13 @@ class KrakenMarginArmyTrader:
         target_usd = self._trade_profit_target(trade)
 
         # === LIVE STREAM PRICE (sub-100ms) — preferred ===
-        current_price = 0.0
         stream_live = False
         if self.stream and self.stream.is_alive():
-            current_price = self.stream.get_executable_price(
+            stream_price = self.stream.get_executable_price(
                 trade.binance_symbol,
                 side=trade.side,
             )
-            if current_price > 0:
+            if stream_price > 0:
                 stream_live = True
 
         # === FLASH CRASH DETECTION (stream-only, sub-second) ===
@@ -7030,45 +7509,31 @@ class KrakenMarginArmyTrader:
                 f"spread={flow['spread_pct']:.3f}%"
             )
 
-        # === REST FALLBACK ===
-        if current_price <= 0:
-            current_price = self.market.get_single_price(trade.binance_symbol)
-        if current_price <= 0:
-            self.market.fetch_all_binance_prices()
-            current_price = self.market.get_price(trade.binance_symbol)
-
-        if current_price <= 0:
-            logger.warning(f"Cannot get price for {trade.binance_symbol} - using Kraken fallback")
-            try:
-                ticker = self.client.get_ticker(trade.pair)
-                current_price = ticker.get("price", 0)
-            except Exception:
-                pass
-
-        if current_price <= 0:
-            msg = f"Lost all price sources for {trade.pair} ({trade.binance_symbol}); refusing unmanaged live position"
+        quote = self._fresh_provider_quote(trade.pair)
+        if quote is None:
+            msg = f"Fresh provider quote unavailable for {trade.pair}; refusing an unstamped close decision"
             if self.dry_run:
                 logger.warning(msg)
                 return None
             raise RuntimeError(msg)
+        current_price = quote["price"]
 
-        # === ROLLOVER FEE TRACKING ===
-        # Kraken charges ~0.01% per 4 hours on margin positions
+        # Decision-only projection; never persist it as provider-observed fees.
         hold_time = time.time() - trade.entry_time
         rollover_periods = int(hold_time / KRAKEN_ROLLOVER_INTERVAL)
-        rollover_fees = rollover_periods * trade.cost * KRAKEN_ROLLOVER_RATE
-        if rollover_fees != getattr(trade, 'rollover_fees', 0):
-            trade.rollover_fees = rollover_fees
-            if rollover_fees > 0:
-                logger.info(f"Rollover fee update: ${rollover_fees:.4f} ({rollover_periods} x 4h periods)")
-            # Recalculate breakeven with rollover
-            _, close_fee_rate = self._get_open_close_fee_rates(trade.pair)
-            total_fees_est = trade.entry_fee + (trade.cost * close_fee_rate) + rollover_fees
-            if trade.side == "buy":
-                trade.breakeven_price = trade.entry_price + (total_fees_est + target_usd) / trade.volume
-            else:
-                trade.breakeven_price = trade.entry_price - (total_fees_est + target_usd) / trade.volume
-            self._save_state()
+        projected_rollover = rollover_periods * trade.cost * KRAKEN_ROLLOVER_RATE
+        _, projected_close_fee_rate = self._get_open_close_fee_rates(trade.pair)
+        projected_target_cost = (
+            trade.entry_fee
+            + trade.cost * projected_close_fee_rate
+            + projected_rollover
+            + target_usd
+        )
+        projected_target_price = (
+            trade.entry_price + projected_target_cost / trade.volume
+            if trade.side == "buy"
+            else trade.entry_price - projected_target_cost / trade.volume
+        )
 
         if trade.side == "buy":
             gross_pnl = (current_price - trade.entry_price) * trade.volume
@@ -7078,7 +7543,7 @@ class KrakenMarginArmyTrader:
         exit_value = current_price * trade.volume
         _, close_fee_rate = self._get_open_close_fee_rates(trade.pair)
         exit_fee = exit_value * close_fee_rate
-        rollover = getattr(trade, 'rollover_fees', 0.0)
+        rollover = projected_rollover
         net_pnl = gross_pnl - trade.entry_fee - exit_fee - rollover
         validated_net_pnl = self._validated_net_pnl(trade.pair, exit_value, net_pnl)
         total_fees = trade.entry_fee + exit_fee + rollover
@@ -7096,7 +7561,7 @@ class KrakenMarginArmyTrader:
             hold_str = f"{hold_time/3600:.1f}h"
 
         # Show clear target price
-        need_to_target = trade.breakeven_price - current_price if trade.side == "buy" else current_price - trade.breakeven_price
+        need_to_target = projected_target_price - current_price if trade.side == "buy" else current_price - projected_target_price
         need_pct = need_to_target / current_price * 100 if current_price > 0 else 0
 
         # ── DEAD MAN'S SWITCH ─────────────────────────────────────────────────
@@ -7416,13 +7881,13 @@ class KrakenMarginArmyTrader:
                     "local_net_pnl": float(net_pnl or 0.0),
                     "validated_net_pnl": float(validated_net_pnl or 0.0),
                 }
-                # Update entry_fee if Kraken shows different (includes rollover)
+                # Open-position telemetry is not a terminal fee receipt and
+                # cannot rewrite fill accounting.
                 if kraken_fee > 0 and abs(kraken_fee - trade.entry_fee) > 0.001:
-                    logger.info(f"Fee drift: Kraken=${kraken_fee:.4f} vs ours=${trade.entry_fee:.4f}")
-                    # Kraken's fee field on position includes rollover fees
-                    trade.entry_fee = kraken_fee
-                    trade.rollover_fees = 0  # Kraken fee already includes rollovers
-                    self._save_state()
+                    logger.info(
+                        f"Observed fee drift: Kraken=${kraken_fee:.4f} "
+                        f"vs entry receipt=${trade.entry_fee:.4f}"
+                    )
 
                 if 0 < ml < LIQUIDATION_FORCE:
                     if validated_net_pnl >= 0:
@@ -7454,6 +7919,8 @@ class KrakenMarginArmyTrader:
     # ----------------------------------------------------------
     def _save_state(self):
         """Save current state atomically."""
+        if getattr(self, "dry_run", False):
+            return
         try:
             # Legacy active_trade = whichever is open (prefer long)
             at = self.active_long or self.active_short
@@ -7561,6 +8028,17 @@ class KrakenMarginArmyTrader:
             if os.path.exists(STATE_FILE):
                 with open(STATE_FILE) as f:
                     state = json.load(f)
+            if self.dry_run:
+                self.active_long = None
+                self.active_short = None
+                self.extra_active_longs = []
+                self.extra_active_shorts = []
+                self.active_trade = None
+                self.total_profit = 0.0
+                self.total_trades = 0
+                self.winning_trades = 0
+                self.completed_trades = []
+                return
 
             valid_fields = {f.name for f in ActiveTrade.__dataclass_fields__.values()}
             live_positions_by_slot = self._reconcile_live_positions()

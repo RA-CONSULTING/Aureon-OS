@@ -24,31 +24,6 @@ Purpose:
 import logging
 logger = logging.getLogger(__name__)
 
-from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
-import sys
-import os
-if sys.platform == 'win32':
-    os.environ['PYTHONIOENCODING'] = 'utf-8'
-    try:
-        import io
-        def _is_utf8_wrapper(stream):
-            return (isinstance(stream, io.TextIOWrapper) and 
-                    hasattr(stream, 'encoding') and stream.encoding and
-                    stream.encoding.lower().replace('-', '') == 'utf8')
-        def _is_buffer_valid(stream):
-            if not hasattr(stream, 'buffer'):
-                return False
-            try:
-                return stream.buffer is not None and not stream.buffer.closed
-            except (ValueError, AttributeError):
-                return False
-        if _is_buffer_valid(sys.stdout) and not _is_utf8_wrapper(sys.stdout):
-            sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace', line_buffering=True)
-        if _is_buffer_valid(sys.stderr) and not _is_utf8_wrapper(sys.stderr):
-            sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace', line_buffering=True)
-    except Exception:
-        pass
-
 import json
 import time
 import math
@@ -511,41 +486,4 @@ class TruthPredictionEngine:
         }
 
 
-if __name__ == "__main__":
-    print("🎯 Truth Prediction Engine - Test Mode")
-    print("=" * 60)
-    
-    engine = TruthPredictionEngine()
-    
-    # Test with mock snapshot
-    test_snapshot = MarketSnapshot(
-        symbol="BTCUSD",
-        price=88250.0,
-        change_24h=0.38,
-        volume_24h=1000000.0,
-        momentum_30s=0.15,  # 0.15% up
-        volatility_30s=0.05,
-        hz_frequency=275.0,
-        timestamp=time.time()
-    )
-    
-    print(f"\n📊 Test snapshot: {test_snapshot.symbol} @ ${test_snapshot.price}")
-    print(f"   Momentum: {test_snapshot.momentum_30s:+.3f}%")
-    print(f"   Volatility: {test_snapshot.volatility_30s:.3f}%")
-    print(f"   Hz: {test_snapshot.hz_frequency:.1f}")
-    
-    pred = engine.generate_prediction(test_snapshot, horizon_seconds=30.0)
-    
-    if pred:
-        print(f"\n✅ PREDICTION APPROVED:")
-        print(f"   Direction: {pred.predicted_direction}")
-        print(f"   Magnitude: {pred.predicted_change_pct:+.3f}%")
-        print(f"   Win Probability: {pred.win_probability:.1%}")
-        print(f"   Pattern Confidence: {pred.pattern_confidence:.1%}")
-        print(f"   Auris Approved: {pred.auris_approved} (resonance={pred.auris_resonance:.2f})")
-        print(f"   Queen Approved: {pred.queen_approved}")
-        print(f"   Pattern: {pred.pattern_key}")
-    else:
-        print(f"\n❌ PREDICTION REJECTED (confidence too low or gates failed)")
-    
-    print(f"\n" + "=" * 60)
+# Standalone manufactured execution removed; callers must inject receipted market state.

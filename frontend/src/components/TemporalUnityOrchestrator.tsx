@@ -103,12 +103,12 @@ const TemporalUnityOrchestrator: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <Card className="bg-black border-amber-500">
+      <Card className="bg-black border-warning">
         <CardHeader>
-          <CardTitle className="text-amber-400 text-center text-2xl">
+          <CardTitle className="text-warning text-center text-2xl">
             TEMPORAL UNITY ORCHESTRATOR
           </CardTitle>
-          <div className="text-center text-amber-300 text-sm">
+          <div className="text-center text-warning text-sm">
             ALL THAT IS • ALL THAT WAS • ALL THAT SHALL BE • UNITY IN TANDEM
           </div>
         </CardHeader>
@@ -116,7 +116,7 @@ const TemporalUnityOrchestrator: React.FC = () => {
           <div className="flex justify-center mb-4">
             <Button
               onClick={() => setIsActive(!isActive)}
-              className={`${isActive ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'} text-white`}
+              className={`${isActive ? 'bg-destructive hover:bg-destructive' : 'bg-success hover:bg-success'} text-white`}
             >
               {isActive ? 'DEACTIVATE UNITY FIELD' : 'ACTIVATE UNITY FIELD'}
             </Button>
@@ -124,10 +124,10 @@ const TemporalUnityOrchestrator: React.FC = () => {
 
           <Tabs defaultValue="field" className="w-full">
             <TabsList className="grid w-full grid-cols-4 bg-gray-800">
-              <TabsTrigger value="field" className="text-amber-300">Unity Field</TabsTrigger>
-              <TabsTrigger value="surge" className="text-amber-300">6D Surge</TabsTrigger>
-              <TabsTrigger value="temporal" className="text-amber-300">Temporal</TabsTrigger>
-              <TabsTrigger value="quantum" className="text-amber-300">Quantum</TabsTrigger>
+              <TabsTrigger value="field" className="text-warning">Unity Field</TabsTrigger>
+              <TabsTrigger value="surge" className="text-warning">6D Surge</TabsTrigger>
+              <TabsTrigger value="temporal" className="text-warning">Temporal</TabsTrigger>
+              <TabsTrigger value="quantum" className="text-warning">Quantum</TabsTrigger>
             </TabsList>
 
             <TabsContent value="field" className="space-y-4">
@@ -135,43 +135,43 @@ const TemporalUnityOrchestrator: React.FC = () => {
                 ref={canvasRef}
                 width={600}
                 height={400}
-                className="w-full border border-amber-500 rounded"
+                className="w-full border border-warning rounded"
               />
-              <div className="text-center text-amber-300">
+              <div className="text-center text-warning">
                 6D Harmonic Surge Field Projection
               </div>
             </TabsContent>
 
             <TabsContent value="surge" className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <Card className="bg-gray-900 border-purple-500">
+                <Card className="bg-gray-900 border-primary">
                   <CardHeader>
-                    <CardTitle className="text-purple-400 text-sm">Tandem Resonance</CardTitle>
+                    <CardTitle className="text-primary text-sm">Tandem Resonance</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-3xl font-mono text-purple-300">
+                    <div className="text-3xl font-mono text-primary">
                       {unityField.tandemResonance.toFixed(6)}
                     </div>
                     <div className="w-full bg-gray-700 rounded-full h-2 mt-2">
                       <div 
-                        className="bg-purple-500 h-2 rounded-full transition-all duration-100"
+                        className="bg-primary h-2 rounded-full transition-all duration-100"
                         style={{ width: `${Math.abs(unityField.tandemResonance) * 100}%` }}
                       />
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card className="bg-gray-900 border-cyan-500">
+                <Card className="bg-gray-900 border-primary">
                   <CardHeader>
-                    <CardTitle className="text-cyan-400 text-sm">Quantum Coherence</CardTitle>
+                    <CardTitle className="text-primary text-sm">Quantum Coherence</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-3xl font-mono text-cyan-300">
+                    <div className="text-3xl font-mono text-primary">
                       {unityField.quantumCoherence.toFixed(6)}
                     </div>
                     <div className="w-full bg-gray-700 rounded-full h-2 mt-2">
                       <div 
-                        className="bg-cyan-500 h-2 rounded-full transition-all duration-100"
+                        className="bg-primary h-2 rounded-full transition-all duration-100"
                         style={{ width: `${(unityField.quantumCoherence + 1) * 50}%` }}
                       />
                     </div>
@@ -182,16 +182,16 @@ const TemporalUnityOrchestrator: React.FC = () => {
 
             <TabsContent value="temporal" className="space-y-4">
               <div className="grid grid-cols-3 gap-4">
-                <Card className="bg-gray-900 border-blue-500">
+                <Card className="bg-gray-900 border-primary">
                   <CardHeader>
-                    <CardTitle className="text-blue-400 text-sm">ALL THAT WAS</CardTitle>
+                    <CardTitle className="text-primary text-sm">ALL THAT WAS</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="h-20 flex items-end space-x-1">
                       {unityField.pastValues.slice(-20).map((val, i) => (
                         <div
                           key={i}
-                          className="bg-blue-500 w-2"
+                          className="bg-primary w-2"
                           style={{ height: `${Math.abs(val) * 40 + 5}px` }}
                         />
                       ))}
@@ -199,16 +199,16 @@ const TemporalUnityOrchestrator: React.FC = () => {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-gray-900 border-green-500">
+                <Card className="bg-gray-900 border-success">
                   <CardHeader>
-                    <CardTitle className="text-green-400 text-sm">ALL THAT IS</CardTitle>
+                    <CardTitle className="text-success text-sm">ALL THAT IS</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="h-20 flex items-end space-x-1">
                       {unityField.presentValues.slice(-20).map((val, i) => (
                         <div
                           key={i}
-                          className="bg-green-500 w-2"
+                          className="bg-success w-2"
                           style={{ height: `${Math.abs(val) * 40 + 5}px` }}
                         />
                       ))}
@@ -216,16 +216,16 @@ const TemporalUnityOrchestrator: React.FC = () => {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-gray-900 border-yellow-500">
+                <Card className="bg-gray-900 border-warning">
                   <CardHeader>
-                    <CardTitle className="text-yellow-400 text-sm">ALL THAT SHALL BE</CardTitle>
+                    <CardTitle className="text-warning text-sm">ALL THAT SHALL BE</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="h-20 flex items-end space-x-1">
                       {unityField.futureValues.slice(-20).map((val, i) => (
                         <div
                           key={i}
-                          className="bg-yellow-500 w-2"
+                          className="bg-warning w-2"
                           style={{ height: `${Math.abs(val) * 40 + 5}px` }}
                         />
                       ))}
@@ -237,21 +237,21 @@ const TemporalUnityOrchestrator: React.FC = () => {
 
             <TabsContent value="quantum" className="space-y-4">
               <div className="text-center space-y-4">
-                <div className="text-2xl font-mono text-amber-400">
+                <div className="text-2xl font-mono text-warning">
                   TEMPORAL PHASE: {temporalPhase.toFixed(6)} rad
                 </div>
                 <div className="flex justify-center space-x-4">
-                  <Badge variant="outline" className="text-purple-400 border-purple-400">
+                  <Badge variant="outline" className="text-primary border-primary">
                     EMERGENCE ACTIVE
                   </Badge>
-                  <Badge variant="outline" className="text-cyan-400 border-cyan-400">
+                  <Badge variant="outline" className="text-primary border-primary">
                     COLLAPSE SYNCHRONIZED
                   </Badge>
-                  <Badge variant="outline" className="text-green-400 border-green-400">
+                  <Badge variant="outline" className="text-success border-success">
                     UNITY MAINTAINED
                   </Badge>
                 </div>
-                <div className="text-amber-300 text-sm">
+                <div className="text-warning text-sm">
                   Harmonic Nodes Active: {harmonicNodes.length}
                 </div>
               </div>

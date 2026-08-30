@@ -72,9 +72,10 @@ class Phi:
     Φ(x) = tanh(M @ x)  (linear transform + saturation)
     """
     def __init__(self, dim: int = 3):
-        # Initialize pattern recognition matrix
-        np.random.seed(42)  # Reproducibility
-        self.M = np.eye(dim) + 0.1 * np.random.randn(dim, dim)
+        # Deterministic HNC pattern matrix; no synthetic noise enters runtime state.
+        phi = (1.0 + np.sqrt(5.0)) / 2.0
+        grid = np.arange(1, dim * dim + 1, dtype=float).reshape(dim, dim)
+        self.M = np.eye(dim) + 0.1 * np.sin(grid * phi)
 
     def __call__(self, x: np.ndarray) -> np.ndarray:
         """Apply pattern recognition"""
@@ -650,9 +651,9 @@ def run_demo():
             t = step / phase['steps']
             kappa_low, kappa_high = phase['kappa_range']
 
-            # Add some variation
-            noise = np.random.randn(3) * 0.1
-            C = np.clip(phase['C_base'] + noise, 0, 1)
+            # This isolated manual fixture is deterministic and never labelled live.
+            variation = 0.1 * np.sin(np.arange(1, 4) * (step + 1) * ((1 + np.sqrt(5)) / 2))
+            C = np.clip(phase['C_base'] + variation, 0, 1)
 
             # Synthetic physiological signals
             signal_power = 0.5 + 0.3 * np.sin(t * np.pi)

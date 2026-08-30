@@ -39,9 +39,12 @@ import time as _time
 
 # Use port 8081 for Orca health checks (matches app.yaml deployment config)
 _HEALTH_PORT = int(os.environ.get('HEALTH_PORT', '8081'))
-_health_status = {"status": "starting", "uptime": 0, "cycles": 0, "positions": 0}
+_health_status = {"status": "inactive", "uptime": 0, "cycles": 0, "positions": 0}
 _health_start_time = _time.time()
 HEALTH_TTL_SECONDS = int(os.environ.get('AUREON_HEALTH_TTL_SECONDS', '30'))
+_health_server = None
+_health_thread = None
+_health_lock = threading.Lock()
 
 
 def compute_real_health() -> tuple:
@@ -127,18 +130,81 @@ class _HealthHandler(http.server.BaseHTTPRequestHandler):
             self.send_response(404)
             self.end_headers()
 
-def _start_health_server():
-    """Start health check HTTP server in background thread."""
+class _HealthServer(socketserver.ThreadingTCPServer):
+    """Reusable health server whose worker threads cannot hold shutdown open."""
+
+    allow_reuse_address = True
+    daemon_threads = True
+
+
+def _serve_health_server(httpd):
+    """Serve an already-bound health server until its owner stops it."""
+    global _health_server, _health_thread
     try:
-        with socketserver.TCPServer(("", _HEALTH_PORT), _HealthHandler) as httpd:
-            print(f"🏥 Health check server running on port {_HEALTH_PORT}")
-            _health_status['status'] = 'healthy'
-            httpd.serve_forever()
-    except OSError as e:
-        if "Address already in use" in str(e):
-            print(f"⚠️ Health port {_HEALTH_PORT} already in use - skipping health server")
-        else:
-            print(f"⚠️ Health server error: {e}")
+        port = httpd.server_address[1]
+        print(f"🏥 Health check server running on port {port}")
+        _health_status['status'] = 'healthy'
+        httpd.serve_forever(poll_interval=0.2)
+    finally:
+        httpd.server_close()
+        with _health_lock:
+            if _health_server is httpd:
+                _health_server = None
+            if _health_thread is threading.current_thread():
+                _health_thread = None
+
+
+def start_health_server(port=None):
+    """Explicitly start the container health server.
+
+    Importing this module is intentionally inert. Runtime launchers own this
+    lifecycle and must pair this call with stop_health_server.
+    """
+    global _health_server, _health_thread, _health_start_time
+    selected_port = _HEALTH_PORT if port is None else int(port)
+
+    with _health_lock:
+        if _health_thread is not None and _health_thread.is_alive():
+            return True
+        try:
+            httpd = _HealthServer(("", selected_port), _HealthHandler)
+        except OSError as exc:
+            _health_status['status'] = 'unavailable'
+            print(f"⚠️ Health server could not bind port {selected_port}: {exc}")
+            return False
+
+        _health_start_time = _time.time()
+        _health_status.update(status='starting', uptime=0)
+        _health_server = httpd
+        _health_thread = threading.Thread(
+            target=_serve_health_server,
+            args=(httpd,),
+            daemon=True,
+            name="orca-health-server",
+        )
+        _health_thread.start()
+        return True
+
+
+def stop_health_server(timeout=2.0):
+    """Stop and join the explicitly started health-server thread."""
+    global _health_server, _health_thread
+    with _health_lock:
+        httpd = _health_server
+        thread = _health_thread
+
+    if httpd is not None:
+        httpd.shutdown()
+        httpd.server_close()
+    if thread is not None and thread is not threading.current_thread():
+        thread.join(timeout=max(0.0, float(timeout)))
+
+    with _health_lock:
+        if _health_server is httpd:
+            _health_server = None
+        if _health_thread is thread and (thread is None or not thread.is_alive()):
+            _health_thread = None
+    _health_status['status'] = 'inactive'
 
 def update_health_status(cycles=None, positions=None, status=None):
     """Update health status for probes."""
@@ -148,10 +214,6 @@ def update_health_status(cycles=None, positions=None, status=None):
         _health_status['positions'] = positions
     if status is not None:
         _health_status['status'] = status
-
-# Start health server immediately in background thread
-_health_thread = threading.Thread(target=_start_health_server, daemon=True)
-_health_thread.start()
 
 from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -204,6 +266,7 @@ import time
 import asyncio
 import threading
 import json
+import math
 from typing import Dict, Optional, List, Tuple, Any
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -661,12 +724,17 @@ except ImportError:
 
 # 🔩🌊 Harmonic Liquid Aluminium Field - Global market as dancing waveform sandbox
 try:
-    from aureon.harmonic.aureon_harmonic_liquid_aluminium import HarmonicLiquidAluminiumField, FieldSnapshot
+    from aureon.harmonic.aureon_harmonic_liquid_aluminium import (
+        FieldSnapshot,
+        HarmonicLiquidAluminiumField,
+        harmonic_streaming_runtime,
+    )
     HARMONIC_LIQUID_ALUMINIUM_AVAILABLE = True
 except ImportError:
     HARMONIC_LIQUID_ALUMINIUM_AVAILABLE = False
     HarmonicLiquidAluminiumField = None
     FieldSnapshot = None
+    harmonic_streaming_runtime = lambda method: method
 
 # 🔤 Unified Symbol Manager - Correct symbol formats & quantities per exchange
 try:
@@ -1418,6 +1486,211 @@ _kraken_rate_limit_window = 3.0  # Window in seconds
 _kraken_max_calls_per_window = 10  # Max calls in window (conservative)
 _kraken_rate_limit_lock = threading.Lock()
 
+_READY_MARKET_TRUTH = frozenset({'live', 'observed', 'real_observed', 'real_derived'})
+
+
+def _finite_market_number(value: Any, *, positive: bool = False,
+                          nonnegative: bool = False) -> Optional[float]:
+    """Parse a provider number without substituting a missing observation."""
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    if not math.isfinite(number):
+        return None
+    if positive and number <= 0:
+        return None
+    if nonnegative and number < 0:
+        return None
+    return number
+
+
+def _provider_epoch(value: Any) -> Optional[float]:
+    """Parse a provider clock; receipt time is deliberately not a fallback."""
+    if isinstance(value, (int, float)):
+        timestamp = float(value)
+        if timestamp > 1_000_000_000_000:
+            timestamp /= 1000.0
+        return timestamp if math.isfinite(timestamp) and timestamp > 0 else None
+    if isinstance(value, str) and value.strip():
+        try:
+            parsed = datetime.fromisoformat(value.strip().replace('Z', '+00:00'))
+        except ValueError:
+            return None
+        if parsed.tzinfo is None:
+            return None
+        timestamp = parsed.timestamp()
+        return timestamp if math.isfinite(timestamp) and timestamp > 0 else None
+    return None
+
+
+def _no_data_market_receipt(symbol: str, source_id: str, reason: str, *,
+                            source_timestamp: Any = None,
+                            received_at: Any = None) -> Dict[str, Any]:
+    """Return an explicit non-actionable receipt for absent provider evidence."""
+    receipt_time = _finite_market_number(received_at, positive=True)
+    if receipt_time is None:
+        receipt_time = time.time()
+    return {
+        'symbol': symbol,
+        'price': None,
+        'bid': None,
+        'ask': None,
+        'change_pct': None,
+        'volume': None,
+        'truth_status': 'no_data',
+        'decision_status': 'blocked',
+        'action_eligible': False,
+        'eligible_for_learning': False,
+        'reason': reason,
+        'source_id': source_id,
+        'source_timestamp': _provider_epoch(source_timestamp),
+        'received_at': receipt_time,
+        'generated_values': False,
+    }
+
+
+def _verified_market_receipt(
+    *,
+    symbol: str,
+    source_id: str,
+    source_timestamp: Any,
+    received_at: Any = None,
+    price: Any = None,
+    bid: Any = None,
+    ask: Any = None,
+    change_pct: Any = None,
+    volume: Any = None,
+    required_fields: Tuple[str, ...] = ('price',),
+    max_age_seconds: float = 300.0,
+    provider_truth_status: Any = None,
+    provider_action_eligible: Any = None,
+) -> Dict[str, Any]:
+    """Canonicalise one fresh provider observation without filling gaps.
+
+    ``source_timestamp`` must come from the provider/cache record. ``received_at``
+    records when this process saw the payload and is never used as its source
+    clock. Callers declare the fields their decision actually requires.
+    """
+    receipt_time = _finite_market_number(received_at, positive=True)
+    if receipt_time is None:
+        receipt_time = time.time()
+    provider_time = _provider_epoch(source_timestamp)
+    source = str(source_id or '').strip()
+    if not source:
+        return _no_data_market_receipt(
+            symbol, 'unidentified_provider', 'MISSING_PROVIDER_ID',
+            source_timestamp=source_timestamp, received_at=receipt_time,
+        )
+    if provider_truth_status is not None and str(provider_truth_status).lower() not in _READY_MARKET_TRUTH:
+        return _no_data_market_receipt(
+            symbol, source, 'PROVIDER_MARKED_OBSERVATION_INCOMPLETE',
+            source_timestamp=source_timestamp, received_at=receipt_time,
+        )
+    if provider_action_eligible is False:
+        return _no_data_market_receipt(
+            symbol, source, 'PROVIDER_MARKED_OBSERVATION_NON_ACTIONABLE',
+            source_timestamp=source_timestamp, received_at=receipt_time,
+        )
+    max_age = _finite_market_number(max_age_seconds, positive=True)
+    if max_age is None:
+        max_age = 300.0
+    if provider_time is None:
+        return _no_data_market_receipt(
+            symbol, source, 'MISSING_PROVIDER_TIMESTAMP',
+            source_timestamp=source_timestamp, received_at=receipt_time,
+        )
+    age_seconds = receipt_time - provider_time
+    if age_seconds > max_age or age_seconds < -300.0:
+        return _no_data_market_receipt(
+            symbol, source, 'STALE_OR_FUTURE_PROVIDER_OBSERVATION',
+            source_timestamp=provider_time, received_at=receipt_time,
+        )
+
+    values = {
+        'price': _finite_market_number(price, positive=True),
+        'bid': _finite_market_number(bid, positive=True),
+        'ask': _finite_market_number(ask, positive=True),
+        'change_pct': _finite_market_number(change_pct),
+        'volume': _finite_market_number(volume, nonnegative=True),
+    }
+    missing = [name for name in required_fields if values.get(name) is None]
+    if missing:
+        return _no_data_market_receipt(
+            symbol, source, f"MISSING_OR_MALFORMED_PROVIDER_FIELDS:{','.join(missing)}",
+            source_timestamp=provider_time, received_at=receipt_time,
+        )
+    if values['bid'] is not None and values['ask'] is not None and values['ask'] < values['bid']:
+        return _no_data_market_receipt(
+            symbol, source, 'CROSSED_PROVIDER_BOOK',
+            source_timestamp=provider_time, received_at=receipt_time,
+        )
+
+    return {
+        'symbol': symbol,
+        **values,
+        'truth_status': 'real_derived',
+        'decision_status': 'ready',
+        'action_eligible': True,
+        'eligible_for_learning': True,
+        'reason': None,
+        'source_id': source,
+        'source_timestamp': provider_time,
+        'received_at': receipt_time,
+        'age_seconds': age_seconds,
+        'max_age_seconds': max_age,
+        'field_provenance': {
+            name: {'source': source, 'source_timestamp': provider_time}
+            for name in values if values[name] is not None
+        },
+        'generated_values': False,
+    }
+
+
+def _verified_orderbook_receipt(
+    payload: Any,
+    *,
+    symbol: str,
+    source_id: str,
+    max_age_seconds: float = 30.0,
+) -> Dict[str, Any]:
+    """Canonicalise an order book without turning one side into the other."""
+    received_at = time.time()
+    if not isinstance(payload, dict):
+        return _no_data_market_receipt(
+            symbol, source_id, 'ORDERBOOK_PAYLOAD_MISSING', received_at=received_at,
+        )
+    bids = payload.get('bids') if 'bids' in payload else payload.get('b')
+    asks = payload.get('asks') if 'asks' in payload else payload.get('a')
+    if not isinstance(bids, list) or not bids or not isinstance(asks, list) or not asks:
+        return _no_data_market_receipt(
+            symbol, source_id, 'ORDERBOOK_SIDES_INCOMPLETE',
+            source_timestamp=payload.get('source_timestamp') or payload.get('t'),
+            received_at=received_at,
+        )
+    best_bid = bids[0].get('p') if isinstance(bids[0], dict) else None
+    best_ask = asks[0].get('p') if isinstance(asks[0], dict) else None
+    bid = _finite_market_number(best_bid, positive=True)
+    ask = _finite_market_number(best_ask, positive=True)
+    midpoint = (bid + ask) / 2.0 if bid is not None and ask is not None else None
+    return _verified_market_receipt(
+        symbol=symbol,
+        source_id=payload.get('source_id') or source_id,
+        source_timestamp=(
+            payload.get('source_timestamp')
+            if 'source_timestamp' in payload
+            else payload.get('t')
+        ),
+        received_at=payload.get('received_at') or received_at,
+        price=midpoint,
+        bid=bid,
+        ask=ask,
+        required_fields=('price', 'bid', 'ask'),
+        max_age_seconds=max_age_seconds,
+        provider_truth_status=payload.get('truth_status'),
+        provider_action_eligible=payload.get('action_eligible'),
+    )
+
 def kraken_rate_limit_check() -> bool:
     """Check if we can make a Kraken API call without hitting rate limit."""
     global _kraken_call_times
@@ -1499,17 +1772,32 @@ def get_cached_ticker_dict(symbol: str, max_age: float = 60.0) -> Optional[Dict[
     if not ticker:
         ticker = get_ticker(symbol, max_age=max_age)
     
-    if ticker and ticker.price > 0:
-        # Return in compatible dict format
-        return {
-            'price': ticker.price,
-            'last': ticker.price,
-            'bid': ticker.bid or ticker.price,
-            'ask': ticker.ask or ticker.price,
-            'c': [str(ticker.price)],  # Kraken format
-            'source': ticker.source,
-            'cached': True
-        }
+    if ticker:
+        receipt = _verified_market_receipt(
+            symbol=symbol,
+            source_id=f"unified_market_cache:{ticker.source}",
+            source_timestamp=ticker.timestamp,
+            received_at=time.time(),
+            price=ticker.price,
+            bid=ticker.bid,
+            ask=ticker.ask,
+            change_pct=ticker.change_24h,
+            volume=ticker.volume_24h,
+            required_fields=('price', 'bid', 'ask'),
+            max_age_seconds=max_age,
+        )
+        if receipt['decision_status'] == 'ready':
+            receipt['last'] = receipt['price']
+            receipt['c'] = [str(receipt['price'])]
+            receipt['cached'] = True
+            # The current cache schema can prove its timestamped price, but it
+            # does not preserve field-level evidence showing whether bid/ask
+            # were provider-observed or normalized upstream. It is valuation
+            # evidence only, never an execution or learning input.
+            receipt['action_eligible'] = False
+            receipt['eligible_for_learning'] = False
+            receipt['reason'] = 'CACHE_BOOK_FIELD_PROVENANCE_INCOMPLETE'
+            return receipt
     return None
 
 def smart_get_ticker(client: Any, symbol: str, exchange: str = 'unknown') -> Optional[Dict[str, Any]]:
@@ -1531,33 +1819,89 @@ def smart_get_ticker(client: Any, symbol: str, exchange: str = 'unknown') -> Opt
     """
     # 1. Try cache first (FREE!)
     cached = get_cached_ticker_dict(symbol, max_age=30.0)
-    if cached:
+    if cached and exchange.lower() in {'unknown', 'display', 'valuation'}:
         return cached
     
-    # 2. For Kraken, check rate limit before API call
+    received_at = time.time()
+    source_id = f"{exchange.lower()}:ticker"
+
+    # 2. For Kraken, join a fresh provider-clock receipt to its live book.
     if exchange.lower() == 'kraken':
         if not kraken_rate_limit_check():
-            # Rate limited - return None, let caller handle fallback
-            return None
-        # Record the API call
+            return _no_data_market_receipt(
+                symbol, 'kraken:ticker', 'KRAKEN_RATE_LIMITED', received_at=received_at,
+            )
         kraken_rate_limit_record()
-    
-    # 3. Make the actual API call
+        try:
+            proof = client.get_24h_ticker(symbol) if hasattr(client, 'get_24h_ticker') else None
+            if not isinstance(proof, dict):
+                return _no_data_market_receipt(
+                    symbol, 'kraken:ticker', 'KRAKEN_PROVIDER_PROOF_MISSING',
+                    received_at=received_at,
+                )
+            if not kraken_rate_limit_check():
+                return _no_data_market_receipt(
+                    symbol, 'kraken:ticker', 'KRAKEN_BOOK_RATE_LIMITED',
+                    source_timestamp=proof.get('source_timestamp'), received_at=received_at,
+                )
+            kraken_rate_limit_record()
+            book = client.get_ticker(symbol) if hasattr(client, 'get_ticker') else None
+            if not isinstance(book, dict):
+                return _no_data_market_receipt(
+                    symbol, 'kraken:ticker', 'KRAKEN_BOOK_MISSING',
+                    source_timestamp=proof.get('source_timestamp'), received_at=received_at,
+                )
+            receipt = _verified_market_receipt(
+                symbol=symbol,
+                source_id=proof.get('source_id') or 'kraken:/0/public/Ticker+/0/public/Time',
+                source_timestamp=proof.get('source_timestamp'),
+                received_at=time.time(),
+                price=proof.get('price') if 'price' in proof else proof.get('lastPrice'),
+                bid=book.get('bid'),
+                ask=book.get('ask'),
+                change_pct=proof.get('priceChangePercent'),
+                volume=proof.get('quoteVolume'),
+                required_fields=('price', 'bid', 'ask'),
+                provider_truth_status=proof.get('truth_status'),
+            )
+            if receipt['decision_status'] == 'ready':
+                receipt['last'] = receipt['price']
+                receipt['c'] = [str(receipt['price'])]
+            return receipt
+        except Exception:
+            return _no_data_market_receipt(
+                symbol, 'kraken:ticker', 'KRAKEN_TICKER_REQUEST_FAILED',
+                received_at=received_at,
+            )
+
+    # 3. Other venues must return their own timestamped complete quote.
     try:
-        if hasattr(client, 'get_ticker'):
-            return client.get_ticker(symbol)
-        elif hasattr(client, 'get_ticker_price'):
-            result = client.get_ticker_price(symbol)
-            if result:
-                price = float(result.get('price', 0) if isinstance(result, dict) else result)
-                return {'price': price, 'last': price, 'bid': price, 'ask': price}
-    except Exception as e:
-        if 'Rate limit' in str(e):
-            # Log but don't spam
-            pass
-        return None
-    
-    return None
+        result = client.get_ticker(symbol) if hasattr(client, 'get_ticker') else None
+    except Exception:
+        return _no_data_market_receipt(
+            symbol, source_id, 'TICKER_REQUEST_FAILED', received_at=received_at,
+        )
+    if not isinstance(result, dict):
+        return _no_data_market_receipt(
+            symbol, source_id, 'TICKER_PAYLOAD_MISSING', received_at=received_at,
+        )
+    receipt = _verified_market_receipt(
+        symbol=symbol,
+        source_id=result.get('source_id') or source_id,
+        source_timestamp=result.get('source_timestamp'),
+        received_at=result.get('received_at'),
+        price=result.get('price') if 'price' in result else result.get('last'),
+        bid=result.get('bid'),
+        ask=result.get('ask'),
+        change_pct=result.get('change_pct'),
+        volume=result.get('volume'),
+        required_fields=('price', 'bid', 'ask'),
+        provider_truth_status=result.get('truth_status'),
+        provider_action_eligible=result.get('action_eligible'),
+    )
+    if receipt['decision_status'] == 'ready':
+        receipt['last'] = receipt['price']
+    return receipt
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -2070,13 +2414,20 @@ class WarRoomDisplay:
         ]
         
         for name, score in quantum_status:
+            if not isinstance(score, (int, float)) or not math.isfinite(float(score)):
+                intel.add_row(Text(f"  {name}: [dim]NO DATA[/]"))
+                continue
             score_color = "green" if score > 0.7 else "yellow" if score > 0.4 else "dim"
             intel.add_row(Text(f"  {name}: [{score_color}]{score:.2f}[/]"))
         
-        total_boost = self.quantum_data.get('total_boost', 1.0)
-        boost_color = "green" if total_boost > 1.2 else "yellow" if total_boost > 1.0 else "red"
+        total_boost = self.quantum_data.get('total_boost')
         intel.add_row("")
-        intel.add_row(Text(f"  ⚡ TOTAL BOOST: [{boost_color}]{total_boost:.2f}x[/]", style="bold"))
+        if isinstance(total_boost, (int, float)) and math.isfinite(float(total_boost)):
+            boost_color = "green" if total_boost > 1.2 else "yellow" if total_boost > 1.0 else "red"
+            intel.add_row(Text(f"  ⚡ TOTAL BOOST: [{boost_color}]{total_boost:.2f}x[/]", style="bold"))
+        else:
+            reason = self.quantum_data.get('reason', 'NO_FRESH_QUANTUM_EVIDENCE')
+            intel.add_row(Text(f"  ⚡ TOTAL BOOST: [dim]NO DATA ({reason})[/]", style="bold"))
         
         # 🦅 Momentum Ecosystem
         intel.add_row("")
@@ -3089,75 +3440,16 @@ class WhaleIntelligenceTracker:
             # Keep only recent
             self.firm_activities[symbol] = self.firm_activities[symbol][-20:]
     
-    def _simulate_firm_activity(self, symbol: str, current_price: float, price_change_pct: float) -> List[FirmActivity]:
+    def _get_observed_firm_activity(self, symbol: str) -> List[FirmActivity]:
         """
-        Simulate realistic firm activity based on market conditions.
-        Uses known firm patterns from GLOBAL_TRADING_FIRMS.
+        Return only activities created from observed provider trade events.
 
         ⚠ Direction (accumulating / distributing / market_making) is derived
         from real `price_change_pct`, but volume + confidence are sampled
-        from random.uniform. Gated behind AUREON_ALLOW_SIM_FALLBACK so
-        production refuses to emit synthetic FirmActivity into the catalog
-        and ThoughtBus.
+        This method returns only provider-observed activity already ingested
+        into the tracker.
         """
-        from aureon.observer.live_data_policy import simulation_fallback_allowed
-        if not simulation_fallback_allowed():
-            return []
-        activities = []
-        symbol_base = symbol.replace('/USD', '').replace('USDT', '').upper()
-        
-        # Get firms that typically trade this symbol
-        likely_firms = self.SYMBOL_FIRM_MAP.get(symbol_base, ['unknown_mm'])
-        
-        for firm_id in likely_firms[:3]:  # Top 3 firms
-            firm_data = GLOBAL_TRADING_FIRMS.get(firm_id)
-            firm_name = firm_data.name if firm_data else firm_id.replace('_', ' ').title()
-            
-            # Simulate activity based on price movement
-            # Firms typically:
-            # - Accumulate when price is down (buying the dip)
-            # - Distribute when price is up (taking profits)
-            # - Market make in sideways
-            
-            if price_change_pct < -2:
-                # Price down - smart money accumulating
-                action = "ACCUMULATING"
-                direction = "bullish"
-                volume = random.uniform(50000, 500000)
-            elif price_change_pct > 2:
-                # Price up - distribution
-                action = "DISTRIBUTING"
-                direction = "bearish"
-                volume = random.uniform(30000, 300000)
-            else:
-                # Sideways - market making
-                action = "MARKET_MAKING"
-                direction = "neutral"
-                volume = random.uniform(100000, 1000000)
-            
-            # Some randomness for realism
-            if random.random() < 0.3:
-                # 30% chance firm is doing opposite (contrarian)
-                if direction == "bullish":
-                    direction = "bearish"
-                    action = "DISTRIBUTING"
-                elif direction == "bearish":
-                    direction = "bullish"
-                    action = "ACCUMULATING"
-            
-            confidence = random.uniform(0.6, 0.95)
-            
-            activities.append(FirmActivity(
-                firm_name=firm_name,
-                firm_id=firm_id,
-                action=action,
-                direction=direction,
-                volume_24h=volume,
-                impact="",  # Will be set based on our position
-                confidence=confidence
-            ))
-        
-        return activities
+        return list(self.firm_activities.get(symbol, []))
     
     def _record_firm_activity_to_catalog(self, symbol: str, activities: List[FirmActivity], price: float):
         """Record simulated activity to FirmIntelligenceCatalog for tracking."""
@@ -3229,7 +3521,7 @@ class WhaleIntelligenceTracker:
         symbol_base = symbol.replace('/USD', '').replace('USDT', '').upper()
         
         # 1. Simulate/get firm activity for this symbol
-        activities = self._simulate_firm_activity(symbol, current_price, price_change_pct)
+        activities = self._get_observed_firm_activity(symbol)
         
         # Record to catalog and emit to ThoughtBus
         if time.time() - self.last_market_scan > 5:  # Every 5 seconds
@@ -3415,10 +3707,20 @@ class MarketOpportunity:
     exchange: str
     price: float
     change_pct: float
-    volume: float
+    volume: Optional[float]
     momentum_score: float
     fee_rate: float
+    # ``timestamp`` is retained as a legacy receipt clock for display only.
+    # Decisions use the provider clock in ``source_timestamp``.
     timestamp: float = field(default_factory=time.time)
+    source_id: Optional[str] = None
+    source_timestamp: Optional[float] = None
+    received_at: Optional[float] = None
+    truth_status: str = 'no_data'
+    decision_status: str = 'blocked'
+    action_eligible: bool = False
+    eligible_for_learning: bool = False
+    generated_values: bool = False
 
 
 @dataclass
@@ -3516,7 +3818,16 @@ class OrcaKillCycle:
             _safe_print(f"⚠️ Kraken asset discovery failed: {e}")
             return []
 
-    def __init__(self, client=None, exchange='alpaca', quick_init=False):
+    def __init__(
+        self,
+        client=None,
+        exchange='alpaca',
+        quick_init=False,
+        *,
+        unity_composition=None,
+        unity_plan_supplier=None,
+        trusted_unity_plan_supplier_ids=None,
+    ):
         """
         Initialize OrcaKillCycle.
         
@@ -3564,7 +3875,11 @@ class OrcaKillCycle:
             _safe_print(f"⚠️ Adaptive Profit Gate: {e}")
         
         # Initialize clients for BOTH exchanges (unless specific client provided)
-        if client:
+        if unity_composition is not None:
+            # Canonical composition owns provider construction; never create a
+            # second set of raw mutation-capable clients here.
+            pass
+        elif client:
             self.clients[exchange] = client
             self.client = client  # Backward compatibility
         else:
@@ -3608,6 +3923,22 @@ class OrcaKillCycle:
             
             # Set primary client for backward compatibility
             self.client = self.clients.get(exchange) or list(self.clients.values())[0]
+
+        from aureon.queen.unity_exchange_brain import build_queen_exchange_brains
+
+        self.clients, self._queen_governed_client, self.unity_governance_status = (
+            build_queen_exchange_brains(
+                unity_composition=unity_composition,
+                unity_plan_supplier=unity_plan_supplier,
+                trusted_unity_plan_supplier_ids=frozenset(
+                    trusted_unity_plan_supplier_ids or ()
+                ),
+                fallback_read_clients=(
+                    None if unity_composition is not None else self.clients
+                ),
+            )
+        )
+        self.client = self.clients[exchange]
         
         self.exchange = exchange
         self.fee_rate = self.fee_rates.get(exchange, 0.0025)
@@ -4087,8 +4418,7 @@ class OrcaKillCycle:
         if HARMONIC_LIQUID_ALUMINIUM_AVAILABLE and HarmonicLiquidAluminiumField:
             try:
                 self.harmonic_field = HarmonicLiquidAluminiumField(stream_interval_ms=100)
-                self.harmonic_field.start_streaming()
-                print("🔩🌊 Harmonic Liquid Aluminium Field: WIRED! (Market as dancing frequencies)")
+                print("🔩🌊 Harmonic Liquid Aluminium Field: WIRED! (Runtime start pending)")
             except Exception as e:
                 print(f"🔩 Harmonic Liquid Aluminium: {e}")
         
@@ -4865,15 +5195,17 @@ class OrcaKillCycle:
     
     def _ensure_capital_client(self):
         """Lazy-load Capital.com client on first use (avoids rate limiting during init)."""
-        if 'capital' in self.clients and self.clients['capital'] is None:
+        brain = self.clients.get('capital')
+        if brain is not None and brain.read_client is None:
             try:
                 _safe_print("🔄 Lazy-loading Capital.com client...")
-                self.clients['capital'] = CapitalClient()
+                brain.bind_read_client(CapitalClient())
                 _safe_print("✅ Capital.com: CONNECTED (lazy load)")
             except Exception as e:
                 _safe_print(f"⚠️ Capital.com lazy load failed: {e}")
-                # Keep as None to retry next time
-        return self.clients.get('capital')
+                # Keep the brain unbound so a later read may retry. Mutation
+                # authority remains HOLD regardless of read availability.
+        return brain
     
     def emit_position_signal(self, symbol: str, exchange: str, qty: float, entry_price: float,
                              current_price: float, unrealized_pnl: float, status: str = "hunting"):
@@ -5846,8 +6178,10 @@ class OrcaKillCycle:
     # 🔮 QUANTUM INTELLIGENCE - ENHANCED PROBABILITY SCORING
     # ═══════════════════════════════════════════════════════════════════════
     
-    def get_quantum_score(self, symbol: str, price: float, change_pct: float, 
-                          volume: float = 0, momentum: float = 0) -> dict:
+    def get_quantum_score(self, symbol: str, price: float, change_pct: float,
+                          volume: float = 0, momentum: float = 0,
+                          source_timestamp: Optional[float] = None,
+                          received_at: Optional[float] = None) -> dict:
         """
         Get enhanced probability score using ALL quantum systems.
         
@@ -5860,15 +6194,85 @@ class OrcaKillCycle:
             - quantum_boost: Combined confidence multiplier
             - action_bias: BUY/SELL/HOLD suggestion
         """
+        try:
+            numeric_inputs = [float(price), float(change_pct), float(volume), float(momentum)]
+        except (TypeError, ValueError):
+            numeric_inputs = []
+        if (
+            len(numeric_inputs) != 4
+            or not all(math.isfinite(value) for value in numeric_inputs)
+            or numeric_inputs[0] <= 0
+            or numeric_inputs[2] < 0
+        ):
+            return {
+                'luck_field': None,
+                'luck_state': None,
+                'limbo_probability': None,
+                'limbo_pattern': None,
+                'quantum_boost': None,
+                'action_bias': None,
+                'is_blessed': None,
+                'inception_wisdom': None,
+                'truth_status': 'no_data',
+                'decision_status': 'blocked',
+                'reason': 'INCOMPLETE_MARKET_INPUT',
+                'source_timestamp': source_timestamp,
+                'received_at': received_at,
+                'generated_values': False,
+            }
+
+        price, change_pct, volume, momentum = numeric_inputs
+        # Freshness is provider-owned. ``received_at`` is receipt metadata only
+        # and must never stand in for a missing market clock.
+        freshness_timestamp = source_timestamp
+        try:
+            freshness_timestamp = float(freshness_timestamp)
+        except (TypeError, ValueError):
+            freshness_timestamp = None
+        now = time.time()
+        try:
+            max_input_age = float(
+                os.environ.get('AUREON_QUANTUM_INPUT_MAX_AGE_SECONDS', '300')
+            )
+        except (TypeError, ValueError):
+            max_input_age = 300.0
+        if not math.isfinite(max_input_age) or max_input_age <= 0:
+            max_input_age = 300.0
+        if (
+            freshness_timestamp is None
+            or not math.isfinite(freshness_timestamp)
+            or now - freshness_timestamp > max_input_age
+            or freshness_timestamp - now > 300.0
+        ):
+            return {
+                'luck_field': None,
+                'luck_state': None,
+                'limbo_probability': None,
+                'limbo_pattern': None,
+                'quantum_boost': None,
+                'action_bias': None,
+                'is_blessed': None,
+                'inception_wisdom': None,
+                'truth_status': 'no_data',
+                'decision_status': 'blocked',
+                'reason': 'MISSING_OR_STALE_MARKET_TIMESTAMP',
+                'source_timestamp': source_timestamp,
+                'received_at': received_at,
+                'generated_values': False,
+            }
+
         result = {
-            'luck_field': 0.5,
-            'luck_state': 'NEUTRAL',
-            'limbo_probability': 0.5,
-            'limbo_pattern': 'unknown',
+            'luck_field': None,
+            'luck_state': None,
+            'limbo_probability': None,
+            'limbo_pattern': None,
             'quantum_boost': 1.0,
-            'action_bias': 'HOLD',
-            'is_blessed': False,
-            'inception_wisdom': None
+            'action_bias': None,
+            'is_blessed': None,
+            'inception_wisdom': None,
+            'source_timestamp': source_timestamp,
+            'received_at': received_at,
+            'generated_values': False,
         }
         
         # 1. LUCK FIELD MAPPER - Cosmic alignment score
@@ -5950,6 +6354,8 @@ class OrcaKillCycle:
                 if tick and hasattr(self.hft_engine, 'ingest_tick'):
                     tone = self.hft_engine.ingest_tick(tick)
                     if tone and hasattr(tone, 'confidence'):
+                        result['hft_frequency'] = getattr(tone, 'frequency', None)
+                        result['hft_confidence'] = tone.confidence
                         # 528Hz (Love frequency) alignment gives boost
                         if abs(tone.frequency - 528) < 50:
                             result['quantum_boost'] *= 1.1
@@ -5986,7 +6392,11 @@ class OrcaKillCycle:
         if self.russian_doll:
             try:
                 directives = self.russian_doll.get_queen_directives()
-                result['queen_confidence'] = directives.get('confidence', 0.5)
+                confidence = directives.get('confidence')
+                if confidence is not None:
+                    confidence = float(confidence)
+                    if math.isfinite(confidence):
+                        result['queen_confidence'] = confidence
                 result['target_exchanges'] = directives.get('target_exchanges', [])
                 
                 # High Queen confidence = trust the system
@@ -6014,7 +6424,11 @@ class OrcaKillCycle:
         if self.stargate:
             try:
                 status = self.stargate.get_status()
-                result['stargate_coherence'] = status.get('network_coherence', 0.5)
+                coherence = status.get('network_coherence')
+                if coherence is not None:
+                    coherence = float(coherence)
+                    if math.isfinite(coherence):
+                        result['stargate_coherence'] = coherence
                 result['active_nodes'] = status.get('active_nodes', 0)
                 
                 # High network coherence = timeline alignment
@@ -6050,7 +6464,7 @@ class OrcaKillCycle:
         if self.immune_system:
             try:
                 health = self.immune_system.get_health_status()
-                result['system_health'] = health.get('overall', 'healthy')
+                result['system_health'] = health.get('overall')
                 
                 # If system is unhealthy, reduce confidence
                 if health.get('overall') == 'critical':
@@ -6074,8 +6488,8 @@ class OrcaKillCycle:
                 surge = self.hnc_surge_detector.detect_surge(symbol)
                 if surge:
                     result['hnc_surge_active'] = True
-                    result['hnc_surge_intensity'] = surge.intensity if hasattr(surge, 'intensity') else 0.7
-                    result['hnc_dominant_harmonic'] = surge.primary_harmonic if hasattr(surge, 'primary_harmonic') else 'Unknown'
+                    result['hnc_surge_intensity'] = getattr(surge, 'intensity', None)
+                    result['hnc_dominant_harmonic'] = getattr(surge, 'primary_harmonic', None)
                     
                     # SACRED FREQUENCY ALIGNMENT - Major boost for harmonic resonance!
                     # Map primary harmonic name to frequency for boost calculation
@@ -6123,9 +6537,9 @@ class OrcaKillCycle:
                 )
                 
                 if pattern_match:
-                    result['historical_pattern'] = pattern_match.get('pattern_name', 'Unknown')
-                    result['historical_similarity'] = pattern_match.get('similarity', 0.0)
-                    result['historical_outcome'] = pattern_match.get('historical_outcome', 'unknown')
+                    result['historical_pattern'] = pattern_match.get('pattern_name')
+                    result['historical_similarity'] = pattern_match.get('similarity')
+                    result['historical_outcome'] = pattern_match.get('historical_outcome')
                     
                     # If historical pattern predicts crash/manipulation → REDUCE confidence
                     if pattern_match.get('is_danger_pattern', False):
@@ -6197,6 +6611,41 @@ class OrcaKillCycle:
                 result['animal_spirit'] = True
             else:
                 result['animal_spirit'] = False
+
+        evidence_fields = [
+            'luck_field',
+            'limbo_probability',
+            'hft_frequency',
+            'elephant_score',
+            'queen_confidence',
+            'whale_prediction',
+            'stargate_coherence',
+            'mirror_boost',
+            'system_health',
+            'hnc_surge_intensity',
+            'historical_similarity',
+            'stargate_node',
+        ]
+        observed_components = [
+            field_name for field_name in evidence_fields
+            if result.get(field_name) is not None
+        ]
+        if 'animal_spirit' in result:
+            observed_components.append('animal_spirit')
+
+        result['coverage'] = {
+            'observed_components': observed_components,
+            'observed_count': len(observed_components),
+        }
+        if observed_components:
+            result['truth_status'] = 'real_derived'
+            result['decision_status'] = 'ready'
+            result['reason'] = None
+        else:
+            result['truth_status'] = 'no_data'
+            result['decision_status'] = 'blocked'
+            result['reason'] = 'NO_QUANTUM_COMPONENT_OBSERVATION'
+            result['quantum_boost'] = None
 
         return result
     
@@ -6355,6 +6804,75 @@ class OrcaKillCycle:
     # �🆕 SCAN ENTIRE MARKET - ALL EXCHANGES, ALL SYMBOLS
     # ═══════════════════════════════════════════════════════════════════════
     
+    def _opportunity_from_market_receipt(
+        self,
+        receipt: Dict[str, Any],
+        *,
+        symbol: str,
+        exchange: str,
+        momentum_score: float,
+        fee_rate: float,
+    ) -> Optional[MarketOpportunity]:
+        """Create a decision candidate only from a complete canonical receipt."""
+        if (
+            not isinstance(receipt, dict)
+            or receipt.get('decision_status') != 'ready'
+            or receipt.get('truth_status') not in _READY_MARKET_TRUTH
+            or receipt.get('generated_values') is not False
+            or not receipt.get('action_eligible')
+            or not receipt.get('eligible_for_learning')
+        ):
+            if hasattr(self, 'last_market_scan_rejections'):
+                self.last_market_scan_rejections.append({
+                    'symbol': symbol,
+                    'exchange': exchange,
+                    'reason': receipt.get('reason', 'NO_PROVIDER_RECEIPT') if isinstance(receipt, dict) else 'NO_PROVIDER_RECEIPT',
+                    'truth_status': 'no_data',
+                    'decision_status': 'blocked',
+                    'generated_values': False,
+                })
+            return None
+        return MarketOpportunity(
+            symbol=symbol,
+            exchange=exchange,
+            price=receipt['price'],
+            change_pct=receipt['change_pct'],
+            volume=receipt['volume'],
+            momentum_score=momentum_score,
+            fee_rate=fee_rate,
+            timestamp=receipt['received_at'],
+            source_id=receipt['source_id'],
+            source_timestamp=receipt['source_timestamp'],
+            received_at=receipt['received_at'],
+            truth_status=receipt['truth_status'],
+            decision_status=receipt['decision_status'],
+            action_eligible=receipt['action_eligible'],
+            eligible_for_learning=receipt['eligible_for_learning'],
+            generated_values=False,
+        )
+
+    def _opportunity_is_actionable(self, opportunity: Any) -> bool:
+        """Revalidate provenance at the decision boundary to catch staleness."""
+        if not isinstance(opportunity, MarketOpportunity):
+            return False
+        receipt = _verified_market_receipt(
+            symbol=opportunity.symbol,
+            source_id=opportunity.source_id or '',
+            source_timestamp=opportunity.source_timestamp,
+            received_at=time.time(),
+            price=opportunity.price,
+            change_pct=opportunity.change_pct,
+            volume=opportunity.volume,
+            required_fields=('price', 'change_pct', 'volume'),
+            provider_truth_status=opportunity.truth_status,
+            provider_action_eligible=opportunity.action_eligible,
+        )
+        return (
+            receipt['decision_status'] == 'ready'
+            and opportunity.eligible_for_learning
+            and opportunity.generated_values is False
+        )
+
     def scan_entire_market(self, min_change_pct: float = 0.25, min_volume: float = 500) -> List[MarketOpportunity]:
         """
         Scan ENTIRE market across ALL exchanges for opportunities.
@@ -6369,6 +6887,7 @@ class OrcaKillCycle:
         print("="*70)
         
         opportunities = []
+        self.last_market_scan_rejections = []
         
         # Scan Alpaca
         if 'alpaca' in self.clients:
@@ -6475,24 +6994,32 @@ class OrcaKillCycle:
         # ═══════════════════════════════════════════════════════════════════
         # 🎯📊 FEED DATA TO PROBABILITY NEXUS (Batten Matrix)
         # ═══════════════════════════════════════════════════════════════════
-        if PROBABILITY_NEXUS_AVAILABLE and process_market_data and opportunities:
+        provenance_ready_opportunities = [
+            opp for opp in opportunities if self._opportunity_is_actionable(opp)
+        ]
+        if PROBABILITY_NEXUS_AVAILABLE and process_market_data and provenance_ready_opportunities:
             try:
                 # Feed market data from opportunities to Probability Nexus
-                for opp in opportunities:
+                for opp in provenance_ready_opportunities:
                     market_snapshot = {
                         'price': opp.price,
                         'volume': opp.volume,
                         'coherence': min(1.0, opp.momentum_score / 100.0) if opp.momentum_score else 0.5,
                         'volatility': abs(opp.change_pct) / 100.0,
                         'sentiment': 0.5 + (opp.change_pct / 200.0),  # Normalize to 0-1
-                        'timestamp': int(time.time()),
+                        'timestamp': opp.source_timestamp,
+                        'source_id': opp.source_id,
+                        'source_timestamp': opp.source_timestamp,
+                        'received_at': opp.received_at,
+                        'truth_status': opp.truth_status,
+                        'generated_values': False,
                     }
                     # Feed to Probability Nexus
                     process_market_data([market_snapshot], symbol=opp.symbol)
                 
                 # Update subsystem state to calculate coherence/lambda metrics
                 update_subsystems()
-                print(f"   🎯 Fed {len(opportunities)} snapshots to Probability Nexus (Batten Matrix)")
+                print(f"   🎯 Fed {len(provenance_ready_opportunities)} snapshots to Probability Nexus (Batten Matrix)")
             except Exception as e:
                 print(f"   ⚠️ Probability Nexus feed error: {e}")
         
@@ -6560,13 +7087,29 @@ class OrcaKillCycle:
         filtered_opportunities = []
         
         for opp in opportunities:
+            if not self._opportunity_is_actionable(opp):
+                opp._quantum_truth_status = 'no_data'
+                opp._quantum_block_reason = 'MISSING_OR_STALE_PROVIDER_PROVENANCE'
+                continue
             quantum = self.get_quantum_score(
                 symbol=opp.symbol,
                 price=opp.price,
                 change_pct=opp.change_pct,
                 volume=opp.volume,
-                momentum=opp.momentum_score
+                momentum=opp.momentum_score,
+                source_timestamp=opp.source_timestamp,
+                received_at=opp.received_at,
             )
+
+            if (
+                quantum.get('decision_status') != 'ready'
+                or quantum.get('quantum_boost') is None
+            ):
+                opp._quantum_truth_status = 'no_data'
+                opp._quantum_block_reason = quantum.get('reason', 'NO_QUANTUM_EVIDENCE')
+                continue
+            opp._quantum_truth_status = quantum.get('truth_status')
+            opp._quantum_block_reason = None
             
             # ═══════════════════════════════════════════════════════════════
             # ⚠️ HISTORICAL DANGER CHECK - WARN BUT LET QUEEN DECIDE!
@@ -6613,9 +7156,12 @@ class OrcaKillCycle:
             else:
                 opp._historical_pattern = None
             
-            if quantum['is_blessed']:
+            if quantum.get('is_blessed') is True:
                 blessed_count += 1
-            if quantum['limbo_probability'] >= 0.7:
+            if (
+                quantum.get('limbo_probability') is not None
+                and quantum['limbo_probability'] >= 0.7
+            ):
                 limbo_high_count += 1
             
             # Add to filtered list (passed danger check!)
@@ -6942,32 +7488,45 @@ class OrcaKillCycle:
         
         # 🌐 PRODUCTION: Use unified cache (Binance WebSocket data)
         # This is FREE and doesn't hit Kraken API at all!
-        if UNIFIED_CACHE_AVAILABLE and get_all_prices:
+        if UNIFIED_CACHE_AVAILABLE and get_all_prices and get_ticker:
             try:
                 cached_prices = get_all_prices(max_age=30)  # 30 second freshness
                 if cached_prices:
-                    for symbol, price in cached_prices.items():
-                        if price <= 0:
+                    for symbol in cached_prices:
+                        ticker = get_ticker(symbol, max_age=30)
+                        if not ticker or 'kraken' not in str(ticker.source).lower():
+                            # A Binance observation must never be relabelled as
+                            # executable Kraken market evidence.
                             continue
-                        
-                        # Get full ticker for change/volume
-                        ticker = get_ticker(symbol, max_age=30) if get_ticker else None
-                        change_pct = ticker.change_24h if ticker else 0.0
-                        volume = ticker.volume_24h if ticker else 0.0
-                        
+                        receipt = _verified_market_receipt(
+                            symbol=symbol,
+                            source_id=f"unified_market_cache:{ticker.source}",
+                            source_timestamp=ticker.timestamp,
+                            received_at=time.time(),
+                            price=ticker.price,
+                            bid=ticker.bid,
+                            ask=ticker.ask,
+                            change_pct=ticker.change_24h,
+                            volume=ticker.volume_24h,
+                            required_fields=('price', 'change_pct', 'volume'),
+                            max_age_seconds=30.0,
+                        )
+                        if receipt['decision_status'] != 'ready':
+                            continue
+                        change_pct = receipt['change_pct']
+                        volume = receipt['volume']
                         momentum = abs(change_pct) * (1 + min(volume / 100000, 1))
-                        
                         if abs(change_pct) >= min_change_pct:
                             norm_symbol = f"{symbol}/USD"
-                            opportunities.append(MarketOpportunity(
+                            opportunity = self._opportunity_from_market_receipt(
+                                receipt,
                                 symbol=norm_symbol,
-                                exchange='kraken',  # Source agnostic - works for any exchange
-                                price=price,
-                                change_pct=change_pct,
-                                volume=volume,
+                                exchange='kraken',
                                 momentum_score=momentum,
-                                fee_rate=self.fee_rates.get('kraken', 0.0026)
-                            ))
+                                fee_rate=self.fee_rates.get('kraken', 0.0026),
+                            )
+                            if opportunity is not None:
+                                opportunities.append(opportunity)
                     
                     if opportunities:
                         print(f"   🌐 Cache scan: {len(opportunities)} opportunities from unified cache")
@@ -6995,28 +7554,36 @@ class OrcaKillCycle:
                     if 'USD' not in symbol:
                         continue
                     
-                    last_price = float(ticker.get('lastPrice', 0))
-                    change_pct = float(ticker.get('priceChangePercent', 0))
-                    volume = float(ticker.get('quoteVolume', 0))
-                    
-                    if last_price <= 0:
+                    receipt = _verified_market_receipt(
+                        symbol=symbol,
+                        source_id=ticker.get('source_id') or 'kraken:/0/public/Ticker+/0/public/Time',
+                        source_timestamp=ticker.get('source_timestamp'),
+                        received_at=ticker.get('received_at'),
+                        price=ticker.get('lastPrice'),
+                        change_pct=ticker.get('priceChangePercent'),
+                        volume=ticker.get('quoteVolume'),
+                        required_fields=('price', 'change_pct', 'volume'),
+                        provider_truth_status=ticker.get('truth_status'),
+                    )
+                    if receipt['decision_status'] != 'ready':
                         continue
-                    
+                    change_pct = receipt['change_pct']
+                    volume = receipt['volume']
                     # Calculate momentum score
                     momentum = abs(change_pct) * (1 + min(volume / 100000, 1))
                     
                     if abs(change_pct) >= min_change_pct:
                         # Normalize symbol format
                         norm_symbol = symbol if '/' in symbol else symbol.replace('USD', '/USD')
-                        opportunities.append(MarketOpportunity(
+                        opportunity = self._opportunity_from_market_receipt(
+                            receipt,
                             symbol=norm_symbol,
                             exchange='kraken',
-                            price=last_price,
-                            change_pct=change_pct,
-                            volume=volume,
                             momentum_score=momentum,
-                            fee_rate=self.fee_rates['kraken']
-                        ))
+                            fee_rate=self.fee_rates['kraken'],
+                        )
+                        if opportunity is not None:
+                            opportunities.append(opportunity)
                 except Exception:
                     pass
         except Exception as e:
@@ -7040,6 +7607,8 @@ class OrcaKillCycle:
                 return opportunities
             
             tickers = r.json()
+            if not isinstance(tickers, list):
+                return opportunities
             print(f"   🔍 DEBUG: Fetched {len(tickers)} tickers from Binance")
             
             # Track which quote currencies we're seeing
@@ -7078,14 +7647,23 @@ class OrcaKillCycle:
                     if any(x in symbol for x in ['_', 'BULL', 'BEAR', 'UP', 'DOWN']):
                         continue
                     
-                    last_price = float(ticker.get('lastPrice', 0))
-                    change_pct = float(ticker.get('priceChangePercent', 0))
-                    volume = float(ticker.get('quoteVolume', 0))
-                    
-                    if last_price <= 0:
+                    receipt = _verified_market_receipt(
+                        symbol=symbol,
+                        source_id='binance:/api/v3/ticker/24hr',
+                        source_timestamp=ticker.get('closeTime'),
+                        received_at=time.time(),
+                        price=ticker.get('lastPrice'),
+                        bid=ticker.get('bidPrice'),
+                        ask=ticker.get('askPrice'),
+                        change_pct=ticker.get('priceChangePercent'),
+                        volume=ticker.get('quoteVolume'),
+                        required_fields=('price', 'change_pct', 'volume'),
+                    )
+                    if receipt['decision_status'] != 'ready':
                         skipped_zeros += 1
                         continue
-                    
+                    change_pct = receipt['change_pct']
+                    volume = receipt['volume']
                     # Calculate momentum score
                     momentum = abs(change_pct) * (1 + min(volume / 1000000, 1))  # Binance has higher volume
                     
@@ -7099,15 +7677,15 @@ class OrcaKillCycle:
                                 quote_currencies.add(quote)
                                 break
                         
-                        opportunities.append(MarketOpportunity(
+                        opportunity = self._opportunity_from_market_receipt(
+                            receipt,
                             symbol=norm_symbol,
                             exchange='binance',
-                            price=last_price,
-                            change_pct=change_pct,
-                            volume=volume,
                             momentum_score=momentum,
-                            fee_rate=self.fee_rates.get('binance', 0.001)
-                        ))
+                            fee_rate=self.fee_rates.get('binance', 0.001),
+                        )
+                        if opportunity is not None:
+                            opportunities.append(opportunity)
                     else:
                         skipped_low_change += 1
 
@@ -7153,25 +7731,45 @@ class OrcaKillCycle:
             
             for symbol, ticker_data in tickers_dict.items():
                 try:
-                    price = ticker_data.get('price', 0)
-                    change_pct = ticker_data.get('change_pct', 0)
-                    
-                    if price <= 0:
+                    if not isinstance(ticker_data, dict):
                         continue
-                    
+                    receipt = _verified_market_receipt(
+                        symbol=symbol,
+                        source_id=ticker_data.get('source_id') or f'capital_market:{symbol}',
+                        source_timestamp=ticker_data.get('source_timestamp'),
+                        received_at=ticker_data.get('received_at'),
+                        price=ticker_data.get('price'),
+                        bid=ticker_data.get('bid'),
+                        ask=ticker_data.get('ask'),
+                        change_pct=ticker_data.get('change_pct'),
+                        volume=ticker_data.get('volume'),
+                        required_fields=('price', 'change_pct', 'volume'),
+                        provider_truth_status=ticker_data.get('truth_status'),
+                        provider_action_eligible=ticker_data.get('action_eligible'),
+                    )
+                    if receipt['decision_status'] != 'ready':
+                        self._opportunity_from_market_receipt(
+                            receipt,
+                            symbol=symbol,
+                            exchange='capital',
+                            momentum_score=0.0,
+                            fee_rate=self.fee_rates.get('capital', 0.0008),
+                        )
+                        continue
+                    change_pct = receipt['change_pct']
                     # Capital.com doesn't provide volume, use price change as momentum proxy
                     momentum = abs(change_pct) * 2.0  # Weight CFDs higher for equal comparison
                     
                     if abs(change_pct) >= min_change_pct:
-                        opportunities.append(MarketOpportunity(
+                        opportunity = self._opportunity_from_market_receipt(
+                            receipt,
                             symbol=symbol,
                             exchange='capital',
-                            price=price,
-                            change_pct=change_pct,
-                            volume=0,  # CFDs don't have traditional volume
                             momentum_score=momentum,
-                            fee_rate=self.fee_rates.get('capital', 0.0008)
-                        ))
+                            fee_rate=self.fee_rates.get('capital', 0.0008),
+                        )
+                        if opportunity is not None:
+                            opportunities.append(opportunity)
                 except Exception:
                     pass
             
@@ -7185,28 +7783,48 @@ class OrcaKillCycle:
     
     def _get_live_crypto_prices(self) -> Dict[str, float]:
         """
-        Get prices for portfolio valuation - CACHE FIRST, API FALLBACK.
+        Get observed prices for portfolio valuation - cache first, API second.
         
         🚀 OPTIMIZATION: Uses unified cache (Binance WebSocket) for FREE prices!
         Only falls back to API calls if cache is empty/stale.
         This prevents Kraken rate limiting on DigitalOcean.
         """
-        prices = {}
+        prices: Dict[str, float] = {}
+        provenance: Dict[str, Dict[str, Any]] = {}
+        received_at = time.time()
+        required_pairs = {
+            'ETHUSD', 'ETHUSDT', 'SOLUSD', 'SOLUSDT', 'BTCUSD', 'BTCUSDT',
+            'GBPUSD', 'EURUSD', 'TRXUSD', 'TRXUSDT', 'BNBUSDT', 'ADAUSD', 'ADAUSDT',
+            'DOTUSD', 'DOTUSDT', 'ATOMUSD', 'ATOMUSDT', 'AVAXUSDT',
+            'LINKUSDT', 'MATICUSDT', 'XRPUSDT',
+        }
+
+        def record_price(pair: str, value: Any, source_id: str) -> None:
+            try:
+                price = float(value)
+            except (TypeError, ValueError):
+                return
+            if not math.isfinite(price) or price <= 0:
+                return
+            prices[pair] = price
+            provenance[pair] = {
+                'source_id': source_id,
+                'received_at': received_at,
+                'generated_values': False,
+            }
         
         # 1. TRY CACHE FIRST (FREE! No API calls!)
-        all_symbols = ['ETH', 'SOL', 'BTC', 'TRX', 'ADA', 'DOT', 'ATOM', 'BNB', 'AVAX', 'LINK', 'MATIC', 'XRP']
         if UNIFIED_CACHE_AVAILABLE and get_all_prices:
             try:
                 cached = get_all_prices(max_age=60.0)  # 60s is fine for valuation
                 for sym, price in cached.items():
-                    if price > 0:
-                        # Add in both formats for compatibility
-                        prices[f"{sym}USD"] = price
-                        prices[f"{sym}USDT"] = price
+                    # The cache enforces max_age before returning a value.
+                    record_price(f"{sym}USD", price, 'unified_market_cache')
+                    record_price(f"{sym}USDT", price, 'unified_market_cache')
             except Exception:
                 pass
         
-        # 2. FALLBACK: Binance API (free tier, no issues)
+        # 2. SECOND LIVE SOURCE: Binance API
         # Only if cache didn't have prices we need
         if 'binance' in self.clients:
             binance = self.clients['binance']
@@ -7217,9 +7835,9 @@ class OrcaKillCycle:
                     try:
                         result = binance.get_ticker_price(pair)
                         if isinstance(result, dict):
-                            prices[pair] = float(result.get('price', 0))
-                        elif result:
-                            prices[pair] = float(result)
+                            record_price(pair, result.get('price'), 'binance.ticker_price')
+                        else:
+                            record_price(pair, result, 'binance.ticker_price')
                     except Exception:
                         pass
         
@@ -7228,7 +7846,7 @@ class OrcaKillCycle:
         if 'kraken' in self.clients and kraken_rate_limit_check():
             kraken = self.clients['kraken']
             # Only fetch what we can't get elsewhere
-            kraken_only_pairs = ['GBPUSD']  # GBP rate not on Binance
+            kraken_only_pairs = ['GBPUSD', 'EURUSD']
             for pair in kraken_only_pairs:
                 if pair not in prices or prices.get(pair, 0) == 0:
                     try:
@@ -7236,29 +7854,27 @@ class OrcaKillCycle:
                         ticker = kraken.get_ticker(pair)
                         if ticker:
                             if 'c' in ticker and isinstance(ticker['c'], list):
-                                prices[pair] = float(ticker['c'][0])
+                                record_price(pair, ticker['c'][0], 'kraken.ticker')
                             elif 'price' in ticker:
-                                prices[pair] = float(ticker['price'])
+                                record_price(pair, ticker['price'], 'kraken.ticker')
                             elif 'last' in ticker:
-                                prices[pair] = float(ticker['last'])
+                                record_price(pair, ticker['last'], 'kraken.ticker')
                     except Exception:
                         pass
         
-        # 4. HARDCODED FALLBACKS (last resort)
-        fallbacks = {
-            'ETHUSD': 3300.0, 'ETHUSDT': 3300.0,
-            'SOLUSD': 250.0, 'SOLUSDT': 250.0,
-            'BTCUSD': 105000.0, 'BTCUSDT': 105000.0,
-            'GBPUSD': 1.27,
-            'TRXUSD': 0.25, 'TRXUSDT': 0.25,
-            'BNBUSDT': 700.0,
-            'ADAUSD': 1.0, 'ADAUSDT': 1.0,
-            'DOTUSD': 7.0, 'DOTUSDT': 7.0,
-            'ATOMUSD': 10.0, 'ATOMUSDT': 10.0,
+        missing_pairs = sorted(required_pairs.difference(prices))
+        self.last_live_price_coverage = {
+            'truth_status': (
+                'live' if not missing_pairs else 'incomplete' if prices else 'no_data'
+            ),
+            'decision_status': 'ready' if not missing_pairs else 'blocked',
+            'received_at': received_at,
+            'max_cache_age_seconds': 60.0,
+            'observed_pairs': sorted(prices),
+            'missing_pairs': missing_pairs,
+            'provenance': provenance,
+            'generated_values': False,
         }
-        for pair, fallback in fallbacks.items():
-            if pair not in prices or prices[pair] == 0:
-                prices[pair] = fallback
         
         return prices
     
@@ -7267,12 +7883,9 @@ class OrcaKillCycle:
         cash: Dict[str, float] = {}
         self.last_cash_status = {'alpaca': 'unknown', 'kraken': 'unknown', 'binance': 'unknown', 'capital': 'unknown'}
         
-        # 🆕 TEST MODE: Add funds for testing fallback logic
-        test_mode = os.environ.get('AUREON_TEST_MODE', '').lower() == 'true'
-        
         # 📊 Get LIVE prices from APIs (cached for this call)
         live_prices = self._get_live_crypto_prices()
-        gbp_usd_rate = live_prices.get('GBPUSD', 1.27)  # Live or fallback
+        gbp_usd_rate = live_prices.get('GBPUSD')
         
         if 'alpaca' in self.clients:
             try:
@@ -7314,11 +7927,11 @@ class OrcaKillCycle:
                         
                         if self.last_cash_status['alpaca'] == 'unknown':
                             self.last_cash_status['alpaca'] = 'ok'
-                        cash['alpaca'] = alpaca_cash + (5.0 if test_mode else 0)
+                        cash['alpaca'] = alpaca_cash
             except Exception as e:
                 print(f"   ⚠️ Alpaca cash error: {e}")
                 self.last_cash_status['alpaca'] = 'error'
-                cash['alpaca'] = 5.0 if test_mode else 0.0
+                cash['alpaca'] = 0.0
         
         if 'kraken' in self.clients:
             try:
@@ -7342,18 +7955,22 @@ class OrcaKillCycle:
                         # 🇬🇧 ADD GBP (ZGBP) - Convert to USD using LIVE rate (GBP IS spendable)
                         gbp_balance = float(bal.get('ZGBP', 0) or bal.get('GBP', 0))
                         if gbp_balance > 0:
-                            kraken_cash += gbp_balance * gbp_usd_rate
+                            if gbp_usd_rate is None:
+                                self.last_cash_status['kraken'] = 'incomplete_no_data:GBPUSD'
+                            else:
+                                kraken_cash += gbp_balance * gbp_usd_rate
                         
                         # ❌ REMOVED: Crypto balances should NOT be counted as "cash"
                         # They are positions, not spendable buying power for new orders
                         # The system was incorrectly thinking it had $16 when it only had $1.68 USD
                         
-                        self.last_cash_status['kraken'] = 'ok'
-                        cash['kraken'] = kraken_cash + (5.0 if test_mode else 0)
+                        if self.last_cash_status['kraken'] == 'unknown':
+                            self.last_cash_status['kraken'] = 'ok'
+                        cash['kraken'] = kraken_cash
             except Exception as e:
                 print(f"   ⚠️ Kraken cash error: {e}")
                 self.last_cash_status['kraken'] = 'error'
-                cash['kraken'] = 5.0 if test_mode else 0.0
+                cash['kraken'] = 0.0
         
         if 'binance' in self.clients:
             try:
@@ -7393,11 +8010,11 @@ class OrcaKillCycle:
                 # The system was incorrectly counting portfolio value as available cash
                 
                 self.last_cash_status['binance'] = 'ok'
-                cash['binance'] = binance_cash + (5.0 if test_mode else 0)
+                cash['binance'] = binance_cash
             except Exception as e:
                 print(f"   ⚠️ Binance cash error: {e}")
                 self.last_cash_status['binance'] = 'error'
-                cash['binance'] = 5.0 if test_mode else 0.0
+                cash['binance'] = 0.0
         
         # Capital.com balance checking
         if 'capital' in self.clients:
@@ -7415,13 +8032,20 @@ class OrcaKillCycle:
                         # Use FULL balance, not just available (includes margin used)
                         capital_balance = float(acc.get('balance', 0) or 0)
                         capital_available = float(acc.get('available', 0) or 0)
-                        currency = acc.get('currency', 'GBP')
+                        currency = acc.get('currency')
                         
                         # Convert GBP to USD using LIVE rate
                         if currency == 'GBP':
-                            capital_cash = capital_balance * gbp_usd_rate
-                        else:
+                            if gbp_usd_rate is None:
+                                capital_cash = 0.0
+                                self.last_cash_status['capital'] = 'no_data:GBPUSD'
+                            else:
+                                capital_cash = capital_balance * gbp_usd_rate
+                        elif currency == 'USD':
                             capital_cash = capital_balance
+                        else:
+                            capital_cash = 0.0
+                            self.last_cash_status['capital'] = 'no_data:ACCOUNT_CURRENCY'
                         
                         # 🪙 ADD POSITIONS VALUE - Include open CFD positions
                         try:
@@ -7441,22 +8065,27 @@ class OrcaKillCycle:
                                     'symbol': symbol,
                                     'size': size,
                                     'entry_price': level,
-                                    'unrealized_pl': upl * gbp_usd_rate if currency == 'GBP' else upl,
+                                    'unrealized_pl': (
+                                        upl * gbp_usd_rate
+                                        if currency == 'GBP' and gbp_usd_rate is not None
+                                        else upl if currency == 'USD' else None
+                                    ),
                                     'direction': direction,
                                     'deal_id': pos.get('dealId', '')
                                 })
                         except Exception:
                             pass
                         
-                        self.last_cash_status['capital'] = 'ok'
-                        cash['capital'] = capital_cash + (5.0 if test_mode else 0)
+                        if self.last_cash_status['capital'] == 'unknown':
+                            self.last_cash_status['capital'] = 'ok'
+                        cash['capital'] = capital_cash
                     else:
                         self.last_cash_status['capital'] = 'error'
-                        cash['capital'] = 5.0 if test_mode else 0.0
+                        cash['capital'] = 0.0
             except Exception as e:
                 print(f"   ⚠️ Capital.com cash error: {e}")
                 self.last_cash_status['capital'] = 'error'
-                cash['capital'] = 5.0 if test_mode else 0.0
+                cash['capital'] = 0.0
 
         # Cache latest cash snapshot for dashboards (avoid extra API calls elsewhere)
         try:
@@ -7520,19 +8149,50 @@ class OrcaKillCycle:
     def get_all_positions(self) -> Dict[str, list]:
         """Get all existing positions across ALL exchanges that could be sold."""
         all_positions = {'alpaca': [], 'kraken': [], 'binance': [], 'capital': []}
+        valuation_missing: List[Dict[str, str]] = []
+        valuation_receipts: List[str] = []
+        observed_prices = self._get_live_crypto_prices()
+        gbp_usd_rate = observed_prices.get('GBPUSD')
         
         # Alpaca positions
         if 'alpaca' in self.clients:
             try:
                 positions = self.clients['alpaca'].get_positions()
+                valuation_receipts.append('alpaca.positions')
                 for pos in positions:
-                    qty = float(pos.get('qty', 0))
+                    qty = float(pos.get('qty', 0) or 0)
                     if qty > 0:
-                        market_val = float(pos.get('market_value', 0) or 0)
-                        entry = float(pos.get('avg_entry_price', 0) or 0)
-                        current = float(pos.get('current_price', 0) or 0)
-                        upl = float(pos.get('unrealized_pl', 0) or 0)
-                        pnl_pct = (upl / (entry * qty) * 100) if entry > 0 and qty > 0 else 0
+                        def optional_finite(field_name: str) -> Optional[float]:
+                            raw_value = pos.get(field_name)
+                            if raw_value is None:
+                                return None
+                            try:
+                                value = float(raw_value)
+                            except (TypeError, ValueError):
+                                return None
+                            return value if math.isfinite(value) else None
+
+                        market_val = optional_finite('market_value')
+                        entry = optional_finite('avg_entry_price')
+                        current = optional_finite('current_price')
+                        upl = optional_finite('unrealized_pl')
+                        if market_val is None and current is not None and current > 0:
+                            market_val = qty * current
+                        complete = (
+                            market_val is not None
+                            and current is not None
+                            and current > 0
+                        )
+                        pnl_pct = (
+                            upl / (entry * qty) * 100
+                            if upl is not None and entry is not None and entry > 0
+                            else None
+                        )
+                        if not complete:
+                            valuation_missing.append({
+                                'exchange': 'alpaca',
+                                'asset': pos.get('symbol', ''),
+                            })
                         all_positions['alpaca'].append({
                             'symbol': pos.get('symbol', ''),
                             'qty': qty,
@@ -7541,86 +8201,138 @@ class OrcaKillCycle:
                             'current_price': current,
                             'unrealized_pl': upl,
                             'pnl_pct': pnl_pct,
-                            'can_sell': qty > 0
+                            'can_sell': complete,
+                            'truth_status': 'real_derived' if complete else 'no_data',
+                            'decision_status': 'ready' if complete else 'blocked',
+                            'reason': None if complete else 'INCOMPLETE_PROVIDER_POSITION',
+                            'source_id': 'alpaca.positions',
+                            'generated_values': False,
                         })
             except Exception as e:
+                valuation_missing.append({
+                    'exchange': 'alpaca',
+                    'asset': 'PROVIDER_POSITION_RECEIPT',
+                })
                 print(f"   ⚠️ Alpaca positions error: {e}")
         
         # Kraken positions (crypto balances) - USE CACHED PRICES!
         if 'kraken' in self.clients:
             try:
                 balances = self.clients['kraken'].get_balance()
-                # Get prices from cache first, then fallbacks
+                valuation_receipts.append('kraken.balance')
+                # Only fresh cached observations may value balances.
                 crypto_prices = {}
                 for asset in ['ETH', 'XETH', 'SOL', 'TRX', 'ADA', 'DOT', 'ATOM', 'BTC', 'XXBT', 'SEI']:
                     cached_price = get_cached_price(asset, max_age=120.0) if UNIFIED_CACHE_AVAILABLE else None
                     if cached_price and cached_price > 0:
                         crypto_prices[asset] = cached_price
-                # Fallbacks for anything not in cache
-                fallback_prices = {
-                    'ETH': 3300.0, 'XETH': 3300.0, 'SOL': 250.0, 'TRX': 0.25,
-                    'ADA': 1.0, 'DOT': 7.0, 'ATOM': 10.0, 'BTC': 105000.0, 'XXBT': 105000.0, 'SEI': 0.30
-                }
-                for k, v in fallback_prices.items():
-                    if k not in crypto_prices:
-                        crypto_prices[k] = v
                 
                 for asset, amount in balances.items():
                     amount = float(amount)
-                    if amount > 0.0001 and asset in crypto_prices:
-                        price = crypto_prices[asset]
+                    if amount <= 0.0001 or asset in {
+                        'USD', 'ZUSD', 'USDC', 'USDT', 'TUSD', 'DAI', 'USDD',
+                        'EUR', 'ZEUR', 'GBP', 'ZGBP',
+                    }:
+                        continue
+                    price = crypto_prices.get(asset)
+                    if price is not None:
                         market_val = amount * price
                         if market_val > 0.10:  # Only show if worth > $0.10
                             all_positions['kraken'].append({
                                 'symbol': asset,
                                 'qty': amount,
                                 'market_value': market_val,
-                                'entry_price': 0,  # Unknown for spot
+                                'entry_price': None,
                                 'current_price': price,
-                                'unrealized_pl': 0,
-                                'pnl_pct': 0,
-                                'can_sell': True
+                                'unrealized_pl': None,
+                                'pnl_pct': None,
+                                'can_sell': True,
+                                'truth_status': 'real_derived',
+                                'source_id': 'unified_market_cache',
+                                'max_source_age_seconds': 120.0,
+                                'generated_values': False,
                             })
+                    else:
+                        valuation_missing.append({'exchange': 'kraken', 'asset': asset})
+                        all_positions['kraken'].append({
+                            'symbol': asset,
+                            'qty': amount,
+                            'market_value': None,
+                            'entry_price': None,
+                            'current_price': None,
+                            'unrealized_pl': None,
+                            'pnl_pct': None,
+                            'can_sell': False,
+                            'truth_status': 'no_data',
+                            'decision_status': 'blocked',
+                            'reason': 'NO_FRESH_PRICE',
+                            'generated_values': False,
+                        })
             except Exception as e:
+                valuation_missing.append({
+                    'exchange': 'kraken',
+                    'asset': 'PROVIDER_BALANCE_RECEIPT',
+                })
                 print(f"   ⚠️ Kraken positions error: {e}")
         
         # Binance positions (crypto balances) - USE CACHED PRICES!
         if 'binance' in self.clients:
             try:
                 balances = self.clients['binance'].get_balance()
-                # Get prices from cache first, then fallbacks
+                valuation_receipts.append('binance.balance')
+                # Only fresh cached observations may value balances.
                 crypto_prices = {}
                 for asset in ['ETH', 'SOL', 'BTC', 'BNB', 'TRX', 'ADA', 'DOT', 'AVAX', 'LINK', 'SENT', 'KAIA', 'ENSO', 'LPT']:
                     cached_price = get_cached_price(asset, max_age=120.0) if UNIFIED_CACHE_AVAILABLE else None
                     if cached_price and cached_price > 0:
                         crypto_prices[asset] = cached_price
-                # Fallbacks
-                fallback_prices = {
-                    'ETH': 3300.0, 'SOL': 250.0, 'BTC': 105000.0, 'BNB': 700.0,
-                    'TRX': 0.25, 'ADA': 1.0, 'DOT': 7.0, 'AVAX': 40.0, 'LINK': 25.0,
-                    'SENT': 0.027, 'KAIA': 0.07, 'ENSO': 1.30, 'LPT': 3.10
-                }
-                for k, v in fallback_prices.items():
-                    if k not in crypto_prices:
-                        crypto_prices[k] = v
                 
                 for asset, amount in balances.items():
                     amount = float(amount or 0)
-                    if amount > 0.0001 and asset in crypto_prices:
-                        price = crypto_prices[asset]
+                    if amount <= 0.0001 or asset in {
+                        'USD', 'USDT', 'USDC', 'BUSD', 'FDUSD', 'TUSD', 'DAI',
+                        'LDUSDC', 'EUR', 'GBP',
+                    }:
+                        continue
+                    price = crypto_prices.get(asset)
+                    if price is not None:
                         market_val = amount * price
                         if market_val > 0.10:
                             all_positions['binance'].append({
                                 'symbol': asset,
                                 'qty': amount,
                                 'market_value': market_val,
-                                'entry_price': 0,
+                                'entry_price': None,
                                 'current_price': price,
-                                'unrealized_pl': 0,
-                                'pnl_pct': 0,
-                                'can_sell': True
+                                'unrealized_pl': None,
+                                'pnl_pct': None,
+                                'can_sell': True,
+                                'truth_status': 'real_derived',
+                                'source_id': 'unified_market_cache',
+                                'max_source_age_seconds': 120.0,
+                                'generated_values': False,
                             })
+                    else:
+                        valuation_missing.append({'exchange': 'binance', 'asset': asset})
+                        all_positions['binance'].append({
+                            'symbol': asset,
+                            'qty': amount,
+                            'market_value': None,
+                            'entry_price': None,
+                            'current_price': None,
+                            'unrealized_pl': None,
+                            'pnl_pct': None,
+                            'can_sell': False,
+                            'truth_status': 'no_data',
+                            'decision_status': 'blocked',
+                            'reason': 'NO_FRESH_PRICE',
+                            'generated_values': False,
+                        })
             except Exception as e:
+                valuation_missing.append({
+                    'exchange': 'binance',
+                    'asset': 'PROVIDER_BALANCE_RECEIPT',
+                })
                 print(f"   ⚠️ Binance positions error: {e}")
         
         # Capital.com positions (CFDs)
@@ -7629,53 +8341,112 @@ class OrcaKillCycle:
                 capital_client = self._ensure_capital_client()
                 if capital_client:
                     positions = capital_client.get_positions()
+                    valuation_receipts.append('capital.positions')
                     for pos_data in positions:
                         pos = pos_data.get('position', {})
                         market = pos_data.get('market', {})
                         size = float(pos.get('size', 0) or 0)
                         if size > 0:
                             level = float(pos.get('level', 0) or 0)
-                            upl = float(pos.get('upl', 0) or 0) * 1.27  # GBP to USD
+                            upl_native = float(pos.get('upl', 0) or 0)
                             bid = float(market.get('bid', 0) or 0)
+                            currency = pos.get('currency') or market.get('currency')
+                            fx_rate = (
+                                1.0 if currency == 'USD'
+                                else gbp_usd_rate if currency == 'GBP'
+                                else None
+                            )
+                            if fx_rate is None:
+                                valuation_missing.append({
+                                    'exchange': 'capital',
+                                    'asset': market.get('symbol', market.get('epic', 'unknown')),
+                                })
                             all_positions['capital'].append({
                                 'symbol': market.get('symbol', market.get('epic', '')),
                                 'qty': size,
-                                'market_value': size * bid,
+                                'market_value': size * bid * fx_rate if bid > 0 and fx_rate is not None else None,
                                 'entry_price': level,
-                                'current_price': bid,
-                                'unrealized_pl': upl,
-                                'pnl_pct': (upl / (level * size) * 100) if level > 0 else 0,
-                                'can_sell': True,
-                                'deal_id': pos.get('dealId', '')
+                                'current_price': bid if bid > 0 else None,
+                                'unrealized_pl': upl_native * fx_rate if fx_rate is not None else None,
+                                'pnl_pct': (
+                                    upl_native / (level * size) * 100
+                                    if level > 0 and size > 0 else None
+                                ),
+                                'can_sell': bid > 0 and fx_rate is not None,
+                                'deal_id': pos.get('dealId', ''),
+                                'truth_status': (
+                                    'real_derived'
+                                    if bid > 0 and fx_rate is not None
+                                    else 'no_data'
+                                ),
+                                'decision_status': (
+                                    'ready'
+                                    if bid > 0 and fx_rate is not None
+                                    else 'blocked'
+                                ),
+                                'reason': (
+                                    None
+                                    if bid > 0 and fx_rate is not None
+                                    else 'NO_FRESH_FX_OR_PRICE'
+                                ),
+                                'generated_values': False,
                             })
             except Exception as e:
+                valuation_missing.append({
+                    'exchange': 'capital',
+                    'asset': 'PROVIDER_POSITION_RECEIPT',
+                })
                 print(f"   ⚠️ Capital.com positions error: {e}")
         
+        self.last_position_valuation_coverage = {
+            'truth_status': (
+                'incomplete'
+                if valuation_missing
+                else 'real_derived' if valuation_receipts else 'no_data'
+            ),
+            'decision_status': (
+                'blocked'
+                if valuation_missing or not valuation_receipts
+                else 'ready'
+            ),
+            'observed_receipts': valuation_receipts,
+            'missing_prices': valuation_missing,
+            'generated_values': False,
+        }
         return all_positions
 
     def _get_binance_ticker(self, client, symbol: str) -> Dict[str, Any]:
-        """Safely fetch Binance ticker for symbols with or without slashes."""
+        """Fetch a complete Binance book with a fresh provider close clock."""
         if not client or not symbol:
-            return {}
+            return _no_data_market_receipt(
+                symbol, 'binance:/api/v3/ticker/24hr', 'BINANCE_CLIENT_OR_SYMBOL_MISSING'
+            )
         symbols_to_try = [symbol, symbol.replace('/', '')]
         for sym in symbols_to_try:
             try:
-                # Try get_ticker first (returns bid/ask/etc)
-                if hasattr(client, 'get_ticker'):
-                    ticker = client.get_ticker(sym)
-                    if ticker:
-                        return ticker
-                # Fallback to get_ticker_price (returns {'price': ...})
-                if hasattr(client, 'get_ticker_price'):
-                    ticker = client.get_ticker_price(sym)
-                    if ticker:
-                        # Normalize to have 'bid' and 'price' keys
-                        price = float(ticker.get('price', 0) if isinstance(ticker, dict) else ticker)
-                        if price > 0:
-                            return {'price': price, 'bid': price, 'ask': price}
+                ticker = client.get_24h_ticker(sym) if hasattr(client, 'get_24h_ticker') else None
+                if not isinstance(ticker, dict):
+                    continue
+                receipt = _verified_market_receipt(
+                    symbol=sym,
+                    source_id='binance:/api/v3/ticker/24hr',
+                    source_timestamp=ticker.get('closeTime'),
+                    received_at=time.time(),
+                    price=ticker.get('lastPrice'),
+                    bid=ticker.get('bidPrice'),
+                    ask=ticker.get('askPrice'),
+                    change_pct=ticker.get('priceChangePercent'),
+                    volume=ticker.get('quoteVolume'),
+                    required_fields=('price', 'bid', 'ask'),
+                )
+                if receipt['decision_status'] == 'ready':
+                    receipt['last'] = receipt['price']
+                    return receipt
             except Exception:
                 continue
-        return {}
+        return _no_data_market_receipt(
+            symbol, 'binance:/api/v3/ticker/24hr', 'NO_FRESH_COMPLETE_BINANCE_BOOK'
+        )
 
 
     def _binance_symbol_variants(self, asset: str) -> List[str]:
@@ -7734,22 +8505,21 @@ class OrcaKillCycle:
                 seen.add(sym)
         return ordered
 
-    def _extract_ticker_price(self, ticker: Dict[str, Any], exchange: str = '') -> float:
-        """Extract a numeric price from heterogeneous exchange ticker payloads."""
-        if not ticker:
-            return 0.0
-        try:
-            if exchange == 'kraken' and isinstance(ticker.get('c'), list) and ticker.get('c'):
-                return float(ticker['c'][0] or 0)
-            for key in ['bid', 'price', 'last', 'ask', 'close']:
-                val = ticker.get(key)
-                if val is not None:
-                    p = float(val)
-                    if p > 0:
-                        return p
-        except Exception:
-            return 0.0
-        return 0.0
+    def _extract_ticker_price(self, ticker: Dict[str, Any], exchange: str = '') -> Optional[float]:
+        """Read a price only from a canonical, decision-ready receipt."""
+        if (
+            not isinstance(ticker, dict)
+            or ticker.get('decision_status') != 'ready'
+            or ticker.get('truth_status') not in _READY_MARKET_TRUTH
+            or ticker.get('generated_values') is not False
+        ):
+            return None
+        for key in ['price', 'bid', 'last', 'ask', 'close']:
+            if key in ticker:
+                price = _finite_market_number(ticker[key], positive=True)
+                if price is not None:
+                    return price
+        return None
 
     def _resolve_asset_price(self, client: Any, exchange: str, asset: str) -> Tuple[str, float, Dict[str, Any]]:
         """Unified price lookup with exchange-specific symbol preference logic."""
@@ -7775,7 +8545,7 @@ class OrcaKillCycle:
                 ticker = {}
 
             price = self._extract_ticker_price(ticker, exchange=exchange)
-            if price > 0:
+            if price is not None:
                 return symbol, price, ticker
 
         return '', 0.0, {}
@@ -8081,8 +8851,12 @@ class OrcaKillCycle:
             'still_holding': [],
             'total_value': 0.0,
             'total_freed': 0.0,
-            'errors': []
+            'errors': [],
+            'truth_status': 'real_derived',
+            'generated_values': False,
         }
+        observed_prices = self._get_live_crypto_prices()
+        gbp_usd_rate = observed_prices.get('GBPUSD')
         
         print("\n🌾 HARVESTING ALL EXCHANGES FOR PROFITABLE POSITIONS...")
         
@@ -8176,14 +8950,37 @@ class OrcaKillCycle:
                                 pos = pos_data.get('position', {})
                                 market = pos_data.get('market', {})
                                 size = float(pos.get('size', 0) or 0)
-                                upl = float(pos.get('upl', 0) or 0)  # Unrealized P&L in GBP
-                                upl_usd = upl * 1.27  # Convert to USD
+                                upl = float(pos.get('upl', 0) or 0)
+                                currency = pos.get('currency') or market.get('currency')
+                                fx_rate = (
+                                    1.0 if currency == 'USD'
+                                    else gbp_usd_rate if currency == 'GBP'
+                                    else None
+                                )
                                 
                                 if size > 0:
                                     symbol = market.get('symbol', market.get('epic', ''))
                                     level = float(pos.get('level', 0) or 0)
                                     bid = float(market.get('bid', 0) or 0)
-                                    market_value = size * bid if bid > 0 else size * level
+                                    if fx_rate is None:
+                                        results['truth_status'] = 'incomplete'
+                                        results['errors'].append(
+                                            f"capital:{symbol}: NO_FRESH_FX_OR_ACCOUNT_CURRENCY"
+                                        )
+                                        results['still_holding'].append({
+                                            'exchange': exchange_name,
+                                            'symbol': symbol,
+                                            'qty': size,
+                                            'value': None,
+                                            'pnl': None,
+                                            'truth_status': 'no_data',
+                                            'decision_status': 'blocked',
+                                            'reason': 'NO_FRESH_FX_OR_ACCOUNT_CURRENCY',
+                                        })
+                                        continue
+                                    upl_usd = upl * fx_rate
+                                    market_value_native = size * bid if bid > 0 else size * level
+                                    market_value = market_value_native * fx_rate
                                     
                                     results['total_value'] += market_value
                                     
@@ -9957,31 +10754,63 @@ class OrcaKillCycle:
     def _get_energy_snapshot(self) -> Dict[str, Any]:
         """Compute cash/assets energy per exchange with momentum tracking."""
         live_prices = self._get_live_crypto_prices()
-        gbp_usd_rate = live_prices.get('GBPUSD', 1.27)
+        gbp_usd_rate = live_prices.get('GBPUSD')
+        eur_usd_rate = live_prices.get('EURUSD')
         energy = {
             "exchanges": {},
-            "total": {"cash": 0.0, "assets": 0.0, "total": 0.0}
+            "total": {
+                "cash": 0.0,
+                "assets": 0.0,
+                "total": 0.0,
+                "truth_status": "real_derived",
+                "decision_status": "ready",
+            },
+            "generated_values": False,
         }
 
-        def _finalize(exchange: str, cash: float, assets: float) -> None:
+        def _finalize(
+            exchange: str,
+            cash: float,
+            assets: float,
+            missing_prices: Optional[List[str]] = None,
+        ) -> None:
+            missing_prices = sorted(set(missing_prices or []))
             total = cash + assets
-            last_total = self.energy_last_totals.get(exchange, 0.0)
-            momentum = ((total - last_total) / last_total) if last_total > 0 else 0.0
-            self.energy_last_totals[exchange] = total
+            complete = not missing_prices
+            last_total = self.energy_last_totals.get(exchange)
+            momentum = (
+                ((total - last_total) / last_total) * 100
+                if complete and last_total is not None and last_total > 0
+                else None
+            )
+            if complete:
+                self.energy_last_totals[exchange] = total
             energy["exchanges"][exchange] = {
                 "cash": cash,
                 "assets": assets,
-                "total": total,
-                "momentum_pct": momentum * 100
+                "total": total if complete else None,
+                "observed_total_usd": total,
+                "momentum_pct": momentum,
+                "truth_status": "real_derived" if complete else "incomplete",
+                "decision_status": "ready" if complete else "blocked",
+                "missing_prices": missing_prices,
+                "generated_values": False,
             }
-            energy["total"]["cash"] += cash
-            energy["total"]["assets"] += assets
-            energy["total"]["total"] += total
+            if complete:
+                energy["total"]["cash"] += cash
+                energy["total"]["assets"] += assets
+                if energy["total"]["total"] is not None:
+                    energy["total"]["total"] += total
+            else:
+                energy["total"]["truth_status"] = "incomplete"
+                energy["total"]["decision_status"] = "blocked"
+                energy["total"]["total"] = None
 
         # Alpaca energy
         if 'alpaca' in self.clients:
             cash = 0.0
             assets = 0.0
+            missing = []
             try:
                 alpaca_client = self.clients['alpaca']
                 acct = alpaca_client.get_account() if alpaca_client else {}
@@ -9989,17 +10818,18 @@ class OrcaKillCycle:
                 positions = alpaca_client.get_positions() if alpaca_client else []
                 assets = sum(abs(float(p.get('market_value', 0) or 0)) for p in (positions or []))
             except Exception:
-                pass
-            _finalize('alpaca', cash, assets)
+                missing.append('ALPACA_ACCOUNT_OR_POSITIONS')
+            _finalize('alpaca', cash, assets, missing)
 
         # Kraken energy
         if 'kraken' in self.clients:
             cash = 0.0
             assets = 0.0
+            missing = []
             try:
                 kraken_client = self.clients['kraken']
                 bal = kraken_client.get_balance() if kraken_client else {}
-                cash_assets = {'ZUSD', 'USD', 'USDC', 'USDT', 'TUSD', 'DAI', 'USDD', 'ZEUR', 'EUR', 'ZGBP', 'GBP'}
+                cash_assets = {'ZUSD', 'USD', 'USDC', 'USDT', 'TUSD', 'DAI', 'USDD'}
                 kraken_pairs = {
                     'BTC': 'BTCUSD', 'XXBT': 'BTCUSD',
                     'ETH': 'ETHUSD', 'XETH': 'ETHUSD',
@@ -10015,7 +10845,16 @@ class OrcaKillCycle:
                     if qty <= 0:
                         continue
                     if asset in {'ZGBP', 'GBP'}:
-                        cash += qty * gbp_usd_rate
+                        if gbp_usd_rate is None:
+                            missing.append('GBPUSD')
+                        else:
+                            cash += qty * gbp_usd_rate
+                        continue
+                    if asset in {'ZEUR', 'EUR'}:
+                        if eur_usd_rate is None:
+                            missing.append('EURUSD')
+                        else:
+                            cash += qty * eur_usd_rate
                         continue
                     if asset in cash_assets:
                         cash += qty
@@ -10024,14 +10863,17 @@ class OrcaKillCycle:
                     price = float(live_prices.get(pair, 0)) if pair else 0.0
                     if price > 0:
                         assets += qty * price
+                    else:
+                        missing.append(pair or f"{asset}USD")
             except Exception:
-                pass
-            _finalize('kraken', cash, assets)
+                missing.append('KRAKEN_BALANCE')
+            _finalize('kraken', cash, assets, missing)
 
         # Binance energy
         if 'binance' in self.clients:
             cash = 0.0
             assets = 0.0
+            missing = []
             try:
                 binance_client = self.clients['binance']
                 bal = binance_client.get_balance() if binance_client else {}
@@ -10055,24 +10897,33 @@ class OrcaKillCycle:
                     price = float(live_prices.get(pair, 0)) if pair else 0.0
                     if price > 0:
                         assets += qty * price
+                    else:
+                        missing.append(pair or f"{asset}USDT")
             except Exception:
-                pass
-            _finalize('binance', cash, assets)
+                missing.append('BINANCE_BALANCE')
+            _finalize('binance', cash, assets, missing)
 
         # Capital (cash-only snapshot)
         if 'capital' in self.clients:
             cash = 0.0
+            missing = []
             try:
                 capital_client = self.clients['capital']
                 bal = capital_client.get_account_balance() if capital_client else {}
                 for asset, qty in (bal or {}).items():
-                    if str(asset).upper() in {'GBP'}:
-                        cash += float(qty or 0) * gbp_usd_rate
-                    else:
+                    asset_name = str(asset).upper()
+                    if asset_name == 'GBP':
+                        if gbp_usd_rate is None:
+                            missing.append('GBPUSD')
+                        else:
+                            cash += float(qty or 0) * gbp_usd_rate
+                    elif asset_name == 'USD':
                         cash += float(qty or 0)
+                    else:
+                        missing.append(f"{asset_name}USD")
             except Exception:
-                pass
-            _finalize('capital', cash, 0.0)
+                missing.append('CAPITAL_BALANCE')
+            _finalize('capital', cash, 0.0, missing)
 
         return energy
         
@@ -10301,90 +11152,146 @@ class OrcaKillCycle:
             pass
 
     def _get_real_market_data(self, symbol: str, all_prices: dict) -> dict:
-        """Fetch REAL market data (price, change, volume) for quantum scoring."""
-        # 1. Price from streaming updates or use 0 to fetch from bars
-        price = all_prices.get(symbol, 0.0)
-        
-        # Defaults
-        change_pct = 0.0
-        volume = 0.0
-        momentum = 0.5
-        change_1h = 0.0
-        
-        # 2. Fetch MINUTE bars for granular/lively signals (limit 60 = 1 hour)
+        """Return a fresh, complete provider observation for quantum scoring."""
+        received_at = time.time()
+
+        def blocked(reason: str, missing_fields: List[str], source_timestamp=None) -> dict:
+            return {
+                'symbol': symbol,
+                'price': None,
+                'change_pct': None,
+                'volume': None,
+                'momentum': None,
+                'truth_status': 'no_data',
+                'decision_status': 'blocked',
+                'reason': reason,
+                'missing_fields': missing_fields,
+                'source_id': 'alpaca.crypto_bars',
+                'source_timestamp': source_timestamp,
+                'received_at': received_at,
+                'generated_values': False,
+            }
+
+        def to_epoch(value: Any) -> Optional[float]:
+            if isinstance(value, (int, float)):
+                timestamp = float(value)
+                if timestamp > 1_000_000_000_000:
+                    timestamp /= 1000.0
+                return timestamp if math.isfinite(timestamp) and timestamp > 0 else None
+            if isinstance(value, str) and value.strip():
+                try:
+                    parsed = datetime.fromisoformat(value.strip().replace('Z', '+00:00'))
+                    if parsed.tzinfo is None:
+                        return None
+                    return parsed.timestamp()
+                except ValueError:
+                    return None
+            return None
+
+        alpaca = self.clients.get('alpaca')
+        if not alpaca or not hasattr(alpaca, 'get_crypto_bars'):
+            return blocked('MARKET_PROVIDER_UNAVAILABLE', ['price', 'change_pct', 'volume', 'momentum'])
+
+        query_sym = symbol
+        if '/' not in query_sym:
+            if query_sym in ['BTC', 'ETH', 'SOL', 'DOGE', 'SHIB', 'TRX', 'LTC', 'PHA']:
+                query_sym = f"{query_sym}/USD"
+            elif 'USD' in query_sym and not query_sym.endswith('/USD'):
+                query_sym = query_sym.replace('USD', '/USD')
+
         try:
-            alpaca = self.clients.get('alpaca')
-            if alpaca and hasattr(alpaca, 'get_crypto_bars'):
-                # Handle symbol normalization for Alpaca
-                # Ensure we have a valid crypto pair like BTC/USD
-                query_sym = symbol
-                if '/' not in query_sym:
-                    if query_sym in ['BTC', 'ETH', 'SOL', 'DOGE', 'SHIB', 'TRX', 'LTC', 'PHA']:
-                        query_sym = f"{query_sym}/USD"
-                    elif 'USD' in query_sym and not query_sym.endswith('/USD'):
-                         query_sym = query_sym.replace('USD', '/USD')
-                
-                # Fetch 60 minutes of data for lively quantum calculation
-                bars_map = alpaca.get_crypto_bars([query_sym], timeframe='1Min', limit=60)
-                bars = bars_map.get(query_sym, []) or bars_map.get(symbol, [])
-                
-                if len(bars) >= 1:
-                    latest = bars[-1]
-                    # Update price if missing or older than bar
-                    if price == 0:
-                        price = float(latest.get('c', 0) or latest.get('close', 0))
-                    
-                    # Sum volume from last hour
-                    volume = sum(float(b.get('v', 0) or b.get('volume', 0)) for b in bars)
-                
-                if len(bars) >= 2:
-                    # Calculate change from start of the hour
-                    start_bar = bars[0]
-                    start_price = float(start_bar.get('c', 0) or start_bar.get('close', 0))
-                    
-                    if start_price > 0:
-                        change_pct = ((price - start_price) / start_price) * 100.0
-                    
-                    # Momentum:
-                    # 1. Price Trend (Change)
-                    # 2. Volatility factor
-                    
-                    # Calculate volatility (std dev of returns)
-                    closes = [float(b.get('c', 0) or b.get('close', 0)) for b in bars]
-                    if len(closes) > 1:
-                        avg_price = sum(closes) / len(closes)
-                        variance = sum((x - avg_price) ** 2 for x in closes) / len(closes)
-                        std_dev = variance ** 0.5
-                        volatility = std_dev / avg_price # normalized
-                    else:
-                        volatility = 0.0
-                    
-                    # Enhanced Momentum Calculation
-                    # Base 0.5
-                    # + Change Factor (1% change = +0.1 score adjustment)
-                    trend_score = change_pct / 10.0 
-                    
-                    momentum = 0.5 + trend_score
-                    momentum = max(0.05, min(0.95, momentum))
-                    
-                    # Add volatility boost to "Luck" indirectly via change_pct used in caller
-                    # But caller uses change_pct. We return 1h change now, which is more relevant.
-                    
-        except Exception:
-            pass
-            
-        # Fallbacks to ensure non-zero
-        if price == 0: price = 50000.0 # Default fallback
-        if volume == 0: volume = 1000000.0
-        
+            response = alpaca.get_crypto_bars([query_sym], timeframe='1Min', limit=60)
+        except Exception as exc:
+            return blocked(
+                f"MARKET_PROVIDER_ERROR:{type(exc).__name__}",
+                ['price', 'change_pct', 'volume', 'momentum'],
+            )
+
+        payload = response.get('bars', response) if isinstance(response, dict) else {}
+        bars = (
+            payload.get(query_sym, []) or payload.get(symbol, [])
+            if isinstance(payload, dict)
+            else []
+        )
+        if not isinstance(bars, list) or len(bars) < 2:
+            return blocked('INCOMPLETE_BAR_COVERAGE', ['change_pct', 'volume', 'momentum'])
+
+        observed = []
+        for bar in bars:
+            if not isinstance(bar, dict):
+                continue
+            close_raw = bar['c'] if 'c' in bar else bar.get('close')
+            volume_raw = bar['v'] if 'v' in bar else bar.get('volume')
+            timestamp_raw = bar['t'] if 't' in bar else bar.get('timestamp')
+            try:
+                close = float(close_raw)
+                volume_value = float(volume_raw)
+            except (TypeError, ValueError):
+                continue
+            source_timestamp = to_epoch(timestamp_raw)
+            if (
+                not math.isfinite(close)
+                or close <= 0
+                or not math.isfinite(volume_value)
+                or volume_value < 0
+                or source_timestamp is None
+            ):
+                continue
+            observed.append((source_timestamp, close, volume_value))
+
+        if len(observed) < 2:
+            return blocked(
+                'INCOMPLETE_BAR_FIELDS',
+                ['price', 'change_pct', 'volume', 'momentum', 'source_timestamp'],
+            )
+
+        observed.sort(key=lambda item: item[0])
+        latest_timestamp, price, _ = observed[-1]
+        try:
+            max_age_seconds = float(
+                os.environ.get('AUREON_QUANTUM_BAR_MAX_AGE_SECONDS', '300')
+            )
+        except (TypeError, ValueError):
+            max_age_seconds = 300.0
+        if not math.isfinite(max_age_seconds) or max_age_seconds <= 0:
+            max_age_seconds = 300.0
+        age_seconds = received_at - latest_timestamp
+        if age_seconds > max_age_seconds or age_seconds < -300.0:
+            return blocked('STALE_OR_FUTURE_MARKET_DATA', ['freshness'], latest_timestamp)
+
+        start_price = observed[0][1]
+        change_pct = ((price - start_price) / start_price) * 100.0
+        volume = sum(item[2] for item in observed)
+        closes = [item[1] for item in observed]
+        avg_price = sum(closes) / len(closes)
+        variance = sum((value - avg_price) ** 2 for value in closes) / len(closes)
+        volatility = (variance ** 0.5) / avg_price
+
+        # Preserve the Queen's existing momentum equation; it now receives
+        # only complete, fresh observations.
+        trend_score = change_pct / 10.0
+        momentum = max(0.05, min(0.95, 0.5 + trend_score))
+
         return {
             'symbol': symbol,
             'price': price,
-            'change_pct': change_pct, # Now returning 1-hour change
+            'change_pct': change_pct,
             'volume': volume,
-            'momentum': momentum
+            'momentum': momentum,
+            'volatility': volatility,
+            'truth_status': 'real_derived',
+            'decision_status': 'ready',
+            'reason': None,
+            'missing_fields': [],
+            'source_id': 'alpaca.crypto_bars',
+            'source_timestamp': latest_timestamp,
+            'received_at': received_at,
+            'sample_count': len(observed),
+            'max_age_seconds': max_age_seconds,
+            'generated_values': False,
         }
     
+    @harmonic_streaming_runtime
     def hunt_and_kill(self, symbol: str, amount_usd: float, target_pct: float = 1.0,
                        stop_pct: float = -1.0, max_wait: int = 300):
         """
@@ -11058,12 +11965,10 @@ class OrcaKillCycle:
         # 🆕 FILTER: Only keep opportunities where we have cash!
         funded_opportunities = []
         for opp in opportunities:
-            if isinstance(opp, MarketOpportunity):
-                exchange = opp.exchange
-                symbol = opp.symbol
-            else:
-                exchange = opp.get('exchange', 'alpaca') if isinstance(opp, dict) else self.primary_exchange
-                symbol = opp.get('symbol', opp) if isinstance(opp, dict) else str(opp)
+            if not self._opportunity_is_actionable(opp):
+                continue
+            exchange = opp.exchange
+            symbol = opp.symbol
             
             # Check if we can afford minimum order for this symbol on this exchange
             available_cash = cash.get(exchange, 0)
@@ -11072,10 +11977,7 @@ class OrcaKillCycle:
         
         if not funded_opportunities:
             print(f"⚠️ {len(opportunities)} opportunities found but none affordable with current cash")
-            # For testing: Try with smaller amounts or different logic
-            print("   Attempting with available cash amounts...")
-            # Use all opportunities but adjust amounts per exchange
-            funded_opportunities = opportunities
+            return []
         else:
             print(f"✅ {len(funded_opportunities)} funded opportunities (affordable with current cash)")
         
@@ -11192,17 +12094,28 @@ class OrcaKillCycle:
                             # Get entry price using exchange-specific method
                             if exchange == 'alpaca':
                                 orderbook = client.get_crypto_orderbook(symbol_clean)
-                                asks = orderbook.get('asks', [])
-                                if not asks:
-                                    continue
-                                entry_price = float(asks[0].get('p', 0))
+                                quote = _verified_orderbook_receipt(
+                                    orderbook,
+                                    symbol=symbol_clean,
+                                    source_id='alpaca:/v1beta3/crypto/us/latest/orderbooks',
+                                )
+                                entry_price = (
+                                    quote['ask']
+                                    if quote['decision_status'] == 'ready'
+                                    and quote['action_eligible']
+                                    else None
+                                )
                             elif exchange == 'kraken':
-                                ticker = client.get_ticker(symbol_clean)
-                                entry_price = ticker.get('ask', ticker.get('price', 0))
+                                ticker = smart_get_ticker(client, symbol_clean, exchange='kraken')
+                                entry_price = (
+                                    _finite_market_number(ticker.get('ask'), positive=True)
+                                    if isinstance(ticker, dict) and ticker.get('decision_status') == 'ready'
+                                    else None
+                                )
                             else:
                                 continue
                             
-                            if entry_price <= 0:
+                            if entry_price is None:
                                 continue
                             
                             # Check if we have enough cash for this specific position
@@ -11292,17 +12205,28 @@ class OrcaKillCycle:
                             # Get price from correct exchange
                             if pos.exchange == 'alpaca':
                                 orderbook = pos.client.get_crypto_orderbook(pos.symbol)
-                                bids = orderbook.get('bids', [])
-                                if not bids:
-                                    continue
-                                current = float(bids[0].get('p', 0))
+                                quote = _verified_orderbook_receipt(
+                                    orderbook,
+                                    symbol=pos.symbol,
+                                    source_id='alpaca:/v1beta3/crypto/us/latest/orderbooks',
+                                )
+                                current = (
+                                    quote['bid']
+                                    if quote['decision_status'] == 'ready'
+                                    and quote['action_eligible']
+                                    else None
+                                )
                             elif pos.exchange == 'kraken':
-                                ticker = pos.client.get_ticker(pos.symbol)
-                                current = ticker.get('bid', ticker.get('price', 0))
+                                ticker = smart_get_ticker(pos.client, pos.symbol, exchange='kraken')
+                                current = (
+                                    _finite_market_number(ticker.get('bid'), positive=True)
+                                    if isinstance(ticker, dict) and ticker.get('decision_status') == 'ready'
+                                    else None
+                                )
                             else:
                                 continue
                             
-                            if current == 0:
+                            if current is None:
                                 continue
                             
                             # Track momentum
@@ -11601,17 +12525,28 @@ class OrcaKillCycle:
                         # Get price from correct exchange
                         if pos.exchange == 'alpaca':
                             orderbook = pos.client.get_crypto_orderbook(pos.symbol)
-                            bids = orderbook.get('bids', [])
-                            if not bids:
-                                continue
-                            current = float(bids[0].get('p', 0))
+                            quote = _verified_orderbook_receipt(
+                                orderbook,
+                                symbol=pos.symbol,
+                                source_id='alpaca:/v1beta3/crypto/us/latest/orderbooks',
+                            )
+                            current = (
+                                quote['bid']
+                                if quote['decision_status'] == 'ready'
+                                and quote['action_eligible']
+                                else None
+                            )
                         elif pos.exchange == 'kraken':
-                            ticker = pos.client.get_ticker(pos.symbol)
-                            current = ticker.get('bid', ticker.get('price', 0))
+                            ticker = smart_get_ticker(pos.client, pos.symbol, exchange='kraken')
+                            current = (
+                                _finite_market_number(ticker.get('bid'), positive=True)
+                                if isinstance(ticker, dict) and ticker.get('decision_status') == 'ready'
+                                else None
+                            )
                         else:
                             continue
                         
-                        if current == 0:
+                        if current is None:
                             continue
                         
                         # Track momentum
@@ -11816,6 +12751,7 @@ class OrcaKillCycle:
         else:
             print("🧠👑 Queen Sentience: UNAVAILABLE")
 
+    @harmonic_streaming_runtime
     def run_autonomous(self, max_positions: int = 3, amount_per_position: float = 2.5,
                        target_pct: float = 1.0, min_change_pct: float = 0.3):
         """
@@ -12179,8 +13115,12 @@ class OrcaKillCycle:
                                 for symbol in symbol_variants:
                                     try:
                                         ticker = self._get_binance_ticker(client, symbol)
-                                        if ticker and float(ticker.get('bid', ticker.get('price', 0)) or 0) > 0:
-                                            current_price = float(ticker.get('bid', ticker.get('price', 0)) or 0)
+                                        current_price = (
+                                            _finite_market_number(ticker.get('bid'), positive=True)
+                                            if ticker.get('decision_status') == 'ready'
+                                            else None
+                                        )
+                                        if current_price is not None:
                                             market_value = qty * current_price
                                             
                                             if market_value > 0.0:  # Track all positions
@@ -12457,7 +13397,7 @@ class OrcaKillCycle:
                                 try:
                                     ticker = smart_get_ticker(kraken_client, sym, exchange='kraken')
                                     price = self._extract_ticker_price(ticker or {}, exchange='kraken')
-                                    if price > 0:
+                                    if price is not None:
                                         batch_prices[sym] = price
                                 except Exception:
                                     pass
@@ -12533,7 +13473,7 @@ class OrcaKillCycle:
                                 try:
                                     ticker = self._get_binance_ticker(binance_client, sym)
                                     price = self._extract_ticker_price(ticker or {}, exchange='binance')
-                                    if price > 0:
+                                    if price is not None:
                                         batch_prices[sym] = price
                                 except Exception:
                                     pass
@@ -12557,8 +13497,12 @@ class OrcaKillCycle:
                                         
                                         try:
                                             ticker = self._get_binance_ticker(binance_client, symbol)
-                                            if ticker and float(ticker.get('bid', ticker.get('price', 0)) or 0) > 0:
-                                                current_price = float(ticker.get('bid', ticker.get('price', 0)) or 0)
+                                            current_price = (
+                                                _finite_market_number(ticker.get('bid'), positive=True)
+                                                if ticker.get('decision_status') == 'ready'
+                                                else None
+                                            )
+                                            if current_price is not None:
                                                 market_value = qty * current_price
                                                 
                                                 if market_value > 0.0:  # Track all positions
@@ -12888,7 +13832,7 @@ class OrcaKillCycle:
                                 try:
                                     ticker = smart_get_ticker(kraken_client, sym, exchange='kraken')
                                     price = self._extract_ticker_price(ticker or {}, exchange='kraken')
-                                    if price > 0:
+                                    if price is not None:
                                         all_prices[sym] = price
                                 except Exception:
                                     pass
@@ -12902,9 +13846,13 @@ class OrcaKillCycle:
                             for sym in binance_symbols:
                                 try:
                                     ticker = self._get_binance_ticker(binance_client, sym)
-                                    if ticker:
-                                        price = ticker.get('bid', ticker.get('price', 0))
-                                        all_prices[sym] = float(price) if price else 0
+                                    price = (
+                                        _finite_market_number(ticker.get('bid'), positive=True)
+                                        if ticker.get('decision_status') == 'ready'
+                                        else None
+                                    )
+                                    if price is not None:
+                                        all_prices[sym] = price
                                 except Exception:
                                     pass
                     except Exception:
@@ -13428,23 +14376,16 @@ class OrcaKillCycle:
             except Exception:
                 pass
 
-            # Quantum data for quantum tab
+            # These feeds are unavailable until their provider observations
+            # are connected; never project values from session statistics.
             quantum_data = {
-                'coherence': 0.618 + (random.random() * 0.1 - 0.05),
-                'active_timelines': 7,
-                'anchored_timelines': 3,
-                'schumann_hz': 7.83,
-                'love_freq': 528
+                'truth_status': 'no_data',
+                'reason': 'NO_FRESH_QUANTUM_OBSERVATION'
             }
-
-            # Whale and bot data (simulated for now - integrate real data later)
             whale_stats = {
-                'count_24h': session_stats.get('total_trades', 0) * 3,
-                'total_volume': session_stats.get('total_pnl', 0) * 10000 + 50000,
-                'bulls': int(session_stats.get('winning_trades', 0) * 1.5),
-                'bears': session_stats.get('losing_trades', 0)
+                'truth_status': 'no_data',
+                'reason': 'NO_FRESH_WHALE_PROVIDER_OBSERVATION'
             }
-            bot_count = len(systems_registry)
             
             state = {
                 "timestamp": time.time(),
@@ -13456,7 +14397,7 @@ class OrcaKillCycle:
                 "force_trade": getattr(self, "_last_force_trade_result", {}),
                 "flight_check": flight_check,
                 "queen_message": "War Room Active",
-                "queen_equity": queen.equity if queen else 0.0,
+                "queen_equity": queen.equity if queen else None,
                 "last_candidates": getattr(self, 'last_rising_star_candidates', []),
                 "last_winners": getattr(self, 'last_rising_star_winners', []),
                 "last_queen_decisions": getattr(self, 'last_queen_decisions', []),
@@ -13472,9 +14413,9 @@ class OrcaKillCycle:
                 # Whale tab data
                 "whale_stats": whale_stats,
                 # Bot tab data  
-                "bot_count": bot_count,
-                "total_bots": bot_count + 50,
-                "active_bots": int(bot_count * 0.6)
+                "bot_count": None,
+                "total_bots": None,
+                "active_bots": None
             }
 
             # Atomic write into shared state dir
@@ -13494,6 +14435,7 @@ class OrcaKillCycle:
     # 🎖️ WAR ROOM MODE - RICH TERMINAL UI (NO SPAM)
     # ═══════════════════════════════════════════════════════════════════════════════
     
+    @harmonic_streaming_runtime
     def run_autonomous_warroom(self, max_positions: int = 5, amount_per_position: float = 2.5,
                                target_pct: float = 1.0, min_change_pct: float = 0.3):
         """
@@ -14033,8 +14975,12 @@ class OrcaKillCycle:
                                 for symbol in symbol_variants:
                                     try:
                                         ticker = self._get_binance_ticker(client, symbol)
-                                        current_price = float(ticker.get('bid', ticker.get('price', 0)) or 0)
-                                        if current_price <= 0:
+                                        current_price = (
+                                            _finite_market_number(ticker.get('bid'), positive=True)
+                                            if ticker.get('decision_status') == 'ready'
+                                            else None
+                                        )
+                                        if current_price is None:
                                             continue
                                         market_value = qty * current_price
                                         if market_value > 0.0:
@@ -14278,7 +15224,7 @@ class OrcaKillCycle:
                             try:
                                 ticker = smart_get_ticker(kraken_client, sym, exchange='kraken')
                                 price = self._extract_ticker_price(ticker or {}, exchange='kraken')
-                                if price > 0:
+                                if price is not None:
                                     all_prices[sym] = price
                             except Exception:
                                 pass
@@ -14838,21 +15784,27 @@ class OrcaKillCycle:
                 # ═══════════════════════════════════════════════════════
                 # UPDATE QUANTUM SCORES FROM ALL SYSTEMS
                 # ═══════════════════════════════════════════════════════
-                # Initialize ALL quantum scores with defaults BEFORE any try blocks
-                # This ensures we always have values to display even if systems fail
-                luck_score = 0.5
-                phantom_score = 0.5
-                inception_score = 0.5
-                elephant_score = 0.5
-                russian_doll_score = 0.5
-                immune_score = 0.5
-                moby_score = 0.3
-                stargate_score = 0.5
-                mirror_score = 0.5
-                hnc_score = 0.3
-                historical_score = 0.5
-                war_band_score = 0.5
-                quantum = {}
+                # Missing observations remain missing; the display must never
+                # turn subsystem absence into a neutral score.
+                luck_score = None
+                phantom_score = None
+                inception_score = None
+                elephant_score = None
+                russian_doll_score = None
+                immune_score = None
+                moby_score = None
+                stargate_score = None
+                mirror_score = None
+                hnc_score = None
+                historical_score = None
+                war_band_score = None
+                quantum = {
+                    'truth_status': 'no_data',
+                    'decision_status': 'blocked',
+                    'reason': 'MARKET_DATA_NOT_EVALUATED',
+                    'quantum_boost': None,
+                    'generated_values': False,
+                }
                 intel = {}
                 
                 try:
@@ -14861,6 +15813,13 @@ class OrcaKillCycle:
                     if positions: target_symbol = positions[0].symbol
                     
                     mkt = self._get_real_market_data(target_symbol, all_prices)
+                    self.last_quantum_market_status = mkt
+                    if mkt.get('decision_status') != 'ready':
+                        quantum.update(
+                            reason=mkt.get('reason', 'NO_FRESH_MARKET_DATA'),
+                            source_timestamp=mkt.get('source_timestamp'),
+                        )
+                        raise RuntimeError(quantum['reason'])
                     btc_price = mkt['price']
                     # Tune volatility sensitivity for Luck Mapper (0.1% change should register)
                     # We want 0-1 range. 1% move is huge for 1h. 
@@ -14877,106 +15836,124 @@ class OrcaKillCycle:
                         mkt['price'], 
                         mkt['change_pct'], 
                         mkt['volume'], 
-                        mkt['momentum']
+                        mkt['momentum'],
+                        source_timestamp=mkt.get('source_timestamp'),
+                        received_at=mkt.get('received_at'),
                     )
+                    if quantum.get('decision_status') != 'ready':
+                        raise RuntimeError(quantum.get('reason', 'NO_QUANTUM_EVIDENCE'))
                     
                     # ═══════════════════════════════════════════════════════════════════
                     # 🔗 UNITY FIX: Get REAL scores from all wired systems
                     # ═══════════════════════════════════════════════════════════════════
                     
                     # Luck Field - from quantum result or direct query
-                    luck_score = quantum.get('luck_field', 0)
-                    if luck_score == 0 and self.luck_mapper:
+                    luck_score = quantum.get('luck_field')
+                    if luck_score is None and self.luck_mapper:
                         try:
                             reading = self.luck_mapper.read_field(
                                 price=mkt['price'], 
                                 volatility=real_volatility,
                                 market_frequency=mkt['volume'] / 1000000
                             )
-                            luck_score = reading.luck_field if reading else 0.5
-                        except: luck_score = 0.5
+                            luck_score = reading.luck_field if reading else None
+                        except Exception:
+                            pass
                     
                     # Phantom Filter - check if phantom is cleared
-                    phantom_score = 0.5
                     if self.phantom_filter:
                         try:
                             phantom_score = 1.0 if self.phantom_filter.is_cleared() else 0.3
-                        except: phantom_score = 0.5
+                        except Exception:
+                            pass
                     
                     # Inception/Limbo - from quantum result
-                    inception_score = quantum.get('limbo_probability', 0.5)
+                    inception_score = quantum.get('limbo_probability')
                     
                     # Elephant Learning - direct query
-                    elephant_score = quantum.get('elephant_score', 0)
-                    if elephant_score == 0 and self.elephant:
+                    elephant_score = quantum.get('elephant_score')
+                    if elephant_score is None and self.elephant:
                         try:
                             raw_score = self.elephant.get_asset_score("BTC/USD")
                             elephant_score = raw_score / 100.0  # Normalize 0-100 to 0-1
-                        except: elephant_score = 0.5
-                    elif elephant_score > 1.0:
+                        except Exception:
+                            pass
+                    elif elephant_score is not None and elephant_score > 1.0:
                          elephant_score = elephant_score / 100.0 # Fix if from quantum dict
 
                     
                     # Russian Doll - queen confidence
-                    russian_doll_score = quantum.get('queen_confidence', 0)
-                    if russian_doll_score == 0 and self.russian_doll:
+                    russian_doll_score = quantum.get('queen_confidence')
+                    if russian_doll_score is None and self.russian_doll:
                         try:
                             directives = self.russian_doll.get_queen_directives()
-                            russian_doll_score = directives.get('confidence', 0.5)
-                        except: russian_doll_score = 0.5
+                            russian_doll_score = directives.get('confidence')
+                        except Exception:
+                            pass
                     
                     # Immune System - health check
-                    immune_score = 0.5
                     if self.immune_system:
                         try:
                             health = self.immune_system.get_health_status()
                             immune_score = 1.0 if health.get('overall') == 'healthy' else 0.5
-                        except: immune_score = 0.5
+                        except Exception:
+                            pass
                     
                     # Moby Dick - whale confidence
-                    moby_score = 0
                     if self.moby_dick:
                         try:
-                            preds = self.moby_dick.get_execution_ready_predictions()
-                            moby_score = 0.8 if preds else 0.3
-                        except: moby_score = 0.3
+                            preds = self.moby_dick.get_execution_ready_predictions() or []
+                            confidences = []
+                            for pred in preds:
+                                raw_confidence = (
+                                    pred.get('confidence')
+                                    if isinstance(pred, dict)
+                                    else getattr(pred, 'confidence', None)
+                                )
+                                if raw_confidence is not None:
+                                    confidence = float(raw_confidence)
+                                    if math.isfinite(confidence):
+                                        confidences.append(confidence)
+                            moby_score = max(confidences) if confidences else 0.0
+                        except Exception:
+                            pass
                     
                     # Stargate - network coherence
-                    stargate_score = quantum.get('stargate_coherence', 0)
-                    if stargate_score == 0 and self.stargate:
+                    stargate_score = quantum.get('stargate_coherence')
+                    if stargate_score is None and self.stargate:
                         try:
                             status = self.stargate.get_status()
-                            stargate_score = status.get('network_coherence', 0.5)
-                        except: stargate_score = 0.5
+                            stargate_score = status.get('network_coherence')
+                        except Exception:
+                            pass
                     
                     # Quantum Mirror - boost value
-                    mirror_score = quantum.get('mirror_boost', 0)
-                    if mirror_score == 0 and self.quantum_mirror:
+                    mirror_score = quantum.get('mirror_boost')
+                    if mirror_score is None and self.quantum_mirror:
                         try:
                             boost, _ = self.quantum_mirror.get_quantum_boost('USD', 'BTC', 'mixed')
-                            mirror_score = min(1.0, boost) if boost else 0.5
-                        except: mirror_score = 0.5
+                            mirror_score = min(1.0, float(boost)) if boost is not None else None
+                        except Exception:
+                            pass
                     
                     # HNC Surge - from quantum result or detector
-                    hnc_score = quantum.get('hnc_surge_intensity', 0)
-                    if hnc_score == 0 and self.hnc_surge_detector:
+                    hnc_score = quantum.get('hnc_surge_intensity')
+                    if hnc_score is None and self.hnc_surge_detector:
                         try:
                             surge = self.hnc_surge_detector.detect_surge("BTC/USD")
-                            hnc_score = surge.intensity if surge else 0.3
-                        except: hnc_score = 0.3
+                            hnc_score = surge.intensity if surge else 0.0
+                        except Exception:
+                            pass
                     
                     # Historical Hunter - pattern confidence
-                    historical_score = quantum.get('historical_confidence', 0)
-                    if historical_score == 0 and self.historical_hunter:
-                        try:
-                            historical_score = 0.6  # Active = baseline confidence
-                        except: historical_score = 0.5
+                    historical_score = quantum.get('historical_similarity')
                     
                     # Apache War Band - calculate unified score
                     if war_band:
                         try:
                             war_band_score = war_band.calculate_unified()
-                        except: war_band_score = 0.5
+                        except Exception:
+                            pass
                     
                     # (Quantum update moved OUTSIDE try block for reliability)
                     
@@ -15160,7 +16137,13 @@ class OrcaKillCycle:
                             pass
                         
                 except Exception as e:
-                    pass  # Quantum gathering failed, but we still have defaults
+                    if quantum.get('decision_status') != 'ready':
+                        quantum['truth_status'] = 'no_data'
+                        quantum['decision_status'] = 'blocked'
+                        quantum['reason'] = quantum.get('reason') or f"QUANTUM_SCORING_ERROR:{type(e).__name__}"
+                        quantum['quantum_boost'] = None
+                        quantum['generated_values'] = False
+                    self.last_quantum_score_status = dict(quantum)
                 
                 # ═══════════════════════════════════════════════════════
                 # ALWAYS UPDATE QUANTUM DISPLAY - Use whatever values we got
@@ -15179,31 +16162,37 @@ class OrcaKillCycle:
                     hnc_surge=hnc_score,
                     historical=historical_score,
                     war_band=war_band_score,
-                    hive_state=0.8 if hive_publisher else 0.0,
-                    bot_census=0.7 if bot_census else 0.0,
-                    backtest=0.6 if backtest_engine else 0.0,
-                    global_orchestrator=0.85 if global_orchestrator else 0.0,
-                    harmonic_binary=0.75 if harmonic_binary else 0.0,
-                    harmonic_chain_master=0.8 if harmonic_chain_master else 0.0,
-                    harmonic_counter=0.7 if harmonic_counter else 0.0,
-                    harmonic_fusion=0.82 if harmonic_fusion else 0.0,
-                    harmonic_momentum=0.78 if harmonic_momentum else 0.0,
-                    harmonic_reality=0.85 if harmonic_reality else 0.0,
-                    global_bot_map=0.72 if global_bot_map else 0.0,
-                    enhanced_telescope=0.88 if enhanced_quantum_telescope else 0.0,
-                    enigma_dream=0.9 if enigma_dream else 0.0,
-                    enhancement_layer=0.85 if enhancement_layer else 0.0,
-                    enigma_integration=0.92 if enigma_integration else 0.0,
-                    firm_intelligence=0.8 if firm_intelligence else 0.0,
-                    enigma_core=0.95 if enigma_core else 0.0,
-                    aureon_miner=0.75 if aureon_miner else 0.0,
-                    multi_exchange=0.88 if multi_exchange else 0.0,
-                    multi_pair=0.82 if multi_pair else 0.0,
-                    multiverse_live=0.85 if multiverse_live else 0.0,
-                    multiverse_orchestrator=0.9 if multiverse_orchestrator else 0.0,
-                    mycelium_network=0.92 if mycelium_network else 0.0,
-                    neural_revenue=0.87 if neural_revenue else 0.0,
-                    total_boost=quantum.get('quantum_boost', 1.0) if quantum else 1.0
+                    hive_state=None,
+                    bot_census=None,
+                    backtest=None,
+                    global_orchestrator=None,
+                    harmonic_binary=None,
+                    harmonic_chain_master=None,
+                    harmonic_counter=None,
+                    harmonic_fusion=None,
+                    harmonic_momentum=None,
+                    harmonic_reality=None,
+                    global_bot_map=None,
+                    enhanced_telescope=None,
+                    enigma_dream=None,
+                    enhancement_layer=None,
+                    enigma_integration=None,
+                    firm_intelligence=None,
+                    enigma_core=None,
+                    aureon_miner=None,
+                    multi_exchange=None,
+                    multi_pair=None,
+                    multiverse_live=None,
+                    multiverse_orchestrator=None,
+                    mycelium_network=None,
+                    neural_revenue=None,
+                    total_boost=quantum.get('quantum_boost'),
+                    truth_status=quantum.get('truth_status', 'no_data'),
+                    decision_status=quantum.get('decision_status', 'blocked'),
+                    reason=quantum.get('reason'),
+                    source_timestamp=quantum.get('source_timestamp'),
+                    received_at=quantum.get('received_at'),
+                    generated_values=False,
                 )
                 
                 # 🇮🇪🎯 SYNC SNIPER SCOPE 
@@ -15383,6 +16372,8 @@ class OrcaKillCycle:
 if __name__ == "__main__":
     import sys
     import traceback
+
+    start_health_server()
     
     # 🛡️ Wrap entire execution in try-except to prevent crash loops
     try:
@@ -15636,12 +16627,15 @@ if __name__ == "__main__":
                     for pos in positions[:]:
                         try:
                             # Get live price
-                            ticker = pos.client.get_ticker(pos.symbol)
-                            if not ticker:
-                                continue
-                            
-                            current = float(ticker.get('last', ticker.get('bid', 0)))
-                            if current <= 0:
+                            ticker = smart_get_ticker(
+                                pos.client, pos.symbol, exchange=pos.exchange
+                            )
+                            current = (
+                                _finite_market_number(ticker.get('bid'), positive=True)
+                                if isinstance(ticker, dict) and ticker.get('decision_status') == 'ready'
+                                else None
+                            )
+                            if current is None:
                                 continue
                             
                             pos.current_price = current
@@ -15979,3 +16973,5 @@ if __name__ == "__main__":
         traceback.print_exc(file=sys.stderr)
         print("\n🛑 Orca exiting gracefully to prevent crash loop\n", file=sys.stderr)
         sys.exit(1)
+    finally:
+        stop_health_server()

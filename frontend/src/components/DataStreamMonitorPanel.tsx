@@ -34,16 +34,16 @@ export function DataStreamMonitorPanel() {
 
   const getHealthIcon = () => {
     switch (overallHealth) {
-      case 'healthy': return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'degraded': return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
-      case 'down': return <XCircle className="h-4 w-4 text-red-500" />;
+      case 'healthy': return <CheckCircle className="h-4 w-4 text-success" />;
+      case 'degraded': return <AlertTriangle className="h-4 w-4 text-warning" />;
+      case 'down': return <XCircle className="h-4 w-4 text-destructive" />;
     }
   };
 
   const getHealthBadge = () => {
     switch (overallHealth) {
-      case 'healthy': return <Badge variant="default" className="bg-green-600">HEALTHY</Badge>;
-      case 'degraded': return <Badge variant="secondary" className="bg-yellow-600">DEGRADED</Badge>;
+      case 'healthy': return <Badge variant="default" className="bg-success">HEALTHY</Badge>;
+      case 'degraded': return <Badge variant="secondary" className="bg-warning">DEGRADED</Badge>;
       case 'down': return <Badge variant="destructive">DOWN</Badge>;
     }
   };
@@ -70,7 +70,7 @@ export function DataStreamMonitorPanel() {
           </CardTitle>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <span>{totalRequests} requests</span>
-            <span className="text-red-400">{totalErrors} errors</span>
+            <span className="text-destructive">{totalErrors} errors</span>
             <Button variant="ghost" size="sm" onClick={clearHistory}>
               <Trash2 className="h-3 w-3" />
             </Button>
@@ -101,15 +101,15 @@ export function DataStreamMonitorPanel() {
                     className={cn(
                       "flex items-center justify-between p-2 rounded-md text-xs cursor-pointer hover:bg-muted/50 transition-colors",
                       selectedEndpoint === stat.endpoint && "bg-muted",
-                      !stat.isHealthy && (stat.successCount > 0 || stat.errorCount > 0) && "border-l-2 border-yellow-500"
+                      !stat.isHealthy && (stat.successCount > 0 || stat.errorCount > 0) && "border-l-2 border-warning"
                     )}
                     onClick={() => setSelectedEndpoint(stat.endpoint === selectedEndpoint ? null : stat.endpoint)}
                   >
                     <div className="flex items-center gap-2">
                       {stat.isHealthy ? (
-                        <CheckCircle className="h-3 w-3 text-green-500" />
+                        <CheckCircle className="h-3 w-3 text-success" />
                       ) : stat.successCount > 0 || stat.errorCount > 0 ? (
-                        <AlertTriangle className="h-3 w-3 text-yellow-500" />
+                        <AlertTriangle className="h-3 w-3 text-warning" />
                       ) : (
                         <XCircle className="h-3 w-3 text-muted-foreground" />
                       )}
@@ -120,12 +120,12 @@ export function DataStreamMonitorPanel() {
                     
                     <div className="flex items-center gap-3">
                       <div className="flex items-center gap-1">
-                        <ArrowUpCircle className="h-3 w-3 text-green-500" />
-                        <span className="text-green-400">{stat.successCount}</span>
+                        <ArrowUpCircle className="h-3 w-3 text-success" />
+                        <span className="text-success">{stat.successCount}</span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <ArrowDownCircle className="h-3 w-3 text-red-500" />
-                        <span className="text-red-400">{stat.errorCount}</span>
+                        <ArrowDownCircle className="h-3 w-3 text-destructive" />
+                        <span className="text-destructive">{stat.errorCount}</span>
                       </div>
                       <span className="text-muted-foreground w-14 text-right">
                         {stat.avgLatencyMs.toFixed(0)}ms
@@ -145,9 +145,9 @@ export function DataStreamMonitorPanel() {
                     key={stream.id}
                     className={cn(
                       "flex items-center gap-2 p-1.5 rounded",
-                      stream.status === 'success' && "bg-green-500/10",
-                      stream.status === 'error' && "bg-red-500/10",
-                      stream.status === 'pending' && "bg-yellow-500/10"
+                      stream.status === 'success' && "bg-success/10",
+                      stream.status === 'error' && "bg-destructive/10",
+                      stream.status === 'pending' && "bg-warning/10"
                     )}
                   >
                     <span className="text-muted-foreground w-16">
@@ -155,11 +155,11 @@ export function DataStreamMonitorPanel() {
                     </span>
                     
                     {stream.direction === 'OUT' ? (
-                      <ArrowUpCircle className="h-3 w-3 text-blue-400" />
+                      <ArrowUpCircle className="h-3 w-3 text-primary" />
                     ) : (
                       <ArrowDownCircle className={cn(
                         "h-3 w-3",
-                        stream.status === 'success' ? "text-green-400" : "text-red-400"
+                        stream.status === 'success' ? "text-success" : "text-destructive"
                       )} />
                     )}
                     
@@ -169,20 +169,20 @@ export function DataStreamMonitorPanel() {
                     
                     <span className={cn(
                       "w-10 text-right",
-                      stream.latencyMs < 100 ? "text-green-400" :
-                      stream.latencyMs < 500 ? "text-yellow-400" : "text-red-400"
+                      stream.latencyMs < 100 ? "text-success" :
+                      stream.latencyMs < 500 ? "text-warning" : "text-destructive"
                     )}>
                       {stream.latencyMs}ms
                     </span>
                     
                     {stream.status === 'success' && (
-                      <CheckCircle className="h-3 w-3 text-green-500" />
+                      <CheckCircle className="h-3 w-3 text-success" />
                     )}
                     {stream.status === 'error' && (
-                      <XCircle className="h-3 w-3 text-red-500" />
+                      <XCircle className="h-3 w-3 text-destructive" />
                     )}
                     {stream.status === 'pending' && (
-                      <RefreshCw className="h-3 w-3 text-yellow-500 animate-spin" />
+                      <RefreshCw className="h-3 w-3 text-warning animate-spin" />
                     )}
                   </div>
                 ))}

@@ -22,7 +22,7 @@ import time
 # ═══════════════════════════════════════════════════════════════════════════
 # WINDOWS UTF-8 FIX - Must be at top before any logging/printing
 # ═══════════════════════════════════════════════════════════════════════════
-if sys.platform == 'win32':
+if sys.platform == 'win32' and sys.stdout is sys.__stdout__ and sys.stdout.isatty():
     os.environ['PYTHONIOENCODING'] = 'utf-8'
     try:
         import io
@@ -36,7 +36,6 @@ if sys.platform == 'win32':
     except Exception:
         pass
 import hashlib
-import random
 import re
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any, Tuple
@@ -884,7 +883,7 @@ class TradingEducationSystem:
     
     def get_market_wisdom(self) -> str:
         """
-        🎓 Get a random piece of trading wisdom.
+        🎓 Get the day's auditable piece of trading wisdom.
         """
         tips = self.get_trading_tips()
         
@@ -892,7 +891,9 @@ class TradingEducationSystem:
         for concept in self.learned_concepts.values():
             tips.extend(concept.key_lessons)
         
-        return random.choice(tips) if tips else "Learn from every trade."
+        if not tips:
+            return "Learn from every trade."
+        return tips[datetime.now().toordinal() % len(tips)]
     
     def summarize_knowledge(self) -> str:
         """

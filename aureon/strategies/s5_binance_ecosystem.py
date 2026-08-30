@@ -22,7 +22,6 @@ import json
 import asyncio
 import websockets
 import signal
-import random
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Set, Tuple
 from dataclasses import dataclass, field
@@ -435,39 +434,16 @@ class S5BinanceEcosystem:
         
         paths = list(self.conversion_paths.values())
         
-        # Exploration vs Exploitation
-        if random.random() < self.exploration_rate:
-            # Explore: random path
-            return random.choice(paths)
-        else:
-            # Exploit: weight by momentum
-            weights = []
-            for path in paths:
-                # Get momentum of from_asset
-                momentum = 0.0
-                for quote in ['USDT', 'USDC']:
-                    pair = f"{path.from_asset}{quote}"
-                    if pair in self.momentum_scores:
-                        momentum = abs(self.momentum_scores[pair])
-                        break
-                
-                # Higher momentum = higher weight
-                weight = max(0.1, momentum + 1.0) * (1 + path.total_conversions * 0.1)
-                weights.append(weight)
-            
-            # Weighted random selection
-            total_weight = sum(weights)
-            if total_weight <= 0:
-                return random.choice(paths)
-            
-            r = random.random() * total_weight
-            cumulative = 0
-            for path, weight in zip(paths, weights):
-                cumulative += weight
-                if r <= cumulative:
-                    return path
-            
-            return paths[-1]
+        def observed_weight(path: ConversionPath) -> float:
+            momentum = 0.0
+            for quote in ['USDT', 'USDC']:
+                pair = f"{path.from_asset}{quote}"
+                if pair in self.momentum_scores:
+                    momentum = abs(self.momentum_scores[pair])
+                    break
+            return max(0.1, momentum + 1.0) * (1 + path.total_conversions * 0.1)
+
+        return max(paths, key=lambda path: (observed_weight(path), path.from_asset, path.to_asset))
     
     async def _evaluate_conversion(self, path: ConversionPath):
         """Evaluate and potentially execute a conversion"""

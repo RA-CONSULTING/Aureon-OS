@@ -70,7 +70,6 @@ from typing import Dict, List, Optional, Tuple, Any, Set
 from datetime import datetime, timedelta, timezone
 from collections import deque
 from enum import Enum
-import random
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # CONSTANTS - TIMELINE CONFIGURATION
@@ -666,8 +665,8 @@ class TimelineOracle:
         now = time.time()
         
         # Generate sequence ID
-        seq_hash = hashlib.md5(
-            f"{symbol}:{now}:{random.random()}".encode()
+        seq_hash = hashlib.sha256(
+            f"{symbol}:{time.time_ns()}".encode()
         ).hexdigest()[:12]
         sequence_id = f"SEQ-{seq_hash}"
         
@@ -1098,8 +1097,8 @@ class TimelineOracle:
         
         for action in [TimelineAction.BUY, TimelineAction.SELL, TimelineAction.HOLD, TimelineAction.CONVERT]:
             # Generate unique branch ID
-            branch_hash = hashlib.md5(
-                f"{symbol}:{action.value}:{now}:{random.random()}".encode()
+            branch_hash = hashlib.sha256(
+                f"{symbol}:{action.value}:{time.time_ns()}".encode()
             ).hexdigest()[:12]
             branch_id = f"TL-{branch_hash}"
             

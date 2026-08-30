@@ -8,14 +8,16 @@
 
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Rocket, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   loadUnifiedFrontendState,
   type UnifiedFrontendState,
 } from "@/services/aureonAutonomousFrontend";
+import { useSetupStatus } from "@/hooks/useSetupStatus";
 import { NAV_SECTIONS } from "../nav";
 
 interface PlatformStatus {
@@ -48,6 +50,11 @@ interface AutomationIndex {
   label?: string;
   dimensions?: Record<string, { pct?: number | null; weight?: number; detail?: string }>;
   journey?: Array<{ ts?: number; index_pct?: number }>;
+  truth_status?: string;
+}
+
+interface DefenseSummary {
+  counts?: { total?: number; passing?: number };
   truth_status?: string;
 }
 
@@ -111,6 +118,7 @@ export default function OverviewPage() {
   const [billing, setBilling] = useState<BillingStatus | null | undefined>(undefined);
   const [organism, setOrganism] = useState<OrganismStatus | null | undefined>(undefined);
   const [automation, setAutomation] = useState<AutomationIndex | null | undefined>(undefined);
+  const [defense, setDefense] = useState<DefenseSummary | null | undefined>(undefined);
   const [unified, setUnified] = useState<UnifiedFrontendState | null>(null);
 
   useEffect(() => {
@@ -118,11 +126,13 @@ export default function OverviewPage() {
     fetchJson<BillingStatus>("/api/billing/status").then(setBilling);
     fetchJson<OrganismStatus>("/api/organism").then(setOrganism);
     fetchJson<AutomationIndex>("/api/automation").then(setAutomation);  // once — avoids repeated organ cold-boot
+    fetchJson<DefenseSummary>("/api/defense").then(setDefense);
     loadUnifiedFrontendState().then(setUnified).catch(() => setUnified(null));
   }, []);
 
   const domains = status?.product_domains ?? {};
   const surfaceCount = unified?.inventory?.summary?.surface_count;
+  const setup = useSetupStatus();
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 p-6">
@@ -136,6 +146,28 @@ export default function OverviewPage() {
           the coding system, operations, and the platform itself.
         </p>
       </div>
+
+      {/* First-run nudge — only when the backend is reachable but no model is connected yet. */}
+      {!setup.loading && !setup.offline && !setup.hasProvider && (
+        <Card className="border-primary/40 bg-primary/5">
+          <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4">
+            <div className="flex items-start gap-3">
+              <Rocket className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+              <div>
+                <p className="text-sm font-medium">New here? Connect a model to begin.</p>
+                <p className="text-sm text-muted-foreground">
+                  Add an API key, test it, and start a grounded conversation — three steps.
+                </p>
+              </div>
+            </div>
+            <Button asChild size="sm">
+              <Link to="/start">
+                Get started <ArrowRight className="ml-1.5 h-4 w-4" />
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Automation progress — the headline metric toward "fully automated" */}
       <Card className="border-primary/30">
@@ -187,6 +219,38 @@ export default function OverviewPage() {
                 </div>
               )}
             </>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Defenses — the bio family's benchmark health (immune layer + statistical validity + lanes) */}
+      <Card>
+        <CardHeader className="pb-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <CardTitle className="text-base">Defense & Validation</CardTitle>
+            <Link to="/defense" className="text-xs text-primary hover:underline inline-flex items-center gap-1">
+              open <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
+          <CardDescription>
+            The cognitive immune layer + statistical-validity dossier + sensor lanes — real
+            Tier-A benchmark status, never fabricated.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {defense === undefined ? (
+            <Skeleton className="h-8 w-40" />
+          ) : !defense || defense.counts?.total == null ? (
+            <p className="text-xs text-muted-foreground">
+              Gateway offline — start the operator for live defense status.
+            </p>
+          ) : (
+            <div className="flex items-center gap-3">
+              <span className="font-mono text-2xl tabular-nums text-primary">
+                {defense.counts.passing}/{defense.counts.total}
+              </span>
+              <span className="text-xs text-muted-foreground">bio benchmarks passing · immune layer active</span>
+            </div>
           )}
         </CardContent>
       </Card>

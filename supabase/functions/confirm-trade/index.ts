@@ -1,6 +1,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { createHmac } from 'https://deno.land/std@0.168.0/node/crypto.ts';
+import { decryptCredential } from '../_shared/credential_crypto.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,19 +12,12 @@ interface TradeConfirmationResult {
   orderId: string;
   status: string;
   executedQty: number;
-  executedPrice: number;
+  executedPrice: number | null;
   fills: any[];
   commission: number;
-  commissionAsset: string;
+  commissionAsset: string | null;
+  side: string;
   isConfirmed: boolean;
-}
-
-function decryptCredential(encrypted: string, iv: string, masterKey: string): string {
-  // Simple XOR decryption for demo - in production use proper AES
-  const encryptedBytes = Uint8Array.from(atob(encrypted), c => c.charCodeAt(0));
-  const keyBytes = new TextEncoder().encode(masterKey.slice(0, encryptedBytes.length));
-  const decryptedBytes = encryptedBytes.map((b, i) => b ^ keyBytes[i % keyBytes.length]);
-  return new TextDecoder().decode(decryptedBytes);
 }
 
 async function confirmBinanceOrder(
@@ -51,15 +45,24 @@ async function confirmBinanceOrder(
   }
   
   const order = await response.json();
+  const executedQty = Number(order.executedQty);
+  const limitPrice = Number(order.price);
+  const cumulativeQuote = Number(order.cummulativeQuoteQty);
+  const executedPrice = Number.isFinite(limitPrice) && limitPrice > 0
+    ? limitPrice
+    : Number.isFinite(executedQty) && executedQty > 0 && Number.isFinite(cumulativeQuote)
+      ? cumulativeQuote / executedQty
+      : null;
   
   return {
     orderId: order.orderId.toString(),
     status: order.status,
-    executedQty: parseFloat(order.executedQty),
-    executedPrice: parseFloat(order.price) || parseFloat(order.cummulativeQuoteQty) / parseFloat(order.executedQty),
+    executedQty,
+    executedPrice,
     fills: order.fills || [],
     commission: order.fills?.reduce((sum: number, f: any) => sum + parseFloat(f.commission), 0) || 0,
-    commissionAsset: order.fills?.[0]?.commissionAsset || '',
+    commissionAsset: order.fills?.[0]?.commissionAsset ?? null,
+    side: String(order.side || 'UNKNOWN'),
     isConfirmed: ['FILLED', 'PARTIALLY_FILLED', 'CANCELED', 'REJECTED', 'EXPIRED'].includes(order.status),
   };
 }
@@ -75,13 +78,18 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
     
-    const masterKey = Deno.env.get('MASTER_ENCRYPTION_KEY') ?? 'default-key-for-demo';
-
     const { trade_id, external_order_id, symbol, exchange, user_id } = await req.json();
     
     if (!external_order_id || !symbol) {
       throw new Error('Missing required fields: external_order_id, symbol');
     }
+
+    const authHeader = req.headers.get('Authorization');
+    const token = authHeader?.replace(/^Bearer\s+/i, '');
+    if (!token) throw new Error('AUTHENTICATION_REQUIRED');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !user) throw new Error('INVALID_AUTHENTICATION');
+    if (user_id && user_id !== user.id) throw new Error('USER_ID_MISMATCH');
     
     console.log(`[confirm-trade] Confirming order ${external_order_id} for ${symbol} on ${exchange}`);
     
@@ -89,7 +97,7 @@ serve(async (req) => {
     const { data: session, error: sessionError } = await supabase
       .from('aureon_user_sessions')
       .select('binance_api_key_encrypted, binance_api_secret_encrypted, binance_iv')
-      .eq('user_id', user_id)
+      .eq('user_id', user.id)
       .single();
     
     if (sessionError || !session) {
@@ -99,15 +107,13 @@ serve(async (req) => {
     let confirmResult: TradeConfirmationResult;
     
     if (exchange === 'binance' || !exchange) {
-      const apiKey = decryptCredential(
+      const apiKey = await decryptCredential(
         session.binance_api_key_encrypted,
-        session.binance_iv || '',
-        masterKey
+        session.binance_iv || ''
       );
-      const apiSecret = decryptCredential(
+      const apiSecret = await decryptCredential(
         session.binance_api_secret_encrypted,
-        session.binance_iv || '',
-        masterKey
+        session.binance_iv || ''
       );
       
       confirmResult = await confirmBinanceOrder(external_order_id, symbol, apiKey, apiSecret);
@@ -133,13 +139,13 @@ serve(async (req) => {
         stage,
         exchange: exchange || 'binance',
         symbol,
-        side: 'UNKNOWN', // Will be updated from original trade
+        side: confirmResult.side,
         quantity: confirmResult.executedQty,
         executed_qty: confirmResult.executedQty,
         executed_price: confirmResult.executedPrice,
         commission: confirmResult.commission,
         commission_asset: confirmResult.commissionAsset,
-        exchange_response: confirmResult,
+        exchange_response: { ...confirmResult, truthStatus: 'live', generatedValues: false, collectedAt: new Date().toISOString() },
         validation_status: validationStatus,
         validation_message: `Order ${confirmResult.status} - Executed ${confirmResult.executedQty} @ ${confirmResult.executedPrice}`,
       });

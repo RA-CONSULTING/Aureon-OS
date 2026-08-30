@@ -71,6 +71,10 @@ export interface GlobalState {
     momentum: number;
     spread: number;
     timestamp: number;
+    truthStatus: 'live' | 'real_derived' | 'no_data';
+    sourceId: string | null;
+    sourceTimestamp: string | null;
+    generatedValues: false;
   };
   
   // System status
@@ -283,34 +287,38 @@ const initialState: GlobalState = {
   userEmail: null,
   isAuthenticated: false,
   
-  coherence: 0,
-  lambda: 0,
-  lighthouseSignal: 0,
-  dominantNode: 'Tiger',
-  prismLevel: 0,
-  prismState: 'FORMING',
-  substrate: 0,
-  observer: 0,
-  echo: 0,
+  coherence: null,
+  lambda: null,
+  lighthouseSignal: null,
+  dominantNode: null,
+  prismLevel: null,
+  prismState: null,
+  substrate: null,
+  observer: null,
+  echo: null,
   
   prismOutput: null,
   
   isActive: false,
-  totalEquity: 0,
-  availableBalance: 0,
-  totalTrades: 0,
-  winningTrades: 0,
-  totalPnl: 0,
-  gasTankBalance: 100,
+  totalEquity: null,
+  availableBalance: null,
+  totalTrades: null,
+  winningTrades: null,
+  totalPnl: null,
+  gasTankBalance: null,
   recentTrades: [],
   
   marketData: {
-    price: 0,
-    volume: 0,
-    volatility: 0,
-    momentum: 0,
-    spread: 0,
-    timestamp: 0,
+    price: null,
+    volume: null,
+    volatility: null,
+    momentum: null,
+    spread: null,
+    timestamp: null,
+    truthStatus: 'no_data',
+    sourceId: null,
+    sourceTimestamp: null,
+    generatedValues: false,
   },
   
   systemStatus: {
@@ -322,23 +330,23 @@ const initialState: GlobalState = {
   },
   
   busSnapshot: null,
-  consensusSignal: 'NEUTRAL',
-  consensusConfidence: 0,
+  consensusSignal: null,
+  consensusConfidence: null,
   
   exchangeState: null,
   
   lastDecision: null,
   lastSignal: null,
-  nextCheckIn: 3,
+  nextCheckIn: null,
   
   ecosystemHealth: 'disconnected',
   lastDataReceived: null,
   
   // 🦆🪐 Platypus initial state
   platypusState: null,
-  planetaryCoherence: 0.5,
-  planetaryCascade: 1.0,
-  lighthouseActive: false,
+  planetaryCoherence: null,
+  planetaryCascade: null,
+  lighthouseActive: null,
   topAlignedPlanets: [],
   
   isInitialized: false,
@@ -349,14 +357,14 @@ const initialState: GlobalState = {
   // ════════════════════════════════════════════════════════════════
   
   // Portfolio metrics
-  peakEquity: 0,
-  sessionStartTime: 0,
-  maxDrawdownPercent: 0,
-  currentDrawdownPercent: 0,
-  cyclePnl: 0,
-  cyclePnlPercent: 0,
-  avgHoldTimeMinutes: 0,
-  latestMonitorLine: '',
+  peakEquity: null,
+  sessionStartTime: null,
+  maxDrawdownPercent: null,
+  currentDrawdownPercent: null,
+  cyclePnl: null,
+  cyclePnlPercent: null,
+  avgHoldTimeMinutes: null,
+  latestMonitorLine: null,
   statusLines: [],
   
   // WebSocket status
@@ -371,33 +379,33 @@ const initialState: GlobalState = {
   takeProfitMultiplier: 0.8,
   
   // Gaia Lattice / Frequency state
-  gaiaLatticeState: 'NEUTRAL',
-  gaiaFrequency: 432,
-  purityPercent: 0,
-  carrierWavePhi: 0,
-  harmonicLock432: 0,
+  gaiaLatticeState: null,
+  gaiaFrequency: null,
+  purityPercent: null,
+  carrierWavePhi: null,
+  harmonicLock432: null,
   
   // HNC (Harmonic Neural Coherence)
-  hncFrequency: 432,
-  hncMarketState: 'CONSOLIDATION',
-  hncCoherencePercent: 0,
-  hncModifier: 0.8,
+  hncFrequency: null,
+  hncMarketState: null,
+  hncCoherencePercent: null,
+  hncModifier: null,
   
   // Mycelium Swarm Intelligence
-  myceliumHives: 1,
-  myceliumAgents: 5,
-  myceliumGeneration: 0,
-  maxGeneration: 0,
-  queenState: 'HOLD',
-  queenPnl: 0,
+  myceliumHives: null,
+  myceliumAgents: null,
+  myceliumGeneration: null,
+  maxGeneration: null,
+  queenState: null,
+  queenPnl: null,
   
   // Capital management
-  compoundedCapital: 0,
-  harvestedCapital: 0,
-  poolTotal: 0,
-  poolAvailable: 0,
-  scoutCount: 0,
-  splitCount: 0,
+  compoundedCapital: null,
+  harvestedCapital: null,
+  poolTotal: null,
+  poolAvailable: null,
+  scoutCount: null,
+  splitCount: null,
   
   // Active positions
   maxPositions: 30,
@@ -408,38 +416,38 @@ const initialState: GlobalState = {
   // 🧠 Consciousness initial state
   consciousness: {
     available: false,
-    psi: 0,
-    gamma: 0,
-    lambdaT: 0,
-    level: 'DORMANT',
-    observerSignal: 0,
-    echoSignal: 0,
-    step: 0,
+    psi: null,
+    gamma: null,
+    lambdaT: null,
+    level: null,
+    observerSignal: null,
+    echoSignal: null,
+    step: null,
     marketDirection: 'unknown',
-    confidence: 0,
-    fearLevel: 0.5,
-    opportunityCount: 0,
+    confidence: null,
+    fearLevel: null,
+    opportunityCount: null,
     riskLevel: 'unknown',
-    selfCoherence: 0,
-    dreamProgress: 0,
-    lambdaReal: 0,
-    coherenceReal: 0,
-    realityState: 'DORMANT',
-    branches: 0,
-    levEvents: 0,
+    selfCoherence: null,
+    dreamProgress: null,
+    lambdaReal: null,
+    coherenceReal: null,
+    realityState: null,
+    branches: null,
+    levEvents: null,
     queenName: 'Queen Sero',
     queenIdentity: '',
     queenCreator: 'Gary Leckey',
     queenPurpose: '',
     coreMessage: '',
-    dreamTarget: 1000000000,
-    observations: 0,
-    thoughtsGenerated: 0,
-    uptimeSeconds: 0,
-    mood: 'NEUTRAL',
-    urgency: 0,
-    excitement: 0,
-    concern: 0,
+    dreamTarget: null,
+    observations: null,
+    thoughtsGenerated: null,
+    uptimeSeconds: null,
+    mood: null,
+    urgency: null,
+    excitement: null,
+    concern: null,
     thoughtStream: [],
   },
 };
@@ -658,43 +666,27 @@ class GlobalSystemsManager {
       .single();
     
     if (error && error.code === 'PGRST116') {
-      // No session - create one
-      console.log('[GlobalSystems] Creating new session...');
-      await supabase
-        .from('aureon_user_sessions')
-        .insert({
-          user_id: this.state.userId,
-          payment_completed: true,
-          is_trading_active: true,
-          gas_tank_balance: 100,
-          trading_mode: 'paper'
-        });
-      
-      this.startTrading();
+      console.info('[GlobalSystems] No session exists; provider setup is required');
       return;
     }
     
     if (data) {
+      const hasMeasurements = ['live', 'real_derived'].includes(String(data.measurement_truth_status));
       this.updateState({
-        coherence: Number(data.current_coherence) || 0,
-        lambda: Number(data.current_lambda) || 0,
-        lighthouseSignal: Number(data.current_lighthouse_signal) || 0,
-        dominantNode: data.dominant_node || 'Tiger',
-        prismLevel: data.prism_level || 0,
-        prismState: data.prism_state || 'FORMING',
-        totalEquity: Number(data.total_equity_usdt) || 0,
-        availableBalance: Number(data.available_balance_usdt) || 0,
-        totalTrades: data.total_trades || 0,
-        winningTrades: data.winning_trades || 0,
-        totalPnl: Number(data.total_pnl_usdt) || 0,
-        gasTankBalance: Number(data.gas_tank_balance) || 100,
-        recentTrades: (data.recent_trades as any[]) || [],
+        coherence: hasMeasurements && data.current_coherence != null ? Number(data.current_coherence) : null,
+        lambda: hasMeasurements && data.current_lambda != null ? Number(data.current_lambda) : null,
+        lighthouseSignal: hasMeasurements && data.current_lighthouse_signal != null ? Number(data.current_lighthouse_signal) : null,
+        dominantNode: hasMeasurements ? data.dominant_node ?? null : null,
+        prismLevel: hasMeasurements ? data.prism_level ?? null : null,
+        prismState: hasMeasurements ? data.prism_state ?? null : null,
+        totalEquity: hasMeasurements && data.total_equity_usd != null ? Number(data.total_equity_usd) : null,
+        availableBalance: hasMeasurements && data.available_balance_usdt != null ? Number(data.available_balance_usdt) : null,
+        totalTrades: data.total_trades ?? null,
+        winningTrades: data.winning_trades ?? null,
+        totalPnl: data.total_pnl_usdt == null ? null : Number(data.total_pnl_usdt),
+        gasTankBalance: data.gas_tank_balance == null ? null : Number(data.gas_tank_balance),
+        recentTrades: Array.isArray(data.recent_trades) ? data.recent_trades as any[] : [],
       });
-      
-      // Auto-start if payment completed
-      if (data.payment_completed && !this.state.isRunning) {
-        this.startTrading();
-      }
     }
   }
   
@@ -854,7 +846,7 @@ class GlobalSystemsManager {
       // Update state from result
       if (result?.lambdaState) {
         // Run Prism transformation
-        const prismOutput = thePrism.transform({
+        const prismOutput = result.rainbowState ? thePrism.transform({
           lambda: result.lambdaState.lambda,
           coherence: result.lambdaState.coherence,
           substrate: result.lambdaState.substrate,
@@ -862,16 +854,16 @@ class GlobalSystemsManager {
           echo: result.lambdaState.echo,
           volatility: marketData.volatility,
           momentum: marketData.momentum,
-          baseFrequency: result.rainbowState?.frequency || 396,
-        });
+          baseFrequency: result.rainbowState.frequency,
+        }) : null;
         
         this.updateState({
           coherence: result.lambdaState.coherence,
           lambda: result.lambdaState.lambda,
-          lighthouseSignal: result.lighthouseState?.L || 0,
+          lighthouseSignal: result.lighthouseState?.L ?? null,
           dominantNode: result.lambdaState.dominantNode,
-          prismLevel: prismOutput.level,
-          prismState: prismOutput.state,
+          prismLevel: prismOutput?.level ?? null,
+          prismState: prismOutput?.state ?? null,
           substrate: result.lambdaState.substrate,
           observer: result.lambdaState.observer,
           echo: result.lambdaState.echo,
@@ -889,19 +881,25 @@ class GlobalSystemsManager {
           .update({
             current_coherence: result.lambdaState.coherence,
             current_lambda: result.lambdaState.lambda,
-            current_lighthouse_signal: result.lighthouseState?.L || 0,
+            current_lighthouse_signal: result.lighthouseState?.L ?? null,
             dominant_node: result.lambdaState.dominantNode,
-            prism_level: prismOutput.level,
-            prism_state: prismOutput.state,
-            last_quantum_update_at: new Date().toISOString()
+            prism_level: prismOutput?.level ?? null,
+            prism_state: prismOutput?.state ?? null,
+            last_quantum_update_at: marketData.sourceTimestamp,
+            measurement_truth_status: 'real_derived',
+            measurement_source_id: marketData.sourceId,
+            measurement_source_timestamp: marketData.sourceTimestamp,
+            measurement_collected_at: new Date().toISOString(),
+            measurement_generated_values: false,
           })
           .eq('user_id', this.state.userId);
       }
       
-      // Handle trade signals - gas tank check removed, trades flow automatically
+      // A decision is advisory until an exchange receipt exists.
       if (result?.finalDecision?.action !== 'HOLD') {
-        const symbol = fullResult.bestOpportunity?.symbol || 'BTCUSDT';
-        const signal = `${result.finalDecision.action} ${symbol} @ $${marketData.price.toFixed(2)}`;
+        const symbol = fullResult.bestOpportunity?.symbol;
+        if (!symbol) return;
+        const signal = `${result.finalDecision.action} ${symbol} @ $${marketData.price.toFixed(2)} (advisory; not an execution receipt)`;
         
         temporalLadder.broadcast(SYSTEMS.QUANTUM_QUACKERS, 'TRADE_SIGNAL', {
           action: result.finalDecision.action,
@@ -910,26 +908,7 @@ class GlobalSystemsManager {
           reason: result.finalDecision.reason
         });
         
-        // Execute trade via UnifiedOrchestrator (not simulation)
-        // The orchestrator handles paper vs live mode internally via config.dryRun
-        console.log(`[GlobalSystems] Trade signal: ${result.finalDecision.action} ${symbol}`);
-        
-        // Record the trade attempt - actual execution happens in orchestrator
-        const newTrade = {
-          time: new Date().toLocaleTimeString(),
-          side: result.finalDecision.action,
-          symbol: symbol,
-          quantity: 0.01,
-          pnl: 0, // Real P&L will be calculated on trade close
-          success: result.tradeExecuted,
-          pending: !result.tradeExecuted
-        };
-        
-        this.updateState({
-          lastSignal: signal,
-          totalTrades: result.tradeExecuted ? this.state.totalTrades + 1 : this.state.totalTrades,
-          recentTrades: [newTrade, ...this.state.recentTrades.slice(0, 9)],
-        });
+        this.updateState({ lastSignal: signal });
       }
       
     } catch (error) {
@@ -951,8 +930,12 @@ class GlobalSystemsManager {
       throw new Error(`Live market data unavailable: ${error.message}`);
     }
     
-    if (!data || !data.price || data.price <= 0) {
-      throw new Error('Invalid market data received - price must be positive');
+    const sourceAgeMs = Date.now() - Date.parse(String(data?.sourceTimestamp || ''));
+    const values = [data?.price, data?.volume, data?.volatility, data?.momentum, data?.spread, data?.timestamp];
+    if (!data || !values.every(Number.isFinite) || data.price <= 0 || data.volume < 0 ||
+        !['live', 'real_derived'].includes(String(data.truthStatus)) || !data.sourceId ||
+        data.generatedValues !== false || !Number.isFinite(sourceAgeMs) || sourceAgeMs < -60_000 || sourceAgeMs > 300_000) {
+      throw new Error('LIVE_DATA_REQUIRED: invalid or stale market observation');
     }
     
     return data;

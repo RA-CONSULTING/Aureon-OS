@@ -16,11 +16,11 @@ export function BackendHealthMonitor() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'healthy':
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
+        return <CheckCircle className="h-4 w-4 text-success" />;
       case 'degraded':
-        return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
+        return <AlertTriangle className="h-4 w-4 text-warning" />;
       case 'unhealthy':
-        return <XCircle className="h-4 w-4 text-red-500" />;
+        return <XCircle className="h-4 w-4 text-destructive" />;
       case 'not_configured':
       case 'skipped':
         return <AlertCircle className="h-4 w-4 text-gray-400" />;
@@ -118,14 +118,14 @@ export function BackendHealthMonitor() {
 
           {/* Warnings */}
           {healthReport.warnings.length > 0 && (
-            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4">
+            <div className="bg-warning/10 border border-warning/20 rounded-lg p-4">
               <div className="flex items-start gap-2">
-                <AlertTriangle className="h-5 w-5 text-yellow-500 mt-0.5" />
+                <AlertTriangle className="h-5 w-5 text-warning mt-0.5" />
                 <div className="flex-1">
-                  <h4 className="font-semibold text-yellow-500 mb-2">Warnings</h4>
+                  <h4 className="font-semibold text-warning mb-2">Warnings</h4>
                   <ul className="space-y-1">
                     {healthReport.warnings.map((warning, i) => (
-                      <li key={i} className="text-sm text-yellow-500/90">• {warning}</li>
+                      <li key={i} className="text-sm text-warning/90">• {warning}</li>
                     ))}
                   </ul>
                 </div>

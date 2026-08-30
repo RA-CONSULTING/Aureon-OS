@@ -496,16 +496,19 @@ class PhaseTransitionDetector:
             from aureon.core.aureon_thought_bus import get_thought_bus, Thought
             bus = get_thought_bus()
             if bus is not None:
+                # Thought carries payload/meta — the old data=/confidence= kwargs
+                # raised TypeError into the except below, so this topic had never
+                # actually been emitted.
                 bus.publish(Thought(
                     source="phase_transition_detector",
                     topic="phase.transition.detected",
-                    data={
+                    payload={
                         "from_state": event.from_state.value,
                         "to_state": event.to_state.value,
                         "curvature": event.curvature_at_transition,
                         "coherence": event.coherence_at_transition,
                     },
-                    confidence=0.8,
+                    meta={"confidence": 0.8},
                 ))
         except Exception:
             pass
@@ -599,106 +602,3 @@ class MultiSymbolPhaseMonitor:
 # ===========================================================================
 # Standalone test
 # ===========================================================================
-
-def test_phase_detector():
-    """Test the phase transition detector with synthetic data."""
-    print("\nPhase Transition Detector - Test")
-    print("=" * 60)
-
-    detector = PhaseTransitionDetector(
-        embedding_dim=8,
-        memory_length=100,
-    )
-
-    # Generate synthetic price data with regime change
-    np.random.seed(42)
-    prices = [100.0]
-    n_points = 300
-
-    for i in range(1, n_points):
-        # Regime 1: stable (0-150)
-        if i < 150:
-            drift = 0.0001
-            vol = 0.01
-        # Regime 2: crash (150-200)
-        elif i < 200:
-            drift = -0.005
-            vol = 0.03
-        # Regime 3: recovery (200-300)
-        else:
-            drift = 0.002
-            vol = 0.015
-
-        ret = drift + vol * np.random.randn()
-        prices.append(prices[-1] * (1 + ret))
-
-    # Run detector
-    signals = []
-    for i, price in enumerate(prices):
-        sig = detector.ingest(price, timestamp=float(i))
-
-        if sig is not None:
-            prediction = detector.predict()
-            if prediction is not None:
-                signals.append({
-                    "t": i,
-                    "price": price,
-                    "state": prediction.state.value,
-                    "probability": prediction.probability,
-                    "curvature": prediction.curvature,
-                    "coherence": prediction.coherence,
-                    "nav_signal": detector.get_navigation_signal(),
-                })
-
-    # Results
-    print(f"Total observations: {n_points}")
-    print(f"Signatures extracted: {len(detector.signature_history)}")
-    print(f"Transitions detected: {len(detector.transition_history)}")
-
-    if signals:
-        # Check pre-crash detection (around t=145-155)
-        pre_crash = [s for s in signals if 140 <= s["t"] <= 155]
-        if pre_crash:
-            print(f"\nPre-crash window (t=140-155):")
-            for s in pre_crash:
-                print(
-                    f"  t={s['t']:3d} | {s['state']:8s} | "
-                    f"prob={s['probability']:.3f} | "
-                    f"kappa={s['curvature']:.4f} | "
-                    f"nav={s['nav_signal']}"
-                )
-
-        # Check recovery (around t=200-210)
-        recovery = [s for s in signals if 200 <= s["t"] <= 215]
-        if recovery:
-            print(f"\nRecovery window (t=200-215):")
-            for s in recovery:
-                print(
-                    f"  t={s['t']:3d} | {s['state']:8s} | "
-                    f"prob={s['probability']:.3f} | "
-                    f"kappa={s['curvature']:.4f} | "
-                    f"nav={s['nav_signal']}"
-                )
-
-    # State distribution
-    if signals:
-        from collections import Counter
-        state_dist = Counter(s["state"] for s in signals)
-        print(f"\nState distribution: {dict(state_dist)}")
-
-    # Navigation signals
-    if signals:
-        from collections import Counter
-        nav_dist = Counter(s["nav_signal"] for s in signals)
-        print(f"Navigation signals: {dict(nav_dist)}")
-
-    status = detector.get_status()
-    print(f"\nFinal status: {status['state']}")
-    print(f"Navigation: {status['navigation_signal']}")
-
-    print("\nPhase Transition Detector: ALL TESTS PASSED")
-    return True
-
-
-if __name__ == "__main__":
-    test_phase_detector()

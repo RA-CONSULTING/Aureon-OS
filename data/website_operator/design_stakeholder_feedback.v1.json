@@ -1,0 +1,116 @@
+{
+  "schema": "aureon.design-stakeholder-feedback.v1",
+  "feedback_id": "investor-site-signals-20260730",
+  "issued_at": "2026-07-29T23:45:00Z",
+  "refresh_by": "2026-08-13T23:59:59Z",
+  "authority": {
+    "scope": "local privacy-preserving stakeholder design signals only",
+    "raw_correspondence_access": "none",
+    "canonical_website_mutation": "never",
+    "claim_register_mutation": "never",
+    "release_eligible": false,
+    "package_authority": "none",
+    "deployment_authority": "none",
+    "credential_access": "none",
+    "network_access": "none",
+    "connector_access": "none",
+    "human_review": "required before any staged design response"
+  },
+  "claim_register": {
+    "path": "data/website_operator/public_claim_evidence_register.v1.json",
+    "sha256": "78032392BD3ECED2C5C9B294415AD6D2C6380FF903F7E43844C191AFD99C99A7"
+  },
+  "evidence_snapshot": {
+    "kind": "human-created-redacted-evidence-snapshot",
+    "path": "docs/research/AUREON_STAKEHOLDER_SIGNAL_REDACTION_20260730.md",
+    "sha256": "1F35763F4C5ACA172C1E45C604EA0B735419B8C77D428D1B9A3EFF7F1BDA7DB4"
+  },
+  "signals": [
+    {
+      "signal_id": "signal-market-problem-clarity",
+      "signal_kind": "clarity-gap",
+      "disposition": "action-requested",
+      "priority": "critical",
+      "requested_response_dimension": "first-visit-clarity",
+      "route_scope": "/",
+      "claim_ids": [
+        "aureon-os-evidence-system",
+        "company-research-led-systems"
+      ]
+    },
+    {
+      "signal_id": "signal-product-solution-clarity",
+      "signal_kind": "diligence-question",
+      "disposition": "action-requested",
+      "priority": "critical",
+      "requested_response_dimension": "product-clarity",
+      "route_scope": "/",
+      "claim_ids": [
+        "aureon-os-evidence-system",
+        "hnc-research-framework"
+      ]
+    },
+    {
+      "signal_id": "signal-first-buyer-clarity",
+      "signal_kind": "diligence-question",
+      "disposition": "action-requested",
+      "priority": "high",
+      "requested_response_dimension": "audience-specificity",
+      "route_scope": "/",
+      "claim_ids": [
+        "aureon-os-evidence-system",
+        "company-research-led-systems"
+      ]
+    },
+    {
+      "signal_id": "signal-business-model-clarity",
+      "signal_kind": "diligence-question",
+      "disposition": "consider",
+      "priority": "high",
+      "requested_response_dimension": "business-model-clarity",
+      "route_scope": "/",
+      "claim_ids": [
+        "aureon-os-evidence-system",
+        "company-research-led-systems"
+      ]
+    },
+    {
+      "signal_id": "signal-differentiation-boundary",
+      "signal_kind": "positioning-guidance",
+      "disposition": "action-requested",
+      "priority": "high",
+      "requested_response_dimension": "differentiation-clarity",
+      "route_scope": "/",
+      "claim_ids": [
+        "aureon-os-evidence-system",
+        "company-research-led-systems"
+      ]
+    },
+    {
+      "signal_id": "signal-proof-state-clarity",
+      "signal_kind": "boundary-confirmation",
+      "disposition": "no-action",
+      "priority": "critical",
+      "requested_response_dimension": "claim-boundary",
+      "route_scope": "/funding/investor-deck/",
+      "claim_ids": [
+        "academia-research-attention",
+        "github-technical-access",
+        "strategic-rd-route-themes"
+      ]
+    },
+    {
+      "signal_id": "signal-information-hierarchy",
+      "signal_kind": "positioning-guidance",
+      "disposition": "action-requested",
+      "priority": "high",
+      "requested_response_dimension": "narrative-sequencing",
+      "route_scope": "/projects/",
+      "claim_ids": [
+        "company-research-led-systems",
+        "mission-blades-application-model",
+        "shared-core-application-thesis"
+      ]
+    }
+  ]
+}

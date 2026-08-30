@@ -44,10 +44,11 @@ import sys
 import json
 import time
 import logging
+import math
 from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass, field
 from collections import defaultdict, deque
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -57,6 +58,73 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 # ═══════════════════════════════════════════════════════════════════════════════════
 
 logger = logging.getLogger(__name__)
+
+
+def _configured_max_age_seconds() -> float:
+    """Return the provider-evidence TTL without allowing a bad env value to fail open."""
+    try:
+        value = float(os.getenv("AUREON_CONVERSION_SIGNAL_MAX_AGE_SECONDS", "120"))
+    except (TypeError, ValueError):
+        return 120.0
+    return value if math.isfinite(value) and value > 0 else 120.0
+
+
+CONVERSION_SIGNAL_MAX_AGE_SECONDS = _configured_max_age_seconds()
+
+
+def _coerce_source_timestamp(value: Any) -> Optional[datetime]:
+    """Parse a provider/source timestamp. Receipt time is never substituted."""
+    if isinstance(value, datetime):
+        parsed = value
+    elif isinstance(value, (int, float)) and not isinstance(value, bool):
+        numeric = float(value)
+        if not math.isfinite(numeric):
+            return None
+        if numeric > 10_000_000_000:
+            numeric /= 1000.0
+        try:
+            parsed = datetime.fromtimestamp(numeric, tz=timezone.utc)
+        except (OSError, OverflowError, ValueError):
+            return None
+    elif isinstance(value, str) and value.strip():
+        try:
+            parsed = datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
+        except ValueError:
+            return None
+    else:
+        return None
+
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+
+def _fresh_source_timestamp(value: Any, *, now: Optional[datetime] = None) -> Optional[datetime]:
+    parsed = _coerce_source_timestamp(value)
+    if parsed is None:
+        return None
+    reference = now or datetime.now(timezone.utc)
+    age = (reference - parsed).total_seconds()
+    if age < -5.0 or age > CONVERSION_SIGNAL_MAX_AGE_SECONDS:
+        return None
+    return parsed
+
+
+def _finite_number(value: Any, *, minimum: Optional[float] = None,
+                   maximum: Optional[float] = None) -> Optional[float]:
+    if isinstance(value, bool):
+        return None
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError):
+        return None
+    if not math.isfinite(numeric):
+        return None
+    if minimum is not None and numeric < minimum:
+        return None
+    if maximum is not None and numeric > maximum:
+        return None
+    return numeric
 
 # 🍄 MYCELIUM NETWORK - The Foundation
 try:
@@ -235,6 +303,10 @@ class SystemSignal:
     confidence: float  # 0.0 to 1.0
     score: float       # Raw score
     reason: str
+    source_timestamp: Optional[datetime] = None
+    provenance: str = ""
+    data_status: str = "ok"
+    proof_eligible: bool = True
     timestamp: datetime = field(default_factory=datetime.now)
 
 
@@ -262,6 +334,13 @@ class MyceliumSignal:
     # Pathway info
     pathway_strength: float = 0.0  # How strong the mycelium pathway is
     participating_systems: List[str] = field(default_factory=list)
+
+    # A no_data signal can be displayed, but cannot drive conversion execution
+    # or learning.
+    data_status: str = "no_data"
+    no_data_reason: str = "unscored"
+    proof_eligible: bool = False
+    source_timestamps: Dict[str, str] = field(default_factory=dict)
     
     timestamp: datetime = field(default_factory=datetime.now)
 
@@ -426,6 +505,8 @@ class MyceliumConversionHub:
         # Stats
         self.stats = {
             'signals_generated': 0,
+            'no_data_signals': 0,
+            'last_no_data_reason': None,
             'conversions_recommended': 0,
             'successful_conversions': 0,
             'total_profit': 0.0,
@@ -499,18 +580,34 @@ class MyceliumConversionHub:
     # SIGNAL GENERATION FROM ALL SYSTEMS
     # ═══════════════════════════════════════════════════════════════════════════════
     
-    def get_v14_signal(self, symbol: str, price: float, volume: float) -> Optional[SystemSignal]:
+    def get_v14_signal(
+        self,
+        symbol: str,
+        price: float,
+        volume: Optional[float],
+        source_timestamp: Any = None,
+    ) -> Optional[SystemSignal]:
         """Get signal from V14 scoring engine"""
         if not self.v14:
+            return None
+
+        observed_at = _fresh_source_timestamp(source_timestamp)
+        clean_price = _finite_number(price, minimum=0.000000000001)
+        clean_volume = _finite_number(volume, minimum=0.0)
+        if observed_at is None or clean_price is None or clean_volume is None:
             return None
         
         try:
             # Update price history
-            self.v14.scoring_engine.update_price_history(symbol, price, volume)
+            self.v14.scoring_engine.update_price_history(symbol, clean_price, clean_volume)
             
             # Get score using evaluate_entry
-            result = self.v14.evaluate_entry(symbol, price)
-            score = result.get('score', 0)
+            result = self.v14.evaluate_entry(symbol, clean_price)
+            if not isinstance(result, dict) or 'score' not in result:
+                return None
+            score = _finite_number(result['score'], minimum=0.0, maximum=9.0)
+            if score is None:
+                return None
             
             # Convert to signal
             if score >= 8:
@@ -530,7 +627,9 @@ class MyceliumConversionHub:
                 signal=signal,
                 confidence=score / 9.0,
                 score=score,
-                reason=f"V14 score: {score}/9"
+                reason=f"V14 score: {score}/9",
+                source_timestamp=observed_at,
+                provenance='v14:provider_price_observation',
             )
         except Exception as e:
             logger.warning(f"V14 signal error: {e}")
@@ -542,21 +641,25 @@ class MyceliumConversionHub:
             return None
         
         try:
-            # Get prediction - simplified approach
+            if not hasattr(self.probability_nexus, 'get_prediction'):
+                return None
+            pred = self.probability_nexus.get_prediction(symbol)
+            if not isinstance(pred, dict) or 'probability' not in pred:
+                return None
+
+            prob = _finite_number(pred['probability'], minimum=0.0, maximum=1.0)
+            observed_at = _fresh_source_timestamp(
+                pred.get('source_timestamp', pred.get('timestamp', pred.get('ts')))
+            )
+            if prob is None or observed_at is None:
+                return None
+
             signal = ConversionSignal.NEUTRAL
-            prob = 0.5
-            reason = "Probability nexus"
-            
-            # Try to get prediction
-            if hasattr(self.probability_nexus, 'get_prediction'):
-                pred = self.probability_nexus.get_prediction(symbol)
-                if pred:
-                    prob = pred.get('probability', 0.5)
-                    if prob > 0.65:
-                        signal = ConversionSignal.BUY
-                    elif prob < 0.35:
-                        signal = ConversionSignal.SELL
-                    reason = f"Probability: {prob:.1%}"
+            if prob > 0.65:
+                signal = ConversionSignal.BUY
+            elif prob < 0.35:
+                signal = ConversionSignal.SELL
+            reason = f"Probability: {prob:.1%}"
             
             return SystemSignal(
                 system_name='probability',
@@ -564,7 +667,9 @@ class MyceliumConversionHub:
                 signal=signal,
                 confidence=prob,
                 score=prob,
-                reason=reason
+                reason=reason,
+                source_timestamp=observed_at,
+                provenance='probability_nexus:provider_derived',
             )
         except Exception as e:
             logger.warning(f"Probability signal error: {e}")
@@ -577,35 +682,63 @@ class MyceliumConversionHub:
             return None
         
         try:
-            # Get consensus from worlds - simplified
-            buy_votes = 0
-            total_worlds = len(self.multiverse.worlds) if hasattr(self.multiverse, 'worlds') else 10
-            
-            # Simulate world votes based on random state
-            # In real implementation, this would query each world
-            import random
-            for _ in range(total_worlds):
-                vote = random.choice([-1, 0, 1])
-                if vote > 0:
-                    buy_votes += 1
-            
-            consensus = (buy_votes * 2 - total_worlds) / total_worlds  # -1 to +1
-            conf = abs(consensus)
-            
-            if consensus > 0.3:
-                signal = ConversionSignal.BUY
-            elif consensus < -0.3:
-                signal = ConversionSignal.SELL
-            else:
-                signal = ConversionSignal.NEUTRAL
+            worlds = getattr(self.multiverse, 'worlds', None)
+            consensus_engine = getattr(self.multiverse, 'consensus', None)
+            if not isinstance(worlds, list) or not worlds or consensus_engine is None:
+                return None
+
+            votes = []
+            source_times = []
+            for world in worlds:
+                state = getattr(world, 'state', None)
+                vote = getattr(state, 'last_signal', None)
+                if vote is None or getattr(vote, 'symbol', None) != symbol:
+                    return None
+                observed_at = _fresh_source_timestamp(getattr(vote, 'timestamp', None))
+                strength = _finite_number(
+                    getattr(vote, 'strength', None), minimum=-1.0, maximum=1.0
+                )
+                confidence = _finite_number(
+                    getattr(vote, 'confidence', None), minimum=0.0, maximum=1.0
+                )
+                if (
+                    observed_at is None
+                    or strength is None
+                    or confidence is None
+                    or getattr(vote, 'signal_type', None) not in {'BUY', 'SELL', 'HOLD'}
+                ):
+                    return None
+                votes.append(vote)
+                source_times.append(observed_at)
+
+            result = consensus_engine.compute_consensus(votes)
+            if not isinstance(result, dict):
+                return None
+            action = result.get('action')
+            consensus = _finite_number(
+                result.get('strength'), minimum=-1.0, maximum=1.0
+            )
+            conf = _finite_number(
+                result.get('confidence'), minimum=0.0, maximum=1.0
+            )
+            if action not in {'BUY', 'SELL', 'HOLD'} or consensus is None or conf is None:
+                return None
+
+            signal = {
+                'BUY': ConversionSignal.BUY,
+                'SELL': ConversionSignal.SELL,
+                'HOLD': ConversionSignal.NEUTRAL,
+            }[action]
             
             return SystemSignal(
                 system_name='multiverse',
                 symbol=symbol,
                 signal=signal,
-                confidence=0.5 + conf * 0.5,
+                confidence=conf,
                 score=consensus,
-                reason=f"10-world consensus: {consensus:.2f}"
+                reason=f"{len(votes)}-world consensus: {consensus:.2f}",
+                source_timestamp=min(source_times),
+                provenance='internal_multiverse:fresh_world_votes',
             )
         except Exception as e:
             logger.warning(f"Multiverse signal error: {e}")
@@ -618,32 +751,38 @@ class MyceliumConversionHub:
             return None
         
         try:
-            # Get miner brain cognitive assessment
-            # MinerBrain has evolved params and IRA training
-            signal = ConversionSignal.NEUTRAL
-            confidence = 0.5
-            
-            # Check for IRA training with 100% win rate
-            if hasattr(self.miner_brain, 'ira_training') and self.miner_brain.ira_training:
-                ira = self.miner_brain.ira_training
-                win_rate = ira.get('win_rate', 0.5) if isinstance(ira, dict) else 0.5
-                if win_rate >= 0.99:  # IRA trained to 100%
-                    signal = ConversionSignal.BUY
-                    confidence = win_rate
-            
-            # Check sandbox evolution for generation count
-            if hasattr(self.miner_brain, 'sandbox_evolution') and self.miner_brain.sandbox_evolution:
-                gen = getattr(self.miner_brain.sandbox_evolution, 'generation', 0)
-                if gen > 400:  # Highly evolved
-                    confidence = min(1.0, confidence + 0.1)
+            if not hasattr(self.miner_brain, 'get_signal'):
+                return None
+            result = self.miner_brain.get_signal(symbol)
+            if not isinstance(result, dict):
+                return None
+
+            raw = _finite_number(result.get('signal'), minimum=-1.0, maximum=1.0)
+            confidence = _finite_number(
+                result.get('confidence'), minimum=0.0, maximum=1.0
+            )
+            observed_at = _fresh_source_timestamp(
+                result.get('source_timestamp', result.get('timestamp', result.get('ts')))
+            )
+            if raw is None or confidence is None or observed_at is None:
+                return None
+
+            if raw > 0.3:
+                signal = ConversionSignal.BUY
+            elif raw < -0.3:
+                signal = ConversionSignal.SELL
+            else:
+                signal = ConversionSignal.NEUTRAL
             
             return SystemSignal(
                 system_name='miner_brain',
                 symbol=symbol,
                 signal=signal,
                 confidence=confidence,
-                score=confidence,
-                reason=f"Miner cognitive: {confidence:.1%}"
+                score=raw,
+                reason=f"Miner cognitive signal: {raw:.3f}",
+                source_timestamp=observed_at,
+                provenance='miner_brain:fresh_signal',
             )
         except Exception as e:
             logger.warning(f"Miner signal error: {e}")
@@ -656,24 +795,28 @@ class MyceliumConversionHub:
             return None
         
         try:
-            # Get harmonic bias
-            signal = ConversionSignal.NEUTRAL
-            confidence = 0.5
-            bias = 0.0
-            
-            if hasattr(self.harmonic, 'get_trading_bias'):
-                result = self.harmonic.get_trading_bias()
-                if isinstance(result, (int, float)):
-                    bias = result
-                elif isinstance(result, dict):
-                    bias = result.get('bias', 0.0)
-                
-                if bias > 0.3:
-                    signal = ConversionSignal.BUY
-                    confidence = 0.7
-                elif bias < -0.3:
-                    signal = ConversionSignal.SELL
-                    confidence = 0.7
+            if not hasattr(self.harmonic, 'get_trading_bias'):
+                return None
+            result = self.harmonic.get_trading_bias()
+            if not isinstance(result, dict):
+                return None
+
+            bias = _finite_number(result.get('bias'), minimum=-1.0, maximum=1.0)
+            confidence = _finite_number(
+                result.get('confidence'), minimum=0.0, maximum=1.0
+            )
+            observed_at = _fresh_source_timestamp(
+                result.get('source_timestamp', result.get('timestamp', result.get('ts')))
+            )
+            if bias is None or confidence is None or observed_at is None:
+                return None
+
+            if bias > 0.3:
+                signal = ConversionSignal.BUY
+            elif bias < -0.3:
+                signal = ConversionSignal.SELL
+            else:
+                signal = ConversionSignal.NEUTRAL
             
             return SystemSignal(
                 system_name='harmonic',
@@ -681,7 +824,9 @@ class MyceliumConversionHub:
                 signal=signal,
                 confidence=confidence,
                 score=bias,
-                reason=f"Harmonic bias: {bias:.2f}"
+                reason=f"Harmonic bias: {bias:.2f}",
+                source_timestamp=observed_at,
+                provenance='harmonic:fresh_bias',
             )
         except Exception as e:
             logger.warning(f"Harmonic signal error: {e}")
@@ -694,18 +839,48 @@ class MyceliumConversionHub:
             return None
         
         try:
-            # Lighthouse detects patterns and events
-            # Return a neutral signal with confidence based on pattern detection
-            signal = ConversionSignal.NEUTRAL
-            confidence = 0.5
+            getter = getattr(self.lighthouse, 'get_signal', None)
+            if getter is None:
+                getter = getattr(self.lighthouse, 'get_pattern_signal', None)
+            if not callable(getter):
+                return None
+            result = getter(symbol)
+            if not isinstance(result, dict):
+                return None
+
+            action = str(result.get('signal', result.get('action', ''))).upper()
+            confidence = _finite_number(
+                result.get('confidence'), minimum=0.0, maximum=1.0
+            )
+            score = _finite_number(result.get('score'), minimum=-1.0, maximum=1.0)
+            observed_at = _fresh_source_timestamp(
+                result.get('source_timestamp', result.get('timestamp', result.get('ts')))
+            )
+            signal_map = {
+                'STRONG_BUY': ConversionSignal.STRONG_BUY,
+                'BUY': ConversionSignal.BUY,
+                'HOLD': ConversionSignal.NEUTRAL,
+                'NEUTRAL': ConversionSignal.NEUTRAL,
+                'SELL': ConversionSignal.SELL,
+                'STRONG_SELL': ConversionSignal.STRONG_SELL,
+            }
+            if (
+                action not in signal_map
+                or confidence is None
+                or score is None
+                or observed_at is None
+            ):
+                return None
             
             return SystemSignal(
                 system_name='lighthouse',
                 symbol=symbol,
-                signal=signal,
+                signal=signal_map[action],
                 confidence=confidence,
-                score=0.0,
-                reason="Lighthouse watching"
+                score=score,
+                reason=str(result.get('reason') or f"Lighthouse signal: {action}"),
+                source_timestamp=observed_at,
+                provenance='lighthouse:fresh_pattern_signal',
             )
         except Exception as e:
             logger.warning(f"Lighthouse signal error: {e}")
@@ -718,16 +893,25 @@ class MyceliumConversionHub:
             return None
         
         try:
-            # Get growth governor
             governor = self.mycelium.get_growth_governor()
-            
-            # Get conversion metrics
             metrics = self.mycelium.conversion_metrics
+            if (
+                not isinstance(governor, dict)
+                or not isinstance(metrics, dict)
+                or 'allow_entries' not in governor
+                or not isinstance(governor['allow_entries'], bool)
+                or 'velocity_per_hour' not in metrics
+            ):
+                return None
+
+            velocity = _finite_number(metrics['velocity_per_hour'])
+            observed_at = _fresh_source_timestamp(
+                metrics.get('source_timestamp', metrics.get('timestamp', metrics.get('ts')))
+            )
+            if velocity is None or observed_at is None:
+                return None
             
-            # Simple signal based on growth state
-            velocity = metrics.get('velocity_per_hour', 0)
-            
-            if velocity > 50 and governor.get('allow_entries', True):
+            if velocity > 50 and governor['allow_entries']:
                 signal = ConversionSignal.STRONG_BUY
                 conf = 0.8
             elif velocity > 20:
@@ -746,7 +930,9 @@ class MyceliumConversionHub:
                 signal=signal,
                 confidence=conf,
                 score=velocity,
-                reason=f"Velocity: ${velocity:.2f}/hr"
+                reason=f"Velocity: USD {velocity:.2f}/hr",
+                source_timestamp=observed_at,
+                provenance='mycelium:fresh_conversion_metrics',
             )
         except Exception as e:
             logger.warning(f"Mycelium signal error: {e}")
@@ -757,13 +943,54 @@ class MyceliumConversionHub:
     # UNIFIED CONVERSION SIGNAL
     # ═══════════════════════════════════════════════════════════════════════════════
     
+    def _no_data_conversion_signal(
+        self,
+        from_asset: str,
+        to_asset: str,
+        reason: str,
+    ) -> MyceliumSignal:
+        """Return a visible, non-actionable result without contaminating history."""
+        stats = getattr(self, 'stats', None)
+        if isinstance(stats, dict):
+            if 'no_data_signals' not in stats:
+                stats['no_data_signals'] = 0
+            stats['no_data_signals'] += 1
+            stats['last_no_data_reason'] = reason
+        return MyceliumSignal(
+            from_asset=from_asset,
+            to_asset=to_asset,
+            unified_score=0.0,
+            unified_confidence=0.0,
+            recommendation=ConversionSignal.NEUTRAL,
+            data_status='no_data',
+            no_data_reason=reason,
+            proof_eligible=False,
+        )
+
+    @staticmethod
+    def _valid_system_signal(signal: Optional[SystemSignal]) -> bool:
+        if signal is None or signal.data_status != 'ok' or not signal.proof_eligible:
+            return False
+        return (
+            isinstance(signal.signal, ConversionSignal)
+            and _finite_number(signal.confidence, minimum=0.0, maximum=1.0) is not None
+            and _finite_number(signal.score) is not None
+            and _fresh_source_timestamp(signal.source_timestamp) is not None
+            and bool(signal.provenance)
+        )
+
     def get_conversion_signal(
         self, 
         from_asset: str, 
         to_asset: str,
         from_price: float,
         to_price: float,
-        volume: float = 0.0
+        volume: Optional[float] = None,
+        *,
+        from_source_timestamp: Any = None,
+        to_source_timestamp: Any = None,
+        from_volume: Optional[float] = None,
+        to_volume: Optional[float] = None,
     ) -> MyceliumSignal:
         """
         Get unified conversion signal from ALL systems through Mycelium.
@@ -772,41 +999,94 @@ class MyceliumConversionHub:
         their signals through the mycelium pathways.
         """
         
+        clean_from_price = _finite_number(from_price, minimum=0.000000000001)
+        clean_to_price = _finite_number(to_price, minimum=0.000000000001)
+        from_observed_at = _fresh_source_timestamp(from_source_timestamp)
+        to_observed_at = _fresh_source_timestamp(to_source_timestamp)
+        if clean_from_price is None or clean_to_price is None:
+            return self._no_data_conversion_signal(
+                from_asset, to_asset, 'malformed_provider_price'
+            )
+        if from_observed_at is None or to_observed_at is None:
+            return self._no_data_conversion_signal(
+                from_asset, to_asset, 'missing_or_stale_provider_timestamp'
+            )
+
         # Get signals from all systems for both assets
         from_symbol = f"{from_asset}USDT"
         to_symbol = f"{to_asset}USDT"
+        clean_from_volume = from_volume if from_volume is not None else volume
+        clean_to_volume = to_volume if to_volume is not None else volume
         
         # FROM asset signals (we want weak = SELL signals)
-        v14_from = self.get_v14_signal(from_symbol, from_price, volume)
-        prob_from = self.get_probability_signal(from_symbol, from_price)
-        multi_from = self.get_multiverse_signal(from_symbol, from_price)
-        miner_from = self.get_miner_signal(from_symbol, from_price)
+        v14_from = self.get_v14_signal(
+            from_symbol, clean_from_price, clean_from_volume, from_observed_at
+        )
+        prob_from = self.get_probability_signal(from_symbol, clean_from_price)
+        multi_from = self.get_multiverse_signal(from_symbol, clean_from_price)
+        miner_from = self.get_miner_signal(from_symbol, clean_from_price)
         harmonic_from = self.get_harmonic_signal(from_symbol)
         lighthouse_from = self.get_lighthouse_signal(from_symbol)
-        mycelium_from = self.get_mycelium_consensus(from_symbol, from_price)
+        mycelium_from = self.get_mycelium_consensus(from_symbol, clean_from_price)
         
         # TO asset signals (we want strong = BUY signals)
-        v14_to = self.get_v14_signal(to_symbol, to_price, volume)
-        prob_to = self.get_probability_signal(to_symbol, to_price)
-        multi_to = self.get_multiverse_signal(to_symbol, to_price)
-        miner_to = self.get_miner_signal(to_symbol, to_price)
+        v14_to = self.get_v14_signal(
+            to_symbol, clean_to_price, clean_to_volume, to_observed_at
+        )
+        prob_to = self.get_probability_signal(to_symbol, clean_to_price)
+        multi_to = self.get_multiverse_signal(to_symbol, clean_to_price)
+        miner_to = self.get_miner_signal(to_symbol, clean_to_price)
         harmonic_to = self.get_harmonic_signal(to_symbol)
         lighthouse_to = self.get_lighthouse_signal(to_symbol)
-        mycelium_to = self.get_mycelium_consensus(to_symbol, to_price)
+        mycelium_to = self.get_mycelium_consensus(to_symbol, clean_to_price)
+
+        configured_pairs = [
+            ('v14', getattr(self, 'v14', None), v14_from, v14_to),
+            (
+                'probability',
+                getattr(self, 'probability_nexus', None),
+                prob_from,
+                prob_to,
+            ),
+            ('multiverse', getattr(self, 'multiverse', None), multi_from, multi_to),
+            ('miner_brain', getattr(self, 'miner_brain', None), miner_from, miner_to),
+            ('harmonic', getattr(self, 'harmonic', None), harmonic_from, harmonic_to),
+            (
+                'lighthouse',
+                getattr(self, 'lighthouse', None),
+                lighthouse_from,
+                lighthouse_to,
+            ),
+            ('mycelium', getattr(self, 'mycelium', None), mycelium_from, mycelium_to),
+        ]
+        expected_pairs = [pair for pair in configured_pairs if pair[1] is not None]
+        if not expected_pairs:
+            return self._no_data_conversion_signal(
+                from_asset, to_asset, 'no_decision_systems_with_evidence'
+            )
+
+        missing = [
+            name
+            for name, _, from_signal, to_signal in expected_pairs
+            if not self._valid_system_signal(from_signal)
+            or not self._valid_system_signal(to_signal)
+        ]
+        if missing:
+            return self._no_data_conversion_signal(
+                from_asset,
+                to_asset,
+                'missing_stale_or_malformed_factor:' + ','.join(missing),
+            )
         
         # Calculate unified score
         # FROM asset: SELL signals are good (we want to convert FROM weak)
         # TO asset: BUY signals are good (we want to convert TO strong)
         
         unified_score = 0.0
-        unified_confidence = 0.0
         participating_systems = []
         
-        def score_signal(sig: Optional[SystemSignal], is_from: bool) -> float:
+        def score_signal(sig: SystemSignal, is_from: bool) -> float:
             """Score a signal (inverted for FROM asset)"""
-            if not sig:
-                return 0.0
-            
             signal_scores = {
                 ConversionSignal.STRONG_BUY: 1.0,
                 ConversionSignal.BUY: 0.5,
@@ -815,55 +1095,18 @@ class MyceliumConversionHub:
                 ConversionSignal.STRONG_SELL: -1.0,
             }
             
-            raw = signal_scores.get(sig.signal, 0.0)
+            raw = signal_scores[sig.signal]
             
             # Invert for FROM asset (SELL is good for FROM)
             if is_from:
                 raw = -raw
             
             return raw * sig.confidence
-        
-        # V14
-        if v14_from or v14_to:
-            v14_score = score_signal(v14_from, True) + score_signal(v14_to, False)
-            unified_score += v14_score * self.SYSTEM_WEIGHTS['v14']
-            participating_systems.append('v14')
-        
-        # Probability
-        if prob_from or prob_to:
-            prob_score = score_signal(prob_from, True) + score_signal(prob_to, False)
-            unified_score += prob_score * self.SYSTEM_WEIGHTS['probability']
-            participating_systems.append('probability')
-        
-        # Multiverse
-        if multi_from or multi_to:
-            multi_score = score_signal(multi_from, True) + score_signal(multi_to, False)
-            unified_score += multi_score * self.SYSTEM_WEIGHTS['multiverse']
-            participating_systems.append('multiverse')
-        
-        # Miner Brain
-        if miner_from or miner_to:
-            miner_score = score_signal(miner_from, True) + score_signal(miner_to, False)
-            unified_score += miner_score * self.SYSTEM_WEIGHTS['miner_brain']
-            participating_systems.append('miner_brain')
-        
-        # Harmonic
-        if harmonic_from or harmonic_to:
-            harm_score = score_signal(harmonic_from, True) + score_signal(harmonic_to, False)
-            unified_score += harm_score * self.SYSTEM_WEIGHTS['harmonic']
-            participating_systems.append('harmonic')
-        
-        # Lighthouse
-        if lighthouse_from or lighthouse_to:
-            light_score = score_signal(lighthouse_from, True) + score_signal(lighthouse_to, False)
-            unified_score += light_score * self.SYSTEM_WEIGHTS['lighthouse']
-            participating_systems.append('lighthouse')
-        
-        # Mycelium
-        if mycelium_from or mycelium_to:
-            myc_score = score_signal(mycelium_from, True) + score_signal(mycelium_to, False)
-            unified_score += myc_score * self.SYSTEM_WEIGHTS['mycelium']
-            participating_systems.append('mycelium')
+
+        for name, _, from_signal, to_signal in expected_pairs:
+            pair_score = score_signal(from_signal, True) + score_signal(to_signal, False)
+            unified_score += pair_score * self.SYSTEM_WEIGHTS[name]
+            participating_systems.append(name)
         
         # Normalize score to 0-1 range
         unified_score = (unified_score + 2.0) / 4.0  # -2 to +2 → 0 to 1
@@ -888,6 +1131,18 @@ class MyceliumConversionHub:
                 if sys in pathway_id:
                     pathway_strength += synapse.weight
         pathway_strength /= max(len(participating_systems) * 2, 1)
+
+        source_timestamps = {
+            'price:from': from_observed_at.isoformat(),
+            'price:to': to_observed_at.isoformat(),
+        }
+        for name, _, from_signal, to_signal in expected_pairs:
+            source_timestamps[f'{name}:from'] = (
+                _coerce_source_timestamp(from_signal.source_timestamp).isoformat()
+            )
+            source_timestamps[f'{name}:to'] = (
+                _coerce_source_timestamp(to_signal.source_timestamp).isoformat()
+            )
         
         # Create unified signal
         signal = MyceliumSignal(
@@ -905,6 +1160,10 @@ class MyceliumConversionHub:
             recommendation=recommendation,
             pathway_strength=pathway_strength,
             participating_systems=participating_systems,
+            data_status='ok',
+            no_data_reason='',
+            proof_eligible=True,
+            source_timestamps=source_timestamps,
         )
         
         # Record in history
@@ -922,6 +1181,9 @@ class MyceliumConversionHub:
                         'score': unified_score,
                         'recommendation': recommendation.value,
                         'systems': participating_systems,
+                        'data_status': signal.data_status,
+                        'proof_eligible': signal.proof_eligible,
+                        'source_timestamps': source_timestamps,
                     }
                 )
             except:
@@ -934,21 +1196,46 @@ class MyceliumConversionHub:
         from_asset: str, 
         to_asset: str, 
         success: bool, 
-        profit: float
-    ):
-        """Record conversion outcome for learning"""
+        profit: float,
+        execution_receipt: Optional[Dict[str, Any]] = None,
+        source_timestamp: Any = None,
+    ) -> bool:
+        """Record a provider-proven outcome for learning.
+
+        A local estimate, dry-run result, or outcome without a fresh execution
+        receipt must never strengthen or weaken organism pathways.
+        """
+        if not isinstance(success, bool) or not isinstance(execution_receipt, dict):
+            return False
+        receipt_id = (
+            execution_receipt.get('receipt_id')
+            or execution_receipt.get('order_id')
+            or execution_receipt.get('txid')
+            or execution_receipt.get('id')
+        )
+        clean_profit = _finite_number(profit)
+        observed_at = _fresh_source_timestamp(
+            source_timestamp
+            if source_timestamp is not None
+            else execution_receipt.get(
+                'source_timestamp',
+                execution_receipt.get('timestamp', execution_receipt.get('ts')),
+            )
+        )
+        if not receipt_id or clean_profit is None or observed_at is None:
+            return False
         
         # Update stats
         if success:
             self.stats['successful_conversions'] += 1
-            self.stats['total_profit'] += profit
+            self.stats['total_profit'] += clean_profit
         
         self.stats['conversions_recommended'] += 1
         
         # Strengthen/weaken pathways based on outcome
         for sys in self._get_active_systems():
             if success:
-                self.strengthen_pathway(sys, 'conversion_hub', profit * 0.1)
+                self.strengthen_pathway(sys, 'conversion_hub', clean_profit * 0.1)
             else:
                 self.weaken_pathway(sys, 'conversion_hub', 0.05)
         
@@ -957,19 +1244,22 @@ class MyceliumConversionHub:
             self.mycelium.conversion_metrics['total_conversions'] += 1
             if success:
                 self.mycelium.conversion_metrics['successful_conversions'] += 1
-                self.mycelium.conversion_metrics['total_conversion_profit'] += profit
+                self.mycelium.conversion_metrics['total_conversion_profit'] += clean_profit
         
         # Record in unified ecosystem if available
         if self.unified_ecosystem:
             try:
                 self.unified_ecosystem.record_trade_outcome({
                     'symbol': f"{from_asset}→{to_asset}",
-                    'profit': profit,
+                    'profit': clean_profit,
                     'success': success,
                     'type': 'conversion',
+                    'provider_receipt_id': str(receipt_id),
+                    'source_timestamp': observed_at.isoformat(),
                 })
             except:
                 pass
+        return True
     
     def get_hub_status(self) -> Dict[str, Any]:
         """Get current hub status"""
@@ -977,6 +1267,8 @@ class MyceliumConversionHub:
             'active_systems': self._get_active_systems(),
             'pathway_count': len(self.pathways),
             'signals_generated': self.stats['signals_generated'],
+            'no_data_signals': self.stats.get('no_data_signals'),
+            'last_no_data_reason': self.stats.get('last_no_data_reason'),
             'conversions': self.stats['conversions_recommended'],
             'successful': self.stats['successful_conversions'],
             'total_profit': self.stats['total_profit'],

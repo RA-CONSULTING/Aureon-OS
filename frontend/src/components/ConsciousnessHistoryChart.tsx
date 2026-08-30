@@ -50,9 +50,9 @@ export function ConsciousnessHistoryChart() {
   }));
 
   const getCorrelationStatus = (corr: number) => {
-    if (Math.abs(corr) >= 0.7) return { text: 'Strong', color: 'text-green-500' };
-    if (Math.abs(corr) >= 0.4) return { text: 'Moderate', color: 'text-blue-500' };
-    if (Math.abs(corr) >= 0.2) return { text: 'Weak', color: 'text-yellow-500' };
+    if (Math.abs(corr) >= 0.7) return { text: 'Strong', color: 'text-success' };
+    if (Math.abs(corr) >= 0.4) return { text: 'Moderate', color: 'text-primary' };
+    if (Math.abs(corr) >= 0.2) return { text: 'Weak', color: 'text-warning' };
     return { text: 'Minimal', color: 'text-muted-foreground' };
   };
 
@@ -73,7 +73,7 @@ export function ConsciousnessHistoryChart() {
       <Card className="bg-card/50 backdrop-blur border-border/50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-blue-500" />
+            <TrendingUp className="w-5 h-5 text-primary" />
             24-Hour Consciousness Field Trends
           </CardTitle>
           <CardDescription>Historical tracking and correlation analysis</CardDescription>
@@ -93,7 +93,7 @@ export function ConsciousnessHistoryChart() {
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-blue-500" />
+              <TrendingUp className="w-5 h-5 text-primary" />
               24-Hour Consciousness Field Trends
             </CardTitle>
             <CardDescription>
@@ -114,7 +114,7 @@ export function ConsciousnessHistoryChart() {
         {/* Main Coherence Trend */}
         <div>
           <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
-            <Brain className="w-4 h-4 text-purple-500" />
+            <Brain className="w-4 h-4 text-primary" />
             Total Field Coherence
           </h4>
           <ResponsiveContainer width="100%" height={200}>
@@ -156,7 +156,7 @@ export function ConsciousnessHistoryChart() {
         {/* Schumann vs Biometric Comparison */}
         <div>
           <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
-            <Activity className="w-4 h-4 text-green-500" />
+            <Activity className="w-4 h-4 text-success" />
             Schumann & Biometric Correlation
           </h4>
           <ResponsiveContainer width="100%" height={200}>

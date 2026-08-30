@@ -1,49 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.81.1';
+import { decryptCredential } from '../_shared/credential_crypto.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-// AES-256-GCM decryption using Web Crypto API
-async function decryptCredential(encryptedCredential: string, iv: string): Promise<string> {
-  try {
-    const encoder = new TextEncoder();
-    
-    // Get master encryption key from environment
-    const masterKeyString = Deno.env.get('MASTER_ENCRYPTION_KEY');
-    if (!masterKeyString) {
-      throw new Error('MASTER_ENCRYPTION_KEY not configured');
-    }
-    
-    // Import master key for AES-GCM
-    const masterKeyData = encoder.encode(masterKeyString);
-    const masterKey = await crypto.subtle.importKey(
-      'raw',
-      masterKeyData.slice(0, 32), // Use first 32 bytes for AES-256
-      { name: 'AES-GCM', length: 256 },
-      false,
-      ['decrypt']
-    );
-    
-    // Convert base64 strings back to Uint8Arrays
-    const encryptedData = Uint8Array.from(atob(encryptedCredential), c => c.charCodeAt(0));
-    const ivData = Uint8Array.from(atob(iv), c => c.charCodeAt(0));
-    
-    // Decrypt the credential
-    const decryptedData = await crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv: ivData },
-      masterKey,
-      encryptedData
-    );
-    
-    return new TextDecoder().decode(decryptedData);
-  } catch (error) {
-    console.error('[decrypt-credentials] Decryption error:', error);
-    throw new Error('Failed to decrypt credentials - may be corrupted or encrypted with different key');
-  }
-}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {

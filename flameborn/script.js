@@ -1,6 +1,8 @@
 (() => {
   "use strict";
 
+  const WORKER_ACCESS_TOKEN_SESSION_KEY = "aureon.workerAccessToken";
+
   const state = {
     language: "en",
     messages: [],
@@ -38,8 +40,43 @@
     return [];
   }
 
+  function workerAccessToken() {
+    try {
+      return String(window.sessionStorage.getItem(WORKER_ACCESS_TOKEN_SESSION_KEY) || "").trim();
+    } catch {
+      return "";
+    }
+  }
+
+  function saveWorkerAccessTokenForSession() {
+    const input = $("workerAccessToken");
+    const token = String(input?.value || "").trim();
+    try {
+      if (token) {
+        window.sessionStorage.setItem(WORKER_ACCESS_TOKEN_SESSION_KEY, token);
+      } else {
+        window.sessionStorage.removeItem(WORKER_ACCESS_TOKEN_SESSION_KEY);
+      }
+    } catch {
+      setStatus("Session storage is unavailable; the access token was not retained.", "warn");
+      return;
+    } finally {
+      if (input) input.value = "";
+    }
+    setStatus(token ? "Worker access token is active for this tab." : "Worker access token cleared.", token ? "ok" : "info");
+  }
+
   async function fetchJson(url, options = {}) {
-    const response = await fetch(url, options);
+    const target = new URL(url, window.location.href);
+    const requestOptions = { ...options };
+    if (target.origin === window.location.origin && (target.pathname === "/api" || target.pathname.startsWith("/api/"))) {
+      const token = workerAccessToken();
+      if (!token) throw new Error("Worker access token is required for API routes.");
+      const headers = new Headers(options.headers || {});
+      headers.set("Authorization", `Bearer ${token}`);
+      requestOptions.headers = headers;
+    }
+    const response = await fetch(url, requestOptions);
     const text = await response.text();
     const data = text ? JSON.parse(text) : {};
     if (!response.ok) {
@@ -535,6 +572,13 @@
   }
 
   function bindEvents() {
+    $("saveWorkerAccessToken")?.addEventListener("click", saveWorkerAccessTokenForSession);
+    $("workerAccessToken")?.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        saveWorkerAccessTokenForSession();
+      }
+    });
     $("provider")?.addEventListener("change", updateModels);
     $("model")?.addEventListener("change", updateActiveLabels);
     $("assistantEngine")?.addEventListener("change", updateActiveLabels);

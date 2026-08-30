@@ -114,13 +114,16 @@ class LatticeState:
 @dataclass
 class BarcelonaSchumannState:
     """Live Barcelona ground station Schumann resonance data"""
-    fundamental_hz: float = 7.83    # Mode 1 frequency
-    amplitude: float = 0.65         # Signal amplitude
-    quality: float = 0.70           # Q factor
-    coherence_boost: float = 0.0    # Boost from alignment
-    resonance_phase: str = 'stable' # 'stable', 'elevated', 'peak', 'disturbed'
+    fundamental_hz: float
+    amplitude: float
+    quality: float
+    coherence_boost: float
+    resonance_phase: str
     harmonics: list = field(default_factory=list)  # All 7 modes
     timestamp: float = 0.0
+    source_id: str = ""
+    source_event_id: str = ""
+    truth_status: str = "live"
 
     @property
     def is_coherent(self) -> bool:
@@ -221,68 +224,41 @@ class CarrierWaveDynamics:
         """Check if quantum energy exceeds Planck threshold for Signal Sero"""
         return E_quantum >= PLANCK_THRESHOLD
 
-    def update_barcelona_schumann(self, schumann_data: Dict = None) -> BarcelonaSchumannState:
+    def update_barcelona_schumann(self, schumann_data: Dict = None) -> Optional[BarcelonaSchumannState]:
         """
         Update Barcelona ground station Schumann resonance data.
 
-        If no live data provided, simulate based on time-of-day diurnal patterns.
-        Barcelona monitors Earth's electromagnetic cavity resonances 24/7.
+        Missing data remains unavailable. No time-of-day values are generated.
         """
         now = time.time()
-        hour_of_day = (now % 86400) / 3600  # UTC hour
+        if not schumann_data:
+            self.barcelona_state = None
+            return None
 
-        if schumann_data:
-            # Use live Barcelona data
-            self.barcelona_state = BarcelonaSchumannState(
-                fundamental_hz=schumann_data.get('fundamentalHz', 7.83),
-                amplitude=schumann_data.get('amplitude', 0.65),
-                quality=schumann_data.get('quality', 0.70),
-                coherence_boost=schumann_data.get('coherenceBoost', 0.0),
-                resonance_phase=schumann_data.get('resonancePhase', 'stable'),
-                harmonics=schumann_data.get('harmonics', []),
-                timestamp=now
-            )
-        else:
-            # Simulate Barcelona Schumann data with natural diurnal variation
-            # Peak activity typically around local noon, minimum at night
-            diurnal_factor = math.sin((hour_of_day - 6) * math.pi / 12) * 0.08
+        required = ('fundamentalHz', 'amplitude', 'quality', 'coherenceBoost',
+                    'resonancePhase', 'sourceId', 'sourceEventId', 'providerTimestamp')
+        missing = [key for key in required if schumann_data.get(key) in (None, '')]
+        if missing:
+            raise ValueError(f"SCHUMANN_PROVENANCE_MISSING:{','.join(missing)}")
 
-            fundamental = 7.83 + diurnal_factor + (np.random.random() - 0.5) * 0.05
-            amplitude = 0.65 + diurnal_factor * 0.3 + (np.random.random() - 0.5) * 0.1
-            quality = 0.70 + (np.random.random() - 0.5) * 0.1
+        provider_timestamp = float(schumann_data['providerTimestamp'])
+        if provider_timestamp > 1e12:
+            provider_timestamp /= 1000.0
+        if abs(now - provider_timestamp) > 900:
+            raise ValueError("SCHUMANN_OBSERVATION_STALE")
 
-            # Determine resonance phase
-            if amplitude > 0.85 and quality > 0.85:
-                phase = 'peak'
-            elif amplitude > 0.7 or quality > 0.75:
-                phase = 'elevated'
-            elif amplitude < 0.4 or quality < 0.6:
-                phase = 'disturbed'
-            else:
-                phase = 'stable'
-
-            # Generate all 7 Barcelona modes
-            harmonics = []
-            for i, (mode_name, mode_freq) in enumerate(BARCELONA_SCHUMANN_MODES.items()):
-                harmonics.append({
-                    'frequency': mode_freq + (np.random.random() - 0.5) * (0.2 + i * 0.1),
-                    'amplitude': amplitude * (0.9 ** i),
-                    'name': f'Mode {i+1} ({mode_freq}Hz)'
-                })
-
-            # Coherence boost based on proximity to ideal 7.83 Hz
-            deviation = abs(fundamental - 7.83)
-            coherence_boost = max(0, (0.15 - deviation) / 0.15) * 0.12
-
-            self.barcelona_state = BarcelonaSchumannState(
-                fundamental_hz=fundamental,
-                amplitude=amplitude,
-                quality=quality,
-                coherence_boost=coherence_boost,
-                resonance_phase=phase,
-                harmonics=harmonics,
-                timestamp=now
-            )
+        self.barcelona_state = BarcelonaSchumannState(
+            fundamental_hz=float(schumann_data['fundamentalHz']),
+            amplitude=float(schumann_data['amplitude']),
+            quality=float(schumann_data['quality']),
+            coherence_boost=float(schumann_data['coherenceBoost']),
+            resonance_phase=str(schumann_data['resonancePhase']),
+            harmonics=list(schumann_data.get('harmonics') or []),
+            timestamp=provider_timestamp,
+            source_id=str(schumann_data['sourceId']),
+            source_event_id=str(schumann_data['sourceEventId']),
+            truth_status='live',
+        )
 
         return self.barcelona_state
 
@@ -291,15 +267,16 @@ class CarrierWaveDynamics:
     # ─────────────────────────────────────────────────────────────
 
     def generate_distortion_field(self, amplitude: float = 1.0,
-                                   noise_level: float = 0.1) -> np.ndarray:
+                                   noise_level: float = 0.0) -> np.ndarray:
         """
         Λ_dist(t) = A × sin(2π × 440t) + η(t)
 
         The satellite grid / Mars extraction field.
         """
         distortion = amplitude * np.sin(2 * np.pi * FREQ_DISTORTION * self.t)
-        noise = np.random.normal(0, noise_level, len(self.t))
-        return distortion + noise
+        if noise_level:
+            raise ValueError("Observed noise samples are required; generated noise is prohibited")
+        return distortion
 
     def generate_nullifier(self, distortion: np.ndarray) -> np.ndarray:
         """
@@ -450,9 +427,9 @@ class CarrierWaveDynamics:
         barcelona = self.update_barcelona_schumann(barcelona_data)
 
         # Boost schumann_power if Barcelona reports elevated/peak
-        if barcelona.is_peak:
+        if barcelona and barcelona.is_peak:
             schumann_power *= 1.3  # 30% boost on peak coherence
-        elif barcelona.is_coherent:
+        elif barcelona and barcelona.is_coherent:
             schumann_power *= (1.0 + barcelona.coherence_boost)
 
         # Generate default field if none provided
@@ -479,12 +456,13 @@ class CarrierWaveDynamics:
         emergent_432, emergent_strength = self.generate_emergent_432(carrier_payload)
 
         # Apply Barcelona coherence boost to emergent strength
-        if barcelona.is_coherent:
+        if barcelona and barcelona.is_coherent:
             emergent_strength = min(1.0, emergent_strength * (1.0 + barcelona.coherence_boost))
 
         # Calculate field coherence with Barcelona alignment
         field_coherence = self._calculate_field_coherence(healed_field)
-        field_coherence = min(1.0, field_coherence + barcelona.coherence_boost * 0.5)
+        if barcelona:
+            field_coherence = min(1.0, field_coherence + barcelona.coherence_boost * 0.5)
 
         # Create state with Barcelona integration
         state = CarrierWaveState(
@@ -516,7 +494,7 @@ class CarrierWaveDynamics:
         - Harmonic structure integrity
         """
         if len(field) < 2:
-            return 0.0
+            raise ValueError("FIELD_OBSERVATION_TOO_SHORT")
 
         # Simple coherence: normalized autocorrelation
         field_normalized = (field - np.mean(field)) / (np.std(field) + 1e-10)
@@ -527,14 +505,14 @@ class CarrierWaveDynamics:
         if len(autocorr) > 10:
             coherence = np.mean(autocorr[:10]) / (autocorr[0] + 1e-10)
         else:
-            coherence = 0.5
+            raise ValueError("FIELD_AUTOCORRELATION_TOO_SHORT")
 
         return max(0.0, min(1.0, coherence))
 
     def get_dominant_frequency(self, field: np.ndarray) -> float:
         """Determine the dominant frequency in the field using FFT"""
         if len(field) < 10:
-            return FREQ_DISTORTION
+            raise ValueError("FIELD_OBSERVATION_TOO_SHORT")
 
         fft = np.fft.fft(field)
         freqs = np.fft.fftfreq(len(field), 1/self.fs)

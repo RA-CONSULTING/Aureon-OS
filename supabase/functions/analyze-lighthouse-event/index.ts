@@ -1,4 +1,5 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+import { fetchExternalLlm } from "../_shared/external_llm_fallback.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -38,9 +39,6 @@ serve(async (req) => {
     const { lighthouseEvent, tradingSignal, marketData }: AnalysisRequest = await req.json();
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY not configured');
-    }
 
     console.log('🤖 Generating AI analysis for Lighthouse Event...');
 
@@ -75,13 +73,9 @@ Provide a concise 2-3 paragraph analysis that:
 
 Keep it professional, clear, and actionable. Avoid jargon unless necessary.`;
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
+    const response = await fetchExternalLlm({
+      primaryApiKey: LOVABLE_API_KEY,
+      primaryBody: {
         model: 'google/gemini-2.5-flash',
         messages: [
           {
@@ -95,7 +89,7 @@ Keep it professional, clear, and actionable. Avoid jargon unless necessary.`;
         ],
         temperature: 0.7,
         max_tokens: 500,
-      }),
+      },
     });
 
     if (!response.ok) {

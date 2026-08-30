@@ -29,15 +29,8 @@ services:
     instance_count: 1
     instance_size_slug: apps-d-8vcpu-32gb  # 32GB RAM, 8 vCPU - DigitalOcean recommended size
     
-    # Autoscaling for memory spikes during parallel supervisord startup
-    autoscaling:
-      min_instance_count: 1
-      max_instance_count: 2
-      metrics:
-        cpu:
-          percent: 80
-        memory:
-          percent: 85
+    # A single process owner is required until distributed leader election
+    # and cross-replica order idempotency are independently proven.
     
     # Health check - Queen Power Dashboard /health endpoint on port 8080
     health_check:
@@ -87,16 +80,22 @@ services:
       # 🔥 LIVE TRADING MODE
       - key: LIVE
         scope: RUN_TIME
+        value: "0"
+      - key: DRY_RUN
+        scope: RUN_TIME
         value: "1"
+      - key: AUREON_LIVE_TRADING
+        scope: RUN_TIME
+        value: "0"
       - key: KRAKEN_DRY_RUN
         scope: RUN_TIME
-        value: "false"
+        value: "true"
       - key: BINANCE_DRY_RUN
         scope: RUN_TIME
-        value: "false"
+        value: "true"
       - key: ALPACA_DRY_RUN
         scope: RUN_TIME
-        value: "false"
+        value: "true"
       
       # ═══════════════════════════════════════════════════════════════
       # ⚠️ API KEYS - SET THESE IN DIGITAL OCEAN DASHBOARD ⚠️
@@ -139,12 +138,12 @@ services:
         type: SECRET
       - key: CAPITAL_DEMO
         scope: RUN_TIME
-        value: "false"
+        value: "true"
       
       # 🧠 Redis for ThoughtBus (optional - uses internal if available)
       - key: AUREON_REDIS_URL
         scope: RUN_TIME
-        value: "\${db.REDIS_URL}"
+        value: '${db.REDIS_URL}'
 
 # 🧠 Redis Database for ThoughtBus Pub/Sub
 databases:

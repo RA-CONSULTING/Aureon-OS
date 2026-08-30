@@ -15,6 +15,7 @@ class FakeBus:
 
 
 def test_autonomous_full_accounts_workflow_coordinates_raw_data_and_agents(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setenv("AUREON_OBSIDIAN_VAULT_PATH", str(tmp_path / "vault"))
     raw = tmp_path / "client_raw"
     raw.mkdir()
     (raw / "Statement_06_Apr_2024_05_Apr_2025.csv").write_text(

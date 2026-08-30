@@ -137,9 +137,9 @@ export function AssetInventoryPanel({ className, compact = false }: AssetInvento
               >
                 <div className="flex items-center gap-2">
                   {asset.isActive ? (
-                    <CheckCircle className="h-3 w-3 text-green-500" />
+                    <CheckCircle className="h-3 w-3 text-success" />
                   ) : (
-                    <XCircle className="h-3 w-3 text-red-500" />
+                    <XCircle className="h-3 w-3 text-destructive" />
                   )}
                   <span className="font-mono font-medium">{asset.symbol}</span>
                   <Badge variant="outline" className="text-xs capitalize">

@@ -216,25 +216,25 @@ export const HarmonicRealityFramework = () => {
                     className="w-full rounded-lg border border-border"
                   />
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="rounded-lg bg-yellow-500/10 border border-yellow-500/20 p-3">
+                    <div className="rounded-lg bg-warning/10 border border-warning/20 p-3">
                       <h4 className="font-semibold text-sm mb-1">Sweet Spot</h4>
                       <p className="text-xs text-muted-foreground">
                         Optimal parameter region for maximal coherent throughput
                       </p>
                     </div>
-                    <div className="rounded-lg bg-green-500/10 border border-green-500/20 p-3">
+                    <div className="rounded-lg bg-success/10 border border-success/20 p-3">
                       <h4 className="font-semibold text-sm mb-1">Dream Band</h4>
                       <p className="text-xs text-muted-foreground">
                         Self-simulation regime where system models itself
                       </p>
                     </div>
-                    <div className="rounded-lg bg-purple-500/10 border border-purple-500/20 p-3">
+                    <div className="rounded-lg bg-primary/10 border border-primary/20 p-3">
                       <h4 className="font-semibold text-sm mb-1">Quiescent/Decay</h4>
                       <p className="text-xs text-muted-foreground">
                         Low activity, insufficient feedback for sustained oscillation
                       </p>
                     </div>
-                    <div className="rounded-lg bg-orange-500/10 border border-orange-500/20 p-3">
+                    <div className="rounded-lg bg-warning/10 border border-warning/20 p-3">
                       <h4 className="font-semibold text-sm mb-1">Collapse/Over-gain</h4>
                       <p className="text-xs text-muted-foreground">
                         Excessive feedback leads to instability
@@ -258,15 +258,15 @@ export const HarmonicRealityFramework = () => {
                     className="w-full rounded-lg border border-border"
                   />
                   <div className="grid grid-cols-3 gap-2">
-                    <div className="rounded-lg bg-green-500/10 border border-green-500/20 p-2">
+                    <div className="rounded-lg bg-success/10 border border-success/20 p-2">
                       <h4 className="font-semibold text-xs mb-1">Coherence</h4>
                       <p className="text-xs text-muted-foreground">Self-organization metric (0-1)</p>
                     </div>
-                    <div className="rounded-lg bg-orange-500/10 border border-orange-500/20 p-2">
+                    <div className="rounded-lg bg-warning/10 border border-warning/20 p-2">
                       <h4 className="font-semibold text-xs mb-1">Echo Strength</h4>
                       <p className="text-xs text-muted-foreground">Memory fidelity measure</p>
                     </div>
-                    <div className="rounded-lg bg-purple-500/10 border border-purple-500/20 p-2">
+                    <div className="rounded-lg bg-primary/10 border border-primary/20 p-2">
                       <h4 className="font-semibold text-xs mb-1">Max Amplitude</h4>
                       <p className="text-xs text-muted-foreground">Field strength (log scale)</p>
                     </div>

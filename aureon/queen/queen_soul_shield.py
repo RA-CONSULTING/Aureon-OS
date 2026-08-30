@@ -141,7 +141,9 @@ class QueenSoulShield:
         self.scan_interval = 2.0  # seconds
 
         # Real-signal mode only (no simulated attacks)
-        self.simulated_attacks = os.getenv("SIMULATED_ATTACKS", "false").lower() in ("1", "true", "yes")
+        if os.getenv("SIMULATED_ATTACKS", "false").lower() in ("1", "true", "yes"):
+            raise RuntimeError("SIMULATED_ATTACKS is prohibited by the Aureon real-data contract")
+        self.simulated_attacks = False
         self._attack_queue: deque = deque()
         self._attack_lock = threading.Lock()
 
@@ -321,20 +323,9 @@ class QueenSoulShield:
                     source="simulation"
                 )
             
-            # Market predators (during market hours)
-            if 9 <= current_hour <= 16 and weekday < 5:
-                # Simulate checking for front-running
-                import random
-                if random.random() < 0.2:  # 20% chance per scan
-                    strength = 0.6
-                    self._handle_attack_detected(
-                        frequency=666.0,
-                        strength=strength,
-                        attacker_name="Market Predator",
-                        attacker_type="ENERGY_VAMPIRE",
-                        source="simulation"
-                    )
-            
+            # Market-predator events must arrive through submit_attack with
+            # provider provenance. Wall-clock time is not attack evidence.
+
             # Scarcity programming (stronger on Mondays and end of month)
             day_of_month = datetime.now().day
             if weekday == 0 or day_of_month >= 25:  # Monday or near month end

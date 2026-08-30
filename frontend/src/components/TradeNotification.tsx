@@ -26,8 +26,8 @@ const TradeNotification: React.FC<TradeNotificationProps> = ({ trade }) => {
 
   const { side, pair, size, price } = trade;
   const isLong = String(side).toUpperCase() === 'LONG';
-  const sideColor = isLong ? 'border-green-500' : 'border-red-500';
-  const sideTextColor = isLong ? 'text-green-400' : 'text-red-400';
+  const sideColor = isLong ? 'border-success' : 'border-destructive';
+  const sideTextColor = isLong ? 'text-success' : 'text-destructive';
 
   return (
     <div
@@ -38,11 +38,11 @@ const TradeNotification: React.FC<TradeNotificationProps> = ({ trade }) => {
       <div className="flex items-start">
         <div className="flex-shrink-0 pt-0.5">
           {isLong ? (
-             <svg className="h-6 w-6 text-green-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+             <svg className="h-6 w-6 text-success" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
             </svg>
           ) : (
-            <svg className="h-6 w-6 text-red-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="h-6 w-6 text-destructive" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
             </svg>
           )}

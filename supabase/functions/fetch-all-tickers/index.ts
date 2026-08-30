@@ -1,5 +1,4 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { fetchLiveJson, requireFiniteNumber, requireFreshTimestamp } from '../_shared/real_data.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -8,7 +7,7 @@ const corsHeaders = {
 
 interface TickerData {
   symbol: string;
-  exchange: string;
+  exchange: 'binance' | 'kraken';
   price: number;
   bidPrice: number;
   askPrice: number;
@@ -21,203 +20,198 @@ interface TickerData {
   momentum: number;
   spread: number;
   timestamp: number;
-  isValidated: boolean;
-  dataSource: string;
+  truthStatus: 'real_derived';
+  sourceId: string;
+  sourceTimestamp: string;
+  generatedValues: false;
 }
 
-serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+const MAX_AGE_MS = 5 * 60 * 1000;
+const BINANCE_URL = 'https://api.binance.com/api/v3/ticker/24hr';
+
+function finite(value: unknown, name: string): number {
+  return requireFiniteNumber(Number(value), name);
+}
+
+function validateMarketNumbers(values: number[], exchange: string, symbol: string): void {
+  if (values.some((value) => !Number.isFinite(value)) || values[0] <= 0 || values[1] < 0 || values[2] < 0 || values[3] < 0) {
+    throw new Error(`${exchange.toUpperCase()}_INVALID_TICKER:${symbol}`);
   }
+}
+
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
   try {
-    const { symbols, exchanges = ['binance'], limit = 100 } = await req.json().catch(() => ({}));
-    
-    const allTickers: TickerData[] = [];
-    const errors: string[] = [];
-    const fetchedAt = Date.now();
+    const body = await req.json().catch(() => ({}));
+    const exchanges = Array.isArray(body.exchanges) ? body.exchanges : ['binance'];
+    const symbols = Array.isArray(body.symbols)
+      ? body.symbols.map((value: unknown) => String(value).toUpperCase()).filter((value: string) => /^[A-Z0-9]{5,20}$/.test(value))
+      : null;
+    const limit = Number(body.limit ?? 100);
+    if (!Number.isInteger(limit) || limit < 1 || limit > 1000) {
+      throw new Error('INVALID_LIMIT');
+    }
+    if (exchanges.some((exchange: unknown) => !['binance', 'kraken'].includes(String(exchange)))) {
+      throw new Error('INVALID_EXCHANGE');
+    }
 
-    // Fetch from Binance (primary exchange)
+    const allTickers: TickerData[] = [];
+    const providerErrors: Array<{ exchange: string; error: string }> = [];
+
     if (exchanges.includes('binance')) {
       try {
-        console.log('[fetch-all-tickers] Fetching Binance tickers...');
-        
-        // Fetch all 24hr tickers in one call
-        const response = await fetch('https://api.binance.com/api/v3/ticker/24hr');
-        
-        if (response.ok) {
-          const tickers = await response.json();
-          
-          // Filter by symbols if provided, otherwise take top by volume
-          let filteredTickers = tickers;
-          
-          if (symbols && symbols.length > 0) {
-            filteredTickers = tickers.filter((t: any) => symbols.includes(t.symbol));
-          } else {
-            // Filter USDT pairs and sort by volume
-            filteredTickers = tickers
-              .filter((t: any) => t.symbol.endsWith('USDT') && parseFloat(t.quoteVolume) > 100000)
-              .sort((a: any, b: any) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
-              .slice(0, limit);
-          }
-          
-          for (const t of filteredTickers) {
-            const price = parseFloat(t.lastPrice);
-            const high = parseFloat(t.highPrice);
-            const low = parseFloat(t.lowPrice);
-            const bidPrice = parseFloat(t.bidPrice);
-            const askPrice = parseFloat(t.askPrice);
-            const volume = parseFloat(t.volume);
-            const quoteVolume = parseFloat(t.quoteVolume);
-            const priceChange = parseFloat(t.priceChangePercent);
-            
-            // Calculate derived metrics
-            const volatility = price > 0 ? (high - low) / price : 0;
-            const momentum = priceChange / 100;
-            const spread = price > 0 ? (askPrice - bidPrice) / price : 0;
-            
+        const rows = await fetchLiveJson<any[]>(BINANCE_URL);
+        if (!Array.isArray(rows)) throw new Error('BINANCE_TICKER_RESPONSE_INVALID');
+        let selected = symbols
+          ? rows.filter((row) => symbols.includes(String(row.symbol)))
+          : rows
+            .filter((row) => String(row.symbol).endsWith('USDT') && Number(row.quoteVolume) > 100000)
+            .sort((a, b) => Number(b.quoteVolume) - Number(a.quoteVolume))
+            .slice(0, limit);
+
+        for (const row of selected) {
+          try {
+            const symbol = String(row.symbol);
+            const price = finite(row.lastPrice, `${symbol}.lastPrice`);
+            const bidPrice = finite(row.bidPrice, `${symbol}.bidPrice`);
+            const askPrice = finite(row.askPrice, `${symbol}.askPrice`);
+            const volume = finite(row.volume, `${symbol}.volume`);
+            const volumeUsd = finite(row.quoteVolume, `${symbol}.quoteVolume`);
+            const high24h = finite(row.highPrice, `${symbol}.highPrice`);
+            const low24h = finite(row.lowPrice, `${symbol}.lowPrice`);
+            const priceChange24h = finite(row.priceChangePercent, `${symbol}.priceChangePercent`);
+            const closeTime = finite(row.closeTime, `${symbol}.closeTime`);
+            const sourceTimestamp = new Date(closeTime).toISOString();
+            requireFreshTimestamp(sourceTimestamp, MAX_AGE_MS, `${symbol}.closeTime`);
+            validateMarketNumbers([price, bidPrice, askPrice, volume, volumeUsd, high24h, low24h], 'binance', symbol);
+            if (askPrice < bidPrice) throw new Error(`BINANCE_CROSSED_BOOK:${symbol}`);
             allTickers.push({
-              symbol: t.symbol,
+              symbol,
               exchange: 'binance',
               price,
               bidPrice,
               askPrice,
               volume,
-              volumeUsd: quoteVolume,
-              high24h: high,
-              low24h: low,
-              priceChange24h: priceChange,
-              volatility,
-              momentum,
-              spread,
-              timestamp: fetchedAt,
-              isValidated: true,
-              dataSource: 'live',
+              volumeUsd,
+              high24h,
+              low24h,
+              priceChange24h,
+              volatility: (high24h - low24h) / price,
+              momentum: priceChange24h / 100,
+              spread: (askPrice - bidPrice) / price,
+              timestamp: closeTime,
+              truthStatus: 'real_derived',
+              sourceId: 'binance:/api/v3/ticker/24hr',
+              sourceTimestamp,
+              generatedValues: false,
             });
+          } catch (error) {
+            providerErrors.push({ exchange: 'binance', error: error instanceof Error ? error.message : String(error) });
           }
-          
-          console.log(`[fetch-all-tickers] Binance: ${allTickers.length} tickers fetched`);
-        } else {
-          errors.push(`Binance API error: ${response.status}`);
         }
       } catch (error) {
-        console.error('[fetch-all-tickers] Binance error:', error);
-        errors.push(`Binance: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        providerErrors.push({ exchange: 'binance', error: error instanceof Error ? error.message : String(error) });
       }
     }
 
-    // Fetch from Kraken (if requested) - Extended pair list
     if (exchanges.includes('kraken')) {
       try {
-        console.log('[fetch-all-tickers] Fetching Kraken tickers...');
-        
-        // Expanded list of Kraken USD pairs (top 20 by volume)
-        const krakenPairs = [
-          'XBTUSD', 'ETHUSD', 'SOLUSD', 'XRPUSD', 'DOGEUSD', 'ADAUSD',
-          'DOTUSD', 'AVAXUSD', 'LINKUSD', 'MATICUSD', 'UNIUSD', 'LTCUSD',
-          'ATOMUSD', 'XLMUSD', 'ALGOUSD', 'NEARUSD', 'FILUSD', 'APEUSD'
-        ].join(',');
-        
-        const response = await fetch(`https://api.kraken.com/0/public/Ticker?pair=${krakenPairs}`);
-        
-        if (response.ok) {
-          const data = await response.json();
-          
-          // Complete Kraken pair mapping (from Python aureon_unified_ecosystem.py)
-          const krakenPairMap: Record<string, string> = {
-            'XXBTZUSD': 'BTCUSDT', 'XBTUSD': 'BTCUSDT',
-            'XETHZUSD': 'ETHUSDT', 'ETHUSD': 'ETHUSDT',
-            'SOLUSD': 'SOLUSDT', 'XRPUSD': 'XRPUSDT', 'DOGEUSD': 'DOGEUSDT',
-            'ADAUSD': 'ADAUSDT', 'DOTUSD': 'DOTUSDT', 'AVAXUSD': 'AVAXUSDT',
-            'LINKUSD': 'LINKUSDT', 'MATICUSD': 'MATICUSDT', 'UNIUSD': 'UNIUSDT',
-            'LTCUSD': 'LTCUSDT', 'ATOMUSD': 'ATOMUSDT', 'XLMUSD': 'XLMUSDT',
-            'ALGOUSD': 'ALGOUSDT', 'NEARUSD': 'NEARUSDT', 'FILUSD': 'FILUSDT',
-            'APEUSD': 'APEUSDT',
-          };
-          
-          if (data.result) {
-            for (const [pair, t] of Object.entries(data.result) as any) {
-              const ticker = t as any;
-              const price = parseFloat(ticker.c[0]);
-              const high = parseFloat(ticker.h[1]); // 24h high
-              const low = parseFloat(ticker.l[1]); // 24h low
-              const volume = parseFloat(ticker.v[1]); // 24h volume
-              
-              const standardSymbol = krakenPairMap[pair] || pair.replace('USD', 'USDT');
-              
-              allTickers.push({
-                symbol: standardSymbol,
-                exchange: 'kraken',
-                price,
-                bidPrice: parseFloat(ticker.b[0]),
-                askPrice: parseFloat(ticker.a[0]),
-                volume,
-                volumeUsd: volume * price,
-                high24h: high,
-                low24h: low,
-                priceChange24h: price > 0 ? ((price - parseFloat(ticker.o)) / parseFloat(ticker.o)) * 100 : 0,
-                volatility: price > 0 ? (high - low) / price : 0,
-                momentum: 0,
-                spread: price > 0 ? (parseFloat(ticker.a[0]) - parseFloat(ticker.b[0])) / price : 0,
-                timestamp: fetchedAt,
-                isValidated: true,
-                dataSource: 'live',
-              });
-            }
+        const pairNames = ['XBTUSD', 'ETHUSD', 'SOLUSD', 'XRPUSD', 'DOGEUSD', 'ADAUSD', 'DOTUSD', 'AVAXUSD', 'LINKUSD', 'LTCUSD'];
+        const [clock, payload] = await Promise.all([
+          fetchLiveJson<any>('https://api.kraken.com/0/public/Time'),
+          fetchLiveJson<any>(`https://api.kraken.com/0/public/Ticker?pair=${pairNames.join(',')}`),
+        ]);
+        if (clock?.error?.length || payload?.error?.length) throw new Error('KRAKEN_PROVIDER_ERROR');
+        const providerTime = finite(clock?.result?.unixtime, 'kraken.unixtime') * 1000;
+        const sourceTimestamp = new Date(providerTime).toISOString();
+        requireFreshTimestamp(sourceTimestamp, MAX_AGE_MS, 'kraken.unixtime');
+        const pairMap: Record<string, string> = {
+          XXBTZUSD: 'BTCUSDT', XBTUSD: 'BTCUSDT', XETHZUSD: 'ETHUSDT', ETHUSD: 'ETHUSDT',
+          SOLUSD: 'SOLUSDT', XRPUSD: 'XRPUSDT', DOGEUSD: 'DOGEUSDT', ADAUSD: 'ADAUSDT',
+          DOTUSD: 'DOTUSDT', AVAXUSD: 'AVAXUSDT', LINKUSD: 'LINKUSDT', LTCUSD: 'LTCUSDT',
+        };
+        for (const [pair, raw] of Object.entries(payload?.result ?? {}) as Array<[string, any]>) {
+          try {
+            const symbol = pairMap[pair];
+            if (!symbol || (symbols && !symbols.includes(symbol))) continue;
+            const price = finite(raw.c?.[0], `${pair}.close`);
+            const bidPrice = finite(raw.b?.[0], `${pair}.bid`);
+            const askPrice = finite(raw.a?.[0], `${pair}.ask`);
+            const volume = finite(raw.v?.[1], `${pair}.volume`);
+            const high24h = finite(raw.h?.[1], `${pair}.high`);
+            const low24h = finite(raw.l?.[1], `${pair}.low`);
+            const open = finite(raw.o, `${pair}.open`);
+            const volumeUsd = volume * price;
+            validateMarketNumbers([price, bidPrice, askPrice, volume, volumeUsd, high24h, low24h, open], 'kraken', symbol);
+            if (askPrice < bidPrice || open <= 0) throw new Error(`KRAKEN_INVALID_BOOK:${symbol}`);
+            const priceChange24h = ((price - open) / open) * 100;
+            allTickers.push({
+              symbol,
+              exchange: 'kraken',
+              price,
+              bidPrice,
+              askPrice,
+              volume,
+              volumeUsd,
+              high24h,
+              low24h,
+              priceChange24h,
+              volatility: (high24h - low24h) / price,
+              momentum: priceChange24h / 100,
+              spread: (askPrice - bidPrice) / price,
+              timestamp: providerTime,
+              truthStatus: 'real_derived',
+              sourceId: 'kraken:/0/public/Ticker+/0/public/Time',
+              sourceTimestamp,
+              generatedValues: false,
+            });
+          } catch (error) {
+            providerErrors.push({ exchange: 'kraken', error: error instanceof Error ? error.message : String(error) });
           }
-          
-          console.log(`[fetch-all-tickers] Kraken: ${Object.keys(data.result || {}).length} tickers fetched`);
         }
       } catch (error) {
-        console.error('[fetch-all-tickers] Kraken error:', error);
-        errors.push(`Kraken: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        providerErrors.push({ exchange: 'kraken', error: error instanceof Error ? error.message : String(error) });
       }
     }
 
-    // Sort by volume USD descending
     allTickers.sort((a, b) => b.volumeUsd - a.volumeUsd);
-
-    // Calculate aggregate stats
-    const stats = {
-      totalTickers: allTickers.length,
-      exchangeBreakdown: {} as Record<string, number>,
-      avgVolatility: 0,
-      avgSpread: 0,
-      topSymbol: allTickers[0]?.symbol || null,
-      topVolume: allTickers[0]?.volumeUsd || 0,
-    };
-
-    for (const t of allTickers) {
-      stats.exchangeBreakdown[t.exchange] = (stats.exchangeBreakdown[t.exchange] || 0) + 1;
-      stats.avgVolatility += t.volatility;
-      stats.avgSpread += t.spread;
+    if (allTickers.length === 0) {
+      return new Response(JSON.stringify({
+        success: false,
+        truthStatus: 'no_data',
+        generatedValues: false,
+        providerErrors,
+      }), { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    if (allTickers.length > 0) {
-      stats.avgVolatility /= allTickers.length;
-      stats.avgSpread /= allTickers.length;
-    }
-
-    console.log(`[fetch-all-tickers] Total: ${allTickers.length} tickers from ${Object.keys(stats.exchangeBreakdown).length} exchanges`);
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        tickers: allTickers,
-        stats,
-        fetchedAt,
-        errors: errors.length > 0 ? errors : undefined,
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    const exchangeBreakdown: Record<string, number> = {};
+    for (const ticker of allTickers) exchangeBreakdown[ticker.exchange] = (exchangeBreakdown[ticker.exchange] ?? 0) + 1;
+    const avgVolatility = allTickers.reduce((sum, ticker) => sum + ticker.volatility, 0) / allTickers.length;
+    const avgSpread = allTickers.reduce((sum, ticker) => sum + ticker.spread, 0) / allTickers.length;
+    return new Response(JSON.stringify({
+      success: true,
+      truthStatus: 'real_derived',
+      generatedValues: false,
+      partial: providerErrors.length > 0,
+      tickers: allTickers,
+      stats: {
+        totalTickers: allTickers.length,
+        exchangeBreakdown,
+        avgVolatility,
+        avgSpread,
+        topSymbol: allTickers[0].symbol,
+        topVolume: allTickers[0].volumeUsd,
+      },
+      providerErrors,
+      collectedAt: new Date().toISOString(),
+    }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   } catch (error) {
-    console.error('[fetch-all-tickers] Error:', error);
-    return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
-      }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify({
+      success: false,
+      error: error instanceof Error ? error.message : String(error),
+      truthStatus: 'no_data',
+      generatedValues: false,
+    }), { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   }
 });

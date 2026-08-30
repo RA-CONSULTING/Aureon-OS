@@ -40,9 +40,9 @@ export function UnityNexusCore() {
 
   return (
     <div className="space-y-6">
-      <Card className="bg-gradient-to-br from-slate-900 to-purple-900 border-cyan-500/30">
+      <Card className="bg-gradient-to-br from-slate-900 to-primary border-primary/30">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl text-cyan-400">
+          <CardTitle className="text-2xl text-primary">
             🌌 Unity Nexus Core - Song of Time and Space 🌌
           </CardTitle>
           <div className="flex justify-center gap-2 mt-2">
@@ -66,10 +66,10 @@ export function UnityNexusCore() {
                   <div className="w-full bg-slate-700 rounded-full h-2">
                     <div 
                       className={`h-2 rounded-full transition-all duration-100 ${
-                        index === 0 ? 'bg-purple-500' :
-                        index === 1 ? 'bg-blue-500' :
-                        index === 2 ? 'bg-cyan-500' :
-                        index === 3 ? 'bg-green-500' : 'bg-yellow-500'
+                        index === 0 ? 'bg-primary' :
+                        index === 1 ? 'bg-primary' :
+                        index === 2 ? 'bg-primary' :
+                        index === 3 ? 'bg-success' : 'bg-warning'
                       }`}
                       style={{ width: `${Math.max(0, (layer.amplitude / 15) * 100)}%` }}
                     />
@@ -87,7 +87,7 @@ export function UnityNexusCore() {
             ))}
           </div>
           
-          <div className="mt-6 p-4 bg-gradient-to-r from-purple-900/50 to-blue-900/50 rounded-lg">
+          <div className="mt-6 p-4 bg-gradient-to-r from-primary/50 to-primary/50 rounded-lg">
             <div className="text-center">
               <div className="text-lg text-gold-400 mb-2">Composite Waveform</div>
               <div className="text-3xl font-mono text-white">

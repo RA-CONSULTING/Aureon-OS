@@ -112,9 +112,9 @@ export function GlyphTradingCorrelationChart() {
   }));
 
   const getCorrelationColor = (score: number) => {
-    if (score > 0.7) return 'text-green-500';
-    if (score > 0.4) return 'text-yellow-500';
-    return 'text-orange-500';
+    if (score > 0.7) return 'text-success';
+    if (score > 0.4) return 'text-warning';
+    return 'text-warning';
   };
 
   const getCorrelationLabel = (score: number) => {

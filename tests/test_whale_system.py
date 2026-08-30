@@ -12,9 +12,8 @@ Tests all integration points:
 Usage:
     python test_whale_system.py
 """
-from aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
-import sys
 import os
+import sys
 
 if sys.platform == 'win32':
     os.environ['PYTHONIOENCODING'] = 'utf-8'
@@ -34,11 +33,39 @@ import logging
 import time
 from pathlib import Path
 
+import pytest
+
+from scripts.validation.pytest_no_skip_shards import (
+    fingerprint_operational_paths,
+    isolate_runtime_writers,
+    safe_subprocess_environment,
+)
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+_REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
-def test_onchain_providers():
+@pytest.fixture(scope="module", autouse=True)
+def _isolated_runtime(tmp_path_factory):
+    before = fingerprint_operational_paths(_REPO_ROOT)
+    runtime_root = tmp_path_factory.mktemp("whale-system")
+    patcher = pytest.MonkeyPatch()
+    safe_env, scrubbed = safe_subprocess_environment(dict(os.environ))
+    safe_env = isolate_runtime_writers(safe_env, runtime_root)
+    for name in scrubbed:
+        patcher.delenv(name, raising=False)
+    for name, value in safe_env.items():
+        patcher.setenv(name, value)
+    patcher.chdir(runtime_root)
+    try:
+        yield
+    finally:
+        patcher.undo()
+        assert fingerprint_operational_paths(_REPO_ROOT) == before
+
+
+def _check_onchain_providers():
     """Test 1: Exchange whale tracker connectivity"""
     print("\n" + "="*70)
     print("TEST 1: Exchange Whale Tracker (Using Existing Exchange APIs)")
@@ -67,7 +94,7 @@ def test_onchain_providers():
         return False
 
 
-def test_stargate_correlation():
+def _check_stargate_correlation():
     """Test 2: Stargate correlation mapping"""
     print("\n" + "="*70)
     print("TEST 2: Stargate Correlation Mapping")
@@ -113,7 +140,7 @@ def test_stargate_correlation():
         return False
 
 
-def test_metrics():
+def _check_metrics():
     """Test 3: Metrics emission"""
     print("\n" + "="*70)
     print("TEST 3: Metrics Emission")
@@ -153,7 +180,7 @@ def test_metrics():
         return False
 
 
-def test_ml_pipeline():
+def _check_ml_pipeline():
     """Test 4: ML training pipeline"""
     print("\n" + "="*70)
     print("TEST 4: ML Training Pipeline")
@@ -206,7 +233,7 @@ def test_ml_pipeline():
         return False
 
 
-def test_end_to_end():
+def _check_end_to_end():
     """Test 5: End-to-end flow"""
     print("\n" + "="*70)
     print("TEST 5: End-to-End Flow")
@@ -264,6 +291,26 @@ def test_end_to_end():
         return False
 
 
+def test_onchain_providers():
+    assert _check_onchain_providers()
+
+
+def test_stargate_correlation():
+    assert _check_stargate_correlation()
+
+
+def test_metrics():
+    assert _check_metrics()
+
+
+def test_ml_pipeline():
+    assert _check_ml_pipeline()
+
+
+def test_end_to_end():
+    assert _check_end_to_end()
+
+
 def main():
     """Run all tests"""
     print("\n" + "="*70)
@@ -271,11 +318,11 @@ def main():
     print("="*70)
     
     results = {
-        'On-chain Providers': test_onchain_providers(),
-        'Stargate Correlation': test_stargate_correlation(),
-        'Metrics Emission': test_metrics(),
-        'ML Training Pipeline': test_ml_pipeline(),
-        'End-to-End Flow': test_end_to_end(),
+        'On-chain Providers': _check_onchain_providers(),
+        'Stargate Correlation': _check_stargate_correlation(),
+        'Metrics Emission': _check_metrics(),
+        'ML Training Pipeline': _check_ml_pipeline(),
+        'End-to-End Flow': _check_end_to_end(),
     }
     
     # Summary

@@ -57,11 +57,18 @@ from typing import Dict, List, Optional, Any, Tuple
 from datetime import datetime
 from pathlib import Path
 
-# Load environment
-for line in Path('.env').read_text().splitlines():
-    if '=' in line and not line.startswith('#'):
-        k, v = line.split('=', 1)
-        os.environ.setdefault(k.strip(), v.strip())
+# Load local runtime credentials only when the file exists.  Importing this
+# module from another working directory must remain inert and must not turn a
+# missing credential file into an invented runtime state.
+_env_path = Path('.env')
+if _env_path.is_file():
+    try:
+        for line in _env_path.read_text(encoding='utf-8').splitlines():
+            if '=' in line and not line.startswith('#'):
+                k, v = line.split('=', 1)
+                os.environ.setdefault(k.strip(), v.strip())
+    except OSError:
+        pass
 
 logger = logging.getLogger(__name__)
 
@@ -94,22 +101,34 @@ class HuntResult:
     volume: float
     
     # Probability Nexus validation
-    nexus_direction: str = 'NEUTRAL'  # 'LONG', 'SHORT', 'NEUTRAL'
-    nexus_probability: float = 0.5
-    nexus_confidence: float = 0.0
-    nexus_factors: Dict[str, float] = field(default_factory=dict)
+    nexus_direction: str = 'NO_DATA'
+    nexus_probability: Optional[float] = None
+    nexus_confidence: Optional[float] = None
+    nexus_factors: Dict[str, Any] = field(default_factory=dict)
     
     # Queen decision
     queen_approved: bool = False
-    queen_confidence: float = 0.0
+    queen_confidence: Optional[float] = None
     queen_reasoning: str = ""
+
+    # Provenance chain
+    truth_status: str = "no_data"
+    source_id: Optional[str] = None
+    source_timestamp: Optional[float] = None
+    received_at: Optional[float] = None
+    generated_values: bool = False
+    nexus_truth_status: str = "no_data"
+    nexus_source_id: Optional[str] = None
+    nexus_source_timestamp: Optional[float] = None
+    eligible_for_external_action: bool = False
     
     # Execution
     executed: bool = False
+    execution_status: str = "not_submitted"
     order_id: Optional[str] = None
-    entry_price: float = 0.0
-    exit_price: float = 0.0
-    final_pnl: float = 0.0
+    entry_price: Optional[float] = None
+    exit_price: Optional[float] = None
+    final_pnl: Optional[float] = None
     
     def is_valid_opportunity(self, aggressive: bool = False) -> bool:
         """Check if this hunt result meets minimum criteria.
@@ -122,12 +141,42 @@ class HuntResult:
         
         # 3-pass validation (Batten Matrix)
         pass_1 = self.net_pct > 0  # Must be net positive after fees
-        pass_2 = self.nexus_confidence > conf_threshold  # Nexus must have confidence
+        pass_2 = (
+            self.nexus_confidence is not None
+            and self.nexus_confidence > conf_threshold
+        )
         pass_3 = (
             (self.side == 'buy' and self.nexus_direction == 'LONG') or
             (self.side == 'sell' and self.nexus_direction == 'SHORT')
         )
-        return pass_1 and pass_2 and pass_3
+        try:
+            source_timestamp = float(self.source_timestamp)
+            received_at = float(self.received_at)
+            nexus_source_timestamp = float(self.nexus_source_timestamp)
+        except (TypeError, ValueError):
+            return False
+        now = time.time()
+        provenance_ok = (
+            self.truth_status in {"live", "real_derived"}
+            and bool(self.source_id)
+            and all(
+                math.isfinite(value)
+                for value in (source_timestamp, received_at, nexus_source_timestamp)
+            )
+            and source_timestamp > 0
+            and received_at > 0
+            and nexus_source_timestamp > 0
+            and now - source_timestamp <= 2 * 60 * 60
+            and source_timestamp - now <= 5 * 60
+            and received_at - source_timestamp <= 2 * 60 * 60
+            and self.generated_values is False
+            and self.nexus_truth_status == "real_derived"
+            and bool(self.nexus_source_id)
+            and now - nexus_source_timestamp <= 5 * 60
+            and nexus_source_timestamp - now <= 5 * 60
+            and self.eligible_for_external_action is True
+        )
+        return pass_1 and pass_2 and pass_3 and provenance_ok
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -167,16 +216,24 @@ class LiveMomentumHunter:
         from aureon.exchanges.alpaca_client import AlpacaClient
         self.alpaca = AlpacaClient()
         
-        # Get account info
+        self.cash = None
+        self.equity = None
+
+        # Get account info.  Missing/malformed provider fields remain no-data;
+        # zero is never substituted for an unavailable balance.
         try:
             acct = self.alpaca.get_account()
-            self.cash = float(acct.get('cash', 0))
-            self.equity = float(acct.get('equity', 0))
+            if not isinstance(acct, dict) or acct.get('cash') is None or acct.get('equity') is None:
+                raise ValueError("account receipt missing cash/equity")
+            cash = float(acct['cash'])
+            equity = float(acct['equity'])
+            if not math.isfinite(cash) or not math.isfinite(equity) or cash < 0 or equity < 0:
+                raise ValueError("account receipt contains invalid cash/equity")
+            self.cash = cash
+            self.equity = equity
             logger.info(f"🦙 Alpaca connected: ${self.equity:.2f} equity, ${self.cash:.2f} cash")
         except Exception as e:
             logger.error(f"❌ Alpaca connection failed: {e}")
-            self.cash = 0
-            self.equity = 0
     
     def _init_scanner_bridge(self):
         """Initialize fee-aware scanner bridge."""
@@ -224,7 +281,9 @@ class LiveMomentumHunter:
         try:
             from aureon.utils.aureon_queen_hive_mind import QueenHiveMind, create_queen_hive_mind
             
-            self.queen = create_queen_hive_mind(initial_capital=self.equity or 100.0)
+            if self.equity is None:
+                raise RuntimeError("account equity unavailable; Queen capital cannot be evidenced")
+            self.queen = create_queen_hive_mind(initial_capital=self.equity)
             
             # Wire components
             if self.nexus:
@@ -365,14 +424,21 @@ class LiveMomentumHunter:
                     return []
             
             result = []
+            received_at = time.time()
             for bar in bar_data[symbol]:
+                source_timestamp = float(bar.timestamp.timestamp())
                 result.append({
                     'open': float(bar.open),
                     'high': float(bar.high),
                     'low': float(bar.low),
                     'close': float(bar.close),
                     'volume': float(bar.volume),
-                    'timestamp': bar.timestamp.timestamp()
+                    'timestamp': source_timestamp,
+                    'source_id': 'alpaca_crypto_bars_1m',
+                    'source_timestamp': source_timestamp,
+                    'received_at': received_at,
+                    'truth_status': 'live',
+                    'generated_values': False,
                 })
             
             return result[-limit:]
@@ -402,17 +468,24 @@ class LiveMomentumHunter:
                 return []
             
             result = []
+            received_at = time.time()
             if 'result' in data:
                 for key, candles in data['result'].items():
                     if isinstance(candles, list) and candles:
                         for c in candles[-limit:]:
+                            source_timestamp = float(c[0])
                             result.append({
                                 'open': float(c[1]),
                                 'high': float(c[2]),
                                 'low': float(c[3]),
                                 'close': float(c[4]),
                                 'volume': float(c[6]),
-                                'timestamp': float(c[0])
+                                'timestamp': source_timestamp,
+                                'source_id': 'kraken_public_ohlc_1m',
+                                'source_timestamp': source_timestamp,
+                                'received_at': received_at,
+                                'truth_status': 'live',
+                                'generated_values': False,
                             })
                         break
             
@@ -436,6 +509,54 @@ class LiveMomentumHunter:
             if len(candles) < 30:
                 logger.warning(f"Insufficient data for {symbol}: {len(candles)} candles")
                 return None
+            latest = candles[-1]
+            source_timestamp = latest.get("source_timestamp", latest.get("timestamp"))
+            source_id = latest.get("source_id")
+            try:
+                source_timestamp = float(source_timestamp)
+            except (TypeError, ValueError):
+                return None
+            if (
+                not source_id
+                or not math.isfinite(source_timestamp)
+                or source_timestamp <= 0
+                or time.time() - source_timestamp > 5 * 60
+                or source_timestamp - time.time() > 5 * 60
+            ):
+                return None
+            for candle in candles:
+                required = [
+                    candle.get("open"),
+                    candle.get("high"),
+                    candle.get("low"),
+                    candle.get("close"),
+                    candle.get("volume"),
+                    candle.get("timestamp"),
+                ]
+                try:
+                    numbers = [float(value) for value in required]
+                except (TypeError, ValueError):
+                    return None
+                if (
+                    not all(math.isfinite(value) for value in numbers)
+                    or min(numbers[:4]) <= 0
+                    or numbers[4] < 0
+                    or candle.get("truth_status") != "live"
+                    or candle.get("source_id") != source_id
+                    or candle.get("generated_values") is not False
+                ):
+                    return None
+                candle_source_timestamp = candle.get("source_timestamp")
+                try:
+                    candle_source_timestamp = float(candle_source_timestamp)
+                except (TypeError, ValueError):
+                    return None
+                if (
+                    not math.isfinite(candle_source_timestamp)
+                    or candle_source_timestamp <= 0
+                    or abs(candle_source_timestamp - numbers[5]) > 1e-6
+                ):
+                    return None
             
             # Feed to nexus - use update_history method
             for candle in candles:
@@ -443,39 +564,58 @@ class LiveMomentumHunter:
             
             # Get prediction
             prediction = self.nexus.predict()
+            probability = float(prediction.probability)
+            confidence = float(prediction.confidence)
+            if (
+                not math.isfinite(probability)
+                or not math.isfinite(confidence)
+                or not 0 <= probability <= 1
+                or not 0 <= confidence <= 1
+                or prediction.direction not in {"LONG", "SHORT", "NEUTRAL"}
+            ):
+                return None
             
             return {
                 'direction': prediction.direction,
-                'probability': prediction.probability,
-                'confidence': prediction.confidence,
+                'probability': probability,
+                'confidence': confidence,
                 'factors': prediction.factors,
                 'stop_loss_pct': prediction.stop_loss_pct,
                 'take_profit_pct': prediction.take_profit_pct,
-                'reason': prediction.reason
+                'reason': prediction.reason,
+                'truth_status': 'real_derived',
+                'source_id': f"probability_nexus:{source_id}",
+                'source_timestamp': source_timestamp,
+                'generated_values': False,
             }
             
         except Exception as e:
             logger.error(f"Nexus validation failed for {symbol}: {e}")
             return None
     
-    def ask_queen(self, opportunity: Dict) -> Tuple[bool, float, str]:
+    def ask_queen(self, opportunity: Dict) -> Tuple[bool, Optional[float], str]:
         """Ask Queen for final 4th-pass decision."""
         if not self.queen:
-            return True, 0.5, "Queen unavailable - default approval"
+            return False, None, "NO_DATA: Queen unavailable"
         
         try:
             decision = self.queen.get_queen_decision_with_intelligence(opportunity)
             
             # Extract decision
-            approved = decision.get('final_score', 0) > 0.5
-            confidence = decision.get('final_score', 0.5)
-            reasoning = " | ".join(decision.get('reasoning', ['No reasoning']))
+            if not isinstance(decision, dict) or decision.get('final_score') is None:
+                return False, None, "NO_DATA: Queen decision score missing"
+            confidence = float(decision['final_score'])
+            if not math.isfinite(confidence) or not 0 <= confidence <= 1:
+                return False, None, "NO_DATA: Queen decision score invalid"
+            approved = confidence > 0.5
+            reasons = decision.get('reasoning')
+            reasoning = " | ".join(str(item) for item in reasons) if isinstance(reasons, list) and reasons else "reasoning_not_provided"
             
             return approved, confidence, reasoning
             
         except Exception as e:
             logger.error(f"Queen decision failed: {e}")
-            return True, 0.5, f"Queen error: {e}"
+            return False, None, f"NO_DATA: Queen decision failed: {e}"
     
     def hunt(self) -> List[HuntResult]:
         """
@@ -519,13 +659,43 @@ class LiveMomentumHunter:
             global_as_animal = []
             for gopp in global_opportunities[:10]:  # Top 10 global
                 try:
+                    truth_status = getattr(gopp, 'truth_status', None)
+                    source_id = getattr(gopp, 'source_id', None)
+                    source_timestamp = getattr(gopp, 'source_timestamp', None)
+                    received_at = getattr(gopp, 'received_at', None)
+                    generated_values = getattr(gopp, 'generated_values', None)
+                    eligible = getattr(gopp, 'eligible_for_external_action', None)
+                    volume = getattr(gopp, 'volume', None)
+                    numeric_values = [
+                        float(source_timestamp),
+                        float(received_at),
+                        float(volume),
+                        float(gopp.momentum_pct),
+                        float(gopp.net_edge),
+                    ]
+                    if (
+                        truth_status not in {'live', 'real_derived'}
+                        or not source_id
+                        or not all(math.isfinite(value) for value in numeric_values)
+                        or time.time() - numeric_values[0] > 2 * 60 * 60
+                        or numeric_values[0] - time.time() > 5 * 60
+                        or generated_values is not False
+                        or eligible is not True
+                    ):
+                        continue
                     animal_opp = AnimalOpportunity(
                         symbol=gopp.symbol,
                         side=gopp.direction,
                         move_pct=gopp.momentum_pct,
                         net_pct=gopp.net_edge * 100,  # Convert to %
-                        volume=0,
-                        reason=f"🌍 {gopp.exchange}: {gopp.reason}"
+                        volume=volume,
+                        reason=f"🌍 {gopp.exchange}: {gopp.reason}",
+                        truth_status=truth_status,
+                        source_id=source_id,
+                        source_timestamp=numeric_values[0],
+                        received_at=numeric_values[1],
+                        generated_values=False,
+                        eligible_for_external_action=True,
                     )
                     global_as_animal.append(animal_opp)
                 except Exception as e:
@@ -547,6 +717,25 @@ class LiveMomentumHunter:
         for scanner, opps in scan_results.items():
             for opp in opps[:3]:  # Top 3 from each scanner
                 print(f"   Validating {opp.symbol}...", end=" ")
+
+                try:
+                    source_timestamp = float(opp.source_timestamp)
+                    received_at = float(opp.received_at)
+                except (TypeError, ValueError):
+                    print("NO DATA")
+                    continue
+                if (
+                    opp.truth_status not in {'live', 'real_derived'}
+                    or not opp.source_id
+                    or not math.isfinite(source_timestamp)
+                    or not math.isfinite(received_at)
+                    or time.time() - source_timestamp > 2 * 60 * 60
+                    or source_timestamp - time.time() > 5 * 60
+                    or opp.generated_values is not False
+                    or opp.eligible_for_external_action is not True
+                ):
+                    print("NO DATA")
+                    continue
                 
                 # Create hunt result
                 result = HuntResult(
@@ -555,35 +744,27 @@ class LiveMomentumHunter:
                     scanner_source=scanner,
                     momentum_pct=opp.move_pct,
                     net_pct=opp.net_pct,
-                    volume=opp.volume
+                    volume=opp.volume,
+                    truth_status=opp.truth_status,
+                    source_id=opp.source_id,
+                    source_timestamp=source_timestamp,
+                    received_at=received_at,
+                    generated_values=False,
                 )
                 
-                # 🦈 EXTREME MOMENTUM BYPASS: For massive moves (>10%), trust the signal
-                # The Nexus looks at recent candles but the move may have happened earlier
-                if scanner == 'global' and abs(opp.move_pct) >= 10.0:
-                    # Trust Binance's 24h data for extreme moves
-                    direction = 'LONG' if opp.side == 'buy' else 'SHORT'
-                    # Scale confidence by momentum: 10% = 0.5, 20% = 0.75, 40%+ = 1.0
-                    extreme_conf = min(0.5 + (abs(opp.move_pct) - 10) / 40, 1.0)
-                    result.nexus_direction = direction
-                    result.nexus_probability = 0.5 + extreme_conf * 0.4  # 0.7-0.9
-                    result.nexus_confidence = extreme_conf
-                    result.nexus_factors = {'extreme_momentum': True, 'binance_24h': opp.move_pct}
-                    print(f"{direction} ({extreme_conf:.2f}) [🔥 EXTREME MOMENTUM BYPASS]")
+                nexus_result = self.validate_with_nexus(opp.symbol)
+                if nexus_result:
+                    result.nexus_direction = nexus_result['direction']
+                    result.nexus_probability = nexus_result['probability']
+                    result.nexus_confidence = nexus_result['confidence']
+                    result.nexus_factors = nexus_result['factors']
+                    result.nexus_truth_status = nexus_result['truth_status']
+                    result.nexus_source_id = nexus_result['source_id']
+                    result.nexus_source_timestamp = nexus_result['source_timestamp']
+                    result.eligible_for_external_action = True
+                    print(f"{nexus_result['direction']} ({nexus_result['confidence']:.2f})")
                 else:
-                    # Normal Nexus validation
-                    nexus_result = self.validate_with_nexus(opp.symbol)
-                    if nexus_result:
-                        result.nexus_direction = nexus_result['direction']
-                        result.nexus_probability = nexus_result['probability']
-                        result.nexus_confidence = nexus_result['confidence']
-                        result.nexus_factors = nexus_result['factors']
-                        print(f"{nexus_result['direction']} ({nexus_result['confidence']:.2f})")
-                    else:
-                        result.nexus_direction = 'NEUTRAL'
-                        result.nexus_probability = 0.5
-                        result.nexus_confidence = 0.3
-                        print("NO DATA")
+                    print("NO DATA")
                 
                 hunt_results.append(result)
         
@@ -591,7 +772,7 @@ class LiveMomentumHunter:
         print("\n📊 PHASE 3: 3-Pass Validation Filter...")
         
         # Use aggressive mode for small portfolios (< $100)
-        aggressive_mode = self.equity < 100
+        aggressive_mode = self.equity is not None and self.equity < 100
         if aggressive_mode:
             print("   🚀 AGGRESSIVE MODE: Small portfolio - confidence threshold 0.2")
         
@@ -605,7 +786,9 @@ class LiveMomentumHunter:
                 reasons = []
                 if r.net_pct <= 0:
                     reasons.append(f"net={r.net_pct:.2f}%")
-                if r.nexus_confidence <= 0.5:
+                if r.nexus_confidence is None:
+                    reasons.append("conf=NO_DATA")
+                elif r.nexus_confidence <= 0.5:
                     reasons.append(f"conf={r.nexus_confidence:.2f}")
                 if not ((r.side == 'buy' and r.nexus_direction == 'LONG') or
                         (r.side == 'sell' and r.nexus_direction == 'SHORT')):
@@ -623,31 +806,28 @@ class LiveMomentumHunter:
                 'action': 'BUY' if result.side == 'buy' else 'SELL',
                 'exchange': 'alpaca',
                 'score': result.nexus_confidence,
-                'coherence': result.nexus_factors.get('coherence', 0.5),
                 'momentum': result.momentum_pct,
                 'net_profit_pct': result.net_pct
             }
+            coherence = result.nexus_factors.get('coherence')
+            try:
+                coherence = float(coherence)
+            except (TypeError, ValueError):
+                coherence = None
+            if coherence is not None and math.isfinite(coherence):
+                opp_dict['coherence'] = coherence
             
             approved, confidence, reasoning = self.ask_queen(opp_dict)
-            
-            # 🔥 EXTREME MOMENTUM OVERRIDE: If momentum > 15% and net edge > 10%, override Queen
-            is_extreme = result.nexus_factors.get('extreme_momentum', False)
-            extreme_override = False
-            if not approved and is_extreme and abs(result.momentum_pct) >= 15 and result.net_pct >= 10:
-                extreme_override = True
-                approved = True
-                confidence = min(0.6, result.nexus_confidence)
-                reasoning = f"🔥 EXTREME OVERRIDE: {result.momentum_pct:+.2f}% momentum, {result.net_pct:.1f}% net edge"
-            
+
             result.queen_approved = approved
             result.queen_confidence = confidence
             result.queen_reasoning = reasoning
-            
-            if extreme_override:
-                status = "🔥 OVERRIDE"
-            else:
-                status = "✅ APPROVED" if approved else "❌ REJECTED"
-            print(f"   {result.symbol}: {status} ({confidence:.2f}) - {reasoning[:50]}...")
+            if not approved:
+                result.eligible_for_external_action = False
+
+            status = "✅ APPROVED" if approved else "❌ REJECTED"
+            confidence_text = f"{confidence:.2f}" if confidence is not None else "NO DATA"
+            print(f"   {result.symbol}: {status} ({confidence_text}) - {reasoning[:50]}...")
             
             if approved:
                 approved_results.append(result)
@@ -672,14 +852,29 @@ class LiveMomentumHunter:
             print("❌ No opportunities to execute")
             return None
         
-        # Sort by queen confidence × net profit
-        results.sort(key=lambda r: r.queen_confidence * r.net_pct, reverse=True)
+        aggressive_mode = self.equity is not None and self.equity < 100
+        results = [
+            result for result in results
+            if result.queen_approved
+            and result.queen_confidence is not None
+            and result.is_valid_opportunity(aggressive=aggressive_mode)
+        ]
+        if not results:
+            print("❌ No proven, Queen-approved opportunity to execute")
+            return None
+
+        # Sort only proven Queen decisions by confidence × provider-derived net edge.
+        results.sort(key=lambda r: float(r.queen_confidence) * r.net_pct, reverse=True)
         best = results[0]
         
         print(f"\n🎯 EXECUTING BEST: {best.symbol} {best.side.upper()}")
         
         if self.dry_run:
             print(f"   [DRY-RUN] Would execute {best.side} on {best.symbol}")
+            best.executed = False
+            best.execution_status = "not_submitted"
+            best.order_id = None
+            best.entry_price = None
             return best
         
         # Calculate position size (use 90% of cash)
@@ -695,10 +890,28 @@ class LiveMomentumHunter:
             quotes = data_client.get_crypto_latest_quote(req)
             quote = quotes[symbol_fmt]
             price = float(quote.ask_price) if best.side == 'buy' else float(quote.bid_price)
+            if not math.isfinite(price) or price <= 0:
+                raise ValueError("provider quote price is invalid")
+            quote_timestamp = getattr(quote, 'timestamp', None)
+            if hasattr(quote_timestamp, 'timestamp'):
+                quote_timestamp = quote_timestamp.timestamp()
+            quote_timestamp = float(quote_timestamp)
+            now = time.time()
+            if (
+                not math.isfinite(quote_timestamp)
+                or quote_timestamp <= 0
+                or now - quote_timestamp > 60
+                or quote_timestamp - now > 5 * 60
+            ):
+                raise ValueError("provider quote timestamp is missing or stale")
             
             # Refresh account
             acct = self.alpaca.get_account()
-            cash = float(acct.get('cash', 0))
+            if not isinstance(acct, dict) or acct.get('cash') is None:
+                raise ValueError("account cash receipt unavailable")
+            cash = float(acct['cash'])
+            if not math.isfinite(cash) or cash <= 0:
+                raise ValueError("account cash receipt is invalid or empty")
             
             # Calculate qty
             trade_value = cash * 0.90
@@ -712,53 +925,45 @@ class LiveMomentumHunter:
             print(f"   Trade Value: ${trade_value:.2f}")
             print(f"   Quantity: {qty:.6f}")
             
-            # Execute via bridge with trailing stop
-            if self.bridge and best.side == 'buy':
-                from aureon.scanners.aureon_animal_momentum_scanners import AnimalOpportunity
-                opp = AnimalOpportunity(
-                    symbol=alpaca_symbol,
-                    side=best.side,
-                    move_pct=best.momentum_pct,
-                    net_pct=best.net_pct,
-                    volume=best.volume,
-                    reason=f"Queen: {best.queen_confidence:.2f}"
-                )
-                
-                result = self.swarm.execute_opportunity(opp, qty, use_trailing_stop=True)
-                
-                if result and not result.get('dry_run'):
-                    best.executed = True
-                    best.order_id = result.get('id', 'unknown')
-                    best.entry_price = price
-                    print(f"   ✅ Order executed: {best.order_id}")
-                
+            # Every side uses the same receipted bridge path.  There is no
+            # direct-order bypass around the provenance gate.
+            if not self.bridge or not self.swarm:
+                raise RuntimeError("scanner bridge execution path unavailable")
+            from aureon.scanners.aureon_animal_momentum_scanners import AnimalOpportunity
+            opp = AnimalOpportunity(
+                symbol=alpaca_symbol,
+                side=best.side,
+                move_pct=best.momentum_pct,
+                net_pct=best.net_pct,
+                volume=best.volume,
+                reason=f"Queen: {best.queen_confidence:.2f}",
+                truth_status=best.truth_status,
+                source_id=best.source_id,
+                source_timestamp=best.source_timestamp,
+                received_at=best.received_at,
+                generated_values=False,
+                eligible_for_external_action=True,
+            )
+
+            result = self.swarm.execute_opportunity(opp, qty, use_trailing_stop=True)
+            if not isinstance(result, dict):
+                best.execution_status = "submission_failed"
                 return best
-            else:
-                # Direct execution
-                from alpaca.trading.client import TradingClient
-                from alpaca.trading.requests import MarketOrderRequest
-                from alpaca.trading.enums import OrderSide, TimeInForce
-                
-                trading = TradingClient(
-                    os.environ['ALPACA_API_KEY'],
-                    os.environ['ALPACA_SECRET_KEY'],
-                    paper=False
-                )
-                
-                order = MarketOrderRequest(
-                    symbol=alpaca_symbol,
-                    qty=qty,
-                    side=OrderSide.BUY if best.side == 'buy' else OrderSide.SELL,
-                    time_in_force=TimeInForce.GTC
-                )
-                
-                result = trading.submit_order(order)
-                best.executed = True
-                best.order_id = str(result.id)
-                best.entry_price = price
-                print(f"   ✅ Order executed: {best.order_id}")
-                
+
+            provider_order_id = result.get('provider_order_id')
+            if result.get('status') == 'submitted' and provider_order_id:
+                best.executed = False
+                best.execution_status = "submitted"
+                best.order_id = str(provider_order_id)
+                best.entry_price = None
+                print(f"   ✅ Order submitted: {best.order_id}; fill reconciliation pending")
                 return best
+
+            best.executed = False
+            best.execution_status = str(result.get('decision_status') or result.get('status') or 'submission_failed')
+            best.order_id = None
+            best.entry_price = None
+            return best
                 
         except Exception as e:
             logger.error(f"Execution failed: {e}")
@@ -928,14 +1133,25 @@ class LiveMomentumHunter:
         print()
         
         # Track portfolio for growth measurement
+        start_equity = None
+        start_cash = None
         try:
             acct = self.alpaca.get_account()
-            start_equity = float(acct.get('equity', 0))
-            start_cash = float(acct.get('cash', 0))
+            if not isinstance(acct, dict) or acct.get('equity') is None or acct.get('cash') is None:
+                raise ValueError("account receipt missing equity/cash")
+            start_equity = float(acct['equity'])
+            start_cash = float(acct['cash'])
+            if (
+                not math.isfinite(start_equity)
+                or not math.isfinite(start_cash)
+                or start_equity < 0
+                or start_cash < 0
+            ):
+                raise ValueError("account receipt contains invalid equity/cash")
             print(f"💰 Starting Portfolio: ${start_equity:.2f} equity, ${start_cash:.2f} cash")
-        except:
-            start_equity = 0
-            start_cash = 0
+        except Exception as exc:
+            logger.warning("Starting portfolio unavailable: %s", exc)
+            print("💰 Starting Portfolio: NO DATA")
         
         # ═══════════════════════════════════════════════════════════════════
         # PHASE 1: 🎯 HUNTING GROUNDS - Where to fish?
@@ -1017,13 +1233,16 @@ class LiveMomentumHunter:
         print("PHASE 4: 🔪 EXECUTING THE KILL")
         print("-" * 50)
         
-        # Sort by best opportunity (queen confidence × net profit × hunt score boost)
-        for result in hunt_results:
-            # Boost score if symbol matches best hunting ground
-            if grounds and result.symbol.replace('/', '') == grounds[0]['symbol'].replace('/', ''):
-                result.queen_confidence *= 1.2  # 20% boost for best venue
-        
-        hunt_results.sort(key=lambda r: r.queen_confidence * max(r.net_pct, 0.001), reverse=True)
+        # Rank by observed Queen confidence and provider-derived net edge.  Venue
+        # metadata may inform reporting, but it must not manufacture confidence.
+        hunt_results = [
+            result for result in hunt_results
+            if result.queen_confidence is not None and result.queen_approved
+        ]
+        if not hunt_results:
+            print("   No proven Queen-approved opportunity remains")
+            return None
+        hunt_results.sort(key=lambda r: float(r.queen_confidence) * r.net_pct, reverse=True)
         
         best_kill = hunt_results[0]
         print(f"\n🎯 TARGET: {best_kill.symbol} {best_kill.side.upper()}")
@@ -1035,8 +1254,16 @@ class LiveMomentumHunter:
         if self.dry_run:
             print(f"\n   [DRY-RUN] Would execute {best_kill.side} on {best_kill.symbol}")
             return {
+                'status': 'not_submitted',
+                'truth_status': 'dry_run',
+                'decision_status': 'not_submitted',
                 'executed': False,
                 'dry_run': True,
+                'provider_order_id': None,
+                'filled_qty': None,
+                'filled_avg_price': None,
+                'eligible_for_learning': False,
+                'generated_values': False,
                 'target': best_kill.symbol,
                 'side': best_kill.side,
                 'expected_net': best_kill.net_pct,
@@ -1046,6 +1273,26 @@ class LiveMomentumHunter:
         # Execute!
         executed = self.execute_best([best_kill])
         
+        if executed and executed.execution_status == 'submitted' and executed.order_id:
+            print(f"\n✅ ORDER SUBMITTED; FILL RECONCILIATION PENDING")
+            print(f"   Provider Order ID: {executed.order_id}")
+            return {
+                'status': 'submitted',
+                'truth_status': 'live',
+                'decision_status': 'submitted',
+                'executed': False,
+                'provider_order_id': executed.order_id,
+                'symbol': executed.symbol,
+                'side': executed.side,
+                'filled_qty': None,
+                'filled_avg_price': None,
+                'actual_pnl': None,
+                'eligible_for_learning': False,
+                'generated_values': False,
+                'expected_net': best_kill.net_pct,
+                'confidence': best_kill.queen_confidence,
+            }
+
         if executed and executed.executed:
             print(f"\n✅ KILL EXECUTED!")
             print(f"   Order ID: {executed.order_id}")
@@ -1054,12 +1301,16 @@ class LiveMomentumHunter:
             # Check growth
             try:
                 acct = self.alpaca.get_account()
-                end_equity = float(acct.get('equity', 0))
+                if start_equity is None or not isinstance(acct, dict) or acct.get('equity') is None:
+                    raise ValueError("paired equity receipts unavailable")
+                end_equity = float(acct['equity'])
+                if not math.isfinite(end_equity) or end_equity < 0 or start_equity <= 0:
+                    raise ValueError("paired equity receipt invalid")
                 growth = end_equity - start_equity
-                growth_pct = (growth / start_equity * 100) if start_equity > 0 else 0
+                growth_pct = growth / start_equity * 100
                 print(f"\n📈 GROWTH: ${growth:+.2f} ({growth_pct:+.2f}%)")
-            except:
-                pass
+            except Exception as exc:
+                logger.warning("Growth readback unavailable: %s", exc)
             
             return {
                 'executed': True,

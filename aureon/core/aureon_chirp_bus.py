@@ -20,7 +20,7 @@ from multiprocessing import shared_memory
 from typing import Optional
 
 # Windows UTF-8 Fix
-if sys.platform == 'win32':
+if sys.platform == 'win32' and sys.stdout.isatty():
     os.environ['PYTHONIOENCODING'] = 'utf-8'
     try:
         # Avoid replacing sys.stdout with a new TextIOWrapper around stdout.buffer:

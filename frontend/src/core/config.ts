@@ -32,14 +32,8 @@ export const defaultAQTSConfig: AQTSConfig = {
   mode: 'paper',
   tradingPairs: ['BTC/USDT', 'ETH/USDT'],
   ingestion: {
-    initialPrice: 42000,
-    exchanges: [
-      { name: 'Binance', liquidityWeight: 1.0, latencyMs: 25 },
-      { name: 'Coinbase', liquidityWeight: 0.8, latencyMs: 35 },
-      { name: 'Kraken', liquidityWeight: 0.6, latencyMs: 40 },
-      { name: 'Bybit', liquidityWeight: 0.9, latencyMs: 32 },
-      { name: 'KuCoin', liquidityWeight: 0.5, latencyMs: 45 },
-    ],
+    initialPrice: 0,
+    exchanges: [],
   },
   qgita: {
     fibonacciSequence: [5, 8, 13, 21, 34, 55],
@@ -60,7 +54,10 @@ export const defaultAQTSConfig: AQTSConfig = {
     },
   },
   risk: {
-    initialEquity: 100000,
+    initialEquity: 0,
+    initialEquitySourceId: '',
+    initialEquitySourceEventId: '',
+    initialEquitySourceTimestamp: 0,
     maxPortfolioRisk: 0.03,
     maxLeverage: 5,
     circuitBreaker: 0.1,

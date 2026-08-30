@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.81.1";
+import { fetchExternalLlm, parseExternalLlmJson } from "../_shared/external_llm_fallback.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -21,10 +22,6 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
-
-    if (!lovableApiKey) {
-      throw new Error('LOVABLE_API_KEY not configured');
-    }
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -154,20 +151,16 @@ Provide a comprehensive forecast for the next 7 days with specific time slots th
 
     console.log('[forecast-coherence] Calling Lovable AI for analysis');
 
-    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${lovableApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
+    const aiResponse = await fetchExternalLlm({
+      primaryApiKey: lovableApiKey,
+      primaryBody: {
         model: 'google/gemini-2.5-flash',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
         ],
         response_format: { type: 'json_object' },
-      }),
+      },
     });
 
     if (!aiResponse.ok) {
@@ -187,7 +180,13 @@ Provide a comprehensive forecast for the next 7 days with specific time slots th
     const aiData = await aiResponse.json();
     console.log('[forecast-coherence] AI analysis complete');
 
-    const forecastResult = JSON.parse(aiData.choices[0].message.content);
+    const forecastResult = parseExternalLlmJson<Record<string, unknown> | null>(
+      aiData.choices?.[0]?.message?.content,
+      null,
+    );
+    if (!forecastResult) {
+      throw new Error('AI response did not contain valid forecast JSON');
+    }
 
     // Add metadata
     const response = {

@@ -8,8 +8,8 @@ cognition whose paths must "touch every piece of the repo", that isn't enough.
 This wraps the existing :class:`ResearchCorpusIndex` (reused verbatim — same
 TF-IDF, same cache, same search API) but points it at the **repo root** and
 widens the ingest set to ``.md`` + ``.py`` + ``.txt`` + ``.pdf`` with a deny-list
-for vendored / generated / binary trees. It writes its own cache
-(``state/operator_repo_index.json``) so the Queen-voice docs index
+for vendored / generated / binary trees. It writes its own compact cache
+(``state/operator_repo_index_v6.json``) so the Queen-voice docs index
 (``state/research_index.json``) is left completely untouched.
 """
 
@@ -31,13 +31,27 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 # historical, or runtime-state trees. Matched both as path components and as
 # substrings by ResearchCorpusIndex._iter_source_files.
 _EXCLUDE = (
-    ".git", "node_modules", "__pycache__", ".pytest_cache", ".mypy_cache",
-    "frontend", "state", "imports", "archive", "queen_backups",
-    "VERIFICATION AND VALIDATION", "data/ephemeral", ".venv", "venv",
-    "dist", "build", "site-packages",
+    ".git",
+    "node_modules",
+    "__pycache__",
+    ".pytest_cache",
+    ".mypy_cache",
+    "frontend",
+    "state",
+    "imports",
+    "archive",
+    "queen_backups",
+    "VERIFICATION AND VALIDATION",
+    "data/ephemeral",
+    ".venv",
+    "venv",
+    "dist",
+    "build",
+    "site-packages",
     # Raw evidence dumps and crash logs are provenance artifacts, not grounding
     # material — indexing them pollutes retrieval for general prompts.
-    "data/research/grants", "crash_log",
+    "data/research/grants",
+    "crash_log",
 )
 
 _INGEST = (".md", ".py", ".txt", ".pdf")
@@ -55,7 +69,7 @@ def get_operator_repo_index() -> ResearchCorpusIndex:
         if _instance is None:
             _instance = ResearchCorpusIndex(
                 root=str(REPO_ROOT),
-                cache_path=str(REPO_ROOT / "state" / "operator_repo_index.json"),
+                cache_path=str(REPO_ROOT / "state" / "operator_repo_index_v6.json"),
                 exclude=_EXCLUDE,
                 ingest_exts=_INGEST,
             )

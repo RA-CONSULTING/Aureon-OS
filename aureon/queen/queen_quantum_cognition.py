@@ -73,7 +73,7 @@ except ImportError:
     FIBONACCI_SEQUENCE = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55]
 
 # UTF-8 fix for Windows
-if sys.platform == 'win32':
+if sys.platform == 'win32' and sys.stdout is sys.__stdout__ and sys.stdout.isatty():
     os.environ['PYTHONIOENCODING'] = 'utf-8'
     try:
         import io
@@ -1449,39 +1449,53 @@ class QueenQuantumCognition:
         # STEP 5: EXECUTE (if action required)
         # ═══════════════════════════════════════════════════════════════════════
         if decision.get('action') not in ['HOLD', 'WAIT', None]:
-            if self.queen_hive and hasattr(self.queen_hive, 'autonomous_execute'):
-                try:
-                    exec_result = self.queen_hive.autonomous_execute(decision)
-                    cycle_result['execution'] = exec_result
-                except Exception as e:
-                    cycle_result['execution'] = {'error': str(e)}
+            try:
+                from aureon.queen.queen_mind import get_canonical_queen_mind
+
+                mind = get_canonical_queen_mind()
+                if mind is None:
+                    raise RuntimeError('canonical_queen_mind_required')
+                confidence = decision.get('confidence')
+                if (
+                    isinstance(confidence, bool)
+                    or not isinstance(confidence, (int, float))
+                    or not math.isfinite(float(confidence))
+                ):
+                    confidence = None
+                receipt = mind.submit_action_proposal(
+                    module_name=__name__,
+                    proposal={
+                        'intent': 'quantum_market_decision',
+                        'action': str(decision.get('action') or ''),
+                        'symbol': str((market_data or {}).get('symbol') or ''),
+                        'confidence': confidence,
+                        'reason': str(decision.get('reason') or '')[:1000],
+                    },
+                )
+                cycle_result['execution'] = {
+                    'action': 'PROPOSED',
+                    'executed': False,
+                    'proposal_receipt_id': receipt['receipt_id'],
+                    'action_eligible': False,
+                }
+            except Exception as e:
+                cycle_result['execution'] = {
+                    'action': 'HOLD',
+                    'executed': False,
+                    'reason': type(e).__name__,
+                    'action_eligible': False,
+                }
         else:
             cycle_result['execution'] = {'action': 'NONE', 'reason': 'No action required'}
         
         # ═══════════════════════════════════════════════════════════════════════
         # STEP 6: LEARN
         # ═══════════════════════════════════════════════════════════════════════
-        if self.queen_neuron and hasattr(self.queen_neuron, 'learn'):
-            try:
-                # Prepare learning input from this cycle
-                learning_input = [
-                    self.state.unified_amplification,
-                    self.state.decision_confidence,
-                    self.state.elite_hierarchy_score,
-                    self.state.coherence_contribution,
-                    1.0 if decision['action'] == 'BUY' else 0.0,
-                    cycle_result['execution'].get('success', False) * 1.0
-                ]
-                # Target is based on whether execution was successful
-                target = 1.0 if cycle_result['execution'].get('success', False) else 0.0
-                
-                cycle_result['learning'] = {
-                    'input': learning_input[:6],
-                    'target': target,
-                    'neuron_updated': True
-                }
-            except:
-                cycle_result['learning'] = {'neuron_updated': False}
+        cycle_result['learning'] = {
+            'neuron_updated': False,
+            'learning_eligible': False,
+            'reason': 'verified_terminal_outcome_receipt_required',
+        }
         
         logger.debug(f"👑🔄 Autonomous cycle complete: {decision['action']} (conf: {decision['confidence']:.2f})")
         return cycle_result

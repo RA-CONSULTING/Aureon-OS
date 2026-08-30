@@ -1444,17 +1444,10 @@ class MonteCarloETASimulator:
     
     def __init__(self, num_simulations: int = 100):
         self.num_simulations = num_simulations
-        self.rng = None  # Lazy init numpy random
+        self.rng = None
         
     def _ensure_numpy(self):
-        """Lazy load numpy for performance."""
-        if self.rng is None:
-            try:
-                import numpy as np
-                self.rng = np.random.default_rng()
-                self.np = np
-            except ImportError:
-                return False
+        """Compatibility surface; ETA analysis no longer generates paths."""
         return True
     
     def simulate_eta(
@@ -1477,11 +1470,6 @@ class MonteCarloETASimulator:
             - mc_eta_p90: 90th percentile (conservative) 
             - enhanced: Whether MC improves upon simple ETA
         """
-        if not self._ensure_numpy():
-            return {'enhanced': False, 'reason': 'numpy not available'}
-        
-        np = self.np
-        
         gap = target_pnl - current_pnl
         
         # If already at target
@@ -1506,44 +1494,18 @@ class MonteCarloETASimulator:
                 'simulations': 0
             }
         
-        # Time step for simulation
-        dt = 1.0  # 1 second steps
-        n_steps = int(max_time_seconds / dt)
-        
-        # Run simulations
-        hit_times = []
-        
-        for _ in range(self.num_simulations):
-            pnl = current_pnl
-            for step in range(n_steps):
-                # Geometric Brownian motion: dP = μdt + σdW
-                drift = pnl_velocity * dt
-                shock = volatility * np.sqrt(dt) * self.rng.standard_normal()
-                pnl += drift + shock
-                
-                if pnl >= target_pnl:
-                    hit_times.append(step * dt)
-                    break
-        
-        # Calculate statistics
-        n_hits = len(hit_times)
-        probability = n_hits / self.num_simulations
-        
-        if n_hits > 0:
-            hit_times_sorted = sorted(hit_times)
-            eta_median = hit_times_sorted[len(hit_times_sorted) // 2]
-            eta_p10 = hit_times_sorted[max(0, int(len(hit_times_sorted) * 0.1))]
-            eta_p90 = hit_times_sorted[min(len(hit_times_sorted) - 1, int(len(hit_times_sorted) * 0.9))]
-        else:
-            eta_median = float('inf')
-            eta_p10 = float('inf')
-            eta_p90 = float('inf')
-        
-        # Simple ETA for comparison
+        # Deterministic bounds derived from the observed velocity and measured
+        # volatility. No parallel P&L paths are generated or claimed as data.
         simple_eta = gap / pnl_velocity if pnl_velocity > 0 else float('inf')
-        
-        # MC is "enhanced" if it provides useful info
-        enhanced = probability > 0.1 or (simple_eta == float('inf') and probability > 0)
+        if pnl_velocity > 0:
+            uncertainty = min(0.9, abs(volatility) / max(abs(pnl_velocity), 1e-12))
+            eta_median = simple_eta
+            eta_p10 = max(0.0, simple_eta * (1.0 - uncertainty))
+            eta_p90 = min(max_time_seconds, simple_eta * (1.0 + uncertainty))
+            probability = max(0.0, min(1.0, 1.0 - simple_eta / max_time_seconds))
+        else:
+            eta_median = eta_p10 = eta_p90 = float('inf')
+            probability = 0.0
         
         return {
             'mc_probability': probability,
@@ -1551,8 +1513,10 @@ class MonteCarloETASimulator:
             'mc_eta_p10': eta_p10,
             'mc_eta_p90': eta_p90,
             'simple_eta': simple_eta,
-            'enhanced': enhanced,
-            'simulations': self.num_simulations
+            'enhanced': False,
+            'truth_status': 'real_derived',
+            'generated_values': False,
+            'simulations': 0
         }
 
 
@@ -3552,98 +3516,3 @@ def get_celtic_sniper(dry_run: bool = False) -> IraCelticSniper:
 
 
 # =============================================================================
-# MAIN - TEST SNIPER CONFIG & CELTIC ENHANCEMENT
-# =============================================================================
-
-if __name__ == "__main__":
-    print("""
-╔══════════════════════════════════════════════════════════════════════════╗
-║                                                                          ║
-║   🇮🇪🎯 IRA SNIPER MODE - CELTIC ENHANCED 🎯🇮🇪                          ║
-║                                                                          ║
-║   "We have been afraid for too long. This ends now."                    ║
-║   "Now with Celtic Warfare Intelligence - Strike before they react."    ║
-║                                                                          ║
-╚══════════════════════════════════════════════════════════════════════════╝
-    """)
-    
-    print("=" * 70)
-    print("🎯 SNIPER CONFIGURATION")
-    print("=" * 70)
-    
-    config = get_sniper_config()
-    
-    for key, value in config.items():
-        print(f"   {key:25s}: {value}")
-    
-    print()
-    print("=" * 70)
-    print("☘️ CELTIC WARFARE SYSTEMS STATUS")
-    print("=" * 70)
-    print(f"   🧠 Guerrilla Engine:    {'✅ AVAILABLE' if GUERRILLA_WIRED else '❌ NOT LOADED'}")
-    print(f"   ⚡ Preemptive Strike:   {'✅ AVAILABLE' if PREEMPTIVE_WIRED else '❌ NOT LOADED'}")
-    print(f"   🌐 Multi-Battlefront:   {'✅ AVAILABLE' if COORDINATOR_WIRED else '❌ NOT LOADED'}")
-    print(f"   ⚔️ War Strategy:        {'✅ AVAILABLE' if WAR_STRATEGY_WIRED else '❌ NOT LOADED'}")
-    print(f"   ☘️ Patriot Network:     {'✅ AVAILABLE' if PATRIOTS_WIRED else '❌ NOT LOADED'}")
-    
-    print()
-    print("=" * 70)
-    print("🧪 TEST SNIPER EXITS")
-    print("=" * 70)
-    
-    # Test scenarios
-    test_cases = [
-        (0.05, 0.04, -0.02, 0, "Penny profit on first cycle"),
-        (0.03, 0.04, -0.02, 0, "Not quite there yet"),
-        (-0.025, 0.04, -0.02, 2, "Stop loss triggered (IGNORED - we hold!)"),
-        (0.041, 0.04, -0.02, 1, "Just over threshold"),
-    ]
-    
-    for gross_pnl, win, stop, cycles, scenario in test_cases:
-        should_exit, reason, is_win = check_sniper_exit(gross_pnl, win, stop, cycles)
-        status = "✅ EXIT" if should_exit else "⏳ HOLD"
-        win_status = "WIN" if is_win else "LOSS" if should_exit else "-"
-        print(f"\n   📊 Scenario: {scenario}")
-        print(f"      Gross P&L: ${gross_pnl:.3f} | {status} | {win_status}")
-        print(f"      Reason: {reason}")
-    
-    print()
-    print("=" * 70)
-    print("☘️ TESTING CELTIC ENHANCED SNIPER")
-    print("=" * 70)
-    
-    # Test the Celtic sniper
-    sniper = IraCelticSniper(dry_run=False)
-    
-    # Acquire some test targets
-    test_targets = [
-        ('BTCUSDC', 'binance', 104500.0),
-        ('ETHGBP', 'kraken', 3200.0),
-        ('SOLUSDT', 'binance', 220.0),
-    ]
-    
-    print("\n📍 Acquiring test targets...")
-    for symbol, exchange, price in test_targets:
-        target = sniper.acquire_target(symbol, exchange, price)
-        
-        # Simulate price movement
-        import random
-        for _ in range(3):
-            movement = random.uniform(-0.002, 0.02) * price
-            new_price = price + movement
-            sniper.update_target_intelligence(target, new_price)
-        
-        # Check kill shot
-        should_exit, reason, is_win = sniper.check_kill_shot(target)
-        print(f"      🔫 Kill shot check: {reason}")
-        
-        if should_exit and is_win:
-            sniper.execute_kill(target)
-    
-    # Display final status
-    sniper.display_status()
-    
-    print("=" * 70)
-    print("🇮🇪 THE CELTIC SNIPER IS READY. ZERO LOSSES. MAXIMUM PRECISION. 🇮🇪")
-    print("=" * 70)
-    print()

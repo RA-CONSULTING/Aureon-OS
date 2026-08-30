@@ -1,0 +1,152 @@
+{
+  "schema": "aureon.website-release-validation.v1",
+  "created_at": "2026-08-21T02:18:10Z",
+  "release_id": "v45-5e099dc2-20260821T021809Z",
+  "target": "https://aureonzorzatechnologies.pl/",
+  "state": "blocked-before-production",
+  "production_eligible": false,
+  "deployment_performed": false,
+  "homepl_live_readback_passed": false,
+  "source": {
+    "repository": "RA-CONSULTING/Aureon-OS",
+    "branch": "website/v45-investor-rebuild-20260820",
+    "commit": "5e099dc2735c5478704c6fcbed1dc626e6049828",
+    "remote_branch_readback_match": true,
+    "website_tree_clean_at_build": true
+  },
+  "candidate": {
+    "archive": "artifacts/website-releases/v45-5e099dc2-20260821T021809Z/aureon-zorza-website.zip",
+    "archive_bytes": 2617662,
+    "archive_sha256": "a8d3a663a1b8d3a310af0ef01e9587234f35aaf7bba491ae3e8749655467b6db",
+    "package_file_count": 90,
+    "package_uncompressed_bytes": 3494147,
+    "file_hash_record_count": 89,
+    "file_hash_manifest_sha256": "49f23e30540a93fab49fdaf031b61bb8454af2b23f25878b194e2624b426f1eb",
+    "deterministic_rebuild_sha256_match": true,
+    "exact_directory_rebuild_readback_passed": true,
+    "assembled_package_audit_passed": true,
+    "archive_excludes_private_evidence": true,
+    "archive_excludes_working_archive_and_styleguide": true,
+    "archive_secret_suffix_scan_passed": true
+  },
+  "validation": {
+    "pytest": {
+      "passed": 68,
+      "failed": 0,
+      "files": [
+        "tests/test_website_tooling.py",
+        "tests/test_website_design_capability_set.py",
+        "tests/test_website_design_capability_implementations.py"
+      ]
+    },
+    "ruff_check_passed": true,
+    "ruff_format_check_passed": true,
+    "strict_mypy_source_files": 3,
+    "strict_mypy_passed": true,
+    "site_audit_errors": 0,
+    "site_audit_warnings": 0,
+    "javascript_syntax_files": 3,
+    "javascript_syntax_passed": true,
+    "json_xml_svg_parse_passed": true,
+    "git_diff_check_passed": true
+  },
+  "content": {
+    "coverage_receipt": "artifacts/website-operator/capability-evidence/content_source_inventory/v45-content-source-coverage-20260821.json",
+    "coverage_receipt_sha256": "ede34878e4b5fb60819f55782d54fe8c9fcc8dca2383a003c0fab64dc97aa1d5",
+    "claim_binding_gaps": 0,
+    "approved_but_hidden": 0,
+    "github_snapshot_as_of": "2026-08-21",
+    "substack_families_approved": 6,
+    "substack_current_placements_approved": 15,
+    "unmapped_images_blocked": 1,
+    "internal_financial_figures_published": false,
+    "content_gate": "pass"
+  },
+  "browser_evidence": {
+    "scope": "local-preview-only-not-homepl-live",
+    "run_id": "v45-final-local-browser-20260821T011720Z",
+    "final_evidence_sha256": "235d0aae648a6ad46ec2cbcedb255f0502fa7ac58fa49be1372c67e958720fc7",
+    "visual_manifest_sha256": "69cd7d228bbb6324c52a8e974559bda39a5379b62878240085bb8814dde61bfc",
+    "performance_input_sha256": "ffb3966b49df1da882634e8a368e764d874ec639e30bb2d229c22cc308914804",
+    "visual_cases": 8,
+    "visual_regressions": 0,
+    "document_horizontal_overflow_cases": 0,
+    "reduced_motion_active_animation_cases": 0,
+    "no_javascript_routes_with_visible_main_content": 4,
+    "median_lcp_ms_min": 252,
+    "median_lcp_ms_max": 564,
+    "maximum_median_cls": 0.015640679285934135,
+    "field_inp": "unavailable",
+    "synthetic_keyboard_latency_mislabeled_as_inp": false
+  },
+  "competitor_positioning": {
+    "brief": "docs/audits/AUREON_WEBSITE_COMPETITOR_DESIGN_BRIEF_20260821.md",
+    "brief_sha256": "7d99b6a0ab26c0ec0cf58a61bf64438135d4239288e472f4e5efd7a881f07366",
+    "fixture_sha256": "3e62952135616012604457c85cc4305f521ec1af3765142d3812333e6a6e7d08",
+    "official_primary_sources": 7,
+    "copy_instruction": "positioning-only-do-not-copy"
+  },
+  "public_live_baseline": {
+    "receipt": "artifacts/website-operator/cycle-evidence/v45-public-live-baseline-20260821T020305Z.json",
+    "receipt_sha256": "ba86da60ae890972b2873990a9a67618f88daf7d8e5e2d50222de5248c819cf5",
+    "captured_at": "2026-08-21T02:03:05Z",
+    "candidate_exact_matches": 0,
+    "v45_only_routes_present": 0,
+    "publication_complete": false,
+    "conclusion": "The public site remains the July mixed-era surface. V45 has not been published."
+  },
+  "hnc_cycle": {
+    "schema": "aureon.website-design-cycle-receipt.v1",
+    "cycle_id": "v45-5e099dc2-20260821T021809Z",
+    "candidate_hash": "a8d3a663a1b8d3a310af0ef01e9587234f35aaf7bba491ae3e8749655467b6db",
+    "target": "homepl:aureonzorzatechnologies.pl",
+    "state": "vetoed",
+    "veto_active": true,
+    "authority_binding_valid": false,
+    "receipt_sha256": "044db0318468f261db7eb6301c06aa96445a05ee62edba64997faeb2a45a0858",
+    "receipt_file_sha256": "c85fa7b81735136c4b50e1f19457e53a9c2172da4a76f93dc7b8be08f1405346",
+    "registered_capabilities": 15,
+    "registry_version": "2.0.0",
+    "closed_loop_stages": 12,
+    "deployment_authority": "none",
+    "write_performed": false
+  },
+  "blocking_gates": [
+    {
+      "code": "fresh-homepl-backup-missing",
+      "owner": "homepl_deploy",
+      "required": "Fresh recursive served-root backup with producer-bound manifest and non-zero exact readback"
+    },
+    {
+      "code": "homepl-account-target-unresolved",
+      "owner": "homepl_deploy",
+      "required": "Read back the exact authenticated Host FTP, served root, mode, port and account before the first socket; do not guess or substitute a target"
+    },
+    {
+      "code": "chrome-control-unavailable",
+      "owner": "ceo_owner_user",
+      "required": "Update or reinstall the Codex Chrome plugin so the signed-in Home.pl tab can be controlled and read back"
+    },
+    {
+      "code": "exact-candidate-authority-unbound",
+      "owner": "ceo_owner_user",
+      "required": "Bind action-time approval to archive SHA-256 a8d3a663a1b8d3a310af0ef01e9587234f35aaf7bba491ae3e8749655467b6db and the verified Home.pl served root"
+    },
+    {
+      "code": "live-readback-missing",
+      "owner": "homepl_deploy",
+      "required": "Exact 90-file remote/public readback plus TLS, cache, critical-route, redirect, 404 and security checks"
+    },
+    {
+      "code": "field-inp-unavailable",
+      "owner": "audit_benchmark",
+      "required": "Collect and label representative live interaction evidence without substituting synthetic keyboard timing for field INP"
+    }
+  ],
+  "private_data": {
+    "credentials_recorded": false,
+    "gmail_message_ids_recorded": false,
+    "private_drive_links_recorded": false,
+    "private_evidence_packaged": false
+  }
+}

@@ -1,0 +1,53 @@
+name: Aureon Appliance Contract CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "aureon/appliance/**"
+      - "packaging/appliance/**"
+      - "tests/test_appliance_packaging_contract.py"
+      - ".github/workflows/appliance-ci.yml"
+  pull_request:
+    paths:
+      - "aureon/appliance/**"
+      - "packaging/appliance/**"
+      - "tests/test_appliance_packaging_contract.py"
+      - ".github/workflows/appliance-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: appliance-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static-contract:
+    name: offline packaging contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Install offline contract tools
+        run: python -m pip install --disable-pip-version-check "pytest>=8,<9" "ruff>=0.12,<1"
+      - name: Validate Python and packaging contracts
+        run: |
+          python -m ruff check aureon/appliance tests/test_appliance_packaging_contract.py
+          python -m pytest -q tests/test_appliance_packaging_contract.py
+      - name: Validate appliance shell syntax
+        run: |
+          for script in \
+            packaging/appliance/mkosi.postinst.chroot \
+            packaging/appliance/mkosi.finalize.chroot \
+            packaging/appliance/rootfs/usr/sbin/aureon-firstboot \
+            packaging/appliance/rootfs/usr/lib/aureon/aureon-boot-attest; do
+            bash -n "$script"
+          done

@@ -1,7 +1,13 @@
-import os, time, json, hmac, hashlib, base64, threading, logging
+import os, time, json, hmac, hashlib, base64, threading, logging, math
 from pathlib import Path
 from typing import Dict, Any, List, Tuple
 from decimal import Decimal
+
+from aureon.governance.economic_boundary import (
+    EconomicGovernanceBlocked,
+    _claim_economic_transport_context,
+    _economic_transport_body_digest,
+)
 
 # Cross-process file locking for the Kraken nonce counter.
 # - POSIX: fcntl.flock
@@ -35,8 +41,190 @@ KRAKEN_BASE = "https://api.kraken.com"
 
 ASSETPAIR_CACHE_TTL = 300  # seconds
 KRAKEN_TRADES_PAGE_SIZE = 50
+KRAKEN_FILL_RECEIPT_MAX_AGE_SECONDS = 300.0
+
+_KRAKEN_TRANSPORT_OWNED_FIELDS = frozenset({"nonce"})
+_KRAKEN_ORDER_MUTATION_ACTIONS = frozenset(
+    {
+        "addorder",
+        "addorderbatch",
+        "amendorder",
+        "editorder",
+        "cancelorder",
+        "cancelorderbatch",
+        "cancelall",
+        "cancelallordersafter",
+    }
+)
+_KRAKEN_FUND_MUTATION_ACTIONS = frozenset(
+    {
+        "withdraw",
+        "withdrawcancel",
+        "wallettransfer",
+        "accounttransfer",
+        "transfer",
+        "stake",
+        "unstake",
+    }
+)
+_KRAKEN_EARN_MUTATION_ROUTES = frozenset(
+    {
+        "earn/allocate",
+        "earn/deallocate",
+    }
+)
+_KRAKEN_CANONICAL_MUTATION_PATHS = frozenset(
+    {
+        "/0/private/AddOrder",
+        "/0/private/AddOrderBatch",
+        "/0/private/AmendOrder",
+        "/0/private/EditOrder",
+        "/0/private/CancelOrder",
+        "/0/private/CancelOrderBatch",
+        "/0/private/CancelAll",
+        "/0/private/CancelAllOrdersAfter",
+        "/0/private/Withdraw",
+        "/0/private/WithdrawCancel",
+        "/0/private/WalletTransfer",
+        "/0/private/AccountTransfer",
+        "/0/private/Transfer",
+        "/0/private/Stake",
+        "/0/private/Unstake",
+        "/0/private/Earn/Allocate",
+        "/0/private/Earn/Deallocate",
+    }
+)
+
+_KRAKEN_SENTINEL_IDS = frozenset({
+    "unknown",
+    "none",
+    "null",
+    "dry_run",
+    "dry_run_id",
+    "dryrun",
+    "mock",  # sentinel rejected as no_data
+    "mock_order",
+    "test",
+    "test_order",
+})
 
 logger = logging.getLogger(__name__)
+
+
+def _is_kraken_economic_mutation_path(path: object) -> bool:
+    """Identify Kraken private routes that can change orders or funds."""
+
+    if not isinstance(path, str):
+        return False
+    route = path.split("?", 1)[0].rstrip("/")
+    prefix = "/0/private/"
+    if not route.casefold().startswith(prefix):
+        return False
+    action = route[len(prefix):].casefold()
+    return (
+        action in _KRAKEN_ORDER_MUTATION_ACTIONS
+        or action in _KRAKEN_FUND_MUTATION_ACTIONS
+        or action in _KRAKEN_EARN_MUTATION_ROUTES
+    )
+
+
+def _finite_decimal(
+    value: Any,
+    *,
+    positive: bool = False,
+    nonnegative: bool = False,
+) -> Decimal | None:
+    """Parse an observed numeric value without substituting a fallback."""
+    if value is None or isinstance(value, bool):
+        return None
+    try:
+        observed = Decimal(str(value).strip())
+    except Exception:
+        return None
+    if not observed.is_finite():
+        return None
+    if positive and observed <= 0:
+        return None
+    if nonnegative and observed < 0:
+        return None
+    return observed
+
+
+def _decimal_text(value: Any) -> str | None:
+    """Return the provider numeric value as a validated decimal string."""
+    observed = _finite_decimal(value)
+    if observed is None:
+        return None
+    return format(observed, "f")
+
+
+def _valid_kraken_id(value: Any) -> str | None:
+    """Return a non-sentinel provider identifier, otherwise no data."""
+    if not isinstance(value, str):
+        return None
+    candidate = value.strip()
+    normalized = candidate.lower().replace("-", "_").replace(" ", "_")
+    if not candidate or normalized in _KRAKEN_SENTINEL_IDS:
+        return None
+    if normalized.startswith(("dry_run", "mock_", "test_")):
+        return None
+    return candidate
+
+
+def _valid_kraken_client_order_id(value: Any) -> str | None:
+    """Accept only the deterministic short-UUID form used by S5."""
+    if not isinstance(value, str):
+        return None
+    candidate = value.strip().lower()
+    if len(candidate) != 32:
+        return None
+    if any(character not in "0123456789abcdef" for character in candidate):
+        return None
+    return candidate
+
+
+def _add_order_txid(result: Any) -> str | None:
+    """Extract the single txid Kraken documents for an AddOrder receipt."""
+    if not isinstance(result, dict):
+        return None
+    txids = result.get("txid")
+    if not isinstance(txids, (list, tuple)) or len(txids) != 1:
+        return None
+    return _valid_kraken_id(txids[0])
+
+
+def _fresh_provider_timestamp(
+    value: Any,
+    *,
+    now: float | None = None,
+    max_age_seconds: float = KRAKEN_FILL_RECEIPT_MAX_AGE_SECONDS,
+) -> float | None:
+    """Validate Kraken time; local receipt time is never a substitute."""
+    observed = _finite_decimal(value, positive=True)
+    if observed is None:
+        return None
+    try:
+        timestamp = float(observed)
+    except (OverflowError, ValueError):
+        return None
+    if timestamp > 10_000_000_000:
+        timestamp /= 1000.0
+    checked_at = time.time() if now is None else now
+    age_seconds = checked_at - timestamp
+    if age_seconds < -30.0 or age_seconds > max_age_seconds:
+        return None
+    return timestamp
+
+
+def _deterministic_receipt_id(prefix: str, payload: Dict[str, Any]) -> str:
+    """Hash provider evidence without including a local receipt clock."""
+    material = json.dumps(
+        payload,
+        sort_keys=True,
+        separators=(",", ":"),
+        default=str,
+    )
+    return f"{prefix}:" + hashlib.sha256(material.encode("utf-8")).hexdigest()
 
 # Import TokenBucket for proper rate limiting
 try:
@@ -134,8 +322,11 @@ def _get_next_nonce() -> int:
     3. Recovers gracefully if nonce file is corrupted
     """
     with _nonce_lock:
-        # Current time in microseconds as base
-        current_us = int(time.time() * 1000000)
+        # Kraken remembers the highest nonce ever observed for an API key.
+        # This key has historically been used by Aureon clients with
+        # nanosecond nonces, so falling back to microseconds permanently
+        # strands every authenticated request below that provider high-water.
+        current_ns = time.time_ns()
         
         try:
             # Try to read existing nonce from file (with locking)
@@ -148,8 +339,8 @@ def _get_next_nonce() -> int:
                         last_nonce = 0
                     
                     # New nonce = max(current_time, last_nonce + 1) plus a
-                    # deterministic offset for same-microsecond calls.
-                    new_nonce = max(current_us, last_nonce + 1) + _next_nonce_offset()
+                    # deterministic offset for same-nanosecond calls.
+                    new_nonce = max(current_ns, last_nonce + 1) + _next_nonce_offset()
                     
                     # Write back atomically
                     f.seek(0)
@@ -164,7 +355,7 @@ def _get_next_nonce() -> int:
                     return new_nonce
             else:
                 # Create new nonce file
-                new_nonce = current_us + _next_nonce_offset()
+                new_nonce = current_ns + _next_nonce_offset()
                 with open(NONCE_FILE, 'w+') as f:
                     _lock_file(f)
                     f.write(str(new_nonce))
@@ -178,7 +369,7 @@ def _get_next_nonce() -> int:
                 
         except Exception:
             # Fallback: use time + PID + deterministic offset.
-            return current_us + (os.getpid() % 10000) * 1000 + _next_nonce_offset()
+            return current_ns + (os.getpid() % 10000) * 1000 + _next_nonce_offset()
 
 class KrakenClient:
     """
@@ -203,7 +394,10 @@ class KrakenClient:
         retry_strategy = Retry(
             total=3,
             status_forcelist=[429, 500, 502, 503, 504],
-            allowed_methods=["GET", "POST"],
+            # A transport retry of AddOrder can duplicate a mutation after an
+            # ambiguous timeout/5xx. Private POSTs surface to their durable
+            # caller; only explicit Kraken rejection payloads retry below.
+            allowed_methods=["GET"],
             backoff_factor=1
         )
         adapter = HTTPAdapter(
@@ -258,6 +452,10 @@ class KrakenClient:
         self._rate_limit_backoff: float = 0.0
         self._rate_limit_until: float = 0.0
         self._consecutive_rate_limits: int = 0
+        # A one-call capability independently protects the final HTTP seam.
+        # It is consumed before the fake/real session can observe a mutation.
+        self._economic_dispatch_lock = threading.RLock()
+        self._economic_dispatches: dict[object, tuple[str, str, str]] = {}
 
     def _normalize_asset_name(self, asset: str) -> str:
         asset_up = (asset or "").upper()
@@ -302,6 +500,106 @@ class KrakenClient:
         sigdigest = base64.b64encode(mac.digest()).decode()
         return sigdigest
 
+    def _register_economic_dispatch(
+        self,
+        *,
+        method: str,
+        path: str,
+        body_digest: str,
+    ) -> object:
+        dispatch = object()
+        with self._economic_dispatch_lock:
+            self._economic_dispatches[dispatch] = (method, path, body_digest)
+        return dispatch
+
+    def _discard_economic_dispatch(self, dispatch: object | None) -> None:
+        if dispatch is None:
+            return
+        with self._economic_dispatch_lock:
+            self._economic_dispatches.pop(dispatch, None)
+
+    def _consume_economic_dispatch(
+        self,
+        dispatch: object | None,
+        *,
+        method: str,
+        path: str,
+        data: Dict[str, Any],
+    ) -> None:
+        with self._economic_dispatch_lock:
+            state = self._economic_dispatches.pop(dispatch, None)
+        if state is None:
+            raise EconomicGovernanceBlocked(
+                "signed_kraken_mutation_dispatch_capability_required"
+            )
+        if not isinstance(data, dict):
+            raise EconomicGovernanceBlocked(
+                "exact_kraken_mutation_body_required"
+            )
+        economic_body = dict(data)
+        nonce = economic_body.pop("nonce", None)
+        if not isinstance(nonce, str) or not nonce:
+            raise EconomicGovernanceBlocked(
+                "kraken_transport_owned_nonce_required"
+            )
+        try:
+            observed = (
+                method,
+                path,
+                _economic_transport_body_digest(economic_body),
+            )
+        except (TypeError, ValueError) as exc:
+            raise EconomicGovernanceBlocked(
+                "exact_kraken_mutation_body_required"
+            ) from exc
+        if observed != state:
+            raise EconomicGovernanceBlocked(
+                "exact_kraken_mutation_method_path_body_required"
+            )
+
+    def _private_http_post(
+        self,
+        path: str,
+        *,
+        data: Dict[str, Any],
+        headers: Dict[str, str],
+        timeout: int,
+        _economic_dispatch: object | None = None,
+    ):
+        """Final authenticated POST seam; mutations require one exact capability."""
+
+        is_mutation = _is_kraken_economic_mutation_path(path)
+        if is_mutation:
+            if path not in _KRAKEN_CANONICAL_MUTATION_PATHS:
+                raise EconomicGovernanceBlocked(
+                    "canonical_kraken_mutation_path_required"
+                )
+            if self.use_testnet:
+                raise EconomicGovernanceBlocked(
+                    "kraken_spot_testnet_mutation_unavailable"
+                )
+            if self.base != KRAKEN_BASE:
+                raise EconomicGovernanceBlocked(
+                    "canonical_kraken_live_endpoint_required"
+                )
+            self._consume_economic_dispatch(
+                _economic_dispatch,
+                method="POST",
+                path=path,
+                data=data,
+            )
+        elif _economic_dispatch is not None:
+            raise EconomicGovernanceBlocked(
+                "kraken_mutation_dispatch_on_read_only_request_forbidden"
+            )
+        url = f"{self.base}{path}"
+        return self.session.post(
+            url,
+            data=data,
+            headers=headers,
+            timeout=timeout,
+        )
+
     def _private(self, path: str, data: Dict[str, Any] = None, _cost: float = 1.0) -> Dict[str, Any]:
         """Execute a private (authenticated) Kraken API call with production-grade rate limiting.
         
@@ -310,12 +608,44 @@ class KrakenClient:
             data: POST data dict
             _cost: Rate limit cost — 1 for normal calls, 2 for ledger/trades queries
         """
+        is_mutation = _is_kraken_economic_mutation_path(path)
         if self.dry_run:
+            if is_mutation:
+                raise EconomicGovernanceBlocked(
+                    "dry_run_kraken_provider_mutation_forbidden"
+                )
             raise RuntimeError("Private Kraken endpoint used in dry-run. Provide balances via env or disable dry-run.")
         if not self.api_key or not self.api_secret:
             raise RuntimeError("Missing KRAKEN_API_KEY / KRAKEN_API_SECRET")
-        
-        max_retries = 3
+
+        request_data = dict(data or {})
+        authorized_body_digest: str | None = None
+        if is_mutation:
+            if path not in _KRAKEN_CANONICAL_MUTATION_PATHS:
+                raise EconomicGovernanceBlocked(
+                    "canonical_kraken_mutation_path_required"
+                )
+            if self.use_testnet:
+                raise EconomicGovernanceBlocked(
+                    "kraken_spot_testnet_mutation_unavailable"
+                )
+            if self.base != KRAKEN_BASE:
+                raise EconomicGovernanceBlocked(
+                    "canonical_kraken_live_endpoint_required"
+                )
+            if _KRAKEN_TRANSPORT_OWNED_FIELDS.intersection(request_data):
+                raise EconomicGovernanceBlocked(
+                    "kraken_nonce_is_transport_owned"
+                )
+            authorized_body_digest = _claim_economic_transport_context(
+                method="POST",
+                path=path,
+                body=request_data,
+            )
+
+        # A mutation permit authorizes exactly one provider request. Read-only
+        # calls retain their existing bounded retry behaviour.
+        max_retries = 1 if is_mutation else 3
         for attempt in range(max_retries):
             # Thread-safe rate limiting
             with self._private_lock:
@@ -336,18 +666,37 @@ class KrakenClient:
                 if elapsed < self._min_call_interval:
                     time.sleep(self._min_call_interval - elapsed)
                 
-                data = dict(data)
-                data["nonce"] = str(_get_next_nonce())
+                wire_data = dict(request_data)
+                wire_data["nonce"] = str(_get_next_nonce())
                 headers = {
                     "API-Key": self.api_key,
-                    "API-Sign": self._kraken_sign(path, data)
+                    "API-Sign": self._kraken_sign(path, wire_data)
                 }
-                url = f"{self.base}{path}"
                 
                 # Update last call time before making request
                 self._last_private_call = time.time()
                 
-                r = self.session.post(url, data=data, headers=headers, timeout=15)
+                dispatch: object | None = None
+                if is_mutation:
+                    if authorized_body_digest is None:
+                        raise EconomicGovernanceBlocked(
+                            "exact_kraken_mutation_body_required"
+                        )
+                    dispatch = self._register_economic_dispatch(
+                        method="POST",
+                        path=path,
+                        body_digest=authorized_body_digest,
+                    )
+                try:
+                    r = self._private_http_post(
+                        path,
+                        data=wire_data,
+                        headers=headers,
+                        timeout=15,
+                        _economic_dispatch=dispatch,
+                    )
+                finally:
+                    self._discard_economic_dispatch(dispatch)
                 r.raise_for_status()
                 res = r.json()
                 
@@ -489,19 +838,55 @@ class KrakenClient:
             if total is None:
                 total = count
             for trade_id, trade in batch.items():
-                pair = trade.get("pair", "")
+                provider_trade_id = _valid_kraken_id(trade_id)
+                pair = trade.get("pair") if isinstance(trade, dict) else None
+                trade_type = trade.get("type") if isinstance(trade, dict) else None
+                price = _finite_decimal(
+                    trade.get("price") if isinstance(trade, dict) else None,
+                    positive=True,
+                )
+                volume = _finite_decimal(
+                    trade.get("vol") if isinstance(trade, dict) else None,
+                    positive=True,
+                )
+                cost = _finite_decimal(
+                    trade.get("cost") if isinstance(trade, dict) else None,
+                    positive=True,
+                )
+                fee = _finite_decimal(
+                    trade.get("fee") if isinstance(trade, dict) else None,
+                    nonnegative=True,
+                )
+                provider_time = _finite_decimal(
+                    trade.get("time") if isinstance(trade, dict) else None,
+                    positive=True,
+                )
+                if (
+                    provider_trade_id is None
+                    or not isinstance(pair, str)
+                    or not pair
+                    or trade_type not in {"buy", "sell"}
+                    or price is None
+                    or volume is None
+                    or cost is None
+                    or fee is None
+                    or provider_time is None
+                ):
+                    raise RuntimeError("Incomplete Kraken TradesHistory provider receipt")
                 base, quote = self._pair_base_quote(pair)
                 trades.append({
-                    "id": trade_id,
+                    "id": provider_trade_id,
                     "pair": pair,
                     "base": base,
                     "quote": quote,
-                    "type": trade.get("type", ""),
-                    "price": float(trade.get("price", 0) or 0),
-                    "vol": float(trade.get("vol", 0) or 0),
-                    "cost": float(trade.get("cost", 0) or 0),
-                    "fee": float(trade.get("fee", 0) or 0),
-                    "time": float(trade.get("time", 0) or 0),
+                    "type": trade_type,
+                    "price": float(price),
+                    "vol": float(volume),
+                    "cost": float(cost),
+                    "fee": float(fee),
+                    "time": float(provider_time),
+                    "truth_status": "real_observed",
+                    "generated_values": False,
                 })
                 if len(trades) >= max_records:
                     break
@@ -512,7 +897,7 @@ class KrakenClient:
                 break
             # Extra delay between pages to avoid rate limit saturation
             time.sleep(self._page_call_interval)
-        trades.sort(key=lambda x: x.get("time", 0))
+        trades.sort(key=lambda x: x["time"])
         return trades
 
     def _normalize_symbol(self, symbol: str) -> List[str]:
@@ -707,6 +1092,17 @@ class KrakenClient:
             chunk = alts[i:i+40]
             try:
                 result = self._ticker(chunk)
+                provider_clock = self._public_get("/0/public/Time")
+                source_timestamp = _fresh_provider_timestamp(
+                    provider_clock.get("unixtime") if isinstance(provider_clock, dict) else None,
+                    max_age_seconds=60.0,
+                )
+                if source_timestamp is None:
+                    logger.warning(
+                        "Kraken ticker chunk %s has no fresh provider clock receipt",
+                        chunk_idx + 1,
+                    )
+                    continue
             except RuntimeError as e:
                 if "Rate limit" in str(e):
                     logger.warning(f"Kraken 24h ticker rate limited at chunk {chunk_idx+1}/{total_chunks}, stopping")
@@ -715,16 +1111,37 @@ class KrakenClient:
             for internal, t in result.items():
                 alt = self._int_to_alt.get(internal, internal)
                 try:
-                    last = float(t.get("c", [None])[0] or 0.0)
-                    openp = float(t.get("o", 0.0) or 0.0)
-                    vol_base = float(t.get("v", [0.0, 0.0])[1])  # 24h volume in base units
-                    change_pct = ((last - openp) / openp * 100.0) if openp > 0 else 0.0
+                    closes = t["c"]
+                    volumes = t["v"]
+                    if not isinstance(closes, list) or not closes:
+                        continue
+                    if not isinstance(volumes, list) or len(volumes) < 2:
+                        continue
+                    last_decimal = _finite_decimal(closes[0], positive=True)
+                    open_decimal = _finite_decimal(t["o"], positive=True)
+                    volume_decimal = _finite_decimal(volumes[1], nonnegative=True)
+                    if (
+                        last_decimal is None
+                        or open_decimal is None
+                        or volume_decimal is None
+                    ):
+                        continue
+                    last = float(last_decimal)
+                    openp = float(open_decimal)
+                    vol_base = float(volume_decimal)
+                    change_pct = (last - openp) / openp * 100.0
                     quote_vol = last * vol_base
                     out.append({
                         "symbol": alt,
                         "lastPrice": str(last),
                         "priceChangePercent": str(change_pct),
-                        "quoteVolume": str(quote_vol)
+                        "quoteVolume": str(quote_vol),
+                        "source_id": "kraken:/0/public/Ticker+/0/public/Time",
+                        "source_timestamp": source_timestamp,
+                        "received_at": time.time(),
+                        "timestamp_policy": "kraken_server_time_near_ticker_read",
+                        "truth_status": "real_derived",
+                        "generated_values": False,
                     })
                 except Exception:
                     continue
@@ -744,16 +1161,45 @@ class KrakenClient:
         if not res:
             return {}
         internal, t = next(iter(res.items()))
-        last = float(t.get("c", [None])[0] or 0.0)
-        openp = float(t.get("o", 0.0) or 0.0)
-        vol_base = float(t.get("v", [0.0, 0.0])[1])
-        change_pct = ((last - openp) / openp * 100.0) if openp > 0 else 0.0
+        closes = t.get("c")
+        volumes = t.get("v")
+        if not isinstance(closes, list) or not closes:
+            return {}
+        if not isinstance(volumes, list) or len(volumes) < 2:
+            return {}
+        last_decimal = _finite_decimal(closes[0], positive=True)
+        open_decimal = _finite_decimal(t.get("o"), positive=True)
+        volume_decimal = _finite_decimal(volumes[1], nonnegative=True)
+        if (
+            last_decimal is None
+            or open_decimal is None
+            or volume_decimal is None
+        ):
+            return {}
+        provider_clock = self._public_get("/0/public/Time")
+        source_timestamp = _fresh_provider_timestamp(
+            provider_clock.get("unixtime") if isinstance(provider_clock, dict) else None,
+            max_age_seconds=60.0,
+        )
+        if source_timestamp is None:
+            return {}
+        last = float(last_decimal)
+        openp = float(open_decimal)
+        vol_base = float(volume_decimal)
+        change_pct = (last - openp) / openp * 100.0
         quote_vol = last * vol_base
         return {
             "symbol": self._int_to_alt.get(internal, symbol),
             "lastPrice": str(last),
             "priceChangePercent": str(change_pct),
-            "quoteVolume": str(quote_vol)
+            "quoteVolume": str(quote_vol),
+            "price": last,
+            "source_id": "kraken:/0/public/Ticker+/0/public/Time",
+            "source_timestamp": source_timestamp,
+            "received_at": time.time(),
+            "timestamp_policy": "kraken_server_time_near_ticker_read",
+            "truth_status": "real_derived",
+            "generated_values": False,
         }
 
     def get_ticker(self, symbol: str) -> Dict[str, Any]:
@@ -775,6 +1221,118 @@ class KrakenClient:
             }
         except Exception:
             return {"symbol": symbol, "price": 0.0, "bid": 0.0, "ask": 0.0}
+
+    def get_ticker_receipt(self, symbol: str) -> Dict[str, Any]:
+        """Return a complete, fresh, provider-observed ticker receipt or no_data.
+
+        This is deliberately separate from the legacy ``get_ticker`` shape so
+        receipt consumers never have to infer provenance from compatibility
+        defaults.  Kraken's public ticker response has no per-ticker clock, so
+        the provider's own Time endpoint is retained as a distinct near-read
+        source timestamp; the local receipt time is never substituted for it.
+        """
+        def no_data(reason: str) -> Dict[str, Any]:
+            return {
+                "symbol": symbol,
+                "data_status": "no_data",
+                "truth_status": "no_data",
+                "generated_values": False,
+                "action": False,
+                "accounting": False,
+                "learning": False,
+                "reason": reason,
+            }
+
+        try:
+            result = self._ticker([symbol]) or self._ticker(self._normalize_symbol(symbol))
+            if not isinstance(result, dict) or not result:
+                return no_data("missing_provider_ticker")
+            internal, raw = next(iter(result.items()))
+            if not isinstance(raw, dict):
+                return no_data("malformed_provider_ticker")
+            closes = raw.get("c")
+            bids = raw.get("b")
+            asks = raw.get("a")
+            volumes = raw.get("v")
+            if (
+                not isinstance(closes, list) or not closes
+                or not isinstance(bids, list) or not bids
+                or not isinstance(asks, list) or not asks
+                or not isinstance(volumes, list) or len(volumes) < 2
+            ):
+                return no_data("incomplete_provider_book_or_ticker")
+            last = _finite_decimal(closes[0], positive=True)
+            bid = _finite_decimal(bids[0], positive=True)
+            ask = _finite_decimal(asks[0], positive=True)
+            open_price = _finite_decimal(raw.get("o"), positive=True)
+            volume = _finite_decimal(volumes[1], nonnegative=True)
+            if (
+                last is None or bid is None or ask is None
+                or open_price is None or volume is None or ask < bid
+            ):
+                return no_data("invalid_provider_book_or_ticker")
+            provider_clock = self._public_get("/0/public/Time")
+            received_at = time.time()
+            source_timestamp = _fresh_provider_timestamp(
+                provider_clock.get("unixtime") if isinstance(provider_clock, dict) else None,
+                now=received_at,
+                max_age_seconds=60.0,
+            )
+            if source_timestamp is None or source_timestamp > received_at + 5.0:
+                return no_data("missing_or_stale_provider_clock")
+            source_id = "kraken:/0/public/Ticker+/0/public/Time"
+            ticker_payload_material = "|".join((
+                str(internal),
+                format(last, "f"),
+                format(bid, "f"),
+                format(ask, "f"),
+                format(open_price, "f"),
+                format(volume, "f"),
+            ))
+            ticker_input_id = "kraken_ticker_payload:" + hashlib.sha256(
+                ticker_payload_material.encode("utf-8")
+            ).hexdigest()
+            clock_input_id = "kraken_time:" + hashlib.sha256(
+                format(source_timestamp, ".6f").encode("utf-8")
+            ).hexdigest()
+            input_receipt_ids = [ticker_input_id, clock_input_id]
+            receipt_material = "|".join((
+                source_id,
+                str(internal),
+                format(source_timestamp, ".6f"),
+                format(last, "f"),
+                format(bid, "f"),
+                format(ask, "f"),
+                format(open_price, "f"),
+                format(volume, "f"),
+                *input_receipt_ids,
+            ))
+            return {
+                "symbol": self._int_to_alt.get(internal, symbol),
+                "price": float(last),
+                "bid": float(bid),
+                "ask": float(ask),
+                "open_price": float(open_price),
+                "volume_24h": float(volume),
+                "change_pct": (float(last) - float(open_price)) / float(open_price) * 100.0,
+                "provider": "kraken",
+                "venue": "kraken",
+                "provider_receipt_type": "Ticker+Time",
+                "data_status": "live",
+                "truth_status": "real_observed",
+                "generated_values": False,
+                "source_id": source_id,
+                "source_timestamp": source_timestamp,
+                "received_at": received_at,
+                "receipt_id": "kraken_ticker:" + hashlib.sha256(receipt_material.encode("utf-8")).hexdigest(),
+                "input_receipt_ids": input_receipt_ids,
+                "action": False,
+                "accounting": False,
+                "learning": False,
+            }
+        except Exception as exc:
+            logger.warning("Kraken ticker receipt unavailable for %s: %s", symbol, exc)
+            return no_data("provider_ticker_receipt_error")
 
     def best_price(self, symbol: str) -> Dict[str, Any]:
         t = self.get_24h_ticker(symbol)
@@ -905,13 +1463,422 @@ class KrakenClient:
             return value
         return format(Decimal(str(value)), 'f').rstrip('0').rstrip('.') or '0'
 
-    def place_market_order(self, symbol: str, side: str, quantity: float | str | Decimal | None = None, quote_qty: float | str | Decimal | None = None) -> Dict[str, Any]:
+    def _order_receipt_shell(
+        self,
+        *,
+        symbol: str | None,
+        side: str | None,
+        order_type: str | None,
+        order_id: Any = None,
+        requested_quantity: Any = None,
+        requested_price: Any = None,
+        client_order_id: Any = None,
+    ) -> Dict[str, Any]:
+        txid = _valid_kraken_id(order_id)
+        cl_ord_id = _valid_kraken_client_order_id(client_order_id)
+        return {
+            "provider": "kraken",
+            "venue": "kraken",
+            "orderId": txid,
+            "symbol": symbol,
+            "side": side.upper() if isinstance(side, str) else None,
+            "type": order_type.upper() if isinstance(order_type, str) else None,
+            "requestedQty": _decimal_text(requested_quantity),
+            "origQty": _decimal_text(requested_quantity),
+            "requestedPrice": _decimal_text(requested_price),
+            "cl_ord_id": cl_ord_id,
+            "price": None,
+            "executedQty": None,
+            "filled_qty": None,
+            "avgPrice": None,
+            "filled_avg_price": None,
+            "cummulativeQuoteQty": None,
+            "filled_notional": None,
+            "fee": None,
+            "fee_asset": None,
+            "fee_currency": None,
+            "fills": None,
+            "provider_timestamp": None,
+            "source_timestamp": None,
+            "source_id": None,
+            "receipt_id": None,
+            "input_receipt_ids": [],
+            "fill_receipt_complete": False,
+            "eligible_for_accounting": False,
+            "eligible_for_learning": False,
+            "eligible_for_action": False,
+            "action": False,
+            "accounting": False,
+            "learning": False,
+            "generated_values": False,
+        }
+
+    def _not_submitted_order_receipt(
+        self,
+        *,
+        symbol: str | None,
+        side: str | None,
+        order_type: str | None,
+        requested_quantity: Any = None,
+        requested_price: Any = None,
+        client_order_id: Any = None,
+    ) -> Dict[str, Any]:
+        receipt = self._order_receipt_shell(
+            symbol=symbol,
+            side=side,
+            order_type=order_type,
+            requested_quantity=requested_quantity,
+            requested_price=requested_price,
+            client_order_id=client_order_id,
+        )
+        receipt.update({
+            "status": "not_submitted",
+            "data_status": "not_submitted",
+            "truth_status": "not_submitted",
+            "submitted": False,
+            "dryRun": True,
+            "reconciliation_required": False,
+            "reason": "dry_run_order_not_submitted",
+        })
+        return receipt
+
+    def _submission_order_receipt(
+        self,
+        result: Any,
+        *,
+        symbol: str | None,
+        side: str | None,
+        order_type: str | None,
+        requested_quantity: Any = None,
+        requested_price: Any = None,
+        client_order_id: Any = None,
+    ) -> Dict[str, Any]:
+        """Normalize AddOrder only as a submission acknowledgement."""
+        txid = _add_order_txid(result)
+        receipt = self._order_receipt_shell(
+            symbol=symbol,
+            side=side,
+            order_type=order_type,
+            order_id=txid,
+            requested_quantity=requested_quantity,
+            requested_price=requested_price,
+            client_order_id=client_order_id,
+        )
+        receipt["received_at"] = time.time()
+        receipt["provider_receipt_type"] = "AddOrder"
+        receipt["receipt_id"] = _deterministic_receipt_id(
+            "kraken_order_ack",
+            {
+                "provider_receipt_type": "AddOrder",
+                "provider_result": result,
+                "order_id": txid,
+                "symbol": symbol,
+                "side": side,
+                "order_type": order_type,
+                "requested_quantity": _decimal_text(requested_quantity),
+                "requested_price": _decimal_text(requested_price),
+                "cl_ord_id": receipt["cl_ord_id"],
+            },
+        )
+        if txid is None:
+            receipt.update({
+                "status": "pending_reconciliation",
+                "data_status": "pending_reconciliation",
+                "truth_status": "no_data",
+                "submitted": None,
+                "reconciliation_required": True,
+                "reason": "missing_or_ambiguous_provider_txid",
+                "source_id": None,
+            })
+            return receipt
+        receipt.update({
+            "status": "pending_reconciliation",
+            "data_status": "pending_reconciliation",
+            "truth_status": "real_observed",
+            "submitted": True,
+            "reconciliation_required": True,
+            "reason": "terminal_provider_fill_receipt_required",
+            "source_id": f"kraken:/0/private/AddOrder:{txid}",
+        })
+        return receipt
+
+    def _normalize_order_receipt(
+        self,
+        order_id: Any,
+        order: Any,
+        *,
+        provider_receipt_type: str,
+        now: float | None = None,
+    ) -> Dict[str, Any]:
+        """Normalize QueryOrders/ClosedOrders without manufacturing fill data."""
+        txid = _valid_kraken_id(order_id)
+        if not isinstance(order, dict):
+            order = None
+        descr = order.get("descr") if order is not None else None
+        if not isinstance(descr, dict):
+            descr = {}
+        pair = descr.get("pair") if isinstance(descr.get("pair"), str) else None
+        side = descr.get("type") if isinstance(descr.get("type"), str) else None
+        order_type = descr.get("ordertype") if isinstance(descr.get("ordertype"), str) else None
+        requested_quantity = order.get("vol") if order is not None else None
+        requested_price = descr.get("price")
+        receipt = self._order_receipt_shell(
+            symbol=pair,
+            side=side,
+            order_type=order_type,
+            order_id=txid,
+            requested_quantity=requested_quantity,
+            requested_price=requested_price,
+        )
+        receipt.update({
+            "provider_receipt_type": provider_receipt_type,
+            "received_at": time.time(),
+            "source_id": (
+                f"kraken_order:/0/private/{provider_receipt_type}:{txid}"
+                if txid else None
+            ),
+            "submitted": txid is not None,
+            "reconciliation_required": True,
+            "receipt_id": _deterministic_receipt_id(
+                "kraken_order",
+                {
+                    "provider_receipt_type": provider_receipt_type,
+                    "order_id": txid,
+                    "provider_order": order,
+                },
+            ),
+        })
+
+        if txid is None:
+            receipt.update({
+                "status": "no_data",
+                "data_status": "no_data",
+                "truth_status": "no_data",
+                "reason": "missing_or_sentinel_provider_txid",
+            })
+            return receipt
+        if order is None:
+            receipt.update({
+                "status": "no_data",
+                "data_status": "no_data",
+                "truth_status": "no_data",
+                "reason": "missing_provider_order_receipt",
+            })
+            return receipt
+
+        provider_status = str(order.get("status") or "").strip().lower()
+        receipt["provider_status"] = provider_status or None
+        if provider_status in {"pending", "open"}:
+            receipt.update({
+                "status": "pending_reconciliation",
+                "data_status": "pending_reconciliation",
+                "truth_status": "real_observed",
+                "reason": "terminal_provider_fill_receipt_required",
+            })
+            return receipt
+        if provider_status not in {"closed", "canceled", "expired"}:
+            receipt.update({
+                "status": "no_data",
+                "data_status": "no_data",
+                "truth_status": "no_data",
+                "reason": "unknown_or_nonterminal_provider_status",
+            })
+            return receipt
+
+        provider_timestamp = _fresh_provider_timestamp(order.get("closetm"), now=now)
+        filled_quantity = _finite_decimal(order.get("vol_exec"), nonnegative=True)
+        if provider_timestamp is None:
+            receipt.update({
+                "status": "no_data",
+                "data_status": "no_data",
+                "truth_status": "no_data",
+                "reason": "missing_or_stale_provider_close_timestamp",
+            })
+            return receipt
+        if filled_quantity is None:
+            receipt.update({
+                "status": "no_data",
+                "data_status": "no_data",
+                "truth_status": "no_data",
+                "reason": "missing_or_malformed_provider_filled_quantity",
+            })
+            return receipt
+
+        if provider_status in {"canceled", "expired"} and filled_quantity == 0:
+            receipt.update({
+                "status": provider_status.upper(),
+                "data_status": "live",
+                "truth_status": "real_observed",
+                "provider_timestamp": provider_timestamp,
+                "source_timestamp": provider_timestamp,
+                "reconciliation_required": False,
+                "reason": "terminal_provider_receipt_without_fill",
+            })
+            return receipt
+
+        if filled_quantity <= 0:
+            receipt.update({
+                "status": "no_data",
+                "data_status": "no_data",
+                "truth_status": "no_data",
+                "reason": "terminal_receipt_has_no_observed_fill",
+            })
+            return receipt
+
+        average_price = _finite_decimal(order.get("price"), positive=True)
+        filled_cost = _finite_decimal(order.get("cost"), positive=True)
+        observed_fee = _finite_decimal(order.get("fee"), nonnegative=True)
+        raw_trade_ids = order.get("trades")
+        trade_ids = []
+        if isinstance(raw_trade_ids, (list, tuple)):
+            for raw_trade_id in raw_trade_ids:
+                trade_id = _valid_kraken_id(raw_trade_id)
+                if trade_id is None or trade_id in trade_ids:
+                    trade_ids = []
+                    break
+                trade_ids.append(trade_id)
+
+        if average_price is None:
+            reason = "missing_or_malformed_provider_average_price"
+        elif filled_cost is None:
+            reason = "missing_or_malformed_provider_filled_cost"
+        elif observed_fee is None:
+            reason = "missing_or_malformed_provider_fee"
+        elif not trade_ids:
+            reason = "missing_or_ambiguous_provider_trade_ids"
+        else:
+            reason = None
+        if reason is not None:
+            receipt.update({
+                "status": "no_data",
+                "data_status": "no_data",
+                "truth_status": "no_data",
+                "reason": reason,
+            })
+            return receipt
+
+        expected_cost = filled_quantity * average_price
+        cost_tolerance = max(Decimal("0.00000001"), filled_cost * Decimal("0.001"))
+        if abs(expected_cost - filled_cost) > cost_tolerance:
+            receipt.update({
+                "status": "no_data",
+                "data_status": "no_data",
+                "truth_status": "no_data",
+                "reason": "inconsistent_provider_fill_cost_and_average_price",
+            })
+            return receipt
+
+        requested = _finite_decimal(requested_quantity, positive=True)
+        if requested is None:
+            receipt.update({
+                "status": "no_data",
+                "data_status": "no_data",
+                "truth_status": "no_data",
+                "reason": "missing_or_malformed_provider_requested_quantity",
+            })
+            return receipt
+        if filled_quantity > requested:
+            receipt.update({
+                "status": "no_data",
+                "data_status": "no_data",
+                "truth_status": "no_data",
+                "reason": "provider_filled_quantity_exceeds_order_quantity",
+            })
+            return receipt
+
+        fee_asset = None
+        if pair:
+            try:
+                _base_asset, fee_asset = self._pair_base_quote(pair)
+            except Exception:
+                fee_asset = None
+        if not fee_asset:
+            receipt.update({
+                "status": "no_data",
+                "data_status": "no_data",
+                "truth_status": "no_data",
+                "reason": "missing_provider_pair_metadata_for_fee_currency",
+            })
+            return receipt
+
+        fully_filled = provider_status == "closed"
+        if requested is not None and filled_quantity < requested:
+            fully_filled = False
+        fill_status = "FILLED" if fully_filled else "PARTIALLY_FILLED"
+        input_receipt_ids = [f"kraken_trade:{trade_id}" for trade_id in trade_ids]
+        receipt.update({
+            "status": fill_status,
+            "data_status": "live",
+            "truth_status": "real_observed",
+            "price": format(average_price, "f"),
+            "executedQty": format(filled_quantity, "f"),
+            "filled_qty": format(filled_quantity, "f"),
+            "avgPrice": format(average_price, "f"),
+            "filled_avg_price": format(average_price, "f"),
+            "cummulativeQuoteQty": format(filled_cost, "f"),
+            "filled_notional": format(filled_cost, "f"),
+            "fee": format(observed_fee, "f"),
+            "fee_asset": fee_asset,
+            "fee_currency": fee_asset,
+            "fills": [
+                {
+                    "tradeId": trade_id,
+                    "source": f"kraken_{provider_receipt_type.lower()}",
+                }
+                for trade_id in trade_ids
+            ],
+            "provider_timestamp": provider_timestamp,
+            "source_timestamp": provider_timestamp,
+            "closedTime": provider_timestamp,
+            "input_receipt_ids": input_receipt_ids,
+            "fill_receipt_complete": fully_filled,
+            "eligible_for_accounting": fully_filled,
+            "eligible_for_learning": fully_filled,
+            "eligible_for_action": False,
+            "action": False,
+            "accounting": fully_filled,
+            "learning": fully_filled,
+            "generated_values": False,
+            "reconciliation_required": not fully_filled,
+            "reason": (
+                None if fully_filled
+                else "terminal_partial_fill_requires_external_reconciliation"
+            ),
+        })
+        return receipt
+
+    def place_market_order(
+        self,
+        symbol: str,
+        side: str,
+        quantity: float | str | Decimal | None = None,
+        quote_qty: float | str | Decimal | None = None,
+        *,
+        client_order_id: str | None = None,
+    ) -> Dict[str, Any]:
         """
-        Execute a market order. In dry-run, returns a mock.
-        In live mode, calls Kraken AddOrder.
+        Submit a market order.
+
+        AddOrder acknowledges submission only. Fill fields remain unavailable
+        until get_order_status() observes a complete terminal provider receipt.
         """
+        cl_ord_id = None
+        if client_order_id is not None:
+            cl_ord_id = _valid_kraken_client_order_id(client_order_id)
+            if cl_ord_id is None:
+                raise ValueError(
+                    "client_order_id must be a 32-character hexadecimal value"
+                )
         if self.dry_run:
-            return {"dryRun": True, "symbol": symbol, "side": side, "quantity": quantity, "quoteQty": quote_qty}
+            receipt = self._not_submitted_order_receipt(
+                symbol=symbol,
+                side=side,
+                order_type="market",
+                requested_quantity=quantity,
+                client_order_id=cl_ord_id,
+            )
+            receipt["requestedQuoteQty"] = _decimal_text(quote_qty)
+            return receipt
         
         # ═══ SAFETY NET: £50 GBP minimum trade value (≈ $63 USD at 1.27 GBP/USD) ═══
         # Aligned with the system-wide spot minimum — any buy below this is rejected.
@@ -965,39 +1932,20 @@ class KrakenClient:
             return {"error": "volume_minimum", "symbol": symbol, "volume": vol, "ordermin": ordermin}
         
         params["volume"] = self._format_order_value(vol)
+        if cl_ord_id is not None:
+            params["cl_ord_id"] = cl_ord_id
 
         res = self._private("/0/private/AddOrder", params)
-        txid = res.get("txid", ["unknown"])[0]
-        
-        # Estimate cummulativeQuoteQty from current best price when not a quote_qty order
-        cumm_quote = "0.00000000"
-        if quote_qty:
-            cumm_quote = str(quote_qty)
-        else:
-            try:
-                price_info = self.best_price(symbol)
-                best_px = float(price_info.get("price", 0))
-                if best_px > 0:
-                    cumm_quote = str(round(vol * best_px, 8))
-            except Exception:
-                pass
-        
-        # Return Binance-compatible response structure
-        return {
-            "symbol": symbol,
-            "orderId": txid,
-            "clientOrderId": str(time.time()),
-            "transactTime": int(time.time() * 1000),
-            "price": "0.00000000",
-            "origQty": params.get("volume"),
-            "executedQty": params.get("volume"), # Assumed filled
-            "cummulativeQuoteQty": cumm_quote,
-            "status": "FILLED",
-            "timeInForce": "GTC",
-            "type": "MARKET",
-            "side": side.upper(),
-            "fills": [] # Kraken doesn't return fills in AddOrder response immediately
-        }
+        receipt = self._submission_order_receipt(
+            res,
+            symbol=symbol,
+            side=side,
+            order_type="market",
+            requested_quantity=params.get("volume"),
+            client_order_id=cl_ord_id,
+        )
+        receipt["requestedQuoteQty"] = _decimal_text(quote_qty)
+        return receipt
 
     def convert_to_quote(self, asset: str, amount: float, quote: str) -> float:
         asset_up = asset.upper()
@@ -1104,21 +2052,27 @@ class KrakenClient:
             target_pairs.add(f"X{base}Z{quote}")
             target_pairs.add(f"XX{base}Z{quote}")
         
-        total_qty = 0.0
-        total_cost = 0.0
-        total_fees = 0.0
+        total_qty = Decimal("0")
+        total_cost = Decimal("0")
+        total_fees = Decimal("0")
         buy_trades = 0
         
-        for _trade_id, trade in trades.items():
-            pair = trade.get('pair', '')
+        for trade_id, trade in trades.items():
+            if not isinstance(trade, dict) or _valid_kraken_id(trade_id) is None:
+                return None
+            pair = trade.get('pair')
             # Check if this trade matches our target symbol
-            if pair not in target_pairs and symbol not in pair:
+            if not isinstance(pair, str) or (
+                pair not in target_pairs and symbol not in pair
+            ):
                 continue
             
-            trade_type = trade.get('type', '')  # 'buy' or 'sell'
-            qty = float(trade.get('vol', 0))
-            price = float(trade.get('price', 0))
-            fee = float(trade.get('fee', 0))
+            trade_type = trade.get('type')
+            qty = _finite_decimal(trade.get('vol'), positive=True)
+            price = _finite_decimal(trade.get('price'), positive=True)
+            fee = _finite_decimal(trade.get('fee'), nonnegative=True)
+            if trade_type not in {'buy', 'sell'} or qty is None or price is None or fee is None:
+                return None
             
             if trade_type == 'buy':
                 total_qty += qty
@@ -1128,26 +2082,49 @@ class KrakenClient:
             elif trade_type == 'sell':
                 total_qty -= qty
                 if total_qty > 0:
-                    avg_price = total_cost / (total_qty + qty) if (total_qty + qty) > 0 else 0
+                    prior_quantity = total_qty + qty
+                    if prior_quantity <= 0:
+                        return None
+                    avg_price = total_cost / prior_quantity
                     total_cost = total_qty * avg_price
         
         if total_qty <= 0 or buy_trades == 0:
             return None
         
-        avg_entry = total_cost / total_qty if total_qty > 0 else 0
+        avg_entry = total_cost / total_qty
         
         return {
             'symbol': symbol,
-            'avg_entry_price': avg_entry,
-            'total_quantity': total_qty,
-            'total_cost': total_cost,
-            'total_fees': total_fees,
-            'trade_count': buy_trades
+            'avg_entry_price': float(avg_entry),
+            'total_quantity': float(total_qty),
+            'total_cost': float(total_cost),
+            'total_fees': float(total_fees),
+            'trade_count': buy_trades,
+            'truth_status': 'real_derived',
+            'generated_values': False,
         }
 
-    def compute_order_fees_in_quote(self, order: Dict[str, Any], primary_quote: str) -> float:
-        # No fill info in dry-run; return 0 to let orchestrator use configured taker fee model if any
-        return 0.0
+    def compute_order_fees_in_quote(
+        self,
+        order: Dict[str, Any],
+        primary_quote: str,
+    ) -> float | None:
+        """Return only a verified provider fee already denominated in quote."""
+        if (
+            not isinstance(order, dict)
+            or order.get("data_status") != "live"
+            or order.get("fill_receipt_complete") is not True
+            or order.get("eligible_for_accounting") is not True
+        ):
+            return None
+        observed_fee = _finite_decimal(order.get("fee"), nonnegative=True)
+        fee_asset = self._normalize_asset_name(
+            str(order.get("fee_asset") or order.get("fee_currency") or "")
+        )
+        quote_asset = self._normalize_asset_name(primary_quote)
+        if observed_fee is None or not fee_asset or fee_asset != quote_asset:
+            return None
+        return float(observed_fee)
 
     # ══════════════════════════════════════════════════════════════════════
     # ADVANCED ORDER TYPES - Limit, Stop-Loss, Take-Profit, Trailing Stop
@@ -1181,11 +2158,15 @@ class KrakenClient:
         Benefit: Maker fee 0.16% vs Taker fee 0.26% (40% savings with post_only)
         """
         if self.dry_run:
-            return {
-                "dryRun": True, "symbol": symbol, "side": side, 
-                "type": "LIMIT", "quantity": str(quantity), "price": str(price),
-                "postOnly": post_only, "timeInForce": time_in_force
-            }
+            receipt = self._not_submitted_order_receipt(
+                symbol=symbol,
+                side=side,
+                order_type="limit",
+                requested_quantity=quantity,
+                requested_price=price,
+            )
+            receipt.update({"postOnly": post_only, "timeInForce": time_in_force})
+            return receipt
         
         self._load_asset_pairs()
         pair = self._alt_to_int.get(symbol, symbol)
@@ -1217,22 +2198,16 @@ class KrakenClient:
         # GTC is default, no param needed
         
         res = self._private("/0/private/AddOrder", params)
-        txid = res.get("txid", ["unknown"])[0]
-        
-        return {
-            "symbol": symbol,
-            "orderId": txid,
-            "clientOrderId": str(time.time()),
-            "transactTime": int(time.time() * 1000),
-            "price": str(price),
-            "origQty": str(quantity),
-            "executedQty": "0",  # Not immediately filled
-            "status": "NEW",
-            "timeInForce": time_in_force,
-            "type": "LIMIT",
-            "side": side.upper(),
-            "postOnly": post_only
-        }
+        receipt = self._submission_order_receipt(
+            res,
+            symbol=symbol,
+            side=side,
+            order_type="limit",
+            requested_quantity=quantity,
+            requested_price=price,
+        )
+        receipt.update({"postOnly": post_only, "timeInForce": time_in_force})
+        return receipt
 
     def place_stop_loss_order(
         self,
@@ -1258,12 +2233,18 @@ class KrakenClient:
         CRITICAL: Unlike client-side stops, these execute on Kraken's servers!
         """
         if self.dry_run:
-            return {
-                "dryRun": True, "symbol": symbol, "side": side,
-                "type": "STOP_LOSS_LIMIT" if limit_price else "STOP_LOSS",
-                "quantity": str(quantity), "stopPrice": str(stop_price),
-                "limitPrice": str(limit_price) if limit_price else None
-            }
+            receipt = self._not_submitted_order_receipt(
+                symbol=symbol,
+                side=side,
+                order_type="stop_loss_limit" if limit_price else "stop_loss",
+                requested_quantity=quantity,
+                requested_price=limit_price,
+            )
+            receipt.update({
+                "stopPrice": _decimal_text(stop_price),
+                "limitPrice": _decimal_text(limit_price),
+            })
+            return receipt
         
         self._load_asset_pairs()
         pair = self._alt_to_int.get(symbol, symbol)
@@ -1284,18 +2265,19 @@ class KrakenClient:
             params["price2"] = self._format_order_value(limit_price)  # Limit price after trigger
         
         res = self._private("/0/private/AddOrder", params)
-        txid = res.get("txid", ["unknown"])[0]
-        
-        return {
-            "symbol": symbol,
-            "orderId": txid,
-            "type": "STOP_LOSS_LIMIT" if limit_price else "STOP_LOSS",
-            "side": side.upper(),
-            "quantity": str(quantity),
-            "stopPrice": str(stop_price),
-            "limitPrice": str(limit_price) if limit_price else None,
-            "status": "NEW"
-        }
+        receipt = self._submission_order_receipt(
+            res,
+            symbol=symbol,
+            side=side,
+            order_type="stop_loss_limit" if limit_price else "stop_loss",
+            requested_quantity=quantity,
+            requested_price=limit_price,
+        )
+        receipt.update({
+            "stopPrice": _decimal_text(stop_price),
+            "limitPrice": _decimal_text(limit_price),
+        })
+        return receipt
 
     def place_take_profit_order(
         self,
@@ -1319,12 +2301,18 @@ class KrakenClient:
             Order response
         """
         if self.dry_run:
-            return {
-                "dryRun": True, "symbol": symbol, "side": side,
-                "type": "TAKE_PROFIT_LIMIT" if limit_price else "TAKE_PROFIT",
-                "quantity": str(quantity), "takeProfitPrice": str(take_profit_price),
-                "limitPrice": str(limit_price) if limit_price else None
-            }
+            receipt = self._not_submitted_order_receipt(
+                symbol=symbol,
+                side=side,
+                order_type="take_profit_limit" if limit_price else "take_profit",
+                requested_quantity=quantity,
+                requested_price=limit_price,
+            )
+            receipt.update({
+                "takeProfitPrice": _decimal_text(take_profit_price),
+                "limitPrice": _decimal_text(limit_price),
+            })
+            return receipt
         
         self._load_asset_pairs()
         pair = self._alt_to_int.get(symbol, symbol)
@@ -1343,18 +2331,19 @@ class KrakenClient:
             params["price2"] = self._format_order_value(limit_price)
         
         res = self._private("/0/private/AddOrder", params)
-        txid = res.get("txid", ["unknown"])[0]
-        
-        return {
-            "symbol": symbol,
-            "orderId": txid,
-            "type": "TAKE_PROFIT_LIMIT" if limit_price else "TAKE_PROFIT",
-            "side": side.upper(),
-            "quantity": str(quantity),
-            "takeProfitPrice": str(take_profit_price),
-            "limitPrice": str(limit_price) if limit_price else None,
-            "status": "NEW"
-        }
+        receipt = self._submission_order_receipt(
+            res,
+            symbol=symbol,
+            side=side,
+            order_type="take_profit_limit" if limit_price else "take_profit",
+            requested_quantity=quantity,
+            requested_price=limit_price,
+        )
+        receipt.update({
+            "takeProfitPrice": _decimal_text(take_profit_price),
+            "limitPrice": _decimal_text(limit_price),
+        })
+        return receipt
 
     def place_trailing_stop_order(
         self,
@@ -1381,12 +2370,17 @@ class KrakenClient:
                  If ETH rises to $3500 -> stop auto-adjusts to $3430
         """
         if self.dry_run:
-            return {
-                "dryRun": True, "symbol": symbol, "side": side,
-                "type": "TRAILING_STOP",
-                "quantity": str(quantity), "trailingOffset": str(trailing_offset),
-                "offsetType": offset_type
-            }
+            receipt = self._not_submitted_order_receipt(
+                symbol=symbol,
+                side=side,
+                order_type="trailing_stop",
+                requested_quantity=quantity,
+            )
+            receipt.update({
+                "trailingOffset": _decimal_text(trailing_offset),
+                "offsetType": offset_type,
+            })
+            return receipt
         
         self._load_asset_pairs()
         pair = self._alt_to_int.get(symbol, symbol)
@@ -1408,18 +2402,18 @@ class KrakenClient:
             params["price"] = f"+{self._format_order_value(trailing_offset)}"
         
         res = self._private("/0/private/AddOrder", params)
-        txid = res.get("txid", ["unknown"])[0]
-        
-        return {
-            "symbol": symbol,
-            "orderId": txid,
-            "type": "TRAILING_STOP",
-            "side": side.upper(),
-            "quantity": str(quantity),
-            "trailingOffset": str(trailing_offset),
+        receipt = self._submission_order_receipt(
+            res,
+            symbol=symbol,
+            side=side,
+            order_type="trailing_stop",
+            requested_quantity=quantity,
+        )
+        receipt.update({
+            "trailingOffset": _decimal_text(trailing_offset),
             "offsetType": offset_type,
-            "status": "NEW"
-        }
+        })
+        return receipt
 
     def place_order_with_tp_sl(
         self,
@@ -1455,14 +2449,19 @@ class KrakenClient:
             # Buys 1 ETH, auto-sells at $3500 profit or $2800 loss
         """
         if self.dry_run:
-            return {
-                "dryRun": True, "symbol": symbol, "side": side,
-                "type": order_type.upper(), "quantity": str(quantity),
-                "price": str(price) if price else None,
-                "takeProfit": str(take_profit) if take_profit else None,
-                "stopLoss": str(stop_loss) if stop_loss else None,
-                "conditionalClose": True
-            }
+            receipt = self._not_submitted_order_receipt(
+                symbol=symbol,
+                side=side,
+                order_type=order_type,
+                requested_quantity=quantity,
+                requested_price=price,
+            )
+            receipt.update({
+                "takeProfit": _decimal_text(take_profit),
+                "stopLoss": _decimal_text(stop_loss),
+                "conditionalClose": True,
+            })
+            return receipt
         
         self._load_asset_pairs()
         pair = self._alt_to_int.get(symbol, symbol)
@@ -1489,7 +2488,28 @@ class KrakenClient:
             
             # Submit entry with stop-loss
             res = self._private("/0/private/AddOrder", params)
-            entry_txid = res.get("txid", ["unknown"])[0]
+            entry_receipt = self._submission_order_receipt(
+                res,
+                symbol=symbol,
+                side=side,
+                order_type=order_type,
+                requested_quantity=quantity,
+                requested_price=price,
+            )
+            entry_receipt.update({
+                "entryOrderId": entry_receipt.get("orderId"),
+                "takeProfitOrderId": None,
+                "stopLossAttached": True,
+                "takeProfit": _decimal_text(take_profit),
+                "stopLoss": _decimal_text(stop_loss),
+                "conditionalClose": True,
+            })
+            if (
+                entry_receipt.get("data_status") != "pending_reconciliation"
+                or not entry_receipt.get("orderId")
+            ):
+                entry_receipt["reason"] = "entry_submission_receipt_unproven"
+                return entry_receipt
             
             # Now add take-profit as separate order
             tp_params = {
@@ -1499,21 +2519,32 @@ class KrakenClient:
                 "volume": self._format_order_value(quantity),
                 "price": self._format_order_value(take_profit),
             }
-            tp_res = self._private("/0/private/AddOrder", tp_params)
-            tp_txid = tp_res.get("txid", ["unknown"])[0]
-            
-            return {
-                "symbol": symbol,
-                "entryOrderId": entry_txid,
-                "takeProfitOrderId": tp_txid,
-                "stopLossAttached": True,
-                "type": order_type.upper(),
-                "side": side.upper(),
-                "quantity": str(quantity),
-                "takeProfit": str(take_profit),
-                "stopLoss": str(stop_loss),
-                "status": "NEW"
-            }
+            try:
+                tp_res = self._private("/0/private/AddOrder", tp_params)
+            except Exception as exc:
+                entry_receipt.update({
+                    "reason": "secondary_submission_requires_reconciliation",
+                    "secondary_submission_error": type(exc).__name__,
+                })
+                return entry_receipt
+            tp_receipt = self._submission_order_receipt(
+                tp_res,
+                symbol=symbol,
+                side=close_side,
+                order_type="take_profit",
+                requested_quantity=quantity,
+                requested_price=take_profit,
+            )
+            entry_receipt.update({
+                "takeProfitOrderId": tp_receipt.get("orderId"),
+                "orderReceipts": [entry_receipt.copy(), tp_receipt],
+            })
+            if (
+                tp_receipt.get("data_status") != "pending_reconciliation"
+                or not tp_receipt.get("orderId")
+            ):
+                entry_receipt["reason"] = "secondary_submission_receipt_unproven"
+            return entry_receipt
         
         elif take_profit:
             # Entry with take-profit close
@@ -1526,19 +2557,20 @@ class KrakenClient:
             params["close[price]"] = self._format_order_value(stop_loss)
         
         res = self._private("/0/private/AddOrder", params)
-        txid = res.get("txid", ["unknown"])[0]
-        
-        return {
-            "symbol": symbol,
-            "orderId": txid,
-            "type": order_type.upper(),
-            "side": side.upper(),
-            "quantity": str(quantity),
-            "takeProfit": str(take_profit) if take_profit else None,
-            "stopLoss": str(stop_loss) if stop_loss else None,
+        receipt = self._submission_order_receipt(
+            res,
+            symbol=symbol,
+            side=side,
+            order_type=order_type,
+            requested_quantity=quantity,
+            requested_price=price,
+        )
+        receipt.update({
+            "takeProfit": _decimal_text(take_profit),
+            "stopLoss": _decimal_text(stop_loss),
             "conditionalClose": True,
-            "status": "NEW"
-        }
+        })
+        return receipt
 
     # ══════════════════════════════════════════════════════════════════════
     # ORDER MANAGEMENT - Query, Cancel, Modify
@@ -1559,8 +2591,12 @@ class KrakenClient:
         
         out = []
         for txid, order in orders.items():
-            descr = order.get("descr", {})
-            pair = descr.get("pair", "")
+            receipt = self._normalize_order_receipt(
+                txid,
+                order,
+                provider_receipt_type="OpenOrders",
+            )
+            pair = receipt.get("symbol")
             
             # Filter by symbol if provided
             if symbol:
@@ -1568,21 +2604,311 @@ class KrakenClient:
                 target_pair = self._alt_to_int.get(symbol, symbol)
                 if pair != target_pair and pair != symbol:
                     continue
-            
-            out.append({
-                "orderId": txid,
-                "symbol": pair,
-                "side": descr.get("type", "").upper(),
-                "type": descr.get("ordertype", "").upper(),
-                "price": descr.get("price", "0"),
-                "stopPrice": descr.get("price2", None),
-                "origQty": str(order.get("vol", 0)),
-                "executedQty": str(order.get("vol_exec", 0)),
-                "status": order.get("status", "OPEN").upper(),
-                "time": order.get("opentm", 0)
-            })
+            out.append(receipt)
         
         return out
+
+    def get_account_balance_receipt(
+        self,
+        pair: str | None = None,
+    ) -> Dict[str, Any]:
+        """Return authenticated balances and, when requested, a spot fee.
+
+        Kraken's Balance response has no provider timestamp.  The public Time
+        response is therefore read immediately after the private reads and
+        retained as the source timestamp. TradeVolume fees are pair-specific,
+        so S5 must request its exact spot pair; no fee is guessed or defaulted.
+        ``received_at`` is a separate local receipt clock and is never used as
+        a substitute for provider time.
+        """
+        pair_requested = pair is not None
+        provider_receipt_type = (
+            "Balance+TradeVolume+Time+KeyInfo"
+            if pair_requested
+            else "Balance+Time+KeyInfo"
+        )
+
+        def no_data(reason: str) -> Dict[str, Any]:
+            return {
+                "provider": "kraken",
+                "venue": "kraken",
+                "provider_receipt_type": provider_receipt_type,
+                "account_scope": "incomplete",
+                "account_id_hash": None,
+                "balances": None,
+                "balance_text": None,
+                "taker_fee_pair": None,
+                "provider_fee_pair": None,
+                "taker_fee_percent_text": None,
+                "taker_fee_rate": None,
+                "taker_fee_rate_text": None,
+                "source_id": None,
+                "source_timestamp": None,
+                "received_at": time.time(),
+                "receipt_id": None,
+                "input_receipt_ids": [],
+                "api_key_permission_receipt_id": None,
+                "api_key_query_funds": False,
+                "api_key_modify_trades": False,
+                "api_key_funding_mutations_absent": False,
+                "data_status": "no_data",
+                "truth_status": "no_data",
+                "generated_values": False,
+                "eligible_for_action": False,
+                "action": False,
+                "accounting": False,
+                "learning": False,
+                "reason": reason,
+            }
+
+        if getattr(self, "dry_run", True):
+            return no_data("live_private_balance_receipt_required")
+        try:
+            raw_key_info = self._private("/0/private/GetApiKeyInfo", {})
+            raw_permissions = (
+                raw_key_info.get("permissions")
+                if isinstance(raw_key_info, dict)
+                else None
+            )
+            if (
+                not isinstance(raw_permissions, list)
+                or not raw_permissions
+                or any(
+                    not isinstance(value, str) or not value.strip()
+                    for value in raw_permissions
+                )
+            ):
+                return no_data("complete_provider_api_key_permissions_required")
+            permissions = sorted({value.strip() for value in raw_permissions})
+            dangerous_permission_tokens = (
+                "withdraw",
+                "transfer",
+                "subaccount",
+                "stake",
+                "earn",
+                "deposit",
+            )
+            query_funds = "query-funds" in permissions
+            modify_trades = "modify-trades" in permissions
+            funding_mutations_absent = not any(
+                any(token in permission.lower() for token in dangerous_permission_tokens)
+                for permission in permissions
+            )
+            if not query_funds or not modify_trades or not funding_mutations_absent:
+                return no_data("least_privilege_kraken_trading_key_required")
+            if raw_key_info.get("apiKey") != self.api_key:
+                return no_data("provider_api_key_identity_mismatch")
+            ip_allowlist = raw_key_info.get("ipAllowlist")
+            if not isinstance(ip_allowlist, list) or any(
+                not isinstance(value, str) for value in ip_allowlist
+            ):
+                return no_data("complete_provider_api_key_permissions_required")
+            permission_material = json.dumps(
+                {
+                    "permissions": permissions,
+                    "valid_until": str(raw_key_info.get("validUntil") or ""),
+                    "ip_allowlist": sorted(ip_allowlist),
+                },
+                sort_keys=True,
+                separators=(",", ":"),
+            )
+            permission_input_id = "kraken_api_key_permissions:" + hashlib.sha256(
+                permission_material.encode("utf-8")
+            ).hexdigest()
+            account_id_hash = hashlib.sha256(
+                f"kraken:live_spot:{self.api_key}".encode("utf-8")
+            ).hexdigest()
+            resolved_pair = None
+            taker_fee_pair = None
+            if pair_requested:
+                if not isinstance(pair, str) or not pair.strip():
+                    return no_data("valid_spot_fee_pair_required")
+                resolved_pair, pair_info = self._resolve_pair(pair.strip())
+                if not resolved_pair or not isinstance(pair_info, dict):
+                    return no_data("valid_spot_fee_pair_required")
+                raw_altname = pair_info.get("altname") or resolved_pair
+                if not isinstance(raw_altname, str) or not raw_altname.strip():
+                    return no_data("valid_spot_fee_pair_required")
+                taker_fee_pair = raw_altname.strip().upper()
+
+            raw_balances = self._private("/0/private/Balance", {})
+            if not isinstance(raw_balances, dict) or not raw_balances:
+                return no_data("missing_provider_balance_payload")
+
+            balances: Dict[str, float] = {}
+            balance_text: Dict[str, str] = {}
+            provider_assets: Dict[str, str] = {}
+            provider_rows: List[Tuple[str, str, str]] = []
+            for raw_asset, raw_amount in raw_balances.items():
+                if not isinstance(raw_asset, str) or not raw_asset.strip():
+                    return no_data("malformed_provider_balance_asset")
+                provider_asset = raw_asset.strip().upper()
+                asset = self._normalize_asset_name(provider_asset)
+                amount = _finite_decimal(raw_amount, nonnegative=True)
+                if not asset or amount is None or asset in balances:
+                    return no_data("ambiguous_or_malformed_provider_balances")
+                try:
+                    numeric_amount = float(amount)
+                except (OverflowError, ValueError):
+                    return no_data("nonfinite_provider_balance")
+                if not math.isfinite(numeric_amount):
+                    return no_data("nonfinite_provider_balance")
+                exact_amount = format(amount, "f")
+                balances[asset] = numeric_amount
+                balance_text[asset] = exact_amount
+                provider_assets[asset] = provider_asset
+                provider_rows.append((asset, provider_asset, exact_amount))
+
+            provider_fee_pair = None
+            taker_fee_percent = None
+            taker_fee_rate = None
+            if resolved_pair is not None:
+                raw_trade_volume = self._private(
+                    "/0/private/TradeVolume",
+                    {"pair": resolved_pair, "fee-info": True},
+                )
+                raw_fees = (
+                    raw_trade_volume.get("fees")
+                    if isinstance(raw_trade_volume, dict)
+                    else None
+                )
+                if not isinstance(raw_fees, dict) or len(raw_fees) != 1:
+                    return no_data("single_provider_spot_taker_fee_required")
+                raw_provider_fee_pair, raw_fee_row = next(iter(raw_fees.items()))
+                if (
+                    not isinstance(raw_provider_fee_pair, str)
+                    or not raw_provider_fee_pair.strip()
+                    or not isinstance(raw_fee_row, dict)
+                ):
+                    return no_data("single_provider_spot_taker_fee_required")
+                taker_fee_percent = _finite_decimal(
+                    raw_fee_row.get("fee"),
+                    nonnegative=True,
+                )
+                if taker_fee_percent is None or taker_fee_percent > Decimal("100"):
+                    return no_data("valid_provider_spot_taker_fee_required")
+                provider_fee_pair = raw_provider_fee_pair.strip().upper()
+                taker_fee_rate = taker_fee_percent / Decimal("100")
+
+            provider_clock = self._public_get("/0/public/Time")
+            received_at = time.time()
+            source_timestamp = _fresh_provider_timestamp(
+                provider_clock.get("unixtime") if isinstance(provider_clock, dict) else None,
+                now=received_at,
+                max_age_seconds=60.0,
+            )
+            if source_timestamp is None or source_timestamp > received_at + 5.0:
+                return no_data("missing_or_stale_provider_clock")
+
+            provider_rows.sort()
+            balance_payload = json.dumps(provider_rows, separators=(",", ":"))
+            balance_input_id = "kraken_balance_payload:" + hashlib.sha256(
+                balance_payload.encode("utf-8")
+            ).hexdigest()
+            clock_input_id = "kraken_time:" + hashlib.sha256(
+                format(source_timestamp, ".6f").encode("utf-8")
+            ).hexdigest()
+            input_receipt_ids = [
+                permission_input_id,
+                balance_input_id,
+                clock_input_id,
+            ]
+            source_id = (
+                "kraken:/0/private/GetApiKeyInfo+"
+                "/0/private/Balance+/0/public/Time"
+            )
+            receipt_evidence = {
+                "source_id": source_id,
+                "source_timestamp": format(source_timestamp, ".6f"),
+                "account_id_hash": account_id_hash,
+                "api_key_permissions": permissions,
+                "api_key_permission_receipt_id": permission_input_id,
+                "provider_rows": provider_rows,
+                "input_receipt_ids": input_receipt_ids,
+            }
+            if taker_fee_rate is not None:
+                fee_material = json.dumps(
+                    {
+                        "requested_pair": taker_fee_pair,
+                        "provider_pair": provider_fee_pair,
+                        "fee_percent": format(taker_fee_percent, "f"),
+                        "fee_rate": format(taker_fee_rate, "f"),
+                    },
+                    sort_keys=True,
+                    separators=(",", ":"),
+                )
+                fee_input_id = "kraken_trade_volume_fee:" + hashlib.sha256(
+                    fee_material.encode("utf-8")
+                ).hexdigest()
+                input_receipt_ids.insert(1, fee_input_id)
+                source_id = (
+                    "kraken:/0/private/GetApiKeyInfo+"
+                    "/0/private/Balance+"
+                    "/0/private/TradeVolume+/0/public/Time"
+                )
+                receipt_evidence.update({
+                    "source_id": source_id,
+                    "taker_fee_pair": taker_fee_pair,
+                    "provider_fee_pair": provider_fee_pair,
+                    "taker_fee_percent": format(taker_fee_percent, "f"),
+                    "taker_fee_rate": format(taker_fee_rate, "f"),
+                    "input_receipt_ids": input_receipt_ids,
+                })
+            receipt_material = json.dumps(
+                receipt_evidence,
+                sort_keys=True,
+                separators=(",", ":"),
+            )
+            return {
+                "provider": "kraken",
+                "venue": "kraken",
+                "provider_receipt_type": provider_receipt_type,
+                "account_scope": "complete",
+                "account_id_hash": account_id_hash,
+                "balances": balances,
+                "balance_text": balance_text,
+                "provider_assets": provider_assets,
+                "taker_fee_pair": taker_fee_pair,
+                "provider_fee_pair": provider_fee_pair,
+                "taker_fee_percent_text": (
+                    format(taker_fee_percent, "f")
+                    if taker_fee_percent is not None
+                    else None
+                ),
+                "taker_fee_rate": (
+                    float(taker_fee_rate)
+                    if taker_fee_rate is not None
+                    else None
+                ),
+                "taker_fee_rate_text": (
+                    format(taker_fee_rate, "f")
+                    if taker_fee_rate is not None
+                    else None
+                ),
+                "source_id": source_id,
+                "source_timestamp": source_timestamp,
+                "received_at": received_at,
+                "timestamp_policy": "kraken_server_time_near_private_balance_read",
+                "receipt_id": "kraken_balance:" + hashlib.sha256(
+                    receipt_material.encode("utf-8")
+                ).hexdigest(),
+                "input_receipt_ids": input_receipt_ids,
+                "api_key_permission_receipt_id": permission_input_id,
+                "api_key_query_funds": query_funds,
+                "api_key_modify_trades": modify_trades,
+                "api_key_funding_mutations_absent": funding_mutations_absent,
+                "data_status": "live",
+                "truth_status": "real_observed",
+                "generated_values": False,
+                "eligible_for_action": True,
+                "action": False,
+                "accounting": False,
+                "learning": False,
+                "reason": None,
+            }
+        except Exception as exc:
+            logger.warning("Kraken balance receipt unavailable: %s", exc)
+            return no_data("provider_balance_receipt_error")
 
     def get_order_status(self, order_id: str) -> Dict[str, Any]:
         """
@@ -1595,38 +2921,65 @@ class KrakenClient:
             Order details including status
         """
         if self.dry_run:
-            return {"orderId": order_id, "status": "UNKNOWN", "dryRun": True}
+            receipt = self._order_receipt_shell(
+                symbol=None,
+                side=None,
+                order_type=None,
+                order_id=order_id,
+            )
+            receipt.update({
+                "status": "no_data",
+                "data_status": "no_data",
+                "truth_status": "no_data",
+                "submitted": None,
+                "dryRun": True,
+                "reconciliation_required": receipt.get("orderId") is not None,
+                "reason": "provider_order_query_not_executed_in_dry_run",
+            })
+            return receipt
+
+        txid = _valid_kraken_id(order_id)
+        if txid is None:
+            return self._normalize_order_receipt(
+                order_id,
+                None,
+                provider_receipt_type="QueryOrders",
+            )
         
-        result = self._private("/0/private/QueryOrders", {"txid": order_id})
-        
-        if order_id not in result:
-            return {"orderId": order_id, "status": "NOT_FOUND"}
-        
-        order = result[order_id]
-        descr = order.get("descr", {})
-        
-        # Map Kraken status to Binance-like status
-        status_map = {
-            "pending": "NEW",
-            "open": "NEW",
-            "closed": "FILLED",
-            "canceled": "CANCELED",
-            "expired": "EXPIRED"
-        }
-        kraken_status = order.get("status", "unknown")
-        
-        return {
-            "orderId": order_id,
-            "symbol": descr.get("pair", ""),
-            "side": descr.get("type", "").upper(),
-            "type": descr.get("ordertype", "").upper(),
-            "price": descr.get("price", "0"),
-            "origQty": str(order.get("vol", 0)),
-            "executedQty": str(order.get("vol_exec", 0)),
-            "status": status_map.get(kraken_status, kraken_status.upper()),
-            "time": order.get("opentm", 0),
-            "closedTime": order.get("closetm", None)
-        }
+        result = self._private(
+            "/0/private/QueryOrders",
+            {"txid": txid, "trades": True},
+        )
+        order = result.get(txid) if isinstance(result, dict) else None
+        return self._normalize_order_receipt(
+            txid,
+            order,
+            provider_receipt_type="QueryOrders",
+        )
+
+    def get_closed_orders(self, symbol: str | None = None) -> List[Dict[str, Any]]:
+        """Return only fail-closed normalizations of provider ClosedOrders rows."""
+        if self.dry_run:
+            return []
+        result = self._private("/0/private/ClosedOrders", {"trades": True})
+        orders = result.get("closed") if isinstance(result, dict) else None
+        if not isinstance(orders, dict):
+            return []
+        normalized = []
+        for txid, order in orders.items():
+            receipt = self._normalize_order_receipt(
+                txid,
+                order,
+                provider_receipt_type="ClosedOrders",
+            )
+            pair = receipt.get("symbol")
+            if symbol:
+                self._load_asset_pairs()
+                target_pair = self._alt_to_int.get(symbol, symbol)
+                if pair != target_pair and pair != symbol:
+                    continue
+            normalized.append(receipt)
+        return normalized
 
     def cancel_order(self, order_id: str) -> Dict[str, Any]:
         """
@@ -1639,15 +2992,56 @@ class KrakenClient:
             Cancellation result
         """
         if self.dry_run:
-            return {"orderId": order_id, "status": "CANCELED", "dryRun": True}
-        
-        result = self._private("/0/private/CancelOrder", {"txid": order_id})
-        
-        return {
-            "orderId": order_id,
-            "status": "CANCELED",
-            "count": result.get("count", 0)
-        }
+            receipt = self._not_submitted_order_receipt(
+                symbol=None,
+                side=None,
+                order_type=None,
+            )
+            receipt["attemptedOrderId"] = _valid_kraken_id(order_id)
+            receipt["reason"] = "dry_run_cancel_not_submitted"
+            return receipt
+
+        txid = _valid_kraken_id(order_id)
+        if txid is None:
+            receipt = self._order_receipt_shell(
+                symbol=None,
+                side=None,
+                order_type=None,
+            )
+            receipt.update({
+                "status": "no_data",
+                "data_status": "no_data",
+                "truth_status": "no_data",
+                "submitted": False,
+                "reconciliation_required": False,
+                "reason": "missing_or_sentinel_provider_txid",
+            })
+            return receipt
+
+        result = self._private("/0/private/CancelOrder", {"txid": txid})
+        count = _finite_decimal(result.get("count"), positive=True) if isinstance(result, dict) else None
+        receipt = self._order_receipt_shell(
+            symbol=None,
+            side=None,
+            order_type=None,
+            order_id=txid,
+        )
+        receipt.update({
+            "provider_receipt_type": "CancelOrder",
+            "received_at": time.time(),
+            "providerCancelCount": format(count, "f") if count is not None else None,
+            "status": "pending_reconciliation" if count is not None else "no_data",
+            "data_status": "pending_reconciliation" if count is not None else "no_data",
+            "truth_status": "real_observed" if count is not None else "no_data",
+            "submitted": count is not None,
+            "reconciliation_required": count is not None,
+            "reason": (
+                "terminal_provider_order_receipt_required"
+                if count is not None
+                else "missing_or_malformed_cancel_acknowledgement"
+            ),
+        })
+        return receipt
 
     def cancel_all_orders(self, symbol: str | None = None) -> Dict[str, Any]:
         """
@@ -1660,7 +3054,15 @@ class KrakenClient:
             Count of cancelled orders
         """
         if self.dry_run:
-            return {"count": 0, "dryRun": True}
+            return {
+                "count": None,
+                "status": "not_submitted",
+                "data_status": "not_submitted",
+                "truth_status": "not_submitted",
+                "dryRun": True,
+                "submitted": False,
+                "generated_values": False,
+            }
         
         if symbol:
             # Cancel orders for specific symbol by iterating
@@ -1668,15 +3070,31 @@ class KrakenClient:
             cancelled = 0
             for order in open_orders:
                 try:
-                    self.cancel_order(order["orderId"])
-                    cancelled += 1
+                    receipt = self.cancel_order(order["orderId"])
+                    if receipt.get("data_status") == "pending_reconciliation":
+                        cancelled += 1
                 except Exception:
                     pass
-            return {"count": cancelled, "symbol": symbol}
+            return {
+                "acknowledged_count": cancelled,
+                "symbol": symbol,
+                "status": "pending_reconciliation" if cancelled else "no_data",
+                "data_status": "pending_reconciliation" if cancelled else "no_data",
+                "reconciliation_required": bool(cancelled),
+                "generated_values": False,
+            }
         
         # Cancel all orders
         result = self._private("/0/private/CancelAll", {})
-        return {"count": result.get("count", 0)}
+        count = _finite_decimal(result.get("count"), nonnegative=True) if isinstance(result, dict) else None
+        return {
+            "providerCancelCount": format(count, "f") if count is not None else None,
+            "status": "pending_reconciliation" if count is not None else "no_data",
+            "data_status": "pending_reconciliation" if count is not None else "no_data",
+            "truth_status": "real_observed" if count is not None else "no_data",
+            "reconciliation_required": count is not None,
+            "generated_values": False,
+        }
 
     def edit_order(
         self,
@@ -1696,9 +3114,33 @@ class KrakenClient:
             New order ID (Kraken returns new txid for edited orders)
         """
         if self.dry_run:
-            return {"orderId": order_id, "status": "EDITED", "dryRun": True}
-        
-        params = {"txid": order_id}
+            receipt = self._not_submitted_order_receipt(
+                symbol=None,
+                side=None,
+                order_type=None,
+                requested_quantity=quantity,
+                requested_price=price,
+            )
+            receipt["attemptedOrderId"] = _valid_kraken_id(order_id)
+            receipt["reason"] = "dry_run_edit_not_submitted"
+            return receipt
+
+        txid = _valid_kraken_id(order_id)
+        if txid is None:
+            receipt = self._order_receipt_shell(
+                symbol=None,
+                side=None,
+                order_type=None,
+            )
+            receipt.update({
+                "status": "no_data",
+                "data_status": "no_data",
+                "truth_status": "no_data",
+                "reason": "missing_or_sentinel_provider_txid",
+            })
+            return receipt
+
+        params = {"txid": txid}
         
         if quantity:
             params["volume"] = self._format_order_value(quantity)
@@ -1706,12 +3148,32 @@ class KrakenClient:
             params["price"] = self._format_order_value(price)
         
         result = self._private("/0/private/EditOrder", params)
-        
-        return {
-            "originalOrderId": order_id,
-            "newOrderId": result.get("txid", order_id),
-            "status": "EDITED"
-        }
+        new_txid = _valid_kraken_id(result.get("txid")) if isinstance(result, dict) else None
+        receipt = self._order_receipt_shell(
+            symbol=None,
+            side=None,
+            order_type=None,
+            order_id=new_txid,
+            requested_quantity=quantity,
+            requested_price=price,
+        )
+        receipt.update({
+            "originalOrderId": txid,
+            "newOrderId": new_txid,
+            "provider_receipt_type": "EditOrder",
+            "received_at": time.time(),
+            "status": "pending_reconciliation" if new_txid else "no_data",
+            "data_status": "pending_reconciliation" if new_txid else "no_data",
+            "truth_status": "real_observed" if new_txid else "no_data",
+            "submitted": new_txid is not None,
+            "reconciliation_required": new_txid is not None,
+            "reason": (
+                "terminal_provider_order_receipt_required"
+                if new_txid
+                else "missing_or_malformed_edit_acknowledgement"
+            ),
+        })
+        return receipt
 
     # ══════════════════════════════════════════════════════════════════════
     # CRYPTO CONVERSION - Convert between crypto assets internally
@@ -1966,11 +3428,17 @@ class KrakenClient:
         if self.dry_run:
             return {
                 "dryRun": True,
+                "status": "not_submitted",
+                "data_status": "not_submitted",
+                "truth_status": "not_submitted",
+                "submitted": False,
+                "generated_values": False,
                 "from_asset": from_asset,
                 "to_asset": to_asset,
                 "amount": amount,
                 "path": path,
-                "trades": len(path)
+                "planned_steps": len(path),
+                "trades": [],
             }
         
         # Execute trades
@@ -2009,36 +3477,106 @@ class KrakenClient:
                         "partial_results": results
                     }
 
-                # Calculate the RECEIVED amount for this trade
-                received_amount = 0.0
+                if (
+                    result.get("data_status") != "live"
+                    or result.get("fill_receipt_complete") is not True
+                    or result.get("eligible_for_accounting") is not True
+                    or str(result.get("status") or "").upper() not in {"FILLED", "PARTIALLY_FILLED"}
+                ):
+                    reconciliation_status = str(
+                        result.get("data_status") or "no_data"
+                    )
+                    results.append({
+                        "trade": trade,
+                        "result": result,
+                        "status": reconciliation_status,
+                    })
+                    return {
+                        "error": "terminal_fill_receipt_required",
+                        "status": reconciliation_status,
+                        "data_status": reconciliation_status,
+                        "truth_status": result.get("truth_status") or "no_data",
+                        "reconciliation_required": (
+                            reconciliation_status == "pending_reconciliation"
+                        ),
+                        "from_asset": from_asset,
+                        "to_asset": to_asset,
+                        "partial_results": results,
+                        "generated_values": False,
+                    }
+
+                executed_quantity = _finite_decimal(
+                    result.get("executedQty"),
+                    positive=True,
+                )
+                filled_cost = _finite_decimal(
+                    result.get("cummulativeQuoteQty"),
+                    positive=True,
+                )
+                observed_fee = _finite_decimal(result.get("fee"), nonnegative=True)
+                fee_asset = str(result.get("fee_asset") or "").upper()
+                if (
+                    executed_quantity is None
+                    or filled_cost is None
+                    or observed_fee is None
+                    or not fee_asset
+                ):
+                    results.append({
+                        "trade": trade,
+                        "result": result,
+                        "status": "no_data",
+                    })
+                    return {
+                        "error": "malformed_terminal_fill_receipt",
+                        "status": "no_data",
+                        "data_status": "no_data",
+                        "truth_status": "no_data",
+                        "reconciliation_required": True,
+                        "from_asset": from_asset,
+                        "to_asset": to_asset,
+                        "partial_results": results,
+                        "generated_values": False,
+                    }
+
+                base_asset, quote_asset = self._pair_base_quote(pair)
                 if side == "sell":
-                    # For SELL, we receive quote currency (base_qty * price)
-                    exec_qty = float(result.get("executedQty", 0))
-                    price = float(self.best_price(pair).get("price", 0))
-                    if price > 0 and exec_qty > 0:
-                        received_amount = exec_qty * price
+                    received_amount = filled_cost
+                    if fee_asset == quote_asset.upper():
+                        received_amount -= observed_fee
                 else:
-                    # For BUY, we receive base currency (executedQty)
-                    received_amount = float(result.get("executedQty", 0))
+                    received_amount = executed_quantity
+                    if fee_asset == base_asset.upper():
+                        received_amount -= observed_fee
+                if received_amount <= 0:
+                    results.append({
+                        "trade": trade,
+                        "result": result,
+                        "status": "no_data",
+                    })
+                    return {
+                        "error": "nonpositive_provider_net_received_quantity",
+                        "status": "no_data",
+                        "data_status": "no_data",
+                        "truth_status": "no_data",
+                        "reconciliation_required": True,
+                        "from_asset": from_asset,
+                        "to_asset": to_asset,
+                        "partial_results": results,
+                        "generated_values": False,
+                    }
                 
-                # Store the received amount in result for verification
-                result['receivedQty'] = received_amount
+                verified_result = dict(result)
+                verified_result["receivedQty"] = format(received_amount, "f")
                 
                 results.append({
                     "trade": trade,
-                    "result": result,
+                    "result": verified_result,
                     "status": "success",
-                    "receivedQty": received_amount  # Include for easy access
+                    "receivedQty": format(received_amount, "f"),
                 })
                 
-                # Update remaining amount for next trade in chain
-                if side == "sell":
-                    # Use the calculated received amount
-                    remaining_amount = received_amount if received_amount > 0 else remaining_amount
-                else:
-                    # We spent remaining_amount, received the bought asset
-                    exec_qty = float(result.get("executedQty", 0))
-                    remaining_amount = exec_qty
+                # Advance a conversion chain only with verified provider proceeds.
+                remaining_amount = received_amount
                     
             except Exception as e:
                 results.append({
@@ -2156,30 +3694,65 @@ class KrakenClient:
             - free_margin: Available margin for new trades
             - margin_level: Margin level percentage (equity / margin * 100)
         """
+        empty_values = {
+            "equity_value": None,
+            "trade_balance": None,
+            "margin_amount": None,
+            "unrealized_pnl": None,
+            "cost_basis": None,
+            "floating_valuation": None,
+            "free_margin": None,
+            "margin_level": None,
+        }
         if self.dry_run:
             return {
-                "equity_value": 10000.0,
-                "trade_balance": 10000.0,
-                "margin_amount": 0.0,
-                "unrealized_pnl": 0.0,
-                "cost_basis": 0.0,
-                "floating_valuation": 0.0,
-                "free_margin": 10000.0,
-                "margin_level": 0.0,
+                **empty_values,
+                "status": "not_submitted",
+                "data_status": "not_submitted",
+                "truth_status": "not_submitted",
                 "dryRun": True
             }
 
         result = self._private("/0/private/TradeBalance", {"asset": asset})
-
+        if not isinstance(result, dict):
+            return {
+                **empty_values,
+                "status": "no_data",
+                "data_status": "no_data",
+                "truth_status": "no_data",
+                "reason": "missing_provider_trade_balance_receipt",
+            }
+        provider_fields = {
+            "equity_value": "e",
+            "trade_balance": "tb",
+            "margin_amount": "m",
+            "unrealized_pnl": "n",
+            "cost_basis": "c",
+            "floating_valuation": "v",
+            "free_margin": "mf",
+            "margin_level": "ml",
+        }
+        observed = {
+            output_name: _finite_decimal(result.get(provider_name))
+            for output_name, provider_name in provider_fields.items()
+        }
+        if any(value is None for value in observed.values()):
+            return {
+                **empty_values,
+                "status": "no_data",
+                "data_status": "no_data",
+                "truth_status": "no_data",
+                "reason": "incomplete_provider_trade_balance_receipt",
+                "generated_values": False,
+            }
         return {
-            "equity_value": float(result.get("e", 0)),        # Total equity
-            "trade_balance": float(result.get("tb", 0)),      # Trade balance
-            "margin_amount": float(result.get("m", 0)),       # Margin used
-            "unrealized_pnl": float(result.get("n", 0)),      # Unrealized P&L
-            "cost_basis": float(result.get("c", 0)),           # Cost basis
-            "floating_valuation": float(result.get("v", 0)),   # Floating valuation
-            "free_margin": float(result.get("mf", 0)),         # Free margin
-            "margin_level": float(result.get("ml", 0)),        # Margin level %
+            **{name: float(value) for name, value in observed.items()},
+            "status": "live",
+            "data_status": "live",
+            "truth_status": "real_observed",
+            "source_id": f"kraken_trade_balance:{asset}",
+            "received_at": time.time(),
+            "generated_values": False,
         }
 
     def get_open_margin_positions(self, do_calcs: bool = True) -> List[Dict[str, Any]]:
@@ -2344,14 +3917,20 @@ class KrakenClient:
             place_margin_order('BTCUSD', 'sell', 0.01, leverage=2, stop_loss=105000)
         """
         if self.dry_run:
-            return {
-                "dryRun": True, "symbol": symbol, "side": side,
-                "type": order_type.upper(), "quantity": str(quantity),
-                "leverage": str(leverage), "price": str(price) if price else None,
-                "takeProfit": str(take_profit) if take_profit else None,
-                "stopLoss": str(stop_loss) if stop_loss else None,
-                "margin": True
-            }
+            receipt = self._not_submitted_order_receipt(
+                symbol=symbol,
+                side=side,
+                order_type=order_type,
+                requested_quantity=quantity,
+                requested_price=price,
+            )
+            receipt.update({
+                "leverage": str(leverage),
+                "takeProfit": _decimal_text(take_profit),
+                "stopLoss": _decimal_text(stop_loss),
+                "margin": True,
+            })
+            return receipt
 
         # ═══ SAFETY NET: $5 minimum margin trade value (last-resort gate) ═══
         # Note: For market orders (price=None), skip this gate — the ecosystem
@@ -2439,7 +4018,29 @@ class KrakenClient:
             params["close[price]"] = self._format_order_value(stop_loss)
 
             res = self._private("/0/private/AddOrder", params)
-            entry_txid = res.get("txid", ["unknown"])[0]
+            entry_receipt = self._submission_order_receipt(
+                res,
+                symbol=symbol,
+                side=side,
+                order_type=order_type,
+                requested_quantity=vol,
+                requested_price=price,
+            )
+            entry_receipt.update({
+                "entryOrderId": entry_receipt.get("orderId"),
+                "takeProfitOrderId": None,
+                "stopLossAttached": True,
+                "leverage": str(lev),
+                "takeProfit": _decimal_text(take_profit),
+                "stopLoss": _decimal_text(stop_loss),
+                "margin": True,
+            })
+            if (
+                entry_receipt.get("data_status") != "pending_reconciliation"
+                or not entry_receipt.get("orderId")
+            ):
+                entry_receipt["reason"] = "entry_submission_receipt_unproven"
+                return entry_receipt
 
             # Add take-profit as separate margin order
             close_side = "sell" if side.lower() == "buy" else "buy"
@@ -2453,23 +4054,32 @@ class KrakenClient:
                 "reduce_only": "true",
                 "trading_agreement": "agree",
             }
-            tp_res = self._private("/0/private/AddOrder", tp_params)
-            tp_txid = tp_res.get("txid", ["unknown"])[0]
-
-            return {
-                "symbol": symbol,
-                "entryOrderId": entry_txid,
-                "takeProfitOrderId": tp_txid,
-                "stopLossAttached": True,
-                "type": order_type.upper(),
-                "side": side.upper(),
-                "quantity": str(vol),
-                "leverage": str(lev),
-                "takeProfit": str(take_profit),
-                "stopLoss": str(stop_loss),
-                "status": "NEW",
-                "margin": True
-            }
+            try:
+                tp_res = self._private("/0/private/AddOrder", tp_params)
+            except Exception as exc:
+                entry_receipt.update({
+                    "reason": "secondary_submission_requires_reconciliation",
+                    "secondary_submission_error": type(exc).__name__,
+                })
+                return entry_receipt
+            tp_receipt = self._submission_order_receipt(
+                tp_res,
+                symbol=symbol,
+                side=close_side,
+                order_type="take_profit",
+                requested_quantity=vol,
+                requested_price=take_profit,
+            )
+            entry_receipt.update({
+                "takeProfitOrderId": tp_receipt.get("orderId"),
+                "orderReceipts": [entry_receipt.copy(), tp_receipt],
+            })
+            if (
+                tp_receipt.get("data_status") != "pending_reconciliation"
+                or not tp_receipt.get("orderId")
+            ):
+                entry_receipt["reason"] = "secondary_submission_receipt_unproven"
+            return entry_receipt
 
         elif take_profit:
             params["close[ordertype]"] = "take-profit"
@@ -2479,27 +4089,22 @@ class KrakenClient:
             params["close[price]"] = self._format_order_value(stop_loss)
 
         res = self._private("/0/private/AddOrder", params)
-        txid = res.get("txid", ["unknown"])[0]
-
-        filled = order_type.lower() == "market"
-
-        return {
-            "symbol": symbol,
-            "orderId": txid,
-            "clientOrderId": str(time.time()),
-            "transactTime": int(time.time() * 1000),
-            "price": str(price) if price else "0.00000000",
-            "origQty": str(vol),
-            "executedQty": str(vol) if filled else "0",
-            "status": "FILLED" if filled else "NEW",
+        receipt = self._submission_order_receipt(
+            res,
+            symbol=symbol,
+            side=side,
+            order_type=order_type,
+            requested_quantity=vol,
+            requested_price=price,
+        )
+        receipt.update({
             "timeInForce": "GTC",
-            "type": order_type.upper(),
-            "side": side.upper(),
             "leverage": str(lev),
-            "takeProfit": str(take_profit) if take_profit else None,
-            "stopLoss": str(stop_loss) if stop_loss else None,
-            "margin": True
-        }
+            "takeProfit": _decimal_text(take_profit),
+            "stopLoss": _decimal_text(stop_loss),
+            "margin": True,
+        })
+        return receipt
 
     def close_margin_position(
         self,
@@ -2528,11 +4133,18 @@ class KrakenClient:
             Order response
         """
         if self.dry_run:
-            return {
-                "dryRun": True, "symbol": symbol, "side": side,
-                "type": order_type.upper(), "volume": str(volume),
-                "margin_close": True
-            }
+            receipt = self._not_submitted_order_receipt(
+                symbol=symbol,
+                side=side,
+                order_type=order_type,
+                requested_quantity=volume,
+                requested_price=price,
+            )
+            receipt.update({
+                "leverage": str(leverage) if leverage else None,
+                "margin_close": True,
+            })
+            return receipt
 
         # If no volume specified, find the open position volume
         if volume is None:
@@ -2574,18 +4186,19 @@ class KrakenClient:
         params["reduce_only"] = "true"
 
         res = self._private("/0/private/AddOrder", params)
-        txid = res.get("txid", ["unknown"])[0]
-
-        return {
-            "symbol": symbol,
-            "orderId": txid,
-            "type": order_type.upper(),
-            "side": side.upper(),
-            "quantity": str(vol),
+        receipt = self._submission_order_receipt(
+            res,
+            symbol=symbol,
+            side=side,
+            order_type=order_type,
+            requested_quantity=vol,
+            requested_price=price,
+        )
+        receipt.update({
             "leverage": str(leverage) if leverage else None,
-            "status": "FILLED" if order_type.lower() == "market" else "NEW",
-            "margin_close": True
-        }
+            "margin_close": True,
+        })
+        return receipt
 
 
 # ══════════════════════════════════════════════════════════════════════════════

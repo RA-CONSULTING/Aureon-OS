@@ -15,7 +15,7 @@ Author: Aureon System / Gary Leckey
 Date: November 28, 2025
 """
 from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
-import os, sys, json, time, logging, argparse, random, math
+import os, sys, json, time, logging, argparse, math
 from datetime import datetime
 from typing import List, Dict, Any
 from aureon.exchanges.binance_client import BinanceClient, get_binance_client
@@ -113,6 +113,13 @@ class MasterEquation:
         # Coherence is derived from Lambda stability (simplified here to be inverse of variance)
         # For this aggressive strategy, we map lambda directly to coherence potential
         coherence = min(max(lambda_t, 0.0), 1.0)
+        # Reconcile with the canonical HNC field: the shared Γ can only tighten
+        # this live gate, never loosen it (b46 order-path wiring).
+        try:
+            from aureon.core.hnc_field import reconcile_gamma
+            coherence = reconcile_gamma(coherence)
+        except Exception:
+            pass
         return coherence
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -376,8 +383,8 @@ class ThePlayTrader:
             pnl_pct = (curr_price - entry_price) / entry_price
             duration = time.time() - pos['entry_time']
             
-            # Log status occasionally
-            if random.random() < 0.05:
+            pos['status_checks'] = pos.get('status_checks', 0) + 1
+            if pos['status_checks'] % 20 == 0:
                 logger.info(f"📊 {symbol}: PnL {pnl_pct*100:.2f}% (Entry: {entry_price:.4f} | Curr: {curr_price:.4f})")
             
             # Take Profit

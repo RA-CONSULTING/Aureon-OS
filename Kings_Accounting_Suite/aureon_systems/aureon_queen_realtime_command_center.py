@@ -116,7 +116,7 @@ class QueenNarrative:
             "Absorbing selling pressure."
         ]
 
-        return f"{random.choice(intros)} {random.choice(actions)}"
+        return f"Provider log attributed activity to {firm_name} on {symbol}."
 
     def generate_market_insight(self, symbol: str, volume: float) -> str:
         """Queen comments on market conditions."""
@@ -392,16 +392,16 @@ class QueenDashboard:
 
                     # Manual/Mock Attribution for Demo if not in log
                     # (In full version, this comes from log)
-                    if self.state.profiler and event.symbol != "UNKNOWN":
+                    if event.firm and event.firm_data and event.symbol != "UNKNOWN":
                         # Simulate firm detection if not explicit in log
                         # 30% chance to identify a firm on any detection
                         # Prefer big events for big firms
                         chance = 0.4 if event.volume > 50000 else 0.2
 
-                        if random.random() < chance:
+                        if event.firm and event.firm_data:
                             # If no firms loaded, skip
                             if TRADING_FIRM_SIGNATURES:
-                                firm_name, firm_data = random.choice(list(TRADING_FIRM_SIGNATURES.items()))
+                                firm_name, firm_data = event.firm, event.firm_data
 
                                 # Only attribute if not already attributed recently to avoid spam?
                                 # Nah, spam is good for "live" feel

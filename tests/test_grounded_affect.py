@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import time
+from types import SimpleNamespace
 
 import pytest
 
@@ -53,7 +54,17 @@ def _fearful_bus():
 def _ground(bus):
     from aureon.operator.grounded_action import GroundedActionGate
 
-    return GroundedActionGate(bus=bus, enable_llm=False).ground("read_repo_file", {"path": "README.md"})
+    conscience = SimpleNamespace(
+        ask_why=lambda *_args, **_kwargs: SimpleNamespace(
+            verdict=SimpleNamespace(name="APPROVED"),
+            message="grounded: within the stability island",
+        )
+    )
+    return GroundedActionGate(
+        bus=bus,
+        conscience=conscience,
+        enable_llm=False,
+    ).ground("read_repo_file", {"path": "README.md"})
 
 
 def test_off_by_default_is_a_noop():
@@ -73,7 +84,7 @@ def test_victory_never_loosens(monkeypatch, tmp_path):
     # A victorious, coherent field must not make the gate MORE permissive than
     # the already-permissive default (a benign read is APPROVED either way).
     monkeypatch.setenv("AUREON_AFFECT_MODULATION", "1")
-    (tmp_path / "gfs.json").write_text(json.dumps({"last_snapshot": {"crypto_fear_greed": 95}}), encoding="utf-8")
+    (tmp_path / "gfs.json").write_text(json.dumps({"last_snapshot": {"crypto_fear_greed": 100}}), encoding="utf-8")
     (tmp_path / "runtime.json").write_text(
         json.dumps({"shadow_trading": {"validated_shadow_count": 10, "missed_shadow_count": 0}}), encoding="utf-8")
     b = get_thought_bus()

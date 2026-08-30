@@ -37,11 +37,13 @@ function Write-Aureon {
 }
 
 function Resolve-RepoRoot {
-    $root = Split-Path -Parent $MyInvocation.ScriptName
-    if (-not $root) {
-        $root = (Get-Location).Path
+    $root = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot "..\..")).Path
+    foreach ($sentinel in @("pyproject.toml", "aureon", "frontend")) {
+        if (-not (Test-Path -LiteralPath (Join-Path $root $sentinel))) {
+            throw "Resolved launcher repo root is missing $sentinel`: $root"
+        }
     }
-    return (Resolve-Path $root).Path
+    return $root
 }
 
 function Get-PythonPath {
@@ -1228,6 +1230,16 @@ if ($FullCognitiveOrderCapability) {
 }
 if ($ProductionMode) {
     $Mode = "$Mode + PRODUCTION_SUPERVISOR"
+}
+
+if ($LiveTrading -or $ProductionMode) {
+    Write-Aureon "Running full live release preflight before any process or exchange mutation" "CHECK"
+    & $Python -m aureon.autonomous.aureon_full_live_release --root $RepoRoot
+    $fullLiveReleaseExit = $LASTEXITCODE
+    if ($fullLiveReleaseExit -ne 0) {
+        throw "Full live release preflight returned HOLD (exit=$fullLiveReleaseExit). No Aureon process or exchange mutation was started. See state\aureon_full_live_release.json."
+    }
+    Write-Aureon "Full live release preflight ACCEPTED" "OK"
 }
 
 Write-Aureon "Aureon wake-up launcher"

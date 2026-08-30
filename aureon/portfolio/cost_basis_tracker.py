@@ -37,7 +37,7 @@ from dataclasses import dataclass, field
 # 🔇 WINDOWS UTF-8 FIX - MUST BE BEFORE ANY PRINT STATEMENTS!
 # ═══════════════════════════════════════════════════════════════════════════════
 import sys
-if sys.platform == 'win32':
+if sys.platform == 'win32' and sys.stdout is sys.__stdout__ and sys.stderr is sys.__stderr__ and sys.stdout.isatty() and sys.stderr.isatty():
     os.environ['PYTHONIOENCODING'] = 'utf-8'
     try:
         import io

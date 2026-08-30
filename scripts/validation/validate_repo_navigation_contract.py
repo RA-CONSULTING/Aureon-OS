@@ -39,6 +39,26 @@ PUBLIC_SUPABASE_HARDENING = REPO_ROOT / "frontend" / "public" / "aureon_supabase
 SUPABASE_CONFIG = REPO_ROOT / "supabase" / "config.toml"
 ENV_SOURCES = [".env.example", "deploy/env.example", "app.yaml"]
 
+CANONICAL_LAUNCHER_PATHS = (
+    "scripts/launchers/AUREON_PRODUCTION_LIVE.cmd",
+    "scripts/launchers/AUREON_WAKE_UP_FULL_AUTONOMOUS.ps1",
+    "scripts/launchers/AUREON_DATA_OCEAN.cmd",
+    "scripts/launchers/AUREON_DATA_OCEAN.ps1",
+)
+
+LAUNCHER_NAVIGATION_SOURCES = (
+    "CAPABILITIES.md",
+    "QUICK_START.md",
+    "RUNNING.md",
+    "docs/REPO_SITEMAP.md",
+    "docs/SAAS_INTEGRATION_READINESS.md",
+    "scripts/validation/generate_saas_integration_manifest.py",
+    "docs/end_user_access_map.json",
+    "frontend/public/aureon_end_user_access_map.json",
+    "docs/repo_sitemap.json",
+    "frontend/public/aureon_repo_sitemap.json",
+)
+
 AUTONOMOUS_FRONTEND_MANIFESTS = [
     "aureon_saas_system_inventory.json",
     "aureon_frontend_unification_plan.json",
@@ -327,6 +347,29 @@ def expect(condition: bool, failures: list[str], message: str) -> None:
         failures.append(message)
 
 
+def collect_launcher_navigation_failures() -> list[str]:
+    failures: list[str] = []
+    for rel_path in CANONICAL_LAUNCHER_PATHS:
+        if not (REPO_ROOT / rel_path).is_file():
+            failures.append(f"canonical launcher missing: {rel_path}")
+
+    for source_path in LAUNCHER_NAVIGATION_SOURCES:
+        path = REPO_ROOT / source_path
+        if not path.is_file():
+            failures.append(f"launcher navigation source missing: {source_path}")
+            continue
+        normalized = path.read_text(encoding="utf-8").replace(chr(92), "/")
+        for launcher_path in CANONICAL_LAUNCHER_PATHS:
+            launcher_name = Path(launcher_path).name
+            without_canonical_paths = normalized.replace(launcher_path, "")
+            if launcher_name in without_canonical_paths:
+                failures.append(
+                    f"{source_path} contains bare-root launcher reference: "
+                    f"{launcher_name}"
+                )
+    return failures
+
+
 def main() -> int:
     failures: list[str] = []
 
@@ -357,6 +400,7 @@ def main() -> int:
 
     for rel_path in REQUIRED_PATHS:
         expect((REPO_ROOT / rel_path).exists(), failures, f"required path missing: {rel_path}")
+    failures.extend(collect_launcher_navigation_failures())
 
     tracked_total = git_file_count()
     expect(docs_repo.get("tracked_file_count") == tracked_total, failures, "docs/repo_sitemap.json tracked_file_count is stale")
@@ -1136,6 +1180,7 @@ def main() -> int:
     print(f"OK supabase_auth_counts={supabase_counts}")
     print(f"OK supabase_hardening_public_blockers={len(public_high_risk_routes)}")
     print(f"OK autonomous_frontend_manifests={len(AUTONOMOUS_FRONTEND_MANIFESTS)}")
+    print(f"OK canonical_launchers={len(CANONICAL_LAUNCHER_PATHS)}")
     print("OK public navigation manifests contain no credential-like values")
     print("OK key Markdown links resolve")
     return 0

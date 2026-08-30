@@ -38,6 +38,7 @@ from aureon.core.aureon_runtime_safety import (
 from aureon.core.aureon_thought_bus import Thought, ThoughtBus
 from aureon.autonomous.aureon_goal_capability_map import build_goal_capability_map
 from aureon.integrations.obsidian import ObsidianBridge
+from aureon.obsidian_paths import resolve_obsidian_vault_path
 from aureon.integrations.ollama import OllamaBridge
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -121,13 +122,10 @@ def _tail_jsonl(path: Path, limit: int = 20) -> List[Dict[str, Any]]:
 
 
 def resolve_default_obsidian_vault(repo_root: Path = REPO_ROOT) -> Path:
-    """Prefer an explicit vault, then the repo-as-vault, then the default vault."""
-    env = os.environ.get("AUREON_OBSIDIAN_VAULT_PATH", "").strip()
-    if env:
-        return Path(env).expanduser()
-    if (repo_root / ".obsidian").exists():
-        return repo_root
-    return Path.home() / "AureonObsidianVault"
+    """Resolve the canonical external vault; keep the argument for compatibility."""
+
+    _ = repo_root
+    return resolve_obsidian_vault_path()
 
 
 def _extract_json_object(text: str) -> Optional[Dict[str, Any]]:
@@ -239,7 +237,7 @@ class SelfQuestioningAI:
         safe_mode: bool = True,
     ) -> None:
         self.repo_root = Path(repo_root or REPO_ROOT).resolve()
-        self.state_path = Path(state_path or STATE_LOG)
+        self.state_path = Path(state_path or (self.repo_root / "state" / "self_questioning_ai_cycles.jsonl"))
         self.safe_mode = bool(safe_mode)
         if self.safe_mode and not live_trading_enabled():
             apply_safe_runtime_environment()
@@ -302,6 +300,7 @@ class SelfQuestioningAI:
         questions: Optional[Sequence[str]] = None,
         include_audit: bool = True,
         include_self_scan: bool = True,
+        augment_questions: bool = True,
     ) -> SelfQuestioningCycle:
         if not self._cycle_lock.acquire(blocking=False):
             return self._busy_cycle(questions)
@@ -310,6 +309,7 @@ class SelfQuestioningAI:
                 questions=questions,
                 include_audit=include_audit,
                 include_self_scan=include_self_scan,
+                augment_questions=augment_questions,
             )
         finally:
             self._cycle_lock.release()
@@ -319,6 +319,7 @@ class SelfQuestioningAI:
         questions: Optional[Sequence[str]] = None,
         include_audit: bool = True,
         include_self_scan: bool = True,
+        augment_questions: bool = True,
     ) -> SelfQuestioningCycle:
         if self.safe_mode and not live_trading_enabled():
             apply_safe_runtime_environment()
@@ -331,7 +332,7 @@ class SelfQuestioningAI:
             include_self_scan=include_self_scan,
             errors=errors,
         )
-        question_list = self._build_questions(context, questions)
+        question_list = self._build_questions(context, questions, augment=augment_questions)
         context["goal_capability_map"] = build_goal_capability_map(
             repo_root=self.repo_root,
             current_goal=" ".join(question_list),
@@ -692,8 +693,12 @@ class SelfQuestioningAI:
         self,
         context: Dict[str, Any],
         custom: Optional[Sequence[str]],
+        *,
+        augment: bool = True,
     ) -> List[str]:
         questions = [str(q).strip() for q in (custom or DEFAULT_QUESTIONS) if str(q).strip()]
+        if custom and not augment:
+            return questions
         counts = ((context.get("mind_wiring") or {}).get("counts") or {})
         if counts.get("broken", 0):
             questions.append("Which broken mind-wiring entries should be repaired first?")
@@ -741,7 +746,7 @@ class SelfQuestioningAI:
                 "or ask for human approval. Never suggest placing "
                 "live orders, mutating exchange state, exposing secrets, or editing "
                 "code directly from this loop. Never suggest automatic Companies House "
-                "or HMRC filing/payment. Return short strict JSON only."
+                "or HMRC filing/payment. Return short strict JSON only with no markdown fences."
         )
         prompt = {
             "questions": list(questions),
@@ -750,6 +755,7 @@ class SelfQuestioningAI:
                 "Return only one JSON object.",
                 "Keep summary under 20 words.",
                 "Keep each answer under 45 words.",
+                "Use at most 3 short evidence strings per answer.",
                 "Name the route surfaces or systems that should be used.",
                 "Do not include next_actions; Aureon will derive safe actions locally.",
             ],
@@ -760,6 +766,14 @@ class SelfQuestioningAI:
         }
 
         try:
+            question_chars = sum(len(str(item)) for item in questions)
+            if len(questions) <= 1 and question_chars < 300:
+                response_tokens = max(self.ollama_num_predict, 256)
+            else:
+                response_tokens = max(
+                    self.ollama_num_predict,
+                    min(2048, 1024 + (256 * max(1, len(questions))) + (question_chars // 8)),
+                )
             data = self.ollama.chat(
                 messages=[{"role": "user", "content": json.dumps(prompt, default=_json_default)}],
                 model=chat_model,
@@ -767,8 +781,8 @@ class SelfQuestioningAI:
                 format="json",
                 options={
                     "temperature": 0.1,
-                    "num_ctx": 2048,
-                    "num_predict": self.ollama_num_predict,
+                    "num_ctx": max(4096, response_tokens * 4),
+                    "num_predict": response_tokens,
                 },
             )
             if data.get("error"):
@@ -870,7 +884,7 @@ class SelfQuestioningAI:
                     "Ollama can see local models, but this cycle used fallback mode. "
                     "Prefer a small self-questioning model for fast inner-loop reasoning."
                 )
-            return "Ollama is reachable but no local chat model is listed, so deeper autonomy needs a pulled model or a corrected AUREON_OLLAMA_MODEL."
+            return "The configured Ollama endpoint is reachable but reports no chat model, so deeper autonomy needs a refreshed catalog or corrected lane configuration."
         if "ollama" in q:
             return "If Ollama is offline, continue with deterministic checks and write the limitation into Obsidian."
         if "obsidian" in q or "remember" in q:
@@ -1116,7 +1130,7 @@ class SelfQuestioningAI:
                     requires_human=True,
                     details=(
                         "Ollama is reachable but reports no local models. "
-                        "Pull the configured AUREON_OLLAMA_MODEL or set it to an installed model."
+                        "Refresh the configured Ollama catalog or select a model that the endpoint currently reports."
                     ),
                 )
             )
@@ -1922,6 +1936,9 @@ def build_arg_parser() -> argparse.ArgumentParser:
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = build_arg_parser()
     args = parser.parse_args(argv)
+    from aureon.core.aureon_env import bootstrap_credentials
+
+    bootstrap_credentials(REPO_ROOT)
     if args.status:
         print(json.dumps(SelfQuestioningAI().get_status(), indent=2, default=_json_default))
         return 0

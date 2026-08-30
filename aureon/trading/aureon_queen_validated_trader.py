@@ -137,6 +137,7 @@ class QueenValidatedTrader:
         # Trading state
         self.validated_opportunities: List[ValidatedTrade] = []
         self.executed_trades: List[ValidatedTrade] = []
+        self.dry_run_attempts: List[Dict] = []
         self.daily_metrics: Dict = {
             "total_validations": 0,
             "successful_validations": 0,
@@ -428,17 +429,23 @@ class QueenValidatedTrader:
         
         try:
             if self.dry_run:
-                # Simulate execution
                 execution_result = {
-                    "status": "success",
+                    "status": "not_submitted",
+                    "truth_status": "dry_run",
+                    "provider_order_id": None,
+                    "fill": None,
+                    "actual_pnl": None,
+                    "eligible_for_learning": False,
+                    "generated_values": False,
                     "symbol": trade.symbol,
                     "action": trade.action,
-                    "quantity": 0.01,  # Small test size
-                    "price": 100.0,  # Mock price
-                    "fees": 0.001,
-                    "timestamp": time.time(),
-                    "mode": "DRY_RUN"
+                    "recorded_at": time.time(),
                 }
+                trade.executed = False
+                trade.execution_result = execution_result
+                self.dry_run_attempts.append(execution_result)
+                logger.info("   🧪 Dry-run intent recorded; no provider order was submitted")
+                return execution_result
             else:
                 # Real execution
                 client = self.exchanges.get(trade.exchange)

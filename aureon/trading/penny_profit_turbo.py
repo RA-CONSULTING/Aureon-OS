@@ -35,7 +35,7 @@ from typing import Dict, List, Optional, Tuple
 from collections import deque
 
 # Windows UTF-8 fix
-if sys.platform == 'win32':
+if sys.platform == 'win32' and sys.stdout.isatty():
     os.environ['PYTHONIOENCODING'] = 'utf-8'
     try:
         import io

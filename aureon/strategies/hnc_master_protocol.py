@@ -410,10 +410,14 @@ class HarmonicNexusCore:
         Returns: (composite_field, distortion_component)
         """
         # Map market movements to frequency modulations
-        btc_mod = market_data.get('btc_change', 0) / 10  # Normalize to ±1
-        sp500_mod = market_data.get('sp500_change', 0) / 5
-        vix = market_data.get('vix', 20) / 100  # VIX as fear measure
-        forex_mod = market_data.get('dxy_change', 0) / 3
+        required = ('btc_change', 'sp500_change', 'vix', 'dxy_change')
+        missing = [key for key in required if market_data.get(key) is None]
+        if missing:
+            raise ValueError(f"no_data: missing observed market fields {missing}")
+        btc_mod = float(market_data['btc_change']) / 10  # Normalize to ±1
+        sp500_mod = float(market_data['sp500_change']) / 5
+        vix = float(market_data['vix']) / 100  # VIX as fear measure
+        forex_mod = float(market_data['dxy_change']) / 3
         
         # Update global pulse frequencies based on market state
         self.global_pulse.crypto_freq = 528.0 + (btc_mod * 50)  # 478-578 Hz
@@ -433,10 +437,7 @@ class HarmonicNexusCore:
         # Distortion component (fear-based)
         distortion = vix * np.sin(2 * np.pi * self.global_pulse.fear_freq * self.t)
         
-        # Add market noise
-        noise = np.random.normal(0, 0.1 + vix * 0.3, len(self.t))
-        
-        return composite + noise, distortion
+        return composite, distortion
     
     def execute_signal_sero(self, current_field: np.ndarray, 
                             distortion: np.ndarray) -> Tuple[Optional[np.ndarray], Optional[np.ndarray]]:

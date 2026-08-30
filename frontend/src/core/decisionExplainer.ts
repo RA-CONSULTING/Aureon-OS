@@ -216,7 +216,7 @@ class DecisionExplainerClass {
     const summary = this.buildSummary(action, confidence, factors);
 
     const explanation: DecisionExplanation = {
-      id: `decision-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      id: `decision-${Date.now()}-${crypto.randomUUID()}`,
       timestamp: Date.now(),
       action,
       confidence,

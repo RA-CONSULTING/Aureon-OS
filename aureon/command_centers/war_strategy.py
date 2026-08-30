@@ -31,7 +31,7 @@ import time
 import os
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple
-from datetime import datetime
+from datetime import datetime, timezone
 import math
 
 # ═══════════════════════════════════════════════════════════════
@@ -71,6 +71,7 @@ def get_dynamic_required_r(exchange: str = 'binance', trade_size: float = 10.0) 
 SECONDS_PER_BAR = 60  # Assume 1-minute bars for crypto
 MAX_ACCEPTABLE_BARS = 30  # Don't want to hold longer than 30 bars
 IDEAL_BARS = 10  # Ideal exit within 10 bars (10 minutes)
+VOLATILITY_EVIDENCE_TTL_SECONDS = 300
 
 @dataclass
 class QuickKillEstimate:
@@ -98,6 +99,10 @@ class QuickKillEstimate:
     
     # Timestamps
     estimated_at: float = field(default_factory=time.time)
+    truth_status: str = 'real_derived'
+    source_id: Optional[str] = None
+    source_timestamp: Optional[str] = None
+    generated_values: bool = False
     
     def to_dict(self) -> Dict:
         return {
@@ -111,7 +116,11 @@ class QuickKillEstimate:
             'confidence': self.confidence,
             'go_signal': self.go_signal,
             'priority': self.priority,
-            'reason': self.reason
+            'reason': self.reason,
+            'truth_status': self.truth_status,
+            'source_id': self.source_id,
+            'source_timestamp': self.source_timestamp,
+            'generated_values': self.generated_values,
         }
 
 
@@ -247,15 +256,51 @@ class WarStrategy:
         
         # Get volatility data
         vol_data = self.volatility_cache.get(symbol, {})
-        avg_move = vol_data.get('avg_bar_move_pct', 0.005)  # Default 0.5% per bar
-        volatility = vol_data.get('volatility', 0.003)
+        required_volatility_fields = {
+            'avg_bar_move_pct',
+            'volatility',
+            'sample_size',
+            'updated_at',
+        }
+        if not required_volatility_fields.issubset(vol_data):
+            missing = sorted(required_volatility_fields.difference(vol_data))
+            raise ValueError(
+                f'NO_DATA: {symbol} requires observed price volatility; missing {missing}'
+            )
+        avg_move = float(vol_data['avg_bar_move_pct'])
+        volatility = float(vol_data['volatility'])
+        volatility_sample_size = int(vol_data['sample_size'])
+        volatility_updated_at = float(vol_data['updated_at'])
+        if avg_move <= 0 or volatility_sample_size <= 0:
+            raise ValueError(f'NO_DATA: {symbol} has no usable observed price movement')
+        vol_age = time.time() - volatility_updated_at
+        if vol_age < -300:
+            raise ValueError(
+                f'NO_DATA: {symbol} volatility receipt timestamp is in the future'
+            )
+        if vol_age > VOLATILITY_EVIDENCE_TTL_SECONDS:
+            raise ValueError(
+                f'NO_DATA: {symbol} volatility evidence is stale '
+                f'({vol_age:.1f}s > {VOLATILITY_EVIDENCE_TTL_SECONDS}s)'
+            )
         
         # Get historical stats for this symbol
         stats = self.symbol_stats.get(symbol, {})
-        historical_avg_bars = stats.get('avg_bars_to_profit', 20)
-        historical_win_rate = stats.get('win_rate', 0.5)
-        historical_quick_rate = stats.get('quick_kill_rate', 0.3)
-        sample_size = stats.get('trades', 0)
+        sample_size = int(stats.get('trades') or 0)
+        historical_avg_bars = stats.get('avg_bars_to_profit')
+        historical_win_rate = stats.get('win_rate')
+        historical_quick_rate = stats.get('quick_kill_rate')
+        if sample_size >= 5 and any(
+            value is None
+            for value in (
+                historical_avg_bars,
+                historical_win_rate,
+                historical_quick_rate,
+            )
+        ):
+            raise ValueError(
+                f'NO_DATA: {symbol} history count exists without complete outcome metrics'
+            )
         
         # ═══════════════════════════════════════════════════════════════
         # 🧮 CALCULATE PROBABILITY OF PENNY PROFIT
@@ -264,10 +309,7 @@ class WarStrategy:
         required_r = get_dynamic_required_r(exchange, POSITION_SIZE)
         
         # How many bars to hit REQUIRED_R based on avg move?
-        if avg_move > 0:
-            estimated_bars = required_r / avg_move
-        else:
-            estimated_bars = 50  # Conservative default
+        estimated_bars = required_r / avg_move
         
         # Factor in volatility - higher vol = faster potential but also risk
         if volatility > avg_move:
@@ -276,7 +318,7 @@ class WarStrategy:
         
         # Blend with historical if we have data
         if sample_size >= 5:
-            estimated_bars = (estimated_bars * 0.3) + (historical_avg_bars * 0.7)
+            estimated_bars = (estimated_bars * 0.3) + (float(historical_avg_bars) * 0.7)
         
         estimated_bars = max(1, estimated_bars)  # At least 1 bar
         estimated_seconds = estimated_bars * SECONDS_PER_BAR
@@ -296,7 +338,7 @@ class WarStrategy:
         
         # Adjust with historical win rate
         if sample_size >= 5:
-            prob_penny = (prob_penny * 0.4) + (historical_win_rate * 0.6)
+            prob_penny = (prob_penny * 0.4) + (float(historical_win_rate) * 0.6)
         
         prob_penny = max(0.1, min(0.95, prob_penny))  # Clamp 10-95%
         
@@ -310,29 +352,22 @@ class WarStrategy:
         
         # Adjust with historical quick rate
         if sample_size >= 5:
-            prob_quick = (prob_quick * 0.4) + (historical_quick_rate * 0.6)
+            prob_quick = (prob_quick * 0.4) + (float(historical_quick_rate) * 0.6)
         
         prob_quick = max(0.05, min(0.90, prob_quick))  # Clamp 5-90%
         
         # ═══════════════════════════════════════════════════════════════
         # 🎖️ CONFIDENCE SCORE
         # ═══════════════════════════════════════════════════════════════
-        confidence = 0.5  # Base confidence
-        
-        # More data = more confidence
-        if sample_size >= 20:
-            confidence += 0.3
-        elif sample_size >= 5:
-            confidence += 0.15
-        
-        # Fresh volatility data = more confidence
-        vol_age = time.time() - vol_data.get('updated_at', 0)
-        if vol_age < 60:  # Less than 1 minute old
-            confidence += 0.2
-        elif vol_age < 300:  # Less than 5 minutes
-            confidence += 0.1
-        
-        confidence = min(0.95, confidence)
+        # Confidence comes only from observed sample coverage and freshness.
+        vol_age = max(0.0, vol_age)
+        evidence_scores = [
+            min(1.0, volatility_sample_size / 20.0),
+            max(0.0, 1.0 - min(vol_age, 300.0) / 300.0),
+        ]
+        if sample_size >= 5:
+            evidence_scores.append(min(1.0, sample_size / 20.0))
+        confidence = min(0.95, sum(evidence_scores) / len(evidence_scores))
         
         # ═══════════════════════════════════════════════════════════════
         # ⚔️ WAR RECOMMENDATION
@@ -372,7 +407,17 @@ class WarStrategy:
             avg_bar_move_pct=avg_move,
             go_signal=go_signal,
             priority=priority,
-            reason=reason
+            reason=reason,
+            truth_status='real_derived',
+            source_id=(
+                f'{exchange}:observed_prices+war_strategy_history'
+                if sample_size >= 5
+                else f'{exchange}:observed_prices'
+            ),
+            source_timestamp=datetime.fromtimestamp(
+                volatility_updated_at, timezone.utc
+            ).isoformat(),
+            generated_values=False,
         )
     
     def start_raid(self, symbol: str, exchange: str, entry_price: float, 
@@ -619,64 +664,3 @@ def get_war_briefing() -> str:
 
 
 # ═══════════════════════════════════════════════════════════════
-# 🧪 TEST
-# ═══════════════════════════════════════════════════════════════
-# 🟡 DEMO ONLY — synthetic price data + hardcoded exit_price below.
-# Production callers should use start_raid / complete_raid with real
-# market prices, not invoke this __main__ block.
-if __name__ == "__main__":
-    print("⚔️ WAR STRATEGY - QUICK KILL PROBABILITY SYSTEM (DEMO) ⚔️\n")
-
-    # Simulate price data with varying volatility (DEMO ONLY)
-    import random
-    
-    # High volatility coin (good for quick kills)
-    btc_prices = [100000]
-    for _ in range(100):
-        move = random.uniform(-0.008, 0.008)  # 0.8% moves
-        btc_prices.append(btc_prices[-1] * (1 + move))
-    
-    # Low volatility coin (slow kills)
-    stable_prices = [1.0]
-    for _ in range(100):
-        move = random.uniform(-0.001, 0.001)  # 0.1% moves
-        stable_prices.append(stable_prices[-1] * (1 + move))
-    
-    # Get estimates
-    print("🎯 HIGH VOLATILITY COIN (BTC-like):")
-    btc_estimate = get_quick_kill_estimate('BTCUSD', 'kraken', btc_prices)
-    print(f"   Probability of penny profit: {btc_estimate.prob_penny_profit*100:.1f}%")
-    print(f"   Probability of quick kill: {btc_estimate.prob_quick_kill*100:.1f}%")
-    print(f"   Estimated bars to profit: {btc_estimate.estimated_bars_to_profit:.1f}")
-    print(f"   Estimated time: {btc_estimate.estimated_seconds/60:.1f} minutes")
-    print(f"   GO SIGNAL: {'✅ ATTACK!' if btc_estimate.go_signal else '❌ HOLD'}")
-    print(f"   Priority: {btc_estimate.priority}/10")
-    print(f"   Reason: {btc_estimate.reason}")
-    
-    print("\n🐢 LOW VOLATILITY COIN (stablecoin-like):")
-    stable_estimate = get_quick_kill_estimate('USDCUSD', 'kraken', stable_prices)
-    print(f"   Probability of penny profit: {stable_estimate.prob_penny_profit*100:.1f}%")
-    print(f"   Probability of quick kill: {stable_estimate.prob_quick_kill*100:.1f}%")
-    print(f"   Estimated bars to profit: {stable_estimate.estimated_bars_to_profit:.1f}")
-    print(f"   Estimated time: {stable_estimate.estimated_seconds/60:.1f} minutes")
-    print(f"   GO SIGNAL: {'✅ ATTACK!' if stable_estimate.go_signal else '❌ HOLD'}")
-    print(f"   Priority: {stable_estimate.priority}/10")
-    print(f"   Reason: {stable_estimate.reason}")
-    
-    # Simulate a raid
-    print("\n" + "="*60)
-    print("🎯 SIMULATING A RAID...")
-    print("="*60)
-    
-    # Start raid
-    raid = start_raid('BTCUSD', 'kraken', 100000)
-    
-    # Simulate holding for 8 bars with profit
-    time.sleep(0.5)  # Simulate some time passing
-    exit_price = 100000 * (1 + REQUIRED_R + 0.001)  # Hit target + extra
-    exit_value = POSITION_SIZE * (exit_price / 100000)
-    
-    # Complete raid
-    completed = complete_raid('BTCUSD', exit_price, exit_value, 8)
-    
-    print("\n" + get_war_briefing())

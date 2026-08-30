@@ -34,6 +34,7 @@ import json
 import time
 import math
 import random
+import uuid
 import asyncio
 import logging
 
@@ -785,12 +786,13 @@ class MyceliumNetwork:
         if symbol not in self.synapses:
             self.synapses[symbol] = []
             
-        # Randomly connect to existing nodes to grow the network
+        # Connect deterministically to the first not-yet-connected active node.
         if len(self.activations) > 1 and len(self.synapses[symbol]) < 5:
-            targets = list(self.activations.keys())
+            targets = sorted(self.activations.keys())
             if symbol in targets: targets.remove(symbol)
-            if targets:
-                target = random.choice(targets)
+            existing = {synapse.target for synapse in self.synapses[symbol]}
+            target = next((candidate for candidate in targets if candidate not in existing), None)
+            if target is not None:
                 # Check if connection exists
                 if not any(s.target == target for s in self.synapses[symbol]):
                     self.synapses[symbol].append(Synapse(source=symbol, target=target))
@@ -866,7 +868,7 @@ class Position:
     margin_amount: float = 0.0   # Actual margin (collateral) put up
 
     # Generate unique ID for position
-    id: str = field(default_factory=lambda: f"pos_{int(time.time()*1000)}_{random.randint(1000,9999)}")
+    id: str = field(default_factory=lambda: f"pos_{uuid.uuid4().hex}")
     
     # Convenience properties
     @property
@@ -939,8 +941,7 @@ class PerformanceTracker:
         if net_pnl > 0:
             self.wins += 1
             # 🇮🇪 IRA SNIPER CELEBRATION!
-            import random  # noqa: F811
-            quote = random.choice(self.IRA_SNIPER_QUOTES)
+            quote = self.IRA_SNIPER_QUOTES[(self.total_trades - 1) % len(self.IRA_SNIPER_QUOTES)]
             print(f"\n🇮🇪🇮🇪🇮🇪 IRA SNIPER WIN! 🇮🇪🇮🇪🇮🇪")
             print(f"    💰 +${net_pnl:.4f} on {symbol}")
             print(f"    📜 \"{quote}\"")

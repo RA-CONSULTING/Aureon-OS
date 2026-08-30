@@ -198,6 +198,10 @@ class OpportunityScanner {
       momentum: ticker.momentum,
       spread: ticker.spread,
       timestamp: ticker.timestamp,
+      truthStatus: ticker.truthStatus,
+      sourceId: ticker.sourceId,
+      sourceTimestamp: ticker.sourceTimestamp,
+      generatedValues: false,
     };
 
     return {

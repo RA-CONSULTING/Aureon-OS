@@ -18,6 +18,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional, Sequence
 
+from aureon.obsidian_paths import resolve_obsidian_note_path
+
 
 SCHEMA_VERSION = "aureon-hnc-saas-security-architect-v1"
 DEFAULT_OUTPUT_MD = Path("docs/audits/hnc_saas_security_blueprint.md")
@@ -841,7 +843,7 @@ def build_hnc_saas_security_blueprint(
         status = "blueprint_ready_implementation_queued"
     else:
         status = "blueprint_ready_implementation_required"
-    vault_path = root / DEFAULT_VAULT_NOTE
+    vault_path = resolve_obsidian_note_path(DEFAULT_VAULT_NOTE, repo_root=root)
     summary = {
         "hnc_surface_count": len(inventory),
         "hnc_surface_type_count": len(hnc_types),
@@ -1019,7 +1021,7 @@ def write_report(
     root = Path(blueprint.repo_root)
     md_path = markdown_path if markdown_path.is_absolute() else root / markdown_path
     js_path = json_path if json_path.is_absolute() else root / json_path
-    note_path = vault_path if vault_path.is_absolute() else root / vault_path
+    note_path = resolve_obsidian_note_path(vault_path, repo_root=root)
     md_path.parent.mkdir(parents=True, exist_ok=True)
     js_path.parent.mkdir(parents=True, exist_ok=True)
     note_path.parent.mkdir(parents=True, exist_ok=True)

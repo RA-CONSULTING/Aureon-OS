@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-⚛️🌌 QUANTUM WARFARE - LIVE DEMONSTRATION 🌌⚛️
+⚛️🌌 QUANTUM WARFARE - LIVE OBSERVER 🌌⚛️
 ═══════════════════════════════════════════════════════════════════════════════
 Watch the quantum system detect HFTs, find entanglements, and execute trades
 in the calm nodes while HFTs fight each other.
@@ -17,7 +17,6 @@ if sys.platform == 'win32':
 
 import time
 import asyncio
-import random
 import math
 from datetime import datetime
 from dataclasses import dataclass
@@ -158,56 +157,20 @@ class QuantumWarfareLive:
                         )
                         continue
                 
-                # Stage AE: only substitute simulated market data when the
-                # operator has explicitly opted in via AUREON_ALLOW_SIM_FALLBACK.
-                # Default production posture: skip the symbol so we never trade
-                # on hardcoded 2024 prices ($98,500 BTC, $3,200 ETH, etc.) when
-                # the live ticker fetch hiccups.
-                from aureon.observer.live_data_policy import (
-                    simulation_fallback_allowed, log_blocked_fallback,
+                from aureon.observer.live_data_policy import log_blocked_fallback
+                log_blocked_fallback(
+                    f"quantum_warfare_live:{symbol}", "ticker_returned_no_data"
                 )
-                if simulation_fallback_allowed():
-                    states[symbol] = self._simulate_market_data(symbol)
-                else:
-                    log_blocked_fallback(f"quantum_warfare_live:{symbol}",
-                                         "ticker_returned_none")
 
             except Exception as e:
-                from aureon.observer.live_data_policy import (
-                    simulation_fallback_allowed, log_blocked_fallback,
+                from aureon.observer.live_data_policy import log_blocked_fallback
+                log_blocked_fallback(
+                    f"quantum_warfare_live:{symbol}",
+                    f"ticker_exc:{type(e).__name__}",
                 )
-                if simulation_fallback_allowed():
-                    states[symbol] = self._simulate_market_data(symbol)
-                else:
-                    log_blocked_fallback(f"quantum_warfare_live:{symbol}",
-                                         f"ticker_exc:{type(e).__name__}")
         
         self.market_states = states
         return states
-    
-    def _simulate_market_data(self, symbol: str) -> LiveMarketState:
-        """Generate simulated market data for demo"""
-        base_prices = {
-            'BTC/USD': 98500,
-            'ETH/USD': 3200,
-            'SOL/USD': 180,
-            'XRP/USD': 2.5,
-            'DOGE/USD': 0.35
-        }
-        
-        base = base_prices.get(symbol, 100)
-        noise = random.gauss(0, base * 0.001)
-        price = base + noise
-        spread = base * 0.0005 * (1 + random.random())
-        
-        return LiveMarketState(
-            symbol=symbol,
-            bid=price - spread/2,
-            ask=price + spread/2,
-            last=price,
-            volume=random.uniform(100, 10000),
-            timestamp=time.time()
-        )
     
     def detect_hft_activity(self, symbol: str, trades: List[Dict]) -> List[HFTInterferencePattern]:
         """Detect HFT activity in trade stream"""
@@ -371,14 +334,16 @@ class QuantumWarfareLive:
             result['reason'] = "Confidence too low"
             return result
         
-        # Execute or simulate
+        # Observer-only mode never turns an edge into a claimed fill.
         if self.dry_run:
-            result['executed'] = True
-            result['simulated_fill'] = self.market_states.get(symbol, LiveMarketState(symbol, 0, 0, 0, 0, 0)).last
-            self.trades_executed += 1
+            state = self.market_states.get(symbol)
+            result['would_execute'] = True
+            result['reference_price'] = state.last if state else None
+            result['truth_status'] = 'real_derived' if state else 'no_data'
+            result['reason'] = 'observer_only_no_order_submitted'
         else:
-            # Real execution would go here
-            result['reason'] = "Live execution disabled for safety"
+            result['truth_status'] = 'real_derived'
+            result['reason'] = "execution_adapter_not_connected"
         
         return result
     
@@ -413,15 +378,9 @@ class QuantumWarfareLive:
                     self.price_histories[symbol] = deque(maxlen=1000)
                 self.price_histories[symbol].append(state.last)
             
-            # Simulate trade stream for HFT detection
-            for symbol in symbols:
-                trades = [
-                    {'timestamp': time.time() - random.uniform(0, 1), 'price': states[symbol].last}
-                    for _ in range(50)
-                ]
-                if symbol not in self.trade_histories:
-                    self.trade_histories[symbol] = deque(maxlen=1000)
-                self.trade_histories[symbol].extend(trades)
+            # HFT detection consumes externally ingested provider trades only.
+            # Missing trade receipts remain no_data; ticker snapshots are not
+            # expanded into a fabricated trade stream.
             
             # Display market state
             print("\n📊 MARKET STATE:")

@@ -1,9 +1,17 @@
 import { useState, useEffect, useCallback } from 'react';
-import { stargateLayer, StargateActivation, NetworkMetrics } from '@/core/stargateLattice';
+import {
+  stargateLayer,
+  StargateActivation,
+  NetworkMetrics,
+  StargateNodeObservation,
+} from '@/core/stargateLattice';
 import { usePrimelinesProtocol } from './usePrimelinesProtocol';
-import { toast } from 'sonner';
 
-export function useStargateNetwork() {
+const NO_STARGATE_OBSERVATIONS: StargateNodeObservation[] = [];
+
+export function useStargateNetwork(
+  observations: StargateNodeObservation[] = NO_STARGATE_OBSERVATIONS,
+) {
   const [activations, setActivations] = useState<StargateActivation[]>([]);
   const [metrics, setMetrics] = useState<NetworkMetrics | null>(null);
   const [isActive, setIsActive] = useState(false);
@@ -11,22 +19,34 @@ export function useStargateNetwork() {
 
   const pingNetwork = useCallback(async () => {
     try {
-      // Activate all 12 stargates
-      const newActivations = stargateLayer.activateAllNodes();
-      setActivations(newActivations);
-
-      // Calculate network metrics
+      const newActivations = stargateLayer.activateAllNodes(observations);
       const newMetrics = stargateLayer.calculateNetworkMetrics(newActivations);
-      setMetrics(newMetrics);
-
-      // Calculate additional metrics for analysis
-      const avgCoherence = newActivations.reduce((sum, a) => sum + a.coherence, 0) / newActivations.length;
-      const avgFrequency = newActivations.reduce((sum, a) => sum + a.frequencyLock, 0) / newActivations.length;
       const activeNodes = newActivations.filter(a => a.status === 'ACTIVE').length;
-      const phaseLocks = activeNodes * (activeNodes - 1) / 2; // All possible pairs
-      const resonanceQuality = newMetrics.networkStrength * avgCoherence;
 
-      // Sync with Primelines Protocol Gateway
+      setActivations(newActivations);
+      setMetrics(newMetrics);
+      setIsActive(activeNodes > 0);
+
+      // Missing telemetry remains no_data and is never published as a network state.
+      if (
+        activeNodes === 0 ||
+        newMetrics.avgCoherence === null ||
+        newMetrics.avgEnergyFlow === null ||
+        newMetrics.avgLatency === null ||
+        newMetrics.networkStrength === null
+      ) {
+        return;
+      }
+
+      const frequencyLocks = newActivations
+        .filter(a => a.status === 'ACTIVE' && a.frequencyLock !== null)
+        .map(a => a.frequencyLock as number);
+      const avgFrequency = frequencyLocks.length > 0
+        ? frequencyLocks.reduce((sum, value) => sum + value, 0) / frequencyLocks.length
+        : null;
+      const phaseLocks = activeNodes * (activeNodes - 1) / 2;
+      const resonanceQuality = newMetrics.networkStrength * newMetrics.avgCoherence;
+
       await invokeProtocol({
         operation: 'SYNC_HARMONIC_NEXUS',
         payload: {
@@ -34,7 +54,6 @@ export function useStargateNetwork() {
             activations: newActivations,
             metrics: {
               ...newMetrics,
-              avgCoherence,
               avgFrequency,
               phaseLocks,
               resonanceQuality,
@@ -42,34 +61,19 @@ export function useStargateNetwork() {
             gridEnergy: stargateLayer.calculateGridEnergy(),
           },
         },
-        requireValidation: false, // Don't require validation for continuous pings
+        requireValidation: false,
       });
-
-      // Log major events
-      if (newMetrics.networkStrength > 0.95) {
-        console.log('🌟 STARGATE NETWORK AT MAXIMUM COHERENCE');
-      }
-
     } catch (error) {
-      console.error('Stargate network ping error:', error);
+      setIsActive(false);
+      console.error('Stargate network observation error:', error);
     }
-  }, [invokeProtocol]);
+  }, [invokeProtocol, observations]);
 
-  // Start continuous pinging on mount
   useEffect(() => {
-    setIsActive(true);
-    
-    // Initial ping
-    pingNetwork();
+    void pingNetwork();
 
-    // Continuous ping every 2 seconds
-    const interval = setInterval(pingNetwork, 2000);
-
-    // Show activation toast
-    toast.success('🌟 All 12 Stargates Activated', {
-      description: 'Network pinging continuously via Primelines Protocol',
-    });
-
+    // Revalidate freshness without inventing values between observations.
+    const interval = setInterval(() => void pingNetwork(), 30_000);
     return () => {
       clearInterval(interval);
       setIsActive(false);

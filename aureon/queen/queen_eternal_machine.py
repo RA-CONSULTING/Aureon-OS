@@ -33,6 +33,7 @@ import math
 import json
 import asyncio
 import logging
+import time
 import concurrent.futures
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Any, Tuple
@@ -41,7 +42,7 @@ from pathlib import Path
 from enum import Enum, auto
 
 # UTF-8 Windows fix
-if sys.platform == 'win32':
+if sys.platform == 'win32' and sys.stdout is sys.__stdout__ and sys.stdout.isatty():
     os.environ['PYTHONIOENCODING'] = 'utf-8'
     try:
         import io
@@ -143,6 +144,452 @@ MIN_DIP_ADVANTAGE = 0.005     # Minimum 0.5% deeper dip to justify leap (more le
 MIN_PROFIT_SCALP = 0.005      # Minimum 0.5% profit to scalp
 MAX_POSITIONS = 50            # Maximum breadcrumb positions
 SCAN_INTERVAL_SECONDS = 10    # Scan market every 10 seconds (faster cycles)
+ORDER_RECEIPT_MAX_AGE_SECONDS = 300.0
+ORDER_RECEIPT_FUTURE_TOLERANCE_SECONDS = 30.0
+
+
+def _first_receipt_value(receipt: Dict[str, Any], *keys: str) -> Any:
+    """Return the first explicitly present provider field."""
+    for key in keys:
+        if key in receipt and receipt[key] is not None:
+            return receipt[key]
+    return None
+
+
+def _finite_receipt_number(
+    value: Any,
+    *,
+    positive: bool = False,
+    nonnegative: bool = False,
+) -> Optional[float]:
+    """Parse a provider number without turning missing data into zero."""
+    if value is None or isinstance(value, bool):
+        return None
+    try:
+        parsed = float(value)
+    except (TypeError, ValueError, OverflowError):
+        return None
+    if not math.isfinite(parsed):
+        return None
+    if positive and parsed <= 0:
+        return None
+    if nonnegative and parsed < 0:
+        return None
+    return parsed
+
+
+def _provider_receipt_timestamp(value: Any) -> Optional[float]:
+    """Normalize numeric or ISO provider timestamps to Unix seconds."""
+    if value is None or isinstance(value, bool):
+        return None
+    if isinstance(value, (int, float)):
+        parsed = float(value)
+        if not math.isfinite(parsed):
+            return None
+        if parsed > 10_000_000_000:
+            parsed /= 1000.0
+        return parsed
+    if isinstance(value, str):
+        text = value.strip()
+        if not text:
+            return None
+        numeric = _finite_receipt_number(text)
+        if numeric is not None:
+            return numeric / 1000.0 if numeric > 10_000_000_000 else numeric
+        try:
+            return datetime.fromisoformat(text.replace("Z", "+00:00")).timestamp()
+        except (TypeError, ValueError, OverflowError):
+            return None
+    return None
+
+
+def _valid_provider_identifier(value: Any) -> Optional[str]:
+    """Reject absent and non-provider identifiers used by local dry runs."""
+    if value is None or isinstance(value, bool):
+        return None
+    text = str(value).strip()
+    if not text:
+        return None
+    lowered = text.lower()
+    if lowered in {"0", "none", "null", "unknown", "missing", "n/a"}:
+        return None
+    if lowered.startswith(("dry-", "paper-", "local-")):
+        return None
+    return text
+
+
+def _pair_assets(symbol: Any) -> Tuple[Optional[str], Optional[str]]:
+    """Extract common base/quote assets without inventing a conversion."""
+    compact = str(symbol or "").upper().replace("/", "").replace("-", "")
+    for quote in (
+        "FDUSD",
+        "USDT",
+        "USDC",
+        "BUSD",
+        "TUSD",
+        "USD",
+        "EUR",
+        "GBP",
+        "BTC",
+        "BNB",
+        "ETH",
+    ):
+        if compact.endswith(quote) and len(compact) > len(quote):
+            return compact[:-len(quote)], quote
+    return None, None
+
+
+def _provider_symbol_matches(
+    response_symbol: Any,
+    expected_symbol: str,
+    exchange: str,
+) -> bool:
+    """Require the terminal receipt to identify the requested base asset."""
+    compact = str(response_symbol or "").upper().replace("/", "").replace("-", "")
+    expected = str(expected_symbol or "").upper().strip()
+    if not compact or not expected:
+        return False
+    aliases = {expected}
+    if expected == "BTC":
+        aliases.add("XBT")
+    elif expected == "XBT":
+        aliases.add("BTC")
+    pair_base, _pair_quote = _pair_assets(compact)
+    if exchange.strip().lower() != "kraken":
+        return pair_base in aliases
+    return any(
+        compact.startswith(alias) or compact.startswith(f"X{alias}")
+        for alias in aliases
+    )
+
+
+def _classify_terminal_order_receipt(
+    response: Any,
+    exchange: str,
+    *,
+    expected_side: Optional[str] = None,
+    expected_symbol: Optional[str] = None,
+    now: Optional[float] = None,
+) -> Dict[str, Any]:
+    """
+    Classify a provider order response.
+
+    Submission acknowledgements are evidence that reconciliation is required,
+    never evidence of a fill. Only a fresh, complete terminal provider receipt
+    may become eligible for state, accounting, memory, or learning mutations.
+    """
+    checked_at = time.time() if now is None else float(now)
+    result: Dict[str, Any] = {
+        "success": False,
+        "status": "no_data",
+        "data_status": "no_data",
+        "truth_status": "no_data",
+        "submitted": None,
+        "reconciliation_required": False,
+        "order_id": None,
+        "filled_qty": None,
+        "filled_price": None,
+        "filled_notional": None,
+        "fee_by_asset": {},
+        "provider_timestamp": None,
+        "eligible_for_accounting": False,
+        "eligible_for_learning": False,
+        "generated_values": False,
+        "reason": "missing_provider_order_receipt",
+    }
+    if not isinstance(response, dict):
+        return result
+
+    status = str(response.get("status") or "").strip().upper()
+    data_status = str(response.get("data_status") or "").strip().lower()
+    order_id = _valid_provider_identifier(
+        _first_receipt_value(response, "orderId", "id", "order_id", "txid")
+    )
+    result["order_id"] = order_id
+
+    if (
+        response.get("dryRun") is True
+        or response.get("dry_run") is True
+        or status == "NOT_SUBMITTED"
+        or data_status == "not_submitted"
+    ):
+        result.update(
+            {
+                "status": "not_submitted",
+                "data_status": "not_submitted",
+                "truth_status": "not_submitted",
+                "submitted": False,
+                "reason": "order_not_submitted",
+            }
+        )
+        return result
+
+    if (
+        response.get("rejected") is True
+        or response.get("error")
+        or status in {"REJECTED", "CANCELED", "CANCELLED", "EXPIRED"}
+    ):
+        result.update(
+            {
+                "status": "rejected",
+                "data_status": "live" if order_id else "no_data",
+                "truth_status": "real_observed" if order_id else "no_data",
+                "submitted": bool(order_id),
+                "reason": "provider_order_not_filled",
+            }
+        )
+        return result
+
+    provider_receipt_type = str(response.get("provider_receipt_type") or "")
+    if provider_receipt_type.lower() == "addorder":
+        result.update(
+            {
+                "status": "pending_reconciliation",
+                "data_status": "pending_reconciliation",
+                "truth_status": (
+                    "real_observed"
+                    if order_id
+                    else str(response.get("truth_status") or "no_data")
+                ),
+                "submitted": response.get("submitted"),
+                "reconciliation_required": True,
+                "reason": "terminal_provider_fill_receipt_required",
+            }
+        )
+        return result
+
+    if status != "FILLED":
+        pending = bool(
+            order_id
+            or response.get("submitted") is True
+            or response.get("reconciliation_required") is True
+            or data_status == "pending_reconciliation"
+        )
+        result.update(
+            {
+                "status": "pending_reconciliation" if pending else "no_data",
+                "data_status": "pending_reconciliation" if pending else "no_data",
+                "truth_status": (
+                    str(response.get("truth_status") or "real_observed")
+                    if order_id
+                    else "no_data"
+                ),
+                "submitted": True if order_id else response.get("submitted"),
+                "reconciliation_required": pending,
+                "reason": "terminal_provider_fill_receipt_required",
+            }
+        )
+        return result
+
+    if order_id is None:
+        result["reason"] = "missing_provider_order_identifier"
+        return result
+    if response.get("generated_values") is True:
+        result["reason"] = "generated_order_values_are_not_provider_evidence"
+        return result
+    if data_status and data_status != "live":
+        result["reason"] = "provider_receipt_not_live"
+        return result
+    truth_status = str(response.get("truth_status") or "").strip().lower()
+    if truth_status and truth_status not in {"real_observed", "real_derived"}:
+        result["reason"] = "provider_receipt_truth_status_invalid"
+        return result
+    if response.get("fill_receipt_complete") is False:
+        result["reason"] = "provider_fill_receipt_incomplete"
+        return result
+    if response.get("eligible_for_accounting") is False:
+        result["reason"] = "provider_receipt_not_accounting_eligible"
+        return result
+    if response.get("eligible_for_learning") is False:
+        result["reason"] = "provider_receipt_not_learning_eligible"
+        return result
+
+    provider = exchange.strip().lower()
+    if provider == "kraken" and provider_receipt_type.lower() not in {
+        "queryorders",
+        "closedorders",
+    }:
+        result["reason"] = "kraken_terminal_readback_required"
+        return result
+
+    side = str(response.get("side") or "").strip().upper()
+    if expected_side and side != expected_side.strip().upper():
+        result["reason"] = "provider_order_side_mismatch"
+        return result
+
+    timestamp_value = _first_receipt_value(
+        response,
+        "provider_timestamp",
+        "source_timestamp",
+        "transactTime",
+        "updateTime",
+        "filled_at",
+        "closedTime",
+    )
+    provider_timestamp = _provider_receipt_timestamp(timestamp_value)
+    if provider_timestamp is None:
+        result["reason"] = "missing_provider_fill_timestamp"
+        return result
+    age = checked_at - provider_timestamp
+    if age > ORDER_RECEIPT_MAX_AGE_SECONDS:
+        result["reason"] = "stale_provider_fill_timestamp"
+        return result
+    if age < -ORDER_RECEIPT_FUTURE_TOLERANCE_SECONDS:
+        result["reason"] = "future_provider_fill_timestamp"
+        return result
+
+    filled_qty = _finite_receipt_number(
+        _first_receipt_value(response, "executedQty", "filled_qty"),
+        positive=True,
+    )
+    filled_price = _finite_receipt_number(
+        _first_receipt_value(
+            response,
+            "avgPrice",
+            "filled_avg_price",
+            "avg_fill_price",
+        ),
+        positive=True,
+    )
+    filled_notional = _finite_receipt_number(
+        _first_receipt_value(
+            response,
+            "cummulativeQuoteQty",
+            "filled_notional",
+            "filled_notional_value",
+        ),
+        positive=True,
+    )
+    if filled_qty is None or filled_price is None:
+        result["reason"] = "missing_provider_fill_quantity_or_price"
+        return result
+    if filled_notional is None:
+        if provider == "alpaca":
+            filled_notional = filled_qty * filled_price
+        else:
+            result["reason"] = "missing_provider_filled_notional"
+            return result
+
+    expected_notional = filled_qty * filled_price
+    notional_tolerance = max(1e-8, filled_notional * 0.001)
+    if abs(expected_notional - filled_notional) > notional_tolerance:
+        result["reason"] = "inconsistent_provider_fill_notional"
+        return result
+
+    response_symbol = response.get("symbol")
+    pair_base, pair_quote = _pair_assets(response_symbol)
+    if expected_symbol:
+        if not _provider_symbol_matches(
+            response_symbol, expected_symbol, provider
+        ):
+            result["reason"] = "provider_order_symbol_mismatch"
+            return result
+        pair_base = expected_symbol.upper()
+    fee_by_asset: Dict[str, float] = {}
+    fills = response.get("fills")
+
+    if provider == "binance":
+        if response.get("fills_verified") is not True or not isinstance(fills, list) or not fills:
+            result["reason"] = "missing_provider_trade_fills"
+            return result
+        fill_qty_total = 0.0
+        fill_notional_total = 0.0
+        for fill in fills:
+            if not isinstance(fill, dict):
+                result["reason"] = "malformed_provider_trade_fill"
+                return result
+            trade_id = _valid_provider_identifier(
+                _first_receipt_value(fill, "tradeId", "id")
+            )
+            qty = _finite_receipt_number(fill.get("qty"), positive=True)
+            price = _finite_receipt_number(fill.get("price"), positive=True)
+            commission = _finite_receipt_number(
+                fill.get("commission"), nonnegative=True
+            )
+            commission_asset = str(fill.get("commissionAsset") or "").upper()
+            if (
+                trade_id is None
+                or qty is None
+                or price is None
+                or commission is None
+                or not commission_asset
+            ):
+                result["reason"] = "incomplete_provider_trade_fill"
+                return result
+            fill_qty_total += qty
+            fill_notional_total += qty * price
+            fee_by_asset[commission_asset] = (
+                fee_by_asset.get(commission_asset, 0.0) + commission
+            )
+        if abs(fill_qty_total - filled_qty) > max(1e-8, filled_qty * 0.001):
+            result["reason"] = "inconsistent_provider_fill_quantity"
+            return result
+        if abs(fill_notional_total - filled_notional) > notional_tolerance:
+            result["reason"] = "inconsistent_provider_trade_notional"
+            return result
+    elif provider == "kraken":
+        if not isinstance(fills, list) or not fills:
+            result["reason"] = "missing_provider_trade_identifiers"
+            return result
+        if any(
+            not isinstance(fill, dict)
+            or _valid_provider_identifier(
+                _first_receipt_value(fill, "tradeId", "id")
+            )
+            is None
+            for fill in fills
+        ):
+            result["reason"] = "invalid_provider_trade_identifier"
+            return result
+        fee = _finite_receipt_number(response.get("fee"), nonnegative=True)
+        fee_asset = str(
+            response.get("fee_asset") or response.get("fee_currency") or ""
+        ).upper()
+        if fee is None or not fee_asset:
+            result["reason"] = "missing_provider_fee_receipt"
+            return result
+        fee_by_asset[fee_asset] = fee
+        pair_quote = pair_quote or fee_asset
+    else:
+        fee = _finite_receipt_number(
+            _first_receipt_value(response, "fee", "commission"),
+            nonnegative=True,
+        )
+        fee_asset = str(
+            response.get("fee_asset")
+            or response.get("fee_currency")
+            or response.get("currency")
+            or ""
+        ).upper()
+        if fee is None or not fee_asset:
+            result["reason"] = "missing_provider_fee_receipt"
+            return result
+        fee_by_asset[fee_asset] = fee
+
+    result.update(
+        {
+            "success": True,
+            "status": "filled",
+            "data_status": "live",
+            "truth_status": "real_observed",
+            "submitted": True,
+            "reconciliation_required": False,
+            "filled_qty": filled_qty,
+            "filled_price": filled_price,
+            "filled_notional": filled_notional,
+            "fee_by_asset": fee_by_asset,
+            "provider_timestamp": provider_timestamp,
+            "base_asset": pair_base,
+            "quote_asset": pair_quote,
+            "exchange": provider,
+            "symbol": expected_symbol.upper() if expected_symbol else pair_base,
+            "side": side,
+            "eligible_for_accounting": True,
+            "eligible_for_learning": True,
+            "reason": None,
+        }
+    )
+    return result
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -478,6 +925,8 @@ class QueenEternalMachine:
         self.exchange = exchange
         self.cost_basis_file = Path(cost_basis_file)
         self._exchange_clients: Dict[str, Any] = {}
+        self._pending_orders: Dict[str, Dict[str, Any]] = {}
+        self.last_execution_receipt: Optional[Dict[str, Any]] = None
         # LIVE env defaults "1" — Stage AD sweep: production trading
         # is the default. Operator who wants a paper / dry posture sets
         # LIVE=0 explicitly in the deployment env.
@@ -489,11 +938,15 @@ class QueenEternalMachine:
         # Track total fees paid
         self.total_fees_paid: float = 0.0
         self.total_slippage_cost: float = 0.0
+        self.observed_fees_by_asset: Dict[str, float] = {}
 
         if self.live_trading:
             logger.info("Eternal Machine live trading: ENABLED")
         else:
-            logger.warning("Eternal Machine live trading: DISABLED (simulation-only)")
+            logger.warning(
+                "Eternal Machine live trading: DISABLED "
+                "(observation-only; portfolio mutation disabled)"
+            )
         
         # 🆕 FRIENDS WITH BAGGAGE SYSTEM
         self.friends: Dict[str, Friend] = {}  # All our "friends" (assets)
@@ -912,11 +1365,365 @@ class QueenEternalMachine:
         return [f"{base}USD"]
 
     def _order_failed(self, response: Dict[str, Any]) -> bool:
+        """Compatibility predicate: only an explicit terminal fill is success."""
         if not isinstance(response, dict):
             return True
         if response.get("rejected") or response.get("error") or response.get("dryRun"):
             return True
-        return False
+        return str(response.get("status") or "").strip().upper() != "FILLED"
+
+    def _pending_order_key(self, exchange: str, base_symbol: str, side: str) -> str:
+        return "|".join(
+            (
+                str(exchange or "").strip().lower(),
+                str(base_symbol or "").strip().upper(),
+                str(side or "").strip().upper(),
+            )
+        )
+
+    def _pending_registry(self) -> Dict[str, Dict[str, Any]]:
+        registry = getattr(self, "_pending_orders", None)
+        if not isinstance(registry, dict):
+            registry = {}
+            self._pending_orders = registry
+        return registry
+
+    def _not_submitted_receipt(
+        self,
+        exchange: str,
+        symbol: str,
+        side: str,
+        *,
+        reason: str,
+    ) -> Dict[str, Any]:
+        receipt = {
+            "success": False,
+            "status": "not_submitted",
+            "data_status": "not_submitted",
+            "truth_status": "not_submitted",
+            "submitted": False,
+            "reconciliation_required": False,
+            "order_id": None,
+            "filled_qty": None,
+            "filled_price": None,
+            "filled_notional": None,
+            "fee_by_asset": {},
+            "provider_timestamp": None,
+            "eligible_for_accounting": False,
+            "eligible_for_learning": False,
+            "generated_values": False,
+            "exchange": exchange,
+            "symbol": symbol,
+            "side": side.upper(),
+            "reason": reason,
+        }
+        self.last_execution_receipt = receipt
+        return receipt
+
+    def _remember_pending_order(
+        self,
+        exchange: str,
+        symbol: str,
+        side: str,
+        receipt: Dict[str, Any],
+        *,
+        quantity: Optional[float] = None,
+        quote_qty: Optional[float] = None,
+    ) -> Dict[str, Any]:
+        pending = {
+            "success": False,
+            "status": "pending_reconciliation",
+            "data_status": "pending_reconciliation",
+            "truth_status": receipt.get("truth_status") or "no_data",
+            "submitted": receipt.get("submitted"),
+            "reconciliation_required": True,
+            "order_id": receipt.get("order_id")
+            or _valid_provider_identifier(
+                _first_receipt_value(
+                    receipt, "orderId", "id", "order_id", "txid"
+                )
+            ),
+            "filled_qty": None,
+            "filled_price": None,
+            "filled_notional": None,
+            "fee_by_asset": {},
+            "provider_timestamp": None,
+            "eligible_for_accounting": False,
+            "eligible_for_learning": False,
+            "generated_values": False,
+            "exchange": exchange,
+            "symbol": symbol,
+            "side": side.upper(),
+            "requested_quantity": quantity,
+            "requested_quote_quantity": quote_qty,
+            "recorded_at": time.time(),
+            "reason": receipt.get("reason")
+            or "terminal_provider_fill_receipt_required",
+        }
+        key = self._pending_order_key(exchange, symbol, side)
+        self._pending_registry()[key] = pending
+        self.last_execution_receipt = pending
+        save_state = getattr(self, "_save_state", None)
+        if callable(save_state):
+            save_state()
+        return pending
+
+    def _commit_resolved_orders(
+        self, *orders: Tuple[str, str, str]
+    ) -> None:
+        """
+        Clear duplicate blocks only in the same save as the state mutation.
+
+        A terminal readback alone does not clear a block: the organism must
+        first commit the corresponding holdings/accounting transition.
+        """
+        registry = self._pending_registry()
+        for exchange, symbol, side in orders:
+            registry.pop(self._pending_order_key(exchange, symbol, side), None)
+        self._save_state()
+
+    def _remember_terminal_uncommitted(
+        self,
+        exchange: str,
+        symbol: str,
+        side: str,
+        receipt: Dict[str, Any],
+        *,
+        quantity: Optional[float] = None,
+        quote_qty: Optional[float] = None,
+    ) -> Dict[str, Any]:
+        """
+        Persist a verified fill until its holdings transition is committed.
+
+        This closes the crash window between a terminal first leg and a pending
+        dependent leg. Re-entry can reuse the verified receipt, but cannot
+        submit the same order again.
+        """
+        terminal = dict(receipt)
+        lock = {
+            "success": False,
+            "status": "terminal_fill_uncommitted",
+            "data_status": "live",
+            "truth_status": "real_observed",
+            "submitted": True,
+            "reconciliation_required": False,
+            "order_id": terminal.get("order_id"),
+            "filled_qty": terminal.get("filled_qty"),
+            "filled_price": terminal.get("filled_price"),
+            "filled_notional": terminal.get("filled_notional"),
+            "fee_by_asset": dict(terminal.get("fee_by_asset") or {}),
+            "provider_timestamp": terminal.get("provider_timestamp"),
+            "eligible_for_accounting": False,
+            "eligible_for_learning": False,
+            "generated_values": False,
+            "exchange": exchange,
+            "symbol": symbol,
+            "side": side.upper(),
+            "requested_quantity": quantity,
+            "requested_quote_quantity": quote_qty,
+            "recorded_at": time.time(),
+            "reason": "terminal_fill_waiting_for_state_commit",
+            "terminal_receipt": terminal,
+        }
+        key = self._pending_order_key(exchange, symbol, side)
+        self._pending_registry()[key] = lock
+        self.last_execution_receipt = terminal
+        save_state = getattr(self, "_save_state", None)
+        if callable(save_state):
+            save_state()
+        return terminal
+
+    def _reuse_terminal_uncommitted(
+        self,
+        exchange: str,
+        symbol: str,
+        side: str,
+        lock: Dict[str, Any],
+        *,
+        quantity: Optional[float] = None,
+        quote_qty: Optional[float] = None,
+    ) -> Optional[Dict[str, Any]]:
+        """Validate and reuse only an internally classified terminal lock."""
+        terminal = lock.get("terminal_receipt")
+        if not isinstance(terminal, dict):
+            return None
+        if (
+            terminal.get("success") is not True
+            or terminal.get("status") != "filled"
+            or terminal.get("data_status") != "live"
+            or terminal.get("truth_status") != "real_observed"
+            or terminal.get("eligible_for_accounting") is not True
+            or terminal.get("eligible_for_learning") is not True
+            or terminal.get("generated_values") is not False
+            or terminal.get("exchange") != exchange.strip().lower()
+            or terminal.get("symbol") != symbol.strip().upper()
+            or terminal.get("side") != side.strip().upper()
+            or _valid_provider_identifier(terminal.get("order_id")) is None
+            or _finite_receipt_number(
+                terminal.get("filled_qty"), positive=True
+            )
+            is None
+            or _finite_receipt_number(
+                terminal.get("filled_price"), positive=True
+            )
+            is None
+            or _finite_receipt_number(
+                terminal.get("filled_notional"), positive=True
+            )
+            is None
+            or _provider_receipt_timestamp(
+                terminal.get("provider_timestamp")
+            )
+            is None
+        ):
+            return None
+        requested_quantity = _finite_receipt_number(quantity, positive=True)
+        locked_quantity = _finite_receipt_number(
+            lock.get("requested_quantity"), positive=True
+        )
+        if (
+            requested_quantity is not None
+            and locked_quantity is not None
+            and abs(requested_quantity - locked_quantity)
+            > max(1e-12, locked_quantity * 0.001)
+        ):
+            return None
+        requested_quote = _finite_receipt_number(quote_qty, positive=True)
+        locked_quote = _finite_receipt_number(
+            lock.get("requested_quote_quantity"), positive=True
+        )
+        if (
+            requested_quote is not None
+            and locked_quote is not None
+            and abs(requested_quote - locked_quote)
+            > max(1e-8, locked_quote * 0.001)
+        ):
+            return None
+        fees = terminal.get("fee_by_asset")
+        if not isinstance(fees, dict) or any(
+            not str(asset).strip()
+            or _finite_receipt_number(value, nonnegative=True) is None
+            for asset, value in fees.items()
+        ):
+            return None
+        self.last_execution_receipt = terminal
+        return terminal
+
+    def _resolve_terminal_fill(
+        self,
+        exchange: str,
+        symbol: str,
+        side: str,
+        response: Dict[str, Any],
+        *,
+        quantity: Optional[float] = None,
+        quote_qty: Optional[float] = None,
+    ) -> Dict[str, Any]:
+        """
+        Require a complete terminal receipt, with one read-only reconciliation.
+
+        The readback can complete an acknowledged order, but this method never
+        submits another order. An unresolved receipt remains in the duplicate
+        block registry until a provider terminal readback is observed.
+        """
+        if (
+            isinstance(response, dict)
+            and response.get("status") == "terminal_fill_uncommitted"
+        ):
+            reused = self._reuse_terminal_uncommitted(
+                exchange,
+                symbol,
+                side,
+                response,
+                quantity=quantity,
+                quote_qty=quote_qty,
+            )
+            if reused is not None:
+                return reused
+            self.last_execution_receipt = response
+            return response
+
+        classified = _classify_terminal_order_receipt(
+            response,
+            exchange,
+            expected_side=side,
+            expected_symbol=symbol,
+        )
+        if classified["success"]:
+            return self._remember_terminal_uncommitted(
+                exchange,
+                symbol,
+                side,
+                classified,
+                quantity=quantity,
+                quote_qty=quote_qty,
+            )
+
+        order_id = classified.get("order_id")
+        if (
+            classified.get("status") == "pending_reconciliation"
+            and order_id
+        ):
+            client = self._get_exchange_client(exchange)
+            query = None
+            try:
+                if client and hasattr(client, "get_order_status"):
+                    query = client.get_order_status(order_id)
+                elif client and hasattr(client, "get_order"):
+                    query = client.get_order(order_id)
+            except Exception as exc:
+                classified["reason"] = (
+                    f"terminal_provider_readback_failed:{type(exc).__name__}"
+                )
+            if isinstance(query, dict):
+                readback = _classify_terminal_order_receipt(
+                    query,
+                    exchange,
+                    expected_side=side,
+                    expected_symbol=symbol,
+                )
+                if readback["success"]:
+                    return self._remember_terminal_uncommitted(
+                        exchange,
+                        symbol,
+                        side,
+                        readback,
+                        quantity=quantity,
+                        quote_qty=quote_qty,
+                    )
+                classified = readback
+
+        if classified.get("status") == "pending_reconciliation":
+            return self._remember_pending_order(
+                exchange,
+                symbol,
+                side,
+                classified,
+                quantity=quantity,
+                quote_qty=quote_qty,
+            )
+        self.last_execution_receipt = classified
+        return classified
+
+    def _record_observed_fees(self, *receipts: Dict[str, Any]) -> None:
+        """Accumulate provider-observed fees by their actual asset."""
+        ledger = getattr(self, "observed_fees_by_asset", None)
+        if not isinstance(ledger, dict):
+            ledger = {}
+            self.observed_fees_by_asset = ledger
+        for receipt in receipts:
+            for asset, value in (receipt.get("fee_by_asset") or {}).items():
+                fee = _finite_receipt_number(value, nonnegative=True)
+                if fee is not None:
+                    ledger[asset] = ledger.get(asset, 0.0) + fee
+
+    @staticmethod
+    def _net_base_quantity(receipt: Dict[str, Any], base_symbol: str) -> float:
+        filled_qty = float(receipt["filled_qty"])
+        base_fee = float(
+            (receipt.get("fee_by_asset") or {}).get(base_symbol.upper(), 0.0)
+        )
+        return max(0.0, filled_qty - base_fee)
 
     def _base_symbol_variants(self, base_symbol: str) -> set[str]:
         base = (base_symbol or "").upper().strip()
@@ -979,7 +1786,13 @@ class QueenEternalMachine:
     def _extract_order_id(self, response: Dict[str, Any]) -> Optional[str]:
         if not isinstance(response, dict):
             return None
-        for key in ("orderId", "id", "clientOrderId", "order_id", "txid"):
+        for key in (
+            "orderId",
+            "id",
+            "clientOrderId",
+            "order_id",
+            "txid",
+        ):
             value = response.get(key)
             if isinstance(value, list):
                 value = value[0] if value else None
@@ -1000,16 +1813,40 @@ class QueenEternalMachine:
         logger.info(f"   ✅ LIVE ORDER SUMMARY ({label} {exchange}): SELL={sell_id} BUY={buy_id}")
 
     def _place_market_order(self, exchange: str, base_symbol: str, side: str, quantity: float | None = None, quote_qty: float | None = None) -> Dict[str, Any]:
+        key = self._pending_order_key(exchange, base_symbol, side)
+        existing = self._pending_registry().get(key)
+        if existing:
+            blocked = dict(existing)
+            blocked["reason"] = "existing_order_requires_terminal_reconciliation"
+            self.last_execution_receipt = blocked
+            return blocked
+
         client = self._get_exchange_client(exchange)
         if not client:
-            return {"error": "no_client", "exchange": exchange}
+            return self._not_submitted_receipt(
+                exchange,
+                base_symbol,
+                side,
+                reason="exchange_client_unavailable",
+            )
         if getattr(client, "dry_run", False):
-            return {"error": "dry_run", "exchange": exchange}
-        last_err: str | None = None
+            return self._not_submitted_receipt(
+                exchange,
+                base_symbol,
+                side,
+                reason="exchange_client_dry_run",
+            )
+        last_rejection: Optional[Dict[str, Any]] = None
         for pair in self._pair_candidates(base_symbol, exchange):
             try:
                 res = client.place_market_order(pair, side, quantity=quantity, quote_qty=quote_qty)
-                if not self._order_failed(res):
+                classified = _classify_terminal_order_receipt(
+                    res,
+                    exchange,
+                    expected_side=side,
+                    expected_symbol=base_symbol,
+                )
+                if classified["success"]:
                     return res
                 if isinstance(res, dict) and str(res.get("error", "")).lower() == "volume_minimum":
                     return {
@@ -1019,10 +1856,61 @@ class QueenEternalMachine:
                         "side": side,
                         "details": res,
                     }
-                last_err = f"rejected for {pair}"
-            except Exception as e:
-                last_err = str(e)
-        return {"error": last_err or "order_failed", "exchange": exchange, "symbol": base_symbol, "side": side}
+                if (
+                    classified.get("status") == "rejected"
+                    and (
+                        res.get("rejected") is True
+                        or res.get("submitted") is False
+                    )
+                    and not classified.get("submitted")
+                ):
+                    last_rejection = res
+                    continue
+                if classified.get("status") == "rejected":
+                    return self._remember_pending_order(
+                        exchange,
+                        base_symbol,
+                        side,
+                        {
+                            "truth_status": classified.get("truth_status"),
+                            "submitted": None,
+                            "reason": "ambiguous_provider_error_response",
+                        },
+                        quantity=quantity,
+                        quote_qty=quote_qty,
+                    )
+                return self._remember_pending_order(
+                    exchange,
+                    base_symbol,
+                    side,
+                    classified,
+                    quantity=quantity,
+                    quote_qty=quote_qty,
+                )
+            except Exception as exc:
+                return self._remember_pending_order(
+                    exchange,
+                    base_symbol,
+                    side,
+                    {
+                        "truth_status": "no_data",
+                        "submitted": None,
+                        "reason": (
+                            "ambiguous_order_submission:"
+                            f"{type(exc).__name__}"
+                        ),
+                    },
+                    quantity=quantity,
+                    quote_qty=quote_qty,
+                )
+        if last_rejection is not None:
+            return last_rejection
+        return self._not_submitted_receipt(
+            exchange,
+            base_symbol,
+            side,
+            reason="no_provider_pair_accepted",
+        )
     
     def _load_friends_from_cost_basis_fallback(self) -> None:
         """Fallback: Load from cost_basis_history.json if tracked_positions.json doesn't exist."""
@@ -2035,84 +2923,159 @@ class QueenEternalMachine:
             logger.warning(f"⚠️ Leap rejected - not profitable after fees!")
             logger.warning(f"   Fee-adjusted multiplier: {opportunity.fee_adjusted_multiplier:.4f}x (needs > 1.0)")
             return False
-        
-        # Current value at CURRENT prices
-        current_value = self.main_position.current_value
-        breadcrumb_value = current_value * self.breadcrumb_percent
-        
-        # Use the PRE-CALCULATED net value from the opportunity (already fee-adjusted!)
-        net_value_for_purchase = opportunity.net_value_after_fees
-        
-        # Calculate quantities
-        old_qty = self.main_position.quantity * (1 - self.breadcrumb_percent)
-        new_qty = net_value_for_purchase / opportunity.to_price
 
-        if self.live_trading:
-            exchange = self.exchange
-            sell_res = self._place_market_order(exchange, opportunity.from_symbol, "SELL", quantity=old_qty)
-            if self._order_failed(sell_res):
-                logger.error(f"❌ Leap SELL failed on {exchange}: {sell_res}")
-                return False
-            self._log_order_id("LEAP SELL", exchange, opportunity.from_symbol, "SELL", sell_res)
-            buy_res = self._place_market_order(exchange, opportunity.to_symbol, "BUY", quote_qty=net_value_for_purchase)
-            if self._order_failed(buy_res):
-                logger.error(f"❌ Leap BUY failed on {exchange}: {buy_res}")
-                logger.error("⚠️ Sell may have executed - manual reconciliation required.")
-                return False
-            self._log_order_id("LEAP BUY", exchange, opportunity.to_symbol, "BUY", buy_res)
-            self._log_order_summary("LEAP", exchange, sell_res, buy_res)
+        if not self.live_trading:
+            self._not_submitted_receipt(
+                self.exchange,
+                opportunity.from_symbol,
+                "SELL",
+                reason=(
+                    "queen_dry_run"
+                    if self.dry_run
+                    else "live_trading_disabled"
+                ),
+            )
+            logger.info("🧪 Quantum leap not submitted; portfolio state is unchanged")
+            return False
 
-        # Track fees paid (after order execution if live)
-        self.total_fees_paid += opportunity.total_fees
-        self.total_slippage_cost += opportunity.slippage_cost
-        
-        # Create breadcrumb from current position (this stays and grows!)
-        breadcrumb_qty = self.main_position.quantity * self.breadcrumb_percent
-        breadcrumb = Breadcrumb(
-            symbol=self.main_position.symbol,
-            quantity=breadcrumb_qty,
-            cost_basis=breadcrumb_value,
-            entry_price=self.main_position.current_price,
-            entry_time=datetime.now(),
-            current_price=self.main_position.current_price,
-            exchange=self.exchange
+        original_position = self.main_position
+        requested_sell_qty = original_position.quantity * (
+            1 - self.breadcrumb_percent
         )
-        self.breadcrumbs[self.main_position.symbol] = breadcrumb
-        self.total_breadcrumbs += 1
-        
-        # Create new main position with FEE-ADJUSTED values
+        exchange = self.exchange
+        sell_res = self._place_market_order(
+            exchange,
+            opportunity.from_symbol,
+            "SELL",
+            quantity=requested_sell_qty,
+        )
+        sell_fill = self._resolve_terminal_fill(
+            exchange,
+            opportunity.from_symbol,
+            "SELL",
+            sell_res,
+            quantity=requested_sell_qty,
+        )
+        if not sell_fill["success"]:
+            logger.error(
+                f"❌ Leap SELL has no complete terminal receipt on {exchange}: "
+                f"{sell_fill.get('reason')}"
+            )
+            return False
+
+        sold_qty = float(sell_fill["filled_qty"])
+        if sold_qty > original_position.quantity + max(
+            1e-12, original_position.quantity * 0.001
+        ):
+            sell_fill["success"] = False
+            sell_fill["eligible_for_accounting"] = False
+            sell_fill["eligible_for_learning"] = False
+            sell_fill["reason"] = "provider_sell_exceeds_tracked_position"
+            self.last_execution_receipt = sell_fill
+            logger.error("❌ Provider SELL conflicts with tracked Queen position")
+            return False
+
+        sell_quote = str(sell_fill.get("quote_asset") or "").upper()
+        sell_quote_fee = float(
+            (sell_fill.get("fee_by_asset") or {}).get(sell_quote, 0.0)
+        )
+        purchase_quote_qty = float(sell_fill["filled_notional"]) - sell_quote_fee
+        if not math.isfinite(purchase_quote_qty) or purchase_quote_qty <= 0:
+            sell_fill["success"] = False
+            sell_fill["eligible_for_accounting"] = False
+            sell_fill["eligible_for_learning"] = False
+            sell_fill["reason"] = "provider_sell_has_no_positive_net_proceeds"
+            self.last_execution_receipt = sell_fill
+            return False
+
+        # The dependent BUY is reached only after terminal SELL evidence.
+        buy_res = self._place_market_order(
+            exchange,
+            opportunity.to_symbol,
+            "BUY",
+            quote_qty=purchase_quote_qty,
+        )
+        buy_fill = self._resolve_terminal_fill(
+            exchange,
+            opportunity.to_symbol,
+            "BUY",
+            buy_res,
+            quote_qty=purchase_quote_qty,
+        )
+        if not buy_fill["success"]:
+            logger.error(
+                f"❌ Leap BUY requires reconciliation on {exchange}: "
+                f"{buy_fill.get('reason')}"
+            )
+            logger.error("⚠️ SELL filled; dependent BUY state was not committed.")
+            return False
+
+        new_qty = self._net_base_quantity(buy_fill, opportunity.to_symbol)
+        if new_qty <= 0:
+            buy_fill["success"] = False
+            buy_fill["eligible_for_accounting"] = False
+            buy_fill["eligible_for_learning"] = False
+            buy_fill["reason"] = "provider_buy_has_no_net_base_quantity"
+            self.last_execution_receipt = buy_fill
+            return False
+
+        breadcrumb_qty = max(0.0, original_position.quantity - sold_qty)
+        breadcrumb_value = (
+            original_position.cost_basis
+            * (breadcrumb_qty / original_position.quantity)
+            if original_position.quantity > 0
+            else 0.0
+        )
+        if breadcrumb_qty > 0:
+            self.breadcrumbs[original_position.symbol] = Breadcrumb(
+                symbol=original_position.symbol,
+                quantity=breadcrumb_qty,
+                cost_basis=breadcrumb_value,
+                entry_price=original_position.entry_price,
+                entry_time=original_position.entry_time,
+                current_price=original_position.current_price,
+                exchange=self.exchange,
+            )
+            self.total_breadcrumbs += 1
+
+        buy_quote = str(buy_fill.get("quote_asset") or "").upper()
+        buy_quote_fee = float(
+            (buy_fill.get("fee_by_asset") or {}).get(buy_quote, 0.0)
+        )
+        buy_cost = float(buy_fill["filled_notional"]) + buy_quote_fee
         self.main_position = MainPosition(
             symbol=opportunity.to_symbol,
             quantity=new_qty,
-            cost_basis=net_value_for_purchase,  # Real cost after fees
-            entry_price=opportunity.to_price,
-            entry_time=datetime.now(),
-            current_price=opportunity.to_price,
-            change_24h=opportunity.to_change
+            cost_basis=buy_cost,
+            entry_price=float(buy_fill["filled_price"]),
+            entry_time=datetime.fromtimestamp(
+                float(buy_fill["provider_timestamp"])
+            ),
+            current_price=float(buy_fill["filled_price"]),
+            change_24h=opportunity.to_change,
         )
-        
+        self._record_observed_fees(sell_fill, buy_fill)
         self.total_leaps += 1
-        
-        # DETAILED LOGGING WITH FULL FEE BREAKDOWN
-        logger.info(f"🐸 BLOODLESS QUANTUM LEAP! (Fee-adjusted)")
-        logger.info(f"   ════════════════════════════════════════════")
-        logger.info(f"   💰 GROSS VALUE: ${opportunity.gross_value:.4f}")
-        logger.info(f"   📉 SELL FEE:    -${opportunity.sell_fee_cost:.4f} ({self.fee_structure.taker_fee*100:.2f}%)")
-        logger.info(f"   📉 BUY FEE:     -${opportunity.buy_fee_cost:.4f} ({self.fee_structure.taker_fee*100:.2f}%)")
-        logger.info(f"   📉 SLIPPAGE:    -${opportunity.slippage_cost:.4f} ({self.fee_structure.slippage_estimate*100:.2f}% x2)")
-        logger.info(f"   ────────────────────────────────────────────")
-        logger.info(f"   💵 NET VALUE:   ${net_value_for_purchase:.4f}")
-        logger.info(f"   💸 TOTAL COST:  ${opportunity.total_fees:.4f} ({opportunity.total_fees/opportunity.gross_value*100:.2f}%)")
-        logger.info(f"   ════════════════════════════════════════════")
-        logger.info(f"   📦 OLD QTY: {old_qty:.6f} {opportunity.from_symbol}")
-        logger.info(f"   📦 NEW QTY: {new_qty:.6f} {opportunity.to_symbol}")
-        logger.info(f"   🎯 MULTIPLIER: {opportunity.fee_adjusted_multiplier:.4f}x (AFTER fees!)")
-        logger.info(f"   ════════════════════════════════════════════")
-        logger.info(f"   🍞 Breadcrumb: {breadcrumb_qty:.6f} {opportunity.from_symbol} (${breadcrumb_value:.2f})")
-        logger.info(f"   📊 Dip advantage: {opportunity.dip_advantage:.2f}% (vs {opportunity.total_fees/opportunity.gross_value*100:.2f}% fees)")
-        logger.info(f"   💰 Lifetime fees paid: ${self.total_fees_paid:.4f}")
-        
-        self._save_state()
+
+        logger.info("🐸 BLOODLESS QUANTUM LEAP! (provider-reconciled)")
+        logger.info(
+            f"   SELL: {sold_qty:.6f} {opportunity.from_symbol} -> "
+            f"{sell_fill['filled_notional']:.4f} {sell_quote}"
+        )
+        logger.info(
+            f"   BUY: {new_qty:.6f} {opportunity.to_symbol} <- "
+            f"{buy_fill['filled_notional']:.4f} {buy_quote}"
+        )
+        logger.info(f"   🧾 OBSERVED FEES: {self.observed_fees_by_asset}")
+        logger.info(
+            f"   🍞 Breadcrumb: {breadcrumb_qty:.6f} "
+            f"{opportunity.from_symbol}"
+        )
+
+        self._commit_resolved_orders(
+            (exchange, opportunity.from_symbol, "SELL"),
+            (exchange, opportunity.to_symbol, "BUY"),
+        )
         return True
     
     def execute_friend_leap(self, friend: Friend, opportunity: LeapOpportunity) -> bool:
@@ -2129,141 +3092,219 @@ class QueenEternalMachine:
         if not opportunity.is_profitable_after_fees:
             logger.warning(f"⚠️ Friend leap rejected - not profitable after fees!")
             return False
-        
-        # Initialize cost basis tracker
-        cost_basis_tracker = None
-        try:
-            from aureon.portfolio.cost_basis_tracker import CostBasisTracker
-            cost_basis_tracker = CostBasisTracker()
-        except Exception as e:
-            logger.warning(f"⚠️ Cost basis tracker unavailable for leap recording: {e}")
-        
-        # Calculate leap amounts
-        leap_value = opportunity.gross_value
-        breadcrumb_value = opportunity.gross_value * self.breadcrumb_percent
-        net_leap_value = leap_value - breadcrumb_value
-        
-        # Calculate quantities
-        old_qty_leaping = net_leap_value / friend.current_price if friend.current_price > 0 else 0
-        new_qty = opportunity.net_value_after_fees / opportunity.to_price if opportunity.to_price > 0 else 0
 
-        if self.live_trading:
-            exchange = friend.exchange
-            if exchange in ("multi", "kraken-cached"):
-                logger.warning(f"⚠️ Friend leap exchange '{exchange}' not tradable - skipping live order")
-                return False
-            sell_res = self._place_market_order(exchange, friend.symbol, "SELL", quantity=old_qty_leaping)
-            if self._order_failed(sell_res):
-                logger.error(f"❌ Friend leap SELL failed on {exchange}: {sell_res}")
-                return False
-            self._log_order_id("FRIEND LEAP SELL", exchange, friend.symbol, "SELL", sell_res)
-            buy_res = self._place_market_order(exchange, opportunity.to_symbol, "BUY", quote_qty=opportunity.net_value_after_fees)
-            if self._order_failed(buy_res):
-                logger.error(f"❌ Friend leap BUY failed on {exchange}: {buy_res}")
-                logger.error("⚠️ Sell may have executed - manual reconciliation required.")
-                return False
-            self._log_order_id("FRIEND LEAP BUY", exchange, opportunity.to_symbol, "BUY", buy_res)
-            self._log_order_summary("FRIEND LEAP", exchange, sell_res, buy_res)
-
-        # Track fees (after order execution if live)
-        self.total_fees_paid += opportunity.total_fees
-        self.total_slippage_cost += opportunity.slippage_cost
-        
-        # Leave breadcrumb if friend is clear
-        if friend.is_clear and breadcrumb_value > 0:
-            breadcrumb_qty = breadcrumb_value / friend.current_price if friend.current_price > 0 else 0
-            breadcrumb = Breadcrumb(
-                symbol=friend.symbol,
-                quantity=breadcrumb_qty,
-                cost_basis=breadcrumb_value,
-                entry_price=friend.current_price,
-                entry_time=datetime.now(),
-                current_price=friend.current_price,
-                exchange=friend.exchange
+        exchange = friend.exchange
+        if not self.live_trading or exchange in ("multi", "kraken-cached"):
+            self._not_submitted_receipt(
+                exchange,
+                friend.symbol,
+                "SELL",
+                reason=(
+                    "queen_dry_run"
+                    if self.dry_run
+                    else "friend_exchange_not_live_tradable"
+                ),
             )
-            self.breadcrumbs[friend.symbol] = breadcrumb
+            logger.info("🧪 Friend leap not submitted; holdings are unchanged")
+            return False
+
+        original_symbol = friend.symbol
+        original_quantity = friend.quantity
+        original_cost_basis = friend.cost_basis
+        original_entry_price = friend.entry_price
+        original_current_price = friend.current_price
+        original_is_clear = friend.is_clear
+        requested_value = opportunity.gross_value * (
+            1 - self.breadcrumb_percent
+        )
+        requested_sell_qty = (
+            requested_value / friend.current_price
+            if friend.current_price > 0
+            else 0.0
+        )
+        if requested_sell_qty <= 0:
+            self._not_submitted_receipt(
+                exchange,
+                friend.symbol,
+                "SELL",
+                reason="friend_sell_quantity_unavailable",
+            )
+            return False
+
+        sell_res = self._place_market_order(
+            exchange,
+            friend.symbol,
+            "SELL",
+            quantity=requested_sell_qty,
+        )
+        sell_fill = self._resolve_terminal_fill(
+            exchange,
+            friend.symbol,
+            "SELL",
+            sell_res,
+            quantity=requested_sell_qty,
+        )
+        if not sell_fill["success"]:
+            logger.error(
+                f"❌ Friend leap SELL requires reconciliation on {exchange}: "
+                f"{sell_fill.get('reason')}"
+            )
+            return False
+
+        sold_qty = float(sell_fill["filled_qty"])
+        if sold_qty > original_quantity + max(1e-12, original_quantity * 0.001):
+            sell_fill["success"] = False
+            sell_fill["eligible_for_accounting"] = False
+            sell_fill["eligible_for_learning"] = False
+            sell_fill["reason"] = "provider_sell_exceeds_tracked_friend"
+            self.last_execution_receipt = sell_fill
+            return False
+
+        sell_quote = str(sell_fill.get("quote_asset") or "").upper()
+        sell_quote_fee = float(
+            (sell_fill.get("fee_by_asset") or {}).get(sell_quote, 0.0)
+        )
+        purchase_quote_qty = float(sell_fill["filled_notional"]) - sell_quote_fee
+        if not math.isfinite(purchase_quote_qty) or purchase_quote_qty <= 0:
+            sell_fill["success"] = False
+            sell_fill["eligible_for_accounting"] = False
+            sell_fill["eligible_for_learning"] = False
+            sell_fill["reason"] = "provider_sell_has_no_positive_net_proceeds"
+            self.last_execution_receipt = sell_fill
+            return False
+
+        buy_res = self._place_market_order(
+            exchange,
+            opportunity.to_symbol,
+            "BUY",
+            quote_qty=purchase_quote_qty,
+        )
+        buy_fill = self._resolve_terminal_fill(
+            exchange,
+            opportunity.to_symbol,
+            "BUY",
+            buy_res,
+            quote_qty=purchase_quote_qty,
+        )
+        if not buy_fill["success"]:
+            logger.error(
+                f"❌ Friend leap BUY requires reconciliation on {exchange}: "
+                f"{buy_fill.get('reason')}"
+            )
+            logger.error("⚠️ SELL filled; dependent BUY state was not committed.")
+            return False
+
+        new_qty = self._net_base_quantity(buy_fill, opportunity.to_symbol)
+        if new_qty <= 0:
+            buy_fill["success"] = False
+            buy_fill["eligible_for_accounting"] = False
+            buy_fill["eligible_for_learning"] = False
+            buy_fill["reason"] = "provider_buy_has_no_net_base_quantity"
+            self.last_execution_receipt = buy_fill
+            return False
+
+        remaining_qty = max(0.0, original_quantity - sold_qty)
+        remaining_cost = (
+            original_cost_basis * (remaining_qty / original_quantity)
+            if original_quantity > 0
+            else 0.0
+        )
+        if remaining_qty <= 1e-12:
+            self.friends.pop(original_symbol, None)
+        elif original_is_clear:
+            self.friends.pop(original_symbol, None)
+            self.breadcrumbs[original_symbol] = Breadcrumb(
+                symbol=original_symbol,
+                quantity=remaining_qty,
+                cost_basis=remaining_cost,
+                entry_price=original_entry_price,
+                entry_time=datetime.fromtimestamp(
+                    float(sell_fill["provider_timestamp"])
+                ),
+                current_price=original_current_price,
+                exchange=exchange,
+            )
             self.total_breadcrumbs += 1
-            
-            # Reduce friend's quantity by breadcrumb amount
-            friend.quantity -= breadcrumb_qty
-        
-        # Reduce friend's quantity by leaping amount
-        friend.quantity -= old_qty_leaping
-        
-        # If friend is now empty, remove them
-        if friend.quantity <= 0.000001:
-            del self.friends[friend.symbol]
         else:
-            # Update friend's cost basis proportionally
-            # (This is approximate - cost basis tracker has the real FIFO accounting)
-            remaining_ratio = friend.quantity / (friend.quantity + old_qty_leaping)
-            friend.cost_basis *= remaining_ratio
-        
-        # Add new friend or update existing
+            friend.quantity = remaining_qty
+            friend.cost_basis = remaining_cost
+
+        buy_quote = str(buy_fill.get("quote_asset") or "").upper()
+        buy_quote_fee = float(
+            (buy_fill.get("fee_by_asset") or {}).get(buy_quote, 0.0)
+        )
+        buy_cost = float(buy_fill["filled_notional"]) + buy_quote_fee
         if opportunity.to_symbol in self.friends:
-            # Merge with existing friend
             existing = self.friends[opportunity.to_symbol]
             total_qty = existing.quantity + new_qty
-            total_cost = existing.cost_basis + opportunity.net_value_after_fees
-            avg_price = total_cost / total_qty if total_qty > 0 else opportunity.to_price
-            
+            total_cost = existing.cost_basis + buy_cost
             existing.quantity = total_qty
             existing.cost_basis = total_cost
-            existing.entry_price = avg_price
-            existing.current_price = opportunity.to_price
+            existing.entry_price = total_cost / total_qty
+            existing.current_price = float(buy_fill["filled_price"])
         else:
-            # Create new friend
             self.friends[opportunity.to_symbol] = Friend(
                 symbol=opportunity.to_symbol,
                 quantity=new_qty,
-                cost_basis=opportunity.net_value_after_fees,
-                entry_price=opportunity.to_price,
-                current_price=opportunity.to_price,
-                exchange=friend.exchange  # Same exchange
+                cost_basis=buy_cost,
+                entry_price=float(buy_fill["filled_price"]),
+                current_price=float(buy_fill["filled_price"]),
+                exchange=exchange,
             )
-        
-        # Record the trades in cost basis tracker
-        if cost_basis_tracker and not self.dry_run:
+
+        # The legacy cost-basis tracker accepts one quote-denominated fee.
+        # Write to it only when both provider receipts prove that exact unit.
+        sell_other_fees = {
+            asset: fee
+            for asset, fee in sell_fill["fee_by_asset"].items()
+            if asset != sell_quote and fee > 0
+        }
+        buy_other_fees = {
+            asset: fee
+            for asset, fee in buy_fill["fee_by_asset"].items()
+            if asset != buy_quote and fee > 0
+        }
+        if sell_quote and sell_quote == buy_quote and not sell_other_fees and not buy_other_fees:
             try:
-                # Record sell of old position
+                from aureon.portfolio.cost_basis_tracker import CostBasisTracker
+
+                cost_basis_tracker = CostBasisTracker()
                 cost_basis_tracker.record_trade(
-                    symbol=f"{friend.symbol}USDT",  # Assume USDT pair
-                    side='sell',
-                    quantity=old_qty_leaping,
-                    price=friend.current_price,
-                    exchange=friend.exchange,
-                    fee=opportunity.sell_fee_cost + (opportunity.slippage_cost / 2)
+                    symbol=f"{original_symbol}{sell_quote}",
+                    side="sell",
+                    quantity=sold_qty,
+                    price=float(sell_fill["filled_price"]),
+                    exchange=exchange,
+                    fee=sell_quote_fee,
                 )
-                
-                # Record buy of new position
                 cost_basis_tracker.record_trade(
-                    symbol=f"{opportunity.to_symbol}USDT",  # Assume USDT pair
-                    side='buy',
+                    symbol=f"{opportunity.to_symbol}{buy_quote}",
+                    side="buy",
                     quantity=new_qty,
-                    price=opportunity.to_price,
-                    exchange=friend.exchange,
-                    fee=opportunity.buy_fee_cost + (opportunity.slippage_cost / 2)
+                    price=float(buy_fill["filled_price"]),
+                    exchange=exchange,
+                    fee=buy_quote_fee,
                 )
-                
-                logger.info(f"📊 Cost basis updated for friend leap")
-            except Exception as e:
-                logger.warning(f"⚠️ Failed to update cost basis tracker: {e}")
-        
+            except Exception as exc:
+                logger.warning(
+                    f"⚠️ Provider-backed cost basis write failed: {exc}"
+                )
+
+        self._record_observed_fees(sell_fill, buy_fill)
         self.total_leaps += 1
-        
-        # Detailed logging
-        logger.info(f"🐸 FRIEND QUANTUM LEAP! {friend.symbol} → {opportunity.to_symbol}")
-        logger.info(f"   ═══════════════════════════════════════════════")
-        logger.info(f"   💰 GROSS LEAP: ${leap_value:.4f}")
-        logger.info(f"   🍞 BREADCRUMB: -${breadcrumb_value:.4f} ({self.breadcrumb_percent*100:.1f}%)")
-        logger.info(f"   📉 FEES:       -${opportunity.total_fees:.4f}")
-        logger.info(f"   ───────────────────────────────────────────────")
-        logger.info(f"   💵 NET VALUE:  ${opportunity.net_value_after_fees:.4f}")
-        logger.info(f"   📦 LEAP QTY:   {old_qty_leaping:.6f} {friend.symbol}")
-        logger.info(f"   📦 NEW QTY:    {new_qty:.6f} {opportunity.to_symbol}")
-        logger.info(f"   📦 MULTIPLIER: {new_qty/old_qty_leaping:.4f}x")
-        logger.info(f"   ═══════════════════════════════════════════════")
-        
+        logger.info(
+            f"🐸 FRIEND QUANTUM LEAP! {original_symbol} → "
+            f"{opportunity.to_symbol} (provider-reconciled)"
+        )
+        logger.info(
+            f"   SOLD {sold_qty:.6f} {original_symbol}; "
+            f"BOUGHT {new_qty:.6f} {opportunity.to_symbol}"
+        )
+        logger.info(f"   🧾 OBSERVED FEES: {self.observed_fees_by_asset}")
+        self._commit_resolved_orders(
+            (exchange, original_symbol, "SELL"),
+            (exchange, opportunity.to_symbol, "BUY"),
+        )
         return True
     
     # ═══════════════════════════════════════════════════════════════════════════
@@ -2279,6 +3320,20 @@ class QueenEternalMachine:
         if self.main_position:
             logger.warning("⚠️ Journey already in progress")
             return False
+
+        if not self.live_trading:
+            self._not_submitted_receipt(
+                self.exchange,
+                start_symbol,
+                "BUY",
+                reason=(
+                    "queen_dry_run"
+                    if self.dry_run
+                    else "live_trading_disabled"
+                ),
+            )
+            logger.info("🧪 Journey not submitted; portfolio state is unchanged")
+            return False
         
         self.fetch_market_data()
         
@@ -2287,34 +3342,70 @@ class QueenEternalMachine:
             return False
         
         coin = self.market_data[start_symbol]
-        quantity = self.available_cash / coin.price
+        requested_quote_qty = self.available_cash
+        buy_res = self._place_market_order(
+            self.exchange,
+            start_symbol,
+            "BUY",
+            quote_qty=requested_quote_qty,
+        )
+        buy_fill = self._resolve_terminal_fill(
+            self.exchange,
+            start_symbol,
+            "BUY",
+            buy_res,
+            quote_qty=requested_quote_qty,
+        )
+        if not buy_fill["success"]:
+            logger.error(
+                f"❌ Journey BUY requires terminal provider evidence: "
+                f"{buy_fill.get('reason')}"
+            )
+            return False
 
-        if self.live_trading:
-            buy_res = self._place_market_order(self.exchange, start_symbol, "BUY", quote_qty=self.available_cash)
-            if self._order_failed(buy_res):
-                logger.error(f"❌ Journey BUY failed on {self.exchange}: {buy_res}")
-                return False
+        quantity = self._net_base_quantity(buy_fill, start_symbol)
+        buy_quote = str(buy_fill.get("quote_asset") or "").upper()
+        quote_fee = float(
+            (buy_fill.get("fee_by_asset") or {}).get(buy_quote, 0.0)
+        )
+        cash_spent = float(buy_fill["filled_notional"]) + quote_fee
+        if quantity <= 0 or cash_spent > self.available_cash + max(
+            1e-8, self.available_cash * 0.001
+        ):
+            buy_fill["success"] = False
+            buy_fill["eligible_for_accounting"] = False
+            buy_fill["eligible_for_learning"] = False
+            buy_fill["reason"] = "provider_buy_conflicts_with_tracked_cash"
+            self.last_execution_receipt = buy_fill
+            return False
         
         self.main_position = MainPosition(
             symbol=start_symbol,
             quantity=quantity,
-            cost_basis=self.available_cash,
-            entry_price=coin.price,
-            entry_time=datetime.now(),
-            current_price=coin.price,
-            change_24h=coin.change_24h
+            cost_basis=cash_spent,
+            entry_price=float(buy_fill["filled_price"]),
+            entry_time=datetime.fromtimestamp(
+                float(buy_fill["provider_timestamp"])
+            ),
+            current_price=float(buy_fill["filled_price"]),
+            change_24h=coin.change_24h,
         )
         
-        self.available_cash = 0.0
-        self.start_time = datetime.now()
+        self.available_cash = max(0.0, self.available_cash - cash_spent)
+        self.start_time = datetime.fromtimestamp(
+            float(buy_fill["provider_timestamp"])
+        )
+        self._record_observed_fees(buy_fill)
         
         logger.info(f"🟡 YELLOW BRICK ROAD JOURNEY STARTED!")
         logger.info(f"   Starting coin: {start_symbol}")
-        logger.info(f"   Entry price: ${coin.price:.4f}")
+        logger.info(f"   Provider fill price: {buy_fill['filled_price']:.4f}")
         logger.info(f"   Quantity: {quantity:.6f} {start_symbol}")
-        logger.info(f"   Vault deployed: ${self.initial_vault:.2f}")
+        logger.info(f"   Quote deployed: {cash_spent:.4f} {buy_quote}")
         
-        self._save_state()
+        self._commit_resolved_orders(
+            (self.exchange, start_symbol, "BUY"),
+        )
         return True
     
     # ═══════════════════════════════════════════════════════════════════════════
@@ -2388,65 +3479,139 @@ class QueenEternalMachine:
         """
         if symbol not in self.breadcrumbs:
             return 0.0
-        
-        crumb = self.breadcrumbs[symbol]
-        sell_qty = crumb.quantity * percent_to_sell
-        sell_value = sell_qty * crumb.current_price
-        
-        # Calculate realized profit
-        cost_portion = crumb.cost_basis * percent_to_sell
-        profit = sell_value - cost_portion
 
-        if self.live_trading:
-            exchange = crumb.exchange if hasattr(crumb, "exchange") else self.exchange
-            available_qty = self._get_available_base_quantity(exchange, symbol)
-            if available_qty <= 0:
-                logger.warning(f"⚠️ No available live balance for {symbol} on {exchange}; skipping scalp sell")
-                return 0.0
-            if sell_qty > available_qty:
-                logger.warning(
-                    f"⚠️ Adjusting scalp sell qty for {symbol} on {exchange}: "
-                    f"tracked={sell_qty:.8f}, available={available_qty:.8f}"
-                )
-                sell_qty = available_qty
-                sell_value = sell_qty * crumb.current_price
-                cost_portion = crumb.cost_basis * percent_to_sell * (sell_qty / max(crumb.quantity * percent_to_sell, 1e-12))
-                profit = sell_value - cost_portion
-            if sell_qty <= 0:
-                return 0.0
-            sell_res = self._place_market_order(exchange, symbol, "SELL", quantity=sell_qty)
-            if self._order_failed(sell_res):
-                if isinstance(sell_res, dict) and str(sell_res.get("error", "")).lower() == "volume_minimum":
-                    details = sell_res.get("details") if isinstance(sell_res.get("details"), dict) else {}
-                    min_qty = details.get("ordermin", "?")
-                    qty = details.get("volume", sell_qty)
-                    logger.warning(
-                        f"⚠️ Scalp skipped for {symbol} on {exchange}: dust size {qty} below min {min_qty}"
-                    )
-                    return 0.0
-                logger.error(f"❌ Scalp SELL failed on {exchange}: {sell_res}")
-                return 0.0
-            self._log_order_id("SCALP SELL", exchange, symbol, "SELL", sell_res)
-        
-        # Update breadcrumb
-        crumb.quantity -= sell_qty
-        crumb.cost_basis -= cost_portion
-        
-        # Add to available cash
-        self.available_cash += sell_value
-        self.total_profit_realized += profit
+        crumb = self.breadcrumbs[symbol]
+        exchange = (
+            crumb.exchange if hasattr(crumb, "exchange") else self.exchange
+        )
+        if not self.live_trading:
+            self._not_submitted_receipt(
+                exchange,
+                symbol,
+                "SELL",
+                reason=(
+                    "queen_dry_run"
+                    if self.dry_run
+                    else "live_trading_disabled"
+                ),
+            )
+            logger.info("🧪 Scalp not submitted; breadcrumb is unchanged")
+            return 0.0
+
+        fraction = _finite_receipt_number(percent_to_sell, positive=True)
+        if fraction is None or fraction > 1:
+            self._not_submitted_receipt(
+                exchange,
+                symbol,
+                "SELL",
+                reason="invalid_scalp_fraction",
+            )
+            return 0.0
+
+        requested_sell_qty = crumb.quantity * fraction
+        available_qty = self._get_available_base_quantity(exchange, symbol)
+        if available_qty <= 0:
+            self._not_submitted_receipt(
+                exchange,
+                symbol,
+                "SELL",
+                reason="live_base_balance_unavailable",
+            )
+            logger.warning(
+                f"⚠️ No available live balance for {symbol} on {exchange}"
+            )
+            return 0.0
+        requested_sell_qty = min(requested_sell_qty, available_qty)
+        if requested_sell_qty <= 0:
+            return 0.0
+
+        sell_res = self._place_market_order(
+            exchange,
+            symbol,
+            "SELL",
+            quantity=requested_sell_qty,
+        )
+        sell_fill = self._resolve_terminal_fill(
+            exchange,
+            symbol,
+            "SELL",
+            sell_res,
+            quantity=requested_sell_qty,
+        )
+        if not sell_fill["success"]:
+            logger.error(
+                f"❌ Scalp SELL requires terminal provider evidence: "
+                f"{sell_fill.get('reason')}"
+            )
+            return 0.0
+
+        filled_qty = float(sell_fill["filled_qty"])
+        base_fee = float(
+            (sell_fill.get("fee_by_asset") or {}).get(symbol.upper(), 0.0)
+        )
+        quantity_removed = filled_qty + base_fee
+        if quantity_removed > crumb.quantity + max(
+            1e-12, crumb.quantity * 0.001
+        ):
+            sell_fill["success"] = False
+            sell_fill["eligible_for_accounting"] = False
+            sell_fill["eligible_for_learning"] = False
+            sell_fill["reason"] = "provider_sell_exceeds_tracked_breadcrumb"
+            self.last_execution_receipt = sell_fill
+            return 0.0
+
+        cost_portion = (
+            crumb.cost_basis * (quantity_removed / crumb.quantity)
+            if crumb.quantity > 0
+            else 0.0
+        )
+        quote_asset = str(sell_fill.get("quote_asset") or "").upper()
+        quote_fee = float(
+            (sell_fill.get("fee_by_asset") or {}).get(quote_asset, 0.0)
+        )
+        net_proceeds = float(sell_fill["filled_notional"]) - quote_fee
+        other_fees = {
+            asset: fee
+            for asset, fee in sell_fill["fee_by_asset"].items()
+            if asset not in {quote_asset, symbol.upper()} and fee > 0
+        }
+
+        crumb.quantity = max(0.0, crumb.quantity - quantity_removed)
+        crumb.cost_basis = max(0.0, crumb.cost_basis - cost_portion)
+        self.available_cash += net_proceeds
+        self._record_observed_fees(sell_fill)
         self.total_scalps += 1
-        
-        # Remove if too small
-        if crumb.quantity * crumb.current_price < 1.0:  # Less than $1
+
+        profit: Optional[float] = None
+        if not other_fees:
+            profit = net_proceeds - cost_portion
+            self.total_profit_realized += profit
+        else:
+            sell_fill["pnl_status"] = (
+                "no_data_external_fee_conversion_required"
+            )
+            sell_fill["eligible_for_learning"] = False
+            self.last_execution_receipt = sell_fill
+
+        if crumb.quantity <= 1e-12:
             del self.breadcrumbs[symbol]
-        
-        logger.info(f"⚡ SCALP EXECUTED on {symbol}!")
-        logger.info(f"   Sold: {sell_qty:.4f} @ ${crumb.current_price:.4f}")
-        logger.info(f"   Realized profit: ${profit:.2f}")
-        
-        self._save_state()
-        return profit
+
+        logger.info(f"⚡ SCALP EXECUTED on {symbol} (provider-reconciled)")
+        logger.info(
+            f"   Sold: {filled_qty:.6f} @ "
+            f"{sell_fill['filled_price']:.6f}"
+        )
+        if profit is None:
+            logger.warning(
+                f"   P&L unavailable until fee assets are valued: {other_fees}"
+            )
+        else:
+            logger.info(f"   Realized P&L: {profit:.6f} {quote_asset}")
+
+        self._commit_resolved_orders(
+            (exchange, symbol, "SELL"),
+        )
+        return profit if profit is not None else 0.0
     
     # ═══════════════════════════════════════════════════════════════════════════
     # 🔄 MAIN CYCLE - THE 24/7 MACHINE
@@ -2740,6 +3905,11 @@ class QueenEternalMachine:
                 "change_24h": self.main_position.change_24h if self.main_position else 0
             },
             "breadcrumbs": breadcrumb_summary,
+            "execution_receipts": {
+                "pending_orders": list(self._pending_registry().values()),
+                "observed_fees_by_asset": dict(self.observed_fees_by_asset),
+                "last_execution_receipt": self.last_execution_receipt,
+            },
             "statistics": {
                 "total_cycles": self.total_cycles,
                 "total_leaps": self.total_leaps,
@@ -2761,6 +3931,8 @@ class QueenEternalMachine:
                 "timestamp": datetime.now().isoformat(),
                 "initial_vault": self.initial_vault,
                 "available_cash": self.available_cash,
+                "pending_orders": self._pending_registry(),
+                "observed_fees_by_asset": self.observed_fees_by_asset,
                 "main_position": {
                     "symbol": self.main_position.symbol,
                     "quantity": self.main_position.quantity,
@@ -2817,6 +3989,35 @@ class QueenEternalMachine:
             
             self.initial_vault = state.get("initial_vault", self.initial_vault)
             self.available_cash = state.get("available_cash", 0)
+
+            pending_orders = state.get("pending_orders")
+            if isinstance(pending_orders, dict):
+                self._pending_orders = {
+                    str(key): dict(receipt)
+                    for key, receipt in pending_orders.items()
+                    if isinstance(receipt, dict)
+                    and (
+                        (
+                            receipt.get("status")
+                            == "pending_reconciliation"
+                            and receipt.get("reconciliation_required") is True
+                        )
+                        or receipt.get("status")
+                        == "terminal_fill_uncommitted"
+                    )
+                }
+            observed_fees = state.get("observed_fees_by_asset")
+            if isinstance(observed_fees, dict):
+                self.observed_fees_by_asset = {
+                    str(asset).upper(): fee
+                    for asset, value in observed_fees.items()
+                    if (
+                        fee := _finite_receipt_number(
+                            value, nonnegative=True
+                        )
+                    )
+                    is not None
+                }
             
             # Load main position
             mp_data = state.get("main_position")

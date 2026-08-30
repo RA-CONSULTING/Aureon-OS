@@ -41,6 +41,16 @@ AUREON_LLM_BASE_URL=...      # optional self-hosted OpenAI-compatible model (Oll
 AUREON_OPERATOR_PORT=8790    # default; keep distinct from the 8080 Power Station
 AUREON_OPERATOR_HOST=0.0.0.0
 
+# Production HTTP envelope (all exact names; inject the secret at runtime)
+AUREON_OPERATOR_ENV=production
+AUREON_OPERATOR_API_KEY=<nonempty-secret>
+AUREON_OPERATOR_RATE_RPS=10
+AUREON_OPERATOR_RATE_BURST=20
+AUREON_OPERATOR_MAX_BODY=262144
+AUREON_OPERATOR_TRUSTED_PROXY_CIDRS=10.20.0.0/24  # only the actual ingress; omit otherwise
+AUREON_OPERATOR_HTTP_PROCESSES=1
+AUREON_OPERATOR_REPLICAS=1
+
 # Safety / mode guards (any truthy value disables outbound model + web calls)
 AUREON_LLM_OFFLINE=1         # hard offline
 AUREON_AUDIT_MODE=1          # audit — network off unless AUREON_LLM_ALLOW_HTTP_IN_AUDIT
@@ -58,8 +68,9 @@ skipped at assembly.
 ## Run it
 
 ```bash
-# local / dev
-AUREON_OPERATOR_PORT=8790 python -m aureon.operator.operator_server
+# local / offline development (the permissive mode must be explicit)
+AUREON_OPERATOR_ENV=development AUREON_OPERATOR_DEV=1 AUREON_OPERATOR_PORT=8790 \
+  python -m aureon.operator.operator_server
 
 # under supervisord — already wired as [program:aureon_operator] (priority 50)
 supervisorctl start aureon_operator          # supervisord.conf (Codespaces paths)
@@ -68,6 +79,17 @@ supervisorctl start aureon-operator          # production/supervisord.conf (/aur
 
 Both supervisord files ship the program block; it autostarts and autorestarts on
 priority 50 (after the trading loops), logging to `logs/aureon_operator.log`.
+
+Production startup fails if AUREON_OPERATOR_API_KEY is empty or whitespace, if
+AUREON_OPERATOR_RATE_RPS is zero, or if the declared HTTP process/replica count
+is not exactly one. The token bucket is thread-safe but process-local:
+AUREON_OPERATOR_THREADS may exceed one, while multiple WSGI processes or
+orchestrator replicas require a shared limiter/cache that is not implemented.
+Do not scale this service horizontally until that shared backend exists.
+
+X-Forwarded-For is ignored by default. Set
+AUREON_OPERATOR_TRUSTED_PROXY_CIDRS only to the exact CIDR/list containing the
+direct reverse proxy. Untrusted peers cannot choose their rate-limit identity.
 
 ---
 
@@ -127,9 +149,11 @@ SSE needs an un-buffered proxy: the service already sends
 ```bash
 curl -s http://HOST:8790/healthz                                   # {"ok":true, providers:[...]}
 curl -s -X POST http://HOST:8790/api/cognition/reason \
+     -H "Authorization: Bearer $AUREON_OPERATOR_API_KEY" \
      -H 'Content-Type: application/json' \
      -d '{"prompt":"How does Aureon ground its answers?"}'          # grounded + cited
-curl -N "http://HOST:8790/api/cognition/stream?prompt=hello"        # live SSE tokens
+curl -N -H "Authorization: Bearer $AUREON_OPERATOR_API_KEY" \
+     "http://HOST:8790/api/cognition/stream?prompt=hello"           # live SSE tokens
 ```
 
 ---

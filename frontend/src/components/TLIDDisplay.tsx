@@ -34,24 +34,24 @@ export function TLIDDisplay({ tlid, name, dob, date }: TLIDDisplayProps) {
   };
 
   return (
-    <Card className="border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-purple-50">
+    <Card className="border-2 border-primary bg-gradient-to-br from-primary to-primary">
       <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-indigo-800">
+        <CardTitle className="flex items-center gap-2 text-primary">
           <Shield className="w-5 h-5" />
           Temporal Lattice ID (TLID)
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex items-center gap-2 p-3 bg-white/60 rounded-lg border">
-          <code className="flex-1 font-mono text-sm font-bold text-indigo-900 tracking-wider">
+          <code className="flex-1 font-mono text-sm font-bold text-primary tracking-wider">
             {tlid}
           </code>
           <button
             onClick={copyTLID}
-            className="p-1 hover:bg-indigo-100 rounded transition-colors"
+            className="p-1 hover:bg-primary rounded transition-colors"
             title="Copy TLID"
           >
-            <Copy className="w-4 h-4 text-indigo-600" />
+            <Copy className="w-4 h-4 text-primary" />
           </button>
           {copied && (
             <Badge variant="secondary" className="text-xs">
@@ -63,7 +63,7 @@ export function TLIDDisplay({ tlid, name, dob, date }: TLIDDisplayProps) {
         <div className="grid grid-cols-2 gap-3 text-xs">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="bg-indigo-100 text-indigo-800">
+              <Badge variant="outline" className="bg-primary text-primary">
                 {prefix}
               </Badge>
               <span className="text-gray-600">Nexus Source Law</span>
@@ -71,14 +71,14 @@ export function TLIDDisplay({ tlid, name, dob, date }: TLIDDisplayProps) {
             
             <div className="flex items-center gap-2">
               <Clock className="w-3 h-3 text-gray-500" />
-              <code className="text-indigo-700">{formatDate(dateStamp)}</code>
+              <code className="text-primary">{formatDate(dateStamp)}</code>
               <span className="text-gray-600">Anchor Date</span>
             </div>
           </div>
 
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="bg-purple-100 text-purple-800">
+              <Badge variant="outline" className="bg-primary text-primary">
                 {initials}
               </Badge>
               <span className="text-gray-600">Identity</span>
@@ -94,12 +94,12 @@ export function TLIDDisplay({ tlid, name, dob, date }: TLIDDisplayProps) {
           </div>
         </div>
 
-        <div className="pt-2 border-t border-indigo-100">
+        <div className="pt-2 border-t border-primary">
           <div className="text-xs text-gray-600 space-y-1">
             <div className="font-mono">
               Hash({name} + {dob} + {formatDate(dateStamp)} + Nexus:10-9-1 + Peace+Joy)
             </div>
-            <div className="text-indigo-700 font-medium">
+            <div className="text-primary font-medium">
               🔒 Cryptographic proof of temporal session state
             </div>
           </div>

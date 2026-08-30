@@ -1,0 +1,429 @@
+{
+  "adapter": "AureonLocalAdapter",
+  "model": "qwen2.5:3b-instruct",
+  "aureon_measured": {
+    "gsm8k": {
+      "dataset": "gsm8k",
+      "n": 25,
+      "ok_turns": 25,
+      "correct": 16,
+      "accuracy": 0.64,
+      "provenance": {
+        "source_url": "https://raw.githubusercontent.com/openai/grade-school-math/master/grade_school_math/data/test.jsonl",
+        "sha256": "3730d312f6e3440559ace48831e51066acaca737f6eabec99bccb9e4b3c39d14",
+        "bytes": 749738,
+        "license": "MIT (openai/grade-school-math)",
+        "retrieved_at": "2026-08-08T10:09:35Z",
+        "task": "grade-school math word problems (exact-match final number)",
+        "items_used": 25,
+        "items_total": 1319
+      },
+      "results": [
+        {
+          "status": "ok",
+          "got": "18",
+          "gold": "18",
+          "correct": true,
+          "envelope": true
+        },
+        {
+          "status": "ok",
+          "got": "3",
+          "gold": "3",
+          "correct": true,
+          "envelope": true
+        },
+        {
+          "status": "ok",
+          "got": "70000",
+          "gold": "70000",
+          "correct": true,
+          "envelope": true
+        },
+        {
+          "status": "ok",
+          "got": "540",
+          "gold": "540",
+          "correct": true,
+          "envelope": true
+        },
+        {
+          "status": "ok",
+          "got": "20",
+          "gold": "20",
+          "correct": true,
+          "envelope": true
+        },
+        {
+          "status": "ok",
+          "got": "16",
+          "gold": "64",
+          "correct": false,
+          "envelope": true
+        },
+        {
+          "status": "ok",
+          "got": "260",
+          "gold": "260",
+          "correct": true,
+          "envelope": true
+        },
+        {
+          "status": "ok",
+          "got": "120",
+          "gold": "160",
+          "correct": false,
+          "envelope": true
+        },
+        {
+          "status": "ok",
+          "got": "85",
+          "gold": "45",
+          "correct": false,
+          "envelope": true
+        },
+        {
+          "status": "ok",
+          "got": "460",
+          "gold": "460",
+          "correct": true,
+          "envelope": true
+        },
+        {
+          "status": "ok",
+          "got": "366",
+          "gold": "366",
+          "correct": true,
+          "envelope": true
+        },
+        {
+          "status": "ok",
+          "got": "794",
+          "gold": "694",
+          "correct": false,
+          "envelope": true
+        },
+        {
+          "status": "ok",
+          "got": "12",
+          "gold": "13",
+          "correct": false,
+          "envelope": true
+        },
+        {
+          "status": "ok",
+          "got": "10",
+          "gold": "18",
+          "correct": false,
+          "envelope": true
+        },
+        {
+          "status": "ok",
+          "got": "60",
+          "gold": "60",
+          "correct": true,
+          "envelope": true
+        },
+        {
+          "status": "ok",
+          "got": "125",
+          "gold": "125",
+          "correct": true,
+          "envelope": true
+        },
+        {
+          "status": "ok",
+          "got": "300",
+          "gold": "230",
+          "correct": false,
+          "envelope": true
+        },
+        {
+          "status": "ok",
+          "got": "57500",
+          "gold": "57500",
+          "correct": true,
+          "envelope": true
+        },
+        {
+          "status": "ok",
+          "got": "4",
+          "gold": "7",
+          "correct": false,
+          "envelope": true
+        },
+        {
+          "status": "ok",
+          "got": "6",
+          "gold": "6",
+          "correct": true,
+          "envelope": true
+        },
+        {
+          "status": "ok",
+          "got": "3",
+          "gold": "15",
+          "correct": false,
+          "envelope": true
+        },
+        {
+          "status": "ok",
+          "got": "14",
+          "gold": "14",
+          "correct": true,
+          "envelope": true
+        },
+        {
+          "status": "ok",
+          "got": "7",
+          "gold": "7",
+          "correct": true,
+          "envelope": true
+        },
+        {
+          "status": "ok",
+          "got": "8",
+          "gold": "8",
+          "correct": true,
+          "envelope": true
+        },
+        {
+          "status": "ok",
+          "got": "26",
+          "gold": "26",
+          "correct": true,
+          "envelope": true
+        }
+      ]
+    },
+    "humaneval": {
+      "dataset": "humaneval",
+      "n": 25,
+      "ok_turns": 25,
+      "passed": 12,
+      "pass_at_1": 0.48,
+      "provenance": {
+        "source_url": "https://raw.githubusercontent.com/openai/human-eval/master/data/HumanEval.jsonl.gz",
+        "sha256": "b796127e635a67f93fb35c04f4cb03cf06f38c8072ee7cee8833d7bee06979ef",
+        "bytes": 44877,
+        "license": "MIT (openai/human-eval)",
+        "retrieved_at": "2026-08-08T10:38:44Z",
+        "task": "Python function synthesis (pass@1 via guarded execution)",
+        "items_used": 25,
+        "items_total": 164
+      },
+      "results": [
+        {
+          "task_id": "HumanEval/0",
+          "status": "ok",
+          "passed": false
+        },
+        {
+          "task_id": "HumanEval/1",
+          "status": "ok",
+          "passed": false
+        },
+        {
+          "task_id": "HumanEval/2",
+          "status": "ok",
+          "passed": true
+        },
+        {
+          "task_id": "HumanEval/3",
+          "status": "ok",
+          "passed": true
+        },
+        {
+          "task_id": "HumanEval/4",
+          "status": "ok",
+          "passed": true
+        },
+        {
+          "task_id": "HumanEval/5",
+          "status": "ok",
+          "passed": false
+        },
+        {
+          "task_id": "HumanEval/6",
+          "status": "ok",
+          "passed": false
+        },
+        {
+          "task_id": "HumanEval/7",
+          "status": "ok",
+          "passed": true
+        },
+        {
+          "task_id": "HumanEval/8",
+          "status": "ok",
+          "passed": true
+        },
+        {
+          "task_id": "HumanEval/9",
+          "status": "ok",
+          "passed": false
+        },
+        {
+          "task_id": "HumanEval/10",
+          "status": "ok",
+          "passed": false
+        },
+        {
+          "task_id": "HumanEval/11",
+          "status": "ok",
+          "passed": false
+        },
+        {
+          "task_id": "HumanEval/12",
+          "status": "ok",
+          "passed": true
+        },
+        {
+          "task_id": "HumanEval/13",
+          "status": "ok",
+          "passed": false
+        },
+        {
+          "task_id": "HumanEval/14",
+          "status": "ok",
+          "passed": false
+        },
+        {
+          "task_id": "HumanEval/15",
+          "status": "ok",
+          "passed": true
+        },
+        {
+          "task_id": "HumanEval/16",
+          "status": "ok",
+          "passed": true
+        },
+        {
+          "task_id": "HumanEval/17",
+          "status": "ok",
+          "passed": false
+        },
+        {
+          "task_id": "HumanEval/18",
+          "status": "ok",
+          "passed": true
+        },
+        {
+          "task_id": "HumanEval/19",
+          "status": "ok",
+          "passed": false
+        },
+        {
+          "task_id": "HumanEval/20",
+          "status": "ok",
+          "passed": false
+        },
+        {
+          "task_id": "HumanEval/21",
+          "status": "ok",
+          "passed": false
+        },
+        {
+          "task_id": "HumanEval/22",
+          "status": "ok",
+          "passed": true
+        },
+        {
+          "task_id": "HumanEval/23",
+          "status": "ok",
+          "passed": true
+        },
+        {
+          "task_id": "HumanEval/24",
+          "status": "ok",
+          "passed": true
+        }
+      ]
+    }
+  },
+  "competition_cited": [
+    {
+      "model": "Kimi K2 Instruct (Moonshot AI, open weights)",
+      "source": "https://huggingface.co/moonshotai/Kimi-K2-Instruct",
+      "label": "vendor_published \u2014 cited from the source URL, not measured here",
+      "scores": {
+        "humaneval_pass@1": null,
+        "gsm8k": null,
+        "note": "vendor card leads with LiveCodeBench/MATH-500/agentic suites; classic GSM8K/HumanEval not the headline rows \u2014 cite the card directly rather than transplant numbers"
+      }
+    },
+    {
+      "model": "DeepSeek-V3 (open weights)",
+      "source": "https://huggingface.co/deepseek-ai/DeepSeek-V3",
+      "label": "vendor_published \u2014 cited from the source URL, not measured here",
+      "scores": {
+        "humaneval_pass@1": null,
+        "gsm8k": null,
+        "note": "see model card benchmark table at the source URL"
+      }
+    },
+    {
+      "model": "Llama 3.1 405B Instruct (Meta, open weights)",
+      "source": "https://huggingface.co/meta-llama/Llama-3.1-405B-Instruct",
+      "label": "vendor_published \u2014 cited from the source URL, not measured here",
+      "scores": {
+        "humaneval_pass@1": null,
+        "gsm8k": null,
+        "note": "see model card benchmark table at the source URL"
+      }
+    },
+    {
+      "model": "Qwen2.5-72B-Instruct (Alibaba, open weights)",
+      "source": "https://huggingface.co/Qwen/Qwen2.5-72B-Instruct",
+      "label": "vendor_published \u2014 cited from the source URL, not measured here",
+      "scores": {
+        "humaneval_pass@1": null,
+        "gsm8k": null,
+        "note": "see model card benchmark table at the source URL"
+      }
+    }
+  ],
+  "architecture_contract": [
+    {
+      "feature": "Enforced response envelope (sources named or absence stated)",
+      "aureon": "measured \u2014 b53",
+      "raw_model_api": "not offered"
+    },
+    {
+      "feature": "Measured knowledge reach + reach class on every answer",
+      "aureon": "measured \u2014 b57",
+      "raw_model_api": "not offered"
+    },
+    {
+      "feature": "Conscience veto + hard authority boundaries (wall first)",
+      "aureon": "measured \u2014 b61",
+      "raw_model_api": "not offered"
+    },
+    {
+      "feature": "Field-driven coherence aperture (tighten-only, live signal)",
+      "aureon": "measured \u2014 b58",
+      "raw_model_api": "not offered"
+    },
+    {
+      "feature": "Film-Reel actualization ledger (realized vs parked)",
+      "aureon": "measured \u2014 b54",
+      "raw_model_api": "not offered"
+    },
+    {
+      "feature": "Bake-until-complete with honest incompleteness seal",
+      "aureon": "measured \u2014 b56",
+      "raw_model_api": "not offered"
+    },
+    {
+      "feature": "Heart charter (alive / love / power consequences stated)",
+      "aureon": "measured \u2014 b59",
+      "raw_model_api": "not offered"
+    },
+    {
+      "feature": "Deterministic pipeline-order pin (the flow itself tested)",
+      "aureon": "measured \u2014 b61",
+      "raw_model_api": "not offered"
+    }
+  ],
+  "honesty": "Aureon rows are measured on THIS machine's resolved adapter and scale with the provider set behind the one door; competition rows are vendor-published citations; the architecture columns cite the Tier-A benchmark that pins each feature."
+}

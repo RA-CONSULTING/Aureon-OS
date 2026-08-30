@@ -1,0 +1,504 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aureon.local/schemas/aureon-design-candidate-claim-surface-v1.json",
+  "title": "Aureon staged candidate public claim-surface receipt",
+  "description": "A hash-only, route-capsule-bound record of new static public text in one staged website candidate. It is local evidence only and never grants canonical mutation, package, credential, release, or deployment authority.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "state",
+    "passed",
+    "release_eligible",
+    "package_authority",
+    "deployment_authority",
+    "authority",
+    "context",
+    "manifest",
+    "new_surfaces",
+    "surface_fingerprint_sha256",
+    "summary",
+    "checks"
+  ],
+  "properties": {
+    "schema": {
+      "const": "aureon.design-candidate-claim-surface.v1"
+    },
+    "state": {
+      "enum": [
+        "pass",
+        "blocked"
+      ]
+    },
+    "passed": {
+      "type": "boolean"
+    },
+    "release_eligible": {
+      "const": false
+    },
+    "package_authority": {
+      "const": "none"
+    },
+    "deployment_authority": {
+      "const": "none"
+    },
+    "authority": {
+      "$ref": "#/$defs/authority"
+    },
+    "context": {
+      "$ref": "#/$defs/context"
+    },
+    "manifest": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/manifestEntry"
+      }
+    },
+    "new_surfaces": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/newSurface"
+      }
+    },
+    "surface_fingerprint_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "summary": {
+      "$ref": "#/$defs/summary"
+    },
+    "checks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/check"
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "passed": {
+            "const": true
+          }
+        },
+        "required": [
+          "passed"
+        ]
+      },
+      "then": {
+        "properties": {
+          "state": {
+            "const": "pass"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "state": {
+            "const": "pass"
+          }
+        },
+        "required": [
+          "state"
+        ]
+      },
+      "then": {
+        "properties": {
+          "passed": {
+            "const": true
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[A-F0-9]{64}$"
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scope",
+        "canonical_website_mutation",
+        "release_eligible",
+        "package_authority",
+        "deployment_authority",
+        "credential_access",
+        "human_visual_acceptance",
+        "release_authority"
+      ],
+      "properties": {
+        "scope": {
+          "const": "local staged-candidate public claim-surface evidence only"
+        },
+        "canonical_website_mutation": {
+          "const": "never by this control or a design agent"
+        },
+        "release_eligible": {
+          "const": false
+        },
+        "package_authority": {
+          "const": "none"
+        },
+        "deployment_authority": {
+          "const": "none"
+        },
+        "credential_access": {
+          "const": "none"
+        },
+        "human_visual_acceptance": {
+          "const": "required for material brand changes"
+        },
+        "release_authority": {
+          "const": "WebsiteOperator owner gate only"
+        }
+      }
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "route",
+        "allowed_paths",
+        "claim_capsule_sha256"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "route": {
+          "type": "string",
+          "pattern": "^$|^/[^?#]*$"
+        },
+        "allowed_paths": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "claim_capsule_sha256": {
+          "type": "string",
+          "pattern": "^$|^[A-F0-9]{64}$"
+        }
+      }
+    },
+    "inputContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "route",
+        "allowed_paths",
+        "claim_capsule",
+        "claim_capsule_sha256"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "route": {
+          "type": "string",
+          "pattern": "^/[^?#]*$"
+        },
+        "allowed_paths": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "claim_capsule": {
+          "$ref": "#/$defs/claimCapsule"
+        },
+        "claim_capsule_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "claimCapsule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "route_id",
+        "route",
+        "claims"
+      ],
+      "properties": {
+        "route_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "route": {
+          "type": "string",
+          "pattern": "^/[^?#]*$"
+        },
+        "claims": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/claimCapsuleEntry"
+          }
+        }
+      }
+    },
+    "claimCapsuleEntry": {
+      "type": "object",
+      "required": [
+        "id",
+        "boundary",
+        "permitted_wording",
+        "prohibited_inferences"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "claim": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "boundary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "permitted_wording": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "prohibited_inferences": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "public_routes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^/[^?#]*$"
+          }
+        },
+        "expires_on": {
+          "type": "string"
+        },
+        "source": {
+          "type": "object"
+        }
+      }
+    },
+    "manifestEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "kind",
+        "claim_id",
+        "text_sha256",
+        "surface_sha256",
+        "rationale"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "enum": [
+            "permitted-wording",
+            "boundary",
+            "non-claim"
+          ]
+        },
+        "claim_id": {
+          "type": "string"
+        },
+        "text_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "surface_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "rationale": {
+          "type": "string",
+          "enum": [
+            "accessibility-label",
+            "citation-label",
+            "decorative-copy",
+            "interface-label",
+            "metadata-label",
+            "navigation-label",
+            "route-claim-boundary",
+            "route-permitted-wording",
+            "source-label"
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "non-claim"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "claim_id": {
+                "const": ""
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "claim_id": {
+                "minLength": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "permitted-wording"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "rationale": {
+                "const": "route-permitted-wording"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "boundary"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "rationale": {
+                "const": "route-claim-boundary"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "newSurface": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "source",
+        "text_sha256",
+        "surface_sha256"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "text_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "surface_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "changed_path_count",
+        "text_surface_path_count",
+        "new_public_surface_count",
+        "manifest_entry_count"
+      ],
+      "properties": {
+        "changed_path_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "text_surface_path_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "new_public_surface_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "manifest_entry_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "passed",
+        "message",
+        "evidence"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence": {
+          "type": "object"
+        }
+      }
+    }
+  }
+}

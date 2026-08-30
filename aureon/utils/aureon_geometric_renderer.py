@@ -32,10 +32,7 @@
 ╚══════════════════════════════════════════════════════════════════════════════╝
 """
 
-from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
-
 import math
-import sys
 from typing import Dict, List, Optional, Tuple
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1364,182 +1361,28 @@ def patch_world_simulator() -> None:
     """
     try:
         import aureon.simulation.aureon_world_simulator as ws
-        from aureon.simulation.aureon_world_simulator import WorldView, VIEW_ICONS, WorldSimulator
-
-        # Add GEOMETRY to the enum (dynamic enum extension)
-        # Since we can't easily extend Enum, we patch the view cycle directly
-        _bridge = EagleBridge()
-
-        _orig_render = ws.render_frame
-
-        def _patched_render(state, view, focused):
-            if str(view) == "geometry" or getattr(view, "value", "") == "geometry":
-                lines = _bridge.see(state, focused)
-                return "\n".join(lines)
-            return _orig_render(state, view, focused)
-
-        ws.render_frame = _patched_render
-        logger_msg = "🦅 Eagle Bridge geometry view patched into WorldSimulator"
-        print(logger_msg)
     except ImportError:
-        pass   # WorldSimulator not loaded yet — that's fine
+        return   # WorldSimulator not loaded yet — that's fine
 
+    # The organism heartbeat belongs to this explicit integration lifecycle,
+    # never to module import or EagleBridge construction.
+    try:
+        from aureon.core.aureon_baton_link import link_system
 
-# ─────────────────────────────────────────────────────────────────────────────
-# STANDALONE DEMO
-# ─────────────────────────────────────────────────────────────────────────────
+        link_system(__name__)
+    except Exception:
+        pass
 
-def _demo_world_state():
-    """Build a synthetic WorldState for standalone demo."""
-    class _MockBody:
-        def __init__(self, sym, hz, org, phase="none", manip=None, cx=0.5, cy=0.5):
-            self.symbol            = sym
-            self.hz                = hz
-            self.organic_score     = org
-            self.quality           = org
-            self.valence           = (org - 0.5) * 2
-            self.price_change_pct  = (org - 0.5) * 30
-            self.volume_24h_usd    = 1e9
-            self.pump_dump_phase   = phase
-            self.manipulation_types= manip or []
-            self.dominant_emotion  = "Joy"
-            self.cx, self.cy       = cx, cy
-            self.glyph             = "☀" if sym == "BTC" else "○"
-            self.is_event          = phase in ("pump", "distribution", "dump")
-
-    import types
-    ws = types.SimpleNamespace(
-        tick=7,
-        timestamp=__import__("time").time(),
-        bodies={
-            "BTC":  _MockBody("BTC",  577.0, 0.84, cx=0.5, cy=0.3),
-            "ETH":  _MockBody("ETH",  648.0, 0.91, cx=0.6, cy=0.2),
-            "XRP":  _MockBody("XRP",  285.0, 0.38, "pump",
-                              ["pump_dump","wash_trading"], cx=0.2, cy=0.8),
-            "SOL":  _MockBody("SOL",  712.0, 0.85, cx=0.7, cy=0.25),
-            "GOLD": _MockBody("GOLD", 572.0, 0.96, cx=0.5, cy=0.1),
-        },
-        organism_health=0.77,
-        organism_hz=562.0,
-        organic_flow=0.774,
-        manipulation_index=0.23,
-        posture="reduce",
-        active_pd_symbols=["XRP"],
-        contagion_alerts=["XRP_ecosystem"],
-        dominant_entities=["KOREAN_WHALE"],
-        sense_scores={
-            "touch": 0.96, "taste": 0.45, "smell": 0.62, "sound": 0.71,
-            "sight": 0.53, "balance": 0.87, "intuition": 0.64,
-            "ancestral": 0.86, "manipulation": 0.38,
-        },
-        sense_hz={
-            "touch": 174.0, "taste": 650.0, "smell": 345.0, "sound": 480.0,
-            "sight": 693.0, "balance": 528.0, "intuition": 915.0,
-            "ancestral": 963.0, "manipulation": 285.0,
-        },
-        sense_descriptions={},
-        sense_actions={},
-        narrative_lines=["I see the harmonic universe clearly."],
-    )
-    return ws
-
-
-if __name__ == "__main__":
-    import argparse
-    parser = argparse.ArgumentParser(
-        description="🦅 Aureon Eagle Bridge — Geometric Vision Engine"
-    )
-    parser.add_argument("--render", default="all",
-                        choices=["mandala", "cymatics", "waveform", "fractal",
-                                 "body", "spectrum", "darkfield", "molecular", "all"],
-                        help="Which geometric render to show")
-    parser.add_argument("--pattern", default="HEXAGON",
-                        choices=list(_CYMATICS_ART.keys()),
-                        help="Cymatics pattern for --render cymatics")
-    parser.add_argument("--hz",      type=float, default=577.0)
-    parser.add_argument("--quality", type=float, default=0.82)
-    parser.add_argument("--hurst",   type=float, default=0.55)
-    parser.add_argument("--organic", type=float, default=0.84)
-    args = parser.parse_args()
-
-    ws = _demo_world_state()
+    # Add GEOMETRY to the view cycle without constructing anything until this
+    # explicit integration function is called.
     bridge = EagleBridge()
+    original_render = ws.render_frame
 
-    def _section(title: str) -> None:
-        print()
-        r2, g2, b2 = _hz_rgb(528)
-        print(f"\033[1;38;2;{r2};{g2};{b2}m{'═'*72}\033[0m")
-        print(f"\033[1;38;2;{r2};{g2};{b2}m  {title}\033[0m")
-        print(f"\033[1;38;2;{r2};{g2};{b2}m{'─'*72}\033[0m")
+    def _patched_render(state, view, focused):
+        if str(view) == "geometry" or getattr(view, "value", "") == "geometry":
+            lines = bridge.see(state, focused)
+            return "\n".join(lines)
+        return original_render(state, view, focused)
 
-    if args.render in ("mandala", "all"):
-        _section("MANDALA — 9-Sense Sacred Geometry")
-        for line in render_mandala(ws.sense_scores, ws.sense_hz):
-            print(line)
-
-    if args.render in ("cymatics", "all"):
-        _section(f"CYMATICS — {args.pattern}")
-        for line in render_cymatics(args.pattern, args.hz, args.quality, "BTC"):
-            print(line)
-        # Show all 6 patterns in a row
-        if args.render == "all":
-            print(_dim("  All cymatics patterns:"))
-            for pat in ["CIRCLE", "HEXAGON", "STAR", "SPIRAL", "MANDALA", "CHAOS"]:
-                print(_bold_hz(args.hz, f"  ── {pat} ──"))
-                for line in render_cymatics(pat, args.hz * (0.85 + list(
-                        _CYMATICS_ART.keys()).index(pat) * 0.05), 0.75):
-                    print(line)
-
-    if args.render in ("waveform", "all"):
-        _section("WAVEFORM OSCILLOSCOPE")
-        hz_vals = [b.hz for b in ws.bodies.values()]
-        amps    = [b.organic_score for b in ws.bodies.values()]
-        lbs     = [b.symbol for b in ws.bodies.values()]
-        for line in render_waveform(hz_vals, amps, lbs, width=58):
-            print(line)
-
-    if args.render in ("fractal", "all"):
-        _section("FRACTAL DNA — Price Structure")
-        for line in render_fractal_dna(args.hurst, args.organic, "BTC"):
-            print(line)
-        _section("FRACTAL DNA — Manipulated (H=0.91)")
-        for line in render_fractal_dna(0.91, 0.32, "XRP"):
-            print(line)
-
-    if args.render in ("body", "all"):
-        _section("ORGANISM ANATOMY")
-        for line in render_organism_body(ws.sense_scores, ws.sense_hz, ws.organism_health):
-            print(line)
-
-    if args.render in ("spectrum", "all"):
-        _section("HZ SPECTRUM — The Solfeggio Rainbow")
-        highlighted = {s[:3].upper(): hz for s, hz in ws.sense_hz.items()}
-        for line in render_hz_spectrum(highlighted, width=60):
-            print(line)
-
-    if args.render in ("darkfield", "all"):
-        _section("DARK FIELD — Clean vs Manipulated")
-        for line in render_dark_field(0.92, [], "GOLD"):
-            print(line)
-        for line in render_dark_field(0.38, ["pump_dump", "wash_trading"], "XRP"):
-            print(line)
-
-    if args.render in ("molecular", "all"):
-        _section("MOLECULAR GEOMETRY")
-        for line in render_molecular("Market-Aspartame", "C₁₄H₁₈N₂O₅",
-                                     700.0, 0.82, "natural"):
-            print(line)
-        for line in render_molecular("Market-Capsaicin", "C₁₈H₂₇NO₃",
-                                     285.0, 0.28, "synthetic"):
-            print(line)
-
-    if args.render == "all":
-        _section("EAGLE BRIDGE — Full Geometric Vision (BTC)")
-        ws._tick = 0
-        bridge._tick = 0
-        for i in range(6):
-            bridge._tick = i
-            ws.tick = i
-            _section(f"Eagle View {i+1}/6")
-            for line in bridge.see(ws, "BTC"):
-                print(line)
+    ws.render_frame = _patched_render
+    print("🦅 Eagle Bridge geometry view patched into WorldSimulator")

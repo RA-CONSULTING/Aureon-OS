@@ -41,8 +41,59 @@ RAW_TELEMETRY_RE = re.compile(
 )
 
 
+class GeneratedControlContent:
+    """Immutable evidence boundary for prose and classifications made here.
+
+    These objects can support presentation and operator review. They are not
+    provider receipts and must never be promoted to operational, accounting,
+    or learning evidence merely because they were written to an audit path.
+    """
+
+    __slots__ = ()
+
+    @property
+    def content_class(self) -> str:
+        return "generated_voice_control_content"
+
+    @property
+    def operational_eligible(self) -> bool:
+        return False
+
+    @property
+    def accounting_eligible(self) -> bool:
+        return False
+
+    @property
+    def learning_eligible(self) -> bool:
+        return False
+
+    @property
+    def provider_verified(self) -> bool:
+        return False
+
+    @property
+    def requires_operator_review(self) -> bool:
+        return True
+
+    def _control_boundary(self) -> Dict[str, Any]:
+        return {
+            "content_class": self.content_class,
+            "operational_eligible": self.operational_eligible,
+            "accounting_eligible": self.accounting_eligible,
+            "learning_eligible": self.learning_eligible,
+            "provider_verified": self.provider_verified,
+            "requires_operator_review": self.requires_operator_review,
+            "permitted_uses": ["presentation", "operator_review"],
+            "forbidden_evidence_uses": ["action", "accounting", "learning"],
+        }
+
+    def _bounded_dict(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        data.update(self._control_boundary())
+        return data
+
+
 @dataclass
-class ExpressionSource:
+class ExpressionSource(GeneratedControlContent):
     path: str
     kind: str
     facets: List[str]
@@ -50,11 +101,11 @@ class ExpressionSource:
     sample: str = ""
 
     def to_dict(self) -> Dict[str, Any]:
-        return asdict(self)
+        return self._bounded_dict(asdict(self))
 
 
 @dataclass
-class ExpressionProfile:
+class ExpressionProfile(GeneratedControlContent):
     schema_features: List[str] = field(default_factory=lambda: ["aureon_expression_profile_v1"])
     generated_at: str = ""
     root: str = ""
@@ -68,7 +119,7 @@ class ExpressionProfile:
     def to_dict(self) -> Dict[str, Any]:
         data = asdict(self)
         data["sources"] = [source.to_dict() for source in self.sources]
-        return data
+        return self._bounded_dict(data)
 
     def top_facets(self, limit: int = 5) -> List[str]:
         ranked = sorted(self.facet_counts.items(), key=lambda item: (-item[1], item[0]))
@@ -76,7 +127,7 @@ class ExpressionProfile:
 
 
 @dataclass
-class RuntimeTranslation:
+class RuntimeTranslation(GeneratedControlContent):
     schema_features: List[str] = field(default_factory=lambda: ["aureon_runtime_state_translation_v1"])
     summary: str = ""
     senses: Dict[str, str] = field(default_factory=dict)
@@ -85,11 +136,11 @@ class RuntimeTranslation:
     redaction_applied: bool = False
 
     def to_dict(self) -> Dict[str, Any]:
-        return asdict(self)
+        return self._bounded_dict(asdict(self))
 
 
 @dataclass
-class VoiceArtifact:
+class VoiceArtifact(GeneratedControlContent):
     schema_features: List[str] = field(default_factory=lambda: ["aureon_whole_knowledge_voice_v1"])
     ok: bool = True
     mode: str = "conversation"
@@ -104,7 +155,7 @@ class VoiceArtifact:
     warnings: List[str] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:
-        return asdict(self)
+        return self._bounded_dict(asdict(self))
 
 
 def repo_root() -> Path:
@@ -199,7 +250,7 @@ def translate_runtime_state(snapshot: Optional[Dict[str, Any]] = None, style: st
 
     senses: Dict[str, str] = {
         "see": f"I see {hot_topic} as the nearest signal in the field.",
-        "feel": f"I feel {_synthetic_state_phrase(mood)} while I hold the next action as {str(action).lower()}.",
+        "feel": f"I feel {_internal_state_phrase(mood)} while I hold the next action as {str(action).lower()}.",
         "hear": "I hear the system as a quiet baseline until a harmonic reading is present.",
         "touch": "I touch the work through tools, files, goals, memory, and verified outcomes.",
         "smell": "I smell risk as stale data, blocked guards, missing evidence, or claims without proof.",
@@ -217,7 +268,7 @@ def translate_runtime_state(snapshot: Optional[Dict[str, Any]] = None, style: st
         senses["smell"] = "I smell caution around " + ", ".join(blockers[:5]) + "."
 
     summary = (
-        "Aureon translates its synthetic state as a working loop: see the signal, "
+        "Aureon translates its internally computed state as a working loop: see the signal, "
         "feel coherence or caution, hear harmonic context, touch the task through tools, "
         "smell risk, then speak in evidence-backed human language."
     )
@@ -443,10 +494,10 @@ def _audience_phrase(audience: str) -> str:
     return f"a {value}"
 
 
-def _synthetic_state_phrase(mood: Any) -> str:
+def _internal_state_phrase(mood: Any) -> str:
     word = str(mood or "steady").strip().lower()
     article = "an" if word[:1] in {"a", "e", "i", "o", "u"} else "a"
-    return f"{article} {word} synthetic state"
+    return f"{article} {word} internally computed state"
 
 
 def _public_signal_label(value: Any) -> str:

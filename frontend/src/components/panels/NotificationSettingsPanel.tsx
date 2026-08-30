@@ -67,7 +67,7 @@ export const NotificationSettingsPanel = () => {
         <div className="space-y-3 p-3 rounded-lg bg-muted/20">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Send className="h-4 w-4 text-blue-500" />
+              <Send className="h-4 w-4 text-primary" />
               <Label className="text-sm font-medium">Telegram</Label>
             </div>
             <Switch 
@@ -106,7 +106,7 @@ export const NotificationSettingsPanel = () => {
         <div className="space-y-3 p-3 rounded-lg bg-muted/20">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <MessageSquare className="h-4 w-4 text-indigo-500" />
+              <MessageSquare className="h-4 w-4 text-primary" />
               <Label className="text-sm font-medium">Discord</Label>
             </div>
             <Switch 

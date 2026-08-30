@@ -19,7 +19,6 @@ LIVE STREAMING - Real signals, real time, real location discovery.
 import sys
 import time
 import threading
-import random
 sys.path.insert(0, '/workspaces/aureon-trading')
 
 import logging
@@ -35,17 +34,17 @@ class LiveSignalEmitter:
     def __init__(self):
         self.running = False
         self.signal_thread = None
-        self.current_signals = {
-            'heart_rate': 72,
-            'hrv': 45.0,
-            'alpha': 2.5,
-            'theta': 1.8,
-            'beta': 1.0,
-            'delta': 0.5,
-            'gsr': 4.0,
-            'respiration': 12,
-            'coherence': 0.65,
-        }
+        self.current_signals = None
+
+    def update_live_signals(self, signals, source_id, source_timestamp):
+        """Mount a sensor observation. Missing fields remain no_data."""
+        required = ('heart_rate', 'hrv', 'alpha', 'theta', 'beta', 'delta', 'gsr', 'respiration', 'coherence')
+        if not isinstance(signals, dict) or any(signals.get(name) is None for name in required):
+            raise ValueError('COMPLETE_LIVE_BIOFIELD_OBSERVATION_REQUIRED')
+        if not source_id or not source_timestamp:
+            raise ValueError('LIVE_BIOFIELD_PROVENANCE_REQUIRED')
+        self.current_signals = {**signals, 'truth_status': 'live', 'source_id': source_id,
+                                'source_timestamp': source_timestamp, 'generated_values': False}
 
     def start_streaming(self):
         """Start live signal streaming"""
@@ -64,14 +63,10 @@ class LiveSignalEmitter:
         while self.running:
             cycle += 1
 
-            # Simulate realistic signal variations
-            self.current_signals['heart_rate'] = 72 + random.randint(-5, 5)
-            self.current_signals['hrv'] = 45.0 + random.uniform(-5, 5)
-            self.current_signals['alpha'] = 2.5 + random.uniform(-0.3, 0.5)
-            self.current_signals['theta'] = 1.8 + random.uniform(-0.2, 0.3)
-            self.current_signals['beta'] = 1.0 + random.uniform(-0.2, 0.2)
-            self.current_signals['coherence'] = min(0.85, max(0.55, 0.65 + random.uniform(-0.05, 0.1)))
-            self.current_signals['gsr'] = 4.0 + random.uniform(-0.5, 1.0)
+            if self.current_signals is None:
+                logger.warning('no_data: live biofield sensor provider is not mounted')
+                time.sleep(3)
+                continue
 
             # Print live stream
             print(f"\n📊 STREAM #{cycle} - LIVE SIGNALS:")
@@ -88,6 +83,8 @@ class LiveSignalEmitter:
 
     def get_live_data(self):
         """Get current live signals"""
+        if self.current_signals is None:
+            raise RuntimeError('LIVE_BIOFIELD_SENSOR_NOT_MOUNTED')
         return {
             'hrv_rmssd': self.current_signals['hrv'],
             'heart_rate_bpm': self.current_signals['heart_rate'],
@@ -99,6 +96,10 @@ class LiveSignalEmitter:
             },
             'gsr_uS': self.current_signals['gsr'],
             'resp_bpm': self.current_signals['respiration'],
+            'truth_status': 'live',
+            'source_id': self.current_signals['source_id'],
+            'source_timestamp': self.current_signals['source_timestamp'],
+            'generated_values': False,
         }
 
     def stop_streaming(self):

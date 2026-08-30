@@ -466,24 +466,30 @@ class ConsciousnessModule:
         senses everything, no longer *acts* through channels the shared field
         can't see.
 
-        OPT-IN: only active when ``AUREON_CONSCIOUSNESS_FIELD_GATE`` is truthy, so
-        live trading behaviour is unchanged by default. When enabled, a conscience
-        VETO (collapsed SLS or a divided field — the conscience now reads both via
-        its blend_field / canonical fallbacks) pauses this beat's trading and
-        publishes a ``consciousness.trade.gated`` trace. Fail-open: any error →
-        permitted, so the gate can never wedge trading shut."""
+        The field gate is active by default. Explicitly disabling it cannot be a
+        route around the organism's coherence evidence: autonomous trading is
+        denied until the gate is restored. A missing, malformed, or unavailable
+        conscience result is ``no_data`` and therefore denied; valid non-VETO
+        verdict semantics remain unchanged."""
         import os
 
-        if str(os.environ.get("AUREON_CONSCIOUSNESS_FIELD_GATE", "") or "").strip().lower() \
-                not in {"1", "true", "yes", "on"}:
-            return True, "gate disabled"
+        gate_setting = str(
+            os.environ.get("AUREON_CONSCIOUSNESS_FIELD_GATE", "1") or ""
+        ).strip().lower()
+        if gate_setting not in {"1", "true", "yes", "on"}:
+            return False, "no_data: coherence trade gate disabled; decision=denied"
         try:
             if getattr(self, "_trade_conscience", None) is None:
                 from aureon.queen.queen_conscience import QueenConscience
                 self._trade_conscience = QueenConscience()
             whisper = self._trade_conscience.ask_why(
                 "execute trade (autonomous heartbeat)", {"risk": 0.1})
-            if getattr(whisper.verdict, "name", "") == "VETO":
+            verdict_name = str(
+                getattr(getattr(whisper, "verdict", None), "name", "") or ""
+            ).strip().upper()
+            if not verdict_name:
+                return False, "no_data: coherence verdict missing; decision=denied"
+            if verdict_name == "VETO":
                 reason = str(getattr(whisper, "message", "") or "conscience veto")
                 if self.bus is not None and Thought is not None:
                     try:
@@ -493,10 +499,15 @@ class ConsciousnessModule:
                     except Exception:  # noqa: BLE001
                         pass
                 return False, reason
-            return True, "permitted"
-        except Exception as exc:  # noqa: BLE001 — fail-open, never wedge trading
-            log.debug(f"coherence trade gate unavailable (fail-open): {exc}")
-            return True, "gate unavailable"
+            if verdict_name not in {"APPROVED", "CONCERNED", "TEACHING_MOMENT"}:
+                return False, "no_data: unrecognized coherence verdict; decision=denied"
+            return True, f"permitted: {verdict_name.lower()}"
+        except Exception as exc:  # noqa: BLE001 — unavailable evidence must fail closed
+            log.warning(
+                "coherence trade gate unavailable; autonomous trading denied: %s",
+                type(exc).__name__,
+            )
+            return False, "no_data: coherence trade gate unavailable; decision=denied"
 
     # ──────────────────────────────────────────────────────────
     #  HEARTBEAT — called by the sentient loop or a timer
@@ -655,8 +666,8 @@ class ConsciousnessModule:
                 except Exception as e:
                     log.debug(f"Energy field: {e}")
 
-        # Whole-body coherence gate for this beat's autonomous trading (opt-in;
-        # default no-op → trade_ok True → the phases below are unchanged).
+        # Default-on whole-body coherence gate for this beat's autonomous trading.
+        # Disabled or unavailable evidence is no_data and pauses every trade phase.
         trade_ok, _trade_gate_reason = self._coherence_permits_trading()
         if not trade_ok:
             self._understanding["trade_gate"] = f"paused: {_trade_gate_reason[:80]}"

@@ -105,14 +105,14 @@ export function PerformanceMetricsDashboard() {
   }
 
   const getWinRateColor = (rate: number) => {
-    if (rate >= 60) return "text-green-500";
-    if (rate >= 50) return "text-yellow-500";
+    if (rate >= 60) return "text-success";
+    if (rate >= 50) return "text-warning";
     return "text-destructive";
   };
 
   const getSharpeColor = (sharpe: number) => {
-    if (sharpe >= 2) return "text-green-500";
-    if (sharpe >= 1) return "text-yellow-500";
+    if (sharpe >= 2) return "text-success";
+    if (sharpe >= 1) return "text-warning";
     return "text-destructive";
   };
 
@@ -149,7 +149,7 @@ export function PerformanceMetricsDashboard() {
                 {metrics.winRate.toFixed(1)}%
               </p>
               {metrics.winRate >= 60 && (
-                <Badge variant="outline" className="text-xs text-green-500">Excellent</Badge>
+                <Badge variant="outline" className="text-xs text-success">Excellent</Badge>
               )}
             </div>
           </div>
@@ -157,10 +157,10 @@ export function PerformanceMetricsDashboard() {
           {/* Average Win */}
           <div className="p-4 bg-muted/30 rounded-lg border border-border/30">
             <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="h-4 w-4 text-green-500" />
+              <TrendingUp className="h-4 w-4 text-success" />
               <p className="text-xs text-muted-foreground">Avg Win</p>
             </div>
-            <p className="text-2xl font-bold font-mono text-green-500">
+            <p className="text-2xl font-bold font-mono text-success">
               +{metrics.avgWin.toFixed(2)}%
             </p>
           </div>
@@ -198,7 +198,7 @@ export function PerformanceMetricsDashboard() {
                 {metrics.sharpeRatio.toFixed(2)}
               </p>
               {metrics.sharpeRatio >= 2 && (
-                <Badge variant="outline" className="text-xs text-green-500">Strong</Badge>
+                <Badge variant="outline" className="text-xs text-success">Strong</Badge>
               )}
             </div>
           </div>
@@ -233,7 +233,7 @@ export function PerformanceMetricsDashboard() {
             Based on historical backtest: 2024-01-01 to 2024-11-01
           </p>
           <div className="flex flex-wrap gap-2">
-            <Badge variant="outline" className="text-green-500">
+            <Badge variant="outline" className="text-success">
               Win Rate: {metrics.winRate.toFixed(1)}%
             </Badge>
             <Badge variant="outline" className="text-primary">

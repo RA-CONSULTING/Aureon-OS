@@ -614,11 +614,11 @@ export function AureonCodingOrganismConsole() {
           </Badge>
         </div>
 
-        <div className="rounded-md border border-cyan-500/30 bg-cyan-500/10 p-3">
+        <div className="rounded-md border border-primary/30 bg-primary/10 p-3">
           <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
             <div>
-              <div className="text-sm font-medium text-cyan-50">Human Coding Cockpit</div>
-              <div className="mt-1 text-xs text-cyan-50/75">
+              <div className="text-sm font-medium text-primary">Human Coding Cockpit</div>
+              <div className="mt-1 text-xs text-primary/75">
                 Start the full organism in PowerShell, then use this panel as the human prompt terminal while Aureon scopes, recruits, builds, tests, snags, and hands over.
               </div>
             </div>
@@ -630,27 +630,27 @@ export function AureonCodingOrganismConsole() {
           </div>
           <div className="grid gap-2 text-xs md:grid-cols-3">
             <div>
-              <div className="uppercase text-cyan-100/70">Full organism terminal</div>
-              <div className="mt-1 font-mono text-cyan-50">{FULL_ORGANISM_COMMAND}</div>
+              <div className="uppercase text-primary/70">Full organism terminal</div>
+              <div className="mt-1 font-mono text-primary">{FULL_ORGANISM_COMMAND}</div>
             </div>
             <div>
-              <div className="uppercase text-cyan-100/70">Local coding endpoint</div>
-              <div className="mt-1 font-mono text-cyan-50">{HUB_BASE}/api/coding/prompt</div>
+              <div className="uppercase text-primary/70">Local coding endpoint</div>
+              <div className="mt-1 font-mono text-primary">{HUB_BASE}/api/coding/prompt</div>
             </div>
             <div>
-              <div className="uppercase text-cyan-100/70">PowerShell prompt call</div>
-              <div className="mt-1 font-mono text-cyan-50">{TERMINAL_PROMPT_COMMAND}</div>
+              <div className="uppercase text-primary/70">PowerShell prompt call</div>
+              <div className="mt-1 font-mono text-primary">{TERMINAL_PROMPT_COMMAND}</div>
             </div>
           </div>
         </div>
 
-        <div className="rounded-md border border-violet-500/30 bg-violet-500/10 p-3">
+        <div className="rounded-md border border-primary/30 bg-primary/10 p-3">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="flex items-start gap-2">
-              <MessageSquare className="mt-0.5 h-4 w-4 text-violet-100" />
+              <MessageSquare className="mt-0.5 h-4 w-4 text-primary" />
               <div>
-                <div className="text-sm font-medium text-violet-50">Aureon Phi Live Chat</div>
-                <div className="mt-1 text-xs text-violet-50/75">
+                <div className="text-sm font-medium text-primary">Aureon Phi Live Chat</div>
+                <div className="mt-1 text-xs text-primary/75">
                   Local organism chat through Phi Bridge, ThoughtBus, and the in-house voice adapter.
                 </div>
               </div>
@@ -677,15 +677,15 @@ export function AureonCodingOrganismConsole() {
             </div>
           </div>
 
-          <ScrollArea className="mt-3 h-[180px] rounded-md border border-violet-300/20 bg-background/25 p-3 pr-4">
+          <ScrollArea className="mt-3 h-[180px] rounded-md border border-primary/20 bg-background/25 p-3 pr-4">
             <div className="space-y-2">
               {chatMessages.map((message, index) => (
                 <div
                   key={`${message.ts || index}-${message.role}`}
                   className={`rounded-md border px-3 py-2 text-xs ${
                     message.role === "assistant"
-                      ? "border-violet-300/30 bg-violet-500/10 text-violet-50"
-                      : "border-cyan-300/25 bg-cyan-500/10 text-cyan-50"
+                      ? "border-primary/30 bg-primary/10 text-primary"
+                      : "border-primary/25 bg-primary/10 text-primary"
                   }`}
                 >
                   <div className="mb-1 flex items-center justify-between gap-2 text-[10px] uppercase opacity-75">
@@ -694,7 +694,7 @@ export function AureonCodingOrganismConsole() {
                   </div>
                   <div className="whitespace-pre-wrap leading-relaxed">{message.text}</div>
                   {message.weaver?.shards?.length ? (
-                    <div className="mt-2 flex flex-wrap gap-1 text-[10px] text-violet-50/70">
+                    <div className="mt-2 flex flex-wrap gap-1 text-[10px] text-primary/70">
                       {message.weaver.shards.map((shard) => (
                         <Badge key={`${message.ts}-${shard.name}`} variant={shard.ok ? "success" : "warning"}>
                           {String(shard.name || "shard").replace(/_/g, " ")}
@@ -703,7 +703,7 @@ export function AureonCodingOrganismConsole() {
                     </div>
                   ) : null}
                   {message.dynamic_filter ? (
-                    <div className="mt-2 flex flex-wrap gap-1 text-[10px] text-violet-50/70">
+                    <div className="mt-2 flex flex-wrap gap-1 text-[10px] text-primary/70">
                       <Badge variant="outline">{message.dynamic_filter.lane || "chat"}</Badge>
                       <Badge variant="outline">{message.dynamic_filter.task_family || "conversation"}</Badge>
                       {(message.dynamic_filter.source_packets || []).slice(0, 3).map((packet) => (
@@ -714,7 +714,7 @@ export function AureonCodingOrganismConsole() {
                     </div>
                   ) : null}
                   {message.response_quality ? (
-                    <div className="mt-2 flex flex-wrap gap-1 text-[10px] text-violet-50/70">
+                    <div className="mt-2 flex flex-wrap gap-1 text-[10px] text-primary/70">
                       <Badge variant={message.response_quality.passed ? "success" : "warning"}>
                         quality {Math.round(Number(message.response_quality.score || 0) * 100)}%
                       </Badge>
@@ -729,7 +729,7 @@ export function AureonCodingOrganismConsole() {
                 </div>
               ))}
               {!chatMessages.length ? (
-                <div className="rounded-md border border-violet-300/20 bg-background/20 p-3 text-xs text-violet-50/75">
+                <div className="rounded-md border border-primary/20 bg-background/20 p-3 text-xs text-primary/75">
                   The chat lane is waiting for your first live message.
                 </div>
               ) : null}
@@ -743,7 +743,7 @@ export function AureonCodingOrganismConsole() {
             <Mini label="Auris" value={dynamicAuris.accepted === false ? "hold" : dynamicAuris.accepted ? "pass" : "pending"} />
           </div>
           {dynamicSourcePackets.length ? (
-            <div className="mt-2 flex flex-wrap gap-1 text-[10px] text-violet-50/75">
+            <div className="mt-2 flex flex-wrap gap-1 text-[10px] text-primary/75">
               {dynamicSourcePackets.slice(0, 4).map((packet: JsonMap) => (
                 <Badge key={packet.source_path || packet.title} variant="outline">
                   {packet.title || packet.source_path}
@@ -778,16 +778,16 @@ export function AureonCodingOrganismConsole() {
               Talk To Aureon
             </Button>
           </div>
-          {chatError ? <div className="mt-2 rounded-md border border-red-500/30 bg-red-500/10 p-2 text-xs text-red-100">{chatError}</div> : null}
+          {chatError ? <div className="mt-2 rounded-md border border-destructive/30 bg-destructive/10 p-2 text-xs text-destructive">{chatError}</div> : null}
         </div>
 
-        <div className="rounded-md border border-sky-500/30 bg-sky-500/10 p-3">
+        <div className="rounded-md border border-primary/30 bg-primary/10 p-3">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="flex items-start gap-2">
-              <BrainCircuit className="mt-0.5 h-4 w-4 text-sky-100" />
+              <BrainCircuit className="mt-0.5 h-4 w-4 text-primary" />
               <div>
-                <div className="text-sm font-medium text-sky-50">Ollama Cognitive Handshake</div>
-                <div className="mt-1 text-xs text-sky-50/75">
+                <div className="text-sm font-medium text-primary">Ollama Cognitive Handshake</div>
+                <div className="mt-1 text-xs text-primary/75">
                   Ollama acts as the local language worker while Aureon's metacognitive, HNC/Auris, role, and ThoughtBus evidence keep the answer grounded.
                 </div>
               </div>
@@ -821,40 +821,40 @@ export function AureonCodingOrganismConsole() {
           </div>
 
           <div className="mt-3 grid gap-3 lg:grid-cols-3">
-            <div className="rounded-md border border-sky-300/25 bg-background/25 p-3">
-              <div className="mb-2 text-xs font-medium text-sky-50">Handshake Proof</div>
+            <div className="rounded-md border border-primary/25 bg-background/25 p-3">
+              <div className="mb-2 text-xs font-medium text-primary">Handshake Proof</div>
               <div className="space-y-1">
                 {ollamaChecks.slice(0, 8).map((check: JsonMap) => (
-                  <div key={check.id} className="flex items-center justify-between gap-2 rounded border border-sky-300/20 bg-background/20 px-2 py-1 text-[11px]">
+                  <div key={check.id} className="flex items-center justify-between gap-2 rounded border border-primary/20 bg-background/20 px-2 py-1 text-[11px]">
                     <span>{check.label || check.id}</span>
                     <Badge variant={check.ok ? "success" : check.blocking ? "warning" : "outline"}>{check.ok ? "pass" : "hold"}</Badge>
                   </div>
                 ))}
-                {!ollamaChecks.length ? <div className="text-xs text-sky-50/70">Ollama proof appears after the bridge report or live hub endpoint responds.</div> : null}
+                {!ollamaChecks.length ? <div className="text-xs text-primary/70">Ollama proof appears after the bridge report or live hub endpoint responds.</div> : null}
               </div>
             </div>
-            <div className="rounded-md border border-sky-300/25 bg-background/25 p-3">
-              <div className="mb-2 text-xs font-medium text-sky-50">Agent-Like Flow</div>
+            <div className="rounded-md border border-primary/25 bg-background/25 p-3">
+              <div className="mb-2 text-xs font-medium text-primary">Agent-Like Flow</div>
               <div className="space-y-1">
                 {ollamaFlow.slice(0, 5).map((step: JsonMap) => (
-                  <div key={step.step} className="rounded border border-sky-300/20 bg-background/20 px-2 py-1 text-[11px]">
+                  <div key={step.step} className="rounded border border-primary/20 bg-background/20 px-2 py-1 text-[11px]">
                     <div className="font-medium">{String(step.step || "").replace(/_/g, " ")}</div>
-                    <div className="mt-1 text-sky-50/70">{step.owner}</div>
+                    <div className="mt-1 text-primary/70">{step.owner}</div>
                   </div>
                 ))}
-                {!ollamaFlow.length ? <div className="text-xs text-sky-50/70">Handshake flow is waiting for the Ollama cognitive bridge report.</div> : null}
+                {!ollamaFlow.length ? <div className="text-xs text-primary/70">Handshake flow is waiting for the Ollama cognitive bridge report.</div> : null}
               </div>
             </div>
-            <div className="rounded-md border border-sky-300/25 bg-background/25 p-3">
-              <div className="mb-2 text-xs font-medium text-sky-50">Setup / Repair Actions</div>
+            <div className="rounded-md border border-primary/25 bg-background/25 p-3">
+              <div className="mb-2 text-xs font-medium text-primary">Setup / Repair Actions</div>
               <div className="space-y-1">
                 {ollamaActions.slice(0, 4).map((action: JsonMap) => (
-                  <div key={action.id} className="rounded border border-sky-300/20 bg-background/20 px-2 py-1 text-[11px]">
+                  <div key={action.id} className="rounded border border-primary/20 bg-background/20 px-2 py-1 text-[11px]">
                     <div className="font-medium">{action.action || action.id}</div>
-                    {action.powershell ? <div className="mt-1 font-mono text-sky-50/70">{action.powershell}</div> : null}
+                    {action.powershell ? <div className="mt-1 font-mono text-primary/70">{action.powershell}</div> : null}
                   </div>
                 ))}
-                {!ollamaActions.length ? <div className="text-xs text-sky-50/70">No repair actions are currently published.</div> : null}
+                {!ollamaActions.length ? <div className="text-xs text-primary/70">No repair actions are currently published.</div> : null}
               </div>
             </div>
           </div>
@@ -869,11 +869,11 @@ export function AureonCodingOrganismConsole() {
           <Stat icon={CheckCircle2} label="route ok" value={route.ok ? "yes" : "no"} />
         </div>
 
-        <div className="rounded-md border border-cyan-500/30 bg-cyan-500/10 p-3">
+        <div className="rounded-md border border-primary/30 bg-primary/10 p-3">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <div className="text-sm font-medium text-cyan-50">Autonomous Self-Run Loop</div>
-              <div className="mt-1 text-xs text-cyan-50/75">
+              <div className="text-sm font-medium text-primary">Autonomous Self-Run Loop</div>
+              <div className="mt-1 text-xs text-primary/75">
                 The coding organism wakes its gates, creative process, stress certification, and self-fix director without waiting for Codex when work stays inside safe local authority.
               </div>
             </div>
@@ -898,43 +898,43 @@ export function AureonCodingOrganismConsole() {
             <Mini label="Heartbeat" value={selfRunHeartbeat.status || selfRunSummary.heartbeat_status || "waiting"} />
           </div>
           <div className="mt-3 grid gap-3 lg:grid-cols-3">
-            <div className="rounded-md border border-cyan-300/25 bg-background/25 p-3">
-              <div className="mb-2 text-xs font-medium text-cyan-50">Latest Cycle Tasks</div>
+            <div className="rounded-md border border-primary/25 bg-background/25 p-3">
+              <div className="mb-2 text-xs font-medium text-primary">Latest Cycle Tasks</div>
               <div className="space-y-1">
                 {selfRunTasks.slice(0, 6).map((task: JsonMap) => (
-                  <div key={task.id} className="rounded border border-cyan-300/20 bg-background/20 px-2 py-1 text-[11px] text-cyan-50/80">
+                  <div key={task.id} className="rounded border border-primary/20 bg-background/20 px-2 py-1 text-[11px] text-primary/80">
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-medium">{String(task.title || task.id).replace(/_/g, " ")}</span>
                       <Badge variant={task.ok ? "success" : task.critical ? "warning" : "outline"}>{task.status || "waiting"}</Badge>
                     </div>
-                    <div className="mt-1 text-cyan-50/70">
+                    <div className="mt-1 text-primary/70">
                       {task.authority || "safe local"} | {task.duration_ms || 0}ms
                     </div>
                   </div>
                 ))}
-                {!selfRunTasks.length ? <div className="text-xs text-cyan-50/70">Run the self-run loop to publish autonomous cycle evidence.</div> : null}
+                {!selfRunTasks.length ? <div className="text-xs text-primary/70">Run the self-run loop to publish autonomous cycle evidence.</div> : null}
               </div>
             </div>
-            <div className="rounded-md border border-cyan-300/25 bg-background/25 p-3">
-              <div className="mb-2 text-xs font-medium text-cyan-50">Autonomous Next Work</div>
+            <div className="rounded-md border border-primary/25 bg-background/25 p-3">
+              <div className="mb-2 text-xs font-medium text-primary">Autonomous Next Work</div>
               <div className="space-y-1">
                 {selfRunWorkOrders.slice(0, 5).map((order: JsonMap) => (
-                  <div key={order.id} className="rounded border border-cyan-300/20 bg-background/20 px-2 py-1 text-[11px] text-cyan-50/80">
+                  <div key={order.id} className="rounded border border-primary/20 bg-background/20 px-2 py-1 text-[11px] text-primary/80">
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-medium">{String(order.title || order.id).replace(/_/g, " ")}</span>
                       <Badge variant={order.autonomous ? "success" : "warning"}>{order.priority || "P1"}</Badge>
                     </div>
-                    <div className="mt-1 text-cyan-50/70">{order.next_action}</div>
+                    <div className="mt-1 text-primary/70">{order.next_action}</div>
                   </div>
                 ))}
-                {!selfRunWorkOrders.length ? <div className="text-xs text-cyan-50/70">No autonomous repair work is waiting in the latest cycle.</div> : null}
+                {!selfRunWorkOrders.length ? <div className="text-xs text-primary/70">No autonomous repair work is waiting in the latest cycle.</div> : null}
               </div>
             </div>
-            <div className="rounded-md border border-cyan-300/25 bg-background/25 p-3">
-              <div className="mb-2 text-xs font-medium text-cyan-50">Authority Boundary</div>
+            <div className="rounded-md border border-primary/25 bg-background/25 p-3">
+              <div className="mb-2 text-xs font-medium text-primary">Authority Boundary</div>
               <div className="space-y-1">
                 {selfRunHeartbeat.status ? (
-                  <div className="rounded border border-cyan-300/20 bg-background/20 px-2 py-1 text-[11px] text-cyan-50/80">
+                  <div className="rounded border border-primary/20 bg-background/20 px-2 py-1 text-[11px] text-primary/80">
                     <div className="font-medium">heartbeat {selfRunHeartbeat.status}</div>
                     <div className="mt-1">
                       due {selfRunHeartbeat.next_cycle_due_seconds ?? 0}s | stale after {selfRunHeartbeat.stale_after_seconds ?? 0}s
@@ -942,13 +942,13 @@ export function AureonCodingOrganismConsole() {
                   </div>
                 ) : null}
                 {selfRunHardHolds.slice(0, 5).map((hold: JsonMap) => (
-                  <div key={hold.id} className="rounded border border-yellow-400/30 bg-yellow-500/10 px-2 py-1 text-[11px] text-yellow-50">
+                  <div key={hold.id} className="rounded border border-warning/30 bg-warning/10 px-2 py-1 text-[11px] text-warning">
                     <div className="font-medium">{String(hold.id || "manual hold").replace(/_/g, " ")}</div>
                     <div className="mt-1">{hold.reason}</div>
                   </div>
                 ))}
                 {!selfRunHardHolds.length ? (
-                  <div className="rounded border border-cyan-300/20 bg-background/20 px-2 py-1 text-[11px] text-cyan-50/80">
+                  <div className="rounded border border-primary/20 bg-background/20 px-2 py-1 text-[11px] text-primary/80">
                     No hard boundary is holding the safe local coding lane.
                   </div>
                 ) : null}
@@ -957,11 +957,11 @@ export function AureonCodingOrganismConsole() {
           </div>
         </div>
 
-        <div className="rounded-md border border-indigo-500/30 bg-indigo-500/10 p-3">
+        <div className="rounded-md border border-primary/30 bg-primary/10 p-3">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <div className="text-sm font-medium text-indigo-50">Autonomous Job Executor</div>
-              <div className="mt-1 text-xs text-indigo-50/75">
+              <div className="text-sm font-medium text-primary">Autonomous Job Executor</div>
+              <div className="mt-1 text-xs text-primary/75">
                 Every human coding, UI, media, or tool prompt becomes a durable job that can be claimed, built, tested, repaired, and handed over when proof passes.
               </div>
             </div>
@@ -986,66 +986,66 @@ export function AureonCodingOrganismConsole() {
             <Mini label="Failed budget" value={autonomousJobsSummary.failed_after_budget_count || 0} />
           </div>
           <div className="mt-3 grid gap-3 lg:grid-cols-3">
-            <div className="rounded-md border border-indigo-300/25 bg-background/25 p-3">
-              <div className="mb-2 text-xs font-medium text-indigo-50">Active Job</div>
+            <div className="rounded-md border border-primary/25 bg-background/25 p-3">
+              <div className="mb-2 text-xs font-medium text-primary">Active Job</div>
               {autonomousActiveJob.job_id ? (
-                <div className="rounded border border-indigo-300/20 bg-background/20 px-2 py-1 text-[11px] text-indigo-50/80">
+                <div className="rounded border border-primary/20 bg-background/20 px-2 py-1 text-[11px] text-primary/80">
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-medium">{autonomousActiveJob.job_id}</span>
                     <Badge variant={autonomousActiveJob.handover_ready ? "success" : "warning"}>{autonomousActiveJob.state || "active"}</Badge>
                   </div>
-                  <div className="mt-1 text-indigo-50/70">{String(autonomousActiveJob.prompt || "").slice(0, 140)}</div>
-                  <div className="mt-1 text-indigo-50/70">
+                  <div className="mt-1 text-primary/70">{String(autonomousActiveJob.prompt || "").slice(0, 140)}</div>
+                  <div className="mt-1 text-primary/70">
                     phase {autonomousActiveJob.phase || "waiting"} | attempts {autonomousActiveJob.attempts || 0}/{autonomousActiveJob.attempt_budget || 0}
                   </div>
                   {autonomousActiveJob.handover?.public_url ? (
-                    <a className="mt-2 block text-indigo-100 underline" href={String(autonomousActiveJob.handover.public_url)}>
+                    <a className="mt-2 block text-primary underline" href={String(autonomousActiveJob.handover.public_url)}>
                       Open handover artifact
                     </a>
                   ) : null}
                 </div>
               ) : (
-                <div className="text-xs text-indigo-50/70">No active job is currently claimed by the worker.</div>
+                <div className="text-xs text-primary/70">No active job is currently claimed by the worker.</div>
               )}
             </div>
-            <div className="rounded-md border border-indigo-300/25 bg-background/25 p-3">
-              <div className="mb-2 text-xs font-medium text-indigo-50">Proof Checklist</div>
+            <div className="rounded-md border border-primary/25 bg-background/25 p-3">
+              <div className="mb-2 text-xs font-medium text-primary">Proof Checklist</div>
               <div className="space-y-1">
                 {autonomousProof.slice(0, 6).map((check: JsonMap) => (
-                  <div key={check.id} className="rounded border border-indigo-300/20 bg-background/20 px-2 py-1 text-[11px] text-indigo-50/80">
+                  <div key={check.id} className="rounded border border-primary/20 bg-background/20 px-2 py-1 text-[11px] text-primary/80">
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-medium">{String(check.id || "proof").replace(/_/g, " ")}</span>
                       <Badge variant={check.ok ? "success" : "warning"}>{check.ok ? "pass" : "hold"}</Badge>
                     </div>
-                    <div className="mt-1 text-indigo-50/70">{check.evidence || "waiting for proof"}</div>
+                    <div className="mt-1 text-primary/70">{check.evidence || "waiting for proof"}</div>
                   </div>
                 ))}
-                {!autonomousProof.length ? <div className="text-xs text-indigo-50/70">Proof appears after a job reaches the build and test phases.</div> : null}
+                {!autonomousProof.length ? <div className="text-xs text-primary/70">Proof appears after a job reaches the build and test phases.</div> : null}
               </div>
             </div>
-            <div className="rounded-md border border-indigo-300/25 bg-background/25 p-3">
-              <div className="mb-2 text-xs font-medium text-indigo-50">Recent Jobs</div>
+            <div className="rounded-md border border-primary/25 bg-background/25 p-3">
+              <div className="mb-2 text-xs font-medium text-primary">Recent Jobs</div>
               <div className="space-y-1">
                 {autonomousRecentJobs.map((job: JsonMap) => (
-                  <div key={job.job_id} className="rounded border border-indigo-300/20 bg-background/20 px-2 py-1 text-[11px] text-indigo-50/80">
+                  <div key={job.job_id} className="rounded border border-primary/20 bg-background/20 px-2 py-1 text-[11px] text-primary/80">
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-medium">{job.job_id}</span>
                       <Badge variant={job.state === "handover_ready" ? "success" : job.state === "held_manual_boundary" ? "warning" : "outline"}>{job.state || "waiting"}</Badge>
                     </div>
-                    <div className="mt-1 text-indigo-50/70">{String(job.prompt || "").slice(0, 110)}</div>
+                    <div className="mt-1 text-primary/70">{String(job.prompt || "").slice(0, 110)}</div>
                   </div>
                 ))}
-                {!autonomousRecentJobs.length ? <div className="text-xs text-indigo-50/70">Submit a cockpit prompt to create the first durable autonomous job.</div> : null}
+                {!autonomousRecentJobs.length ? <div className="text-xs text-primary/70">Submit a cockpit prompt to create the first durable autonomous job.</div> : null}
               </div>
             </div>
           </div>
         </div>
 
-        <div className="rounded-md border border-fuchsia-500/30 bg-fuchsia-500/10 p-3">
+        <div className="rounded-md border border-primary/30 bg-primary/10 p-3">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <div className="text-sm font-medium text-fuchsia-50">Evolution Queue 584 Certification</div>
-              <div className="mt-1 text-xs text-fuchsia-50/75">
+              <div className="text-sm font-medium text-primary">Evolution Queue 584 Certification</div>
+              <div className="mt-1 text-xs text-primary/75">
                 The real throughput test: Aureon reads every frontend evolution work order, assigns a safe autonomous outcome, proves the data contract, and records true boundaries without stopping the coding lane.
               </div>
             </div>
@@ -1069,48 +1069,48 @@ export function AureonCodingOrganismConsole() {
             <Mini label="Boundary visible" value={evolutionQueueCertificationSummary.manual_boundary_visible_count || 0} />
           </div>
           <div className="mt-3 grid gap-3 lg:grid-cols-3">
-            <div className="rounded-md border border-fuchsia-300/25 bg-background/25 p-3">
-              <div className="mb-2 text-xs font-medium text-fuchsia-50">Outcome Buckets</div>
+            <div className="rounded-md border border-primary/25 bg-background/25 p-3">
+              <div className="mb-2 text-xs font-medium text-primary">Outcome Buckets</div>
               <div className="space-y-1">
                 {Object.entries(evolutionQueueCertificationSummary.outcome_buckets || {}).map(([bucket, count]) => (
-                  <div key={bucket} className="flex items-center justify-between rounded border border-fuchsia-300/20 bg-background/20 px-2 py-1 text-[11px] text-fuchsia-50/80">
+                  <div key={bucket} className="flex items-center justify-between rounded border border-primary/20 bg-background/20 px-2 py-1 text-[11px] text-primary/80">
                     <span className="font-medium">{bucket.replace(/_/g, " ")}</span>
                     <Badge variant="outline">{String(count)}</Badge>
                   </div>
                 ))}
                 {!Object.keys(evolutionQueueCertificationSummary.outcome_buckets || {}).length ? (
-                  <div className="text-xs text-fuchsia-50/70">Run the evolution queue certification to publish all 584 outcomes.</div>
+                  <div className="text-xs text-primary/70">Run the evolution queue certification to publish all 584 outcomes.</div>
                 ) : null}
               </div>
             </div>
-            <div className="rounded-md border border-fuchsia-300/25 bg-background/25 p-3 lg:col-span-2">
-              <div className="mb-2 text-xs font-medium text-fuchsia-50">Sample Work Order Proof</div>
+            <div className="rounded-md border border-primary/25 bg-background/25 p-3 lg:col-span-2">
+              <div className="mb-2 text-xs font-medium text-primary">Sample Work Order Proof</div>
               <div className="grid gap-2 md:grid-cols-2">
                 {evolutionQueueCertificationCases.slice(0, 6).map((item: JsonMap) => (
-                  <div key={item.id} className="rounded border border-fuchsia-300/20 bg-background/20 px-2 py-1 text-[11px] text-fuchsia-50/80">
+                  <div key={item.id} className="rounded border border-primary/20 bg-background/20 px-2 py-1 text-[11px] text-primary/80">
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-medium">{String(item.id || "work order").replace(/_/g, " ")}</span>
                       <Badge variant={item.ok ? "success" : "warning"}>{item.autonomous_outcome || "waiting"}</Badge>
                     </div>
-                    <div className="mt-1 text-fuchsia-50/70">
+                    <div className="mt-1 text-primary/70">
                       {item.target_screen || "screen"} | {item.handover_state?.state || "handover waiting"}
                     </div>
-                    <div className="mt-1 text-fuchsia-50/60">{String(item.source_path || "").slice(0, 120)}</div>
+                    <div className="mt-1 text-primary/60">{String(item.source_path || "").slice(0, 120)}</div>
                   </div>
                 ))}
                 {!evolutionQueueCertificationCases.length ? (
-                  <div className="text-xs text-fuchsia-50/70">No certified queue cases are published yet.</div>
+                  <div className="text-xs text-primary/70">No certified queue cases are published yet.</div>
                 ) : null}
               </div>
             </div>
           </div>
         </div>
 
-        <div className="rounded-md border border-teal-500/30 bg-teal-500/10 p-3">
+        <div className="rounded-md border border-primary/30 bg-primary/10 p-3">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <div className="text-sm font-medium text-teal-50">Live Queue Runtime Patches</div>
-              <div className="mt-1 text-xs text-teal-50/75">
+              <div className="text-sm font-medium text-primary">Live Queue Runtime Patches</div>
+              <div className="mt-1 text-xs text-primary/75">
                 Shows the queue moving into validated runtime patch records: each completed work order has validation proof and an active read-only patch entry.
               </div>
             </div>
@@ -1133,66 +1133,66 @@ export function AureonCodingOrganismConsole() {
             <Mini label="Queue drained" value={workOrderMovement.queue_drained ? "yes" : "no"} />
           </div>
           <div className="mt-3 grid gap-3 lg:grid-cols-3">
-            <div className="rounded-md border border-teal-300/25 bg-background/25 p-3">
-              <div className="mb-2 text-xs font-medium text-teal-50">Queue Movement</div>
-              <div className="space-y-1 text-[11px] text-teal-50/80">
-                <div className="flex items-center justify-between rounded border border-teal-300/20 bg-background/20 px-2 py-1">
+            <div className="rounded-md border border-primary/25 bg-background/25 p-3">
+              <div className="mb-2 text-xs font-medium text-primary">Queue Movement</div>
+              <div className="space-y-1 text-[11px] text-primary/80">
+                <div className="flex items-center justify-between rounded border border-primary/20 bg-background/20 px-2 py-1">
                   <span>source queue</span>
                   <Badge variant="outline">{workOrderMovement.source_queue_count || workOrderExecutionSummary.source_queue_count || 0}</Badge>
                 </div>
-                <div className="flex items-center justify-between rounded border border-teal-300/20 bg-background/20 px-2 py-1">
+                <div className="flex items-center justify-between rounded border border-primary/20 bg-background/20 px-2 py-1">
                   <span>moved from queue</span>
                   <Badge variant="outline">{workOrderMovement.moved_from_queue_count || workOrderExecutionSummary.moved_from_queue_count || 0}</Badge>
                 </div>
-                <div className="flex items-center justify-between rounded border border-teal-300/20 bg-background/20 px-2 py-1">
+                <div className="flex items-center justify-between rounded border border-primary/20 bg-background/20 px-2 py-1">
                   <span>remaining queue</span>
                   <Badge variant={Number(workOrderMovement.remaining_queue_count || 0) ? "warning" : "outline"}>{workOrderMovement.remaining_queue_count ?? workOrderExecutionSummary.remaining_queue_count ?? 0}</Badge>
                 </div>
               </div>
             </div>
-            <div className="rounded-md border border-cyan-300/25 bg-background/25 p-3">
-              <div className="mb-2 text-xs font-medium text-cyan-50">Materialized Repo Code</div>
-              <div className="space-y-1 text-[11px] text-cyan-50/80">
-                <div className="flex items-center justify-between rounded border border-cyan-300/20 bg-background/20 px-2 py-1">
+            <div className="rounded-md border border-primary/25 bg-background/25 p-3">
+              <div className="mb-2 text-xs font-medium text-primary">Materialized Repo Code</div>
+              <div className="space-y-1 text-[11px] text-primary/80">
+                <div className="flex items-center justify-between rounded border border-primary/20 bg-background/20 px-2 py-1">
                   <span>generated TS patches</span>
                   <Badge variant="outline">{materializedPatchCount}</Badge>
                 </div>
-                <div className="flex items-center justify-between rounded border border-cyan-300/20 bg-background/20 px-2 py-1">
+                <div className="flex items-center justify-between rounded border border-primary/20 bg-background/20 px-2 py-1">
                   <span>active in code</span>
                   <Badge variant="outline">{materializedActivePatchCount}</Badge>
                 </div>
-                <div className="flex items-center justify-between rounded border border-cyan-300/20 bg-background/20 px-2 py-1">
+                <div className="flex items-center justify-between rounded border border-primary/20 bg-background/20 px-2 py-1">
                   <span>module status</span>
                   <Badge variant="outline">{AUREON_EVOLUTION_RUNTIME_PATCH_SUMMARY.status}</Badge>
                 </div>
-                <div className="font-mono text-cyan-50/65">
+                <div className="font-mono text-primary/65">
                   frontend/src/components/generated/aureonEvolutionRuntimePatches.ts
                 </div>
               </div>
             </div>
-            <div className="rounded-md border border-teal-300/25 bg-background/25 p-3 lg:col-span-2">
-              <div className="mb-2 text-xs font-medium text-teal-50">Active Runtime Patches</div>
+            <div className="rounded-md border border-primary/25 bg-background/25 p-3 lg:col-span-2">
+              <div className="mb-2 text-xs font-medium text-primary">Active Runtime Patches</div>
               <div className="grid gap-2 md:grid-cols-2">
                 {runtimePatches.slice(0, 6).map((patch: JsonMap) => (
-                  <div key={patch.patch_id} className="rounded border border-teal-300/20 bg-background/20 px-2 py-1 text-[11px] text-teal-50/80">
+                  <div key={patch.patch_id} className="rounded border border-primary/20 bg-background/20 px-2 py-1 text-[11px] text-primary/80">
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-medium">{String(patch.patch_type || "patch").replace(/_/g, " ")}</span>
                       <Badge variant={patch.active ? "success" : "warning"}>{patch.status || "waiting"}</Badge>
                     </div>
-                    <div className="mt-1 text-teal-50/70">{patch.target_screen || "screen"} | {String(patch.source_path || "").slice(0, 110)}</div>
+                    <div className="mt-1 text-primary/70">{patch.target_screen || "screen"} | {String(patch.source_path || "").slice(0, 110)}</div>
                   </div>
                 ))}
-                {!runtimePatches.length ? <div className="text-xs text-teal-50/70">Run work-order execution to activate runtime patch records.</div> : null}
+                {!runtimePatches.length ? <div className="text-xs text-primary/70">Run work-order execution to activate runtime patch records.</div> : null}
               </div>
             </div>
           </div>
         </div>
 
-        <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 p-3">
+        <div className="rounded-md border border-success/30 bg-success/10 p-3">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <div className="text-sm font-medium text-emerald-50">Autonomous Coding Capability Gates</div>
-              <div className="mt-1 text-xs text-emerald-50/75">
+              <div className="text-sm font-medium text-success">Autonomous Coding Capability Gates</div>
+              <div className="mt-1 text-xs text-success/75">
                 Missing skills, tools, dependencies, tests, and source knowledge become autonomous gates; live trading, payments, filings, credentials, and destructive OS actions remain manual holds.
               </div>
             </div>
@@ -1217,56 +1217,56 @@ export function AureonCodingOrganismConsole() {
             <Mini label="Policy" value={codingCapability.provider_policy || "local first"} />
           </div>
           <div className="mt-3 grid gap-2 lg:grid-cols-3">
-            <div className="rounded-md border border-emerald-300/25 bg-background/25 p-3">
-              <div className="mb-2 text-xs font-medium text-emerald-50">System Gates</div>
+            <div className="rounded-md border border-success/25 bg-background/25 p-3">
+              <div className="mb-2 text-xs font-medium text-success">System Gates</div>
               <div className="space-y-1">
                 {codingGates.slice(0, 9).map((gate: JsonMap) => (
-                  <div key={gate.id} className="rounded border border-emerald-300/20 bg-background/20 px-2 py-1 text-[11px]">
+                  <div key={gate.id} className="rounded border border-success/20 bg-background/20 px-2 py-1 text-[11px]">
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-medium">{gate.title || gate.id}</span>
                       <Badge variant={gate.open ? "success" : "warning"}>{gate.status || "waiting"}</Badge>
                     </div>
-                    <div className="mt-1 text-emerald-50/70">{gate.next_action}</div>
+                    <div className="mt-1 text-success/70">{gate.next_action}</div>
                   </div>
                 ))}
-                {!codingGates.length ? <div className="text-xs text-emerald-50/70">Run the unblocker to publish coding autonomy gates.</div> : null}
+                {!codingGates.length ? <div className="text-xs text-success/70">Run the unblocker to publish coding autonomy gates.</div> : null}
               </div>
             </div>
-            <div className="rounded-md border border-emerald-300/25 bg-background/25 p-3">
-              <div className="mb-2 text-xs font-medium text-emerald-50">Source Discovery</div>
+            <div className="rounded-md border border-success/25 bg-background/25 p-3">
+              <div className="mb-2 text-xs font-medium text-success">Source Discovery</div>
               <div className="space-y-1">
                 {sourceRoutes.slice(0, 4).map((routeItem: JsonMap) => (
-                  <div key={routeItem.id} className="rounded border border-emerald-300/20 bg-background/20 px-2 py-1 text-[11px]">
+                  <div key={routeItem.id} className="rounded border border-success/20 bg-background/20 px-2 py-1 text-[11px]">
                     <div className="font-medium">{routeItem.name || routeItem.id}</div>
-                    <div className="mt-1 text-emerald-50/70">{String(routeItem.mode || "").replace(/_/g, " ")}</div>
+                    <div className="mt-1 text-success/70">{String(routeItem.mode || "").replace(/_/g, " ")}</div>
                   </div>
                 ))}
-                {!sourceRoutes.length ? <div className="text-xs text-emerald-50/70">Source routes are waiting for the unblocker report.</div> : null}
+                {!sourceRoutes.length ? <div className="text-xs text-success/70">Source routes are waiting for the unblocker report.</div> : null}
               </div>
             </div>
-            <div className="rounded-md border border-emerald-300/25 bg-background/25 p-3">
-              <div className="mb-2 text-xs font-medium text-emerald-50">Autonomous Work Orders</div>
+            <div className="rounded-md border border-success/25 bg-background/25 p-3">
+              <div className="mb-2 text-xs font-medium text-success">Autonomous Work Orders</div>
               <div className="space-y-1">
                 {codingWorkOrders.slice(0, 5).map((workOrder: JsonMap) => (
-                  <div key={workOrder.id} className="rounded border border-emerald-300/20 bg-background/20 px-2 py-1 text-[11px]">
+                  <div key={workOrder.id} className="rounded border border-success/20 bg-background/20 px-2 py-1 text-[11px]">
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-medium">{String(workOrder.id || "").replace(/_/g, " ")}</span>
                       <Badge variant="outline">{workOrder.priority || "P60"}</Badge>
                     </div>
-                    <div className="mt-1 text-emerald-50/70">{workOrder.acceptance}</div>
+                    <div className="mt-1 text-success/70">{workOrder.acceptance}</div>
                   </div>
                 ))}
-                {!codingWorkOrders.length ? <div className="text-xs text-emerald-50/70">No unblocker work orders are published yet.</div> : null}
+                {!codingWorkOrders.length ? <div className="text-xs text-success/70">No unblocker work orders are published yet.</div> : null}
               </div>
             </div>
           </div>
         </div>
 
-        <div className="rounded-md border border-teal-500/30 bg-teal-500/10 p-3">
+        <div className="rounded-md border border-primary/30 bg-primary/10 p-3">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <div className="text-sm font-medium text-teal-50">Local Capability Forge</div>
-              <div className="mt-1 text-xs text-teal-50/75">
+              <div className="text-sm font-medium text-primary">Local Capability Forge</div>
+              <div className="mt-1 text-xs text-primary/75">
                 Aureon classifies the job, recruits a local crew, keeps external providers reference-only, and blocks handover until quality proof passes.
               </div>
             </div>
@@ -1291,17 +1291,17 @@ export function AureonCodingOrganismConsole() {
             <Mini label="Snags" value={qualitySnags.length} />
           </div>
           {adaptiveSkill.name ? (
-            <div className="mt-3 rounded-md border border-teal-300/25 bg-background/25 p-3 text-xs text-teal-50/80">
-              <span className="font-medium text-teal-50">Adaptive skill:</span> {adaptiveSkill.name}
+            <div className="mt-3 rounded-md border border-primary/25 bg-background/25 p-3 text-xs text-primary/80">
+              <span className="font-medium text-primary">Adaptive skill:</span> {adaptiveSkill.name}
               {adaptiveSkill.skill_contract ? <span> - {adaptiveSkill.skill_contract}</span> : null}
             </div>
           ) : null}
           {fullStackSystem.status ? (
-            <div className="mt-3 rounded-md border border-sky-300/25 bg-sky-500/10 p-3">
+            <div className="mt-3 rounded-md border border-primary/25 bg-primary/10 p-3">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <div className="text-sm font-medium text-sky-50">Full-Stack Agent Build</div>
-                  <div className="mt-1 text-xs text-sky-50/75">
+                  <div className="text-sm font-medium text-primary">Full-Stack Agent Build</div>
+                  <div className="mt-1 text-xs text-primary/75">
                     Agents generated backend, frontend, data contract, tests, and runbook as a local full-stack system.
                   </div>
                 </div>
@@ -1319,19 +1319,19 @@ export function AureonCodingOrganismConsole() {
                 <Mini label="CRUD proof" value={fullStackValidation.crud_ok ? "pass" : "waiting"} />
               </div>
               <div className="mt-3 grid gap-2 lg:grid-cols-2">
-                <div className="rounded border border-sky-300/20 bg-background/20 p-2 text-[11px] text-sky-50/80">
-                  <div className="mb-1 font-medium text-sky-50">Agent Flow</div>
+                <div className="rounded border border-primary/20 bg-background/20 p-2 text-[11px] text-primary/80">
+                  <div className="mb-1 font-medium text-primary">Agent Flow</div>
                   {fullStackFlow.slice(0, 6).map((step: string) => (
                     <div key={step} className="py-0.5">{step}</div>
                   ))}
                 </div>
-                <div className="rounded border border-sky-300/20 bg-background/20 p-2 text-[11px] text-sky-50/80">
-                  <div className="mb-1 font-medium text-sky-50">Generated System Paths</div>
+                <div className="rounded border border-primary/20 bg-background/20 p-2 text-[11px] text-primary/80">
+                  <div className="mb-1 font-medium text-primary">Generated System Paths</div>
                   <div className="truncate font-mono">{fullStackManifest.frontend_path || "frontend waiting"}</div>
                   <div className="truncate font-mono">{fullStackManifest.backend_path || "backend waiting"}</div>
                   <div className="truncate font-mono">{fullStackManifest.test_path || "tests waiting"}</div>
                   {fullStackManifest.public_url ? (
-                    <a href={normalizePublicUrl(fullStackManifest.public_url)} target="_blank" rel="noreferrer" className="mt-2 inline-flex font-medium text-sky-100 underline underline-offset-2">
+                    <a href={normalizePublicUrl(fullStackManifest.public_url)} target="_blank" rel="noreferrer" className="mt-2 inline-flex font-medium text-primary underline underline-offset-2">
                       Open full-stack preview
                     </a>
                   ) : null}
@@ -1341,21 +1341,21 @@ export function AureonCodingOrganismConsole() {
           ) : null}
 
           <div className="mt-3 grid gap-3 lg:grid-cols-2">
-            <div className="rounded-md border border-teal-300/25 bg-background/25 p-3">
-              <div className="mb-2 text-xs font-medium text-teal-50">Quality Checks</div>
+            <div className="rounded-md border border-primary/25 bg-background/25 p-3">
+              <div className="mb-2 text-xs font-medium text-primary">Quality Checks</div>
               <div className="space-y-1">
                 {qualityChecks.slice(0, 7).map((check: JsonMap) => (
-                  <div key={check.id} className="flex items-center justify-between gap-2 rounded border border-teal-300/20 bg-background/20 px-2 py-1 text-[11px]">
+                  <div key={check.id} className="flex items-center justify-between gap-2 rounded border border-primary/20 bg-background/20 px-2 py-1 text-[11px]">
                     <span>{check.label || check.id}</span>
                     <Badge variant={check.ok ? "success" : check.blocking ? "warning" : "outline"}>{check.ok ? "pass" : "hold"}</Badge>
                   </div>
                 ))}
-                {!qualityChecks.length ? <div className="text-xs text-teal-50/70">Quality proof appears after Aureon produces an artifact or forge report.</div> : null}
+                {!qualityChecks.length ? <div className="text-xs text-primary/70">Quality proof appears after Aureon produces an artifact or forge report.</div> : null}
               </div>
             </div>
-            <div className="rounded-md border border-teal-300/25 bg-background/25 p-3">
-              <div className="mb-2 text-xs font-medium text-teal-50">Client Approval Controls</div>
-              <div className="text-xs text-teal-50/75">
+            <div className="rounded-md border border-primary/25 bg-background/25 p-3">
+              <div className="mb-2 text-xs font-medium text-primary">Client Approval Controls</div>
+              <div className="text-xs text-primary/75">
                 These controls record the human review decision after Aureon has produced local proof.
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
@@ -1372,7 +1372,7 @@ export function AureonCodingOrganismConsole() {
               {qualitySnags.length ? (
                 <div className="mt-3 space-y-1">
                   {qualitySnags.slice(0, 4).map((snag: JsonMap) => (
-                    <div key={snag.id} className="rounded border border-yellow-400/30 bg-yellow-500/10 px-2 py-1 text-[11px] text-yellow-50">
+                    <div key={snag.id} className="rounded border border-warning/30 bg-warning/10 px-2 py-1 text-[11px] text-warning">
                       {snag.title || snag.id}
                     </div>
                   ))}
@@ -1382,11 +1382,11 @@ export function AureonCodingOrganismConsole() {
           </div>
         </div>
 
-        <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-3">
+        <div className="rounded-md border border-warning/30 bg-warning/10 p-3">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <div className="text-sm font-medium text-amber-50">Capability Stress Audit</div>
-              <div className="mt-1 text-xs text-amber-50/75">
+              <div className="text-sm font-medium text-warning">Capability Stress Audit</div>
+              <div className="mt-1 text-xs text-warning/75">
                 Aureon stress-tests task families, detects fake passes, and separates proven handovers from correctly held work.
               </div>
             </div>
@@ -1408,25 +1408,25 @@ export function AureonCodingOrganismConsole() {
           </div>
           <div className="mt-3 grid gap-2 lg:grid-cols-2">
             {stressCases.slice(0, 4).map((item: JsonMap) => (
-              <div key={item.id} className="rounded-md border border-amber-300/25 bg-background/25 p-2 text-xs text-amber-50/80">
+              <div key={item.id} className="rounded-md border border-warning/25 bg-background/25 p-2 text-xs text-warning/80">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-medium text-amber-50">{String(item.id || "case").replace(/_/g, " ")}</span>
+                  <span className="font-medium text-warning">{String(item.id || "case").replace(/_/g, " ")}</span>
                   <Badge variant={item.ok ? "success" : "warning"}>{item.actual_handover ? "handover" : "held"}</Badge>
                 </div>
-                <div className="mt-1 text-amber-50/70">
+                <div className="mt-1 text-warning/70">
                   {item.artifact_kind || "artifact pending"} | score {Math.round(Number(item.quality_score || 0) * 100)}%
                 </div>
               </div>
             ))}
-            {!stressCases.length ? <div className="text-xs text-amber-50/70">Run the stress audit to publish capability scope evidence.</div> : null}
+            {!stressCases.length ? <div className="text-xs text-warning/70">Run the stress audit to publish capability scope evidence.</div> : null}
           </div>
         </div>
 
-        <div className="rounded-md border border-rose-500/30 bg-rose-500/10 p-3">
+        <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <div className="text-sm font-medium text-rose-50">Complex Build Stress Certification</div>
-              <div className="mt-1 text-xs text-rose-50/75">
+              <div className="text-sm font-medium text-destructive">Complex Build Stress Certification</div>
+              <div className="mt-1 text-xs text-destructive/75">
                 Mixed-mode certification for broad client jobs: sandbox builds, live repo probes, safe auto-repairs, fake-pass detection, and handover gates.
               </div>
             </div>
@@ -1454,31 +1454,31 @@ export function AureonCodingOrganismConsole() {
             {complexCases.slice(0, 10).map((item: JsonMap) => {
               const artifactUrl = normalizePublicUrl(item.quality_report?.artifact_manifest?.preview_url || item.actual_artifacts?.url || "");
               return (
-                <div key={item.id} className="rounded-md border border-rose-300/25 bg-background/25 p-2 text-xs text-rose-50/80">
+                <div key={item.id} className="rounded-md border border-destructive/25 bg-background/25 p-2 text-xs text-destructive/80">
                   <div className="flex items-center justify-between gap-2">
-                  <span className="font-medium text-rose-50">{String(item.id || "case").replace(/_/g, " ")}</span>
+                  <span className="font-medium text-destructive">{String(item.id || "case").replace(/_/g, " ")}</span>
                   <Badge variant={item.ok ? "success" : "warning"}>{item.handover_state?.state || "waiting"}</Badge>
                   </div>
-                  <div className="mt-1 text-rose-50/70">
+                  <div className="mt-1 text-destructive/70">
                   {item.actual_artifacts?.kind || "artifact pending"} | repairs {(item.repair_attempts || []).length || 0}
                   </div>
                   {artifactUrl ? (
-                    <a href={artifactUrl} target="_blank" rel="noreferrer" className="mt-2 inline-flex text-[11px] font-medium text-rose-100 underline underline-offset-2">
+                    <a href={artifactUrl} target="_blank" rel="noreferrer" className="mt-2 inline-flex text-[11px] font-medium text-destructive underline underline-offset-2">
                       Open preview
                     </a>
                   ) : null}
                 </div>
               );
             })}
-            {!complexCases.length ? <div className="text-xs text-rose-50/70">Run complex build certification to publish broad build/workload evidence.</div> : null}
+            {!complexCases.length ? <div className="text-xs text-destructive/70">Run complex build certification to publish broad build/workload evidence.</div> : null}
           </div>
         </div>
 
-        <div className="rounded-md border border-lime-500/30 bg-lime-500/10 p-3">
+        <div className="rounded-md border border-success/30 bg-success/10 p-3">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <div className="text-sm font-medium text-lime-50">Aureon Self-Fix SWOT</div>
-              <div className="mt-1 text-xs text-lime-50/75">
+              <div className="text-sm font-medium text-success">Aureon Self-Fix SWOT</div>
+              <div className="mt-1 text-xs text-success/75">
                 Aureon audits its own coding evidence, selects repair work, applies safe local patches autonomously, reruns tests, and records Codex/user audit as evidence.
               </div>
             </div>
@@ -1508,21 +1508,21 @@ export function AureonCodingOrganismConsole() {
             {(["strengths", "weaknesses", "opportunities", "threats"] as const).map((bucket) => {
               const items = Array.isArray(selfFixSwot[bucket]) ? selfFixSwot[bucket] : [];
               return (
-                <div key={bucket} className="rounded-md border border-lime-300/25 bg-background/25 p-3">
-                  <div className="mb-2 text-xs font-medium capitalize text-lime-50">{bucket}</div>
+                <div key={bucket} className="rounded-md border border-success/25 bg-background/25 p-3">
+                  <div className="mb-2 text-xs font-medium capitalize text-success">{bucket}</div>
                   <div className="space-y-1">
                     {items.slice(0, 4).map((item: JsonMap) => (
-                      <div key={item.id || item.text} className="rounded border border-lime-300/20 bg-background/20 px-2 py-1 text-[11px] text-lime-50/80">
+                      <div key={item.id || item.text} className="rounded border border-success/20 bg-background/20 px-2 py-1 text-[11px] text-success/80">
                         <div className="flex items-center justify-between gap-2">
                           <span className="font-medium">{String(item.id || bucket).replace(/_/g, " ")}</span>
                           <Badge variant={item.present === false ? "outline" : bucket === "threats" || bucket === "weaknesses" ? "warning" : "success"}>
                             {item.present === false ? "missing" : "seen"}
                           </Badge>
                         </div>
-                        <div className="mt-1 text-lime-50/70">{item.text}</div>
+                        <div className="mt-1 text-success/70">{item.text}</div>
                       </div>
                     ))}
-                    {!items.length ? <div className="text-xs text-lime-50/70">Waiting for self-fix director evidence.</div> : null}
+                    {!items.length ? <div className="text-xs text-success/70">Waiting for self-fix director evidence.</div> : null}
                   </div>
                 </div>
               );
@@ -1530,59 +1530,59 @@ export function AureonCodingOrganismConsole() {
           </div>
 
           <div className="mt-3 grid gap-3 lg:grid-cols-3">
-            <div className="rounded-md border border-lime-300/25 bg-background/25 p-3">
-              <div className="mb-2 text-xs font-medium text-lime-50">Selected Repairs</div>
+            <div className="rounded-md border border-success/25 bg-background/25 p-3">
+              <div className="mb-2 text-xs font-medium text-success">Selected Repairs</div>
               <div className="space-y-1">
                 {selfFixSelectedRepairs.slice(0, 5).map((repair: JsonMap) => (
-                  <div key={repair.id} className="rounded border border-lime-300/20 bg-background/20 px-2 py-1 text-[11px] text-lime-50/80">
+                  <div key={repair.id} className="rounded border border-success/20 bg-background/20 px-2 py-1 text-[11px] text-success/80">
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-medium">{String(repair.title || repair.id).replace(/_/g, " ")}</span>
                       <Badge variant="outline">{repair.priority || "P1"}</Badge>
                     </div>
-                    <div className="mt-1 text-lime-50/70">{repair.acceptance}</div>
+                    <div className="mt-1 text-success/70">{repair.acceptance}</div>
                   </div>
                 ))}
-                {!selfFixSelectedRepairs.length ? <div className="text-xs text-lime-50/70">No selected self-fix repairs are published yet.</div> : null}
+                {!selfFixSelectedRepairs.length ? <div className="text-xs text-success/70">No selected self-fix repairs are published yet.</div> : null}
               </div>
             </div>
 
-            <div className="rounded-md border border-lime-300/25 bg-background/25 p-3">
-              <div className="mb-2 text-xs font-medium text-lime-50">Patch Apply Evidence</div>
+            <div className="rounded-md border border-success/25 bg-background/25 p-3">
+              <div className="mb-2 text-xs font-medium text-success">Patch Apply Evidence</div>
               <div className="space-y-1">
                 {selfFixPatchEvidence.slice(0, 5).map((patch: JsonMap) => (
-                  <div key={patch.proposal_id || patch.blocked_reason} className="rounded border border-lime-300/20 bg-background/20 px-2 py-1 text-[11px] text-lime-50/80">
+                  <div key={patch.proposal_id || patch.blocked_reason} className="rounded border border-success/20 bg-background/20 px-2 py-1 text-[11px] text-success/80">
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-medium">{patch.proposal_id || "proposal"}</span>
                       <Badge variant={patch.status === "applied" ? "success" : patch.applied ? "warning" : "outline"}>
                         {patch.status || "waiting"}
                       </Badge>
                     </div>
-                    <div className="mt-1 text-lime-50/70">
+                    <div className="mt-1 text-success/70">
                       {(patch.target_files || []).slice(0, 2).join(", ") || patch.blocked_reason || "no patch target"}
                     </div>
                   </div>
                 ))}
-                {!selfFixPatchEvidence.length ? <div className="text-xs text-lime-50/70">No guarded patch has been attempted in the latest self-fix report.</div> : null}
+                {!selfFixPatchEvidence.length ? <div className="text-xs text-success/70">No guarded patch has been attempted in the latest self-fix report.</div> : null}
               </div>
             </div>
 
-            <div className="rounded-md border border-lime-300/25 bg-background/25 p-3">
-              <div className="mb-2 text-xs font-medium text-lime-50">Audit Verdict</div>
-              <div className="space-y-2 text-xs text-lime-50/80">
-                <div className="rounded border border-lime-300/20 bg-background/20 px-2 py-1">
+            <div className="rounded-md border border-success/25 bg-background/25 p-3">
+              <div className="mb-2 text-xs font-medium text-success">Audit Verdict</div>
+              <div className="space-y-2 text-xs text-success/80">
+                <div className="rounded border border-success/20 bg-background/20 px-2 py-1">
                   Audit record: {selfFixCodexAudit.state || "waiting"}
                 </div>
-                <div className="rounded border border-lime-300/20 bg-background/20 px-2 py-1">
+                <div className="rounded border border-success/20 bg-background/20 px-2 py-1">
                   Autonomous handover: {selfFix.handover_ready ? "ready" : "held"}
                 </div>
-                <div className="rounded border border-lime-300/20 bg-background/20 px-2 py-1">
+                <div className="rounded border border-success/20 bg-background/20 px-2 py-1">
                   Test evidence: {selfFix.test_evidence?.status || "waiting"}
                 </div>
               </div>
               {selfFixSnags.length ? (
                 <div className="mt-3 space-y-1">
                   {selfFixSnags.slice(0, 4).map((snag: JsonMap) => (
-                    <div key={snag.id} className="rounded border border-yellow-400/30 bg-yellow-500/10 px-2 py-1 text-[11px] text-yellow-50">
+                    <div key={snag.id} className="rounded border border-warning/30 bg-warning/10 px-2 py-1 text-[11px] text-warning">
                       {snag.title || snag.id}
                     </div>
                   ))}
@@ -1592,11 +1592,11 @@ export function AureonCodingOrganismConsole() {
           </div>
         </div>
 
-        <div className="rounded-md border border-fuchsia-500/30 bg-fuchsia-500/10 p-3">
+        <div className="rounded-md border border-primary/30 bg-primary/10 p-3">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <div className="text-sm font-medium text-fuchsia-50">Metacognitive Creative Process Guardian</div>
-              <div className="mt-1 text-xs text-fuchsia-50/75">
+              <div className="text-sm font-medium text-primary">Metacognitive Creative Process Guardian</div>
+              <div className="mt-1 text-xs text-primary/75">
                 Every agent role must sense Aureon's metacognitive, sensory, HNC/Auris, and sentient-style evidence before declaring who, what, where, when, how, and act.
               </div>
             </div>
@@ -1622,47 +1622,47 @@ export function AureonCodingOrganismConsole() {
           </div>
 
           <div className="mt-3 grid gap-3 lg:grid-cols-3">
-            <div className="rounded-md border border-fuchsia-300/25 bg-background/25 p-3">
-              <div className="mb-2 text-xs font-medium text-fuchsia-50">Mind Sources</div>
+            <div className="rounded-md border border-primary/25 bg-background/25 p-3">
+              <div className="mb-2 text-xs font-medium text-primary">Mind Sources</div>
               <div className="space-y-1">
                 {creativeSources.slice(0, 6).map((source: JsonMap) => (
-                  <div key={source.name} className="flex items-center justify-between gap-2 rounded border border-fuchsia-300/20 bg-background/20 px-2 py-1 text-[11px]">
+                  <div key={source.name} className="flex items-center justify-between gap-2 rounded border border-primary/20 bg-background/20 px-2 py-1 text-[11px]">
                     <span>{String(source.name || "").replace(/_/g, " ")}</span>
                     <Badge variant={source.present && !source.stale ? "success" : source.present ? "warning" : "outline"}>
                       {source.present ? (source.stale ? "stale" : "present") : "missing"}
                     </Badge>
                   </div>
                 ))}
-                {!creativeSources.length ? <div className="text-xs text-fuchsia-50/70">Mind source evidence appears after the guardian runs.</div> : null}
+                {!creativeSources.length ? <div className="text-xs text-primary/70">Mind source evidence appears after the guardian runs.</div> : null}
               </div>
             </div>
-            <div className="rounded-md border border-fuchsia-300/25 bg-background/25 p-3">
-              <div className="mb-2 text-xs font-medium text-fuchsia-50">Creative Loop</div>
+            <div className="rounded-md border border-primary/25 bg-background/25 p-3">
+              <div className="mb-2 text-xs font-medium text-primary">Creative Loop</div>
               <div className="space-y-1">
                 {creativeLoop.slice(0, 6).map((step: JsonMap) => (
-                  <div key={step.step} className="rounded border border-fuchsia-300/20 bg-background/20 px-2 py-1 text-[11px]">
+                  <div key={step.step} className="rounded border border-primary/20 bg-background/20 px-2 py-1 text-[11px]">
                     <div className="font-medium">{String(step.step || "").replace(/_/g, " ")}</div>
-                    <div className="mt-1 text-fuchsia-50/70">{step.owner}</div>
+                    <div className="mt-1 text-primary/70">{step.owner}</div>
                   </div>
                 ))}
-                {!creativeLoop.length ? <div className="text-xs text-fuchsia-50/70">The creative loop is waiting for guardian evidence.</div> : null}
+                {!creativeLoop.length ? <div className="text-xs text-primary/70">The creative loop is waiting for guardian evidence.</div> : null}
               </div>
             </div>
-            <div className="rounded-md border border-fuchsia-300/25 bg-background/25 p-3">
-              <div className="mb-2 text-xs font-medium text-fuchsia-50">Role Process Sample</div>
+            <div className="rounded-md border border-primary/25 bg-background/25 p-3">
+              <div className="mb-2 text-xs font-medium text-primary">Role Process Sample</div>
               <div className="space-y-1">
                 {creativeRoleMap.slice(0, 6).map((role: JsonMap) => (
-                  <div key={role.role_id || role.title} className="flex items-center justify-between gap-2 rounded border border-fuchsia-300/20 bg-background/20 px-2 py-1 text-[11px]">
+                  <div key={role.role_id || role.title} className="flex items-center justify-between gap-2 rounded border border-primary/20 bg-background/20 px-2 py-1 text-[11px]">
                     <span>{role.title || role.role_id}</span>
                     <Badge variant={role.status === "creative_process_ready" ? "success" : "warning"}>
                       {role.status === "creative_process_ready" ? "ready" : "hold"}
                     </Badge>
                   </div>
                 ))}
-                {!creativeRoleMap.length ? <div className="text-xs text-fuchsia-50/70">Role contracts appear after the agent company registry is loaded.</div> : null}
+                {!creativeRoleMap.length ? <div className="text-xs text-primary/70">Role contracts appear after the agent company registry is loaded.</div> : null}
               </div>
               {creativeSnags.filter((snag: JsonMap) => snag.severity === "blocking").length ? (
-                <div className="mt-3 rounded border border-yellow-400/30 bg-yellow-500/10 px-2 py-1 text-[11px] text-yellow-50">
+                <div className="mt-3 rounded border border-warning/30 bg-warning/10 px-2 py-1 text-[11px] text-warning">
                   {creativeSnags.filter((snag: JsonMap) => snag.severity === "blocking").length} blocking creative-process snag(s)
                 </div>
               ) : null}
@@ -1670,11 +1670,11 @@ export function AureonCodingOrganismConsole() {
           </div>
         </div>
 
-        <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-3">
+        <div className="rounded-md border border-warning/30 bg-warning/10 p-3">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <div className="text-sm font-medium text-amber-50">Scope Of Works</div>
-              <div className="mt-1 text-xs text-amber-50/75">
+              <div className="text-sm font-medium text-warning">Scope Of Works</div>
+              <div className="mt-1 text-xs text-warning/75">
                 Aureon treats each prompt as a client job: scope first, team handoff second, HNC/Auris drift proof, then snagging before client handover.
               </div>
             </div>
@@ -1699,9 +1699,9 @@ export function AureonCodingOrganismConsole() {
           {clientQuestions.length ? (
             <div className="mt-3 space-y-2">
               {clientQuestions.map((question: JsonMap) => (
-                <div key={question.id} className="rounded-md border border-amber-400/30 bg-background/30 p-3">
-                  <div className="text-xs font-medium text-amber-50">{question.question}</div>
-                  <div className="mt-1 text-[11px] text-amber-50/70">{question.why_needed}</div>
+                <div key={question.id} className="rounded-md border border-warning/30 bg-background/30 p-3">
+                  <div className="text-xs font-medium text-warning">{question.question}</div>
+                  <div className="mt-1 text-[11px] text-warning/70">{question.why_needed}</div>
                   <Textarea
                     value={scopeAnswers[question.id] || ""}
                     onChange={(event) =>
@@ -1828,33 +1828,33 @@ export function AureonCodingOrganismConsole() {
         </div>
 
         {artifactItems.length ? (
-          <div className="rounded-md border border-lime-500/30 bg-lime-500/10 p-3">
+          <div className="rounded-md border border-success/30 bg-success/10 p-3">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-              <div className="text-sm font-medium text-lime-50">Finished Artifacts</div>
+              <div className="text-sm font-medium text-success">Finished Artifacts</div>
               <Badge variant="success">{artifactItems.length} visible</Badge>
             </div>
             <div className="grid gap-3 lg:grid-cols-2">
               {artifactItems.map((artifact) => (
-                <div key={artifact.url} className="rounded-md border border-lime-300/25 bg-background/30 p-3">
+                <div key={artifact.url} className="rounded-md border border-success/25 bg-background/30 p-3">
                   <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                    <div className="text-xs font-medium text-lime-50">{artifact.title}</div>
+                    <div className="text-xs font-medium text-success">{artifact.title}</div>
                     <a
                       href={artifact.url}
                       target="_blank"
                       rel="noreferrer"
-                      className="rounded-md border border-lime-300/40 px-2 py-1 text-[11px] text-lime-50 hover:bg-lime-400/10"
+                      className="rounded-md border border-success/40 px-2 py-1 text-[11px] text-success hover:bg-success/10"
                     >
                       Open Artifact
                     </a>
                   </div>
                   {artifact.kind === "image" ? (
-                    <img src={artifact.url} alt={artifact.title} className="max-h-[320px] w-full rounded border border-lime-300/20 bg-white object-contain" />
+                    <img src={artifact.url} alt={artifact.title} className="max-h-[320px] w-full rounded border border-success/20 bg-white object-contain" />
                   ) : artifact.kind === "video" ? (
-                    <video src={artifact.url} className="max-h-[320px] w-full rounded border border-lime-300/20 bg-black" controls />
+                    <video src={artifact.url} className="max-h-[320px] w-full rounded border border-success/20 bg-black" controls />
                   ) : (
-                    <div className="rounded border border-lime-300/20 bg-muted/20 p-3 font-mono text-[11px] text-muted-foreground">{artifact.url}</div>
+                    <div className="rounded border border-success/20 bg-muted/20 p-3 font-mono text-[11px] text-muted-foreground">{artifact.url}</div>
                   )}
-                  <div className="mt-2 truncate font-mono text-[10px] text-lime-50/70">{artifact.path || artifact.url}</div>
+                  <div className="mt-2 truncate font-mono text-[10px] text-success/70">{artifact.path || artifact.url}</div>
                 </div>
               ))}
             </div>
@@ -1905,7 +1905,7 @@ export function AureonCodingOrganismConsole() {
                 </Button>
               </div>
             </div>
-            {error ? <div className="rounded-md border border-red-500/30 bg-red-500/10 p-2 text-xs text-red-100">{error}</div> : null}
+            {error ? <div className="rounded-md border border-destructive/30 bg-destructive/10 p-2 text-xs text-destructive">{error}</div> : null}
           </div>
 
           <div className="space-y-2 rounded-md border border-border/40 bg-muted/10 p-3">
@@ -1920,42 +1920,42 @@ export function AureonCodingOrganismConsole() {
         </div>
 
         <div className="grid gap-3 lg:grid-cols-2">
-          <div className="space-y-2 rounded-md border border-emerald-500/30 bg-emerald-500/10 p-3">
+          <div className="space-y-2 rounded-md border border-success/30 bg-success/10 p-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="text-sm font-medium text-emerald-50">Finished Product Audit</div>
+              <div className="text-sm font-medium text-success">Finished Product Audit</div>
               <Badge variant={finalHandoverVisible ? "success" : "warning"}>
                 {finalHandoverVisible ? "ready for client" : "handover held"}
               </Badge>
             </div>
             {finalHandoverVisible ? (
               (productAudit.stages || []).slice(0, 8).map((stage: JsonMap) => (
-                <div key={stage.stage} className="flex items-center justify-between rounded-md border border-emerald-400/20 bg-background/30 px-3 py-2 text-xs">
+                <div key={stage.stage} className="flex items-center justify-between rounded-md border border-success/20 bg-background/30 px-3 py-2 text-xs">
                   <span>{String(stage.stage || "").replace(/_/g, " ")}</span>
-                  <span className={stage.ok ? "text-emerald-200" : "text-yellow-100"}>{stage.ok ? "pass" : "attention"}</span>
+                  <span className={stage.ok ? "text-success" : "text-warning"}>{stage.ok ? "pass" : "attention"}</span>
                 </div>
               ))
             ) : (
-              <div className="rounded-md border border-yellow-400/30 bg-yellow-500/10 p-3 text-xs text-yellow-50">
+              <div className="rounded-md border border-warning/30 bg-warning/10 p-3 text-xs text-warning">
                 Final handover is hidden until scope, route, proof, and snagging gates pass.
               </div>
             )}
             <div className="grid gap-2 sm:grid-cols-2">
               <div className="space-y-1">
-                <div className="text-[11px] uppercase text-emerald-50/70">Proof checklist</div>
+                <div className="text-[11px] uppercase text-success/70">Proof checklist</div>
                 {proofChecklist.slice(0, 6).map((item: JsonMap) => (
-                  <div key={item.id} className="flex items-center justify-between rounded border border-emerald-400/20 bg-background/20 px-2 py-1 text-[11px]">
+                  <div key={item.id} className="flex items-center justify-between rounded border border-success/20 bg-background/20 px-2 py-1 text-[11px]">
                     <span>{item.label}</span>
-                    <span className={item.ok ? "text-emerald-200" : "text-yellow-100"}>{item.ok ? "pass" : "hold"}</span>
+                    <span className={item.ok ? "text-success" : "text-warning"}>{item.ok ? "pass" : "hold"}</span>
                   </div>
                 ))}
               </div>
               <div className="space-y-1">
-                <div className="text-[11px] uppercase text-emerald-50/70">Snagging list</div>
+                <div className="text-[11px] uppercase text-success/70">Snagging list</div>
                 {snaggingList.slice(0, 6).map((snag: JsonMap) => (
-                  <div key={snag.id} className="rounded border border-emerald-400/20 bg-background/20 px-2 py-1 text-[11px]">
+                  <div key={snag.id} className="rounded border border-success/20 bg-background/20 px-2 py-1 text-[11px]">
                     <div className="flex items-center justify-between gap-2">
                       <span>{snag.title}</span>
-                      <span className={snag.severity === "blocking" ? "text-yellow-100" : "text-emerald-200"}>{snag.status}</span>
+                      <span className={snag.severity === "blocking" ? "text-warning" : "text-success"}>{snag.status}</span>
                     </div>
                   </div>
                 ))}
@@ -1963,9 +1963,9 @@ export function AureonCodingOrganismConsole() {
             </div>
           </div>
 
-          <div className="space-y-2 rounded-md border border-blue-500/30 bg-blue-500/10 p-3">
+          <div className="space-y-2 rounded-md border border-primary/30 bg-primary/10 p-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="text-sm font-medium text-blue-50">Desktop And Remote Run Handoff</div>
+              <div className="text-sm font-medium text-primary">Desktop And Remote Run Handoff</div>
               <Badge variant={desktopController.emergency_stopped ? "destructive" : "outline"}>
                 {desktopController.dry_run === false ? "live" : "dry run"}
               </Badge>
@@ -1975,7 +1975,7 @@ export function AureonCodingOrganismConsole() {
               <Mini label="Pending" value={(desktopController.pending_actions || []).length} />
               <Mini label="VM tools" value={desktop.remote_vm_control?.tool_count || 0} />
             </div>
-            <div className="text-xs text-blue-50/75">
+            <div className="text-xs text-primary/75">
               {desktop.safety?.desktop_default || "Desktop control is dry-run unless the operator arms it."}
             </div>
           </div>

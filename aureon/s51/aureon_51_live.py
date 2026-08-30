@@ -12,31 +12,39 @@ Strategy:
 - Compound profits back into balance
 """
 
-from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
+from aureon.core.aureon_baton_link import link_system as _baton_link
 import os
 import sys
 import json
 import time
 import asyncio
 import websockets
-from datetime import datetime
+from datetime import datetime, timezone
+import math
 from typing import Dict, List, Optional
 from dataclasses import dataclass
 from threading import Thread, Lock
 
-sys.path.insert(0, '/workspaces/aureon-trading')
 from aureon.exchanges.kraken_client import KrakenClient, get_kraken_client
 
-# � PENNY PROFIT ENGINE
-try:
-    from aureon.trading.penny_profit_engine import check_penny_exit, get_penny_engine
-    PENNY_PROFIT_AVAILABLE = True
-    _penny_engine = get_penny_engine()
-    print("🪙 Penny Profit Engine loaded")
-except ImportError:
-    PENNY_PROFIT_AVAILABLE = False
-    _penny_engine = None
-    print("⚠️ Penny Profit Engine not available - using percentage exits")
+PENNY_PROFIT_AVAILABLE = False
+_penny_engine = None
+
+
+def _load_penny_engine():
+    """Explicitly load the optional engine only when the live loop needs it."""
+    global PENNY_PROFIT_AVAILABLE, _penny_engine
+    if _penny_engine is not None:
+        return True
+    try:
+        if '/workspaces/aureon-trading' not in sys.path:
+            sys.path.insert(0, '/workspaces/aureon-trading')
+        from aureon.trading.penny_profit_engine import get_penny_engine
+        _penny_engine = get_penny_engine()
+        PENNY_PROFIT_AVAILABLE = _penny_engine is not None
+    except ImportError:
+        PENNY_PROFIT_AVAILABLE = False
+    return PENNY_PROFIT_AVAILABLE
 
 # �🧠 MINER BRAIN INTEGRATION
 try:
@@ -104,6 +112,8 @@ class ElephantMemory:
             'elephant_unified.json',
             'elephant_ultimate.json'
         ]
+        self._seen_receipt_ids = set()
+        self._seen_trade_ids = set()
         self.load()
     
     def load(self):
@@ -166,8 +176,77 @@ class ElephantMemory:
         
         self.save()
     
-    def record(self, symbol: str, profit_usd: float):
-        """Record trade result"""
+    @staticmethod
+    def _no_data(blocker):
+        return {
+            'status': 'no_data',
+            'truth_status': 'no_data',
+            'generated_values': False,
+            'eligible_for_learning': False,
+            'blocker': blocker,
+        }
+
+    @staticmethod
+    def _as_epoch(value):
+        try:
+            numeric = float(value)
+            return numeric if math.isfinite(numeric) and numeric > 0 else None
+        except (TypeError, ValueError):
+            pass
+        try:
+            parsed = datetime.fromisoformat(str(value).replace('Z', '+00:00'))
+            if parsed.tzinfo is None:
+                return None
+            numeric = parsed.timestamp()
+            return numeric if math.isfinite(numeric) and numeric > 0 else None
+        except (TypeError, ValueError):
+            return None
+
+    def record(self, symbol: str, receipt=None, max_age_sec: float = 300.0):
+        """Persist only fresh provider-observed closed-trade receipts."""
+        required = (
+            'receipt_id', 'provider', 'source_id', 'source_timestamp', 'received_at',
+            'terminal_status', 'trade_id', 'realized_pnl', 'fees', 'fee_currency',
+            'balance_after', 'truth_status', 'generated_values', 'eligible_for_learning',
+        )
+        if not isinstance(receipt, dict):
+            return self._no_data('missing_provider_receipt')
+        missing = [key for key in required if receipt.get(key) is None]
+        if missing:
+            return self._no_data('missing_receipt_fields:' + ','.join(missing))
+        if receipt['truth_status'] != 'real_observed' or receipt['generated_values'] is not False:
+            return self._no_data('untrusted_receipt')
+        if receipt['eligible_for_learning'] is not True:
+            return self._no_data('not_eligible_for_learning')
+        if str(receipt['terminal_status']).lower() not in {'closed', 'filled', 'settled'}:
+            return self._no_data('nonterminal_receipt')
+        try:
+            max_age_sec = float(max_age_sec)
+            realized_pnl = float(receipt['realized_pnl'])
+            fees = float(receipt['fees'])
+            balance_after = float(receipt['balance_after'])
+        except (TypeError, ValueError):
+            return self._no_data('malformed_receipt_numbers')
+        if not math.isfinite(max_age_sec) or max_age_sec <= 0 or not all(
+            math.isfinite(value) for value in (realized_pnl, fees, balance_after)
+        ):
+            return self._no_data('malformed_receipt_numbers')
+        source_timestamp = self._as_epoch(receipt['source_timestamp'])
+        received_at = self._as_epoch(receipt['received_at'])
+        now = time.time()
+        if source_timestamp is None or received_at is None:
+            return self._no_data('malformed_receipt_time')
+        if source_timestamp > now + 5 or received_at > now + 5:
+            return self._no_data('future_receipt')
+        if now - source_timestamp > max_age_sec or now - received_at > max_age_sec:
+            return self._no_data('stale_receipt')
+        receipt_id = str(receipt['receipt_id']).strip()
+        trade_id = str(receipt['trade_id']).strip()
+        if not receipt_id or not trade_id or not str(receipt['provider']).strip() or not str(receipt['source_id']).strip() or not str(receipt['fee_currency']).strip():
+            return self._no_data('malformed_receipt_identity')
+        if receipt_id in self._seen_receipt_ids or trade_id in self._seen_trade_ids:
+            return self._no_data('duplicate_receipt_or_trade')
+
         if symbol not in self.symbols:
             self.symbols[symbol] = {
                 'hunts': 0, 'trades': 0, 'wins': 0, 'losses': 0,
@@ -176,10 +255,10 @@ class ElephantMemory:
         
         s = self.symbols[symbol]
         s['trades'] += 1
-        s['profit'] += profit_usd
-        s['last_time'] = time.time()
+        s['profit'] += realized_pnl
+        s['last_time'] = received_at
         
-        if profit_usd >= 0:
+        if realized_pnl >= 0:
             s['wins'] += 1
             s['streak'] = 0
         else:
@@ -193,16 +272,34 @@ class ElephantMemory:
         try:
             with open(self.history_path, 'a') as f:
                 record = {
-                    'ts': datetime.now().isoformat(),
-                    'type': 'result',
+                    'type': 'provider_closed_trade',
                     'symbol': symbol,
-                    'profit': profit_usd
+                    'receipt_id': receipt_id,
+                    'trade_id': trade_id,
+                    'provider': receipt['provider'],
+                    'source_id': receipt['source_id'],
+                    'source_timestamp': receipt['source_timestamp'],
+                    'received_at': receipt['received_at'],
+                    'realized_pnl': realized_pnl,
+                    'fees': fees,
+                    'fee_currency': receipt['fee_currency'],
+                    'balance_after': balance_after,
                 }
                 f.write(json.dumps(record) + '\n')
         except:
             pass
         
         self.save()
+        self._seen_receipt_ids.add(receipt_id)
+        self._seen_trade_ids.add(trade_id)
+        return {
+            'status': 'ok',
+            'truth_status': 'real_observed',
+            'generated_values': False,
+            'eligible_for_learning': True,
+            'receipt_id': receipt_id,
+            'trade_id': trade_id,
+        }
     
     def should_avoid(self, symbol: str) -> bool:
         # Check local memory
@@ -572,7 +669,7 @@ class Aureon51Live:
             gross_pnl = current_value - pos.entry_value
             
             # 🪙 PENNY PROFIT EXIT LOGIC
-            if PENNY_PROFIT_AVAILABLE and _penny_engine is not None:
+            if _load_penny_engine() and _penny_engine is not None:
                 action, _ = check_penny_exit('kraken', pos.entry_value, current_value)
                 threshold = _penny_engine.get_threshold('kraken', pos.entry_value)
                 
@@ -612,7 +709,7 @@ class Aureon51Live:
         self.total_trades += 1
         
         # 🐘 Record result
-        self.memory.record(symbol, net_pnl)
+        self.memory.record(symbol)
         
         if net_pnl > 0:
             self.wins += 1

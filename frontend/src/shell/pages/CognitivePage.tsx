@@ -14,8 +14,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LiveDataNotice } from "@/shell/Page";
+import { type TruthStatus, TRUTH_STATUS_STYLE } from "../truthStatus";
 
-type TruthStatus = "live" | "real_derived" | "cached_real" | "no_data" | "test_fixture";
 
 interface Surface {
   truth_status: TruthStatus;
@@ -48,11 +48,11 @@ const SURFACE_META: Record<string, { label: string; icon: typeof Brain; blurb: s
 };
 
 const STATUS_STYLE: Record<TruthStatus, { cls: string; label: string }> = {
-  live: { cls: "bg-emerald-500/15 text-emerald-600 border-emerald-500/30", label: "live" },
-  real_derived: { cls: "bg-sky-500/15 text-sky-600 border-sky-500/30", label: "real · derived" },
-  cached_real: { cls: "bg-amber-500/15 text-amber-600 border-amber-500/30", label: "cached real" },
-  no_data: { cls: "bg-muted text-muted-foreground border-border", label: "no data" },
-  test_fixture: { cls: "bg-purple-500/15 text-purple-600 border-purple-500/30", label: "test fixture" },
+  live: { cls: TRUTH_STATUS_STYLE.live, label: "live" },
+  real_derived: { cls: TRUTH_STATUS_STYLE.real_derived, label: "real · derived" },
+  cached_real: { cls: TRUTH_STATUS_STYLE.cached_real, label: "cached real" },
+  no_data: { cls: TRUTH_STATUS_STYLE.no_data, label: "no data" },
+  test_fixture: { cls: TRUTH_STATUS_STYLE.test_fixture, label: "test fixture" },
 };
 
 function StatusBadge({ status }: { status: TruthStatus }) {

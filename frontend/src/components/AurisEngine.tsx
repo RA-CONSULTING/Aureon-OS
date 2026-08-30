@@ -204,7 +204,7 @@ export const AurisEngine: React.FC = () => {
 
         {isLiveActive && (
           <>
-            <Card className="border-2 border-blue-500 animate-pulse">
+            <Card className="border-2 border-primary animate-pulse">
               <CardHeader>
                 <CardTitle className="text-sm flex items-center justify-between">
                   Live Validation Metrics
@@ -284,7 +284,7 @@ export const AurisEngine: React.FC = () => {
         )}
 
         {lastBroadcast && (
-          <Card className={isLiveActive ? "border-green-500" : ""}>
+          <Card className={isLiveActive ? "border-success" : ""}>
             <CardHeader>
               <CardTitle className="text-sm">
                 {isLiveActive ? "Live Broadcast Result" : "Last Broadcast Result"}

@@ -1,72 +1,24 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Cross-domain harmonic bridge for neutral research simulations.
-
-The bridge aligns public-record geopolitical L(t) findings with synthetic
-plasma-coherence events inside the same temporal clustering framework.
-"""
-
-import sys
-import os
-
-if sys.platform == 'win32':
-    os.environ['PYTHONIOENCODING'] = 'utf-8'
-    try:
-        import io
-
-        def _is_utf8_wrapper(stream):
-            return (
-                isinstance(stream, io.TextIOWrapper)
-                and hasattr(stream, 'encoding')
-                and stream.encoding
-                and stream.encoding.lower().replace('-', '') == 'utf8'
-            )
-
-        if hasattr(sys.stdout, 'buffer') and not _is_utf8_wrapper(sys.stdout):
-            sys.stdout = io.TextIOWrapper(
-                sys.stdout.buffer,
-                encoding='utf-8',
-                errors='replace',
-                line_buffering=True,
-            )
-    except Exception:
-        pass
+"""Receipt-gated cross-domain harmonic clustering bridge."""
 
 import argparse
 import importlib.util
 import json
 import logging
-import sys as _sys
-import time as _time
+import math
+import time
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Dict, Optional, Sequence, Tuple
-
-
-def _load_geopolitical_module():
-    try:
-        from aureon.analytics import geopolitical_forensics as module  # type: ignore
-        return module
-    except Exception:
-        module_path = Path(__file__).with_name('geopolitical_forensics.py')
-        module_name = 'aureon.geopolitical_forensics'
-        spec = importlib.util.spec_from_file_location(module_name, module_path)
-        if spec is None or spec.loader is None:
-            raise ImportError(f'Unable to load {module_name} from {module_path}')
-        module = importlib.util.module_from_spec(spec)
-        _sys.modules[module_name] = module
-        spec.loader.exec_module(module)
-        return module
-
-
-_GEO = _load_geopolitical_module()
-GeopoliticalForensicsEngine = _GEO.GeopoliticalForensicsEngine
+from typing import Any, Dict, Optional, Sequence
 
 logger = logging.getLogger(__name__)
 
 DEFAULT_EXPECTED_WINDOW_SECONDS = 72 * 60
 DEFAULT_PLANETARY_NETWORK_PATH = Path(__file__).resolve().parents[1] / 'planetary_harmonic_network.json'
+MAX_RECEIPT_AGE_SECONDS = 300.0
+FUTURE_SKEW_SECONDS = 30.0
 
 
 @dataclass(frozen=True)
@@ -81,19 +33,35 @@ class DomainAnomaly:
     summary: str
     source: str
     metadata: Dict[str, object] = field(default_factory=dict)
+    source_id: Optional[str] = None
+    source_timestamp: Optional[float] = None
+    received_at: Optional[float] = None
+    receipt_id: Optional[str] = None
+    truth_status: str = 'no_data'
+    generated_values: bool = False
 
 
 @dataclass(frozen=True)
 class CrossDomainAnalysis:
     status: str
-    geo_count: int
-    plasma_count: int
-    avg_temporal_proximity_sec: int
-    clustering_score: float
+    geo_count: Optional[int]
+    plasma_count: Optional[int]
+    avg_temporal_proximity_sec: Optional[int]
+    clustering_score: Optional[float]
     interpretation: str
     note: str
 
     def to_dict(self) -> Dict[str, object]:
+        if self.status == 'no_data':
+            return {
+                'status': 'no_data',
+                'truth_status': 'no_data',
+                'generated_values': False,
+                'eligible_for_action': False,
+                'eligible_for_accounting': False,
+                'eligible_for_learning': False,
+                'note': self.note,
+            }
         return {
             'status': self.status,
             'geo_count': self.geo_count,
@@ -110,21 +78,63 @@ class HarmonicNexusBridge:
         self.expected_window_seconds = expected_window_seconds
         self.anomalies: list[DomainAnomaly] = []
 
-    def register(self, anomaly: DomainAnomaly) -> None:
+    @staticmethod
+    def _finite(value: Any) -> Optional[float]:
+        try:
+            number = float(value)
+        except (TypeError, ValueError):
+            return None
+        return number if math.isfinite(number) else None
+
+    def _valid_anomaly(self, anomaly: Any) -> bool:
+        if not isinstance(anomaly, DomainAnomaly):
+            return False
+        if (
+            anomaly.truth_status not in {'real_observed', 'real_derived'}
+            or anomaly.generated_values is not False
+            or not isinstance(anomaly.source_id, str) or not anomaly.source_id.strip()
+            or not isinstance(anomaly.receipt_id, str) or not anomaly.receipt_id.strip()
+            or not isinstance(anomaly.observed_at, datetime)
+        ):
+            return False
+        source_timestamp = self._finite(anomaly.source_timestamp)
+        received_at = self._finite(anomaly.received_at)
+        now = time.time()
+        if (
+            source_timestamp is None or received_at is None
+            or source_timestamp <= 0 or received_at <= 0
+            or source_timestamp > now + FUTURE_SKEW_SECONDS
+            or received_at > now + FUTURE_SKEW_SECONDS
+            or received_at < source_timestamp - FUTURE_SKEW_SECONDS
+            or now - source_timestamp > MAX_RECEIPT_AGE_SECONDS
+            or anomaly.observed_at.tzinfo is None
+            or abs(anomaly.observed_at.timestamp() - source_timestamp) > FUTURE_SKEW_SECONDS
+            or any(self._finite(value) is None for value in (
+                anomaly.lagrangian_score, anomaly.coherence, anomaly.energy_value,
+            ))
+        ):
+            return False
+        return bool(str(anomaly.anomaly_id).strip() and str(anomaly.domain).strip())
+
+    def register(self, anomaly: DomainAnomaly) -> bool:
+        """Record a complete fresh observation only; invalid input is inert."""
+        if not self._valid_anomaly(anomaly):
+            return False
         self.anomalies.append(anomaly)
+        return True
 
     def analyze(self) -> CrossDomainAnalysis:
         geo_events = [event for event in self.anomalies if event.domain == 'geopolitical']
         plasma_events = [event for event in self.anomalies if event.domain == 'plasma']
         if not geo_events or not plasma_events:
             return CrossDomainAnalysis(
-                status='InsufficientData',
-                geo_count=len(geo_events),
-                plasma_count=len(plasma_events),
-                avg_temporal_proximity_sec=0,
-                clustering_score=0.0,
+                status='no_data',
+                geo_count=None,
+                plasma_count=None,
+                avg_temporal_proximity_sec=None,
+                clustering_score=None,
                 interpretation='INCONCLUSIVE',
-                note='At least one geopolitical and one plasma anomaly are required.',
+                note='complete fresh geopolitical and plasma receipts are required.',
             )
 
         proximities = []
@@ -157,41 +167,6 @@ class HarmonicNexusBridge:
             note=note,
         )
 
-    def build_demo_anomalies(self) -> Tuple[DomainAnomaly, DomainAnomaly]:
-        geo_finding = GeopoliticalForensicsEngine().analyze('magamyman')[0]
-        base_time = datetime(2026, 2, 28, 1, 34, tzinfo=timezone.utc)
-        geo_event = DomainAnomaly(
-            anomaly_id=geo_finding.case.cluster_id,
-            domain='geopolitical',
-            observed_at=base_time,
-            lagrangian_score=geo_finding.lt_score,
-            coherence=geo_finding.case.coherence,
-            energy_value=geo_finding.case.energy_rate_per_minute_usd,
-            energy_unit='USD/min',
-            summary='Public-record geopolitical timing anomaly',
-            source='aureon.geopolitical_forensics',
-            metadata={'severity': geo_finding.case.severity},
-        )
-        plasma_event = DomainAnomaly(
-            anomaly_id='EPOS-SIM-001',
-            domain='plasma',
-            observed_at=base_time + timedelta(minutes=26),
-            lagrangian_score=5.0,
-            coherence=0.88,
-            energy_value=1.0,
-            energy_unit='W/m^3',
-            summary='Synthetic plasma coherence event for research validation',
-            source='simulation',
-            metadata={'mode': 'test-only'},
-        )
-        return geo_event, plasma_event
-
-    def run_demo(self) -> CrossDomainAnalysis:
-        self.anomalies.clear()
-        for anomaly in self.build_demo_anomalies():
-            self.register(anomaly)
-        return self.analyze()
-
     # ────────────────────────────────────────────────────────────
     # Planetary network injection
     # ────────────────────────────────────────────────────────────
@@ -210,15 +185,19 @@ class HarmonicNexusBridge:
         """
         network_path = Path(network_path or DEFAULT_PLANETARY_NETWORK_PATH)
 
-        # Load existing network (or start fresh skeleton)
+        validated = [a for a in self.anomalies if self._valid_anomaly(a) and a.domain == 'geopolitical']
+        if not validated:
+            return network_path
+
+        # Load existing network (or start fresh skeleton) without inventing source time.
         if network_path.exists():
             with open(network_path, encoding='utf-8') as fh:
                 network = json.load(fh)
         else:
             network = {
                 'metadata': {
-                    'sweep_timestamp': _time.time(),
-                    'sweep_date': datetime.now(timezone.utc).isoformat(),
+                    'sweep_timestamp': None,
+                    'sweep_date': None,
                     'total_entities': 0,
                     'total_signatures': 0,
                     'total_coordination_links': 0,
@@ -235,9 +214,7 @@ class HarmonicNexusBridge:
         }
 
         injected = 0
-        for anomaly in self.anomalies:
-            if anomaly.domain != 'geopolitical':
-                continue
+        for anomaly in validated:
             entity_name = anomaly.anomaly_id  # e.g. MAGAMYMAN-001
             if entity_name in existing_names:
                 continue
@@ -260,6 +237,12 @@ class HarmonicNexusBridge:
                 'lt_score': anomaly.lagrangian_score,
                 'severity': anomaly.metadata.get('severity', 'UNKNOWN'),
                 'source_module': 'aureon.harmonic_nexus_bridge',
+                'source_id': anomaly.source_id,
+                'source_timestamp': anomaly.source_timestamp,
+                'received_at': anomaly.received_at,
+                'receipt_id': anomaly.receipt_id,
+                'truth_status': anomaly.truth_status,
+                'generated_values': False,
             }
             network['harmonic_signatures'].append(sig)
             existing_names.add(entity_name)
@@ -269,7 +252,9 @@ class HarmonicNexusBridge:
         network['metadata']['total_signatures'] = len(network['harmonic_signatures'])
         entity_names = {s.get('entity_name') for s in network['harmonic_signatures']}
         network['metadata']['total_entities'] = len(entity_names)
-        network['metadata']['last_injection'] = datetime.now(timezone.utc).isoformat()
+        network['metadata']['last_injection_source_timestamp'] = max(
+            anomaly.source_timestamp for anomaly in validated
+        )
 
         # Atomic write
         network_path.parent.mkdir(parents=True, exist_ok=True)
@@ -342,21 +327,19 @@ class HarmonicNexusBridge:
 
 
 def _format_console_output(bridge: HarmonicNexusBridge, report: CrossDomainAnalysis) -> str:
-    geo_event, plasma_event = bridge.build_demo_anomalies()
     lines = [
         '=' * 70,
         'HARMONIC NEXUS BRIDGE - Cross-Domain Anomaly Fusion',
         'Research Mode: Geopolitical L(t) <-> Plasma Coherence',
         '=' * 70,
         '',
-        f'[GEO] Registered: L={geo_event.lagrangian_score:.2f}, Coherence={geo_event.coherence:.2f}, Energy=${geo_event.energy_value / 1000:.1f}k/min',
-        f'[PLASMA] Registered: L={plasma_event.lagrangian_score:.2f}, Coherence={plasma_event.coherence:.2f}, Density={plasma_event.energy_value:.1f} {plasma_event.energy_unit}',
+        f'Registered validated anomalies: {len(bridge.anomalies)}',
         '',
         '=' * 70,
         'CROSS-DOMAIN ANALYSIS',
         '=' * 70,
-        f'Temporal proximity: {report.avg_temporal_proximity_sec} seconds ({report.avg_temporal_proximity_sec // 60} minutes)',
-        f'Clustering score: {report.clustering_score:.2f}x expected',
+        f'Temporal proximity: {report.avg_temporal_proximity_sec} seconds' if report.avg_temporal_proximity_sec is not None else 'Temporal proximity: no_data',
+        f'Clustering score: {report.clustering_score:.2f}x expected' if report.clustering_score is not None else 'Clustering score: no_data',
         f'Assessment: {report.interpretation}',
         '',
         'NEXUS REPORT SUMMARY',
@@ -368,7 +351,11 @@ def _format_console_output(bridge: HarmonicNexusBridge, report: CrossDomainAnaly
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description='Run the harmonic nexus bridge demo.')
+    parser = argparse.ArgumentParser(description='Analyze receipt-bearing harmonic anomalies.')
+    parser.add_argument(
+        '--input-json', required=True,
+        help='JSON array of complete provider anomaly receipts.',
+    )
     parser.add_argument(
         '--expected-window-seconds',
         type=int,
@@ -391,7 +378,30 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     bridge = HarmonicNexusBridge(expected_window_seconds=args.expected_window_seconds)
-    report = bridge.run_demo()
+    try:
+        records = json.loads(Path(args.input_json).read_text(encoding='utf-8'))
+    except Exception as exc:
+        parser.error(f'input receipt file unavailable: {exc}')
+    for record in records if isinstance(records, list) else []:
+        if not isinstance(record, dict):
+            continue
+        observed_at = record.get('observed_at')
+        try:
+            observed = datetime.fromisoformat(str(observed_at).replace('Z', '+00:00'))
+        except (TypeError, ValueError):
+            continue
+        bridge.register(DomainAnomaly(
+            anomaly_id=str(record.get('anomaly_id') or ''), domain=str(record.get('domain') or ''),
+            observed_at=observed, lagrangian_score=record.get('lagrangian_score'),
+            coherence=record.get('coherence'), energy_value=record.get('energy_value'),
+            energy_unit=str(record.get('energy_unit') or ''), summary=str(record.get('summary') or ''),
+            source=str(record.get('source') or ''), metadata=dict(record.get('metadata') or {}),
+            source_id=record.get('source_id'), source_timestamp=record.get('source_timestamp'),
+            received_at=record.get('received_at'), receipt_id=record.get('receipt_id'),
+            truth_status=str(record.get('truth_status') or 'no_data'),
+            generated_values=record.get('generated_values'),
+        ))
+    report = bridge.analyze()
 
     if args.inject_planetary:
         net_path = bridge.inject_into_planetary_network(args.inject_planetary)

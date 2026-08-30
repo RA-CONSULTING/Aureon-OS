@@ -1,0 +1,134 @@
+{
+  "schema_version": "aureon.supabase.live_only_edge_function_archive.v1",
+  "project_ref": "siihxcwetdjdsrfdexmb",
+  "captured_at": "2026-08-11T22:18:19+01:00",
+  "capture_mode": "read_only_supabase_get_edge_function",
+  "source_normalization": "lf_with_single_final_newline",
+  "do_not_deploy": true,
+  "provider_mutated": false,
+  "provider_hash_readback_verified": true,
+  "function_count": 11,
+  "functions": [
+    {
+      "slug": "client-portal-api",
+      "provider_id": "a7a648d8-ea46-47c0-8d32-1349f49f12b9",
+      "provider_version": 4,
+      "provider_verify_jwt": false,
+      "provider_created_at": "2025-09-14T14:15:14.947Z",
+      "provider_updated_at": "2025-09-14T14:15:14.947Z",
+      "archive_path": "docs/evidence/supabase/edge-functions/20260811/client-portal-api.ts",
+      "archive_bytes": 3808,
+      "sha256": "5025e28637771c94ba3e099239d626ecf18dd4c7991c464ba1ab101b7ea4cc16"
+    },
+    {
+      "slug": "chronicle-data-manager",
+      "provider_id": "4d60bff6-3857-45f0-9608-b5d410a12844",
+      "provider_version": 4,
+      "provider_verify_jwt": false,
+      "provider_created_at": "2025-09-14T16:52:24.832Z",
+      "provider_updated_at": "2025-09-14T16:52:24.832Z",
+      "archive_path": "docs/evidence/supabase/edge-functions/20260811/chronicle-data-manager.ts",
+      "archive_bytes": 2823,
+      "sha256": "89dcc8a674bdd4080d662df643db3f4ec6b02ba879a07959364872c758893444"
+    },
+    {
+      "slug": "nexus-api-gateway",
+      "provider_id": "0cdcfe64-c50b-4505-8b43-e194a7de2b49",
+      "provider_version": 4,
+      "provider_verify_jwt": false,
+      "provider_created_at": "2025-09-15T06:10:39.087Z",
+      "provider_updated_at": "2025-09-15T06:10:39.087Z",
+      "archive_path": "docs/evidence/supabase/edge-functions/20260811/nexus-api-gateway.ts",
+      "archive_bytes": 7766,
+      "sha256": "c44b11cef0be723226dccccf0491c172c50fc17339497ac72762989dac8ab09e"
+    },
+    {
+      "slug": "spiritual-data-manager",
+      "provider_id": "fe25c03e-ccbc-42bb-8bce-d1a7afe01db7",
+      "provider_version": 7,
+      "provider_verify_jwt": false,
+      "provider_created_at": "2025-09-15T16:25:01.790Z",
+      "provider_updated_at": "2025-09-15T18:11:44.568Z",
+      "archive_path": "docs/evidence/supabase/edge-functions/20260811/spiritual-data-manager.ts",
+      "archive_bytes": 6469,
+      "sha256": "0a930d4f72753e7e3218a381d90e12ae2856d93998f6095814ef804114568fea"
+    },
+    {
+      "slug": "realtime-data-stream",
+      "provider_id": "ce2623c5-4d57-4251-b337-cc808f05565a",
+      "provider_version": 4,
+      "provider_verify_jwt": false,
+      "provider_created_at": "2025-09-15T20:45:54.427Z",
+      "provider_updated_at": "2025-09-15T20:45:54.427Z",
+      "archive_path": "docs/evidence/supabase/edge-functions/20260811/realtime-data-stream.ts",
+      "archive_bytes": 10365,
+      "sha256": "10a1b8e85c6083c53bcd3333a73d1cb35031afa68a7096d4a0ff7cafc40f6150"
+    },
+    {
+      "slug": "data-ingestion-pipeline",
+      "provider_id": "561a621a-6fbd-4277-b5a5-a0e43f8ca967",
+      "provider_version": 4,
+      "provider_verify_jwt": false,
+      "provider_created_at": "2025-09-15T20:47:58.584Z",
+      "provider_updated_at": "2025-09-15T20:47:58.584Z",
+      "archive_path": "docs/evidence/supabase/edge-functions/20260811/data-ingestion-pipeline.ts",
+      "archive_bytes": 10499,
+      "sha256": "dd1fe21e07985183231c2ac5701c09c7943c137acc8d4194f1ba7ca9829dc11e"
+    },
+    {
+      "slug": "backend-health-monitor",
+      "provider_id": "0e790974-03b9-46ca-93c5-8b6c2fc1a318",
+      "provider_version": 4,
+      "provider_verify_jwt": false,
+      "provider_created_at": "2025-09-15T22:47:02.211Z",
+      "provider_updated_at": "2025-09-15T22:47:02.211Z",
+      "archive_path": "docs/evidence/supabase/edge-functions/20260811/backend-health-monitor.ts",
+      "archive_bytes": 7990,
+      "sha256": "8ca76562cb238826bd1d298758b9bf95817064e076239d29f24587e1dab4e364"
+    },
+    {
+      "slug": "distributed-health-monitor",
+      "provider_id": "72dcfd76-8b6b-41e6-abb3-4d2c2f157977",
+      "provider_version": 4,
+      "provider_verify_jwt": false,
+      "provider_created_at": "2025-09-15T22:53:13.823Z",
+      "provider_updated_at": "2025-09-15T22:53:13.823Z",
+      "archive_path": "docs/evidence/supabase/edge-functions/20260811/distributed-health-monitor.ts",
+      "archive_bytes": 5983,
+      "sha256": "48ff5d8bb3b07a084efc4e7dccb5b6f5f3b3ece363773f145520bcd797cf38de"
+    },
+    {
+      "slug": "realtime-session-manager",
+      "provider_id": "98449a3d-da8e-441e-9c80-f4c5991f606a",
+      "provider_version": 4,
+      "provider_verify_jwt": false,
+      "provider_created_at": "2025-09-15T23:13:24.789Z",
+      "provider_updated_at": "2025-09-15T23:42:15.111Z",
+      "archive_path": "docs/evidence/supabase/edge-functions/20260811/realtime-session-manager.ts",
+      "archive_bytes": 4972,
+      "sha256": "d30a6db51d36762da16d5b6773625e7e1632ba528975b34bd304723732d7cdf9"
+    },
+    {
+      "slug": "realtime-sessions-api",
+      "provider_id": "d29ba7e3-c1fb-43f4-9248-b6169a7d5c94",
+      "provider_version": 4,
+      "provider_verify_jwt": false,
+      "provider_created_at": "2025-09-15T23:44:23.972Z",
+      "provider_updated_at": "2025-09-15T23:48:48.491Z",
+      "archive_path": "docs/evidence/supabase/edge-functions/20260811/realtime-sessions-api.ts",
+      "archive_bytes": 4466,
+      "sha256": "e8cf794b4b4dcedc30c56645ca500f91d76267614da6194eef0b54ce2cd54da0"
+    },
+    {
+      "slug": "nexus-database-api",
+      "provider_id": "6291175f-362a-4ce6-9f64-2f8039235989",
+      "provider_version": 3,
+      "provider_verify_jwt": false,
+      "provider_created_at": "2025-09-16T00:43:43.933Z",
+      "provider_updated_at": "2025-09-16T00:43:43.933Z",
+      "archive_path": "docs/evidence/supabase/edge-functions/20260811/nexus-database-api.ts",
+      "archive_bytes": 3283,
+      "sha256": "79a82fc6df8e22545f6380091a9397a02138637e85454246195ed811b3b5b524"
+    }
+  ]
+}

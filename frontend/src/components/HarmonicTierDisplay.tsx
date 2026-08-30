@@ -46,7 +46,7 @@ const HarmonicTierDisplay: React.FC<HarmonicTierDisplayProps> = ({
     <Card 
       key={emotion}
       className={`transition-all duration-300 ${
-        isActive ? 'ring-2 ring-blue-500 shadow-lg scale-105' : 'hover:shadow-md'
+        isActive ? 'ring-2 ring-primary shadow-lg scale-105' : 'hover:shadow-md'
       }`}
     >
       <CardHeader className="pb-2">
@@ -80,7 +80,7 @@ const HarmonicTierDisplay: React.FC<HarmonicTierDisplayProps> = ({
     <div className="space-y-6">
       {/* Prime Frequencies */}
       <div>
-        <h3 className="text-lg font-semibold mb-3 text-green-700">
+        <h3 className="text-lg font-semibold mb-3 text-success">
           ✨ Prime Frequencies (Positive States)
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -92,7 +92,7 @@ const HarmonicTierDisplay: React.FC<HarmonicTierDisplayProps> = ({
 
       {/* Shadow Frequencies */}
       <div>
-        <h3 className="text-lg font-semibold mb-3 text-red-700">
+        <h3 className="text-lg font-semibold mb-3 text-destructive">
           🌑 Shadow Frequencies (Challenge States)
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -110,27 +110,27 @@ const HarmonicTierDisplay: React.FC<HarmonicTierDisplayProps> = ({
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-purple-600"></div>
+              <div className="w-3 h-3 rounded-full bg-primary"></div>
               <span>Crown Prime (800-1000+ Hz)</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-indigo-600"></div>
+              <div className="w-3 h-3 rounded-full bg-primary"></div>
               <span>Third-Eye Prime (700-850 Hz)</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-green-600"></div>
+              <div className="w-3 h-3 rounded-full bg-success"></div>
               <span>Heart Prime (500-650 Hz)</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-blue-600"></div>
+              <div className="w-3 h-3 rounded-full bg-primary"></div>
               <span>Visionary Tier (400-750 Hz)</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-amber-600"></div>
+              <div className="w-3 h-3 rounded-full bg-warning"></div>
               <span>Social Prime (600-650 Hz)</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-emerald-600"></div>
+              <div className="w-3 h-3 rounded-full bg-success"></div>
               <span>Gaia Tier (400-450 Hz)</span>
             </div>
           </div>

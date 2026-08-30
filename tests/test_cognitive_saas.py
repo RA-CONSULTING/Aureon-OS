@@ -11,6 +11,7 @@ process is never started.
 from __future__ import annotations
 
 import json
+import time
 
 import pytest
 
@@ -27,12 +28,48 @@ from aureon.saas.cognitive import (
 )
 
 
+def _hnc_envelope(symbolic_life_score, coherence_gamma, consciousness_psi=0.7):
+    received_at = time.time()
+    return {
+        "data_status": "live",
+        "source": "hnc_live_daemon",
+        "source_id": "aureon:hnc:live_daemon",
+        "source_timestamp": received_at,
+        "received_at": received_at,
+        "ts": received_at,
+        "receipt_id": "hnc:live_field:test-cognitive-saas",
+        "receipt_type": "hnc_live_field",
+        "provider_receipt_type": "hnc_live_field",
+        "truth_status": "real_derived",
+        "generated_values": False,
+        "input_receipt_ids": ["test.provider:cognitive-saas"],
+        "freshness_status": "fresh",
+        "symbolic_life_score": symbolic_life_score,
+        "coherence_gamma": coherence_gamma,
+        "consciousness_psi": consciousness_psi,
+        "consciousness_level": "AWARE",
+        "lambda_t": symbolic_life_score,
+        "source_count": 1,
+        "operational_eligible": False,
+        "provider_eligible": False,
+        "action_eligible": False,
+        "actionable": False,
+        "accounting_eligible": False,
+        "learning_eligible": False,
+        "eligible_for_action": False,
+        "eligible_for_accounting": False,
+        "eligible_for_learning": False,
+        "equation_inputs_complete": True,
+        "action_gate_passed": False,
+        "action_gate_reason": "route_specific_market_link_required",
+    }
+
+
 def _bus_with_pulse() -> ThoughtBus:
     b = ThoughtBus()
     b.publish(Thought(
-        source="test", topic="symbolic.life.pulse",
-        payload={"symbolic_life_score": 0.72, "coherence_gamma": 1.18,
-                 "consciousness_level": "aware", "source": "test_pulse"},
+        source="hnc_live_daemon", topic="symbolic.life.pulse",
+        payload=_hnc_envelope(0.72, 0.88),
     ))
     b.publish(Thought(
         source="queen", topic="symbolic.life.subfield",
@@ -47,8 +84,21 @@ def test_field_surface_live_with_pulse():
     s = field_surface(_bus_with_pulse())
     assert s["truth_status"] == "live"
     assert s["canonical"]["available"] is True
+    assert s["canonical"]["source"] == "hnc_live_daemon"
+    assert s["canonical"]["evidence_transport"] == "thought_bus"
     assert s["subfields"]["count"] >= 1
     assert s["blended"]["available"] is True
+
+
+def test_field_surface_marks_validated_trace_as_cached_real(tmp_path, monkeypatch):
+    trace_path = tmp_path / "hnc_live_trace.jsonl"
+    trace_path.write_text(json.dumps(_hnc_envelope(0.61, 0.59)) + "\n", encoding="utf-8")
+    monkeypatch.setenv("AUREON_HNC_TRACE_PATH", str(trace_path))
+
+    s = field_surface(ThoughtBus(persist_path=None))
+    assert s["truth_status"] == "cached_real"
+    assert s["canonical"]["source"] == "hnc_live_daemon"
+    assert s["canonical"]["evidence_transport"] == "persisted_trace"
 
 
 def test_field_surface_no_data_on_empty_bus(monkeypatch):

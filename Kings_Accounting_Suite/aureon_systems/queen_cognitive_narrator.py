@@ -197,7 +197,7 @@ class CognitiveThought:
     thought_type: str  # analysis, decision, observation, warning, opportunity
     title: str
     paragraphs: List[str]
-    confidence: float
+    confidence: Optional[float]
     urgency: str  # low, medium, high, critical
     related_symbols: List[str] = field(default_factory=list)
     metrics: Dict = field(default_factory=dict)
@@ -473,7 +473,7 @@ class QueenCognitiveNarrator:
         paragraphs = []
 
         # Paragraph 1: Opening - Full Systems Check
-        intro = random.choice(self.broadcast_intros)
+        intro = self.broadcast_intros[len(self.thought_history) % len(self.broadcast_intros)]
         p1 = f"{intro} {self.user_name}, I'm initiating a full hive mind status report. "
         p1 += f"This is a complete neural systems check. All subsystems reporting in. "
         p1 += f"{time_context}"
@@ -726,7 +726,7 @@ class QueenCognitiveNarrator:
         paragraphs = []
 
         # Paragraph 1: BROADCAST OPENING - Personal address with news anchor style
-        intro = random.choice(self.broadcast_intros)
+        intro = self.broadcast_intros[len(self.thought_history) % len(self.broadcast_intros)]
         p1 = f"{intro} {time_context} Right now, {self.user_name}, I'm watching Bitcoin trade at ${ctx.btc_price:,.2f}, {mood_desc} with a {ctx.btc_change_24h:+.2f}% change over the past 24 hours. {mood_urgency}, {self.user_name}. "
 
         # Add market breadth from Binance WebSocket data
@@ -787,7 +787,7 @@ class QueenCognitiveNarrator:
 
         if hive_insights:
             # Pick 1-2 insights to keep it concise but rich
-            selected = random.sample(hive_insights, min(2, len(hive_insights)))
+            selected = hive_insights[:2]
             p3 = " ".join(selected)
             paragraphs.append(p3)
 
@@ -1094,8 +1094,7 @@ class QueenCognitiveNarrator:
 
         # Paragraph 3: Analysis - Batten Matrix status
         p3 = f"Before I commit your capital, {self.user_name}, this needs to pass the Batten Matrix. "
-        p3 += f"Current coherence score sits at {random.uniform(0.6, 0.9):.2f}, "
-        p3 += f"lambda stability showing {random.uniform(0.7, 0.95):.2f}. "
+        p3 += "Live coherence and lambda readings are required before this setup can clear the matrix. "
         if ctx.volatility_index > 0.6:
             p3 += f"Volatility is elevated, {self.user_name}, so I'll use tighter sizing and wider stops. "
         else:
@@ -1116,12 +1115,24 @@ class QueenCognitiveNarrator:
         p4 += f"Discipline separates us from gamblers, {self.user_name}. Queen Aureon, standing by."
         paragraphs.append(p4)
 
+        evidence_confidence = None
+        if ctx.elephant_best_win_rate or ctx.whale_signal_score:
+            evidence_confidence = max(
+                0.0,
+                min(
+                    1.0,
+                    0.5
+                    + 0.3 * (ctx.elephant_best_win_rate / 100.0 if ctx.elephant_best_win_rate else 0.0)
+                    + 0.2 * float(ctx.whale_signal_score or 0.0),
+                ),
+            )
+
         return CognitiveThought(
             timestamp=datetime.now(),
             thought_type="opportunity",
             title=f"📡 OPPORTUNITY ALERT: {symbol} {opportunity_type.title()}",
             paragraphs=paragraphs,
-            confidence=random.uniform(0.6, 0.85),
+            confidence=evidence_confidence,
             urgency="medium" if opportunity_type != "whale_wake" else "high",
             related_symbols=[symbol],
             metrics={
@@ -1185,8 +1196,9 @@ class QueenCognitiveNarrator:
         """Generate a contextual thought based on current state."""
         ctx = self.market_context
 
-        # Occasionally do a full hive status report (roughly every 5th thought)
-        if random.random() < 0.2:
+        # Emit a status report on a deterministic cadence; this controls only
+        # presentation timing and never fabricates a measurement.
+        if len(self.thought_history) % 5 == 0:
             return self.generate_hive_mind_status_report()
 
         # Choose thought type based on conditions

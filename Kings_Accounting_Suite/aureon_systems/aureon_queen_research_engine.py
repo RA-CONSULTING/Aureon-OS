@@ -517,10 +517,15 @@ class QueenResearchEngine:
             "Market sentiment analysis latest trends"
         ]
 
-        # Randomly research one continuous topic
-        import random
-        if random.random() > 0.7:  # 30% chance each cycle
-            topic = random.choice(continuous_topics)
+        # Deterministic round-robin scheduling. The findings themselves must
+        # still come from the live research providers used by queue_research.
+        pending_topics = {
+            query.query
+            for query in self.research_queue
+            if query.status == "pending"
+        }
+        topic = continuous_topics[self.research_count % len(continuous_topics)]
+        if topic not in pending_topics:
             self.queue_research(topic, priority=ResearchPriority.CONTINUOUS)
 
         logger.info(f"📊 Research Stats:")

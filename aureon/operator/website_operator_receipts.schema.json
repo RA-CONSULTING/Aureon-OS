@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aureonzorzatechnologies.pl/schemas/website-operator-receipts-v1.json",
+  "title": "Aureon Website Operator external receipts",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/ownerApproval"
+    },
+    {
+      "$ref": "#/$defs/hostingCapacity"
+    }
+  ],
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[A-Fa-f0-9]{64}$"
+    },
+    "ownerApproval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "decision",
+        "scope",
+        "package_sha256",
+        "approved_at",
+        "expires_at",
+        "approved_by"
+      ],
+      "properties": {
+        "schema": {
+          "const": "aureon.website-operator.owner-approval.v1"
+        },
+        "decision": {
+          "const": "approved"
+        },
+        "scope": {
+          "const": "static-website-release"
+        },
+        "package_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "approved_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "approved_by": {
+          "type": "string",
+          "minLength": 1
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    },
+    "hostingCapacity": {
+      "type": "object",
+      "required": [
+        "schema",
+        "observed_on",
+        "source",
+        "plan",
+        "provider_display",
+        "policy"
+      ],
+      "properties": {
+        "schema": {
+          "const": "aureon.website-operator.hosting-capacity.v1"
+        },
+        "observed_on": {
+          "type": "string",
+          "format": "date"
+        },
+        "source": {
+          "const": "authenticated-owner-panel"
+        },
+        "policy": {
+          "const": "capacity-is-context-not-budget"
+        }
+      }
+    }
+  }
+}

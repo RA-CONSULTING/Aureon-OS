@@ -45,7 +45,12 @@ def test_murge_runtime_activation_health_probe_can_certify_local_services() -> N
     def probe(url: str) -> dict:
         return {"url": url, "ok": True, "status_code": 200, "round_trip_ms": 1.0}
 
-    report = build_runtime_activation_stress_audit(probe_services=True, http_probe=probe, env={})
+    report = build_runtime_activation_stress_audit(
+        probe_services=True,
+        http_probe=probe,
+        port_probe=lambda host, port: host == "127.0.0.1" and port > 0,
+        env={},
+    )
 
     assert report["summary"]["web_health_passed"] is True
     assert report["summary"]["runtime_health_passed"] is True

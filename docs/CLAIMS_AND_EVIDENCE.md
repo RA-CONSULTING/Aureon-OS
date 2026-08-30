@@ -4,6 +4,15 @@ Every bold claim Aureon / HNC makes, with a direct link to the file that proves 
 
 > **How to use this table:** The middle column tells you *where the claim was established*. The right column gives you the *Python module, dataset, or paper section* that lets you reproduce it. Start with any row that interests you — all claims cross-reference.
 
+> **Prove it in one command.** To verify the running system end-to-end rather than a single claim, boot the operator app and exercise the full capability surface + every self-test (including the 45 Tier-A architectural invariants) in one shot:
+>
+> ```bash
+> AUREON_LLM_OFFLINE=1 AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS=1 \
+>   python -m aureon.saas.capability_demo --report docs/reports/CAPABILITY_DEMO.md
+> ```
+>
+> Exit 0 means every capability class is proven, every rolled-up suite is green, coverage is complete, and all 45 Tier-A invariants pass. The written report is [`docs/reports/CAPABILITY_DEMO.md`](reports/CAPABILITY_DEMO.md). Read-only; nothing is armed; an offline / unconfigured capability reports *honest_unavailable*, never a fabricated value.
+
 ---
 
 ## Core Quantitative Claims
@@ -51,6 +60,22 @@ Every bold claim Aureon / HNC makes, with a direct link to the file that proves 
 
 ---
 
+## Adaptive-Direction Integrity Claims (falsifiable, benchmarked)
+
+The adaptive logic is *directed by the HNC and Auris nodes* — and the MCP connection is a *real,
+integrity-checked wire*, not a metaphor. Each claim is a Tier-A benchmark in
+[`tests/benchmarks/benchmark_aureon_scope.py`](../tests/benchmarks/benchmark_aureon_scope.py); reproduce
+with `python tests/benchmarks/benchmark_aureon_scope.py` (status lands in `report.json`).
+
+| # | Claim | Value | Code / benchmark |
+|---|-------|-------|------------------|
+| D1 | Logic flows HNC → decision on one unbroken trace | pulse → `read_canonical_field` → decision, **single trace_id** | [`aureon/cognition/logic_flow.py`](../aureon/cognition/logic_flow.py) · **b40** |
+| D2 | Every adaptive consumer reads the ONE canonical field | **5/5 directed** (was 1/5) — Kelly, miner, Seer, base Queen, conscience | [`aureon/bio/hnc_direction_audit.py`](../aureon/bio/hnc_direction_audit.py) · **b41** · before/after in [audit](research/audits/HNC_AURIS_DIRECTION_AUDIT_2026-07-24.md) |
+| D3 | MCP connection is a live wire through the membrane | tool calls sealed out / screened in / guarded dispatch; laminar round-trip | [`aureon/bio/mcp_transport.py`](../aureon/bio/mcp_transport.py) · **b42** · [`MCP_BOUNDARY_MEMBRANE`](architecture/MCP_BOUNDARY_MEMBRANE.md) |
+| D4 | The canonical field is load-bearing, not just referenced | **5/5 consumers** move when the field is set low→high (Kelly buffer widens, conscience VETO→CONCERN, Seer/Queen/miner shift) | [`aureon/bio/direction_runtime.py`](../aureon/bio/direction_runtime.py) · **b43** |
+
+---
+
 ## Ancient Substrate / Archaeo-Harmonic Claims
 
 | # | Claim | Value | Source paper |
@@ -85,8 +110,8 @@ If you want to verify the *single most important claim* (C1: r=0.85 oil↔node c
 
 ```bash
 # 1. Clone the repo (this itself contributes to node-activation data!)
-git clone https://github.com/RA-CONSULTING/aureon-trading.git
-cd aureon-trading
+git clone https://github.com/RA-CONSULTING/Aureon-OS.git
+cd Aureon-OS
 
 # 2. Read the methodology
 open docs/research/AUREON_WHITE_PAPER_RESEARCH_HUB.md   # §3 Methodology

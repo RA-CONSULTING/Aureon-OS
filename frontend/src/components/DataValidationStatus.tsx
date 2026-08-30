@@ -41,17 +41,17 @@ export function DataValidationStatus({ className = '', compact = false }: DataVa
 
   const getStatusColor = (status: 'healthy' | 'degraded' | 'critical') => {
     switch (status) {
-      case 'healthy': return 'text-green-400';
-      case 'degraded': return 'text-yellow-400';
-      case 'critical': return 'text-red-400';
+      case 'healthy': return 'text-success';
+      case 'degraded': return 'text-warning';
+      case 'critical': return 'text-destructive';
     }
   };
 
   const getStatusIcon = (status: 'healthy' | 'degraded' | 'critical') => {
     switch (status) {
-      case 'healthy': return <CheckCircle className="w-4 h-4 text-green-400" />;
-      case 'degraded': return <AlertTriangle className="w-4 h-4 text-yellow-400" />;
-      case 'critical': return <XCircle className="w-4 h-4 text-red-400" />;
+      case 'healthy': return <CheckCircle className="w-4 h-4 text-success" />;
+      case 'degraded': return <AlertTriangle className="w-4 h-4 text-warning" />;
+      case 'critical': return <XCircle className="w-4 h-4 text-destructive" />;
     }
   };
 
@@ -72,7 +72,7 @@ export function DataValidationStatus({ className = '', compact = false }: DataVa
           DATA {health.status.toUpperCase()}
         </span>
         {hasStale && (
-          <Badge variant="outline" className="text-yellow-400 border-yellow-400/50 text-[10px] px-1">
+          <Badge variant="outline" className="text-warning border-warning/50 text-[10px] px-1">
             STALE
           </Badge>
         )}
@@ -97,8 +97,8 @@ export function DataValidationStatus({ className = '', compact = false }: DataVa
             <div className="w-24 h-2 bg-background rounded-full overflow-hidden">
               <div 
                 className={`h-full transition-all duration-500 ${
-                  health.status === 'healthy' ? 'bg-green-500' :
-                  health.status === 'degraded' ? 'bg-yellow-500' : 'bg-red-500'
+                  health.status === 'healthy' ? 'bg-success' :
+                  health.status === 'degraded' ? 'bg-warning' : 'bg-destructive'
                 }`}
                 style={{ width: `${health.score * 100}%` }}
               />
@@ -123,11 +123,11 @@ export function DataValidationStatus({ className = '', compact = false }: DataVa
               >
                 <div className="flex items-center gap-2">
                   {status.isStale ? (
-                    <Clock className="w-3 h-3 text-yellow-400" />
+                    <Clock className="w-3 h-3 text-warning" />
                   ) : status.consecutiveErrors > 0 ? (
-                    <XCircle className="w-3 h-3 text-red-400" />
+                    <XCircle className="w-3 h-3 text-destructive" />
                   ) : (
-                    <Zap className="w-3 h-3 text-green-400" />
+                    <Zap className="w-3 h-3 text-success" />
                   )}
                   <span className="text-xs font-medium uppercase">{status.exchange}</span>
                 </div>
@@ -138,7 +138,7 @@ export function DataValidationStatus({ className = '', compact = false }: DataVa
                   </span>
                   <span>{formatTimestamp(status.lastValidTimestamp)}</span>
                   {status.errorCount > 0 && (
-                    <Badge variant="outline" className="text-red-400 border-red-400/50 text-[10px] px-1">
+                    <Badge variant="outline" className="text-destructive border-destructive/50 text-[10px] px-1">
                       {status.errorCount} err
                     </Badge>
                   )}
@@ -150,9 +150,9 @@ export function DataValidationStatus({ className = '', compact = false }: DataVa
 
         {/* Stale Data Warning */}
         {hasStale && (
-          <div className="flex items-center gap-2 p-2 bg-yellow-500/10 rounded border border-yellow-500/30">
-            <AlertTriangle className="w-4 h-4 text-yellow-400" />
-            <span className="text-xs text-yellow-400">
+          <div className="flex items-center gap-2 p-2 bg-warning/10 rounded border border-warning/30">
+            <AlertTriangle className="w-4 h-4 text-warning" />
+            <span className="text-xs text-warning">
               Some exchanges have stale data (&gt;30s old)
             </span>
           </div>

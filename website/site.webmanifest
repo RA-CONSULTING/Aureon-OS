@@ -1,0 +1,31 @@
+{
+  "name": "Aureon Zorza Technologies",
+  "short_name": "Aureon Zorza",
+  "description": "Research-led systems company developing the proposed HNC grammar, Aureon OS software organism, Evidence OS control plane and evidence-gated deep-tech programmes.",
+  "lang": "en-GB",
+  "dir": "ltr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "browser",
+  "background_color": "#08111f",
+  "theme_color": "#08111f",
+  "categories": [
+    "business",
+    "productivity",
+    "education"
+  ],
+  "icons": [
+    {
+      "src": "/assets/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

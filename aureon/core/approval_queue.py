@@ -77,7 +77,8 @@ class ApprovalQueue:
 
     # ── decide (the human gate; records only, never executes) ───────────────
     def decide(self, item_id: str, decision: str, approver: str = "gary",
-               note: str = "") -> dict[str, Any] | None:
+               note: str = "", *,
+               auth_context: dict[str, Any] | None = None) -> dict[str, Any] | None:
         """Record the human's approve/reject. This is the gate — it does NOT execute
         the move. Returns the updated item, or None if unknown/already decided."""
         try:
@@ -87,13 +88,28 @@ class ApprovalQueue:
             item = self.get(item_id)
             if item is None or item.get("status") != _OPEN:
                 return None
+            auth = dict(auth_context or {})
+            identity_kind = str(auth.get("identity_kind") or "").strip()
+            authn_method = str(auth.get("authn_method") or "").strip()
+            approval_auth = (
+                {
+                    "authenticated": True,
+                    "identity_kind": identity_kind,
+                    "authn_method": authn_method,
+                }
+                if identity_kind and authn_method else {
+                    "authenticated": False,
+                    "identity_kind": "",
+                    "authn_method": "",
+                }
+            )
             self._append({
                 "event": "decided", "id": item_id, "kind": item.get("kind"),
                 "summary": item.get("summary"), "params": item.get("params"),
                 "prepared_by": item.get("prepared_by"), "risk": item.get("risk"),
                 "requires_human": True, "status": status, "note": str(note)[:400],
                 "approver": str(approver), "created_at": item.get("created_at"),
-                "decided_at": time.time(),
+                "decided_at": time.time(), "approval_auth": approval_auth,
             })
             return self.get(item_id)
         except Exception as exc:  # noqa: BLE001

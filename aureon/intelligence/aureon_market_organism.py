@@ -51,17 +51,170 @@
 ╚══════════════════════════════════════════════════════════════════════════════╝
 """
 
-from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
-
+import hashlib
 import math
 import time
 import logging
 import statistics
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Set, Tuple, Union
 
 logger = logging.getLogger("market_organism")
+
+MAX_RECEIPT_AGE_SECONDS = 120.0
+MAX_CLOCK_SKEW_SECONDS = 5.0
+REAL_TRUTH_STATUSES = frozenset({"real_observed", "real_derived"})
+
+
+def _finite(
+    value: Any,
+    *,
+    positive: bool = False,
+    nonnegative: bool = False,
+) -> Optional[float]:
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    if not math.isfinite(number):
+        return None
+    if positive and number <= 0.0:
+        return None
+    if nonnegative and number < 0.0:
+        return None
+    return number
+
+
+def _normalise_symbol(value: Any) -> str:
+    return str(value or "").strip().upper().replace("/", "").replace("-", "")
+
+
+def _no_data(reason: str) -> "MarketNoData":
+    return MarketNoData(reason=reason)
+
+
+@dataclass(frozen=True)
+class MarketNoData:
+    """Numeric-free fail-closed result for missing or untrusted evidence."""
+
+    reason: str
+    data_status: str = "no_data"
+    truth_status: str = "no_data"
+    source_id: Optional[str] = None
+    source_timestamp: Optional[float] = None
+    received_at: Optional[float] = None
+    receipt_id: Optional[str] = None
+    generated_values: bool = False
+    generated: bool = False
+    evidence_complete: bool = False
+    actionable: bool = False
+    accounting_eligible: bool = False
+    learning_eligible: bool = False
+    state_mutated: bool = False
+
+
+@dataclass(frozen=True)
+class _ValidatedReceipt:
+    source_id: str
+    source_timestamp: float
+    received_at: float
+    receipt_id: str
+    symbol: str
+    payload: Mapping[str, Any]
+
+
+@dataclass(frozen=True)
+class _ValidatedBundle:
+    current: _ValidatedReceipt
+    volumes: Tuple[_ValidatedReceipt, ...]
+    prices: Tuple[_ValidatedReceipt, ...]
+
+    @property
+    def input_receipt_ids(self) -> Tuple[str, ...]:
+        return tuple(
+            receipt.receipt_id
+            for receipt in (*self.volumes, *self.prices, self.current)
+        )
+
+
+def _validate_provider_receipt(
+    receipt: Any,
+    *,
+    symbol: str,
+    now: float,
+) -> Optional[_ValidatedReceipt]:
+    if not isinstance(receipt, Mapping):
+        return None
+    source_id = str(receipt.get("source_id") or "").strip()
+    receipt_id = str(receipt.get("receipt_id") or "").strip()
+    source_timestamp = _finite(receipt.get("source_timestamp"), positive=True)
+    received_at = _finite(receipt.get("received_at"), positive=True)
+    receipt_symbol = _normalise_symbol(receipt.get("symbol"))
+    if (
+        not source_id
+        or not receipt_id
+        or source_timestamp is None
+        or received_at is None
+        or receipt_symbol != _normalise_symbol(symbol)
+        or receipt.get("data_status") != "live"
+        or receipt.get("truth_status") not in REAL_TRUTH_STATUSES
+        or receipt.get("generated_values") is not False
+        or receipt.get("generated") is not False
+        or source_timestamp > received_at + MAX_CLOCK_SKEW_SECONDS
+        or received_at > now + MAX_CLOCK_SKEW_SECONDS
+        or now - source_timestamp > MAX_RECEIPT_AGE_SECONDS
+        or now - received_at > MAX_RECEIPT_AGE_SECONDS
+    ):
+        return None
+    return _ValidatedReceipt(
+        source_id=source_id,
+        source_timestamp=source_timestamp,
+        received_at=received_at,
+        receipt_id=receipt_id,
+        symbol=receipt_symbol,
+        payload=receipt,
+    )
+
+
+def _validate_receipt_sequence(
+    receipts: Any,
+    *,
+    symbol: str,
+    now: float,
+    value_field: str,
+    minimum: int,
+) -> Optional[Tuple[_ValidatedReceipt, ...]]:
+    if not isinstance(receipts, Sequence) or isinstance(receipts, (str, bytes)):
+        return None
+    if len(receipts) < minimum:
+        return None
+    validated: List[_ValidatedReceipt] = []
+    seen_ids: Set[str] = set()
+    previous_timestamp: Optional[float] = None
+    for raw in receipts:
+        receipt = _validate_provider_receipt(raw, symbol=symbol, now=now)
+        if receipt is None:
+            return None
+        value = _finite(receipt.payload.get(value_field), positive=True)
+        if (
+            value is None
+            or receipt.receipt_id in seen_ids
+            or (
+                previous_timestamp is not None
+                and receipt.source_timestamp <= previous_timestamp
+            )
+        ):
+            return None
+        validated.append(receipt)
+        seen_ids.add(receipt.receipt_id)
+        previous_timestamp = receipt.source_timestamp
+    return tuple(validated)
+
+
+def _derived_receipt_id(input_receipt_ids: Sequence[str]) -> str:
+    digest = hashlib.sha256("\n".join(input_receipt_ids).encode("utf-8")).hexdigest()
+    return f"market-organism:{digest}"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # SACRED CONSTANTS (mirrored — never import back into subsystems)
@@ -1231,157 +1384,3 @@ def get_organism() -> GlobalMarketOrganism:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# DEMO / SELF-TEST
-# ─────────────────────────────────────────────────────────────────────────────
-
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO,
-                        format="%(asctime)s [%(name)s] %(message)s")
-
-    print("\n" + "═" * 72)
-    print("  👑🌍  GLOBAL MARKET ORGANISM — SELF TEST")
-    print("═" * 72)
-
-    # ── Build a multi-asset ecosystem scenario ────────────────────────────────
-    # Scenario: BTC is being pumped (coordinated), ETH is clean, XRP has a live P&D
-    market_data_map = {
-        "BTC": {
-            "price_change_24h_pct":  +28.5,   # Massive move
-            "volume_24h_usd":        180_000_000_000,  # 4.5x normal ($40B baseline)
-            "bid_ask_spread_pct":    0.012,
-            "order_book_depth_usd":  8_000_000,
-            "trend_persistence":     3,
-            "is_organic_growth":     False,
-            "bot_order_ratio":       0.62,
-            "entity_coordination":   0.75,
-            "round_number_order_pct": 0.45,
-        },
-        "ETH": {
-            "price_change_24h_pct":  +4.2,
-            "volume_24h_usd":        21_000_000_000,
-            "bid_ask_spread_pct":    0.015,
-            "order_book_depth_usd":  3_500_000,
-            "trend_persistence":     5,
-            "is_organic_growth":     True,
-            "bot_order_ratio":       0.28,
-            "entity_coordination":   0.15,
-        },
-        "XRP": {
-            "price_change_24h_pct":  +155.0,  # Extreme — active pump
-            "volume_24h_usd":        9_000_000_000,  # 6x normal
-            "bid_ask_spread_pct":    0.025,
-            "order_book_depth_usd":  1_200_000,
-            "trend_persistence":     2,
-            "is_organic_growth":     False,
-            "bot_order_ratio":       0.78,
-            "entity_coordination":   0.88,
-            "round_number_order_pct": 0.60,
-        },
-        "SOL": {
-            "price_change_24h_pct":  +2.1,
-            "volume_24h_usd":        2_800_000_000,
-            "bid_ask_spread_pct":    0.018,
-            "order_book_depth_usd":  2_100_000,
-            "trend_persistence":     8,
-            "is_organic_growth":     True,
-            "bot_order_ratio":       0.22,
-        },
-    }
-
-    # Volume histories — BTC and XRP have recent spikes vs flat baseline
-    volume_history_map = {
-        "BTC": [38_000_000_000] * 25 + [42_000_000_000] * 5,   # Stable then spike
-        "ETH": [19_000_000_000 + i * 50_000_000 for i in range(30)],
-        "XRP": [1_500_000_000] * 28 + [2_000_000_000, 3_000_000_000],  # pre-pump
-        "SOL": [2_600_000_000] * 30,
-    }
-
-    # Price histories — XRP staircases up artificially
-    import random; random.seed(42)
-    xrp_prices = [0.50 + i * 0.003 + random.uniform(-0.001, 0.001) for i in range(30)]
-    price_history_map = {
-        "BTC": [65_000 + i * 200 + random.uniform(-100, 100) for i in range(30)],
-        "ETH": [3_200 + i * 15 + random.uniform(-10, 10)     for i in range(30)],
-        "XRP": xrp_prices,
-        "SOL": [170 + i * 0.5 + random.uniform(-0.3, 0.3)    for i in range(30)],
-    }
-
-    # ── Run organism sense ────────────────────────────────────────────────────
-    organism = get_organism()
-    report   = organism.sense_ecosystem(market_data_map, volume_history_map, price_history_map)
-
-    print(f"\n  Nodes monitored : {report.nodes_monitored}")
-    print(f"  Nodes active    : {report.nodes_active}")
-    print(f"  Health score    : {report.organism_health_score:.3f}")
-    print(f"  Organic flow    : {report.organic_flow_score:.3f}")
-    print(f"  Manipulation idx: {report.manipulation_index:.3f}")
-    print(f"  Dominant Hz     : {report.dominant_hz:.0f} Hz")
-    print(f"  Posture         : {report.recommended_posture.upper()}")
-
-    if report.manipulation_hotspots:
-        print("\n  ⚠  MANIPULATION HOTSPOTS:")
-        for h in report.manipulation_hotspots:
-            print(f"    {h.symbol:<6}  organic={h.organic_score:.2f}  "
-                  f"verdict={h.verdict}  phase={h.pump_dump_phase.value}")
-            for ev in h.evidence[:2]:
-                print(f"           ↳ {ev}")
-
-    if report.active_pump_dumps:
-        print("\n  🚨 ACTIVE PUMP & DUMP OPERATIONS:")
-        for pd in report.active_pump_dumps:
-            print(f"    {pd['symbol']:<6}  PHASE: {pd['phase'].upper():<14}  "
-                  f"organic={pd['organic_score']:.2f}")
-            for ev in pd["evidence"]:
-                print(f"           ↳ {ev}")
-
-    if report.contagion_alerts:
-        print("\n  🔴 CONTAGION ALERTS:")
-        for alert in report.contagion_alerts:
-            print(f"    {alert}")
-
-    print(f"\n  GRAND VERDICT:\n  {report.grand_verdict}")
-
-    # ── Now plug the sixth sense into the sensory framework ───────────────────
-    print("\n" + "─" * 72)
-    print("  SIXTH SENSE — ManipulationChannel in QueenSensorySystem")
-    print("─" * 72)
-
-    register_manipulation_sense()
-
-    from aureon.intelligence.aureon_sensory_framework import get_queen_senses, SensoryStimulus
-    senses   = get_queen_senses()
-
-    stimulus = SensoryStimulus(
-        symbol="XRP",
-        timeframe="24h",
-        market_data=market_data_map["XRP"],
-        raw_data={
-            "volume_history_30d": volume_history_map["XRP"],
-            "price_history_30d":  price_history_map["XRP"],
-        },
-    )
-
-    print(f"\n  Sensing XRP through all {len(senses.registry.all_channels)} channels...")
-    rainbow = senses.sense_all(stimulus)
-
-    print(f"\n  Channels active : {rainbow.channels_active}")
-    print(f"  Mean quality    : {rainbow.mean_quality:.3f}")
-    print(f"  Mean valence    : {rainbow.mean_valence:+.3f}")
-    print(f"  Dominant Hz     : {rainbow.dominant_hz:.0f} Hz")
-    print()
-    print("  Rainbow spectrum:")
-    print(rainbow.rainbow_string)
-
-    manip_exp = rainbow.experiences.get("manipulation")
-    if manip_exp:
-        print(f"\n  ⚡ SIXTH SENSE READING (manipulation channel):")
-        print(f"    Hz       : {manip_exp.hz:.0f} Hz")
-        print(f"    Quality  : {manip_exp.quality:.3f}  (organic score)")
-        print(f"    Valence  : {manip_exp.valence:+.3f}")
-        print(f"    State    : {manip_exp.emotional_state}")
-        print(f"    Action   : {manip_exp.action_hint}")
-        print(f"    → {manip_exp.description}")
-
-    print(f"\n  Grand verdict: {rainbow.grand_verdict}")
-    print(f"  Action       : {rainbow.action}")
-    print("\n" + "═" * 72 + "\n")

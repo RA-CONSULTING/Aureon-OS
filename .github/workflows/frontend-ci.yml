@@ -46,7 +46,7 @@ jobs:
       - name: Install Playwright chromium
         run: npx playwright install --with-deps chromium
       - name: Shell smoke E2E (backend-independent)
-        run: npx playwright test tests/shell-smoke.spec.ts --project=chromium --reporter=line
+        run: npx playwright test tests/shell-smoke.spec.ts tests/live-data.spec.ts --project=chromium --reporter=line
 
   ratchet:
     name: whole-frontend lint + typecheck (informational)

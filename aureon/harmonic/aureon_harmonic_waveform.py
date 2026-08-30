@@ -68,7 +68,7 @@ import json
 import time
 import math
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Any
+from typing import Dict, List, Optional, Tuple, Any, Mapping
 from datetime import datetime
 from decimal import Decimal, ROUND_DOWN
 from enum import Enum
@@ -107,6 +107,7 @@ SCHUMANN = 7.83                         # Hz - Earth's heartbeat
 LOVE_FREQ = 528                         # Hz - DNA repair frequency
 UNIVERSAL_A = 432                       # Hz - Universal tuning
 SOLFEGGIO = [174, 285, 396, 417, 528, 639, 741, 852, 963]  # Healing frequencies
+PROVIDER_RECEIPT_TTL_SECONDS = 300.0
 
 
 class WavePhase(Enum):
@@ -164,6 +165,17 @@ class HarmonicNode:
     # TIMESTAMPS
     entry_time: float = 0     # When node was created
     last_update: float = 0    # Last data update
+
+    # PROVIDER RECEIPT (no node is created without this evidence)
+    source_id: str = ""
+    source_timestamp: Optional[float] = None
+    received_at: Optional[float] = None
+    receipt_id: str = ""
+    truth_status: str = "no_data"
+    generated_values: bool = False
+    action_enabled: bool = False
+    accounting_enabled: bool = False
+    learning_enabled: bool = False
 
 
 @dataclass
@@ -256,6 +268,75 @@ class HarmonicWaveformScanner:
             return float(value)
         except:
             return default
+
+    @staticmethod
+    def _finite_number(value: Any, *, positive: bool = False) -> Optional[float]:
+        if isinstance(value, bool):
+            return None
+        try:
+            parsed = float(value)
+        except (TypeError, ValueError):
+            return None
+        if not math.isfinite(parsed) or (positive and parsed <= 0):
+            return None
+        return parsed
+
+    def _validated_provider_receipt(
+        self, receipt: Any, current_price: Any
+    ) -> Optional[Dict[str, Any]]:
+        if not isinstance(receipt, Mapping):
+            return None
+        source_id = receipt.get("source_id")
+        receipt_id = receipt.get("receipt_id")
+        if not isinstance(source_id, str) or not source_id.strip():
+            return None
+        if not isinstance(receipt_id, str) or not receipt_id.strip():
+            return None
+        if receipt.get("truth_status") != "real_observed":
+            return None
+        if receipt.get("generated_values") is not False:
+            return None
+        source_timestamp = self._finite_number(receipt.get("source_timestamp"), positive=True)
+        received_at = self._finite_number(receipt.get("received_at"), positive=True)
+        price = self._finite_number(current_price, positive=True)
+        if source_timestamp is None or received_at is None or price is None:
+            return None
+        now = time.time()
+        if source_timestamp > received_at or received_at > now + 30.0:
+            return None
+        if now - source_timestamp > PROVIDER_RECEIPT_TTL_SECONDS:
+            return None
+        return {
+            "source_id": source_id.strip(),
+            "source_timestamp": source_timestamp,
+            "received_at": received_at,
+            "receipt_id": receipt_id.strip(),
+            "price": price,
+        }
+
+    def _binance_ticker_receipt(self, ticker: Any) -> Optional[Dict[str, Any]]:
+        if not isinstance(ticker, Mapping):
+            return None
+        symbol = ticker.get("symbol")
+        close_time = ticker.get("closeTime")
+        last_id = ticker.get("lastId")
+        price = ticker.get("lastPrice")
+        if not isinstance(symbol, str) or not symbol.strip() or last_id is None:
+            return None
+        source_timestamp = self._finite_number(close_time, positive=True)
+        if source_timestamp is None:
+            return None
+        if source_timestamp > 10_000_000_000:
+            source_timestamp /= 1000.0
+        return {
+            "source_id": "binance:/api/v3/ticker/24hr",
+            "source_timestamp": source_timestamp,
+            "received_at": time.time(),
+            "receipt_id": f"{symbol}:{close_time}:{last_id}",
+            "truth_status": "real_observed",
+            "generated_values": False,
+            "price": price,
+        }
     
     def _parse_symbol(self, symbol: str) -> Tuple[str, str]:
         """Parse symbol into base/quote"""
@@ -335,16 +416,19 @@ class HarmonicWaveformScanner:
         amount: float,
         entry_price: float,
         current_price: float,
-        entry_time: float = 0
+        entry_time: float = 0,
+        receipt: Optional[Mapping[str, Any]] = None,
     ) -> Optional[HarmonicNode]:
         """Create a fully calculated harmonic node"""
-        
-        if amount == 0 or entry_price == 0:
+        provider_receipt = self._validated_provider_receipt(receipt, current_price)
+        if provider_receipt is None:
             return None
         
-        # Use entry if current is 0
-        if current_price == 0:
-            current_price = entry_price
+        amount = self._finite_number(amount, positive=True)
+        entry_price = self._finite_number(entry_price, positive=True)
+        if amount is None or entry_price is None:
+            return None
+        current_price = provider_receipt["price"]
         
         # Generate ID
         node_id, sequence = self._generate_node_id(relay_code)
@@ -399,7 +483,16 @@ class HarmonicWaveformScanner:
             schumann_harmonic=schumann_harmonic,
             solfeggio_resonance=solfeggio_resonance,
             entry_time=entry_time,
-            last_update=time.time()
+            last_update=provider_receipt["received_at"],
+            source_id=provider_receipt["source_id"],
+            source_timestamp=provider_receipt["source_timestamp"],
+            received_at=provider_receipt["received_at"],
+            receipt_id=provider_receipt["receipt_id"],
+            truth_status="real_observed",
+            generated_values=False,
+            action_enabled=False,
+            accounting_enabled=False,
+            learning_enabled=False,
         )
     
     # ═══════════════════════════════════════════════════════════════════════════════════════
@@ -420,7 +513,9 @@ class HarmonicWaveformScanner:
             try:
                 tickers = self.binance.get_24h_tickers()
                 for t in tickers:
-                    all_tickers[t['symbol']] = self._safe_float(t.get('lastPrice', 0))
+                    receipt = self._binance_ticker_receipt(t)
+                    if receipt is not None:
+                        all_tickers[t['symbol']] = receipt
             except Exception as e:
                 print(f"   ⚠️ Couldn't fetch all Binance tickers: {e}")
             
@@ -446,24 +541,17 @@ class HarmonicWaveformScanner:
                 
                 # Get current price from batch tickers
                 symbol = f"{asset}USDT"
-                current_price = all_tickers.get(symbol, 0.0)
-                
-                # Fallback to individual ticker if batch didn't have it
-                if current_price == 0:
-                    try:
-                        ticker = self.binance.get_ticker(symbol=symbol)
-                        if ticker:
-                            current_price = self._safe_float(ticker.get('last', ticker.get('price', 0)))
-                    except:
-                        pass
+                receipt = all_tickers.get(symbol)
+                if receipt is None:
+                    continue
+                current_price = receipt["price"]
                 
                 if entry_price == 0 and current_price > 0:
                     entry_price = current_price
                 
-                if current_price == 0:
-                    continue
-                
-                node = self._create_harmonic_node('BIN', symbol, amount, entry_price, current_price)
+                node = self._create_harmonic_node(
+                    'BIN', symbol, amount, entry_price, current_price, receipt=receipt
+                )
                 if node:
                     relay.nodes.append(node)
             

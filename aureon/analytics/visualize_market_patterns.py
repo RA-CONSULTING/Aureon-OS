@@ -13,41 +13,195 @@ Visualizes market patterns from collected snapshots with:
 Gary Leckey | December 2025
 """
 
-from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
+import argparse
 import json
 import math
 import time
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
-from datetime import datetime
-from typing import Dict, List, Any
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Dict, List, Any, Mapping, Optional
 from collections import deque
 
-# Try to import all clients
-try:
-    from aureon.exchanges.binance_client import BinanceClient, get_binance_client
-    BINANCE_OK = True
-except:
-    BINANCE_OK = False
+PROVIDER_MAX_AGE_SECONDS = 300.0
+SNAPSHOT_MAX_AGE_SECONDS = 900.0
+FUTURE_SKEW_SECONDS = 5.0
 
-try:
-    from aureon.exchanges.kraken_client import KrakenClient, get_kraken_client
-    KRAKEN_OK = True
-except:
-    KRAKEN_OK = False
 
-try:
-    from aureon.exchanges.alpaca_client import AlpacaClient
-    ALPACA_OK = True
-except:
-    ALPACA_OK = False
+def _finite_number(value: Any, *, positive: bool = False) -> Optional[float]:
+    try:
+        number = float(value)
+    except (TypeError, ValueError, OverflowError):
+        return None
+    if not math.isfinite(number) or (positive and number <= 0):
+        return None
+    return number
 
-try:
-    from aureon.exchanges.capital_client import CapitalClient
-    CAPITAL_OK = True
-except:
-    CAPITAL_OK = False
+
+def _timestamp_seconds(value: Any) -> Optional[float]:
+    number = _finite_number(value)
+    if number is not None:
+        if number > 100_000_000_000:
+            number /= 1000.0
+        return number if number > 0 else None
+    if not isinstance(value, str) or not value.strip():
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.timestamp()
+
+
+def _fresh_timestamp(value: Any, *, received_at: float, max_age: float) -> Optional[float]:
+    timestamp = _timestamp_seconds(value)
+    if timestamp is None:
+        return None
+    age = received_at - timestamp
+    if age < -FUTURE_SKEW_SECONDS or age > max_age:
+        return None
+    return timestamp
+
+
+def _no_data_status(platform: str, reason: str, *, received_at: float) -> Dict[str, Any]:
+    return {
+        "platform": platform,
+        "status": "NO_DATA",
+        "truth_status": "no_data",
+        "reason": reason,
+        "source_id": None,
+        "source_timestamp": None,
+        "received_at": received_at,
+        "generated_values": False,
+        "eligible_for_action": False,
+        "eligible_for_accounting": False,
+        "eligible_for_learning": False,
+        "ok": False,
+    }
+
+
+def _price_status(
+    payload: Any,
+    *,
+    platform: str,
+    expected_symbol: str,
+    source_id: str,
+    received_at: float,
+) -> Dict[str, Any]:
+    if not isinstance(payload, Mapping):
+        return _no_data_status(platform, "provider_payload_not_mapping", received_at=received_at)
+    payload_symbol = str(payload.get("symbol") or "").strip().upper()
+    if payload_symbol and payload_symbol != expected_symbol.upper():
+        return _no_data_status(platform, "provider_symbol_mismatch", received_at=received_at)
+    price_value = payload.get("lastPrice") if "lastPrice" in payload else payload.get("price")
+    price = _finite_number(price_value, positive=True)
+    source_value = payload.get("source_timestamp")
+    if source_value is None:
+        source_value = payload.get("closeTime")
+    if source_value is None:
+        source_value = payload.get("timestamp")
+    source_timestamp = _fresh_timestamp(
+        source_value,
+        received_at=received_at,
+        max_age=PROVIDER_MAX_AGE_SECONDS,
+    )
+    if price is None or source_timestamp is None:
+        return _no_data_status(platform, "incomplete_or_stale_provider_price", received_at=received_at)
+    return {
+        "platform": platform,
+        "status": "LIVE",
+        "truth_status": "real_observed",
+        "price": price,
+        "symbol": expected_symbol,
+        "source_id": source_id,
+        "source_timestamp": source_timestamp,
+        "received_at": received_at,
+        "generated_values": False,
+        "eligible_for_action": False,
+        "eligible_for_accounting": False,
+        "eligible_for_learning": False,
+        "ok": True,
+    }
+
+
+def _clock_status(payload: Any, *, received_at: float) -> Dict[str, Any]:
+    if not isinstance(payload, Mapping):
+        return _no_data_status("alpaca", "provider_clock_not_mapping", received_at=received_at)
+    source_timestamp = _fresh_timestamp(
+        payload.get("timestamp"),
+        received_at=received_at,
+        max_age=PROVIDER_MAX_AGE_SECONDS,
+    )
+    if source_timestamp is None or not isinstance(payload.get("is_open"), bool):
+        return _no_data_status("alpaca", "incomplete_or_stale_provider_clock", received_at=received_at)
+    return {
+        "platform": "alpaca",
+        "status": "LIVE",
+        "truth_status": "real_observed",
+        "market_open": payload["is_open"],
+        "source_id": "alpaca:/v2/clock",
+        "source_timestamp": source_timestamp,
+        "received_at": received_at,
+        "generated_values": False,
+        "eligible_for_action": False,
+        "eligible_for_accounting": False,
+        "eligible_for_learning": False,
+        "ok": True,
+    }
+
+
+def _capital_status(accounts: Any, *, received_at: float) -> Dict[str, Any]:
+    truth_status = str(getattr(accounts, "truth_status", "") or "")
+    source_timestamp = _fresh_timestamp(
+        getattr(accounts, "source_timestamp", None),
+        received_at=received_at,
+        max_age=PROVIDER_MAX_AGE_SECONDS,
+    )
+    if truth_status != "real_observed" or source_timestamp is None or not accounts:
+        return _no_data_status("capital", "incomplete_or_stale_provider_accounts", received_at=received_at)
+    return {
+        "platform": "capital",
+        "status": "LIVE",
+        "truth_status": "real_observed",
+        "source_id": "capital:/accounts",
+        "source_timestamp": source_timestamp,
+        "received_at": received_at,
+        "generated_values": False,
+        "eligible_for_action": False,
+        "eligible_for_accounting": False,
+        "eligible_for_learning": False,
+        "ok": True,
+    }
+
+
+def _load_provider_clients() -> Dict[str, Any]:
+    """Construct provider clients only for an explicit connectivity probe."""
+    clients: Dict[str, Any] = {}
+    try:
+        from aureon.exchanges.binance_client import get_binance_client
+        clients["binance"] = get_binance_client()
+    except Exception:
+        pass
+    try:
+        from aureon.exchanges.kraken_client import get_kraken_client
+        clients["kraken"] = get_kraken_client()
+    except Exception:
+        pass
+    try:
+        from aureon.exchanges.alpaca_client import AlpacaClient
+        clients["alpaca"] = AlpacaClient()
+    except Exception:
+        pass
+    try:
+        from aureon.exchanges.capital_client import CapitalClient
+        clients["capital"] = CapitalClient()
+    except Exception:
+        pass
+    return clients
 
 # Constants
 PHI = (1 + math.sqrt(5)) / 2  # Golden Ratio
@@ -78,7 +232,9 @@ COLORS = {
 class APIBufferMonitor:
     """Monitor API rate limits and buffer status"""
     
-    def __init__(self):
+    def __init__(self, clients: Optional[Dict[str, Any]] = None, now_fn=time.time):
+        self.clients = clients
+        self._now = now_fn
         self.call_history: Dict[str, deque] = {
             'binance': deque(maxlen=100),
             'kraken': deque(maxlen=100),
@@ -95,14 +251,14 @@ class APIBufferMonitor:
     
     def record_call(self, platform: str):
         """Record an API call"""
-        self.call_history[platform].append(time.time())
+        self.call_history[platform].append(self._now())
     
     def get_buffer_status(self, platform: str) -> Dict[str, Any]:
         """Get buffer status for a platform"""
         history = list(self.call_history[platform])
         limits = self.rate_limits[platform]
         
-        now = time.time()
+        now = self._now()
         window_start = now - limits['window']
         calls_in_window = len([t for t in history if t > window_start])
         
@@ -115,78 +271,70 @@ class APIBufferMonitor:
             'window': limits['window'],
             'usage_pct': usage_pct,
             'remaining': remaining,
-            'status': 'OK' if usage_pct < 80 else 'WARNING' if usage_pct < 95 else 'CRITICAL'
+            'status': 'OK' if usage_pct < 80 else 'WARNING' if usage_pct < 95 else 'CRITICAL',
+            'truth_status': 'local_observation',
+            'source_id': 'process_call_history',
+            'generated_values': False,
+            'eligible_for_action': False,
         }
     
     def test_all_apis(self) -> Dict[str, Dict]:
-        """Test all API connections"""
-        results = {}
-        
-        # Binance
-        if BINANCE_OK:
+        """Run explicit read-only provider probes and return receipted status."""
+        clients = self.clients if self.clients is not None else _load_provider_clients()
+        results: Dict[str, Dict[str, Any]] = {}
+
+        for platform in ('binance', 'kraken', 'alpaca', 'capital'):
+            client = clients.get(platform)
+            if client is None:
+                results[platform] = _no_data_status(
+                    platform,
+                    'provider_client_unavailable',
+                    received_at=self._now(),
+                )
+                continue
+            start = self._now()
             try:
-                bc = get_binance_client()
-                start = time.time()
-                ticker = bc.get_24h_ticker('BTCUSDC')
-                latency = (time.time() - start) * 1000
-                self.record_call('binance')
-                results['binance'] = {
-                    'status': 'LIVE' if not bc.dry_run else 'DRY_RUN',
-                    'latency_ms': latency,
-                    'price': float(ticker.get('lastPrice', 0)),
-                    'ok': True
-                }
-            except Exception as e:
-                results['binance'] = {'status': 'ERROR', 'error': str(e), 'ok': False}
-        
-        # Kraken
-        if KRAKEN_OK:
-            try:
-                kc = get_kraken_client()
-                start = time.time()
-                ticker = kc.get_24h_ticker('XXBTZUSD')
-                latency = (time.time() - start) * 1000
-                self.record_call('kraken')
-                results['kraken'] = {
-                    'status': 'LIVE' if not kc.dry_run else 'DRY_RUN',
-                    'latency_ms': latency,
-                    'price': float(ticker.get('lastPrice', 0)),
-                    'ok': True
-                }
-            except Exception as e:
-                results['kraken'] = {'status': 'ERROR', 'error': str(e), 'ok': False}
-        
-        # Alpaca
-        if ALPACA_OK:
-            try:
-                ac = AlpacaClient()
-                start = time.time()
-                # Simple connectivity test
-                latency = (time.time() - start) * 1000
-                self.record_call('alpaca')
-                results['alpaca'] = {
-                    'status': 'LIVE' if not ac.dry_run else 'DRY_RUN',
-                    'latency_ms': latency,
-                    'ok': True
-                }
-            except Exception as e:
-                results['alpaca'] = {'status': 'ERROR', 'error': str(e), 'ok': False}
-        
-        # Capital.com
-        if CAPITAL_OK:
-            try:
-                cc = CapitalClient()
-                start = time.time()
-                latency = (time.time() - start) * 1000
-                self.record_call('capital')
-                results['capital'] = {
-                    'status': 'ENABLED' if cc.enabled else 'DISABLED',
-                    'latency_ms': latency,
-                    'ok': cc.enabled
-                }
-            except Exception as e:
-                results['capital'] = {'status': 'ERROR', 'error': str(e), 'ok': False}
-        
+                if platform == 'binance':
+                    payload = client.get_24h_ticker('BTCUSDC')
+                    received_at = self._now()
+                    status = _price_status(
+                        payload,
+                        platform='binance',
+                        expected_symbol='BTCUSDC',
+                        source_id='binance:/api/v3/ticker/24hr',
+                        received_at=received_at,
+                    )
+                elif platform == 'kraken':
+                    payload = client.get_24h_ticker('XXBTZUSD')
+                    received_at = self._now()
+                    status = _price_status(
+                        payload,
+                        platform='kraken',
+                        expected_symbol='XXBTZUSD',
+                        source_id='kraken:/0/public/Ticker',
+                        received_at=received_at,
+                    )
+                elif platform == 'alpaca':
+                    payload = client.get_clock()
+                    received_at = self._now()
+                    status = _clock_status(payload, received_at=received_at)
+                else:
+                    payload = client.get_accounts(cache_ttl=0.0)
+                    received_at = self._now()
+                    status = _capital_status(payload, received_at=received_at)
+                self.record_call(platform)
+                status['latency_ms'] = max(0.0, (received_at - start) * 1000.0)
+                results[platform] = status
+            except Exception as exc:
+                received_at = self._now()
+                status = _no_data_status(
+                    platform,
+                    f'provider_probe_failed:{type(exc).__name__}',
+                    received_at=received_at,
+                )
+                status['latency_ms'] = max(0.0, (received_at - start) * 1000.0)
+                results[platform] = status
+
         self.status = results
         return results
 
@@ -222,7 +370,71 @@ def calculate_momentum(prices: List[float]) -> List[float]:
                   for i in range(1, len(prices))]
 
 
-def visualize_patterns(data_file: str = '/tmp/market_snapshots.json'):
+def _normalise_snapshots(
+    payload: Any,
+    *,
+    received_at: Optional[float] = None,
+) -> Dict[str, Dict[str, List[Dict[str, Any]]]]:
+    """Keep only fresh provider-observed price rows with complete provenance."""
+    now = time.time() if received_at is None else float(received_at)
+    normalised: Dict[str, Dict[str, List[Dict[str, Any]]]] = {}
+    if not isinstance(payload, Mapping):
+        return normalised
+    for platform, symbols in payload.items():
+        if not isinstance(symbols, Mapping):
+            continue
+        platform_rows: Dict[str, List[Dict[str, Any]]] = {}
+        for symbol, rows in symbols.items():
+            if not isinstance(rows, list):
+                continue
+            accepted: List[Dict[str, Any]] = []
+            for row in rows:
+                if not isinstance(row, Mapping):
+                    continue
+                if str(row.get('truth_status') or '') != 'real_observed':
+                    continue
+                if row.get('generated_values') is not False:
+                    continue
+                source_id = str(row.get('source_id') or '').strip()
+                if not source_id:
+                    continue
+                price_value = row.get('price') if 'price' in row else row.get('p')
+                price = _finite_number(price_value, positive=True)
+                source_timestamp = _fresh_timestamp(
+                    row.get('source_timestamp'),
+                    received_at=now,
+                    max_age=SNAPSHOT_MAX_AGE_SECONDS,
+                )
+                row_received_at = _timestamp_seconds(row.get('received_at'))
+                if price is None or source_timestamp is None or row_received_at is None:
+                    continue
+                if row_received_at < source_timestamp - FUTURE_SKEW_SECONDS:
+                    continue
+                if row_received_at > now + FUTURE_SKEW_SECONDS:
+                    continue
+                accepted.append({
+                    't': source_timestamp,
+                    'p': price,
+                    'truth_status': 'real_observed',
+                    'source_id': source_id,
+                    'source_timestamp': source_timestamp,
+                    'received_at': row_received_at,
+                    'generated_values': False,
+                })
+            if accepted:
+                platform_rows[str(symbol)] = sorted(accepted, key=lambda item: item['t'])
+        if platform_rows:
+            normalised[str(platform)] = platform_rows
+    return normalised
+
+
+def visualize_patterns(
+    data_file: str,
+    *,
+    output_dir: Optional[str] = None,
+    probe_providers: bool = False,
+    clients: Optional[Dict[str, Any]] = None,
+):
     """Create comprehensive visualization"""
     
     # Load data
@@ -231,11 +443,32 @@ def visualize_patterns(data_file: str = '/tmp/market_snapshots.json'):
             snapshots = json.load(f)
     except FileNotFoundError:
         print("❌ No snapshot data found. Run data collection first.")
-        return
-    
-    # Initialize buffer monitor
-    buffer_monitor = APIBufferMonitor()
-    api_status = buffer_monitor.test_all_apis()
+        return _no_data_status('visualizer', 'snapshot_file_missing', received_at=time.time())
+    except (OSError, json.JSONDecodeError):
+        return _no_data_status('visualizer', 'snapshot_file_unreadable', received_at=time.time())
+
+    snapshot_received_at = time.time()
+    snapshots = _normalise_snapshots(snapshots, received_at=snapshot_received_at)
+    if not snapshots:
+        return _no_data_status(
+            'visualizer',
+            'no_fresh_proven_provider_snapshots',
+            received_at=snapshot_received_at,
+        )
+
+    # Provider probes are explicit read-only operations, never constructor claims.
+    buffer_monitor = APIBufferMonitor(clients=clients)
+    if probe_providers:
+        api_status = buffer_monitor.test_all_apis()
+    else:
+        api_status = {
+            platform: _no_data_status(
+                platform,
+                'provider_probe_not_requested',
+                received_at=snapshot_received_at,
+            )
+            for platform in ('binance', 'kraken', 'alpaca', 'capital')
+        }
     
     # Create figure
     fig = plt.figure(figsize=(20, 14))
@@ -406,8 +639,9 @@ def visualize_patterns(data_file: str = '/tmp/market_snapshots.json'):
     for i, (p, buf_pct) in enumerate(zip(platforms, buffer_data)):
         status = api_status.get(p, {})
         status_txt = status.get('status', 'N/A')
-        latency = status.get('latency_ms', 0)
-        ax7.text(i, buf_pct + 2, f'{status_txt}\n{latency:.0f}ms', 
+        latency = _finite_number(status.get('latency_ms'))
+        latency_text = f'{latency:.0f}ms' if latency is not None else 'NO DATA'
+        ax7.text(i, buf_pct + 2, f'{status_txt}\n{latency_text}',
                 ha='center', va='bottom', color='white', fontsize=8)
     
     ax7.set_xticks(x_pos)
@@ -499,8 +733,11 @@ def visualize_patterns(data_file: str = '/tmp/market_snapshots.json'):
     summary_lines.append("\n🔌 API STATUS:")
     for platform, status in api_status.items():
         icon = "✅" if status.get('ok') else "❌"
-        latency = status.get('latency_ms', 0)
-        summary_lines.append(f"   {icon} {platform.upper():10} - {status.get('status', 'N/A'):10} - Latency: {latency:.0f}ms")
+        latency = _finite_number(status.get('latency_ms'))
+        latency_text = f"{latency:.0f}ms" if latency is not None else "NO DATA"
+        summary_lines.append(
+            f"   {icon} {platform.upper():10} - {status.get('status', 'NO_DATA'):10} - Latency: {latency_text}"
+        )
     
     summary_text = "\n".join(summary_lines)
     ax9.text(0.02, 0.95, summary_text, transform=ax9.transAxes,
@@ -508,14 +745,17 @@ def visualize_patterns(data_file: str = '/tmp/market_snapshots.json'):
             verticalalignment='top')
     
     # Save figure
-    output_path = '/workspaces/aureon-trading/market_pattern_analysis.png'
+    output_root = Path(output_dir).resolve() if output_dir else Path(data_file).resolve().parent
+    output_root.mkdir(parents=True, exist_ok=True)
+    output_path = output_root / 'market_pattern_analysis.png'
     plt.savefig(output_path, dpi=150, facecolor='#1a1a2e', edgecolor='none', bbox_inches='tight')
     print(f"\n✅ Visualization saved to: {output_path}")
     
     # Also save as HTML-friendly version
-    plt.savefig('/workspaces/aureon-trading/market_pattern_analysis.svg', format='svg', 
+    svg_path = output_root / 'market_pattern_analysis.svg'
+    plt.savefig(svg_path, format='svg',
                 facecolor='#1a1a2e', edgecolor='none', bbox_inches='tight')
-    print(f"✅ SVG version saved to: /workspaces/aureon-trading/market_pattern_analysis.svg")
+    print(f"✅ SVG version saved to: {svg_path}")
     
     plt.close()
     
@@ -523,11 +763,28 @@ def visualize_patterns(data_file: str = '/tmp/market_snapshots.json'):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Render fresh, proven Aureon market snapshots.")
+    parser.add_argument("data_file", help="JSON file containing provenance-bearing provider snapshots")
+    parser.add_argument("--output-dir", help="Directory for PNG and SVG output")
+    parser.add_argument(
+        "--probe-providers",
+        action="store_true",
+        help="Run explicit read-only provider connectivity probes",
+    )
+    args = parser.parse_args()
+
     print("\n" + "="*70)
     print("📊🎨 AUREON MARKET PATTERN VISUALIZER 🎨📊")
     print("="*70)
     
-    api_status = visualize_patterns()
+    api_status = visualize_patterns(
+        args.data_file,
+        output_dir=args.output_dir,
+        probe_providers=args.probe_providers,
+    )
+    if api_status.get('platform') == 'visualizer':
+        print(f"NO DATA: {api_status.get('reason')}")
+        raise SystemExit(1)
     
     print("\n" + "="*70)
     print("🔌 API BUFFER SYSTEM STATUS")

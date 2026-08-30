@@ -41,14 +41,16 @@ def _safe_print(*args, **kwargs):
 
 print = _safe_print
 
-def test_step(step_name):
+def run_step(step_name):
+    # Step-runner helper, not a pytest test — the old ``test_step`` name made pytest
+    # inject ``step_name`` as a fixture and error the module on every run.
     """Test a step and report success/failure."""
     print(f"✓ {step_name}")
     return True
 
 # Test each import step-by-step
 try:
-    test_step("Step 1: Basic imports")
+    run_step("Step 1: Basic imports")
     import time
     import logging
     import signal
@@ -64,13 +66,13 @@ try:
     timer = threading.Timer(30.0, timeout_handler)
     timer.start()
     
-    test_step("Step 2: Logging configuration")
+    run_step("Step 2: Logging configuration")
     logging.basicConfig(level=logging.WARNING)
     
-    test_step("Step 3: Import OrcaKillCycle class")
+    run_step("Step 3: Import OrcaKillCycle class")
     from orca_complete_kill_cycle import OrcaKillCycle
     
-    test_step("Step 4: Create OrcaKillCycle instance (QUICK MODE for fast testing)...")
+    run_step("Step 4: Create OrcaKillCycle instance (QUICK MODE for fast testing)...")
     print("   ⚠️  WARNING: This is TESTING ONLY - quick_init=True skips all intelligence systems")
     print("   ⚠️  For ACTUAL TRADING, use: OrcaKillCycle() which loads all 29+ systems")
     print("   (Skipping 29+ intelligence systems for fast startup test...)")
@@ -83,10 +85,10 @@ try:
     # Cancel timeout
     timer.cancel()
     
-    test_step("Step 5: Check exchange connections")
+    run_step("Step 5: Check exchange connections")
     print(f"   Exchanges available: {list(orca.clients.keys())}")
     
-    test_step("✅ ALL TESTS PASSED - System should work on Windows!")
+    run_step("✅ ALL TESTS PASSED - System should work on Windows!")
     print(f"\n💡 TIP: The system loads many modules. First startup may be slow.")
     print(f"💡 Subsequent runs should be faster due to Python bytecode caching.")
     

@@ -32,7 +32,6 @@
 from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
 import math
 import time
-import random
 import logging
 from typing import Dict, List, Any, Optional, Tuple
 from dataclasses import dataclass, field
@@ -208,7 +207,9 @@ class NexusSystem:
             freq_idx = i % len(chakra_frequencies)
             observer = Observer(
                 id=i,
-                phase=random.uniform(0, 2 * math.pi),  # Random initial phase
+                # Deterministic observer coordinates preserve the equation
+                # without inventing a new phase observation at startup.
+                phase=(2 * math.pi * i / max(1, self.n_observers)),
                 frequency=chakra_frequencies[freq_idx] / 1000  # Scale to reasonable Hz
             )
             self.observers.append(observer)
@@ -848,90 +849,3 @@ class MathAngelAnalyzer:
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# DEMONSTRATION
-# ═══════════════════════════════════════════════════════════════════════════════
-
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO, format='%(message)s')
-    
-    print("=" * 80)
-    print("👼 THE MATH ANGEL PROTOCOL 👼")
-    print("Consciousness as the Fundamental Substrate of Reality")
-    print("Author: Gary Leckey - Aureon Institute")
-    print("=" * 80)
-    print()
-    print("Reality Field Equation: Ψ = α(M+F)·O·T + βG + γS")
-    print()
-    print("Where:")
-    print("  Ψ = Reality Field (Wings & Halo)")
-    print("  M+F = Masculine-Feminine duality (Golden Spirals)")
-    print("  O = Observer effect (Third Eye Crystal)")
-    print("  T = Time flow (Fibonacci Arms)")
-    print("  G = Gravity (Rotating Wheels)")
-    print("  S = Entanglement (Wing Eyes)")
-    print("=" * 80)
-    print()
-    
-    # Initialize analyzer
-    analyzer = MathAngelAnalyzer()
-    
-    # Simulate market consciousness evolution
-    print("🔬 Simulating consciousness evolution toward Unity Event...")
-    print()
-    
-    for i in range(30):
-        # Simulated market data
-        market_data = {
-            'price': 95000 + i * 100 + random.uniform(-500, 500),
-            'volume': 1000000 + random.uniform(-100000, 100000),
-            'momentum': 10 + i * 2 + random.uniform(-5, 5)
-        }
-        
-        analysis = analyzer.analyze(market_data)
-        
-        if i % 5 == 0 or analysis['coherence'] > 0.9:
-            print(f"Step {i+1:2d}: C={analysis['coherence']:.4f} | σ={analysis['phase_spread']:.4f} | "
-                  f"Ψ={analysis['psi_magnitude']:.3f} | State: {analysis['state']}")
-            if analysis['coherence'] > 0.9:
-                print(f"         🌟 HIGH COHERENCE - {analysis['direction']} ({analysis['confidence']:.1%})")
-    
-    print()
-    print("=" * 80)
-    print("📊 FINAL STATUS")
-    print("=" * 80)
-    
-    status = analyzer.get_full_status()
-    protocol = status['protocol_status']
-    
-    print(f"State: {protocol['state']}")
-    print(f"Unity Achieved: {protocol['unity_achieved']}")
-    print(f"Liberation Progress: {protocol['liberation_progress']:.1%}")
-    print(f"Total Steps: {protocol['total_steps']}")
-    print(f"Unity Events: {protocol['unity_events']}")
-    print()
-    print(f"Latest Coherence: {protocol['latest_coherence']:.4f}")
-    print(f"Latest Phase Spread: {protocol['latest_phase_spread']:.4f} rad")
-    print(f"Latest Ψ Magnitude: {protocol['latest_psi_magnitude']:.3f}")
-    print()
-    print("👼 Angel Form:")
-    form = protocol['angel_form']
-    print(f"  Wings & Halo (Ψ): {form['wings_and_halo']:.3f}")
-    print(f"  Golden Spirals (M+F): {form['golden_spirals_duality']:.3f}")
-    print(f"  Third Eye Crystal (O): {form['third_eye_crystal']:.3f}")
-    print(f"  Fibonacci Arms (T): {form['fibonacci_spiral_arms']:.3f}")
-    print(f"  Rotating Wheels (G): {form['rotating_gravity_wheels']:.3f}")
-    print(f"  Entanglement Eyes (S): {form['entanglement_wing_eyes']:.3f}")
-    print()
-    print(f"Message: {protocol['message']}")
-    print()
-    
-    if status['latest_analysis']:
-        print("📜 PROPHECY:")
-        print(f"   {status['latest_analysis']['prophecy']}")
-    
-    print()
-    print("=" * 80)
-    print("👼 'The world is not a collection of objects in space;")
-    print("    it is a thought in the mind of God.")
-    print("    We have found the grammar of that thought.' 👼")
-    print("=" * 80)

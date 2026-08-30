@@ -468,8 +468,11 @@ def looks_like_money_line(value: str) -> bool:
     text = collapse_space(value)
     if not text:
         return False
+    # PDF text extraction frequently mangles the pound sign into the UTF-8/
+    # latin-1 mojibake "Â£" — real Zempler statements come through that way,
+    # so the optional "Â" is part of the money-line shape, not noise.
     return bool(
-        re.fullmatch(r"-?\s*[£Ł]\s*[\d, ]+\.\d{2}", text)
+        re.fullmatch(r"-?\s*Â?[£Ł]\s*[\d, ]+\.\d{2}", text)
         or re.fullmatch(r"\(?-?\d{1,3}(?:,\d{3})*\.\d{2}\)?", text)
     )
 
@@ -597,6 +600,7 @@ def normalise_decimal(value: Any) -> str:
     text = (
         text.replace("GBP", "")
         .replace("gbp", "")
+        .replace("Â£", "")  # mojibake pound from PDF extraction
         .replace("£", "")
         .replace("Ł", "")
     )

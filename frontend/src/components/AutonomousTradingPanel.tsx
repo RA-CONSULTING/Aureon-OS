@@ -23,12 +23,12 @@ export const AutonomousTradingPanel = () => {
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-semibold flex items-center gap-2">
-            <Zap className="h-5 w-5 text-yellow-500" />
-            AUREON Quantum Trading System
-            <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white ml-2">🌈 LIVE</Badge>
+            <Zap className="h-5 w-5 text-warning" />
+            AUREON Live Trading System
+            <Badge className="bg-gradient-to-r from-primary to-primary text-white ml-2">PROVIDER RECEIPTS</Badge>
           </h3>
           <p className="text-sm text-muted-foreground">
-            Master Equation (Λ) • 9 Auris Nodes • Lighthouse (Γ{'>'}0.945) • 528Hz Prism | {totalPairs} pairs
+            Master Equation (Λ) • 9 Auris Nodes • Lighthouse (Γ{'>'}0.945) • {totalPairs} fresh provider pairs
           </p>
         </div>
         {isActive ? (
@@ -51,20 +51,20 @@ export const AutonomousTradingPanel = () => {
           <div className="text-xs text-muted-foreground">Trades Executed</div>
         </div>
         <div className="p-4 rounded-lg bg-muted/50">
-          <div className="text-2xl font-bold text-green-500">
-            ${totalProfit.toFixed(2)}
+          <div className="text-2xl font-bold text-success">
+            Unavailable
           </div>
           <div className="text-xs text-muted-foreground">Total Profit</div>
         </div>
         <div className="p-4 rounded-lg bg-muted/50">
-          <div className="text-2xl font-bold text-red-500">
-            ${totalFees.toFixed(2)}
+          <div className="text-2xl font-bold text-destructive">
+            Unavailable
           </div>
           <div className="text-xs text-muted-foreground">Total Fees</div>
         </div>
         <div className="p-4 rounded-lg bg-muted/50">
-          <div className={`text-2xl font-bold ${netProfit >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-            ${netProfit.toFixed(2)}
+          <div className="text-2xl font-bold text-muted-foreground">
+            Unavailable
           </div>
           <div className="text-xs text-muted-foreground">Net Profit</div>
         </div>
@@ -73,7 +73,7 @@ export const AutonomousTradingPanel = () => {
       {/* Status Badge */}
       <div className="flex items-center gap-2">
         {isActive ? (
-          <Badge className="bg-green-500">
+          <Badge className="bg-success">
             <Activity className="h-3 w-3 mr-1" />
             ACTIVE
           </Badge>
@@ -98,13 +98,13 @@ export const AutonomousTradingPanel = () => {
               <div className="flex-1">
                 <div className="font-medium text-sm">{opp.symbol}</div>
                 <div className="text-xs text-muted-foreground">
-                  ${opp.price.toFixed(4)} • Vol: ${(opp.volume24h / 1e6).toFixed(1)}M
+                  ${opp.price.toFixed(4)} • Quote volume: ${(opp.volumeUsd / 1e6).toFixed(1)}M
                 </div>
               </div>
               <div className="text-right">
                 <div
                   className={`text-sm font-medium ${
-                    opp.priceChange24h > 0 ? 'text-green-500' : 'text-red-500'
+                    opp.priceChange24h > 0 ? 'text-success' : 'text-destructive'
                   }`}
                 >
                   {opp.priceChange24h > 0 ? '+' : ''}
@@ -113,6 +113,7 @@ export const AutonomousTradingPanel = () => {
                 <div className="text-xs text-muted-foreground">
                   Score: {opp.opportunityScore.toFixed(2)}
                 </div>
+                <div className="text-[10px] text-muted-foreground">{opp.exchange} · {opp.sourceTimestamp}</div>
               </div>
             </div>
           ))}

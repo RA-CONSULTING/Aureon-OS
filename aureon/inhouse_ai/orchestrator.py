@@ -84,11 +84,21 @@ class OpenMultiAgent:
         if adapter:
             self.adapter = adapter
         elif mode == "local":
-            self.adapter = AureonLocalAdapter(base_url=base_url, model=model)
+            if base_url or model:
+                self.adapter = AureonLocalAdapter(base_url=base_url, model=model)
+            else:
+                from aureon.integrations.ollama import OllamaModelSwitchboard
+
+                self.adapter, _selection = OllamaModelSwitchboard().compatible_adapter_for("general")
         elif mode == "brain":
             self.adapter = AureonBrainAdapter()
         else:  # hybrid
-            self.adapter = AureonHybridAdapter(base_url=base_url, model=model)
+            if base_url or model:
+                self.adapter = AureonHybridAdapter(base_url=base_url, model=model)
+            else:
+                from aureon.integrations.ollama import OllamaModelSwitchboard
+
+                self.adapter, _selection = OllamaModelSwitchboard().hybrid_adapter_for("general")
 
         # Global tool registry
         self.tools = ToolRegistry(include_builtins=True)

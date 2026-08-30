@@ -37,8 +37,9 @@ import asyncio
 import logging
 import time
 import math
+from collections.abc import Mapping
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple, Set
 from collections import deque, defaultdict
 from enum import Enum
@@ -79,6 +80,282 @@ TIER_1_THRESHOLD = 0.5   # > 0.5% in 1 min = HOT (immediate entry)
 TIER_2_THRESHOLD = 0.4   # > 0.4% in 5 min = STRONG (high priority)
 TIER_3_THRESHOLD = 0.34  # > 0.34% in 5 min = VALID (covers costs)
 
+# Provider evidence must remain distinct from the local receipt clock. These
+# windows bound action eligibility; they do not alter any wave equations.
+MAX_TICKER_AGE_SECONDS = 120.0
+MAX_LATEST_CANDLE_AGE_SECONDS = 180.0
+MAX_CANDLE_HISTORY_AGE_SECONDS = 2 * 60 * 60
+MAX_HOURLY_HISTORY_AGE_SECONDS = 26 * 60 * 60
+MAX_SOURCE_CLOCK_SKEW_SECONDS = 5.0
+
+
+def _finite_number(value: Any, *, positive: bool = False) -> Optional[float]:
+    """Return a finite provider number without manufacturing a fallback."""
+    if value is None or isinstance(value, bool):
+        return None
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    if not math.isfinite(number) or (positive and number <= 0):
+        return None
+    return number
+
+
+def _required_number(
+    payload: Mapping[str, Any],
+    *keys: str,
+    positive: bool = False,
+) -> Optional[float]:
+    for key in keys:
+        if key in payload and payload[key] is not None:
+            return _finite_number(payload[key], positive=positive)
+    return None
+
+
+def _parse_source_timestamp(value: Any) -> Optional[float]:
+    if value is None or isinstance(value, bool):
+        return None
+    if isinstance(value, (int, float)):
+        timestamp = float(value)
+        if timestamp > 10_000_000_000:
+            timestamp /= 1000.0
+        return timestamp if math.isfinite(timestamp) and timestamp > 0 else None
+    try:
+        parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
+        timestamp = parsed.timestamp()
+        return timestamp if math.isfinite(timestamp) and timestamp > 0 else None
+    except (TypeError, ValueError, OverflowError):
+        return None
+
+
+def _source_timestamp(payload: Mapping[str, Any], *keys: str) -> Optional[float]:
+    for key in keys:
+        if key in payload and payload[key] is not None:
+            return _parse_source_timestamp(payload[key])
+    return None
+
+
+def _required_text(payload: Mapping[str, Any], key: str) -> Optional[str]:
+    if key not in payload or payload[key] is None:
+        return None
+    value = str(payload[key]).strip()
+    return value or None
+
+
+def _no_data(reason: str, *, symbol: str, exchange: str) -> Dict[str, Any]:
+    """Return a numeric-free denial record that cannot cross any side-effect gate."""
+    return {
+        "status": "no_data",
+        "data_status": "no_data",
+        "truth_status": "no_data",
+        "reason": reason,
+        "symbol": symbol,
+        "exchange": exchange,
+        "source_id": None,
+        "source_timestamp": None,
+        "receipt_id": None,
+        "generated_values": False,
+        "eligible_for_action": False,
+        "eligible_for_external_action": False,
+        "eligible_for_accounting": False,
+        "eligible_for_learning": False,
+    }
+
+
+def _normalise_ticker_receipt(
+    payload: Any,
+    *,
+    received_at: Optional[float] = None,
+) -> Optional[Dict[str, Any]]:
+    """Validate and canonicalise a complete, fresh provider ticker receipt."""
+    if not isinstance(payload, Mapping):
+        return None
+    source_id = _required_text(payload, "source_id")
+    receipt_id = _required_text(payload, "receipt_id")
+    observed_at = _source_timestamp(payload, "source_timestamp")
+    if (
+        source_id is None
+        or receipt_id is None
+        or observed_at is None
+        or payload.get("generated_values") is not False
+        or payload.get("data_status") in {"no_data", "stale", "invalid"}
+        or payload.get("truth_status") in {"no_data", "simulated", "synthetic", "demo"}
+    ):
+        return None
+
+    received = time.time() if received_at is None else float(received_at)
+    age = received - observed_at
+    if age < -MAX_SOURCE_CLOCK_SKEW_SECONDS or age > MAX_TICKER_AGE_SECONDS:
+        return None
+
+    price = _required_number(payload, "price", "lastPrice", positive=True)
+    change_24h = _required_number(payload, "change24h", "priceChangePercent")
+    volume = _required_number(payload, "volume", "quoteVolume")
+    high = _required_number(payload, "high", "highPrice", positive=True)
+    low = _required_number(payload, "low", "lowPrice", positive=True)
+    if None in (price, change_24h, volume, high, low):
+        return None
+    assert price is not None and change_24h is not None and volume is not None
+    assert high is not None and low is not None
+    if volume < 0 or low > price or price > high:
+        return None
+
+    short_changes: Dict[str, Optional[float]] = {}
+    for key in ("change_1m", "change_5m"):
+        if key in payload:
+            value = _finite_number(payload[key])
+            if value is None:
+                return None
+            short_changes[key] = value
+        else:
+            short_changes[key] = None
+
+    return {
+        "price": price,
+        "change24h": change_24h,
+        "volume": volume,
+        "high": high,
+        "low": low,
+        "change_1m": short_changes["change_1m"],
+        "change_5m": short_changes["change_5m"],
+        "is_profitable": payload.get("is_profitable") is True,
+        "profit_tier": payload.get("profit_tier"),
+        "source_id": source_id,
+        "source_timestamp": observed_at,
+        "received_at": received,
+        "receipt_id": receipt_id,
+        "data_status": "live",
+        "truth_status": "live",
+        "generated_values": False,
+        "eligible_for_action": True,
+        "eligible_for_external_action": True,
+        "eligible_for_accounting": False,
+        "eligible_for_learning": True,
+    }
+
+
+def _normalise_provider_bars(
+    bars: Any,
+    *,
+    trusted_source_id: Optional[str] = None,
+    trusted_receipt_id: Optional[str] = None,
+    received_at: Optional[float] = None,
+    max_latest_age: float = MAX_LATEST_CANDLE_AGE_SECONDS,
+    max_history_age: float = MAX_CANDLE_HISTORY_AGE_SECONDS,
+) -> List[Dict[str, Any]]:
+    """Validate complete provider OHLCV bars without sorting or filling gaps."""
+    if not isinstance(bars, list) or not bars:
+        return []
+    received = time.time() if received_at is None else float(received_at)
+    normalised: List[Dict[str, Any]] = []
+    previous_timestamp: Optional[float] = None
+
+    for bar in bars:
+        if not isinstance(bar, Mapping):
+            return []
+        opened = _required_number(bar, "open", "o", positive=True)
+        high = _required_number(bar, "high", "h", positive=True)
+        low = _required_number(bar, "low", "l", positive=True)
+        closed = _required_number(bar, "close", "c", positive=True)
+        volume = _required_number(bar, "volume", "v")
+        observed_at = _source_timestamp(bar, "source_timestamp", "timestamp", "t")
+        if None in (opened, high, low, closed, volume, observed_at):
+            return []
+        assert opened is not None and high is not None and low is not None
+        assert closed is not None and volume is not None and observed_at is not None
+
+        age = received - observed_at
+        if (
+            volume < 0
+            or low > min(opened, closed)
+            or high < max(opened, closed)
+            or low > high
+            or age < -MAX_SOURCE_CLOCK_SKEW_SECONDS
+            or age > max_history_age
+            or (previous_timestamp is not None and observed_at <= previous_timestamp)
+        ):
+            return []
+
+        source_id = _required_text(bar, "source_id") or trusted_source_id
+        receipt_id = _required_text(bar, "receipt_id") or trusted_receipt_id
+        marker = bar.get("generated_values") if "generated_values" in bar else None
+        if trusted_source_id is not None and marker is None:
+            marker = False
+        if source_id is None or marker is not False:
+            return []
+        if receipt_id is None and trusted_source_id is not None:
+            receipt_id = f"{source_id}:{int(observed_at * 1_000_000)}"
+        if receipt_id is None:
+            return []
+        if bar.get("data_status") in {"no_data", "stale", "invalid"}:
+            return []
+        if bar.get("truth_status") in {"no_data", "simulated", "synthetic", "demo"}:
+            return []
+
+        normalised.append(
+            {
+                "timestamp": observed_at,
+                "open": opened,
+                "high": high,
+                "low": low,
+                "close": closed,
+                "volume": volume,
+                "source_id": source_id,
+                "source_timestamp": observed_at,
+                "received_at": received,
+                "receipt_id": receipt_id,
+                "data_status": "live",
+                "truth_status": "live",
+                "generated_values": False,
+                "eligible_for_action": True,
+                "eligible_for_external_action": True,
+                "eligible_for_accounting": False,
+                "eligible_for_learning": True,
+            }
+        )
+        previous_timestamp = observed_at
+
+    if received - normalised[-1]["source_timestamp"] > max_latest_age:
+        return []
+    return normalised
+
+
+def _ticker_from_provider_bars(
+    bars: List[Dict[str, Any]],
+    *,
+    source_id: str,
+    required_count: int = 24,
+) -> Optional[Dict[str, Any]]:
+    """Derive a complete 24-hour ticker only from a proven provider bar series."""
+    if len(bars) < required_count:
+        return None
+    window = bars[-required_count:]
+    first_price = window[0]["open"]
+    last_close = window[-1]["close"]
+    change_24h = ((last_close - first_price) / first_price) * 100
+    latest = window[-1]
+    return {
+        "price": last_close,
+        "change24h": change_24h,
+        "volume": sum(bar["volume"] for bar in window),
+        "high": max(bar["high"] for bar in window),
+        "low": min(bar["low"] for bar in window),
+        "source_id": source_id,
+        "source_timestamp": latest["source_timestamp"],
+        "received_at": latest["received_at"],
+        "receipt_id": latest["receipt_id"],
+        "data_status": "live",
+        "truth_status": "real_derived",
+        "generated_values": False,
+        "eligible_for_action": True,
+        "eligible_for_external_action": True,
+        "eligible_for_accounting": False,
+        "eligible_for_learning": True,
+    }
+
 # ═══════════════════════════════════════════════════════════════════════════
 # 🌊 WAVE STATE CLASSIFICATIONS
 # ═══════════════════════════════════════════════════════════════════════════
@@ -118,10 +395,10 @@ class WaveAnalysis:
     
     # Price data
     price: float
-    change_1m: float = 0.0      # 1 minute change
-    change_5m: float = 0.0      # 5 minute change
-    change_15m: float = 0.0     # 15 minute change
-    change_1h: float = 0.0      # 1 hour change
+    change_1m: Optional[float] = None      # 1 minute change
+    change_5m: Optional[float] = None      # 5 minute change
+    change_15m: Optional[float] = None     # 15 minute change
+    change_1h: Optional[float] = None      # 1 hour change
     change_24h: float = 0.0     # 24 hour change
     
     # Volume analysis
@@ -150,6 +427,19 @@ class WaveAnalysis:
     # Execution signals
     action: str = "WATCH"       # "BUY", "SELL", "HOLD", "WATCH"
     action_reason: str = ""
+
+    # Provider evidence and downstream eligibility
+    data_status: str = "no_data"
+    truth_status: str = "no_data"
+    source_id: Optional[str] = None
+    source_timestamp: Optional[float] = None
+    received_at: Optional[float] = None
+    receipt_id: Optional[str] = None
+    generated_values: bool = True
+    eligible_for_action: bool = False
+    eligible_for_external_action: bool = False
+    eligible_for_accounting: bool = False
+    eligible_for_learning: bool = False
 
 
 @dataclass
@@ -245,6 +535,7 @@ class GlobalWaveScanner:
         
         # Candle cache for deep dives
         self.candle_cache: Dict[str, List[Dict]] = {}
+        self.last_no_data: Dict[str, Dict[str, Any]] = {}
         
         # Scan stats
         self.total_scans = 0
@@ -268,6 +559,69 @@ class GlobalWaveScanner:
         self.scanner_bridge = bridge
         self._use_sse_tickers = True
         self._update_cost_thresholds_from_bridge()
+
+    def _record_no_data(self, symbol: str, exchange: str, reason: str) -> None:
+        self.last_no_data[symbol] = _no_data(
+            reason,
+            symbol=symbol,
+            exchange=exchange,
+        )
+
+    @staticmethod
+    def _stamp_direct_ticker(
+        payload: Any,
+        *,
+        source_id: str,
+        symbol: str,
+    ) -> Optional[Dict[str, Any]]:
+        """Stamp data returned directly by a provider without replacing source time."""
+        if not isinstance(payload, Mapping):
+            return None
+        observed_at = _source_timestamp(
+            payload,
+            "source_timestamp",
+            "timestamp",
+            "event_time",
+            "E",
+            "closeTime",
+            "close_time",
+        )
+        if observed_at is None:
+            return None
+        if "generated_values" in payload and payload["generated_values"] is not False:
+            return None
+        if payload.get("data_status") in {"no_data", "stale", "invalid"}:
+            return None
+        if payload.get("truth_status") in {"no_data", "simulated", "synthetic", "demo"}:
+            return None
+        stamped = dict(payload)
+        stamped["source_id"] = _required_text(payload, "source_id") or source_id
+        stamped["source_timestamp"] = observed_at
+        stamped["receipt_id"] = (
+            _required_text(payload, "receipt_id")
+            or f"{source_id}:{symbol}:{int(observed_at * 1_000_000)}"
+        )
+        stamped["generated_values"] = False
+        stamped["data_status"] = "live"
+        stamped["truth_status"] = payload.get("truth_status") or "live"
+        return stamped
+
+    @staticmethod
+    def _analysis_has_fresh_provenance(analysis: WaveAnalysis) -> bool:
+        observed_at = _finite_number(analysis.source_timestamp, positive=True)
+        if observed_at is None:
+            return False
+        age = time.time() - observed_at
+        return (
+            analysis.data_status == "live"
+            and analysis.truth_status in {"live", "real_derived"}
+            and bool(analysis.source_id)
+            and bool(analysis.receipt_id)
+            and analysis.generated_values is False
+            and analysis.eligible_for_action is True
+            and analysis.eligible_for_external_action is True
+            and -MAX_SOURCE_CLOCK_SKEW_SECONDS <= age <= MAX_TICKER_AGE_SECONDS
+        )
         logger.info("🦙 Scanner Bridge wired to Global Wave Scanner")
     
     def _update_cost_thresholds_from_bridge(self):
@@ -376,15 +730,27 @@ class GlobalWaveScanner:
             return None
         
         try:
-            ticker = self.scanner_bridge.get_ticker(symbol)
-            if ticker and ticker.get('source') == 'sse':
+            raw_ticker = self.scanner_bridge.get_ticker(symbol)
+            if not isinstance(raw_ticker, Mapping):
+                return None
+            ticker = dict(raw_ticker)
+            source = str(ticker.get("source") or "").strip().lower()
+            if source == 'sse':
                 # Enhance with 1m/5m momentum from SSE
                 if 'change_1m' in ticker:
                     # Check if move is profitable using dynamic thresholds
-                    is_profitable, tier = self.scanner_bridge.is_move_profitable(abs(ticker.get('change_1m', 0)))
+                    change_1m = _finite_number(ticker["change_1m"])
+                    if change_1m is None:
+                        return None
+                    is_profitable, tier = self.scanner_bridge.is_move_profitable(abs(change_1m))
                     ticker['is_profitable'] = is_profitable
                     ticker['profit_tier'] = tier
-            return ticker
+            source_id = "alpaca_sse" if source == "sse" else "alpaca_bridge_rest"
+            return self._stamp_direct_ticker(
+                ticker,
+                source_id=source_id,
+                symbol=symbol,
+            )
         except Exception as e:
             logger.debug(f"SSE ticker fetch error for {symbol}: {e}")
             return None
@@ -415,7 +781,7 @@ class GlobalWaveScanner:
             
             for symbol, exchange in batch_symbols:
                 analysis = await self._analyze_wave(symbol, exchange, ticker_cache)
-                if analysis:
+                if analysis and self._analysis_has_fresh_provenance(analysis):
                     self.wave_cache[symbol] = analysis
                     self.wave_cache_time[symbol] = time.time()
                     self.wave_buckets[analysis.wave_state].append(analysis)
@@ -435,13 +801,13 @@ class GlobalWaveScanner:
                 direction="A-Z",
                 start_letter=start_letter,
                 end_letter=end_letter,
-                symbols_count=len(batch_symbols),
+                symbols_count=sum(batch_waves.values()),
                 scan_time_ms=(time.time() - batch_start) * 1000,
                 waves_found=batch_waves,
                 top_opportunities=sorted(batch_opportunities, key=lambda x: -x.jump_score)[:5]
             )
             self.batches.append(batch)
-            self.total_symbols_scanned += len(batch_symbols)
+            self.total_symbols_scanned += sum(batch_waves.values())
         
         self.last_full_scan_time = time.time() - start
         
@@ -485,15 +851,31 @@ class GlobalWaveScanner:
                 if cache_age < self.cache_ttl:
                     # Use cached analysis but check for changes
                     cached = self.wave_cache.get(symbol)
-                    if cached:
+                    if cached and self._analysis_has_fresh_provenance(cached):
                         # Quick momentum check
                         new_analysis = await self._quick_momentum_check(symbol, exchange, ticker_cache, cached)
-                        if new_analysis and new_analysis.jump_score > 0.7:
+                        if (
+                            new_analysis
+                            and self._analysis_has_fresh_provenance(new_analysis)
+                            and new_analysis.jump_score > 0.7
+                        ):
                             batch_opportunities.append(new_analysis)
+                    else:
+                        analysis = await self._analyze_wave(symbol, exchange, ticker_cache)
+                        if (
+                            analysis
+                            and self._analysis_has_fresh_provenance(analysis)
+                            and analysis.jump_score > 0.7
+                        ):
+                            batch_opportunities.append(analysis)
                 else:
                     # Full re-analysis
                     analysis = await self._analyze_wave(symbol, exchange, ticker_cache)
-                    if analysis and analysis.jump_score > 0.7:
+                    if (
+                        analysis
+                        and self._analysis_has_fresh_provenance(analysis)
+                        and analysis.jump_score > 0.7
+                    ):
                         batch_opportunities.append(analysis)
             
             start_letter = batch_symbols[0][0][0].upper() if batch_symbols else '?'
@@ -527,39 +909,49 @@ class GlobalWaveScanner:
         🦙 SSE INTEGRATION: Uses real-time data from SSE bridge when available
         """
         try:
-            # Get ticker data
+            # Every source is validated independently before it can reach the
+            # wave equations. A malformed preferred source never becomes a
+            # numeric fallback.
             ticker = None
             
             # 🦙 PRIORITY 1: SSE Bridge (real-time, lowest latency)
             if self._use_sse_tickers and exchange == 'alpaca':
-                ticker = self._get_ticker_from_bridge(symbol)
+                ticker = _normalise_ticker_receipt(
+                    self._get_ticker_from_bridge(symbol)
+                )
             
             # PRIORITY 2: Provided cache
             if not ticker and ticker_cache:
-                ticker = ticker_cache.get(symbol)
+                cached_ticker = ticker_cache.get(symbol)
+                ticker = _normalise_ticker_receipt(cached_ticker)
             
             # PRIORITY 3: Fetch fresh from exchange
             if not ticker:
-                ticker = await self._fetch_ticker(symbol, exchange)
+                ticker = _normalise_ticker_receipt(
+                    await self._fetch_ticker(symbol, exchange)
+                )
             
             if not ticker:
+                self._record_no_data(
+                    symbol,
+                    exchange,
+                    "missing_stale_or_malformed_provider_ticker",
+                )
                 return None
             
             # Extract price data
-            price = float(ticker.get('price', ticker.get('lastPrice', 0)) or 0)
-            change_24h = float(ticker.get('change24h', ticker.get('priceChangePercent', 0)) or 0)
-            volume_24h = float(ticker.get('volume', ticker.get('quoteVolume', 0)) or 0)
+            price = ticker["price"]
+            change_24h = ticker["change24h"]
+            volume_24h = ticker["volume"]
             
             # 🦙 Extract SSE-specific momentum data
-            change_1m = float(ticker.get('change_1m', 0) or 0)
-            change_5m = float(ticker.get('change_5m', 0) or 0)
-            
-            if price <= 0:
-                return None
+            change_1m = ticker["change_1m"]
+            change_5m = ticker["change_5m"]
             
             # Parse base/quote
             base, quote = self._parse_symbol(symbol)
             if not base:
+                self._record_no_data(symbol, exchange, "unparseable_market_symbol")
                 return None
             
             # Classify wave using DYNAMIC thresholds
@@ -578,15 +970,15 @@ class GlobalWaveScanner:
             # Determine action
             action, reason = self._determine_action(wave_state, jump_score, exit_score)
             
-            return WaveAnalysis(
+            analysis = WaveAnalysis(
                 symbol=symbol,
                 exchange=exchange,
                 base=base,
                 quote=quote,
-                timestamp=time.time(),
+                timestamp=ticker["source_timestamp"],
                 price=price,
-                change_1m=change_1m,  # 🦙 SSE momentum
-                change_5m=change_5m,  # 🦙 SSE momentum
+                change_1m=change_1m,
+                change_5m=change_5m,
                 change_24h=change_24h,
                 volume_24h=volume_24h,
                 wave_state=wave_state,
@@ -595,78 +987,24 @@ class GlobalWaveScanner:
                 exit_score=exit_score,
                 action=action,
                 action_reason=reason,
+                data_status="live",
+                truth_status="real_derived",
+                source_id=ticker["source_id"],
+                source_timestamp=ticker["source_timestamp"],
+                received_at=ticker["received_at"],
+                receipt_id=ticker["receipt_id"],
+                generated_values=False,
+                eligible_for_action=True,
+                eligible_for_external_action=True,
+                eligible_for_accounting=False,
+                eligible_for_learning=True,
             )
-            
-            # 🐦 CHIRP EMISSION - kHz-Speed Wave Signals
-            # Emit wave analysis chirps for real-time scanner coordination
-            if CHIRP_BUS_AVAILABLE and get_chirp_bus:
-                try:
-                    chirp_bus = get_chirp_bus()
-                    
-                    # Map wave state to frequency
-                    wave_freq_map = {
-                        WaveState.RISING: 880.0,      # Rising wave frequency
-                        WaveState.PEAK: 1760.0,       # Peak frequency (diving signal)
-                        WaveState.FALLING: 440.0,     # Falling wave frequency
-                        WaveState.TROUGH: 220.0,      # Trough frequency (rising signal)
-                        WaveState.BALANCED: 528.0,    # Balanced at love frequency
-                        WaveState.BREAKOUT_UP: 1320.0,   # Breakout up
-                        WaveState.BREAKOUT_DOWN: 660.0   # Breakout down
-                    }
-                    
-                    chirp_bus.emit_signal(
-                        signal_type='WAVE_ANALYSIS',
-                        symbol=symbol,
-                        coherence=wave_strength,
-                        confidence=jump_score,
-                        frequency=wave_freq_map.get(wave_state, 440.0),
-                        amplitude=wave_strength
-                    )
-                    
-                except Exception as e:
-                    # Chirp emission failure - non-critical, continue
-                    pass
-
-            # 📡 THOUGHT EMISSION - Neural Persistence
-            if hasattr(self, 'thought_bus') and self.thought_bus and wave_strength > 0.6:
-                try:
-                    thought = Thought(
-                        source="global_wave_scanner",
-                        topic=f"wave.{wave_state.name.lower()}",
-                        payload={
-                            "symbol": symbol,
-                            "wave_state": wave_state.name,
-                            "wave_strength": wave_strength,
-                            "jump_score": jump_score,
-                            "action": action,
-                            "timestamp": time.time()
-                        }
-                    )
-                    self.thought_bus.publish(thought)
-                except Exception:
-                    pass
-            
-            return WaveAnalysis(
-                symbol=symbol,
-                exchange=exchange,
-                base=base,
-                quote=quote,
-                timestamp=time.time(),
-                price=price,
-                change_1m=change_1m,  # 🦙 SSE momentum
-                change_5m=change_5m,  # 🦙 SSE momentum
-                change_24h=change_24h,
-                volume_24h=volume_24h,
-                wave_state=wave_state,
-                wave_strength=wave_strength,
-                jump_score=jump_score,
-                exit_score=exit_score,
-                action=action,
-                action_reason=reason,
-            )
+            self.last_no_data.pop(symbol, None)
+            return analysis
             
         except Exception as e:
             logger.debug(f"Wave analysis error for {symbol}: {e}")
+            self._record_no_data(symbol, exchange, "market_analysis_error")
             return None
     
     def _classify_wave(
@@ -683,13 +1021,13 @@ class GlobalWaveScanner:
         """
         
         # Extract additional data if available
-        high = float(ticker.get('high', ticker.get('highPrice', 0)) or 0)
-        low = float(ticker.get('low', ticker.get('lowPrice', 0)) or 0)
-        price = float(ticker.get('price', ticker.get('lastPrice', 0)) or 0)
+        high = ticker["high"]
+        low = ticker["low"]
+        price = ticker["price"]
         
         # 🦙 Get short-term momentum from SSE if available
-        change_1m = float(ticker.get('change_1m', 0) or 0)
-        change_5m = float(ticker.get('change_5m', 0) or 0)
+        change_1m = ticker["change_1m"]
+        change_5m = ticker["change_5m"]
         
         # Calculate position in range
         range_size = high - low if high > low else 1
@@ -701,14 +1039,14 @@ class GlobalWaveScanner:
         # ═══════════════════════════════════════════════════════════════════
         
         # 🦙 MICRO-SCALPING: Check 1m/5m momentum with dynamic thresholds
-        if change_1m != 0:
+        if change_1m is not None and change_1m != 0:
             if abs(change_1m) >= self._dynamic_tier_1:
                 if change_1m > 0:
                     return WaveState.BREAKOUT_UP, min(1.0, abs(change_1m) / 2)
                 else:
                     return WaveState.BREAKOUT_DOWN, min(1.0, abs(change_1m) / 2)
         
-        if change_5m != 0:
+        if change_5m is not None and change_5m != 0:
             if abs(change_5m) >= self._dynamic_tier_2:
                 if change_5m > 0:
                     return WaveState.RISING, min(1.0, abs(change_5m) / 3)
@@ -828,66 +1166,60 @@ class GlobalWaveScanner:
         return None, None
     
     async def _fetch_ticker(self, symbol: str, exchange: str) -> Optional[Dict]:
-        """Fetch ticker data from exchange."""
+        """Fetch and stamp data returned directly by a configured provider."""
         try:
             if exchange == 'kraken' and self.kraken:
-                return self.kraken.get_ticker(symbol)
+                fetch = (
+                    self.kraken.get_24h_ticker
+                    if hasattr(self.kraken, "get_24h_ticker")
+                    else self.kraken.get_ticker
+                )
+                stamped = self._stamp_direct_ticker(
+                    fetch(symbol),
+                    source_id="kraken_ticker",
+                    symbol=symbol,
+                )
+                return stamped if _normalise_ticker_receipt(stamped) else None
             elif exchange == 'binance' and self.binance:
-                return self.binance.get_ticker(symbol=symbol)
+                fetch = (
+                    self.binance.get_24h_ticker
+                    if hasattr(self.binance, "get_24h_ticker")
+                    else self.binance.get_ticker
+                )
+                stamped = self._stamp_direct_ticker(
+                    fetch(symbol),
+                    source_id="binance_ticker",
+                    symbol=symbol,
+                )
+                return stamped if _normalise_ticker_receipt(stamped) else None
             elif exchange == 'alpaca' and self.alpaca:
                 resolved = symbol
                 if hasattr(self.alpaca, "_resolve_symbol"):
                     resolved = self.alpaca._resolve_symbol(symbol)
 
-                def bar_field(bar: Dict[str, Any], key: str, fallback: float = 0.0) -> float:
-                    for candidate in (key, key[0], key.lower(), key.upper()):
-                        if candidate in bar:
-                            try:
-                                return float(bar.get(candidate) or 0.0)
-                            except (TypeError, ValueError):
-                                return fallback
-                    return fallback
-
-                bars_resp = self.alpaca.get_crypto_bars([resolved], timeframe="1H", limit=24) or {}
-                bars = []
-                if isinstance(bars_resp, dict):
-                    bars = bars_resp.get("bars", {}).get(resolved, []) or []
-
-                price = 0.0
-                change_24h = 0.0
-                volume = 0.0
-                high = 0.0
-                low = 0.0
-
-                if bars:
-                    first = bars[0]
-                    last = bars[-1]
-                    first_price = bar_field(first, "o") or bar_field(first, "c")
-                    last_close = bar_field(last, "c") or bar_field(last, "o")
-                    price = last_close
-                    if first_price > 0:
-                        change_24h = ((last_close - first_price) / first_price) * 100
-                    volume = sum(bar_field(b, "v") for b in bars)
-                    high = max(bar_field(b, "h") for b in bars)
-                    low = min(bar_field(b, "l") for b in bars) if bars else 0.0
-                else:
-                    quotes = self.alpaca.get_latest_crypto_quotes([resolved]) or {}
-                    quote = quotes.get(resolved, {})
-                    bid = float(quote.get("bp", 0) or 0.0)
-                    ask = float(quote.get("ap", 0) or 0.0)
-                    if bid > 0 and ask > 0:
-                        price = (bid + ask) / 2
-
-                if price <= 0:
+                bars_response = self.alpaca.get_crypto_bars(
+                    [resolved],
+                    timeframe="1H",
+                    limit=24,
+                )
+                if not isinstance(bars_response, Mapping):
                     return None
-
-                return {
-                    "price": price,
-                    "change24h": change_24h,
-                    "volume": volume,
-                    "high": high,
-                    "low": low,
-                }
+                bars_by_symbol = bars_response.get("bars")
+                if not isinstance(bars_by_symbol, Mapping):
+                    return None
+                raw_bars = bars_by_symbol.get(resolved)
+                response_receipt_id = _required_text(bars_response, "receipt_id")
+                bars = _normalise_provider_bars(
+                    raw_bars,
+                    trusted_source_id=f"alpaca_crypto_bars_1h:{resolved}",
+                    trusted_receipt_id=response_receipt_id,
+                    max_latest_age=2 * 60 * 60,
+                    max_history_age=MAX_HOURLY_HISTORY_AGE_SECONDS,
+                )
+                return _ticker_from_provider_bars(
+                    bars,
+                    source_id=bars[-1]["source_id"],
+                )
         except Exception as e:
             logger.debug(f"Fetch ticker error {symbol}@{exchange}: {e}")
         return None
@@ -900,11 +1232,21 @@ class GlobalWaveScanner:
         cached: WaveAnalysis
     ) -> Optional[WaveAnalysis]:
         """Quick check if momentum has changed significantly."""
-        ticker = ticker_cache.get(symbol) if ticker_cache else None
-        if not ticker:
+        if not self._analysis_has_fresh_provenance(cached):
+            self._record_no_data(symbol, exchange, "stale_cached_wave_analysis")
+            return None
+        if not ticker_cache or symbol not in ticker_cache:
             return cached
+        ticker = _normalise_ticker_receipt(ticker_cache[symbol])
+        if ticker is None:
+            self._record_no_data(
+                symbol,
+                exchange,
+                "missing_stale_or_malformed_momentum_ticker",
+            )
+            return None
         
-        new_change = float(ticker.get('change24h', 0) or 0)
+        new_change = ticker["change24h"]
         
         # Check for significant change (>1% difference)
         if abs(new_change - cached.change_24h) > 1.0:
@@ -923,9 +1265,16 @@ class GlobalWaveScanner:
         Analyzes candle patterns, volume, and micro-trends.
         """
         try:
-            candles = await self._fetch_candles(symbol, exchange, limit=30)
+            raw_candles = await self._fetch_candles(symbol, exchange, limit=30)
+            candles = _normalise_provider_bars(raw_candles)
             if not candles or len(candles) < 10:
-                return {"error": "Insufficient candle data"}
+                denial = _no_data(
+                    "missing_stale_malformed_or_insufficient_provider_bars",
+                    symbol=symbol,
+                    exchange=exchange,
+                )
+                self.last_no_data[symbol] = denial
+                return denial
             
             # Analyze candle patterns
             patterns = self._detect_candle_patterns(candles)
@@ -941,8 +1290,12 @@ class GlobalWaveScanner:
             
             # Generate signal
             signal, confidence = self._generate_signal(patterns, micro_trend, volume_profile, rsi)
-            
+            latest = candles[-1]
+            self.last_no_data.pop(symbol, None)
             return {
+                "status": "ready",
+                "data_status": "live",
+                "truth_status": "real_derived",
                 "symbol": symbol,
                 "exchange": exchange,
                 "candle_count": len(candles),
@@ -952,12 +1305,27 @@ class GlobalWaveScanner:
                 "rsi": rsi,
                 "signal": signal,
                 "confidence": confidence,
-                "timestamp": time.time(),
+                "timestamp": latest["source_timestamp"],
+                "source_id": latest["source_id"],
+                "source_timestamp": latest["source_timestamp"],
+                "received_at": latest["received_at"],
+                "receipt_id": latest["receipt_id"],
+                "generated_values": False,
+                "eligible_for_action": True,
+                "eligible_for_external_action": True,
+                "eligible_for_accounting": False,
+                "eligible_for_learning": True,
             }
             
         except Exception as e:
             logger.error(f"Deep dive error for {symbol}: {e}")
-            return {"error": str(e)}
+            denial = _no_data(
+                "provider_bar_analysis_error",
+                symbol=symbol,
+                exchange=exchange,
+            )
+            self.last_no_data[symbol] = denial
+            return denial
     
     async def _fetch_candles(
         self, 
@@ -966,62 +1334,75 @@ class GlobalWaveScanner:
         interval: str = '1m',
         limit: int = 30
     ) -> List[Dict]:
-        """Fetch recent candles from exchange."""
+        """Fetch and normalise recent provider candles."""
         try:
-            if exchange == 'kraken' and self.kraken:
+            if exchange == 'kraken' and self.kraken and hasattr(self.kraken, "get_ohlc"):
                 ohlc = self.kraken.get_ohlc(symbol, interval=1)  # 1 minute
-                if ohlc and 'result' in ohlc:
+                if isinstance(ohlc, Mapping) and 'result' in ohlc:
                     for key in ohlc['result']:
                         if key != 'last':
                             data = ohlc['result'][key]
-                            return [
+                            raw_bars = [
                                 {
                                     'timestamp': c[0],
-                                    'open': float(c[1]),
-                                    'high': float(c[2]),
-                                    'low': float(c[3]),
-                                    'close': float(c[4]),
-                                    'volume': float(c[6]),
+                                    'open': c[1],
+                                    'high': c[2],
+                                    'low': c[3],
+                                    'close': c[4],
+                                    'volume': c[6],
                                 }
                                 for c in data[-limit:]
                             ]
+                            return _normalise_provider_bars(
+                                raw_bars,
+                                trusted_source_id=f"kraken_ohlc_1m:{symbol}",
+                                trusted_receipt_id=_required_text(ohlc, "receipt_id"),
+                            )
             
             elif exchange == 'binance' and self.binance:
                 klines = self.binance.get_klines(symbol=symbol, interval='1m', limit=limit)
-                if klines:
-                    return [
-                        {
-                            'timestamp': k[0],
-                            'open': float(k[1]),
-                            'high': float(k[2]),
-                            'low': float(k[3]),
-                            'close': float(k[4]),
-                            'volume': float(k[5]),
-                        }
-                        for k in klines
-                    ]
+                if isinstance(klines, list) and klines:
+                    raw_bars = []
+                    for kline in klines:
+                        if isinstance(kline, Mapping):
+                            raw_bars.append(dict(kline))
+                        elif isinstance(kline, (list, tuple)) and len(kline) >= 6:
+                            raw_bars.append(
+                                {
+                                    'timestamp': kline[0],
+                                    'open': kline[1],
+                                    'high': kline[2],
+                                    'low': kline[3],
+                                    'close': kline[4],
+                                    'volume': kline[5],
+                                }
+                            )
+                        else:
+                            return []
+                    return _normalise_provider_bars(
+                        raw_bars,
+                        trusted_source_id=f"binance_klines_1m:{symbol}",
+                    )
             elif exchange == 'alpaca' and self.alpaca:
                 resolved = symbol
                 if hasattr(self.alpaca, "_resolve_symbol"):
                     resolved = self.alpaca._resolve_symbol(symbol)
-                bars_resp = self.alpaca.get_crypto_bars([resolved], timeframe="1Min", limit=limit) or {}
-                bars = []
-                if isinstance(bars_resp, dict):
-                    bars = bars_resp.get("bars", {}).get(resolved, []) or []
-                if bars:
-                    candles = []
-                    for b in bars:
-                        candles.append(
-                            {
-                                "timestamp": b.get("t") or b.get("timestamp"),
-                                "open": float(b.get("o", b.get("open", 0)) or 0),
-                                "high": float(b.get("h", b.get("high", 0)) or 0),
-                                "low": float(b.get("l", b.get("low", 0)) or 0),
-                                "close": float(b.get("c", b.get("close", 0)) or 0),
-                                "volume": float(b.get("v", b.get("volume", 0)) or 0),
-                            }
-                        )
-                    return candles
+                bars_response = self.alpaca.get_crypto_bars(
+                    [resolved],
+                    timeframe="1Min",
+                    limit=limit,
+                )
+                if not isinstance(bars_response, Mapping):
+                    return []
+                bars_by_symbol = bars_response.get("bars")
+                if not isinstance(bars_by_symbol, Mapping):
+                    return []
+                bars = bars_by_symbol.get(resolved)
+                return _normalise_provider_bars(
+                    bars,
+                    trusted_source_id=f"alpaca_crypto_bars_1m:{resolved}",
+                    trusted_receipt_id=_required_text(bars_response, "receipt_id"),
+                )
         except Exception as e:
             logger.debug(f"Fetch candles error: {e}")
         
@@ -1297,8 +1678,11 @@ async def run_bee_sweep(scanner: GlobalWaveScanner, ticker_cache: Dict = None):
     print("\n🔬 PHASE 3: Deep Dive Top Waves...")
     for opp in scanner.top_opportunities[:5]:
         dive = await scanner.deep_dive_candles(opp.symbol, opp.exchange)
-        print(f"   {opp.symbol}: {dive.get('signal', 'N/A')} "
-              f"(Conf: {dive.get('confidence', 0):.1%})")
+        if dive.get("status") == "no_data":
+            print(f"   {opp.symbol}: NO_DATA ({dive.get('reason', 'provider evidence unavailable')})")
+        else:
+            print(f"   {opp.symbol}: {dive['signal']} "
+                  f"(Conf: {dive['confidence']:.1%})")
     
     return {
         "az_batches": len(az_batches),

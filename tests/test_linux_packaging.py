@@ -23,6 +23,19 @@ _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _CONF = os.path.join(_ROOT, "deploy", "supervisord.linux.conf")
 
 
+def _bash_parser():
+    if os.name != "nt":
+        return "bash"
+    git_bash = os.path.join(
+        os.environ.get("PROGRAMFILES", r"C:\Program Files"),
+        "Git",
+        "bin",
+        "bash.exe",
+    )
+    assert os.path.isfile(git_bash), "Git Bash is required to validate Linux scripts on Windows"
+    return git_bash
+
+
 def _programs():
     cp = configparser.ConfigParser(interpolation=None)
     cp.read(_CONF)
@@ -104,7 +117,7 @@ def test_console_entry_points_import_and_are_callable():
 def test_launcher_scripts_executable_and_valid(script):
     path = os.path.join(_ROOT, script)
     assert os.access(path, os.X_OK), f"{script} is not executable"
-    r = subprocess.run(["bash", "-n", path], capture_output=True, text=True)
+    r = subprocess.run([_bash_parser(), "-n", path], capture_output=True, text=True)
     assert r.returncode == 0, f"{script} syntax error: {r.stderr}"
 
 

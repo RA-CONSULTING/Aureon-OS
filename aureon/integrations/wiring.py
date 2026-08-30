@@ -39,7 +39,7 @@ from aureon.integrations.audit_trail import (
 )
 from aureon.integrations.neural_pathway_mapper import NeuralPathwayMapper
 from aureon.integrations.obsidian import ObsidianBridge, ObsidianSink, ObsidianSinkConfig
-from aureon.integrations.ollama import OllamaBridge, OllamaLLMAdapter
+from aureon.integrations.ollama import OllamaBridge, OllamaLLMAdapter, OllamaModelSwitchboard
 
 logger = logging.getLogger("aureon.integrations.wiring")
 
@@ -142,9 +142,15 @@ def wire_integrations(
                 f"base={result.ollama_bridge.base_url}"
             )
             if reachable:
-                result.ollama_adapter = OllamaLLMAdapter(
-                    bridge=result.ollama_bridge,
-                    model=ollama_model,
+                result.ollama_adapter, selection = OllamaModelSwitchboard(
+                    bridge=result.ollama_bridge
+                ).adapter_for(
+                    "general",
+                    preferred=ollama_model or "",
+                )
+                result.ollama_bridge = result.ollama_adapter.bridge
+                result.notes.append(
+                    f"ollama nerve lane=general model={selection.model} source={selection.source}"
                 )
                 _swap_voice_adapters(loop, result.ollama_adapter, result.notes)
                 if goal_engine is not None and hasattr(goal_engine, "set_ollama_adapter"):

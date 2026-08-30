@@ -21,24 +21,7 @@ vs our current "puddle":
   • 28 opportunities (only from 5 held positions)
 
 """
-from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
-import sys
 import os
-
-# Windows UTF-8 Fix
-if sys.platform == 'win32':
-    os.environ['PYTHONIOENCODING'] = 'utf-8'
-    try:
-        import io
-        def _is_utf8_wrapper(stream):
-            return (isinstance(stream, io.TextIOWrapper) and 
-                    hasattr(stream, 'encoding') and stream.encoding and
-                    stream.encoding.lower().replace('-', '') == 'utf8')
-        if hasattr(sys.stdout, 'buffer') and not _is_utf8_wrapper(sys.stdout):
-            sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace', line_buffering=True)
-        # Skip stderr wrapping (causes Windows exit errors)
-    except Exception:
-        pass
 
 import asyncio
 import time
@@ -558,9 +541,21 @@ class OceanScanner:
             if not ticker and not price:
                 continue
             
-            t_price = float(ticker.get('price', 0) or 0) if ticker else price
-            t_change = float(ticker.get('change24h', 0) or 0) if ticker else 0
-            t_volume = float(ticker.get('volume', 0) or 0) if ticker else 0
+            if not isinstance(ticker, dict):
+                continue
+            raw_price = ticker.get('price')
+            raw_change = ticker.get('change24h')
+            raw_volume = ticker.get('volume')
+            if raw_price is None or raw_change is None or raw_volume is None:
+                continue
+            try:
+                t_price = float(raw_price)
+                t_change = float(raw_change)
+                t_volume = float(raw_volume)
+            except (TypeError, ValueError):
+                continue
+            if not all(math.isfinite(value) for value in (t_price, t_change, t_volume)):
+                continue
             
             if t_price <= 0:
                 continue
@@ -822,7 +817,7 @@ class OceanScanner:
         # Momentum score (0-0.4) - positive momentum is better
         momentum_score = min(0.4, max(0, momentum_24h / 20))  # 20% = max score
         
-        # Volume score (0-0.3) - placeholder, needs volume comparison
+        # Volume score (0-0.3); this path remains advisory until a volume-ratio receipt is wired.
         volume_score = 0.15 if volume > 0 else 0
         
         # Volatility score (0-0.3) - sweet spot is 2-10%
@@ -918,48 +913,3 @@ class OceanScanner:
         
         print(f"\n⏱️  Scan #{self.scan_count} completed in {self.last_scan_time:.2f}s")
         print("🌊" * 35)
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# STANDALONE TEST
-# ═══════════════════════════════════════════════════════════════════════════════
-async def main():
-    """Test the ocean scanner."""
-    print("\n" + "=" * 70)
-    print("🌊 AUREON OCEAN SCANNER - TEST MODE")
-    print("=" * 70)
-    
-    # Load exchange clients
-    exchanges = {}
-    
-    try:
-        from aureon.exchanges.kraken_client import KrakenClient, get_kraken_client
-        exchanges['kraken'] = get_kraken_client()
-        print("✅ Kraken client loaded")
-    except Exception as e:
-        print(f"❌ Kraken: {e}")
-    
-    try:
-        from aureon.exchanges.alpaca_client import AlpacaClient
-        exchanges['alpaca'] = AlpacaClient()
-        print("✅ Alpaca client loaded")
-    except Exception as e:
-        print(f"❌ Alpaca: {e}")
-    
-    # Create scanner
-    scanner = OceanScanner(exchanges)
-    
-    # Discover universe
-    universe = await scanner.discover_universe()
-    
-    # Scan ocean (limited for test)
-    opportunities = await scanner.scan_ocean(limit=50)
-    
-    # Print report
-    scanner.print_ocean_report()
-    
-    return scanner
-
-
-if __name__ == '__main__':
-    asyncio.run(main())

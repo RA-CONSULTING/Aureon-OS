@@ -89,13 +89,11 @@ def test_usgs_parses_collections_payload(monkeypatch):
 def test_daemon_mappers_handle_none_and_payload():
     from aureon.core.hnc_live_daemon import _map_noaa_climate, _map_usgs_water
 
-    # None → neutral, zero-confidence (the field ignores it)
+    # Missing measurements stay no_data; no numeric neutral enters the equation.
     for mapper in (_map_noaa_climate, _map_usgs_water):
-        r = mapper(None)
-        assert r.confidence == 0.0
-        assert 0.0 <= r.value <= 1.0
+        assert mapper(None) is None
 
     noaa = _map_noaa_climate(WorldDataItem(source="noaa_cdo", topic="d", title="t", text="x", raw={"count": 5}))
-    assert noaa.confidence > 0.0 and 0.0 <= noaa.value <= 1.0
+    assert noaa is None
     usgs = _map_usgs_water(WorldDataItem(source="usgs_water", topic="c", title="t", text="x", raw={"count": 35}))
-    assert usgs.confidence > 0.0 and 0.0 <= usgs.value <= 1.0
+    assert usgs is None

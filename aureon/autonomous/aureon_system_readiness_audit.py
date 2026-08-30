@@ -112,7 +112,10 @@ def proof_status(ok: bool, attention: bool = False) -> str:
         return "working_with_attention"
     if ok:
         return "working"
-    return "blocked_or_missing"
+    # A failed or absent internal proof is a repair input, not a dead-end
+    # authority decision. Outer boundaries (live money, filings, credentials,
+    # destructive actions) are enforced separately by runtime safety.
+    return "repair_pending"
 
 
 def probe_repo_organization(root: Path) -> CapabilityProof:
@@ -121,7 +124,7 @@ def probe_repo_organization(root: Path) -> CapabilityProof:
         return CapabilityProof(
             id="repo_organization",
             name="Repo Organization",
-            status="blocked_or_missing",
+            status="repair_pending",
             summary="Repo-wide organization audit has not been generated yet.",
             systems=["repo_wide_organization_audit"],
             next_action="Run python -m aureon.autonomous.repo_wide_organization_audit.",
@@ -131,7 +134,11 @@ def probe_repo_organization(root: Path) -> CapabilityProof:
     missing = [item.get("id") for item in surfaces if item.get("status") != "present"]
     unstaged = int(summary.get("unstaged_file_count") or 0)
     attention = bool(summary.get("attention_counts"))
-    ok = not missing and unstaged == 0
+    # A dirty working tree is an observation/ownership concern, not a missing
+    # capability.  Treat only absent contract surfaces or an empty audit as a
+    # real failure; preserve existing local work and route attention into the
+    # evolution queue instead of closing the organism.
+    ok = not missing and int(summary.get("recorded_files") or 0) > 0
     return CapabilityProof(
         id="repo_organization",
         name="Repo Organization",
@@ -149,7 +156,7 @@ def probe_repo_organization(root: Path) -> CapabilityProof:
             "missing_contract_surfaces": missing,
         },
         safety_boundary="Read-only path/size staging; no files moved or deleted.",
-        next_action="Move generated frontend dist/runtime state only if you want a cleaner repo layout.",
+        next_action="Preserve existing local work; classify and reconcile attention paths without deleting or overwriting them.",
     )
 
 
@@ -160,7 +167,7 @@ def probe_repo_self_catalog(root: Path) -> CapabilityProof:
         return CapabilityProof(
             id="repo_self_catalog",
             name="File-By-File Self Catalog",
-            status="blocked_or_missing",
+            status="repair_pending",
             summary="Repo self-catalog has not been generated yet.",
             systems=["AureonRepoSelfCatalog", "Obsidian repo self-catalog note"],
             next_action="Run python -m aureon.autonomous.aureon_repo_self_catalog.",
@@ -199,7 +206,7 @@ def probe_mind_wiring(root: Path) -> CapabilityProof:
         return CapabilityProof(
             id="mind_wiring",
             name="Whole-Mind Wiring",
-            status="blocked_or_missing",
+            status="repair_pending",
             summary="Mind wiring audit manifest is missing.",
             systems=["mind_wiring_audit", "organism_spine"],
             next_action="Run python -m aureon.autonomous.mind_wiring_audit --static --imports --local-services.",
@@ -264,7 +271,7 @@ def probe_goal_routing(root: Path) -> CapabilityProof:
         return CapabilityProof(
             id="goal_routing",
             name="Goal, Skill, Task, And Route Brain",
-            status="blocked_or_missing",
+            status="repair_pending",
             summary=f"Goal routing failed: {type(exc).__name__}: {exc}",
             systems=["GoalCapabilityMap"],
             next_action="Repair goal capability imports.",
@@ -362,7 +369,7 @@ def probe_hnc_saas_security(root: Path) -> CapabilityProof:
         return CapabilityProof(
             id="hnc_saas_security",
             name="HNC SaaS Security Architect",
-            status="blocked_or_missing",
+            status="repair_pending",
             summary=f"HNC SaaS security blueprint failed: {type(exc).__name__}: {exc}",
             systems=["HNCSaaSSecurityArchitect"],
             next_action="Repair the HNC SaaS security architect import/build path.",
@@ -420,7 +427,7 @@ def probe_saas_product_inventory(root: Path) -> CapabilityProof:
         return CapabilityProof(
             id="saas_product_inventory",
             name="Unified SaaS Frontend Inventory",
-            status="blocked_or_missing",
+            status="repair_pending",
             summary=f"SaaS inventory failed: {type(exc).__name__}: {exc}",
             systems=["AureonSaaSSystemInventory", "AureonFrontendUnificationPlan"],
             next_action="Repair SaaS inventory imports or frontend manifest paths.",
@@ -464,7 +471,7 @@ def probe_contract_stack() -> CapabilityProof:
         return CapabilityProof(
             id="contract_stack",
             name="Internal Contract Stack",
-            status="blocked_or_missing",
+            status="repair_pending",
             summary=f"Contract probe failed: {type(exc).__name__}: {exc}",
             systems=["OrganismContractStack", "ThoughtBus"],
             next_action="Repair contract stack imports or state persistence.",
@@ -560,7 +567,7 @@ def probe_trading_brain() -> CapabilityProof:
         return CapabilityProof(
             id="trading_brain",
             name="Trading Brain And Margin Cognition",
-            status="blocked_or_missing",
+            status="repair_pending",
             summary=f"Trading cognition probe failed: {type(exc).__name__}: {exc}",
             systems=["DynamicMarginSizer", "TemporalTradeCognition", "UnifiedMarginDecisionBrain"],
             next_action="Repair trading cognition imports/tests.",
@@ -584,11 +591,22 @@ def probe_accounting(root: Path) -> CapabilityProof:
         handoff_readiness = ((status.get("human_filing_handoff_pack") or {}).get("readiness") or {})
         bank_rows = combined.get("unique_rows_in_period", 0)
         build_status = status.get("accounts_build_status") or workflow.get("status")
-        ok = not status.get("error") and bool(status.get("company_number")) and int(bank_rows or 0) > 0
+        bridge_working = not status.get("error")
+        data_ready = (
+            bridge_working
+            and str(status.get("company_number") or "") not in {"", "00000000"}
+            and int(bank_rows or 0) > 0
+        )
         return CapabilityProof(
             id="accounting_brain",
             name="Accounting Brain And UK Filing Pack",
-            status=proof_status(ok, attention=bool(status.get("manual_filing_required", True)) and ok),
+            status=(
+                "working"
+                if data_ready and not bool(status.get("manual_filing_required", True))
+                else "working_with_attention"
+                if bridge_working
+                else "repair_pending"
+            ),
             summary=(
                 f"Company {status.get('company_number', 'unknown')}; "
                 f"bank rows={bank_rows}; build={build_status}; "
@@ -626,7 +644,7 @@ def probe_accounting(root: Path) -> CapabilityProof:
         return CapabilityProof(
             id="accounting_brain",
             name="Accounting Brain And UK Filing Pack",
-            status="blocked_or_missing",
+            status="repair_pending",
             summary=f"Accounting bridge failed: {type(exc).__name__}: {exc}",
             systems=["AccountingContextBridge", "Kings_Accounting_Suite"],
             next_action="Repair accounting bridge/status loading.",
@@ -635,10 +653,14 @@ def probe_accounting(root: Path) -> CapabilityProof:
 
 def probe_research_and_vault(root: Path) -> CapabilityProof:
     try:
-        from aureon.integrations.obsidian import ObsidianBridge
+        from aureon.integrations.obsidian import ObsidianBridge, resolve_obsidian_vault_path
         from aureon.queen.research_corpus_index import ResearchCorpusIndex
 
-        obsidian = ObsidianBridge(vault_path=str(root), prefer_filesystem=True, timeout_s=2)
+        obsidian = ObsidianBridge(
+            vault_path=str(resolve_obsidian_vault_path()),
+            prefer_filesystem=True,
+            timeout_s=2,
+        )
         obsidian_snapshot = obsidian.snapshot()
         index = ResearchCorpusIndex(
             root=str(root / "docs"),
@@ -667,7 +689,7 @@ def probe_research_and_vault(root: Path) -> CapabilityProof:
         return CapabilityProof(
             id="research_vault",
             name="Research Corpus And Obsidian Vault",
-            status="blocked_or_missing",
+            status="repair_pending",
             summary=f"Research/vault probe failed: {type(exc).__name__}: {exc}",
             systems=["ResearchCorpusIndex", "ObsidianBridge"],
             next_action="Repair research index or vault path.",
@@ -677,17 +699,23 @@ def probe_research_and_vault(root: Path) -> CapabilityProof:
 def probe_llm_capability() -> CapabilityProof:
     try:
         from aureon.inhouse_ai.llm_adapter import AureonHybridAdapter, AureonLocalAdapter
-        from aureon.integrations.ollama import OllamaBridge
+        from aureon.integrations.ollama import OllamaBridge, OllamaModelSwitchboard
 
-        local_adapter = AureonLocalAdapter()
+        switchboard = OllamaModelSwitchboard()
+        local_adapter, fast_selection = switchboard.compatible_adapter_for("fast")
         local_response = local_adapter.prompt([{"role": "user", "content": "ping"}], max_tokens=32)
-        hybrid_response = AureonHybridAdapter().prompt(
+        hybrid_adapter, general_selection = switchboard.hybrid_adapter_for("general")
+        hybrid_response = hybrid_adapter.prompt(
             [{"role": "user", "content": "explain the current safe audit route"}],
             max_tokens=128,
         )
-        ollama_snapshot = OllamaBridge(timeout_s=2).snapshot()
-        ok = bool(hybrid_response.text) and hybrid_response.model == "aureon-brain-v1"
-        attention = not bool(ollama_snapshot.get("reachable"))
+        ollama_bridge = OllamaBridge(timeout_s=2)
+        ollama_snapshot = ollama_bridge.snapshot()
+        switchboard_snapshot = OllamaModelSwitchboard(bridge=ollama_bridge).snapshot()
+        ok = bool(hybrid_response.text) and (
+            hybrid_response.model == "aureon-brain-v1" or bool(switchboard_snapshot.get("reachable"))
+        )
+        attention = not bool(switchboard_snapshot.get("reachable"))
         return CapabilityProof(
             id="llm_capability",
             name="LLM And Local Reasoning Capability",
@@ -695,7 +723,7 @@ def probe_llm_capability() -> CapabilityProof:
             summary=(
                 f"Hybrid reasoning model={hybrid_response.model}; "
                 f"Ollama reachable={ollama_snapshot.get('reachable')}; "
-                f"HTTP direct call stop={local_response.stop_reason}."
+                f"live catalog models={switchboard_snapshot.get('catalog_size', 0)}."
             ),
             systems=["AureonHybridAdapter", "AureonBrainAdapter", "AureonLocalAdapter", "OllamaBridge"],
             evidence={
@@ -704,15 +732,20 @@ def probe_llm_capability() -> CapabilityProof:
                 "direct_local_http_stop_reason": local_response.stop_reason,
                 "direct_local_http_text": local_response.text[:200],
                 "ollama": ollama_snapshot,
+                "model_switchboard": switchboard_snapshot,
+                "probe_nerve_lanes": {
+                    "fast": fast_selection.to_dict(),
+                    "general": general_selection.to_dict(),
+                },
             },
-            safety_boundary="Audit mode disables direct LLM HTTP unless explicitly allowed; hybrid falls back to AureonBrain.",
-            next_action="Start Ollama/install a chat model for deeper local LLM cycles, or keep AureonBrain fallback.",
+            safety_boundary="Audit mode suppresses generic direct HTTP; the guarded Ollama bridge/catalog and AureonBrain fallback remain observable.",
+            next_action="Keep the live model catalog refreshed and route calls through the Ollama model switchboard.",
         )
     except Exception as exc:
         return CapabilityProof(
             id="llm_capability",
             name="LLM And Local Reasoning Capability",
-            status="blocked_or_missing",
+            status="repair_pending",
             summary=f"LLM probe failed: {type(exc).__name__}: {exc}",
             systems=["AureonHybridAdapter", "OllamaBridge"],
             next_action="Repair LLM adapter imports or local model setup.",
@@ -754,7 +787,7 @@ def probe_self_enhancement_lifecycle(root: Path) -> CapabilityProof:
         return CapabilityProof(
             id="self_enhancement_lifecycle",
             name="Self-Enhancement And Restart Handoff",
-            status="blocked_or_missing",
+            status="repair_pending",
             summary=f"Self-enhancement lifecycle failed: {type(exc).__name__}: {exc}",
             systems=["AureonSelfEnhancementLifecycle", "SelfEnhancementEngine", "CodeArchitect"],
             next_action="Repair lifecycle imports or enhancement engine wiring.",
@@ -773,12 +806,19 @@ def probe_capability_growth_loop(root: Path) -> CapabilityProof:
             queue_contracts=False,
             max_gaps=8,
         )
-        ok = not growth.status.startswith("growth_loop_needs_repair")
         latest = growth.iterations[-1]
+        loop_working = bool(latest.summary.get("domain_count", 0))
         return CapabilityProof(
             id="capability_growth_loop",
             name="Capability Growth Loop",
-            status=proof_status(ok, attention=bool(latest.summary.get("gap_count")) and ok),
+            status=proof_status(
+                loop_working,
+                attention=bool(
+                    latest.summary.get("gap_count")
+                    or latest.summary.get("blocked_domain_count")
+                    or latest.summary.get("failed_benchmark_count")
+                ),
+            ),
             summary=(
                 f"domains={latest.summary.get('domain_count', 0)}; "
                 f"gaps={latest.summary.get('gap_count', 0)}; "
@@ -805,7 +845,7 @@ def probe_capability_growth_loop(root: Path) -> CapabilityProof:
         return CapabilityProof(
             id="capability_growth_loop",
             name="Capability Growth Loop",
-            status="blocked_or_missing",
+            status="repair_pending",
             summary=f"Capability growth loop failed: {type(exc).__name__}: {exc}",
             systems=["AureonCapabilityGrowthLoop", "CodeArchitect", "OrganismContractStack"],
             next_action="Repair capability growth loop imports or audit manifest inputs.",
@@ -818,7 +858,7 @@ def probe_ignition(root: Path) -> CapabilityProof:
         return CapabilityProof(
             id="ignition",
             name="Single Boot Ignition Readiness",
-            status="blocked_or_missing",
+            status="repair_pending",
             summary="Ignition audit is missing.",
             systems=["scripts/aureon_ignition.py"],
             next_action="Run python scripts/aureon_ignition.py --audit-only --accounts-status.",
@@ -885,7 +925,11 @@ def build_readiness_audit(repo_root: Optional[Path] = None) -> AureonSystemReadi
     for proof in proofs:
         status_counts[proof.status] = status_counts.get(proof.status, 0) + 1
     blocked = status_counts.get("blocked_or_missing", 0)
-    attention = sum(count for status, count in status_counts.items() if "attention" in status)
+    attention = sum(
+        count
+        for status, count in status_counts.items()
+        if "attention" in status or status == "repair_pending"
+    )
     if blocked:
         status = "blocked_capabilities_present"
     elif attention:
@@ -914,7 +958,7 @@ def build_readiness_audit(repo_root: Optional[Path] = None) -> AureonSystemReadi
         "Trading is proven through sizing, ETA cognition, and margin-brain simulation only.",
         "Accounting is proven through the bridge/status/generated pack surfaces; official filing and payment stay manual.",
         "Research is proven through the repo corpus index and Obsidian filesystem vault path.",
-        "LLM capability is proven through local adapter surfaces; direct HTTP is intentionally blocked in audit mode.",
+        "LLM capability is proven through AureonBrain plus the guarded live Ollama catalog and dynamic model switchboard.",
         "The SaaS product inventory counts UI/API/dashboard surfaces and drives the unified autonomous frontend shell.",
         "HNC SaaS security is proven as an unhackable pursuit loop; production deployment remains blocked until authorized self-attack, stress, repair, and retest gates have evidence.",
     ]

@@ -197,11 +197,20 @@ class InnerWork:
             from aureon.core.hnc_field import blend_field, read_canonical_field
 
             cf = read_canonical_field()
-            if cf.available:
+            field_truth = {
+                "thought_bus": "live",
+                "persisted_trace": "cached_real",
+            }.get(cf.evidence_transport)
+            if cf.available and field_truth is not None:
                 coherence = _clamp01(cf.coherence_gamma or 0.0)
                 psi = _clamp01(cf.consciousness_psi or 0.0)
                 signals["field"] = {"coherence": coherence, "psi": psi,
-                                    "truth_status": "live" if cf.source != "hnc_trace_file" else "cached_real"}
+                                    "truth_status": field_truth}
+            else:
+                signals["field"] = {
+                    "truth_status": "no_data",
+                    "blocker": "field transport unavailable",
+                }
             bf = blend_field()
             if bf.available and bf.divergence is not None:
                 divergence = _clamp01(bf.divergence)

@@ -20,11 +20,11 @@ const dummy = new THREE.Object3D();
 const tempColor = new THREE.Color();
 
 export function HiveConstellation({
-  hiveCount = 3,
-  agentCount = 20,
-  generation = 1,
-  queenPnl = 0,
-  coherence = 0.5,
+  hiveCount,
+  agentCount,
+  generation,
+  queenPnl,
+  coherence,
 }: HiveConstellationProps) {
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const glowRef = useRef<THREE.InstancedMesh>(null);
@@ -32,31 +32,27 @@ export function HiveConstellation({
   // Generate agent orbital data
   const agents = useMemo(() => {
     const data = [];
-    const effectiveCount = Math.min(Math.max(agentCount, 5), MAX_AGENTS);
+    const effectiveCount = Math.min(Math.max(agentCount, 0), MAX_AGENTS);
     const effectiveHives = Math.max(hiveCount, 1);
 
     for (let i = 0; i < effectiveCount; i++) {
       const hiveIndex = i % effectiveHives;
       const baseRadius = 5 + hiveIndex * 2.5 + (generation * 0.3);
-      const radiusJitter = (Math.random() - 0.5) * 1.5;
+      const radiusJitter = Math.sin((i + 1) * 1.618) * 0.75;
       const radius = baseRadius + radiusJitter;
 
       // Orbital parameters
       const angle = (i / effectiveCount) * Math.PI * 2 + hiveIndex * 1.2;
-      const speed = (0.15 + Math.random() * 0.15) / (1 + hiveIndex * 0.3);
-      const yOffset = (Math.random() - 0.5) * 2.0;
-      const yWobble = Math.random() * 0.5;
-      const size = 0.08 + Math.random() * 0.12;
+      const speed = (0.15 + ((i % 7) / 7) * 0.15) / (1 + hiveIndex * 0.3);
+      const yOffset = Math.sin((i + 1) * 2.414) * 1.0;
+      const yWobble = (i % 5) * 0.1;
+      const size = 0.08 + (i % 6) * 0.02;
 
       // Profit status determines color
-      const profitChance = queenPnl > 0 ? 0.7 : queenPnl < 0 ? 0.2 : 0.5;
-      const isProfitable = Math.random() < profitChance;
-      const isNeutral = Math.random() < 0.3;
-
       let color: THREE.Color;
-      if (isNeutral) {
+      if (queenPnl === 0) {
         color = new THREE.Color(0.9, 0.7, 0.2); // amber
-      } else if (isProfitable) {
+      } else if (queenPnl > 0) {
         color = new THREE.Color(0.1, 0.9, 0.4); // green
       } else {
         color = new THREE.Color(0.9, 0.2, 0.2); // red
@@ -100,7 +96,7 @@ export function HiveConstellation({
     if (glowRef.current.instanceColor) glowRef.current.instanceColor.needsUpdate = true;
   });
 
-  const count = Math.min(Math.max(agentCount, 5), MAX_AGENTS);
+  const count = Math.min(Math.max(agentCount, 0), MAX_AGENTS);
 
   return (
     <group>

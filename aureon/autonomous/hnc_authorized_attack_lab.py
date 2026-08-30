@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Any, Optional, Sequence
 from urllib.parse import urlparse
 
+from aureon.obsidian_paths import resolve_obsidian_note_path
 from aureon.autonomous.hnc_saas_security_architect import (
     DEFAULT_OUTPUT_JSON as DEFAULT_BLUEPRINT_JSON,
     OFFICIAL_ANCHORS,
@@ -631,7 +632,7 @@ def write_report(
     root = Path(report.repo_root)
     md_path = markdown_path if markdown_path.is_absolute() else root / markdown_path
     js_path = json_path if json_path.is_absolute() else root / json_path
-    note_path = vault_path if vault_path.is_absolute() else root / vault_path
+    note_path = resolve_obsidian_note_path(vault_path, repo_root=root)
     md_path.parent.mkdir(parents=True, exist_ok=True)
     js_path.parent.mkdir(parents=True, exist_ok=True)
     note_path.parent.mkdir(parents=True, exist_ok=True)

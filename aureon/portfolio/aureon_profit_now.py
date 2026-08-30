@@ -131,6 +131,13 @@ class MasterEquation:
         # Coherence Γ
         variance = max(abs(market_data['high'] - market_data['low']) / market_data['price'], 0.001)
         coherence = max(1 - (variance / 10), 0.0)
+        # Reconcile with the canonical HNC field: the shared Γ can only tighten
+        # this live gate, never loosen it (b46 order-path wiring).
+        try:
+            from aureon.core.hnc_field import reconcile_gamma
+            coherence = reconcile_gamma(coherence)
+        except Exception:
+            pass
         
         return {
             'lambda': lambda_t,

@@ -14,7 +14,7 @@ from Kings_Accounting_Suite.tools.company_house_tax_audit import (
 
 def test_parse_companies_house_profile_marks_overdue_and_strike_off() -> None:
     html = """
-    <h1>R&amp;A CONSULTING AND BROKERAGE SERVICES LTD</h1>
+    <h1>EXAMPLE TRADING LTD</h1>
     Company number 00000000
     Registered office address 123 Test Street
     Company status Active -- Active proposal to strike off

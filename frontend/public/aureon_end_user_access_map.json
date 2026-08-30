@@ -37,7 +37,7 @@
       "label": "Local runtime",
       "user_action": "Start and validate the local operator runtime.",
       "primary_docs": ["RUNNING.md", "QUICK_START.md"],
-      "related_systems": ["AUREON_PRODUCTION_LIVE.cmd", "AUREON_DATA_OCEAN.cmd", "aureon/", "scripts/"],
+      "related_systems": ["scripts/launchers/AUREON_PRODUCTION_LIVE.cmd", "scripts/launchers/AUREON_DATA_OCEAN.cmd", "aureon/", "scripts/"],
       "runtime_or_api_surface": ["http://127.0.0.1:8791/api/terminal-state"],
       "safety_gate": "Validate env and dry-run/live mode first."
     },

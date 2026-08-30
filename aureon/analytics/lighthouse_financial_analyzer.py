@@ -1,15 +1,59 @@
-from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
 import argparse
-import re
-from datetime import datetime
+import json
+import math
+import time
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional, Sequence, Tuple
+from typing import Any, Mapping, Optional, Sequence, Tuple
 
 import numpy as np
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 
 from aureon.analytics.lighthouse_metrics import LighthouseMetricsEngine
+
+
+MAX_SOURCE_AGE_SECONDS = 3600.0
+FUTURE_SKEW_SECONDS = 5.0
+
+
+def _finite_positive(value: Any) -> Optional[float]:
+    try:
+        number = float(value)
+    except (TypeError, ValueError, OverflowError):
+        return None
+    return number if math.isfinite(number) and number > 0 else None
+
+
+def _timestamp_seconds(value: Any) -> Optional[float]:
+    try:
+        number = float(value)
+    except (TypeError, ValueError, OverflowError):
+        number = None
+    if number is not None and math.isfinite(number):
+        if number > 100_000_000_000:
+            number /= 1000.0
+        return number if number > 0 else None
+    if not isinstance(value, str) or not value.strip():
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.timestamp()
+
+
+def _proven_receipt_meta(meta: Any) -> bool:
+    return bool(
+        isinstance(meta, Mapping)
+        and meta.get("truth_status") == "real_observed"
+        and meta.get("generated_values") is False
+        and meta.get("eligible_for_analysis") is True
+        and meta.get("source_ids")
+        and meta.get("receipt_ids")
+    )
 
 
 class LighthouseFinancialAnalyzer:
@@ -27,37 +71,17 @@ class LighthouseFinancialAnalyzer:
         self.DISTORTION_FREQ = 440
         self.INTERFERENCE_RATIO = self.DISTORTION_FREQ / self.RESTORATION_FREQ
         self.cmap = plt.get_cmap("turbo")
-        self.rng = np.random.default_rng(random_state)
         self.metrics_engine = LighthouseMetricsEngine(
             restoration_freq=self.RESTORATION_FREQ,
             distortion_freq=self.DISTORTION_FREQ,
         )
 
     def generate_market_data(self, n_points=1000, mode="mixed"):
-        """
-        Simulates a 'Financial Ego System' time series.
-        Generates a signal that transitions from:
-        1. Lighthouse State (Stable, Harmonic)
-        2. Ego State (Chaotic, High-Frequency Noise)
-        """
-        t = np.linspace(0, 10, n_points)
-
-        if mode == "stable":
-            signal = np.sin(2 * np.pi * 1.0 * t) * 100 + 200
-        elif mode == "chaos":
-            r = 3.9
-            x = np.empty(n_points)
-            x[0] = 0.5
-            for i in range(1, n_points):
-                x[i] = r * x[i - 1] * (1 - x[i - 1])
-            signal = x * 100 + 150
-        else:
-            carrier = np.linspace(200, 400, n_points)
-            harmony = np.sin(2 * np.pi * 0.5 * t) * 20
-            noise_amp = np.linspace(0, 50, n_points) * self.rng.normal(0, 1, n_points)
-            signal = carrier + harmony + noise_amp
-
-        return t, signal
+        """Retired generated-data entry point retained for compatibility."""
+        raise RuntimeError(
+            "no_data: generated Lighthouse market series are retired; "
+            "load a provider-observed log price series"
+        )
 
     def phase_space_reconstruction(self, data, delay=10):
         """TOOL I: PHASE SPACE RECONSTRUCTION."""
@@ -86,78 +110,88 @@ class LighthouseFinancialAnalyzer:
         asset: Optional[str] = None,
         resample_seconds: Optional[float] = None,
         limit: Optional[int] = None,
+        max_age_seconds: float = MAX_SOURCE_AGE_SECONDS,
+        received_at: Optional[float] = None,
     ) -> Tuple[np.ndarray, np.ndarray, dict]:
-        pattern = re.compile(
-            r"^(?P<ts>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}),(?P<msec>\d+) .*?Kelly Calc: (?P<asset>[A-Z0-9]+).*?Price: \$(?P<price>[0-9.]+)"
-        )
-        timestamps = []
-        prices = []
-        assets = []
-
-        with open(log_path, "r", encoding="utf-8", errors="ignore") as handle:
+        """Load a regular series of fresh JSONL provider-price receipts."""
+        if resample_seconds is not None:
+            raise ValueError("no_data: interpolated/resampled prices are not accepted")
+        now = time.time() if received_at is None else float(received_at)
+        observations = []
+        rejected_rows = 0
+        with open(log_path, "r", encoding="utf-8") as handle:
             for line in handle:
-                match = pattern.search(line)
-                if not match:
-                    continue
-                asset_code = match.group("asset")
-                if asset and asset_code != asset:
-                    continue
-                ts_raw = f"{match.group('ts')}.{match.group('msec')}"
                 try:
-                    ts = datetime.strptime(ts_raw, "%Y-%m-%d %H:%M:%S.%f")
-                except ValueError:
+                    row = json.loads(line)
+                except json.JSONDecodeError:
+                    rejected_rows += 1
                     continue
-                price = float(match.group("price"))
-                timestamps.append(ts)
-                prices.append(price)
-                assets.append(asset_code)
+                if not isinstance(row, Mapping):
+                    rejected_rows += 1
+                    continue
+                asset_code = str(row.get("asset") or row.get("symbol") or "").strip().upper()
+                if not asset_code or (asset and asset_code != asset.upper()):
+                    continue
+                if row.get("truth_status") != "real_observed" or row.get("generated_values") is not False:
+                    rejected_rows += 1
+                    continue
+                source_id = str(row.get("source_id") or "").strip()
+                receipt_id = str(row.get("receipt_id") or "").strip()
+                source_timestamp = _timestamp_seconds(row.get("source_timestamp"))
+                row_received_at = _timestamp_seconds(row.get("received_at"))
+                price = _finite_positive(row.get("price"))
+                if not source_id or not receipt_id or source_timestamp is None or row_received_at is None or price is None:
+                    rejected_rows += 1
+                    continue
+                age = now - source_timestamp
+                if age < -FUTURE_SKEW_SECONDS or age > max_age_seconds:
+                    rejected_rows += 1
+                    continue
+                if row_received_at < source_timestamp - FUTURE_SKEW_SECONDS or row_received_at > now + FUTURE_SKEW_SECONDS:
+                    rejected_rows += 1
+                    continue
+                observations.append(
+                    (source_timestamp, price, asset_code, source_id, receipt_id)
+                )
 
-        if not timestamps:
-            raise ValueError("No matching price entries found in log.")
-
+        observations.sort(key=lambda item: item[0])
         if limit is not None and limit > 0:
-            timestamps = timestamps[-limit:]
-            prices = prices[-limit:]
-            assets = assets[-limit:]
+            observations = observations[-limit:]
+        if len(observations) < 8:
+            raise ValueError("no_data: at least eight fresh provider receipts are required")
 
-        unix_seconds = np.array([(ts - timestamps[0]).total_seconds() for ts in timestamps])
-        sorted_idx = np.argsort(unix_seconds)
-        unix_seconds = unix_seconds[sorted_idx]
-        prices = np.array(prices)[sorted_idx]
-        assets = np.array(assets)[sorted_idx]
+        assets = {item[2] for item in observations}
+        if len(assets) != 1:
+            raise ValueError("no_data: a Lighthouse price series must contain exactly one asset")
+        absolute_timestamps = np.array([item[0] for item in observations], dtype=float)
+        if np.any(np.diff(absolute_timestamps) <= 0):
+            raise ValueError("no_data: provider source timestamps must be strictly increasing")
+        diffs = np.diff(absolute_timestamps)
+        step = float(np.median(diffs))
+        if step <= 0 or np.max(np.abs(diffs - step)) > step * 0.10:
+            raise ValueError("no_data: provider observations are not regularly sampled")
 
-        unique_mask = np.concatenate(([True], np.diff(unix_seconds) > 0))
-        unix_seconds = unix_seconds[unique_mask]
-        prices = prices[unique_mask]
-        assets = assets[unique_mask]
-
-        if len(unix_seconds) < 3:
-            raise ValueError("Not enough data points after filtering to construct a series.")
-
-        diffs = np.diff(unix_seconds)
-        positive_diffs = diffs[diffs > 0]
-        if positive_diffs.size == 0:
-            raise ValueError("Timestamps are not strictly increasing; cannot compute sampling rate.")
-
-        step = resample_seconds or float(np.median(positive_diffs))
-        if step <= 0:
-            step = float(np.mean(positive_diffs))
-        if step <= 0:
-            step = 1.0
-
-        target_grid = np.arange(0, unix_seconds[-1] + step, step)
-        resampled_prices = np.interp(target_grid, unix_seconds, prices)
-
+        timestamps = absolute_timestamps - absolute_timestamps[0]
+        prices = np.array([item[1] for item in observations], dtype=float)
         meta = {
-            "asset": asset if asset else "MULTI",
-            "points": len(resampled_prices),
+            "asset": next(iter(assets)),
+            "points": len(observations),
             "source": str(log_path),
             "step_seconds": step,
-            "start": timestamps[0].isoformat(),
-            "end": timestamps[-1].isoformat(),
+            "start_source_timestamp": float(absolute_timestamps[0]),
+            "source_timestamp": float(absolute_timestamps[-1]),
+            "received_at": now,
+            "source_ids": sorted({item[3] for item in observations}),
+            "receipt_ids": [item[4] for item in observations],
+            "truth_status": "real_observed",
+            "generated_values": False,
+            "eligible_for_analysis": True,
+            "eligible_for_action": False,
+            "eligible_for_accounting": False,
+            "eligible_for_learning": False,
+            "rejected_rows": rejected_rows,
         }
-
-        return target_grid, resampled_prices, meta
+        return timestamps, prices, meta
 
     def run_dashboard(
         self,
@@ -268,24 +302,20 @@ class LighthouseFinancialAnalyzer:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Lighthouse Protocol Financial Analyzer")
-    parser.add_argument("--source", choices=["synthetic", "log"], default="synthetic", help="Data source to drive the dashboard")
-    parser.add_argument("--mode", choices=["mixed", "stable", "chaos"], default="mixed", help="Synthetic data regime when --source=synthetic")
-    parser.add_argument("--log-path", type=str, help="Path to trading log file when --source=log")
+    parser.add_argument("--source", choices=["log"], default="log", help="Observed data source")
+    parser.add_argument("--log-path", type=str, required=True, help="Path to provider-observed trading log")
     parser.add_argument("--asset", type=str, help="Asset symbol to filter within the log (default: all)")
     parser.add_argument("--resample", type=float, help="Resample step in seconds for log data")
     parser.add_argument("--limit", type=int, help="Limit number of log entries (latest N)")
     parser.add_argument("--delay", type=int, help="Custom delay for phase-space reconstruction")
-    parser.add_argument("--seed", type=int, default=7, help="Random seed for synthetic noise generation")
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = parse_args()
-    analyzer = LighthouseFinancialAnalyzer(random_state=args.seed)
+    analyzer = LighthouseFinancialAnalyzer()
 
     if args.source == "log":
-        if not args.log_path:
-            raise SystemExit("--log-path is required when --source=log")
         grid, prices, meta = analyzer.load_log_price_series(
             Path(args.log_path),
             asset=args.asset,
@@ -299,5 +329,3 @@ if __name__ == "__main__":
             source_label=label,
             phase_delay=args.delay,
         )
-    else:
-        analyzer.run_dashboard(mode=args.mode, phase_delay=args.delay)

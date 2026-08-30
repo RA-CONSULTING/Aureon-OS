@@ -1,9 +1,248 @@
 #!/usr/bin/env python3
-import time
+import hashlib
 import threading
+import time
 import unittest
+from pathlib import Path
 
-from aureon.exchanges.capital_cfd_trader import CAPITAL_MIN_PROFIT_GBP, CFD_FLAGS, CapitalCFDTrader, CFDPosition, CFDShadowTrade
+import pytest
+
+from aureon.core import aureon_thought_bus as thought_bus_module
+from aureon.exchanges import capital_cfd_trader as capital_cfd_trader_module
+from aureon.exchanges.capital_cfd_trader import (
+    CAPITAL_MIN_PROFIT_GBP,
+    CFD_FLAGS,
+    CapitalCFDTrader,
+    CFDPosition,
+    CFDShadowTrade,
+)
+from aureon.trading import order_lifecycle as order_lifecycle_module
+
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+_PROTECTED_WORKSPACE_PATHS = tuple(
+    dict.fromkeys(
+        (
+            capital_cfd_trader_module.CAPITAL_TRACE_PATH,
+            capital_cfd_trader_module.CAPITAL_PROMOTION_LOG_PATH,
+            capital_cfd_trader_module.CAPITAL_ASSET_REGISTRY_PATH,
+            capital_cfd_trader_module.CAPITAL_ASSET_REGISTRY_AUDIT_PATH,
+            capital_cfd_trader_module.CAPITAL_EXECUTION_JOURNAL_PATH,
+            _REPO_ROOT / "state" / "unified_order_lifecycle_latest.json",
+            _REPO_ROOT / "state" / "unified_order_lifecycle_events.jsonl",
+            _REPO_ROOT
+            / "frontend"
+            / "public"
+            / "aureon_unified_order_lifecycle.json",
+            _REPO_ROOT / "state" / "capital_thoughts.jsonl",
+            _REPO_ROOT / "thoughts.jsonl",
+        )
+    )
+)
+
+
+def _workspace_fingerprint(path: Path):
+    if not path.exists():
+        return None
+    stat = path.stat()
+    return (
+        stat.st_size,
+        stat.st_mtime_ns,
+        hashlib.sha256(path.read_bytes()).hexdigest(),
+    )
+
+
+@pytest.fixture(scope="module", autouse=True)
+def _protect_workspace_state():
+    protected_before = {
+        path: _workspace_fingerprint(path) for path in _PROTECTED_WORKSPACE_PATHS
+    }
+    yield
+    protected_after = {
+        path: _workspace_fingerprint(path) for path in _PROTECTED_WORKSPACE_PATHS
+    }
+    assert protected_after == protected_before
+
+
+@pytest.fixture(autouse=True)
+def _isolate_capital_runtime(monkeypatch, tmp_path):
+    runtime_root = tmp_path / "capital-runtime"
+    state_root = runtime_root / "state"
+    audit_root = runtime_root / "docs" / "audits"
+    monkeypatch.setattr(
+        capital_cfd_trader_module,
+        "CAPITAL_TRACE_PATH",
+        state_root / "capital_cfd_last_exchange_trace.json",
+    )
+    monkeypatch.setattr(
+        capital_cfd_trader_module,
+        "CAPITAL_PROMOTION_LOG_PATH",
+        state_root / "capital_shadow_promotions.jsonl",
+    )
+    monkeypatch.setattr(
+        capital_cfd_trader_module,
+        "CAPITAL_ASSET_REGISTRY_PATH",
+        state_root / "aureon_capital_tradable_asset_registry.json",
+    )
+    monkeypatch.setattr(
+        capital_cfd_trader_module,
+        "CAPITAL_ASSET_REGISTRY_AUDIT_PATH",
+        audit_root / "aureon_capital_tradable_asset_registry.json",
+    )
+    monkeypatch.setattr(
+        capital_cfd_trader_module,
+        "CAPITAL_EXECUTION_JOURNAL_PATH",
+        state_root / "capital_cfd_pending_execution.json",
+    )
+    monkeypatch.setenv("AUREON_BUS_TRACE_DIR", str(state_root / "bus-traces"))
+    isolated_bus = thought_bus_module.ThoughtBus(
+        persist_path=str(state_root / "capital_thoughts.jsonl")
+    )
+    monkeypatch.setattr(thought_bus_module, "_thought_bus_instance", isolated_bus)
+    monkeypatch.setattr(
+        thought_bus_module,
+        "get_thought_bus",
+        lambda persist_path=None: isolated_bus,
+    )
+    monkeypatch.setattr(
+        capital_cfd_trader_module,
+        "get_thought_bus",
+        lambda persist_path=None: isolated_bus,
+    )
+    real_append_event = order_lifecycle_module.append_event
+
+    def append_isolated_event(*args, **kwargs):
+        kwargs["root"] = runtime_root
+        return real_append_event(*args, **kwargs)
+
+    monkeypatch.setattr(
+        capital_cfd_trader_module,
+        "append_order_lifecycle_event",
+        append_isolated_event,
+    )
+
+
+def _fee_receipt(amount=0.0, *, source_id="capital_transaction:test-fee"):
+    now = time.time()
+    return {
+        "amount": amount,
+        "currency": "GBP",
+        "source_id": source_id,
+        "source_timestamp": now - 0.2,
+        "received_at": now - 0.1,
+        "truth_status": "real_observed",
+        "generated_values": False,
+    }
+
+
+def _submission_ack(deal_reference, *, purpose="open_position"):
+    now = time.time()
+    return {
+        "purpose": purpose,
+        "status": "submitted",
+        "reason": "terminal_provider_confirmation_required",
+        "truth_status": "real_observed",
+        "dealReference": deal_reference,
+        "provider_order_id": deal_reference,
+        "source_id": f"capital_submission:{deal_reference}",
+        "source_timestamp": now - 0.4,
+        "received_at": now - 0.3,
+        "generated_values": False,
+        "submission_acknowledged": True,
+        "terminal_fill": False,
+        "terminal_fill_receipt_complete": False,
+        "eligible_for_state": False,
+        "eligible_for_pnl": False,
+        "eligible_for_learning": False,
+    }
+
+
+def _terminal_receipt(
+    deal_reference,
+    *,
+    deal_id,
+    epic,
+    side,
+    affected_status,
+    price,
+    quantity,
+    fee=0.0,
+):
+    now = time.time()
+    return {
+        "status": "filled",
+        "reason": "complete_terminal_provider_fill_receipt",
+        "truth_status": "real_observed",
+        "provider_order_id": deal_reference,
+        "provider_deal_id": deal_id,
+        "epic": epic,
+        "side": side,
+        "filled_qty": quantity,
+        "filled_avg_price": price,
+        "affected_deals": [{"dealId": deal_id, "status": affected_status}],
+        "source_id": f"capital_confirmation:{deal_reference}",
+        "source_timestamp": now - 0.2,
+        "received_at": now - 0.1,
+        "generated_values": False,
+        "terminal_fill": True,
+        "terminal_fill_receipt_complete": True,
+        "eligible_for_state": True,
+        "eligible_for_pnl": True,
+        "eligible_for_learning": True,
+        "fee_receipt": _fee_receipt(
+            fee,
+            source_id=f"capital_transaction:fee-{deal_reference}",
+        ),
+    }
+
+
+def _incomplete_terminal_receipt(deal_reference, *, deal_id):
+    now = time.time()
+    return {
+        "status": "filled_unsettled",
+        "reason": "provider_fee_receipt_required_for_state_pnl_and_learning",
+        "truth_status": "incomplete",
+        "provider_order_id": deal_reference,
+        "provider_deal_id": deal_id,
+        "source_id": f"capital_confirmation:{deal_reference}",
+        "source_timestamp": now - 0.2,
+        "received_at": now - 0.1,
+        "generated_values": False,
+        "terminal_fill": True,
+        "terminal_fill_receipt_complete": False,
+        "eligible_for_state": False,
+        "eligible_for_pnl": False,
+        "eligible_for_learning": False,
+    }
+
+
+def _rejection_receipt(deal_reference, *, reason):
+    now = time.time()
+    return {
+        "status": "rejected",
+        "reason": reason,
+        "truth_status": "real_observed",
+        "provider_order_id": deal_reference,
+        "source_id": f"capital_confirmation:{deal_reference}",
+        "source_timestamp": now - 0.2,
+        "received_at": now - 0.1,
+        "generated_values": False,
+        "terminal_fill": False,
+    }
+
+
+def _receipted_position(**kwargs):
+    position = CFDPosition(**kwargs)
+    position.entry_fill_receipt = _terminal_receipt(
+        f"ENTRY-{position.deal_id}",
+        deal_id=position.deal_id,
+        epic=position.epic,
+        side=position.direction,
+        affected_status="OPENED",
+        price=position.entry_price,
+        quantity=position.size,
+    )
+    position.entry_fill_receipt_complete = True
+    return position
 
 
 class ClientStub:
@@ -55,7 +294,7 @@ class ClientStub:
     def update_position_limits(self, deal_id: str, **kwargs):
         return {"success": True, "deal_id": deal_id, "kwargs": kwargs}
 
-    def confirm_order(self, deal_reference: str):
+    def confirm_order(self, deal_reference: str, *, fee_receipt=None):
         return dict(self._confirm_result)
 
     def _resolve_market(self, symbol: str):
@@ -83,6 +322,12 @@ class TestCapitalCFDSync(unittest.TestCase):
         trader = CapitalCFDTrader.__new__(CapitalCFDTrader)
         trader.client = client
         trader.positions = []
+        trader._unsettled_provider_positions = {}
+        trader._execution_journal_loaded = False
+        trader._execution_journal_blocked = False
+        trader._execution_journal_error = ""
+        trader._pending_executions = {}
+        trader._completed_executions = {}
         trader.shadow_trades = []
         trader._prices = {}
         trader._prices_lock = threading.RLock()
@@ -698,14 +943,27 @@ class TestCapitalCFDSync(unittest.TestCase):
             def learning_snapshot(self):
                 return {"total_feedback": 1.0, "win_bias": 1.0}
 
-        trader = self._build_trader(ClientStub(close_result={"success": True}))
+        trader = self._build_trader(ClientStub(
+            close_result=_submission_ack(
+                "CLOSE-D5", purpose="close_position"
+            ),
+            confirm_result=_terminal_receipt(
+                "CLOSE-D5",
+                deal_id="D5",
+                epic="CS.D.SILVER.CFD.IP",
+                side="SELL",
+                affected_status="CLOSED",
+                price=101.0,
+                quantity=1,
+            ),
+        ))
         trader._signal_brain = BrainStub()
         trader._latest_candidate_snapshot = [{
             "symbol": "SILVER",
             "brain_coherence": 0.8,
             "self_confidence": 0.7,
         }]
-        pos = CFDPosition(
+        pos = _receipted_position(
             symbol="SILVER",
             deal_id="D5",
             epic="CS.D.SILVER.CFD.IP",
@@ -729,13 +987,27 @@ class TestCapitalCFDSync(unittest.TestCase):
             def learn_from_outcome(self, symbol, pnl, confidence=0.5):
                 return {"symbol_bias": 0.12, "reward": pnl}
 
-        trader = self._build_trader(ClientStub(close_result={"success": True}))
+        trader = self._build_trader(ClientStub(
+            close_result=_submission_ack(
+                "CLOSE-D6", purpose="close_position"
+            ),
+            confirm_result=_terminal_receipt(
+                "CLOSE-D6",
+                deal_id="D6",
+                epic="CS.D.SILVER.CFD.IP",
+                side="SELL",
+                affected_status="CLOSED",
+                price=101.0,
+                quantity=1,
+            ),
+        ))
         trader._signal_brain = BrainStub()
         trader.thought_bus = ThoughtBusStub()
-        from aureon.core.aureon_thought_bus import Thought
         import aureon.exchanges.capital_cfd_trader as capital_cfd_trader_module
+        from aureon.core.aureon_thought_bus import Thought
+
         capital_cfd_trader_module.Thought = Thought
-        pos = CFDPosition(
+        pos = _receipted_position(
             symbol="SILVER",
             deal_id="D6",
             epic="CS.D.SILVER.CFD.IP",
@@ -1256,8 +1528,16 @@ class TestCapitalCFDSync(unittest.TestCase):
             },
         }
         trader = self._build_trader(ClientStub(
-            open_result={"dealReference": "REF-DELAY"},
-            confirm_result={"dealId": "DDELAY", "level": 7282.6},
+            open_result=_submission_ack("REF-DELAY"),
+            confirm_result=_terminal_receipt(
+                "REF-DELAY",
+                deal_id="DDELAY",
+                epic="CS.D.SILVER.CFD.IP",
+                side="BUY",
+                affected_status="OPENED",
+                price=7282.6,
+                quantity=1,
+            ),
             accounts=[{"accountId": "A1", "balance": 50000.0, "available": 50000.0, "currency": "GBP"}],
         ))
         trader.client._position_batches = [[], [], [live_position]]
@@ -1271,11 +1551,13 @@ class TestCapitalCFDSync(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertEqual(result.deal_id, "DDELAY")
 
-    def test_open_position_requires_exchange_validation(self):
+    def test_open_position_requires_terminal_provider_receipt(self):
         trader = self._build_trader(ClientStub(
             positions=[],
-            open_result={"dealReference": "REF-NO-LIVE"},
-            confirm_result={"dealId": "D-NO-LIVE", "level": 7282.6},
+            open_result=_submission_ack("REF-NO-LIVE"),
+            confirm_result=_incomplete_terminal_receipt(
+                "REF-NO-LIVE", deal_id="D-NO-LIVE"
+            ),
         ))
 
         result = trader._open_position(
@@ -1291,13 +1573,10 @@ class TestCapitalCFDSync(unittest.TestCase):
     def test_open_position_stops_immediately_on_capital_reject_reason(self):
         trader = self._build_trader(ClientStub(
             positions=[],
-            open_result={"dealReference": "REF-REJECT"},
-            confirm_result={
-                "dealId": "D-REJECT",
-                "dealStatus": "REJECTED",
-                "rejectReason": "RISK_CHECK",
-                "status": "DELETED",
-            },
+            open_result=_submission_ack("REF-REJECT"),
+            confirm_result=_rejection_receipt(
+                "REF-REJECT", reason="RISK_CHECK"
+            ),
             accounts=[{"accountId": "A1", "balance": 50000.0, "available": 50000.0, "currency": "GBP"}],
         ))
 
@@ -1308,9 +1587,13 @@ class TestCapitalCFDSync(unittest.TestCase):
         )
 
         self.assertIsNone(result)
-        self.assertIn("RISK_CHECK", trader._latest_order_error)
+        completed = trader._completed_executions["REF-REJECT"]
+        self.assertEqual(completed["status"], "rejected")
+        self.assertEqual(completed["terminal_receipt"]["status"], "rejected")
+        self.assertEqual(completed["result"]["reason"], "RISK_CHECK")
+        self.assertIs(completed["result"]["eligible_for_state"], False)
 
-    def test_sync_positions_from_exchange_rebuilds_live_position(self):
+    def test_sync_provider_visible_position_is_risk_only_until_terminal_receipt(self):
         trader = CapitalCFDTrader.__new__(CapitalCFDTrader)
         trader.client = ClientStub(positions=[{
             "position": {
@@ -1334,12 +1617,18 @@ class TestCapitalCFDSync(unittest.TestCase):
 
         trader._sync_positions_from_exchange(force=True)
 
-        self.assertEqual(len(trader.positions), 1)
-        pos = trader.positions[0]
-        self.assertEqual(pos.symbol, "SILVER")
-        self.assertEqual(pos.deal_id, "D1")
-        self.assertEqual(pos.direction, "BUY")
-        self.assertGreater(pos.tp_price, pos.entry_price)
+        self.assertEqual(trader.positions, [])
+        risk_only = trader._unsettled_provider_positions["D1"]
+        self.assertEqual(risk_only["status"], "pending_reconciliation")
+        self.assertEqual(
+            risk_only["reason"],
+            "broker_position_visible_terminal_fill_receipt_pending",
+        )
+        self.assertEqual(risk_only["symbol"], "SILVER")
+        self.assertEqual(risk_only["direction"], "BUY")
+        self.assertIs(risk_only["eligible_for_state"], False)
+        self.assertIs(risk_only["eligible_for_pnl"], False)
+        self.assertIs(risk_only["eligible_for_learning"], False)
 
     def test_open_position_accepts_verified_live_deal(self):
         live_position = {
@@ -1359,8 +1648,16 @@ class TestCapitalCFDSync(unittest.TestCase):
         }
         trader = self._build_trader(ClientStub(
             positions=[live_position],
-            open_result={"dealReference": "REF1"},
-            confirm_result={"dealId": "DOPEN", "level": 7282.6},
+            open_result=_submission_ack("REF1"),
+            confirm_result=_terminal_receipt(
+                "REF1",
+                deal_id="DOPEN",
+                epic="CS.D.SILVER.CFD.IP",
+                side="BUY",
+                affected_status="OPENED",
+                price=7282.6,
+                quantity=1,
+            ),
             accounts=[{"accountId": "A1", "balance": 50000.0, "available": 50000.0, "currency": "GBP"}],
         ))
 
@@ -1393,8 +1690,16 @@ class TestCapitalCFDSync(unittest.TestCase):
         }
         client = ClientStub(
             positions=[live_position],
-            open_result={"dealReference": "REFSELL"},
-            confirm_result={"dealId": "DSELL", "level": 7249.8},
+            open_result=_submission_ack("REFSELL"),
+            confirm_result=_terminal_receipt(
+                "REFSELL",
+                deal_id="DSELL",
+                epic="CS.D.SILVER.CFD.IP",
+                side="SELL",
+                affected_status="OPENED",
+                price=7249.8,
+                quantity=1,
+            ),
             accounts=[{"accountId": "A1", "balance": 50000.0, "available": 50000.0, "currency": "GBP"}],
         )
         trader = self._build_trader(client)
@@ -1437,8 +1742,17 @@ class TestCapitalCFDSync(unittest.TestCase):
                 self._sequence += 1
                 deal_id = f"DSTRESS{self._sequence}"
                 self.order_calls.append((symbol, side.upper(), size, kwargs))
-                self._open_result = {"dealReference": f"REF-{deal_id}", "dealId": deal_id}
-                self._confirm_result = {"dealId": deal_id, "level": 100.0}
+                deal_reference = f"REF-{deal_id}"
+                self._open_result = _submission_ack(deal_reference)
+                self._confirm_result = _terminal_receipt(
+                    deal_reference,
+                    deal_id=deal_id,
+                    epic=f"CS.D.{symbol}.CFD.IP",
+                    side=side.upper(),
+                    affected_status="OPENED",
+                    price=100.0,
+                    quantity=size,
+                )
                 self._positions.append({
                     "position": {
                         "dealId": deal_id,
@@ -1572,9 +1886,22 @@ class TestCapitalCFDSync(unittest.TestCase):
         CFD_FLAGS["profit_only_closes"] = True
         try:
             trader = CapitalCFDTrader.__new__(CapitalCFDTrader)
-            trader.client = ClientStub(close_result={"success": True})
+            trader.client = ClientStub(
+                close_result=_submission_ack(
+                    "CLOSE-D4", purpose="close_position"
+                ),
+                confirm_result=_terminal_receipt(
+                    "CLOSE-D4",
+                    deal_id="D4",
+                    epic="CS.D.SILVER.CFD.IP",
+                    side="SELL",
+                    affected_status="CLOSED",
+                    price=7335.0,
+                    quantity=1,
+                ),
+            )
             trader.positions = [
-                CFDPosition(
+                _receipted_position(
                     symbol="SILVER",
                     deal_id="D3",
                     epic="CS.D.SILVER.CFD.IP",
@@ -1604,9 +1931,22 @@ class TestCapitalCFDSync(unittest.TestCase):
         CFD_FLAGS["profit_only_closes"] = True
         try:
             trader = CapitalCFDTrader.__new__(CapitalCFDTrader)
-            trader.client = ClientStub(close_result={"success": True})
+            trader.client = ClientStub(
+                close_result=_submission_ack(
+                    "CLOSE-D4", purpose="close_position"
+                ),
+                confirm_result=_terminal_receipt(
+                    "CLOSE-D4",
+                    deal_id="D4",
+                    epic="CS.D.SILVER.CFD.IP",
+                    side="SELL",
+                    affected_status="CLOSED",
+                    price=7335.0,
+                    quantity=1,
+                ),
+            )
             trader.positions = [
-                CFDPosition(
+                _receipted_position(
                     symbol="SILVER",
                     deal_id="D4",
                     epic="CS.D.SILVER.CFD.IP",
@@ -1651,10 +1991,23 @@ class TestCapitalCFDSync(unittest.TestCase):
         CFD_FLAGS["profit_only_closes"] = True
         CFD_FLAGS["penny_take_profit"] = True
         try:
-            trader = self._build_trader(ClientStub(close_result={"success": True}))
+            trader = self._build_trader(ClientStub(
+                close_result=_submission_ack(
+                    "CLOSE-D5P", purpose="close_position"
+                ),
+                confirm_result=_terminal_receipt(
+                    "CLOSE-D5P",
+                    deal_id="D5P",
+                    epic="CS.D.SILVER.CFD.IP",
+                    side="SELL",
+                    affected_status="CLOSED",
+                    price=100.08,
+                    quantity=1,
+                ),
+            ))
             trader.penny_engine = EngineStub()
             trader.positions = [
-                CFDPosition(
+                _receipted_position(
                     symbol="SILVER",
                     deal_id="D5P",
                     epic="CS.D.SILVER.CFD.IP",
@@ -1679,7 +2032,18 @@ class TestCapitalCFDSync(unittest.TestCase):
 
     def test_monitor_positions_fast_profit_capture_closes_tradeable_profit(self):
         trader = self._build_trader(ClientStub(
-            close_result={"success": True},
+            close_result=_submission_ack(
+                "CLOSE-DFAST", purpose="close_position"
+            ),
+            confirm_result=_terminal_receipt(
+                "CLOSE-DFAST",
+                deal_id="DFAST",
+                epic="CS.D.SILVER.CFD.IP",
+                side="SELL",
+                affected_status="CLOSED",
+                price=100.06,
+                quantity=1,
+            ),
             market_snapshot={
                 "instrument": {"epic": "CS.D.SILVER.CFD.IP", "name": "Silver"},
                 "snapshot": {"marketStatus": "TRADEABLE", "bid": 100.05, "offer": 100.07},
@@ -1687,7 +2051,7 @@ class TestCapitalCFDSync(unittest.TestCase):
             },
         ))
         trader.positions = [
-            CFDPosition(
+            _receipted_position(
                 symbol="SILVER",
                 deal_id="DFAST",
                 epic="CS.D.SILVER.CFD.IP",
@@ -1708,7 +2072,11 @@ class TestCapitalCFDSync(unittest.TestCase):
         self.assertEqual(trader.positions, [])
         self.assertIn("FAST_PROFIT_CAPTURE", closed[0]["reason"])
         self.assertGreater(closed[0]["net_pnl"], 0.0)
-        self.assertTrue(closed[0]["fast_profit_capture"]["market_active_for_close"])
+        self.assertTrue(
+            trader._last_fast_profit_capture["checks"][0][
+                "market_active_for_close"
+            ]
+        )
         self.assertEqual(trader._last_fast_profit_capture["ready_to_capture"], 1)
 
     def test_monitor_positions_fast_profit_capture_holds_when_market_closed(self):

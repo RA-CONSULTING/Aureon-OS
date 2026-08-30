@@ -1,20 +1,26 @@
 /**
- * Analytics Tab Content - Displays trading performance analytics
- * 
- * This component is a PURE VIEW that reads from global state.
- * All systems run continuously in GlobalSystemsManager regardless of which tab is active.
+ * Production analytics view. Every displayed value is either a stored provider
+ * observation or a transparent calculation over stored trade receipts.
  */
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
-import { TrendingUp, TrendingDown, BarChart3, Target, Percent, DollarSign, Activity } from 'lucide-react';
+import { TrendingUp, TrendingDown, BarChart3, Percent, DollarSign, Activity } from 'lucide-react';
 import type { GlobalState } from '@/core/globalSystemsManager';
 
 interface AnalyticsTabContentProps {
   globalState: GlobalState;
 }
+
+const finite = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isFinite(value);
+
+const numberText = (value: number | null | undefined, decimals = 2): string =>
+  finite(value) ? value.toFixed(decimals) : 'Unavailable';
+
+const moneyText = (value: number | null | undefined, currency = '$', signed = false): string =>
+  finite(value) ? `${signed && value >= 0 ? '+' : ''}${currency}${value.toFixed(2)}` : 'Unavailable';
 
 export function AnalyticsTabContent({ globalState }: AnalyticsTabContentProps) {
   const {
@@ -27,194 +33,105 @@ export function AnalyticsTabContent({ globalState }: AnalyticsTabContentProps) {
     coherence,
   } = globalState;
 
-  const winRate = totalTrades > 0 ? (winningTrades / totalTrades) * 100 : 0;
-  const losingTrades = totalTrades - winningTrades;
-  const profitFactor = totalPnl > 0 ? (totalPnl / (Math.abs(totalPnl) + 1)) : 0;
-  
-  // Calculate trade statistics
-  const tradePnls = recentTrades.map(t => t.pnl);
-  const avgWin = tradePnls.filter(p => p > 0).reduce((a, b) => a + b, 0) / (tradePnls.filter(p => p > 0).length || 1);
-  const avgLoss = tradePnls.filter(p => p < 0).reduce((a, b) => a + b, 0) / (tradePnls.filter(p => p < 0).length || 1);
-  const expectancy = (winRate / 100 * avgWin) + ((100 - winRate) / 100 * avgLoss);
+  const hasCounts = finite(totalTrades) && totalTrades >= 0 && finite(winningTrades) &&
+    winningTrades >= 0 && winningTrades <= totalTrades;
+  const winRate = hasCounts && totalTrades > 0 ? (winningTrades / totalTrades) * 100 : null;
+  const losingTrades = hasCounts ? totalTrades - winningTrades : null;
+
+  const receiptPnls = recentTrades.map((trade) => trade.pnl).filter(finite);
+  const wins = receiptPnls.filter((pnl) => pnl > 0);
+  const losses = receiptPnls.filter((pnl) => pnl < 0);
+  const avgWin = wins.length > 0 ? wins.reduce((sum, pnl) => sum + pnl, 0) / wins.length : null;
+  const avgLoss = losses.length > 0 ? losses.reduce((sum, pnl) => sum + pnl, 0) / losses.length : null;
+  const grossProfit = wins.length > 0 ? wins.reduce((sum, pnl) => sum + pnl, 0) : null;
+  const grossLoss = losses.length > 0 ? Math.abs(losses.reduce((sum, pnl) => sum + pnl, 0)) : null;
+  const profitFactor = finite(grossProfit) && finite(grossLoss) && grossLoss > 0 ? grossProfit / grossLoss : null;
+  const riskReward = finite(avgWin) && finite(avgLoss) && avgLoss !== 0 ? Math.abs(avgWin / avgLoss) : null;
+  const expectancy = finite(winRate) && finite(avgWin) && finite(avgLoss)
+    ? (winRate / 100) * avgWin + ((100 - winRate) / 100) * avgLoss
+    : null;
 
   return (
     <div className="space-y-4">
-      {/* Performance Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="border-border/50">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-              <span className="text-xs text-muted-foreground">Total P&L</span>
-            </div>
-            <div className={cn(
-              "text-2xl font-mono font-bold",
-              totalPnl >= 0 ? "text-green-400" : "text-red-400"
-            )}>
-              {totalPnl >= 0 ? '+' : ''}${totalPnl.toFixed(2)}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/50">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Percent className="h-4 w-4 text-muted-foreground" />
-              <span className="text-xs text-muted-foreground">Win Rate</span>
-            </div>
-            <div className={cn(
-              "text-2xl font-mono font-bold",
-              winRate >= 51 ? "text-green-400" : "text-yellow-400"
-            )}>
-              {winRate.toFixed(1)}%
-            </div>
-            <Progress 
-              value={winRate} 
-              className={cn(
-                "h-1 mt-2",
-                winRate >= 51 ? "[&>div]:bg-green-500" : "[&>div]:bg-yellow-500"
-              )}
-            />
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/50">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <BarChart3 className="h-4 w-4 text-muted-foreground" />
-              <span className="text-xs text-muted-foreground">Total Trades</span>
-            </div>
-            <div className="text-2xl font-mono font-bold">
-              {totalTrades}
-            </div>
-            <div className="flex gap-2 mt-2 text-xs">
-              <span className="text-green-400">W: {winningTrades}</span>
-              <span className="text-red-400">L: {losingTrades}</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/50">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Target className="h-4 w-4 text-muted-foreground" />
-              <span className="text-xs text-muted-foreground">Expectancy</span>
-            </div>
-            <div className={cn(
-              "text-2xl font-mono font-bold",
-              expectancy >= 0 ? "text-green-400" : "text-red-400"
-            )}>
-              ${expectancy.toFixed(2)}
-            </div>
-            <span className="text-xs text-muted-foreground">per trade</span>
-          </CardContent>
-        </Card>
+        <MetricCard
+          icon={DollarSign}
+          label="Total P&L"
+          value={moneyText(totalPnl, '$', true)}
+          tone={finite(totalPnl) ? (totalPnl >= 0 ? 'positive' : 'negative') : 'neutral'}
+        />
+        <MetricCard
+          icon={Percent}
+          label="Win Rate"
+          value={finite(winRate) ? `${winRate.toFixed(1)}%` : 'Unavailable'}
+        />
+        <MetricCard icon={BarChart3} label="Total Trades" value={finite(totalTrades) ? String(totalTrades) : 'Unavailable'} />
+        <MetricCard
+          icon={Activity}
+          label="Recent-receipt expectancy"
+          value={moneyText(expectancy)}
+          tone={finite(expectancy) ? (expectancy >= 0 ? 'positive' : 'negative') : 'neutral'}
+        />
       </div>
 
-      {/* Detailed Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Trade Analysis */}
         <Card className="border-border/50">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Activity className="h-4 w-4 text-primary" />
-              Trade Analysis
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Receipt-derived statistics</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex justify-between text-xs">
-              <span className="text-muted-foreground">Average Win</span>
-              <span className="font-mono text-green-400">+${avgWin.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between text-xs">
-              <span className="text-muted-foreground">Average Loss</span>
-              <span className="font-mono text-red-400">${avgLoss.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between text-xs">
-              <span className="text-muted-foreground">Risk/Reward</span>
-              <span className="font-mono">{Math.abs(avgWin / (avgLoss || 1)).toFixed(2)}:1</span>
-            </div>
-            <div className="flex justify-between text-xs">
-              <span className="text-muted-foreground">Profit Factor</span>
-              <span className="font-mono">{profitFactor.toFixed(2)}</span>
-            </div>
+          <CardContent className="space-y-3 text-xs">
+            <Row label="Winning trades" value={finite(winningTrades) ? String(winningTrades) : 'Unavailable'} />
+            <Row label="Losing trades" value={finite(losingTrades) ? String(losingTrades) : 'Unavailable'} />
+            <Row label="Recent average win" value={moneyText(avgWin)} />
+            <Row label="Recent average loss" value={moneyText(avgLoss)} />
+            <Row label="Recent risk/reward" value={finite(riskReward) ? `${riskReward.toFixed(2)}:1` : 'Unavailable'} />
+            <Row label="Recent profit factor" value={numberText(profitFactor)} />
           </CardContent>
         </Card>
 
-        {/* Account Status */}
         <Card className="border-border/50">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <DollarSign className="h-4 w-4 text-primary" />
-              Account Status
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Observed account state</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex justify-between text-xs">
-              <span className="text-muted-foreground">Total Equity</span>
-              <span className="font-mono font-bold">${totalEquity.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between text-xs">
-              <span className="text-muted-foreground">Gas Tank</span>
-              <span className="font-mono">£{gasTankBalance.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between text-xs">
-              <span className="text-muted-foreground">Current Coherence</span>
-              <span className={cn(
-                "font-mono",
-                coherence >= 0.7 ? "text-green-400" : "text-yellow-400"
-              )}>
-                {coherence.toFixed(3)}
-              </span>
-            </div>
-            <div className="flex justify-between text-xs">
-              <span className="text-muted-foreground">Trade Readiness</span>
-              <Badge variant={coherence >= 0.7 ? "default" : "secondary"} className="text-[9px]">
-                {coherence >= 0.7 ? "READY" : "WAITING"}
+          <CardContent className="space-y-3 text-xs">
+            <Row label="Total equity" value={moneyText(totalEquity)} />
+            <Row label="Gas tank" value={moneyText(gasTankBalance, '£')} />
+            <Row label="Current coherence" value={numberText(coherence, 3)} />
+            <div className="flex justify-between items-center">
+              <span className="text-muted-foreground">Trade readiness</span>
+              <Badge variant={finite(coherence) && coherence >= 0.7 ? 'default' : 'secondary'} className="text-[9px]">
+                {!finite(coherence) ? 'NO DATA' : coherence >= 0.7 ? 'READY' : 'WAITING'}
               </Badge>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Recent Trade History */}
       <Card className="border-border/50">
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium">Trade History</CardTitle>
+          <CardTitle className="text-sm font-medium">Recent provider receipts</CardTitle>
         </CardHeader>
         <CardContent>
           {recentTrades.length === 0 ? (
-            <p className="text-xs text-muted-foreground text-center py-8">
-              No trades recorded yet. Start trading to see history here.
-            </p>
+            <p className="text-xs text-muted-foreground text-center py-8">No verified trade receipts are available.</p>
           ) : (
             <div className="space-y-2">
-              {recentTrades.slice(0, 10).map((trade, i) => (
-                <div 
-                  key={i}
-                  className="flex items-center justify-between p-3 rounded border border-border/30 text-xs"
-                >
+              {recentTrades.slice(0, 10).map((trade, index) => (
+                <div key={trade.tradeId ?? `${trade.time}-${index}`} className="flex items-center justify-between p-3 rounded border border-border/30 text-xs">
                   <div className="flex items-center gap-3">
-                    {trade.pnl >= 0 ? (
-                      <TrendingUp className="h-4 w-4 text-green-400" />
-                    ) : (
-                      <TrendingDown className="h-4 w-4 text-red-400" />
-                    )}
-                    <Badge variant={trade.side === 'BUY' ? 'default' : 'secondary'}>
-                      {trade.side}
-                    </Badge>
+                    {finite(trade.pnl) && trade.pnl >= 0
+                      ? <TrendingUp className="h-4 w-4 text-success" />
+                      : <TrendingDown className="h-4 w-4 text-destructive" />}
+                    <Badge variant={trade.side === 'BUY' ? 'default' : 'secondary'}>{trade.side}</Badge>
                     <span className="font-mono">{trade.symbol}</span>
                   </div>
                   <div className="flex items-center gap-4">
-                    <span className="text-muted-foreground">Qty: {trade.quantity}</span>
-                    <span className={cn(
-                      "font-mono font-bold",
-                      trade.pnl >= 0 ? "text-green-400" : "text-red-400"
-                    )}>
-                      {trade.pnl >= 0 ? '+' : ''}${trade.pnl.toFixed(2)}
+                    <span className="text-muted-foreground">Qty: {finite(trade.quantity) ? trade.quantity : 'Unavailable'}</span>
+                    <span className={cn('font-mono font-bold', finite(trade.pnl) && (trade.pnl >= 0 ? 'text-success' : 'text-destructive'))}>
+                      {moneyText(trade.pnl, '$', true)}
                     </span>
-                    <Badge variant={trade.success ? "default" : "destructive"} className="text-[9px]">
-                      {trade.success ? "SUCCESS" : "FAILED"}
+                    <Badge variant={trade.success ? 'default' : 'destructive'} className="text-[9px]">
+                      {trade.success ? 'CONFIRMED' : 'FAILED'}
                     </Badge>
                   </div>
                 </div>
@@ -223,55 +140,41 @@ export function AnalyticsTabContent({ globalState }: AnalyticsTabContentProps) {
           )}
         </CardContent>
       </Card>
-
-      {/* Performance Targets */}
-      <Card className="border-border/50">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium">Performance vs Targets</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div>
-              <div className="flex justify-between text-xs mb-1">
-                <span className="text-muted-foreground">Win Rate (Target: 51%+)</span>
-                <span className={cn("font-mono", winRate >= 51 ? "text-green-400" : "text-red-400")}>
-                  {winRate.toFixed(1)}%
-                </span>
-              </div>
-              <Progress 
-                value={winRate} 
-                className={cn("h-2", winRate >= 51 ? "[&>div]:bg-green-500" : "[&>div]:bg-red-500")}
-              />
-            </div>
-            
-            <div>
-              <div className="flex justify-between text-xs mb-1">
-                <span className="text-muted-foreground">Coherence (Target: 0.70+)</span>
-                <span className={cn("font-mono", coherence >= 0.7 ? "text-green-400" : "text-yellow-400")}>
-                  {coherence.toFixed(3)}
-                </span>
-              </div>
-              <Progress 
-                value={coherence * 100} 
-                className={cn("h-2", coherence >= 0.7 ? "[&>div]:bg-green-500" : "[&>div]:bg-yellow-500")}
-              />
-            </div>
-            
-            <div>
-              <div className="flex justify-between text-xs mb-1">
-                <span className="text-muted-foreground">Net Profit</span>
-                <span className={cn("font-mono", totalPnl >= 0 ? "text-green-400" : "text-red-400")}>
-                  {totalPnl >= 0 ? '+' : ''}${totalPnl.toFixed(2)}
-                </span>
-              </div>
-              <Progress 
-                value={totalPnl >= 0 ? Math.min(totalPnl / 100, 100) : 0} 
-                className={cn("h-2", totalPnl >= 0 ? "[&>div]:bg-green-500" : "[&>div]:bg-red-500")}
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
+  );
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex justify-between">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="font-mono">{value}</span>
+    </div>
+  );
+}
+
+function MetricCard({
+  icon: Icon,
+  label,
+  value,
+  tone = 'neutral',
+}: {
+  icon: typeof Activity;
+  label: string;
+  value: string;
+  tone?: 'positive' | 'negative' | 'neutral';
+}) {
+  return (
+    <Card className="border-border/50">
+      <CardContent className="p-4">
+        <div className="flex items-center gap-2 mb-2">
+          <Icon className="h-4 w-4 text-muted-foreground" />
+          <span className="text-xs text-muted-foreground">{label}</span>
+        </div>
+        <div className={cn('text-2xl font-mono font-bold', tone === 'positive' && 'text-success', tone === 'negative' && 'text-destructive')}>
+          {value}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

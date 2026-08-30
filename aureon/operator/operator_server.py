@@ -26,9 +26,12 @@ docs/architecture/AUREON_OPERATOR_SWITCHBOARD.md), not localhost.
 
 from __future__ import annotations
 
+import contextlib
 import json
 import logging
 import os
+import threading
+from types import SimpleNamespace
 from typing import Any, Dict
 
 logger = logging.getLogger("aureon.operator.server")
@@ -55,13 +58,18 @@ def _load_env_file() -> None:
         pass
 
 try:
-    from flask import Flask, Response, jsonify, request, send_from_directory
+    from flask import Flask, Response, g, jsonify, request, send_from_directory
 except Exception as exc:  # noqa: BLE001
     raise SystemExit(
         "Flask is required for the operator server (it is in requirements.txt): "
         f"{exc}"
     ) from exc
 
+from aureon.observability import (  # noqa: E402
+    current_correlation_id,
+    emit_local_event,
+    install_flask_request_correlation,
+)
 from aureon.operator.aureon_operator import AureonOperator  # noqa: E402  (after guarded flask import)
 from aureon.operator.providers import build_provider_set, describe_provider_set  # noqa: E402
 
@@ -94,27 +102,9 @@ def _test_provider_adapter(info: Any, api_key: str, base_url: Any, model: str) -
     import time
 
     try:
-        kind = info.kind
-        if kind in ("openai", "openai_compat"):
-            from aureon.operator.providers import AureonOpenAIAdapter
+        from aureon.operator.providers import build_adapter
 
-            adapter = AureonOpenAIAdapter(api_key=api_key, base_url=base_url, model=model)
-        elif kind == "grok":
-            from aureon.operator.providers import AureonGrokAdapter
-
-            adapter = AureonGrokAdapter(api_key=api_key, base_url=base_url, model=model)
-        elif kind == "gemini":
-            from aureon.operator.providers import AureonGeminiAdapter
-
-            adapter = AureonGeminiAdapter(api_key=api_key, model=model, base_url=base_url)
-        elif kind == "anthropic":
-            from aureon.inhouse_ai.llm_adapter import AureonAnthropicAdapter
-
-            adapter = AureonAnthropicAdapter(api_key=api_key, model=model)
-        else:  # local / self-hosted (Ollama)
-            from aureon.inhouse_ai.llm_adapter import AureonLocalAdapter
-
-            adapter = AureonLocalAdapter(api_key=api_key, base_url=base_url, model=model)
+        adapter = build_adapter(info.kind, api_key=api_key, base_url=base_url, model=model)
 
         t0 = time.perf_counter()
         resp = adapter.prompt(
@@ -132,8 +122,22 @@ def _test_provider_adapter(info: Any, api_key: str, base_url: Any, model: str) -
             "error": "" if ok else (text[:160] or "no response"),
         }
     except Exception as exc:  # noqa: BLE001 — a failed test is a verdict, not a 500
-        return {"ok": False, "latency_ms": 0, "model": model, "sample": "",
-                "error": f"{type(exc).__name__}: {str(exc)[:140]}"}
+        emit_local_event(
+            logger,
+            logging.WARNING,
+            "operator_provider_test_failure",
+            correlation_id=current_correlation_id(),
+            fields={"component": "provider_test", "model": model},
+            exception=exc,
+        )
+        return {
+            "ok": False,
+            "latency_ms": 0,
+            "model": model,
+            "sample": "",
+            "error": "provider_test_failed",
+            "error_type": type(exc).__name__,
+        }
 
 
 PAGE = """<!doctype html>
@@ -257,36 +261,146 @@ input.addEventListener('keydown', e=>{ if(e.key==='Enter') ask(); });
 """
 
 
+# ── What a TENANT may reach: an ALLOWLIST, enforced once in the gate ──────────────────────────
+#
+# Default-deny. Any /api or /mcp route absent from this table is operator-only for a signed-in
+# end user, whichever registrar mounted it.
+#
+# This replaces per-route guarding because per-route guarding failed three audits running, always
+# the same way: the WRITE sibling got a guard and the READ sibling kept serving. Round 1 found
+# unguarded POSTs; round 2 guarded them; round 3 then found GET /api/terminal-state (instance
+# equity, exchange account id, open positions, PnL), GET /api/flight-test and /api/reboot-advice
+# (the instance .env path and which exchange keys were written — the very disclosure round 2 had
+# just closed on /api/env-credentials), GET /api/approvals, GET /api/switchboard, GET /api/pulse
+# and GET /api/action/status. The reason enumeration keeps missing routes is structural: the ~64
+# rules are mounted by five different registrars (this module, saas/gateway, legacy_runtime_api,
+# connections_api, autonomous/aureon_face_app), so no file lists them and no reviewer sees them
+# all. The gate does see them all — so the decision belongs here.
+#
+# The failure mode is now "a tenant feature 403s until it is added here", which is loud and safe,
+# instead of "an instance route leaks until an auditor finds it".
+_TENANT_OWN_PLANE = {
+    # Who am I / what may I do. Reports the caller's own identity and nothing about the instance,
+    # so the console can render the right plane instead of discovering it by collecting 403s.
+    ("GET", "/api/me"),
+    # The user's own data: their keys, their reasoning, their billing.
+    ("GET", "/api/providers"), ("POST", "/api/providers/<provider_id>"),
+    ("DELETE", "/api/providers/<provider_id>"), ("POST", "/api/providers/<provider_id>/test"),
+    ("GET", "/api/connections"), ("GET", "/api/connections/readiness"),
+    ("POST", "/api/connections/<conn_id>"), ("POST", "/api/connections/<conn_id>/test"),
+    ("POST", "/api/cognition/reason"), ("POST", "/api/operator/respond"),
+    ("GET", "/api/cognition/stream"), ("GET", "/api/operator/stream"),
+    ("GET", "/api/billing/balance"), ("GET", "/api/billing/usage"), ("GET", "/api/billing/status"),
+    # Listed, but the view is stricter than this table: it permits a tenant ONLY when they supply
+    # their own botToken, never the instance's bot identity.
+    ("POST", "/api/notifications/telegram"),
+}
+_TENANT_SHOWCASE = {
+    # Read-only views of the organism that are ALREADY public by design — the same material the
+    # /watch surface and the Twitch stream put in front of anonymous visitors. Withholding these
+    # from a signed-in user would protect nothing.
+    ("GET", "/api/catalog"), ("GET", "/api/domains"), ("GET", "/api/domains/<domain>"),
+    ("GET", "/api/coverage"), ("GET", "/api/defense"),
+    ("GET", "/api/organism"), ("GET", "/api/soul"), ("GET", "/api/consciousness"),
+    ("GET", "/api/company"), ("GET", "/api/org"), ("GET", "/api/affect"),
+    ("GET", "/api/pursuit"), ("GET", "/api/inner-work"), ("GET", "/api/metacognition"),
+    ("GET", "/api/automation"), ("GET", "/api/cognition"), ("GET", "/api/cognition/brain"),
+    ("GET", "/api/cognition/bus"), ("GET", "/api/cognition/connectome"),
+    ("GET", "/api/cognition/field"), ("GET", "/api/cognition/mycelium"),
+}
+_TENANT_ALLOWED = _TENANT_OWN_PLANE | _TENANT_SHOWCASE
+
+
 def create_app(operator: AureonOperator | None = None, cognition: Any = None) -> Flask:
     app = Flask("aureon-operator")
+    install_flask_request_correlation(app, logger=logger)
     _operator = operator or AureonOperator()
 
-    # ── Security envelope (auth + rate limit + body cap; off by default) ───────
-    from aureon.operator.security import SecurityConfig, TokenBucket, check_bearer
+    # ── Security envelope (production fail-closed; explicit dev/test is permissive) ──
+    from aureon.operator.identity import resolve_identity
+    from aureon.operator.security import SecurityConfig, TokenBucket
 
     _sec = SecurityConfig.from_env()
+    # End-user tenancy (optional): a Supabase HS256 JWT identifies the caller as a tenant, so their
+    # provider/connection keys are namespaced to them. Off by default (secret unset) ⇒ the gate is
+    # identical to the single static-key path — see aureon.operator.identity.resolve_identity.
+    _jwt_secret = str(os.environ.get("AUREON_SUPABASE_JWT_SECRET", "") or "")
     _bucket = TokenBucket(_sec.rate_rps, _sec.burst)
     app.config["MAX_CONTENT_LENGTH"] = _sec.max_body_bytes
     _OPEN_PATHS = ("/", "/healthz", "/readyz", "/metrics", "/favicon.ico")
-
     def _err(code: int, message: str, **extra):
-        return jsonify({"error": {"code": code, "message": message, **extra}}), code
+        response = jsonify({"error": {"code": code, "message": message, **extra}})
+        response.headers["Cache-Control"] = "no-store"
+        return response, code
+
+    def _record_runtime_exception(
+        event: str,
+        component: str,
+        exc: BaseException,
+        *,
+        level: int = logging.ERROR,
+    ) -> None:
+        emit_local_event(
+            logger,
+            level,
+            event,
+            correlation_id=current_correlation_id(),
+            fields={"component": component, "method": request.method, "path": request.path},
+            exception=exc,
+        )
 
     @app.before_request
     def _gate():
         path = request.path
-        if path in _OPEN_PATHS or not path.startswith("/api/"):
+        if path in _OPEN_PATHS or not (path.startswith("/api/") or path.startswith("/mcp/")):
             return None
-        if _sec.auth_enabled and not check_bearer(request.headers.get("Authorization"), _sec.api_key):
-            return _err(401, "missing or invalid bearer token")
+        # Rate-limit before authentication so invalid bearer attempts cannot
+        # bypass the limiter. Forwarded addresses are resolved only through
+        # explicitly configured trusted proxy networks.
         if _sec.rate_enabled:
-            client = request.headers.get("X-Forwarded-For", request.remote_addr or "anon").split(",")[0].strip()
+            client = _sec.client_ip(
+                request.remote_addr,
+                request.headers.get("X-Forwarded-For"),
+            )
             ok, retry = _bucket.check(client)
             if not ok:
                 resp = _err(429, "rate limit exceeded", retry_after=retry)
                 resp[0].headers["Retry-After"] = str(int(retry) + 1)
                 return resp
+        # Resolve identity once. In explicit development/test mode, an empty static key and JWT
+        # secret retain the local kind="open" behavior; production validation refuses that state.
+        ident = resolve_identity(
+            request.headers.get("Authorization"), operator_key=_sec.api_key, jwt_secret=_jwt_secret,
+        )
+        if not ident.ok:
+            return _err(401, "missing or invalid bearer token")
+        # Downstream routes namespace per-user stores by g.tenant (None ⇒ admin/global plane).
+        g.tenant = ident.tenant
+        g.is_admin = ident.kind in ("admin", "open")
+        g.identity_kind = ident.kind
+        # Default-deny for tenants (see _TENANT_ALLOWED). Match the url RULE, not request.path, so a
+        # crafted id can never be read as a different route; an unmatched path (url_rule None ⇒ 404)
+        # falls through untouched so Flask still answers 404 rather than 403. Admin and open planes
+        # skip this entirely, which is what keeps the single-operator default byte-for-byte unchanged.
+        if ident.kind == "tenant":
+            rule = getattr(request.url_rule, "rule", None)
+            if rule is not None and (request.method, rule) not in _TENANT_ALLOWED:
+                return _err(403, "this route is operator-only", plane="admin")
         return None
+
+    def _admin_denied():
+        """403 for an end-user (tenant) reaching an INSTANCE-control route, else None.
+
+        ``g.is_admin`` is true for the admin bearer and for the open/unauthenticated single-operator
+        default, so this guard changes nothing when tenancy is off. It exists because the instance
+        control plane — the feature switchboard (which can arm hard boundaries and re-apply the
+        instance's own keys to ``os.environ``), local machine actions, manifest rebuilds, the
+        approvals desk and the instance's notification credentials — is the operator's, not a
+        signed-in end user's.
+        """
+        if getattr(g, "is_admin", True):
+            return None
+        return _err(403, "this control-plane route is operator-only", plane="admin")
 
     @app.errorhandler(400)
     def _400(e):
@@ -302,8 +416,13 @@ def create_app(operator: AureonOperator | None = None, cognition: Any = None) ->
 
     @app.errorhandler(500)
     def _500(e):
-        logger.exception("unhandled server error")
-        return _err(500, "internal server error")
+        # Flask calls the overridden, sanitized ``app.log_exception`` before
+        # wrapping an unhandled failure as InternalServerError. Avoid emitting
+        # a duplicate record for that path; explicit HTTP 500 responses have no
+        # original exception and still receive one safe local event here.
+        if getattr(e, "original_exception", None) is None:
+            _record_runtime_exception("operator_unhandled_exception", "request", e)
+        return _err(500, "internal server error", request_id=current_correlation_id())
 
     @app.get("/")
     def index():
@@ -324,6 +443,35 @@ def create_app(operator: AureonOperator | None = None, cognition: Any = None) ->
             resp.headers["Cache-Control"] = "no-cache"
         return resp
 
+    @app.get("/api/me")
+    def whoami():
+        """Who is this caller, and what may they do? The one identity call a TENANT may make.
+
+        The console needs this to render honestly: without it a signed-in end user is shown the
+        operator's navigation and discovers the boundary by collecting 403s. Deliberately says
+        nothing about the instance — no provider line-up, no switchboard, no counts — so it is safe
+        on the tenant plane, unlike ``/api/pulse`` which is operator-only for exactly that reason.
+
+        The tenant id is reported as a **label** (a short hash), never the raw JWT ``sub``: it is
+        enough for the user to confirm which account they are on and for support to correlate a
+        report, without echoing the subject identifier back into the page or the logs.
+        """
+        kind = str(getattr(g, "identity_kind", "open") or "open")
+        tenant = getattr(g, "tenant", None)
+        is_admin = bool(getattr(g, "is_admin", True))
+        return jsonify({
+            "kind": kind,                       # "open" | "admin" | "tenant"
+            "is_admin": is_admin,
+            "tenant_label": _tenant_label(tenant) if tenant else None,
+            "plane": "instance" if is_admin else "account",
+            "tenancy_enabled": bool(_jwt_secret),
+            "auth_required": bool(_sec.api_key or _jwt_secret),
+            # What this caller may reach, so the console can hide what would 403 rather than
+            # letting the user find the boundary by trial and error.
+            "allowed_routes": (None if is_admin else
+                               sorted(f"{m} {r}" for m, r in _TENANT_ALLOWED)),
+        })
+
     @app.get("/api/pulse")
     def pulse():
         # One composed, read-only vitals call for the watch: line-up + platform
@@ -338,19 +486,28 @@ def create_app(operator: AureonOperator | None = None, cognition: Any = None) ->
 
             out["status"] = get_platform_status()
         except Exception as exc:  # noqa: BLE001 — degrade honestly, never 500
-            out["status"] = {"status": "unknown", "error": str(exc)[:200]}
+            _record_runtime_exception(
+                "operator_component_unavailable", "platform_status", exc, level=logging.WARNING
+            )
+            out["status"] = {"status": "unknown", "error": "platform_status_unavailable"}
         try:
             from aureon.saas.gateway import build_organism_payload
 
             out["organism"] = build_organism_payload()
         except Exception as exc:  # noqa: BLE001
-            out["organism"] = {"available": False, "error": str(exc)[:200]}
+            _record_runtime_exception(
+                "operator_component_unavailable", "organism", exc, level=logging.WARNING
+            )
+            out["organism"] = {"available": False, "error": "organism_unavailable"}
         try:  # the human control plane's safety posture, at a glance
             from aureon.operator import feature_switchboard as _sb
 
             out["switchboard"] = _sb.summary()
         except Exception as exc:  # noqa: BLE001
-            out["switchboard"] = {"error": str(exc)[:200]}
+            _record_runtime_exception(
+                "operator_component_unavailable", "switchboard", exc, level=logging.WARNING
+            )
+            out["switchboard"] = {"error": "switchboard_unavailable"}
         # Browser Response.json() rejects bare Infinity/NaN — keep the body spec-clean.
         return jsonify(_json_safe(out))
 
@@ -379,14 +536,23 @@ def create_app(operator: AureonOperator | None = None, cognition: Any = None) ->
             checks["repo_index"] = True
         except Exception as exc:  # noqa: BLE001
             checks["repo_index"] = False
-            checks["repo_index_error"] = str(exc)
+            checks["repo_index_error"] = "repo_index_unavailable"
+            _record_runtime_exception(
+                "operator_readiness_failure", "repo_index", exc, level=logging.WARNING
+            )
         checks["cognition"] = _cognition["engine"] is not None
         try:
             from aureon.operator.connections_api import _real_data_policy_summary
 
             checks["real_data_policy"] = _real_data_policy_summary()
         except Exception as exc:  # noqa: BLE001
-            checks["real_data_policy"] = {"probe_report_status": "unavailable", "error": str(exc)[:160]}
+            checks["real_data_policy"] = {
+                "probe_report_status": "unavailable",
+                "error": "real_data_policy_unavailable",
+            }
+            _record_runtime_exception(
+                "operator_readiness_failure", "real_data_policy", exc, level=logging.WARNING
+            )
         ready = bool(checks["providers"] and checks["repo_index"])
         return jsonify({"ready": ready, "checks": checks}), (200 if ready else 503)
 
@@ -406,17 +572,12 @@ def create_app(operator: AureonOperator | None = None, cognition: Any = None) ->
         session_id = request.args.get("session_id")
         if not prompt:
             return jsonify({"error": "missing prompt"}), 400
-
-        def gen():
-            for event in _operator.stream_events(prompt, session_id=session_id):
-                etype = event.get("type", "message")
-                yield f"event: {etype}\ndata: {json.dumps(event, default=str)}\n\n"
-
-        return Response(
-            gen(),
-            mimetype="text/event-stream",
-            headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
-        )
+        # Tenant-aware exactly like POST /api/operator/respond: a signed-in user streams on THEIR
+        # OWN model, never the instance's keys.
+        op = _get_operator_for(getattr(g, "tenant", None))
+        if op is None:
+            return _sse([{"type": "complete", "response": _NO_TENANT_KEY}])
+        return _sse(op.stream_events(prompt, session_id=session_id))
 
     @app.post("/api/operator/respond")
     def respond():
@@ -424,7 +585,10 @@ def create_app(operator: AureonOperator | None = None, cognition: Any = None) ->
         prompt = str(body.get("prompt", "")).strip()
         if not prompt:
             return jsonify({"error": "missing prompt"}), 400
-        resp = _operator.respond(prompt, session_id=body.get("session_id"))
+        op = _get_operator_for(getattr(g, "tenant", None))
+        if op is None:  # signed-in user with no model of their own — honest, never instance models
+            return jsonify(_NO_TENANT_KEY)
+        resp = op.respond(prompt, session_id=body.get("session_id"))
         return jsonify(resp.to_dict())
 
     # ── Agentic cognition mode (tools + repo-wide grounding + veto) ────────────
@@ -437,19 +601,250 @@ def create_app(operator: AureonOperator | None = None, cognition: Any = None) ->
             _cognition["engine"] = AureonCognition(join_mesh=True)
         return _cognition["engine"]
 
+    # ── Per-tenant live reasoning ──────────────────────────────────────────────
+    # A signed-in end user reasons on THEIR OWN model keys, in isolation. We build a
+    # request-scoped engine from the tenant's keystore (never os.environ), cache it per
+    # tenant (bounded LRU), share the one tenant-agnostic conscience, and keep the engine
+    # off the mesh AND off the shared thought bus. When a tenant has no key we answer
+    # honestly instead of falling back to the instance's models.
+    from collections import OrderedDict
+
+    class _IsolatedBus:
+        """A no-op bus for per-tenant engines: nothing published, nothing subscribed, nothing read.
+
+        Two isolation duties. (1) ``subscribe`` must not register organism callbacks, or every cached
+        tenant engine would accumulate them on the shared bus. (2) ``publish``/``recall`` must not
+        touch shared memory, because a tenant's prompt and answer would otherwise land in the
+        instance-wide thought bus where other planes can recall them. Read calls return empty rather
+        than raising, so cognition simply reasons without organism context.
+        """
+
+        def subscribe(self, *args: Any, **kwargs: Any) -> None:
+            return None
+
+        def publish(self, *args: Any, **kwargs: Any) -> None:
+            return None
+
+        def recall(self, *args: Any, **kwargs: Any) -> list:
+            return []
+
+        def get_recent(self, *args: Any, **kwargs: Any) -> list:
+            return []
+
+        def __getattr__(self, name: str) -> Any:  # any other bus call is a silent no-op
+            return lambda *a, **k: None
+
+    def _tenant_label(tenant: str) -> str:
+        """A short, non-reversible tag for logs/provenance — never the raw JWT sub."""
+        import hashlib
+
+        return hashlib.sha256(tenant.encode("utf-8")).hexdigest()[:12]
+
+    _TENANT_ENGINE_MAX = 8
+    _tenant_cog: OrderedDict[str, Any] = OrderedDict()
+    _tenant_op: OrderedDict[str, Any] = OrderedDict()
+    # Flask serves requests on many threads, so these caches are shared mutable state. Individual
+    # dict operations are atomic under the GIL, but `if t in cache: cache.move_to_end(t)` is not —
+    # a concurrent credential write calling _invalidate_tenant_engines can pop the key inside that
+    # window, turning a request into a KeyError 500. Narrow, but it is a real interleaving.
+    _engine_lock = threading.RLock()
+    _NO_TENANT_KEY: Dict[str, Any] = {
+        "text": "No model is connected to your account yet. Add an API key in Providers "
+                "to reason with your own model.",
+        "grounded": False, "blocked": False, "conscience_verdict": "APPROVED",
+        "tenant_no_key": True,
+    }
+
+    def _shared_conscience() -> Any:
+        try:
+            return _get_cognition()._get_conscience()
+        except Exception:  # noqa: BLE001 — no conscience ⇒ APPROVED-by-default downstream
+            return None
+
+    _tenant_conscience: Dict[str, Any] = {}
+
+    class _UnavailableTenantConscience:
+        """Fail-closed verdict source used when the isolated conscience has no evidence."""
+
+        _thought_bus = None
+        available = False
+
+        def ask_why(self, *args: Any, **kwargs: Any) -> Any:
+            return SimpleNamespace(
+                verdict=SimpleNamespace(name="VETO"),
+                message="NO_DATA: tenant-plane conscience unavailable; decision denied",
+                truth_status="no_data",
+                decision_status="denied",
+                generated_values=False,
+            )
+
+    def _tenant_plane_conscience() -> Any:
+        """One conscience for the whole tenant plane, with bus publishing disabled.
+
+        The ethical gate must judge a tenant's turn in full — it is load-bearing, never skipped — but
+        the Queen publishes each verdict (which quotes the action, i.e. the user's prompt) onto the
+        shared thought bus, where other planes could recall it. So the tenant plane gets its own
+        instance with ``_thought_bus`` detached: identical judgement, nothing written into shared
+        instance memory.
+
+        If a private conscience cannot be built, return an isolated unavailable conscience whose
+        only verdict is an explicit ``VETO`` with ``no_data`` provenance — never ``None`` and never
+        the shared one. Falling back to ``_shared_conscience()`` would cache the INSTANCE's bus-attached object
+        for the whole tenant plane, so every later tenant verdict would publish the quoted action —
+        the user's prompt — straight into shared instance memory, defeating the entire point of this
+        function. A constructor failure must not downgrade either isolation or the decision gate.
+        """
+        if "obj" in _tenant_conscience:
+            return _tenant_conscience["obj"]
+        obj: Any
+        try:
+            from aureon.queen.queen_conscience import QueenConscience
+
+            obj = QueenConscience()
+            # __init__ subscribes to "symbolic.life.pulse" on the shared bus before we can detach it,
+            # which leaves the tenant-plane conscience receiving the INSTANCE's substrate pulses and
+            # feeding them into tenant verdicts — an inbound cross-plane read, and a callback the
+            # shared bus would hold forever. Detach the subscription, then cut publishing.
+            _detach_from_shared_bus(obj)
+            obj._thought_bus = None  # verdicts judged, never published to shared memory
+        except Exception:  # noqa: BLE001 — fail closed on both isolation and decision authority
+            logger.warning("tenant-plane conscience unavailable; tenant turns are denied with no_data "
+                           "rather than borrowing the instance's bus-attached conscience")
+            # Do not cache the unavailable sentinel globally: a later tenant build
+            # may recover after a transient constructor failure.
+            return _UnavailableTenantConscience()
+        _tenant_conscience["obj"] = obj
+        return obj
+
+    def _detach_from_shared_bus(obj: Any) -> None:
+        """Remove every subscription ``obj`` registered on the shared thought bus. Best-effort."""
+        bus = getattr(obj, "_thought_bus", None)
+        subs = getattr(bus, "_subs", None)
+        if not isinstance(subs, dict):
+            return
+        try:
+            lock = getattr(bus, "_lock", None)
+            ctx = lock if lock is not None else contextlib.nullcontext()
+            with ctx:
+                for handlers in subs.values():
+                    if not isinstance(handlers, list):
+                        continue
+                    for h in [h for h in handlers if getattr(h, "__self__", None) is obj]:
+                        handlers.remove(h)
+        except Exception:  # noqa: BLE001 — a detached conscience is best-effort hardening
+            logger.debug("tenant conscience: shared-bus detach failed", exc_info=True)
+
+    def _tenant_provider_set(tenant: str) -> Dict[str, Any]:
+        from aureon.operator import keystore as _ks
+        from aureon.operator.providers import build_provider_set_from_entries
+
+        return build_provider_set_from_entries(_ks.load(tenant))
+
+    def _lru_put(cache: OrderedDict[str, Any], key: str, value: Any) -> None:
+        with _engine_lock:
+            cache[key] = value
+            cache.move_to_end(key)
+            while len(cache) > _TENANT_ENGINE_MAX:
+                cache.popitem(last=False)
+
+    def _lru_get(cache: OrderedDict[str, Any], key: str) -> Any:
+        """Fetch-and-promote atomically. Returns None on a miss (never raises on a concurrent evict)."""
+        with _engine_lock:
+            eng = cache.get(key)
+            if eng is not None:
+                cache.move_to_end(key)
+            return eng
+
+    def _invalidate_tenant_engines(tenant: str | None) -> None:
+        """Drop a tenant's cached engines so the NEXT request rebuilds from the keystore.
+
+        Called on every tenant credential write/delete: without this a revoked or rotated key
+        would keep being spent by a cached engine that still holds the old adapter.
+        """
+        if tenant is None:
+            return
+        with _engine_lock:
+            _tenant_cog.pop(tenant, None)
+            _tenant_op.pop(tenant, None)
+
+    def _tenant_tools() -> Any:
+        """The toolbelt a TENANT's engine may use: an ALLOWLIST of pure-compute tools only.
+
+        This is a hard boundary, not a preference. A tenant supplies their own ``base_url``, so the
+        model answering their turn is a server THEY control; whatever ``tool_calls`` it returns are
+        dispatched on the operator host. The conscience veto runs after the tool loop, so it cannot
+        undo a side effect — the tools must never exist.
+
+        A *denylist* is not enough here, and a counter-audit proved it: dropping shell + repo writes
+        still left ``web_fetch`` (outbound HTTP from the operator's IP → SSRF onto co-located instance
+        services and cloud metadata), ``touch_module`` (import anything), ``publish_thought`` (writes
+        the process-global thought bus, going around ``_IsolatedBus``) and the instance's live trading
+        state readers. So the belt is pinned positively — see
+        :data:`~aureon.operator.tools.TENANT_ALLOWED_TOOLS`.
+        """
+        from aureon.operator.tools import TENANT_ALLOWED_TOOLS, build_operator_tools
+
+        return build_operator_tools(allow_writes=False, allow_shell=False,
+                                    allowlist=TENANT_ALLOWED_TOOLS)
+
+    def _get_cognition_for(tenant: str | None) -> Any:
+        if tenant is None:
+            return _get_cognition()  # admin / open plane — unchanged
+        cached = _lru_get(_tenant_cog, tenant)
+        if cached is not None:
+            return cached
+        providers = _tenant_provider_set(tenant)
+        if not providers:
+            return None
+        from aureon.operator.cognition import AureonCognition
+
+        adapter = next(iter(providers.values()))
+        eng = AureonCognition(adapter=adapter, bus=_IsolatedBus(), join_mesh=False,
+                              mesh_broadcast=False,
+                              conscience=_tenant_plane_conscience(), tools=_tenant_tools(),
+                              allow_writes=False, allow_shell=False,
+                              allow_repo_grounding=False,
+                              allow_organism_context=False,
+                              governance_enabled=False,
+                              source=f"aureon.cognition.tenant:{_tenant_label(tenant)}")
+        _lru_put(_tenant_cog, tenant, eng)
+        return eng
+
+    def _get_operator_for(tenant: str | None) -> Any:
+        if tenant is None:
+            return _operator  # admin / open plane — unchanged
+        cached = _lru_get(_tenant_op, tenant)
+        if cached is not None:
+            return cached
+        providers = _tenant_provider_set(tenant)
+        if not providers:
+            return None
+        op = AureonOperator(providers=providers, conscience=_tenant_plane_conscience(), join_mesh=False,
+                            mesh_broadcast=False, bus=_IsolatedBus(),
+                            allow_repo_grounding=False,
+                            source=f"aureon.operator.tenant:{_tenant_label(tenant)}")
+        _lru_put(_tenant_op, tenant, op)
+        return op
+
+    def _sse(events: Any) -> Any:
+        return Response(
+            (f"event: {e.get('type','message')}\ndata: {json.dumps(e, default=str)}\n\n" for e in events),
+            mimetype="text/event-stream",
+            headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+        )
+
     @app.get("/api/cognition/stream")
     def cognition_stream():
         prompt = request.args.get("prompt", "").strip()
         session_id = request.args.get("session_id")  # capture before the generator (no request ctx inside gen)
         if not prompt:
             return jsonify({"error": "missing prompt"}), 400
-
-        def gen():
-            for event in _get_cognition().stream_events(prompt, session_id=session_id):
-                yield f"event: {event.get('type','message')}\ndata: {json.dumps(event, default=str)}\n\n"
-
-        return Response(gen(), mimetype="text/event-stream",
-                        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+        # Tenant-aware exactly like POST /api/cognition/reason (see that route): the stream must not
+        # be a side door onto the instance's models.
+        eng = _get_cognition_for(getattr(g, "tenant", None))
+        if eng is None:
+            return _sse([{"type": "complete", "response": _NO_TENANT_KEY}])
+        return _sse(eng.stream_events(prompt, session_id=session_id))
 
     @app.post("/api/cognition/reason")
     def cognition_reason():
@@ -457,7 +852,10 @@ def create_app(operator: AureonOperator | None = None, cognition: Any = None) ->
         prompt = str(body.get("prompt", "")).strip()
         if not prompt:
             return jsonify({"error": "missing prompt"}), 400
-        return jsonify(_get_cognition().reason(prompt, session_id=body.get("session_id")).to_dict())
+        eng = _get_cognition_for(getattr(g, "tenant", None))
+        if eng is None:  # signed-in user with no model of their own — honest keyless reply
+            return jsonify(_NO_TENANT_KEY)
+        return jsonify(eng.reason(prompt, session_id=body.get("session_id")).to_dict())
 
     # ── Provider API-key management (instance-owned, encrypted keystore) ────────
     # BYO keys for every model. Keys are stored encrypted (keystore.py), masked on
@@ -476,13 +874,22 @@ def create_app(operator: AureonOperator | None = None, cognition: Any = None) ->
             return ""
         return ("•" * 4) + value[-4:] if len(value) > 4 else "•" * len(value)
 
-    def _provider_view() -> list:
-        stored = _keystore.masked_view()
-        live_names = {p["name"] for p in describe_provider_set(_operator.providers)}
+    def _provider_view(tenant: str | None = None) -> list:
+        # A tenant sees ONLY their own isolated keystore — never the instance env keys. "live" is
+        # computed from the plane that will actually answer them: their own tenant provider set when
+        # signed in, the shared instance line-up for the admin/global plane (unchanged).
+        stored = _keystore.masked_view(tenant)
+        if tenant is None:
+            live_names = {p["name"] for p in describe_provider_set(_operator.providers)}
+        else:
+            try:
+                live_names = set(_tenant_provider_set(tenant).keys())
+            except Exception:  # noqa: BLE001 — an unbuildable entry is simply not live
+                live_names = set()
         out = []
         for info in CATALOG:
             s = stored.get(info.id, {})
-            env_key = os.environ.get(info.key_env, "") if info.key_env else ""
+            env_key = "" if tenant is not None else (os.environ.get(info.key_env, "") if info.key_env else "")
             has_key = bool(s.get("has_key")) or bool(env_key)
             key_masked = s.get("key_masked") or (_mask_env(env_key) if env_key else "")
             source = "keystore" if s.get("has_key") else ("env" if env_key else "none")
@@ -500,12 +907,13 @@ def create_app(operator: AureonOperator | None = None, cognition: Any = None) ->
 
     @app.get("/api/providers")
     def providers_list():
-        return jsonify({"providers": _provider_view()})
+        return jsonify({"providers": _provider_view(getattr(g, "tenant", None))})
 
     @app.post("/api/providers/<provider_id>")
     def providers_set(provider_id: str):
         if get_provider(provider_id) is None:
             return _err(404, f"unknown provider: {provider_id}")
+        tenant = getattr(g, "tenant", None)
         body: Dict[str, Any] = request.get_json(silent=True) or {}
         try:
             _keystore.save_provider(
@@ -514,31 +922,57 @@ def create_app(operator: AureonOperator | None = None, cognition: Any = None) ->
                 base_url=body.get("base_url"),
                 model=body.get("model"),
                 enabled=body.get("enabled"),
+                tenant=tenant,
             )
         except KeyError:
             return _err(404, f"unknown provider: {provider_id}")
-        _rebuild_switchboard()
-        view = next((p for p in _provider_view() if p["id"] == provider_id), None)
+        # A tenant write must NEVER touch os.environ / the shared switchboard (the leak vector);
+        # instead drop their cached engines so the next request rebuilds on the new key.
+        if tenant is None:
+            _rebuild_switchboard()
+        else:
+            _invalidate_tenant_engines(tenant)
+        view = next((p for p in _provider_view(tenant) if p["id"] == provider_id), None)
         return jsonify({"ok": True, "provider": view})
 
     @app.delete("/api/providers/<provider_id>")
     def providers_delete(provider_id: str):
         if get_provider(provider_id) is None:
             return _err(404, f"unknown provider: {provider_id}")
-        _keystore.delete_provider(provider_id)
-        _rebuild_switchboard()
+        tenant = getattr(g, "tenant", None)
+        _keystore.delete_provider(provider_id, tenant=tenant)
+        if tenant is None:
+            _rebuild_switchboard()
+        else:
+            _invalidate_tenant_engines(tenant)   # a revoked key must stop being spent immediately
         return jsonify({"ok": True, "provider_id": provider_id})
+
+    def _no_key_verdict(model: str) -> Dict[str, Any]:
+        """Honest verdict when a tenant has no key of their own to test.
+
+        We must NOT call an adapter with an empty key: every adapter falls back to the process env
+        (``api_key or os.environ.get(...)``), so an empty tenant key would silently spend the
+        INSTANCE's credentials and confirm which instance keys are live.
+        """
+        return {"ok": False, "latency_ms": 0, "model": model, "sample": "",
+                "error": "no key stored for your account — add one first"}
 
     @app.post("/api/providers/<provider_id>/test")
     def providers_test(provider_id: str):
         info = get_provider(provider_id)
         if info is None:
             return _err(404, f"unknown provider: {provider_id}")
+        tenant = getattr(g, "tenant", None)
         body: Dict[str, Any] = request.get_json(silent=True) or {}
-        stored = _keystore.load().get(provider_id, {})
-        api_key = body.get("api_key") or stored.get("api_key") or os.environ.get(info.key_env, "")
+        stored = _keystore.load(tenant).get(provider_id, {})
+        # A tenant tests ONLY their own key — never the instance env key, and never an empty key
+        # (which the adapters would resolve from the env).
+        env_key = "" if tenant is not None else os.environ.get(info.key_env, "")
+        api_key = body.get("api_key") or stored.get("api_key") or env_key
         base_url = body.get("base_url") or stored.get("base_url") or info.default_base_url or None
         model = body.get("model") or stored.get("model") or info.default_model
+        if tenant is not None and not str(api_key or "").strip():
+            return jsonify(_no_key_verdict(model))
         result = _test_provider_adapter(info, api_key, base_url, model)
         return jsonify(result)
 
@@ -554,6 +988,11 @@ def create_app(operator: AureonOperator | None = None, cognition: Any = None) ->
 
     @app.post("/api/switchboard/<flag_id>")
     def switchboard_set(flag_id: str):
+        # Operator-only: flipping a flag writes os.environ, can re-apply the instance's own keys via
+        # _rebuild_switchboard, and can arm hard boundaries (e.g. live trading).
+        denied = _admin_denied()
+        if denied is not None:
+            return denied
         flag = _switchboard.get_flag(flag_id)
         if flag is None:
             return _err(404, f"unknown feature flag: {flag_id}")
@@ -577,56 +1016,78 @@ def create_app(operator: AureonOperator | None = None, cognition: Any = None) ->
 
     @app.get("/api/connections")
     def connections_list():
-        return jsonify(_json_safe(_conn_api.build_view(_provider_view())))
+        # `tenant` must reach build_view itself, not just the LLM rows it is handed: the non-LLM
+        # (exchange / data-source) rows are built inside from the keystore + os.environ.
+        tenant = getattr(g, "tenant", None)
+        return jsonify(_json_safe(_conn_api.build_view(_provider_view(tenant), tenant=tenant)))
 
     @app.get("/api/connections/readiness")
     def connections_readiness():
-        return jsonify(_json_safe(_conn_api.readiness(_provider_view())))
+        tenant = getattr(g, "tenant", None)
+        return jsonify(_json_safe(_conn_api.readiness(_provider_view(tenant), tenant=tenant)))
 
     @app.post("/api/connections/<conn_id>")
     def connections_set(conn_id: str):
+        tenant = getattr(g, "tenant", None)
         body: Dict[str, Any] = request.get_json(silent=True) or {}
         api_key = body.get("api_key")
         extra = body.get("extra") or {}
-        # LLM provider → keystore + switchboard rebuild (same as /api/providers)
+        # LLM provider → keystore (+ switchboard rebuild only on the global/admin plane)
         if get_provider(conn_id) is not None:
             _keystore.save_provider(
                 conn_id, api_key=api_key, base_url=body.get("base_url"),
-                model=body.get("model"), enabled=body.get("enabled"),
+                model=body.get("model"), enabled=body.get("enabled"), tenant=tenant,
             )
-            _rebuild_switchboard()
-            view = next((p for p in _provider_view() if p["id"] == conn_id), None)
+            if tenant is None:
+                _rebuild_switchboard()
+            else:
+                _invalidate_tenant_engines(tenant)
+            view = next((p for p in _provider_view(tenant) if p["id"] == conn_id), None)
             return jsonify({"ok": True, "connection": view})
         conn = _get_conn(conn_id)
         if conn is None:
             return _err(404, f"unknown connection: {conn_id}")
-        if conn.category == "exchange":
+        # Exchange credentials on the global/admin plane validate + write the instance .env. A tenant
+        # instead stores the credential in isolation (never touching the shared .env / os.environ).
+        if tenant is None and conn.category == "exchange":
             result = _conn_api.set_exchange_credential(conn, api_key or "", extra)
             code = 200 if result.get("ok") else 502
             return jsonify(result), code
-        # operator-consumed data source → keystore + env
-        _keystore.save_provider(conn_id, api_key=api_key, enabled=body.get("enabled"), extra=extra)
-        _keystore.apply_to_env()
+        # data source (or any tenant credential) → keystore; apply_to_env only on the global plane.
+        _keystore.save_provider(conn_id, api_key=api_key, enabled=body.get("enabled"),
+                                extra=extra, tenant=tenant)
+        if tenant is None:
+            _keystore.apply_to_env()
+        else:
+            _invalidate_tenant_engines(tenant)
         return jsonify({"ok": True, "connection": _conn_api.connection_public(
-            conn, _keystore.load(), {})})
+            conn, _keystore.load(tenant), {}, allow_env=tenant is None)})
 
     @app.post("/api/connections/<conn_id>/test")
     def connections_test(conn_id: str):
+        tenant = getattr(g, "tenant", None)
         body: Dict[str, Any] = request.get_json(silent=True) or {}
-        # LLM → real prompt round-trip; data source → connectivity probe
+        # LLM → real prompt round-trip; data source → connectivity probe. A tenant tests ONLY their
+        # own stored key — never the instance env key.
         info = get_provider(conn_id)
         if info is not None:
-            stored = _keystore.load().get(conn_id, {})
-            api_key = body.get("api_key") or stored.get("api_key") or os.environ.get(info.key_env, "")
+            stored = _keystore.load(tenant).get(conn_id, {})
+            env_key = "" if tenant is not None else os.environ.get(info.key_env, "")
+            api_key = body.get("api_key") or stored.get("api_key") or env_key
             base_url = body.get("base_url") or stored.get("base_url") or info.default_base_url or None
             model = body.get("model") or stored.get("model") or info.default_model
+            if tenant is not None and not str(api_key or "").strip():
+                return jsonify(_no_key_verdict(model))   # never let an empty key resolve from env
             return jsonify(_test_provider_adapter(info, api_key, base_url, model))
         conn = _get_conn(conn_id)
         if conn is None:
             return _err(404, f"unknown connection: {conn_id}")
-        stored = _keystore.load().get(conn_id, {})
-        api_key = body.get("api_key") or stored.get("api_key") or (
-            os.environ.get(conn.key_env, "") if conn.key_env else "")
+        stored = _keystore.load(tenant).get(conn_id, {})
+        env_key = "" if tenant is not None else (os.environ.get(conn.key_env, "") if conn.key_env else "")
+        api_key = body.get("api_key") or stored.get("api_key") or env_key
+        if tenant is not None and conn.key_env and not str(api_key or "").strip():
+            return jsonify({"ok": False, "latency_ms": 0,
+                            "error": "no key stored for your account — add one first"})
         return jsonify(_conn_api.probe(conn, api_key))
 
     # ── Grounded local-machine actions (the organism's hands) ──────────────────
@@ -638,6 +1099,10 @@ def create_app(operator: AureonOperator | None = None, cognition: Any = None) ->
 
         @app.post("/api/action")
         def local_action():
+            # Operator-only: this touches the host machine. An end user never gets the hands.
+            denied = _admin_denied()
+            if denied is not None:
+                return denied
             body: Dict[str, Any] = request.get_json(silent=True) or {}
             action = str(body.get("action") or "").strip()
             if not action:
@@ -673,6 +1138,26 @@ def create_app(operator: AureonOperator | None = None, cognition: Any = None) ->
     except Exception as exc:  # noqa: BLE001 — billing is optional; the operator must serve
         logger.warning("billing routes not registered: %s", exc)
 
+    # ── MCP transport (GET /mcp/tools, POST /mcp/call) ───────────────────────────
+    # Attaches Aureon as a live MCP-style server: every tool call is routed through the
+    # membrane (ingress screened as data, egress sealed, guarded dispatch). Optional.
+    try:
+        from aureon.bio.mcp_transport import register_mcp_routes
+
+        register_mcp_routes(app)
+    except Exception as exc:  # noqa: BLE001 — the transport is optional; the operator must serve
+        logger.warning("MCP transport routes not registered: %s", exc)
+
+    # ── legacy runtime surface (terminal-state / flight-test / bots / trades / …) ─
+    # Serves the older trading console's endpoints on the one gateway, read-only/notify-only and
+    # honest (real state or an explicit unavailable, never fabricated). Optional.
+    try:
+        from aureon.operator.legacy_runtime_api import register_legacy_runtime_routes
+
+        register_legacy_runtime_routes(app)
+    except Exception as exc:  # noqa: BLE001 — legacy surface is optional; the operator must serve
+        logger.warning("legacy runtime routes not registered: %s", exc)
+
     return app
 
 
@@ -707,6 +1192,24 @@ def build_boot_app():
             get_trace_pump().start()
         except Exception as exc:  # noqa: BLE001 — the pump is optional
             logger.warning("trace pump not started: %s", exc)
+    # Close the cognitive immune layer's loop: subscribe immune memory to confirmed
+    # neutralizations (bio.swarm_defense.run) so a repeat parasite is recognized
+    # instantly. The Queen observes on her own channel; the effector stays leaderless.
+    if str(os.environ.get("AUREON_IMMUNE_MEMORY", "1")).strip().lower() not in {"0", "false", "no", "off"}:
+        try:
+            from aureon.bio.immune_memory import install_immune_memory
+
+            install_immune_memory()
+        except Exception as exc:  # noqa: BLE001 — the immune memory is optional
+            logger.warning("immune memory not installed: %s", exc)
+        # The homeostatic brake: a confirmed neutralization registers a cooldown so the layer
+        # does not re-attack a just-cleared threat (memory accelerates; regulation restrains).
+        try:
+            from aureon.bio.immune_regulation import install_immune_regulation
+
+            install_immune_regulation()
+        except Exception as exc:  # noqa: BLE001 — the immune regulation is optional
+            logger.warning("immune regulation not installed: %s", exc)
     # The static manifests in frontend/public are owned by the repo's manifest
     # pipeline (scripts/validation/generate_*) and checked in with a richer
     # schema; the gateway serves its own live manifests at /api/manifests/<name>.

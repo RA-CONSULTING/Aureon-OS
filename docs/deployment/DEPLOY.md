@@ -101,9 +101,14 @@ doctl apps logs <app-id> --type run --follow
 # Restart
 doctl apps create-deployment <app-id>
 
-# Scale up
+# Re-apply the pinned single-instance spec
 doctl apps update <app-id> --spec .do/app.yaml
 ```
+
+Do not increase the app instance count or add autoscaling for the trading or
+operator stack. It remains single-writer until leader election,
+cross-replica order idempotency, and shared limiter/cache/state have separate
+runtime proof.
 
 ### Droplet (Systemd)
 ```bash

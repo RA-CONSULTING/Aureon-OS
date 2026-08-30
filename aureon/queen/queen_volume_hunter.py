@@ -20,7 +20,7 @@ import sys
 import os
 
 # Windows UTF-8 Fix (MANDATORY)
-if sys.platform == 'win32':
+if sys.platform == 'win32' and sys.stdout.isatty() and sys.stderr.isatty():
     os.environ['PYTHONIOENCODING'] = 'utf-8'
     try:
         import io

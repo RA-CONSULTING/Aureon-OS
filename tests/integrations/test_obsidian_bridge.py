@@ -16,6 +16,10 @@ Covers:
   6. ObsidianSink.on_utterance creates daily + per-voice notes
   7. ObsidianSink.on_tick appends one line to the loop log
   8. ObsidianSink.on_audit writes an audit dump
+  9. Canonical vault resolution honors explicit and environment overrides
+ 10. Legacy repo note paths route to the dedicated vault in Git checkouts
+ 11. Non-Git test fixtures retain isolated repo-local note paths
+ 12. Canonical path resolution blocks directory traversal
 """
 
 import os
@@ -36,6 +40,10 @@ from aureon.integrations.obsidian import (
     ObsidianSinkConfig,
 )
 from aureon.integrations.obsidian.obsidian_bridge import ObsidianBridgeError
+from aureon.obsidian_paths import (
+    resolve_obsidian_note_path,
+    resolve_obsidian_vault_path,
+)
 from aureon.vault.voice.utterance import Utterance, VoiceStatement
 
 
@@ -60,6 +68,59 @@ def _make_bridge(tmp: Path) -> ObsidianBridge:
         vault_path=str(tmp),
         prefer_filesystem=True,
     )
+
+
+def test_canonical_vault_resolution(tmp_path, monkeypatch):
+    env_vault = tmp_path / "environment-vault"
+    explicit_vault = tmp_path / "explicit-vault"
+    monkeypatch.setenv("AUREON_OBSIDIAN_VAULT_PATH", str(env_vault))
+
+    assert resolve_obsidian_vault_path() == env_vault.resolve()
+    assert resolve_obsidian_vault_path(explicit_vault) == explicit_vault.resolve()
+
+    bridge = ObsidianBridge(api_key="", prefer_filesystem=True)
+    assert bridge.vault_path == env_vault.resolve()
+
+
+def test_legacy_note_routes_to_canonical_vault_in_git_checkout(tmp_path, monkeypatch):
+    repo = tmp_path / "repo"
+    vault = tmp_path / "vault"
+    (repo / ".git").mkdir(parents=True)
+    monkeypatch.setenv("AUREON_OBSIDIAN_VAULT_PATH", str(vault))
+
+    resolved = resolve_obsidian_note_path(
+        ".obsidian/Aureon Self Understanding/status.md",
+        repo_root=repo,
+    )
+
+    assert resolved == (vault / "Aureon Self Understanding" / "status.md").resolve()
+
+
+def test_legacy_note_stays_isolated_for_non_git_fixture(tmp_path, monkeypatch):
+    repo = tmp_path / "fixture"
+    repo.mkdir()
+    monkeypatch.delenv("AUREON_OBSIDIAN_VAULT_PATH", raising=False)
+
+    resolved = resolve_obsidian_note_path(
+        ".obsidian/Aureon Self Understanding/status.md",
+        repo_root=repo,
+    )
+
+    assert resolved == (repo / ".obsidian" / "Aureon Self Understanding" / "status.md").resolve()
+
+
+def test_canonical_note_resolution_blocks_traversal(tmp_path):
+    vault = tmp_path / "vault"
+
+    try:
+        resolve_obsidian_note_path(
+            ".obsidian/../../escape.md",
+            vault_path=vault,
+        )
+    except ValueError as exc:
+        assert "escapes vault" in str(exc)
+    else:
+        raise AssertionError("vault traversal was not rejected")
 
 
 # ─────────────────────────────────────────────────────────────────────────────

@@ -1,0 +1,34 @@
+{
+  "name": "moltbook",
+  "version": "0.1.0",
+  "description": "Fail-closed Moltbook social and identity registry tools with explicit mutation gates.",
+  "author": {
+    "name": "Aureon"
+  },
+  "keywords": [
+    "moltbook",
+    "registry",
+    "identity",
+    "social",
+    "agents"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Moltbook",
+    "shortDescription": "Use gated Moltbook and registry tools.",
+    "longDescription": "Read Moltbook and registry data through injected transports, with validation, redaction, confirmation, and idempotency gates for every mutation.",
+    "developerName": "Aureon",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Check an agent registry identity.",
+      "Browse recent Moltbook posts.",
+      "Prepare a gated Moltbook reply."
+    ]
+  }
+}

@@ -717,9 +717,9 @@ def run_audit() -> list[dict]:
             # Edge 27 — the field's producers map is honest: publish two sub-fields on
             # a temp bus and assert field_producers marks exactly those live, the rest
             # dark, and every live source is inside the intended set (no overclaim).
+            from aureon.core.aureon_thought_bus import ThoughtBus as _TB
             from aureon.core.hnc_field import publish_subfield as _psub
             from aureon.core.hnc_field import read_subfields as _rsub2
-            from aureon.core.aureon_thought_bus import ThoughtBus as _TB
             from aureon.saas.cognitive import field_producers as _fp
 
             class _PS:
@@ -790,8 +790,8 @@ def run_audit() -> list[dict]:
             try:
                 from aureon.core.awakening import awaken as _awk
                 from aureon.core.awakening import read_genome as _rg
-                from aureon.saas.consciousness_catalog import state_of_being as _sob
                 from aureon.saas.automation_index import automation_index as _ai
+                from aureon.saas.consciousness_catalog import state_of_being as _sob
 
                 _awk()
                 _gen = _rg()["generation"]
@@ -882,6 +882,7 @@ def run_audit() -> list[dict]:
             # purely for a name suffix is freed into the reachable body.
             import importlib as _il
             import time as _time2
+
             from aureon.core.aureon_connectome import Connectome as _Conn2
             from aureon.core.aureon_connectome import _denied as _dny
             from aureon.core.aureon_connectome import reset_connectome_for_tests as _rc2
@@ -1011,6 +1012,53 @@ def run_audit() -> list[dict]:
                     _osm.environ.pop(_k, None)
                 else:
                     _osm.environ[_k] = _val
+
+    # Edge 37 — the cognitive immune layer closes its loop: a confirmed neutralization
+    # published on bio.swarm_defense.run is committed to immune memory, and the same
+    # parasite recurring is recognized (guard→swarm→memory delivers, not a silo).
+    try:
+        from aureon.bio.immune_memory import install_immune_memory
+        from aureon.bio.swarm_defense import ThreatReport
+
+        _mem = install_immune_memory(bus=bus)
+        bus.publish(Thought(source="swarm_defense", topic="bio.swarm_defense.run",
+                            payload={"threat_id": "audit-parasite", "kind": "mutated_invariant",
+                                     "confirmed": True}))
+        _repeat = ThreatReport(threat_id="audit-parasite", kind="mutated_invariant",
+                               description="audit recurrence", severity=2)
+        _novel = ThreatReport(threat_id="audit-novel", kind="mutated_invariant",
+                              description="unseen", severity=2)
+        _recognized = _mem.recognize(_repeat) is not None
+        _specific = _mem.recognize(_novel) is None
+        results.append(_check(
+            "immune_layer_recall", _recognized and _specific,
+            f"repeat_recognized={_recognized} novel_ignored={_specific} mem={len(_mem)}",
+            critical=False))
+    except Exception as _exc:  # noqa: BLE001
+        results.append(_check("immune_layer_recall", False, f"error: {_exc}", critical=False))
+
+    # Edge 38 — the immune layer's homeostatic brake closes its loop: a confirmed neutralization
+    # published on bio.swarm_defense.run registers a cooldown, so the same threat recurring is
+    # regulated (suppressed) rather than re-attacked — while a benign self signal is never mounted against.
+    try:
+        from aureon.bio.immune_regulation import install_immune_regulation
+        from aureon.bio.swarm_defense import ThreatReport as _TR
+
+        _gov = install_immune_regulation(bus=bus)
+        bus.publish(Thought(source="swarm_defense", topic="bio.swarm_defense.run",
+                            payload={"threat_id": "audit-reg", "kind": "mutated_invariant",
+                                     "confirmed": True}))
+        _repeat_reg = _gov.regulate(_TR(threat_id="audit-reg", kind="mutated_invariant",
+                                        description="recur", severity=2))
+        _self_reg = _gov.regulate(_TR(threat_id="audit-self", kind="unknown",
+                                      description="benign", severity=0))
+        _damped = _repeat_reg.reason == "refractory_cooldown"
+        _tolerant = _self_reg.reason == "self_tolerance"
+        results.append(_check(
+            "immune_regulation_homeostasis", _damped and _tolerant,
+            f"repeat_damped={_damped} self_tolerated={_tolerant}", critical=False))
+    except Exception as _exc:  # noqa: BLE001
+        results.append(_check("immune_regulation_homeostasis", False, f"error: {_exc}", critical=False))
 
     return results
 

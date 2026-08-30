@@ -1,6 +1,6 @@
 from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
 import sys, os
-if sys.platform == 'win32':
+if sys.platform == 'win32' and sys.stdout is sys.__stdout__ and sys.stdout.isatty():
     os.environ['PYTHONIOENCODING'] = 'utf-8'
     try:
         import io
@@ -61,6 +61,12 @@ from dataclasses import dataclass
 from typing import Optional, Dict, Any
 from dotenv import load_dotenv
 
+from aureon.ollama_config import (
+    ensure_ollama_runtime_config,
+    ollama_config_snapshot,
+    resolve_external_llm_fallback,
+)
+
 load_dotenv()
 logger = logging.getLogger(__name__)
 
@@ -97,13 +103,27 @@ class SeroClient:
     """
     
     def __init__(self):
+        ensure_ollama_runtime_config()
         self.endpoint = os.getenv('AUREON_AGENT_ENDPOINT', '')
         self.agent_id = os.getenv('AUREON_AGENT_ID', '')
         self.chatbot_id = os.getenv('AUREON_CHATBOT_ID', '')
         # DigitalOcean widget uses chatbot_id as API key; allow override via AUREON_AGENT_KEY
         self.api_key = os.getenv('AUREON_AGENT_KEY', '') or self.chatbot_id
         
-        self.enabled = bool(self.endpoint and self.api_key and self.agent_id and self.chatbot_id)
+        self.provider_enabled = bool(self.endpoint and self.api_key and self.agent_id and self.chatbot_id)
+        fallback = ollama_config_snapshot()
+        self.fallback_enabled = bool(
+            resolve_external_llm_fallback() == "ollama"
+            and fallback.get("cloud")
+            and fallback.get("authorization_header_enabled")
+        )
+        self.enabled = self.provider_enabled or self.fallback_enabled
+        self.route = (
+            "digitalocean_agent"
+            if self.provider_enabled
+            else ("ollama_cloud" if self.fallback_enabled else "disabled")
+        )
+        self._fallback_adapter = None
         self.timeout = aiohttp.ClientTimeout(total=15.0)  # 15s max
         
         # ⚡ HFT RATE LIMIT TRACKING
@@ -123,7 +143,7 @@ class SeroClient:
         if not self.enabled:
             logger.warning("Dr Auris Throne Chatbot not configured - AI augmentation disabled")
         else:
-            logger.info(f"Dr Auris Throne Chatbot enabled: agent_id={self.agent_id[:8]}...")
+            logger.info("Dr Auris Throne intelligence enabled: route=%s", self.route)
     
     async def ask_trading_decision(
         self,
@@ -151,7 +171,7 @@ class SeroClient:
         prompt = self._build_trading_prompt(symbol, side, context, queen_confidence)
         
         try:
-            response = await self._query_api(prompt)
+            response = await self._query_model(prompt)
             if response is None:
                 raise Exception("Dr Auris Throne returned no response")
             return self._parse_trading_response(response)
@@ -174,7 +194,7 @@ class SeroClient:
             return None
         
         try:
-            response = await self._query_api(query)
+            response = await self._query_model(query)
             return self._extract_message_from_response(response)
         except Exception as e:
             logger.warning(f"Dr Auris Throne intelligence query failed: {type(e).__name__} {repr(e)}")
@@ -324,6 +344,48 @@ Reply: PROCEED/CAUTION/ABORT + 0.0-1.0 + reason"""
             except aiohttp.ClientError as e:
                 logger.error(f"Dr Auris Throne API request failed: {e}")
                 return None
+
+    async def _query_model(self, prompt: str) -> Optional[Dict[str, Any]]:
+        """Use the explicit DigitalOcean agent, else the canonical cloud fallback."""
+
+        if self.provider_enabled:
+            return await self._query_api(prompt)
+        if not self.fallback_enabled:
+            return None
+        return await asyncio.to_thread(self._query_ollama_fallback, prompt)
+
+    def _query_ollama_fallback(self, prompt: str) -> Optional[Dict[str, Any]]:
+        """Run an advisory-only Sero prompt through the shared Ollama adapter."""
+
+        try:
+            from aureon.inhouse_ai.llm_adapter import _llm_http_disabled
+            from aureon.integrations.ollama import OllamaModelSwitchboard
+
+            if _llm_http_disabled():
+                return None
+            if self._fallback_adapter is None:
+                self._fallback_adapter, _selection = OllamaModelSwitchboard().compatible_adapter_for("fast")
+            response = self._fallback_adapter.prompt(
+                [{"role": "user", "content": prompt}],
+                system=(
+                    "You are Dr Auris, an advisory-only risk reviewer. Reply concisely. "
+                    "For trade validation start with PROCEED, CAUTION, or ABORT, then a "
+                    "confidence from 0 to 1 and one short evidence-based reason. Never "
+                    "claim to execute a trade or bypass an Aureon gate."
+                ),
+                max_tokens=96,
+                temperature=0.1,
+            )
+            if response.stop_reason == "error" or not str(response.text or "").strip():
+                return None
+            return {
+                "choices": [{"message": {"content": str(response.text)}}],
+                "model": str(response.model or ""),
+                "route": "ollama_cloud_fallback",
+            }
+        except Exception as exc:
+            logger.warning("Dr Auris Ollama fallback failed: %s", type(exc).__name__)
+            return None
 
     async def _get_access_token(self, session: aiohttp.ClientSession) -> Optional[str]:
         """Issue access token via DigitalOcean Agents auth endpoint.

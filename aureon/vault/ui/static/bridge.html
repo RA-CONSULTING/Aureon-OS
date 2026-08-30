@@ -296,7 +296,12 @@
   // ───────── Peer identity ─────────
   function uuid() {
     if (window.crypto && crypto.randomUUID) return crypto.randomUUID().replace(/-/g, "").slice(0, 12);
-    return Math.random().toString(36).slice(2, 14);
+    if (window.crypto && crypto.getRandomValues) {
+      const bytes = new Uint8Array(6);
+      crypto.getRandomValues(bytes);
+      return Array.from(bytes, byte => byte.toString(16).padStart(2, "0")).join("");
+    }
+    throw new Error("Secure peer identity generation is unavailable");
   }
   let peerId = localStorage.getItem("aureon.peer_id");
   if (!peerId) {

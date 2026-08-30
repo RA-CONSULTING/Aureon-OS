@@ -180,9 +180,9 @@ export function AureonAgentCompanyConsole() {
           </div>
 
           <div className="space-y-3">
-            <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 p-3">
+            <div className="rounded-md border border-success/30 bg-success/10 p-3">
               <div className="mb-2 flex items-center justify-between gap-2">
-                <div className="text-sm font-medium text-emerald-50">Mycelium Organisation Ethos</div>
+                <div className="text-sm font-medium text-success">Mycelium Organisation Ethos</div>
                 <Badge variant={summary.mycelium_doctrine_ready ? "success" : "warning"}>
                   {String(myceliumDoctrine.ethos || "waiting").replace(/_/g, " ")}
                 </Badge>
@@ -190,7 +190,7 @@ export function AureonAgentCompanyConsole() {
               <div className="text-[11px] text-muted-foreground">{myceliumDoctrine.one_line || "Waiting for mycelium doctrine."}</div>
               <div className="mt-2 space-y-1">
                 {myceliumMap.slice(0, 5).map((item: JsonMap) => (
-                  <div key={item.mycelium_part} className="rounded border border-emerald-400/20 bg-background/20 px-2 py-1.5">
+                  <div key={item.mycelium_part} className="rounded border border-success/20 bg-background/20 px-2 py-1.5">
                     <div className="text-[11px] font-medium">
                       {String(item.mycelium_part || "").replace(/_/g, " ")} {"->"} {item.aureon_part}
                     </div>
@@ -200,16 +200,16 @@ export function AureonAgentCompanyConsole() {
               </div>
               <div className="mt-2 grid gap-1">
                 {myceliumPrinciples.slice(0, 4).map((principle: string) => (
-                  <div key={principle} className="rounded border border-emerald-400/20 bg-background/15 px-2 py-1 text-[11px] text-muted-foreground">
+                  <div key={principle} className="rounded border border-success/20 bg-background/15 px-2 py-1 text-[11px] text-muted-foreground">
                     {principle}
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="rounded-md border border-violet-500/30 bg-violet-500/10 p-3">
+            <div className="rounded-md border border-primary/30 bg-primary/10 p-3">
               <div className="mb-2 flex items-center justify-between gap-2">
-                <div className="text-sm font-medium text-violet-50">Cells To Stars Doctrine</div>
+                <div className="text-sm font-medium text-primary">Cells To Stars Doctrine</div>
                 <Badge variant={summary.bio_cosmic_doctrine_ready ? "success" : "warning"}>
                   {String(bioCosmicDoctrine.ethos || "waiting").replace(/_/g, " ")}
                 </Badge>
@@ -217,7 +217,7 @@ export function AureonAgentCompanyConsole() {
               <div className="text-[11px] text-muted-foreground">{bioCosmicDoctrine.one_line || "Waiting for living-system doctrine."}</div>
               <div className="mt-2 grid gap-1">
                 {bioCosmicScale.slice(0, 6).map((item: JsonMap) => (
-                  <div key={item.scale} className="rounded border border-violet-400/20 bg-background/20 px-2 py-1.5">
+                  <div key={item.scale} className="rounded border border-primary/20 bg-background/20 px-2 py-1.5">
                     <div className="text-[11px] font-medium">{String(item.scale || "").replace(/_/g, " ")}</div>
                     <div className="mt-0.5 text-[11px] text-muted-foreground">{item.aureon_translation}</div>
                   </div>
@@ -225,22 +225,22 @@ export function AureonAgentCompanyConsole() {
               </div>
               <div className="mt-2 grid gap-1">
                 {bioCosmicLaws.slice(0, 4).map((law: string) => (
-                  <div key={law} className="rounded border border-violet-400/20 bg-background/15 px-2 py-1 text-[11px] text-muted-foreground">
+                  <div key={law} className="rounded border border-primary/20 bg-background/15 px-2 py-1 text-[11px] text-muted-foreground">
                     {law}
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="rounded-md border border-violet-500/30 bg-violet-500/10 p-3">
+            <div className="rounded-md border border-primary/30 bg-primary/10 p-3">
               <div className="mb-2 flex items-center justify-between gap-2">
-                <div className="text-sm font-medium text-violet-50">Prompt As Client Job</div>
+                <div className="text-sm font-medium text-primary">Prompt As Client Job</div>
                 <Badge variant="outline">{summary.agency_lifecycle_step_count || clientJobLifecycle.length} stages</Badge>
               </div>
               <div className="text-[11px] text-muted-foreground">{agencyModel.analogy || "Waiting for agency model."}</div>
               <div className="mt-2 space-y-2">
                 {clientJobLifecycle.map((step: JsonMap) => (
-                  <div key={step.step} className="rounded border border-violet-400/20 bg-background/25 p-2">
+                  <div key={step.step} className="rounded border border-primary/20 bg-background/25 p-2">
                     <div className="flex items-center justify-between gap-2">
                       <div className="text-xs font-medium">{String(step.step || "").replace(/_/g, " ")}</div>
                       <Badge variant="outline" className="text-[10px]">{step.owner}</Badge>
@@ -251,15 +251,15 @@ export function AureonAgentCompanyConsole() {
               </div>
             </div>
 
-            <div className="rounded-md border border-cyan-500/30 bg-cyan-500/10 p-3">
+            <div className="rounded-md border border-primary/30 bg-primary/10 p-3">
               <div className="mb-2 flex items-center justify-between gap-2">
-                <div className="text-sm font-medium text-cyan-50">Recruitment Engine</div>
+                <div className="text-sm font-medium text-primary">Recruitment Engine</div>
                 <Badge variant={recruitmentEngine.status === "recruitment_ready" ? "success" : "warning"}>
                   {recruitmentEngine.status || "waiting"}
                 </Badge>
               </div>
               <div className="grid gap-2 md:grid-cols-2">
-                <div className="rounded border border-cyan-400/20 bg-background/25 p-2">
+                <div className="rounded border border-primary/20 bg-background/25 p-2">
                   <div className="text-xs font-medium">Search Stack</div>
                   <div className="mt-1 text-[11px] text-muted-foreground">
                     internal hits {recruitmentSummary.internal_hit_count || 0}; online {String(recruitmentSummary.online_enabled ?? false)}; status {recruitmentSummary.online_status || "not requested"}
@@ -272,7 +272,7 @@ export function AureonAgentCompanyConsole() {
                     ))}
                   </div>
                 </div>
-                <div className="rounded border border-cyan-400/20 bg-background/25 p-2">
+                <div className="rounded border border-primary/20 bg-background/25 p-2">
                   <div className="text-xs font-medium">Recruited Crew</div>
                   <div className="mt-1 text-[11px] text-muted-foreground">
                     {recruitedWorkers.length || 0} workers; blueprints {recruitmentSummary.agent_blueprint_count || 0}
@@ -288,7 +288,7 @@ export function AureonAgentCompanyConsole() {
               </div>
               <div className="mt-2 space-y-1">
                 {recruitmentStages.slice(0, 4).map((stage: JsonMap) => (
-                  <div key={stage.stage} className="rounded border border-cyan-400/20 bg-background/20 px-2 py-1.5">
+                  <div key={stage.stage} className="rounded border border-primary/20 bg-background/20 px-2 py-1.5">
                     <div className="text-[11px] font-medium">{String(stage.stage || "").replace(/_/g, " ")}</div>
                     <div className="mt-0.5 text-[11px] text-muted-foreground">{stage.owner}: {stage.action}</div>
                   </div>
@@ -296,9 +296,9 @@ export function AureonAgentCompanyConsole() {
               </div>
             </div>
 
-            <div className="rounded-md border border-orange-500/30 bg-orange-500/10 p-3">
+            <div className="rounded-md border border-warning/30 bg-warning/10 p-3">
               <div className="mb-2 flex items-center justify-between gap-2">
-                <div className="text-sm font-medium text-orange-50">Hire / Retire Crews</div>
+                <div className="text-sm font-medium text-warning">Hire / Retire Crews</div>
                 <Badge variant={summary.temporary_staff_retirement_policy_ready ? "success" : "warning"}>
                   {summary.temporary_staff_retirement_policy_ready ? "ready" : "check"}
                 </Badge>
@@ -309,9 +309,9 @@ export function AureonAgentCompanyConsole() {
               </div>
             </div>
 
-            <div className="rounded-md border border-fuchsia-500/30 bg-fuchsia-500/10 p-3">
+            <div className="rounded-md border border-primary/30 bg-primary/10 p-3">
               <div className="mb-2 flex items-center justify-between gap-2">
-                <div className="text-sm font-medium text-fuchsia-50">Memory Phonebook</div>
+                <div className="text-sm font-medium text-primary">Memory Phonebook</div>
                 <Badge variant={summary.memory_phonebook_ready ? "success" : "warning"}>
                   {memorySummary.entry_count || 0} packs
                 </Badge>
@@ -347,9 +347,9 @@ export function AureonAgentCompanyConsole() {
               </div>
             </div>
 
-            <div className="rounded-md border border-sky-500/30 bg-sky-500/10 p-3">
+            <div className="rounded-md border border-primary/30 bg-primary/10 p-3">
               <div className="mb-2 flex items-center justify-between gap-2">
-                <div className="text-sm font-medium text-sky-50">Whole Organism Access</div>
+                <div className="text-sm font-medium text-primary">Whole Organism Access</div>
                 <Badge variant="outline">{(accessPolicy.universal_surfaces || []).length || 0} surfaces</Badge>
               </div>
               <div className="text-[11px] text-muted-foreground">{accessPolicy.purpose || "Waiting for access policy."}</div>
@@ -362,11 +362,11 @@ export function AureonAgentCompanyConsole() {
               </div>
             </div>
 
-            <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 p-3">
-              <div className="mb-2 text-sm font-medium text-emerald-50">Authority Boundaries</div>
+            <div className="rounded-md border border-success/30 bg-success/10 p-3">
+              <div className="mb-2 text-sm font-medium text-success">Authority Boundaries</div>
               <div className="space-y-2">
                 {boundaries.map((boundary: JsonMap) => (
-                  <div key={boundary.id} className="rounded border border-emerald-400/20 bg-background/25 p-2">
+                  <div key={boundary.id} className="rounded border border-success/20 bg-background/25 p-2">
                     <div className="text-xs font-medium">{boundary.title}</div>
                     <div className="mt-1 text-[11px] text-muted-foreground">{boundary.rule}</div>
                   </div>
@@ -389,14 +389,14 @@ export function AureonAgentCompanyConsole() {
               </div>
             </div>
 
-            <div className="rounded-md border border-yellow-500/30 bg-yellow-500/10 p-3">
+            <div className="rounded-md border border-warning/30 bg-warning/10 p-3">
               <div className="mb-2 flex items-center justify-between gap-2">
-                <div className="text-sm font-medium text-yellow-50">Work Orders</div>
+                <div className="text-sm font-medium text-warning">Work Orders</div>
                 <Badge variant={workOrders.length ? "warning" : "success"}>{workOrders.length}</Badge>
               </div>
               <div className="space-y-2">
                 {topWorkOrders.map((order: JsonMap) => (
-                  <div key={order.id} className="rounded border border-yellow-400/20 bg-background/25 p-2">
+                  <div key={order.id} className="rounded border border-warning/20 bg-background/25 p-2">
                     <div className="text-xs font-medium">{order.title}</div>
                     <div className="mt-1 text-[11px] text-muted-foreground">{order.exact_aureon_prompt}</div>
                   </div>

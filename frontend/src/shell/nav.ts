@@ -11,8 +11,10 @@ import {
   Activity,
   BarChart3,
   Bot,
+  Boxes,
   Brain,
   Briefcase,
+  Building2,
   Coins,
   Compass,
   CreditCard,
@@ -29,12 +31,15 @@ import {
   MessageSquare,
   Radar,
   Radio,
+  Rocket,
   Satellite,
+  ShieldCheck,
   Ship,
   SlidersHorizontal,
   Sparkles,
   Sun,
   TerminalSquare,
+  UserCircle,
   Wrench,
   type LucideIcon,
 } from "lucide-react";
@@ -47,6 +52,15 @@ export interface NavItem {
   Component: ComponentType;
   /** Needs a live backend (WS bridge / Supabase / gateway) — shown as a badge. */
   live?: boolean;
+  /** Retired from the sidebar/command palette but still routable (deep links
+   *  and legacy hash redirects keep working). */
+  hidden?: boolean;
+  /** Manages the INSTANCE rather than the signed-in user's own account, so its backing routes are
+   *  operator-only and would 403 for a tenant (see docs/architecture/MULTI_TENANT_AUTH.md).
+   *  Hidden from the sidebar for a signed-in end user so they are not invited to click into a
+   *  refusal. This is a curated list, not derived — the backend gate is the actual enforcer, so a
+   *  missing flag costs a confusing error, never an exposure. */
+  operatorOnly?: boolean;
 }
 
 export interface NavSection {
@@ -64,7 +78,15 @@ export const NAV_SECTIONS: NavSection[] = [
     label: "Platform",
     items: [
       {
-        path: "/",
+        path: "/start",
+        label: "Get Started",
+        description: "Three steps to your first grounded conversation — connect a model, test, chat",
+        icon: Rocket,
+        Component: lazy(() => import("./pages/GetStartedPage")),
+        live: true,
+      },
+      {
+        path: "/console",
         label: "Overview",
         description: "Platform health, domains, and quick routes",
         icon: LayoutDashboard,
@@ -78,11 +100,28 @@ export const NAV_SECTIONS: NavSection[] = [
         Component: lazyNamed(() => import("@/components/RepoNavigationPanel"), "RepoNavigationPanel"),
       },
       {
+        path: "/platform/coverage",
+        label: "Systems & Coverage",
+        description: "Live repo-wide coverage — every aureon/ package + per-domain health",
+        icon: Boxes,
+        Component: lazy(() => import("./pages/SystemsCoveragePage")),
+        live: true,
+      },
+      {
         path: "/platform/switchboard",
         label: "Switchboard",
         description: "Turn every system feature on/off at human discretion",
         icon: SlidersHorizontal,
         Component: lazy(() => import("./pages/SwitchboardPage")),
+        live: true,
+        operatorOnly: true,
+      },
+      {
+        path: "/account",
+        label: "Account & Session",
+        description: "Your plane, your keys, your billing, and how to sign out",
+        icon: UserCircle,
+        Component: lazy(() => import("./pages/AccountPage")),
         live: true,
       },
       {
@@ -93,11 +132,21 @@ export const NAV_SECTIONS: NavSection[] = [
         Component: lazy(() => import("./pages/BillingPage")),
       },
       {
+        path: "/platform/company",
+        label: "Company",
+        description: "The organization behind Aureon OS — R&A Consulting · Aureon Zorza Technologies",
+        icon: Building2,
+        Component: lazy(() => import("./pages/CompanyPage")),
+      },
+      {
         path: "/platform/console",
         label: "Legacy Console",
-        description: "The original nine-tab operational console",
+        description: "The original nine-tab operational console (superseded by the shell)",
         icon: TerminalSquare,
         Component: lazy(() => import("./pages/LegacyConsolePage")),
+        // Retired from the front door: still routed so deep links / legacy #hash
+        // redirects resolve, but hidden from the sidebar + command palette.
+        hidden: true,
       },
     ],
   },
@@ -235,6 +284,19 @@ export const NAV_SECTIONS: NavSection[] = [
     ],
   },
   {
+    label: "Defense & Validation",
+    items: [
+      {
+        path: "/defense",
+        label: "Defense & Validation",
+        description: "The bio family — sensor lanes, statistical-validity dossier & the cognitive immune layer",
+        icon: ShieldCheck,
+        Component: lazy(() => import("./pages/DefensePage")),
+        live: true,
+      },
+    ],
+  },
+  {
     label: "Coding System",
     items: [
       {
@@ -257,6 +319,7 @@ export const NAV_SECTIONS: NavSection[] = [
         description: "Work-order execution and burndown",
         icon: ListChecks,
         Component: lazyNamed(() => import("@/components/generated/AureonWorkOrderExecutionConsole"), "AureonWorkOrderExecutionConsole"),
+        operatorOnly: true,
       },
       {
         path: "/coding/director",
@@ -264,6 +327,7 @@ export const NAV_SECTIONS: NavSection[] = [
         description: "Director-to-build capability bridge",
         icon: Compass,
         Component: lazyNamed(() => import("@/components/generated/AureonDirectorCapabilityBridgeConsole"), "AureonDirectorCapabilityBridgeConsole"),
+        operatorOnly: true,
       },
     ],
   },
@@ -284,6 +348,7 @@ export const NAV_SECTIONS: NavSection[] = [
         description: "Gold and capital intelligence company",
         icon: Coins,
         Component: lazyNamed(() => import("@/components/generated/AureonGoldCapitalIntelligenceConsole"), "AureonGoldCapitalIntelligenceConsole"),
+        operatorOnly: true,
       },
       {
         path: "/ops/affect",
@@ -346,6 +411,27 @@ export const NAV_SECTIONS: NavSection[] = [
 
 export const ALL_NAV_ITEMS: NavItem[] = NAV_SECTIONS.flatMap((s) => s.items);
 
+/** Sections with hidden items removed and any now-empty section dropped —
+ *  the nav surface the sidebar and command palette render. Routes are still
+ *  generated from ALL_NAV_ITEMS, so hidden pages stay reachable by URL. */
+export const VISIBLE_NAV_SECTIONS: NavSection[] = NAV_SECTIONS
+  .map((s) => ({ ...s, items: s.items.filter((i) => !i.hidden) }))
+  .filter((s) => s.items.length > 0);
+
+/** The nav surface for a given plane.
+ *
+ *  A signed-in end user does not get the instance-control pages: their backing routes are
+ *  operator-only, so showing them would only invite a click into a 403. Routes stay generated from
+ *  ALL_NAV_ITEMS, so nothing becomes unreachable by URL — this is presentation, and the backend gate
+ *  remains the enforcer. `isAdmin` defaults true so any caller that has not resolved an identity
+ *  yet (or an older backend with no `/api/me`) sees exactly today's nav. */
+export function navSectionsForPlane(isAdmin: boolean): NavSection[] {
+  if (isAdmin) return VISIBLE_NAV_SECTIONS;
+  return VISIBLE_NAV_SECTIONS
+    .map((s) => ({ ...s, items: s.items.filter((i) => !i.operatorOnly) }))
+    .filter((s) => s.items.length > 0);
+}
+
 export function navItemForPath(pathname: string): NavItem | undefined {
   return ALL_NAV_ITEMS.find((i) => i.path === pathname);
 }
@@ -360,7 +446,7 @@ export function sectionForPath(pathname: string): NavSection | undefined {
  * right tab.
  */
 export const HASH_REDIRECTS: Record<string, string> = {
-  "#overview": "/",
+  "#overview": "/console",
   "#repo-map": "/platform/repo-map",
   "#live-ops": "/platform/console#live-ops",
   "#coding": "/coding/organism",

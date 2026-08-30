@@ -6,9 +6,7 @@
  * Like Python aureon_unified_ecosystem.py position management
  */
 
-import { unifiedBus } from './unifiedBus';
 import { temporalLadder, SYSTEMS } from './temporalLadder';
-import { elephantMemory } from './elephantMemory';
 import { trailingStopManager } from './trailingStopManager';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -30,8 +28,10 @@ export interface Position {
   entryTime: number;
   holdDurationMs: number;
   exchange_order_id?: string;
-  coherenceAtEntry: number;
-  qgitaTierAtEntry: number;
+  coherenceAtEntry: number | null;
+  qgitaTierAtEntry: number | null;
+  priceSourceId: string;
+  priceSourceTimestamp: string;
 }
 
 export interface PositionManagerState {
@@ -44,8 +44,6 @@ export interface PositionManagerState {
 }
 
 const MAX_POSITIONS = 15;
-const DEFAULT_TP_PCT = 1.5;  // 1.5% take profit
-const DEFAULT_SL_PCT = 0.8;  // 0.8% stop loss
 const TRAILING_ACTIVATION_PCT = 0.5; // Activate trailing at 0.5% profit
 
 class PositionManager {
@@ -53,8 +51,7 @@ class PositionManager {
   private isInitialized: boolean = false;
 
   constructor() {
-    temporalLadder.registerSystem(SYSTEMS.POSITION_MANAGER);
-    console.log('📈 Position Manager initialized');
+    console.log('📈 Position Manager ready; awaiting provider-backed positions');
   }
 
   /**
@@ -76,29 +73,39 @@ class PositionManager {
 
       if (!error && data) {
         for (const row of data) {
+          const required = [
+            row.entry_price, row.quantity, row.position_value_usdt, row.current_price,
+            row.unrealized_pnl, row.take_profit_price, row.stop_loss_price,
+          ];
+          const openedAt = Date.parse(String(row.source_timestamp || ''));
+          if (row.truth_status !== 'live' || row.generated_values !== false || !row.source_id ||
+              !required.every(Number.isFinite) || !Number.isFinite(openedAt)) continue;
           const position: Position = {
             id: row.id,
             symbol: row.symbol,
-            exchange: 'binance', // Default exchange
+            exchange: row.exchange,
             side: row.side as 'LONG' | 'SHORT',
             entryPrice: row.entry_price,
             quantity: row.quantity,
-            positionSizeUsd: row.position_value_usdt || row.entry_price * row.quantity,
-            currentPrice: row.entry_price,
-            unrealizedPnl: 0,
-            unrealizedPnlPct: 0,
-            takeProfitPrice: row.take_profit_price || row.entry_price * (1 + DEFAULT_TP_PCT / 100),
-            stopLossPrice: row.stop_loss_price || row.entry_price * (1 - DEFAULT_SL_PCT / 100),
+            positionSizeUsd: row.position_value_usdt,
+            currentPrice: row.current_price,
+            unrealizedPnl: row.unrealized_pnl,
+            unrealizedPnlPct: row.position_value_usdt > 0 ? (row.unrealized_pnl / row.position_value_usdt) * 100 : null,
+            takeProfitPrice: row.take_profit_price,
+            stopLossPrice: row.stop_loss_price,
             trailingStopActive: false,
             trailingStopPrice: null,
-            entryTime: new Date(row.opened_at).getTime(),
-            holdDurationMs: Date.now() - new Date(row.opened_at).getTime(),
-            coherenceAtEntry: 0,
-            qgitaTierAtEntry: 3,
+            entryTime: openedAt,
+            holdDurationMs: Date.now() - openedAt,
+            coherenceAtEntry: null,
+            qgitaTierAtEntry: null,
+            priceSourceId: row.source_id,
+            priceSourceTimestamp: row.source_timestamp,
           };
           this.positions.set(position.id, position);
         }
         console.log(`[PositionManager] Loaded ${data.length} open positions`);
+        if (this.positions.size > 0) temporalLadder.registerSystem(SYSTEMS.POSITION_MANAGER);
       }
     } catch (error) {
       console.error('[PositionManager] Init error:', error);
@@ -123,69 +130,34 @@ class PositionManager {
     takeProfitPct?: number;
     stopLossPct?: number;
   }): Promise<Position | null> {
-    // Check max positions
-    if (this.positions.size >= MAX_POSITIONS) {
-      console.warn('[PositionManager] Max positions reached');
-      return null;
-    }
-
-    // Check if already have position in this symbol
-    for (const pos of this.positions.values()) {
-      if (pos.symbol === params.symbol) {
-        console.warn(`[PositionManager] Already have position in ${params.symbol}`);
-        return null;
-      }
-    }
-
-    const tpPct = params.takeProfitPct || DEFAULT_TP_PCT;
-    const slPct = params.stopLossPct || DEFAULT_SL_PCT;
-
-    const position: Position = {
-      id: crypto.randomUUID(),
-      symbol: params.symbol,
-      exchange: params.exchange,
-      side: params.side,
-      entryPrice: params.entryPrice,
-      quantity: params.quantity,
-      positionSizeUsd: params.positionSizeUsd,
-      currentPrice: params.entryPrice,
-      unrealizedPnl: 0,
-      unrealizedPnlPct: 0,
-      takeProfitPrice: params.side === 'LONG' 
-        ? params.entryPrice * (1 + tpPct / 100)
-        : params.entryPrice * (1 - tpPct / 100),
-      stopLossPrice: params.side === 'LONG'
-        ? params.entryPrice * (1 - slPct / 100)
-        : params.entryPrice * (1 + slPct / 100),
-      trailingStopActive: false,
-      trailingStopPrice: null,
-      entryTime: Date.now(),
-      holdDurationMs: 0,
-      exchange_order_id: params.exchangeOrderId,
-      coherenceAtEntry: params.coherenceAtEntry,
-      qgitaTierAtEntry: params.qgitaTierAtEntry,
-    };
-
-    this.positions.set(position.id, position);
-
-    // Create trailing stop in trailing stop manager
-    trailingStopManager.createStop(params.symbol, params.entryPrice, params.entryPrice);
-
-    // Persist to database
-    await this.persistPosition(position);
-
-    console.log(`[PositionManager] 📈 Opened ${params.side} ${params.symbol} @ ${params.entryPrice}`);
-
-    this.publishToUnifiedBus();
-    return position;
+    // A frontend model cannot create a live position. The execute-trade/OMS
+    // receipt path owns both the exchange order and the database position row.
+    throw new Error('PROVIDER_ORDER_RECEIPT_REQUIRED: open positions through a live execution function');
   }
 
   /**
    * Update position with new price
    */
-  public updatePrice(symbol: string, currentPrice: number): Position | null {
+  public updatePrice(ticker: {
+    symbol: string;
+    price: number;
+    truthStatus: 'real_derived';
+    sourceId: string;
+    sourceTimestamp: string;
+    generatedValues: false;
+  }): Position | null {
+    const sourceTime = Date.parse(ticker.sourceTimestamp);
+    if (!Number.isFinite(ticker.price) || ticker.price <= 0 || !ticker.sourceId ||
+        ticker.truthStatus !== 'real_derived' || ticker.generatedValues !== false ||
+        !Number.isFinite(sourceTime) || Date.now() - sourceTime > 60_000) {
+      return null;
+    }
+
     for (const position of this.positions.values()) {
-      if (position.symbol !== symbol) continue;
+      if (position.symbol !== ticker.symbol) continue;
+
+      const symbol = ticker.symbol;
+      const currentPrice = ticker.price;
 
       // Calculate unrealized P&L
       const priceDiff = position.side === 'LONG'
@@ -193,6 +165,8 @@ class PositionManager {
         : position.entryPrice - currentPrice;
 
       position.currentPrice = currentPrice;
+      position.priceSourceId = ticker.sourceId;
+      position.priceSourceTimestamp = ticker.sourceTimestamp;
       position.unrealizedPnl = priceDiff * position.quantity;
       position.unrealizedPnlPct = (priceDiff / position.entryPrice) * 100;
       position.holdDurationMs = Date.now() - position.entryTime;
@@ -260,52 +234,7 @@ class PositionManager {
    * Close a position
    */
   public async closePosition(positionId: string, exitPrice: number, reason: string = 'manual'): Promise<Position | null> {
-    const position = this.positions.get(positionId);
-    if (!position) return null;
-
-    // Calculate final P&L
-    const priceDiff = position.side === 'LONG'
-      ? exitPrice - position.entryPrice
-      : position.entryPrice - exitPrice;
-
-    const realizedPnl = priceDiff * position.quantity;
-    const realizedPnlPct = (priceDiff / position.entryPrice) * 100;
-    const isWin = realizedPnl > 0;
-
-    // Update Elephant Memory
-    elephantMemory.recordTrade(position.symbol, realizedPnl, position.side === 'LONG' ? 'BUY' : 'SELL');
-
-    // Remove from active positions
-    this.positions.delete(positionId);
-
-    // Remove trailing stop
-    trailingStopManager.removeStop(position.symbol);
-
-    console.log(`[PositionManager] 📤 Closed ${position.side} ${position.symbol} @ ${exitPrice} | P&L: ${realizedPnlPct.toFixed(2)}% ($${realizedPnl.toFixed(2)}) | ${reason}`);
-
-    // Update database
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        await supabase
-          .from('trading_positions')
-          .update({
-            status: 'closed',
-            exit_price: exitPrice,
-            realized_pnl: realizedPnl,
-            realized_pnl_pct: realizedPnlPct,
-            close_reason: reason,
-            closed_at: new Date().toISOString(),
-          })
-          .eq('id', positionId);
-      }
-    } catch (error) {
-      console.error('[PositionManager] DB update error:', error);
-    }
-
-    this.publishToUnifiedBus();
-
-    return { ...position, unrealizedPnl: realizedPnl, unrealizedPnlPct: realizedPnlPct };
+    throw new Error('PROVIDER_CLOSE_ORDER_RECEIPT_REQUIRED: closing a local model must not mark a live position closed');
   }
 
   /**
@@ -316,9 +245,10 @@ class PositionManager {
     const toClose: Position[] = [];
     
     for (const position of this.positions.values()) {
-      const updated = this.updatePrice(position.symbol, position.currentPrice);
-      if (updated && this.shouldClose(updated, updated.currentPrice)) {
-        toClose.push(updated);
+      const observedAt = Date.parse(position.priceSourceTimestamp);
+      if (Number.isFinite(observedAt) && Date.now() - observedAt <= 60_000 &&
+          this.shouldClose(position, position.currentPrice)) {
+        toClose.push(position);
       }
     }
     
@@ -373,49 +303,6 @@ class PositionManager {
       maxPositions: MAX_POSITIONS,
       positionsAtRisk,
     };
-  }
-
-  private async persistPosition(position: Position): Promise<void> {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
-
-      await supabase.from('trading_positions').insert({
-        user_id: session.user.id,
-        symbol: position.symbol,
-        side: position.side,
-        entry_price: position.entryPrice,
-        quantity: position.quantity,
-        position_value_usdt: position.positionSizeUsd,
-        take_profit_price: position.takeProfitPrice,
-        stop_loss_price: position.stopLossPrice,
-        status: 'open',
-      });
-    } catch (error) {
-      console.error('[PositionManager] Persist error:', error);
-    }
-  }
-
-  private publishToUnifiedBus(): void {
-    const state = this.getState();
-
-    unifiedBus.publish({
-      systemName: 'PositionManager',
-      timestamp: Date.now(),
-      ready: true,
-      coherence: state.totalPositions > 0 ? 0.85 : 0.5,
-      confidence: 0.9,
-      signal: state.totalUnrealizedPnl > 0 ? 'BUY' : state.totalUnrealizedPnl < 0 ? 'SELL' : 'NEUTRAL',
-      data: {
-        totalPositions: state.totalPositions,
-        maxPositions: state.maxPositions,
-        canOpenNew: this.canOpenPosition(),
-        totalExposureUsd: state.totalExposureUsd,
-        totalUnrealizedPnl: state.totalUnrealizedPnl,
-        positionsAtRisk: state.positionsAtRisk,
-        symbols: state.positions.map(p => p.symbol),
-      },
-    });
   }
 }
 

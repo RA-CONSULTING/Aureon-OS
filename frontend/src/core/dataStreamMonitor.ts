@@ -87,7 +87,7 @@ class DataStreamMonitorClass {
 
   // Record an outgoing request (OUT)
   recordRequest(endpoint: string, requestBody?: any): string {
-    const id = `${endpoint}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const id = `${endpoint}-${Date.now()}-${crypto.randomUUID()}`;
     
     const entry: StreamEntry = {
       id,

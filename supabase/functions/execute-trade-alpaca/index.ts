@@ -31,8 +31,7 @@ serve(async (req) => {
       );
     }
 
-    // Alpaca paper trading API
-    const baseUrl = 'https://paper-api.alpaca.markets';
+    const baseUrl = 'https://api.alpaca.markets';
 
     const orderPayload: Record<string, any> = {
       symbol: symbol.replace('/', ''), // BTCUSD format for crypto
@@ -82,6 +81,10 @@ serve(async (req) => {
         status: data.status,
         filledQty: data.filled_qty,
         filledAvgPrice: data.filled_avg_price,
+        truthStatus: 'live',
+        sourceId: 'alpaca:/v2/orders',
+        sourceTimestamp: response.headers.get('date') || new Date().toISOString(),
+        generatedValues: false,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

@@ -18,13 +18,36 @@ OpenAI-compatible /v1 surface. This module adds:
     think mode, format=json).
 """
 
-from aureon.integrations.ollama.ollama_bridge import (
-    OllamaBridge,
-    OllamaModel,
-    OllamaPsEntry,
-    OllamaBridgeError,
+from aureon.integrations.ollama.hnc_phi_swarm import (
+    HNCPhiOllamaSwarm,
+    build_phi_swarm_plan,
+)
+from aureon.integrations.ollama.model_switchboard import (
+    HNC_ROUTE_SCHEMA,
+    LANES,
+    HNCModelRoutingReceipt,
+    OllamaModelSelection,
+    OllamaModelSwitchboard,
+    validate_hnc_model_routing_receipt,
 )
 from aureon.integrations.ollama.ollama_adapter import OllamaLLMAdapter
+from aureon.integrations.ollama.ollama_bridge import (
+    OllamaBridge,
+    OllamaBridgeError,
+    OllamaModel,
+    OllamaPsEntry,
+)
+from aureon.ollama_config import (
+    ensure_ollama_runtime_config,
+    is_ollama_cloud_url,
+    ollama_authorization_headers,
+    ollama_config_snapshot,
+    resolve_external_llm_fallback,
+    resolve_ollama_api_key,
+    resolve_ollama_native_base_url,
+    resolve_ollama_openai_base_url,
+    resolve_ollama_reasoning_effort,
+)
 
 __all__ = [
     "OllamaBridge",
@@ -32,4 +55,21 @@ __all__ = [
     "OllamaPsEntry",
     "OllamaBridgeError",
     "OllamaLLMAdapter",
+    "LANES",
+    "HNC_ROUTE_SCHEMA",
+    "HNCModelRoutingReceipt",
+    "OllamaModelSelection",
+    "OllamaModelSwitchboard",
+    "validate_hnc_model_routing_receipt",
+    "HNCPhiOllamaSwarm",
+    "build_phi_swarm_plan",
+    "ensure_ollama_runtime_config",
+    "is_ollama_cloud_url",
+    "ollama_authorization_headers",
+    "ollama_config_snapshot",
+    "resolve_external_llm_fallback",
+    "resolve_ollama_api_key",
+    "resolve_ollama_native_base_url",
+    "resolve_ollama_openai_base_url",
+    "resolve_ollama_reasoning_effort",
 ]

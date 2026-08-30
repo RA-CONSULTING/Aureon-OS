@@ -19,6 +19,30 @@ if str(EXCHANGES_DIR) not in sys.path:
 import unified_market_trader as trader_mod
 
 
+def _provider_payload(**values):
+    return {
+        **values,
+        "source_timestamp": time.time() - 0.01,
+        "truth_status": "real_observed",
+        "generated_values": False,
+    }
+
+
+def _complete_fill(order_id, *, quantity, price, fee=0.0):
+    return _provider_payload(
+        orderId=order_id,
+        status="FILLED",
+        data_status="live",
+        submitted=True,
+        fill_receipt_complete=True,
+        filled_qty=quantity,
+        filled_avg_price=price,
+        filled_notional=quantity * price,
+        fee=fee,
+        eligible_for_learning=True,
+    )
+
+
 class FeedTarget:
     def __init__(self):
         self._hive_boosts = {}
@@ -367,7 +391,10 @@ class UnifiedMarketTraderTests(unittest.TestCase):
 
     def test_route_price_uses_stream_cache_before_rest_quote(self):
         trader = self._make_trader()
-        trader._stream_price_ticker = lambda symbol, max_age=trader_mod.STREAM_CACHE_MAX_AGE_SEC: trader_mod.SimpleNamespace(price=123.45)  # type: ignore[method-assign]
+        trader._stream_price_ticker = lambda symbol, max_age=trader_mod.STREAM_CACHE_MAX_AGE_SEC: trader_mod.SimpleNamespace(  # type: ignore[method-assign]
+            price=123.45,
+            timestamp=time.time() - 0.01,
+        )
 
         class KrakenProbe:
             def best_price(self, symbol):
@@ -434,14 +461,19 @@ class UnifiedMarketTraderTests(unittest.TestCase):
         self.assertIn(("alpaca", "spot"), routes)
         self.assertIn(("binance", "spot"), routes)
         self.assertIn(("binance", "margin"), routes)
-        self.assertEqual(top["ready_route_count"], 6)
-        self.assertEqual(top["available_route_count"], 6)
-        self.assertEqual(top["held_route_count"], 0)
+        self.assertEqual(top["ready_route_count"], 5)
+        self.assertEqual(top["available_route_count"], 5)
+        self.assertEqual(top["held_route_count"], 1)
         for route in top["execution_routes"]:
             self.assertGreater(route["model_count"], 0)
             self.assertTrue(route["model_coverage_ready"])
-            self.assertEqual(route["trade_clearance_state"], "available")
-            self.assertTrue(route["end_user_trade_available"])
+            if route["venue"] == "kraken" and route["market_type"] == "spot":
+                self.assertEqual(route["trade_clearance_state"], "held")
+                self.assertFalse(route["end_user_trade_available"])
+                self.assertIn("kraken_spot_client_or_balance_unavailable", route["blockers"])
+            else:
+                self.assertEqual(route["trade_clearance_state"], "available")
+                self.assertTrue(route["end_user_trade_available"])
 
         action_plan = trader._build_exchange_action_plan(order_flow)
         model_coverage = action_plan["model_coverage"]
@@ -452,14 +484,18 @@ class UnifiedMarketTraderTests(unittest.TestCase):
 
         shadow_report = trader._build_shadow_trade_report(order_flow, action_plan, persist=False)
         self.assertEqual(shadow_report["shadow_count"], 6)
-        self.assertEqual(shadow_report["shadow_opened_count"], 6)
+        self.assertEqual(shadow_report["shadow_opened_count"], 5)
         self.assertTrue(shadow_report["self_measurement"]["all_four_exchange_routes_seen"])
         self.assertFalse(shadow_report["self_measurement"]["real_exchange_mutation"])
         self.assertIs(action_plan["shadow_trading"], shadow_report)
         for shadow in shadow_report["shadows"]:
-            self.assertEqual(shadow["status"], "shadow_opened")
             self.assertFalse(shadow["real_order_submitted"])
-            self.assertTrue(shadow["agent_review"]["logic_validated"])
+            if shadow["venue"] == "kraken" and shadow["market_type"] == "spot":
+                self.assertEqual(shadow["status"], "shadow_held")
+                self.assertFalse(shadow["agent_review"]["logic_validated"])
+            else:
+                self.assertEqual(shadow["status"], "shadow_opened")
+                self.assertTrue(shadow["agent_review"]["logic_validated"])
             self.assertIn("hnc_alignment_agent", shadow["agent_review"]["agents"])
             self.assertIn("runtime_clearance_agent", shadow["agent_review"]["agents"])
 
@@ -915,7 +951,7 @@ class UnifiedMarketTraderTests(unittest.TestCase):
             "signed_imbalance": 0.38,
         }
         central_beat = {
-            "generated_at": "2026-05-14T12:00:00",
+            "generated_at": datetime.now(timezone.utc).isoformat(),
             "source_count": 5,
             "stream_cache": {"fresh": True, "symbol_count": 1},
             "model_signal_feed": {"used": True},
@@ -977,6 +1013,7 @@ class UnifiedMarketTraderTests(unittest.TestCase):
 
         budget = trader._build_dynamic_intelligence_budget(
             {
+                "generated_at": datetime.now(timezone.utc).isoformat(),
                 "portfolio_balances": {
                     "source": "kraken_private_balance_cached_live",
                     "tradable_cash_usd": 120.0,
@@ -1284,6 +1321,28 @@ class UnifiedMarketTraderTests(unittest.TestCase):
             trader.capital_ready = True
             trader.alpaca = AlpacaExec()
             trader.binance = BinanceExec()
+            route_calls = []
+
+            def route_result(venue, market_type):
+                def execute(side, symbol, quote_usd):
+                    route_calls.append((venue, market_type, symbol, side, quote_usd))
+                    return {
+                        "ok": True,
+                        "submitted": True,
+                        "status": "pending_reconciliation",
+                        "venue": venue,
+                        "market_type": market_type,
+                        "symbol": symbol,
+                        "side": side,
+                    }
+
+                return execute
+
+            trader._execute_kraken_spot_route = route_result("kraken", "spot")
+            trader._execute_kraken_margin_route = route_result("kraken", "margin")
+            trader._execute_alpaca_spot_route = route_result("alpaca", "spot")
+            trader._execute_binance_spot_route = route_result("binance", "spot")
+            trader._execute_binance_margin_route = route_result("binance", "margin")
             trader._last_tick_started_at = time.time()
             payload = {
                 "combined": {"open_positions": 0},
@@ -1318,14 +1377,16 @@ class UnifiedMarketTraderTests(unittest.TestCase):
             self.assertEqual(summary["delegated_count"], 1)
             self.assertEqual(summary["held_count"], 0)
             self.assertEqual(summary["trade_path_state"], "available")
-            self.assertEqual(trader.kraken.client.spot_orders[0], ("XBTUSD", "buy", None, trader_mod.KRAKEN_SPOT_QUOTE_USD))
-            self.assertEqual(trader.kraken.client.margin_orders[0][0], "XXBTZUSD")
-            self.assertEqual(trader.alpaca.orders[0], ("BTC/USD", "buy", None, trader_mod.ORDER_EXECUTOR_QUOTE_USD))
-            self.assertEqual(trader.binance.spot_orders[0], ("BTCUSDT", "BUY", None, trader_mod.ORDER_EXECUTOR_QUOTE_USD))
+            self.assertEqual(
+                [(venue, market_type) for venue, market_type, *_ in route_calls],
+                [("kraken", "spot"), ("kraken", "margin"), ("alpaca", "spot"), ("binance", "spot")],
+            )
         finally:
             self._restore_env(old_env)
 
     def test_kraken_spot_buy_records_fee_aware_fast_profit_position(self):
+        old_env = self._with_live_executor_env()
+
         class KrakenExec:
             def __init__(self):
                 self.orders = []
@@ -1333,12 +1394,15 @@ class UnifiedMarketTraderTests(unittest.TestCase):
             def get_free_balance(self, asset):
                 return 500.0 if asset in {"USD", "ZUSD"} else 0.0
 
+            def get_account_balance(self):
+                return {"USD": 500.0}
+
             def get_ticker(self, symbol):
-                return {"price": 100.0, "bid": 99.99, "ask": 100.01}
+                return _provider_payload(price=100.0, bid=99.99, ask=100.01)
 
             def place_market_order(self, symbol, side, quantity=None, quote_qty=None):
                 self.orders.append((symbol, side, quantity, quote_qty))
-                return {"orderId": "KB1", "executedQty": "0.65", "status": "FILLED"}
+                return _complete_fill("KB1", quantity=0.65, price=100.0, fee=0.26)
 
         class KrakenTrader:
             def __init__(self):
@@ -1363,8 +1427,11 @@ class UnifiedMarketTraderTests(unittest.TestCase):
             finally:
                 trader_mod.KRAKEN_SPOT_POSITION_STATE_PATH = old_state
                 trader_mod.KRAKEN_SPOT_POSITION_PUBLIC_PATH = old_public
+                self._restore_env(old_env)
 
     def test_kraken_spot_buy_can_use_gbp_quote_balance(self):
+        old_env = self._with_live_executor_env()
+
         class KrakenExec:
             def __init__(self):
                 self.orders = []
@@ -1378,11 +1445,13 @@ class UnifiedMarketTraderTests(unittest.TestCase):
                 return 0.0
 
             def get_ticker(self, symbol):
-                return {"price": 80.0, "bid": 79.9, "ask": 80.1}
+                if str(symbol).upper() == "GBPUSD":
+                    return _provider_payload(price=1.25, bid=1.249, ask=1.251)
+                return _provider_payload(price=80.0, bid=79.9, ask=80.1)
 
             def place_market_order(self, symbol, side, quantity=None, quote_qty=None):
                 self.orders.append((symbol, side, quantity, quote_qty))
-                return {"orderId": "KGBP1", "executedQty": "0.8125", "status": "FILLED"}
+                return _complete_fill("KGBP1", quantity=0.8125, price=80.0, fee=0.26)
 
         class KrakenTrader:
             def __init__(self):
@@ -1405,6 +1474,7 @@ class UnifiedMarketTraderTests(unittest.TestCase):
             finally:
                 trader_mod.KRAKEN_SPOT_POSITION_STATE_PATH = old_state
                 trader_mod.KRAKEN_SPOT_POSITION_PUBLIC_PATH = old_public
+                self._restore_env(old_env)
 
     def test_kraken_margin_route_submits_through_unified_executor(self):
         old_env = self._with_live_executor_env()
@@ -1441,9 +1511,14 @@ class UnifiedMarketTraderTests(unittest.TestCase):
             self._restore_env(old_env)
 
     def test_kraken_spot_buy_goes_margin_only_when_spot_inventory_underwater(self):
+        old_env = self._with_live_executor_env()
+
         class KrakenExec:
             def get_account_balance(self):
                 return {"TRX": 100.0, "USD": 500.0}
+
+            def get_ticker(self, symbol):
+                return _provider_payload(price=0.90, bid=0.899, ask=0.901)
 
             def convert_to_quote(self, asset, amount, quote):
                 if asset == "TRX" and quote == "USD":
@@ -1466,15 +1541,18 @@ class UnifiedMarketTraderTests(unittest.TestCase):
             def __init__(self):
                 self.client = KrakenExec()
 
-        trader = self._make_trader()
-        trader.kraken = KrakenTrader()
+        try:
+            trader = self._make_trader()
+            trader.kraken = KrakenTrader()
 
-        posture = trader._kraken_spot_portfolio_posture(force=True)
-        result = trader._execute_kraken_spot_route("BUY", "TRXUSD", 65.0)
+            posture = trader._kraken_spot_portfolio_posture(force=True)
+            result = trader._execute_kraken_spot_route("BUY", "TRXUSD", 65.0)
 
-        self.assertFalse(posture["spot_buy_allowed"])
-        self.assertEqual(posture["mode"], "margin_only_until_spot_profit")
-        self.assertEqual(result["reason"], "kraken_spot_inventory_underwater_margin_only")
+            self.assertFalse(posture["spot_buy_allowed"])
+            self.assertEqual(posture["mode"], "margin_only_until_spot_profit")
+            self.assertIn("spot_inventory_underwater", result["reason"])
+        finally:
+            self._restore_env(old_env)
 
     def test_executor_skips_kraken_spot_buy_and_still_uses_margin_when_spot_underwater(self):
         old_env = self._with_live_executor_env()
@@ -1538,11 +1616,11 @@ class UnifiedMarketTraderTests(unittest.TestCase):
                 self.orders = []
 
             def get_ticker(self, symbol):
-                return {"price": 101.0, "bid": 101.0, "ask": 101.02}
+                return _provider_payload(price=101.0, bid=101.0, ask=101.02)
 
             def place_market_order(self, symbol, side, quantity=None, quote_qty=None):
                 self.orders.append((symbol, side, quantity, quote_qty))
-                return {"orderId": "KS1", "status": "FILLED"}
+                return _complete_fill("KS1", quantity=quantity, price=101.0, fee=0.10)
 
         class KrakenTrader:
             def __init__(self):
@@ -1581,7 +1659,8 @@ class UnifiedMarketTraderTests(unittest.TestCase):
                 self.assertEqual(trader.kraken.client.orders[0][1], "sell")
                 self.assertGreater(closed[0]["fast_profit_capture"]["true_net_profit_usd"], 0.0)
                 state = trader._load_kraken_spot_fast_profit_state()
-                self.assertEqual(state["open_positions"], [])
+                self.assertEqual(len(state["open_positions"]), 1)
+                self.assertAlmostEqual(state["open_positions"][0]["quantity"], 0.001)
                 self.assertEqual(state["last_check"]["closed_count"], 1)
             finally:
                 trader_mod.KRAKEN_SPOT_POSITION_STATE_PATH = old_state
@@ -1611,14 +1690,15 @@ class UnifiedMarketTraderTests(unittest.TestCase):
                     "total_quantity": 100.0,
                     "total_fees": 0.02,
                     "trade_count": 1,
+                    "latest_buy_timestamp": time.time() - 60.0,
                 }
 
             def get_ticker(self, symbol):
-                return {"price": 0.40, "bid": 0.40, "ask": 0.401}
+                return _provider_payload(price=0.40, bid=0.40, ask=0.401)
 
             def place_market_order(self, symbol, side, quantity=None, quote_qty=None):
                 self.orders.append((symbol, side, quantity, quote_qty))
-                return {"orderId": "TRXSELL1", "status": "FILLED"}
+                return _complete_fill("TRXSELL1", quantity=quantity, price=0.40, fee=0.02)
 
         class KrakenTrader:
             def __init__(self):
@@ -1640,7 +1720,7 @@ class UnifiedMarketTraderTests(unittest.TestCase):
                 self.assertEqual(len(closed), 1)
                 self.assertEqual(trader.kraken.client.orders[0][0], "TRXUSD")
                 self.assertEqual(trader.kraken.client.orders[0][1], "sell")
-                self.assertEqual(closed[0]["source"], "live_balance_cost_basis")
+                self.assertEqual(closed[0]["source"], "live_balance_and_provider_trade_history")
                 self.assertGreater(closed[0]["fast_profit_capture"]["true_net_profit_usd"], 0.0)
             finally:
                 trader_mod.KRAKEN_SPOT_POSITION_STATE_PATH = old_state
@@ -1753,8 +1833,12 @@ class UnifiedMarketTraderTests(unittest.TestCase):
     def test_hnc_cognitive_proof_runs_master_flow_over_real_runtime_data(self):
         trader = self._make_trader()
         central_beat = {
+            "generated_at": datetime.now(timezone.utc).isoformat(),
             "source_count": 4,
-            "sources": [{"source": "kraken"}, {"source": "capital"}, {"source": "alpaca"}, {"source": "binance"}],
+            "sources": [
+                {"source": source, "ready": True, "actionable": True, "data_status": "live"}
+                for source in ["kraken", "capital", "alpaca", "binance"]
+            ],
             "symbols": {
                 "BTCUSD": {
                     "symbol": "BTCUSD",
@@ -1842,7 +1926,8 @@ class UnifiedMarketTraderTests(unittest.TestCase):
     def test_kraken_equity_uses_portfolio_value_and_balance_snapshot_fallbacks(self):
         trader = self._make_trader()
 
-        self.assertEqual(trader._kraken_equity_from_payload({"portfolio_value": 123.45}), 123.45)
+        self.assertEqual(trader._kraken_equity_from_payload({"portfolio_value_usd": 123.45}), 123.45)
+        self.assertEqual(trader._kraken_equity_from_payload({"portfolio_value": 123.45}), 0.0)
         self.assertEqual(
             trader._kraken_equity_from_payload({"balance_snapshot": {"total_usd_estimate": 77.7}}),
             77.7,
@@ -2085,6 +2170,87 @@ class UnifiedMarketTraderTests(unittest.TestCase):
         )
         self.assertEqual(emitted.get("route_key"), "capital:cfd:GOLD:BUY")
         self.assertEqual(emitted.get("trace_id"), "life-1")
+
+    def test_fast_money_score_ranks_but_does_not_raise_gate_confidence(self):
+        """P4 inversion fix: fast_money_score (volatility-rewarding) may rank
+        opportunities but must not raise the published gate confidence, and the
+        separation is audited whenever the old max() would have scored higher."""
+        trader = self._make_trader()
+        trader._central_feed_targets = lambda: []  # type: ignore[method-assign]
+        payload = {
+            "shared_tradable_count": 1,
+            "active_order_flow": [
+                {
+                    "symbol": "BTCUSD",
+                    "side": "BUY",
+                    "confidence": 0.20,
+                    "profit_velocity_score": 0.30,
+                    "fast_money_score": 0.90,
+                    "candidate_id": "cand-2",
+                    "lifecycle_id": "life-2",
+                    "execution_routes": [
+                        {"venue": "kraken", "market_type": "margin", "symbol": "XXBTZUSD"}
+                    ],
+                }
+            ],
+        }
+        captured: dict = {}
+        audits: list = []
+
+        def fake_publish(phase, event_payload, **kwargs):
+            if phase == "signal_generated":
+                captured["payload"] = dict(event_payload)
+            return {"ok": True}
+
+        with patch.object(trader_mod, "publish_trade_flow_event", side_effect=fake_publish), \
+             patch("aureon.observer.production_mode.audit",
+                   side_effect=lambda event, p, **kw: audits.append((event, p, kw))):
+            trader._feed_shared_order_flow_to_decision_logic(payload)
+
+        emitted = captured.get("payload", {})
+        self.assertAlmostEqual(float(emitted.get("confidence", -1.0)), 0.30, places=6)
+        # The ranking signal still travels with the event — separated, not erased.
+        self.assertAlmostEqual(float(emitted.get("fast_money_score", -1.0)), 0.90, places=6)
+        separation = [a for a in audits if a[0] == "fast_money_gate_rank_separation"]
+        self.assertTrue(separation, "the dropped fast-money gate influence must be audited")
+        self.assertAlmostEqual(separation[0][1]["fast_money_score"], 0.90, places=6)
+        self.assertAlmostEqual(separation[0][1]["decision_score"], 0.30, places=6)
+
+    def test_fast_money_below_measured_confidence_emits_no_separation_audit(self):
+        """When measured confidence already wins, nothing was dropped — no audit noise."""
+        trader = self._make_trader()
+        trader._central_feed_targets = lambda: []  # type: ignore[method-assign]
+        payload = {
+            "shared_tradable_count": 1,
+            "active_order_flow": [
+                {
+                    "symbol": "BTCUSD",
+                    "side": "BUY",
+                    "confidence": 0.80,
+                    "profit_velocity_score": 0.30,
+                    "fast_money_score": 0.50,
+                    "execution_routes": [
+                        {"venue": "kraken", "market_type": "margin", "symbol": "XXBTZUSD"}
+                    ],
+                }
+            ],
+        }
+        captured: dict = {}
+        audits: list = []
+
+        def fake_publish(phase, event_payload, **kwargs):
+            if phase == "signal_generated":
+                captured["payload"] = dict(event_payload)
+            return {"ok": True}
+
+        with patch.object(trader_mod, "publish_trade_flow_event", side_effect=fake_publish), \
+             patch("aureon.observer.production_mode.audit",
+                   side_effect=lambda event, p, **kw: audits.append((event, p, kw))):
+            trader._feed_shared_order_flow_to_decision_logic(payload)
+
+        emitted = captured.get("payload", {})
+        self.assertAlmostEqual(float(emitted.get("confidence", -1.0)), 0.80, places=6)
+        self.assertFalse([a for a in audits if a[0] == "fast_money_gate_rank_separation"])
 
 
 if __name__ == "__main__":

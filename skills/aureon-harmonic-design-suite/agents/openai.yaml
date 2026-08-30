@@ -1,0 +1,4 @@
+interface:
+  display_name: "Aureon Harmonic Design Suite"
+  short_description: "Autonomous evidence-led website and brand design"
+  default_prompt: "Use $aureon-harmonic-design-suite to research, design, audit, iterate, and package an investor-ready Aureon website release."

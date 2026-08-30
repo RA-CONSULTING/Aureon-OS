@@ -105,6 +105,20 @@ def test_self_questioning_cycle_uses_ollama_and_writes_obsidian(tmp_path):
     assert any(t["topic"] == "autonomy.self_question.answer" for t in thoughts)
 
 
+def test_self_questioning_scales_json_budget_for_multiple_questions(tmp_path):
+    fake_ollama = FakeOllama(reachable=True)
+    ai = make_ai(tmp_path, fake_ollama)
+
+    ai.run_cycle(
+        questions=["one", "two", "three", "four"],
+        include_audit=False,
+        include_self_scan=False,
+    )
+
+    assert fake_ollama.calls[0]["options"]["num_predict"] == 2048
+    assert fake_ollama.calls[0]["options"]["num_ctx"] >= 8192
+
+
 def test_self_questioning_exposes_goal_capability_map_to_ollama_and_thoughtbus(tmp_path):
     audits = tmp_path / "docs" / "audits"
     audits.mkdir(parents=True)

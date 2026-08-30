@@ -223,7 +223,9 @@ def simulate_spore_projection(substrate: Dict) -> Dict:
     return prediction_data
 
 
-def test_spore_projection_to_stargate(stem: RealityStem, prediction_data: Dict):
+def project_spores_to_stargate(stem: RealityStem, prediction_data: Dict):
+    # Pipeline stage, not a pytest test — its old ``test_`` name made pytest inject
+    # ``stem``/``prediction_data`` as fixtures and error the module on every run.
     """
     Test projecting the spore into the Stargate Protocol.
     Verify full lineage tracking: stem → spore → quantum mirror.
@@ -345,7 +347,7 @@ def main():
     prediction_data = simulate_spore_projection(substrate)
     
     # Step 4: Project into Stargate
-    spore_mirror = test_spore_projection_to_stargate(stem, prediction_data)
+    spore_mirror = project_spores_to_stargate(stem, prediction_data)
     
     # Summary
     print("\n" + "=" * 70)

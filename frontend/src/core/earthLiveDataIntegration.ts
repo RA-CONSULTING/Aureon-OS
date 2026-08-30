@@ -1,320 +1,184 @@
 /**
- * Earth Live Data Integration
- * 
- * Wires all Earth live data (Schumann, lattice, seal packets) 
- * into the UnifiedBus and TemporalLadder ecosystem
+ * Earth data integration backed by the live NOAA-derived Supabase function.
+ * Local CSV/JSON datasets are research inputs and are never replayed as live.
  */
 
 import { unifiedBus } from './unifiedBus';
-import { temporalLadder, SYSTEMS } from './temporalLadder';
-import { 
-  earthDataLoader, 
-  type SchumannFeatures, 
-  type LatticeTimeseries,
-  type SealPacket,
-  type TimelineMarker
-} from '@/lib/earth-data-loader';
-import { earthValidation, type ValidationResult } from '@/lib/earth-validation';
 import { supabase } from '@/integrations/supabase/client';
+import { assertFreshProvenance, type DataProvenance } from './liveDataContract';
+
+interface SchumannProxyResponse extends DataProvenance {
+  fundamentalHz: number;
+  amplitude: number;
+  quality: number;
+  variance: number;
+  coherenceBoost: number;
+  resonancePhase: string;
+  earthDisturbance: number;
+  harmonics: Array<{ frequency: number; amplitude: number; name: string }>;
+  derivation: string;
+}
 
 export interface EarthIntegrationState {
   isInitialized: boolean;
-  lastUpdate: number;
-  
-  // Current values
-  schumann: SchumannFeatures | null;
-  lattice: LatticeTimeseries | null;
-  sealPacket: SealPacket | null;
-  marker: TimelineMarker | null;
-  validation: ValidationResult | null;
-  
-  // Computed metrics for ecosystem
-  coherence: number;
-  frequency: number;
-  fieldStrength: number;
-  phaseLock: boolean;
-  harmonicFidelity: number;
-  
-  // 5-mode Schumann
+  dataStatus: 'real_derived' | 'no_data' | 'stale';
+  lastUpdate: number | null;
+  sourceId: string | null;
+  sourceTimestamp: string | null;
+  derivation: string | null;
+  schumann: null;
+  lattice: null;
+  sealPacket: null;
+  marker: null;
+  validation: null;
+  coherence: number | null;
+  frequency: number | null;
+  fieldStrength: number | null;
+  phaseLock: boolean | null;
+  harmonicFidelity: number | null;
+  coherenceBoost: number | null;
+  earthDisturbance: number | null;
   modes: {
-    mode1: number; // 7.83 Hz
-    mode2: number; // 14.3 Hz
-    mode3: number; // 20.8 Hz
-    mode4: number; // 27.3 Hz
-    mode5: number; // 33.8 Hz
+    mode1: number | null;
+    mode2: number | null;
+    mode3: number | null;
+    mode4: number | null;
+    mode5: number | null;
   };
-  
-  // Magnetic field vector
-  magneticField: {
-    Bx: number;
-    By: number;
-    Bz: number;
-    magnitude: number;
-  };
-  
-  // Electric field vector
-  electricField: {
-    Ex: number;
-    Ey: number;
-    magnitude: number;
-  };
+  magneticField: null;
+  electricField: null;
 }
 
+const EMPTY_STATE: EarthIntegrationState = {
+  isInitialized: false,
+  dataStatus: 'no_data',
+  lastUpdate: null,
+  sourceId: null,
+  sourceTimestamp: null,
+  derivation: null,
+  schumann: null,
+  lattice: null,
+  sealPacket: null,
+  marker: null,
+  validation: null,
+  coherence: null,
+  frequency: null,
+  fieldStrength: null,
+  phaseLock: null,
+  harmonicFidelity: null,
+  coherenceBoost: null,
+  earthDisturbance: null,
+  modes: { mode1: null, mode2: null, mode3: null, mode4: null, mode5: null },
+  magneticField: null,
+  electricField: null,
+};
+
 class EarthLiveDataIntegration {
-  private state: EarthIntegrationState = {
-    isInitialized: false,
-    lastUpdate: 0,
-    schumann: null,
-    lattice: null,
-    sealPacket: null,
-    marker: null,
-    validation: null,
-    coherence: 0,
-    frequency: 7.83,
-    fieldStrength: 0,
-    phaseLock: false,
-    harmonicFidelity: 0,
-    modes: { mode1: 0, mode2: 0, mode3: 0, mode4: 0, mode5: 0 },
-    magneticField: { Bx: 0, By: 0, Bz: 0, magnitude: 0 },
-    electricField: { Ex: 0, Ey: 0, magnitude: 0 }
-  };
-  
-  private dataIndex = 0;
-  private schumannData: SchumannFeatures[] = [];
-  private latticeData: LatticeTimeseries[] = [];
-  private sealPackets: SealPacket[] = [];
-  private markers: TimelineMarker[] = [];
-  private schumannHistory: SchumannFeatures[] = [];
-  private heartbeatInterval: number | null = null;
-  private listeners: Set<(state: EarthIntegrationState) => void> = new Set();
-  
+  private state: EarthIntegrationState = { ...EMPTY_STATE, modes: { ...EMPTY_STATE.modes } };
+  private refreshInterval: ReturnType<typeof setInterval> | null = null;
+  private readonly listeners = new Set<(state: EarthIntegrationState) => void>();
+
   async initialize(): Promise<void> {
-    if (this.state.isInitialized) return;
-    
-    console.log('🌍 Earth Live Data Integration: Initializing...');
-    
-    try {
-      // Load all Earth data
-      const data = await earthDataLoader.loadAll();
-      
-      this.schumannData = data.schumannData;
-      this.latticeData = data.latticeData;
-      this.sealPackets = data.sealPackets;
-      this.markers = data.timelineMarkers;
-      
-      // Set codex for validation
-      if (data.aurisCodex) {
-        earthValidation.setCodex(data.aurisCodex);
-      }
-      
-      console.log('🌍 Loaded Earth data:', {
-        schumann: this.schumannData.length,
-        lattice: this.latticeData.length,
-        seals: this.sealPackets.length,
-        markers: this.markers.length
-      });
-      
-      // Register with Temporal Ladder
-      temporalLadder.registerSystem(SYSTEMS.EARTH_INTEGRATION);
-      
-      // Start heartbeats
-      this.startHeartbeat();
-      
-      // Initial update
-      this.update();
-      
-      this.state.isInitialized = true;
-      console.log('✅ Earth Live Data Integration: Online');
-      
-    } catch (error) {
-      console.error('❌ Earth Live Data Integration failed:', error);
-    }
+    if (this.refreshInterval) return;
+    await this.refresh();
+    this.refreshInterval = setInterval(() => {
+      this.refresh().catch((error) => console.warn('[EarthIntegration] refresh failed', error));
+    }, 60_000);
   }
-  
-  private lastPersistTime = 0;
-  
-  private startHeartbeat(): void {
-    if (this.heartbeatInterval) return;
-    
-    this.heartbeatInterval = window.setInterval(() => {
-      this.update();
-      this.publishToBus();
-      this.sendHeartbeat();
-      
-      // Persist to database every 30 seconds
-      const now = Date.now();
-      if (now - this.lastPersistTime > 30000) {
-        this.lastPersistTime = now;
-        this.persistToDatabase();
-      }
-    }, 1000);
-  }
-  
-  private update(): void {
-    const now = Date.now();
-    
-    // Get current data points (cycle through arrays)
-    const schumannIdx = this.dataIndex % Math.max(1, this.schumannData.length);
-    const latticeIdx = this.dataIndex % Math.max(1, this.latticeData.length);
-    const sealIdx = this.dataIndex % Math.max(1, this.sealPackets.length);
-    const markerIdx = Math.floor(this.dataIndex / 10) % Math.max(1, this.markers.length);
-    
-    const schumann = this.schumannData[schumannIdx] || null;
-    const lattice = this.latticeData[latticeIdx] || null;
-    const sealPacket = this.sealPackets[sealIdx] || null;
-    const marker = this.markers[markerIdx] || null;
-    
-    // Update history for validation
-    if (schumann) {
-      this.schumannHistory.push(schumann);
-      if (this.schumannHistory.length > 60) {
-        this.schumannHistory.shift();
-      }
+
+  async refresh(): Promise<void> {
+    const { data, error } = await supabase.functions.invoke<SchumannProxyResponse>('fetch-schumann-data');
+    if (error || !data) {
+      this.state = { ...EMPTY_STATE, modes: { ...EMPTY_STATE.modes } };
+      this.notifyListeners();
+      throw new Error(`NO_DATA: NOAA-derived Earth proxy unavailable${error ? `: ${error.message}` : ''}`);
     }
-    
-    // Run validation
-    const validation = schumann 
-      ? earthValidation.validate(schumann, this.schumannHistory, lattice || undefined)
-      : null;
-    
-    // Compute ecosystem metrics
-    const coherence = validation?.overallScore ?? (schumann?.coherence_idx ?? 0);
-    const frequency = schumann?.A7_83 ?? 7.83;
-    const fieldStrength = lattice 
-      ? Math.sqrt(lattice.Bx ** 2 + lattice.By ** 2 + lattice.Bz ** 2) / 100
-      : 0;
-    const phaseLock = validation?.phaseLockStrength ? validation.phaseLockStrength > 0.8 : false;
-    const harmonicFidelity = validation?.harmonicCoherence ?? 0;
-    
-    // 5-mode Schumann
-    const modes = schumann ? {
-      mode1: schumann.A7_83,
-      mode2: schumann.A14_3,
-      mode3: schumann.A20_8,
-      mode4: schumann.A27_3,
-      mode5: schumann.A33_8
-    } : { mode1: 0, mode2: 0, mode3: 0, mode4: 0, mode5: 0 };
-    
-    // Field vectors
-    const magneticField = lattice ? {
-      Bx: lattice.Bx,
-      By: lattice.By,
-      Bz: lattice.Bz,
-      magnitude: Math.sqrt(lattice.Bx ** 2 + lattice.By ** 2 + lattice.Bz ** 2)
-    } : { Bx: 0, By: 0, Bz: 0, magnitude: 0 };
-    
-    const electricField = lattice ? {
-      Ex: lattice.Ex,
-      Ey: lattice.Ey,
-      magnitude: Math.sqrt(lattice.Ex ** 2 + lattice.Ey ** 2)
-    } : { Ex: 0, Ey: 0, magnitude: 0 };
-    
-    // Update state
-    this.state = {
-      ...this.state,
-      lastUpdate: now,
-      schumann,
-      lattice,
-      sealPacket,
-      marker,
-      validation,
-      coherence,
-      frequency,
-      fieldStrength,
-      phaseLock,
-      harmonicFidelity,
-      modes,
-      magneticField,
-      electricField
+    assertFreshProvenance(data, 20 * 60 * 1000);
+    const numericValues = [
+      data.fundamentalHz,
+      data.amplitude,
+      data.quality,
+      data.variance,
+      data.coherenceBoost,
+      data.earthDisturbance,
+    ];
+    if (!numericValues.every(Number.isFinite) || !Array.isArray(data.harmonics)) {
+      throw new Error('NO_DATA: invalid NOAA-derived Earth proxy response');
+    }
+    const amplitudeAt = (index: number) => {
+      const value = data.harmonics[index]?.amplitude;
+      return Number.isFinite(value) ? value : null;
     };
-    
-    this.dataIndex++;
-    this.notifyListeners();
-  }
-  
-  private publishToBus(): void {
-    const { coherence, phaseLock, harmonicFidelity, frequency } = this.state;
-    
-    // Determine signal based on coherence and phase lock
-    let signal: 'BUY' | 'SELL' | 'NEUTRAL' = 'NEUTRAL';
-    if (coherence > 0.8 && phaseLock) {
-      signal = 'BUY'; // High coherence + phase lock = favorable conditions
-    } else if (coherence < 0.4 || harmonicFidelity < 0.3) {
-      signal = 'SELL'; // Poor coherence = unfavorable conditions
-    }
-    
+    this.state = {
+      ...EMPTY_STATE,
+      isInitialized: true,
+      dataStatus: 'real_derived',
+      lastUpdate: Date.parse(data.sourceTimestamp),
+      sourceId: data.sourceId,
+      sourceTimestamp: data.sourceTimestamp,
+      derivation: data.derivation,
+      coherence: data.quality,
+      frequency: data.fundamentalHz,
+      phaseLock: data.resonancePhase === 'peak',
+      harmonicFidelity: data.quality,
+      coherenceBoost: data.coherenceBoost,
+      earthDisturbance: data.earthDisturbance,
+      modes: {
+        mode1: amplitudeAt(0),
+        mode2: amplitudeAt(1),
+        mode3: amplitudeAt(2),
+        mode4: amplitudeAt(3),
+        mode5: null,
+      },
+    };
+
     unifiedBus.publish({
       systemName: 'EarthIntegration',
-      timestamp: Date.now(),
-      ready: this.state.isInitialized,
-      coherence,
-      confidence: harmonicFidelity,
-      signal,
+      timestamp: Date.parse(data.sourceTimestamp),
+      ready: true,
+      coherence: data.quality,
+      confidence: data.quality,
+      signal: 'NEUTRAL',
       data: {
-        frequency,
-        phaseLock,
-        harmonicFidelity,
+        frequency: data.fundamentalHz,
+        phaseLock: this.state.phaseLock,
+        harmonicFidelity: data.quality,
         modes: this.state.modes,
-        magneticField: this.state.magneticField,
-        electricField: this.state.electricField,
-        validation: this.state.validation ? {
-          fieldAlignment: this.state.validation.fieldAlignment,
-          harmonicCoherence: this.state.validation.harmonicCoherence,
-          resonanceStability: this.state.validation.resonanceStability,
-          phaseLockStrength: this.state.validation.phaseLockStrength,
-          overallScore: this.state.validation.overallScore
-        } : null
-      }
+        earthDisturbance: data.earthDisturbance,
+        derivation: data.derivation,
+        provenance: {
+          truthStatus: data.truthStatus,
+          sourceId: data.sourceId,
+          sourceTimestamp: data.sourceTimestamp,
+          generatedValues: false,
+        },
+      },
     });
+    this.notifyListeners();
   }
-  
-  private sendHeartbeat(): void {
-    temporalLadder.heartbeat(SYSTEMS.EARTH_INTEGRATION, this.state.coherence);
-  }
-  
-  /**
-   * Persist current state to consciousness_field_history
-   */
-  async persistToDatabase(): Promise<void> {
-    const { schumann, validation, coherence, frequency, phaseLock } = this.state;
-    if (!schumann) return;
-    
-    try {
-      await supabase.from('consciousness_field_history').insert({
-        schumann_frequency: frequency,
-        schumann_amplitude: schumann.A7_83,
-        schumann_coherence_boost: coherence,
-        schumann_phase: phaseLock ? 'LOCKED' : 'UNLOCKED',
-        schumann_quality: validation?.overallScore ?? 0,
-        total_coherence: coherence,
-        celestial_boost: 0,
-        timestamp: new Date().toISOString()
-      });
-    } catch (error) {
-      console.warn('Failed to persist Earth data:', error);
-    }
-  }
-  
+
   getState(): EarthIntegrationState {
-    return { ...this.state };
+    if (this.state.lastUpdate !== null && Date.now() - this.state.lastUpdate > 20 * 60 * 1000) {
+      return { ...this.state, isInitialized: false, dataStatus: 'stale' };
+    }
+    return { ...this.state, modes: { ...this.state.modes } };
   }
-  
+
   subscribe(callback: (state: EarthIntegrationState) => void): () => void {
     this.listeners.add(callback);
     return () => this.listeners.delete(callback);
   }
-  
+
   private notifyListeners(): void {
     const state = this.getState();
-    this.listeners.forEach(cb => cb(state));
+    this.listeners.forEach((callback) => callback(state));
   }
-  
+
   destroy(): void {
-    if (this.heartbeatInterval) {
-      clearInterval(this.heartbeatInterval);
-      this.heartbeatInterval = null;
-    }
+    if (this.refreshInterval) clearInterval(this.refreshInterval);
+    this.refreshInterval = null;
     this.listeners.clear();
+    this.state = { ...EMPTY_STATE, modes: { ...EMPTY_STATE.modes } };
   }
 }
 

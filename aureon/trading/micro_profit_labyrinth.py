@@ -40,7 +40,13 @@ def safe_print(*args, **kwargs):
 # ═══════════════════════════════════════════════════════════════════════════
 # WINDOWS UTF-8 FIX - MUST BE AT TOP BEFORE ANY PRINT STATEMENTS
 # ═══════════════════════════════════════════════════════════════════════════
-if sys.platform == 'win32':
+if (
+    sys.platform == 'win32'
+    and sys.stdout is sys.__stdout__
+    and sys.stderr is sys.__stderr__
+    and sys.stdout.isatty()
+    and sys.stderr.isatty()
+):
     os.environ['PYTHONIOENCODING'] = 'utf-8'
     try:
         import io
@@ -92,11 +98,13 @@ import importlib
 import inspect
 import json
 import logging
+import math
 import time
 import uuid
 from dataclasses import dataclass, field, asdict
 from datetime import datetime
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any, Dict, List, Optional, Set, Tuple, TYPE_CHECKING
 from aureon.core.aureon_runtime_safety import live_block_reason, real_orders_disabled
 # Import Adaptive Prime Profit Gate
@@ -2049,7 +2057,14 @@ class GroundingReality:
         # Λ(t) = S(t) + O(t) + E(t)
         # We average them to keep it normalized
         lambda_t = (signal_score + obs_mapped + environment_score) / 3.0
-        
+
+        # Reconcile with the canonical HNC field: the shared Γ can only tighten
+        # this live gate, never loosen it (b46 order-path wiring).
+        try:
+            from aureon.core.hnc_field import reconcile_gamma
+            lambda_t = reconcile_gamma(lambda_t)
+        except Exception:
+            pass
         return lambda_t
 
     def calculate_gravity_signal(self, price_change_pct: float, volume: float) -> float:
@@ -3454,6 +3469,139 @@ class LiveBarterMatrix:
             'path_win_rate': win_rate,
             'is_win': is_win
         }
+
+    def record_verified_realized_profit(
+        self,
+        *,
+        from_asset: str,
+        to_asset: str,
+        from_amount: float,
+        from_usd: float,
+        to_amount: float,
+        to_usd: float,
+        profit_usd: float,
+        source_id: str,
+        source_timestamp: float,
+        actual_slippage_pct: Optional[float] = None,
+    ) -> Dict[str, Any]:
+        """Record exact provider-derived PnL without estimates or outlier rewriting."""
+        numeric = {
+            'from_amount': from_amount,
+            'from_usd': from_usd,
+            'to_amount': to_amount,
+            'to_usd': to_usd,
+            'profit_usd': profit_usd,
+            'source_timestamp': source_timestamp,
+        }
+        observed: Dict[str, float] = {}
+        for name, value in numeric.items():
+            if value is None or isinstance(value, bool):
+                raise ValueError(f'NO_DATA: {name} is unavailable')
+            try:
+                parsed = float(value)
+            except (TypeError, ValueError) as exc:
+                raise ValueError(f'NO_DATA: {name} is not numeric') from exc
+            if not math.isfinite(parsed):
+                raise ValueError(f'NO_DATA: {name} is not finite')
+            observed[name] = parsed
+        if (
+            observed['from_amount'] <= 0 or observed['from_usd'] <= 0
+            or observed['to_amount'] <= 0 or observed['to_usd'] <= 0
+            or observed['source_timestamp'] <= 0
+        ):
+            raise ValueError('NO_DATA: verified amounts, values, and timestamp must be positive')
+        normalized_source_id = str(source_id or '').strip()
+        if not normalized_source_id:
+            raise ValueError('NO_DATA: provider source_id is required')
+        derived_profit = observed['to_usd'] - observed['from_usd']
+        tolerance = max(1e-9, abs(observed['profit_usd']) * 1e-9)
+        if abs(derived_profit - observed['profit_usd']) > tolerance:
+            raise ValueError('Verified PnL does not reconcile to provider values')
+
+        slippage = None
+        if actual_slippage_pct is not None:
+            try:
+                slippage = float(actual_slippage_pct)
+            except (TypeError, ValueError) as exc:
+                raise ValueError('Observed slippage is not numeric') from exc
+            if not math.isfinite(slippage) or slippage < 0:
+                raise ValueError('Observed slippage must be finite and nonnegative')
+
+        key = (from_asset.upper(), to_asset.upper())
+        history = self.barter_history.setdefault(key, {
+            'trades': 0,
+            'total_profit': 0.0,
+            'profit': 0.0,
+            'wins': 0,
+            'losses': 0,
+            'consecutive_losses': 0,
+        })
+        history['trades'] = int(history.get('trades', 0)) + 1
+        history['total_profit'] = float(history.get('total_profit', 0.0)) + observed['profit_usd']
+        history['profit'] = history['total_profit']
+        is_win = observed['profit_usd'] >= 0
+        if is_win:
+            history['wins'] = int(history.get('wins', 0)) + 1
+            history['consecutive_losses'] = 0
+        else:
+            history['losses'] = int(history.get('losses', 0)) + 1
+            history['consecutive_losses'] = int(history.get('consecutive_losses', 0)) + 1
+        if slippage is not None:
+            previous_slippage = history.get('avg_slippage')
+            if isinstance(previous_slippage, (int, float)) and math.isfinite(float(previous_slippage)):
+                history['avg_slippage'] = 0.3 * slippage + 0.7 * float(previous_slippage)
+            else:
+                history['avg_slippage'] = slippage
+        history['last_source_id'] = normalized_source_id
+        history['last_source_timestamp'] = observed['source_timestamp']
+        history['truth_status'] = 'real_derived'
+        history['generated_values'] = False
+
+        self.profit_ledger.append((
+            observed['source_timestamp'],
+            from_asset,
+            to_asset,
+            observed['from_usd'],
+            observed['to_usd'],
+            observed['profit_usd'],
+            normalized_source_id,
+        ))
+        receipts = getattr(self, 'verified_profit_receipts', None)
+        if not isinstance(receipts, list):
+            receipts = []
+            self.verified_profit_receipts = receipts
+        receipts.append({
+            'source_id': normalized_source_id,
+            'source_timestamp': observed['source_timestamp'],
+            'from_asset': from_asset,
+            'to_asset': to_asset,
+            'from_amount': observed['from_amount'],
+            'from_usd': observed['from_usd'],
+            'to_amount': observed['to_amount'],
+            'to_usd': observed['to_usd'],
+            'profit_usd': observed['profit_usd'],
+            'actual_slippage_pct': slippage,
+            'truth_status': 'real_derived',
+            'generated_values': False,
+        })
+        self.total_realized_profit += observed['profit_usd']
+        self.conversion_count += 1
+        win_rate = history['wins'] / history['trades']
+        return {
+            'profit_usd': observed['profit_usd'],
+            'profit_pct': observed['profit_usd'] / observed['from_usd'] * 100.0,
+            'actual_slippage_pct': slippage,
+            'running_total': self.total_realized_profit,
+            'conversion_number': self.conversion_count,
+            'path_total_profit': history['total_profit'],
+            'path_trades': history['trades'],
+            'path_win_rate': win_rate,
+            'is_win': is_win,
+            'source_id': normalized_source_id,
+            'source_timestamp': observed['source_timestamp'],
+            'truth_status': 'real_derived',
+            'generated_values': False,
+        }
     
     def get_best_barter_path(self, from_asset: str, target_assets: List[str],
                             prices: Dict[str, float]) -> List[Dict[str, Any]]:
@@ -4666,22 +4814,24 @@ class MicroProfitLabyrinth:
     Even $0.01 profit per conversion will compound over time!
     """
     
-    def compute_mc_pwin(self, symbol: str, scanner_gross_pnl: float, notional_usd: float, n_samples: int = 1000) -> float:
-        """Compute Monte-Carlo probability that net profit > 0 for given gross P&L.
+    def compute_mc_pwin(self, symbol: str, scanner_gross_pnl: float, notional_usd: float, n_samples: int = 1000) -> Optional[float]:
+        """Compute the empirical probability that net profit is positive.
 
-        Returns a probability between 0.0 and 1.0. Uses the dynamic cost estimator
-        draws (percent units) and calculates net samples = gross - cost_usd.
+        Returns ``None`` when no observed cost distribution is available. A
+        missing estimator must never be interpreted as a guaranteed win.
         """
         if not hasattr(self, 'cost_estimator') or self.cost_estimator is None:
-            return 1.0  # conservative default: assume it's fine if no estimator
+            return None
         try:
             draws_pct = self.cost_estimator.sample_total_cost_draws(symbol, 'buy', notional_usd, n_samples=n_samples)
+            if not draws_pct:
+                return None
             net_samples = [scanner_gross_pnl - (d_pct / 100.0) * notional_usd for d_pct in draws_pct]
             positive = sum(1 for v in net_samples if v > 0)
-            return positive / max(1, len(net_samples))
+            return positive / len(net_samples)
         except Exception as e:
             logger.debug(f"compute_mc_pwin failed: {e}")
-            return 0.0
+            return None
 
     def __init__(self, live: bool = False, dry_run: bool = False):
         # --dry-run explicitly overrides LIVE env; otherwise allow env to enable live
@@ -5005,44 +5155,115 @@ class MicroProfitLabyrinth:
         except Exception as e:
             logger.debug(f"Trade audit write failed: {e}")
 
+    @staticmethod
+    def _finite_observation(value: Any, *, positive: bool = False, nonnegative: bool = False) -> Optional[float]:
+        """Return a finite provider observation without manufacturing a fallback."""
+        if value is None or isinstance(value, bool):
+            return None
+        try:
+            observed = float(value)
+        except (TypeError, ValueError):
+            return None
+        if not math.isfinite(observed):
+            return None
+        if positive and observed <= 0:
+            return None
+        if nonnegative and observed < 0:
+            return None
+        return observed
+
+    @staticmethod
+    def _parse_provider_timestamp(value: Any) -> Optional[float]:
+        """Parse a provider timestamp; receipt time is never a substitute."""
+        numeric = MicroProfitLabyrinth._finite_observation(value, positive=True)
+        if numeric is not None:
+            if numeric > 10_000_000_000:
+                numeric /= 1000.0
+            return numeric
+        if not isinstance(value, str) or not value.strip():
+            return None
+        try:
+            parsed = datetime.fromisoformat(value.strip().replace('Z', '+00:00'))
+        except ValueError:
+            return None
+        if parsed.tzinfo is None:
+            return None
+        return parsed.timestamp()
+
+    def _extract_provider_timestamp(self, result: Dict[str, Any], exchange: str) -> Optional[float]:
+        """Extract only timestamps known to originate in a provider receipt."""
+        exchange_name = (exchange or '').lower()
+        if exchange_name == 'binance':
+            fields = ('updateTime', 'transactTime', 'workingTime')
+        elif exchange_name == 'alpaca':
+            fields = ('filled_at', 'updated_at', 'submitted_at', 'created_at')
+        elif exchange_name == 'kraken':
+            # KrakenClient's Binance-compatible ``transactTime`` is generated
+            # locally after AddOrder, so it is intentionally not accepted.
+            fields = ('provider_timestamp', 'closetm', 'opentm', 'time')
+        else:
+            fields = (
+                'provider_timestamp', 'source_timestamp', 'filled_at',
+                'updated_at', 'transactTime', 'updateTime',
+            )
+        for field_name in fields:
+            timestamp = self._parse_provider_timestamp(result.get(field_name))
+            if timestamp is not None:
+                return timestamp
+        return None
+
+    @staticmethod
+    def _provider_status_is_filled(result: Dict[str, Any]) -> bool:
+        status = str(result.get('status') or result.get('order_status') or '').strip().lower()
+        return status in {'filled', 'closed', 'executed', 'completed', 'complete'}
+
     def _extract_execution_details(self, result: Dict[str, Any]) -> Dict[str, Any]:
-        order_id = result.get('orderId') or result.get('order_id') or result.get('txid')
+        order_id = self._extract_order_id(result, 'generic')
         client_order_id = result.get('clientOrderId')
-        fills = result.get('fills') or []
-        avg_fill_price = result.get('avg_fill_price')
-        if avg_fill_price is None:
-            try:
-                price = float(result.get('price', 0) or 0)
-                avg_fill_price = price if price > 0 else None
-            except Exception:
-                avg_fill_price = None
-        fees = result.get('fees')
-        if fees is None:
-            try:
-                fees = float(result.get('fee', 0) or 0)
-            except Exception:
-                fees = 0.0
-        executed_qty = None
-        try:
-            executed_qty = float(result.get('executedQty', 0) or 0)
-        except Exception:
-            executed_qty = None
-        quote_qty = None
-        try:
-            quote_qty = float(result.get('cummulativeQuoteQty', 0) or 0)
-        except Exception:
-            quote_qty = None
+        fills = result.get('fills') if isinstance(result.get('fills'), list) else []
+        fill_ids = [
+            str(fill.get('tradeId') or fill.get('id') or fill.get('fill_id')).strip()
+            for fill in fills
+            if isinstance(fill, dict)
+            and (fill.get('tradeId') or fill.get('id') or fill.get('fill_id')) is not None
+        ]
+        avg_fill_price = self._finite_observation(
+            result.get('filled_avg_price', result.get('avgPrice', result.get('avg_fill_price'))),
+            positive=True,
+        )
+        fees = self._extract_fees(result, 'generic')
+        executed_qty = self._finite_observation(
+            result.get('executedQty', result.get('filled_qty', result.get('filledQty'))),
+            positive=True,
+        )
+        quote_qty = self._finite_observation(
+            result.get('cummulativeQuoteQty', result.get('filled_notional', result.get('quoteQty'))),
+            positive=True,
+        )
+        provider_timestamp = self._extract_provider_timestamp(result, 'generic')
+        verified = bool(
+            order_id
+            and executed_qty is not None
+            and avg_fill_price is not None
+            and fees is not None
+            and provider_timestamp is not None
+            and fills
+            and len(fill_ids) == len(fills)
+            and self._provider_status_is_filled(result)
+        )
 
         return {
             'order_id': order_id,
             'client_order_id': client_order_id,
             'fills': fills,
+            'fill_ids': fill_ids,
             'avg_fill_price': avg_fill_price,
             'fees': fees,
             'executed_qty': executed_qty,
             'quote_qty': quote_qty,
-            'status': result.get('status', 'UNKNOWN'),
-            'verified': True if result.get('fills_verified') or fills else False
+            'provider_timestamp': provider_timestamp,
+            'status': result.get('status') or 'UNKNOWN',
+            'verified': verified,
         }
 
     def _record_execution_to_cost_basis(self, exchange: str, symbol: str, side: str, result: Dict[str, Any]) -> None:
@@ -5050,7 +5271,7 @@ class MicroProfitLabyrinth:
         order_id = details.get('order_id')
         avg_fill_price = details.get('avg_fill_price')
         executed_qty = details.get('executed_qty')
-        if not order_id or not avg_fill_price or not executed_qty:
+        if not details.get('verified') or not order_id or not avg_fill_price or not executed_qty:
             return
         try:
             self.cost_basis_tracker.record_order_execution(
@@ -5060,7 +5281,7 @@ class MicroProfitLabyrinth:
                 order_id=order_id,
                 fills=details.get('fills') or [],
                 avg_fill_price=avg_fill_price,
-                fees=float(details.get('fees') or 0),
+                fees=details.get('fees'),
                 executed_qty=executed_qty
             )
         except Exception as e:
@@ -5079,7 +5300,7 @@ class MicroProfitLabyrinth:
             quote_qty=details.get('quote_qty'),
             avg_fill_price=details.get('avg_fill_price'),
             fills=details.get('fills') or [],
-            fees=float(details.get('fees') or 0),
+            fees=details.get('fees'),
             status=details.get('status') or 'UNKNOWN',
             verified=bool(details.get('verified')),
             source=source,
@@ -5549,9 +5770,9 @@ class MicroProfitLabyrinth:
         elif get_kraken_client:
             self.kraken = get_kraken_client()
             if self.kraken and KRAKEN_API_KEY:
-                # Gary: Explicitly show if we are using Real or Fake data
+                # Explicitly distinguish a non-submitting client from live API mode.
                 is_dry = getattr(self.kraken, 'dry_run', False)
-                mode = "🛡️ SIMULATED (Fake Data)" if is_dry else "🌍 LIVE (Real Data)"
+                mode = "🛡️ DRY RUN (Not Submitted)" if is_dry else "🌍 LIVE (Provider API)"
                 safe_print(f"🐙 Kraken Client: WIRED ({mode})")
             else:
                 safe_print("⚠️ Kraken Client: Missing API credentials")
@@ -6520,40 +6741,62 @@ class MicroProfitLabyrinth:
         self.quack_targets = {}  # Cached targets from commandos
         if QUACK_COMMANDOS_AVAILABLE:
             try:
-                # Create a mock client for commandos (they need ticker data)
-                class QuackClient:
-                    """Mock client that uses our existing ticker cache"""
+                # Read-only adapter over provider-received ticker cache entries.
+                class QuackTickerCacheAdapter:
+                    """Expose only complete observed ticker rows to the commandos."""
                     def __init__(self, labyrinth):
                         self.labyrinth = labyrinth
                     
                     def get_24h_ticker(self, symbol):
                         """Get 24h stats for a symbol"""
                         for _cached_sym, data in self.labyrinth.ticker_cache.items():
-                            base = data.get('base', '')
-                            quote = data.get('quote', '')
+                            if not isinstance(data, dict):
+                                continue
+                            base = str(data.get('base') or '').upper()
+                            quote = str(data.get('quote') or '').upper()
                             if f"{base}{quote}" == symbol or f"{base}/USD" == symbol:
+                                change = self.labyrinth._finite_observation(data.get('change24h'))
+                                volume = self.labyrinth._finite_observation(
+                                    data.get('volume'), nonnegative=True
+                                )
+                                price = self.labyrinth._finite_observation(
+                                    data.get('price'), positive=True
+                                )
+                                if change is None or volume is None or price is None:
+                                    return {}
                                 return {
-                                    'priceChangePercent': data.get('change24h', 0) * 100,
-                                    'quoteVolume': data.get('volume', 0),
-                                    'lastPrice': data.get('price', 0),
+                                    'priceChangePercent': change * 100,
+                                    'quoteVolume': volume,
+                                    'lastPrice': price,
                                 }
-                        return {'priceChangePercent': 0, 'quoteVolume': 0, 'lastPrice': 0}
+                        return {}
                     
                     def get_24h_tickers(self):
                         """Get all 24h stats"""
                         tickers = []
                         for symbol, data in self.labyrinth.ticker_cache.items():
-                            base = data.get('base', '')
-                            quote = data.get('quote', 'USD')
+                            if not isinstance(data, dict):
+                                continue
+                            base = str(data.get('base') or '').upper()
+                            quote = str(data.get('quote') or '').upper()
+                            change = self.labyrinth._finite_observation(data.get('change24h'))
+                            volume = self.labyrinth._finite_observation(
+                                data.get('volume'), nonnegative=True
+                            )
+                            price = self.labyrinth._finite_observation(
+                                data.get('price'), positive=True
+                            )
+                            if not base or not quote or change is None or volume is None or price is None:
+                                continue
                             tickers.append({
                                 'symbol': f"{base}{quote}",
-                                'priceChangePercent': data.get('change24h', 0) * 100,
-                                'quoteVolume': data.get('volume', 100000),
-                                'lastPrice': data.get('price', 1.0),
+                                'priceChangePercent': change * 100,
+                                'quoteVolume': volume,
+                                'lastPrice': price,
                             })
                         return tickers
                 
-                quack_client = QuackClient(self)
+                quack_client = QuackTickerCacheAdapter(self)
                 self.quack_commandos = QuackCommandos(quack_client)
                 
                 # 👑 WIRE COMMANDOS TO QUEEN! The Queen commands the army!
@@ -7050,8 +7293,10 @@ class MicroProfitLabyrinth:
                 
                 for ticker in binance_tickers:
                     symbol = ticker.get('symbol', '')
-                    price = float(ticker.get('lastPrice', 0))
-                    if price > 0:
+                    price = self._finite_observation(ticker.get('lastPrice'), positive=True)
+                    change = self._finite_observation(ticker.get('priceChangePercent'))
+                    volume = self._finite_observation(ticker.get('volume'), nonnegative=True)
+                    if price is not None and change is not None and volume is not None:
                         # 🇬🇧 UK MODE: Only load allowed pairs
                         if self.binance_uk_mode and not self.is_binance_pair_allowed(symbol):
                             continue
@@ -7063,8 +7308,6 @@ class MicroProfitLabyrinth:
                                 if base not in prices:
                                     prices[base] = price
                                 
-                                change = float(ticker.get('priceChangePercent', 0))
-                                volume = float(ticker.get('volume', 0))
                                 ticker_entry = {
                                     'price': price,
                                     'change24h': change,
@@ -7835,8 +8078,10 @@ class MicroProfitLabyrinth:
         score = 5.0  # Start neutral
         
         # 1. Momentum differential (want to go TO stronger momentum)
-        from_momentum = from_ticker.get('change24h', 0)
-        to_momentum = to_ticker.get('change24h', 0)
+        from_momentum = self._finite_observation(from_ticker.get('change24h'))
+        to_momentum = self._finite_observation(to_ticker.get('change24h'))
+        if from_momentum is None or to_momentum is None:
+            return 5.0
         momentum_diff = to_momentum - from_momentum
         
         if momentum_diff > 2:  # Going to significantly stronger
@@ -7847,8 +8092,8 @@ class MicroProfitLabyrinth:
             score -= 2
         
         # 2. Volume check (prefer liquid assets)
-        to_volume = to_ticker.get('volume', 0)
-        if to_volume > 100000:
+        to_volume = self._finite_observation(to_ticker.get('volume'), nonnegative=True)
+        if to_volume is not None and to_volume > 100000:
             score += 1
         
         # 3. Positive momentum preference
@@ -9571,11 +9816,10 @@ class MicroProfitLabyrinth:
                 if not base or base not in alpaca_bases:
                     continue  # Only consider Alpaca-tradeable
                 
-                price = float(ticker.get('price', 0) or 0)
-                change_24h = float(ticker.get('change24h', 0) or 0)
-                volume = float(ticker.get('volume', 0) or 0)
-                
-                if price <= 0:
+                price = self._finite_observation(ticker.get('price'), positive=True)
+                change_24h = self._finite_observation(ticker.get('change24h'))
+                volume = self._finite_observation(ticker.get('volume'), nonnegative=True)
+                if price is None or change_24h is None or volume is None:
                     continue
                 
                 # Use Binance 24h change as momentum proxy
@@ -9604,11 +9848,10 @@ class MicroProfitLabyrinth:
                 if base in seen_bases:
                     continue  # Binance already has this
                 
-                price = float(ticker.get('price', 0) or 0)
-                change_24h = float(ticker.get('change24h', 0) or 0)
-                volume = float(ticker.get('volume', 0) or 0)
-                
-                if price <= 0:
+                price = self._finite_observation(ticker.get('price'), positive=True)
+                change_24h = self._finite_observation(ticker.get('change24h'))
+                volume = self._finite_observation(ticker.get('volume'), nonnegative=True)
+                if price is None or change_24h is None or volume is None:
                     continue
                 
                 candidates.append({
@@ -9640,11 +9883,16 @@ class MicroProfitLabyrinth:
                     if not base or base not in alpaca_bases:
                         continue
                     
-                    price = float(t.get('price', t.get('lastPrice', 0)) or 0)
-                    change_pct = float(t.get('priceChangePercent', 0) or 0)
-                    volume = float(t.get('volume', t.get('quoteVolume', 0)) or 0)
-                    
-                    if price <= 0:
+                    price = self._finite_observation(
+                        t.get('price') if t.get('price') is not None else t.get('lastPrice'),
+                        positive=True,
+                    )
+                    change_pct = self._finite_observation(t.get('priceChangePercent'))
+                    volume_value = (
+                        t.get('volume') if t.get('volume') is not None else t.get('quoteVolume')
+                    )
+                    volume = self._finite_observation(volume_value, nonnegative=True)
+                    if price is None or change_pct is None or volume is None:
                         continue
                     
                     candidates.append({
@@ -9657,22 +9905,11 @@ class MicroProfitLabyrinth:
             except Exception as e:
                 logger.debug(f"Binance REST fallback error: {e}")
         
-        # Second fallback: use existing momentum data
         if not candidates:
-            safe_print(f"   🦙 Ocean scanning {len(symbols)} Alpaca symbols (no Binance data)...")
-            rising_coins = self.get_strongest_rising(exclude={'USD', 'USDT', 'USDC'}, limit=3000)
-            for coin, momentum in rising_coins[:2000]:
-                if momentum < 0.01 or coin not in alpaca_bases:
-                    continue
-                coin_price = self.prices.get(coin, 0)
-                if coin_price > 0:
-                    candidates.append({
-                        'base': coin,
-                        'price': coin_price,
-                        'change_pct': momentum * 5,  # Rough conversion
-                        'volume': 0,
-                        'source': 'momentum',
-                    })
+            safe_print(
+                f"   🦙 Ocean NO_DATA: no complete price/change/volume receipt "
+                f"for {len(symbols)} Alpaca symbols"
+            )
         
         # ════════════════════════════════════════════════════════════════════════
         # 📊 SORT & SCORE CANDIDATES
@@ -9866,31 +10103,70 @@ class MicroProfitLabyrinth:
             try:
                 # Build a market state for the asset
                 asset = opp.to_asset
-                price = self.prices.get(asset, 0)
-                
-                if price <= 0:
-                    validated.append(opp)  # Pass through if no price data
+                market_ticker = next(
+                    (
+                        data for data in self.ticker_cache.values()
+                        if isinstance(data, dict)
+                        and str(data.get('base') or '').upper() == asset.upper()
+                    ),
+                    None,
+                )
+                if not isinstance(market_ticker, dict):
+                    validated.append(opp)
+                    continue
+                price = self._finite_observation(market_ticker.get('price'), positive=True)
+                open_price = self._finite_observation(
+                    market_ticker.get('open_price')
+                    if market_ticker.get('open_price') is not None
+                    else market_ticker.get('open'),
+                    positive=True,
+                )
+                high = self._finite_observation(market_ticker.get('high'), positive=True)
+                low = self._finite_observation(market_ticker.get('low'), positive=True)
+                close = self._finite_observation(
+                    market_ticker.get('close')
+                    if market_ticker.get('close') is not None
+                    else market_ticker.get('price'),
+                    positive=True,
+                )
+                volume = self._finite_observation(
+                    market_ticker.get('volume'), nonnegative=True
+                )
+                source_timestamp = self._parse_provider_timestamp(
+                    market_ticker.get('source_timestamp')
+                )
+                if (
+                    price is None or open_price is None or high is None or low is None
+                    or close is None or volume is None or source_timestamp is None
+                ):
+                    validated.append(opp)
                     continue
                 
                 # Try to get prediction from probability nexus
                 prediction = None
                 if hasattr(self.probability_nexus, 'predict'):
-                    # Build minimal market state
+                    # Build the state only from a complete provider OHLCV receipt.
                     from aureon.bridges.aureon_probability_nexus import MarketState
                     state = MarketState(
-                        timestamp=datetime.now(),
+                        timestamp=datetime.fromtimestamp(source_timestamp),
                         price=price,
-                        open_price=price * 0.995,  # Estimate
-                        high=price * 1.01,
-                        low=price * 0.99,
-                        close=price,
-                        volume=1000,  # Placeholder
+                        open_price=open_price,
+                        high=high,
+                        low=low,
+                        close=close,
+                        volume=volume,
                     )
                     prediction = self.probability_nexus.predict(state)
                 
                 if prediction:
-                    prob = getattr(prediction, 'probability', 0.5)
-                    conf = getattr(prediction, 'confidence', 0.5)
+                    prob = self._finite_observation(getattr(prediction, 'probability', None))
+                    conf = self._finite_observation(getattr(prediction, 'confidence', None))
+                    if (
+                        prob is None or conf is None
+                        or not 0.0 <= prob <= 1.0 or not 0.0 <= conf <= 1.0
+                    ):
+                        validated.append(opp)
+                        continue
                     
                     # Filter low probability (<50%)
                     if prob < 0.5:
@@ -10316,246 +10592,144 @@ class MicroProfitLabyrinth:
         shortfall_usd: float,
         expected_profit_pct: float = 0.01,
     ) -> bool:
+        """Plan aggregation without submitting a non-atomic financial saga.
+
+        A sell-then-buy sequence cannot be called successful from placement
+        responses or planning values. Until a durable saga reconciler can prove
+        every provider fill and any cross-exchange transfer, this route remains
+        explicitly not submitted. Normal single-order execution remains active
+        through the receipt-validation path used elsewhere in this class.
         """
-        💧🔀 ATTEMPT LIQUIDITY AGGREGATION
-        
-        When we need more funds to execute a trade, try to liquidate other assets
-        to "top up" the target asset. Only proceeds if profitable after fees.
-        
-        Args:
-            target_asset: The asset we need more of (e.g., 'ETH')
-            target_exchange: Exchange where we need the funds
-            shortfall_usd: How much USD value we need to add
-            expected_profit_pct: Expected profit from the target trade
-            
-        Returns:
-            True if aggregation was successful and we now have enough funds
-        """
-        safe_print(f"\n   💧🔀 LIQUIDITY AGGREGATION ATTEMPT")
-        safe_print(f"   🎯 Need ${shortfall_usd:.2f} more {target_asset} on {target_exchange}")
-        
-        # Don't aggregate for tiny amounts - not worth the fees
-        if shortfall_usd < 1.0:
-            safe_print(f"   ❌ Shortfall ${shortfall_usd:.2f} too small to aggregate")
-            return False
-        
-        # Create aggregation plan
-        plan = self.liquidity_engine.create_aggregation_plan(
-            target_asset=target_asset,
-            target_exchange=target_exchange,
-            amount_needed_usd=shortfall_usd * 1.2,  # 20% buffer
-            expected_profit_pct=expected_profit_pct,
-            exchange_balances=self.exchange_balances,
-            prices=self.prices,
-            momentum=self.asset_momentum,
+        safe_print("\n   LIQUIDITY AGGREGATION PREFLIGHT")
+
+        target_asset = str(target_asset or '').upper().strip()
+        exchange_name = str(target_exchange or '').lower().strip()
+        observed_shortfall = self._finite_observation(shortfall_usd, positive=True)
+        observed_expected_profit = self._finite_observation(
+            expected_profit_pct, nonnegative=True
         )
-        
+        if (
+            not target_asset or not exchange_name or observed_shortfall is None
+            or observed_expected_profit is None
+        ):
+            self._audit_event('liquidity_aggregation_no_data', {
+                'target_asset': target_asset or None,
+                'target_exchange': exchange_name or None,
+                'shortfall_usd': observed_shortfall,
+                'reason': 'missing finite aggregation preflight inputs',
+                'execution_state': 'not_submitted',
+                'truth_status': 'no_data',
+                'generated_values': False,
+            })
+            return False
+        if observed_shortfall < 1.0:
+            safe_print(f"   Shortfall ${observed_shortfall:.2f} is below the aggregation minimum")
+            return False
+
+        liquidity_engine = getattr(self, 'liquidity_engine', None)
+        if liquidity_engine is None:
+            self._audit_event('liquidity_aggregation_no_data', {
+                'target_asset': target_asset,
+                'target_exchange': exchange_name,
+                'shortfall_usd': observed_shortfall,
+                'reason': 'liquidity engine unavailable',
+                'execution_state': 'not_submitted',
+                'truth_status': 'no_data',
+                'generated_values': False,
+            })
+            return False
+
+        plan = liquidity_engine.create_aggregation_plan(
+            target_asset=target_asset,
+            target_exchange=exchange_name,
+            amount_needed_usd=observed_shortfall * 1.2,
+            expected_profit_pct=observed_expected_profit,
+            exchange_balances=getattr(self, 'exchange_balances', {}),
+            prices=getattr(self, 'prices', {}),
+            momentum=getattr(self, 'asset_momentum', {}),
+        )
         if not plan:
-            safe_print(f"   ❌ No aggregation plan available (no suitable victims)")
+            safe_print("   No aggregation plan available")
             return False
-        
-        # Print the plan
-        safe_print(self.liquidity_engine.print_aggregation_plan(plan))
-        
+        safe_print(liquidity_engine.print_aggregation_plan(plan))
         if not plan.is_profitable:
-            safe_print(f"   ❌ Aggregation not profitable (fees ${plan.total_fees_usd:.4f} > profit)")
+            safe_print("   Aggregation plan did not pass the pre-execution profit gate")
             return False
-        
-        # Execute the plan!
-        safe_print(f"\n   🚀 EXECUTING AGGREGATION PLAN...")
-        
-        success_count = 0
-        total_received = 0.0
-        
-        for step in plan.steps:
-            if step['action'] == 'SELL':
-                victim_asset = step['asset']
-                victim_amount = step['amount']
-                victim_exchange = step['exchange']
-                
-                safe_print(f"   📤 SELL: {victim_amount:.6f} {victim_asset} on {victim_exchange}")
-                
-                # Execute the liquidation based on exchange
-                sell_success = False
-                received_usd = 0.0
-                
-                try:
-                    if victim_exchange == 'kraken' and self.kraken:
-                        # Sell to USD/ZUSD on Kraken
-                        result = self.kraken.place_market_order(
-                            symbol=f"{victim_asset}USD",
-                            side='sell',
-                            volume=victim_amount
-                        )
-                        if result and 'error' not in str(result).lower():
-                            sell_success = True
-                            received_usd = step['expected_usd'] * 0.97  # Estimate
-                            self._audit_order_execution(
-                                exchange='kraken',
-                                action='SELL',
-                                symbol=f"{victim_asset}USD",
-                                result=result,
-                                source='liquidity_aggregation'
-                            )
-                            self._record_execution_to_cost_basis('kraken', f"{victim_asset}USD", 'SELL', result)
-                            
-                    elif victim_exchange == 'binance' and self.binance:
-                        # Sell to USDC on Binance (UK mode) or USDT
-                        quote = 'USDC' if self.binance_uk_mode else 'USDT'
-                        result = self.binance.place_market_order(
-                            symbol=f"{victim_asset}{quote}",
-                            side='SELL',
-                            quantity=victim_amount
-                        )
-                        if result and result.get('status') == 'FILLED':
-                            sell_success = True
-                            received_usd = float(result.get('cummulativeQuoteQty', step['expected_usd'] * 0.97))
-                            self._audit_order_execution(
-                                exchange='binance',
-                                action='SELL',
-                                symbol=f"{victim_asset}{quote}",
-                                result=result,
-                                source='liquidity_aggregation'
-                            )
-                            self._record_execution_to_cost_basis('binance', f"{victim_asset}{quote}", 'SELL', result)
-                            
-                    elif victim_exchange == 'alpaca' and self.alpaca:
-                        # 🔒 Check Alpaca verify-only gate
-                        if self.alpaca_verify_only:
-                            safe_print(f"   🔒 ALPACA VERIFY-ONLY: Skipping SELL {victim_asset} (set ALPACA_EXECUTE=true to enable)")
-                            continue
-                        # Sell to USD on Alpaca
-                        result = self.alpaca.place_order(
-                            symbol=f"{victim_asset}/USD",
-                            side='sell',
-                            qty=victim_amount,
-                            type='market'
-                        )
-                        if result:
-                            sell_success = True
-                            received_usd = step['expected_usd'] * 0.97
-                            self._audit_order_execution(
-                                exchange='alpaca',
-                                action='SELL',
-                                symbol=f"{victim_asset}/USD",
-                                result=result,
-                                source='liquidity_aggregation'
-                            )
-                            
-                except Exception as e:
-                    safe_print(f"   ❌ SELL failed for {victim_asset}: {e}")
-                    sell_success = False
-                
-                if sell_success:
-                    success_count += 1
-                    total_received += received_usd
-                    safe_print(f"   ✅ SOLD {victim_asset} → ${received_usd:.2f}")
-                    
-                    # Record liquidation for cooldown
-                    self.liquidity_engine.record_liquidation(victim_asset)
-                else:
-                    safe_print(f"   ❌ SELL failed for {victim_asset}")
-                    # Continue trying other victims
-            
-            elif step['action'] == 'BUY':
-                # Now buy the target asset with our accumulated USD
-                if total_received < 1.0:
-                    safe_print(f"   ❌ Not enough funds received (${total_received:.2f}) to buy {target_asset}")
-                    continue
-                
-                safe_print(f"   📥 BUY: ${total_received:.2f} worth of {target_asset} on {target_exchange}")
-                
-                buy_success = False
-                try:
-                    if target_exchange == 'kraken' and self.kraken:
-                        # Buy target with USD
-                        target_price = self.prices.get(target_asset, 1.0)
-                        buy_amount = (total_received * 0.98) / target_price  # 2% buffer
-                        result = self.kraken.place_market_order(
-                            symbol=f"{target_asset}USD",
-                            side='buy',
-                            volume=buy_amount
-                        )
-                        if result and 'error' not in str(result).lower():
-                            buy_success = True
-                            
-                    elif target_exchange == 'binance' and self.binance:
-                        quote = 'USDC' if self.binance_uk_mode else 'USDT'
-                        target_price = self.prices.get(target_asset, 1.0)
-                        buy_amount = (total_received * 0.98) / target_price
-                        result = self.binance.place_market_order(
-                            symbol=f"{target_asset}{quote}",
-                            side='BUY',
-                            quantity=buy_amount
-                        )
-                        if result and result.get('status') == 'FILLED':
-                            buy_success = True
-                            
-                    elif target_exchange == 'alpaca' and self.alpaca:
-                        # 🔒 Check Alpaca verify-only gate
-                        if self.alpaca_verify_only:
-                            safe_print(f"   🔒 ALPACA VERIFY-ONLY: Skipping BUY {target_asset} (set ALPACA_EXECUTE=true to enable)")
-                            continue
-                        target_price = self.prices.get(target_asset, 1.0)
-                        buy_amount = (total_received * 0.98) / target_price
-                        result = self.alpaca.place_order(
-                            symbol=f"{target_asset}/USD",
-                            side='buy',
-                            qty=buy_amount,
-                            type='market'
-                        )
-                        if result:
-                            buy_success = True
-                            
-                except Exception as e:
-                    safe_print(f"   ❌ BUY failed for {target_asset}: {e}")
-                    buy_success = False
-                
-                if buy_success:
-                    success_count += 1
-                    safe_print(f"   ✅ BOUGHT {target_asset}")
-                    if result:
-                        if target_exchange == 'kraken':
-                            self._audit_order_execution(
-                                exchange='kraken',
-                                action='BUY',
-                                symbol=f"{target_asset}USD",
-                                result=result,
-                                source='liquidity_aggregation'
-                            )
-                            self._record_execution_to_cost_basis('kraken', f"{target_asset}USD", 'BUY', result)
-                        elif target_exchange == 'binance':
-                            quote = 'USDC' if self.binance_uk_mode else 'USDT'
-                            self._audit_order_execution(
-                                exchange='binance',
-                                action='BUY',
-                                symbol=f"{target_asset}{quote}",
-                                result=result,
-                                source='liquidity_aggregation'
-                            )
-                            self._record_execution_to_cost_basis('binance', f"{target_asset}{quote}", 'BUY', result)
-                        elif target_exchange == 'alpaca':
-                            self._audit_order_execution(
-                                exchange='alpaca',
-                                action='BUY',
-                                symbol=f"{target_asset}/USD",
-                                result=result,
-                                source='liquidity_aggregation'
-                            )
-                    
-                    # Update stats
-                    self.liquidity_engine.executed_aggregations += 1
-                    self.liquidity_engine.total_aggregation_profit += plan.profit_after_fees
-                else:
-                    safe_print(f"   ❌ BUY failed for {target_asset}")
-        
-        # Final success check
-        if success_count > 0:
-            safe_print(f"\n   💧 AGGREGATION COMPLETE: {success_count} steps executed")
-            return True
-        else:
-            safe_print(f"\n   ❌ AGGREGATION FAILED: No steps completed")
+
+        steps = getattr(plan, 'steps', None)
+        sell_steps = [
+            step for step in steps or []
+            if isinstance(step, dict) and str(step.get('action') or '').upper() == 'SELL'
+        ]
+        buy_steps = [
+            step for step in steps or []
+            if isinstance(step, dict) and str(step.get('action') or '').upper() == 'BUY'
+        ]
+        ordered_actions = [
+            str(step.get('action') or '').upper() if isinstance(step, dict) else ''
+            for step in steps or []
+        ]
+        same_exchange = bool(sell_steps) and all(
+            str(step.get('exchange') or '').lower() == exchange_name
+            for step in sell_steps
+        )
+        buy_matches_target = bool(
+            len(buy_steps) == 1
+            and str(buy_steps[0].get('exchange') or '').lower() == exchange_name
+            and str(buy_steps[0].get('asset') or '').upper() == target_asset
+        )
+        complete_sell_sizing = all(
+            str(step.get('asset') or '').strip()
+            and self._finite_observation(step.get('amount'), positive=True) is not None
+            for step in sell_steps
+        )
+        if (
+            not isinstance(steps, list) or not steps or not same_exchange
+            or not buy_matches_target or not complete_sell_sizing
+            or ordered_actions != ['SELL'] * len(sell_steps) + ['BUY']
+        ):
+            self._audit_event('liquidity_aggregation_no_data', {
+                'target_asset': target_asset,
+                'target_exchange': exchange_name,
+                'shortfall_usd': observed_shortfall,
+                'reason': 'aggregation plan lacks same-exchange, fully sized sell-then-buy steps',
+                'execution_state': 'not_submitted',
+                'truth_status': 'no_data',
+                'generated_values': False,
+            })
             return False
+
+        context = SimpleNamespace(
+            from_asset=str(sell_steps[0]['asset']).upper(),
+            to_asset=target_asset,
+            source_exchange=exchange_name,
+            trace_id=f"liquidity-aggregation:{uuid.uuid4()}",
+            executed=False,
+            actual_pnl_usd=None,
+        )
+        if self._has_pending_reconciliation(context, exchange_name):
+            safe_print("   Aggregation remains blocked by a pending reconciliation")
+            return False
+
+        reason = (
+            'automatic multi-order aggregation requires a durable provider-fill '
+            'and transfer-receipt saga reconciler'
+        )
+        self._mark_not_submitted(context, reason)
+        self._audit_event('liquidity_aggregation_not_submitted', {
+            'trace_id': context.trace_id,
+            'target_asset': target_asset,
+            'target_exchange': exchange_name,
+            'shortfall_usd': observed_shortfall,
+            'planned_step_count': len(steps),
+            'reason': reason,
+            'execution_state': 'not_submitted',
+            'realized_pnl_usd': None,
+            'truth_status': 'no_data',
+            'generated_values': False,
+        })
+        safe_print("   Aggregation not submitted: provider saga reconciliation is required")
+        return False
 
     async def harvest_profitable_positions(self) -> Dict[str, Any]:
         """
@@ -13545,7 +13719,9 @@ if __name__ == "__main__":
                 continue
             
             # Get momentum for this asset
-            momentum = self.asset_momentum.get(asset, 0)
+            momentum = self._finite_observation(self.asset_momentum.get(asset))
+            if momentum is None:
+                continue
             # Cap momentum to avoid runaway scores / data glitches
             if momentum > MAX_MOMENTUM_PER_MIN:
                 momentum = MAX_MOMENTUM_PER_MIN
@@ -13554,18 +13730,20 @@ if __name__ == "__main__":
             if momentum <= 0:
                 continue
             
-            # Estimate volume from recent trades (or use fallback)
-            volume = 100000  # Base volume estimate
-            
-            # Check ticker cache for actual volume
+            # Require observed volume from the provider ticker cache.
+            volume = None
             for symbol, ticker in self.ticker_cache.items():
                 if ticker.get('base') == asset:
-                    volume = ticker.get('volume', 100000)
+                    volume = self._finite_observation(
+                        ticker.get('volume'), nonnegative=True
+                    )
                     break
+            if volume is None:
+                continue
             
             # 🐺 WOLF SCORE: momentum × log(1 + volume)
             import math
-            score = momentum * math.log(1 + max(1, volume))
+            score = momentum * math.log1p(volume)
             
             if score > best_score:
                 best_symbol = asset
@@ -14577,9 +14755,8 @@ if __name__ == "__main__":
                 orca_boost * 0.30        # 🦈🔪 ORCA WHALE HUNTER up to 30%!
             )
             
-            # 🔐 Log Enigma contribution occasionally
-            import random  # Ensure import
-            if enigma_score != 0 and random.random() < 0.05:  # 5% of the time
+            # Log every non-zero observed/derived Enigma contribution.
+            if enigma_score != 0:
                 logger.info(f"🔐 Enigma says {enigma_direction} for {to_asset}: score {enigma_score:+.2f}")
             
             # Gate check
@@ -15062,11 +15239,13 @@ if __name__ == "__main__":
                 if is_stablecoin_source:
                     # For stablecoin → volatile, we just need to_pair
                     # e.g., ZUSD → BTC uses BTCUSD pair (buying BTC with USD)
-                    from_pair = "STABLECOIN_SOURCE"  # Placeholder - we have USD/ZUSD/etc
+                    from_pair = None
                     to_pair = self._find_exchange_pair(to_asset, "USD", source_exchange)
                     # Try USDT pair on Binance/Alpaca if USD not available
                     if not to_pair and source_exchange in ('binance', 'alpaca'):
                         to_pair = self._find_exchange_pair(to_asset, "USDT", source_exchange)
+                    # The single observed market pair is both the entry and path proof.
+                    from_pair = to_pair
                 else:
                     from_pair = self._find_exchange_pair(from_asset, "USD", source_exchange)
                     to_pair = self._find_exchange_pair(to_asset, "USD", source_exchange)
@@ -15238,16 +15417,34 @@ if __name__ == "__main__":
                 if self.timeline_oracle:
                     try:
                         # Get timeline branch selection for this conversion
-                        from_price = self.prices.get(from_asset, 0)
-                        to_price = self.prices.get(to_asset, 0)
-                        change_pct = (to_price - from_price) / from_price if from_price > 0 else 0
+                        timeline_ticker = next(
+                            (
+                                data for data in self.ticker_cache.values()
+                                if isinstance(data, dict)
+                                and str(data.get('base') or '').upper() == to_asset.upper()
+                            ),
+                            None,
+                        )
+                        if not isinstance(timeline_ticker, dict):
+                            raise ValueError('NO_DATA: target ticker unavailable')
+                        to_price = self._finite_observation(
+                            timeline_ticker.get('price'), positive=True
+                        )
+                        timeline_volume = self._finite_observation(
+                            timeline_ticker.get('volume'), nonnegative=True
+                        )
+                        change_pct = self._finite_observation(
+                            timeline_ticker.get('change24h')
+                        )
+                        if to_price is None or timeline_volume is None or change_pct is None:
+                            raise ValueError('NO_DATA: incomplete target price/change/volume receipt')
                         
                         # 🎯 Try 3-MOVE PREDICTION first (predicts 3 moves, validates, then acts)
                         if timeline_select_3move:
                             action_str, confidence, exchange = timeline_select_3move(
                                 symbol=to_asset,
                                 price=to_price,
-                                volume=to_ticker.get('volume', 0) if to_ticker else 0,
+                                volume=timeline_volume,
                                 change_pct=change_pct
                             )
                             
@@ -15278,7 +15475,7 @@ if __name__ == "__main__":
                             action_str, confidence = timeline_select(
                                 symbol=to_asset,
                                 price=to_price,
-                                volume=to_ticker.get('volume', 0) if to_ticker else 0,
+                                volume=timeline_volume,
                                 change_pct=change_pct
                             )
                             timeline_action = action_str
@@ -15300,9 +15497,27 @@ if __name__ == "__main__":
                 luck_state = "NEUTRAL"
                 if self.luck_mapper and LUCK_FIELD_AVAILABLE:
                     try:
+                        luck_ticker = next(
+                            (
+                                data for data in self.ticker_cache.values()
+                                if isinstance(data, dict)
+                                and str(data.get('base') or '').upper() == to_asset.upper()
+                            ),
+                            None,
+                        )
+                        if not isinstance(luck_ticker, dict):
+                            raise ValueError('NO_DATA: target ticker unavailable')
+                        luck_price = self._finite_observation(
+                            luck_ticker.get('price'), positive=True
+                        )
+                        luck_volatility = self._finite_observation(
+                            luck_ticker.get('volatility'), nonnegative=True
+                        )
+                        if luck_price is None or luck_volatility is None:
+                            raise ValueError('NO_DATA: target price/volatility receipt incomplete')
                         luck_reading = self.luck_mapper.read_field(
-                            price=to_price,
-                            volatility=to_ticker.get('volatility', 0.5) if to_ticker else 0.5,
+                            price=luck_price,
+                            volatility=luck_volatility,
                             trade_count=self.conversions_made
                         )
                         luck_score = luck_reading.luck_field
@@ -15348,10 +15563,15 @@ if __name__ == "__main__":
                 
                 g_eff = 0.0
                 if to_ticker:
-                    g_eff = self.grounding.calculate_gravity_signal(
-                        price_change_pct=to_ticker.get('change24h', 0),
-                        volume=to_ticker.get('volume', 0)
+                    observed_change = self._finite_observation(to_ticker.get('change24h'))
+                    observed_volume = self._finite_observation(
+                        to_ticker.get('volume'), nonnegative=True
                     )
+                    if observed_change is not None and observed_volume is not None:
+                        g_eff = self.grounding.calculate_gravity_signal(
+                            price_change_pct=observed_change,
+                            volume=observed_volume,
+                        )
                 
                 # ════════════════════════════════════════════════════════════════
                 # 🔮 FINAL COMBINED SCORE (All Neural Systems United)
@@ -15925,39 +16145,59 @@ if __name__ == "__main__":
         Returns:
             Dict with status and execution details
         """
-        hunt_id = order.get('orca_hunt_id', 'unknown')
-        symbol = order.get('symbol', '')
-        side = order.get('side', 'buy')
-        confidence = order.get('confidence', 0.5)
-        target_pnl = order.get('target_pnl_usd', 0.10)
+        hunt_id = str(order.get('orca_hunt_id') or order.get('hunt_id') or '').strip()
+        symbol = str(order.get('symbol') or '').strip().upper()
+        side = str(order.get('side') or order.get('action') or '').strip().lower()
+        confidence = self._finite_observation(order.get('confidence'))
+        target_pnl = self._finite_observation(
+            order.get('target_pnl_usd')
+            if order.get('target_pnl_usd') is not None
+            else order.get('target_pnl'),
+            positive=True,
+        )
+        from_amount = self._finite_observation(order.get('from_amount'), positive=True)
+        from_value_usd = self._finite_observation(order.get('from_value_usd'), positive=True)
+        source_exchange = str(
+            order.get('source_exchange') or order.get('exchange') or ''
+        ).strip().lower()
+        source_id = str(order.get('source_id') or '').strip()
+        source_timestamp = self._parse_provider_timestamp(order.get('source_timestamp'))
+        if (
+            not hunt_id or '/' not in symbol or side not in {'buy', 'sell'}
+            or confidence is None or not 0.0 <= confidence <= 1.0
+            or target_pnl is None or from_amount is None or from_value_usd is None
+            or not source_exchange or not source_id or source_timestamp is None
+        ):
+            return {
+                'status': 'no_data',
+                'queued': False,
+                'reason': (
+                    'Orca execution requires explicit symbol, side, confidence, target PnL, '
+                    'provider-sized amount/value, exchange, source ID, and source timestamp'
+                ),
+                'truth_status': 'no_data',
+                'generated_values': False,
+            }
         
         logger.info(f"🦈💰 ORCA ORDER RECEIVED: {hunt_id}")
         logger.info(f"   Symbol: {symbol} | Side: {side.upper()}")
         logger.info(f"   Confidence: {confidence:.0%} | Target: ${target_pnl:.2f}")
         
         # Parse symbol to get base/quote
-        if '/' in symbol:
-            base, quote = symbol.split('/')
-        else:
-            base = symbol
-            quote = 'USD'
+        base, quote = symbol.split('/', 1)
         
         try:
             # Create a MicroOpportunity from the Orca order
             from_asset = base if side == 'sell' else quote
             to_asset = quote if side == 'sell' else base
             
-            # Calculate amount based on confidence and available balance
-            # This will be determined by actual balance later in execute_conversion
-            estimated_amount = order.get('position_size_pct', 0.02) * 100  # Rough estimate
-            
             # Build opportunity for the existing execution pipeline
             opp = MicroOpportunity(
-                timestamp=time.time(),
+                timestamp=source_timestamp,
                 from_asset=from_asset,
                 to_asset=to_asset,
-                from_amount=estimated_amount,  # Will be recalculated
-                from_value_usd=estimated_amount,
+                from_amount=from_amount,
+                from_value_usd=from_value_usd,
                 
                 # Scoring - use confidence as proxy for Orca source
                 v14_score=confidence,
@@ -15967,17 +16207,21 @@ if __name__ == "__main__":
                 
                 # Profit estimates
                 expected_pnl_usd=target_pnl,
-                expected_pnl_pct=target_pnl / 100.0, # Placeholder
+                expected_pnl_pct=target_pnl / from_value_usd,
                 
-                source_exchange='alpaca',  # Default to Alpaca for Orca orders
+                source_exchange=source_exchange,
             )
             
             # Set source manually (not in init)
             # opp.source = 'orca_intelligence' 
             opp.queen_confidence = confidence
+            opp.source_id = source_id
+            opp.source_timestamp = source_timestamp
+            opp.truth_status = 'real_derived'
+            opp.generated_values = False
 
             # Add Orca reasoning to opportunity
-            opp.reasoning = order.get('reasoning', [f'Orca hunt: {hunt_id}'])
+            opp.reasoning = order.get('reasoning') or []
             
             # Track this as Orca-sourced
             opp.orca_hunt_id = hunt_id
@@ -16190,6 +16434,9 @@ if __name__ == "__main__":
     async def execute_conversion(self, opp: MicroOpportunity) -> bool:
         """Execute a conversion (dry run or live)."""
         symbol = f"{opp.from_asset}/{opp.to_asset}"
+        if self._has_pending_reconciliation(opp, getattr(opp, 'source_exchange', None)):
+            safe_print(f"   RECONCILIATION REQUIRED: {symbol} will not be retried")
+            return False
         
         # ════════════════════════════════════════════════════════════════════════
         # 🎯 CAPITAL CONCENTRATION GATE — Max open positions check
@@ -16325,22 +16572,35 @@ if __name__ == "__main__":
                 opp.from_asset, opp.to_asset, opp.from_value_usd, opp.source_exchange or 'kraken'
             )
             
-            total_cost_pct = cost_breakdown.get('total_cost_pct', 0.5) / 100.0  # Convert to decimal
+            observed_total_cost_pct = cost_breakdown.get('total_cost_pct')
+            if observed_total_cost_pct is None:
+                self.rejection_safe_print("\n   PRE-EXECUTION NO_DATA: provider cost evidence is unavailable")
+                self.barter_matrix.record_preexec_rejection(
+                    opp.from_asset, opp.to_asset,
+                    'no_data: missing total_cost_pct provider evidence',
+                    opp.from_value_usd,
+                )
+                return False
+            total_cost_pct = float(observed_total_cost_pct) / 100.0
             total_cost_usd = opp.from_value_usd * total_cost_pct
 
             # If we have a dynamic cost estimator, use Monte Carlo to compute a worst-case (90th percentile) cost
             if self.cost_estimator:
                 try:
                     sample_stats = self.cost_estimator.sample_total_cost_distribution(f"{from_upper}/{to_upper}", 'buy', opp.from_value_usd, n_samples=1000)
-                    worst_pct = sample_stats.get('p90', total_cost_pct*100)
+                    worst_pct = sample_stats.get('p90')
+                    if worst_pct is None:
+                        raise ValueError('NO_DATA: empirical p90 cost is unavailable')
                     worst_cost_usd = opp.from_value_usd * (worst_pct / 100.0)
                     # Use worst-case for conservative_pnl calculation below
                     mc_cost_usd = worst_cost_usd
                 except Exception as e:
                     logger.debug(f"Monte Carlo cost sampling failed: {e}")
-                    mc_cost_usd = total_cost_usd
+                    self.rejection_safe_print(f"\n   PRE-EXECUTION NO_DATA: empirical cost evidence failed: {e}")
+                    return False
             else:
-                mc_cost_usd = total_cost_usd
+                self.rejection_safe_print("\n   PRE-EXECUTION NO_DATA: dynamic cost estimator is unavailable")
+                return False
 
             # ════════════════════════════════════════════════════════════════════════
             # 🔧 FIX: Scanner now reports GROSS profit (before costs)
@@ -16362,7 +16622,7 @@ if __name__ == "__main__":
                     draws_pct = self.cost_estimator.sample_total_cost_draws(f"{from_upper}/{to_upper}", 'buy', opp.from_value_usd, n_samples=1000)
                     net_samples = [scanner_gross_pnl - (d_pct/100.0) * opp.from_value_usd for d_pct in draws_pct]
                     positive = sum(1 for v in net_samples if v > 0)
-                    p_win = positive / max(1, len(net_samples))
+                    p_win = positive / len(net_samples) if net_samples else None
                 except Exception as e:
                     logger.debug(f"Monte Carlo P(win) sampling failed: {e}")
                     p_win = None
@@ -16616,48 +16876,9 @@ if __name__ == "__main__":
                 logger.debug(f"ThoughtBus publish error: {e}")
         
         if not self.live:
-            safe_print(f"   🔵 DRY RUN - Not executed")
-            opp.executed = True
-            opp.actual_pnl_usd = opp.expected_pnl_usd  # Simulate
-            self.conversions_made += 1
-            self.total_profit_usd += opp.expected_pnl_usd
-            self.conversions.append(opp)
-
-            # Simulate position registry for dry-run entries (so loss-prevention can use it)
-            from_up = opp.from_asset.upper()
-            to_up = opp.to_asset.upper()
-            is_buy = from_up in self.snowball_stablecoins and to_up not in self.snowball_stablecoins
-            is_sell = to_up in self.snowball_stablecoins and from_up not in self.snowball_stablecoins
-
-            if is_buy:
-                # Simulate a buy entry
-                self.position_registry[to_up] = {
-                    'amount': opp.expected_pnl_usd and (opp.from_value_usd / (self.prices.get(to_up, 1) or 1)) or 0,
-                    'entry_price': self.prices.get(to_up, 0) or 0,
-                    'entry_value_usd': opp.from_value_usd,
-                    'fees_usd': 0.0,
-                    'order_ids': [],
-                    'source': opp.source_exchange or 'dry-run',
-                    'timestamp': time.time(),
-                }
-            elif is_sell:
-                # Selling simulated - reduce or remove registry
-                asset = from_up
-                sold_amount = opp.from_amount
-                if asset in self.position_registry:
-                    prev = self.position_registry[asset]
-                    if sold_amount >= prev['amount']:
-                        del self.position_registry[asset]
-                    else:
-                        prev['amount'] -= sold_amount
-                        prev['entry_value_usd'] = prev['entry_price'] * prev['amount']
-
-            return True
-        
-        # ════════════════════════════════════════════════════════════════
-        # 🔴 LIVE EXECUTION - ROUTE TO CORRECT EXCHANGE
-        # ════════════════════════════════════════════════════════════════
-        # 👑 QUEEN MIND ROUTING: Strictly use the source_exchange from the opportunity
+            safe_print("   DRY RUN - order not submitted")
+            self._mark_not_submitted(opp, 'dry_run')
+            return False
         source_exchange = opp.source_exchange
         
         # Fallback if not set (should not happen with new logic)
@@ -16813,7 +17034,7 @@ if __name__ == "__main__":
             'LUSD',   # Liquity (decentralized)
             'DAI',    # MakerDAO (crypto-collateralized)
             'MIM',    # Abracadabra (defi)
-            'SUSD',   # Synthetix (synthetic)
+            'SUSD',   # Synthetix USD
             'USDD',   # TRON (algo)
             'PYUSD',  # PayPal (new)
             'FDUSD',  # First Digital (HK)
@@ -16937,6 +17158,7 @@ if __name__ == "__main__":
     
     async def _execute_on_kraken(self, opp) -> bool:
         """Execute conversion on Kraken using convert_crypto."""
+        submission_attempted = False
         try:
             # Use the built-in convert_crypto which finds the best path automatically!
             safe_print(f"   🔄 Converting {opp.from_asset} → {opp.to_asset} via Kraken...")
@@ -17075,6 +17297,7 @@ if __name__ == "__main__":
                 return False
             
             # Execute the conversion
+            submission_attempted = True
             result = self.kraken.convert_crypto(
                 from_asset=opp.from_asset,
                 to_asset=opp.to_asset,
@@ -17083,78 +17306,41 @@ if __name__ == "__main__":
             
             if result.get('error'):
                 error_msg = str(result['error'])
+                partial_results = result.get('partial_results')
+                if isinstance(partial_results, list) and partial_results:
+                    partial_validation = self._validate_order_execution(partial_results, opp, 'kraken')
+                    self._mark_reconciliation_required(
+                        opp, 'kraken', f'partial conversion: {error_msg}', partial_validation
+                    )
+                    return False
                 safe_print(f"   ❌ Conversion error: {error_msg}")
-                
-                # 👑 QUEEN LEARNING: Auto-fix minimums
-                if "volume_minimum" in error_msg or "min_notional" in error_msg:
-                    safe_print(f"   👑 Queen learning: Increasing minimum for {opp.from_asset}")
-                    # Increase minimum to 1.5x current amount or at least $10
-                    current_price = self.prices.get(opp.from_asset, 1.0)
-                    min_usd_req = 10.0 # Safe default
-                    
-                    # If we know the amount that failed, we should aim higher
-                    new_min_qty = max(opp.from_amount * 1.5, min_usd_req / current_price if current_price > 0 else 0)
-                    
-                    self.dynamic_min_qty[opp.from_asset.upper()] = new_min_qty
-                    safe_print(f"      Updated dynamic minimum for {opp.from_asset} to {new_min_qty:.6f}")
-                    
-                self._record_failure(opp)
+                self._mark_reconciliation_required(
+                    opp, 'kraken', f'ambiguous response after conversion call: {error_msg}'
+                )
                 return False
             
-            # Check results
-            trades = result.get('trades', [])
-            if isinstance(trades, list):
-                success_count = sum(1 for t in trades if isinstance(t, dict) and t.get('status') == 'success')
-                if success_count > 0:
-                    # Calculate actual bought/received amount from the last trade
-                    last_trade = trades[-1]
-                    buy_amount = 0.0
-                    if last_trade.get('status') == 'success':
-                        res = last_trade.get('result', {})
-                        # PRIORITY: Use receivedQty (for SELL orders) if available
-                        # This is the ACTUAL amount we received after conversion
-                        buy_amount = float(res.get('receivedQty', 0) or 
-                                          last_trade.get('receivedQty', 0) or
-                                          res.get('executedQty', 0.0))
-                    
-                    # Fallback if no amount found (e.g. dry run or error)
-                    if buy_amount == 0.0:
-                         # Estimate based on price
-                         to_price = self.prices.get(opp.to_asset, 0)
-                         if to_price > 0:
-                             buy_amount = opp.from_value_usd / to_price
-                    
-                    safe_print(f"   ✅ Conversion complete! {success_count} trades executed. Bought {buy_amount:.6f} {opp.to_asset}")
-                    
-                    # 🔍 VALIDATE ORDER EXECUTION
-                    validation = self._validate_order_execution(trades, opp, 'kraken')
-                    verification = self._verify_profit_math(validation, opp, buy_amount)
-                    self._print_order_validation(validation, verification, opp)
-                    
-                    self._record_conversion(opp, buy_amount, validation, verification)
-                    return True
-                else:
-                    safe_print(f"   ❌ No successful trades in conversion")
-                    self._record_failure(opp)
-            elif result.get('dryRun'):
-                safe_print(f"   🔵 DRY RUN: Would convert via {len(path)} trades")
-                return True
+            if result.get('dryRun'):
+                self._mark_not_submitted(opp, 'kraken_client_dry_run')
+                return False
+            trades = result.get('trades')
+            if isinstance(trades, list) and trades:
+                return self._finalize_provider_execution(opp, trades, 'kraken')
+            self._mark_reconciliation_required(
+                opp, 'kraken', 'nonstandard response after conversion submission'
+            )
+            return False
+        except Exception as exc:
+            logger.error(f"Kraken conversion error: {exc}")
+            if submission_attempted:
+                self._mark_reconciliation_required(
+                    opp, 'kraken', f'post-submission exception: {type(exc).__name__}'
+                )
             else:
-                safe_print(f"   ✅ Conversion result: {result}")
-                # Estimate amount for non-standard result
-                to_price = self.prices.get(opp.to_asset, 0)
-                buy_amount = opp.from_value_usd / to_price if to_price > 0 else 0
-                self._record_conversion(opp, buy_amount)
-                return True
-                
-        except Exception as e:
-            logger.error(f"❌ Kraken conversion error: {e}")
-            safe_print(f"   ❌ Error: {e}")
-            self._record_failure(opp)
+                self._record_failure(opp, str(exc))
         return False
-    
     async def _execute_on_binance(self, opp) -> bool:
         """Execute conversion on Binance."""
+        submission_attempted = False
         try:
             safe_print(f"   🔄 Converting {opp.from_asset} → {opp.to_asset} via Binance...")
             
@@ -17280,34 +17466,36 @@ if __name__ == "__main__":
                 safe_print(f"   ⚠️ BinanceClient missing convert_crypto method!")
                 safe_print(f"   📍 Available methods: {[m for m in dir(self.binance) if not m.startswith('_')][:20]}")
                 
-                # Fallback: Use direct place_market_order if available
                 if hasattr(self.binance, 'place_market_order'):
-                    safe_print(f"   🔄 Attempting direct market order fallback...")
-                    # Try direct pair
                     pair = f"{opp.from_asset}{opp.to_asset}"
+                    submission_attempted = True
                     result = self.binance.place_market_order(
-                        symbol=pair,
-                        side="SELL",
-                        quantity=opp.from_amount
+                        symbol=pair, side='SELL', quantity=opp.from_amount
                     )
-                    if result and not result.get("error"):
-                        safe_print(f"   ✅ Direct order executed: {result}")
-                        return True
-                    # Try inverse pair
-                    pair = f"{opp.to_asset}{opp.from_asset}"
-                    result = self.binance.place_market_order(
-                        symbol=pair,
-                        side="BUY",
-                        quote_qty=opp.from_amount * opp.price if hasattr(opp, 'price') else opp.from_value_usd
-                    )
-                    if result and not result.get("error"):
-                        safe_print(f"   ✅ Inverse order executed: {result}")
-                        return True
-                
-                self._record_failure(opp)
+                    if result and result.get('dryRun'):
+                        self._mark_not_submitted(opp, 'binance_client_dry_run')
+                        return False
+                    if isinstance(result, dict) and result.get('rejected'):
+                        self._mark_not_submitted(
+                            opp,
+                            str(result.get('reason') or result.get('error') or 'provider_rejected'),
+                        )
+                        return False
+                    if not isinstance(result, dict) or result.get('error'):
+                        self._mark_reconciliation_required(
+                            opp,
+                            'binance',
+                            str((result or {}).get('error') or 'ambiguous response after order call'),
+                        )
+                        return False
+                    trades = [{
+                        'trade': {'pair': pair, 'side': 'sell'},
+                        'result': result,
+                        'status': 'success',
+                    }]
+                    return self._finalize_provider_execution(opp, trades, 'binance')
+                self._record_failure(opp, 'Binance client has no execution method')
                 return False
-            
-            # 🚨 BINANCE LOSS PREVENTION GATE
             loss_prevention_passed, loss_reason = self._check_binance_loss_prevention(opp.from_asset, opp.from_amount)
             if not loss_prevention_passed:
                 safe_print(f"   🚫 {loss_reason}")
@@ -17315,48 +17503,59 @@ if __name__ == "__main__":
                 return False
             
             # Use convert_crypto which handles pathfinding internally
+            submission_attempted = True
             result = self.binance.convert_crypto(
                 from_asset=opp.from_asset,
                 to_asset=opp.to_asset,
                 amount=opp.from_amount
             )
             
-            # Handle pathfinding error from convert_crypto
-            if result and result.get("error"):
-                if "No conversion path" in str(result.get("error", "")):
-                    safe_print(f"   ⚠️ {result['error']}")
-                    return False
-            
-            if result and result.get("trades"):
-                # Validate the execution
-                validation = self._validate_order_execution(result["trades"], opp, 'binance')
-                
-                if validation.get("valid"):
-                    self._log_successful_conversion(validation, opp)
-                    return True
-                else:
-                    logger.error(f"❌ Binance order validation failed: {validation.get('reason')}")
-                    self._record_failure(opp)
-                    return False
-            elif result and result.get("dryRun"):
-                # Dry run mode - simulate success
-                safe_print(f"   🧪 DRY RUN: Would convert via {result.get('trades', 0)} trades")
-                return True
-            else:
-                error_msg = result.get("error", "Unknown error")
-                logger.error(f"❌ Binance conversion error: {error_msg}")
-                safe_print(f"   ❌ Error: {error_msg}")
-                self._record_failure(opp)
+            if not isinstance(result, dict):
+                self._mark_reconciliation_required(
+                    opp, 'binance', 'non-dictionary response after conversion submission'
+                )
                 return False
-        
-        except Exception as e:
-            logger.error(f"❌ Binance conversion error: {e}")
-            safe_print(f"   ❌ Error: {e}")
-            self._record_failure(opp)
+            if result.get('dryRun'):
+                self._mark_not_submitted(opp, 'binance_client_dry_run')
+                return False
+            if result.get('error'):
+                partial_results = result.get('partial_results')
+                if isinstance(partial_results, list) and partial_results:
+                    partial_validation = self._validate_order_execution(
+                        partial_results, opp, 'binance'
+                    )
+                    self._mark_reconciliation_required(
+                        opp,
+                        'binance',
+                        f"partial conversion: {result.get('error')}",
+                        partial_validation,
+                    )
+                else:
+                    self._mark_reconciliation_required(
+                        opp,
+                        'binance',
+                        f"ambiguous response after conversion call: {result.get('error')}",
+                    )
+                return False
+            trades = result.get('trades')
+            if isinstance(trades, list) and trades:
+                return self._finalize_provider_execution(opp, trades, 'binance')
+            self._mark_reconciliation_required(
+                opp, 'binance', 'nonstandard response after conversion submission'
+            )
+            return False
+        except Exception as exc:
+            logger.error(f"Binance conversion error: {exc}")
+            if submission_attempted:
+                self._mark_reconciliation_required(
+                    opp, 'binance', f'post-submission exception: {type(exc).__name__}'
+                )
+            else:
+                self._record_failure(opp, str(exc))
         return False
-    
     async def _execute_on_alpaca(self, opp) -> bool:
         """Execute conversion on Alpaca using convert_crypto."""
+        submission_attempted = False
         try:
             # Use the built-in convert_crypto which finds the best path automatically!
             safe_print(f"   🔄 Converting {opp.from_asset} → {opp.to_asset} via Alpaca...")
@@ -17418,433 +17617,243 @@ if __name__ == "__main__":
                 # ✅ Trust Pre-Execution Gate - if net profit > 0, proceed!
 
             # 🎲 MONTE CARLO SNOWBALL: One trade at a time, hold, roll profits
-            # Try dynamic cost estimation first, fall back to flat 0.25% if unavailable
-            if self.cost_estimator:
-                try:
-                    cost_estimate = self.cost_estimator.estimate_cost(
-                        symbol=opp.to_asset,
-                        side='buy',
-                        notional_usd=opp.from_value_usd
-                    )
-                    total_cost_pct = cost_estimate.estimated_total_pct
-                    cost_metrics = {
-                        "fee_pct": cost_estimate.estimated_fee_pct,
-                        "spread_pct": cost_estimate.estimated_spread_pct,
-                        "slippage_pct": cost_estimate.estimated_slippage_pct,
-                        "total_pct": total_cost_pct,
-                        "source": cost_estimate.source,
-                        "confidence": cost_estimate.confidence,
-                    }
-                    logger.debug(f"💰 Dynamic cost: {total_cost_pct:.3f}% (source={cost_estimate.source}, confidence={cost_estimate.confidence:.2f})")
-                except Exception as e:
-                    logger.debug(f"Dynamic cost estimation failed: {e}, using fallback")
-                    MONTE_CARLO_COST_PCT = 0.25
-                    total_cost_pct = MONTE_CARLO_COST_PCT
-                    cost_metrics = {
-                        "fee_pct": 0.15,
-                        "slippage_pct": 0.02,
-                        "spread_pct": 0.08,
-                        "total_pct": MONTE_CARLO_COST_PCT,
-                        "source": "fallback",
-                    }
-            else:
-                # Fallback to flat 0.25% (original behavior)
-                MONTE_CARLO_COST_PCT = 0.25
-                total_cost_pct = MONTE_CARLO_COST_PCT
+            # Provider-receipted cost evidence is required before net-P&L math.
+            if not self.cost_estimator:
+                safe_print('   PRE-EXECUTION NO_DATA: cost estimator unavailable')
+                return False
+            try:
+                cost_estimate = self.cost_estimator.estimate_cost(
+                    symbol=opp.to_asset,
+                    side='buy',
+                    notional_usd=opp.from_value_usd
+                )
+                if (
+                    cost_estimate.truth_status != 'real_derived'
+                    or not cost_estimate.source_id
+                    or cost_estimate.source_timestamp <= 0
+                    or cost_estimate.generated_values is not False
+                ):
+                    raise ValueError('NO_DATA: invalid cost-estimate provenance')
+                total_cost_pct = cost_estimate.estimated_total_pct
                 cost_metrics = {
-                    "fee_pct": 0.15,
-                    "slippage_pct": 0.02,
-                    "spread_pct": 0.08,
-                    "total_pct": MONTE_CARLO_COST_PCT,
-                    "source": "flat_fallback",
+                    'fee_pct': cost_estimate.estimated_fee_pct,
+                    'spread_pct': cost_estimate.estimated_spread_pct,
+                    'slippage_pct': cost_estimate.estimated_slippage_pct,
+                    'total_pct': total_cost_pct,
+                    'source': cost_estimate.source,
+                    'source_id': cost_estimate.source_id,
+                    'source_timestamp': cost_estimate.source_timestamp,
+                    'confidence': cost_estimate.confidence,
+                    'truth_status': cost_estimate.truth_status,
+                    'generated_values': False,
                 }
-            
+                logger.debug(f"💰 Dynamic cost: {total_cost_pct:.3f}% (source={cost_estimate.source}, confidence={cost_estimate.confidence:.2f})")
+            except Exception as exc:
+                safe_print(f'   PRE-EXECUTION NO_DATA: cost evidence unavailable: {type(exc).__name__}')
+                return False
+
             net_expected_usd = opp.expected_pnl_usd - (opp.from_value_usd * total_cost_pct / 100)
             net_expected_pct = (opp.expected_pnl_pct * 100) - total_cost_pct
-
-            opp.alpaca_fee_pct = cost_metrics.get("fee_pct", 0.0)
-            opp.alpaca_slippage_pct = cost_metrics.get("slippage_pct", 0.0)
-            opp.alpaca_spread_pct = cost_metrics.get("spread_pct", 0.0)
+            opp.alpaca_fee_pct = cost_metrics['fee_pct']
+            opp.alpaca_slippage_pct = cost_metrics['slippage_pct']
+            opp.alpaca_spread_pct = cost_metrics['spread_pct']
             opp.alpaca_total_cost_pct = total_cost_pct
             opp.alpaca_net_expected_usd = net_expected_usd
-
-            # 📊 Record net estimate distribution
             self.run_metrics.record_net_estimate(net_expected_pct)
-            
-            cost_source = cost_metrics.get('source', 'unknown')
-            safe_print(
-                f"   🎲 MONTE CARLO: {cost_source} {total_cost_pct:.2f}% cost | "
-                f"net est ${net_expected_usd:+.4f} ({net_expected_pct:+.2f}%)"
-            )
 
-            # 🚫 ULTIMATE LOSS PREVENTION: Check if we're already bleeding!
-            # Don't compound losses - if significantly underwater, STOP trading until positions recover!
             try:
-                if self.alpaca:
-                    positions = self.alpaca.get_positions()
-                    total_unrealized_pl = sum(float(p.get('unrealized_pl', 0)) for p in positions)
-                    if total_unrealized_pl < -25.00:  # Only stop if $25+ underwater (was $1.00 - blocked everything!)
-                        safe_print(
-                            f"   🚫 POSITIONS DEEPLY UNDERWATER: ${total_unrealized_pl:.4f} unrealized loss. "
-                            f"Pausing new entries until positions recover."
-                        )
-                        return False
-                    elif total_unrealized_pl < 0:
-                        safe_print(f"   📊 Positions slightly underwater: ${total_unrealized_pl:.4f} - continuing to trade (normal volatility)")
-            except Exception:
-                pass  # If check fails, continue to safety gate
+                positions = self.alpaca.get_positions()
+                if not isinstance(positions, list):
+                    raise ValueError('positions receipt is not a list')
+                unrealized_values = []
+                for position in positions:
+                    if not isinstance(position, dict) or 'unrealized_pl' not in position:
+                        raise ValueError('position receipt missing unrealized_pl')
+                    observed_pl = self._finite_observation(position.get('unrealized_pl'))
+                    if observed_pl is None:
+                        raise ValueError('position receipt has invalid unrealized_pl')
+                    unrealized_values.append(observed_pl)
+                total_unrealized_pl = sum(unrealized_values)
+            except Exception as exc:
+                safe_print(
+                    f'   PRE-EXECUTION NO_DATA: Alpaca position evidence unavailable: {type(exc).__name__}'
+                )
+                return False
+            if total_unrealized_pl < -25.00:
+                safe_print(
+                    f'   POSITIONS DEEPLY UNDERWATER: ${total_unrealized_pl:.4f}; new entry denied'
+                )
+                return False
 
             if net_expected_usd < self.alpaca_min_net_profit_usd or net_expected_pct < self.alpaca_min_net_profit_pct:
-                self.run_metrics.record_candidate(passed_preexec=True, passed_mc=False, skip_reason=f"net_below_threshold")
-                safe_print(f"   🛡️ MONTE CARLO: Net ${net_expected_usd:+.4f} ({net_expected_pct:+.2f}%) < required {self.alpaca_min_net_profit_pct:.2f}% - SKIPPING")
-                safe_print(f"      Required: net ≥ {self.alpaca_min_net_profit_pct:.2f}% or net ≥ ${self.alpaca_min_net_profit_usd:.3f}")
+                self.run_metrics.record_candidate(
+                    passed_preexec=True, passed_mc=False, skip_reason='net_below_threshold'
+                )
                 return False
-            
-            # 🎲❄️ MONTE CARLO SNOWBALL APPROVED - EXECUTE ON ALPACA!
             self.run_metrics.record_candidate(passed_preexec=True, passed_mc=True)
-            safe_print(f"\n   🎲❄️ MONTE CARLO SNOWBALL APPROVED! ❄️🎲")
-            safe_print(f"   ├── Net Profit: ${net_expected_usd:+.4f} ({net_expected_pct:+.2f}%)")
-            safe_print(f"   ├── Mode: One trade → Hold → Roll profits")
-            safe_print(f"   └── Executing on ALPACA... 🦙🚀")
-            
-            # Execute directly on Alpaca
+
             path = self.alpaca.find_conversion_path(opp.from_asset, opp.to_asset)
-            if not path:
-                safe_print(f"   ⚠️ No conversion path found from {opp.from_asset} to {opp.to_asset}")
+            if not isinstance(path, list) or not path:
                 return False
-            
-            # 🔍 ALPACA PRE-FLIGHT CHECK: Verify minimums for EACH step
-            # Alpaca has different minimums per crypto asset
-            ALPACA_MIN_NOTIONAL = 1.0  # Alpaca typically has $1 minimum
-            ALPACA_MIN_QTY = {
-                'BTC': 0.0001,    # ~$10 at current prices
-                'ETH': 0.001,     # ~$3 at current prices
-                'SOL': 0.01,      # ~$2 at current prices
-                'DOGE': 1.0,      # ~$0.30 at current prices
-                'SHIB': 100000.0, # Fractions of a cent
-                'PEPE': 100000.0, # Fractions of a cent
-                'AVAX': 0.01,     # ~$0.40 at current prices
-                'LINK': 0.1,      # ~$2 at current prices
-                'DOT': 0.1,       # ~$0.70 at current prices
-                'AAVE': 0.001,    # ~$0.16 at current prices
-            }
-            
             for step in path:
-                pair = step.get('pair', '')
-                # Alpaca pairs are like 'BTC/USD'
-                base_asset = pair.split('/')[0] if '/' in pair else opp.from_asset
-                
-                # Check minimum quantity for this asset
-                min_qty = ALPACA_MIN_QTY.get(base_asset.upper(), 0.0001)  # Default very small
-                
-                # For selling, check if we have enough of the from_asset
-                if step.get('side') == 'sell' and opp.from_amount < min_qty:
-                    safe_print(f"   ⚠️ Qty {opp.from_amount:.6f} < min {min_qty:.6f} for {pair}")
-                    safe_print(f"   💡 Need {min_qty:.6f} {base_asset} minimum")
+                if (
+                    not isinstance(step, dict)
+                    or not step.get('pair')
+                    or str(step.get('side') or '').lower() not in {'buy', 'sell'}
+                ):
                     return False
-                
-                # Check minimum notional value - Use $1.50 buffer for safety!
-                ALPACA_MIN_NOTIONAL_SAFE = 0.50  # $0.50 minimum (reduced from $1.50) to avoid edge cases
-                if opp.from_value_usd < ALPACA_MIN_NOTIONAL_SAFE:
-                    safe_print(f"   ⚠️ Value ${opp.from_value_usd:.2f} < min notional ${ALPACA_MIN_NOTIONAL_SAFE:.2f}")
-                    safe_print(f"   💡 Need ${ALPACA_MIN_NOTIONAL_SAFE:.2f} minimum to trade safely on Alpaca")
-                    return False
-                
-                # 🛡️ 2-HOP SAFETY: Check if we have enough for BOTH legs!
-                if len(path) >= 2:
-                    per_leg_value = opp.from_value_usd * 0.95 / 2  # After 95% adj, split between legs
-                    if per_leg_value < 0.25:
-                        safe_print(f"   ⚠️ 2-hop trade needs $0.50+ (each leg gets ~${per_leg_value:.2f})")
-                        safe_print(f"   💡 Value ${opp.from_value_usd:.2f} too small for 2-hop")
-                        return False
-            
-            # Show the path
-            for step in path:
-                safe_print(f"   📍 Path: {step['description']} via {step['pair']}")
-            
-            # Execute the conversion
+
+            submission_attempted = True
             result = self.alpaca.convert_crypto(
                 from_asset=opp.from_asset,
                 to_asset=opp.to_asset,
-                amount=opp.from_amount
+                amount=opp.from_amount,
             )
-            
-            if result.get('error'):
-                safe_print(f"   ❌ Conversion error: {result['error']}")
-                self._record_failure(opp)
+            if not isinstance(result, dict):
+                self._mark_reconciliation_required(
+                    opp, 'alpaca', 'non-dictionary response after conversion submission'
+                )
                 return False
-            
-            # Check results
-            trades = result.get('trades', [])
-            if isinstance(trades, list):
-                success_count = sum(1 for t in trades if isinstance(t, dict) and t.get('status') == 'success')
-                if success_count > 0:
-                    # Calculate actual bought amount from the last trade
-                    last_trade = trades[-1]
-                    buy_amount = 0.0
-                    if last_trade.get('status') == 'success':
-                        res = last_trade.get('result', {})
-                        buy_amount = float(res.get('qty', 0.0)) # Alpaca uses 'qty'
-                    
-                    # Fallback if qty is missing or 0
-                    if buy_amount == 0.0:
-                         # Estimate based on price
-                         to_price = self.prices.get(opp.to_asset, 0)
-                         if to_price > 0:
-                             buy_amount = opp.from_value_usd / to_price
-                    
-                    safe_print(f"   ✅ Conversion complete! {success_count} trades executed. Bought {buy_amount:.6f} {opp.to_asset}")
-                    
-                    # ⏱️ Record entry time for minimum hold enforcement
-                    self.position_entry_times[opp.to_asset.upper()] = time.time()
-                    safe_print(f"   ⏱️ Position entered at {time.strftime('%H:%M:%S')} - will hold minimum {self.min_hold_time_seconds:.0f}s")
-                    
-                    # 🦙 Optional OCO exits to capture profit + protect downside
-                    self._alpaca_place_exit_orders(opp.to_asset, buy_amount)
-
-                    # 🔍 VALIDATE ORDER EXECUTION
-                    validation = self._validate_order_execution(trades, opp, 'alpaca')
-                    verification = self._verify_profit_math(validation, opp, buy_amount)
-                    self._print_order_validation(validation, verification, opp)
-                    
-                    self._record_conversion(opp, buy_amount, validation, verification)
-                    return True
-                else:
-                    safe_print(f"   ❌ No successful trades in conversion")
-                    self._record_failure(opp)
-            elif result.get('dryRun'):
-                safe_print(f"   🔵 DRY RUN: Would convert via {len(path)} trades")
-                return True
-            else:
-                safe_print(f"   ✅ Conversion result: {result}")
-                # Estimate amount for non-standard result
-                to_price = self.prices.get(opp.to_asset, 0)
-                buy_amount = opp.from_value_usd / to_price if to_price > 0 else 0
-                self._record_conversion(opp, buy_amount)
-                return True
-                
-        except Exception as e:
-            logger.error(f"❌ Alpaca conversion error: {e}")
-            safe_print(f"   ❌ Error: {e}")
-            self._record_failure(opp)
-        return False
-
-    # ════════════════════════════════════════════════════════════════════════════
-    # 🌐 MULTI-EXCHANGE EXECUTION ROUTER
-    # ════════════════════════════════════════════════════════════════════════════
-    
-    def _execute_on_exchange(self, exchange: str, opp, net_expected_usd: float, cost_metrics: Dict) -> bool:
-        """
-        🌐 EXECUTE TRADE ON TARGET EXCHANGE
-        
-        Routes Alpaca-verified trades to other exchanges for execution.
-        Supports: binance, kraken, capital, coinbase
-        
-        Args:
-            exchange: Target exchange name
-            opp: Opportunity object with trade details
-            net_expected_usd: Alpaca-verified net profit
-            cost_metrics: Cost breakdown from Alpaca verification
-        
-        Returns:
-            bool: True if execution successful
-        """
-        exchange = exchange.lower()
-        safe_print(f"\n   🌐═══════════════════════════════════════════════════════════════")
-        safe_print(f"   🌐 MULTI-EXCHANGE EXECUTION: {exchange.upper()}")
-        safe_print(f"   🌐═══════════════════════════════════════════════════════════════")
-        safe_print(f"   📊 Trade: {opp.from_asset} → {opp.to_asset}")
-        safe_print(f"   💰 Amount: {opp.from_amount:.6f} ({opp.from_asset}) = ${opp.from_value_usd:.2f}")
-        safe_print(f"   ✅ Alpaca-verified profit: ${net_expected_usd:+.4f}")
-        
-        try:
-            # Get appropriate client
-            client = None
-            if exchange == 'binance' and hasattr(self, 'binance_client') and self.binance_client:
-                client = self.binance_client
-            elif exchange == 'kraken' and hasattr(self, 'kraken_client') and self.kraken_client:
-                client = self.kraken_client
-            elif exchange == 'capital' and hasattr(self, 'capital_client') and self.capital_client:
-                client = self.capital_client
-            elif exchange == 'coinbase' and hasattr(self, 'coinbase_client') and self.coinbase_client:
-                client = self.coinbase_client
-            
-            if not client:
-                safe_print(f"   ⚠️ {exchange.upper()} client not available")
-                # Try next exchange in priority
-                return self._try_next_exchange(opp, net_expected_usd, cost_metrics, exclude=[exchange])
-            
-            # Check if exchange has balance for this trade
-            try:
-                balance = client.get_balance()
-                from_balance = float(balance.get(opp.from_asset, 0))
-                if from_balance < opp.from_amount:
-                    safe_print(f"   ⚠️ {exchange.upper()} insufficient balance: {from_balance:.6f} < {opp.from_amount:.6f}")
-                    return self._try_next_exchange(opp, net_expected_usd, cost_metrics, exclude=[exchange])
-            except Exception as e:
-                logger.warning(f"Balance check failed for {exchange}: {e}")
-            
-            # Format symbol for exchange
-            symbol = self._format_symbol_for_exchange(opp.from_asset, opp.to_asset, exchange)
-            safe_print(f"   🎯 Symbol: {symbol}")
-            
-            # Execute trade
-            # 🚨 LOSS PREVENTION GATE: Check Alpaca position P&L before selling
-            if exchange.lower() == 'alpaca' and opp.from_asset != 'USD':
-                # This is a SELL order (crypto→USD) - check if position is at unrealized loss
-                loss_prevention_passed, loss_reason = self._check_alpaca_loss_prevention(opp.from_asset, opp.from_amount)
-                if not loss_prevention_passed:
-                    safe_print(f"   🚨 LOSS PREVENTION BLOCKED SELL!")
-                    safe_print(f"   ├── Asset: {opp.from_asset}")
-                    safe_print(f"   ├── Reason: {loss_reason}")
-                    safe_print(f"   └── Would realize loss - trade rejected!")
-                    
-                    # Record rejection for learning
-                    if hasattr(self, 'barter_matrix'):
-                        self.barter_matrix.record_preexec_rejection(
-                            opp.from_asset, opp.to_asset,
-                            f'loss_prevention: {loss_reason}',
-                            opp.from_value_usd
-                        )
-                    return False
-            
-            if hasattr(client, 'convert_crypto'):
-                # Use convert if available (like Alpaca)
-                result = client.convert_crypto(opp.from_asset, opp.to_asset, opp.from_amount)
-            elif exchange == 'kraken' and hasattr(client, 'place_margin_order'):
-                # ══════════════════════════════════════════════════════════════
-                # 🐙💪 KRAKEN MARGIN EXECUTION — Use leverage when available!
-                # The margin methods existed but were NEVER called.
-                # Now we use 2x leverage on confirmed trades to amplify returns.
-                # Safety: Only use margin when free_margin > trade value.
-                # ══════════════════════════════════════════════════════════════
-                use_margin = False
-                margin_leverage = 2  # Conservative 2x default
-                
-                # 💷⚡ PROFIT GOAL: Boost leverage based on aggressiveness
-                goal_leverage_boost = 2
-                goal_wants_margin = False
-                if hasattr(self, 'profit_goal') and self.profit_goal:
-                    goal_leverage_boost = self.profit_goal.get_margin_leverage_boost()
-                    goal_wants_margin = self.profit_goal.should_use_margin()
-                
-                try:
-                    pair_lev = client.get_pair_leverage(symbol)
-                    if pair_lev.get('margin_supported'):
-                        # Check available leverage — use goal-driven target
-                        avail_buy = pair_lev.get('leverage_buy', [])
-                        avail_sell = pair_lev.get('leverage_sell', [])
-                        avail = avail_sell if opp.from_asset != 'USD' else avail_buy
-                        
-                        # Pick best leverage up to goal target
-                        best_lev = 0
-                        for lev in sorted(avail):
-                            if lev <= goal_leverage_boost:
-                                best_lev = lev
-                        if best_lev >= 2:
-                            margin_leverage = best_lev
-                        
-                        if best_lev >= 2 or (goal_wants_margin and avail):
-                            # Check free margin on account
-                            trade_bal = client.get_trade_balance()
-                            free_margin = trade_bal.get('free_margin', 0)
-                            required_margin = opp.from_value_usd / margin_leverage
-                            
-                            # 💷⚡ Relax buffer when aggressiveness is high
-                            margin_buffer = 1.2 if not goal_wants_margin else 1.05
-                            
-                            if free_margin >= required_margin * margin_buffer:
-                                use_margin = True
-                                safe_print(f"   🐙💪 KRAKEN MARGIN: {margin_leverage}x leverage (goal-driven)")
-                                safe_print(f"      Free margin: ${free_margin:.2f}")
-                                safe_print(f"      Required: ${required_margin:.2f}")
-                                safe_print(f"      Effective position: ${opp.from_value_usd * margin_leverage:.2f}")
-                            else:
-                                safe_print(f"   🐙 Margin available but insufficient ({free_margin:.2f} < {required_margin*margin_buffer:.2f})")
-                except Exception as e:
-                    logger.debug(f"Kraken margin check: {e}")
-                
-                if use_margin:
-                    side = 'sell' if opp.from_asset != 'USD' else 'buy'
-                    qty = opp.from_amount
-                    # Calculate take-profit and stop-loss prices for margin position
-                    entry_price = self.prices.get(opp.from_asset if side == 'sell' else opp.to_asset, 0)
-                    tp_price = None
-                    sl_price = None
-                    if entry_price > 0:
-                        if side == 'sell':
-                            # Short: TP below, SL above
-                            tp_price = entry_price * 0.99   # 1% take profit
-                            sl_price = entry_price * 1.015   # 1.5% stop loss
-                        else:
-                            # Long: TP above, SL below
-                            tp_price = entry_price * 1.01    # 1% take profit
-                            sl_price = entry_price * 0.985   # 1.5% stop loss
-                    
-                    result = client.place_margin_order(
-                        symbol=symbol,
-                        side=side,
-                        quantity=qty,
-                        leverage=margin_leverage,
-                        order_type='market',
-                        take_profit=tp_price,
-                        stop_loss=sl_price
+            if result.get('dryRun'):
+                self._mark_not_submitted(opp, 'alpaca_client_dry_run')
+                return False
+            if result.get('error'):
+                partial_results = result.get('partial_results')
+                if isinstance(partial_results, list) and partial_results:
+                    partial_validation = self._validate_order_execution(
+                        partial_results, opp, 'alpaca'
                     )
-                    safe_print(f"   🐙✅ MARGIN ORDER PLACED: {margin_leverage}x {side} {qty:.6f} {symbol}")
+                    self._mark_reconciliation_required(
+                        opp,
+                        'alpaca',
+                        f"partial conversion: {result.get('error')}",
+                        partial_validation,
+                    )
                 else:
-                    # Fallback to spot order
-                    result = client.place_market_order(symbol, 'sell', quantity=opp.from_amount)
-            elif hasattr(client, 'place_market_order'):
-                # Standard trade execution (Kraken/Binance use place_market_order)
-                result = client.place_market_order(symbol, 'sell', quantity=opp.from_amount)
-            elif hasattr(client, 'execute_trade'):
-                # Alpaca async execute_trade — must handle coroutine
-                import asyncio
-                import inspect
-                coro = client.execute_trade(symbol, 'sell', opp.from_amount)
-                if inspect.isawaitable(coro):
-                    try:
-                        loop = asyncio.get_running_loop()
-                        import concurrent.futures
-                        with concurrent.futures.ThreadPoolExecutor() as pool:
-                            result = loop.run_in_executor(pool, asyncio.run, coro)
-                    except RuntimeError:
-                        result = asyncio.run(coro)
-                else:
-                    result = coro
-            else:
-                safe_print(f"   ❌ {exchange.upper()} client missing execute method")
+                    self._mark_reconciliation_required(
+                        opp,
+                        'alpaca',
+                        f"ambiguous response after conversion call: {result.get('error')}",
+                    )
                 return False
-            
-            # Check result
+            trades = result.get('trades')
+            if isinstance(trades, list) and trades:
+                return self._finalize_provider_execution(opp, trades, 'alpaca')
+            self._mark_reconciliation_required(
+                opp, 'alpaca', 'nonstandard response after conversion submission'
+            )
+            return False
+        except Exception as exc:
+            logger.error(f"Alpaca conversion error: {exc}")
+            if submission_attempted:
+                self._mark_reconciliation_required(
+                    opp, 'alpaca', f'post-submission exception: {type(exc).__name__}'
+                )
+            else:
+                self._record_failure(opp, str(exc))
+        return False
+    def _execute_on_exchange(
+        self,
+        exchange: str,
+        opp,
+        net_expected_usd: float,
+        cost_metrics: Dict,
+        exclude: Optional[List[str]] = None,
+    ) -> bool:
+        """Execute synchronously and finalize only a complete provider receipt."""
+        exchange = exchange.lower()
+        excluded = {str(name).lower() for name in (exclude or [])}
+        submission_attempted = False
+        try:
+            client = getattr(self, f'{exchange}_client', None) or getattr(self, exchange, None)
+            if client is None:
+                return self._try_next_exchange(
+                    opp, net_expected_usd, cost_metrics, exclude=sorted(excluded | {exchange})
+                )
+
+            balance = client.get_balance()
+            if not isinstance(balance, dict) or opp.from_asset not in balance:
+                return self._try_next_exchange(
+                    opp, net_expected_usd, cost_metrics, exclude=sorted(excluded | {exchange})
+                )
+            from_balance = self._finite_observation(
+                balance.get(opp.from_asset), nonnegative=True
+            )
+            if from_balance is None or from_balance < opp.from_amount:
+                return self._try_next_exchange(
+                    opp, net_expected_usd, cost_metrics, exclude=sorted(excluded | {exchange})
+                )
+
+            symbol = self._format_symbol_for_exchange(
+                opp.from_asset, opp.to_asset, exchange
+            )
+            if hasattr(client, 'convert_crypto'):
+                submission_attempted = True
+                result = client.convert_crypto(
+                    opp.from_asset, opp.to_asset, opp.from_amount
+                )
+            elif hasattr(client, 'place_market_order'):
+                submission_attempted = True
+                result = client.place_market_order(
+                    symbol, 'sell', quantity=opp.from_amount
+                )
+            elif hasattr(client, 'execute_trade'):
+                if inspect.iscoroutinefunction(client.execute_trade):
+                    self._mark_not_submitted(
+                        opp, f'{exchange}_requires_async_execution_router'
+                    )
+                    return False
+                submission_attempted = True
+                result = client.execute_trade(symbol, 'sell', opp.from_amount)
+            else:
+                return self._try_next_exchange(
+                    opp, net_expected_usd, cost_metrics, exclude=sorted(excluded | {exchange})
+                )
+
+            if not isinstance(result, dict):
+                self._mark_reconciliation_required(
+                    opp, exchange, 'non-dictionary response after order submission'
+                )
+                return False
+            if result.get('dryRun'):
+                self._mark_not_submitted(opp, f'{exchange}_client_dry_run')
+                return False
+            if result.get('rejected'):
+                self._mark_not_submitted(
+                    opp, str(result.get('reason') or result.get('error') or 'provider_rejected')
+                )
+                return False
             if result.get('error'):
-                safe_print(f"   ❌ {exchange.upper()} error: {result['error']}")
-                return self._try_next_exchange(opp, net_expected_usd, cost_metrics, exclude=[exchange])
-            
-            # Success!
-            safe_print(f"   ✅ {exchange.upper()} EXECUTION SUCCESS!")
-            safe_print(f"   📋 Order: {result.get('order_id', result.get('id', 'N/A'))}")
-            
-            # Calculate bought amount
-            buy_amount = 0.0
-            to_price = self.prices.get(opp.to_asset, 0)
-            if to_price > 0:
-                buy_amount = opp.from_value_usd / to_price
-            
-            # Record the trade
-            self._record_conversion(opp, buy_amount)
-            
-            # Track position entry time
-            self.position_entry_times[opp.to_asset.upper()] = time.time()
-            safe_print(f"   ⏱️ Position entered at {time.strftime('%H:%M:%S')}")
-            
-            return True
-            
-        except Exception as e:
-            logger.error(f"❌ {exchange} execution error: {e}")
-            safe_print(f"   ❌ {exchange.upper()} error: {e}")
-            return self._try_next_exchange(opp, net_expected_usd, cost_metrics, exclude=[exchange])
-    
+                self._mark_reconciliation_required(
+                    opp, exchange, f"ambiguous response after order call: {result.get('error')}"
+                )
+                return False
+            trades = result.get('trades')
+            if isinstance(trades, list) and trades:
+                return self._finalize_provider_execution(opp, trades, exchange)
+            side = str(
+                result.get('side')
+                or ('buy' if opp.from_asset.upper() == 'USD' else 'sell')
+            ).lower()
+            return self._finalize_provider_execution(
+                opp,
+                [{
+                    'trade': {'pair': symbol, 'side': side},
+                    'result': result,
+                    'status': 'success',
+                }],
+                exchange,
+            )
+        except Exception as exc:
+            logger.error(f"{exchange} execution error: {exc}")
+            if submission_attempted:
+                self._mark_reconciliation_required(
+                    opp, exchange, f'post-submission exception: {type(exc).__name__}'
+                )
+                return False
+            return self._try_next_exchange(
+                opp, net_expected_usd, cost_metrics, exclude=sorted(excluded | {exchange})
+            )
     def _try_next_exchange(self, opp, net_expected_usd: float, cost_metrics: Dict, exclude: List[str]) -> bool:
         """Try next exchange in priority order, excluding failed ones."""
         exec_order = os.getenv("EXCH_EXEC_ORDER", "binance,kraken,capital,coinbase").split(",")
@@ -17854,7 +17863,9 @@ if __name__ == "__main__":
             if exch in exclude or exch == 'alpaca':
                 continue
             safe_print(f"   🔄 Trying next exchange: {exch.upper()}")
-            return self._execute_on_exchange(exch, opp, net_expected_usd, cost_metrics)
+            return self._execute_on_exchange(
+                exch, opp, net_expected_usd, cost_metrics, exclude=exclude
+            )
         
         safe_print(f"   ❌ All exchanges exhausted. No execution possible.")
         return False
@@ -17889,8 +17900,11 @@ if __name__ == "__main__":
         Returns: (ok: bool, reason: str)
         """
         try:
+            observed_notional = self._finite_observation(notional_usd, positive=True)
+            if observed_notional is None:
+                return False, "NO_DATA: finite positive round-trip notional is required"
             if not hasattr(self, 'barter_navigator') or self.barter_navigator is None:
-                return True, "No barter navigator available (assume path exists)"
+                return False, "NO_DATA: barter navigator is unavailable"
 
             path = self.barter_navigator.find_path(from_asset, to_asset)
             if not path or not path.hops:
@@ -17915,9 +17929,24 @@ if __name__ == "__main__":
                     if not live_depth_check:
                         return False, f"No price/ticker for pair {pair}"
                 else:
-                    # Check volume heuristic
-                    vol = ticker.get('volume', 0) or ticker.get('quoteVolume', 0)
-                    if vol and vol * (ticker.get('price', 1) or 1) < MIN_PER_LEG:
+                    base_volume = self._finite_observation(
+                        ticker.get('volume'), nonnegative=True
+                    )
+                    quote_volume = self._finite_observation(
+                        ticker.get('quoteVolume'), nonnegative=True
+                    )
+                    ticker_price = self._finite_observation(
+                        ticker.get('price'), positive=True
+                    )
+                    if quote_volume is not None:
+                        available_quote_value = quote_volume
+                    elif base_volume is not None and ticker_price is not None:
+                        available_quote_value = base_volume * ticker_price
+                    else:
+                        available_quote_value = None
+                    if available_quote_value is None and not live_depth_check:
+                        return False, f"NO_DATA: incomplete price/volume receipt for {pair}"
+                    if available_quote_value is not None and available_quote_value < MIN_PER_LEG:
                         # If low volume but live check requested, attempt orderbook depth check
                         if not live_depth_check:
                             return False, f"Insufficient volume on {pair} for ${MIN_PER_LEG} leg"
@@ -17925,49 +17954,64 @@ if __name__ == "__main__":
                 # Live orderbook depth checks per exchange (more expensive, optional)
                 if live_depth_check:
                     exchange = step.exchange
-                    per_leg = notional_usd / max(1, len(legs))
+                    per_leg = observed_notional / len(legs)
 
                     # Enforce ALPACA_ONLY restriction: if configured, disallow paths that use other exchanges
                     if getattr(self, 'alpaca_only', False) and exchange and exchange.lower() != 'alpaca':
                         return False, f"ALPACA_ONLY active - path uses {exchange} which is disallowed"
 
-                    # If Alpaca and fee tracker available, use it
                     try:
+                        ob = None
                         if exchange and exchange.lower() == 'alpaca' and hasattr(self, 'alpaca_fee_tracker'):
                             ob = self.alpaca_fee_tracker.get_orderbook(pair)
-                            if ob and isinstance(ob, dict):
-                                # Expect 'bids' and 'asks' with [[price, size], ...]
-                                bids = ob.get('bids', []) or []
-                                asks = ob.get('asks', []) or []
-                                # Compute cumulative quote value available on each side
-                                cum_bid_value = sum(float(p) * float(s) for p, s in bids if p and s)
-                                cum_ask_value = sum(float(p) * float(s) for p, s in asks if p and s)
-                                if cum_bid_value < per_leg and cum_ask_value < per_leg:
-                                    return False, f"Insufficient orderbook depth on {pair}: bids=${cum_bid_value:.2f} asks=${cum_ask_value:.2f} < per-leg ${per_leg:.2f}"
-                        # For other exchanges we may have clients exposing get_order_book/get_orderbook
                         elif exchange and hasattr(self, exchange.lower()):
                             client = getattr(self, exchange.lower())
                             if hasattr(client, 'get_order_book'):
                                 ob = client.get_order_book(pair, limit=20)
-                                if ob:
-                                    bids = ob.get('bids', []) or []
-                                    asks = ob.get('asks', []) or []
-                                    cum_bid_value = sum(float(p) * float(s) for p, s in bids if p and s)
-                                    cum_ask_value = sum(float(p) * float(s) for p, s in asks if p and s)
-                                    if cum_bid_value < per_leg and cum_ask_value < per_leg:
-                                        return False, f"Insufficient orderbook depth on {pair} ({exchange}): bids=${cum_bid_value:.2f} asks=${cum_ask_value:.2f}" 
+                            elif hasattr(client, 'get_orderbook'):
+                                ob = client.get_orderbook(pair)
+                        if not isinstance(ob, dict):
+                            return False, f"NO_DATA: orderbook receipt unavailable for {pair}"
+                        bids = ob.get('bids')
+                        asks = ob.get('asks')
+                        if not isinstance(bids, list) or not bids or not isinstance(asks, list) or not asks:
+                            return False, f"NO_DATA: incomplete orderbook sides for {pair}"
+
+                        def observed_depth(rows: List[Any]) -> Optional[float]:
+                            total = 0.0
+                            for row in rows:
+                                if not isinstance(row, (list, tuple)) or len(row) < 2:
+                                    return None
+                                price = self._finite_observation(row[0], positive=True)
+                                size = self._finite_observation(row[1], positive=True)
+                                if price is None or size is None:
+                                    return None
+                                total += price * size
+                            return total if math.isfinite(total) else None
+
+                        cum_bid_value = observed_depth(bids)
+                        cum_ask_value = observed_depth(asks)
+                        if cum_bid_value is None or cum_ask_value is None:
+                            return False, f"NO_DATA: invalid orderbook rows for {pair}"
+                        if cum_bid_value < per_leg or cum_ask_value < per_leg:
+                            return False, (
+                                f"Insufficient two-sided orderbook depth on {pair}: "
+                                f"bids=${cum_bid_value:.2f} asks=${cum_ask_value:.2f} "
+                                f"< per-leg ${per_leg:.2f}"
+                            )
                     except Exception as e:
-                        logger.debug(f"Orderbook depth check skipped for {pair} on {exchange}: {e}")
+                        logger.debug(f"Orderbook depth check failed for {pair} on {exchange}: {e}")
+                        return False, f"NO_DATA: orderbook depth check failed ({type(e).__name__})"
 
             # Check aggregate notional is reasonable for multi-leg split
-            per_leg = notional_usd / max(1, len(legs))
+            per_leg = observed_notional / len(legs)
             if per_leg < MIN_PER_LEG:
                 return False, f"Notional ${notional_usd:.2f} too small for {len(legs)}-leg path (per-leg ${per_leg:.2f})"
 
             return True, "Round-trip available"
         except Exception as e:
             logger.debug(f"Round-trip availability check error: {e}")
-            return True, f"Checker error ({e}) - assume available"
+            return False, f"NO_DATA: round-trip checker failed ({type(e).__name__})"
 
     # ════════════════════════════════════════════════════════════════════════════
     # 🔍 ORDER VALIDATION & PROFIT VERIFICATION SYSTEM
@@ -17992,29 +18036,39 @@ if __name__ == "__main__":
             - realized_pnl: Validated P&L
             - validation_errors: List of any issues
         """
+        received_at = time.time()
         validation = {
-            'valid': True,
+            'valid': False,
+            'receipt_complete': False,
+            'execution_state': 'reconciliation_required',
+            'truth_status': 'no_data',
+            'generated_values': False,
             'order_ids': [],
-            'total_sold': 0.0,
-            'total_bought': 0.0,
-            'avg_sell_price': 0.0,
-            'avg_buy_price': 0.0,
-            'total_fees': 0.0,
-            'realized_pnl': 0.0,
+            'fill_ids': [],
+            'legs': [],
+            'total_sold': None,
+            'total_bought': None,
+            'avg_sell_price': None,
+            'avg_buy_price': None,
+            'total_fees': None,
+            'realized_pnl': None,
+            'source_debited_amount': None,
+            'target_received_amount': None,
+            'source_value_usd': None,
+            'target_value_usd': None,
+            'notional_usd': None,
+            'provider_timestamps': [],
+            'source_id': None,
+            'source_timestamp': None,
             'validation_errors': [],
             'exchange': exchange,
-            'timestamp': time.time(),
+            'received_at': received_at,
+            'quote_evidence': getattr(opp, 'execution_quote_evidence', None),
         }
         
         if not trades:
-            validation['valid'] = False
             validation['validation_errors'].append("No trades to validate")
             return validation
-        
-        sell_volume = 0.0
-        sell_value = 0.0
-        buy_volume = 0.0
-        buy_value = 0.0
         
         for i, trade in enumerate(trades):
             step_num = i + 1
@@ -18023,11 +18077,19 @@ if __name__ == "__main__":
                 validation['validation_errors'].append(f"Step {step_num}: Invalid trade format")
                 continue
             
-            status = trade.get('status', '')
-            result = trade.get('result', {})
-            trade_info = trade.get('trade', {})
-            
-            # Extract order ID based on exchange
+            result = trade.get('result')
+            trade_info = trade.get('trade')
+            if not isinstance(result, dict) or not isinstance(trade_info, dict):
+                validation['validation_errors'].append(
+                    f"Step {step_num}: Missing provider receipt or trade metadata"
+                )
+                continue
+            if result.get('dryRun') or trade.get('dryRun'):
+                validation['execution_state'] = 'not_submitted'
+                validation['validation_errors'].append(f"Step {step_num}: Dry run is not submitted")
+                continue
+
+            status = str(trade.get('status') or '').lower()
             order_id = self._extract_order_id(result, exchange)
             if order_id:
                 validation['order_ids'].append({
@@ -18037,84 +18099,175 @@ if __name__ == "__main__":
                     'pair': trade_info.get('pair', ''),
                     'side': trade_info.get('side', ''),
                 })
-            
+            else:
+                validation['validation_errors'].append(f"Step {step_num}: Missing provider order ID")
+
             if status != 'success':
-                validation['valid'] = False
                 error_msg = trade.get('error', 'Unknown error')
                 validation['validation_errors'].append(f"Step {step_num}: {error_msg}")
                 continue
-            
-            # Validate fill data
+            if not self._provider_status_is_filled(result):
+                validation['validation_errors'].append(
+                    f"Step {step_num}: Provider status is not terminal-filled"
+                )
+
             executed_qty, cumm_quote_qty, exec_price = self._extract_execution_values(
-                result,
-                exchange,
-                trade_info.get('side', 'buy'),
+                result, exchange, trade_info.get('side', 'buy')
             )
-            
-            side = trade_info.get('side', 'buy')
-            
-            if side == 'sell':
-                sell_volume += executed_qty
-                sell_value += cumm_quote_qty
+            if executed_qty is None:
+                validation['validation_errors'].append(f"Step {step_num}: Missing finite filled quantity")
+            execution_price_derived = False
+            if exec_price is None and executed_qty is not None and cumm_quote_qty is not None:
+                exec_price = cumm_quote_qty / executed_qty
+                execution_price_derived = True
+            if exec_price is None:
+                validation['validation_errors'].append(f"Step {step_num}: Missing finite fill price")
+            quote_value_derived = False
+            if cumm_quote_qty is None and executed_qty is not None and exec_price is not None:
+                cumm_quote_qty = executed_qty * exec_price
+                quote_value_derived = True
+            if cumm_quote_qty is None or not math.isfinite(cumm_quote_qty) or cumm_quote_qty <= 0:
+                validation['validation_errors'].append(f"Step {step_num}: Missing finite quote quantity")
+
+            provider_timestamp = self._extract_provider_timestamp(result, exchange)
+            if provider_timestamp is None:
+                validation['validation_errors'].append(f"Step {step_num}: Missing provider timestamp")
             else:
-                buy_volume += executed_qty
-                buy_value += cumm_quote_qty
-            
-            # Extract and sum fees
-            fees = self._extract_fees(result, exchange)
-            validation['total_fees'] += fees
-            
-            # Verify the fill makes sense
-            if executed_qty <= 0:
-                validation['validation_errors'].append(f"Step {step_num}: Zero executed quantity")
+                receipt_age = received_at - provider_timestamp
+                if receipt_age > 900 or receipt_age < -300:
+                    validation['validation_errors'].append(
+                        f"Step {step_num}: Provider receipt is stale or future-dated"
+                    )
+                validation['provider_timestamps'].append(provider_timestamp)
+
+            fees = self._extract_fees(result, exchange, trade_info, exec_price)
+            if fees is None:
+                validation['validation_errors'].append(f"Step {step_num}: Missing observed fee amount")
+
+            fill_ids = []
+            fills = result.get('fills')
+            if not isinstance(fills, list) or not fills:
+                validation['validation_errors'].append(
+                    f"Step {step_num}: Missing provider fill receipts"
+                )
+            else:
+                for fill_index, fill in enumerate(fills, start=1):
+                    if not isinstance(fill, dict):
+                        validation['validation_errors'].append(
+                            f"Step {step_num} fill {fill_index}: Invalid fill receipt"
+                        )
+                        continue
+                    fill_id = fill.get('tradeId') or fill.get('id') or fill.get('fill_id')
+                    normalized_fill_id = str(fill_id).strip() if fill_id is not None else ''
+                    if not normalized_fill_id or normalized_fill_id.lower() in {
+                        'unknown', 'none', 'null', 'n/a', 'na'
+                    }:
+                        validation['validation_errors'].append(
+                            f"Step {step_num} fill {fill_index}: Missing provider fill ID"
+                        )
+                    else:
+                        fill_ids.append(normalized_fill_id)
+                        validation['fill_ids'].append(normalized_fill_id)
+
+            side = str(trade_info.get('side') or '').lower()
+            if side not in {'buy', 'sell'}:
+                validation['validation_errors'].append(f"Step {step_num}: Invalid order side")
+            validation['legs'].append({
+                'step': step_num,
+                'pair': trade_info.get('pair'),
+                'side': side,
+                'order_id': str(order_id) if order_id is not None else None,
+                'fill_ids': fill_ids,
+                'provider_fills': fills if isinstance(fills, list) else [],
+                'executed_qty': executed_qty,
+                'quote_qty': cumm_quote_qty,
+                'quote_value_derived': quote_value_derived,
+                'execution_price': exec_price,
+                'execution_price_derived': execution_price_derived,
+                'fee_usd': fees,
+                'provider_timestamp': provider_timestamp,
+            })
         
         # Calculate averages
-        if sell_volume > 0:
-            validation['avg_sell_price'] = sell_value / sell_volume if sell_value > 0 else 0
-            validation['total_sold'] = sell_volume
-        
-        if buy_volume > 0:
-            validation['avg_buy_price'] = buy_value / buy_volume
-            validation['total_bought'] = buy_volume
         
         # For conversions, the "bought" amount is what we end up with
         # If we did sell → buy, the buy_volume is our result
         # If we did just one side, use that
-        if buy_volume > 0:
-            validation['final_amount'] = buy_volume
-        elif sell_value > 0:
             # We sold and received quote currency (the sell_value IS what we received)
-            validation['final_amount'] = sell_value
-        elif sell_volume > 0 and validation['avg_sell_price'] > 0:
             # FALLBACK: When sell_value (cummulativeQuoteQty) is 0 (like with Kraken SELL orders)
             # Calculate expected received amount from sell_volume * avg_sell_price
-            validation['final_amount'] = sell_volume * validation['avg_sell_price']
-        else:
-            validation['final_amount'] = 0
-        
+        if validation['legs']:
+            first_leg, last_leg = validation['legs'][0], validation['legs'][-1]
+            source_debit = first_leg.get('executed_qty') if first_leg.get('side') == 'sell' else first_leg.get('quote_qty')
+            target_received = last_leg.get('quote_qty') if last_leg.get('side') == 'sell' else last_leg.get('executed_qty')
+            validation.update({
+                'source_debited_amount': source_debit,
+                'target_received_amount': target_received,
+                'total_sold': source_debit,
+                'total_bought': target_received,
+                'final_amount': target_received,
+            })
+            sell_legs = [leg for leg in validation['legs'] if leg.get('side') == 'sell']
+            buy_legs = [leg for leg in validation['legs'] if leg.get('side') == 'buy']
+            validation['avg_sell_price'] = sell_legs[0].get('execution_price') if sell_legs else None
+            validation['avg_buy_price'] = buy_legs[-1].get('execution_price') if buy_legs else None
+            observed_fees = [leg.get('fee_usd') for leg in validation['legs']]
+            if observed_fees and all(value is not None for value in observed_fees):
+                validation['total_fees'] = sum(float(value) for value in observed_fees)
+
+            usd_units = {'USD', 'USDT', 'USDC', 'BUSD', 'FDUSD', 'TUSD', 'ZUSD'}
+            if opp.from_asset.upper() in usd_units:
+                validation['source_value_usd'] = source_debit
+            if opp.to_asset.upper() in usd_units:
+                validation['target_value_usd'] = target_received
+            validation['notional_usd'] = (
+                validation['source_value_usd']
+                if validation['source_value_usd'] is not None
+                else validation['target_value_usd']
+            )
+
+        if validation['provider_timestamps']:
+            validation['source_timestamp'] = min(validation['provider_timestamps'])
+        if validation['order_ids']:
+            validation['source_id'] = ':'.join(
+                [exchange] + [str(entry['order_id']) for entry in validation['order_ids']]
+            )
+        validation['receipt_complete'] = bool(
+            not validation['validation_errors']
+            and len(validation['legs']) == len(trades)
+            and validation['source_debited_amount'] is not None
+            and validation['target_received_amount'] is not None
+            and validation['total_fees'] is not None
+            and validation['source_id']
+            and validation['source_timestamp']
+        )
+        validation['valid'] = validation['receipt_complete']
+        if validation['receipt_complete']:
+            validation['execution_state'] = 'provider_verified'
+            validation['truth_status'] = 'provider_observed'
         return validation
 
-    def _extract_execution_values(self, result: Dict, exchange: str, side: str) -> Tuple[float, float, float]:
+    def _extract_execution_values(
+        self, result: Dict, exchange: str, side: str
+    ) -> Tuple[Optional[float], Optional[float], Optional[float]]:
         """Extract executed quantity, quote value, and price from exchange results."""
-        executed_qty = 0.0
-        quote_qty = 0.0
-        exec_price = 0.0
-
         if not result:
-            return executed_qty, quote_qty, exec_price
+            return None, None, None
 
         if exchange == 'alpaca':
-            executed_qty = float(result.get('filled_qty', 0) or result.get('qty', 0) or 0)
-            exec_price = float(result.get('filled_avg_price', 0) or result.get('avg_price', 0) or result.get('price', 0) or 0)
-            quote_qty = float(result.get('filled_notional', 0) or 0)
-            if quote_qty <= 0 and executed_qty > 0 and exec_price > 0:
-                quote_qty = executed_qty * exec_price
+            executed_qty = self._finite_observation(result.get('filled_qty'), positive=True)
+            exec_price = self._finite_observation(result.get('filled_avg_price'), positive=True)
+            quote_qty = self._finite_observation(result.get('filled_notional'), positive=True)
         else:
-            executed_qty = float(result.get('executedQty', 0) or result.get('filledQty', 0) or 0)
-            quote_qty = float(result.get('cummulativeQuoteQty', 0) or result.get('quoteQty', 0) or 0)
-            exec_price = float(result.get('avgPrice', 0) or result.get('price', 0) or 0)
-            if quote_qty <= 0 and executed_qty > 0 and exec_price > 0:
-                quote_qty = executed_qty * exec_price
+            executed_qty = self._finite_observation(
+                result.get('executedQty', result.get('filledQty')), positive=True
+            )
+            quote_qty = self._finite_observation(
+                result.get('cummulativeQuoteQty', result.get('quoteQty')), positive=True
+            )
+            exec_price = self._finite_observation(
+                result.get('avgPrice', result.get('price')), positive=True
+            )
 
         return executed_qty, quote_qty, exec_price
     
@@ -18122,215 +18275,255 @@ if __name__ == "__main__":
         """Extract order ID from trade result based on exchange format."""
         if not result:
             return None
-        
+
         if exchange == 'kraken':
-            # Kraken uses 'orderId' which we set from 'txid'
-            return result.get('orderId') or result.get('txid')
+            candidate = result.get('orderId') or result.get('txid')
         elif exchange == 'binance':
-            return result.get('orderId') or result.get('clientOrderId')
+            # ``clientOrderId`` can be generated before the provider accepts an
+            # order and is therefore not proof of a provider-side submission.
+            candidate = result.get('orderId')
         elif exchange == 'alpaca':
-            return result.get('id') or result.get('order_id')
-        
-        # Fallback
-        return result.get('orderId') or result.get('order_id') or result.get('id')
+            candidate = result.get('id') or result.get('order_id')
+        else:
+            candidate = (
+                result.get('orderId') or result.get('order_id')
+                or result.get('id') or result.get('txid')
+            )
+
+        if candidate is None:
+            return None
+        normalized = str(candidate).strip()
+        if not normalized or normalized.lower() in {
+            'unknown', 'none', 'null', 'n/a', 'na', 'dry_run_id', 'dry-run-id'
+        }:
+            return None
+        return normalized
     
-    def _extract_fees(self, result: Dict, exchange: str) -> float:
-        """Extract fees from trade result based on exchange format and convert to USD."""
-        total_fees = 0.0
-        
+    def _extract_fees(
+        self,
+        result: Dict,
+        exchange: str,
+        trade_info: Optional[Dict[str, Any]] = None,
+        execution_price: Optional[float] = None,
+    ) -> Optional[float]:
+        """Return observed USD fees, or ``None`` when currency evidence is incomplete."""
+        for field_name in ('fee_usd', 'fees_usd', 'commission_usd', 'total_fee_usd'):
+            if field_name in result:
+                return self._finite_observation(result.get(field_name), nonnegative=True)
+
         if exchange == 'binance':
-            # Binance includes fills with commission and commissionAsset
-            fills = result.get('fills', [])
+            fills = result.get('fills')
+            if not isinstance(fills, list) or not fills:
+                return None
+            total_fees = 0.0
+            pair = str((trade_info or {}).get('pair') or result.get('symbol') or '').upper().replace('/', '')
+            usd_units = ('USDT', 'USDC', 'BUSD', 'FDUSD', 'TUSD', 'USD')
+            quote_asset = next((unit for unit in usd_units if pair.endswith(unit)), None)
+            base_asset = pair[:-len(quote_asset)] if quote_asset else None
             for fill in fills:
-                try:
-                    commission = float(fill.get('commission', 0))
-                    commission_asset = str(fill.get('commissionAsset', '')).upper()
-                    
-                    if commission > 0 and commission_asset:
-                        # Convert fee to USD using current prices
-                        if commission_asset in ('USD', 'USDT', 'USDC', 'BUSD'):
-                            total_fees += commission
-                        else:
-                            # Get price of commission asset
-                            asset_price = self.prices.get(commission_asset, 0)
-                            if asset_price > 0:
-                                total_fees += commission * asset_price
-                            else:
-                                # Fallback: assume small fee (0.1% of typical trade)
-                                total_fees += commission * 0.0001  # Conservative estimate
-                except (ValueError, TypeError):
-                    pass
-        elif exchange == 'kraken':
-            # Kraken fees need to be calculated from the trade
-            # Fee is typically 0.16% maker or 0.26% taker
-            executed_qty = float(result.get('executedQty', 0))
-            # Get the trade value in USD
-            avg_price = float(result.get('avgPrice', 0) or result.get('price', 0) or 0)
-            trade_value_usd = executed_qty * avg_price
-            fee_rate = 0.0026  # Assume taker (more conservative)
-            total_fees = trade_value_usd * fee_rate
-        elif exchange == 'alpaca':
-            # Alpaca includes fees differently
-            total_fees = float(result.get('commission', 0) or result.get('fee', 0) or 0)
-            if total_fees <= 0:
-                filled_notional = float(result.get('filled_notional', 0) or 0)
-                if filled_notional > 0:
-                    total_fees = filled_notional * 0.0025
-        
-        return total_fees
+                if not isinstance(fill, dict) or 'commission' not in fill:
+                    return None
+                commission = self._finite_observation(fill.get('commission'), nonnegative=True)
+                commission_asset = str(fill.get('commissionAsset') or '').upper()
+                if commission is None or not commission_asset:
+                    return None
+                if commission_asset in usd_units:
+                    total_fees += commission
+                elif base_asset and commission_asset == base_asset and execution_price is not None:
+                    total_fees += commission * execution_price
+                else:
+                    return None
+            return total_fees
+
+        if exchange == 'alpaca':
+            for field_name in ('commission', 'fee'):
+                if field_name in result:
+                    return self._finite_observation(result.get(field_name), nonnegative=True)
+            return None
+
+        if exchange == 'kraken':
+            fee_value = self._finite_observation(result.get('fee'), nonnegative=True)
+            fee_asset = str(result.get('fee_asset') or result.get('fee_currency') or '').upper()
+            if fee_value is not None and fee_asset in {'USD', 'USDT', 'USDC', 'ZUSD'}:
+                return fee_value
+            return None
+
+        fee_currency = str(
+            result.get('fee_currency')
+            or result.get('fee_asset')
+            or result.get('commissionAsset')
+            or ''
+        ).upper()
+        if fee_currency not in {'USD', 'USDT', 'USDC', 'ZUSD'}:
+            return None
+        for field_name in ('fees', 'fee', 'commission'):
+            if field_name in result:
+                return self._finite_observation(result.get(field_name), nonnegative=True)
+        return None
     
     def _verify_profit_math(self, validation: Dict, opp, buy_amount: float) -> Dict:
-        """
-        🔢 VERIFY PROFIT CALCULATION MATH
-        
-        Cross-checks our calculated P&L against actual execution data.
-        Returns verification results with any discrepancies.
-        """
+        """Verify realized PnL only from a complete exit receipt and verified cost basis."""
         verification = {
-            'valid': True,
+            'valid': False,
+            'receipt_valid': False,
+            'pnl_verified': False,
+            'pnl_status': 'no_data',
+            'truth_status': 'no_data',
+            'generated_values': False,
             'expected_pnl': opp.expected_pnl_usd,
-            'calculated_pnl': 0.0,
-            'verified_pnl': 0.0,
-            'discrepancy': 0.0,
-            'discrepancy_pct': 0.0,
+            'calculated_pnl': None,
+            'verified_pnl': None,
+            'cost_basis_usd': None,
+            'discrepancy': None,
+            'discrepancy_pct': None,
             'warnings': [],
         }
-        
-        # Get current prices for calculation
-        from_price = self.prices.get(opp.from_asset, 0)
-        to_price = self.prices.get(opp.to_asset, 0)
-        
-        if not from_price or not to_price:
-            verification['warnings'].append("Missing price data for verification")
+        if not validation or not validation.get('receipt_complete') or not validation.get('valid'):
+            verification['warnings'].append('Provider execution receipt is incomplete')
             return verification
-        
-        # Calculate P&L using our method
-        sold_value = opp.from_amount * from_price
-        bought_value = buy_amount * to_price
-        calculated_pnl = bought_value - sold_value
-        verification['calculated_pnl'] = calculated_pnl
-        
-        # Calculate P&L using actual execution data (if available)
-        if validation.get('total_sold') > 0 or validation.get('final_amount', 0) > 0 or buy_amount > 0:
-            # 🔧 FIX: Use ACTUAL EXECUTION PRICES, not current market prices!
-            # This is critical for accurate P/L calculation
-            
-            # Determine if this is a BUY or SELL order based on the conversion direction
-            # If we're converting FROM crypto TO USD, it's a SELL order
-            # If we're converting FROM USD TO crypto, it's a BUY order
-            is_sell_order = opp.from_asset != 'USD' and opp.to_asset == 'USD'
-            
-            if is_sell_order:
-                # SELL ORDER: DOGE→USD (selling crypto for USD)
-                # P&L = amount_received_USD - cost_basis_of_crypto_sold
-                amount_received_usd = validation.get('final_amount', buy_amount)  # USD received
-                crypto_sold = validation['total_sold']  # DOGE sold
-                crypto_cost_basis = crypto_sold * validation.get('avg_buy_price', 0)  # What we paid for DOGE
-                
-                verified_pnl = amount_received_usd - crypto_cost_basis - validation.get('total_fees', 0)
-            else:
-                # BUY ORDER: USD→DOGE (buying crypto with USD)
-                # P&L = value_of_crypto_bought - usd_spent
-                usd_spent = validation['total_sold'] * validation.get('avg_sell_price', 0)  # USD spent
-                crypto_bought = validation.get('final_amount', buy_amount)  # DOGE bought
-                crypto_value = crypto_bought * validation.get('avg_buy_price', 0)  # Current value of DOGE
-                
-                verified_pnl = crypto_value - usd_spent - validation.get('total_fees', 0)
-            
-            verification['verified_pnl'] = verified_pnl
-            
-            # Check for discrepancy between expected and verified P&L
-            disc_expected = abs(verification['expected_pnl'] - verified_pnl)
-            verification['discrepancy_vs_expected'] = disc_expected
-            disc_expected_pct = 0.0
-            
-            if abs(verification['expected_pnl']) > 0.0001:
-                disc_expected_pct = (disc_expected / abs(verification['expected_pnl'])) * 100
-            verification['discrepancy_vs_expected_pct'] = disc_expected_pct
-            
-            # Flag significant discrepancies (>5%)
-            if disc_expected_pct > 5.0:
-                verification['valid'] = False
-                verification['warnings'].append(
-                    f"P&L discrepancy: expected ${verification['expected_pnl']:.4f} vs verified ${verified_pnl:.4f} ({disc_expected_pct:.1f}%)"
-                )
-            
-            # Check for discrepancy between calculated and verified P&L
-            disc_calculated = abs(calculated_pnl - verified_pnl)
-            verification['discrepancy_vs_calculated'] = disc_calculated
-            disc_calculated_pct = 0.0
-            
-            if abs(calculated_pnl) > 0.0001:
-                disc_calculated_pct = (disc_calculated / abs(calculated_pnl)) * 100
-            verification['discrepancy_vs_calculated_pct'] = disc_calculated_pct
-            
-            # Flag significant discrepancies (>5%)
-            if disc_calculated_pct > 5.0:
-                verification['valid'] = False
-                verification['warnings'].append(
-                    f"P&L discrepancy: calculated ${calculated_pnl:.4f} vs verified ${verified_pnl:.4f} ({disc_calculated_pct:.1f}%)"
-                )
-            
-            # Primary discrepancy = the WORSE of the two (conservative)
-            verification['discrepancy'] = max(disc_expected, disc_calculated)
-            verification['discrepancy_pct'] = max(disc_expected_pct, disc_calculated_pct)
-        else:
-            verification['verified_pnl'] = calculated_pnl
-        
+
+        verification['receipt_valid'] = True
+        verification['valid'] = True
+        usd_units = {'USD', 'USDT', 'USDC', 'BUSD', 'FDUSD', 'TUSD', 'ZUSD'}
+        is_realized_exit = opp.from_asset.upper() not in usd_units and opp.to_asset.upper() in usd_units
+        if not is_realized_exit:
+            verification['pnl_status'] = 'not_realized'
+            verification['truth_status'] = 'provider_observed_fill'
+            verification['warnings'].append(
+                'Fill is verified; realized PnL does not exist until a verified exit'
+            )
+            return verification
+
+        sold_quantity = self._finite_observation(validation.get('source_debited_amount'), positive=True)
+        proceeds_usd = self._finite_observation(validation.get('target_value_usd'), positive=True)
+        exit_fees_usd = self._finite_observation(validation.get('total_fees'), nonnegative=True)
+        if sold_quantity is None or proceeds_usd is None or exit_fees_usd is None:
+            verification['valid'] = False
+            verification['warnings'].append('Observed exit quantity, proceeds, or fees are unavailable')
+            return verification
+
+        exchange_name = validation.get('exchange') or getattr(opp, 'source_exchange', None)
+        cost_basis = None
+        tracker = getattr(self, 'cost_basis_tracker', None)
+        if tracker and hasattr(tracker, 'get_cost_basis'):
+            try:
+                cost_basis = tracker.get_cost_basis(opp.from_asset, exchange_name)
+            except Exception as exc:
+                verification['warnings'].append(f'Cost-basis read failed: {type(exc).__name__}')
+
+        if not isinstance(cost_basis, dict):
+            verification['valid'] = False
+            verification['warnings'].append('Verified provider cost basis is unavailable')
+            return verification
+        entry_order_id = cost_basis.get('last_order_id')
+        entry_price = self._finite_observation(
+            cost_basis.get('avg_fill_price', cost_basis.get('avg_entry_price')), positive=True
+        )
+        position_quantity = self._finite_observation(cost_basis.get('total_quantity'), positive=True)
+        if not cost_basis.get('fills_verified') or not entry_order_id or entry_price is None:
+            verification['valid'] = False
+            verification['warnings'].append(
+                'Cost basis is not backed by provider order and fill evidence'
+            )
+            return verification
+        if position_quantity is not None and sold_quantity > position_quantity + 1e-12:
+            verification['valid'] = False
+            verification['warnings'].append('Exit quantity exceeds the verified cost-basis quantity')
+            return verification
+
+        entry_fee_total = self._finite_observation(cost_basis.get('total_fees'), nonnegative=True)
+        entry_fills = cost_basis.get('last_fills')
+        entry_fill_ids = []
+        if isinstance(entry_fills, list):
+            entry_fill_ids = [
+                str(fill.get('tradeId') or fill.get('id') or fill.get('fill_id')).strip()
+                for fill in entry_fills
+                if isinstance(fill, dict)
+                and (fill.get('tradeId') or fill.get('id') or fill.get('fill_id')) is not None
+            ]
+        if (
+            position_quantity is None
+            or entry_fee_total is None
+            or not isinstance(entry_fills, list)
+            or not entry_fills
+            or len(entry_fill_ids) != len(entry_fills)
+        ):
+            verification['valid'] = False
+            verification['warnings'].append(
+                'Cost basis lacks observed quantity, fees, or provider fill IDs'
+            )
+            return verification
+        allocated_entry_fee = entry_fee_total * (sold_quantity / position_quantity)
+        cost_basis_usd = sold_quantity * entry_price + allocated_entry_fee
+        verified_pnl = proceeds_usd - cost_basis_usd - exit_fees_usd
+        if not math.isfinite(verified_pnl):
+            verification['valid'] = False
+            verification['warnings'].append('Derived realized PnL is not finite')
+            return verification
+
+        verification['cost_basis_usd'] = cost_basis_usd
+        verification['verified_pnl'] = verified_pnl
+        verification['pnl_verified'] = True
+        verification['pnl_status'] = 'provider_and_cost_basis_derived'
+        verification['truth_status'] = 'real_derived'
+        verification['source_ids'] = [validation.get('source_id'), str(entry_order_id)]
+        expected_pnl = self._finite_observation(verification.get('expected_pnl'))
+        if expected_pnl is not None:
+            discrepancy = abs(expected_pnl - verified_pnl)
+            verification['discrepancy'] = discrepancy
+            if abs(expected_pnl) > 1e-12:
+                verification['discrepancy_pct'] = discrepancy / abs(expected_pnl) * 100.0
         return verification
-    
     def _print_order_validation(self, validation: Dict, verification: Dict, opp):
-        """Print comprehensive order validation results."""
-        safe_print("\n   " + "═" * 60)
-        safe_print("   🔍 ORDER VALIDATION & PROFIT VERIFICATION")
-        safe_print("   " + "═" * 60)
-        
-        # Order IDs
-        if validation['order_ids']:
-            safe_print(f"   📋 Order IDs ({validation['exchange'].upper()}):")
+        """Print provider receipt validation without substituting zero for missing data."""
+        def observed(value: Any, precision: int = 8) -> str:
+            number = self._finite_observation(value)
+            return f"{number:.{precision}f}" if number is not None else "NO_DATA"
+
+        safe_print("\n   " + "=" * 60)
+        safe_print("   ORDER RECEIPT AND PROFIT VERIFICATION")
+        safe_print("   " + "=" * 60)
+        if validation.get('order_ids'):
+            safe_print(f"   Provider order IDs ({validation.get('exchange', 'unknown').upper()}):")
             for order in validation['order_ids']:
-                safe_print(f"      Step {order['step']}: {order['order_id']} ({order['side']} {order['pair']})")
-        
-        # Execution Summary
-        safe_print(f"\n   📊 EXECUTION SUMMARY:")
-        safe_print(f"      Sold: {validation['total_sold']:.8f} {opp.from_asset}")
-        safe_print(f"      Bought: {validation.get('final_amount', 0):.8f} {opp.to_asset}")
-        if validation['avg_sell_price'] > 0:
-            safe_print(f"      Avg Sell Price: ${validation['avg_sell_price']:.6f}")
-        if validation['avg_buy_price'] > 0:
-            safe_print(f"      Avg Buy Price: ${validation['avg_buy_price']:.6f}")
-        safe_print(f"      Total Fees: ${validation['total_fees']:.6f}")
-        
-        # P&L Verification
-        safe_print(f"\n   💰 P&L VERIFICATION:")
-        safe_print(f"      Expected P&L: ${verification['expected_pnl']:+.4f}")
-        safe_print(f"      Calculated P&L: ${verification['calculated_pnl']:+.4f}")
-        safe_print(f"      Verified P&L: ${verification['verified_pnl']:+.4f}")
-        
-        if verification['discrepancy'] > 0.0001:
-            status = "⚠️" if verification['discrepancy_pct'] > 5 else "✅"
-            safe_print(f"      {status} Discrepancy: ${verification['discrepancy']:.4f} ({verification['discrepancy_pct']:.1f}%)")
+                safe_print(
+                    f"      Step {order['step']}: {order['order_id']} "
+                    f"({order.get('side')} {order.get('pair')})"
+                )
         else:
-            safe_print(f"      ✅ Math Verified!")
-        
-        # Validation Status
-        if validation['validation_errors']:
-            safe_print(f"\n   ⚠️ VALIDATION ISSUES:")
-            for error in validation['validation_errors']:
-                safe_print(f"      - {error}")
-        
-        if verification['warnings']:
-            safe_print(f"\n   ⚠️ VERIFICATION WARNINGS:")
-            for warning in verification['warnings']:
-                safe_print(f"      - {warning}")
-        
-        # Final Status
-        if validation['valid'] and verification['valid']:
-            safe_print(f"\n   ✅ ORDER FULLY VALIDATED - Profit math confirmed!")
+            safe_print("   Provider order IDs: NO_DATA")
+
+        safe_print("\n   EXECUTION SUMMARY:")
+        safe_print(f"      Sold: {observed(validation.get('total_sold'))} {opp.from_asset}")
+        safe_print(f"      Bought: {observed(validation.get('final_amount'))} {opp.to_asset}")
+        safe_print(f"      Avg Sell Price: ${observed(validation.get('avg_sell_price'), 6)}")
+        safe_print(f"      Avg Buy Price: ${observed(validation.get('avg_buy_price'), 6)}")
+        safe_print(f"      Total Fees: ${observed(validation.get('total_fees'), 6)}")
+        safe_print(f"      Receipt state: {validation.get('execution_state', 'reconciliation_required')}")
+
+        safe_print("\n   P&L VERIFICATION:")
+        safe_print(f"      Expected P&L: ${observed(verification.get('expected_pnl'), 4)}")
+        safe_print(f"      Calculated P&L: ${observed(verification.get('calculated_pnl'), 4)}")
+        safe_print(f"      Verified P&L: ${observed(verification.get('verified_pnl'), 4)}")
+        if verification.get('discrepancy') is not None:
+            safe_print(
+                f"      Discrepancy: ${observed(verification.get('discrepancy'), 4)} "
+                f"({observed(verification.get('discrepancy_pct'), 1)}%)"
+            )
+        elif verification.get('pnl_verified'):
+            safe_print("      Math verified from provider receipt and cost basis")
         else:
-            safe_print(f"\n   ⚠️ VALIDATION INCOMPLETE - Review required")
-        
-        safe_print("   " + "═" * 60)
+            safe_print("      Realized P&L: NO_DATA")
+
+        for error in validation.get('validation_errors') or []:
+            safe_print(f"      Receipt issue: {error}")
+        for warning in verification.get('warnings') or []:
+            safe_print(f"      Verification note: {warning}")
+        if validation.get('receipt_complete') and verification.get('receipt_valid'):
+            safe_print("\n   PROVIDER EXECUTION RECEIPT VERIFIED")
+        else:
+            safe_print("\n   RECONCILIATION REQUIRED")
+        safe_print("   " + "=" * 60)
 
     def _audit_event(self, event_type: str, payload: Dict[str, Any]) -> None:
         """
@@ -18355,9 +18548,351 @@ if __name__ == "__main__":
     def audit_event(self, event_type: str, payload: Dict[str, Any]) -> None:
         """Public wrapper for audit events (used by master launcher)."""
         self._audit_event(event_type, payload)
+
+    @staticmethod
+    def _reconciliation_key(opp, exchange: Optional[str] = None) -> str:
+        exchange_name = exchange or getattr(opp, 'source_exchange', None) or 'unknown'
+        return f"{exchange_name.lower()}:{opp.from_asset.upper()}->{opp.to_asset.upper()}"
+
+    def _has_pending_reconciliation(self, opp, exchange: Optional[str] = None) -> bool:
+        pending = getattr(self, 'pending_reconciliations', {})
+        return self._reconciliation_key(opp, exchange) in pending
+
+    def _mark_not_submitted(self, opp, reason: str) -> None:
+        opp.executed = False
+        opp.actual_pnl_usd = None
+        opp.execution_state = 'not_submitted'
+        opp.reconciliation_required = False
+        opp.execution_reason = reason
+        self._audit_event('execution_not_submitted', {
+            'trace_id': getattr(opp, 'trace_id', None),
+            'pair': f"{opp.from_asset}/{opp.to_asset}",
+            'exchange': getattr(opp, 'source_exchange', None) or 'unknown',
+            'executed': False,
+            'execution_state': 'not_submitted',
+            'reason': reason,
+            'truth_status': 'no_data',
+            'generated_values': False,
+        })
+
+    def _mark_reconciliation_required(
+        self,
+        opp,
+        exchange: str,
+        reason: str,
+        validation: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        """Quarantine a submitted/uncertain order without retrying or learning from it."""
+        key = self._reconciliation_key(opp, exchange)
+        order_ids = []
+        if validation and isinstance(validation.get('order_ids'), list):
+            order_ids = [
+                str(entry.get('order_id'))
+                for entry in validation['order_ids']
+                if isinstance(entry, dict) and entry.get('order_id')
+            ]
+        pending = getattr(self, 'pending_reconciliations', None)
+        if not isinstance(pending, dict):
+            pending = {}
+            self.pending_reconciliations = pending
+        pending[key] = {
+            'execution_state': 'reconciliation_required',
+            'exchange': exchange,
+            'pair': f"{opp.from_asset}/{opp.to_asset}",
+            'order_ids': order_ids,
+            'reason': reason,
+            'received_at': time.time(),
+            'truth_status': 'no_data',
+            'generated_values': False,
+        }
+        opp.executed = False
+        opp.actual_pnl_usd = None
+        opp.execution_state = 'reconciliation_required'
+        opp.reconciliation_required = True
+        opp.order_ids = order_ids
+        opp.execution_validation = validation or {}
+        self._audit_event('execution_reconciliation_required', {
+            'trace_id': getattr(opp, 'trace_id', None),
+            **pending[key],
+            'executed': False,
+        })
+
+    def _record_observed_cost_sample(self, opp, validation: Dict[str, Any]) -> bool:
+        """Teach costs only when execution and contemporaneous quote receipts are complete."""
+        estimator = getattr(self, 'cost_estimator', None)
+        quote = validation.get('quote_evidence')
+        if not estimator or not isinstance(quote, dict) or not validation.get('receipt_complete'):
+            return False
+        quote_source_id = str(quote.get('source_id') or '').strip()
+        quote_timestamp = self._parse_provider_timestamp(quote.get('source_timestamp'))
+        bid = self._finite_observation(quote.get('bid'), positive=True)
+        ask = self._finite_observation(quote.get('ask'), positive=True)
+        execution_timestamp = self._finite_observation(validation.get('source_timestamp'), positive=True)
+        notional_usd = self._finite_observation(validation.get('notional_usd'), positive=True)
+        fees_usd = self._finite_observation(validation.get('total_fees'), nonnegative=True)
+        legs = validation.get('legs') or []
+        execution_price = self._finite_observation(
+            legs[-1].get('execution_price') if legs else None, positive=True
+        )
+        side = str(legs[-1].get('side') if legs else '').lower()
+        if (
+            not quote_source_id or quote_timestamp is None or bid is None or ask is None
+            or ask < bid or execution_timestamp is None or notional_usd is None
+            or fees_usd is None or execution_price is None or side not in {'buy', 'sell'}
+            or abs(execution_timestamp - quote_timestamp) > 30
+        ):
+            return False
+        mid = (bid + ask) / 2.0
+        touch = ask if side == 'buy' else bid
+        fee_pct = fees_usd / notional_usd * 100.0
+        spread_pct = (ask - bid) / mid * 100.0
+        slippage_pct = (
+            max(0.0, execution_price - touch) / touch * 100.0
+            if side == 'buy'
+            else max(0.0, touch - execution_price) / touch * 100.0
+        )
+        estimator.add_sample(
+            symbol=str(legs[-1].get('pair') or f"{opp.from_asset}/{opp.to_asset}"),
+            side=side,
+            notional_usd=notional_usd,
+            fee_pct=fee_pct,
+            spread_pct=spread_pct,
+            slippage_pct=slippage_pct,
+            source_id=f"{validation['source_id']}|{quote_source_id}",
+            source_timestamp=execution_timestamp,
+        )
+        return True
+
+    def _record_verified_fill_without_pnl(
+        self, opp, validation: Dict[str, Any], verification: Dict[str, Any]
+    ) -> bool:
+        """Record a verified position transfer while keeping realized PnL unknown."""
+        source_debit = self._finite_observation(
+            validation.get('source_debited_amount'), positive=True
+        )
+        target_received = self._finite_observation(
+            validation.get('target_received_amount'), positive=True
+        )
+        fees_usd = self._finite_observation(validation.get('total_fees'), nonnegative=True)
+        if source_debit is None or target_received is None or fees_usd is None:
+            self._mark_reconciliation_required(
+                opp,
+                validation.get('exchange') or getattr(opp, 'source_exchange', None) or 'unknown',
+                'verified fill is missing finite debit, receipt, or fee observations',
+                validation,
+            )
+            return False
+
+        opp.executed = True
+        opp.actual_pnl_usd = None
+        opp.pnl_verified = False
+        opp.execution_state = 'provider_verified'
+        opp.reconciliation_required = False
+        opp.verification_status = 'PROVIDER_VERIFIED_FILL_NO_REALIZED_PNL'
+        opp.execution_validation = validation
+        opp.execution_verification = verification
+        opp.order_ids = validation.get('order_ids') or []
+        opp.execution_fees = fees_usd
+
+        if isinstance(getattr(self, 'balances', None), dict):
+            current_source = self._finite_observation(self.balances.get(opp.from_asset), nonnegative=True)
+            current_target = self._finite_observation(self.balances.get(opp.to_asset), nonnegative=True)
+            if current_source is not None:
+                self.balances[opp.from_asset] = max(0.0, current_source - source_debit)
+            if current_target is not None:
+                self.balances[opp.to_asset] = current_target + target_received
+
+        if not isinstance(getattr(self, 'conversions', None), list):
+            self.conversions = []
+        self.conversions.append(opp)
+        self.conversions_made = int(getattr(self, 'conversions_made', 0)) + 1
+
+        usd_units = {'USD', 'USDT', 'USDC', 'BUSD', 'FDUSD', 'TUSD', 'ZUSD'}
+        is_entry = opp.from_asset.upper() in usd_units and opp.to_asset.upper() not in usd_units
+        if is_entry:
+            last_leg = (validation.get('legs') or [])[-1]
+            entry_price = self._finite_observation(last_leg.get('execution_price'), positive=True)
+            order_id = last_leg.get('order_id')
+            fill_ids = last_leg.get('fill_ids') or []
+            if not isinstance(getattr(self, 'position_registry', None), dict):
+                self.position_registry = {}
+            self.position_registry[opp.to_asset.upper()] = {
+                'amount': target_received,
+                'entry_price': entry_price,
+                'entry_value_usd': validation.get('source_value_usd'),
+                'fees_usd': fees_usd,
+                'order_ids': validation.get('order_ids') or [],
+                'fill_ids': fill_ids,
+                'source': validation.get('exchange'),
+                'source_id': validation.get('source_id'),
+                'source_timestamp': validation.get('source_timestamp'),
+                'truth_status': 'provider_observed',
+                'generated_values': False,
+            }
+            if getattr(self, 'snowball_mode', False):
+                self.snowball_position = {
+                    'asset': opp.to_asset.upper(),
+                    'amount': target_received,
+                    'entry_price': entry_price,
+                    'entry_value_usd': validation.get('source_value_usd'),
+                    'source_id': validation.get('source_id'),
+                    'source_timestamp': validation.get('source_timestamp'),
+                    'truth_status': 'provider_observed',
+                    'generated_values': False,
+                }
+            if not isinstance(getattr(self, 'position_entry_times', None), dict):
+                self.position_entry_times = {}
+            self.position_entry_times[opp.to_asset.upper()] = validation.get('source_timestamp')
+            tracker = getattr(self, 'cost_basis_tracker', None)
+            provider_fills = last_leg.get('provider_fills') or []
+            if tracker and order_id and fill_ids and entry_price is not None:
+                tracker.record_order_execution(
+                    exchange=validation.get('exchange') or 'unknown',
+                    symbol=f"{opp.to_asset}/{opp.from_asset}",
+                    side='buy',
+                    order_id=str(order_id),
+                    fills=provider_fills,
+                    avg_fill_price=entry_price,
+                    fees=fees_usd,
+                    executed_qty=target_received,
+                )
+
+        self._audit_event('execution_result', {
+            'trace_id': getattr(opp, 'trace_id', None),
+            'pair': f"{opp.from_asset}/{opp.to_asset}",
+            'exchange': validation.get('exchange'),
+            'executed': True,
+            'execution_state': 'provider_verified',
+            'real_execution_verified': True,
+            'pnl_verified': False,
+            'source_id': validation.get('source_id'),
+            'source_timestamp': validation.get('source_timestamp'),
+            'truth_status': 'provider_observed',
+            'generated_values': False,
+        })
+        self._log_order_validation(opp, validation, verification)
+        return True
+
+    def _finalize_provider_execution(self, opp, trades: List[Dict], exchange: str) -> bool:
+        validation = self._validate_order_execution(trades, opp, exchange)
+        buy_amount = validation.get('target_received_amount')
+        verification = self._verify_profit_math(validation, opp, buy_amount)
+        self._print_order_validation(validation, verification, opp)
+        if validation.get('execution_state') == 'not_submitted':
+            self._mark_not_submitted(opp, f'{exchange}_dry_run_receipt')
+            return False
+        if not validation.get('receipt_complete') or not verification.get('receipt_valid'):
+            self._mark_reconciliation_required(
+                opp,
+                exchange,
+                '; '.join(validation.get('validation_errors') or ['incomplete provider receipt']),
+                validation,
+            )
+            return False
+        recorded = bool(self._record_conversion(opp, buy_amount, validation, verification))
+        if recorded:
+            try:
+                self._record_observed_cost_sample(opp, validation)
+            except Exception as exc:
+                logger.debug(f"Observed cost sample rejected: {type(exc).__name__}")
+        return recorded
     
     def _record_conversion(self, opp, buy_amount: float, validation: Dict = None, verification: Dict = None):
         """Record a successful conversion with STEP-BY-STEP realized profit tracking and ORDER VALIDATION."""
+        exchange_name = (
+            validation.get('exchange') if isinstance(validation, dict)
+            else getattr(opp, 'source_exchange', None)
+        ) or 'unknown'
+        if not validation or not validation.get('receipt_complete') or not validation.get('valid'):
+            self._mark_reconciliation_required(
+                opp, exchange_name, 'conversion mutation denied: incomplete provider receipt', validation
+            )
+            return False
+        observed_received = self._finite_observation(
+            validation.get('target_received_amount'), positive=True
+        )
+        if observed_received is None:
+            self._mark_reconciliation_required(
+                opp, exchange_name, 'conversion mutation denied: missing observed target receipt', validation
+            )
+            return False
+        buy_amount = observed_received
+        if verification is None:
+            verification = self._verify_profit_math(validation, opp, buy_amount)
+        if not verification.get('receipt_valid') or not verification.get('valid'):
+            self._mark_reconciliation_required(
+                opp, exchange_name, 'conversion mutation denied: PnL/cost-basis reconciliation required', validation
+            )
+            return False
+        if not verification.get('pnl_verified'):
+            return self._record_verified_fill_without_pnl(opp, validation, verification)
+        verified_pnl = self._finite_observation(verification.get('verified_pnl'))
+        if verified_pnl is None:
+            self._mark_reconciliation_required(
+                opp, exchange_name, 'conversion mutation denied: verified PnL is not finite', validation
+            )
+            return False
+        source_debit = self._finite_observation(
+            validation.get('source_debited_amount'), positive=True
+        )
+        sold_value = self._finite_observation(
+            verification.get('cost_basis_usd'), positive=True
+        )
+        fees_usd = self._finite_observation(
+            validation.get('total_fees'), nonnegative=True
+        )
+        target_value_usd = self._finite_observation(
+            validation.get('target_value_usd'), positive=True
+        )
+        source_timestamp = self._finite_observation(
+            validation.get('source_timestamp'), positive=True
+        )
+        source_id = str(validation.get('source_id') or '').strip()
+        bought_value = (
+            target_value_usd - fees_usd
+            if target_value_usd is not None and fees_usd is not None
+            else None
+        )
+        if (
+            source_debit is None or sold_value is None or fees_usd is None
+            or bought_value is None or bought_value <= 0
+            or source_timestamp is None or not source_id
+        ):
+            self._mark_reconciliation_required(
+                opp,
+                exchange_name,
+                'conversion mutation denied: verified ledger inputs are incomplete',
+                validation,
+            )
+            return False
+        barter_matrix = getattr(self, 'barter_matrix', None)
+        if not barter_matrix or not hasattr(barter_matrix, 'record_verified_realized_profit'):
+            self._mark_reconciliation_required(
+                opp, exchange_name, 'conversion mutation denied: verified PnL ledger unavailable', validation
+            )
+            return False
+        try:
+            profit_result = barter_matrix.record_verified_realized_profit(
+                from_asset=opp.from_asset,
+                to_asset=opp.to_asset,
+                from_amount=source_debit,
+                from_usd=sold_value,
+                to_amount=buy_amount,
+                to_usd=bought_value,
+                profit_usd=verified_pnl,
+                source_id=source_id,
+                source_timestamp=source_timestamp,
+                actual_slippage_pct=None,
+            )
+        except Exception as exc:
+            self._mark_reconciliation_required(
+                opp,
+                exchange_name,
+                f'verified PnL ledger rejected receipt: {type(exc).__name__}',
+                validation,
+            )
+            return False
+
         # Attach execution metadata to the opportunity for downstream audit
         if validation is not None:
             opp.execution_validation = validation
@@ -18369,14 +18904,14 @@ if __name__ == "__main__":
             order_ids = []
             if validation and isinstance(validation.get('order_ids'), list):
                 order_ids = [entry.get('order_id') for entry in validation.get('order_ids', []) if entry.get('order_id')]
-            real_execution_verified = bool(order_ids) if self.live else False
+            real_execution_verified = bool(validation.get('receipt_complete') and order_ids)
             self._audit_event(
                 event_type='execution_result',
                 payload={
                     'trace_id': getattr(opp, 'trace_id', None),
                     'pair': f"{opp.from_asset}/{opp.to_asset}",
                     'exchange': validation.get('exchange') if validation else (opp.source_exchange or 'unknown'),
-                    'live': self.live,
+                    'live': getattr(self, 'live', False),
                     'executed': True,
                     'real_execution_verified': real_execution_verified,
                     'order_ids': order_ids,
@@ -18387,270 +18922,109 @@ if __name__ == "__main__":
         except Exception:
             logger.debug("Audit logging failed", exc_info=True)
         opp.executed = True
+        opp.execution_state = 'provider_verified'
+        opp.reconciliation_required = False
         self.conversions_made += 1
         self.conversions.append(opp)
-        self.balances[opp.from_asset] = self.balances.get(opp.from_asset, 0) - opp.from_amount
-        self.balances[opp.to_asset] = self.balances.get(opp.to_asset, 0) + buy_amount
+        source_balance = self._finite_observation(self.balances.get(opp.from_asset), nonnegative=True)
+        target_balance = self._finite_observation(self.balances.get(opp.to_asset), nonnegative=True)
+        if source_balance is not None:
+            self.balances[opp.from_asset] = max(0.0, source_balance - source_debit)
+        if target_balance is not None:
+            self.balances[opp.to_asset] = target_balance + buy_amount
         
         # 🎿☃️ SNOWBALL POSITION TRACKING - Record ACTUAL entry/exit prices!
-        if self.snowball_mode:
-            from_upper = opp.from_asset.upper()
-            to_upper = opp.to_asset.upper()
-            is_from_stable = from_upper in self.snowball_stablecoins
-            is_to_stable = to_upper in self.snowball_stablecoins
-            
-            # Use ACTUAL execution price from validation if available
-            actual_buy_price = 0.0
-            actual_sell_price = 0.0
-            if validation:
-                actual_buy_price = validation.get('avg_buy_price', 0) or self.prices.get(to_upper, 0)
-                actual_sell_price = validation.get('avg_sell_price', 0) or self.prices.get(from_upper, 0)
-            else:
-                actual_buy_price = self.prices.get(to_upper, 0)
-                actual_sell_price = self.prices.get(from_upper, 0)
-            
-            if is_from_stable and not is_to_stable:
-                # ENTRY: Buying a coin with stablecoin
-                self.snowball_position = {
-                    'asset': to_upper,
-                    'amount': buy_amount,
-                    'entry_price': actual_buy_price,
-                    'entry_value_usd': opp.from_value_usd,
-                    'entry_time': time.time(),
-                    'entry_from': from_upper,
-                }
-                safe_print(f"\n   🎿☃️ SNOWBALL ENTRY RECORDED:")
-                safe_print(f"      Asset: {to_upper}")
-                safe_print(f"      Amount: {buy_amount:.6f}")
-                safe_print(f"      Entry Price: ${actual_buy_price:.6f}")
-                safe_print(f"      Entry Value: ${opp.from_value_usd:.2f}")
-                safe_print(f"      ⏳ Waiting for profit >= {self.snowball_min_profit_pct}% to exit...")
-            
-            elif not is_from_stable and is_to_stable and self.snowball_position:
-                # EXIT: Selling coin back to stablecoin
-                entry_price = self.snowball_position['entry_price']
-                entry_value = self.snowball_position['entry_value_usd']
-                exit_value = buy_amount if to_upper == 'USD' else (buy_amount * self.prices.get(to_upper, 1.0))
-                
-                # ACTUAL realized profit = what we got - what we spent
-                realized_profit = exit_value - entry_value
-                profit_pct = ((exit_value / entry_value) - 1) * 100 if entry_value > 0 else 0
-                
-                # Record in history
-                trade_record = {
-                    'asset': self.snowball_position['asset'],
-                    'entry_price': entry_price,
-                    'exit_price': actual_sell_price,
-                    'entry_value': entry_value,
-                    'exit_value': exit_value,
-                    'realized_profit': realized_profit,
-                    'profit_pct': profit_pct,
-                    'duration_s': time.time() - self.snowball_position['entry_time'],
-                    'timestamp': time.time(),
-                }
-                self.snowball_profit_history.append(trade_record)
-                self.snowball_total_realized += realized_profit
-                
-                safe_print(f"\n   🎿💰 SNOWBALL EXIT - PROFIT CONFIRMED!")
-                safe_print(f"      Asset: {self.snowball_position['asset']}")
-                safe_print(f"      Entry: ${entry_value:.2f} @ ${entry_price:.6f}")
-                safe_print(f"      Exit:  ${exit_value:.2f} @ ${actual_sell_price:.6f}")
-                safe_print(f"      ════════════════════════════════════")
-                safe_print(f"      💵 REALIZED PROFIT: ${realized_profit:+.4f} ({profit_pct:+.2f}%)")
-                safe_print(f"      📊 SNOWBALL TOTAL:  ${self.snowball_total_realized:+.4f}")
-                safe_print(f"      🎯 Trade #{len(self.snowball_profit_history)}")
-                safe_print(f"      ════════════════════════════════════")
-                
-                if realized_profit >= 0:
-                    safe_print(f"      ✅ CONFIRMED WIN! Entering cooldown...")
-                else:
-                    safe_print(f"      ❌ LOSS (shouldn't happen - gates should prevent this)")
-                
-                # Clear position - ready for next entry after cooldown
-                self.snowball_position = None
-                self.snowball_last_exit_time = time.time()  # 🎿 Start cooldown timer
-                safe_print(f"      ⏸️ COOLDOWN ACTIVE: {self.snowball_cooldown_seconds}s before next entry")
-
-        # 🚨 USE ACTUAL EXECUTION DATA, NOT ESTIMATED PRICES
-        # This is critical to prevent ghost profits!
-        from_price = self.prices.get(opp.from_asset, 0)
-        to_price = self.prices.get(opp.to_asset, 0)
-        
-        # Try to use actual execution values from validation
-        if validation and validation.get('total_sold', 0) > 0:
-            # Use actual execution data
-            if validation.get('avg_sell_price', 0) > 0:
-                sold_value = validation['total_sold'] * validation['avg_sell_price']
-            else:
-                sold_value = opp.from_amount * from_price
-            
-            if validation.get('avg_buy_price', 0) > 0:
-                bought_value = validation.get('final_amount', buy_amount) * validation['avg_buy_price']
-            else:
-                bought_value = buy_amount * to_price
-            
-            # Subtract fees from bought value (fees reduce profit)
-            # Note: fees are already in USD from _extract_fees
-            fees_usd = validation.get('total_fees', 0)
-            if fees_usd > 0:
-                bought_value -= fees_usd  # Direct USD subtraction
-        else:
-            # Fallback to price-based estimate
-            sold_value = opp.from_amount * from_price
-            bought_value = buy_amount * to_price
-        
-        actual_pnl = bought_value - sold_value
-        
-        # 👑 SERO FIX: Sanitity Check for Outlier Profits
-        # This catches "Ghost Profit" bugs where bad data creates impossible PnL
-        MAX_REASONABLE_PROFIT = 500.0   # $500 max profit per trade (realistic for small balances)
-        MIN_REASONABLE_LOSS = -200.0    # -$200 max loss per trade
-        
-        if actual_pnl > MAX_REASONABLE_PROFIT or actual_pnl < MIN_REASONABLE_LOSS:
-            logger.warning(
-                f"👑⚠️ REJECTING OUTLIER PROFIT/LOSS in record: ${actual_pnl:.2f} (from ${sold_value:.2f} to ${bought_value:.2f})"
+        if getattr(self, 'snowball_mode', False) and getattr(self, 'snowball_position', None):
+            exit_price = self._finite_observation(validation.get('avg_sell_price'), positive=True)
+            entry_price = self._finite_observation(self.snowball_position.get('entry_price'), positive=True)
+            entry_value = verification['cost_basis_usd']
+            exit_value = validation['target_value_usd'] - validation['total_fees']
+            entry_timestamp = self._finite_observation(
+                self.snowball_position.get('source_timestamp'), positive=True
             )
-            logger.warning("      This suggests a price data error or bad execution value. Clamping to 0.0")
-            actual_pnl = 0.0
-
+            exit_timestamp = validation.get('source_timestamp')
+            duration_s = (
+                max(0.0, exit_timestamp - entry_timestamp)
+                if entry_timestamp is not None and exit_timestamp is not None
+                else None
+            )
+            profit_pct = actual_profit_pct = (
+                verified_pnl / entry_value * 100.0 if entry_value > 0 else None
+            )
+            trade_record = {
+                'asset': self.snowball_position.get('asset'),
+                'entry_price': entry_price,
+                'exit_price': exit_price,
+                'entry_value': entry_value,
+                'exit_value': exit_value,
+                'realized_profit': verified_pnl,
+                'profit_pct': profit_pct,
+                'duration_s': duration_s,
+                'source_id': validation.get('source_id'),
+                'source_timestamp': exit_timestamp,
+                'truth_status': 'real_derived',
+                'generated_values': False,
+            }
+            self.snowball_profit_history.append(trade_record)
+            self.snowball_total_realized += verified_pnl
+            self.snowball_position = None
+            self.snowball_last_exit_time = validation.get('source_timestamp')
+            safe_print(
+                f"   SNOWBALL EXIT VERIFIED: ${verified_pnl:+.4f} "
+                f"({actual_profit_pct:+.2f}%)"
+            )
+        actual_pnl = verified_pnl
         opp.actual_pnl_usd = actual_pnl
-        
-        # ═══════════════════════════════════════════════════════════════════
-        # 🔍 ORDER VALIDATION AUDIT TRAIL
-        # ═══════════════════════════════════════════════════════════════════
-        if validation:
-            # Use verified P&L if available (most accurate)
-            if verification and verification.get('verified_pnl') is not None:
-                actual_pnl = verification['verified_pnl']
+        opp.pnl_verified = True
+        opp.verification_status = 'VERIFIED'
+        opp.order_ids = validation.get('order_ids') or []
+        opp.execution_fees = fees_usd
+        self._log_order_validation(opp, validation, verification)
 
-                # Re-apply outlier clamp to verified P&L too (prevents ghost-profit override)
-                if actual_pnl > MAX_REASONABLE_PROFIT or actual_pnl < MIN_REASONABLE_LOSS:
-                    logger.warning(
-                        f"👑⚠️ REJECTING OUTLIER VERIFIED P/L: ${actual_pnl:.2f} (clamping to 0.0)"
+        from_up = opp.from_asset.upper()
+        sold_amount = validation['source_debited_amount']
+        if isinstance(getattr(self, 'position_registry', None), dict) and from_up in self.position_registry:
+            previous = self.position_registry[from_up]
+            previous_amount = self._finite_observation(previous.get('amount'), nonnegative=True)
+            if previous_amount is not None:
+                if sold_amount >= previous_amount:
+                    del self.position_registry[from_up]
+                else:
+                    previous['amount'] = previous_amount - sold_amount
+                    entry_price = self._finite_observation(previous.get('entry_price'), positive=True)
+                    previous['entry_value_usd'] = (
+                        previous['amount'] * entry_price if entry_price is not None else None
                     )
-                    actual_pnl = 0.0
 
-                opp.actual_pnl_usd = actual_pnl
-                # Update bought_value to reflect actual P&L (don't reset sold_value!)
-                # sold_value already has correct value from execution data above
-                bought_value = sold_value + actual_pnl  # bought = sold + profit (actual)
-                opp.pnl_verified = True
-                opp.verification_status = 'VERIFIED' if verification['valid'] else 'DISCREPANCY'
-            else:
-                opp.pnl_verified = False
-                opp.verification_status = 'UNVERIFIED'
-            
-            # Store order IDs for audit trail
-            opp.order_ids = validation.get('order_ids', [])
-            opp.execution_fees = validation.get('total_fees', 0)
-            
-            # Log validation to persistent storage for auditing
-            self._log_order_validation(opp, validation, verification)
-
-            # ────────── Position Registry Update (real fills) ──────────
-            try:
-                from_up = opp.from_asset.upper()
-                to_up = opp.to_asset.upper()
-
-                is_buy = from_up in self.snowball_stablecoins and to_up not in self.snowball_stablecoins
-                is_sell = to_up in self.snowball_stablecoins and from_up not in self.snowball_stablecoins
-
-                # Determine final_amount from validation (what we actually received)
-                final_amount = validation.get('final_amount', buy_amount)
-                entry_price = validation.get('avg_buy_price', self.prices.get(to_up, 0))
-                _exit_price = validation.get('avg_sell_price', self.prices.get(from_up, 0))
-                fees_usd = validation.get('total_fees', 0)
-
-                if is_buy:
-                    entry = {
-                        'amount': float(final_amount),
-                        'entry_price': float(entry_price),
-                        'entry_value_usd': float(opp.from_value_usd),
-                        'fees_usd': float(fees_usd),
-                        'order_ids': validation.get('order_ids', []),
-                        'source': opp.source_exchange or 'unknown',
-                        'timestamp': time.time(),
-                    }
-
-                    # Aggregate into registry if existing
-                    if to_up in self.position_registry:
-                        prev = self.position_registry[to_up]
-                        prev_amount = prev.get('amount', 0.0)
-                        prev_cost_usd = prev.get('entry_price', 0.0) * prev_amount + prev.get('fees_usd', 0.0)
-                        new_cost_usd = entry['entry_price'] * entry['amount'] + entry['fees_usd']
-                        total_amount = prev_amount + entry['amount']
-                        avg_price = (prev_cost_usd + new_cost_usd) / total_amount if total_amount > 0 else entry['entry_price']
-                        prev['amount'] = total_amount
-                        prev['entry_price'] = avg_price
-                        prev['entry_value_usd'] = prev_cost_usd + new_cost_usd
-                        prev['fees_usd'] = prev.get('fees_usd', 0.0) + entry['fees_usd']
-                        prev['order_ids'] = prev.get('order_ids', []) + entry['order_ids']
-                        prev['timestamp'] = entry['timestamp']
-                    else:
-                        self.position_registry[to_up] = entry
-
-                elif is_sell:
-                    asset = from_up
-                    sold_amount = float(opp.from_amount)
-                    if asset in self.position_registry:
-                        prev = self.position_registry[asset]
-                        if sold_amount >= prev.get('amount', 0.0):
-                            # Closed out fully
-                            del self.position_registry[asset]
-                        else:
-                            prev['amount'] = prev.get('amount', 0.0) - sold_amount
-                            prev['entry_value_usd'] = prev.get('entry_price', 0.0) * prev.get('amount', 0.0)
-            except Exception as e:
-                logger.debug(f"Position registry update error: {e}")
-
-            # ────────── Cost Basis Tracker (persistent across restarts) ──────────
-            try:
-                exchange_name = validation.get('exchange', opp.source_exchange or 'unknown')
-                if is_buy and entry_price > 0 and final_amount > 0:
-                    # Record BUY entry price so harvest can calculate P&L later
-                    order_id_str = ''
-                    order_ids_list = validation.get('order_ids', [])
-                    if order_ids_list:
-                        first = order_ids_list[0]
-                        order_id_str = first.get('order_id', '') if isinstance(first, dict) else str(first)
-                    if hasattr(self, 'cost_basis_tracker') and self.cost_basis_tracker:
-                        self.cost_basis_tracker.set_entry_price(
-                            symbol=to_up,
-                            price=float(entry_price),
-                            quantity=float(final_amount),
-                            exchange=exchange_name,
-                            fee=float(fees_usd),
-                            order_id=order_id_str
-                        )
-                        logger.info(f"💰 Cost basis recorded: {to_up} @ ${entry_price:.6f} x {final_amount:.6f} on {exchange_name}")
-                    # Also record position entry time for hold-time enforcement
-                    self.position_entry_times[to_up] = time.time()
-                elif is_sell and hasattr(self, 'cost_basis_tracker') and self.cost_basis_tracker:
-                    # On sell, clear the cost basis entry for this asset/exchange
-                    try:
-                        self.cost_basis_tracker.clear_entry(from_up, exchange_name)
-                    except Exception:
-                        pass  # clear_entry may not exist yet - that's OK
-                    # Remove entry time tracking
-                    self.position_entry_times.pop(from_up, None)
-            except Exception as e:
-                logger.debug(f"Cost basis tracker update error: {e}")
+        tracker = getattr(self, 'cost_basis_tracker', None)
+        last_leg = (validation.get('legs') or [])[-1]
+        exit_price = self._finite_observation(last_leg.get('execution_price'), positive=True)
+        order_id = last_leg.get('order_id')
+        fill_ids = last_leg.get('fill_ids') or []
+        if tracker and exit_price is not None and order_id and fill_ids:
+            tracker.record_order_execution(
+                exchange=validation.get('exchange') or 'unknown',
+                symbol=f"{opp.from_asset}/{opp.to_asset}",
+                side='sell',
+                order_id=str(order_id),
+                fills=last_leg.get('provider_fills') or [],
+                avg_fill_price=exit_price,
+                fees=fees_usd,
+                executed_qty=sold_amount,
+            )
+        if isinstance(getattr(self, 'position_entry_times', None), dict):
+            self.position_entry_times.pop(from_up, None)
         # safe_print(step_display)  # FIXME: step_display not defined
-        
-        # 🔧 FIX: Build profit_result from barter_matrix path history
-        path_key = (opp.from_asset.upper(), opp.to_asset.upper())
-        path_history = self.barter_matrix.barter_history.get(path_key, {})
-        profit_result = {
-            'path_trades': path_history.get('trades', 0),
-            'path_total_profit': path_history.get('profit', 0.0),
-            'actual_slippage_pct': path_history.get('slippage', 0.0) * 100,
-            'is_win': actual_pnl >= 0,
-            'path_win_rate': path_history.get('win_rate', 0.0) if path_history.get('trades', 0) > 0 else 0.0,
-        }
         
         # Show path performance (how this specific conversion path is doing)
         safe_print(f"   📊 PATH {opp.from_asset}→{opp.to_asset}: {profit_result['path_trades']} trades, ${profit_result['path_total_profit']:+.4f} total")
-        safe_print(f"   🔄 Slippage: {profit_result['actual_slippage_pct']:.2f}%")
+        observed_slippage = self._finite_observation(
+            profit_result.get('actual_slippage_pct'), nonnegative=True
+        )
+        if observed_slippage is None:
+            safe_print("   🔄 Slippage: NO_DATA")
+        else:
+            safe_print(f"   🔄 Slippage: {observed_slippage:.2f}%")
         
         # 👑🍄 QUEEN'S MYCELIUM BROADCAST - Send signals to all systems
         if profit_result.get('is_win'):
@@ -18665,7 +19039,7 @@ if __name__ == "__main__":
                     safe_print(f"   🍄 MYCELIUM BROADCAST: {signal['path']} BLOCKED - {signal['reason']}")
         
         # Update total_profit_usd to match barter matrix
-        self.total_profit_usd = self.barter_matrix.total_realized_profit
+        self.total_profit_usd = profit_result['running_total']
         
         # 💷⚡ UNIFIED PROFIT GOAL — Record trade for goal tracking
         if hasattr(self, 'profit_goal') and self.profit_goal:
@@ -18688,16 +19062,18 @@ if __name__ == "__main__":
                 symbol = f"{opp.from_asset}{opp.to_asset}"
                 won = actual_pnl >= 0
                 profit_pct = (actual_pnl / sold_value * 100) if sold_value > 0 else 0
-                duration = getattr(opp, 'execution_time', 30.0)  # Default 30s if not tracked
-                
-                self.penny_turbo.record_trade(
-                    exchange=exchange,
-                    symbol=symbol,
-                    won=won,
-                    profit_pct=profit_pct,
-                    volume_usd=sold_value,
-                    duration_sec=duration
+                duration = self._finite_observation(
+                    getattr(opp, 'execution_time', None), nonnegative=True
                 )
+                if duration is not None:
+                    self.penny_turbo.record_trade(
+                        exchange=exchange,
+                        symbol=symbol,
+                        won=won,
+                        profit_pct=profit_pct,
+                        volume_usd=sold_value,
+                        duration_sec=duration,
+                    )
             except Exception as e:
                 logger.debug(f"Penny turbo record error: {e}")
 
@@ -18728,89 +19104,8 @@ if __name__ == "__main__":
                 self.queen.path_memory[path_key]['losses'] += 1
 
         # 📅🔮 7-DAY PLANNER: Validate timing prediction after conversion
-        if self.seven_day_planner:
-            try:
-                # Record this conversion for validation tracking
-                validation_id = self.seven_day_planner.record_conversion(
-                    symbol=opp.to_asset,
-                    entry_price=to_price
-                )
-                
-                # Validate immediately with exit price (for compound tracking)
-                # The next scan will have updated prices for true validation
-                result = self.seven_day_planner.validate_conversion(
-                    validation_id=validation_id,
-                    exit_price=to_price  # Will be updated on next trade
-                )
-                
-                if result:
-                    timing_tag = "🎯" if result.direction_correct else "❌"
-                    safe_print(f"   📅 7-Day Validation: {timing_tag} timing={result.timing_score:.0%}")
-                    
-                    # Log adaptive weight updates
-                    weights = self.seven_day_planner.adaptive_weights
-                    safe_print(f"   🧠 Adaptive: h={weights['hourly_weight']:.2f}, s={weights['symbol_weight']:.2f}, acc={weights['accuracy_7d']:.0%}")
-                    
-                    # 👑📊 FEED VALIDATED PREDICTION TO QUEEN! 
-                    # Every verified prediction feeds Queen's neural learning!
-                    if self.queen and hasattr(self.queen, 'receive_validated_prediction'):
-                        validation_data = {
-                            'symbol': opp.to_asset,
-                            'predicted_edge': result.predicted_edge,
-                            'actual_edge': result.actual_edge,
-                            'direction_correct': result.direction_correct,
-                            'timing_score': result.timing_score,
-                            'confidence': weights.get('accuracy_7d', 0.5),
-                            'hour': datetime.now().hour,
-                            'day_of_week': datetime.now().weekday(),
-                            'source': '7day_planner',
-                            'pair': f"{opp.from_asset}->{opp.to_asset}",
-                            'pnl': actual_pnl
-                        }
-                        queen_result = self.queen.receive_validated_prediction(validation_data)
-                        if queen_result.get('neural_trained'):
-                            safe_print(f"   👑🧠 Queen learned from validated prediction!")
-            except Exception as e:
-                logger.debug(f"7-day planner validation error: {e}")
-
-        # 🔮📊 PROBABILITY NEXUS VALIDATION - Feed to Queen's Neural Learning!
-        # Track nexus prediction accuracy and let Queen learn from it
-        if self.queen and hasattr(self.queen, 'receive_validated_prediction'):
-            try:
-                # Get nexus prediction that was stored with the opportunity
-                nexus_prob = getattr(opp, 'nexus_probability', 0.5)
-                nexus_dir = getattr(opp, 'nexus_direction', 'NEUTRAL')
-                nexus_conf = getattr(opp, 'nexus_confidence', 0.0)
-                nexus_factors = getattr(opp, 'nexus_factors', None)
-                
-                # Validate: Did the nexus prediction match the actual outcome?
-                actual_direction = 'BULLISH' if actual_pnl > 0 else ('BEARISH' if actual_pnl < 0 else 'NEUTRAL')
-                direction_correct = (nexus_dir == actual_direction) or (nexus_dir == 'NEUTRAL')
-                
-                # Timing score based on confidence vs outcome
-                timing_score = 1.0 if direction_correct else 0.0
-                if nexus_conf > 0:
-                    timing_score *= nexus_conf  # Weight by confidence
-                
-                nexus_validation_data = {
-                    'symbol': opp.to_asset,
-                    'predicted_edge': (nexus_prob - 0.5) * 100,  # Convert 0-1 to edge %
-                    'actual_edge': (actual_pnl / sold_value * 100) if sold_value > 0 else 0,
-                    'direction_correct': direction_correct,
-                    'timing_score': timing_score,
-                    'confidence': nexus_conf,
-                    'hour': datetime.now().hour,
-                    'day_of_week': datetime.now().weekday(),
-                    'source': 'probability_nexus',
-                    'pair': f"{opp.from_asset}->{opp.to_asset}",
-                    'pnl': actual_pnl,
-                    'factors': nexus_factors
-                }
-                nexus_queen_result = self.queen.receive_validated_prediction(nexus_validation_data)
-                if nexus_queen_result.get('neural_trained'):
-                    safe_print(f"   🔮👑 Queen learned from Nexus prediction validation!")
-            except Exception as e:
-                logger.debug(f"Nexus validation feed error: {e}")
+        # Prediction systems are not trained here. Their own pre-existing prediction
+        # receipt must be reconciled against this execution receipt in a later cycle.
 
         # Publish observability
         if self.thought_bus:
@@ -18830,202 +19125,79 @@ if __name__ == "__main__":
             except Exception:
                 pass
 
+        return True
+
     def _record_failure(self, opp, error_msg: str = "", validation: Dict = None):
-        """
-        Record a failed conversion attempt for learning.
-        
-        👑🎓 QUEEN LOSS LEARNING INTEGRATION:
-        When we fail, we learn. We pull data, research tactics, and never forget.
-        
-        🔧 FIX: After failure, refresh balances immediately and block asset!
-        This prevents the "265 blanks" loop bug where system keeps trying
-        to trade the same cached balance that no longer exists.
-        """
-        # Attach failure metadata for downstream audit
+        """Record an observed rejection/error without inventing fills, fees, or loss."""
+        exchange = getattr(opp, 'source_exchange', None) or 'unknown'
+        opp.executed = False
+        opp.actual_pnl_usd = None
+        opp.execution_state = 'rejected'
         opp.execution_failure = {
-            'error': error_msg,
+            'error': error_msg or None,
             'validation': validation or {},
+            'truth_status': 'provider_observed' if error_msg else 'no_data',
+            'generated_values': False,
         }
-        
-        # 🔧 CRITICAL FIX: Refresh exchange balances IMMEDIATELY after failure!
-        # This prevents the loop bug where we keep trying to trade stale cached balance
-        exchange = opp.source_exchange or 'unknown'
-        try:
-            loop = asyncio.get_event_loop()
-            if loop.is_running():
-                # Create task for background refresh
-                asyncio.create_task(self.refresh_exchange_balances(exchange))
-            else:
-                loop.run_until_complete(self.refresh_exchange_balances(exchange))
-            safe_print(f"   🔄 Refreshed {exchange} balances after failure")
-        except Exception as e:
-            logger.debug(f"Balance refresh after failure error: {e}")
-        
-        # 🔧 CRITICAL FIX: Block this from_asset for the rest of this turn!
-        # Prevents repeated attempts to trade the same depleted asset
+
         from_upper = opp.from_asset.upper()
-        if hasattr(self, 'barter_matrix') and hasattr(self.barter_matrix, 'high_spread_sources'):
-            self.barter_matrix.high_spread_sources[(from_upper, exchange.lower())] = {
-                'spread': 99.0,  # Block with high spread marker
-                'blocked_turn': getattr(self.barter_matrix, 'current_turn', 0),
-                'reason': f'execution_failed: {error_msg[:50] if error_msg else "unknown"}'
+        barter_matrix = getattr(self, 'barter_matrix', None)
+        if barter_matrix and hasattr(barter_matrix, 'high_spread_sources'):
+            barter_matrix.high_spread_sources[(from_upper, exchange.lower())] = {
+                'spread': None,
+                'blocked': True,
+                'blocked_turn': getattr(barter_matrix, 'current_turn', 0),
+                'reason': f'execution_failed: {error_msg[:100] if error_msg else "no_data"}',
+                'truth_status': 'provider_observed' if error_msg else 'no_data',
+                'generated_values': False,
             }
-            safe_print(f"   🚫 Blocked {from_upper} on {exchange} for this turn (execution failed)")
 
-        # Audit failure (anti-phantom)
-        try:
-            self._audit_event(
-                event_type='execution_failure',
-                payload={
-                    'trace_id': getattr(opp, 'trace_id', None),
-                    'pair': f"{opp.from_asset}/{opp.to_asset}",
-                    'exchange': opp.source_exchange or 'unknown',
-                    'live': self.live,
-                    'executed': False,
-                    'error': error_msg,
-                    'validation': validation or {},
-                }
-            )
-        except Exception:
-            logger.debug("Audit failure logging failed", exc_info=True)
+        self._audit_event('execution_failure', {
+            'trace_id': getattr(opp, 'trace_id', None),
+            'pair': f"{opp.from_asset}/{opp.to_asset}",
+            'exchange': exchange,
+            'executed': False,
+            'execution_state': 'rejected',
+            'error': error_msg or None,
+            'validation': validation or {},
+            'truth_status': 'provider_observed' if error_msg else 'no_data',
+            'generated_values': False,
+        })
 
-        self.path_memory.record(opp.from_asset, opp.to_asset, False)
-        
-        if self.thought_bus:
+        path_memory = getattr(self, 'path_memory', None)
+        if error_msg and path_memory:
+            path_memory.record(opp.from_asset, opp.to_asset, False)
+        thought_bus = getattr(self, 'thought_bus', None)
+        if thought_bus:
             try:
-                self.thought_bus.think(
+                thought_bus.think(
                     topic='conversion.failure',
-                    message='conversion failed',
-                    metadata={'pair': f"{opp.from_asset}->{opp.to_asset}", 'error': error_msg}
+                    message='provider execution rejected',
+                    metadata={
+                        'pair': f"{opp.from_asset}->{opp.to_asset}",
+                        'error': error_msg or None,
+                        'truth_status': 'provider_observed' if error_msg else 'no_data',
+                    },
                 )
             except Exception:
                 pass
-        
-        # 👑🎓 QUEEN LOSS LEARNING - Analyze every failure to learn and evolve
-        if self.loss_learning:
-            try:
-                # Determine exchange
-                exchange = opp.source_exchange or 'unknown'
-                
-                # Estimate loss amount (what we expected vs what happened)
-                # If the conversion failed completely, the loss is the opportunity cost
-                expected_profit = opp.expected_pnl_usd if opp.expected_pnl_usd > 0 else EPSILON_PROFIT_USD
-                
-                # Get prices
-                from_price = self.prices.get(opp.from_asset, opp.from_value_usd / opp.from_amount if opp.from_amount > 0 else 1)
-                to_price = self.prices.get(opp.to_asset, 0)
-                
-                # Calculate executed vs expected prices
-                expected_price = to_price if to_price > 0 else 1
-                executed_price = expected_price  # On failure, we don't have executed price
-                
-                # If validation data available, extract actual execution info
-                if validation:
-                    executed_price = validation.get('avg_buy_price', expected_price)
-                    if validation.get('total_sold', 0) > 0 and opp.from_amount > 0:
-                        # We sold but didn't get what we expected
-                        loss_pct = (opp.from_amount - validation.get('total_sold', 0)) / opp.from_amount
-                        expected_profit = opp.expected_pnl_usd * loss_pct
-                
-                # Build signals map from opportunity scores
-                signals_used = {
-                    'v14_score': opp.v14_score,
-                    'hub_score': opp.hub_score,
-                    'commando_score': opp.commando_score,
-                    'lambda_score': opp.lambda_score,
-                    'gravity_score': opp.gravity_score,
-                    'luck_score': opp.luck_score,
-                    'enigma_score': opp.enigma_score,
-                    'timeline_score': opp.timeline_score,
-                    'trained_matrix_score': opp.trained_matrix_score,
-                    'barter_matrix_score': opp.barter_matrix_score,
-                }
-                
-                # Fees estimated from config
-                fees_paid = opp.from_value_usd * MICRO_CONFIG['total_cost_rate']
-                
-                # Loss amount = expected profit (opportunity cost) + any slippage
-                loss_amount = max(expected_profit, EPSILON_PROFIT_USD)
-                
-                # Schedule async analysis (don't block the main loop)
-                import asyncio
-                asyncio.create_task(self._async_loss_analysis(
-                    exchange=exchange,
-                    from_asset=opp.from_asset,
-                    to_asset=opp.to_asset,
-                    from_amount=opp.from_amount,
-                    from_value_usd=opp.from_value_usd,
-                    executed_price=executed_price,
-                    expected_price=expected_price,
-                    fees_paid=fees_paid,
-                    loss_amount=loss_amount,
-                    signals_used=signals_used,
-                    combined_score=opp.combined_score,
-                    expected_profit=expected_profit,
-                    error_msg=error_msg,
-                ))
-                
-            except Exception as e:
-                logger.debug(f"Loss learning error: {e}")
-    
-    async def _async_loss_analysis(self, **kwargs):
-        """Async wrapper for loss analysis to not block main trading loop."""
-        try:
-            error_msg = kwargs.pop('error_msg', '')
-            _loss = await self.loss_learning.analyze_loss(**kwargs)
-            
-            # Check if we should auto-block this path
-            avoid, reason = self.loss_learning.should_avoid_trade(
-                kwargs['from_asset'],
-                kwargs['to_asset'],
-                kwargs['exchange'],
-                kwargs.get('expected_profit', EPSILON_PROFIT_USD),
-                kwargs.get('from_value_usd', 0.0)
-            )
-            
-            if avoid:
-                safe_print(f"   👑🎓 QUEEN WISDOM: BLOCKING {kwargs['from_asset']}→{kwargs['to_asset']}")
-                safe_print(f"      Reason: {reason}")
-                
-                # Store in path memory as perma-block
-                self.path_memory.block_path(kwargs['from_asset'], kwargs['to_asset'])
-                
-        except Exception as e:
-            logger.debug(f"Async loss analysis error: {e}")
 
-    def _log_successful_conversion(self, validation: Dict, opp):
-        """
-        Log a successful conversion with validation data.
-        This is a convenience wrapper around _record_conversion.
-        """
-        # Calculate buy/received amount from validation
-        buy_amount = 0.0
-        trades = validation.get('trades', [])
-        if trades:
-            last_trade = trades[-1]
-            if isinstance(last_trade, dict):
-                # PRIORITY: Use receivedQty (for SELL orders) if available
-                res = last_trade.get('result', {})
-                buy_amount = float(res.get('receivedQty', 0) or
-                                   last_trade.get('receivedQty', 0) or
-                                   res.get('executedQty', 0) or 
-                                   last_trade.get('executedQty', 0) or 0)
-        
-        # Fallback estimate if no amount found
-        if buy_amount == 0:
-            to_price = self.prices.get(opp.to_asset, 0)
-            if to_price > 0:
-                buy_amount = opp.from_value_usd / to_price
-        
-        # Verify profit math
+    def _log_successful_conversion(self, validation: Dict, opp) -> bool:
+        """Finalize a conversion only from the validated target receipt amount."""
+        buy_amount = self._finite_observation(
+            validation.get('target_received_amount'), positive=True
+        )
         verification = self._verify_profit_math(validation, opp, buy_amount)
-        
-        # Print validation summary
         self._print_order_validation(validation, verification, opp)
-        
-        # Record the conversion
-        self._record_conversion(opp, buy_amount, validation, verification)
-    
+        if buy_amount is None or not validation.get('receipt_complete'):
+            self._mark_reconciliation_required(
+                opp,
+                validation.get('exchange') or getattr(opp, 'source_exchange', None) or 'unknown',
+                'successful wrapper received incomplete provider receipt',
+                validation,
+            )
+            return False
+        return bool(self._record_conversion(opp, buy_amount, validation, verification))
     def _log_order_validation(self, opp, validation: Dict, verification: Dict):
         """
         📋 LOG ORDER VALIDATION TO PERSISTENT AUDIT TRAIL

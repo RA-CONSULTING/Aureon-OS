@@ -16,14 +16,13 @@ Three compound categories:
   placebo       — neutral controls (distilled water, saline)
 """
 
-from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
-
+import hashlib
 import json
 import math
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 # ─── Sacred constants (shared with the rest of the system) ────────────────────
 PHI = (1 + math.sqrt(5)) / 2          # Golden Ratio φ = 1.618…
@@ -47,7 +46,7 @@ TASTE_FREQUENCY_BANDS = [
 ]
 
 # ─── Path to molecular codex data ────────────────────────────────────────────
-_CODEX_PATH = Path(__file__).parent / "public" / "taste_molecular_codex.json"
+_CODEX_PATH = Path(__file__).resolve().parents[2] / "public" / "taste_molecular_codex.json"
 
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -99,7 +98,17 @@ class TasteExperience:
     # Narrative + integration
     sensory_description: str
     brain_input: Any                 # BrainInput — ready for Queen consciousness bus
-    sequenced_at: float = field(default_factory=time.time)
+    data_status: str = "reference_data"
+    truth_status: str = "reference_only"
+    source_id: Optional[str] = None
+    source_timestamp: Optional[float] = None
+    received_at: Optional[float] = None
+    receipt_id: Optional[str] = None
+    generated_values: bool = False
+    eligible_for_action: bool = False
+    eligible_for_accounting: bool = False
+    eligible_for_learning: bool = False
+    sequenced_at: Optional[float] = None
 
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -126,6 +135,15 @@ class MolecularSequencer:
                   + 0.12 × complexity_norm
                   + 0.08 × purity_norm
     """
+
+    def __init__(
+        self,
+        *,
+        reference_receipt: Optional[Dict[str, Any]] = None,
+        clock: Callable[[], float] = time.time,
+    ) -> None:
+        self._reference_receipt = dict(reference_receipt or {})
+        self._clock = clock
 
     def sequence(self, mol: MolecularData) -> SequencedProperties:
         # Guard: zero or negative sweetness (placebo compounds)
@@ -259,7 +277,7 @@ class TasteSense:
         self._molecules: Dict[str, MolecularData] = {}
         # Load all three sections: synthetic, natural, placebo
         all_sections = (
-            raw.get("molecules", [])           # synthetic
+            raw.get("molecules", [])           # engineered-origin sweeteners
             + raw.get("natural_molecules", []) # natural/real human sweeteners
             + raw.get("placebo_molecules", []) # placebo controls
         )
@@ -362,24 +380,4 @@ def _build_description(mol: MolecularData, props: SequencedProperties,
     )
 
 
-# ═════════════════════════════════════════════════════════════════════════════
-# QUICK SELF-TEST  (python aureon_taste_sense.py)
-# ═════════════════════════════════════════════════════════════════════════════
-
-if __name__ == "__main__":
-    ts = TasteSense()
-    print(f"\n{ts}\n{'─'*60}")
-    print(f"{'Molecule':<20} {'Score':>6}  {'Freq (Hz)':>10}  {'Emotion':<14}  {'Band'}")
-    print("─" * 60)
-    for exp in sorted(ts.taste_all(), key=lambda e: e.taste_score):
-        print(f"{exp.molecule_name:<20} {exp.taste_score:>6.3f}  "
-              f"{exp.primary_frequency:>10.1f}  {exp.emotional_state:<14}  {exp.emotional_band}")
-    print("─" * 60)
-    sweetest = ts.sweetest()
-    print(f"\nHighest resonance: {sweetest.molecule_name} → {sweetest.emotional_state} "
-          f"at {sweetest.primary_frequency:.0f} Hz (emotional_weight={sweetest.emotional_weight})")
-    cmp = ts.compare("Cyclamate", "Advantame")
-    print(f"\nCompare Cyclamate vs Advantame:")
-    print(f"  Δ frequency : {cmp['frequency_delta_hz']:+.0f} Hz")
-    print(f"  Δ taste score: {cmp['taste_score_delta']:+.4f}")
-    print(f"  Higher resonance: {cmp['higher_resonance']}\n")
+# Standalone catalog self-test removed; reference data is consumed only by explicit callers.

@@ -117,7 +117,7 @@ export default function AdminPaymentVerification() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'completed':
-        return <Badge className="bg-green-500"><CheckCircle2 className="w-3 h-3 mr-1" />Completed</Badge>;
+        return <Badge className="bg-success"><CheckCircle2 className="w-3 h-3 mr-1" />Completed</Badge>;
       case 'pending':
         return <Badge variant="secondary"><Clock className="w-3 h-3 mr-1" />Pending</Badge>;
       case 'failed':

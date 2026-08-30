@@ -12,9 +12,7 @@ Architecture (matches the 5-layer spec):
                 * aureon.harmonic.aureon_schumann_resonance_bridge.SchumannResonanceBridge
                 * aureon.data_feeds.aureon_space_weather_bridge.SpaceWeatherBridge
                 * aureon.integrations.world_data.world_data_ingester.WorldDataIngester (.fetch_gdelt)
-              Plug-in slots (NotImplemented unless the user supplies):
-                * Bitfinex BTC ticks (no fetcher in repo today)
-                * NASA OMNI hourly  (no fetcher in repo today)
+              Missing sources remain no-data and never create a field input.
 
     Layer 3  — kernel: aureon.core.aureon_lambda_engine.LambdaEngine,
               parameters loaded via aureon.core.hnc_params.
@@ -26,11 +24,8 @@ Architecture (matches the 5-layer spec):
               the JSONL is the hot buffer.
 
     Layer 2 / 5 are out of scope of *this* module:
-        Layer 2 (Schumann strip-diff render) is the single biggest gap and
-        deserves its own module; today the SchumannResonanceBridge falls
-        back to simulation when its sources are down. The daemon will
-        happily consume real readings the moment the bridge starts
-        returning them.
+        Layer 2 (Schumann strip-diff render) remains a direct-source gap;
+        the bridge emits no-data when direct or real-derived sources are down.
         Layer 5 (headless status command) is in ``aureon/status.py``.
 
 The daemon is structured as one supervisor coroutine (``HNCLiveDaemon.run``)
@@ -43,16 +38,27 @@ waiting for any single source.
 from __future__ import annotations
 
 import asyncio
+import contextlib
+import hashlib
+import io
 import json
 import logging
+import math
 import os
 import signal
 import time
+from collections.abc import Mapping
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 from pathlib import Path
-from typing import Awaitable, Callable, Dict, List, Optional
+from typing import Any, Awaitable, Callable, Dict, List, Optional, Tuple
 
-from aureon.core.aureon_lambda_engine import LambdaEngine, SubsystemReading
+from aureon.core.aureon_lambda_engine import (
+    LambdaEngine,
+    SubsystemReading,
+    validate_history_receipt,
+)
 from aureon.core.hnc_params import HNCParams, apply_to_lambda_engine, load_params
 
 logger = logging.getLogger(__name__)
@@ -62,6 +68,7 @@ logger = logging.getLogger(__name__)
 # Source-native intervals (seconds). Match the spec table.
 SCHUMANN_INTERVAL = 300         # Tomsk JPEG updates ~5–10 min
 SPACE_WEATHER_INTERVAL = 60     # USGS geomag every 1 min, NOAA Kp every 5
+SPACE_WEATHER_PROVIDER_MAX_AGE_SECONDS = 600.0
 GDELT_INTERVAL = 900            # GDELT 2.0 publishes every 15 min
 BITFINEX_INTERVAL = 10          # ticker loop (when wired)
 OMNI_INTERVAL = 3600            # OMNI hourly (when wired)
@@ -74,6 +81,8 @@ FRED_INTERVAL = 3600            # FRED economic releases are sparse
 NOAA_CDO_INTERVAL = 3600        # NCEI Climate Data Online — slow daily records
 USGS_WATER_INTERVAL = 1800      # USGS Water Data collections — slow feed
 LOCAL_ACTION_INTERVAL = 60      # the organism's own local-machine moves
+VOL_SENTINEL_INTERVAL = 5       # market volatility prediction — compute cadence
+HARMONIC_SPECTRUM_INTERVAL = 15  # FFT-of-Λ(t) observer readback
 
 # Compute cadence — how often the engine takes a step against the latest
 # readings. The kernel is cheap (<1 ms/step) so 5 s gives the field high
@@ -83,17 +92,487 @@ COMPUTE_INTERVAL = 5
 # Backoff applied after a fetch raises.
 BACKOFF_INITIAL = 30
 BACKOFF_MAX = 600
+SOURCE_CLOCK_FUTURE_SKEW_SECONDS = 5.0
+REAL_SOURCE_TRUTH_STATUSES = frozenset({
+    "live", "real_observed", "real_provider", "real_derived",
+})
+
+
+def _get_macro_snapshot_quietly(macro_feed: Any) -> Any:
+    """Read the legacy macro feed without writing Unicode status art to stdio."""
+    sink = io.StringIO()
+    with contextlib.redirect_stdout(sink), contextlib.redirect_stderr(sink):
+        return macro_feed.get_snapshot()
+
+
+def _finite_timestamp(value: Any) -> Optional[float]:
+    """Parse a provider timestamp without substituting the receipt clock."""
+    if isinstance(value, str):
+        text = value.strip()
+        if not text:
+            return None
+        try:
+            value = float(text)
+        except ValueError:
+            try:
+                parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
+                if parsed.tzinfo is None:
+                    parsed = parsed.replace(tzinfo=timezone.utc)
+                value = parsed.timestamp()
+            except (TypeError, ValueError, OverflowError):
+                try:
+                    parsed = parsedate_to_datetime(text)
+                    if parsed.tzinfo is None:
+                        parsed = parsed.replace(tzinfo=timezone.utc)
+                    value = parsed.timestamp()
+                except (TypeError, ValueError, OverflowError):
+                    return None
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    return number if math.isfinite(number) and number > 0.0 else None
+
+
+def _required_text(value: Any) -> Optional[str]:
+    if not isinstance(value, str):
+        return None
+    text = value.strip()
+    return text or None
+
+
+def _field_value(payload: Any, name: str) -> Any:
+    if isinstance(payload, Mapping):
+        return payload.get(name)
+    return getattr(payload, name, None)
+
+
+@dataclass(frozen=True)
+class SourceReceipt:
+    """Complete immutable provenance for one accepted HNC input."""
+
+    source_id: str
+    source_timestamp: float
+    received_at: float
+    receipt_id: str
+    receipt_type: str
+    truth_status: str
+    data_status: str = "live"
+    generated_values: bool = False
+    input_receipt_ids: Tuple[str, ...] = ()
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "source_id": self.source_id,
+            "source_timestamp": self.source_timestamp,
+            "received_at": self.received_at,
+            "receipt_id": self.receipt_id,
+            "receipt_type": self.receipt_type,
+            "truth_status": self.truth_status,
+            "data_status": self.data_status,
+            "generated_values": self.generated_values,
+            "input_receipt_ids": list(self.input_receipt_ids),
+        }
+
+
+@dataclass(frozen=True)
+class SourceObservation:
+    """A numeric Lambda input paired with its validated source receipt."""
+
+    reading: SubsystemReading
+    receipt: SourceReceipt
+
+
+def _complete_source_observation(
+    name: str,
+    candidate: Any,
+    *,
+    now: float,
+    max_age_s: float,
+) -> Optional[SourceObservation]:
+    """Return a validated observation or None; never invent provenance."""
+    reading: Any
+    if isinstance(candidate, SourceObservation):
+        reading = candidate.reading
+        raw_receipt: Any = candidate.receipt
+    elif isinstance(candidate, Mapping):
+        reading = candidate.get("reading")
+        raw_receipt = candidate.get("receipt")
+    else:
+        return None
+    if not isinstance(reading, SubsystemReading) or reading.name != name:
+        return None
+    try:
+        value = float(reading.value)
+        confidence = float(reading.confidence)
+    except (TypeError, ValueError):
+        return None
+    if (
+        not math.isfinite(value)
+        or not math.isfinite(confidence)
+        or not 0.0 <= value <= 1.0
+        or not 0.0 <= confidence <= 1.0
+    ):
+        return None
+
+    source_id = _required_text(_field_value(raw_receipt, "source_id"))
+    receipt_id = _required_text(_field_value(raw_receipt, "receipt_id"))
+    receipt_type = _required_text(
+        _field_value(raw_receipt, "receipt_type")
+        or _field_value(raw_receipt, "provider_receipt_type")
+    )
+    truth_status = _required_text(_field_value(raw_receipt, "truth_status"))
+    source_timestamp = _finite_timestamp(_field_value(raw_receipt, "source_timestamp"))
+    received_at = _finite_timestamp(_field_value(raw_receipt, "received_at"))
+    generated_values = _field_value(raw_receipt, "generated_values")
+    data_status = _field_value(raw_receipt, "data_status")
+    raw_links = _field_value(raw_receipt, "input_receipt_ids")
+    if raw_links is None:
+        links: Tuple[str, ...] = ()
+    elif isinstance(raw_links, (list, tuple, set)):
+        normalized_links = sorted({
+            text for item in raw_links if (text := _required_text(item)) is not None
+        })
+        if len(normalized_links) != len(raw_links):
+            return None
+        links = tuple(normalized_links)
+    else:
+        return None
+    if (
+        source_id is None
+        or receipt_id is None
+        or receipt_type is None
+        or truth_status not in REAL_SOURCE_TRUTH_STATUSES
+        or data_status != "live"
+        or generated_values is not False
+        or source_timestamp is None
+        or received_at is None
+        or source_timestamp > now + SOURCE_CLOCK_FUTURE_SKEW_SECONDS
+        or received_at > now + SOURCE_CLOCK_FUTURE_SKEW_SECONDS
+        or received_at < source_timestamp - SOURCE_CLOCK_FUTURE_SKEW_SECONDS
+        or now - source_timestamp > max_age_s
+        or (truth_status == "real_derived" and not links)
+    ):
+        return None
+    return SourceObservation(
+        reading=SubsystemReading(
+            name=reading.name,
+            value=value,
+            confidence=confidence,
+            state=str(reading.state),
+        ),
+        receipt=SourceReceipt(
+            source_id=source_id,
+            source_timestamp=source_timestamp,
+            received_at=received_at,
+            receipt_id=receipt_id,
+            receipt_type=receipt_type,
+            truth_status=truth_status,
+            data_status="live",
+            generated_values=False,
+            input_receipt_ids=links,
+        ),
+    )
+
+
+def _source_payload(value: Any) -> Optional[Mapping[str, Any]]:
+    """Expose source-owned receipt fields without inventing missing values."""
+    if isinstance(value, Mapping):
+        return value
+    to_dict = getattr(value, "to_dict", None)
+    if not callable(to_dict):
+        return None
+    try:
+        payload = to_dict()
+    except Exception:
+        return None
+    return payload if isinstance(payload, Mapping) else None
+
+
+def _normalised_source_names(value: Any) -> Optional[Tuple[str, ...]]:
+    if not isinstance(value, (list, tuple)):
+        return None
+    names = tuple(sorted({
+        text for item in value if (text := _required_text(item)) is not None
+    }))
+    return names if names and len(names) == len(value) else None
+
+
+def _provider_input_receipt_id(
+    namespace: str,
+    provider_id: str,
+    source_timestamp: float,
+) -> str:
+    material = {
+        "namespace": namespace,
+        "provider_id": provider_id,
+        "source_timestamp": source_timestamp,
+    }
+    digest = hashlib.sha256(
+        json.dumps(material, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    return f"{namespace}.provider:{digest}"
+
+
+def _make_derived_source_observation(
+    name: str,
+    reading: Optional[SubsystemReading],
+    *,
+    source_timestamp: Any,
+    received_at: Any,
+    input_receipt_ids: Tuple[str, ...],
+    content: Mapping[str, Any],
+) -> Optional[SourceObservation]:
+    """Build a deterministic receipt from exact upstream IDs and content."""
+    if reading is None or reading.name != name:
+        return None
+    provider_timestamp = _finite_timestamp(source_timestamp)
+    receipt_timestamp = _finite_timestamp(received_at)
+    normalized_ids = tuple(sorted({
+        text
+        for item in input_receipt_ids
+        if (text := _required_text(item)) is not None
+    }))
+    try:
+        value = float(reading.value)
+        confidence = float(reading.confidence)
+    except (TypeError, ValueError):
+        return None
+    if (
+        provider_timestamp is None
+        or receipt_timestamp is None
+        or receipt_timestamp < provider_timestamp - SOURCE_CLOCK_FUTURE_SKEW_SECONDS
+        or not normalized_ids
+        or len(normalized_ids) != len(input_receipt_ids)
+        or not math.isfinite(value)
+        or not math.isfinite(confidence)
+    ):
+        return None
+    material = {
+        "name": name,
+        "source_timestamp": provider_timestamp,
+        "input_receipt_ids": list(normalized_ids),
+        "reading": {
+            "value": value,
+            "confidence": confidence,
+            "state": str(reading.state),
+        },
+        "content": content,
+    }
+    try:
+        encoded = json.dumps(
+            material,
+            allow_nan=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    except (TypeError, ValueError):
+        return None
+    receipt_id = f"hnc.source.{name}:{hashlib.sha256(encoded).hexdigest()}"
+    return SourceObservation(
+        reading=reading,
+        receipt=SourceReceipt(
+            source_id=f"hnc.source.{name}",
+            source_timestamp=provider_timestamp,
+            received_at=receipt_timestamp,
+            receipt_id=receipt_id,
+            receipt_type="hnc_source_observation",
+            truth_status="real_derived",
+            data_status="live",
+            generated_values=False,
+            input_receipt_ids=normalized_ids,
+        ),
+    )
+
+
+def _wrap_schumann_observation(
+    raw_reading: Any,
+    reading: Optional[SubsystemReading],
+) -> Optional[SourceObservation]:
+    """Bind a Schumann reading to its named provider and provider clock."""
+    payload = _source_payload(raw_reading)
+    if payload is None:
+        return None
+    active_sources = _normalised_source_names(payload.get("active_sources"))
+    source_timestamp = _finite_timestamp(payload.get("source_timestamp"))
+    received_at = _finite_timestamp(payload.get("timestamp"))
+    truth_status = _required_text(payload.get("truth_status"))
+    if (
+        active_sources is None
+        or source_timestamp is None
+        or received_at is None
+        or truth_status not in {"live", "real_derived"}
+        or payload.get("generated_values") is not False
+    ):
+        return None
+    input_ids = tuple(
+        _provider_input_receipt_id("schumann", provider, source_timestamp)
+        for provider in active_sources
+    )
+    return _make_derived_source_observation(
+        "schumann",
+        reading,
+        source_timestamp=source_timestamp,
+        received_at=received_at,
+        input_receipt_ids=input_ids,
+        content={
+            "active_sources": list(active_sources),
+            "provider_source_timestamp": source_timestamp,
+            "provider_truth_status": truth_status,
+        },
+    )
+
+
+def _wrap_space_weather_observation(
+    raw_reading: Any,
+    reading: Optional[SubsystemReading],
+) -> Optional[SourceObservation]:
+    """Bind a space-weather composite to every timestamped provider input."""
+    payload = _source_payload(raw_reading)
+    if payload is None:
+        return None
+    active_sources = _normalised_source_names(payload.get("active_sources"))
+    raw_timestamps = payload.get("source_timestamps")
+    received_at = _finite_timestamp(payload.get("timestamp"))
+    if (
+        active_sources is None
+        or not isinstance(raw_timestamps, Mapping)
+        or received_at is None
+        or payload.get("truth_status") != "live"
+        or payload.get("generated_values") is not False
+    ):
+        return None
+    provider_timestamps: Dict[str, float] = {}
+    for raw_provider, raw_timestamp in raw_timestamps.items():
+        provider = _required_text(raw_provider)
+        provider_timestamp = _finite_timestamp(raw_timestamp)
+        if (
+            provider is None
+            or provider not in active_sources
+            or provider_timestamp is None
+            or provider_timestamp > received_at + SOURCE_CLOCK_FUTURE_SKEW_SECONDS
+            or received_at - provider_timestamp > SPACE_WEATHER_PROVIDER_MAX_AGE_SECONDS
+        ):
+            return None
+        provider_timestamps[provider] = provider_timestamp
+    required_core = {"NOAA-KP", "NOAA-SolarWind"}
+    active_noaa_sources = {
+        source for source in active_sources if source.startswith("NOAA-")
+    }
+    if (
+        not required_core.issubset(provider_timestamps)
+        or not active_noaa_sources.issubset(provider_timestamps)
+    ):
+        return None
+    timestamp_rows = sorted(provider_timestamps.items())
+    input_ids = tuple(
+        _provider_input_receipt_id("space_weather", provider, provider_timestamp)
+        for provider, provider_timestamp in timestamp_rows
+    )
+    return _make_derived_source_observation(
+        "space_weather",
+        reading,
+        source_timestamp=max(provider_timestamps.values()),
+        received_at=received_at,
+        input_receipt_ids=input_ids,
+        content={
+            "active_sources": list(active_sources),
+            "provider_source_timestamps": timestamp_rows,
+        },
+    )
+
+
+def _wrap_world_data_observation(
+    name: str,
+    reading: Optional[SubsystemReading],
+    raw_items: Any,
+) -> Optional[SourceObservation]:
+    """Accept only WorldDataItems carrying their complete provider receipt."""
+    if isinstance(raw_items, (list, tuple)):
+        items = tuple(raw_items)
+    else:
+        items = (raw_items,)
+    if reading is None or not items or any(item is None for item in items):
+        return None
+
+    provider_rows: List[Dict[str, Any]] = []
+    input_ids: List[str] = []
+    source_timestamps: List[float] = []
+    received_timestamps: List[float] = []
+    for item in items:
+        payload = _source_payload(item)
+        if payload is None:
+            return None
+        source_id = _required_text(payload.get("source_id"))
+        receipt_id = _required_text(payload.get("receipt_id"))
+        source_timestamp = _finite_timestamp(payload.get("source_timestamp"))
+        received_at = _finite_timestamp(payload.get("received_at"))
+        truth_status = _required_text(payload.get("truth_status"))
+        if (
+            source_id is None
+            or receipt_id is None
+            or source_timestamp is None
+            or received_at is None
+            or received_at < source_timestamp - SOURCE_CLOCK_FUTURE_SKEW_SECONDS
+            or truth_status not in {"live", "real_observed", "real_provider"}
+            or payload.get("generated_values") is not False
+            or payload.get("data_status") not in (None, "live")
+            or any(
+                payload.get(field_name, False) is not False
+                for field_name in (
+                    "action_enabled",
+                    "accounting_enabled",
+                    "learning_enabled",
+                    "provider_eligible",
+                )
+            )
+        ):
+            return None
+        input_ids.append(receipt_id)
+        source_timestamps.append(source_timestamp)
+        received_timestamps.append(received_at)
+        provider_rows.append({
+            "receipt_id": receipt_id,
+            "source_id": source_id,
+            "source_timestamp": source_timestamp,
+            "truth_status": truth_status,
+        })
+    if len(set(input_ids)) != len(input_ids):
+        return None
+    return _make_derived_source_observation(
+        name,
+        reading,
+        source_timestamp=min(source_timestamps),
+        received_at=max(received_timestamps),
+        input_receipt_ids=tuple(input_ids),
+        content={"provider_receipts": sorted(
+            provider_rows, key=lambda row: row["receipt_id"]
+        )},
+    )
 
 
 @dataclass
 class SourceState:
-    """Per-source running state — cached reading, error count, last fetch ts."""
+    """Per-source running state — cached reading, error count, last fetch ts.
+
+    ``max_age_s`` is the honesty expiry: a cached reading older than this is
+    excluded from the Λ compute step instead of lingering in Γ forever.
+    """
     name: str
     interval_s: float
     last_reading: Optional[SubsystemReading] = None
+    last_receipt: Optional[SourceReceipt] = None
     last_fetch_ts: float = 0.0
     error_count: int = 0
     backoff_s: float = BACKOFF_INITIAL
+    max_age_s: float = 300.0
+
+    def reading_for_compute(self, now: float) -> SubsystemReading | None:
+        if self.last_reading is None or self.last_receipt is None:
+            return None
+        if (now - self.last_receipt.source_timestamp) > self.max_age_s:
+            return None
+        return self.last_reading
 
 
 # ─── SubsystemReading mappers ─────────────────────────────────────
@@ -101,22 +580,28 @@ class SourceState:
 # the LambdaEngine input contract: name, value ∈ [0,1], confidence ∈ [0,1],
 # state (free-form string).
 
-def _map_schumann(reading) -> SubsystemReading:
+def _map_schumann(reading) -> SubsystemReading | None:
     """SchumannReading → SubsystemReading.
 
     value      = amplitude (already 0..1)
     confidence = quality (Q-factor, already 0..1)
     state      = resonance_phase (stable/elevated/peak/disturbed)
     """
+    if reading is None or getattr(reading, "truth_status", "") not in {"live", "real_derived"}:
+        return None
+    amplitude = getattr(reading, "amplitude", None)
+    quality = getattr(reading, "quality", None)
+    if amplitude is None or quality is None:
+        return None
     return SubsystemReading(
         name="schumann",
-        value=float(getattr(reading, "amplitude", 0.5) or 0.5),
-        confidence=float(getattr(reading, "quality", 0.5) or 0.5),
+        value=float(amplitude),
+        confidence=float(quality),
         state=str(getattr(reading, "resonance_phase", "unknown")),
     )
 
 
-def _map_space_weather(reading) -> SubsystemReading:
+def _map_space_weather(reading) -> SubsystemReading | None:
     """SpaceWeatherReading → SubsystemReading.
 
     The Kp index runs 0..9 (0 = quiet, 9 = severe storm). A *quiet*
@@ -124,7 +609,12 @@ def _map_space_weather(reading) -> SubsystemReading:
     value = 1 - Kp/9. Confidence is fixed because NOAA's feed is
     authoritative when present.
     """
-    kp = float(getattr(reading, "kp_index", 3.0) or 3.0)
+    if reading is None or getattr(reading, "truth_status", "") != "live":
+        return None
+    raw_kp = getattr(reading, "kp_index", None)
+    if raw_kp is None:
+        return None
+    kp = float(raw_kp)
     value = max(0.0, min(1.0, 1.0 - kp / 9.0))
     return SubsystemReading(
         name="space_weather",
@@ -134,7 +624,7 @@ def _map_space_weather(reading) -> SubsystemReading:
     )
 
 
-def _map_gdelt(items: list) -> SubsystemReading:
+def _map_gdelt(items: list) -> SubsystemReading | None:
     """GDELT article list → SubsystemReading.
 
     Phase 1 mapping: more articles in the last pull = higher world-event
@@ -146,17 +636,19 @@ def _map_gdelt(items: list) -> SubsystemReading:
     tone yet — extending that is a separate change, not a daemon concern.
     """
     n = len(items) if items else 0
+    if not n:
+        return None
     import math
     value = math.tanh(n / 25.0)
     return SubsystemReading(
         name="gdelt",
         value=value,
-        confidence=0.7 if n else 0.3,
+        confidence=0.7,
         state=f"{n}_articles",
     )
 
 
-def _map_macro(snapshot) -> SubsystemReading:
+def _map_macro(snapshot) -> SubsystemReading | None:
     """GlobalFinancialFeed.MacroSnapshot → SubsystemReading.
 
     Composite signal from the three most-watched macro indicators:
@@ -170,13 +662,17 @@ def _map_macro(snapshot) -> SubsystemReading:
     are authoritative when present.
     """
     if snapshot is None:
-        return SubsystemReading(
-            name="macro_context", value=0.5, confidence=0.0, state="unavailable",
-        )
-    vix = float(getattr(snapshot, "vix", 20.0) or 20.0)
-    fg = float(getattr(snapshot, "crypto_fear_greed", 50) or 50)
-    curve_inv = bool(getattr(snapshot, "yield_curve_inversion", False))
-    regime = str(getattr(snapshot, "market_regime", "NORMAL") or "NORMAL")
+        return None
+    raw_vix = getattr(snapshot, "vix", None)
+    raw_fg = getattr(snapshot, "crypto_fear_greed", None)
+    raw_curve = getattr(snapshot, "yield_curve_inversion", None)
+    regime = getattr(snapshot, "market_regime", None)
+    if raw_vix is None or raw_fg is None or raw_curve is None or not regime:
+        return None
+    vix = float(raw_vix)
+    fg = float(raw_fg)
+    curve_inv = bool(raw_curve)
+    regime = str(regime)
 
     vix_signal = max(0.0, min(1.0, (100.0 - vix) / 100.0))
     fg_signal = max(0.0, min(1.0, fg / 100.0))
@@ -191,7 +687,7 @@ def _map_macro(snapshot) -> SubsystemReading:
     )
 
 
-def _map_coingecko(item) -> SubsystemReading:
+def _map_coingecko(item) -> SubsystemReading | None:
     """CoinGecko WorldDataItem → SubsystemReading.
 
     Maps 24h percent change to a 0..1 directional value:
@@ -202,17 +698,19 @@ def _map_coingecko(item) -> SubsystemReading:
     State carries the human-readable summary (price + percent change).
     """
     if item is None:
-        return SubsystemReading(
-            name="coingecko_btc", value=0.5, confidence=0.0, state="unavailable",
-        )
+        return None
     raw = getattr(item, "raw", None) or {}
-    change_24h = float(raw.get("change_24h", 0.0) or 0.0)
-    price = float(raw.get("price", 0.0) or 0.0)
+    if raw.get("change_24h") is None or raw.get("price") is None:
+        return None
+    change_24h = float(raw["change_24h"])
+    price = float(raw["price"])
+    if price <= 0:
+        return None
     value = max(0.0, min(1.0, 0.5 + change_24h / 20.0))
     return SubsystemReading(
         name="coingecko_btc",
         value=value,
-        confidence=0.8 if price > 0 else 0.0,
+        confidence=0.8,
         state=f"BTC ${price:,.0f} ({change_24h:+.2f}%)",
     )
 
@@ -226,7 +724,7 @@ _COMM_BEAR_KW = ("crash", "drop", "bear", "dump", "plunge", "tank",
                  "selloff", "collapse", "crater", "wipe out", "rout")
 
 
-def _map_community(items_hn: list, items_reddit: list) -> SubsystemReading:
+def _map_community(items_hn: list, items_reddit: list) -> SubsystemReading | None:
     """Reddit + Hacker News headlines → SubsystemReading.
 
     Crude keyword scoring per item: +1 (bullish kw match), -1 (bearish
@@ -236,10 +734,7 @@ def _map_community(items_hn: list, items_reddit: list) -> SubsystemReading:
     """
     items = (items_hn or []) + (items_reddit or [])
     if not items:
-        return SubsystemReading(
-            name="community_sentiment", value=0.5, confidence=0.0,
-            state="no_posts",
-        )
+        return None
     scores = []
     hits = 0
     for it in items:
@@ -263,7 +758,7 @@ def _map_community(items_hn: list, items_reddit: list) -> SubsystemReading:
     )
 
 
-def _map_fred(item) -> SubsystemReading:
+def _map_fred(item) -> SubsystemReading | None:
     """FRED (UNRATE — US unemployment rate) → SubsystemReading.
 
     Lower unemployment ⇒ stronger economy ⇒ higher confidence. Linear
@@ -271,20 +766,14 @@ def _map_fred(item) -> SubsystemReading:
     item.raw["value"] as a string per fetch_fred's CSV parse.
     """
     if item is None:
-        return SubsystemReading(
-            name="fred_unrate", value=0.5, confidence=0.0, state="unavailable",
-        )
+        return None
     raw = getattr(item, "raw", None) or {}
     try:
         unrate = float(raw.get("value", "nan"))
     except (TypeError, ValueError):
-        return SubsystemReading(
-            name="fred_unrate", value=0.5, confidence=0.0, state="parse_error",
-        )
+        return None
     if unrate != unrate:  # NaN
-        return SubsystemReading(
-            name="fred_unrate", value=0.5, confidence=0.0, state="nan",
-        )
+        return None
     # Map 3..8% → 1..0
     value = max(0.0, min(1.0, (8.0 - unrate) / 5.0))
     return SubsystemReading(
@@ -295,7 +784,7 @@ def _map_fred(item) -> SubsystemReading:
     )
 
 
-def _map_noaa_climate(item) -> SubsystemReading:
+def _map_noaa_climate(item) -> SubsystemReading | None:
     """NOAA NCEI Climate Data Online record → SubsystemReading.
 
     The daily climate record is an environmental-context input: a *present,
@@ -303,21 +792,12 @@ def _map_noaa_climate(item) -> SubsystemReading:
     A missing key/record degrades to a neutral, zero-confidence reading so the
     field simply ignores it. State carries the datatype + latest value.
     """
-    if item is None:
-        return SubsystemReading(
-            name="noaa_climate", value=0.5, confidence=0.0, state="unavailable",
-        )
-    raw = getattr(item, "raw", None) or {}
-    count = int(raw.get("count", 0)) if isinstance(raw, dict) else 0
-    return SubsystemReading(
-        name="noaa_climate",
-        value=0.75,
-        confidence=0.8,
-        state=f"{count}_datasets",
-    )
+    # The current fetch is a catalogue/reachability read, not a climate
+    # measurement. It remains observable but must not enter Λ as a value.
+    return None
 
 
-def _map_local_action(stats) -> SubsystemReading:
+def _map_local_action(stats) -> SubsystemReading | None:
     """Recent local-machine action verdicts → SubsystemReading.
 
     This is the organism grounding its OWN moves back into the Master Formula:
@@ -327,12 +807,12 @@ def _map_local_action(stats) -> SubsystemReading:
     how many moves we have seen. No activity → neutral, zero-confidence.
     """
     if not stats or not stats.get("count"):
-        return SubsystemReading(
-            name="local_action", value=0.5, confidence=0.0, state="idle",
-        )
+        return None
     count = int(stats.get("count", 0))
     ratio = stats.get("approve_ratio")
-    value = float(ratio) if ratio is not None else 0.5
+    if ratio is None:
+        return None
+    value = float(ratio)
     import math
     confidence = min(0.9, math.tanh(count / 20.0))
     return SubsystemReading(
@@ -343,26 +823,67 @@ def _map_local_action(stats) -> SubsystemReading:
     )
 
 
-def _map_usgs_water(item) -> SubsystemReading:
+def _map_usgs_water(item) -> SubsystemReading | None:
     """USGS Water Data collections snapshot → SubsystemReading.
 
     Reachable, keyed water-data service = a stable environmental-context input.
     value scales gently with how many collections responded (tanh-saturated),
     so a richer response reads as marginally higher coherence. Absent → neutral.
     """
-    if item is None:
-        return SubsystemReading(
-            name="usgs_water", value=0.5, confidence=0.0, state="unavailable",
-        )
-    raw = getattr(item, "raw", None) or {}
-    count = int(raw.get("count", 0)) if isinstance(raw, dict) else 0
-    import math
-    value = 0.5 + 0.5 * math.tanh(count / 20.0)
+    # The current fetch is a collection catalogue/reachability read, not a
+    # water measurement. It must not be converted into a coherence value.
+    return None
+
+
+def _map_volatility_sentinel(assessment) -> SubsystemReading | None:
+    """VolatilityAssessment → SubsystemReading (the Fourier→Λ(t) seam).
+
+    value = SAFETY = 1 − volatility_risk: predicted high volatility reads as a
+    LOW subsystem value, which pulls Γ = 1−|σ/μ| down, which every
+    reconcile_gamma order-path gate then takes as the tighter bound — b46
+    tighten-only by construction, with zero edits at the ten gate sites.
+
+    no_data → None, NEVER a neutral placeholder: Γ consumes reading VALUES
+    regardless of confidence, so a substituted 0.5 would move the canonical
+    field — fabrication by another name.
+    """
+    if assessment is None:
+        return None
+    risk = getattr(assessment, "volatility_risk", None)
+    if getattr(assessment, "status", "no_data") != "ok" or risk is None:
+        return None
+    factors = [f.name for f in getattr(assessment, "factors", ())
+               if getattr(f, "status", "") == "ok"]
     return SubsystemReading(
-        name="usgs_water",
-        value=float(value),
-        confidence=0.8,
-        state=f"{count}_collections",
+        name="volatility_sentinel",
+        value=max(0.0, min(1.0, 1.0 - float(risk))),
+        confidence=max(0.0, min(1.0, float(getattr(assessment, "confidence", 0.0)))),
+        state=f"risk={float(risk):.2f};factors={','.join(factors) or 'none'}",
+    )
+
+
+def _map_harmonic_observer(observer) -> SubsystemReading | None:
+    """HarmonicObserver → SubsystemReading (FFT of Λ(t) fed back into Λ(t)).
+
+    value = the observer's rock-stability coherence score; state = its regime.
+    WARMING (no data yet) → None. Confidence capped at 0.6 because this is a
+    self-referential loop — the spectral view of the field must inform the
+    field, never dominate it.
+    """
+    if observer is None:
+        return None
+    try:
+        regime = str(observer.regime())
+        if regime.upper() == "WARMING":
+            return None
+        score = float(observer.coherence_score())
+    except Exception:
+        return None
+    return SubsystemReading(
+        name="harmonic_spectrum",
+        value=max(0.0, min(1.0, score)),
+        confidence=0.6,
+        state=regime,
     )
 
 
@@ -385,7 +906,8 @@ class HNCLiveDaemon:
     def __init__(self, params: Optional[HNCParams] = None,
                  trace_path: Optional[Path] = None,
                  attach_observer: bool = True,
-                 observer=None):
+                 observer=None,
+                 state_path: Optional[Path] = None):
         """
         attach_observer: when True (default), construct a HarmonicObserver
             and feed it engine state on every compute step. The observer
@@ -401,9 +923,9 @@ class HNCLiveDaemon:
             a default observer is created.
         """
         self.params = apply_to_lambda_engine(params or load_params())
-        self.engine = LambdaEngine()
+        self.engine = LambdaEngine(state_path=state_path)
         self._sources: Dict[str, SourceState] = {}
-        self._fetchers: Dict[str, Callable[[], Awaitable[Optional[SubsystemReading]]]] = {}
+        self._fetchers: Dict[str, Callable[[], Awaitable[Any]]] = {}
         self._last_state_dict: Optional[dict] = None
         self._step_lock = asyncio.Lock()
         self._stop = asyncio.Event()
@@ -411,6 +933,7 @@ class HNCLiveDaemon:
             Path(__file__).resolve().parents[2] / "state" / "hnc_live_trace.jsonl"
         )
         self._trace_path.parent.mkdir(parents=True, exist_ok=True)
+        self._observer = observer
 
         # Built-in sources — only wire if their bridges import cleanly.
         self._wire_default_sources()
@@ -419,7 +942,6 @@ class HNCLiveDaemon:
         # observer issue (missing module, missing numpy in sandbox) can
         # NEVER break daemon startup or the compute loop. The observer
         # is purely an output channel from this loop's perspective.
-        self._observer = observer
         if self._observer is None and attach_observer:
             try:
                 from aureon.observer import HarmonicObserver
@@ -454,6 +976,14 @@ class HNCLiveDaemon:
                 logger.info("HNC daemon: MomentumTracker attached (auto)")
             except Exception as exc:
                 logger.warning("HNC daemon: MomentumTracker attach skipped: %s", exc)
+        if self._observer is not None and "harmonic_spectrum" not in self._sources:
+            async def fetch_harmonic_spectrum():
+                return _map_harmonic_observer(self._observer)
+
+            self.register_source(
+                "harmonic_spectrum", HARMONIC_SPECTRUM_INTERVAL,
+                fetch_harmonic_spectrum, max_age_s=180.0,
+            )
 
     # ─── source registration ────────────────────────────────────
 
@@ -461,25 +991,32 @@ class HNCLiveDaemon:
         self,
         name: str,
         interval_s: float,
-        fetcher: Callable[[], Awaitable[Optional[SubsystemReading]]],
+        fetcher: Callable[[], Awaitable[Any]],
+        max_age_s: float | None = None,
     ) -> None:
         """Add a source. ``fetcher`` is an async callable that returns a
         SubsystemReading or None. The daemon handles cadence and retry.
+        ``max_age_s`` expires the cached reading out of the Λ compute step
+        when the source goes dark. The default is three source intervals,
+        never an unbounded stale cache.
         """
-        self._sources[name] = SourceState(name=name, interval_s=interval_s)
+        freshness_limit = float(max_age_s) if max_age_s is not None else max(60.0, float(interval_s) * 3.0)
+        self._sources[name] = SourceState(
+            name=name, interval_s=interval_s, max_age_s=freshness_limit)
         self._fetchers[name] = fetcher
         logger.info("HNC daemon: registered source %s @ %ss", name, interval_s)
 
     def _wire_default_sources(self) -> None:
         # Schumann
         try:
-            from aureon.harmonic.aureon_schumann_resonance_bridge import SchumannResonanceBridge
-            bridge = SchumannResonanceBridge()
+            from aureon.harmonic.aureon_schumann_resonance_bridge import get_schumann_bridge
+            bridge = get_schumann_bridge()
 
             async def fetch_schumann():
                 # SchumannResonanceBridge.get_live_data() is sync; run in thread.
                 reading = await asyncio.to_thread(bridge.get_live_data)
-                return _map_schumann(reading) if reading else None
+                mapped = _map_schumann(reading) if reading else None
+                return _wrap_schumann_observation(reading, mapped)
 
             self.register_source("schumann", SCHUMANN_INTERVAL, fetch_schumann)
         except Exception as exc:
@@ -487,14 +1024,20 @@ class HNCLiveDaemon:
 
         # Space weather
         try:
-            from aureon.data_feeds.aureon_space_weather_bridge import SpaceWeatherBridge
-            sw = SpaceWeatherBridge()
+            from aureon.data_feeds.aureon_space_weather_bridge import get_space_weather_bridge
+            sw = get_space_weather_bridge()
 
             async def fetch_space_weather():
                 reading = await asyncio.to_thread(sw.get_live_data)
-                return _map_space_weather(reading) if reading else None
+                mapped = _map_space_weather(reading) if reading else None
+                return _wrap_space_weather_observation(reading, mapped)
 
-            self.register_source("space_weather", SPACE_WEATHER_INTERVAL, fetch_space_weather)
+            self.register_source(
+                "space_weather",
+                SPACE_WEATHER_INTERVAL,
+                fetch_space_weather,
+                max_age_s=300.0,
+            )
         except Exception as exc:
             logger.warning("HNC daemon: space_weather not wired (%s)", exc)
 
@@ -505,7 +1048,9 @@ class HNCLiveDaemon:
 
             async def fetch_gdelt():
                 items = await asyncio.to_thread(ingester.fetch_gdelt, "world", 25)
-                return _map_gdelt(items)
+                return _wrap_world_data_observation(
+                    "gdelt", _map_gdelt(items), items
+                )
 
             self.register_source("gdelt", GDELT_INTERVAL, fetch_gdelt)
         except Exception as exc:
@@ -517,7 +1062,7 @@ class HNCLiveDaemon:
             macro_feed = GlobalFinancialFeed()
 
             async def fetch_macro():
-                snap = await asyncio.to_thread(macro_feed.get_snapshot)
+                snap = await asyncio.to_thread(_get_macro_snapshot_quietly, macro_feed)
                 return _map_macro(snap) if snap is not None else None
 
             self.register_source("macro_context", MACRO_INTERVAL, fetch_macro)
@@ -531,7 +1076,10 @@ class HNCLiveDaemon:
 
             async def fetch_coingecko():
                 item = await asyncio.to_thread(cg_ingester.fetch_coingecko, "bitcoin")
-                return _map_coingecko(item) if item is not None else None
+                mapped = _map_coingecko(item) if item is not None else None
+                return _wrap_world_data_observation(
+                    "coingecko_btc", mapped, item
+                )
 
             self.register_source("coingecko_btc", COINGECKO_INTERVAL, fetch_coingecko)
         except Exception as exc:
@@ -547,7 +1095,10 @@ class HNCLiveDaemon:
                 reddit = await asyncio.to_thread(
                     comm_ingester.fetch_reddit, "worldnews", 10
                 )
-                return _map_community(hn, reddit)
+                items = (hn or []) + (reddit or [])
+                return _wrap_world_data_observation(
+                    "community_sentiment", _map_community(hn, reddit), items
+                )
 
             self.register_source(
                 "community_sentiment", COMMUNITY_INTERVAL, fetch_community,
@@ -562,7 +1113,10 @@ class HNCLiveDaemon:
 
             async def fetch_fred_unrate():
                 item = await asyncio.to_thread(fred_ingester.fetch_fred, "UNRATE")
-                return _map_fred(item) if item is not None else None
+                mapped = _map_fred(item) if item is not None else None
+                return _wrap_world_data_observation(
+                    "fred_unrate", mapped, item
+                )
 
             self.register_source("fred_unrate", FRED_INTERVAL, fetch_fred_unrate)
         except Exception as exc:
@@ -575,7 +1129,9 @@ class HNCLiveDaemon:
 
             async def fetch_noaa_climate():
                 item = await asyncio.to_thread(noaa_ingester.fetch_noaa_climate)
-                return _map_noaa_climate(item)
+                return _wrap_world_data_observation(
+                    "noaa_climate", _map_noaa_climate(item), item
+                )
 
             self.register_source("noaa_climate", NOAA_CDO_INTERVAL, fetch_noaa_climate)
         except Exception as exc:
@@ -588,7 +1144,9 @@ class HNCLiveDaemon:
 
             async def fetch_usgs_water():
                 item = await asyncio.to_thread(usgs_ingester.fetch_usgs_water)
-                return _map_usgs_water(item)
+                return _wrap_world_data_observation(
+                    "usgs_water", _map_usgs_water(item), item
+                )
 
             self.register_source("usgs_water", USGS_WATER_INTERVAL, fetch_usgs_water)
         except Exception as exc:
@@ -633,6 +1191,87 @@ class HNCLiveDaemon:
         except Exception as exc:
             logger.warning("HNC daemon: local_action not wired (%s)", exc)
 
+        # ── volatility sentinel (market FFT surge + phase + QGITA + EWMA) ──
+        # The Fourier→Λ(t) source: predicted high volatility lowers Γ, which
+        # tightens every reconcile_gamma order-path gate. Prices come from the
+        # same ws_cache the HNC live connector reads — real prices or no
+        # ingest at all; a no_data assessment maps to None (never a
+        # placeholder), and max_age_s expires the reading if the sentinel
+        # goes dark so a stale risk cannot linger in Γ.
+        try:
+            from aureon.intelligence.volatility_sentinel import VolatilitySentinel
+
+            _sentinel_symbols = [
+                s.strip() for s in os.environ.get(
+                    "HNC_SYMBOLS", "BTC/USD,ETH/USD,SOL/USD").split(",")
+                if s.strip()
+            ]
+            _sentinel = VolatilitySentinel(symbols=_sentinel_symbols)
+            self._volatility_sentinel = _sentinel
+
+            def _load_ws_prices() -> dict:
+                # Same cache + normalization as HncLiveConnector
+                # (_load_prices_from_cache): 'prices' (binance) → BASE/USD,
+                # 'ticker_cache' (coingecko) → PAIR. Missing/unreadable → {}.
+                import json as _json
+                from pathlib import Path as _Path
+                path = _Path(os.environ.get(
+                    "WS_PRICE_CACHE_PATH", "ws_cache/ws_prices.json"))
+                if not path.exists():
+                    return {}
+                try:
+                    payload = _json.loads(path.read_text(encoding="utf-8"))
+                except Exception:
+                    return {}
+                out: dict = {}
+                for base, price in (payload.get("prices") or {}).items():
+                    try:
+                        out[f"{base}/USD"] = float(price)
+                    except Exception:
+                        continue
+                for pair, entry in (payload.get("ticker_cache") or {}).items():
+                    try:
+                        out[str(pair).upper()] = float(
+                            (entry or {}).get("price", 0) or 0)
+                    except Exception:
+                        continue
+                return out
+
+            def _sentinel_step():
+                prices = _load_ws_prices()
+                for sym in _sentinel.symbols:
+                    px = prices.get(sym)
+                    if px and px > 0:
+                        _sentinel.ingest_price(sym, px)
+                assessment = _sentinel.assess_portfolio()
+                # Publish even when no_data — the honest state is telemetry too.
+                _sentinel.publish(assessment)
+                return assessment
+
+            async def fetch_volatility_sentinel():
+                assessment = await asyncio.to_thread(_sentinel_step)
+                return _map_volatility_sentinel(assessment)
+
+            self.register_source(
+                "volatility_sentinel", VOL_SENTINEL_INTERVAL,
+                fetch_volatility_sentinel, max_age_s=120.0)
+        except Exception as exc:
+            logger.warning("HNC daemon: volatility_sentinel not wired (%s)", exc)
+
+        # ── harmonic spectrum (FFT of Λ(t), the attached observer) ──
+        # The observer already ingests every engine step; this closes its loop
+        # back into Λ(t) as a bounded-confidence reading.
+        try:
+            if self._observer is not None:
+                async def fetch_harmonic_spectrum():
+                    return _map_harmonic_observer(self._observer)
+
+                self.register_source(
+                    "harmonic_spectrum", HARMONIC_SPECTRUM_INTERVAL,
+                    fetch_harmonic_spectrum, max_age_s=180.0)
+        except Exception as exc:
+            logger.warning("HNC daemon: harmonic_spectrum not wired (%s)", exc)
+
     # ─── per-source pull loop ──────────────────────────────────
 
     async def _source_loop(self, name: str) -> None:
@@ -640,10 +1279,19 @@ class HNCLiveDaemon:
         fetch = self._fetchers[name]
         while not self._stop.is_set():
             try:
-                reading = await fetch()
-                if reading is not None:
+                candidate = await fetch()
+                now = time.time()
+                observation = _complete_source_observation(
+                    name,
+                    candidate,
+                    now=now,
+                    max_age_s=st.max_age_s,
+                )
+                if observation is not None:
+                    reading = observation.reading
                     st.last_reading = reading
-                    st.last_fetch_ts = time.time()
+                    st.last_receipt = observation.receipt
+                    st.last_fetch_ts = observation.receipt.received_at
                     st.error_count = 0
                     st.backoff_s = BACKOFF_INITIAL
                     # Stage AC: feed the value into the momentum tracker
@@ -655,9 +1303,20 @@ class HNCLiveDaemon:
                         from aureon.observer.momentum import get_momentum_tracker
                         mt = get_momentum_tracker()
                         if mt is not None:
-                            mt.ingest(name, float(reading.value), st.last_fetch_ts)
+                            mt.ingest(
+                                name,
+                                float(reading.value),
+                                observation.receipt.source_timestamp,
+                            )
                     except Exception:
                         pass
+                elif candidate is not None:
+                    st.last_reading = None
+                    st.last_receipt = None
+                    logger.debug(
+                        "HNC daemon: source %s returned an incomplete receipt",
+                        name,
+                    )
                 wait = st.interval_s
             except Exception as exc:
                 st.error_count += 1
@@ -675,40 +1334,273 @@ class HNCLiveDaemon:
 
     # ─── compute loop ──────────────────────────────────────────
 
+    def _no_data_envelope(self, received_at: float, reason: str) -> Dict[str, Any]:
+        digest = hashlib.sha256(
+            f"hnc_live_daemon|no_data|{reason}".encode("utf-8")
+        ).hexdigest()[:24]
+        return {
+            "data_status": "no_data",
+            "source": "hnc_live_daemon",
+            "source_id": "aureon:hnc:live_daemon",
+            "source_timestamp": None,
+            "received_at": received_at,
+            "ts": None,
+            "receipt_id": f"hnc:no_data:{digest}",
+            "receipt_type": "hnc_live_field",
+            "provider_receipt_type": "hnc_live_field",
+            "truth_status": "no_data",
+            "generated_values": False,
+            "input_receipt_ids": [],
+            "reason": reason,
+            "operational_eligible": False,
+            "provider_eligible": False,
+            "action_eligible": False,
+            "actionable": False,
+            "accounting_eligible": False,
+            "learning_eligible": False,
+            "eligible_for_action": False,
+            "eligible_for_accounting": False,
+            "eligible_for_learning": False,
+            "equation_inputs_complete": False,
+            "action_gate_passed": False,
+        }
+
+    def _derived_envelope(
+        self,
+        state_dict: Dict[str, Any],
+        readings: List[SubsystemReading],
+        *,
+        received_at: float,
+        source_receipts: List[SourceReceipt],
+        memory_receipt: Mapping[str, Any],
+    ) -> Dict[str, Any]:
+        if (
+            not readings
+            or len(source_receipts) != len(readings)
+            or any(not isinstance(receipt, SourceReceipt) for receipt in source_receipts)
+        ):
+            raise ValueError("exact source receipt snapshot required")
+        validated_memory = validate_history_receipt(memory_receipt)
+        if validated_memory is None:
+            raise ValueError("complete Lambda history receipt required")
+        provider_receipt_ids = sorted({
+            receipt.receipt_id for receipt in source_receipts
+        })
+        if validated_memory["source_receipt_ids"] != provider_receipt_ids:
+            raise ValueError("Lambda history receipt does not match current providers")
+        state_step = state_dict.get("step")
+        state_lambda = state_dict.get("lambda_t")
+        state_psi = state_dict.get("consciousness_psi")
+        if (
+            isinstance(state_step, bool)
+            or not isinstance(state_step, int)
+            or isinstance(state_lambda, bool)
+            or not isinstance(state_lambda, (int, float))
+            or not math.isfinite(float(state_lambda))
+            or isinstance(state_psi, bool)
+            or not isinstance(state_psi, (int, float))
+            or not math.isfinite(float(state_psi))
+            or not validated_memory["history"]
+            or not validated_memory["psi_history"]
+            or validated_memory["step_count"] != state_step
+            or validated_memory["history"][-1] != float(state_lambda)
+            or validated_memory["psi_history"][-1] != float(state_psi)
+        ):
+            raise ValueError("Lambda history receipt does not match emitted state")
+        memory_receipt_id = validated_memory["receipt_id"]
+        memory_canonical_hash = validated_memory["canonical_hash"]
+        memory_previous_receipt_id = validated_memory["previous_receipt_id"]
+        input_receipt_ids = sorted({
+            receipt.receipt_id
+            for receipt in source_receipts
+        } | {memory_receipt_id})
+        source_timestamp = max(
+            receipt.source_timestamp
+            for receipt in source_receipts
+        )
+        fingerprint = {
+            "input_receipt_ids": input_receipt_ids,
+            "source_timestamp": source_timestamp,
+            "received_at": received_at,
+            "step": state_dict.get("step"),
+            "lambda_t": state_dict.get("lambda_t"),
+            "coherence_gamma": state_dict.get("coherence_gamma"),
+            "consciousness_psi": state_dict.get("consciousness_psi"),
+            "symbolic_life_score": state_dict.get("symbolic_life_score"),
+        }
+        digest = hashlib.sha256(
+            json.dumps(
+                fingerprint,
+                sort_keys=True,
+                separators=(",", ":"),
+                allow_nan=False,
+            ).encode("utf-8")
+        ).hexdigest()[:24]
+        return {
+            **state_dict,
+            "data_status": "live",
+            "source": "hnc_live_daemon",
+            "source_id": "aureon:hnc:live_daemon",
+            "source_timestamp": source_timestamp,
+            "received_at": received_at,
+            "ts": source_timestamp,
+            "receipt_id": f"hnc:live_field:{digest}",
+            "receipt_type": "hnc_live_field",
+            "provider_receipt_type": "hnc_live_field",
+            "truth_status": "real_derived",
+            "generated_values": False,
+            "input_receipt_ids": input_receipt_ids,
+            "memory_receipt_id": memory_receipt_id,
+            "memory_canonical_hash": memory_canonical_hash,
+            "memory_previous_receipt_id": memory_previous_receipt_id,
+            "freshness_status": "fresh",
+            "operational_eligible": False,
+            "provider_eligible": False,
+            "action_eligible": False,
+            "actionable": False,
+            "accounting_eligible": False,
+            "learning_eligible": False,
+            "eligible_for_action": False,
+            "eligible_for_accounting": False,
+            "eligible_for_learning": False,
+            "equation_inputs_complete": True,
+            "action_gate_passed": False,
+            "action_gate_reason": "route_specific_market_link_required",
+        }
+
+    def _publish_pulse(self, envelope: Dict[str, Any]) -> None:
+        try:
+            from aureon.core.aureon_thought_bus import Thought, get_thought_bus
+
+            keys = {
+                "data_status", "source", "source_id", "source_timestamp",
+                "received_at", "ts", "receipt_id", "receipt_type",
+                "provider_receipt_type", "truth_status", "generated_values",
+                "input_receipt_ids", "memory_receipt_id",
+                "memory_canonical_hash", "memory_previous_receipt_id",
+                "reason", "freshness_status",
+                "operational_eligible", "provider_eligible",
+                "action_eligible", "actionable", "accounting_eligible",
+                "learning_eligible", "eligible_for_action",
+                "eligible_for_accounting", "eligible_for_learning",
+                "equation_inputs_complete", "action_gate_passed",
+                "action_gate_reason", "symbolic_life_score",
+                "coherence_gamma", "consciousness_psi",
+                "consciousness_level", "lambda_t", "step", "source_count",
+            }
+            payload = {
+                key: value for key, value in envelope.items() if key in keys
+            }
+            get_thought_bus().publish(Thought(
+                source="hnc_live_daemon",
+                topic="symbolic.life.pulse",
+                payload=payload,
+            ))
+        except Exception as exc:
+            logger.debug("symbolic.life.pulse publish failed: %s", exc)
+
+    def _snapshot_source_observations(
+        self,
+        received_at: float,
+    ) -> List[SourceObservation]:
+        """Freeze the exact reading/receipt pairs used by one heartbeat."""
+        observations: List[SourceObservation] = []
+        for source_state in self._sources.values():
+            reading = source_state.reading_for_compute(received_at)
+            receipt = source_state.last_receipt
+            if reading is None or receipt is None:
+                continue
+            observations.append(SourceObservation(
+                reading=SubsystemReading(
+                    name=reading.name,
+                    value=float(reading.value),
+                    confidence=float(reading.confidence),
+                    state=str(reading.state),
+                ),
+                receipt=receipt,
+            ))
+        return observations
+
+    async def _compute_transaction(
+        self,
+        received_at: float,
+    ) -> Tuple[Optional[Any], Dict[str, Any], List[SubsystemReading]]:
+        observations = self._snapshot_source_observations(received_at)
+        if not observations:
+            return (
+                None,
+                self._no_data_envelope(
+                    received_at,
+                    "complete_fresh_real_source_receipt_required",
+                ),
+                [],
+            )
+
+        readings = [observation.reading for observation in observations]
+        source_receipts = [observation.receipt for observation in observations]
+        source_receipt_ids = sorted({
+            receipt.receipt_id for receipt in source_receipts
+        })
+        async with self._step_lock:
+            checkpoint = self.engine.checkpoint_history()
+            try:
+                state = self.engine.step(
+                    readings,
+                    source_receipt_ids=source_receipt_ids,
+                    auto_persist=False,
+                )
+            except Exception as exc:
+                self.engine.rollback_history(checkpoint)
+                logger.warning("HNC Lambda step rolled back: %s", exc)
+                return (
+                    None,
+                    self._no_data_envelope(
+                        received_at,
+                        "lambda_step_failed_rollback",
+                    ),
+                    [],
+                )
+            memory_receipt = self.engine.save_history(
+                source_receipt_ids=source_receipt_ids
+            )
+            if memory_receipt is None:
+                self.engine.rollback_history(checkpoint)
+                logger.warning(
+                    "HNC Lambda history commit rolled back: %s",
+                    self.engine.last_history_commit_error,
+                )
+                return (
+                    None,
+                    self._no_data_envelope(
+                        received_at,
+                        "lambda_history_commit_failed_rollback",
+                    ),
+                    [],
+                )
+
+        envelope = self._derived_envelope(
+            state.to_dict(),
+            readings,
+            received_at=received_at,
+            source_receipts=source_receipts,
+            memory_receipt=memory_receipt,
+        )
+        envelope["source_count"] = len(readings)
+        return state, envelope, readings
+
     async def _compute_loop(self) -> None:
         while not self._stop.is_set():
-            readings: List[SubsystemReading] = [
-                st.last_reading for st in self._sources.values()
-                if st.last_reading is not None
-            ]
-            async with self._step_lock:
-                state = self.engine.step(readings)
-            self._last_state_dict = state.to_dict()
-            self._append_trace(self._last_state_dict, readings)
-
-            # Phase 19 — publish the LIVE field on the thought bus so the whole
-            # organism can sense it. The QueenConscience SLS veto, the grounded-
-            # action gate, and four other subscribers all read
-            # ``symbolic.life.pulse``; without this edge the daemon's real field
-            # stayed trapped in the JSONL trace and every consumer degraded to
-            # "unknown" in production. Guarded — a bus hiccup never stops the loop.
-            try:
-                from aureon.core.aureon_thought_bus import Thought, get_thought_bus
-
-                sd = self._last_state_dict
-                get_thought_bus().publish(Thought(
-                    source="hnc_live_daemon", topic="symbolic.life.pulse",
-                    payload={
-                        "symbolic_life_score": sd.get("symbolic_life_score"),
-                        "coherence_gamma": sd.get("coherence_gamma"),
-                        "consciousness_psi": sd.get("consciousness_psi"),
-                        "consciousness_level": sd.get("consciousness_level"),
-                        "lambda_t": sd.get("lambda_t"),
-                        "source": "hnc_live_daemon",
-                    },
-                ))
-            except Exception as exc:
-                logger.debug("symbolic.life.pulse publish failed: %s", exc)
+            _now = time.time()
+            state, envelope, readings = await self._compute_transaction(_now)
+            self._last_state_dict = envelope
+            self._append_trace(envelope, readings)
+            self._publish_pulse(envelope)
+            if state is None:
+                try:
+                    await asyncio.wait_for(self._stop.wait(), timeout=COMPUTE_INTERVAL)
+                    return
+                except asyncio.TimeoutError:
+                    continue
 
             # Feed the engine state into the attached observer. Wrapped
             # so any observer error (numpy missing in sandbox, scipy
@@ -717,6 +1609,10 @@ class HNCLiveDaemon:
             if self._observer is not None:
                 try:
                     self._observer.ingest_state(state)
+                    # The observer's local field joins the whole-body consensus
+                    # as a sub-field (throttled inside publish_field; no-op
+                    # before it has data).
+                    self._observer.publish_field()
                 except Exception as exc:
                     logger.debug("observer.ingest_state failed: %s", exc)
 
@@ -746,19 +1642,47 @@ class HNCLiveDaemon:
         history deque to state/lambda_history.json.
         """
         try:
+            provenance_keys = (
+                "data_status", "source", "source_id", "source_timestamp",
+                "received_at", "ts", "receipt_id", "receipt_type",
+                "provider_receipt_type", "truth_status", "generated_values",
+                "input_receipt_ids", "memory_receipt_id",
+                "memory_canonical_hash", "memory_previous_receipt_id",
+                "reason", "freshness_status",
+                "operational_eligible", "provider_eligible",
+                "action_eligible", "actionable", "accounting_eligible",
+                "learning_eligible", "eligible_for_action",
+                "eligible_for_accounting", "eligible_for_learning",
+                "equation_inputs_complete", "action_gate_passed",
+                "action_gate_reason",
+            )
             row = {
-                "ts": state_dict.get("timestamp"),
-                "step": state_dict.get("step"),
-                "lambda_t": state_dict.get("lambda_t"),
-                "consciousness_psi": state_dict.get("consciousness_psi"),
-                "consciousness_level": state_dict.get("consciousness_level"),
-                "coherence_gamma": state_dict.get("coherence_gamma"),
-                "symbolic_life_score": state_dict.get("symbolic_life_score"),
-                "sources": {
-                    r.name: {"value": r.value, "confidence": r.confidence, "state": r.state}
-                    for r in readings
-                },
+                key: state_dict.get(key)
+                for key in provenance_keys
+                if key in state_dict
             }
+            if state_dict.get("data_status") == "live":
+                row.update({
+                    "step": state_dict.get("step"),
+                    "lambda_t": state_dict.get("lambda_t"),
+                    "consciousness_psi": state_dict.get("consciousness_psi"),
+                    "consciousness_level": state_dict.get("consciousness_level"),
+                    "coherence_gamma": state_dict.get("coherence_gamma"),
+                    "symbolic_life_score": state_dict.get("symbolic_life_score"),
+                    "source_count": state_dict.get("source_count"),
+                    "sources": {
+                        r.name: {
+                            "value": r.value,
+                            "confidence": r.confidence,
+                            "state": r.state,
+                            **receipt.to_dict(),
+                            "freshness_ttl_s": self._sources[r.name].max_age_s,
+                        }
+                        for r in readings
+                        if (receipt := self._sources[r.name].last_receipt)
+                        is not None
+                    },
+                })
             with open(self._trace_path, "a", encoding="utf-8") as fh:
                 fh.write(json.dumps(row) + "\n")
         except Exception as exc:
@@ -783,6 +1707,15 @@ class HNCLiveDaemon:
                 "lag_s": (now - st.last_fetch_ts) if st.last_fetch_ts else None,
                 "error_count": st.error_count,
                 "has_reading": st.last_reading is not None,
+                "receipt_id": (
+                    st.last_receipt.receipt_id if st.last_receipt else None
+                ),
+                "source_timestamp": (
+                    st.last_receipt.source_timestamp if st.last_receipt else None
+                ),
+                "received_at": (
+                    st.last_receipt.received_at if st.last_receipt else None
+                ),
             }
             for name, st in self._sources.items()
         }
@@ -813,11 +1746,8 @@ class HNCLiveDaemon:
         for t in tasks:
             t.cancel()
         await asyncio.gather(*tasks, return_exceptions=True)
-        # Final persist so the lighthouse echo survives shutdown.
-        try:
-            self.engine.save_history()
-        except Exception:
-            pass
+        # Every accepted heartbeat is committed before publication, so shutdown
+        # never creates an unreceipted extra memory revision.
         logger.info("HNC live daemon stopped.")
 
     async def _stop_after(self, duration_s: float) -> None:

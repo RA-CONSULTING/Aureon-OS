@@ -622,21 +622,23 @@ def get_war_briefing() -> str:
 # 🧪 TEST
 # ═══════════════════════════════════════════════════════════════
 if __name__ == "__main__":
+    raise SystemExit(
+        "Provide provider-observed price history through get_quick_kill_estimate(); generated CLI prices are retired"
+    )
     print("⚔️ WAR STRATEGY - QUICK KILL PROBABILITY SYSTEM ⚔️\n")
 
     # Simulate price data with varying volatility
-    import random
 
     # High volatility coin (good for quick kills)
     btc_prices = [100000]
     for _ in range(100):
-        move = random.uniform(-0.008, 0.008)  # 0.8% moves
+        move = 0.0
         btc_prices.append(btc_prices[-1] * (1 + move))
 
     # Low volatility coin (slow kills)
     stable_prices = [1.0]
     for _ in range(100):
-        move = random.uniform(-0.001, 0.001)  # 0.1% moves
+        move = 0.0
         stable_prices.append(stable_prices[-1] * (1 + move))
 
     # Get estimates

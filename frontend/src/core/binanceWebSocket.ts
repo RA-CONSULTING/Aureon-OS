@@ -31,12 +31,23 @@ export type BinanceDepth = {
 };
 
 export type MarketData = {
+  symbol: string;
   price: number;
   volume: number;
+  volumeUsd: number;
+  bidPrice: number;
+  askPrice: number;
+  high24h: number;
+  low24h: number;
+  priceChange24h: number;
   volatility: number;
   momentum: number;
   spread: number;
   timestamp: number;
+  truthStatus: 'real_derived';
+  sourceId: string;
+  sourceTimestamp: string;
+  generatedValues: false;
 };
 
 export class BinanceWebSocketClient {
@@ -53,14 +64,17 @@ export class BinanceWebSocketClient {
   private connectionStartTime = 0;
   private reconnect24hTimer: NodeJS.Timeout | null = null;
   
-  private priceHistory: number[] = [];
-  private volumeHistory: number[] = [];
-  private maxHistory = 100;
-  
   private lastPrice = 0;
-  private currentVolume = 0;
   private bidPrice = 0;
   private askPrice = 0;
+  private high24h: number | null = null;
+  private low24h: number | null = null;
+  private open24h: number | null = null;
+  private baseVolume24h: number | null = null;
+  private quoteVolume24h: number | null = null;
+  private tradeEventTime: number | null = null;
+  private tickerEventTime: number | null = null;
+  private depthEventTime: number | null = null;
   
   private onDataCallback: ((data: MarketData) => void) | null = null;
   private onErrorCallback: ((error: Error) => void) | null = null;
@@ -263,21 +277,16 @@ export class BinanceWebSocketClient {
 
   private handleAggTrade(trade: BinanceAggTrade) {
     this.lastPrice = parseFloat(trade.p);
-    this.currentVolume = parseFloat(trade.q);
-    
-    this.priceHistory.push(this.lastPrice);
-    if (this.priceHistory.length > this.maxHistory) {
-      this.priceHistory.shift();
-    }
+    this.tradeEventTime = Number(trade.E);
   }
 
   private handleMiniTicker(ticker: BinanceMiniTicker) {
-    const volume = parseFloat(ticker.v);
-    this.volumeHistory.push(volume);
-    
-    if (this.volumeHistory.length > this.maxHistory) {
-      this.volumeHistory.shift();
-    }
+    this.baseVolume24h = parseFloat(ticker.v);
+    this.quoteVolume24h = parseFloat(ticker.q);
+    this.open24h = parseFloat(ticker.o);
+    this.high24h = parseFloat(ticker.h);
+    this.low24h = parseFloat(ticker.l);
+    this.tickerEventTime = Number(ticker.E);
   }
 
   private handleDepth(depth: BinanceDepth) {
@@ -287,68 +296,60 @@ export class BinanceWebSocketClient {
     if (depth.a && depth.a.length > 0) {
       this.askPrice = parseFloat(depth.a[0][0]);
     }
+    this.depthEventTime = Number(depth.E);
   }
 
   private emitMarketData() {
     if (!this.onDataCallback) return;
 
+    const values = [
+      this.lastPrice,
+      this.bidPrice,
+      this.askPrice,
+      this.open24h,
+      this.high24h,
+      this.low24h,
+      this.baseVolume24h,
+      this.quoteVolume24h,
+      this.tradeEventTime,
+      this.tickerEventTime,
+      this.depthEventTime,
+    ];
+    if (values.some((value) => value == null || !Number.isFinite(value)) ||
+        this.lastPrice <= 0 || this.bidPrice <= 0 || this.askPrice < this.bidPrice ||
+        (this.open24h as number) <= 0 || (this.baseVolume24h as number) < 0 ||
+        (this.quoteVolume24h as number) < 0) return;
+
+    const sourceTimestampMs = Math.min(
+      this.tradeEventTime as number,
+      this.tickerEventTime as number,
+      this.depthEventTime as number,
+    );
+    if (Date.now() - sourceTimestampMs > 5_000) return;
+    const volatility = ((this.high24h as number) - (this.low24h as number)) / this.lastPrice;
+    const momentum = (this.lastPrice - (this.open24h as number)) / (this.open24h as number);
+    const spread = (this.askPrice - this.bidPrice) / ((this.askPrice + this.bidPrice) / 2);
     const marketData: MarketData = {
+      symbol: this.symbol.toUpperCase(),
       price: this.lastPrice,
-      volume: this.computeNormalizedVolume(),
-      volatility: this.computeVolatility(),
-      momentum: this.computeMomentum(),
-      spread: this.computeSpread(),
-      timestamp: Date.now(),
+      volume: this.baseVolume24h as number,
+      volumeUsd: this.quoteVolume24h as number,
+      bidPrice: this.bidPrice,
+      askPrice: this.askPrice,
+      high24h: this.high24h as number,
+      low24h: this.low24h as number,
+      priceChange24h: momentum * 100,
+      volatility,
+      momentum,
+      spread,
+      timestamp: sourceTimestampMs,
+      truthStatus: 'real_derived',
+      sourceId: 'binance-websocket:aggTrade+depth+miniTicker',
+      sourceTimestamp: new Date(sourceTimestampMs).toISOString(),
+      generatedValues: false,
     };
 
     this.onDataCallback(marketData);
-  }
-
-  private computeVolatility(): number {
-    if (this.priceHistory.length < 10) return 0;
-
-    const recent = this.priceHistory.slice(-20);
-    const mean = recent.reduce((sum, p) => sum + p, 0) / recent.length;
-    const variance = recent.reduce((sum, p) => sum + Math.pow(p - mean, 2), 0) / recent.length;
-    const stddev = Math.sqrt(variance);
-
-    // Normalize to 0-1 range (assuming typical stddev is 0-500 for BTC)
-    return Math.min(stddev / 500, 1);
-  }
-
-  private computeMomentum(): number {
-    if (this.priceHistory.length < 10) return 0;
-
-    const recent = this.priceHistory.slice(-10);
-    const older = this.priceHistory.slice(-20, -10);
-    
-    if (older.length === 0) return 0;
-
-    const recentAvg = recent.reduce((sum, p) => sum + p, 0) / recent.length;
-    const olderAvg = older.reduce((sum, p) => sum + p, 0) / older.length;
-
-    // Normalized momentum: -1 to 1
-    const momentum = (recentAvg - olderAvg) / olderAvg;
-    return Math.max(-1, Math.min(1, momentum * 100)); // Scale by 100
-  }
-
-  private computeNormalizedVolume(): number {
-    if (this.volumeHistory.length === 0) return 0;
-
-    const maxVolume = Math.max(...this.volumeHistory);
-    const currentVol = this.volumeHistory[this.volumeHistory.length - 1] || 0;
-
-    return maxVolume > 0 ? currentVol / maxVolume : 0;
-  }
-
-  private computeSpread(): number {
-    if (this.bidPrice === 0 || this.askPrice === 0) return 0;
-
-    const spread = this.askPrice - this.bidPrice;
-    const midPrice = (this.askPrice + this.bidPrice) / 2;
-
-    // Normalize spread as percentage
-    return midPrice > 0 ? spread / midPrice : 0;
   }
 
   private attemptReconnect() {

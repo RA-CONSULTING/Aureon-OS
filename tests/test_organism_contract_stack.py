@@ -104,6 +104,70 @@ def test_contract_stack_snapshot_reads_persisted_state(tmp_path):
     assert snapshot["queue_count"] == 1
 
 
+def test_import_state_preserves_legacy_source_and_does_not_requeue_completed_work(tmp_path):
+    legacy_path = tmp_path / "state" / "legacy_contracts.json"
+    legacy = OrganismContractStack(state_path=legacy_path, source="legacy")
+    queued = legacy.enqueue_work_order("Queued legacy task", "execute_internal_task")
+    completed = legacy.enqueue_work_order("Completed legacy task", "execute_internal_task")
+    legacy.complete_work_order(completed.contract_id, result={"ok": True})
+
+    canonical_path = tmp_path / "state" / "organism_contract_stack.json"
+    canonical = OrganismContractStack(state_path=canonical_path, source="canonical")
+    result = canonical.import_state(legacy_path)
+
+    assert result["source_preserved"] is True
+    assert legacy_path.exists()
+    assert result["imported_contract_count"] >= 2
+    assert queued.contract_id in canonical.queue
+    assert completed.contract_id not in canonical.queue
+    second = canonical.import_state(legacy_path)
+    assert second["imported_contract_count"] == 0
+
+
+def test_claim_next_available_services_deepest_specialist_queue(tmp_path):
+    stack = OrganismContractStack(state_path=tmp_path / "contracts.json")
+    stack.enqueue_work_order("default", "execute_internal_task", queue="organism.default")
+    first_growth = stack.enqueue_work_order("growth one", "execute_internal_task", queue="organism.capability_growth")
+    stack.enqueue_work_order("growth two", "execute_internal_task", queue="organism.capability_growth")
+
+    claimed = stack.claim_next_available(
+        ("organism.capability_growth", "organism.default"),
+        worker="test",
+    )
+
+    assert claimed is not None
+    assert claimed.contract_id == first_growth.contract_id
+    assert claimed.queue == "organism.capability_growth"
+
+
+def test_deduplicate_queue_preserves_contracts_and_cancels_only_duplicates(tmp_path):
+    stack = OrganismContractStack(state_path=tmp_path / "contracts.json")
+    first = stack.enqueue_work_order(
+        "first",
+        "execute_internal_task",
+        queue="organism.capability_growth",
+        payload={"gap": {"domain": "repo_wiring"}},
+    )
+    duplicate = stack.enqueue_work_order(
+        "duplicate",
+        "execute_internal_task",
+        queue="organism.capability_growth",
+        payload={"gap": {"domain": "repo_wiring"}},
+    )
+
+    result = stack.deduplicate_queued_work_orders(
+        "organism.capability_growth",
+        payload_path=("gap", "domain"),
+        worker="test",
+    )
+
+    assert result["superseded_count"] == 1
+    assert result["contracts_preserved"] is True
+    assert first.contract_id in stack.contracts
+    assert stack.contracts[duplicate.contract_id]["status"] == "cancelled"
+    assert stack.contracts[duplicate.contract_id]["payload"]["superseded_by"] == first.contract_id
+
+
 def test_integrated_cognitive_system_contract_commands(tmp_path):
     from aureon.core.integrated_cognitive_system import IntegratedCognitiveSystem
 

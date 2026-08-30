@@ -41,13 +41,10 @@ Gary Leckey & GitHub Copilot | November 2025
 """
 
 from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
-import hmac
-import hashlib
 import time
 import math
 import json
 import requests
-from urllib.parse import urlencode
 from datetime import datetime, timedelta
 from typing import Dict, List, Tuple, Optional
 from dataclasses import dataclass, field
@@ -55,49 +52,9 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
 
 # ═══════════════════════════════════════════════════════════════════════════
-# 6 API KEYS - 6 DIMENSIONS
-# ═══════════════════════════════════════════════════════════════════════════
-API_KEYS = {
-    # Key 4 - Main trading key (TRD_GRP_039 - BTC pairs only)
-    "alpha_omega": {
-        "key": "92nqB9iH4JLDCNY9tGZEW3OuEcM9L9oknJJGRlJH03WIkkO8TkvbYRzoyFUbJdfL",
-        "secret": "KgaBXEmUV4xKTREww0W5vfNoAYHfNwBryUInzTQZHqjfsEIcFMquzANchTreKEWH",
-        "role": "BUY_A_TO_Z",
-        "description": "Buys from Alpha to Omega"
-    },
-    "omega_alpha": {
-        "key": "92nqB9iH4JLDCNY9tGZEW3OuEcM9L9oknJJGRlJH03WIkkO8TkvbYRzoyFUbJdfL",
-        "secret": "KgaBXEmUV4xKTREww0W5vfNoAYHfNwBryUInzTQZHqjfsEIcFMquzANchTreKEWH",
-        "role": "SELL_Z_TO_A",
-        "description": "Sells from Omega to Alpha"
-    },
-    "present": {
-        "key": "92nqB9iH4JLDCNY9tGZEW3OuEcM9L9oknJJGRlJH03WIkkO8TkvbYRzoyFUbJdfL",
-        "secret": "KgaBXEmUV4xKTREww0W5vfNoAYHfNwBryUInzTQZHqjfsEIcFMquzANchTreKEWH",
-        "role": "READ_PRESENT",
-        "description": "Reads the NOW"
-    },
-    "past": {
-        "key": "92nqB9iH4JLDCNY9tGZEW3OuEcM9L9oknJJGRlJH03WIkkO8TkvbYRzoyFUbJdfL",
-        "secret": "KgaBXEmUV4xKTREww0W5vfNoAYHfNwBryUInzTQZHqjfsEIcFMquzANchTreKEWH",
-        "role": "READ_PAST",
-        "description": "Reads historical MEMORY"
-    },
-    "future": {
-        "key": "92nqB9iH4JLDCNY9tGZEW3OuEcM9L9oknJJGRlJH03WIkkO8TkvbYRzoyFUbJdfL",
-        "secret": "KgaBXEmUV4xKTREww0W5vfNoAYHfNwBryUInzTQZHqjfsEIcFMquzANchTreKEWH",
-        "role": "PREDICT_FUTURE",
-        "description": "Predicts upcoming opportunities"
-    },
-    "harmony": {
-        "key": "92nqB9iH4JLDCNY9tGZEW3OuEcM9L9oknJJGRlJH03WIkkO8TkvbYRzoyFUbJdfL",
-        "secret": "KgaBXEmUV4xKTREww0W5vfNoAYHfNwBryUInzTQZHqjfsEIcFMquzANchTreKEWH",
-        "role": "ORCHESTRATE",
-        "description": "Harmony synchronizer"
-    }
-}
+# SIMULATION EXECUTION BOUNDARY
+# Provider credentials and private order submission are intentionally unavailable here.
 
-# ═══════════════════════════════════════════════════════════════════════════
 # THE LADDER - FROM ATOM TO MULTIVERSE
 # ═══════════════════════════════════════════════════════════════════════════
 LADDER = [
@@ -153,12 +110,6 @@ class TemporalReader:
     def __init__(self):
         self.state = TemporalState()
         self.lock = threading.Lock()
-    
-    def sign_request(self, key: str, secret: str, params: dict) -> str:
-        params['timestamp'] = int(time.time() * 1000)
-        query = urlencode(params)
-        sig = hmac.new(secret.encode(), query.encode(), hashlib.sha256).hexdigest()
-        return f"{query}&signature={sig}"
     
     def read_present(self) -> Dict:
         """Read NOW - Current market state"""
@@ -324,136 +275,50 @@ class PingPongEngine:
         self.momentum_score: float = 0.0
         self.total_bounces: int = 0
         self.profit_streak: int = 0
+        self.last_order_receipt: Optional[dict] = None
         
         # Ping-pong parameters
         self.ping_threshold = 0.003  # 0.3% for ping (buy dip)
         self.pong_threshold = 0.005  # 0.5% for pong (sell peak)
         self.min_trade_btc = 0.00012
     
-    def sign_request(self, params: dict) -> str:
-        key_config = API_KEYS["alpha_omega"]
-        params['timestamp'] = int(time.time() * 1000)
-        query = urlencode(params)
-        sig = hmac.new(key_config["secret"].encode(), query.encode(), hashlib.sha256).hexdigest()
-        return f"{query}&signature={sig}"
-    
-    def get_symbol_info(self, symbol: str) -> Optional[dict]:
-        try:
-            resp = requests.get('https://api.binance.com/api/v3/exchangeInfo', 
-                               params={'symbol': symbol}, timeout=5).json()
-            for s in resp.get('symbols', []):
-                if s['symbol'] == symbol:
-                    filters = {}
-                    for f in s['filters']:
-                        filters[f['filterType']] = f
-                    return {
-                        'stepSize': float(filters.get('LOT_SIZE', {}).get('stepSize', 0.001)),
-                        'minQty': float(filters.get('LOT_SIZE', {}).get('minQty', 0)),
-                        'minNotional': float(filters.get('NOTIONAL', {}).get('minNotional', 0.0001)),
-                    }
-        except:
-            pass
-        return None
-    
-    def round_step(self, value: float, step: float) -> float:
-        precision = len(str(step).rstrip('0').split('.')[-1]) if '.' in str(step) else 0
-        return round(math.floor(value / step) * step, precision)
-    
     def place_order(self, symbol: str, side: str, quantity: float) -> dict:
-        key_config = API_KEYS["alpha_omega"]
-        params = {
-            'symbol': symbol,
-            'side': side,
-            'type': 'MARKET',
-            'quantity': str(quantity)
+        """Return a non-operational simulation receipt without contacting a venue."""
+        return {
+            "status": "simulation_no_action",
+            "truth_status": "simulation_control",
+            "symbol": symbol,
+            "side": side,
+            "requested_quantity": quantity,
+            "provider_id": None,
+            "order_id": None,
+            "fill_id": None,
+            "generated_values": True,
+            "action_enabled": False,
+            "accounting_enabled": False,
+            "learning_enabled": False,
+            "eligible_for_external_action": False,
+            "eligible_for_accounting": False,
+            "eligible_for_learning": False,
         }
-        query = self.sign_request(params)
-        url = f'https://api.binance.com/api/v3/order?{query}'
-        return requests.post(url, headers={'X-MBX-APIKEY': key_config["key"]}, timeout=10).json()
-    
-    def ping(self, symbol: str, price: float, btc_balance: float) -> bool:
-        """PING - Buy the dip"""
-        if symbol in self.positions:
-            return False  # Already in position
-        
-        if btc_balance < self.min_trade_btc:
-            return False
-        
-        info = self.get_symbol_info(symbol)
-        if not info:
-            return False
-        
-        # Calculate quantity
-        trade_btc = min(btc_balance * 0.25, btc_balance - 0.00005)
-        trade_btc = max(trade_btc, self.min_trade_btc)
-        
-        qty = trade_btc / price
-        qty = self.round_step(qty, info['stepSize'])
-        
-        if qty * price < info['minNotional']:
-            return False
-        
-        result = self.place_order(symbol, 'BUY', qty)
-        
-        if 'orderId' in result:
-            self.positions[symbol] = PingPongPosition(
-                symbol=symbol,
-                side="PING",
-                entry_price=price,
-                quantity=qty,
-                entry_time=time.time()
-            )
-            print(f"  🏓 PING! Bought {qty:.4f} {symbol[:-3]} @ {price:.8f}")
-            return True
-        
+
+    def _receipt_can_mutate_state(self, receipt: dict) -> bool:
         return False
-    
+
+    def ping(self, symbol: str, price: float, btc_balance: float) -> bool:
+        """Simulation cannot create a position or submit an order."""
+        self.last_order_receipt = self.place_order(symbol, "BUY", 0.0)
+        return self._receipt_can_mutate_state(self.last_order_receipt)
+
     def pong(self, symbol: str, current_price: float) -> Optional[float]:
-        """PONG - Sell the peak"""
-        if symbol not in self.positions:
-            return None
-        
-        pos = self.positions[symbol]
-        pnl_pct = (current_price - pos.entry_price) / pos.entry_price
-        
-        if pnl_pct >= self.pong_threshold:
-            info = self.get_symbol_info(symbol)
-            if not info:
-                return None
-            
-            qty = self.round_step(pos.quantity, info['stepSize'])
-            result = self.place_order(symbol, 'SELL', qty)
-            
-            if 'orderId' in result:
-                profit = (current_price - pos.entry_price) * pos.quantity
-                pos.bounces += 1
-                pos.accumulated_profit += profit
-                
-                self.total_bounces += 1
-                self.profit_streak += 1
-                self.momentum_score += pnl_pct * 100
-                
-                print(f"  🏓 PONG! Sold {qty:.4f} {symbol[:-3]} @ {current_price:.8f} (+{pnl_pct*100:.2f}%)")
-                print(f"     Bounce #{pos.bounces} | Profit: {profit:.8f} BTC")
-                
-                del self.positions[symbol]
-                return profit
-        
-        # Check stop loss
-        elif pnl_pct <= -0.01:  # 1% stop loss
-            info = self.get_symbol_info(symbol)
-            if info:
-                qty = self.round_step(pos.quantity, info['stepSize'])
-                result = self.place_order(symbol, 'SELL', qty)
-                if 'orderId' in result:
-                    self.profit_streak = 0
-                    print(f"  ❌ Stop loss {symbol} ({pnl_pct*100:.2f}%)")
-                    del self.positions[symbol]
-        
+        """Simulation cannot realise, publish, or account for a profit."""
+        position = self.positions.get(symbol)
+        if position is not None:
+            self.last_order_receipt = self.place_order(
+                symbol, "SELL", position.quantity
+            )
         return None
 
-
-# ═══════════════════════════════════════════════════════════════════════════
 # MULTIVERSE ORCHESTRATOR - The Main Engine
 # ═══════════════════════════════════════════════════════════════════════════
 class MultiverseOrchestrator:
@@ -485,33 +350,10 @@ class MultiverseOrchestrator:
                 return LADDER[i]
         return LADDER[0]
     
-    def get_account_value(self) -> Tuple[float, float]:
-        """Get total account value in BTC and USD"""
-        key_config = API_KEYS["present"]
-        params = {'timestamp': int(time.time() * 1000)}
-        query = urlencode(params)
-        sig = hmac.new(key_config["secret"].encode(), query.encode(), hashlib.sha256).hexdigest()
-        url = f'https://api.binance.com/api/v3/account?{query}&signature={sig}'
-        
-        result = requests.get(url, headers={'X-MBX-APIKEY': key_config["key"]}, timeout=10).json()
-        prices = {p['symbol']: float(p['price']) for p in requests.get('https://api.binance.com/api/v3/ticker/price').json()}
-        
-        btc_usd = prices.get('BTCUSDT', 91000)
-        total_btc = 0
-        btc_free = 0
-        
-        for b in result.get('balances', []):
-            free = float(b['free'])
-            if free > 0:
-                asset = b['asset']
-                if asset == 'BTC':
-                    total_btc += free
-                    btc_free = free
-                elif f'{asset}BTC' in prices:
-                    total_btc += free * prices[f'{asset}BTC']
-        
-        return total_btc, total_btc * btc_usd, btc_free
-    
+    def get_account_value(self) -> Optional[Tuple[float, float, float]]:
+        """Simulation has no provider-receipted account total."""
+        return None
+
     def compute_harmonics(self, present: Dict, past: Dict, future: Dict) -> Dict:
         """Compute harmonic resonance across time"""
         harmonics = {}
@@ -602,43 +444,18 @@ class MultiverseOrchestrator:
         if harmonics:
             self.global_coherence = sum(h['coherence'] for h in harmonics.values()) / len(harmonics)
         
-        # 5. GET ACCOUNT STATE
-        total_btc, total_usd, btc_free = self.get_account_value()
-        self.current_value = total_usd
-        if self.starting_value == 0:
-            self.starting_value = total_usd
-        if total_usd > self.peak_value:
-            self.peak_value = total_usd
-        
-        ladder = self.get_ladder_level(total_usd)
-        self.current_level = ladder['level']
-        
-        # 6. PING-PONG TRADING
-        trades_made = 0
-        
-        # Check for PONG opportunities (sell existing positions)
-        for symbol, pos in list(self.pingpong.positions.items()):
-            if symbol in present:
-                current_price = present[symbol]['price']
-                profit = self.pingpong.pong(symbol, current_price)
-                if profit:
-                    self.total_profit_btc += profit
-                    self.total_trades += 1
-                    self.winning_trades += 1
-                    trades_made += 1
-        
-        # Find PING opportunities (buy dips)
-        if len(self.pingpong.positions) < 3 and btc_free > self.pingpong.min_trade_btc:
-            ping_targets = self.find_ping_opportunities(present, future, harmonics)
-            
-            for symbol in ping_targets[:2]:  # Max 2 new positions per cycle
-                if symbol in present:
-                    price = present[symbol]['price']
-                    if self.pingpong.ping(symbol, price, btc_free):
-                        trades_made += 1
-                        # Update BTC balance
-                        _, _, btc_free = self.get_account_value()
-        
+        # 5. Provider account state belongs exclusively to production adapters.
+        if self.get_account_value() is None:
+            return {
+                "status": "simulation_no_action",
+                "truth_status": "simulation_control",
+                "generated_values": True,
+                "eligible_for_external_action": False,
+                "eligible_for_accounting": False,
+                "eligible_for_learning": False,
+                "positions": len(self.pingpong.positions),
+            }
+
         cycle_time = time.time() - cycle_start
         
         return {

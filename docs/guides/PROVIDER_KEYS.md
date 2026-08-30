@@ -16,6 +16,37 @@ Supported providers (all optional, all key-gated):
 | Ollama (local or cloud) | self-hosted | ollama.com/settings/keys (cloud) — blank for local |
 | DeepSeek · Mistral · Groq · OpenRouter · Perplexity | OpenAI-compatible | each provider's key page (linked in the UI) |
 
+For Ollama Cloud, the canonical variables are:
+
+```dotenv
+OLLAMA_API_KEY=<key from ollama.com/settings/keys>
+AUREON_LLM_BASE_URL=https://ollama.com/v1
+AUREON_LLM_MODEL=<cloud model name>
+AUREON_EXTERNAL_LLM_FALLBACK=ollama
+AUREON_OLLAMA_REASONING_EFFORT=none
+```
+
+Native Aureon Ollama clients derive `https://ollama.com/api` from that base URL.
+`AUREON_EXTERNAL_LLM_FALLBACK=ollama` makes this profile the shared fallback for
+standalone and subsystem adapter construction. Explicit provider adapters remain
+explicit; audit/offline flags still prohibit outbound model calls.
+The default `none` reasoning effort is sent through Ollama's supported OpenAI
+compatibility control so short JSON, classification, and one-token consumers do
+not spend their entire output allowance on a hidden reasoning trace. Set it to
+`low`, `medium`, or `high` for workloads that intentionally need reasoning.
+`AUREON_OLLAMA_API_KEY` and `AUREON_LLM_API_KEY` are supported as compatibility
+aliases. Local Ollama remains keyless, and a cloud token is not forwarded to a
+loopback endpoint by default.
+
+The same fallback contract is used by Aureon Murge, Flameborn, Cloudflare
+Workers, and the LLM-backed Supabase Edge Functions. Local Node servers read the
+repo `.env` before their surface-specific `.env`. Hosted runtimes require the
+same `OLLAMA_API_KEY` in their platform secret store; repository configuration
+does not copy a local credential into Cloudflare or Supabase automatically.
+Browser code must never use a `VITE_` provider key. Auris classification now
+calls the JWT-protected `auris-classify` Edge Function, which keeps credentials
+server-side and uses the shared Ollama fallback.
+
 ## How it works
 
 ```

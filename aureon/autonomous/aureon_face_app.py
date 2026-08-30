@@ -32,6 +32,7 @@ import json
 import logging
 import os
 import re
+import secrets
 import sqlite3
 import sys
 import threading
@@ -121,14 +122,10 @@ except Exception:
     HAS_PARSER = False
     log.warning("InstructionParser unavailable")
 
-# Laptop Control
-try:
-    from aureon.autonomous.aureon_laptop_control import LaptopControl
-    HAS_LAPTOP = True
-except Exception:
-    LaptopControl = None  # type: ignore[assignment, misc]
-    HAS_LAPTOP = False
-    log.warning("LaptopControl unavailable")
+# Legacy LaptopControl is intentionally not imported: it is not a governed
+# execution boundary.  Read/act flows use AgentCore plus the local GUI runtime.
+LaptopControl = None  # type: ignore[assignment, misc]
+HAS_LAPTOP = False
 
 # Sentient Loop
 try:
@@ -171,8 +168,12 @@ MOODS = ["VIGILANT", "CONFIDENT", "CAUTIOUS", "AGGRESSIVE", "FEARFUL", "EUPHORIC
 # ============================================================================
 
 app = Flask(__name__, template_folder=str(TEMPLATES_DIR))
-app.config["SECRET_KEY"] = "queen-sero-sacred-key-528-963"
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
+app.config["SECRET_KEY"] = os.getenv("AUREON_FACE_SECRET_KEY") or secrets.token_hex(32)
+socketio = SocketIO(
+    app,
+    cors_allowed_origins=["http://127.0.0.1:5299", "http://localhost:5299"],
+    async_mode="threading",
+)
 
 
 # ============================================================================
@@ -240,13 +241,9 @@ def init_subsystems():
         except Exception as e:
             log.warning(f"Instruction Parser init failed: {e}")
 
-    # Laptop Control
-    if HAS_LAPTOP and LaptopControl is not None:
-        try:
-            state.laptop = LaptopControl()
-            log.info("Laptop Control initialized")
-        except Exception as e:
-            log.warning(f"Laptop Control init failed: {e}")
+    # The legacy LaptopControl mutation surface is deliberately not attached.
+    # Desktop actions may flow only through AureonAgentCore's governed gateway.
+    state.laptop = None
 
     # SQLite DB (Global History): always create/ensure schema.
     try:
@@ -447,27 +444,9 @@ def queen_respond(text: str) -> Dict[str, Any]:
     except Exception as e:
         log.debug(f"Language cortex error: {e}")
 
-    # SECONDARY: Cognitive brain for actions
-    try:
-        from aureon.autonomous.aureon_cognitive_brain import get_brain
-        brain = get_brain()
-        result = brain.think(text)
-        if result and result.get("response"):
-            with state.lock:
-                state.current_mood = result.get("mood", state.current_mood)
-            return {
-                "text": result["response"],
-                "action": result.get("action_taken", "cognitive"),
-                "data": {
-                    "mood": result.get("mood"),
-                    "confidence": result.get("confidence"),
-                    "consciousness": result.get("consciousness_level"),
-                },
-            }
-    except Exception as e:
-        log.debug(f"Cognitive brain error: {e}")
-
-    # FALLBACK: rule-based
+    # The legacy cognitive brain can call LaptopControl directly, so it is not a
+    # valid action path. Closed-loop GUI goals are submitted to the governed
+    # local runtime; this conversational face keeps only the bounded rules path.
     return _rule_based_respond(text)
 
 
@@ -483,7 +462,8 @@ IMPORTANT SAFETY / TRUTHFULNESS:
 - You can call tools, but desktop control may be DISARMED or in DRY-RUN mode.
 - Before mouse/keyboard actions, check `desktop_status` if available.
 - Never claim you clicked/typed/executed something unless the tool result confirms success.
-- If a tool returns controller_not_armed, ask the operator to arm with desktop_arm_live (or keep dry-run).
+- You cannot arm desktop control yourself. A separate operator must issue an expiring lease.
+- Browser/desktop tasks must use the observe-plan-act-verify runtime with an exact window binding.
 
 STYLE:
 - Speak in first person.
@@ -502,8 +482,8 @@ _QUEEN_TOOLS = [
     {"name": "screenshot", "description": "Take a screenshot of the screen", "input_schema": {"type": "object", "properties": {}, "required": []}},
     {"name": "read_screen", "description": "Take a screenshot and OCR it to read all text on screen", "input_schema": {"type": "object", "properties": {}, "required": []}},
     {"name": "mouse_move", "description": "Move mouse cursor to coordinates", "input_schema": {"type": "object", "properties": {"x": {"type": "integer"}, "y": {"type": "integer"}}, "required": ["x", "y"]}},
-    {"name": "mouse_click", "description": "Click at coordinates (or current position if omitted)", "input_schema": {"type": "object", "properties": {"x": {"type": "integer"}, "y": {"type": "integer"}, "button": {"type": "string", "default": "left"}}, "required": []}},
-    {"name": "mouse_scroll", "description": "Scroll the mouse wheel. Positive=up, negative=down", "input_schema": {"type": "object", "properties": {"clicks": {"type": "integer"}}, "required": ["clicks"]}},
+    {"name": "mouse_click", "description": "Click exact coordinates through a governed target-window binding", "input_schema": {"type": "object", "properties": {"x": {"type": "integer"}, "y": {"type": "integer"}, "button": {"type": "string", "default": "left"}, "target_binding_id": {"type": "string"}}, "required": ["x", "y", "target_binding_id"]}},
+    {"name": "mouse_scroll", "description": "Scroll at exact coordinates through a governed target-window binding", "input_schema": {"type": "object", "properties": {"clicks": {"type": "integer"}, "x": {"type": "integer"}, "y": {"type": "integer"}, "target_binding_id": {"type": "string"}}, "required": ["clicks", "x", "y", "target_binding_id"]}},
     {"name": "click_text", "description": "Find text on screen via OCR and click on it", "input_schema": {"type": "object", "properties": {"text": {"type": "string"}}, "required": ["text"]}},
     {"name": "type_text", "description": "Type text using the keyboard", "input_schema": {"type": "object", "properties": {"text": {"type": "string"}}, "required": ["text"]}},
     {"name": "press_key", "description": "Press a key (enter, tab, escape, backspace, up, down, f1-f12, etc)", "input_schema": {"type": "object", "properties": {"key": {"type": "string"}}, "required": ["key"]}},
@@ -533,8 +513,7 @@ _QUEEN_TOOLS = [
     {"name": "notify", "description": "Show a Windows notification popup", "input_schema": {"type": "object", "properties": {"title": {"type": "string"}, "message": {"type": "string"}}, "required": ["title", "message"]}},
     {"name": "open_file", "description": "Open a file with its default application", "input_schema": {"type": "object", "properties": {"path": {"type": "string"}}, "required": ["path"]}},
     {"name": "kill_process", "description": "Kill a process by name", "input_schema": {"type": "object", "properties": {"name_or_pid": {"type": "string"}}, "required": ["name_or_pid"]}},
-    {"name": "desktop_status", "description": "Get SafeDesktopControl status (armed/dry-run/kill switch)", "input_schema": {"type": "object", "properties": {}, "required": []}},
-    {"name": "desktop_arm_live", "description": "Arm desktop control (live)", "input_schema": {"type": "object", "properties": {}, "required": []}},
+    {"name": "desktop_status", "description": "Get governed desktop lease/emergency status", "input_schema": {"type": "object", "properties": {}, "required": []}},
     {"name": "desktop_arm_dry_run", "description": "Arm desktop control (dry-run)", "input_schema": {"type": "object", "properties": {}, "required": []}},
     {"name": "desktop_disarm", "description": "Disarm desktop control", "input_schema": {"type": "object", "properties": {}, "required": []}},
     {"name": "desktop_emergency_stop", "description": "Emergency stop desktop control", "input_schema": {"type": "object", "properties": {}, "required": []}},
@@ -546,9 +525,16 @@ _conversation_history: List[Dict[str, Any]] = []
 def _execute_tool(name: str, params: dict) -> str:
     """Execute a tool and return the result as a string for Claude."""
     try:
-        # Route mouse/keyboard actions through the Agent Core (SafeDesktopControl) when available,
-        # even if LaptopControl is present. This avoids uncontrolled UI automation.
-        if state.agent and name in {"mouse_move", "mouse_click", "type_text", "press_key", "hotkey"}:
+        if name in {"read_screen", "click_text"}:
+            return json.dumps({
+                "success": False,
+                "error": "tool_requires_governed_observe_plan_act_verify_runtime",
+            })
+
+        # Every desktop mutation goes through AgentCore's governed gateway.  An
+        # exact target-window binding is part of the action, never inferred.
+        if state.agent and name in {"mouse_move", "mouse_click", "mouse_scroll", "type_text", "press_key", "hotkey"}:
+            binding = str(params.get("target_binding_id", "") or "")
             if name == "mouse_move":
                 r = state.agent.execute(
                     "move_mouse",
@@ -556,46 +542,45 @@ def _execute_tool(name: str, params: dict) -> str:
                         "x": int(params.get("x")),
                         "y": int(params.get("y")),
                         "duration": float(params.get("duration", 0.0) or 0.0),
+                        "target_binding_id": binding,
                     },
                 )
             elif name == "mouse_click":
                 button = str(params.get("button", "left") or "left").strip().lower()
                 if button == "right":
-                    r = state.agent.execute("right_click", {"x": params.get("x"), "y": params.get("y")})
+                    r = state.agent.execute("right_click", {"x": params.get("x"), "y": params.get("y"), "target_binding_id": binding})
                 elif button in {"double", "dbl", "double_click"}:
-                    r = state.agent.execute("double_click", {"x": params.get("x"), "y": params.get("y")})
+                    r = state.agent.execute("double_click", {"x": params.get("x"), "y": params.get("y"), "target_binding_id": binding})
                 else:
-                    r = state.agent.execute("click", {"x": params.get("x"), "y": params.get("y")})
+                    r = state.agent.execute("click", {"x": params.get("x"), "y": params.get("y"), "target_binding_id": binding})
+            elif name == "mouse_scroll":
+                r = state.agent.execute(
+                    "scroll",
+                    {
+                        "x": int(params.get("x")),
+                        "y": int(params.get("y")),
+                        "amount": int(params.get("clicks")),
+                        "target_binding_id": binding,
+                    },
+                )
             elif name == "type_text":
-                r = state.agent.execute("type_text", {"text": str(params.get("text", ""))})
+                r = state.agent.execute("type_text", {"text": str(params.get("text", "")), "target_binding_id": binding})
             elif name == "press_key":
-                r = state.agent.execute("press_key", {"key": str(params.get("key", ""))})
+                r = state.agent.execute("press_key", {"key": str(params.get("key", "")), "target_binding_id": binding})
             elif name == "hotkey":
                 keys = params.get("keys")
                 if isinstance(keys, list):
-                    r = state.agent.execute("hotkey", {"keys": keys})
+                    r = state.agent.execute("hotkey", {"keys": keys, "target_binding_id": binding})
                 else:
-                    flat = [v for k, v in sorted(params.items()) if v and k != "keys"]
-                    r = state.agent.execute("hotkey", {"keys": flat})
+                    flat = [
+                        v for k, v in sorted(params.items())
+                        if v and k not in {"keys", "target_binding_id"}
+                    ]
+                    r = state.agent.execute("hotkey", {"keys": flat, "target_binding_id": binding})
             else:
                 r = state.agent.execute(name, params)
 
-            if isinstance(r, dict):
-                result = r.get("result", r.get("error", "done"))
-                return json.dumps(result, default=str)[:2000] if isinstance(result, (dict, list)) else str(result)[:2000]
-            return str(r)[:2000]
-        # Laptop control methods
-        if state.laptop and hasattr(state.laptop, name):
-            fn = getattr(state.laptop, name)
-            # Handle hotkey specially â€” unpack keys
-            if name == "hotkey":
-                keys = [v for k, v in sorted(params.items()) if v]
-                r = fn(*keys)
-            else:
-                r = fn(**params)
-            if isinstance(r, dict):
-                return json.dumps(r.get("result", r), default=str)[:2000]
-            return str(r)[:2000]
+            return json.dumps(r, default=str)[:2000]
 
         # Agent core methods
         if state.agent:
@@ -626,10 +611,7 @@ def _execute_tool(name: str, params: dict) -> str:
             else:
                 r = state.agent.execute(name, params)
 
-            if isinstance(r, dict):
-                result = r.get("result", r.get("error", "done"))
-                return json.dumps(result, default=str)[:2000] if isinstance(result, (dict, list)) else str(result)[:2000]
-            return str(r)[:2000]
+            return json.dumps(r, default=str)[:2000]
 
         return "Tool not available"
     except Exception as e:
@@ -641,11 +623,30 @@ def _llm_respond(text: str, *, tools_enabled: bool = True) -> Optional[Dict[str,
     """Use Claude as a language module (optionally with tool-use)."""
     global _conversation_history
 
+    # The same prompt-level hard boundary the Operator/Cognition door enforces —
+    # this local face is not a side door around it (live trading, payment,
+    # safety-gate bypass, credential, and filing requests are refused here too).
+    try:
+        from aureon.operator.aureon_operator import _hard_boundary_violation
+
+        if _hard_boundary_violation(text):
+            return {
+                "text": ("🦗 Blocked at the Aureon authority boundary. This request "
+                         "crosses a hard limit (live trading, payment, safety-gate "
+                         "bypass, credential, or filing) and no model will be asked."),
+                "action": "boundary_refusal",
+                "data": {"boundary": "hard_authority", "model": None},
+            }
+    except ImportError:
+        pass
+
     # ── In-House AI — no external dependencies ──
     try:
         from aureon.inhouse_ai.llm_adapter import AureonHybridAdapter, AureonBrainAdapter
         try:
-            adapter = AureonHybridAdapter()
+            from aureon.integrations.ollama import OllamaModelSwitchboard
+
+            adapter, _selection = OllamaModelSwitchboard().hybrid_adapter_for("general")
             if not adapter.health_check():
                 adapter = AureonBrainAdapter()
         except Exception:
@@ -816,12 +817,12 @@ def _rule_based_respond(text: str) -> Dict[str, Any]:
 
     # --- Screenshot / Vision ---
     if re.search(r"(screenshot|screen\s*shot|what\s+do\s+you\s+see|show\s+me\s+the\s+screen)", text_lower):
-        if state.laptop and hasattr(state.laptop, "screenshot"):
+        if state.agent:
             try:
-                result = state.laptop.screenshot()
+                result = state.agent.execute("screenshot", {})
                 if result.get("success"):
                     return {
-                        "text": f"I've taken a screenshot and saved it. {result.get('result', '')}",
+                        "text": "I captured a governed screen observation and recorded its evidence hash.",
                         "action": "screenshot",
                         "data": result,
                     }
@@ -874,28 +875,10 @@ def _rule_based_respond(text: str) -> Dict[str, Any]:
 
     # --- Battery ---
     if re.search(r"(battery|power|charging)", text_lower):
-        if state.laptop and hasattr(state.laptop, "battery_status"):
-            try:
-                result = state.laptop.battery_status()
-                if result.get("success"):
-                    bat = result.get("result", {})
-                    pct = bat.get("percent", "?")
-                    plugged = "plugged in" if bat.get("plugged_in") else "on battery"
-                    return {"text": f"Battery is at {pct}%, {plugged}.", "action": "battery", "data": result}
-            except Exception:
-                pass
         return {"text": "I can't access the battery sensor right now.", "action": None, "data": None}
 
     # --- Volume ---
     if re.search(r"(volume|sound\s+level|audio\s+level|speaker)", text_lower):
-        if state.laptop and hasattr(state.laptop, "volume_get"):
-            try:
-                result = state.laptop.volume_get()
-                if result.get("success"):
-                    vol = result.get("result", "?")
-                    return {"text": f"Current volume is at {vol}.", "action": "volume", "data": result}
-            except Exception:
-                pass
         return {"text": "The audio control system isn't available right now.", "action": None, "data": None}
 
     # --- The Dream ---
@@ -929,19 +912,12 @@ def _rule_based_respond(text: str) -> Dict[str, Any]:
         caps_list = []
         if state.agent:
             caps_list = [c["description"] for c in state.agent.get_capabilities()[:15]]
-        laptop_caps = []
-        if state.laptop:
-            try:
-                laptop_caps = [c.get("description", c.get("method", ""))[:40]
-                               for c in state.laptop.get_all_capabilities()[:10]]
-            except Exception:
-                pass
-        all_caps = caps_list + laptop_caps
+        all_caps = caps_list
         caps_text = ", ".join(all_caps[:20])
         return {
             "text": (
                 f"Gary, I can do a LOT. Here's a taste: {caps_text}. "
-                "I can control your mouse and keyboard, take screenshots, read your screen, "
+                "My governed runtime can control mouse and keyboard, take screenshots, read the screen, "
                 "search the web, open any app, manage files, check your battery, "
                 "query my knowledge database, trade on your exchanges, and more. "
                 "Just tell me what you need â€” in any words you like."
@@ -986,12 +962,6 @@ def _rule_based_respond(text: str) -> Dict[str, Any]:
                 return {"text": f"Mouse move blocked: {reason}", "action": "mouse", "data": r}
             except Exception as e:
                 return {"text": f"Mouse move failed: {e}", "action": None, "data": None}
-        if state.laptop:
-            try:
-                r = state.laptop.mouse_move(x, y)
-                return {"text": f"Done. Moved the mouse to ({x}, {y}).", "action": "mouse", "data": r}
-            except Exception as e:
-                return {"text": f"Mouse move failed: {e}", "action": None, "data": None}
         return {"text": "Mouse control not available.", "action": None, "data": None}
     # --- "Open X" direct ---
     m = re.search(r"^open\s+(.+)$", text_lower)
@@ -1022,41 +992,17 @@ def _rule_based_respond(text: str) -> Dict[str, Any]:
                 return {"text": f"Typing blocked: {reason}", "action": "type", "data": r}
             except Exception as e:
                 return {"text": f"Typing failed: {e}", "action": None, "data": None}
-        if state.laptop:
-            try:
-                r = state.laptop.type_text(text_to_type)
-                return {"text": f"Done. I typed: \"{text_to_type}\"", "action": "type", "data": r}
-            except Exception as e:
-                return {"text": f"Typing failed: {e}", "action": None, "data": None}
         return {"text": "Keyboard control not available.", "action": None, "data": None}
     # --- "Click on X" direct ---
     if re.search(r"click\s+on\s+(.+)", text_lower):
         m = re.search(r"click\s+on\s+(.+)", text_lower)
         target = m.group(1).strip() if m else ""
 
-        # For OCR-clicks, require desktop control to be armed/live if available.
-        if state.agent:
-            try:
-                st = state.agent.execute("desktop_status", {}).get("result", {})
-                if isinstance(st, dict) and (not st.get("armed") or st.get("dry_run")):
-                    return {
-                        "text": "Desktop control is not armed/live. Say 'desktop_arm_live' to enable clicks (or keep dry-run).",
-                        "action": None,
-                        "data": st,
-                    }
-            except Exception:
-                pass
-
-        if state.laptop and target:
-            try:
-                r = state.laptop.click_text(target)
-                if r.get("success"):
-                    return {"text": f"Done. I clicked on \"{target}\".", "action": "click", "data": r}
-                return {"text": f"I couldn't find \"{target}\" on screen: {r.get('error', 'not found')}", "action": None, "data": r}
-            except Exception as e:
-                return {"text": f"Click failed: {e}", "action": None, "data": None}
-
-        return {"text": "I can't click text on screen right now (OCR/click unavailable).", "action": None, "data": None}
+        return {
+            "text": "OCR text-clicks run only inside the governed observe-plan-act-verify runtime with an exact window binding.",
+            "action": None,
+            "data": {"target": target},
+        }
     # --- Conversational responses (before parser, so casual chat doesn't execute) ---
     conversational_patterns = {
         r"(make\s+money|make\s+more\s+money|earn|profit|go\s+make|get\s+rich)":
@@ -1116,19 +1062,10 @@ def _rule_based_respond(text: str) -> Dict[str, Any]:
                             if isinstance(res, (dict, list)):
                                 res = json.dumps(res, default=str)[:300]
                             results.append(f"{desc}: {res}")
-                        elif tool == "laptop" and state.laptop and hasattr(state.laptop, method):
-                            fn = getattr(state.laptop, method)
-                            # Unpack list/tuple params for *args methods (hotkey, etc)
-                            if "keys" in params and isinstance(params["keys"], list):
-                                r = fn(*params["keys"])
-                            elif "args" in params and isinstance(params["args"], list):
-                                r = fn(*params["args"])
-                            else:
-                                r = fn(**params)
-                            res = r.get("result", r.get("error", "done")) if isinstance(r, dict) else r
-                            if isinstance(res, (dict, list)):
-                                res = json.dumps(res, default=str)[:300]
-                            results.append(f"{desc}: {res}")
+                        elif tool == "laptop":
+                            results.append(
+                                f"{desc}: blocked_legacy_laptop_route; use governed local GUI runtime"
+                            )
                         elif tool == "shell" and state.agent:
                             r = state.agent.execute("shell", {"command": method})
                             out = r.get("result", {})
@@ -1701,7 +1638,7 @@ def main():
     except ImportError:
         pass
 
-    socketio.run(app, host="0.0.0.0", port=5299, debug=False, allow_unsafe_werkzeug=True)
+    socketio.run(app, host="127.0.0.1", port=5299, debug=False, allow_unsafe_werkzeug=True)
 
 if __name__ == "__main__":
     main()

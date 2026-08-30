@@ -155,6 +155,7 @@ class LiveConversionTrader:
         self.prices: Dict[str, float] = {}
         self.conversions: Dict[str, LiveConversion] = {}
         self.closed_conversions: List[Dict] = []
+        self.dry_run_attempts: List[Dict[str, Any]] = []
         self.conversion_counter = 0
         self.last_trade_time: Dict[str, float] = {}
         
@@ -183,18 +184,15 @@ class LiveConversionTrader:
         """Load real balances from Kraken"""
         print("\n📊 Loading balances...")
         
-        if self.dry_run or not self.kraken:
-            # Simulated balances for dry run
-            self.balances = {
-                'USD': 100.0,
-                'BTC': 0.001,
-                'ETH': 0.05,
-                'SOL': 1.0,
-            }
-            print("   🔵 DRY RUN - Using simulated balances")
-            for asset, amount in self.balances.items():
-                print(f"      {asset}: {amount}")
-            return True
+        if self.dry_run:
+            self.balances = {}
+            print("   🔵 DRY RUN - No authenticated balance receipt; balances are NO_DATA")
+            return False
+
+        if not self.kraken:
+            self.balances = {}
+            print("   ❌ Kraken client unavailable; balances are NO_DATA")
+            return False
         
         try:
             balance = self.kraken.get_account_balance()
@@ -335,11 +333,28 @@ class LiveConversionTrader:
         
         return best_opportunity
         
-    async def execute_conversion(self, opportunity: Dict) -> bool:
+    async def execute_conversion(self, opportunity: Dict) -> Any:
         """Execute a conversion on Kraken"""
         
         from_asset = opportunity['from_asset']
         to_asset = opportunity['to_asset']
+
+        if self.dry_run:
+            receipt = {
+                'status': 'not_submitted',
+                'truth_status': 'dry_run',
+                'provider_order_id': None,
+                'fill': None,
+                'actual_pnl': None,
+                'eligible_for_learning': False,
+                'generated_values': False,
+                'from_asset': from_asset,
+                'to_asset': to_asset,
+                'recorded_at': time.time(),
+            }
+            self.dry_run_attempts.append(receipt)
+            print("      🔵 DRY RUN - Intent recorded; no order was submitted")
+            return receipt
         
         # Calculate amounts
         from_balance = self.balances.get(from_asset, 0)
@@ -365,48 +380,44 @@ class LiveConversionTrader:
         print(f"      Hub Score: {opportunity['hub_score']*100:.1f}%")
         print(f"      Systems: {', '.join(opportunity['systems'])}")
         
-        if self.dry_run:
-            print(f"      🔵 DRY RUN - Not executing real trade")
-            success = True
-        else:
-            # Real execution on Kraken
-            try:
-                # First sell from_asset for USD
-                sell_pair = f"{from_asset}USD"
-                result = self.kraken.client.query_private('AddOrder', {
-                    'pair': sell_pair,
-                    'type': 'sell',
-                    'ordertype': 'market',
-                    'volume': str(from_amount),
-                })
-                
-                if result.get('error'):
-                    print(f"      ❌ Sell failed: {result['error']}")
-                    return False
-                
-                print(f"      ✅ Sold {from_amount:.6f} {from_asset}")
-                
-                # Then buy to_asset with USD
-                await asyncio.sleep(1)  # Wait for order to settle
-                
-                buy_pair = f"{to_asset}USD"
-                result = self.kraken.client.query_private('AddOrder', {
-                    'pair': buy_pair,
-                    'type': 'buy',
-                    'ordertype': 'market',
-                    'volume': str(to_amount),
-                })
-                
-                if result.get('error'):
-                    print(f"      ❌ Buy failed: {result['error']}")
-                    return False
-                
-                print(f"      ✅ Bought {to_amount:.6f} {to_asset}")
-                success = True
-                
-            except Exception as e:
-                print(f"      ❌ Execution error: {e}")
+        # Real execution on Kraken
+        try:
+            # First sell from_asset for USD
+            sell_pair = f"{from_asset}USD"
+            result = self.kraken.client.query_private('AddOrder', {
+                'pair': sell_pair,
+                'type': 'sell',
+                'ordertype': 'market',
+                'volume': str(from_amount),
+            })
+
+            if result.get('error'):
+                print(f"      ❌ Sell failed: {result['error']}")
                 return False
+
+            print(f"      ✅ Sold {from_amount:.6f} {from_asset}")
+
+            # Then buy to_asset with USD
+            await asyncio.sleep(1)  # Wait for order to settle
+
+            buy_pair = f"{to_asset}USD"
+            result = self.kraken.client.query_private('AddOrder', {
+                'pair': buy_pair,
+                'type': 'buy',
+                'ordertype': 'market',
+                'volume': str(to_amount),
+            })
+
+            if result.get('error'):
+                print(f"      ❌ Buy failed: {result['error']}")
+                return False
+
+            print(f"      ✅ Bought {to_amount:.6f} {to_asset}")
+            success = True
+
+        except Exception as e:
+            print(f"      ❌ Execution error: {e}")
+            return False
         
         if success:
             # Track conversion
@@ -423,15 +434,6 @@ class LiveConversionTrader:
             self.conversions[conv_id] = conversion
             self.stats['conversions_opened'] += 1
             self.last_trade_time[from_asset] = time.time()
-            
-            # Update balances (simulated for dry run)
-            if self.dry_run:
-                self.balances[from_asset] = self.balances.get(from_asset, 0) - from_amount
-                self.balances[to_asset] = self.balances.get(to_asset, 0) + to_amount
-            
-            # Record in Hub
-            if self.hub:
-                self.hub.record_conversion_outcome(from_asset, to_asset, True, 0.01)
             
             print(f"      ✅ Conversion {conv_id} OPENED")
             return True

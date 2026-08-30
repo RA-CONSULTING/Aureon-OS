@@ -36,7 +36,7 @@ import time
 import math
 import urllib.request
 import urllib.error
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass, field
 from collections import deque
@@ -104,46 +104,47 @@ class MacroSnapshot:
     timestamp: datetime
     
     # Fear & Greed
-    crypto_fear_greed: int = 50  # 0-100
-    crypto_fg_classification: str = "Neutral"
+    crypto_fear_greed: int  # 0-100
+    crypto_fg_classification: str
     
     # Volatility
-    vix: float = 20.0
-    vix_change: float = 0.0
+    vix: float
+    vix_change: float
     
     # Dollar Strength
-    dxy: float = 100.0
-    dxy_change: float = 0.0
+    dxy: float
+    dxy_change: float
     
     # Interest Rates
-    us_10y_yield: float = 4.5
-    us_2y_yield: float = 4.3
-    yield_curve_inversion: bool = False  # 2Y > 10Y = recession signal
+    us_10y_yield: float
+    us_2y_yield: float
+    yield_curve_inversion: bool  # 2Y > 10Y = recession signal
     
     # Indices
-    spx: float = 5000.0
-    spx_change: float = 0.0
-    dow: float = 40000.0
-    nasdaq: float = 16000.0
+    spx: float
+    spx_change: float
+    dow: float
+    nasdaq: float
     
     # Commodities
-    gold: float = 2000.0
-    gold_change: float = 0.0
-    oil: float = 75.0
-    oil_change: float = 0.0
+    gold: float
+    gold_change: float
+    oil: float
+    oil_change: float
     
     # Global Crypto Market
-    total_crypto_mcap: float = 2.5e12
-    btc_dominance: float = 50.0
+    total_crypto_mcap: float
+    btc_dominance: float
     
     # Forex
-    eur_usd: float = 1.08
-    gbp_usd: float = 1.27
-    usd_jpy: float = 150.0
+    eur_usd: float
+    gbp_usd: float
+    usd_jpy: float
     
     # Computed Signals
     risk_on_off: str = "NEUTRAL"  # RISK_ON, RISK_OFF, NEUTRAL
     market_regime: str = "NORMAL"  # NORMAL, FEAR, GREED, PANIC, EUPHORIA
+    truth_status: str = "live"
     
     def to_dict(self) -> Dict:
         return {
@@ -172,6 +173,8 @@ class MacroSnapshot:
             'usd_jpy': self.usd_jpy,
             'risk_on_off': self.risk_on_off,
             'market_regime': self.market_regime,
+            'truth_status': self.truth_status,
+            'generated_values': False,
         }
 
 
@@ -269,12 +272,14 @@ class GlobalFinancialFeed:
         data = self._fetch_json(DATA_SOURCES['FEAR_GREED_CRYPTO'])
         if data and data.get('data'):
             fng = data['data'][0]
+            if fng.get('value') is None or fng.get('value_classification') is None:
+                return {}
             return {
-                'value': int(fng.get('value', 50)),
-                'classification': fng.get('value_classification', 'Neutral'),
+                'value': int(fng['value']),
+                'classification': fng['value_classification'],
                 'timestamp': fng.get('timestamp'),
             }
-        return {'value': 50, 'classification': 'Neutral'}
+        return {}
     
     def fetch_global_crypto_market(self) -> Dict[str, Any]:
         """Fetch global crypto market data from CoinGecko."""
@@ -284,9 +289,9 @@ class GlobalFinancialFeed:
             return {
                 'total_mcap': d.get('total_market_cap', {}).get('usd', 0),
                 'total_volume': d.get('total_volume', {}).get('usd', 0),
-                'btc_dominance': d.get('market_cap_percentage', {}).get('btc', 50),
-                'eth_dominance': d.get('market_cap_percentage', {}).get('eth', 15),
-                'mcap_change_24h': d.get('market_cap_change_percentage_24h_usd', 0),
+                'btc_dominance': d.get('market_cap_percentage', {}).get('btc'),
+                'eth_dominance': d.get('market_cap_percentage', {}).get('eth'),
+                'mcap_change_24h': d.get('market_cap_change_percentage_24h_usd'),
             }
         return {}
     
@@ -295,13 +300,16 @@ class GlobalFinancialFeed:
         data = self._fetch_json(DATA_SOURCES['FOREX_RATES'])
         if data and data.get('rates'):
             rates = data['rates']
+            required = ('EUR', 'GBP', 'JPY', 'CHF', 'AUD', 'CAD')
+            if any(rates.get(code) in (None, 0) for code in required):
+                return {}
             return {
-                'eur_usd': 1.0 / rates.get('EUR', 1.08),
-                'gbp_usd': 1.0 / rates.get('GBP', 1.27),
-                'usd_jpy': rates.get('JPY', 150.0),
-                'usd_chf': rates.get('CHF', 0.88),
-                'aud_usd': 1.0 / rates.get('AUD', 1.53),
-                'usd_cad': rates.get('CAD', 1.36),
+                'eur_usd': 1.0 / rates['EUR'],
+                'gbp_usd': 1.0 / rates['GBP'],
+                'usd_jpy': rates['JPY'],
+                'usd_chf': rates['CHF'],
+                'aud_usd': 1.0 / rates['AUD'],
+                'usd_cad': rates['CAD'],
             }
         return {}
     
@@ -315,11 +323,12 @@ class GlobalFinancialFeed:
             for quote in data['quoteResponse']['result']:
                 sym = quote.get('symbol', '')
                 results[sym] = {
-                    'price': quote.get('regularMarketPrice', 0),
-                    'change': quote.get('regularMarketChange', 0),
-                    'change_pct': quote.get('regularMarketChangePercent', 0),
-                    'volume': quote.get('regularMarketVolume', 0),
-                    'market_state': quote.get('marketState', 'CLOSED'),
+                    'price': quote.get('regularMarketPrice'),
+                    'change': quote.get('regularMarketChange'),
+                    'change_pct': quote.get('regularMarketChangePercent'),
+                    'volume': quote.get('regularMarketVolume'),
+                    'market_state': quote.get('marketState'),
+                    'timestamp': quote.get('regularMarketTime'),
                 }
         return results
     
@@ -330,26 +339,26 @@ class GlobalFinancialFeed:
         
         dxy_quote = quotes.get('^DXY') or quotes.get('UUP') or {}
         return {
-            'vix': quotes.get('^VIX', {}).get('price', 20.0),
-            'vix_change': quotes.get('^VIX', {}).get('change_pct', 0),
+            'vix': quotes.get('^VIX', {}).get('price'),
+            'vix_change': quotes.get('^VIX', {}).get('change_pct'),
 
-            'dxy': dxy_quote.get('price', 100.0),
-            'dxy_change': dxy_quote.get('change_pct', 0),
+            'dxy': dxy_quote.get('price'),
+            'dxy_change': dxy_quote.get('change_pct'),
             
-            'spx': quotes.get('^GSPC', {}).get('price', 5000),
-            'spx_change': quotes.get('^GSPC', {}).get('change_pct', 0),
+            'spx': quotes.get('^GSPC', {}).get('price'),
+            'spx_change': quotes.get('^GSPC', {}).get('change_pct'),
             
-            'dow': quotes.get('^DJI', {}).get('price', 40000),
-            'nasdaq': quotes.get('^IXIC', {}).get('price', 16000),
+            'dow': quotes.get('^DJI', {}).get('price'),
+            'nasdaq': quotes.get('^IXIC', {}).get('price'),
             
-            'gold': quotes.get('GC=F', {}).get('price', 2000),
-            'gold_change': quotes.get('GC=F', {}).get('change_pct', 0),
+            'gold': quotes.get('GC=F', {}).get('price'),
+            'gold_change': quotes.get('GC=F', {}).get('change_pct'),
             
-            'oil': quotes.get('CL=F', {}).get('price', 75),
-            'oil_change': quotes.get('CL=F', {}).get('change_pct', 0),
+            'oil': quotes.get('CL=F', {}).get('price'),
+            'oil_change': quotes.get('CL=F', {}).get('change_pct'),
             
-            'us_10y': quotes.get('^TNX', {}).get('price', 4.5),
-            'us_5y': quotes.get('^FVX', {}).get('price', 4.3),
+            'us_10y': quotes.get('^TNX', {}).get('price'),
+            'us_5y': quotes.get('^FVX', {}).get('price'),
         }
     
     # ═══════════════════════════════════════════════════════════════
@@ -597,48 +606,54 @@ class GlobalFinancialFeed:
         crypto_global = self.fetch_global_crypto_market()
         forex = self.fetch_forex_rates()
         macro = self.fetch_macro_indicators()
+
+        def required(mapping: Dict[str, Any], key: str, source: str) -> Any:
+            value = mapping.get(key)
+            if value is None or value == '':
+                raise RuntimeError(f"LIVE_DATA_MISSING:{source}.{key}")
+            return value
         
         # Build snapshot
         snapshot = MacroSnapshot(
-            timestamp=datetime.now(),
+            timestamp=datetime.now(timezone.utc),
             
             # Fear & Greed
-            crypto_fear_greed=fng.get('value', 50),
-            crypto_fg_classification=fng.get('classification', 'Neutral'),
+            crypto_fear_greed=int(required(fng, 'value', 'alternative_me')),
+            crypto_fg_classification=str(required(fng, 'classification', 'alternative_me')),
             
             # Volatility
-            vix=macro.get('vix', 20.0),
-            vix_change=macro.get('vix_change', 0),
+            vix=float(required(macro, 'vix', 'yahoo')),
+            vix_change=float(required(macro, 'vix_change', 'yahoo')),
             
             # Dollar (use proxy if needed)
-            dxy=macro.get('dxy', 100.0),
-            dxy_change=macro.get('dxy_change', 0.0),
+            dxy=float(required(macro, 'dxy', 'yahoo')),
+            dxy_change=float(required(macro, 'dxy_change', 'yahoo')),
             
             # Yields
-            us_10y_yield=macro.get('us_10y', 4.5),
-            us_2y_yield=macro.get('us_5y', 4.3),  # Using 5Y as proxy
-            yield_curve_inversion=macro.get('us_5y', 4.3) > macro.get('us_10y', 4.5),
+            us_10y_yield=float(required(macro, 'us_10y', 'yahoo')),
+            us_2y_yield=float(required(macro, 'us_5y', 'yahoo')),  # Using 5Y as proxy
+            yield_curve_inversion=float(required(macro, 'us_5y', 'yahoo')) > float(required(macro, 'us_10y', 'yahoo')),
             
             # Indices
-            spx=macro.get('spx', 5000),
-            spx_change=macro.get('spx_change', 0),
-            dow=macro.get('dow', 40000),
-            nasdaq=macro.get('nasdaq', 16000),
+            spx=float(required(macro, 'spx', 'yahoo')),
+            spx_change=float(required(macro, 'spx_change', 'yahoo')),
+            dow=float(required(macro, 'dow', 'yahoo')),
+            nasdaq=float(required(macro, 'nasdaq', 'yahoo')),
             
             # Commodities
-            gold=macro.get('gold', 2000),
-            gold_change=macro.get('gold_change', 0),
-            oil=macro.get('oil', 75),
-            oil_change=macro.get('oil_change', 0),
+            gold=float(required(macro, 'gold', 'yahoo')),
+            gold_change=float(required(macro, 'gold_change', 'yahoo')),
+            oil=float(required(macro, 'oil', 'yahoo')),
+            oil_change=float(required(macro, 'oil_change', 'yahoo')),
             
             # Crypto
-            total_crypto_mcap=crypto_global.get('total_mcap', 2.5e12),
-            btc_dominance=crypto_global.get('btc_dominance', 50),
+            total_crypto_mcap=float(required(crypto_global, 'total_mcap', 'coingecko')),
+            btc_dominance=float(required(crypto_global, 'btc_dominance', 'coingecko')),
             
             # Forex
-            eur_usd=forex.get('eur_usd', 1.08),
-            gbp_usd=forex.get('gbp_usd', 1.27),
-            usd_jpy=forex.get('usd_jpy', 150),
+            eur_usd=float(required(forex, 'eur_usd', 'forex')),
+            gbp_usd=float(required(forex, 'gbp_usd', 'forex')),
+            usd_jpy=float(required(forex, 'usd_jpy', 'forex')),
         )
         
         # Compute derived signals

@@ -92,7 +92,7 @@ CATALOG: List[ProviderInfo] = [
     ),
     ProviderInfo(
         id="ollama", label="Ollama (local or cloud)", kind="local",
-        key_env="AUREON_LLM_API_KEY", base_url_env="AUREON_LLM_BASE_URL",
+        key_env="OLLAMA_API_KEY", base_url_env="AUREON_LLM_BASE_URL",
         default_base_url="http://localhost:11434/v1", default_model="llama3.1",
         get_keys_url="https://ollama.com/settings/keys",
         docs_url="https://docs.ollama.com/cloud", key_optional=True, spec_name="local",

@@ -1653,6 +1653,7 @@ class MindThoughtActionHub:
                 scope_answers=scope_answers,
                 scope_approved=scope_approved,
                 base_job_id=base_job_id,
+                require_internal_workforce=True,
             )
             try:
                 from aureon.autonomous.aureon_autonomous_job_executor import enqueue_and_tick_autonomous_job
@@ -1772,7 +1773,7 @@ class MindThoughtActionHub:
         if self._phi_voice_adapter is None:
             from aureon.inhouse_ai.llm_adapter import build_voice_adapter
 
-            self._phi_voice_adapter = build_voice_adapter()
+            self._phi_voice_adapter = build_voice_adapter(lane="self_evolution")
         return self._phi_voice_adapter
 
     def _phi_voice_adapter_needs_reload(self, adapter: Any) -> bool:
@@ -2707,66 +2708,6 @@ class MindThoughtActionHub:
                 logger.error(f"Self-questioning loop error: {e}")
             await asyncio.sleep(interval)
     
-    async def generate_test_thoughts(self):
-        """Generate test thoughts for demonstration.
-
-        ⚠ Publishes synthetic Thoughts onto the bus (fake confidences,
-        topics, payloads). Gated behind AUREON_ALLOW_SIM_FALLBACK so
-        production refuses to inject fake thoughts into the live system.
-        """
-        from aureon.observer.live_data_policy import (
-            simulation_fallback_allowed, log_blocked_fallback,
-        )
-        if not simulation_fallback_allowed():
-            log_blocked_fallback("aureon_mind_thought_action_hub.generate_test_thoughts",
-                                 "synthetic_thoughts")
-            return
-        await asyncio.sleep(5)
-
-        logger.info("🧪 Starting test thought generator...")
-        
-        topics = [
-            'market.snapshot',
-            'miner.signal',
-            'queen.decision',
-            'execution.order',
-            'risk.approval',
-            'harmonic.wave'
-        ]
-        
-        sources = [
-            'Queen',
-            'ProbabilityNexus',
-            'UltimateIntel',
-            'MinerBrain',
-            'HarmonicFusion'
-        ]
-        
-        while True:
-            try:
-                import random
-                
-                topic = random.choice(topics)
-                source = random.choice(sources)
-                
-                thought = Thought(
-                    source=source,
-                    topic=topic,
-                    payload={
-                        'message': f'Test thought from {source}',
-                        'confidence': random.uniform(0.7, 0.99),
-                        'value': random.randint(1, 100)
-                    }
-                )
-                
-                self.thought_bus.publish(thought)
-                
-                await asyncio.sleep(random.uniform(2, 5))  # Random interval
-                
-            except Exception as e:
-                logger.error(f"Error generating test thought: {e}")
-                await asyncio.sleep(5)
-    
     async def start(self):
         """Start the hub."""
         # Start web server
@@ -2793,7 +2734,6 @@ class MindThoughtActionHub:
         
         # Start background tasks
         asyncio.create_task(self.live_stats_updater())
-        asyncio.create_task(self.generate_test_thoughts())
 
 async def main():
     hub = MindThoughtActionHub(port=13002)

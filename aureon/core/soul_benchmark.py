@@ -38,6 +38,7 @@ _ENV_KEYS = (
     "AUREON_BUS_TRACE_DIR", "AUREON_AFFECT_LAMBDA_PATH", "AUREON_METACOG_LAMBDA_PATH",
     "AUREON_HNC_TRACE_PATH", "AUREON_GLOBAL_FINANCIAL_PATH", "AUREON_BRAIN_PREDICTIONS_PATH",
     "AUREON_BRAIN_KNOWLEDGE_PATH", "AUREON_SOUL_CONTRACT_PATH",
+    "AUREON_RUNTIME_STATUS_PATH",
 )
 
 
@@ -63,6 +64,14 @@ def _set_env(workdir: Path) -> None:
     os.environ["AUREON_BRAIN_PREDICTIONS_PATH"] = str(workdir / "preds.json")
     os.environ["AUREON_BRAIN_KNOWLEDGE_PATH"] = str(workdir / "know.json")
     os.environ["AUREON_SOUL_CONTRACT_PATH"] = str(workdir / "contracts.json")
+    # AffectMonitor treats runtime preflight failures as a real fear signal.
+    # Keep each benchmark case causally closed instead of inheriting the
+    # operator's current state/unrelated blockers from the repository.
+    runtime_status = workdir / "runtime_status.json"
+    runtime_status.write_text(
+        json.dumps({"preflight_critical_failures": []}), encoding="utf-8"
+    )
+    os.environ["AUREON_RUNTIME_STATUS_PATH"] = str(runtime_status)
     os.environ.setdefault("AUREON_LLM_OFFLINE", "1")
 
 

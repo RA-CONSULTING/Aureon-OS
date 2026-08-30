@@ -1,18 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { encryptCredentialPacked } from "../_shared/credential_crypto.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-// Simple encryption using base64 (matching the decryption in get-binance-balances)
-function encryptValue(value: string): string {
-  const key = Deno.env.get('MASTER_ENCRYPTION_KEY') || 'default-key';
-  // Store as: value::key in base64
-  const combined = `${value}::${key}`;
-  return btoa(combined);
-}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -45,8 +38,8 @@ serve(async (req) => {
 
       try {
         // Encrypt credentials
-        const encryptedApiKey = encryptValue(apiKey);
-        const encryptedApiSecret = encryptValue(apiSecret);
+        const encryptedApiKey = await encryptCredentialPacked(apiKey);
+        const encryptedApiSecret = await encryptCredentialPacked(apiSecret);
 
         console.log(`[update-bot-credentials] Updating credentials for: ${name}`);
 

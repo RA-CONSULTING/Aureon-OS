@@ -26,13 +26,13 @@
       "trading": 255
     }
   },
-  "generated_at": "2026-07-12T23:25:09.314179+00:00",
+  "generated_at": "2026-08-10T16:44:06.527503+00:00",
   "notes": [
     "This queue is generated from the current SaaS inventory and is safe to show in the frontend.",
     "Work orders are migration intent, not proof that the legacy system has already been wired.",
     "Old systems stay available until their useful panels are replaced, embedded, or archived."
   ],
-  "repo_root": "C:\\Users\\user\\aureon-trading-nav-contract-20260712",
+  "repo_root": "C:\\Users\\user\\Aureon-OS-github-latest-20260810_091213",
   "safety_contract": {
     "apply_requires_explicit_handoff": true,
     "legacy_systems_not_executed": true,

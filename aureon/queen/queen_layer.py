@@ -170,6 +170,48 @@ class QueenLayer:
         if self._booted:
             return self.get_health()
 
+        # Every Queen process lives under the canonical organism roof. The
+        # historical broad auto-loader must not import/start faculties, feeds,
+        # APIs, or execution systems before the complete organism is READY.
+        try:
+            from aureon.queen.queen_process_roof import (
+                get_canonical_queen_process_roof,
+            )
+
+            roof = get_canonical_queen_process_roof()
+            roof_status = roof.status() if roof is not None else {
+                "status": "hold",
+                "reason": "canonical_queen_process_roof_required",
+                "seated_process_count": 0,
+                "active_process_count": 0,
+            }
+        except Exception:
+            roof_status = {
+                "status": "hold",
+                "reason": "canonical_queen_process_roof_unavailable",
+                "seated_process_count": 0,
+                "active_process_count": 0,
+            }
+        if roof_status.get("status") != "ready":
+            self.registry["canonical_queen_process_roof"] = {
+                "status": "HOLD",
+                "instance": None,
+                "error": roof_status.get("reason"),
+                "ts": time.time(),
+            }
+            return {
+                "status": "HOLD",
+                "reason": roof_status.get("reason"),
+                "online": 0,
+                "offline": 0,
+                "total": 0,
+                "systems": {},
+                "queen_roof": roof_status,
+                "live_trading": False,
+                "provider_call_count": 0,
+                "order_call_count": 0,
+            }
+
         boot_start = time.time()
         print("\n" + "=" * 80)
         print("  QUEEN LAYER -- BOOTING ALL SYSTEMS")
@@ -186,10 +228,17 @@ class QueenLayer:
         self._booted = True
         elapsed = time.time() - boot_start
 
+        # HNC direction: at boot the base layer reads the ONE canonical field and publishes it, so the
+        # first-pass orchestration is coupled to the shared symbolic.life.pulse — not only the late
+        # conscience veto. Guarded/offline-safe.
+        field = self.substrate_field()
+        self._publish("queen.layer.substrate_field", field)
+
         # Publish boot complete to ThoughtBus
         self._publish("queen.layer.boot_complete", {
             "elapsed_s": round(elapsed, 2),
             "health": self.get_health(),
+            "substrate_field": field,
         })
 
         health = self.get_health()
@@ -218,6 +267,20 @@ class QueenLayer:
             "total": total,
             "systems": systems,
         }
+
+    def substrate_field(self) -> Dict[str, Any]:
+        """Read the ONE canonical HNC field (``symbolic.life.pulse`` via ``read_canonical_field``).
+
+        The base Queen layer is directed by the same shared field the conscience veto and the rest of
+        the organism read — coherence Γ / symbolic-life score ψ, not a private number. Guarded and
+        offline-safe: returns ``{"available": False}`` when the HNC daemon is not publishing, never raises.
+        """
+        try:
+            from aureon.core.hnc_field import read_canonical_field
+
+            return read_canonical_field().to_dict()
+        except Exception:  # noqa: BLE001 — the field is best-effort; the layer boots regardless
+            return {"available": False}
 
     def get_system(self, name: str) -> Optional[Any]:
         """Retrieve a booted system instance by name."""
@@ -251,10 +314,49 @@ class QueenLayer:
         except Exception as e:
             self._register("chirp_bus", None, error=str(e))
 
+        # Canonical QueenMind first: every cognitive faculty and action proposal
+        # must converge through the same process-owned composition and roof.
+        try:
+            from aureon.queen.queen_mind import get_canonical_queen_mind
+            from aureon.queen.queen_process_roof import (
+                get_canonical_queen_process_roof,
+            )
+
+            roof = get_canonical_queen_process_roof()
+            mind = get_canonical_queen_mind()
+            if roof is None or mind is None:
+                raise RuntimeError("canonical_queen_mind_and_roof_required")
+            mind_activation = roof.activate(
+                "aureon.queen.queen_mind",
+                lambda: mind,
+            )
+            if mind_activation.status != "ACTIVE":
+                raise RuntimeError(
+                    mind_activation.reason or "canonical_queen_mind_activation_hold"
+                )
+            mind_status = mind.start()
+            if mind_status.get("status") != "ready":
+                raise RuntimeError(
+                    mind_status.get("reason") or "canonical_queen_mind_start_hold"
+                )
+            self._register("queen_mind", mind)
+            print("   QueenMind: ONLINE (one canonical cognitive roof)")
+        except Exception as e:
+            logger.error(f"QueenMind failed: {e}")
+            self._register("queen_mind", None, error=str(e))
+            return
+
         # Queen singleton
         try:
             from aureon.utils.aureon_queen_hive_mind import get_queen
-            self.queen = get_queen()
+
+            activation = roof.activate(
+                "aureon.utils.aureon_queen_hive_mind",
+                get_queen,
+            )
+            if activation.status != "ACTIVE":
+                raise RuntimeError(activation.reason or "queen_hive_mind_activation_hold")
+            self.queen = activation.instance
             self._register("queen_hive_mind", self.queen)
             print("   Queen Hive Mind: ONLINE")
         except Exception as e:
@@ -267,8 +369,9 @@ class QueenLayer:
             if hasattr(self.queen, "take_full_control"):
                 self.queen.take_full_control()
             self.queen.has_full_control = True
-            self.queen.trading_enabled = True
-            print("   Queen: FULL CONTROL GRANTED")
+            self.queen.trading_enabled = bool(self.live_trading)
+            mode = "LIVE-ELIGIBLE" if self.live_trading else "READ-ONLY"
+            print(f"   Queen: CANONICAL ROOF CONTROL ({mode})")
         except Exception as e:
             logger.warning(f"take_full_control warning: {e}")
 
@@ -394,12 +497,16 @@ class QueenLayer:
 
         # In-House AI Bridge — sovereign consciousness enhancement
         try:
-            from aureon.queen.queen_inhouse_ai_bridge import get_queen_ai_bridge
-            bridge = get_queen_ai_bridge()
+            bridge = self._safe_activate(
+                "queen_inhouse_ai_bridge",
+                "aureon.queen.queen_inhouse_ai_bridge",
+                singleton_fn="get_queen_ai_bridge",
+            )
+            if bridge is None:
+                raise RuntimeError("queen_inhouse_ai_bridge_activation_hold")
             bridge.start()
             if self.thought_bus is not None and hasattr(bridge, "_thought_bus"):
                 bridge._thought_bus = self.thought_bus
-            self._register("queen_inhouse_ai_bridge", bridge)
             print("   Queen AI Bridge: ONLINE (sovereign in-house AI)")
         except Exception as e:
             self._register("queen_inhouse_ai_bridge", None, error=str(e))
@@ -496,16 +603,34 @@ class QueenLayer:
     ) -> Optional[Any]:
         """Safely import, instantiate, wire ThoughtBus, and register a system."""
         try:
-            mod = importlib.import_module(module_path)
+            canonical_module = (
+                f"aureon.queen.{module_path}"
+                if module_path.startswith("queen_") and "." not in module_path
+                else module_path
+            )
 
-            if singleton_fn:
-                instance = getattr(mod, singleton_fn)()
-            elif class_name:
-                cls = getattr(mod, class_name)
-                instance = cls()
+            def construct() -> Any:
+                mod = importlib.import_module(canonical_module)
+                if singleton_fn:
+                    return getattr(mod, singleton_fn)()
+                if class_name:
+                    return getattr(mod, class_name)()
+                return mod
+
+            if "queen" in canonical_module.casefold():
+                from aureon.queen.queen_process_roof import (
+                    get_canonical_queen_process_roof,
+                )
+
+                roof = get_canonical_queen_process_roof()
+                if roof is None:
+                    raise RuntimeError("canonical_queen_process_roof_required")
+                activation = roof.activate(canonical_module, construct)
+                if activation.status != "ACTIVE":
+                    raise RuntimeError(activation.reason or "queen_process_activation_hold")
+                instance = activation.instance
             else:
-                # Module-level activation (some modules do work on import)
-                instance = mod
+                instance = construct()
 
             # Wire ThoughtBus if the system accepts one
             if self.thought_bus is not None:

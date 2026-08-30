@@ -3,9 +3,21 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from pypdf import PdfReader
+import pytest
 
-from Kings_Accounting_Suite.tools.uk_accounting_requirements_brain import (
+pytest.importorskip(
+    "reportlab",
+    reason="these suites assert rendered PDF artifacts; reportlab is the renderer",
+)
+
+# pypdf is declared in Kings_Accounting_Suite/requirements.txt but not the root install, and
+# the runtime imports it lazily (research_corpus_index.py) — so it is genuinely optional.
+# Skipping keeps a root-only install collecting instead of erroring on import.
+pytest.importorskip("pypdf", reason="pypdf is an optional accounting-suite dependency")
+
+from pypdf import PdfReader  # noqa: E402
+
+from Kings_Accounting_Suite.tools.uk_accounting_requirements_brain import (  # noqa: E402
     QUESTION_SAFE_STATUSES,
     REQUIRED_SELF_QUESTION_DOMAINS,
     build_uk_accounting_requirements_brain,

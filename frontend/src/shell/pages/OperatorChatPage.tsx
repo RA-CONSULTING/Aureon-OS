@@ -7,16 +7,37 @@
  */
 
 import { useRef, useState } from "react";
-import { Brain, Send, ShieldAlert, ShieldCheck, Wrench } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Brain, KeyRound, Send, ShieldAlert, ShieldCheck, Wrench } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { api, ApiError } from "@/services/apiClient";
+import { useSetupStatus } from "@/hooks/useSetupStatus";
 import { LiveDataNotice } from "../Page";
 
 interface GroundingSource {
   title?: string;
   path?: string;
+  score?: string;
+}
+
+interface ResponseEnvelope {
+  status?: string;
+  sources_statement?: string;
+  capability?: { families?: string[]; complex?: boolean };
+  coherence?: { lead_family?: string; gamma_by_cluster?: Record<string, number | null> } | null;
+  actualization?: { realized_count?: number; parked_count?: number; answer?: string } | null;
+  bake?: { passes?: number; complete?: boolean | null; refined?: boolean } | null;
+  knowledge_reach?: string[];
+  acquisition?: { triggered?: boolean; outcome?: string } | null;
+  coherence_gate?: { aperture?: string; field_status?: string } | null;
+  heart?: {
+    alive?: { symbolic_life_score?: number | null; status?: string };
+    love?: { love_amplitude?: number | null; mood?: string | null; status?: string };
+    power?: { withheld?: string[]; statement?: string };
+  } | null;
 }
 
 interface CognitionReply {
@@ -30,6 +51,7 @@ interface CognitionReply {
   grounding?: { sources?: GroundingSource[] } | null;
   tool_calls?: Array<{ tool?: string; name?: string }>;
   trace_id?: string;
+  envelope?: ResponseEnvelope | null;
 }
 
 interface ChatTurn {
@@ -50,6 +72,9 @@ export default function OperatorChatPage() {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const setup = useSetupStatus();
+  // Gateway reachable but no model connected → guide the user instead of failing at send time.
+  const needsKey = !setup.loading && !setup.offline && !setup.hasProvider;
 
   const ask = async (prompt: string) => {
     const trimmed = prompt.trim();
@@ -58,21 +83,24 @@ export default function OperatorChatPage() {
     setBusy(true);
     setTurns((t) => [...t, { role: "user", text: trimmed }]);
     try {
-      const r = await fetch("/api/cognition/reason", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: trimmed }),
-      });
-      if (!r.ok) throw new Error(`gateway returned ${r.status}`);
-      const reply = (await r.json()) as CognitionReply;
+      // Reasoning can take a while; allow a generous timeout. apiClient attaches the
+      // end-user session bearer when one exists (tenant identity).
+      const reply = await api.post<CognitionReply>(
+        "/api/cognition/reason",
+        { prompt: trimmed },
+        { timeoutMs: 60000 },
+      );
       setTurns((t) => [...t, { role: "aureon", text: reply.text || "(empty answer)", reply }]);
     } catch (err) {
+      const offline = err instanceof ApiError && err.offline;
       const message = err instanceof Error ? err.message : String(err);
       setTurns((t) => [
         ...t,
         {
           role: "error",
-          text: `Could not reach the cognition gateway (${message}). Start the operator service (:8790) or check the /api proxy.`,
+          text: offline
+            ? `Could not reach the cognition gateway (${message}). Start the operator service or check the /api proxy.`
+            : `The cognition gateway returned an error: ${message}`,
         },
       ]);
     } finally {
@@ -100,7 +128,22 @@ export default function OperatorChatPage() {
 
       <div className="flex-1 overflow-y-auto rounded-lg border border-border/60" ref={scrollRef}>
         <div className="space-y-4 p-4">
-          {turns.length === 0 && (
+          {turns.length === 0 && needsKey && (
+            <div className="flex flex-col items-center gap-3 py-10 text-center">
+              <KeyRound className="h-8 w-8 text-muted-foreground" />
+              <div className="space-y-1">
+                <p className="text-sm font-medium">Connect a model to start chatting</p>
+                <p className="max-w-sm text-sm text-muted-foreground">
+                  Add an API key for any model and Aureon can reason for you. It takes a minute —
+                  your key is stored encrypted and, when you're signed in, kept to your account alone.
+                </p>
+              </div>
+              <Button asChild size="sm">
+                <Link to="/cognition/providers">Add a model key</Link>
+              </Button>
+            </div>
+          )}
+          {turns.length === 0 && !needsKey && (
             <div className="space-y-2 py-8 text-center">
               <p className="text-sm text-muted-foreground">Ask anything — from the repo to the cosmos.</p>
               <div className="flex flex-wrap justify-center gap-2">
@@ -137,8 +180,67 @@ export default function OperatorChatPage() {
                         </Badge>
                       )}
                       <Badge variant="outline" className="text-muted-foreground">
-                        {turn.reply.grounded ? "repo-grounded" : "general knowledge"}
+                        {turn.reply.envelope?.sources_statement ||
+                          (turn.reply.grounded ? "repo-grounded" : "general knowledge")}
                       </Badge>
+                      {turn.reply.envelope?.status && turn.reply.envelope.status !== "ok" && (
+                        <Badge variant="outline" className="border-warning/40 text-warning">
+                          {turn.reply.envelope.status.replace(/_/g, " ")}
+                        </Badge>
+                      )}
+                      {turn.reply.envelope?.coherence?.lead_family && (
+                        <Badge variant="outline" className="text-muted-foreground">
+                          council lead: {turn.reply.envelope.coherence.lead_family.replace(/^safe_/, "").replace(/_/g, " ")}
+                        </Badge>
+                      )}
+                      {turn.reply.envelope?.actualization &&
+                        (turn.reply.envelope.actualization.parked_count ?? 0) > 0 && (
+                          <Badge variant="outline" className="text-muted-foreground">
+                            {turn.reply.envelope.actualization.realized_count ?? 0} realized ·{" "}
+                            {turn.reply.envelope.actualization.parked_count} parked
+                          </Badge>
+                        )}
+                      {turn.reply.envelope?.knowledge_reach &&
+                        turn.reply.envelope.knowledge_reach.join(",") !== "general_knowledge" && (
+                          <Badge variant="outline" className="text-muted-foreground">
+                            reach: {turn.reply.envelope.knowledge_reach.join(" + ").replace(/_/g, " ")}
+                          </Badge>
+                        )}
+                      {turn.reply.envelope?.acquisition?.triggered && (
+                        <Badge variant="outline" className="text-muted-foreground">
+                          acquired: {turn.reply.envelope.acquisition.outcome}
+                        </Badge>
+                      )}
+                      {turn.reply.envelope?.coherence_gate?.aperture &&
+                        turn.reply.envelope.coherence_gate.aperture !== "full" && (
+                          <Badge variant="outline" className="border-warning/40 text-warning">
+                            aperture: {turn.reply.envelope.coherence_gate.aperture}
+                          </Badge>
+                        )}
+                      {typeof turn.reply.envelope?.heart?.alive?.symbolic_life_score === "number" && (
+                        <Badge variant="outline" className="text-muted-foreground">
+                          alive: {turn.reply.envelope.heart.alive.symbolic_life_score.toFixed(2)}
+                        </Badge>
+                      )}
+                      {(turn.reply.envelope?.heart?.power?.withheld?.length ?? 0) > 0 && (
+                        <Badge
+                          variant="outline"
+                          className="text-muted-foreground"
+                          title={turn.reply.envelope?.heart?.power?.statement}
+                        >
+                          power held: {turn.reply.envelope?.heart?.power?.withheld?.length}
+                        </Badge>
+                      )}
+                      {turn.reply.envelope?.bake?.refined && (
+                        <Badge variant="outline" className="text-muted-foreground">
+                          baked ×{turn.reply.envelope.bake.passes ?? 2}
+                        </Badge>
+                      )}
+                      {turn.reply.envelope?.bake?.complete === false && (
+                        <Badge variant="outline" className="border-warning/40 text-warning">
+                          incomplete — honest seal
+                        </Badge>
+                      )}
                       {(turn.reply.tool_calls?.length ?? 0) > 0 && (
                         <Badge variant="outline" className="gap-1 text-muted-foreground">
                           <Wrench className="h-3 w-3" /> {turn.reply.tool_calls?.length} tool call
@@ -156,7 +258,8 @@ export default function OperatorChatPage() {
                     <div className="space-y-0.5">
                       {turn.reply.grounding.sources.slice(0, 4).map((s, j) => (
                         <p key={j} className="truncate font-mono text-[10px] text-muted-foreground">
-                          ⚓ {s.path || s.title}
+                           {s.path || s.title}
+                          {s.score ? ` · ${s.score}` : ""}
                         </p>
                       ))}
                     </div>

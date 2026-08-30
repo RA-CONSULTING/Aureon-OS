@@ -1,0 +1,920 @@
+{
+  "collection_errors": [],
+  "collection_skip_count": 0,
+  "credential_keys_scrubbed": [],
+  "expected_item_count": 193,
+  "manifest_sha256": "f759b755ede16c84c4132e6555045e46bc6cc27d964a9c9663c8819a316619ca",
+  "operational_state_after": {
+    "aureon/exchanges/.kraken_nonce": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786471546530884800,
+      "sha256": "a97a71e52e16718818803a4ffcf2a23d5bd6bdef8019065923a411e3faeee96c",
+      "size": 16
+    },
+    "real_portfolio_state.json": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786471546579579900,
+      "sha256": "b7819aec57f9754e8059bf4ec0a52aaeb47dc802fc5c7954103dee5120d3c5ac",
+      "size": 69296
+    },
+    "state/aureon_capital_tradable_asset_registry.json": {
+      "exists": false
+    },
+    "state/capital_cfd_last_exchange_trace.json": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786475496169071800,
+      "sha256": "0ae124cf632cd4c7560ba6c1bf47b663a53ffac123409c32e50fbc4a34b201ef",
+      "size": 13582
+    },
+    "state/capital_cfd_pending_execution.json": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786475497232595400,
+      "sha256": "81ae63fa1b35c7c3c582cf1a997bd0caba7fe19f5be198167261af930b121b30",
+      "size": 15935
+    },
+    "state/capital_shadow_promotions.jsonl": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786475494283161800,
+      "sha256": "11a6de8f3dd6cc88837f8c9fb06d5f04f30f15b4a1a02538e5379df135f81eef",
+      "size": 2039
+    },
+    "state/lambda_history.json": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786463161436582000,
+      "sha256": "8464f55b4d3102ad163101863849557aa64cc063e66e84ca51f04624b929f20a",
+      "size": 1695
+    },
+    "state/lighthouse_event.jsonl": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786473931255436200,
+      "sha256": "7b34d1c1f5ec106662d27b5fb7b7a6916c4d3528e3eea3a4854856590b07cd40",
+      "size": 803
+    },
+    "state/unified_order_lifecycle_events.jsonl": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786475697922839600,
+      "sha256": "acc4aa2a6eac44ca9ac74d78f37b9afb07a899241a525572910b988b5bff8764",
+      "size": 140105
+    },
+    "state/unified_order_lifecycle_latest.json": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786475697953779500,
+      "sha256": "0758a12c9df7bda15b315294e160692dc809865e66a0a3e49324f708fefc54c6",
+      "size": 274970
+    },
+    "thoughts.jsonl": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786510009125458400,
+      "sha256": "f3082631534d473a781637a946799da6bd8ff5759e5ba6fe411063e62e7f24b6",
+      "size": 11450371
+    },
+    "trade_logger.log": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786471530121968800,
+      "sha256": "416792f420ffd21a7ca8da7656bee8f94f666f48ddab11d3034dac51aee547ac",
+      "size": 18954
+    }
+  },
+  "operational_state_before": {
+    "aureon/exchanges/.kraken_nonce": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786471546530884800,
+      "sha256": "a97a71e52e16718818803a4ffcf2a23d5bd6bdef8019065923a411e3faeee96c",
+      "size": 16
+    },
+    "real_portfolio_state.json": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786471546579579900,
+      "sha256": "b7819aec57f9754e8059bf4ec0a52aaeb47dc802fc5c7954103dee5120d3c5ac",
+      "size": 69296
+    },
+    "state/aureon_capital_tradable_asset_registry.json": {
+      "exists": false
+    },
+    "state/capital_cfd_last_exchange_trace.json": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786475496169071800,
+      "sha256": "0ae124cf632cd4c7560ba6c1bf47b663a53ffac123409c32e50fbc4a34b201ef",
+      "size": 13582
+    },
+    "state/capital_cfd_pending_execution.json": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786475497232595400,
+      "sha256": "81ae63fa1b35c7c3c582cf1a997bd0caba7fe19f5be198167261af930b121b30",
+      "size": 15935
+    },
+    "state/capital_shadow_promotions.jsonl": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786475494283161800,
+      "sha256": "11a6de8f3dd6cc88837f8c9fb06d5f04f30f15b4a1a02538e5379df135f81eef",
+      "size": 2039
+    },
+    "state/lambda_history.json": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786463161436582000,
+      "sha256": "8464f55b4d3102ad163101863849557aa64cc063e66e84ca51f04624b929f20a",
+      "size": 1695
+    },
+    "state/lighthouse_event.jsonl": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786473931255436200,
+      "sha256": "7b34d1c1f5ec106662d27b5fb7b7a6916c4d3528e3eea3a4854856590b07cd40",
+      "size": 803
+    },
+    "state/unified_order_lifecycle_events.jsonl": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786475697922839600,
+      "sha256": "acc4aa2a6eac44ca9ac74d78f37b9afb07a899241a525572910b988b5bff8764",
+      "size": 140105
+    },
+    "state/unified_order_lifecycle_latest.json": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786475697953779500,
+      "sha256": "0758a12c9df7bda15b315294e160692dc809865e66a0a3e49324f708fefc54c6",
+      "size": 274970
+    },
+    "thoughts.jsonl": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786510009125458400,
+      "sha256": "f3082631534d473a781637a946799da6bd8ff5759e5ba6fe411063e62e7f24b6",
+      "size": 11450371
+    },
+    "trade_logger.log": {
+      "exists": true,
+      "kind": "file",
+      "mtime_ns": 1786471530121968800,
+      "sha256": "416792f420ffd21a7ca8da7656bee8f94f666f48ddab11d3034dac51aee547ac",
+      "size": 18954
+    }
+  },
+  "operational_state_changes": [],
+  "process": {
+    "argv": [
+      "C:\\Users\\user\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+      "-m",
+      "pytest",
+      "--rootdir",
+      "C:\\Users\\user\\Aureon-OS-github-latest-20260810_091213",
+      "-c",
+      "C:\\Users\\user\\Aureon-OS-github-latest-20260810_091213\\pyproject.toml",
+      "-p",
+      "scripts.validation.pytest_no_skip_shards",
+      "--disable-socket",
+      "--strict-config",
+      "-o",
+      "cache_dir=C:\\Users\\user\\AppData\\Local\\Temp\\aureon-pytest-shard-0007-1u9bm4e9\\pytest-cache",
+      "--aureon-shard-report=C:\\Users\\user\\AppData\\Local\\Temp\\aureon-pytest-shard-0007-1u9bm4e9\\pytest-report.json",
+      "tests/bio/test_market_reference.py",
+      "tests/bio/test_sky_reference.py",
+      "tests/test_benchmark_agent_cognition.py",
+      "tests/test_coinapi_integration.py",
+      "tests/test_exchange_rate_limit_registry.py",
+      "tests/test_harmonic_chain.py",
+      "tests/test_historical_replay_validation.py",
+      "tests/test_hnc_essay_benchmark.py",
+      "tests/test_hnc_packet_security_comparison.py",
+      "tests/test_import_snapshot_quarantine.py",
+      "tests/test_non_python_external_llm_fallback.py",
+      "tests/test_profit_mesh_real_data.py",
+      "tests/test_queen_trading.py",
+      "tests/test_round_trip.py",
+      "tests/test_smoke_core.py",
+      "tests/test_unified_market_trader.py",
+      "tests/test_unit_core_math.py",
+      "tests/test_universal_forecast_real_data.py",
+      "tests/test_upe_signal_adapter_receipts.py",
+      "tests/test_value_preservation.py",
+      "tests/test_voice_runner_paths.py",
+      "tests/vault/test_vault_core.py"
+    ],
+    "duration_seconds": 20.094000000011874,
+    "returncode": 1,
+    "stderr": "Traceback (most recent call last):\n  File \"<frozen runpy>\", line 198, in _run_module_as_main\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \"C:\\Users\\user\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\pytest\\__main__.py\", line 9, in <module>\n    raise SystemExit(pytest.console_main())\n                     ^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\user\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\_pytest\\config\\__init__.py\", line 223, in console_main\n    code = main()\n           ^^^^^^\n  File \"C:\\Users\\user\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\_pytest\\config\\__init__.py\", line 199, in main\n    ret: ExitCode | int = config.hook.pytest_cmdline_main(config=config)\n                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\user\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\pluggy\\_hooks.py\", line 512, in __call__\n    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\user\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\pluggy\\_manager.py\", line 120, in _hookexec\n    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\user\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\pluggy\\_callers.py\", line 167, in _multicall\n    raise exception\n  File \"C:\\Users\\user\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\pluggy\\_callers.py\", line 121, in _multicall\n    res = hook_impl.function(*args)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\user\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\_pytest\\main.py\", line 365, in pytest_cmdline_main\n    return wrap_session(config, _main)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\user\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\_pytest\\main.py\", line 360, in wrap_session\n    config._ensure_unconfigure()\n  File \"C:\\Users\\user\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\_pytest\\config\\__init__.py\", line 1171, in _ensure_unconfigure\n    self._cleanup_stack.close()\n  File \"C:\\Users\\user\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\contextlib.py\", line 606, in close\n    self.__exit__(None, None, None)\n  File \"C:\\Users\\user\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\contextlib.py\", line 598, in __exit__\n    raise exc_details[1]\n  File \"C:\\Users\\user\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\contextlib.py\", line 583, in __exit__\n    if cb(*exc_details):\n       ^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\user\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\contextlib.py\", line 466, in _exit_wrapper\n    callback(*args, **kwds)\n  File \"C:\\Users\\user\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\_pytest\\capture.py\", line 778, in stop_global_capturing\n    self._global_capturing.pop_outerr_to_orig()\n  File \"C:\\Users\\user\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\_pytest\\capture.py\", line 659, in pop_outerr_to_orig\n    out, err = self.readouterr()\n               ^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\user\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\_pytest\\capture.py\", line 706, in readouterr\n    out = self.out.snap() if self.out else \"\"\n          ^^^^^^^^^^^^^^^\n  File \"C:\\Users\\user\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\_pytest\\capture.py\", line 591, in snap\n    self.tmpfile.seek(0)\nValueError: I/O operation on closed file.\n",
+    "stderr_sha256": "c3e31b9c67703532b3e599d8aacea2f1cb56c6e6267f8b36f2183589ca0ebbb0",
+    "stdout": "\nno tests ran in 18.06s\n",
+    "stdout_sha256": "cab07ebe438007cff1f05bc78be2c6a45d3d58a1303b803057eedbcba7b851c4",
+    "timed_out": false
+  },
+  "pytest_report_error": "",
+  "pytest_results": {
+    "collection_errors": [],
+    "collection_skips": [],
+    "items": [
+      {
+        "node_id": "tests/bio/test_market_reference.py::test_efficient_market_null_is_iid_like",
+        "source_file": "tests/bio/test_market_reference.py"
+      },
+      {
+        "node_id": "tests/bio/test_market_reference.py::test_structured_returns_has_planted_cycles",
+        "source_file": "tests/bio/test_market_reference.py"
+      },
+      {
+        "node_id": "tests/bio/test_market_reference.py::test_prices_to_returns",
+        "source_file": "tests/bio/test_market_reference.py"
+      },
+      {
+        "node_id": "tests/bio/test_market_reference.py::test_loaders_return_numeric_series",
+        "source_file": "tests/bio/test_market_reference.py"
+      },
+      {
+        "node_id": "tests/bio/test_market_reference.py::test_boundary_and_citation_honest",
+        "source_file": "tests/bio/test_market_reference.py"
+      },
+      {
+        "node_id": "tests/bio/test_sky_reference.py::test_catalogs_are_wellformed",
+        "source_file": "tests/bio/test_sky_reference.py"
+      },
+      {
+        "node_id": "tests/bio/test_sky_reference.py::test_catalog_lines_fold_into_band",
+        "source_file": "tests/bio/test_sky_reference.py"
+      },
+      {
+        "node_id": "tests/bio/test_sky_reference.py::test_21cm_line",
+        "source_file": "tests/bio/test_sky_reference.py"
+      },
+      {
+        "node_id": "tests/bio/test_sky_reference.py::test_continuum_is_featureless_and_diffuse_delegates",
+        "source_file": "tests/bio/test_sky_reference.py"
+      },
+      {
+        "node_id": "tests/bio/test_sky_reference.py::test_structured_reference_has_lines",
+        "source_file": "tests/bio/test_sky_reference.py"
+      },
+      {
+        "node_id": "tests/bio/test_sky_reference.py::test_citations_present",
+        "source_file": "tests/bio/test_sky_reference.py"
+      },
+      {
+        "node_id": "tests/test_benchmark_agent_cognition.py::TestAgentCognitionBenchmark::test_01_perception_signal_detection",
+        "source_file": "tests/test_benchmark_agent_cognition.py"
+      },
+      {
+        "node_id": "tests/test_benchmark_agent_cognition.py::TestAgentCognitionBenchmark::test_02_attention_selective_focus",
+        "source_file": "tests/test_benchmark_agent_cognition.py"
+      },
+      {
+        "node_id": "tests/test_benchmark_agent_cognition.py::TestAgentCognitionBenchmark::test_03_working_memory_context",
+        "source_file": "tests/test_benchmark_agent_cognition.py"
+      },
+      {
+        "node_id": "tests/test_benchmark_agent_cognition.py::TestAgentCognitionBenchmark::test_04_reasoning_blooms_taxonomy",
+        "source_file": "tests/test_benchmark_agent_cognition.py"
+      },
+      {
+        "node_id": "tests/test_benchmark_agent_cognition.py::TestAgentCognitionBenchmark::test_05_metacognition_calibration",
+        "source_file": "tests/test_benchmark_agent_cognition.py"
+      },
+      {
+        "node_id": "tests/test_benchmark_agent_cognition.py::TestAgentCognitionBenchmark::test_06_emotional_regulation",
+        "source_file": "tests/test_benchmark_agent_cognition.py"
+      },
+      {
+        "node_id": "tests/test_benchmark_agent_cognition.py::TestAgentCognitionBenchmark::test_07_adaptability_regime_change",
+        "source_file": "tests/test_benchmark_agent_cognition.py"
+      },
+      {
+        "node_id": "tests/test_benchmark_agent_cognition.py::TestAgentCognitionBenchmark::test_08_ethical_reasoning",
+        "source_file": "tests/test_benchmark_agent_cognition.py"
+      },
+      {
+        "node_id": "tests/test_benchmark_agent_cognition.py::TestAgentCognitionBenchmark::test_09_self_identity",
+        "source_file": "tests/test_benchmark_agent_cognition.py"
+      },
+      {
+        "node_id": "tests/test_benchmark_agent_cognition.py::TestAgentCognitionBenchmark::test_10_ego_death",
+        "source_file": "tests/test_benchmark_agent_cognition.py"
+      },
+      {
+        "node_id": "tests/test_benchmark_agent_cognition.py::TestAgentCognitionBenchmark::test_11_life_understanding",
+        "source_file": "tests/test_benchmark_agent_cognition.py"
+      },
+      {
+        "node_id": "tests/test_benchmark_agent_cognition.py::TestAgentCognitionBenchmark::test_12_hermetic_awareness",
+        "source_file": "tests/test_benchmark_agent_cognition.py"
+      },
+      {
+        "node_id": "tests/test_benchmark_agent_cognition.py::TestAgentCognitionBenchmark::test_13_consciousness_level",
+        "source_file": "tests/test_benchmark_agent_cognition.py"
+      },
+      {
+        "node_id": "tests/test_benchmark_agent_cognition.py::TestAgentCognitionBenchmark::test_14_full_pipeline_live_trade",
+        "source_file": "tests/test_benchmark_agent_cognition.py"
+      },
+      {
+        "node_id": "tests/test_benchmark_agent_cognition.py::TestAgentCognitionBenchmark::test_15_final_report_card",
+        "source_file": "tests/test_benchmark_agent_cognition.py"
+      },
+      {
+        "node_id": "tests/test_coinapi_integration.py::test_anomaly_detection",
+        "source_file": "tests/test_coinapi_integration.py"
+      },
+      {
+        "node_id": "tests/test_coinapi_integration.py::test_opportunity_filtering",
+        "source_file": "tests/test_coinapi_integration.py"
+      },
+      {
+        "node_id": "tests/test_coinapi_integration.py::test_full_integration",
+        "source_file": "tests/test_coinapi_integration.py"
+      },
+      {
+        "node_id": "tests/test_coinapi_integration.py::test_configuration_options",
+        "source_file": "tests/test_coinapi_integration.py"
+      },
+      {
+        "node_id": "tests/test_exchange_rate_limit_registry.py::test_official_exchange_rate_limit_profiles_cover_live_venues",
+        "source_file": "tests/test_exchange_rate_limit_registry.py"
+      },
+      {
+        "node_id": "tests/test_exchange_rate_limit_registry.py::test_cash_aware_rate_plan_boosts_idle_venue_data_without_exceeding_safe_budget",
+        "source_file": "tests/test_exchange_rate_limit_registry.py"
+      },
+      {
+        "node_id": "tests/test_exchange_rate_limit_registry.py::test_get_exchange_rate_limit_unknown_is_none",
+        "source_file": "tests/test_exchange_rate_limit_registry.py"
+      },
+      {
+        "node_id": "tests/test_harmonic_chain.py::TestHarmonicSignalChain::test_adaptive_learning",
+        "source_file": "tests/test_harmonic_chain.py"
+      },
+      {
+        "node_id": "tests/test_harmonic_chain.py::TestHarmonicSignalChain::test_chain_initialization",
+        "source_file": "tests/test_harmonic_chain.py"
+      },
+      {
+        "node_id": "tests/test_harmonic_chain.py::TestHarmonicSignalChain::test_coherence_accumulation",
+        "source_file": "tests/test_harmonic_chain.py"
+      },
+      {
+        "node_id": "tests/test_harmonic_chain.py::TestHarmonicSignalChain::test_direction_turnaround",
+        "source_file": "tests/test_harmonic_chain.py"
+      },
+      {
+        "node_id": "tests/test_harmonic_chain.py::TestHarmonicSignalChain::test_harmonic_encoding_decoding",
+        "source_file": "tests/test_harmonic_chain.py"
+      },
+      {
+        "node_id": "tests/test_harmonic_chain.py::TestHarmonicSignalChain::test_json_command_through_chain",
+        "source_file": "tests/test_harmonic_chain.py"
+      },
+      {
+        "node_id": "tests/test_harmonic_chain.py::TestHarmonicSignalChain::test_node_contributions",
+        "source_file": "tests/test_harmonic_chain.py"
+      },
+      {
+        "node_id": "tests/test_harmonic_chain.py::TestHarmonicSignalChain::test_poem_chain_complete",
+        "source_file": "tests/test_harmonic_chain.py"
+      },
+      {
+        "node_id": "tests/test_harmonic_chain.py::TestHarmonicSignalChain::test_signal_path_tracking",
+        "source_file": "tests/test_harmonic_chain.py"
+      },
+      {
+        "node_id": "tests/test_harmonic_chain.py::TestHarmonicSignalChain::test_signal_timing",
+        "source_file": "tests/test_harmonic_chain.py"
+      },
+      {
+        "node_id": "tests/test_harmonic_chain.py::TestIndividualNodes::test_enigma_decodes",
+        "source_file": "tests/test_harmonic_chain.py"
+      },
+      {
+        "node_id": "tests/test_harmonic_chain.py::TestIndividualNodes::test_queen_initiates_signal",
+        "source_file": "tests/test_harmonic_chain.py"
+      },
+      {
+        "node_id": "tests/test_harmonic_chain.py::TestIndividualNodes::test_whale_turnaround",
+        "source_file": "tests/test_harmonic_chain.py"
+      },
+      {
+        "node_id": "tests/test_harmonic_chain.py::TestHarmonicAlphabetIntegration::test_full_alphabet_through_chain",
+        "source_file": "tests/test_harmonic_chain.py"
+      },
+      {
+        "node_id": "tests/test_harmonic_chain.py::TestHarmonicAlphabetIntegration::test_numbers_through_chain",
+        "source_file": "tests/test_harmonic_chain.py"
+      },
+      {
+        "node_id": "tests/test_harmonic_chain.py::TestHarmonicAlphabetIntegration::test_punctuation_through_chain",
+        "source_file": "tests/test_harmonic_chain.py"
+      },
+      {
+        "node_id": "tests/test_harmonic_chain.py::TestChainContinuity::test_chain_status_updates",
+        "source_file": "tests/test_harmonic_chain.py"
+      },
+      {
+        "node_id": "tests/test_harmonic_chain.py::TestChainContinuity::test_multiple_signals_maintain_state",
+        "source_file": "tests/test_harmonic_chain.py"
+      },
+      {
+        "node_id": "tests/test_historical_replay_validation.py::test_datasets_are_real_and_provenance_stamped",
+        "source_file": "tests/test_historical_replay_validation.py"
+      },
+      {
+        "node_id": "tests/test_historical_replay_validation.py::test_replay_produces_real_hnc_and_auris_observables",
+        "source_file": "tests/test_historical_replay_validation.py"
+      },
+      {
+        "node_id": "tests/test_historical_replay_validation.py::test_validation_verdicts_on_bundled_data",
+        "source_file": "tests/test_historical_replay_validation.py"
+      },
+      {
+        "node_id": "tests/test_historical_replay_validation.py::test_profit_margin_benchmark_measured_on_both_horizons",
+        "source_file": "tests/test_historical_replay_validation.py"
+      },
+      {
+        "node_id": "tests/test_historical_replay_validation.py::test_ablation_gate_ladder_is_structurally_monotone",
+        "source_file": "tests/test_historical_replay_validation.py"
+      },
+      {
+        "node_id": "tests/test_historical_replay_validation.py::test_trade_stats_math_hand_computed",
+        "source_file": "tests/test_historical_replay_validation.py"
+      },
+      {
+        "node_id": "tests/test_historical_replay_validation.py::test_missing_dataset_is_a_named_blocker",
+        "source_file": "tests/test_historical_replay_validation.py"
+      },
+      {
+        "node_id": "tests/test_historical_replay_validation.py::test_replay_is_deterministic",
+        "source_file": "tests/test_historical_replay_validation.py"
+      },
+      {
+        "node_id": "tests/test_historical_replay_validation.py::test_corrupt_dataset_refused",
+        "source_file": "tests/test_historical_replay_validation.py"
+      },
+      {
+        "node_id": "tests/test_historical_replay_validation.py::test_bundled_datasets_are_chronological_and_integral",
+        "source_file": "tests/test_historical_replay_validation.py"
+      },
+      {
+        "node_id": "tests/test_historical_replay_validation.py::test_tampered_chronology_or_ohlc_is_refused",
+        "source_file": "tests/test_historical_replay_validation.py"
+      },
+      {
+        "node_id": "tests/test_historical_replay_validation.py::test_artifact_written_by_cli_matches_module",
+        "source_file": "tests/test_historical_replay_validation.py"
+      },
+      {
+        "node_id": "tests/test_hnc_essay_benchmark.py::test_hnc_essay_benchmark_generates_exact_1000_word_essay_and_audit",
+        "source_file": "tests/test_hnc_essay_benchmark.py"
+      },
+      {
+        "node_id": "tests/test_hnc_packet_security_comparison.py::test_hnc_packet_security_comparison_scores_relative_security",
+        "source_file": "tests/test_hnc_packet_security_comparison.py"
+      },
+      {
+        "node_id": "tests/test_hnc_packet_security_comparison.py::test_hnc_packet_security_comparison_writes_public_reports",
+        "source_file": "tests/test_hnc_packet_security_comparison.py"
+      },
+      {
+        "node_id": "tests/test_import_snapshot_quarantine.py::test_root_docker_contexts_exclude_historical_trees",
+        "source_file": "tests/test_import_snapshot_quarantine.py"
+      },
+      {
+        "node_id": "tests/test_import_snapshot_quarantine.py::test_runtime_controls_never_select_quarantined_source",
+        "source_file": "tests/test_import_snapshot_quarantine.py"
+      },
+      {
+        "node_id": "tests/test_import_snapshot_quarantine.py::test_runtime_reference_detector_rejects_nested_build_and_launch_paths",
+        "source_file": "tests/test_import_snapshot_quarantine.py"
+      },
+      {
+        "node_id": "tests/test_import_snapshot_quarantine.py::test_production_commands_have_no_quarantined_working_directory",
+        "source_file": "tests/test_import_snapshot_quarantine.py"
+      },
+      {
+        "node_id": "tests/test_import_snapshot_quarantine.py::test_snapshot_launchers_are_absent_from_canonical_navigation",
+        "source_file": "tests/test_import_snapshot_quarantine.py"
+      },
+      {
+        "node_id": "tests/test_import_snapshot_quarantine.py::test_quarantine_policy_is_explicit_and_snapshot_is_not_a_package_script",
+        "source_file": "tests/test_import_snapshot_quarantine.py"
+      },
+      {
+        "node_id": "tests/test_non_python_external_llm_fallback.py::test_browser_bundle_contains_no_direct_provider_secret_route",
+        "source_file": "tests/test_non_python_external_llm_fallback.py"
+      },
+      {
+        "node_id": "tests/test_non_python_external_llm_fallback.py::test_node_and_worker_surfaces_have_ollama_fallback",
+        "source_file": "tests/test_non_python_external_llm_fallback.py"
+      },
+      {
+        "node_id": "tests/test_non_python_external_llm_fallback.py::test_supabase_llm_functions_use_shared_server_side_fallback",
+        "source_file": "tests/test_non_python_external_llm_fallback.py"
+      },
+      {
+        "node_id": "tests/test_non_python_external_llm_fallback.py::test_auris_edge_function_requires_jwt",
+        "source_file": "tests/test_non_python_external_llm_fallback.py"
+      },
+      {
+        "node_id": "tests/test_non_python_external_llm_fallback.py::test_structured_supabase_llm_responses_accept_fenced_json",
+        "source_file": "tests/test_non_python_external_llm_fallback.py"
+      },
+      {
+        "node_id": "tests/test_profit_mesh_real_data.py::test_stale_ticker_is_explicit_no_data",
+        "source_file": "tests/test_profit_mesh_real_data.py"
+      },
+      {
+        "node_id": "tests/test_profit_mesh_real_data.py::test_malformed_balance_invalidates_complete_discovery",
+        "source_file": "tests/test_profit_mesh_real_data.py"
+      },
+      {
+        "node_id": "tests/test_profit_mesh_real_data.py::test_dry_run_entry_never_creates_a_position_or_fill",
+        "source_file": "tests/test_profit_mesh_real_data.py"
+      },
+      {
+        "node_id": "tests/test_profit_mesh_real_data.py::test_acknowledgement_without_terminal_fill_is_latched_and_not_retried",
+        "source_file": "tests/test_profit_mesh_real_data.py"
+      },
+      {
+        "node_id": "tests/test_profit_mesh_real_data.py::test_terminal_buy_uses_observed_quantity_price_fee_and_timestamp",
+        "source_file": "tests/test_profit_mesh_real_data.py"
+      },
+      {
+        "node_id": "tests/test_profit_mesh_real_data.py::test_stale_terminal_buy_is_quarantined_without_position",
+        "source_file": "tests/test_profit_mesh_real_data.py"
+      },
+      {
+        "node_id": "tests/test_profit_mesh_real_data.py::test_dry_run_exit_never_closes_or_accounts",
+        "source_file": "tests/test_profit_mesh_real_data.py"
+      },
+      {
+        "node_id": "tests/test_profit_mesh_real_data.py::test_sell_acknowledgement_leaves_position_and_profit_untouched",
+        "source_file": "tests/test_profit_mesh_real_data.py"
+      },
+      {
+        "node_id": "tests/test_profit_mesh_real_data.py::test_terminal_exit_accounts_exact_observed_usdt_result",
+        "source_file": "tests/test_profit_mesh_real_data.py"
+      },
+      {
+        "node_id": "tests/test_profit_mesh_real_data.py::test_unconvertible_commission_never_creates_realised_pnl",
+        "source_file": "tests/test_profit_mesh_real_data.py"
+      },
+      {
+        "node_id": "tests/test_queen_trading.py::test_queen_trading",
+        "source_file": "tests/test_queen_trading.py"
+      }
+    ],
+    "loaded_plugins": [
+      {
+        "module": "_pytest.config",
+        "registered_as": "1626640328432"
+      },
+      {
+        "distribution": "anyio",
+        "module": "anyio.pytest_plugin",
+        "registered_as": "anyio",
+        "source": "pytest_plugin.py",
+        "version": "4.12.1"
+      },
+      {
+        "module": "_pytest.assertion",
+        "registered_as": "assertion",
+        "source": "__init__.py"
+      },
+      {
+        "module": "_pytest.cacheprovider",
+        "registered_as": "cacheprovider",
+        "source": "cacheprovider.py"
+      },
+      {
+        "module": "_pytest.capture",
+        "registered_as": "capture",
+        "source": "capture.py"
+      },
+      {
+        "module": "_pytest.capture",
+        "registered_as": "capturemanager"
+      },
+      {
+        "module": "conftest",
+        "registered_as": "conftest.py",
+        "source": "conftest.py"
+      },
+      {
+        "module": "_pytest.debugging",
+        "registered_as": "debugging",
+        "source": "debugging.py"
+      },
+      {
+        "module": "_pytest.doctest",
+        "registered_as": "doctest",
+        "source": "doctest.py"
+      },
+      {
+        "module": "_pytest.faulthandler",
+        "registered_as": "faulthandler",
+        "source": "faulthandler.py"
+      },
+      {
+        "module": "_pytest.fixtures",
+        "registered_as": "fixtures",
+        "source": "fixtures.py"
+      },
+      {
+        "module": "_pytest.fixtures",
+        "registered_as": "funcmanage"
+      },
+      {
+        "module": "_pytest.helpconfig",
+        "registered_as": "helpconfig",
+        "source": "helpconfig.py"
+      },
+      {
+        "module": "_pytest.junitxml",
+        "registered_as": "junitxml",
+        "source": "junitxml.py"
+      },
+      {
+        "module": "_pytest.legacypath",
+        "registered_as": "legacypath",
+        "source": "legacypath.py"
+      },
+      {
+        "module": "LegacyTmpdirPlugin",
+        "registered_as": "legacypath-tmpdir"
+      },
+      {
+        "module": "_pytest.cacheprovider",
+        "registered_as": "lfplugin"
+      },
+      {
+        "module": "_pytest.logging",
+        "registered_as": "logging",
+        "source": "logging.py"
+      },
+      {
+        "module": "_pytest.logging",
+        "registered_as": "logging-plugin"
+      },
+      {
+        "module": "_pytest.main",
+        "registered_as": "main",
+        "source": "main.py"
+      },
+      {
+        "module": "_pytest.mark",
+        "registered_as": "mark",
+        "source": "__init__.py"
+      },
+      {
+        "module": "_pytest.monkeypatch",
+        "registered_as": "monkeypatch",
+        "source": "monkeypatch.py"
+      },
+      {
+        "module": "_pytest.cacheprovider",
+        "registered_as": "nfplugin"
+      },
+      {
+        "module": "_pytest.pastebin",
+        "registered_as": "pastebin",
+        "source": "pastebin.py"
+      },
+      {
+        "module": "_pytest.config",
+        "registered_as": "pytestconfig"
+      },
+      {
+        "module": "_pytest.python",
+        "registered_as": "python",
+        "source": "python.py"
+      },
+      {
+        "module": "_pytest.recwarn",
+        "registered_as": "recwarn",
+        "source": "recwarn.py"
+      },
+      {
+        "module": "_pytest.reports",
+        "registered_as": "reports",
+        "source": "reports.py"
+      },
+      {
+        "module": "_pytest.runner",
+        "registered_as": "runner",
+        "source": "runner.py"
+      },
+      {
+        "module": "scripts.validation.pytest_no_skip_shards",
+        "registered_as": "scripts.validation.pytest_no_skip_shards",
+        "source": "scripts/validation/pytest_no_skip_shards.py"
+      },
+      {
+        "module": "_pytest.main",
+        "registered_as": "session"
+      },
+      {
+        "module": "_pytest.setuponly",
+        "registered_as": "setuponly",
+        "source": "setuponly.py"
+      },
+      {
+        "module": "_pytest.setupplan",
+        "registered_as": "setupplan",
+        "source": "setupplan.py"
+      },
+      {
+        "module": "_pytest.skipping",
+        "registered_as": "skipping",
+        "source": "skipping.py"
+      },
+      {
+        "distribution": "pytest-socket",
+        "module": "pytest_socket",
+        "registered_as": "socket",
+        "source": "__init__.py",
+        "version": "0.8.0"
+      },
+      {
+        "module": "_pytest.stepwise",
+        "registered_as": "stepwise",
+        "source": "stepwise.py"
+      },
+      {
+        "module": "_pytest.subtests",
+        "registered_as": "subtests",
+        "source": "subtests.py"
+      },
+      {
+        "module": "_pytest.terminal",
+        "registered_as": "terminal",
+        "source": "terminal.py"
+      },
+      {
+        "module": "_pytest.terminalprogress",
+        "registered_as": "terminalprogress",
+        "source": "terminalprogress.py"
+      },
+      {
+        "module": "_pytest.terminal",
+        "registered_as": "terminalreporter"
+      },
+      {
+        "module": "_pytest.threadexception",
+        "registered_as": "threadexception",
+        "source": "threadexception.py"
+      },
+      {
+        "module": "_pytest.tmpdir",
+        "registered_as": "tmpdir",
+        "source": "tmpdir.py"
+      },
+      {
+        "module": "_pytest.unittest",
+        "registered_as": "unittest",
+        "source": "unittest.py"
+      },
+      {
+        "module": "_pytest.unraisableexception",
+        "registered_as": "unraisableexception",
+        "source": "unraisableexception.py"
+      },
+      {
+        "module": "_pytest.warnings",
+        "registered_as": "warnings",
+        "source": "warnings.py"
+      }
+    ],
+    "pytest_exitstatus": 3,
+    "runtime_phases": [],
+    "runtime_skip_count": 0,
+    "schema": "aureon.pytest-no-skip-shards.v1",
+    "socket_blocker_loaded": true,
+    "socket_blocking_requested": true
+  },
+  "runtime_skip_count": 0,
+  "schema": "aureon.pytest-no-skip-shards.v1",
+  "selection_changes": {
+    "missing": [
+      "tests/test_round_trip.py::TestRoundTripAvailability::test_alpaca_only_rejects_non_alpaca_paths",
+      "tests/test_round_trip.py::TestRoundTripAvailability::test_compute_mc_pwin",
+      "tests/test_round_trip.py::TestRoundTripAvailability::test_compute_mc_pwin_low",
+      "tests/test_round_trip.py::TestRoundTripAvailability::test_empty_steps",
+      "tests/test_round_trip.py::TestRoundTripAvailability::test_insufficient_volume",
+      "tests/test_round_trip.py::TestRoundTripAvailability::test_live_depth_check_fails_when_orderbook_insufficient",
+      "tests/test_round_trip.py::TestRoundTripAvailability::test_live_depth_check_passes_when_orderbook_sufficient",
+      "tests/test_round_trip.py::TestRoundTripAvailability::test_missing_pair_in_step",
+      "tests/test_round_trip.py::TestRoundTripAvailability::test_no_barter_navigator",
+      "tests/test_round_trip.py::TestRoundTripAvailability::test_no_path_found",
+      "tests/test_round_trip.py::TestRoundTripAvailability::test_no_ticker_for_pair",
+      "tests/test_round_trip.py::TestRoundTripAvailability::test_per_leg_too_small",
+      "tests/test_round_trip.py::TestRoundTripAvailability::test_success_path",
+      "tests/test_smoke_core.py::TestSmokeCore::test_conversion_commando_scanner",
+      "tests/test_smoke_core.py::TestSmokeCore::test_quantum_mirror_scanner_sanity",
+      "tests/test_smoke_core.py::TestSmokeCore::test_queen_hive_mind_basic",
+      "tests/test_smoke_core.py::TestSmokeCore::test_timeline_oracle_instantiation",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_blocked_execution_summary_is_persisted",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_capital_tick_timeout_does_not_block_unified_runtime",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_capital_tradables_always_include_gold_route_key",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_central_beat_merges_sources_into_symbol_metrics",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_central_beat_reuses_recent_source_when_probe_drops_out",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_dry_run_disables_unified_executor_even_when_env_armed",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_dynamic_budget_expands_orderbook_probe_count",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_dynamic_intelligence_budget_uses_low_cash_exchange_as_sensor",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_exchange_dashboard_payload_timeout_serves_cached_payload",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_executor_route_timeout_holds_tick_without_duplicate_route",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_executor_skips_kraken_spot_buy_and_still_uses_margin_when_spot_underwater",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_fast_money_below_measured_confidence_emits_no_separation_audit",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_fast_money_ranking_uses_volume_momentum_and_orderbook_pressure",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_fast_money_score_ranks_but_does_not_raise_gate_confidence",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_fresh_writer_lock_is_not_honored_when_owner_pid_is_dead",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_get_local_dashboard_state_returns_cached_copy_without_rebuild",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_gold_priority_candidate_stays_visible_above_generic_flow",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_gold_priority_capital_route_exposes_not_ready_blocker",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_gold_priority_hold_side_blocks_intent_publish",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_gold_priority_live_stream_injects_capital_candidate",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_historical_waveform_memory_feeds_central_beat_and_mesh",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_hnc_cognitive_proof_runs_master_flow_over_real_runtime_data",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_intelligence_mesh_reports_capability_presence_and_active_bridges",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_kraken_equity_uses_portfolio_value_and_balance_snapshot_fallbacks",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_kraken_margin_route_submits_through_unified_executor",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_kraken_spot_buy_can_use_gbp_quote_balance",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_kraken_spot_buy_goes_margin_only_when_spot_inventory_underwater",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_kraken_spot_buy_records_fee_aware_fast_profit_position",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_kraken_spot_fast_profit_arms_deadman_when_market_sell_fails",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_kraken_spot_fast_profit_monitor_adopts_profitable_live_inventory",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_kraken_spot_fast_profit_monitor_sells_only_true_net_profit",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_kraken_tick_timeout_does_not_block_unified_runtime",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_multi_exchange_order_flow_routes_all_four_venues",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_open_positions_are_first_class_central_beat_symbols",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_order_intents_include_lifecycle_identity",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_orderbook_pressure_samples_top_ranked_candidate_without_fast_money_threshold",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_parallel_strategy_support_is_loaded_for_matching_route",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_profit_velocity_ranking_uses_cash_price_history_and_eta",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_quote_probes_use_cache_before_second_api_call",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_record_order_lifecycle_adds_live_proof_fields",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_route_price_uses_stream_cache_before_rest_quote",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_runtime_executor_submits_direct_routes_and_delegates_existing_traders_when_gates_clear",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_runtime_health_marks_stalled_tick_without_confusing_heartbeat_freshness",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_runtime_health_uses_cached_state_and_flags_missing_systems",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_scanner_fusion_cross_references_orderbook_waveforms_and_world_context",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_shadow_trade_report_verifies_prior_shadow_against_current_price",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_shared_market_feed_pushes_central_metrics_to_traders",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_shared_order_flow_feeds_all_unified_targets",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_shared_order_flow_preserves_sell_direction_from_central_beat",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_shared_order_flow_signal_publish_carries_live_proof_fields",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_spot_symbol_mapping_filters_non_crypto_cfds",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_stream_cache_snapshot_feeds_fresh_websocket_symbols",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_windows_writer_lock_owner_check_uses_tasklist_not_posix_signal",
+      "tests/test_unified_market_trader.py::UnifiedMarketTraderTests::test_world_financial_ecosystem_feeds_central_beat_decision_symbols",
+      "tests/test_unit_core_math.py::TestUnitCoreMath::test_reality_branch_math",
+      "tests/test_unit_core_math.py::TestUnitCoreMath::test_timeline_anchor_strength",
+      "tests/test_universal_forecast_real_data.py::test_full_linked_receipts_enable_forecast_then_history_not_accounting",
+      "tests/test_universal_forecast_real_data.py::test_import_constructor_and_falsey_paths_are_inert_and_numeric_free",
+      "tests/test_universal_forecast_real_data.py::test_market_receipts_are_same_venue_and_history_waits_for_all_gates",
+      "tests/test_upe_signal_adapter_receipts.py::test_complete_fresh_linked_receipts_open_the_live_hnc_auris_route",
+      "tests/test_upe_signal_adapter_receipts.py::test_generated_controls_are_frozen_non_operational_and_not_relabelable",
+      "tests/test_upe_signal_adapter_receipts.py::test_incomplete_generated_stale_or_unlinked_receipts_fail_closed[auris-gate_open-False-explicitly pass]",
+      "tests/test_upe_signal_adapter_receipts.py::test_incomplete_generated_stale_or_unlinked_receipts_fail_closed[auris-received_at-nan-finite]",
+      "tests/test_upe_signal_adapter_receipts.py::test_incomplete_generated_stale_or_unlinked_receipts_fail_closed[hnc-input_receipt_ids-value3-link exactly]",
+      "tests/test_upe_signal_adapter_receipts.py::test_incomplete_generated_stale_or_unlinked_receipts_fail_closed[measurement-data_sha256-0000000000000000000000000000000000000000000000000000000000000000-does not bind]",
+      "tests/test_upe_signal_adapter_receipts.py::test_incomplete_generated_stale_or_unlinked_receipts_fail_closed[measurement-generated_values-True-generated_values=false]",
+      "tests/test_upe_signal_adapter_receipts.py::test_incomplete_generated_stale_or_unlinked_receipts_fail_closed[measurement-source_timestamp-9000.0-stale]",
+      "tests/test_upe_signal_adapter_receipts.py::test_module_is_inert_and_exact_hardened_validator_is_clean",
+      "tests/test_upe_signal_adapter_receipts.py::test_timeseries_receipt_binds_exact_sample_rate_and_nonnegative_counts",
+      "tests/test_upe_signal_adapter_receipts.py::test_unreceipted_arrays_remain_control_only_regardless_of_claimed_provenance",
+      "tests/test_value_preservation.py::test_value_preservation_strategy",
+      "tests/test_voice_runner_paths.py::test_stop_runner_preserves_stop_file_contract",
+      "tests/test_voice_runner_paths.py::test_voice_cmd_derives_repo_and_validates_dependencies",
+      "tests/test_voice_runner_paths.py::test_voice_powershell_runners_derive_repo_and_validate_it",
+      "tests/test_voice_runner_paths.py::test_voice_powershell_runners_parse[run_aureon_voice_agent.ps1]",
+      "tests/test_voice_runner_paths.py::test_voice_powershell_runners_parse[stop_aureon_voice_agent.ps1]",
+      "tests/test_voice_runner_paths.py::test_voice_runner_speech_and_approval_contract_is_unchanged",
+      "tests/test_voice_runner_paths.py::test_voice_runners_do_not_embed_a_user_profile_root[run_aureon_voice_agent.cmd]",
+      "tests/test_voice_runner_paths.py::test_voice_runners_do_not_embed_a_user_profile_root[run_aureon_voice_agent.ps1]",
+      "tests/test_voice_runner_paths.py::test_voice_runners_do_not_embed_a_user_profile_root[stop_aureon_voice_agent.ps1]",
+      "tests/vault/test_vault_core.py::test_auris_metacognition",
+      "tests/vault/test_vault_core.py::test_casimir_quantifier",
+      "tests/vault/test_vault_core.py::test_fibonacci_shuffler",
+      "tests/vault/test_vault_core.py::test_harmonic_pinger",
+      "tests/vault/test_vault_core.py::test_hnc_deployer",
+      "tests/vault/test_vault_core.py::test_love_gratitude_clock",
+      "tests/vault/test_vault_core.py::test_rally_coordinator",
+      "tests/vault/test_vault_core.py::test_vault_ingest_and_eviction"
+    ],
+    "unexpected": []
+  },
+  "shard": 7,
+  "state_mutation_detected": false,
+  "status": "selection_mismatch"
+}

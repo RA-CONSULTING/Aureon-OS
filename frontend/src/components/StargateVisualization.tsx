@@ -35,7 +35,9 @@ function StargateMarker({ node, isSelected, onClick, activation }: MarkerProps) 
     if (meshRef.current) {
       const time = state.clock.getElapsedTime();
       const pulse = Math.sin(time * 2) * 0.2 + 1;
-      const activationBoost = activation ? activation.coherence : 0.7;
+      const activationBoost = activation?.status === 'ACTIVE' && activation.coherence !== null
+        ? activation.coherence
+        : 0.7;
       meshRef.current.scale.setScalar(pulse * (isSelected ? 1.5 : 1) * activationBoost);
     }
   });
@@ -47,14 +49,16 @@ function StargateMarker({ node, isSelected, onClick, activation }: MarkerProps) 
         <meshStandardMaterial 
           color={activation?.status === 'ACTIVE' ? "#00ff88" : (isSelected ? "#00ff88" : "#00ffff")} 
           emissive={activation?.status === 'ACTIVE' ? "#00ff88" : (isSelected ? "#00ff88" : "#00ffff")}
-          emissiveIntensity={activation ? (activation.coherence * 3) : (isSelected ? 2 : 1)}
+          emissiveIntensity={activation?.status === 'ACTIVE' && activation.coherence !== null
+            ? activation.coherence * 3
+            : (isSelected ? 2 : 1)}
           transparent
           opacity={0.8}
         />
       </mesh>
       
       {/* Frequency ring for active nodes */}
-      {activation && (
+      {activation?.status === 'ACTIVE' && activation.coherence !== null && (
         <mesh position={position} rotation={[Math.PI / 2, 0, 0]}>
           <torusGeometry args={[0.3, 0.02, 8, 32]} />
           <meshStandardMaterial 
@@ -241,9 +245,9 @@ export function StargateVisualization() {
         <div className="space-y-6">
           {/* Network Status */}
           <div className="flex items-center gap-2 text-sm">
-            <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-green-500 animate-pulse' : 'bg-gray-500'}`} />
+            <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-success animate-pulse' : 'bg-gray-500'}`} />
             <span className="text-muted-foreground">
-              {isActive ? 'Live Network Pinging' : 'Network Offline'}
+              {isActive ? 'Observed node telemetry live' : 'Awaiting live node telemetry'}
             </span>
           </div>
 
@@ -251,57 +255,69 @@ export function StargateVisualization() {
             <div>
               <div className="text-xs text-muted-foreground">Active Nodes</div>
               <div className="text-2xl font-bold text-primary">
-                {metrics?.activeNodes || 0}/{metrics?.totalNodes || 12}
+                {metrics?.activeNodes ?? 0}/{metrics?.totalNodes ?? 12}
               </div>
             </div>
             <div>
               <div className="text-xs text-muted-foreground">Grid Energy</div>
-              <div className="text-2xl font-bold text-primary">{(gridEnergy * 100).toFixed(1)}%</div>
+              <div className="text-2xl font-bold text-primary">
+                {gridEnergy === null ? 'Unavailable' : `${(gridEnergy * 100).toFixed(1)}%`}
+              </div>
             </div>
             <div>
               <div className="text-xs text-muted-foreground">Avg Coherence</div>
               <div className="text-2xl font-bold text-primary">
-                {metrics ? (metrics.avgCoherence * 100).toFixed(1) : '0'}%
+                {metrics?.avgCoherence === null || metrics?.avgCoherence === undefined
+                  ? 'Unavailable'
+                  : `${(metrics.avgCoherence * 100).toFixed(1)}%`}
               </div>
             </div>
             <div>
               <div className="text-xs text-muted-foreground">Network Strength</div>
               <div className="text-2xl font-bold text-primary">
-                {metrics ? (metrics.networkStrength * 100).toFixed(1) : '0'}%
+                {metrics?.networkStrength === null || metrics?.networkStrength === undefined
+                  ? 'Unavailable'
+                  : `${(metrics.networkStrength * 100).toFixed(1)}%`}
               </div>
             </div>
             <div>
               <div className="text-xs text-muted-foreground">Avg Latency</div>
               <div className="text-2xl font-bold text-primary">
-                {metrics?.avgLatency.toFixed(0) || '0'}ms
+                {metrics?.avgLatency === null || metrics?.avgLatency === undefined
+                  ? 'Unavailable'
+                  : `${metrics.avgLatency.toFixed(0)}ms`}
               </div>
             </div>
             <div>
               <div className="text-xs text-muted-foreground">Energy Flow</div>
               <div className="text-2xl font-bold text-primary">
-                {metrics ? (metrics.avgEnergyFlow * 100).toFixed(1) : '0'}%
+                {metrics?.avgEnergyFlow === null || metrics?.avgEnergyFlow === undefined
+                  ? 'Unavailable'
+                  : `${(metrics.avgEnergyFlow * 100).toFixed(1)}%`}
               </div>
             </div>
           </div>
 
           <div className="text-xs text-muted-foreground space-y-2">
             <p>• 12-Node Planetary Grid</p>
-            <p>• Continuous Live Pinging (2s interval)</p>
-            <p>• Primelines Protocol Integration</p>
-            <p>• Real-Time Coherence Monitoring</p>
-            <p>• Multi-Frequency Resonance Lock</p>
+            <p>• Provider observations required for activation</p>
+            <p>• Primelines sync only after fresh telemetry validation</p>
+            <p>• Missing measurements remain unavailable</p>
+            <p>• No generated resonance or latency values</p>
           </div>
 
           {/* Live Node Status */}
           {activations.length > 0 && (
             <div className="space-y-2">
-              <div className="text-sm font-medium">Live Node Status</div>
+              <div className="text-sm font-medium">Node Observation Status</div>
               <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto">
                 {activations.slice(0, 6).map((activation) => (
                   <div key={activation.nodeName} className="text-xs p-2 bg-background/50 rounded">
                     <div className="font-medium">{activation.nodeName}</div>
                     <div className="text-muted-foreground">
-                      {(activation.coherence * 100).toFixed(0)}% • {activation.pingLatency.toFixed(0)}ms
+                      {activation.status === 'ACTIVE' && activation.coherence !== null && activation.pingLatency !== null
+                        ? `${(activation.coherence * 100).toFixed(0)}% • ${activation.pingLatency.toFixed(0)}ms`
+                        : 'Unavailable • no_data'}
                     </div>
                   </div>
                 ))}

@@ -73,7 +73,7 @@ import math
 import json
 import logging
 import threading
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass, field, asdict
 from collections import deque
@@ -101,6 +101,44 @@ PHI = (1 + math.sqrt(5)) / 2                    # Golden Ratio ≈ 1.618
 LOVE_FREQUENCY = 528                             # Hz - DNA repair frequency
 SCHUMANN_BASE = 7.83                             # Hz - Earth's heartbeat
 POINT_OF_INTENT = 9.0                            # Unity synthesis
+
+MARKET_FEATURE_FIELDS = (
+    "volatility",
+    "momentum",
+    "sentiment",
+    "trend_strength",
+    "pattern_match",
+    "harmony",
+    "volume_ratio",
+    "correlation",
+)
+MARKET_RECEIPT_MAX_AGE_SECONDS = 120.0
+
+
+def _provider_epoch(value: Any) -> Optional[float]:
+    """Parse provider time without substituting the local receipt clock."""
+    try:
+        if isinstance(value, (int, float)) and not isinstance(value, bool):
+            parsed = float(value)
+            if parsed > 10_000_000_000:
+                parsed /= 1000.0
+        elif isinstance(value, str) and value.strip():
+            text = value.strip()
+            try:
+                parsed = float(text)
+                if parsed > 10_000_000_000:
+                    parsed /= 1000.0
+            except ValueError:
+                normalized = text[:-1] + "+00:00" if text.endswith("Z") else text
+                stamp = datetime.fromisoformat(normalized)
+                if stamp.tzinfo is None:
+                    stamp = stamp.replace(tzinfo=timezone.utc)
+                parsed = stamp.timestamp()
+        else:
+            return None
+    except (OverflowError, TypeError, ValueError):
+        return None
+    return parsed if math.isfinite(parsed) and parsed > 0 else None
 
 # Fibonacci sequence for position sizing
 FIBONACCI = [0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610]
@@ -148,14 +186,17 @@ RAINBOW_STATES = {
 # LOGGING SETUP
 # ═══════════════════════════════════════════════════════════════════════════════
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s [%(levelname)s] %(message)s',
-    handlers=[
-        logging.FileHandler('aureon_nexus.log'),
-        logging.StreamHandler(sys.stdout)
-    ]
-)
+if os.getenv("AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS", "").strip().lower() not in {
+    "1", "true", "yes", "on",
+}:
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s [%(levelname)s] %(message)s',
+        handlers=[
+            logging.FileHandler('aureon_nexus.log'),
+            logging.StreamHandler(sys.stdout)
+        ]
+    )
 logger = logging.getLogger(__name__)
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -290,28 +331,39 @@ class MasterEquation:
         Calculate S(t) from 9 Auris nodes.
         Each node contributes based on its frequency and market alignment.
         """
+        missing = [field for field in MARKET_FEATURE_FIELDS if field not in market_data]
+        if missing:
+            raise ValueError(f"incomplete market feature receipt: {', '.join(missing)}")
+
+        features: Dict[str, float] = {}
+        for field_name in MARKET_FEATURE_FIELDS:
+            value = float(market_data[field_name])
+            if not math.isfinite(value) or not 0.0 <= value <= 1.0:
+                raise ValueError(f"invalid normalized market feature: {field_name}")
+            features[field_name] = value
+
         total = 0.0
         
         for name, node in AURIS_NODES.items():
             # Calculate node contribution based on role
             if node["role"] == "volatility":
-                value = market_data.get("volatility", 0.5)
+                value = features["volatility"]
             elif node["role"] == "momentum":
-                value = market_data.get("momentum", 0.5)
+                value = features["momentum"]
             elif node["role"] == "stability":
-                value = 1.0 - market_data.get("volatility", 0.5)
+                value = 1.0 - features["volatility"]
             elif node["role"] == "emotion":
-                value = market_data.get("sentiment", 0.5)
+                value = features["sentiment"]
             elif node["role"] == "sensing":
-                value = market_data.get("trend_strength", 0.5)
+                value = features["trend_strength"]
             elif node["role"] == "memory":
-                value = market_data.get("pattern_match", 0.5)
+                value = features["pattern_match"]
             elif node["role"] == "love":
-                value = market_data.get("harmony", 0.5)
+                value = features["harmony"]
             elif node["role"] == "infrastructure":
-                value = market_data.get("volume_ratio", 0.5)
+                value = features["volume_ratio"]
             else:  # symbiosis
-                value = market_data.get("correlation", 0.5)
+                value = features["correlation"]
             
             # Apply frequency modulation
             phase = (node["freq"] / LOVE_FREQUENCY) * math.pi
@@ -442,7 +494,7 @@ class QueenHive:
         self.harvest_pct = 0.10    # 10% harvests
         self.spawn_threshold = 0.001  # Spawn new hive when harvest reaches this
     
-    def record_profit(self, profit: float, btc_price: float = 95000) -> Dict[str, float]:
+    def record_profit(self, profit: float, btc_price: Optional[float] = None) -> Dict[str, float]:
         """Record a profitable trade and apply 10-9-1 model"""
         self.total_trades += 1
         
@@ -484,8 +536,14 @@ class QueenHive:
     
     def get_stats(self) -> Dict[str, Any]:
         """Get hive statistics"""
-        win_rate = (self.profitable_trades / self.total_trades * 100) if self.total_trades > 0 else 0
-        roi = ((self.current_capital - self.initial_capital) / self.initial_capital * 100) if self.initial_capital > 0 else 0
+        win_rate = (
+            self.profitable_trades / self.total_trades * 100
+            if self.total_trades > 0 else None
+        )
+        roi = (
+            (self.current_capital - self.initial_capital) / self.initial_capital * 100
+            if self.initial_capital > 0 else None
+        )
         
         return {
             "generation": self.generation,
@@ -503,6 +561,10 @@ class QueenHive:
     def display(self):
         """Display hive statistics"""
         stats = self.get_stats()
+        win_rate_text = (
+            f"{stats['win_rate']:.1f}%" if stats["win_rate"] is not None else "NO DATA"
+        )
+        roi_text = f"{stats['roi']:.2f}%" if stats["roi"] is not None else "NO DATA"
         print(f"\n{'═'*60}")
         print(f"  🐝 QUEEN HIVE - Generation {stats['generation']}")
         print(f"{'═'*60}")
@@ -512,8 +574,8 @@ class QueenHive:
         print(f"  Compounded:       {stats['compounded']:.8f} BTC (90%)")
         print(f"  Harvested:        {stats['harvested']:.8f} BTC (10%)")
         print(f"  ────────────────────────────")
-        print(f"  Trades: {stats['total_trades']} | Win Rate: {stats['win_rate']:.1f}%")
-        print(f"  ROI: {stats['roi']:.2f}%")
+        print(f"  Trades: {stats['total_trades']} | Win Rate: {win_rate_text}")
+        print(f"  ROI: {roi_text}")
         print(f"  Child Hives: {stats['child_hives']}")
         print(f"{'═'*60}")
 
@@ -605,9 +667,12 @@ class AureonNexus:
         
         logger.info("🌌 AUREON NEXUS initialized")
     
-    def connect_mycelium(self, initial_capital: float = 100.0) -> bool:
+    def connect_mycelium(self, initial_capital: Optional[float] = None) -> bool:
         """Connect the Mycelium Neural Network"""
-        if not self.use_mycelium:
+        if not self.use_mycelium or initial_capital is None:
+            return False
+        initial_capital = float(initial_capital)
+        if not math.isfinite(initial_capital) or initial_capital <= 0:
             return False
         
         try:
@@ -628,28 +693,7 @@ class AureonNexus:
         try:
             self.binance = get_binance_client()
             if self.binance.ping():
-                logger.info("✅ Connected to Binance")
-                
-                # Get initial balance
-                btc_balance = self.binance.get_free_balance("BTC")
-                usdt_balance = self.binance.get_free_balance("USDT")
-                
-                self.queen_hive.initial_capital = btc_balance
-                self.queen_hive.current_capital = btc_balance
-                
-                # Initialize mycelium with USD equivalent
-                btc_price = 95000  # Default price
-                try:
-                    price_data = self.binance.best_price("BTCUSDT")
-                    btc_price = float(price_data.get("price", 95000))
-                except:
-                    pass
-                
-                usd_capital = btc_balance * btc_price + usdt_balance
-                if self.use_mycelium and usd_capital > 0:
-                    self.connect_mycelium(usd_capital)
-                
-                logger.info(f"💰 Balance: {btc_balance:.8f} BTC, {usdt_balance:.2f} USDT")
+                logger.info("Connected to Binance; account capital remains NO DATA until a receipted snapshot is available")
                 return True
             else:
                 logger.error("❌ Binance ping failed")
@@ -658,50 +702,88 @@ class AureonNexus:
             logger.error(f"❌ Binance connection failed: {e}")
             return False
     
-    def get_market_data(self, symbol: str = "BTCUSDT") -> Dict[str, float]:
+    def _no_data_market(self, reason: str, *, received_at: Optional[float] = None) -> Dict[str, Any]:
+        return {
+            "truth_status": "no_data",
+            "decision_status": "observe",
+            "reason": reason,
+            "source_id": "binance.market_features",
+            "source_timestamp": None,
+            "received_at": received_at if received_at is not None else time.time(),
+            "generated_values": False,
+            "eligible_for_external_action": False,
+            "eligible_for_learning": False,
+        }
+
+    def _validated_market_receipt(self, raw: Any, *, received_at: float) -> Dict[str, Any]:
+        if not isinstance(raw, dict):
+            return self._no_data_market("malformed_market_feature_receipt", received_at=received_at)
+        if raw.get("generated_values") is not False:
+            return self._no_data_market("generated_or_unproven_market_features", received_at=received_at)
+        if str(raw.get("truth_status") or "").lower() not in {"live", "real", "real_derived"}:
+            return self._no_data_market("market_feature_truth_status_not_live", received_at=received_at)
+        source_id = str(raw.get("source_id") or "").strip()
+        source_timestamp = _provider_epoch(raw.get("source_timestamp"))
+        now = time.time()
+        if not source_id or source_timestamp is None:
+            return self._no_data_market("market_feature_provenance_incomplete", received_at=received_at)
+        age = now - source_timestamp
+        if age < -5.0 or age > MARKET_RECEIPT_MAX_AGE_SECONDS:
+            return self._no_data_market("market_feature_receipt_stale", received_at=received_at)
+        try:
+            price = float(raw["price"])
+            features = {field: float(raw[field]) for field in MARKET_FEATURE_FIELDS}
+        except (KeyError, TypeError, ValueError):
+            return self._no_data_market("market_feature_values_incomplete", received_at=received_at)
+        if not math.isfinite(price) or price <= 0:
+            return self._no_data_market("market_price_invalid", received_at=received_at)
+        if any(not math.isfinite(value) or not 0.0 <= value <= 1.0 for value in features.values()):
+            return self._no_data_market("normalized_market_feature_invalid", received_at=received_at)
+        return {
+            "price": price,
+            **features,
+            "truth_status": "real_derived",
+            "decision_status": "eligible",
+            "source_id": source_id,
+            "source_timestamp": source_timestamp,
+            "received_at": received_at,
+            "generated_values": False,
+            "eligible_for_external_action": True,
+            "eligible_for_learning": True,
+        }
+
+    def get_market_data(self, symbol: str = "BTCUSDT") -> Dict[str, Any]:
         """
         Gather market data for the Master Equation.
         Returns normalized values [0, 1].
         """
+        received_at = time.time()
         try:
             if not self.binance:
-                return self._default_market_data()
-            
-            # Get price
-            price_data = self.binance.best_price(symbol)
-            current_price = float(price_data.get("price", 0))
-            
-            # Calculate basic indicators (simplified)
-            # In production, use klines for proper calculation
-            
-            return {
-                "price": current_price,
-                "volatility": 0.5,        # Placeholder
-                "momentum": 0.5,          # Placeholder
-                "sentiment": 0.5,         # Placeholder
-                "trend_strength": 0.5,    # Placeholder
-                "pattern_match": 0.5,     # Placeholder
-                "harmony": 0.5,           # Placeholder
-                "volume_ratio": 0.5,      # Placeholder
-                "correlation": 0.5,       # Placeholder
-            }
+                return self._no_data_market("binance_unavailable", received_at=received_at)
+            feature_reader = getattr(self.binance, "get_market_features", None)
+            if not callable(feature_reader):
+                return self._no_data_market(
+                    "provider_feature_receipt_unavailable", received_at=received_at
+                )
+            return self._validated_market_receipt(
+                feature_reader(symbol), received_at=received_at
+            )
         except Exception as e:
             logger.warning(f"Market data error: {e}")
-            return self._default_market_data()
+            return self._no_data_market("market_feature_fetch_failed", received_at=received_at)
     
-    def _default_market_data(self) -> Dict[str, float]:
-        """Default market data when API unavailable"""
-        return {
-            "price": 95000.0,
-            "volatility": 0.5,
-            "momentum": 0.5,
-            "sentiment": 0.5,
-            "trend_strength": 0.5,
-            "pattern_match": 0.5,
-            "harmony": 0.5,
-            "volume_ratio": 0.5,
-            "correlation": 0.5,
-        }
+    def _default_market_data(self) -> Dict[str, Any]:
+        """Fallback when the API is unavailable.
+
+        The hardcoded 95000.0 BTC price this used to return is a fabricated
+        reading: everything downstream (mycelium seeding, ladder display,
+        Master Equation) would run on an invented number with no marker.
+        Production refuses — the fallback dict is only served when the
+        operator explicitly opted in via AUREON_ALLOW_SIM_FALLBACK, and it
+        is stamped as fallback-derived. Otherwise: honest no_data ({}).
+        """
+        return self._no_data_market("provider_market_features_unavailable")
     
     def run_cycle(self) -> Dict[str, Any]:
         """
@@ -716,6 +798,29 @@ class AureonNexus:
         
         # 1. Gather market data
         market_data = self.get_market_data()
+
+        if market_data.get("eligible_for_external_action") is not True:
+            cycle_time = time.time() - cycle_start
+            return {
+                "cycle": self.cycle_count,
+                "truth_status": "no_data",
+                "decision_status": "observe",
+                "reason": market_data.get("reason") or "market_evidence_incomplete",
+                "source_id": market_data.get("source_id"),
+                "source_timestamp": market_data.get("source_timestamp"),
+                "received_at": market_data.get("received_at"),
+                "generated_values": False,
+                "eligible_for_external_action": False,
+                "eligible_for_learning": False,
+                "lambda": None,
+                "coherence": None,
+                "signal": "NO_DATA",
+                "confidence": None,
+                "consensus": None,
+                "trade_result": None,
+                "mycelium": None,
+                "cycle_time": cycle_time,
+            }
         
         # 2. Update Master Equation
         self.master_equation.update_substrate(market_data)
@@ -723,8 +828,8 @@ class AureonNexus:
         # Update observer with coherence history
         self.master_equation.update_observer(self.coherence_history)
         
-        # Calculate price momentum (simplified)
-        momentum = 0.5  # Placeholder
+        # Echo uses the same fresh provider-derived momentum observation.
+        momentum = market_data["momentum"]
         self.master_equation.update_echo(momentum)
         
         # Calculate lambda
@@ -758,13 +863,16 @@ class AureonNexus:
         consensus_signal, consensus_conf = NEXUS.get_consensus()
         logger.info(f"📊 Consensus: {consensus_signal} (confidence: {consensus_conf:.2%})")
         
-        # 7. Run Mycelium Neural Network step
+        # 7. Run Mycelium Neural Network step — only on a REAL price. Stepping
+        # the mesh on an invented 95000 would evolve agent fitness against
+        # fabricated market data; a cycle without live data skips the mesh and
+        # names the blocker instead.
         mycelium_result = None
         if self.mycelium:
             mycelium_market = {
-                "price": market_data.get("price", 95000),
-                "momentum": market_data.get("momentum", 0),
-                "volatility": market_data.get("volatility", 0.5),
+                "price": market_data["price"],
+                "momentum": market_data["momentum"],
+                "volatility": market_data["volatility"],
                 "trend": (1 if signal == 'BUY' else -1 if signal == 'SELL' else 0) * confidence
             }
             mycelium_result = self.mycelium.step(mycelium_market)
@@ -782,6 +890,14 @@ class AureonNexus:
         
         return {
             "cycle": self.cycle_count,
+            "truth_status": "real_derived",
+            "decision_status": "eligible",
+            "source_id": market_data["source_id"],
+            "source_timestamp": market_data["source_timestamp"],
+            "received_at": market_data["received_at"],
+            "generated_values": False,
+            "eligible_for_external_action": True,
+            "eligible_for_learning": True,
             "lambda": self.master_equation.lambda_value,
             "coherence": self.master_equation.coherence,
             "signal": signal,
@@ -810,13 +926,36 @@ class AureonNexus:
     
     def _execute_signal(self, signal: str, confidence: float, market_data: Dict) -> Optional[Dict]:
         """Execute a trading signal"""
+        if market_data.get("eligible_for_external_action") is not True:
+            return {
+                "status": "not_submitted",
+                "truth_status": "no_data",
+                "decision_status": "observe",
+                "reason": "market_evidence_ineligible",
+                "provider_order_id": None,
+                "fill": None,
+                "generated_values": False,
+                "eligible_for_external_action": False,
+                "eligible_for_learning": False,
+            }
         if not self.binance:
             logger.warning("No Binance connection for execution")
             return None
         
         if self.binance.dry_run:
             logger.info(f"🧪 DRY RUN: Would execute {signal} with {confidence:.2%} confidence")
-            return {"dry_run": True, "signal": signal, "confidence": confidence}
+            return {
+                "status": "not_submitted",
+                "truth_status": "dry_run",
+                "decision_status": "observe",
+                "signal": signal,
+                "confidence": confidence,
+                "provider_order_id": None,
+                "fill": None,
+                "generated_values": False,
+                "eligible_for_external_action": False,
+                "eligible_for_learning": False,
+            }
         
         # Real execution would go here
         # For safety, this is not implemented yet
@@ -847,7 +986,7 @@ class AureonNexus:
         
         # Connect to Binance
         if not self.connect_binance():
-            logger.error("Failed to connect to Binance. Running in simulation mode.")
+            logger.error("Failed to connect to Binance. Remaining in explicit no-data mode.")
         
         # Display initial state
         self.queen_hive.display()
@@ -859,11 +998,10 @@ class AureonNexus:
                 
                 result = self.run_cycle()
                 
-                # Show ladder progress
-                btc_price = self.get_market_data().get("price", 95000)
-                capital_usd = self.queen_hive.current_capital * btc_price
-                level = get_ladder_level(capital_usd)
-                logger.info(f"🪜 Ladder: {level['emoji']} {level['name']} (${capital_usd:.2f})")
+                # Capital remains no-data until the adapter supplies a fresh,
+                # currency-specific account receipt.  Market price alone must
+                # never turn an unproven balance into a ladder claim.
+                logger.info("🪜 Ladder: unavailable (no receipted account capital)")
                 
                 if i < cycles - 1:
                     time.sleep(interval)

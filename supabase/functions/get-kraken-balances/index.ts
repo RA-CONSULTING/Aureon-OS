@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { fetchLiveJson, requireFiniteNumber } from '../_shared/real_data.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -18,13 +18,6 @@ serve(async (req) => {
   }
 
   try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
-    // For now, return simulated Kraken balances
-    // In production, this would use actual Kraken API credentials
     const krakenApiKey = Deno.env.get('KRAKEN_API_KEY');
     const krakenApiSecret = Deno.env.get('KRAKEN_API_SECRET');
 
@@ -60,10 +53,10 @@ serve(async (req) => {
       encoder.encode(nonce + apiData)
     );
     
-    const apiSecretDecoded = atob(krakenApiSecret);
+    const apiSecretDecoded = Uint8Array.from(atob(krakenApiSecret), c => c.charCodeAt(0));
     const key = await crypto.subtle.importKey(
       'raw',
-      encoder.encode(apiSecretDecoded),
+      apiSecretDecoded,
       { name: 'HMAC', hash: 'SHA-512' },
       false,
       ['sign']
@@ -115,14 +108,48 @@ serve(async (req) => {
       return asset;
     };
     
-    // Convert Kraken balances to unified format
-    const balances = Object.entries(data.result || {}).map(([asset, balance]) => ({
+    const rawBalances = Object.entries(data.result || {}).map(([asset, balance]) => ({
       asset: normalizeKrakenAsset(asset),
-      free: parseFloat(balance as string),
+      free: requireFiniteNumber(balance, `balance.${asset}`),
       locked: 0,
-      total: parseFloat(balance as string),
-      usdValue: 0 // Would need price data to calculate
-    }));
+      total: requireFiniteNumber(balance, `balance.${asset}`),
+    })).filter(balance => balance.total !== 0);
+
+    const assetPairsUrl = 'https://api.kraken.com/0/public/AssetPairs';
+    const assetPairsPayload = await fetchLiveJson<any>(assetPairsUrl);
+    if (assetPairsPayload.error?.length) throw new Error(`Kraken AssetPairs error: ${assetPairsPayload.error.join(', ')}`);
+    const usdPairs = new Map<string, string>();
+    for (const [pairId, pair] of Object.entries<any>(assetPairsPayload.result || {})) {
+      const wsname = String(pair.wsname || '');
+      const [base, quote] = wsname.split('/');
+      if (base && quote === 'USD') usdPairs.set(normalizeKrakenAsset(base), pairId);
+    }
+
+    const requestedPairs = [...new Set(rawBalances.map(balance => usdPairs.get(balance.asset)).filter(Boolean))] as string[];
+    let tickerResult: Record<string, any> = {};
+    if (requestedPairs.length) {
+      const tickerUrl = `https://api.kraken.com/0/public/Ticker?pair=${encodeURIComponent(requestedPairs.join(','))}`;
+      const tickerPayload = await fetchLiveJson<any>(tickerUrl);
+      if (tickerPayload.error?.length) throw new Error(`Kraken Ticker error: ${tickerPayload.error.join(', ')}`);
+      tickerResult = tickerPayload.result || {};
+    }
+
+    const collectedAt = new Date().toISOString();
+    const balances = rawBalances.map(balance => {
+      const pairId = usdPairs.get(balance.asset);
+      const ticker = pairId ? tickerResult[pairId] : null;
+      const usdPrice = balance.asset === 'USD' ? 1 : ticker?.c?.[0] == null ? null : requireFiniteNumber(ticker.c[0], `ticker.${balance.asset}`);
+      return {
+        ...balance,
+        usdPrice,
+        usdValue: usdPrice === null ? null : balance.total * usdPrice,
+        valuationTruthStatus: usdPrice === null ? 'no_data' : 'live',
+        valuationSource: usdPrice === null ? null : balance.asset === 'USD' ? 'Kraken account denomination' : `Kraken ${pairId} ticker`,
+      };
+    });
+    const valuedBalances = balances.filter(balance => balance.usdValue !== null);
+    const totalUsdValue = valuedBalances.reduce((sum, balance) => sum + Number(balance.usdValue), 0);
+    const valuationComplete = valuedBalances.length === balances.length;
 
     console.log(`Fetched ${balances.length} Kraken balances`);
 
@@ -131,8 +158,14 @@ serve(async (req) => {
         success: true,
         exchange: 'kraken',
         balances,
-        totalUsdValue: 0,
-        mode: 'live'
+        totalUsdValue,
+        valuationComplete,
+        mode: 'live',
+        truthStatus: 'live',
+        sourceId: 'kraken_private_and_public',
+        sourceUrls: ['https://api.kraken.com/0/private/Balance', assetPairsUrl, 'https://api.kraken.com/0/public/Ticker'],
+        collectedAt,
+        generatedValues: false
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -9,8 +9,8 @@ conservative, data-driven cost estimates for Monte Carlo approval.
 FEATURES:
 - Rolling window of recent realized fees/spreads
 - Conservative floor/ceiling bounds (never too optimistic)
-- Fallback to safe defaults when no data available
-- Per-symbol cost tracking with global fallback
+- Explicit no_data when no provider-receipted execution costs exist
+- Per-symbol cost tracking with observed global estimates
 
 Gary Leckey | January 2026 | TRUST THE MATH, LEARN FROM REALITY
 """
@@ -24,12 +24,17 @@ if sys.platform == 'win32':
     os.environ['PYTHONIOENCODING'] = 'utf-8'
 
 import time
+import math
 import logging
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from collections import defaultdict, deque
 
 logger = logging.getLogger(__name__)
+
+
+class CostDataUnavailableError(RuntimeError):
+    """Raised when no fresh provider-receipted cost observations exist."""
 
 
 @dataclass
@@ -43,6 +48,9 @@ class CostSample:
     spread_pct: float
     slippage_pct: float
     total_cost_pct: float
+    source_id: str
+    source_timestamp: float
+    generated_values: bool = False
 
 
 @dataclass
@@ -56,7 +64,11 @@ class CostEstimate:
     estimated_total_pct: float
     confidence: float  # 0-1 (based on sample count)
     sample_count: int
-    source: str  # 'symbol_specific', 'global_average', 'fallback'
+    source: str  # 'symbol_specific' or 'global_average'
+    truth_status: str
+    source_id: str
+    source_timestamp: float
+    generated_values: bool = False
 
 
 class DynamicCostEstimator:
@@ -67,7 +79,7 @@ class DynamicCostEstimator:
     - Use recent data when available
     - Conservative floor (never underestimate costs)
     - Safe ceiling (cap extreme outliers)
-    - Fallback to known defaults when no data
+    - Refuse to estimate when no observed costs exist
     
     ROLLING WINDOWS:
     - Per-symbol: last 20 samples (symbol-specific learning)
@@ -82,12 +94,6 @@ class DynamicCostEstimator:
     MAX_SPREAD_PCT = 0.20   # 20 bps (less liquid pairs)
     MIN_SLIPPAGE_PCT = 0.01 # 1 bp (market orders on liquid pairs)
     MAX_SLIPPAGE_PCT = 0.65 # 65% (allow extreme slippage learning)
-    
-    # Fallback defaults (when no data available)
-    DEFAULT_FEE_PCT = 0.20      # 20 bps (tier 3 average)
-    DEFAULT_SPREAD_PCT = 0.08   # 8 bps (reasonable for liquid crypto)
-    DEFAULT_SLIPPAGE_PCT = 0.02 # 2 bps (small market orders)
-    DEFAULT_TOTAL_PCT = 0.30    # 30 bps total (0.20 + 0.08 + 0.02)
     
     # Window sizes
     SYMBOL_WINDOW_SIZE = 20   # Per-symbol samples
@@ -108,7 +114,7 @@ class DynamicCostEstimator:
         self._estimates_served = 0
         
         logger.info("💰 Dynamic Cost Estimator initialized")
-        logger.info(f"   Conservative floor: {self.DEFAULT_TOTAL_PCT:.2f}%")
+        logger.info("   Cost estimates require fresh provider execution receipts")
         logger.info(f"   Symbol window: {self.SYMBOL_WINDOW_SIZE} samples")
         logger.info(f"   Global window: {self.GLOBAL_WINDOW_SIZE} samples")
     
@@ -119,7 +125,9 @@ class DynamicCostEstimator:
         notional_usd: float,
         fee_pct: float,
         spread_pct: float,
-        slippage_pct: float
+        slippage_pct: float,
+        source_id: str,
+        source_timestamp: float,
     ) -> None:
         """
         Record a new cost sample from an actual execution.
@@ -131,18 +139,46 @@ class DynamicCostEstimator:
             fee_pct: Realized fee as percentage (e.g., 0.15 for 15 bps)
             spread_pct: Realized spread as percentage
             slippage_pct: Realized slippage as percentage
+            source_id: Provider execution-receipt identifier
+            source_timestamp: Provider observation time as Unix seconds
         """
+        numeric_values = {
+            'notional_usd': notional_usd,
+            'fee_pct': fee_pct,
+            'spread_pct': spread_pct,
+            'slippage_pct': slippage_pct,
+            'source_timestamp': source_timestamp,
+        }
+        if not source_id or not str(source_id).strip():
+            raise ValueError('source_id is required for a real cost observation')
+        for name, value in numeric_values.items():
+            if not isinstance(value, (int, float)) or not math.isfinite(float(value)):
+                raise ValueError(f'{name} must be a finite provider observation')
+        if float(notional_usd) <= 0 or float(source_timestamp) <= 0:
+            raise ValueError('notional_usd and source_timestamp must be positive')
+        if any(float(value) < 0 for value in (fee_pct, spread_pct, slippage_pct)):
+            raise ValueError('observed cost percentages cannot be negative')
+        collected_at = time.time()
+        receipt_age = collected_at - float(source_timestamp)
+        if receipt_age > self.SAMPLE_TTL_SECONDS:
+            raise CostDataUnavailableError('NO_DATA: cost receipt is stale')
+        if receipt_age < -300:
+            raise ValueError('source_timestamp is more than five minutes in the future')
+
         total_cost_pct = fee_pct + spread_pct + slippage_pct
         
         sample = CostSample(
-            timestamp=time.time(),
+            timestamp=collected_at,
             symbol=symbol,
             side=side,
             notional_usd=notional_usd,
             fee_pct=fee_pct,
             spread_pct=spread_pct,
             slippage_pct=slippage_pct,
-            total_cost_pct=total_cost_pct
+            total_cost_pct=total_cost_pct,
+            source_id=str(source_id),
+            source_timestamp=float(source_timestamp),
+            generated_values=False,
         )
         
         # Add to both windows
@@ -168,7 +204,7 @@ class DynamicCostEstimator:
         Priority:
         1. Symbol-specific data (if enough recent samples)
         2. Global average (if any samples exist)
-        3. Conservative fallback defaults
+        3. Explicit no_data error
         
         Returns:
             CostEstimate with breakdown and confidence score
@@ -180,27 +216,26 @@ class DynamicCostEstimator:
         symbol_samples = list(self._symbol_samples.get(symbol, []))
         if len(symbol_samples) >= 5:  # Need at least 5 samples for confidence
             # Filter recent samples (within TTL)
-            recent = [s for s in symbol_samples if (now - s.timestamp) < self.SAMPLE_TTL_SECONDS]
+            recent = [
+                sample
+                for sample in symbol_samples
+                if 0 <= (now - sample.source_timestamp) < self.SAMPLE_TTL_SECONDS
+            ]
             if len(recent) >= 3:
                 return self._compute_estimate(symbol, side, recent, source='symbol_specific')
         
         # Fall back to global average
         if len(self._global_samples) >= 10:
-            recent = [s for s in self._global_samples if (now - s.timestamp) < self.SAMPLE_TTL_SECONDS]
+            recent = [
+                sample
+                for sample in self._global_samples
+                if 0 <= (now - sample.source_timestamp) < self.SAMPLE_TTL_SECONDS
+            ]
             if len(recent) >= 5:
                 return self._compute_estimate(symbol, side, recent, source='global_average')
         
-        # Fall back to conservative defaults
-        return CostEstimate(
-            symbol=symbol,
-            side=side,
-            estimated_fee_pct=self.DEFAULT_FEE_PCT,
-            estimated_spread_pct=self.DEFAULT_SPREAD_PCT,
-            estimated_slippage_pct=self.DEFAULT_SLIPPAGE_PCT,
-            estimated_total_pct=self.DEFAULT_TOTAL_PCT,
-            confidence=0.3,  # Low confidence with no data
-            sample_count=0,
-            source='fallback'
+        raise CostDataUnavailableError(
+            f'NO_DATA: no fresh provider-receipted cost samples for {symbol} {side}'
         )
     
     def _compute_estimate(
@@ -211,17 +246,31 @@ class DynamicCostEstimator:
         source: str
     ) -> CostEstimate:
         """Compute estimate from samples with conservative bounds."""
+        if not samples:
+            raise CostDataUnavailableError('NO_DATA: empty cost sample set')
+        invalid_receipts = [
+            sample
+            for sample in samples
+            if not sample.source_id
+            or sample.source_timestamp <= 0
+            or sample.generated_values is not False
+        ]
+        if invalid_receipts:
+            raise CostDataUnavailableError(
+                'NO_DATA: cost sample set contains observations without valid provenance'
+            )
+
         # Weight recent samples more heavily (exponential decay)
         now = time.time()
         weights = []
         for s in samples:
-            age_hours = (now - s.timestamp) / 3600
+            age_hours = (now - s.source_timestamp) / 3600
             weight = 2.0 ** (-age_hours / 6)  # Half-life of 6 hours
             weights.append(weight)
         
         total_weight = sum(weights)
-        if total_weight == 0:
-            total_weight = 1.0
+        if total_weight <= 0:
+            raise CostDataUnavailableError('NO_DATA: cost observation weights are empty')
         
         # Weighted averages
         avg_fee = sum(s.fee_pct * w for s, w in zip(samples, weights)) / total_weight
@@ -248,7 +297,13 @@ class DynamicCostEstimator:
             estimated_total_pct=total_pct,
             confidence=confidence,
             sample_count=len(samples),
-            source=source
+            source=source,
+            truth_status='real_derived',
+            source_id='dynamic_cost_estimator:' + ','.join(
+                sorted({sample.source_id for sample in samples})
+            ),
+            source_timestamp=max(sample.source_timestamp for sample in samples),
+            generated_values=False,
         )
     
     def get_stats(self) -> Dict:
@@ -272,45 +327,63 @@ class DynamicCostEstimator:
         logger.info("💰 Cost estimator reset - all samples cleared")
 
     def _draw_total_costs(self, symbol: str, n_samples: int = 1000) -> List[float]:
-        """Internal: draw raw samples of total cost% from historical samples.
+        """Return an empirical distribution from observed cost receipts.
 
-        Returns a list of sampled total cost percentages (e.g., 0.30 == 0.30%).
+        Values are repeated deterministically when a caller requests a larger
+        distribution. No Gaussian noise or default cost is manufactured.
         """
-        import random
-        base = list(self._symbol_samples.get(symbol, []))
+        now = time.time()
+        base = [
+            sample
+            for sample in self._symbol_samples.get(symbol, [])
+            if 0 <= (now - sample.source_timestamp) < self.SAMPLE_TTL_SECONDS
+        ]
         if not base:
-            base = list(self._global_samples)
+            base = [
+                sample
+                for sample in self._global_samples
+                if 0 <= (now - sample.source_timestamp) < self.SAMPLE_TTL_SECONDS
+            ]
         if not base:
-            return [self.DEFAULT_TOTAL_PCT for _ in range(n_samples)]
+            return []
 
-        draws = []
-        for _ in range(n_samples):
-            s = random.choice(base)
-            # sample with small gaussian noise proportional to observed total (5% stddev)
-            noise = random.gauss(0, max(1e-6, s.total_cost_pct * 0.05))
-            val = s.total_cost_pct + noise
-            # clamp to conservative bounds
-            min_total = self.MIN_FEE_PCT + self.MIN_SPREAD_PCT + self.MIN_SLIPPAGE_PCT
-            max_total = self.MAX_FEE_PCT + self.MAX_SPREAD_PCT + self.MAX_SLIPPAGE_PCT
-            val = max(min_total, min(max_total, val))
-            draws.append(val)
-        return draws
+        observed = sorted(float(sample.total_cost_pct) for sample in base)
+        count = max(0, int(n_samples))
+        return [observed[index % len(observed)] for index in range(count)]
 
-    def sample_total_cost_distribution(self, symbol: str, side: str, notional_usd: float, n_samples: int = 1000) -> Dict[str, float]:
-        """Monte Carlo sampling of total cost% from historical samples.
+    def sample_total_cost_distribution(self, symbol: str, side: str, notional_usd: float, n_samples: int = 1000) -> Dict[str, Any]:
+        """Summarize the empirical distribution of observed total costs.
 
         Returns percentiles keyed by 'p5','p50','p90','p95' and a 'samples' list for debugging (truncated).
         """
         draws = self._draw_total_costs(symbol, n_samples=n_samples)
+        if not draws:
+            return {
+                'status': 'no_data',
+                'truth_status': 'no_data',
+                'p5': None,
+                'p50': None,
+                'p90': None,
+                'p95': None,
+                'samples': [],
+            }
         draws.sort()
         def pct(p):
             idx = max(0, min(len(draws)-1, int(len(draws)*p/100)))
             return draws[idx]
 
-        return {'p5': pct(5), 'p50': pct(50), 'p90': pct(90), 'p95': pct(95), 'samples': draws[:10]}
+        return {
+            'status': 'ok',
+            'truth_status': 'real_derived',
+            'p5': pct(5),
+            'p50': pct(50),
+            'p90': pct(90),
+            'p95': pct(95),
+            'samples': draws[:10],
+        }
 
     def sample_total_cost_draws(self, symbol: str, side: str, notional_usd: float, n_samples: int = 1000) -> List[float]:
-        """Return raw Monte Carlo draws of total cost% (percent units) for further analysis."""
+        """Return observed empirical cost values for further analysis."""
         return self._draw_total_costs(symbol, n_samples=n_samples)
 
 

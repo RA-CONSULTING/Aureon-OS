@@ -132,8 +132,8 @@ export function SystemHealthPanel({ userId, tradingMode = 'paper' }: SystemHealt
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'ok': return <CheckCircle className="h-5 w-5 text-green-500" />;
-      case 'warning': return <AlertTriangle className="h-5 w-5 text-yellow-500" />;
+      case 'ok': return <CheckCircle className="h-5 w-5 text-success" />;
+      case 'warning': return <AlertTriangle className="h-5 w-5 text-warning" />;
       case 'error': return <XCircle className="h-5 w-5 text-destructive" />;
       case 'offline': return <WifiOff className="h-5 w-5 text-muted-foreground" />;
       default: return <Activity className="h-5 w-5 text-muted-foreground" />;
@@ -142,7 +142,7 @@ export function SystemHealthPanel({ userId, tradingMode = 'paper' }: SystemHealt
 
   const getDataBadge = (isReal: boolean) => {
     if (isReal) {
-      return <Badge className="bg-green-500/20 text-green-500 border-green-500/30">🟢 LIVE</Badge>;
+      return <Badge className="bg-success/20 text-success border-success/30">🟢 LIVE</Badge>;
     }
     return <Badge variant="secondary" className="bg-muted text-muted-foreground">🔴 OFFLINE</Badge>;
   };
@@ -168,11 +168,11 @@ export function SystemHealthPanel({ userId, tradingMode = 'paper' }: SystemHealt
         
         {/* Summary badges */}
         <div className="flex gap-2 mt-2 flex-wrap">
-          <Badge className="bg-green-500/20 text-green-500">
+          <Badge className="bg-success/20 text-success">
             ✅ {workingCount} Working
           </Badge>
           {warningCount > 0 && (
-            <Badge className="bg-yellow-500/20 text-yellow-500">
+            <Badge className="bg-warning/20 text-warning">
               ⚠️ {warningCount} Warnings
             </Badge>
           )}
@@ -181,7 +181,7 @@ export function SystemHealthPanel({ userId, tradingMode = 'paper' }: SystemHealt
               ❌ {needsFixCount} Need Fix
             </Badge>
           )}
-          <Badge variant={isLiveData ? "default" : "secondary"} className={isLiveData ? "bg-green-500" : ""}>
+          <Badge variant={isLiveData ? "default" : "secondary"} className={isLiveData ? "bg-success" : ""}>
             {isLiveData ? '🟢 LIVE DATA' : '🔴 SIMULATED'}
           </Badge>
         </div>
@@ -192,8 +192,8 @@ export function SystemHealthPanel({ userId, tradingMode = 'paper' }: SystemHealt
           <div 
             key={index}
             className={`p-3 rounded-lg border ${
-              check.status === 'ok' ? 'border-green-500/30 bg-green-500/5' :
-              check.status === 'warning' ? 'border-yellow-500/30 bg-yellow-500/5' :
+              check.status === 'ok' ? 'border-success/30 bg-success/5' :
+              check.status === 'warning' ? 'border-warning/30 bg-warning/5' :
               check.status === 'offline' ? 'border-muted bg-muted/20' :
               'border-destructive/30 bg-destructive/5'
             }`}
@@ -226,19 +226,19 @@ export function SystemHealthPanel({ userId, tradingMode = 'paper' }: SystemHealt
         {/* 10-9-1 Prime Seal Status */}
         <div className={`p-3 rounded-lg border ${
           primeSeal.isLocked 
-            ? 'border-green-500/50 bg-green-500/10' 
-            : 'border-amber-500/50 bg-amber-500/10'
+            ? 'border-success/50 bg-success/10' 
+            : 'border-warning/50 bg-warning/10'
         }`}>
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               {primeSeal.isLocked ? (
-                <Lock className="h-5 w-5 text-green-500" />
+                <Lock className="h-5 w-5 text-success" />
               ) : (
-                <Unlock className="h-5 w-5 text-amber-500" />
+                <Unlock className="h-5 w-5 text-warning" />
               )}
               <span className="font-bold">10-9-1 Prime Seal</span>
             </div>
-            <Badge className={primeSeal.isLocked ? 'bg-green-600' : 'bg-amber-600'}>
+            <Badge className={primeSeal.isLocked ? 'bg-success' : 'bg-warning'}>
               {primeSeal.isLocked ? 'LOCKED' : 'UNLOCKED'}
             </Badge>
           </div>
@@ -258,7 +258,7 @@ export function SystemHealthPanel({ userId, tradingMode = 'paper' }: SystemHealt
           <div className="p-4 rounded-lg border-2 border-dashed border-primary/30 bg-primary/5">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <Flame className="h-5 w-5 text-orange-500" />
+                <Flame className="h-5 w-5 text-warning" />
                 <span className="font-bold">Cycle 1 Validation</span>
               </div>
               {validationResult && (
@@ -299,10 +299,10 @@ export function SystemHealthPanel({ userId, tradingMode = 'paper' }: SystemHealt
 
         {/* Overall status message */}
         <div className={`p-4 rounded-lg text-center ${
-          isLiveData && primeSeal.isLocked ? 'bg-green-500/10 border border-green-500/30' : 'bg-destructive/10 border border-destructive/30'
+          isLiveData && primeSeal.isLocked ? 'bg-success/10 border border-success/30' : 'bg-destructive/10 border border-destructive/30'
         }`}>
           {isLiveData && primeSeal.isLocked ? (
-            <div className="flex items-center justify-center gap-2 text-green-500">
+            <div className="flex items-center justify-center gap-2 text-success">
               <Wifi className="h-5 w-5" />
               <Lock className="h-4 w-4" />
               <span className="font-bold">LIVE TRADING READY</span>
@@ -319,7 +319,7 @@ export function SystemHealthPanel({ userId, tradingMode = 'paper' }: SystemHealt
               </p>
             </div>
           ) : (
-            <div className="flex flex-col items-center gap-2 text-amber-500">
+            <div className="flex flex-col items-center gap-2 text-warning">
               <div className="flex items-center gap-2">
                 <Unlock className="h-5 w-5" />
                 <span className="font-bold">AWAITING SEAL LOCK</span>

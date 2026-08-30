@@ -22,14 +22,14 @@ export function QGITADebugPanel() {
   }
 
   const tierColors = {
-    1: 'bg-green-500',
-    2: 'bg-yellow-500',
-    3: 'bg-red-500',
+    1: 'bg-success',
+    2: 'bg-warning',
+    3: 'bg-destructive',
   };
 
   const signalColors = {
-    BUY: 'bg-green-500 text-white',
-    SELL: 'bg-red-500 text-white',
+    BUY: 'bg-success text-white',
+    SELL: 'bg-destructive text-white',
     HOLD: 'bg-muted text-muted-foreground',
   };
 
@@ -68,7 +68,7 @@ export function QGITADebugPanel() {
           <div className="p-2 rounded bg-muted/50">
             <div className="text-xs text-muted-foreground mb-1">FTCP Detection</div>
             <div className="flex items-center gap-2">
-              <span className={`w-2 h-2 rounded-full ${metrics.ftcpDetected ? 'bg-green-500' : 'bg-red-500'}`} />
+              <span className={`w-2 h-2 rounded-full ${metrics.ftcpDetected ? 'bg-success' : 'bg-destructive'}`} />
               <span className="text-sm font-medium">{metrics.ftcpDetected ? 'Detected' : 'None'}</span>
             </div>
             <div className="text-xs text-muted-foreground mt-1">
@@ -79,7 +79,7 @@ export function QGITADebugPanel() {
           <div className="p-2 rounded bg-muted/50">
             <div className="text-xs text-muted-foreground mb-1">Lighthouse Event</div>
             <div className="flex items-center gap-2">
-              <span className={`w-2 h-2 rounded-full ${metrics.isLHE ? 'bg-orange-500 animate-pulse' : 'bg-muted'}`} />
+              <span className={`w-2 h-2 rounded-full ${metrics.isLHE ? 'bg-warning animate-pulse' : 'bg-muted'}`} />
               <span className="text-sm font-medium">{metrics.isLHE ? 'ACTIVE' : 'Inactive'}</span>
             </div>
             <div className="text-xs text-muted-foreground mt-1">
@@ -152,9 +152,9 @@ export function QGITAStatusIndicator() {
   }
 
   const bgColor = metrics.signalType === 'BUY' 
-    ? 'bg-green-500/20 text-green-400 border-green-500/50'
+    ? 'bg-success/20 text-success border-success/50'
     : metrics.signalType === 'SELL'
-    ? 'bg-red-500/20 text-red-400 border-red-500/50'
+    ? 'bg-destructive/20 text-destructive border-destructive/50'
     : 'bg-muted text-muted-foreground';
 
   return (
@@ -163,7 +163,7 @@ export function QGITAStatusIndicator() {
       <span className="text-xs font-mono">{metrics.signalType}</span>
       <span className="text-xs opacity-70">T{metrics.tier}</span>
       <span className="text-xs font-mono">{metrics.confidence.toFixed(0)}%</span>
-      {metrics.isLHE && <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />}
+      {metrics.isLHE && <span className="w-2 h-2 rounded-full bg-warning animate-pulse" />}
     </div>
   );
 }

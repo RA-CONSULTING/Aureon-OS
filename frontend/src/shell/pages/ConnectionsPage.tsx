@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { api } from "@/services/apiClient";
 import { LiveDataNotice } from "@/shell/Page";
 
 interface Conn {
@@ -59,8 +60,8 @@ export default function ConnectionsPage() {
   async function load() {
     try {
       const [c, r] = await Promise.all([
-        fetch("/api/connections").then((x) => (x.ok ? x.json() : Promise.reject())),
-        fetch("/api/connections/readiness").then((x) => (x.ok ? x.json() : null)).catch(() => null),
+        api.get<{ categories?: Section[] }>("/api/connections"),
+        api.get<Readiness>("/api/connections/readiness").catch(() => null),
       ]);
       setSections(c.categories ?? []);
       setReadiness(r);
@@ -85,12 +86,8 @@ export default function ConnectionsPage() {
   async function save(c: Conn) {
     patch(c.id, { saving: true });
     try {
-      const r = await fetch(`/api/connections/${c.id}`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body(c)),
-      });
-      const v = await r.json();
-      if (!r.ok || v.ok === false) throw new Error(v.error || String(r.status));
+      const v = await api.post<{ ok?: boolean; error?: string }>(`/api/connections/${c.id}`, body(c));
+      if (v.ok === false) throw new Error(v.error || "save failed");
       toast.success(`${c.label} saved`, {
         description: c.category === "exchange" ? "written to .env — trader picks it up on restart" : undefined,
       });
@@ -106,11 +103,11 @@ export default function ConnectionsPage() {
   async function test(c: Conn) {
     patch(c.id, { testing: true });
     try {
-      const r = await fetch(`/api/connections/${c.id}/test`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body(c)),
-      });
-      const v = await r.json();
+      const v = await api.post<{ ok?: boolean; latency_ms?: number; error?: string }>(
+        `/api/connections/${c.id}/test`,
+        body(c),
+        { timeoutMs: 30000 },
+      );
       if (v.ok) toast.success(`${c.label} reachable`, { description: v.latency_ms ? `${v.latency_ms} ms` : undefined });
       else toast.error(`${c.label} test failed`, { description: v.error });
     } catch {
@@ -227,7 +224,7 @@ export default function ConnectionsPage() {
                         onChange={(e) => patch(c.id, { extra: { ...d.extra, [env]: e.target.value } })} />
                     ))}
                     {c.category === "exchange" && (
-                      <p className="text-[11px] text-amber-600">Saved to .env — the trading process applies it on restart.</p>
+                      <p className="text-[11px] text-warning">Saved to .env — the trading process applies it on restart.</p>
                     )}
 
                     <div className="mt-auto flex items-center justify-between pt-1">

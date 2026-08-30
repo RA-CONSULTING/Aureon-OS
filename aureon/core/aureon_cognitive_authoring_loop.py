@@ -77,6 +77,13 @@ except Exception:  # pragma: no cover
     _HAS_ARCHITECT = False
 
 try:
+    from aureon.code_architect.requirement_skill_builder import RequirementSkillBuilder
+    _HAS_REQUIREMENT_BUILDER = True
+except Exception:  # pragma: no cover
+    RequirementSkillBuilder = None  # type: ignore[assignment,misc]
+    _HAS_REQUIREMENT_BUILDER = False
+
+try:
     from aureon.core.aureon_self_introspection import get_self_introspection
     _HAS_INTRO = True
 except Exception:  # pragma: no cover
@@ -84,10 +91,11 @@ except Exception:  # pragma: no cover
     _HAS_INTRO = False
 
 try:
-    from aureon.integrations.ollama.ollama_adapter import OllamaLLMAdapter
+    from aureon.integrations.ollama import OllamaLLMAdapter, OllamaModelSwitchboard
     _HAS_OLLAMA = True
 except Exception:  # pragma: no cover
     OllamaLLMAdapter = None  # type: ignore[assignment,misc]
+    OllamaModelSwitchboard = None  # type: ignore[assignment,misc]
     _HAS_OLLAMA = False
 
 try:
@@ -123,6 +131,8 @@ class LoopStatus:
     ticks: int = 0
     skills_authored: int = 0
     skills_executed: int = 0
+    requirement_skills_staged: int = 0
+    dispatcher_actions_ingested: int = 0
     edits_applied: int = 0
     edits_positive: int = 0
     edits_noop: int = 0
@@ -167,6 +177,7 @@ class CognitiveAuthoringLoop:
         self.ollama_adapter: Any = None
         self.obsidian: Any = None
         self.integrator: Any = None
+        self.requirement_builder: Any = None
 
         self.status = LoopStatus()
         self._stop = threading.Event()
@@ -176,6 +187,7 @@ class CognitiveAuthoringLoop:
         self._last_inbox_mtime = 0.0
         self._inbox_seen_offsets = 0
         self._request_handlers: Dict[str, Callable[[Dict[str, Any]], Any]] = {}
+        self._dispatcher_history_offsets: Dict[str, int] = {}
 
         self._install_default_handlers()
 
@@ -246,8 +258,8 @@ class CognitiveAuthoringLoop:
         # non-trivial skills via llama3.1 (or whichever model is running).
         if _HAS_OLLAMA and self.ollama_adapter is None and self.architect is not None:
             try:
-                model = os.getenv("AUREON_OLLAMA_MODEL", "llama3.1:8b")
-                self.ollama_adapter = OllamaLLMAdapter(model=model)
+                self.ollama_adapter, selection = OllamaModelSwitchboard().adapter_for("coding")
+                model = selection.model
                 # Check health — the bridge returns a falsy response when offline.
                 try:
                     healthy = self.ollama_adapter.bridge.health_check()
@@ -256,7 +268,11 @@ class CognitiveAuthoringLoop:
                 if healthy:
                     self.architect.writer.adapter = self.ollama_adapter
                     self.architect.writer._use_ai = True
-                    logger.info("ollama: online — attached to SkillWriter (%s)", model)
+                    logger.info(
+                        "ollama: online — attached coding nerve to SkillWriter (%s, %s)",
+                        model,
+                        selection.source,
+                    )
                 else:
                     logger.info("ollama: offline — SkillWriter stays in template mode")
             except Exception as e:
@@ -326,6 +342,7 @@ class CognitiveAuthoringLoop:
                     and tick_started - self._last_observe_at >= self.observe_interval_s):
                 self._last_observe_at = tick_started
                 try:
+                    self.status.dispatcher_actions_ingested += self._ingest_dispatcher_history()
                     new_skills = self.architect.observe_and_propose()
                     for skill in new_skills or []:
                         self._announce_skill(skill)
@@ -341,6 +358,8 @@ class CognitiveAuthoringLoop:
                             "ticks": self.status.ticks,
                             "skills_authored": self.status.skills_authored,
                             "skills_executed": self.status.skills_executed,
+                            "requirement_skills_staged": self.status.requirement_skills_staged,
+                            "dispatcher_actions_ingested": self.status.dispatcher_actions_ingested,
                             "errors": self.status.errors,
                             "consciousness_alive": self.status.consciousness_alive,
                         },
@@ -351,6 +370,52 @@ class CognitiveAuthoringLoop:
 
             # Sleep, but stay responsive to stop().
             self._stop.wait(self.tick_interval_s)
+
+    def _ingest_dispatcher_history(self) -> int:
+        """Record each new dispatcher result once before pattern discovery."""
+        if self.architect is None:
+            return 0
+        dispatcher = getattr(getattr(self.architect, "executor", None), "dispatcher", None)
+        observer = getattr(self.architect, "observer", None)
+        if dispatcher is None or observer is None:
+            return 0
+        try:
+            sessions = dispatcher.list_sessions()
+        except Exception:
+            return 0
+
+        active_ids = set()
+        recorded = 0
+        for summary in sessions if isinstance(sessions, list) else []:
+            if not isinstance(summary, dict):
+                continue
+            session_id = str(summary.get("session_id") or "")
+            if not session_id:
+                continue
+            active_ids.add(session_id)
+            try:
+                controller = dispatcher.get_session(session_id)
+                history = list(getattr(getattr(controller, "session", None), "action_history", []) or [])
+            except Exception:
+                continue
+            offset = int(self._dispatcher_history_offsets.get(session_id, 0))
+            if offset < 0 or offset > len(history):
+                offset = 0
+            for result in history[offset:]:
+                try:
+                    observer.record_action(
+                        action=str(getattr(result, "action", "")),
+                        params=dict(getattr(result, "data", {}) or {}),
+                        session_id=session_id,
+                        coherence=0.85 if bool(getattr(result, "ok", False)) else 0.2,
+                    )
+                    recorded += 1
+                except Exception:
+                    continue
+            self._dispatcher_history_offsets[session_id] = len(history)
+        for stale_id in set(self._dispatcher_history_offsets) - active_ids:
+            self._dispatcher_history_offsets.pop(stale_id, None)
+        return recorded
 
     def _poll_inbox(self) -> None:
         """Read any new JSON lines from the inbox file and dispatch them."""
@@ -529,6 +594,9 @@ class CognitiveAuthoringLoop:
         self._request_handlers["workflow"] = self._handle_workflow
         self._request_handlers["role"] = self._handle_role
         self._request_handlers["execute"] = self._handle_execute
+        self._request_handlers["requirement_skill"] = self._handle_requirement_skill
+        self._request_handlers["approve_skill"] = self._handle_approve_skill
+        self._request_handlers["reject_skill"] = self._handle_reject_skill
         self._request_handlers["bootstrap"] = self._handle_bootstrap
         self._request_handlers["status"] = self._handle_status
         # Code integrator — aureon edits its own source, reviewed on the way in.
@@ -649,6 +717,88 @@ class CognitiveAuthoringLoop:
         ok = bool(getattr(result, "ok", False))
         err = getattr(result, "error", None)
         return {"ok": ok, "skill": name, "error": err}
+
+    def _ensure_requirement_builder(self) -> Optional[Any]:
+        if self.requirement_builder is not None:
+            return self.requirement_builder
+        if not _HAS_REQUIREMENT_BUILDER or self.architect is None:
+            return None
+        try:
+            # The builder stores into the architect's library, but it never
+            # runs model output as code and never enables live execution.
+            self.requirement_builder = RequirementSkillBuilder(
+                library=self.architect.library,
+            )
+        except Exception as e:
+            self._record_error(f"requirement builder init: {e}")
+            return None
+        return self.requirement_builder
+
+    def _handle_requirement_skill(self, p: Dict[str, Any]) -> Dict[str, Any]:
+        builder = self._ensure_requirement_builder()
+        if builder is None:
+            return {"ok": False, "error": "requirement builder unavailable"}
+        requirement = str(p.get("requirement") or p.get("goal") or "").strip()
+        if not requirement:
+            return {"ok": False, "error": "requirement required"}
+        plan = p.get("plan")
+        allow_model_plan = p.get("allow_model_plan") is True
+        if plan is None and not allow_model_plan:
+            return {
+                "ok": False,
+                "error": "strict declarative plan required unless allow_model_plan is explicitly true",
+            }
+        adapter = None
+        if plan is None and allow_model_plan:
+            adapter = self.ollama_adapter
+            if adapter is None and self.architect is not None:
+                adapter = getattr(getattr(self.architect, "writer", None), "adapter", None)
+            if adapter is None:
+                return {"ok": False, "error": "no bounded planning adapter available"}
+        result = builder.build(
+            requirement,
+            plan=plan,
+            adapter=adapter,
+            simulation_inputs=p.get("simulation_inputs")
+            if isinstance(p.get("simulation_inputs"), dict)
+            else None,
+        )
+        if result.get("ok"):
+            self.status.requirement_skills_staged += 1
+            skill_name = str(result.get("skill_name") or "")
+            skill = self.architect.library.get(skill_name) if self.architect is not None else None
+            if skill is not None:
+                self._announce_skill(skill)
+        return result
+
+    def _handle_approve_skill(self, p: Dict[str, Any]) -> Dict[str, Any]:
+        builder = self._ensure_requirement_builder()
+        if builder is None:
+            return {"ok": False, "error": "requirement builder unavailable"}
+        name = str(p.get("name") or "").strip()
+        reviewer = str(p.get("reviewer") or "operator").strip()
+        if not name:
+            return {"ok": False, "error": "name required"}
+        # Live activation is a second, explicit choice and is false by default.
+        return builder.approve_skill(
+            name,
+            reviewer=reviewer,
+            enable_live=p.get("enable_live") is True,
+        )
+
+    def _handle_reject_skill(self, p: Dict[str, Any]) -> Dict[str, Any]:
+        builder = self._ensure_requirement_builder()
+        if builder is None:
+            return {"ok": False, "error": "requirement builder unavailable"}
+        name = str(p.get("name") or "").strip()
+        reviewer = str(p.get("reviewer") or "operator").strip()
+        if not name:
+            return {"ok": False, "error": "name required"}
+        return builder.reject_skill(
+            name,
+            reviewer=reviewer,
+            reason=str(p.get("reason") or "rejected"),
+        )
 
     def _handle_bootstrap(self, p: Dict[str, Any]) -> Dict[str, Any]:
         if self.architect is None:
@@ -877,6 +1027,8 @@ class CognitiveAuthoringLoop:
             "ticks": s.ticks,
             "skills_authored": s.skills_authored,
             "skills_executed": s.skills_executed,
+            "requirement_skills_staged": s.requirement_skills_staged,
+            "dispatcher_actions_ingested": s.dispatcher_actions_ingested,
             "edits_applied": s.edits_applied,
             "edits_positive": s.edits_positive,
             "edits_noop": s.edits_noop,

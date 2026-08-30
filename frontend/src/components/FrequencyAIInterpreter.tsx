@@ -155,18 +155,18 @@ export const FrequencyAIInterpreter: React.FC = () => {
   };
 
   const getFrequencyColor = (freq: number): string => {
-    if (Math.abs(freq - 528) < 20) return 'text-green-400';
-    if (freq > 400 && freq < 600) return 'text-yellow-400';
-    if (freq < 300) return 'text-red-400';
-    return 'text-cyan-400';
+    if (Math.abs(freq - 528) < 20) return 'text-success';
+    if (freq > 400 && freq < 600) return 'text-warning';
+    if (freq < 300) return 'text-destructive';
+    return 'text-primary';
   };
 
   const getPhaseIcon = (phase: string) => {
     switch (phase) {
-      case 'LOVE': return <Heart className="h-4 w-4 text-green-400" />;
-      case 'AWE': return <Sparkles className="h-4 w-4 text-cyan-400" />;
-      case 'UNITY': return <Zap className="h-4 w-4 text-purple-400" />;
-      case 'FEAR': return <Radio className="h-4 w-4 text-red-400" />;
+      case 'LOVE': return <Heart className="h-4 w-4 text-success" />;
+      case 'AWE': return <Sparkles className="h-4 w-4 text-primary" />;
+      case 'UNITY': return <Zap className="h-4 w-4 text-primary" />;
+      case 'FEAR': return <Radio className="h-4 w-4 text-destructive" />;
       default: return <Brain className="h-4 w-4 text-muted-foreground" />;
     }
   };
@@ -211,7 +211,7 @@ export const FrequencyAIInterpreter: React.FC = () => {
           </div>
           <div className="bg-background/50 rounded p-2 text-center">
             <div className="text-muted-foreground">Coherence</div>
-            <div className={`font-mono text-lg ${context.coherence > 0.8 ? 'text-green-400' : context.coherence > 0.6 ? 'text-yellow-400' : 'text-red-400'}`}>
+            <div className={`font-mono text-lg ${context.coherence > 0.8 ? 'text-success' : context.coherence > 0.6 ? 'text-warning' : 'text-destructive'}`}>
               {(context.coherence * 100).toFixed(0)}%
             </div>
           </div>
@@ -224,7 +224,7 @@ export const FrequencyAIInterpreter: React.FC = () => {
           </div>
           <div className="bg-background/50 rounded p-2 text-center">
             <div className="text-muted-foreground">528 Lock</div>
-            <div className={`font-mono ${Math.abs(context.prismFrequency - 528) < 10 ? 'text-green-400' : 'text-muted-foreground'}`}>
+            <div className={`font-mono ${Math.abs(context.prismFrequency - 528) < 10 ? 'text-success' : 'text-muted-foreground'}`}>
               {Math.abs(context.prismFrequency - 528) < 10 ? '🔒 LOCKED' : 'SEEKING'}
             </div>
           </div>
@@ -266,7 +266,7 @@ export const FrequencyAIInterpreter: React.FC = () => {
           </span>
           <span className={`text-primary ${isInterpreting ? 'animate-pulse' : ''}`}>↔</span>
           <span className="flex items-center gap-1">
-            <Radio className="h-3 w-3 text-green-400" />
+            <Radio className="h-3 w-3 text-success" />
             <span className={getFrequencyColor(context.prismFrequency)}>FREQUENCY</span>
           </span>
         </div>

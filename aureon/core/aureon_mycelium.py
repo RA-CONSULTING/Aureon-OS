@@ -61,7 +61,6 @@ Gary Leckey & GitHub Copilot | November 2025
 from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
 import math
 import time
-import random
 import logging
 from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import dataclass, field
@@ -104,7 +103,7 @@ try:
         UltimatePrediction
     )
     ULTIMATE_INTELLIGENCE_AVAILABLE = True
-    print("💎 Mycelium: Ultimate Intelligence WIRED! (95% accuracy)")
+    print("💎 Mycelium: Ultimate Intelligence WIRED (accuracy requires validation receipts)")
 except ImportError:
     ULTIMATE_INTELLIGENCE_AVAILABLE = False
     print("⚠️ Mycelium: Ultimate Intelligence not available")
@@ -272,7 +271,7 @@ class Agent:
     def __post_init__(self):
         self.prime_idx = self.id % len(PRIMES)
     
-    def compute_signal(self, market_data: Dict[str, float], probability_bias: float = 0.0) -> float:
+    def compute_signal(self, market_data: Dict[str, float], probability_bias: float = 0.0) -> Optional[float]:
         """
         Compute trading signal based on market data.
         Returns value in [-1, 1]: negative = SELL, positive = BUY
@@ -281,9 +280,13 @@ class Agent:
         prime = PRIMES[self.prime_idx]
         
         # Factors
-        momentum = market_data.get("momentum", 0)
-        volatility = market_data.get("volatility", 0.5)
-        trend = market_data.get("trend", 0)
+        required = ("momentum", "volatility", "trend")
+        if any(market_data.get(name) is None for name in required):
+            self.last_signal = None
+            return None
+        momentum = float(market_data["momentum"])
+        volatility = float(market_data["volatility"])
+        trend = float(market_data["trend"])
         
         # Unique bias per agent
         bias = math.sin(prime * 0.1) * 0.3
@@ -300,25 +303,46 @@ class Agent:
         
         return self.last_signal
     
-    def execute_trade(self, signal: float, price: float) -> Dict[str, Any]:
+    def execute_trade(
+        self,
+        signal: float,
+        price: float,
+        execution_receipt: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
         """
         Execute a trade based on signal.
         Returns trade result.
         """
+        receipt = execution_receipt or {}
+        required = (
+            "realized_pnl",
+            "position_pct",
+            "source_id",
+            "source_event_id",
+            "source_timestamp",
+            "truth_status",
+            "generated_values",
+        )
+        missing = [name for name in required if receipt.get(name) is None]
+        if missing:
+            return {
+                "agent_id": self.id,
+                "truth_status": "no_data",
+                "generated_values": False,
+                "blocked": "missing_execution_receipt_fields",
+                "missing": missing,
+            }
+        if receipt["truth_status"] not in {"live", "provider_observed"}:
+            raise ValueError("execution receipt must be provider-observed")
+        if receipt["generated_values"] is not False:
+            raise ValueError("generated execution receipts are prohibited")
+
+        pnl = float(receipt["realized_pnl"])
+        position_pct = float(receipt["position_pct"])
+        if not math.isfinite(pnl) or not math.isfinite(position_pct):
+            raise ValueError("execution receipt values must be finite")
         self.trades += 1
-        
-        # Position sizing based on prime number (0.02 to 0.97% of equity)
-        prime = PRIMES[self.prime_idx]
         self.prime_idx = (self.prime_idx + 1) % len(PRIMES)
-        position_pct = prime * 0.01
-        
-        # Simulate trade (in real system, would call Binance)
-        # For now, use signal as proxy for return direction
-        expected_return = signal * 0.002  # ±0.2% expected move
-        noise = (random.random() - 0.5) * 0.001  # ±0.05% noise
-        actual_return = expected_return + noise
-        
-        pnl = self.equity * position_pct * actual_return
         self.equity += pnl
         
         if pnl > 0:
@@ -330,7 +354,12 @@ class Agent:
             "position_pct": position_pct,
             "pnl": pnl,
             "new_equity": self.equity,
-            "win": pnl > 0
+            "win": pnl > 0,
+            "truth_status": receipt["truth_status"],
+            "generated_values": False,
+            "source_id": receipt["source_id"],
+            "source_event_id": receipt["source_event_id"],
+            "source_timestamp": receipt["source_timestamp"],
         }
     
     def get_profit(self) -> float:
@@ -402,7 +431,17 @@ class Hive:
         for agent in self.agents:
             if agent.equity > 0:
                 signal = agent.compute_signal(market_data, probability_bias)
-                signals.append(signal)
+                if signal is not None:
+                    signals.append(signal)
+
+        if not signals:
+            return {
+                "hive_id": self.id,
+                "truth_status": "no_data",
+                "generated_values": False,
+                "blocked": "missing_live_market_metrics",
+                "required": ["momentum", "volatility", "trend"],
+            }
         
         # Transmit through synapses
         transmitted = []
@@ -413,12 +452,41 @@ class Hive:
         # Aggregate in neuron
         hive_signal = self.neuron.activate(transmitted)
         
-        # Execute trades for agents with strong signals
+        # Execute trades for agents with strong signals. The price must come
+        # from the caller's real market_data — the old fallback silently ran
+        # every agent against an invented 95000 whenever the key was missing,
+        # evolving fitness on fabricated data. No price → no trades this step.
+        price = market_data.get("price")
         results = []
+        if price is None or float(price) <= 0:
+            return {
+                "hive_id": self.id,
+                "hive_signal": hive_signal,
+                "trades": None,
+                "results": results,
+                "truth_status": "no_data",
+                "generated_values": False,
+                "blocked": "no_live_price",
+            }
+        execution_receipts = market_data.get("execution_receipts")
+        if not isinstance(execution_receipts, dict):
+            return {
+                "hive_id": self.id,
+                "hive_signal": hive_signal,
+                "trades": None,
+                "results": results,
+                "truth_status": "real_derived",
+                "generated_values": False,
+                "blocked": "no_provider_execution_receipts",
+            }
         for agent in self.agents:
             if agent.equity > 0 and agent.equity < self.target_per_agent:
-                price = market_data.get("price", 95000)
-                result = agent.execute_trade(hive_signal, price)
+                receipt = execution_receipts.get(str(agent.id))
+                if not isinstance(receipt, dict):
+                    continue
+                result = agent.execute_trade(hive_signal, float(price), receipt)
+                if result.get("truth_status") == "no_data":
+                    continue
                 results.append(result)
                 self.trades += 1
                 
@@ -2499,51 +2567,3 @@ def read_reproduction() -> "Dict[str, Any] | None":
         }
     except Exception:  # noqa: BLE001 — a lineage read is best-effort, never fatal
         return None
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# MAIN - Demo
-# ═══════════════════════════════════════════════════════════════════════════════
-
-if __name__ == "__main__":
-    # 🟡 DEMO ONLY — synthetic market data via random.uniform.
-    # The MyceliumNetwork class itself takes real market_data dicts; this
-    # __main__ block simulates them for standalone demo runs.
-    print("""
-╔═══════════════════════════════════════════════════════════════════════════════╗
-║                                                                               ║
-║     🍄 AUREON MYCELIUM NEURAL NETWORK - DEMO 🍄                               ║
-║                                                                               ║
-║     "The underground network where everything connects"                        ║
-║                                                                               ║
-╚═══════════════════════════════════════════════════════════════════════════════╝
-    """)
-    
-    # Create network with $100 initial capital
-    network = MyceliumNetwork(initial_capital=100.0, agents_per_hive=5)
-    
-    # Simulate 50 trading steps
-    for i in range(50):
-        # Simulated market data
-        market_data = {
-            "price": 95000 + random.uniform(-500, 500),
-            "momentum": random.uniform(-0.5, 0.5),
-            "volatility": random.uniform(0.2, 0.8),
-            "trend": random.uniform(-0.3, 0.3)
-        }
-        
-        result = network.step(market_data)
-        
-        if i % 10 == 0:
-            network.display()
-    
-    # Final state
-    print("\n📊 FINAL STATE:")
-    network.display()
-    
-    state = network.get_state()
-    print(f"\n✅ Simulation complete!")
-    print(f"   Steps: {state['step']}")
-    print(f"   Final Equity: ${state['total_equity']:.2f}")
-    print(f"   ROI: {((state['total_equity'] - 100) / 100 * 100):.2f}%")
-    print(f"   Hive Spawns: {len(state['split_events'])}")

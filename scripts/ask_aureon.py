@@ -48,6 +48,7 @@ if REPO_ROOT not in sys.path:
 
 from aureon.core.aureon_thought_bus import Thought, ThoughtBus
 from aureon.inhouse_ai.llm_adapter import LLMAdapter, LLMResponse
+from aureon.obsidian_paths import resolve_obsidian_vault_path
 from aureon.vault.aureon_vault import AureonVault
 from aureon.vault.obsidian_adapter import ObsidianVaultAdapter
 from aureon.vault.voice.aureon_personas import (
@@ -415,14 +416,13 @@ class ConversationSession:
         # Track files we've written so /stats can report them.
         self._obsidian_written: int = 0
 
-    def attach_obsidian(self, root: str) -> str:
+    def attach_obsidian(self, root: str = "") -> str:
         """Enable Obsidian mirroring against the folder at `root`.
 
         Creates the folder if it doesn't exist. Returns the absolute path
         it's writing into.
         """
-        from pathlib import Path
-        p = Path(root).expanduser().resolve()
+        p = resolve_obsidian_vault_path(root)
         p.mkdir(parents=True, exist_ok=True)
         self.obsidian = ObsidianVaultAdapter(vault=self.vault, obsidian_root=p)
         return str(p)
@@ -929,8 +929,19 @@ def main() -> int:
                     help="force REPL mode even if a question was provided")
     ap.add_argument("--live", action="store_true",
                     help="start the ambient background engine at session launch")
-    ap.add_argument("--obsidian", default="",
-                    help="folder to mirror every conversation turn into as markdown")
+    ap.add_argument(
+        "--obsidian",
+        default=str(resolve_obsidian_vault_path()),
+        help=(
+            "folder to mirror every conversation turn into as markdown "
+            "(default: AUREON_OBSIDIAN_VAULT_PATH or ~/AureonObsidianVault)"
+        ),
+    )
+    ap.add_argument(
+        "--no-obsidian",
+        action="store_true",
+        help="disable the default Obsidian mirror for this session",
+    )
     args = ap.parse_args()
 
     question = " ".join(args.question).strip()
@@ -940,7 +951,7 @@ def main() -> int:
         session.ambient = AmbientEngine(session, seed=args.seed)
         session.ambient.start()
 
-    if args.obsidian:
+    if args.obsidian and not args.no_obsidian:
         path = session.attach_obsidian(args.obsidian)
         print(f"obsidian mirror enabled → {path}")
 

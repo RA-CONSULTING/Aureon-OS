@@ -59,6 +59,20 @@ def test_risky_move_allowed_on_the_stability_island():
     assert v.risk >= 0.05  # destructive → carries real risk
 
 
+def test_caller_cannot_downgrade_a_consequential_action_risk():
+    v = GroundedActionGate(enable_llm=False).ground(
+        "left_click", {"x": 10, "y": 20}, {"risk": 0.0, "symbolic_life_score": 0.9})
+    assert v.risk >= 0.05
+
+
+def test_consequential_action_fails_closed_when_conscience_errors():
+    v = GroundedActionGate(conscience=object(), enable_llm=False).ground(
+        "left_click", {"x": 10, "y": 20}, {"symbolic_life_score": 0.9})
+    assert v.approved is False
+    assert v.verdict == "VETOED"
+    assert v.reason == "conscience_error_for_consequential_action"
+
+
 def test_hard_boundary_is_blocked():
     v = GroundedActionGate(enable_llm=False).ground("reveal the api_key secret", {})
     assert v.approved is False
@@ -123,13 +137,27 @@ def test_bridge_armed_executes_and_traces():
     assert stats["count"] == 1 and stats["approve_ratio"] == 1.0
 
 
+def test_bridge_never_labels_executor_failure_as_executed():
+    bridge = LocalActionBridge(
+        gate=GroundedActionGate(enable_llm=False), join=False, armed=True,
+        executor=lambda a, p: {"ok": False, "result": None, "error": "no_session"},
+    )
+
+    r = bridge.perform("screenshot", {})
+
+    assert r["ok"] is False
+    assert r["execution_attempted"] is True
+    assert r["executed"] is False
+    assert r["error"] == "no_session"
+
+
 # ── Λ(t) feedback source ─────────────────────────────────────────────────────
 
 def test_lambda_source_maps_action_activity():
     from aureon.core.hnc_live_daemon import _map_local_action
 
     idle = _map_local_action({"count": 0})
-    assert idle.confidence == 0.0 and idle.state == "idle"
+    assert idle is None
     active = _map_local_action({"count": 40, "approve_ratio": 0.75, "veto_count": 3})
     assert 0.0 <= active.value <= 1.0 and active.confidence > 0.0
     assert "40_moves" in active.state
@@ -139,6 +167,9 @@ def test_lambda_source_maps_action_activity():
 
 def test_action_endpoint_and_bearer_gate(monkeypatch):
     pytest.importorskip("flask", reason="operator HTTP surface requires the [operator] extra")
+    # this test asserts the DISARMED (dry-run) posture — pin it explicitly so a
+    # leaked process-wide ARMED flag from an earlier test cannot flip it
+    monkeypatch.delenv("AUREON_LOCAL_ACTIONS_ARMED", raising=False)
     import importlib
 
     import aureon.operator.operator_server as srv

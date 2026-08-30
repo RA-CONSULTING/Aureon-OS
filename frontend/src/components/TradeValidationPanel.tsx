@@ -41,11 +41,11 @@ export function TradeValidationPanel({ className, compact = false }: TradeValida
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'confirmed':
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
+        return <CheckCircle className="h-4 w-4 text-success" />;
       case 'pending':
-        return <Clock className="h-4 w-4 text-yellow-500 animate-pulse" />;
+        return <Clock className="h-4 w-4 text-warning animate-pulse" />;
       case 'failed':
-        return <XCircle className="h-4 w-4 text-red-500" />;
+        return <XCircle className="h-4 w-4 text-destructive" />;
       default:
         return <AlertTriangle className="h-4 w-4 text-muted-foreground" />;
     }
@@ -54,16 +54,16 @@ export function TradeValidationPanel({ className, compact = false }: TradeValida
   const getStageColor = (stage: string) => {
     switch (stage) {
       case 'FILLED':
-        return 'bg-green-500/20 text-green-500';
+        return 'bg-success/20 text-success';
       case 'PARTIALLY_FILLED':
-        return 'bg-blue-500/20 text-blue-500';
+        return 'bg-primary/20 text-primary';
       case 'ORDER_SUBMITTED':
-        return 'bg-yellow-500/20 text-yellow-500';
+        return 'bg-warning/20 text-warning';
       case 'ORDER_CONFIRMED':
-        return 'bg-cyan-500/20 text-cyan-500';
+        return 'bg-primary/20 text-primary';
       case 'FAILED':
       case 'CANCELED':
-        return 'bg-red-500/20 text-red-500';
+        return 'bg-destructive/20 text-destructive';
       default:
         return 'bg-muted text-muted-foreground';
     }
@@ -86,7 +86,7 @@ export function TradeValidationPanel({ className, compact = false }: TradeValida
             </CardTitle>
             <div className="flex items-center gap-2">
               {pendingCount > 0 && (
-                <Badge variant="outline" className="bg-yellow-500/20 text-yellow-500">
+                <Badge variant="outline" className="bg-warning/20 text-warning">
                   {pendingCount} pending
                 </Badge>
               )}
@@ -99,15 +99,15 @@ export function TradeValidationPanel({ className, compact = false }: TradeValida
         <CardContent className="py-2">
           <div className="flex gap-4 text-xs text-muted-foreground">
             <span className="flex items-center gap-1">
-              <CheckCircle className="h-3 w-3 text-green-500" />
+              <CheckCircle className="h-3 w-3 text-success" />
               {stats.confirmed}
             </span>
             <span className="flex items-center gap-1">
-              <Clock className="h-3 w-3 text-yellow-500" />
+              <Clock className="h-3 w-3 text-warning" />
               {stats.pending}
             </span>
             <span className="flex items-center gap-1">
-              <XCircle className="h-3 w-3 text-red-500" />
+              <XCircle className="h-3 w-3 text-destructive" />
               {stats.failed}
             </span>
           </div>
@@ -142,16 +142,16 @@ export function TradeValidationPanel({ className, compact = false }: TradeValida
             <div className="text-2xl font-semibold">{stats.total}</div>
             <div className="text-xs text-muted-foreground">Total</div>
           </div>
-          <div className="bg-green-500/10 rounded-lg p-3 text-center">
-            <div className="text-2xl font-semibold text-green-500">{stats.confirmed}</div>
+          <div className="bg-success/10 rounded-lg p-3 text-center">
+            <div className="text-2xl font-semibold text-success">{stats.confirmed}</div>
             <div className="text-xs text-muted-foreground">Confirmed</div>
           </div>
-          <div className="bg-yellow-500/10 rounded-lg p-3 text-center">
-            <div className="text-2xl font-semibold text-yellow-500">{stats.pending}</div>
+          <div className="bg-warning/10 rounded-lg p-3 text-center">
+            <div className="text-2xl font-semibold text-warning">{stats.pending}</div>
             <div className="text-xs text-muted-foreground">Pending</div>
           </div>
-          <div className="bg-red-500/10 rounded-lg p-3 text-center">
-            <div className="text-2xl font-semibold text-red-500">{stats.failed}</div>
+          <div className="bg-destructive/10 rounded-lg p-3 text-center">
+            <div className="text-2xl font-semibold text-destructive">{stats.failed}</div>
             <div className="text-xs text-muted-foreground">Failed</div>
           </div>
         </div>
@@ -164,7 +164,7 @@ export function TradeValidationPanel({ className, compact = false }: TradeValida
           </div>
           <div className="h-2 bg-muted rounded-full overflow-hidden">
             <div 
-              className="h-full bg-green-500 transition-all"
+              className="h-full bg-success transition-all"
               style={{ width: `${stats.confirmationRate}%` }}
             />
           </div>
@@ -217,7 +217,7 @@ export function TradeValidationPanel({ className, compact = false }: TradeValida
                         </div>
                         <div>
                           <span className="text-muted-foreground">Side: </span>
-                          <span className={trade.side === 'BUY' ? 'text-green-500' : 'text-red-500'}>
+                          <span className={trade.side === 'BUY' ? 'text-success' : 'text-destructive'}>
                             {trade.side}
                           </span>
                         </div>

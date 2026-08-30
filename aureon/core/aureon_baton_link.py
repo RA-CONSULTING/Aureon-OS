@@ -28,27 +28,17 @@ _LAST_PING: Optional[float] = None
 _AUTO_CONTROL_DONE = False
 _LAST_HANDOFF: Optional[tuple[str, float]] = None
 _BATON_LOG_PATH = Path("state/baton_relay.jsonl")
+# Observation truth and mutation authority are separate contracts. Importing a
+# module may disable fabricated observation fallbacks, but it must never switch
+# exchanges from dry-run/paper/testnet into live order execution.
 _REAL_DATA_ENV_DEFAULTS = {
-    "AUREON_DRY_RUN": "0",
-    "DRY_RUN": "0",
-    "BINANCE_DRY_RUN": "false",
-    "KRAKEN_DRY_RUN": "false",
-    "ALPACA_DRY_RUN": "false",
-    "ALPACA_PAPER": "false",
-    "BINANCE_USE_TESTNET": "false",
-    "BINANCE_TESTNET": "false",
-    "USE_TESTNET": "0",
-    "CAPITAL_DEMO": "0",
-    "IG_DEMO": "false",
-    "PAPER_TRADING": "false",
-    "PAPER_MODE": "false",
-    "PAPER": "0",
     "SIMULATION_MODE": "0",
     "DEMO_MODE": "0",
     "STATUS_MOCK": "false",
     "SIMULATED_ATTACKS": "false",
     "AUREON_COMMAND_CENTER_DEMO": "0",
     "SENTIENCE_FORCE_PERFECT": "0",
+    "AUREON_ALLOW_SIM_FALLBACK": "0",
 }
 
 
@@ -170,7 +160,7 @@ def _enforce_real_data_only() -> None:
 
 
 def link_system(module_name: str) -> None:
-    """Publish a baton heartbeat and ensure Mycelium sonar is wired."""
+    """Publish a baton heartbeat without starting background services."""
     _ensure_stdio()
     if _import_side_effects_suppressed():
         return
@@ -200,11 +190,6 @@ def link_system(module_name: str) -> None:
         return
 
     bus = get_thought_bus(persist_path="logs/aureon_thoughts.jsonl")
-    if module_name != "aureon.core.mycelium_whale_sonar" and _load_sonar() and ensure_sonar:
-        try:
-            ensure_sonar(bus)
-        except Exception:
-            pass
 
     now = time.time()
     if not _should_ping(now):

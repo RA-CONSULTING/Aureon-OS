@@ -13,10 +13,11 @@ Only exceptions:
   — Dead Man's Switch floor hit (DTP)
   — 1-hour ride limit reached (rotate to next stallion)
 """
+import argparse
+import math
 import os, sys, time, json, logging
 from datetime import datetime
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
 logger = logging.getLogger('margin_monitor')
 
 # ══════════════════════════════════════════════════════════════
@@ -37,59 +38,168 @@ CANDIDATE_PAIRS = [
 # ══════════════════════════════════════════════════════════════
 #  DEAD MAN'S SWITCH IMPORT
 # ══════════════════════════════════════════════════════════════
-try:
-    from aureon.trading.dynamic_take_profit import DynamicTakeProfit, DTP_CONFIG
-    _DTP_AVAILABLE = True
-except ImportError:
-    _DTP_AVAILABLE = False
-    DynamicTakeProfit = None
-    DTP_CONFIG = {'activation_threshold': 15.0, 'trailing_distance_pct': 0.02, 'gbp_usd_rate': 1.27}
+_DTP_AVAILABLE = False
+DynamicTakeProfit = None
+DTP_CONFIG = {'activation_threshold': 15.0, 'trailing_distance_pct': 0.02, 'gbp_usd_rate': 1.27}
 
 # ══════════════════════════════════════════════════════════════
 #  MARGIN WAVE RIDER IMPORT
 # ══════════════════════════════════════════════════════════════
-try:
-    from aureon.trading.margin_wave_rider import MarginWaveRider, WAVE_CONFIG
-    _WAVE_RIDER_AVAILABLE = True
-    _wave_rider = MarginWaveRider()
-except ImportError:
-    _WAVE_RIDER_AVAILABLE = False
-    _wave_rider = None
-    WAVE_CONFIG = {'entry_min_margin_pct': 250.0, 'danger_margin_pct': 110.0}
+_WAVE_RIDER_AVAILABLE = False
+MarginWaveRider = None
+WAVE_CONFIG = {'entry_min_margin_pct': 250.0, 'danger_margin_pct': 110.0}
+
+_wave_rider = None
 
 # ══════════════════════════════════════════════════════════════
 #  STALLION TRACKER IMPORT
 # ══════════════════════════════════════════════════════════════
-try:
-    from aureon.utils.stallion_tracker import classify_phase as _classify_phase
-    _STALLION_AVAILABLE = True
-except ImportError:
-    _STALLION_AVAILABLE = False
-    _classify_phase = None
+_STALLION_AVAILABLE = False
+_classify_phase = None
 
 # ══════════════════════════════════════════════════════════════
 #  STALLION MULTIVERSE IMPORT
 # ══════════════════════════════════════════════════════════════
-try:
-    from aureon.simulation.stallion_multiverse import StallionMultiverse, MULTIVERSE_CONFIG
-    _MULTIVERSE_AVAILABLE = True
-except ImportError:
-    _MULTIVERSE_AVAILABLE = False
-    StallionMultiverse = None
-    MULTIVERSE_CONFIG = {'real_ride_limit_secs': 3600}
+_MULTIVERSE_AVAILABLE = False
+StallionMultiverse = None
+MULTIVERSE_CONFIG = {'real_ride_limit_secs': 3600}
 
 # ══════════════════════════════════════════════════════════════
 #  MULTIVERSE LEARNING BRIDGE IMPORT
 # ══════════════════════════════════════════════════════════════
-try:
-    from aureon.bridges.multiverse_learning_bridge import MultiverseLearningBridge
-    _LEARNING_BRIDGE_AVAILABLE = True
-except ImportError:
-    _LEARNING_BRIDGE_AVAILABLE = False
-    MultiverseLearningBridge = None
+_LEARNING_BRIDGE_AVAILABLE = False
+MultiverseLearningBridge = None
 
 
-def main():
+RECEIPT_MAX_AGE_SECONDS = 60.0
+RECEIPT_FUTURE_SKEW_SECONDS = 5.0
+
+
+def _finite_number(value, *, positive=False):
+    """Return a finite provider value, or None without manufacturing a default."""
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    if not math.isfinite(number) or (positive and number <= 0):
+        return None
+    return number
+
+
+def _fresh_observed_receipt(receipt, now=None):
+    """Validate provenance before a provider value may reach monitor logic."""
+    if not isinstance(receipt, dict):
+        return "receipt is not a mapping"
+    if receipt.get('truth_status') != 'real_observed' or receipt.get('generated_values') is not False:
+        return "receipt is not real observed evidence"
+    if not all(receipt.get(key) for key in ('source_id', 'receipt_id')):
+        return "receipt has no source or receipt identifier"
+    source_timestamp = _finite_number(receipt.get('source_timestamp'), positive=True)
+    received_at = _finite_number(receipt.get('received_at'), positive=True)
+    if source_timestamp is None or received_at is None:
+        return "receipt has no valid provider or received timestamp"
+    now = time.time() if now is None else now
+    if source_timestamp > now + RECEIPT_FUTURE_SKEW_SECONDS or received_at > now + RECEIPT_FUTURE_SKEW_SECONDS:
+        return "receipt timestamp is in the future"
+    if now - source_timestamp > RECEIPT_MAX_AGE_SECONDS or now - received_at > RECEIPT_MAX_AGE_SECONDS:
+        return "receipt is stale"
+    return None
+
+
+def _complete_quote(receipt, now=None):
+    problem = _fresh_observed_receipt(receipt, now)
+    if problem:
+        return None, problem
+    bid = _finite_number(receipt.get('bid'), positive=True)
+    ask = _finite_number(receipt.get('ask'), positive=True)
+    if bid is None or ask is None or ask < bid:
+        return None, "receipt has no complete two-sided quote"
+    return (bid, ask), None
+
+
+def _complete_position(receipt, now=None):
+    problem = _fresh_observed_receipt(receipt, now)
+    if problem:
+        return problem
+    required = ('position_id', 'pair', 'type', 'opentm')
+    if not all(receipt.get(key) for key in required):
+        return "position receipt is incomplete"
+    for key in ('volume', 'volume_closed', 'cost', 'fee', 'margin', 'opentm'):
+        if _finite_number(receipt.get(key)) is None:
+            return f"position receipt has invalid {key}"
+    if _finite_number(receipt.get('volume'), positive=True) is None:
+        return "position receipt has no open volume"
+    if _finite_number(receipt.get('cost'), positive=True) is None:
+        return "position receipt has no observed cost"
+    if _finite_number(receipt.get('volume')) <= _finite_number(receipt.get('volume_closed')):
+        return "position receipt has no remaining volume"
+    return None
+
+
+def _complete_terminal_fill(receipt, now=None):
+    problem = _fresh_observed_receipt(receipt, now)
+    if problem:
+        return None, problem
+    if str(receipt.get('status', '')).lower() != 'filled':
+        return None, "close receipt is not a terminal fill"
+    if not receipt.get('orderId') and not receipt.get('txid'):
+        return None, "close receipt has no provider order id"
+    if not receipt.get('fill_id') or not receipt.get('fee_currency'):
+        return None, "close receipt has no fill or fee currency"
+    required_positive = ('filled_volume', 'fill_price')
+    if any(_finite_number(receipt.get(key), positive=True) is None for key in required_positive):
+        return None, "close receipt has incomplete fill values"
+    if any(_finite_number(receipt.get(key)) is None for key in ('fee', 'realized_pnl')):
+        return None, "close receipt has incomplete accounting values"
+    return receipt, None
+
+
+def _configure_runtime_components():
+    """Create optional runtime helpers only after the monitor is explicitly started."""
+    global _DTP_AVAILABLE, DynamicTakeProfit, DTP_CONFIG
+    global _WAVE_RIDER_AVAILABLE, MarginWaveRider, WAVE_CONFIG, _wave_rider
+    global _STALLION_AVAILABLE, _classify_phase
+    global _MULTIVERSE_AVAILABLE, StallionMultiverse, MULTIVERSE_CONFIG
+    global _LEARNING_BRIDGE_AVAILABLE, MultiverseLearningBridge
+    try:
+        from aureon.trading.dynamic_take_profit import DynamicTakeProfit as dtp, DTP_CONFIG as dtp_config
+        DynamicTakeProfit, DTP_CONFIG, _DTP_AVAILABLE = dtp, dtp_config, True
+    except ImportError:
+        pass
+    try:
+        from aureon.trading.margin_wave_rider import MarginWaveRider as wave_rider, WAVE_CONFIG as wave_config
+        MarginWaveRider, WAVE_CONFIG, _WAVE_RIDER_AVAILABLE = wave_rider, wave_config, True
+    except ImportError:
+        pass
+    try:
+        from aureon.utils.stallion_tracker import classify_phase
+        _classify_phase, _STALLION_AVAILABLE = classify_phase, True
+    except ImportError:
+        pass
+    try:
+        from aureon.simulation.stallion_multiverse import StallionMultiverse as multiverse, MULTIVERSE_CONFIG as multiverse_config
+        StallionMultiverse, MULTIVERSE_CONFIG, _MULTIVERSE_AVAILABLE = multiverse, multiverse_config, True
+    except ImportError:
+        pass
+    try:
+        from aureon.bridges.multiverse_learning_bridge import MultiverseLearningBridge as learning_bridge
+        MultiverseLearningBridge, _LEARNING_BRIDGE_AVAILABLE = learning_bridge, True
+    except ImportError:
+        pass
+    if _WAVE_RIDER_AVAILABLE and _wave_rider is None:
+        _wave_rider = MarginWaveRider()
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description='Monitor verified margin-position receipts.')
+    parser.add_argument('--run', action='store_true', help='explicitly enable provider monitoring')
+    args = parser.parse_args(argv)
+    if not args.run:
+        print('No provider monitoring started: pass --run with receipt-capable adapters.')
+        return 0
+
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
+    _configure_runtime_components()
     from aureon.exchanges.kraken_client import KrakenClient
     client = KrakenClient()
 
@@ -109,6 +219,7 @@ def main():
     print("=" * 70)
 
     closed_positions = []
+    processed_fill_ids = set()
     cycle = 0
 
     # Dead Man's Switch trackers — persisted across cycles, keyed by position_id
@@ -128,32 +239,39 @@ def main():
         cycle += 1
         try:
             # ── Get open margin positions ───────────────────────────────────
+            receipt_now = time.time()
             positions = client.get_open_margin_positions()
-
-            if not positions:
-                if closed_positions:
-                    print(f"\n{'=' * 70}")
-                    print(f"  ALL MARGIN POSITIONS CLOSED WITH PROFIT!")
-                    print(f"  Closed {len(closed_positions)} positions:")
-                    total_profit = 0
-                    for cp in closed_positions:
-                        print(f"    {cp['pair']}: ${cp['pnl']:+.4f}")
-                        total_profit += cp['pnl']
-                    print(f"  Total profit: ${total_profit:+.4f}")
-                    print(f"{'=' * 70}")
-                else:
-                    print(f"\n  No open margin positions found. Nothing to monitor.")
-                break
+            if not isinstance(positions, list) or not positions:
+                print('  no_data: no complete fresh provider position receipts; monitoring is vetoed.')
+                time.sleep(CHECK_INTERVAL)
+                continue
+            position_problem = next(
+                (problem for problem in (_complete_position(pos, receipt_now) for pos in positions) if problem),
+                None,
+            )
+            if position_problem:
+                print(f'  no_data: {position_problem}; monitoring is vetoed.')
+                time.sleep(CHECK_INTERVAL)
+                continue
 
             # ── Get margin account health ───────────────────────────────────
             tb = client.get_trade_balance()
-            margin_level = float(tb.get('margin_level', 0) or 0)
-            free_margin  = float(tb.get('free_margin',  0) or 0)
+            account_problem = _fresh_observed_receipt(tb, receipt_now)
+            margin_level = _finite_number(tb.get('margin_level')) if isinstance(tb, dict) else None
+            free_margin = _finite_number(tb.get('free_margin')) if isinstance(tb, dict) else None
+            if account_problem or margin_level is None or free_margin is None:
+                print('  no_data: no complete fresh provider account receipt; monitoring is vetoed.')
+                time.sleep(CHECK_INTERVAL)
+                continue
 
             # ── Get ETH price ───────────────────────────────────────────────
-            ticker      = client.get_ticker('ETHUSD')
-            current_bid = float(ticker.get('bid', 0))
-            current_ask = float(ticker.get('ask', 0))
+            ticker = client.get_ticker('ETHUSD')
+            quote, quote_problem = _complete_quote(ticker, receipt_now)
+            if quote_problem:
+                print(f'  no_data: {quote_problem}; monitoring is vetoed.')
+                time.sleep(CHECK_INTERVAL)
+                continue
+            current_bid, current_ask = quote
 
             # ── Fetch candidate prices for multiverse shadow tracking ───────
             candidate_prices = {}
@@ -161,9 +279,9 @@ def main():
                 for cpair in CANDIDATE_PAIRS:
                     try:
                         ct = client.get_ticker(cpair)
-                        cp = float(ct.get('bid', 0) or 0)
-                        if cp > 0:
-                            candidate_prices[cpair] = cp
+                        candidate_quote, candidate_problem = _complete_quote(ct, receipt_now)
+                        if not candidate_problem:
+                            candidate_prices[cpair] = candidate_quote[0]
                     except Exception:
                         pass
 
@@ -187,8 +305,8 @@ def main():
             # ── Register the real ride with the multiverse (first cycle) ────
             if _multiverse is not None and not _multiverse_registered and positions:
                 first_pos   = positions[0]
-                real_opentm = float(first_pos.get('opentm', 0) or 0) or time.time()
-                real_pair   = first_pos.get('pair', 'ETHUSD')
+                real_opentm = float(first_pos['opentm'])
+                real_pair   = first_pos['pair']
                 _multiverse.start_real_ride(real_pair, real_opentm)
                 mv_candidates = [
                     {'pair': p, 'volume': 0.01, 'leverage': 5}
@@ -211,16 +329,14 @@ def main():
 
             # ── Monitor each position ───────────────────────────────────────
             for i, pos in enumerate(positions):
-                pair          = pos.get('pair', '?')
-                pos_type      = pos.get('type', '?')   # buy=long, sell=short
-                volume        = float(pos.get('volume', 0))
-                volume_closed = float(pos.get('volume_closed', 0))
+                pair          = pos['pair']
+                pos_type      = pos['type']   # buy=long, sell=short
+                volume        = float(pos['volume'])
+                volume_closed = float(pos['volume_closed'])
                 remaining     = volume - volume_closed
-                cost          = float(pos.get('cost', 0))
-                fee           = float(pos.get('fee', 0))
+                cost          = float(pos['cost'])
+                fee           = float(pos['fee'])
                 leverage      = pos.get('leverage', '1')
-                unrealized    = float(pos.get('unrealized_pnl', 0) or 0)
-                margin_used   = float(pos.get('margin', 0))
 
                 # Entry price and breakeven
                 entry_price    = cost / volume if volume > 0 else 0
@@ -272,7 +388,7 @@ def main():
                 dtp_state      = None
 
                 if _DTP_AVAILABLE and DynamicTakeProfit is not None:
-                    pos_key = pos.get('position_id', pair)
+                    pos_key = pos['position_id']
                     if pos_key not in dtp_trackers:
                         dtp_trackers[pos_key] = DynamicTakeProfit(
                             activation_threshold_gbp = DTP_CONFIG['activation_threshold'],
@@ -302,8 +418,8 @@ def main():
                 #  STALLION PHASE — fresh classification using current DTP state
                 # ════════════════════════════════════════════════════════════
                 if _STALLION_AVAILABLE and _classify_phase is not None:
-                    _open_ts   = float(pos.get('opentm', 0) or 0)
-                    _hold_secs = (time.time() - _open_ts) if _open_ts > 0 else 0.0
+                    _open_ts   = float(pos['opentm'])
+                    _hold_secs = time.time() - _open_ts
                     _dtp_on    = dtp_state.activated      if dtp_state else False
                     _dtp_trig  = dtp_state.trigger_count  if dtp_state else 0
                     _dtp_floor = dtp_state.floor_gbp       if dtp_state else 0.0
@@ -372,19 +488,38 @@ def main():
                             volume   = remaining,
                             leverage = int(leverage) if str(leverage).isdigit() else None
                         )
-                        close_txid   = close_order.get('orderId') or close_order.get('txid', 'UNKNOWN')
-                        close_status = close_order.get('status', 'UNKNOWN')
+                        terminal_fill, fill_problem = _complete_terminal_fill(close_order, receipt_now)
+                        if fill_problem:
+                            print(f"      >>> no_data: close acknowledgement not booked ({fill_problem}).")
+                            continue
+                        if abs(float(terminal_fill['filled_volume']) - remaining) > 1e-12:
+                            print('      >>> no_data: partial fill is not a complete close and was not booked.')
+                            continue
+                        fill_id = str(terminal_fill['fill_id'])
+                        if fill_id in processed_fill_ids:
+                            print(f"      >>> no_data: duplicate terminal fill {fill_id} was not booked twice.")
+                            continue
+                        close_txid = terminal_fill.get('orderId') or terminal_fill.get('txid')
+                        close_status = terminal_fill['status']
+                        realized_pnl = float(terminal_fill['realized_pnl'])
+                        fill_price = float(terminal_fill['fill_price'])
+                        processed_fill_ids.add(fill_id)
                         print(f"      >>> CLOSED! Order ID: {close_txid} | Status: {close_status}")
-                        print(f"      >>> Net Profit: ${net_pnl:+.4f}")
+                        print(f"      >>> Observed Net Profit: ${realized_pnl:+.4f}")
                         closed_positions.append({
                             'pair':        pair,
                             'entry_price': entry_price,
-                            'exit_price':  current_bid,
-                            'volume':      remaining,
-                            'pnl':         net_pnl,
+                            'exit_price':  fill_price,
+                            'volume':      float(terminal_fill['filled_volume']),
+                            'pnl':         realized_pnl,
                             'order_id':    str(close_txid),
+                            'fill_id':     fill_id,
+                            'fee':         float(terminal_fill['fee']),
+                            'fee_currency': terminal_fill['fee_currency'],
+                            'receipt_id':  terminal_fill['receipt_id'],
+                            'source_timestamp': terminal_fill['source_timestamp'],
+                            'received_at': terminal_fill['received_at'],
                             'reason':      close_reason,
-                            'timestamp':   datetime.now().isoformat(),
                         })
                         # Advance multiverse to next stallion on rotation
                         if rotation_close and _multiverse is not None:
@@ -448,7 +583,11 @@ def main():
 
 def _force_close(client, pos, reason):
     """Emergency close a margin position."""
-    volume   = float(pos.get('volume', 0)) - float(pos.get('volume_closed', 0))
+    problem = _complete_position(pos)
+    if problem:
+        print(f"  no_data: force close vetoed ({problem}).")
+        return
+    volume   = float(pos['volume']) - float(pos['volume_closed'])
     leverage = pos.get('leverage', None)
     try:
         close_order = client.close_margin_position(
@@ -457,10 +596,15 @@ def _force_close(client, pos, reason):
             volume   = volume,
             leverage = int(leverage) if leverage and str(leverage).isdigit() else None
         )
-        print(f"  Force closed: {close_order.get('orderId', '?')} reason={reason}")
+        terminal_fill, fill_problem = _complete_terminal_fill(close_order)
+        if fill_problem or abs(float(terminal_fill['filled_volume']) - volume) > 1e-12:
+            print(f"  no_data: force close acknowledgement is unconfirmed ({fill_problem or 'partial fill'}).")
+            return
+        close_txid = terminal_fill.get('orderId') or terminal_fill.get('txid')
+        print(f"  Force close confirmed: {close_txid} reason={reason}")
     except Exception as e:
         print(f"  Force close failed: {e}")
 
 
 if __name__ == '__main__':
-    main()
+    raise SystemExit(main())

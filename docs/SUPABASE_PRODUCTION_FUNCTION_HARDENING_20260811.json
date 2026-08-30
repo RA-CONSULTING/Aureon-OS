@@ -1,0 +1,45 @@
+{
+  "schema": "aureon.supabase.production_function_hardening.v1",
+  "project_id": "siihxcwetdjdsrfdexmb",
+  "provider_migration": {
+    "name": "harden_privileged_function_execution",
+    "version": "20260811214358"
+  },
+  "source_migration": "supabase/migrations/20260811214358_harden_privileged_function_execution.sql",
+  "sandbox_validation": {
+    "matching_function_count": 0,
+    "migration_applied": true,
+    "project_id": "bswwejakhfojgalhefjy",
+    "security_advisor_finding_count": 0
+  },
+  "target_functions": [
+    "public.handle_new_user()",
+    "public.handle_updated_at()",
+    "public.has_role(uuid,public.app_role)",
+    "public.log_performance_metric(text,text,numeric,integer,text)",
+    "public.session_belongs_to_current_user(uuid)",
+    "public.update_payment_updated_at()",
+    "public.update_sentinel_updated_at()",
+    "public.update_spiritual_user_stats()",
+    "public.update_updated_at_column()"
+  ],
+  "readback": {
+    "anon_execute_false_count": 9,
+    "anonymous_security_definer_advisor_finding_count": 0,
+    "authenticated_execute_false_count": 7,
+    "authenticated_execute_true_functions": [
+      "public.has_role(uuid,public.app_role)",
+      "public.session_belongs_to_current_user(uuid)"
+    ],
+    "fixed_search_path_count": 9,
+    "function_count": 9,
+    "intentional_authenticated_security_definer_advisor_findings": [
+      "public.has_role(uuid,public.app_role)",
+      "public.session_belongs_to_current_user(uuid)"
+    ],
+    "service_role_execute_true_count": 9
+  },
+  "row_content_changed": false,
+  "row_content_read": false,
+  "provider_applied_and_read_back": true
+}

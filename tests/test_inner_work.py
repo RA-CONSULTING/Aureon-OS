@@ -11,12 +11,51 @@ inner_work sub-field back into the whole-body field, and assess() never publishe
 from __future__ import annotations
 
 import json
+import time
 
 import pytest
 
 from aureon.core.aureon_thought_bus import Thought, get_thought_bus
 from aureon.core.hnc_field import read_subfields
 from aureon.core.inner_work import InnerWork, _ascend
+
+
+def _hnc_envelope(symbolic_life_score, coherence_gamma, consciousness_psi=None):
+    received_at = time.time()
+    psi = coherence_gamma if consciousness_psi is None else consciousness_psi
+    return {
+        "data_status": "live",
+        "source": "hnc_live_daemon",
+        "source_id": "aureon:hnc:live_daemon",
+        "source_timestamp": received_at,
+        "received_at": received_at,
+        "ts": received_at,
+        "receipt_id": "hnc:live_field:test-inner-work",
+        "receipt_type": "hnc_live_field",
+        "provider_receipt_type": "hnc_live_field",
+        "truth_status": "real_derived",
+        "generated_values": False,
+        "input_receipt_ids": ["test.provider:inner-work"],
+        "freshness_status": "fresh",
+        "symbolic_life_score": symbolic_life_score,
+        "coherence_gamma": coherence_gamma,
+        "consciousness_psi": psi,
+        "consciousness_level": "AWARE",
+        "lambda_t": symbolic_life_score,
+        "source_count": 1,
+        "operational_eligible": False,
+        "provider_eligible": False,
+        "action_eligible": False,
+        "actionable": False,
+        "accounting_eligible": False,
+        "learning_eligible": False,
+        "eligible_for_action": False,
+        "eligible_for_accounting": False,
+        "eligible_for_learning": False,
+        "equation_inputs_complete": True,
+        "action_gate_passed": False,
+        "action_gate_reason": "route_specific_market_link_required",
+    }
 
 
 @pytest.fixture(autouse=True)
@@ -43,9 +82,8 @@ def _isolate(tmp_path, monkeypatch):
 
 def _coherent(tmp_path):
     b = get_thought_bus()
-    b.publish(Thought(source="hnc", topic="symbolic.life.pulse",
-                      payload={"symbolic_life_score": 0.85, "coherence_gamma": 0.85,
-                               "consciousness_psi": 0.8, "source": "live"}))
+    b.publish(Thought(source="hnc_live_daemon", topic="symbolic.life.pulse",
+                      payload=_hnc_envelope(0.85, 0.85, 0.8)))
     (tmp_path / "gfs.json").write_text(json.dumps({"last_snapshot": {"crypto_fear_greed": 75}}), encoding="utf-8")
     (tmp_path / "preds.json").write_text(
         json.dumps({"predictions": [{"validated": True, "was_correct": True} for _ in range(9)]
@@ -88,6 +126,15 @@ def test_measures_and_potential_on_a_coherent_field(tmp_path):
     assert s.stage_index >= 1 and s.ascended         # it has begun to rise
     assert 0.0 < s.potential <= 1.0
     assert s.hz in (396, 417, 528, 639, 741, 852, 963)
+
+
+def test_trace_field_is_classified_as_cached_real(tmp_path):
+    (tmp_path / "hnc.jsonl").write_text(
+        json.dumps(_hnc_envelope(0.61, 0.59)) + "\n",
+        encoding="utf-8",
+    )
+    s = InnerWork().assess()
+    assert s.signals["field"]["truth_status"] == "cached_real"
 
 
 # ── reflect folds the inner work back; assess never publishes ─────────────────

@@ -24,11 +24,12 @@ Gary Leckey · Aureon Institute
 
 from __future__ import annotations
 
+import importlib
 import json
 import logging
 import os
 from pathlib import Path
-from typing import Any
+from typing import Any, Protocol, cast
 
 logger = logging.getLogger("aureon.core.bus_trace")
 
@@ -36,6 +37,15 @@ _REPO_ROOT = Path(__file__).resolve().parents[2]
 # Bounded tail read: only the last chunk of the file is ever scanned, so read
 # cost is O(chunk) regardless of how large the trace has grown.
 _TAIL_BYTES = 256 * 1024
+
+
+class _PosixFcntl(Protocol):
+    """The small POSIX locking surface used during best-effort compaction."""
+
+    LOCK_EX: int
+    LOCK_UN: int
+
+    def flock(self, fd: int, operation: int) -> None: ...
 
 
 def trace_dir() -> Path:
@@ -78,7 +88,7 @@ def _maybe_compact(path: Path, cap: int) -> None:
             return
         tail = lines[-cap:]
         try:
-            import fcntl
+            fcntl = cast(_PosixFcntl, importlib.import_module("fcntl"))
 
             with path.open("r+", encoding="utf-8") as fh:
                 fcntl.flock(fh.fileno(), fcntl.LOCK_EX)

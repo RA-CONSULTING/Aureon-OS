@@ -12,11 +12,10 @@ Strategy:
 """
 
 from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
-import random
 import time
 from datetime import datetime
 from dataclasses import dataclass
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 # ═══════════════════════════════════════════════════════════════
 # STRATEGY PARAMETERS
@@ -91,54 +90,16 @@ class Aureon51Turbo:
 """)
         
     def init_coins(self):
-        """Generate realistic momentum coins"""
-        coins = [
-            ("ALCHUSD", 0.165, 48.0),
-            ("LSKUSD", 0.225, 28.0),
-            ("GRIFFAINUSD", 0.017, 21.0),
-            ("RIVERUSD", 3.61, 25.0),
-            ("ZOOUSD", 0.058, 18.0),
-            ("TRUMPUSD", 12.50, 15.0),
-            ("SOLDUSD", 180.0, 12.0),
-            ("PEPEUSD", 0.000012, 35.0),
-        ]
-        
-        for symbol, price, momentum in coins:
-            self.prices[symbol] = price
+        """No-op retained for compatibility; live prices must be ingested."""
+        self.prices = {}
             
-    def simulate_price_move(self, symbol: str, momentum: float) -> float:
-        """
-        Simulate realistic price movement.
-        Momentum coins have upward bias.
-        """
-        current = self.prices.get(symbol, 100.0)
-        
-        # Base volatility 0.2-0.5% per tick
-        volatility = random.uniform(0.002, 0.005)
-        
-        # Momentum gives upward bias
-        bias = 0.001 * (momentum / 20.0)  # Higher momentum = more upward bias
-        
-        # Random walk with bias
-        move = random.gauss(bias, volatility)
-        
-        new_price = current * (1 + move)
-        self.prices[symbol] = new_price
-        return new_price
+    def simulate_price_move(self, symbol: str, momentum: float) -> Optional[float]:
+        """Retained API surface; returns only the latest ingested live price."""
+        return self.prices.get(symbol)
         
     def find_opportunities(self) -> List[Dict]:
-        """Find momentum coins to trade"""
-        opps = [
-            {"symbol": "ALCHUSD", "momentum": 48.0, "score": 75},
-            {"symbol": "LSKUSD", "momentum": 28.0, "score": 75},
-            {"symbol": "GRIFFAINUSD", "momentum": 21.0, "score": 70},
-            {"symbol": "RIVERUSD", "momentum": 25.0, "score": 70},
-            {"symbol": "ZOOUSD", "momentum": 18.0, "score": 68},
-            {"symbol": "TRUMPUSD", "momentum": 15.0, "score": 65},
-        ]
-        
-        # Filter out coins we already hold
-        return [o for o in opps if o["symbol"] not in self.positions][:MAX_POSITIONS - len(self.positions)]
+        """No live scanner is connected to this legacy compatibility class."""
+        return []
         
     def open_position(self, opp: Dict):
         """Open a new position"""
@@ -150,7 +111,9 @@ class Aureon51Turbo:
         if pos_size < MIN_TRADE_USD:
             return
             
-        price = self.prices.get(symbol, 0.01)
+        price = self.prices.get(symbol)
+        if price is None or price <= 0:
+            return
         # Entry fee uses combined rate to match penny profit formula
         entry_fee = pos_size * TOTAL_FEE_RATE
         quantity = pos_size / price
@@ -176,6 +139,8 @@ class Aureon51Turbo:
         for symbol, pos in self.positions.items():
             # Simulate price movement
             current_price = self.simulate_price_move(symbol, pos.momentum)
+            if current_price is None:
+                continue
             
             change_pct = (current_price - pos.entry_price) / pos.entry_price * 100
             

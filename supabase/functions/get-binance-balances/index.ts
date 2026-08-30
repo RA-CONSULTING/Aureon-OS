@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { decryptCredential } from "../_shared/credential_crypto.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -31,13 +32,6 @@ serve(async (req) => {
       );
     }
 
-    // Decrypt credentials
-    function decryptValue(encrypted: string): string {
-      const key = Deno.env.get('MASTER_ENCRYPTION_KEY') || 'default-key';
-      const decoded = atob(encrypted);
-      return decoded.split('::')[0];
-    }
-
     // Fetch all current prices from Binance
     let priceMap: Record<string, number> = {};
     try {
@@ -53,13 +47,16 @@ serve(async (req) => {
     } catch (error) {
       console.error('Failed to fetch prices:', error);
     }
+    const tetherResponse = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=usd');
+    const tetherPayload = tetherResponse.ok ? await tetherResponse.json() : {};
+    const tetherUsd = Number(tetherPayload?.tether?.usd);
 
     // Fetch balances from all accounts (all 11 bots access the same wallet)
     const accountBalances = [];
 
     for (const cred of credentials) {
-      const apiKey = decryptValue(cred.api_key_encrypted);
-      const apiSecret = decryptValue(cred.api_secret_encrypted);
+      const apiKey = await decryptCredential(cred.api_key_encrypted, 'v2');
+      const apiSecret = await decryptCredential(cred.api_secret_encrypted, 'v2');
 
       try {
         // Get account balance from Binance
@@ -104,7 +101,7 @@ serve(async (req) => {
         
         // Extract relevant balances and calculate USD value
         const balances: any = {};
-        let accountUSDValue = 0;
+        let accountUSDValue: number | null = 0;
 
         for (const balance of accountData.balances) {
           const free = parseFloat(balance.free);
@@ -112,23 +109,25 @@ serve(async (req) => {
           const total = free + locked;
           
           if (total > 0) {
-            let usdValue = 0;
+            let usdValue: number | null = null;
             
             // Calculate USD value
-            if (balance.asset === 'USDT' || balance.asset === 'USDC' || balance.asset === 'BUSD') {
-              usdValue = total; // Stablecoins are 1:1 with USD
-            } else if (balance.asset === 'LDUSDT' || balance.asset === 'LDUSDC') {
-              usdValue = total; // Liquid stablecoins are also ~1:1
+            if (balance.asset === 'USDT' && Number.isFinite(tetherUsd) && tetherUsd > 0) {
+              usdValue = total * tetherUsd;
             } else {
               // Try to find price in USDT pair
               const usdtSymbol = `${balance.asset}USDT`;
               if (priceMap[usdtSymbol]) {
-                usdValue = total * priceMap[usdtSymbol];
+                usdValue = Number.isFinite(tetherUsd) && tetherUsd > 0
+                  ? total * priceMap[usdtSymbol] * tetherUsd
+                  : null;
               } else {
                 // Try BTC pair, then convert BTC to USDT
                 const btcSymbol = `${balance.asset}BTC`;
                 if (priceMap[btcSymbol] && priceMap['BTCUSDT']) {
-                  usdValue = total * priceMap[btcSymbol] * priceMap['BTCUSDT'];
+                  usdValue = Number.isFinite(tetherUsd) && tetherUsd > 0
+                    ? total * priceMap[btcSymbol] * priceMap['BTCUSDT'] * tetherUsd
+                    : null;
                 }
               }
             }
@@ -137,10 +136,13 @@ serve(async (req) => {
               free,
               locked,
               total,
-              usdValue
+              usdValue,
+              valuationTruthStatus: usdValue === null ? 'no_data' : 'real_derived'
             };
             
-            accountUSDValue += usdValue;
+            accountUSDValue = accountUSDValue === null || usdValue === null
+              ? null
+              : accountUSDValue + usdValue;
           }
         }
 
@@ -168,22 +170,29 @@ serve(async (req) => {
       USDT: 0,
       BTC: 0,
       ETH: 0,
-      totalUSDValue: 0
+      totalUSDValue: null as number | null
     };
 
     if (firstSuccessfulAccount && firstSuccessfulAccount.balances) {
       for (const [asset, balance] of Object.entries(firstSuccessfulAccount.balances)) {
-        const bal = balance as { total: number; usdValue?: number };
+        const bal = balance as { total: number; usdValue?: number | null };
         if (asset === 'USDT') walletTotals.USDT = bal.total;
         if (asset === 'BTC') walletTotals.BTC = bal.total;
         if (asset === 'ETH') walletTotals.ETH = bal.total;
-        walletTotals.totalUSDValue += bal.usdValue || 0;
       }
+      const values = Object.values(firstSuccessfulAccount.balances)
+        .map((entry: any) => entry.usdValue as number | null);
+      const validValues = values.filter(
+        (value): value is number => value !== null && Number.isFinite(value),
+      );
+      walletTotals.totalUSDValue = validValues.length === values.length
+        ? validValues.reduce((sum, value) => sum + value, 0)
+        : null;
     }
 
     console.log(`✅ Fetched balances from ${accountBalances.length} bots (1 shared wallet)`);
     console.log(`Wallet Totals - USDT: ${walletTotals.USDT.toFixed(2)}, BTC: ${walletTotals.BTC.toFixed(6)}, ETH: ${walletTotals.ETH.toFixed(6)}`);
-    console.log(`💰 Total Portfolio Value: $${walletTotals.totalUSDValue.toFixed(2)} USD`);
+    console.log('Portfolio valuation status:', walletTotals.totalUSDValue === null ? 'no_data' : 'real_derived');
 
     return new Response(
       JSON.stringify({
@@ -191,6 +200,9 @@ serve(async (req) => {
         accounts: accountBalances,
         totals: walletTotals,
         timestamp: new Date().toISOString(),
+        truthStatus: 'live',
+        valuationTruthStatus: walletTotals.totalUSDValue === null ? 'no_data' : 'real_derived',
+        generatedValues: false,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

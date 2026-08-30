@@ -22,7 +22,7 @@ import sys
 import os
 
 # Windows UTF-8 fix (MANDATORY)
-if sys.platform == 'win32':
+if sys.platform == 'win32' and sys.stdout is sys.__stdout__ and sys.stdout.isatty():
     os.environ['PYTHONIOENCODING'] = 'utf-8'
     try:
         import io

@@ -89,14 +89,14 @@ export const AnalysisModePanel: React.FC<{ tool: string }> = ({ tool }) => {
               </div>
               <div className="text-xs text-muted-foreground">Guardian Phase</div>
             </div>
-            <div className="text-center p-3 bg-green-500/10 rounded-lg">
-              <div className="text-2xl font-bold text-green-400">
+            <div className="text-center p-3 bg-success/10 rounded-lg">
+              <div className="text-2xl font-bold text-success">
                 {phaseData[phaseData.length - 1]?.anchorPhase.toFixed(1)}°
               </div>
               <div className="text-xs text-muted-foreground">Anchor Phase</div>
             </div>
-            <div className="text-center p-3 bg-purple-500/10 rounded-lg">
-              <div className="text-2xl font-bold text-purple-400">
+            <div className="text-center p-3 bg-primary/10 rounded-lg">
+              <div className="text-2xl font-bold text-primary">
                 {phaseData[phaseData.length - 1]?.coherence.toFixed(3)}
               </div>
               <div className="text-xs text-muted-foreground">Coherence</div>
@@ -110,9 +110,9 @@ export const AnalysisModePanel: React.FC<{ tool: string }> = ({ tool }) => {
                 <div className="absolute -top-1 left-1/2 w-2 h-2 bg-primary rounded-full -translate-x-1" />
               </div>
               
-              <div className="w-16 h-16 border-2 border-green-400 rounded-full relative ml-4">
-                <div className="absolute top-0 left-1/2 w-0.5 h-8 bg-green-400 -translate-x-0.5" />
-                <div className="absolute -top-1 left-1/2 w-2 h-2 bg-green-400 rounded-full -translate-x-1" />
+              <div className="w-16 h-16 border-2 border-success rounded-full relative ml-4">
+                <div className="absolute top-0 left-1/2 w-0.5 h-8 bg-success -translate-x-0.5" />
+                <div className="absolute -top-1 left-1/2 w-2 h-2 bg-success rounded-full -translate-x-1" />
               </div>
             </div>
             
@@ -147,7 +147,7 @@ export const AnalysisModePanel: React.FC<{ tool: string }> = ({ tool }) => {
               {memoryTrace.map((value, idx) => (
                 <div
                   key={idx}
-                  className="bg-purple-500 rounded-sm flex-1 transition-all duration-300"
+                  className="bg-primary rounded-sm flex-1 transition-all duration-300"
                   style={{ height: `${value * 100}%` }}
                 />
               ))}
@@ -157,13 +157,13 @@ export const AnalysisModePanel: React.FC<{ tool: string }> = ({ tool }) => {
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div className="p-3 bg-muted/30 rounded">
               <div className="font-medium text-foreground">Peak Correlation</div>
-              <div className="text-lg font-mono text-purple-400">
+              <div className="text-lg font-mono text-primary">
                 {Math.max(...memoryTrace).toFixed(3)}
               </div>
             </div>
             <div className="p-3 bg-muted/30 rounded">
               <div className="font-medium text-foreground">Memory Persistence</div>
-              <div className="text-lg font-mono text-purple-400">
+              <div className="text-lg font-mono text-primary">
                 {(memoryTrace.filter(v => v > 0.5).length / memoryTrace.length * 100).toFixed(0)}%
               </div>
             </div>
@@ -178,26 +178,26 @@ export const AnalysisModePanel: React.FC<{ tool: string }> = ({ tool }) => {
       <h4 className="font-semibold text-foreground">Stability Analyst</h4>
       
       <div className="grid grid-cols-2 gap-4">
-        <div className={`p-4 rounded-lg border ${liveCoherence > 0.5 ? 'bg-green-500/10 border-green-500/30' : 'bg-muted/30 border-border'}`}>
+        <div className={`p-4 rounded-lg border ${liveCoherence > 0.5 ? 'bg-success/10 border-success/30' : 'bg-muted/30 border-border'}`}>
           <div className="flex items-center gap-2 mb-2">
-            <div className={`w-3 h-3 rounded-full ${liveCoherence > 0.5 ? 'bg-green-500' : 'bg-muted-foreground'}`} />
-            <span className={`font-medium ${liveCoherence > 0.5 ? 'text-green-400' : 'text-muted-foreground'}`}>Bounded Regime</span>
+            <div className={`w-3 h-3 rounded-full ${liveCoherence > 0.5 ? 'bg-success' : 'bg-muted-foreground'}`} />
+            <span className={`font-medium ${liveCoherence > 0.5 ? 'text-success' : 'text-muted-foreground'}`}>Bounded Regime</span>
           </div>
-          <div className={`text-sm ${liveCoherence > 0.5 ? 'text-green-400/80' : 'text-muted-foreground'}`}>
+          <div className={`text-sm ${liveCoherence > 0.5 ? 'text-success/80' : 'text-muted-foreground'}`}>
             {liveCoherence > 0.5 
               ? 'System exhibits stable oscillations within expected parameters'
               : 'Waiting for stable coherence levels'}
           </div>
         </div>
         
-        <div className={`p-4 rounded-lg border ${liveCoherence > 0.7 ? 'bg-primary/10 border-primary/30' : 'bg-orange-500/10 border-orange-500/30'}`}>
+        <div className={`p-4 rounded-lg border ${liveCoherence > 0.7 ? 'bg-primary/10 border-primary/30' : 'bg-warning/10 border-warning/30'}`}>
           <div className="flex items-center gap-2 mb-2">
-            <div className={`w-3 h-3 rounded-full animate-pulse ${liveCoherence > 0.7 ? 'bg-primary' : 'bg-orange-500'}`} />
-            <span className={`font-medium ${liveCoherence > 0.7 ? 'text-primary' : 'text-orange-400'}`}>
+            <div className={`w-3 h-3 rounded-full animate-pulse ${liveCoherence > 0.7 ? 'bg-primary' : 'bg-warning'}`} />
+            <span className={`font-medium ${liveCoherence > 0.7 ? 'text-primary' : 'text-warning'}`}>
               {liveCoherence > 0.7 ? 'Optimal Zone' : 'Edge Dynamics'}
             </span>
           </div>
-          <div className={`text-sm ${liveCoherence > 0.7 ? 'text-primary/80' : 'text-orange-400/80'}`}>
+          <div className={`text-sm ${liveCoherence > 0.7 ? 'text-primary/80' : 'text-warning/80'}`}>
             {liveCoherence > 0.7 
               ? 'Operating in optimal coherence zone'
               : 'Approaching phase transition threshold'}

@@ -98,7 +98,7 @@ export class NotificationManager {
     }
 
     const notification: Notification = {
-      id: `notif-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      id: `notif-${crypto.randomUUID()}`,
       level,
       title,
       message,

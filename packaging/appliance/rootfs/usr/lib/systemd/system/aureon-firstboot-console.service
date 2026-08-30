@@ -1,0 +1,21 @@
+[Unit]
+Description=Aureon explicit owner console provisioning gate
+After=local-fs.target systemd-user-sessions.service
+Before=getty@tty1.service
+Conflicts=getty@tty1.service
+ConditionPathExists=!/etc/aureon/firstboot.complete
+
+[Service]
+Type=idle
+ExecStart=/usr/sbin/aureon-firstboot --console-gate
+StandardInput=tty-force
+StandardOutput=tty
+StandardError=tty
+TTYPath=/dev/tty1
+TTYReset=yes
+TTYVHangup=yes
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

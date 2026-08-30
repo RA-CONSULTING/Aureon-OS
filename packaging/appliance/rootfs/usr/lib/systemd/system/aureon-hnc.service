@@ -1,0 +1,34 @@
+[Unit]
+Description=Aureon HNC daemon in offline evidence mode
+PartOf=aureon-appliance.target
+ConditionPathExists=/etc/aureon/firstboot.complete
+After=local-fs.target
+
+[Service]
+Type=simple
+User=aureon
+Group=aureon
+WorkingDirectory=/opt/aureon/source
+EnvironmentFile=/usr/lib/aureon/aureon-safe.env
+ExecStart=/opt/aureon/.venv/bin/python -u -m aureon.core.hnc_live_daemon
+Restart=on-failure
+RestartSec=5
+StateDirectory=aureon
+LogsDirectory=aureon
+RuntimeDirectory=aureon
+UMask=0077
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+CapabilityBoundingSet=
+RestrictAddressFamilies=AF_UNIX
+ReadWritePaths=/var/lib/aureon /var/log/aureon /run/aureon
+
+[Install]
+WantedBy=aureon-appliance.target

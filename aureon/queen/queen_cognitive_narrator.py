@@ -43,7 +43,7 @@ def _read_live_coherence_lambda() -> Tuple[Optional[float], Optional[float]]:
     Returns (coherence, lambda_stability) when both singletons are wired,
     else (None, None). The narrator uses this to surface real metrics in
     its broadcasts; when the daemon hasn't started, the line is omitted
-    rather than substituted with random.uniform() values.
+    rather than substituted with generated values.
     """
     coh: Optional[float] = None
     lam: Optional[float] = None
@@ -72,27 +72,8 @@ def _read_live_coherence_lambda() -> Tuple[Optional[float], Optional[float]]:
 
 
 def _coherence_lambda_for_narrative() -> Tuple[Optional[float], Optional[float]]:
-    """Pick the right (coherence, lambda) values for narrator output.
-
-    1. Real values from the live HNC field if both singletons present.
-    2. Else, if AUREON_ALLOW_SIM_FALLBACK is set, return random-uniform
-       proxies tagged DEV-ONLY (preserves dev / demo behaviour).
-    3. Else return (None, None) so the narrator omits the metric line
-       rather than broadcasting fake numbers.
-    """
-    coh, lam = _read_live_coherence_lambda()
-    if coh is not None and lam is not None:
-        return coh, lam
-    try:
-        from aureon.observer.live_data_policy import simulation_fallback_allowed
-        if simulation_fallback_allowed():
-            return (
-                coh if coh is not None else random.uniform(0.6, 0.9),
-                lam if lam is not None else random.uniform(0.7, 0.95),
-            )
-    except Exception:
-        pass
-    return coh, lam
+    """Return live HNC values or explicit absence; never substitute values."""
+    return _read_live_coherence_lambda()
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # 🐘 ELEPHANT MEMORY INTEGRATION
@@ -255,7 +236,7 @@ class CognitiveThought:
     thought_type: str  # analysis, decision, observation, warning, opportunity
     title: str
     paragraphs: List[str]
-    confidence: float
+    confidence: Optional[float]
     urgency: str  # low, medium, high, critical
     related_symbols: List[str] = field(default_factory=list)
     metrics: Dict = field(default_factory=dict)
@@ -531,7 +512,7 @@ class QueenCognitiveNarrator:
         paragraphs = []
         
         # Paragraph 1: Opening - Full Systems Check
-        intro = random.choice(self.broadcast_intros)
+        intro = self.broadcast_intros[len(self.thought_history) % len(self.broadcast_intros)]
         p1 = f"{intro} {self.user_name}, I'm initiating a full hive mind status report. "
         p1 += f"This is a complete neural systems check. All subsystems reporting in. "
         p1 += f"{time_context}"
@@ -784,7 +765,7 @@ class QueenCognitiveNarrator:
         paragraphs = []
         
         # Paragraph 1: BROADCAST OPENING - Personal address with news anchor style
-        intro = random.choice(self.broadcast_intros)
+        intro = self.broadcast_intros[len(self.thought_history) % len(self.broadcast_intros)]
         p1 = f"{intro} {time_context} Right now, {self.user_name}, I'm watching Bitcoin trade at ${ctx.btc_price:,.2f}, {mood_desc} with a {ctx.btc_change_24h:+.2f}% change over the past 24 hours. {mood_urgency}, {self.user_name}. "
         
         # Add market breadth from Binance WebSocket data
@@ -845,7 +826,7 @@ class QueenCognitiveNarrator:
         
         if hive_insights:
             # Pick 1-2 insights to keep it concise but rich
-            selected = random.sample(hive_insights, min(2, len(hive_insights)))
+            selected = hive_insights[:2]
             p3 = " ".join(selected)
             paragraphs.append(p3)
         
@@ -1177,7 +1158,7 @@ class QueenCognitiveNarrator:
         paragraphs.append(p4)
         
         # Confidence: derive from real elephant win rate + whale signal when available;
-        # fall back to neutral 0.7 in production rather than random.uniform.
+        # Missing evidence remains unavailable.
         _opp_conf = max(
             0.0,
             min(
@@ -1186,7 +1167,7 @@ class QueenCognitiveNarrator:
                 + 0.3 * (ctx.elephant_best_win_rate / 100.0 if ctx.elephant_best_win_rate else 0.0)
                 + 0.2 * float(ctx.whale_signal_score or 0.0),
             ),
-        ) if (ctx.elephant_best_win_rate or ctx.whale_signal_score) else 0.7
+        ) if (ctx.elephant_best_win_rate or ctx.whale_signal_score) else None
         return CognitiveThought(
             timestamp=datetime.now(),
             thought_type="opportunity",
@@ -1256,8 +1237,9 @@ class QueenCognitiveNarrator:
         """Generate a contextual thought based on current state."""
         ctx = self.market_context
         
-        # Occasionally do a full hive status report (roughly every 5th thought)
-        if random.random() < 0.2:
+        # Emit a status report on a deterministic cadence; this controls only
+        # presentation timing and never fabricates a measurement.
+        if len(self.thought_history) % 5 == 0:
             return self.generate_hive_mind_status_report()
         
         # Choose thought type based on conditions

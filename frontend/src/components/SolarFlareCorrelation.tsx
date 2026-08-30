@@ -61,15 +61,15 @@ export function SolarFlareCorrelation() {
   };
 
   const getPredictionColor = (score: number) => {
-    if (score >= 80) return 'text-green-500';
-    if (score >= 60) return 'text-yellow-500';
-    return 'text-red-500';
+    if (score >= 80) return 'text-success';
+    if (score >= 60) return 'text-warning';
+    return 'text-destructive';
   };
 
   const getFlareColor = (flareClass: string) => {
-    if (flareClass.startsWith('X')) return 'bg-red-500';
-    if (flareClass.startsWith('M')) return 'bg-orange-500';
-    return 'bg-yellow-500';
+    if (flareClass.startsWith('X')) return 'bg-destructive';
+    if (flareClass.startsWith('M')) return 'bg-warning';
+    return 'bg-warning';
   };
 
   return (
@@ -78,7 +78,7 @@ export function SolarFlareCorrelation() {
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <Zap className="w-5 h-5 text-yellow-500" />
+              <Zap className="w-5 h-5 text-warning" />
               Solar Flare Trading Correlation
             </CardTitle>
             <CardDescription>

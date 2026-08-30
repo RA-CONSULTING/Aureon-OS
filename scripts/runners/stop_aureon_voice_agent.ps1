@@ -1,4 +1,16 @@
-$RepoRoot = "C:\Users\ayman kattan\aureon-trading"
+param(
+    [string]$RepoRoot = ""
+)
+
+if ([string]::IsNullOrWhiteSpace($RepoRoot)) {
+    $RepoRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot "..\..") -ErrorAction Stop).Path
+} else {
+    $RepoRoot = (Resolve-Path -LiteralPath $RepoRoot -ErrorAction Stop).Path
+}
+if (-not (Test-Path -LiteralPath (Join-Path $RepoRoot "pyproject.toml") -PathType Leaf)) {
+    throw "Resolved voice runner repo root is invalid: $RepoRoot"
+}
+
 $stateDir = Join-Path $RepoRoot "state"
 $stopFile = Join-Path $stateDir "aureon_voice_agent.stop"
 $lockFile = Join-Path $stateDir "aureon_voice_agent_supervisor.lock"

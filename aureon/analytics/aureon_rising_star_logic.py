@@ -34,7 +34,6 @@ Gary Leckey | The Math Works | January 2026
 
 from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
 import time
-import random
 from dataclasses import dataclass, field
 from typing import Any, List, Dict, Tuple, Optional
 
@@ -211,50 +210,20 @@ class RisingStarScanner:
 
         Returns simulation results.
         """
-        from aureon.observer.live_data_policy import simulation_fallback_allowed
-        _allow_sim = simulation_fallback_allowed()
-        wins = 0
-        total_profit = 0.0
-        time_to_profits = []
-        
         # Base factors from intelligence
         base_win_rate = candidate.probability_win
         quantum_factor = candidate.quantum_boost
         momentum_factor = max(candidate.momentum_strength, 0.1)
-        
-        for i in range(self.simulation_count):
-            # Simulate price movement with intelligence-weighted randomness
-            win_probability = base_win_rate * (quantum_factor / 1.2)  # Normalize quantum
-            
-            if random.random() < win_probability:
-                # WIN SCENARIO
-                wins += 1
-                
-                # Profit calculation (with fees)
-                # Higher momentum = bigger moves. Production: deterministic
-                # mean of uniform(0.5, 2.0) = 1.25. Dev: original random sampling.
-                price_move_pct = (random.uniform(0.5, 2.0) if _allow_sim else 1.25) * momentum_factor
-                gross_profit = amount_per_position * (price_move_pct / 100)
-                fees = amount_per_position * 0.005  # 0.5% round-trip
-                net_profit = gross_profit - fees
-                
-                if net_profit > 0:
-                    total_profit += net_profit
-                    
-                    # Time to profit (faster with better intelligence)
-                    # Target: 30 seconds or less
-                    base_time = 30
-                    time_factor = quantum_factor * momentum_factor
-                    time_to_profit = base_time / max(time_factor, 0.5)
-                    time_to_profits.append(time_to_profit)
-            else:
-                # LOSS SCENARIO (but we hold until profit in real trading)
-                pass
-        
-        # Calculate statistics
-        win_rate = wins / self.simulation_count if self.simulation_count > 0 else 0
-        avg_profit = total_profit / self.simulation_count if self.simulation_count > 0 else 0
-        avg_time = sum(time_to_profits) / len(time_to_profits) if time_to_profits else 999
+
+        # Deterministic expectation from the observed candidate metrics. This
+        # is real_derived analysis, not a generated distribution of price paths.
+        win_rate = max(0.0, min(1.0, base_win_rate * (quantum_factor / 1.2)))
+        observed_move_pct = momentum_factor
+        gross_profit = amount_per_position * (observed_move_pct / 100)
+        fees = amount_per_position * 0.005
+        net_profit_if_win = max(0.0, gross_profit - fees)
+        avg_profit = win_rate * net_profit_if_win
+        avg_time = 30 / max(quantum_factor * momentum_factor, 0.5)
         
         # Confidence: high if win rate good AND time fast
         time_score = 1.0 if avg_time <= 30 else (30 / avg_time)

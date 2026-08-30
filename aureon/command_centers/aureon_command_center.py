@@ -220,16 +220,12 @@ import asyncio
 import json
 import time
 import threading
-import random
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Any, Optional, Set
 from collections import defaultdict, deque
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
-
-# Live vs demo mode
-DEMO_MODE = os.getenv("AUREON_COMMAND_CENTER_DEMO", "0").lower() in ("1", "true", "yes", "y")
 
 from aureon.core.aureon_runtime_safety import (
     child_env_for_mode,
@@ -576,11 +572,16 @@ def run_flight_check() -> Dict[str, FlightCheckResult]:
         from aureon.bridges.aureon_probability_nexus import AureonProbabilityNexus
         nexus = AureonProbabilityNexus()
         ping_ts = datetime.now().isoformat()
-        win_rate = getattr(nexus, 'win_rate', 0.796)
+        win_rate = getattr(nexus, 'win_rate', None)
         ping_ms = (time.perf_counter() - start) * 1000
+        evidence = (
+            f"{float(win_rate)*100:.1f}% observed win rate"
+            if win_rate is not None
+            else "ready; no validated win-rate observation"
+        )
         results['Probability Nexus'] = FlightCheckResult(
             'Probability Nexus', 'GO', ping_ms, ping_ts, True,
-            f"✅ {win_rate*100:.1f}% win rate"
+            f"✅ {evidence}"
         )
     except Exception as e:
         results['Probability Nexus'] = FlightCheckResult(
@@ -597,7 +598,7 @@ def run_flight_check() -> Dict[str, FlightCheckResult]:
         ping_ms = (time.perf_counter() - start) * 1000
         results['Ultimate Intelligence'] = FlightCheckResult(
             'Ultimate Intelligence', 'GO', ping_ms, ping_ts, True,
-            f"✅ 95% accuracy, {patterns} patterns"
+            f"✅ ready, {patterns} loaded patterns; accuracy requires validation receipts"
         )
     except Exception as e:
         results['Ultimate Intelligence'] = FlightCheckResult(
@@ -6002,130 +6003,6 @@ async def broadcast_to_clients(message: dict):
 # BACKGROUND TASKS - FEED DATA INTO COMMAND CENTER
 # ═══════════════════════════════════════════════════════════════════════════════
 
-async def queen_commentary_task():
-    """Generate Queen commentary periodically"""
-    messages = [
-        "Monitoring all exchanges. The market whispers its secrets.",
-        "I see patterns forming in the chaos. Stay alert.",
-        "The bots are dancing. Some will fall. We will profit.",
-        "Harmonic resonance detected. Opportunities emerging.",
-        "Whale activity spotted. Tracking their movements.",
-        "The multiverse branches align. Execute with precision.",
-        "Fear not the volatility. It is our friend.",
-        "Intelligence systems nominal. Ready to strike.",
-        "The golden ratio guides our path. φ = 1.618",
-        "Planet saving mode: ACTIVE. Every trade matters.",
-        "Remember: We trade to win. Losses are teachers.",
-        "The Lighthouse guides us through the storm.",
-        "Mycelium network propagating signals. Stay connected.",
-        "Enigma decoded another pattern. Fascinating.",
-        "All seeing. All knowing. All winning.",
-    ]
-    
-    while True:
-        await asyncio.sleep(30)  # Every 30 seconds
-        message = random.choice(messages)
-        state.queen_messages.append(message)
-        await broadcast_to_clients({
-            'type': 'queen',
-            'message': message
-        })
-
-async def simulate_data_task():
-    """Simulate incoming data for demo purposes"""
-    symbols = ['BTC/USD', 'ETH/USD', 'SOL/USD', 'XRP/USD', 'ADA/USD', 'DOT/USD', 'AVAX/USD', 'MATIC/USD']
-    firms = ['Jump Trading', 'Citadel', 'Two Sigma', 'DE Shaw', 'Wintermute', 'Alameda', 'Jane Street', 'HRT']
-    countries = ['🇺🇸 USA', '🇬🇧 UK', '🇨🇳 China', '🇯🇵 Japan', '🇩🇪 Germany', '🇸🇬 Singapore']
-    
-    while True:
-        await asyncio.sleep(random.uniform(2, 8))
-        
-        # Simulate trade
-        if random.random() < 0.4:
-            trade = {
-                'time': datetime.now().strftime('%H:%M:%S'),
-                'side': random.choice(['buy', 'sell']),
-                'symbol': random.choice(symbols),
-                'amount': random.uniform(10, 5000),
-                'pnl': random.uniform(-50, 100),
-                'volume': random.uniform(1000, 500000)
-            }
-            state.recent_trades.appendleft(trade)
-            state.total_trades += 1
-            state.total_pnl += trade['pnl']
-            if trade['pnl'] > 0:
-                state.winning_trades += 1
-            else:
-                state.losing_trades += 1
-            
-            await broadcast_to_clients({'type': 'trade', 'trade': trade})
-            await broadcast_to_clients({
-                'type': 'stats',
-                'stats': {
-                    'total_trades': state.total_trades,
-                    'winning_trades': state.winning_trades,
-                    'losing_trades': state.losing_trades,
-                    'total_pnl': state.total_pnl,
-                    'coherence': state.coherence_score,
-                }
-            })
-        
-        # Simulate whale
-        if random.random() < 0.1:
-            whale = {
-                'symbol': random.choice(symbols),
-                'volume': random.uniform(100000, 10000000),
-                'direction': random.choice(['buy', 'sell']),
-            }
-            state.whale_alerts.appendleft(whale)
-            await broadcast_to_clients({'type': 'whale', 'whale': whale})
-        
-        # Simulate bot detection
-        if random.random() < 0.15:
-            bot = {
-                'firm': random.choice(firms),
-                'country': random.choice(countries),
-            }
-            state.bot_detections.appendleft(bot)
-            await broadcast_to_clients({'type': 'bot', 'bot': bot})
-        
-        # Simulate bot shape scanner detection
-        if random.random() < 0.12:
-            bot_shape = {
-                'type': random.choice(['HFT_Bot', 'Arbitrage_Bot', 'Momentum_Bot', 'Mean_Revert_Bot', 'Scalp_Bot']),
-                'confidence': random.uniform(0.7, 0.95),
-                'status': 'Detected'
-            }
-            # For demo, we'll broadcast this as a separate update
-            await broadcast_to_clients({'type': 'bot_scanner', 'shape': bot_shape})
-        
-        # Simulate whale sonar signal
-        if random.random() < 0.08:
-            sonar_signal = {
-                'source': random.choice(['BTC/USD', 'ETH/USD', 'SOL/USD']),
-                'signal': random.uniform(0.3, 0.9),
-                'code': random.choice(['S0', 'S1', 'S2', 'S3'])
-            }
-            await broadcast_to_clients({'type': 'whale_sonar', 'signal': sonar_signal})
-        
-        # Simulate orca intelligence hunt
-        if random.random() < 0.06:
-            orca_hunt = {
-                'target': random.choice(symbols),
-                'mode': random.choice(['Stalking', 'Hunting', 'Tracking']),
-                'status': 'Active'
-            }
-            await broadcast_to_clients({'type': 'orca', 'hunt': orca_hunt})
-        
-        # Simulate sniper brain shot
-        if random.random() < 0.1:
-            sniper_shot = {
-                'target': random.choice(symbols),
-                'pnl': random.uniform(-20, 50),
-                'result': 'win' if random.random() > 0.4 else 'loss'
-            }
-            await broadcast_to_clients({'type': 'sniper', 'shot': sniper_shot})
-
 async def update_balances_task():
     """Periodically update exchange balances"""
     kraken_client = None
@@ -6499,28 +6376,40 @@ async def monitor_trading_output():
                         if "WAVE SWEEP:" in decoded_line:
                              try:
                                  opps = int(decoded_line.split(":")[1].split()[0])
-                                 for _ in range(opps):
-                                     state.bot_detections.append({
-                                         'type': 'OPPORTUNITY', 
-                                         'symbol': 'SCAN', 
-                                         'confidence': 0.8, 
-                                         'time': time.time()
-                                     })
-                             except: pass
+                                 received_at = datetime.now(timezone.utc).isoformat()
+                                 await broadcast_to_clients({
+                                     'type': 'wave_sweep',
+                                     'opportunity_count': opps,
+                                     'truth_status': 'real_derived',
+                                     'source_id': 'micro_profit_labyrinth:stdout:WAVE_SWEEP',
+                                     'source_timestamp': None,
+                                     'received_at': received_at,
+                                     'generated_values': False,
+                                     'reason': 'SOURCE_LOG_HAS_NO_EVENT_TIMESTAMP',
+                                 })
+                             except Exception as exc:
+                                 logger.debug(f'WAVE SWEEP parse failed: {exc}')
 
                         # "[MPL] 🌀 TROUGH UNI/USDT Jump:0.57"
                         if "Jump:" in decoded_line:
                              try:
                                  symbol = decoded_line.split()[2]
                                  jump = float(decoded_line.split("Jump:")[1].split("|")[0])
-                                 state.whale_alerts.append({
+                                 received_at = datetime.now(timezone.utc).isoformat()
+                                 await broadcast_to_clients({
+                                     'type': 'wave_jump',
                                      'symbol': symbol,
-                                     'size': jump,
-                                     'side': 'buy' if jump > 0 else 'sell',
-                                     'exchange': 'wave',
-                                     'time': time.time()
+                                     'observed_jump': jump,
+                                     'truth_status': 'no_data',
+                                     'source_id': 'micro_profit_labyrinth:stdout:Jump',
+                                     'source_timestamp': None,
+                                     'received_at': received_at,
+                                     'generated_values': False,
+                                     'eligible_for_external_action': False,
+                                     'reason': 'SOURCE_LOG_HAS_NO_EVENT_TIMESTAMP',
                                  })
-                             except: pass
+                             except Exception as exc:
+                                 logger.debug(f'Jump parse failed: {exc}')
                         
                         # 4. Queen Messages
                         if "👑" in decoded_line:
@@ -6611,9 +6500,6 @@ async def start_background_tasks(app):
             'systems_total': state.systems_total,
         })
     
-    if DEMO_MODE:
-        app['queen_task'] = asyncio.create_task(queen_commentary_task())
-        app['simulate_task'] = asyncio.create_task(simulate_data_task())
     app['balances_task'] = asyncio.create_task(update_balances_task())
     app['thought_bus_task'] = asyncio.create_task(thought_bus_listener_task())
 
@@ -6698,7 +6584,7 @@ def main():
     else:
         safe_print(f"   📊 Intelligence Systems: {state.systems_online}/{state.systems_total} ONLINE")
         safe_print(f"   👑 Queen Voice: {'✅ ENABLED' if SYSTEMS_STATUS.get('Queen Voice') else '⚠️ DISABLED'}")
-        safe_print(f"   🛰️  Data Mode: {'DEMO (SIMULATED)' if DEMO_MODE else 'LIVE (THOUGHT BUS)'}")
+        safe_print(f"   🛰️  Data Mode: LIVE PROVIDERS (missing evidence is NO_DATA)")
         safe_print(f"   🧠 Thought Bus: {'✅ CONNECTED' if SYSTEMS_STATUS.get('Thought Bus') else '⚠️ OFFLINE'}")
         safe_print(f"   🍄 Mycelium: {'✅ ACTIVE' if SYSTEMS_STATUS.get('Mycelium Network') else '⚠️ OFFLINE'}")
         safe_print(f"   🐦 Chirp Bus: {'✅ ACTIVE' if SYSTEMS_STATUS.get('Chirp Bus') else '⚠️ OFFLINE'}")

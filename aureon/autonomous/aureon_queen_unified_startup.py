@@ -50,7 +50,7 @@ import threading
 import time
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from dataclasses import dataclass, asdict, field
 from typing import Dict, List, Optional, Any
 from pathlib import Path
@@ -317,75 +317,49 @@ class QueenUnifiedStartup:
         return results
     
     def start_telemetry_stream(self):
-        """Start continuous telemetry streaming to ThoughtBus"""
+        """Stream observed runtime state to ThoughtBus without market fabrication."""
+
+        existing = self.running_threads.get("telemetry")
+        if existing and existing.is_alive():
+            return
         
         def telemetry_loop():
-            iteration = 0
             while not self.stop_event.is_set():
                 try:
-                    now = datetime.utcnow().isoformat() + "Z"
-                    
-                    # Emit heartbeat
+                    now = datetime.now(timezone.utc).isoformat()
+                    system_states = {
+                        name: status.status
+                        for name, status in self.state.systems_running.items()
+                    }
                     self._emit_telemetry("queen.heartbeat", {
                         "timestamp": now,
-                        "iteration": iteration,
-                        "systems_active": sum(1 for s in self.state.systems_running.values() if s.status == "running"),
-                        "queen_signal": 0.75 + 0.25 * (iteration % 10) / 10,  # Simulated queen confidence
-                        "dry_run": self.dry_run
+                        "source_timestamp": now,
+                        "received_at": now,
+                        "systems_active": sum(
+                            1 for status in system_states.values()
+                            if status == "running"
+                        ),
+                        "systems": system_states,
+                        "queen_active": self.state.queen_active,
+                        "dry_run": self.dry_run,
+                        "truth_status": "real_derived",
+                        "source_id": "queen_unified_startup:runtime_state",
+                        "freshness_ttl_sec": 5,
+                        "derivation_method": "count_observed_runtime_status",
+                        "generated_values": False,
                     })
-                    
-                    # Emit market scan (simulated for now, real data when scanners running)
-                    self._emit_telemetry("market.scan", {
-                        "timestamp": now,
-                        "scanner": "unified",
-                        "opportunities_found": iteration % 5,
-                        "top_momentum": {
-                            "symbol": "BTC/USD",
-                            "change_1h": 0.5 + (iteration % 10) * 0.1,
-                            "volume_usd": 1000000 + iteration * 10000
-                        }
-                    })
-                    
-                    # Emit whale activity (placeholder)
-                    if iteration % 5 == 0:
-                        self._emit_telemetry("whale.detected", {
-                            "timestamp": now,
-                            "symbol": "ETH/USD",
-                            "side": "buy" if iteration % 2 == 0 else "sell",
-                            "volume_usd": 500000 + (iteration % 10) * 50000,
-                            "firm": "Unknown Whale"
-                        })
-                    
-                    # Emit bot detection (placeholder)
-                    if iteration % 7 == 0:
-                        self._emit_telemetry("bot.detected", {
-                            "timestamp": now,
-                            "symbol": "SOL/USD",
-                            "bot_class": "HFT" if iteration % 2 == 0 else "MM",
-                            "confidence": 0.8 + (iteration % 5) * 0.04,
-                            "layering_score": 0.3 + (iteration % 10) * 0.05
-                        })
-                    
-                    # Emit wave analysis
-                    self._emit_telemetry("wave.analysis", {
-                        "timestamp": now,
-                        "symbol": "BTC/USD",
-                        "state": "RISING" if iteration % 3 == 0 else "BALANCED",
-                        "momentum_score": 0.6 + (iteration % 10) * 0.03,
-                        "volume_spike": iteration % 4 == 0
-                    })
-                    
-                    iteration += 1
-                    time.sleep(2.0)  # Emit every 2 seconds
+                    if self.stop_event.wait(2.0):
+                        break
                     
                 except Exception as e:
                     logger.error(f"Telemetry error: {e}")
-                    time.sleep(5.0)
+                    if self.stop_event.wait(5.0):
+                        break
         
         thread = threading.Thread(target=telemetry_loop, name="TelemetryStream", daemon=True)
         thread.start()
         self.running_threads["telemetry"] = thread
-        print("\n📊 Telemetry stream started - live data flowing to dashboard")
+        print("\n📊 Runtime-state telemetry started; market topics require live producers")
     
     def start_all_systems(self) -> bool:
         """Start all systems in proper order"""
@@ -434,7 +408,7 @@ class QueenUnifiedStartup:
         print(f"💰 Mode: {'DRY-RUN' if self.dry_run else 'LIVE'}")
         print("="*70)
         print("\n🌐 Dashboard: http://localhost:13001")
-        print("📊 All systems streaming live telemetry to dashboard")
+        print("📊 Observed runtime state is streaming; provider feeds report separately")
         print("\nPress Ctrl+C to stop all systems")
         
         # Emit final startup complete

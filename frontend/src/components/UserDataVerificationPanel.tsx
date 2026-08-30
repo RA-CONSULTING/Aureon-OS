@@ -23,11 +23,11 @@ export function UserDataVerificationPanel() {
   const getStatusIcon = () => {
     switch (overallStatus) {
       case 'VERIFIED':
-        return <ShieldCheck className="h-5 w-5 text-green-500" />;
+        return <ShieldCheck className="h-5 w-5 text-success" />;
       case 'PARTIAL':
-        return <Shield className="h-5 w-5 text-yellow-500" />;
+        return <Shield className="h-5 w-5 text-warning" />;
       default:
-        return <ShieldAlert className="h-5 w-5 text-red-500" />;
+        return <ShieldAlert className="h-5 w-5 text-destructive" />;
     }
   };
 
@@ -35,14 +35,14 @@ export function UserDataVerificationPanel() {
     switch (status) {
       case 'VERIFIED':
       case 'LIVE':
-        return <Badge className="bg-green-500/20 text-green-400 border-green-500/30">✓ {status}</Badge>;
+        return <Badge className="bg-success/20 text-success border-success/30">✓ {status}</Badge>;
       case 'PARTIAL':
       case 'STALE':
-        return <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">⚠ {status}</Badge>;
+        return <Badge className="bg-warning/20 text-warning border-warning/30">⚠ {status}</Badge>;
       case 'UNVERIFIED':
       case 'NO_DATA':
       case 'DEMO':
-        return <Badge className="bg-red-500/20 text-red-400 border-red-500/30">✗ {status}</Badge>;
+        return <Badge className="bg-destructive/20 text-destructive border-destructive/30">✗ {status}</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -101,11 +101,11 @@ export function UserDataVerificationPanel() {
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Data Ownership:</span>
               {isOwnData ? (
-                <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-xs">
+                <Badge className="bg-success/20 text-success border-success/30 text-xs">
                   ✓ YOUR DATA
                 </Badge>
               ) : (
-                <Badge className="bg-red-500/20 text-red-400 border-red-500/30 text-xs">
+                <Badge className="bg-destructive/20 text-destructive border-destructive/30 text-xs">
                   ✗ UNVERIFIED
                 </Badge>
               )}

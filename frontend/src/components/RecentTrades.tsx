@@ -57,9 +57,9 @@ const RecentTrades: React.FC<{ symbols?: string } > = ({ symbols = 'ETHUSDT,BTCU
     <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-3">
       <div className="flex items-center justify-between mb-2">
         <h4 className="text-gray-200 font-semibold">Recent Trades</h4>
-        {data?.mock && <span className="text-[10px] text-amber-300">MOCK</span>}
+        {data?.mock && <span className="text-[10px] text-warning">MOCK</span>}
       </div>
-      {err && <div className="text-xs text-red-400 mb-2">{err}</div>}
+      {err && <div className="text-xs text-destructive mb-2">{err}</div>}
       {symbolsList.length === 0 ? (
         <div className="text-xs text-gray-400">No trades available.</div>
       ) : (
@@ -75,7 +75,7 @@ const RecentTrades: React.FC<{ symbols?: string } > = ({ symbols = 'ETHUSDT,BTCU
                     const pNow = Number(t.price);
                     const pPrev = prev ? Number(prev.price) : undefined;
                     const ch = pPrev ? (pNow - pPrev) / pPrev : 0;
-                    const color = ch > 0 ? 'text-green-400' : ch < 0 ? 'text-red-400' : 'text-gray-400';
+                    const color = ch > 0 ? 'text-success' : ch < 0 ? 'text-destructive' : 'text-gray-400';
                     return (
                       <div key={(t.id ?? t.orderId ?? idx)+''} className="flex items-center justify-between gap-2">
                         <div className="text-gray-400">{fmtTime(t.time)}</div>

@@ -31,7 +31,6 @@ import json
 import math
 import logging
 import asyncio
-import random
 import subprocess
 from datetime import datetime
 from collections import deque, defaultdict
@@ -101,22 +100,10 @@ class QueenNarrative:
             else:
                 capital = f"${capital/1_000_000:.1f}M"
         
-        intros = [
-            f"{animal} {firm_name} detected on {symbol}!",
-            f"I see {firm_name} moving {capital} capital on {symbol}.",
-            f"Alert: {firm_name} from {hq} is active.",
-            f"The {animal} of {firm_name} strikes again.",
-        ]
-        
-        actions = [
-            "They are deploying liquidity traps.",
-            "High-frequency pings detected.",
-            "Hunting retail stop-losses.",
-            "Establishing sovereign dominance.",
-            "Absorbing selling pressure."
-        ]
-        
-        return f"{random.choice(intros)} {random.choice(actions)}"
+        return (
+            f"{animal} Provider-attributed activity: {firm_name} on {symbol}; "
+            f"reported capital={capital}, headquarters={hq}."
+        )
 
     def generate_market_insight(self, symbol: str, volume: float) -> str:
         """Queen comments on market conditions."""
@@ -297,7 +284,7 @@ class QueenDashboard:
         # Add manually active firms from state
         active_list = sorted(self.state.active_firms.values(), key=lambda x: x['count'], reverse=True)[:6]
         if not active_list:
-             table.add_row("Searching for patterns...", "Global", "$13T", "SCANNING")
+             table.add_row('No attributed firms', 'NO DATA', 'NO DATA', 'AWAITING RECEIPTS')
         else:
             for firm in active_list:
                 data = firm['data']
@@ -390,31 +377,9 @@ class QueenDashboard:
                     if event.size_class == "SHARK": self.state.sharks += 1
                     if event.size_class in ["WHALE", "MEGALODON"]: self.state.whales += 1
                     
-                    # Manual/Mock Attribution for Demo if not in log
-                    # (In full version, this comes from log)
-                    if self.state.profiler and event.symbol != "UNKNOWN":
-                        # Simulate firm detection if not explicit in log
-                        # 30% chance to identify a firm on any detection
-                        # Prefer big events for big firms
-                        chance = 0.4 if event.volume > 50000 else 0.2
-                        
-                        if random.random() < chance:
-                            # If no firms loaded, skip
-                            if TRADING_FIRM_SIGNATURES:
-                                firm_name, firm_data = random.choice(list(TRADING_FIRM_SIGNATURES.items()))
-                                
-                                # Only attribute if not already attributed recently to avoid spam?
-                                # Nah, spam is good for "live" feel
-                                
-                                self.state.active_firms[firm_name] = {
-                                    'name': firm_name,
-                                    'count': self.state.active_firms.get(firm_name, {}).get('count', 0) + 1,
-                                    'last_seen': time.time(),
-                                    'data': firm_data
-                                }
-                                # Queen speaks!
-                                msg = self.voice.generate_firm_insight(firm_name, firm_data, event.symbol)
-                                self.voice.add(msg, "yellow")
+                    # Firm attribution is accepted only when the provider/log
+                    # explicitly supplies it. Guessing an institution from a
+                    # generic volume event would create false live telemetry.
                     
                     # Regular market commentary
                     if event.volume > 50000:

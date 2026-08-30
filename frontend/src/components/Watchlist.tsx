@@ -39,16 +39,16 @@ export const Watchlist = () => {
 
     const isPositive = data.changePercent > 0;
     const isNeutral = data.changePercent === 0;
-    const trendColor = isPositive ? 'text-green-500' : isNeutral ? 'text-muted-foreground' : 'text-red-500';
-    const bgColor = isPositive ? 'bg-green-500/10' : isNeutral ? 'bg-muted/30' : 'bg-red-500/10';
+    const trendColor = isPositive ? 'text-success' : isNeutral ? 'text-muted-foreground' : 'text-destructive';
+    const bgColor = isPositive ? 'bg-success/10' : isNeutral ? 'bg-muted/30' : 'bg-destructive/10';
 
     return (
       <Card key={symbol} className={`p-4 ${bgColor} transition-colors`}>
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <p className="font-semibold text-sm">{data.symbol}</p>
-            {isPositive && <TrendingUp className="h-3 w-3 text-green-500" />}
-            {!isPositive && !isNeutral && <TrendingDown className="h-3 w-3 text-red-500" />}
+            {isPositive && <TrendingUp className="h-3 w-3 text-success" />}
+            {!isPositive && !isNeutral && <TrendingDown className="h-3 w-3 text-destructive" />}
             {isNeutral && <Minus className="h-3 w-3 text-muted-foreground" />}
           </div>
           <Badge variant="outline" className={`${trendColor} text-xs`}>

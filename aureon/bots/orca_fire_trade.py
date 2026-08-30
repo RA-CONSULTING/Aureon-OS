@@ -9,6 +9,7 @@ This script makes REAL trades immediately.
 import os
 import json
 import time
+import math
 import requests
 from datetime import datetime
 from dotenv import load_dotenv
@@ -46,6 +47,11 @@ class FireTrader:
     
     # Minimum seconds between buying the same symbol on the same exchange
     _BUY_COOLDOWN_SECS = 1800  # 30 minutes
+    _SEER_VISION_TTL_SECS = 300
+    _SEER_CANDLE_TTL_SECS = 5400
+    _QUOTE_TTL_SECS = 120
+    _ACCOUNT_TTL_SECS = 120
+    _FILL_TTL_SECS = 900
 
     def __init__(self, kraken_client=None, binance_client=None):
         try:
@@ -61,6 +67,9 @@ class FireTrader:
         # Persisted to disk so cooldown survives process restarts
         self._RECENT_BUYS_FILE = os.path.join(os.path.dirname(__file__), '.recent_buys_cooldown.json')
         self._recent_buys: dict = self._load_recent_buys()
+        self._reconciliation_attempted = set()
+        self._unresolved_order_keys = set()
+        self._blocked_submission_exchanges = set()
 
         # Thought Bus connection
         self._thought_bus = None
@@ -106,80 +115,424 @@ class FireTrader:
         except Exception:
             pass
 
-    def _record_buy_cost_basis(self, pair, order, exchange):
-        """Record cost basis after a successful buy so we can sell at profit later."""
+    @staticmethod
+    def _finite_number(value, *, positive=False, nonnegative=False):
         try:
-            # ── Handle both Binance and Kraken order response formats ──
-            if exchange == 'kraken':
-                # Kraken market order response fields differ from Binance
-                # Kraken uses: vol_exec (executed qty), cost (total cost), price (0 for market)
-                fill_qty = float(order.get('vol_exec', 0) or order.get('filled_qty', 0) or 0)
-                total_cost = float(order.get('cost', 0) or 0)
-                fill_price = (total_cost / fill_qty) if fill_qty > 0 and total_cost > 0 else 0.0
-                # Fallback: normalize response sometimes maps these fields
-                if fill_price <= 0:
-                    fill_price = float(order.get('filled_avg_price', 0) or order.get('price', 0) or 0)
-                if fill_qty <= 0:
-                    fill_qty = float(order.get('filled_qty', 0) or 0)
-                order_id = order.get('txid', order.get('order_id', order.get('id', '')))
-            else:
-                # Binance format
-                fill_price = float(order.get('price', 0) or order.get('avgPrice', 0) or 0)
-                fill_qty = float(order.get('executedQty', 0) or order.get('filledQty', 0) or 0)
-                order_id = order.get('orderId', order.get('order_id', ''))
-                # Binance market orders have price=0; get real price from fills or cummulativeQuoteQty
-                if fill_price <= 0:
-                    fills = order.get('fills', [])
-                    if fills:
-                        fill_price = float(fills[0].get('price', 0) or 0)
-                if fill_price <= 0 and fill_qty > 0:
-                    cum_quote = float(order.get('cummulativeQuoteQty', 0) or 0)
-                    if cum_quote > 0:
-                        fill_price = cum_quote / fill_qty
+            parsed = float(value)
+        except (TypeError, ValueError):
+            return None
+        if not math.isfinite(parsed):
+            return None
+        if positive and parsed <= 0:
+            return None
+        if nonnegative and parsed < 0:
+            return None
+        return parsed
 
-            if fill_price <= 0 or fill_qty <= 0:
-                log_fire(f"   ⚠️ Cannot record cost basis: price={fill_price}, qty={fill_qty}")
-                return
-            
-            # Calculate fee
-            fee_rate = 0.0026 if exchange == 'kraken' else 0.001
-            fee = fill_price * fill_qty * fee_rate
-            
-            # Record in cost_basis_history.json
+    @classmethod
+    def _fresh_timestamp(cls, value, ttl_seconds):
+        parsed = cls._finite_number(value, positive=True)
+        if parsed is None:
+            return None
+        if parsed > 10_000_000_000:
+            parsed /= 1000.0
+        age = time.time() - parsed
+        return parsed if -300 <= age <= ttl_seconds else None
+
+    def _account_receipt(self, exchange):
+        """Return fresh exact free balances or fail closed with ``None``."""
+        client = self.kraken if exchange == 'kraken' else self.binance
+        if client is None or bool(getattr(client, 'dry_run', False)):
+            return None
+        started_at = time.time()
+        try:
+            if exchange == 'kraken':
+                invalidate = getattr(client, 'invalidate_balance_cache', None)
+                if callable(invalidate):
+                    invalidate()
+            raw = client.account()
+        except Exception:
+            return None
+        received_at = time.time()
+        if not isinstance(raw, dict) or raw.get('generated_values') is True:
+            return None
+        if raw.get('truth_status') in {'no_data', 'not_submitted', 'synthetic', 'demo'}:
+            return None
+        if exchange == 'binance':
+            timestamp_value = raw.get('source_timestamp')
+            if timestamp_value is None:
+                timestamp_value = raw.get('updateTime')
+            source_timestamp = self._fresh_timestamp(timestamp_value, self._ACCOUNT_TTL_SECS)
+            timestamp_policy = 'provider_update_time'
+            source_id = raw.get('source_id') or 'binance:/api/v3/account'
+        else:
+            source_timestamp = self._fresh_timestamp(raw.get('source_timestamp'), self._ACCOUNT_TTL_SECS)
+            timestamp_policy = raw.get('timestamp_policy')
+            if source_timestamp is None:
+                cache_timestamp = self._fresh_timestamp(
+                    getattr(client, '_balance_cache_time', None), self._ACCOUNT_TTL_SECS
+                )
+                if cache_timestamp is None or cache_timestamp + 1.0 < started_at:
+                    return None
+                source_timestamp = cache_timestamp
+                timestamp_policy = 'local_receive_time_after_uncached_authenticated_balance_read'
+            source_id = raw.get('source_id') or 'kraken:/0/private/Balance'
+        if source_timestamp is None:
+            return None
+        rows = raw.get('balances')
+        if not isinstance(rows, list):
+            return None
+        balances = {}
+        for row in rows:
+            if not isinstance(row, dict):
+                return None
+            asset = row.get('asset')
+            free = self._finite_number(row.get('free'), nonnegative=True)
+            locked = self._finite_number(row.get('locked'), nonnegative=True)
+            if not isinstance(asset, str) or not asset.strip() or free is None or locked is None:
+                return None
+            asset = asset.strip().upper()
+            if asset in balances:
+                return None
+            balances[asset] = free
+        return {
+            'exchange': exchange,
+            'balances': balances,
+            'source_id': source_id,
+            'source_timestamp': source_timestamp,
+            'received_at': received_at,
+            'timestamp_policy': timestamp_policy,
+            'truth_status': 'real_observed',
+            'data_status': 'live',
+            'generated_values': False,
+            'eligible_for_action': True,
+        }
+
+    def _quote_receipt(self, exchange, symbol, ticker):
+        """Validate a complete fresh 24-hour provider quote."""
+        if not isinstance(ticker, dict) or ticker.get('generated_values') is True:
+            return None
+        if ticker.get('truth_status') in {'no_data', 'not_submitted', 'synthetic', 'demo'}:
+            return None
+        required = ('lastPrice', 'priceChangePercent', 'quoteVolume')
+        if any(key not in ticker or ticker[key] is None for key in required):
+            return None
+        price = self._finite_number(ticker['lastPrice'], positive=True)
+        change = self._finite_number(ticker['priceChangePercent'])
+        volume = self._finite_number(ticker['quoteVolume'], nonnegative=True)
+        if price is None or change is None or volume is None:
+            return None
+        timestamp_value = ticker.get('source_timestamp')
+        timestamp_policy = ticker.get('timestamp_policy')
+        if timestamp_value is None:
+            timestamp_value = ticker.get('closeTime')
+            timestamp_policy = 'provider_close_time'
+        source_timestamp = self._fresh_timestamp(timestamp_value, self._QUOTE_TTL_SECS)
+        if source_timestamp is None:
+            return None
+        provider_symbol = ticker.get('symbol')
+        if provider_symbol is not None and (
+            str(provider_symbol).replace('/', '').upper()
+            != str(symbol).replace('/', '').upper()
+        ):
+            return None
+        return {
+            'exchange': exchange,
+            'symbol': symbol,
+            'price': price,
+            'change_24h': change,
+            'quote_volume': volume,
+            'source_id': ticker.get('source_id') or f'{exchange}:24h_ticker:{symbol}',
+            'source_timestamp': source_timestamp,
+            'received_at': time.time(),
+            'timestamp_policy': timestamp_policy,
+            'truth_status': 'real_observed',
+            'data_status': 'live',
+            'generated_values': False,
+            'eligible_for_action': True,
+        }
+
+    @staticmethod
+    def _quote_asset(symbol):
+        normalized = str(symbol or '').replace('/', '').upper()
+        for suffix, asset in (
+            ('ZUSDC', 'USDC'), ('ZUSDT', 'USDT'), ('ZTUSD', 'TUSD'),
+            ('ZUSD', 'USD'), ('ZGBP', 'GBP'), ('ZEUR', 'EUR'),
+            ('FDUSD', 'FDUSD'), ('USDC', 'USDC'), ('USDT', 'USDT'),
+            ('TUSD', 'TUSD'), ('BUSD', 'BUSD'), ('USD', 'USD'),
+            ('GBP', 'GBP'), ('EUR', 'EUR'),
+        ):
+            if normalized.endswith(suffix) and len(normalized) - len(suffix) >= 3:
+                return asset
+        return None
+
+    @staticmethod
+    def _order_id(receipt):
+        if not isinstance(receipt, dict):
+            return None
+        value = None
+        for key in ('orderId', 'txid', 'order_id', 'id'):
+            if receipt.get(key) is not None:
+                value = receipt[key]
+                break
+        if isinstance(value, (list, tuple)):
+            value = value[0] if len(value) == 1 else None
+        if value is None:
+            return None
+        text = str(value).strip()
+        return text if text and text.lower() not in {'none', 'null', 'unknown', 'pending'} else None
+
+    def _normalize_terminal_fill(self, exchange, receipt, symbol, side):
+        """Return only a fresh, complete, provider-observed terminal fill."""
+        if not isinstance(receipt, dict):
+            return None
+        if receipt.get('dryRun') is True or receipt.get('dry_run') is True:
+            return None
+        if receipt.get('generated_values') is True or receipt.get('reconciliation_required') is True:
+            return None
+        if str(receipt.get('status') or '').upper() != 'FILLED':
+            return None
+        if receipt.get('fill_receipt_complete') is False:
+            return None
+        if receipt.get('eligible_for_accounting') is False:
+            return None
+        order_id = self._order_id(receipt)
+        if order_id is None:
+            return None
+        if str(receipt.get('side') or '').upper() != str(side).upper():
+            return None
+        provider_symbol = receipt.get('symbol')
+        if not isinstance(provider_symbol, str) or not provider_symbol.strip():
+            return None
+        timestamp_value = None
+        for key in ('source_timestamp', 'provider_timestamp', 'transactTime', 'updateTime', 'closedTime', 'time'):
+            if receipt.get(key) is not None:
+                timestamp_value = receipt[key]
+                break
+        source_timestamp = self._fresh_timestamp(timestamp_value, self._FILL_TTL_SECS)
+        if source_timestamp is None:
+            return None
+        executed_qty = None
+        average_price = None
+        filled_notional = None
+        for key in ('executedQty', 'filled_qty', 'vol_exec'):
+            if receipt.get(key) is not None:
+                executed_qty = self._finite_number(receipt[key], positive=True)
+                break
+        for key in ('filled_avg_price', 'avgPrice', 'avg_fill_price', 'price'):
+            if receipt.get(key) is not None:
+                average_price = self._finite_number(receipt[key], positive=True)
+                break
+        for key in ('cummulativeQuoteQty', 'filled_notional', 'cost'):
+            if receipt.get(key) is not None:
+                filled_notional = self._finite_number(receipt[key], positive=True)
+                break
+        if executed_qty is None or filled_notional is None:
+            return None
+        fills = receipt.get('fills')
+        quote_asset = self._quote_asset(symbol)
+        if not isinstance(fills, list) or not fills or quote_asset is None:
+            return None
+        trade_ids = []
+        if exchange == 'binance':
+            observed_qty = 0.0
+            observed_notional = 0.0
+            fee = 0.0
+            fee_assets = set()
+            for fill in fills:
+                if not isinstance(fill, dict):
+                    return None
+                fill_qty = self._finite_number(fill.get('qty'), positive=True)
+                fill_price = self._finite_number(fill.get('price'), positive=True)
+                commission = self._finite_number(fill.get('commission'), nonnegative=True)
+                commission_asset = fill.get('commissionAsset')
+                trade_id = fill.get('tradeId')
+                if (
+                    fill_qty is None or fill_price is None or commission is None
+                    or not isinstance(commission_asset, str) or not commission_asset.strip()
+                    or trade_id is None
+                ):
+                    return None
+                observed_qty += fill_qty
+                observed_notional += fill_qty * fill_price
+                fee += commission
+                fee_assets.add(commission_asset.strip().upper())
+                trade_ids.append(str(trade_id))
+            if len(fee_assets) != 1 or quote_asset not in fee_assets:
+                return None
+            if abs(observed_qty - executed_qty) > max(1e-12, executed_qty * 0.001):
+                return None
+            if abs(observed_notional - filled_notional) > max(1e-8, filled_notional * 0.001):
+                return None
+            average_price = observed_notional / observed_qty
+            fee_asset = quote_asset
+        else:
+            fee = self._finite_number(receipt.get('fee'), nonnegative=True)
+            fee_asset_value = receipt.get('fee_asset') or receipt.get('fee_currency')
+            if fee is None or not isinstance(fee_asset_value, str):
+                return None
+            fee_asset = fee_asset_value.strip().upper()
+            if fee_asset != quote_asset:
+                return None
+            for fill in fills:
+                if not isinstance(fill, dict) or fill.get('tradeId') is None:
+                    return None
+                trade_ids.append(str(fill['tradeId']))
+        if len(trade_ids) != len(set(trade_ids)):
+            return None
+        if average_price is None:
+            average_price = filled_notional / executed_qty
+        if abs(executed_qty * average_price - filled_notional) > max(1e-8, filled_notional * 0.001):
+            return None
+        return {
+            'provider': exchange,
+            'order_id': order_id,
+            'symbol': symbol,
+            'provider_symbol': provider_symbol,
+            'side': str(side).upper(),
+            'status': 'FILLED',
+            'executed_qty': executed_qty,
+            'filled_avg_price': average_price,
+            'filled_notional': filled_notional,
+            'fee': fee,
+            'fee_asset': fee_asset,
+            'trade_ids': trade_ids,
+            'source_id': receipt.get('source_id') or f'{exchange}:order:{order_id}',
+            'source_timestamp': source_timestamp,
+            'received_at': time.time(),
+            'truth_status': 'real_observed',
+            'data_status': 'live',
+            'fill_receipt_complete': True,
+            'eligible_for_accounting': True,
+            'eligible_for_learning': True,
+            'generated_values': False,
+            'reconciliation_required': False,
+            'provider_receipt': receipt,
+        }
+
+    @staticmethod
+    def _definitely_not_submitted(receipt):
+        if not isinstance(receipt, dict):
+            return False
+        status = str(receipt.get('status') or '').lower()
+        return bool(
+            receipt.get('dryRun') is True or receipt.get('dry_run') is True
+            or receipt.get('submitted') is False or receipt.get('rejected') is True
+            or status in {'not_submitted', 'rejected'}
+            or (receipt.get('error') and FireTrader._order_id(receipt) is None)
+        )
+
+    def _submit_and_confirm(self, exchange, symbol, side, *, quantity=None, quote_qty=None):
+        """Submit once; reconcile once; never treat an acknowledgement as a fill."""
+        key = (exchange, str(symbol).upper(), str(side).upper())
+        if exchange in self._blocked_submission_exchanges or key in self._unresolved_order_keys:
+            return {'status': 'suppressed_unresolved_duplicate', 'receipt': None}
+        client = self.kraken if exchange == 'kraken' else self.binance
+        if client is None:
+            return {'status': 'not_submitted', 'receipt': None}
+        try:
+            raw = client.place_market_order(symbol, side, quantity, quote_qty=quote_qty)
+        except Exception as exc:
+            self._unresolved_order_keys.add(key)
+            self._blocked_submission_exchanges.add(exchange)
+            return {'status': 'unresolved', 'receipt': None, 'reason': str(exc)}
+        terminal = self._normalize_terminal_fill(exchange, raw, symbol, side)
+        if terminal is not None:
+            return {'status': 'filled', 'receipt': terminal}
+        if self._definitely_not_submitted(raw):
+            return {'status': 'not_submitted', 'receipt': raw}
+        order_id = self._order_id(raw)
+        readback = getattr(client, 'get_order_status', None)
+        if order_id is not None and callable(readback):
+            attempt = (exchange, order_id)
+            if attempt not in self._reconciliation_attempted:
+                self._reconciliation_attempted.add(attempt)
+                try:
+                    reconciled = readback(order_id)
+                except Exception:
+                    reconciled = None
+                terminal = self._normalize_terminal_fill(exchange, reconciled, symbol, side)
+                if terminal is not None:
+                    return {'status': 'filled', 'receipt': terminal}
+        self._unresolved_order_keys.add(key)
+        self._blocked_submission_exchanges.add(exchange)
+        return {'status': 'unresolved', 'receipt': raw}
+
+    def _append_terminal_trade(self, receipt, event_side):
+        if not isinstance(receipt, dict) or receipt.get('fill_receipt_complete') is not True:
+            return False
+        record = {
+            'recorded_at': datetime.now().isoformat(),
+            'exchange': receipt['provider'],
+            'symbol': receipt['symbol'],
+            'side': event_side,
+            'truth_status': 'real_observed',
+            'source_id': receipt['source_id'],
+            'source_timestamp': receipt['source_timestamp'],
+            'generated_values': False,
+            'fill_receipt': receipt,
+        }
+        try:
+            with open('orca_real_trades.json', 'a') as handle:
+                handle.write(json.dumps(record) + '\n')
+            return True
+        except Exception:
+            return False
+
+    def _record_buy_cost_basis(self, pair, receipt, exchange):
+        """Persist cost basis only from a complete terminal provider fill."""
+        if (
+            not isinstance(receipt, dict)
+            or receipt.get('fill_receipt_complete') is not True
+            or receipt.get('eligible_for_accounting') is not True
+            or receipt.get('generated_values') is not False
+        ):
+            return False
+        fill_price = self._finite_number(receipt.get('filled_avg_price'), positive=True)
+        fill_qty = self._finite_number(receipt.get('executed_qty'), positive=True)
+        total_cost = self._finite_number(receipt.get('filled_notional'), positive=True)
+        fee = self._finite_number(receipt.get('fee'), nonnegative=True)
+        order_id = receipt.get('order_id')
+        if None in (fill_price, fill_qty, total_cost, fee) or not order_id:
+            return False
+        try:
             from aureon.portfolio.cost_basis_tracker import CostBasisTracker
             tracker = CostBasisTracker()
             tracker.set_entry_price(pair, fill_price, fill_qty, exchange, fee, str(order_id))
-            
-            # Also record in tracked_positions.json
-            try:
-                tp_file = 'tracked_positions.json'
-                tp = {}
-                if os.path.exists(tp_file):
-                    with open(tp_file, 'r') as f:
-                        tp = json.load(f)
-                tp[pair] = {
-                    'symbol': pair,
-                    'exchange': exchange,
-                    'entry_price': fill_price,
-                    'buy_price': fill_price,
-                    'entry_qty': fill_qty,
-                    'quantity': fill_qty,
-                    'entry_cost': fill_price * fill_qty + fee,
-                    'entry_fee': fee,
-                    'breakeven_price': fill_price * (1 + fee_rate * 2),  # buy + sell fee
-                    'buy_timestamp': datetime.now().isoformat(),
-                    'source': 'fire_trade',
-                    'auto_tracked': False,
-                }
-                tmp = tp_file + '.tmp'
-                with open(tmp, 'w') as f:
-                    json.dump(tp, f, indent=4)
-                os.replace(tmp, tp_file)
-                log_fire(f"   💾 Cost basis recorded: {exchange}:{pair} @ ${fill_price:.6f} x {fill_qty:.6f}")
-            except Exception as e:
-                log_fire(f"   ⚠️ Failed to update tracked_positions: {e}")
-        except Exception as e:
-            log_fire(f"   ⚠️ Failed to record cost basis: {e}")
+            tp_file = 'tracked_positions.json'
+            tp = {}
+            if os.path.exists(tp_file):
+                with open(tp_file, 'r') as handle:
+                    tp = json.load(handle)
+            tp[pair] = {
+                'symbol': pair,
+                'exchange': exchange,
+                'entry_price': fill_price,
+                'buy_price': fill_price,
+                'entry_qty': fill_qty,
+                'quantity': fill_qty,
+                'entry_cost': total_cost + fee,
+                'entry_fee': fee,
+                'entry_fee_asset': receipt['fee_asset'],
+                'breakeven_price': None,
+                'buy_timestamp': datetime.fromtimestamp(receipt['source_timestamp']).isoformat(),
+                'source': 'fire_trade',
+                'source_id': receipt['source_id'],
+                'source_timestamp': receipt['source_timestamp'],
+                'truth_status': 'real_observed',
+                'generated_values': False,
+                'fill_receipt': receipt,
+                'auto_tracked': False,
+            }
+            tmp = tp_file + '.tmp'
+            with open(tmp, 'w') as handle:
+                json.dump(tp, handle, indent=4)
+            os.replace(tmp, tp_file)
+            log_fire(f"   💾 Cost basis recorded: {exchange}:{pair} @ ${fill_price:.6f} x {fill_qty:.6f}")
+            return True
+        except Exception as exc:
+            log_fire(f"   ⚠️ Failed to record cost basis: {exc}")
+            return False
 
     # ═══════════════════════════════════════════════════════════════════
     # SEER INTEGRATION — The Third Pillar gates every buy
@@ -316,12 +669,31 @@ class FireTrader:
         coins can move up while the macro market is down — we hunt those.
         """
         if not _seer_available:
-            log_fire("   [SEER] Not available — proceeding without gate")
-            return True, 1.0, {"status": "unavailable"}
+            log_fire("   [SEER] Not available — BUY gate denied (NO_DATA)")
+            return False, 0.0, {
+                "status": "unavailable",
+                "truth_status": "no_data",
+                "decision_status": "denied",
+                "generated_values": False,
+            }
 
         try:
             seer = get_seer()
             vision = seer.see()
+            vision_timestamp = float(vision.timestamp)
+            vision_age = time.time() - vision_timestamp
+            if (
+                not math.isfinite(vision_timestamp)
+                or vision_age < -300
+                or vision_age > self._SEER_VISION_TTL_SECS
+            ):
+                return False, 0.0, {
+                    "status": "stale",
+                    "truth_status": "no_data",
+                    "source_timestamp": vision_timestamp,
+                    "decision_status": "denied",
+                    "generated_values": False,
+                }
             grade = vision.grade
             action = vision.action
             risk_mod = vision.risk_modifier
@@ -335,13 +707,28 @@ class FireTrader:
                                   ("harmony", vision.harmony), ("spirits", vision.spirits),
                                   ("timeline", vision.timeline), ("runes", vision.runes),
                                   ("sentiment", vision.sentiment)]:
-                if oracle and hasattr(oracle, 'score'):
+                if (
+                    oracle
+                    and hasattr(oracle, 'score')
+                    and hasattr(oracle, 'timestamp')
+                    and math.isfinite(float(oracle.score))
+                    and 0 <= time.time() - float(oracle.timestamp) <= self._SEER_VISION_TTL_SECS
+                ):
                     oracles_total += 1
                     oracle_scores.append((name, oracle.score, oracle.confidence))
                     if oracle.score > 0.55:
                         oracles_bullish += 1
 
             consensus_ratio = oracles_bullish / oracles_total if oracles_total > 0 else 0
+            if oracles_total < 4:
+                return False, 0.0, {
+                    "status": "insufficient_oracle_evidence",
+                    "oracles_observed": oracles_total,
+                    "truth_status": "no_data",
+                    "source_timestamp": vision_timestamp,
+                    "decision_status": "denied",
+                    "generated_values": False,
+                }
 
             # ── Goal distance: decides whether micro-gains mode activates ──
             goal_distance = self._load_goal_distance()
@@ -359,6 +746,11 @@ class FireTrader:
                 "consensus_ratio": round(consensus_ratio, 3),
                 "micro_gains_mode": micro_mode,
                 "goal_distance": round(goal_distance, 2),
+                "truth_status": "real_derived",
+                "source_id": "aureon_seer:fresh_oracle_consensus",
+                "source_timestamp": vision_timestamp,
+                "received_at": time.time(),
+                "generated_values": False,
             }
 
             # Publish Seer gate result to Thought Bus
@@ -434,8 +826,14 @@ class FireTrader:
             return True, risk_mod, summary
 
         except Exception as e:
-            log_fire(f"   [SEER] Error consulting: {e} — proceeding cautiously")
-            return True, 0.8, {"status": "error", "error": str(e)}
+            log_fire(f"   [SEER] Error consulting: {e} — BUY gate denied")
+            return False, 0.0, {
+                "status": "error",
+                "error": str(e),
+                "truth_status": "no_data",
+                "decision_status": "denied",
+                "generated_values": False,
+            }
 
     def _seer_symbol_signal(self, base_asset: str):
         """
@@ -448,7 +846,17 @@ class FireTrader:
         3. Volume trend — increasing = conviction
         """
         symbol = f"{base_asset}USDT"  # Use USDT pair for data (most liquid)
-        details = {"symbol": symbol, "source": "binance_public_klines"}
+        received_at = time.time()
+        details = {
+            "symbol": symbol,
+            "source": "binance_public_klines",
+            "source_id": f"binance:public_klines:{symbol}:1h",
+            "source_timestamp": None,
+            "received_at": received_at,
+            "truth_status": "no_data",
+            "decision_status": "denied",
+            "generated_values": False,
+        }
 
         try:
             resp = requests.get(
@@ -458,11 +866,26 @@ class FireTrader:
             )
             if resp.status_code != 200:
                 log_fire(f"   [SEER-SYM] Kline fetch failed for {symbol}: HTTP {resp.status_code}")
-                return True, 0.5, details  # Don't block on data failure
+                details["reason"] = f"HTTP_{resp.status_code}"
+                return False, 0.0, details
 
-            candles = resp.json()
+            candles = [
+                candle
+                for candle in resp.json()
+                if isinstance(candle, list)
+                and len(candle) > 6
+                and float(candle[6]) / 1000.0 <= received_at
+            ]
             if len(candles) < 6:
-                return True, 0.5, details
+                details["reason"] = "INSUFFICIENT_CLOSED_CANDLES"
+                return False, 0.0, details
+
+            source_timestamp = float(candles[-1][6]) / 1000.0
+            candle_age = received_at - source_timestamp
+            if candle_age < -300 or candle_age > self._SEER_CANDLE_TTL_SECS:
+                details["reason"] = "STALE_CANDLE_RECEIPT"
+                details["source_timestamp"] = source_timestamp
+                return False, 0.0, details
 
             # Parse candles: [timestamp, open, high, low, close, volume, ...]
             closes = [float(c[4]) for c in candles]
@@ -470,11 +893,22 @@ class FireTrader:
             highs = [float(c[2]) for c in candles]
             lows = [float(c[3]) for c in candles]
             volumes = [float(c[5]) for c in candles]
+            observations = closes + _opens + highs + lows + volumes
+            if (
+                not all(math.isfinite(value) for value in observations)
+                or any(value <= 0 for value in closes + _opens + highs + lows)
+                or any(value < 0 for value in volumes)
+            ):
+                details["reason"] = "INVALID_CANDLE_OBSERVATION"
+                return False, 0.0, details
 
             current_price = closes[-1]
             high_24h = max(highs)
             low_24h = min(lows)
-            price_range = high_24h - low_24h if high_24h > low_24h else 1
+            price_range = high_24h - low_24h
+            if price_range <= 0:
+                details["reason"] = "UNOBSERVABLE_PRICE_RANGE"
+                return False, 0.0, details
 
             # ── Signal 1: Short-term trend (last 6 candles) ──
             recent = candles[-6:]
@@ -492,7 +926,10 @@ class FireTrader:
             # ── Signal 4: Volume trend (recent vs prior) ──
             vol_recent = sum(volumes[-3:])
             vol_prior = sum(volumes[-6:-3])
-            vol_ratio = vol_recent / vol_prior if vol_prior > 0 else 1.0
+            if vol_prior <= 0:
+                details["reason"] = "UNOBSERVABLE_VOLUME_RATIO"
+                return False, 0.0, details
+            vol_ratio = vol_recent / vol_prior
 
             # ── Combined directional score ──
             momentum_signal = min(1.0, max(0.0, 0.5 + momentum_pct / 4))
@@ -532,6 +969,9 @@ class FireTrader:
                 "signal_strength": round(signal_strength, 3),
                 "momentum_conviction": round(momentum_conviction, 3),
                 "trend_agreement": round(trend_agreement, 3),
+                "truth_status": "real_derived",
+                "decision_status": "eligible" if bullish else "denied",
+                "source_timestamp": source_timestamp,
             })
 
             direction = "BULLISH" if bullish else "BEARISH"
@@ -543,7 +983,9 @@ class FireTrader:
 
         except Exception as e:
             log_fire(f"   [SEER-SYM] Error for {base_asset}: {e}")
-            return True, 0.3, {"error": str(e)}
+            details["reason"] = "PROVIDER_OR_PARSE_ERROR"
+            details["error"] = str(e)
+            return False, 0.0, details
 
     # Timeframe layers — every prediction is validated at ALL these horizons
     _TIMEFRAME_LAYERS = [
@@ -565,7 +1007,9 @@ class FireTrader:
         ("1y",    31_536_000),
     ]
 
-    def _log_seer_prediction(self, pair, exchange, buy_price, seer_summary, symbol_signal):
+    def _log_seer_prediction(
+        self, pair, exchange, buy_price, seer_summary, symbol_signal, fill_receipt=None
+    ):
         """Record the Seer's prediction at time of trade for later validation.
         Embeds a layered timeline: 1m → 5m → 30m → 1h … → 1y.
         Each layer is validated independently as its horizon matures.
@@ -573,7 +1017,24 @@ class FireTrader:
         try:
             import time as _t
             now_ts = _t.time()
-            is_bullish = symbol_signal.get("bullish", True) if symbol_signal else True
+            if (
+                not isinstance(symbol_signal, dict)
+                or symbol_signal.get("truth_status") != "real_derived"
+                or not symbol_signal.get("source_timestamp")
+                or symbol_signal.get("generated_values") is not False
+                or not isinstance(symbol_signal.get("bullish"), bool)
+            ):
+                log_fire("   [SEER] Prediction not logged: symbol evidence is NO_DATA")
+                return False
+            if (
+                not isinstance(fill_receipt, dict)
+                or fill_receipt.get('fill_receipt_complete') is not True
+                or fill_receipt.get('eligible_for_learning') is not True
+                or fill_receipt.get('generated_values') is not False
+            ):
+                log_fire("   [SEER] Prediction not logged: terminal buy fill unavailable")
+                return False
+            is_bullish = symbol_signal["bullish"]
 
             timeframe_layers = [
                 {
@@ -589,31 +1050,38 @@ class FireTrader:
                 for label, secs in self._TIMEFRAME_LAYERS
             ]
 
-            # Convert GBP buy_price to USD for accurate validation
-            buy_price_usd = buy_price
-            if exchange == 'kraken' and pair and ('GBP' in pair.upper()):
-                try:
-                    gbp_to_usd = 1.27  # reasonable GBP→USD rate
-                    try:
-                        import urllib.request as _ur2
-                        _fx = _ur2.urlopen('https://api.binance.com/api/v3/ticker/price?symbol=GBPUSDT', timeout=5)
-                        gbp_to_usd = float(json.loads(_fx.read().decode()).get('price', 1.27))
-                    except Exception:
-                        pass  # use fallback rate
-                    buy_price_usd = round(buy_price * gbp_to_usd, 6)
-                    log_fire(f"   💱 GBP→USD conversion: £{buy_price:.2f} × {gbp_to_usd:.4f} = ${buy_price_usd:.2f}")
-                except Exception:
-                    pass  # keep raw price
-
+            buy_price_usd = None
+            fx_receipt = None
+            quote_currency = (
+                "GBP" if pair and pair.upper().endswith("GBP")
+                else "USDC" if pair and pair.upper().endswith("USDC")
+                else "USDT" if pair and pair.upper().endswith("USDT")
+                else "USD" if pair and pair.upper().endswith("USD")
+                else None
+            )
+            if quote_currency == "USD":
+                buy_price_usd = buy_price
+                fx_receipt = {
+                    "truth_status": "real_derived",
+                    "source_id": "currency_unit:USD",
+                    "source_timestamp": now_ts,
+                    "generated_values": False,
+                }
             prediction = {
                 "timestamp": datetime.now().isoformat(),
                 "pair": pair,
                 "exchange": exchange,
                 "buy_price": buy_price,
-                "buy_price_usd": buy_price_usd,  # always in USD for accurate validation
-                "quote_currency": "GBP" if (pair and 'GBP' in pair.upper()) else "USD",
+                "buy_price_usd": buy_price_usd,
+                "quote_currency": quote_currency,
+                "fx_receipt": fx_receipt,
                 "seer_global": seer_summary,
                 "symbol_signal": symbol_signal,
+                "buy_fill_receipt": fill_receipt,
+                "truth_status": "real_derived",
+                "source_id": fill_receipt["source_id"],
+                "source_timestamp": fill_receipt["source_timestamp"],
+                "generated_values": False,
                 "validated": False,          # True when ALL layers done
                 "outcome": None,             # overall (last validated layer)
                 "timeframe_layers": timeframe_layers,
@@ -623,8 +1091,10 @@ class FireTrader:
                 f.write(json.dumps(prediction) + "\n")
             log_fire(f"   📝 Seer prediction logged for {exchange}:{pair} "
                      f"(16 timeframe layers: 1m → 1y)")
+            return True
         except Exception as e:
             log_fire(f"   ⚠️ Failed to log prediction: {e}")
+            return False
 
     def _validate_seer_predictions(self, sold_pair, sold_exchange, sell_price):
         """
@@ -708,64 +1178,56 @@ class FireTrader:
         # Kraken balances
         log_fire("\n🐙 KRAKEN:")
         tradeable_kraken = {}
-        kraken_cash = 0.0
+        kraken_has_cash = False
         kraken_usd_cash = 0.0
         kraken_usdc_cash = 0.0
         kraken_usdt_cash = 0.0  # USDT balance
-        kraken_gbp_cash = 0.0   # ZGBP balance in GBP
+        kraken_gbp_cash = 0.0
         kraken_tusd_cash = 0.0  # TUSD balance
-        GBP_TO_USD = 1.27       # approximate conversion for cash comparison
-        try:
-            try:
-                from aureon.core.api_gateway import gw
-                k_balances = gw.get_balance("kraken")
-            except Exception:
-                k_balances = self.kraken.get_balance()
-            for asset, amt in k_balances.items():
-                amt = float(amt)
-                if amt > 0:
-                    log_fire(f"   {asset}: {amt}")
-                    if asset in ['USD', 'ZUSD', 'USDC', 'USDT', 'TUSD']:
-                        kraken_cash += amt
-                    if asset in ['USD', 'ZUSD']:
-                        kraken_usd_cash += amt
-                    if asset == 'USDC':
-                        kraken_usdc_cash += amt
-                    if asset == 'USDT':
-                        kraken_usdt_cash += amt
-                    if asset == 'TUSD':
-                        kraken_tusd_cash += amt  # kraken_cash already incremented above
-                    if asset == 'ZGBP':
-                        kraken_gbp_cash += amt
-                        kraken_cash += amt * GBP_TO_USD  # count as USD equivalent
-                        log_fire(f"   ZGBP → ~${amt * GBP_TO_USD:.2f} USD equivalent")
-                    if asset not in ['USD', 'ZUSD', 'ZGBP', 'USDC', 'USDT', 'TUSD']:
-                        tradeable_kraken[asset] = amt
-        except Exception as e:
-            log_fire(f"   Error: {e}")
+        kraken_account = self._account_receipt('kraken')
+        if kraken_account is None:
+            log_fire("   NO_DATA: complete fresh Kraken account receipt unavailable")
+        else:
+            for asset, amt in kraken_account['balances'].items():
+                if amt <= 0:
+                    continue
+                log_fire(f"   {asset}: {amt}")
+                if asset in {'USD', 'ZUSD'}:
+                    kraken_usd_cash += amt
+                elif asset == 'USDC':
+                    kraken_usdc_cash += amt
+                elif asset == 'USDT':
+                    kraken_usdt_cash += amt
+                elif asset == 'TUSD':
+                    kraken_tusd_cash += amt
+                elif asset in {'GBP', 'ZGBP'}:
+                    kraken_gbp_cash += amt
+                else:
+                    tradeable_kraken[asset] = amt
+            kraken_has_cash = any(
+                amount > 0 for amount in (
+                    kraken_usd_cash, kraken_usdc_cash, kraken_usdt_cash,
+                    kraken_tusd_cash, kraken_gbp_cash,
+                )
+            )
         
         # Binance balances
         log_fire("\n🟡 BINANCE:")
         tradeable_binance = {}
         binance_cash = 0.0
-        try:
-            try:
-                from aureon.core.api_gateway import gw
-                b_balances = gw.get_balance("binance")
-            except Exception:
-                b_balances = self.binance.get_balance()
-            for asset, amt in b_balances.items():
-                amt = float(amt)
-                if amt > 0:
-                    if asset in ['USDT', 'USDC', 'BUSD', 'FDUSD', 'TUSD']:
-                        binance_cash += amt
-                    # Skip stablecoins and LD* (Binance Simple Earn/Locked) - not spot tradeable
-                    if asset in ['USDT', 'USDC', 'BUSD', 'FDUSD', 'TUSD'] or asset.startswith('LD'):
-                        continue
-                    log_fire(f"   {asset}: {amt}")
-                    tradeable_binance[asset] = amt
-        except Exception as e:
-            log_fire(f"   Error: {e}")
+        binance_account = self._account_receipt('binance')
+        if binance_account is None:
+            log_fire("   NO_DATA: complete fresh Binance account receipt unavailable")
+        else:
+            for asset, amt in binance_account['balances'].items():
+                if amt <= 0:
+                    continue
+                if asset == 'USDC':
+                    binance_cash += amt
+                if asset in {'USDT', 'USDC', 'BUSD', 'FDUSD', 'TUSD'} or asset.startswith('LD'):
+                    continue
+                log_fire(f"   {asset}: {amt}")
+                tradeable_binance[asset] = amt
         
         # Get prices and find ALL profitable opportunities
         log_fire("\n🔍 SCANNING BINANCE FOR ALL PROFITABLE POSITIONS (any real gain after fees)...")
@@ -784,11 +1246,11 @@ class FireTrader:
                 # UK accounts: use USDC pairs only
                 symbol = f"{asset}USDC"
                 ticker = self.binance.get_24h_ticker(symbol)
-                if not ticker:
+                quote = self._quote_receipt('binance', symbol, ticker)
+                if quote is None:
                     continue
-
-                price = float(ticker.get('lastPrice', 0))
-                change = float(ticker.get('priceChangePercent', 0))
+                price = quote['price']
+                change = quote['change_24h']
                 value = qty * price
 
                 if value <= 1:
@@ -873,44 +1335,28 @@ class FireTrader:
                 continue
 
             try:
-                order = self.binance.place_market_order(best_sell['symbol'], 'sell', sell_qty)
-                log_result(f"SELL ORDER RESULT: {json.dumps(order, indent=2) if order else 'None'}")
-                if order and order.get('status') == 'FILLED':
-                    scalp_received = prime_target
-                    # ── 10-9-2 Creature Growth Model ──
-                    dca_back   = scalp_received * self._MODEL_DCA_BACK_PCT   # 9%
-                    reinvest   = scalp_received * self._MODEL_REINVEST_PCT   # 2%
-                    free_cash  = scalp_received * (1.0 - self._MODEL_DCA_BACK_PCT - self._MODEL_REINVEST_PCT)  # 89%
-                    log_fire(f"💥 PRIME SCALP FILLED! {int(prime_target*100)}¢ | +{best_sell['profit_margin']:.2f}%")
-                    log_fire(f"   💎 10-9-2 CREATURE GROWTH: ${free_cash:.4f} free | ${dca_back:.4f} DCA-back | ${reinvest:.4f} reinvest")
-                    with open('orca_real_trades.json', 'a') as f:
-                        f.write(json.dumps({
-                            'timestamp': datetime.now().isoformat(),
-                            'exchange': 'binance',
-                            'symbol': best_sell['symbol'],
-                            'side': 'SCALP_SELL',
-                            'qty': sell_qty,
-                            'price': best_sell['price'],
-                            'value': best_sell['value'],
-                            'prime_scalp_cents': int(prime_target * 100),
-                            'body_protected_qty': body_qty,
-                            'profit_margin': best_sell['profit_margin'],
-                            '10_9_2_free': free_cash,
-                            '10_9_2_dca_back': dca_back,
-                            '10_9_2_reinvest': reinvest,
-                            'order': order
-                        }) + '\n')
-                    self._validate_seer_predictions(best_sell['symbol'], 'binance', best_sell['price'])
+                result = self._submit_and_confirm(
+                    'binance', best_sell['symbol'], 'sell', quantity=sell_qty
+                )
+                receipt = result.get('receipt')
+                if result.get('status') == 'filled' and receipt is not None:
+                    log_fire(f"💥 TERMINAL SCALP FILL: {receipt['order_id']}")
+                    self._append_terminal_trade(receipt, 'SCALP_SELL')
                     self._publish_fire_event("fire_trade.scalp_sold", {
                         "symbol": best_sell['symbol'],
                         "exchange": "binance",
-                        "prime_cents": int(prime_target * 100),
-                        "profit_margin_pct": round(best_sell['profit_margin'], 4),
-                        "free_cash": round(free_cash, 4),
+                        "order_id": receipt['order_id'],
+                        "executed_qty": receipt['executed_qty'],
+                        "filled_notional": receipt['filled_notional'],
+                        "fee": receipt['fee'],
+                        "fee_asset": receipt['fee_asset'],
+                        "source_timestamp": receipt['source_timestamp'],
+                        "truth_status": "real_observed",
+                        "generated_values": False,
                     })
                     sell_executed = True
                 else:
-                    log_fire(f"❌ Binance scalp sell not filled: {order}")
+                    log_fire(f"❌ Binance scalp sell not confirmed: {result.get('status')}")
             except Exception as e:
                 log_fire(f"❌ Binance scalp sell failed ({best_sell['symbol']}): {e}")
         if not profitable_sells:
@@ -926,20 +1372,12 @@ class FireTrader:
             try:
                 pair = f"{asset}USD"
                 ticker24 = self.kraken.get_24h_ticker(pair)
-                if ticker24 and ticker24.get('lastPrice'):
-                    price = float(ticker24.get('lastPrice', 0) or 0)
-                    change_24h = float(ticker24.get('priceChangePercent', 0) or 0)
-                    quote_vol = float(ticker24.get('quoteVolume', 0) or 0)
-                else:
-                    ticker = self.kraken.get_ticker(pair)
-                    if not ticker or not ticker.get('price'):
-                        continue
-                    price = float(ticker['price'])
-                    change_24h = 0.0
-                    quote_vol = 0.0
-
-                if price <= 0:
+                quote = self._quote_receipt('kraken', pair, ticker24)
+                if quote is None:
                     continue
+                price = quote['price']
+                change_24h = quote['change_24h']
+                quote_vol = quote['quote_volume']
 
                 value = qty * price
 
@@ -1007,48 +1445,27 @@ class FireTrader:
                     log_fire(f"\n⚡ EXECUTING SELL: {sell_qty} {asset}...")
                     
                     # Use self.kraken to place order
-                    order = self.kraken.place_market_order(pair, 'sell', sell_qty)
-                    log_result(f"ORDER RESULT: {json.dumps(order, indent=2) if order else 'None'}")
-                    
-                    if order and order.get('status') == 'FILLED':
-                        received = float(order.get('cummulativeQuoteQty', 0))
-                        if received <= 0:
-                            exec_qty = float(order.get('executedQty', sell_qty))
-                            received = exec_qty * price
-                        # ── 10-9-2 Creature Growth Model ──
-                        dca_back_k  = prime_target_k * self._MODEL_DCA_BACK_PCT   # 9%
-                        reinvest_k  = prime_target_k * self._MODEL_REINVEST_PCT   # 2%
-                        free_cash_k = prime_target_k * (1.0 - self._MODEL_DCA_BACK_PCT - self._MODEL_REINVEST_PCT)  # 89%
-                        log_fire(f"💥 PRIME SCALP FILLED! {int(prime_target_k*100)}¢ kraken")
-                        log_fire(f"   💎 10-9-2 CREATURE GROWTH: ${free_cash_k:.4f} free | ${dca_back_k:.4f} DCA-back | ${reinvest_k:.4f} reinvest")
-                        log_fire(f"   Received: ${received:.2f}")
-                        with open('orca_real_trades.json', 'a') as f:
-                            f.write(json.dumps({
-                                'timestamp': datetime.now().isoformat(),
-                                'exchange': 'kraken',
-                                'symbol': pair,
-                                'side': 'SCALP_SELL',
-                                'qty': sell_qty,
-                                'price': price,
-                                'value': value,
-                                'prime_scalp_cents': int(prime_target_k * 100),
-                                'body_protected_qty': body_qty_k,
-                                '10_9_2_free': free_cash_k,
-                                '10_9_2_dca_back': dca_back_k,
-                                '10_9_2_reinvest': reinvest_k,
-                                'order': order
-                            }) + '\n')
-                        self._validate_seer_predictions(pair, 'kraken', price)
+                    result = self._submit_and_confirm('kraken', pair, 'sell', quantity=sell_qty)
+                    receipt = result.get('receipt')
+                    if result.get('status') == 'filled' and receipt is not None:
+                        log_fire(f"💥 TERMINAL SCALP FILL: {receipt['order_id']}")
+                        self._append_terminal_trade(receipt, 'SCALP_SELL')
                         self._publish_fire_event("fire_trade.scalp_sold", {
                             "symbol": pair,
                             "exchange": "kraken",
-                            "prime_cents": int(prime_target_k * 100),
-                            "free_cash": round(free_cash_k, 4),
+                            "order_id": receipt['order_id'],
+                            "executed_qty": receipt['executed_qty'],
+                            "filled_notional": receipt['filled_notional'],
+                            "fee": receipt['fee'],
+                            "fee_asset": receipt['fee_asset'],
+                            "source_timestamp": receipt['source_timestamp'],
+                            "truth_status": "real_observed",
+                            "generated_values": False,
                         })
                         sell_executed = True
                         break
                     else:
-                        log_fire(f"❌ Kraken scalp sell not filled: {order}")
+                        log_fire(f"❌ Kraken scalp sell not confirmed: {result.get('status')}")
                         
             except Exception as e:
                 log_fire(f"   [DEBUG] Kraken {asset}: error while checking profit - {e}")
@@ -1062,13 +1479,17 @@ class FireTrader:
         # BUY PHASE: always runs after sell scan so cash (e.g. ZGBP/TUSD)
         # gets deployed in the same cycle that a sell fires.
         # -----------------------------------------------------------------
-        total_cash = kraken_cash + binance_cash
-        if total_cash < 1.0:
+        if not kraken_has_cash and binance_cash < 1.0:
             log_fire("   [DEBUG] Buy phase skipped: insufficient total cash")
             return sell_executed
 
         log_fire("\n🛒 Scanning for BUY opportunities with available cash...")
-        log_fire(f"   [DEBUG] Cash available: Kraken=${kraken_cash:.2f}, Binance=${binance_cash:.2f}")
+        log_fire(
+            "   [DEBUG] Fresh free cash: "
+            f"Kraken USD={kraken_usd_cash:.2f}, USDC={kraken_usdc_cash:.2f}, "
+            f"USDT={kraken_usdt_cash:.2f}, TUSD={kraken_tusd_cash:.2f}, "
+            f"GBP={kraken_gbp_cash:.2f}; Binance USDC={binance_cash:.2f}"
+        )
 
         # ═══════ SEER GLOBAL GATE — Third Pillar must approve ═══════
         seer_ok, seer_risk_mod, seer_summary = self._seer_global_gate()
@@ -1080,7 +1501,7 @@ class FireTrader:
         bought_any = False
 
         # Prefer Kraken if it has more cash (current setup often has Kraken USDC)
-        prefer_kraken = kraken_cash >= binance_cash and self.kraken is not None
+        prefer_kraken = kraken_has_cash and self.kraken is not None
 
         # Always deploy $50 per position — the Kraken exchange minimum.
         # This applies in both normal and micro-gains (FOG/bearish) mode.
@@ -1097,7 +1518,7 @@ class FireTrader:
         # exchange API for each funded quote currency (GBP / USDC / USD /
         # TUSD). No hardcoded asset list — uses get_available_pairs().
         # ─────────────────────────────────────────────────────────────────
-        if prefer_kraken and kraken_cash >= 1.0:
+        if prefer_kraken:
             buy_candidates = []  # ranked list: try each in order on failure
 
             kraken_quote_map = []  # [(pair_altname, quote_ccy), ...]
@@ -1159,11 +1580,12 @@ class FireTrader:
                         continue
 
                     ticker24 = self.kraken.get_24h_ticker(pair)
-                    if not ticker24:
+                    quote = self._quote_receipt('kraken', pair, ticker24)
+                    if quote is None:
                         continue
-                    price = float(ticker24.get('lastPrice', 0) or 0)
-                    change_24h = float(ticker24.get('priceChangePercent', 0) or 0)
-                    quote_vol = float(ticker24.get('quoteVolume', 0) or 0)
+                    price = quote['price']
+                    change_24h = quote['change_24h']
+                    quote_vol = quote['quote_volume']
                     # Reject micro-cap coins (price < $0.001) and illiquid pairs (< $50K 24h vol)
                     if price <= 0 or price < 0.001 or quote_vol < 50_000:
                         continue
@@ -1228,20 +1650,29 @@ class FireTrader:
                 log_fire(f"   Price=${candidate['price']:.6f} | 24h={candidate['change_24h']:+.2f}% | Vol=${candidate['quote_vol']:.0f}")
                 log_fire(f"   Seer risk_mod={seer_risk_mod:.2f} → qty={quote_qty:.2f} {qccy}")
                 try:
-                    order = self.kraken.place_market_order(candidate['pair'], 'buy', quote_qty=quote_qty)
-                    log_result(f"BUY ORDER RESULT: {json.dumps(order, indent=2) if order else 'None'}")
-                    if order and not order.get('error') and not order.get('rejected'):
-                        log_fire("💥 BUY EXECUTED (Kraken)")
-                        self._record_buy_cost_basis(candidate['pair'], order, 'kraken')
-                        self._log_seer_prediction(candidate['pair'], 'kraken', candidate['price'], seer_summary, sym_details)
+                    result = self._submit_and_confirm(
+                        'kraken', candidate['pair'], 'buy', quote_qty=quote_qty
+                    )
+                    receipt = result.get('receipt')
+                    if result.get('status') == 'filled' and receipt is not None:
+                        log_fire("💥 TERMINAL BUY FILL (Kraken)")
+                        self._record_buy_cost_basis(candidate['pair'], receipt, 'kraken')
+                        self._append_terminal_trade(receipt, 'BUY')
+                        self._log_seer_prediction(
+                            candidate['pair'], 'kraken', receipt['filled_avg_price'],
+                            seer_summary, sym_details, receipt,
+                        )
                         self._recent_buys[f"kraken:{candidate['pair']}"] = time.time()
                         self._persist_recent_buys()
                         bought_any = True
                         break
                     else:
-                        log_fire(f"❌ Not filled: {order} — trying next")
+                        log_fire(f"❌ Kraken buy not confirmed: {result.get('status')}")
+                        if result.get('status') in {'unresolved', 'suppressed_unresolved_duplicate'}:
+                            break
                 except Exception as e:
-                    log_fire(f"❌ Kraken buy failed ({candidate['pair']}): {e} — trying next")
+                    log_fire(f"❌ Kraken buy failed closed ({candidate['pair']}): {e}")
+                    break
 
         # ─────────────────────────────────────────────────────────────────
         # BINANCE BUY — Full UK universe: all 521 UK-FCA-allowed USDC pairs.
@@ -1256,7 +1687,9 @@ class FireTrader:
                 log_fire(f"   [SCAN] Binance: {len(all_tickers)} total tickers, {len(uk_allowed)} UK-allowed pairs")
 
                 for t in all_tickers:
-                    sym = t.get('symbol', '')
+                    if not isinstance(t, dict) or not isinstance(t.get('symbol'), str):
+                        continue
+                    sym = str(t['symbol'])
                     # UK accounts: USDC pairs ONLY (USDT not permitted)
                     if not sym.endswith('USDC'):
                         continue
@@ -1265,10 +1698,13 @@ class FireTrader:
                         continue
                     if uk_allowed and sym not in uk_allowed:
                         continue
-                    price = float(t.get('lastPrice', 0) or 0)
-                    change = float(t.get('priceChangePercent', 0) or 0)
-                    volume = float(t.get('quoteVolume', 0) or 0)
-                    count = int(t.get('count', 0) or 0)
+                    quote = self._quote_receipt('binance', sym, t)
+                    count = self._finite_number(t.get('count'), nonnegative=True)
+                    if quote is None or count is None:
+                        continue
+                    price = quote['price']
+                    change = quote['change_24h']
+                    volume = quote['quote_volume']
                     # Reject micro-cap coins (< $0.001) and illiquid pairs (< $100K 24h vol)
                     if price <= 0 or price < 0.001 or volume < 100_000 or count < 500:
                         continue
@@ -1288,13 +1724,20 @@ class FireTrader:
                 for base in ["BTC", "ETH", "SOL", "BNB", "XRP", "ADA", "LINK", "AVAX", "DOT", "MATIC"]:
                     try:
                         ticker = self.binance.get_24h_ticker(f"{base}USDC")
-                        if ticker and float(ticker.get('lastPrice', 0)) > 0:
+                        pair = f"{base}USDC"
+                        quote = self._quote_receipt('binance', pair, ticker)
+                        if quote is None:
+                            continue
+                        price = quote['price']
+                        change = quote['change_24h']
+                        volume = quote['quote_volume']
+                        if price > 0:
                             buy_candidates.append({
-                                'pair': f"{base}USDC",
-                                'price': float(ticker.get('lastPrice', 0)),
-                                'change': float(ticker.get('priceChangePercent', 0)),
-                                'volume': float(ticker.get('quoteVolume', 0)),
-                                'score': float(ticker.get('priceChangePercent', 0)),
+                                'pair': pair,
+                                'price': price,
+                                'change': change,
+                                'volume': volume,
+                                'score': change,
                             })
                     except Exception:
                         continue
@@ -1327,20 +1770,29 @@ class FireTrader:
                 log_fire(f"   Price=${candidate['price']:.6f} | 24h={candidate['change']:+.2f}% | Vol=${candidate['volume']:.0f}")
                 log_fire(f"   Seer risk_mod={seer_risk_mod:.2f} → qty=${quote_qty:.2f} USDC")
                 try:
-                    order = self.binance.place_market_order(candidate['pair'], 'buy', quote_qty=quote_qty)
-                    log_result(f"BUY ORDER RESULT: {json.dumps(order, indent=2) if order else 'None'}")
-                    if order and not order.get('error') and not order.get('rejected'):
-                        log_fire("💥 BUY EXECUTED (Binance)")
-                        self._record_buy_cost_basis(candidate['pair'], order, 'binance')
-                        self._log_seer_prediction(candidate['pair'], 'binance', candidate['price'], seer_summary, sym_details)
+                    result = self._submit_and_confirm(
+                        'binance', candidate['pair'], 'buy', quote_qty=quote_qty
+                    )
+                    receipt = result.get('receipt')
+                    if result.get('status') == 'filled' and receipt is not None:
+                        log_fire("💥 TERMINAL BUY FILL (Binance)")
+                        self._record_buy_cost_basis(candidate['pair'], receipt, 'binance')
+                        self._append_terminal_trade(receipt, 'BUY')
+                        self._log_seer_prediction(
+                            candidate['pair'], 'binance', receipt['filled_avg_price'],
+                            seer_summary, sym_details, receipt,
+                        )
                         self._recent_buys[f"binance:{candidate['pair']}"] = time.time()
                         self._persist_recent_buys()
                         bought_any = True
                         break
                     else:
-                        log_fire(f"❌ Not filled: {order} — trying next")
+                        log_fire(f"❌ Binance buy not confirmed: {result.get('status')}")
+                        if result.get('status') in {'unresolved', 'suppressed_unresolved_duplicate'}:
+                            break
                 except Exception as e:
-                    log_fire(f"❌ Binance buy failed ({candidate['pair']}): {e} — trying next")
+                    log_fire(f"❌ Binance buy failed closed ({candidate['pair']}): {e}")
+                    break
 
         if not bought_any:
             log_fire("⚠️ No valid buy opportunities after scan")

@@ -17,6 +17,8 @@ Safety model (inherited by all backends):
 from __future__ import annotations
 
 import enum
+import hashlib
+import hmac
 import threading
 import time
 import uuid
@@ -175,6 +177,7 @@ class VMController(ABC):
             armed=False,
         )
         self._max_history = max_history
+        self._confirmation_token_digest: Optional[str] = None
 
     @abstractmethod
     def _backend_name(self) -> str:
@@ -184,24 +187,32 @@ class VMController(ABC):
     # Session lifecycle
     # ─────────────────────────────────────────────────────────────────────
 
-    def arm(self, dry_run: bool = True) -> Dict[str, Any]:
+    def arm(self, dry_run: bool = True, confirmation_token: Optional[str] = None) -> Dict[str, Any]:
         """Arm the controller. Required before any action can execute."""
         with self.session._lock:
             if self.session.emergency_stopped:
                 return {"ok": False, "error": "emergency_stopped"}
+            if not dry_run and self.session.backend != "simulated" and not confirmation_token:
+                return {"ok": False, "error": "live_confirmation_token_required"}
             self.session.armed = True
             self.session.dry_run = dry_run
+            self._confirmation_token_digest = (
+                hashlib.sha256(confirmation_token.encode("utf-8")).hexdigest()
+                if confirmation_token else None
+            )
         return {"ok": True, "armed": True, "dry_run": dry_run}
 
     def disarm(self) -> Dict[str, Any]:
         with self.session._lock:
             self.session.armed = False
+            self._confirmation_token_digest = None
         return {"ok": True, "armed": False}
 
     def emergency_stop(self) -> Dict[str, Any]:
         with self.session._lock:
             self.session.emergency_stopped = True
             self.session.armed = False
+            self._confirmation_token_digest = None
             self.session.pending_actions.clear()
         return {"ok": True, "emergency_stopped": True}
 
@@ -245,6 +256,21 @@ class VMController(ABC):
                     action=action.action,
                     session_id=self.session.session_id,
                     error="not_armed",
+                )
+
+        if (
+            not self.session.dry_run
+            and self.session.backend != "simulated"
+            and action.risk in {ActionRisk.HIGH, ActionRisk.CRITICAL}
+        ):
+            supplied = hashlib.sha256((action.confirm_token or "").encode("utf-8")).hexdigest()
+            expected = self._confirmation_token_digest or ""
+            if not expected or not hmac.compare_digest(supplied, expected):
+                return VMActionResult(
+                    ok=False,
+                    action=action.action,
+                    session_id=self.session.session_id,
+                    error="confirmation_required",
                 )
 
         return None

@@ -734,7 +734,7 @@ def build_aureon_personas(adapter: Any = None) -> Dict[str, ResonantPersona]:
     if adapter is None:
         try:
             from aureon.inhouse_ai.llm_adapter import build_voice_adapter
-            adapter = build_voice_adapter()
+            adapter = build_voice_adapter(lane="general")
         except Exception:
             adapter = None
     return {name: cls(adapter=adapter) for name, cls in AUREON_PERSONA_REGISTRY.items()}

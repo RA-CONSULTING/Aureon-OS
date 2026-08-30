@@ -96,6 +96,11 @@ export class MasterEquation {
     this.schumannBoost = schumannBoost;
   }
 
+  setSchumannBoost(schumannBoost: number) {
+    if (!Number.isFinite(schumannBoost)) throw new Error('SCHUMANN_BOOST_MUST_BE_FINITE');
+    this.schumannBoost = schumannBoost;
+  }
+
   setEarthStreams(streams: SimpleEarthStreams, regionId?: string) {
     this.earthStreams = streams;
     if (regionId) this.regionId = regionId;

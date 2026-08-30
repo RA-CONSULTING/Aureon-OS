@@ -11,11 +11,14 @@ Integrates:
 """
 
 from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
+import hashlib
 import json
 import logging
 import math
 import time
+from collections.abc import Mapping
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Tuple, Any
 from enum import Enum
 from pathlib import Path
@@ -24,6 +27,150 @@ logger = logging.getLogger(__name__)
 
 # PHI - Golden Ratio
 PHI = (1 + math.sqrt(5)) / 2  # 1.618033988749895
+EARTH_GATE_RECEIPT_MAX_AGE_SECONDS = 300.0
+EARTH_GATE_RECEIPT_FUTURE_SKEW_SECONDS = 5.0
+_REAL_EVIDENCE_TRUTH_STATUSES = frozenset({
+    "live", "real_observed", "real_provider", "real_derived",
+})
+_EVIDENCE_ONLY_FIELDS = (
+    "operational_eligible",
+    "provider_eligible",
+    "action_eligible",
+    "actionable",
+    "accounting_eligible",
+    "learning_eligible",
+    "eligible_for_action",
+    "eligible_for_accounting",
+    "eligible_for_learning",
+    "action_gate_passed",
+)
+
+
+def _receipt_text(value: Any) -> Optional[str]:
+    if not isinstance(value, str):
+        return None
+    text = value.strip()
+    return text or None
+
+
+def _receipt_timestamp(value: Any) -> Optional[float]:
+    if isinstance(value, str):
+        text = value.strip()
+        if not text:
+            return None
+        try:
+            value = float(text)
+        except ValueError:
+            try:
+                parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
+                if parsed.tzinfo is None:
+                    parsed = parsed.replace(tzinfo=timezone.utc)
+                value = parsed.timestamp()
+            except (TypeError, ValueError, OverflowError):
+                return None
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    return number if math.isfinite(number) and number > 0.0 else None
+
+
+def _receipt_number(
+    value: Any,
+    *,
+    minimum: Optional[float] = None,
+    maximum: Optional[float] = None,
+) -> Optional[float]:
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    if not math.isfinite(number):
+        return None
+    if minimum is not None and number < minimum:
+        return None
+    if maximum is not None and number > maximum:
+        return None
+    return number
+
+
+def _validated_schumann_receipt(
+    raw: Any,
+    *,
+    now: float,
+    max_age_s: float,
+) -> Optional[Dict[str, Any]]:
+    """Validate the exact Schumann evidence used by an Earth gate receipt."""
+    if not isinstance(raw, Mapping):
+        return None
+    source_id = _receipt_text(raw.get("source_id"))
+    receipt_id = _receipt_text(raw.get("receipt_id"))
+    receipt_type = _receipt_text(
+        raw.get("receipt_type") or raw.get("provider_receipt_type")
+    )
+    truth_status = _receipt_text(raw.get("truth_status"))
+    source_timestamp = _receipt_timestamp(raw.get("source_timestamp"))
+    received_at = _receipt_timestamp(raw.get("received_at"))
+    raw_links = raw.get("input_receipt_ids")
+    if isinstance(raw_links, (list, tuple, set)):
+        links = sorted({
+            text
+            for item in raw_links
+            if (text := _receipt_text(item)) is not None
+        })
+        if len(links) != len(raw_links):
+            return None
+    else:
+        return None
+    metrics = {
+        "fundamental_hz": _receipt_number(
+            raw.get("fundamental_hz"), minimum=0.000001
+        ),
+        "coherence": _receipt_number(
+            raw.get("coherence", raw.get("quality")),
+            minimum=0.0,
+            maximum=1.0,
+        ),
+        "amplitude": _receipt_number(
+            raw.get("amplitude"), minimum=0.0, maximum=1.0
+        ),
+        "earth_disturbance_level": _receipt_number(
+            raw.get("earth_disturbance_level"),
+            minimum=0.0,
+            maximum=1.0,
+        ),
+    }
+    if (
+        source_id is None
+        or receipt_id is None
+        or receipt_type is None
+        or truth_status not in _REAL_EVIDENCE_TRUTH_STATUSES
+        or raw.get("data_status") != "live"
+        or raw.get("generated_values") is not False
+        or any(raw.get(field_name) is not False for field_name in _EVIDENCE_ONLY_FIELDS)
+        or source_timestamp is None
+        or received_at is None
+        or source_timestamp > now + EARTH_GATE_RECEIPT_FUTURE_SKEW_SECONDS
+        or received_at > now + EARTH_GATE_RECEIPT_FUTURE_SKEW_SECONDS
+        or received_at < source_timestamp - EARTH_GATE_RECEIPT_FUTURE_SKEW_SECONDS
+        or now - source_timestamp > max_age_s
+        or truth_status == "real_derived" and not links
+        or any(value is None for value in metrics.values())
+    ):
+        return None
+    return {
+        **raw,
+        **metrics,
+        "source_id": source_id,
+        "source_timestamp": source_timestamp,
+        "received_at": received_at,
+        "receipt_id": receipt_id,
+        "receipt_type": receipt_type,
+        "provider_receipt_type": receipt_type,
+        "truth_status": truth_status,
+        "generated_values": False,
+        "input_receipt_ids": links,
+    }
 
 # Schumann Resonance Modes
 SCHUMANN_MODES = {
@@ -165,6 +312,7 @@ class EarthResonanceEngine:
         # so callers don't mistake the dataclass defaults (field_coherence=0.7)
         # for a real Schumann reading. Set to True on successful update.
         self._schumann_state_initialized = False
+        self._accepted_schumann_receipt_id: Optional[str] = None
 
         self.emotional_state = EmotionalFrequency(
             frequency_hz=256.0,
@@ -184,6 +332,46 @@ class EarthResonanceEngine:
         if phase_lock is not None:
             self.OBSERVER_LOCK_THRESHOLD = phase_lock
             self.schumann_state._phase_lock_threshold = phase_lock
+
+    def update_from_schumann_receipt(
+        self,
+        schumann_receipt: Any,
+        *,
+        received_at: Optional[float] = None,
+        max_age_s: float = EARTH_GATE_RECEIPT_MAX_AGE_SECONDS,
+    ) -> Optional[SchumannState]:
+        """Initialize Earth state from one complete Schumann receipt."""
+        receipt_clock = _receipt_timestamp(
+            time.time() if received_at is None else received_at
+        )
+        if receipt_clock is None:
+            return None
+        receipt = _validated_schumann_receipt(
+            schumann_receipt,
+            now=receipt_clock,
+            max_age_s=float(max_age_s),
+        )
+        if receipt is None:
+            return None
+
+        stability = 1.0 - receipt["earth_disturbance_level"]
+        state = SchumannState(
+            mode1_power=receipt["amplitude"],
+            mode2_power=receipt["coherence"],
+            mode3_power=stability,
+            field_coherence=receipt["coherence"],
+            phase_lock=stability,
+            resonance_stability=stability,
+            timestamp=receipt["source_timestamp"],
+        )
+        state._coherence_threshold = self.COHERENCE_THRESHOLD
+        state._phase_lock_threshold = self.OBSERVER_LOCK_THRESHOLD
+
+        self.schumann_state = state
+        self._schumann_state_initialized = True
+        self._accepted_schumann_receipt_id = receipt["receipt_id"]
+        self.last_update = receipt["received_at"]
+        return state
     
     def _load_codex_data(self):
         """Load JSON codex files if available"""
@@ -479,6 +667,82 @@ class EarthResonanceEngine:
                 return False, f"Extreme greed ({self.emotional_state.frequency_hz:.0f}Hz) at high intensity - reversal risk"
         
         return True, f"Field coherent ({self.schumann_state.field_coherence:.0%}) | {self.emotional_state.state.value}"
+
+    def get_trading_gate_receipt(
+        self,
+        schumann_receipt: Any,
+        *,
+        received_at: Optional[float] = None,
+        max_age_s: float = EARTH_GATE_RECEIPT_MAX_AGE_SECONDS,
+    ) -> Optional[Dict[str, Any]]:
+        """Return evidence for the current fail-closed Earth gate decision.
+
+        An initialized state may be published only when it was explicitly
+        bound to this exact Schumann receipt. An uninitialized engine can
+        truthfully publish its existing closed decision, but never an open one.
+        """
+        receipt_clock = _receipt_timestamp(
+            time.time() if received_at is None else received_at
+        )
+        if receipt_clock is None:
+            return None
+        schumann = _validated_schumann_receipt(
+            schumann_receipt,
+            now=receipt_clock,
+            max_age_s=float(max_age_s),
+        )
+        if schumann is None:
+            return None
+        initialized = bool(getattr(self, "_schumann_state_initialized", False))
+        accepted_receipt_id = getattr(
+            self, "_accepted_schumann_receipt_id", None
+        )
+        if initialized and accepted_receipt_id != schumann["receipt_id"]:
+            return None
+        gate_open, reason = self.get_trading_gate_status()
+        if not initialized and gate_open:
+            return None
+        fingerprint = {
+            "input_receipt_ids": [schumann["receipt_id"]],
+            "gate_open": bool(gate_open),
+            "reason": str(reason),
+            "engine_state_initialized": initialized,
+            "coherence_threshold": float(self.COHERENCE_THRESHOLD),
+            "phase_lock_threshold": float(self.OBSERVER_LOCK_THRESHOLD),
+        }
+        digest = hashlib.sha256(
+            json.dumps(
+                fingerprint,
+                allow_nan=False,
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode("utf-8")
+        ).hexdigest()[:24]
+        return {
+            "data_status": "live",
+            "source_id": "aureon:planetary:earth_gate",
+            "source_timestamp": schumann["source_timestamp"],
+            "received_at": receipt_clock,
+            "receipt_id": f"earth_gate:{digest}",
+            "receipt_type": "earth_resonance_gate_evidence",
+            "provider_receipt_type": "earth_resonance_gate_evidence",
+            "truth_status": "real_derived",
+            "generated_values": False,
+            "input_receipt_ids": [schumann["receipt_id"]],
+            "gate_open": bool(gate_open),
+            "reason": str(reason),
+            "engine_state_initialized": initialized,
+            "operational_eligible": False,
+            "provider_eligible": False,
+            "action_eligible": False,
+            "actionable": False,
+            "accounting_eligible": False,
+            "learning_eligible": False,
+            "eligible_for_action": False,
+            "eligible_for_accounting": False,
+            "eligible_for_learning": False,
+            "action_gate_passed": False,
+        }
     
     def get_phi_position_multiplier(self) -> float:
         """

@@ -57,6 +57,8 @@ import json
 import asyncio
 import logging
 import threading
+import inspect
+from functools import wraps
 from dataclasses import dataclass, field, asdict
 from typing import Dict, List, Optional, Tuple, Any, Callable
 from datetime import datetime
@@ -64,7 +66,7 @@ from collections import deque
 from enum import Enum
 
 # UTF-8 fix for Windows
-if sys.platform == 'win32':
+if sys.platform == 'win32' and sys.stdout is sys.__stdout__ and sys.stdout.isatty():
     os.environ['PYTHONIOENCODING'] = 'utf-8'
     try:
         import io
@@ -84,6 +86,54 @@ except ImportError:
     np = None
 
 logger = logging.getLogger(__name__)
+
+
+def harmonic_streaming_runtime(method):
+    """Own harmonic streaming for the lifetime of a blocking runtime method.
+
+    Constructors only wire the field. A runtime entrypoint decorated with this
+    helper starts the publisher explicitly and stops/joins it on every exit
+    path. Nested runtime calls do not stop a stream owned by their caller.
+    """
+
+    def _start_owned(instance):
+        field = getattr(instance, "harmonic_field", None)
+        if field is None:
+            return None
+        try:
+            return field if field.start_streaming() else None
+        except Exception as exc:
+            logger.warning("Harmonic streaming could not start: %s", exc)
+            return None
+
+    def _stop_owned(field):
+        if field is None:
+            return
+        try:
+            field.stop_streaming()
+        except Exception as exc:
+            logger.warning("Harmonic streaming could not stop cleanly: %s", exc)
+
+    if inspect.iscoroutinefunction(method):
+        @wraps(method)
+        async def async_runtime(instance, *args, **kwargs):
+            owned_field = _start_owned(instance)
+            try:
+                return await method(instance, *args, **kwargs)
+            finally:
+                _stop_owned(owned_field)
+
+        return async_runtime
+
+    @wraps(method)
+    def runtime(instance, *args, **kwargs):
+        owned_field = _start_owned(instance)
+        try:
+            return method(instance, *args, **kwargs)
+        finally:
+            _stop_owned(owned_field)
+
+    return runtime
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════
 # 🔩 SACRED CONSTANTS - THE FREQUENCIES OF REALITY
@@ -362,6 +412,9 @@ class HarmonicLiquidAluminiumField:
         self.cycle_count = 0
         self.running = False
         self.start_time = time.time()
+        self._stream_thread: Optional[threading.Thread] = None
+        self._stream_stop_event = threading.Event()
+        self._stream_lifecycle_lock = threading.Lock()
         
         # Waveform calculation
         self.sample_rate = 1000   # Samples per second for waveform
@@ -820,34 +873,68 @@ class HarmonicLiquidAluminiumField:
     
     def _stream_loop(self):
         """Internal streaming loop."""
-        while self.running:
+        try:
+            while not self._stream_stop_event.is_set():
+                try:
+                    snapshot = self.capture_snapshot()
+                    self.publish_snapshot(snapshot)
+                    self._stream_stop_event.wait(self.stream_interval_s)
+                except Exception as e:
+                    logger.error(f"Stream error: {e}")
+                    self._stream_stop_event.wait(1.0)
+        finally:
+            self.running = False
+
+    def start_streaming(self) -> bool:
+        """Explicitly start the live publisher thread.
+
+        Returns True only when this call starts a new thread. Construction
+        never calls this method; the runtime owner must do so explicitly.
+        """
+        if os.getenv("AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS", "").lower() in {"1", "true", "yes", "on"}:
+            logger.debug("streaming thread suppressed (AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS)")
+            return False
+
+        with self._stream_lifecycle_lock:
+            if self.running or (self._stream_thread is not None and self._stream_thread.is_alive()):
+                return False
+            self._stream_stop_event.clear()
+            self.running = True
+            self.start_time = time.time()
+            self._stream_thread = threading.Thread(
+                target=self._stream_loop,
+                name="HarmonicLiquidAluminiumField",
+                daemon=True,
+            )
             try:
-                snapshot = self.capture_snapshot()
-                self.publish_snapshot(snapshot)
-                time.sleep(self.stream_interval_s)
-            except Exception as e:
-                logger.error(f"Stream error: {e}")
-                time.sleep(1)
-    
-    def start_streaming(self):
-        """Start the live streaming loop."""
-        if self.running:
-            return
-        
-        self.running = True
-        self.start_time = time.time()
-        
-        self._stream_thread = threading.Thread(target=self._stream_loop, daemon=True)
-        self._stream_thread.start()
-        
-        logger.info("🔩 Harmonic Liquid Aluminium Field STREAMING...")
-    
-    def stop_streaming(self):
-        """Stop the live streaming loop."""
-        self.running = False
-        if hasattr(self, '_stream_thread'):
-            self._stream_thread.join(timeout=2)
-        logger.info("🔩 Streaming stopped")
+                self._stream_thread.start()
+            except Exception:
+                self.running = False
+                self._stream_thread = None
+                raise
+
+        logger.info("Harmonic Liquid Aluminium Field streaming started")
+        return True
+
+    def stop_streaming(self, timeout: float = 2.0) -> bool:
+        """Stop and join the owned publisher thread."""
+        with self._stream_lifecycle_lock:
+            self.running = False
+            self._stream_stop_event.set()
+            worker = self._stream_thread
+
+        if worker is not None and worker is not threading.current_thread():
+            worker.join(timeout=max(0.0, float(timeout)))
+
+        stopped = worker is None or not worker.is_alive()
+        if stopped:
+            with self._stream_lifecycle_lock:
+                if self._stream_thread is worker:
+                    self._stream_thread = None
+            logger.info("Harmonic Liquid Aluminium Field streaming stopped")
+        else:
+            logger.warning("Harmonic streaming thread did not stop within %.2fs", timeout)
+        return stopped
     
     # ═══════════════════════════════════════════════════════════════════════════════════════════════════════════
     # 🎨 VISUALIZATION - Console Art

@@ -1,11 +1,12 @@
-import { DataIngestionSnapshot, ExchangeFeedSnapshot } from './dataIngestion';
+import { DataIngestionSnapshot } from './dataIngestion';
 import { RiskAdjustedOrder } from './riskManagement';
 
 export interface ExecutionFill {
   exchange: string;
   price: number;
   size: number;
-  latencyMs: number;
+  latencyMs: number | null;
+  providerFillId: string;
 }
 
 export interface ExecutionReport {
@@ -13,76 +14,98 @@ export interface ExecutionReport {
   fills: ExecutionFill[];
   averagePrice: number;
   slippage: number;
+  providerOrderId: string;
+  sourceId: string;
+  sourceEventId: string;
+  providerTimestamp: number;
+  truthStatus: 'live';
+  generated: false;
+}
+
+export interface ProviderExecutionReceipt {
+  success: boolean;
+  fills: ExecutionFill[];
+  providerOrderId: string;
+  sourceId: string;
+  sourceEventId: string;
+  providerTimestamp: number;
+  generated: false;
 }
 
 export interface ExecutionConfig {
   maxSlippageBps: number;
-  latencyRange: {
-    min: number;
-    max: number;
-  };
+  latencyRange: { min: number; max: number };
   partialFillProbability: number;
 }
 
 const DEFAULT_CONFIG: ExecutionConfig = {
   maxSlippageBps: 18,
-  latencyRange: { min: 35, max: 125 },
-  partialFillProbability: 0.15,
+  latencyRange: { min: 0, max: 0 },
+  partialFillProbability: 0,
 };
 
-const chooseVenue = (feeds: ExchangeFeedSnapshot[], direction: 'long' | 'short') => {
-  if (direction === 'long') {
-    return feeds.reduce((best, current) => (current.price < best.price ? current : best), feeds[0]);
-  }
-  return feeds.reduce((best, current) => (current.price > best.price ? current : best), feeds[0]);
-};
+const timestampMs = (value: number): number => value < 10_000_000_000 ? value * 1000 : value;
 
+/**
+ * Validates provider receipts. Order placement belongs to the authenticated
+ * exchange connector; this class never invents latency, slippage, partial
+ * fills, or a successful execution.
+ */
 export class ExecutionEngine {
   private readonly config: ExecutionConfig;
 
   constructor(config: Partial<ExecutionConfig> = {}) {
-    this.config = { ...DEFAULT_CONFIG, ...config } satisfies ExecutionConfig;
+    this.config = { ...DEFAULT_CONFIG, ...config };
   }
 
-  execute(order: RiskAdjustedOrder, snapshot: DataIngestionSnapshot): ExecutionReport {
-    const venue = chooseVenue(snapshot.exchangeFeeds, order.direction);
-    const baseNoise = (Math.random() - 0.5) * venue.spread * snapshot.consolidatedOHLCV.close;
-    const directionFactor = order.direction === 'long' ? 1 : -1;
-    const constrainedNoise = Math.max(
-      -this.config.maxSlippageBps / 10000,
-      Math.min(this.config.maxSlippageBps / 10000, baseNoise / snapshot.consolidatedOHLCV.close)
-    );
-    const fillPrice = venue.price * (1 + constrainedNoise * directionFactor);
+  execute(_order: RiskAdjustedOrder, _snapshot: DataIngestionSnapshot): never {
+    throw new Error('DIRECT_EXECUTION_RETIRED: invoke the authenticated exchange connector and record its receipt');
+  }
 
-    const primarySize = order.notional / fillPrice;
-
-    const latencyMs =
-      this.config.latencyRange.min +
-      Math.random() * (this.config.latencyRange.max - this.config.latencyRange.min);
-
-    const fills: ExecutionFill[] = [
-      { exchange: venue.exchange, price: fillPrice, size: primarySize, latencyMs },
-    ];
-
-    if (Math.random() < this.config.partialFillProbability) {
-      const residual = primarySize * 0.25;
-      const residualLatency = latencyMs + Math.random() * 40;
-      const residualPrice = fillPrice * (1 + Math.random() * 0.0005 * directionFactor);
-      fills.push({ exchange: venue.exchange, price: residualPrice, size: residual, latencyMs: residualLatency });
+  recordProviderExecution(
+    order: RiskAdjustedOrder,
+    snapshot: DataIngestionSnapshot,
+    receipt: ProviderExecutionReceipt
+  ): ExecutionReport {
+    if (!receipt || receipt.generated !== false || !receipt.sourceId || !receipt.sourceEventId) {
+      throw new Error('EXECUTION_RECEIPT_PROVENANCE_REQUIRED');
     }
-
-    const totalNotional = fills.reduce((acc, fill) => acc + fill.price * fill.size, 0);
-    const totalSize = fills.reduce((acc, fill) => acc + fill.size, 0);
+    const providerTimestamp = timestampMs(receipt.providerTimestamp);
+    const ageMs = Date.now() - providerTimestamp;
+    if (ageMs < -30_000 || ageMs > 300_000) {
+      throw new Error(`EXECUTION_RECEIPT_STALE:${ageMs}`);
+    }
+    if (!receipt.success || !receipt.providerOrderId || !receipt.fills.length) {
+      throw new Error('EXECUTION_NOT_CONFIRMED_BY_PROVIDER');
+    }
+    for (const fill of receipt.fills) {
+      if (!fill.exchange || !fill.providerFillId || !Number.isFinite(fill.price) || fill.price <= 0) {
+        throw new Error('EXECUTION_FILL_INVALID');
+      }
+      if (!Number.isFinite(fill.size) || fill.size <= 0) {
+        throw new Error('EXECUTION_FILL_SIZE_INVALID');
+      }
+    }
+    const totalNotional = receipt.fills.reduce((sum, fill) => sum + fill.price * fill.size, 0);
+    const totalSize = receipt.fills.reduce((sum, fill) => sum + fill.size, 0);
     const averagePrice = totalNotional / totalSize;
-
-    const midPrice = snapshot.consolidatedOHLCV.close;
-    const slippage = (averagePrice - midPrice) / midPrice;
-
+    const referencePrice = snapshot.consolidatedOHLCV.close;
+    const direction = order.direction === 'long' ? 1 : -1;
+    const slippage = ((averagePrice - referencePrice) / referencePrice) * direction;
+    if (Math.abs(slippage) * 10_000 > this.config.maxSlippageBps) {
+      throw new Error(`EXECUTION_SLIPPAGE_LIMIT_EXCEEDED:${slippage}`);
+    }
     return {
       success: true,
-      fills,
+      fills: receipt.fills,
       averagePrice,
       slippage,
-    } satisfies ExecutionReport;
+      providerOrderId: receipt.providerOrderId,
+      sourceId: receipt.sourceId,
+      sourceEventId: receipt.sourceEventId,
+      providerTimestamp,
+      truthStatus: 'live',
+      generated: false,
+    };
   }
 }

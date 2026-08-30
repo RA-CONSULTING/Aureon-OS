@@ -57,7 +57,8 @@ _CONSEQUENTIAL_HINTS = (
     "delete", "remove", "rmdir", "overwrite", "write", "patch", "shell", "exec",
     "click", "type", "keypress", "press_key", "hotkey", "drag", "wifi", "connect",
     "disconnect", "lock", "sleep", "shutdown", "reboot", "wallpaper", "kill",
-    "uninstall", "format", "move_file", "copy_file",
+    "uninstall", "format", "move_file", "copy_file", "arm", "authorize",
+    "clear_emergency",
 )
 _DESTRUCTIVE_HINTS = (
     "delete", "remove", "rmdir", "format", "shutdown", "reboot", "kill",
@@ -113,8 +114,10 @@ class GroundedActionGate:
         self._conscience = conscience
         self._conscience_loaded = conscience is not None
         self._bus = bus if bus is not None else (get_thought_bus() if get_thought_bus else None)
-        # LLM reasoning is Ollama-first and offline-safe; default on, no-op offline.
-        self._enable_llm = _truthy("AUREON_ACTION_LLM_REASONING", "1") if enable_llm is None else enable_llm
+        # Deterministic safety never depends on a model. Optional rationale is
+        # off by default; the fully local GUI planner has its own loopback-only
+        # provider boundary.
+        self._enable_llm = _truthy("AUREON_ACTION_LLM_REASONING", "0") if enable_llm is None else enable_llm
 
     # ── risk classification ────────────────────────────────────────────
     def _risk_for(self, action: str) -> float:
@@ -190,8 +193,8 @@ class GroundedActionGate:
             q = (
                 "You advise an autonomous system before it touches its own "
                 "computer. In ONE sentence, say whether this local action is "
-                f"safe and sensible, and why.\nAction: {action}\nParams: "
-                f"{json.dumps(params, default=str)[:300]}"
+                f"safe and sensible, and why.\nAction: {action}\nParameter keys: "
+                f"{json.dumps(sorted(str(key) for key in params))[:300]}"
             )
             resp = adapter.prompt([{"role": "user", "content": q}], max_tokens=120)
             text = getattr(resp, "text", None) or ""
@@ -241,7 +244,14 @@ class GroundedActionGate:
         params = dict(params or {})
         context = dict(context or {})
         trace_id = context.get("trace_id") or uuid.uuid4().hex
-        risk = float(context.get("risk", self._risk_for(action)))
+        classified_risk = self._risk_for(action)
+        try:
+            requested_risk = float(context.get("risk", classified_risk))
+        except (TypeError, ValueError):
+            requested_risk = classified_risk
+        # Callers may make a gate stricter but may never downgrade the
+        # deterministic action classification.
+        risk = max(classified_risk, requested_risk)
 
         self._publish("operator.action.request", trace_id,
                       {"action": action, "params_keys": sorted(params.keys()), "risk": risk})
@@ -279,12 +289,14 @@ class GroundedActionGate:
         #     conscience-engaging floor — fear tightens, triumph never loosens.
         #     Off by default; fail-open (a bad read leaves risk untouched); capped
         #     at the destructive tier so it can never exceed the hard ceiling.
+        affect_caution_bias = 0.0
         if _truthy("AUREON_AFFECT_MODULATION"):
             try:
                 from aureon.core.affect_monitor import get_affect_monitor
 
                 bias = max(0.0, float(get_affect_monitor().caution_bias()))
                 if bias > 0.0:
+                    affect_caution_bias = bias
                     risk = min(0.12, max(risk, risk + bias))
             except Exception as exc:  # noqa: BLE001 — affect never blocks the gate
                 logger.debug("affect modulation skipped: %s", exc)
@@ -307,7 +319,15 @@ class GroundedActionGate:
                 reason = str(getattr(whisper, "message", "") or reason)
             except Exception as exc:  # noqa: BLE001
                 logger.debug("conscience unavailable: %s", exc)
-                verdict_name = "APPROVED"
+                if risk > 0.0:
+                    verdict_name = "VETO"
+                    reason = "conscience_error_for_consequential_action"
+        elif risk > 0.0:
+            # Read-only sensing remains available during a degraded startup,
+            # but no consequential action is allowed without the final veto
+            # surface being present.
+            verdict_name = "VETO"
+            reason = "conscience_unavailable_for_consequential_action"
 
         concerned = verdict_name == "CONCERNED"
         approved = verdict_name != "VETO"
@@ -321,6 +341,17 @@ class GroundedActionGate:
             if verdict_name not in ("CONCERNED", "VETO"):
                 reason = (f"grounded but cautioned: the field is divided "
                           f"(divergence {divergence:.3f})")
+        # Affect is an advisory tightening signal. A positive caution bias must
+        # be visible in the final verdict even when no canonical HNC divergence
+        # is available; it never upgrades authority and never turns a veto into
+        # an approval.
+        if approved and affect_caution_bias > 0.0:
+            concerned = True
+            if verdict_name not in ("CONCERNED", "VETO"):
+                reason = (
+                    "grounded but cautioned: affect modulation raised risk "
+                    f"by {affect_caution_bias:.3f}"
+                )
         v = ActionVerdict(
             action=action, approved=approved,
             verdict="VETOED" if not approved else ("CONCERNED" if concerned else "APPROVED"),

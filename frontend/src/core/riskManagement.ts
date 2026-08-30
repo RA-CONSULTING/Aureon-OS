@@ -26,6 +26,9 @@ export interface RiskTolerances {
 
 export interface RiskConfig extends RiskTolerances {
   initialEquity: number;
+  initialEquitySourceId: string;
+  initialEquitySourceEventId: string;
+  initialEquitySourceTimestamp: number;
   riskPerTradeCap: number;
   kellyMultiplier: number;
   minHoldMinutes: number;
@@ -42,7 +45,10 @@ export interface RiskAdjustedOrder {
 }
 
 const DEFAULT_PARAMS: RiskConfig = {
-  initialEquity: 100000,
+  initialEquity: 0,
+  initialEquitySourceId: '',
+  initialEquitySourceEventId: '',
+  initialEquitySourceTimestamp: 0,
   maxPortfolioRisk: 0.03,
   maxLeverage: 5,
   circuitBreaker: 0.1,
@@ -65,6 +71,7 @@ export class RiskManager {
 
   constructor(config: Partial<RiskConfig> = {}) {
     this.params = { ...DEFAULT_PARAMS, ...config } satisfies RiskConfig;
+    this.validateEquityObservation();
     this.realizedEquity = this.params.initialEquity;
     this.peakEquity = this.params.initialEquity;
     this.state = {
@@ -76,6 +83,7 @@ export class RiskManager {
 
   reset(config: Partial<RiskConfig> = {}) {
     this.params = { ...DEFAULT_PARAMS, ...config } satisfies RiskConfig;
+    this.validateEquityObservation();
     this.realizedEquity = this.params.initialEquity;
     this.peakEquity = this.params.initialEquity;
     this.state = {
@@ -89,6 +97,22 @@ export class RiskManager {
     return this.state;
   }
 
+  private validateEquityObservation(): void {
+    const observedAt = this.params.initialEquitySourceTimestamp < 10_000_000_000
+      ? this.params.initialEquitySourceTimestamp * 1000
+      : this.params.initialEquitySourceTimestamp;
+    if (
+      !Number.isFinite(this.params.initialEquity) ||
+      this.params.initialEquity <= 0 ||
+      !this.params.initialEquitySourceId ||
+      !this.params.initialEquitySourceEventId ||
+      Date.now() - observedAt > 300_000 ||
+      observedAt - Date.now() > 30_000
+    ) {
+      throw new Error('FRESH_PROVIDER_EQUITY_OBSERVATION_REQUIRED');
+    }
+  }
+
   evaluate(decision: DecisionSignal, snapshot: DataIngestionSnapshot): RiskAdjustedOrder | null {
     if (decision.action === 'hold') {
       return null;
@@ -99,7 +123,10 @@ export class RiskManager {
     const recentVolatility = snapshot.consolidatedOHLCV.high - snapshot.consolidatedOHLCV.low;
     const normalizedVol = Math.max(0.001, recentVolatility / snapshot.consolidatedOHLCV.close);
 
-    const winRate = 0.55 * decision.confidence + 0.45 * Math.random();
+    if (decision.measuredWinRate === null || !Number.isFinite(decision.measuredWinRate)) {
+      return null;
+    }
+    const winRate = decision.measuredWinRate;
     const rewardRisk = 1.5 + decision.confidence;
     const kellyFraction = kellyCriterion(winRate, rewardRisk) * this.params.kellyMultiplier;
 

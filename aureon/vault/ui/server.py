@@ -85,6 +85,7 @@ from aureon.queen.conversation_memory import get_conversation_memory
 from aureon.queen.meaning_resolver import get_meaning_resolver
 from aureon.queen.queen_action_bridge import get_queen_action_bridge
 from aureon.vault.self_feedback_loop import AureonSelfFeedbackLoop
+from aureon.ollama_config import is_ollama_cloud_url
 
 logger = logging.getLogger("aureon.vault.ui")
 
@@ -193,8 +194,9 @@ def create_app(
             adapter = any_voice.adapter
             if adapter is None:
                 return
-            base_url = getattr(adapter, "base_url", "")
-            model = getattr(adapter, "model", "")
+            bridge = getattr(adapter, "bridge", None)
+            base_url = getattr(adapter, "base_url", "") or getattr(bridge, "base_url", "")
+            model = getattr(adapter, "model", "") or getattr(bridge, "chat_model", "")
             if not base_url or not model:
                 return
             # Derive the native endpoint from the /v1 base_url.
@@ -203,7 +205,15 @@ def create_app(
             if native.endswith("/v1"):
                 native = native[:-3]
             native = native + "/api/generate"
+            if is_ollama_cloud_url(native):
+                # Hosted models need no local RAM keepalive. Avoid recurring
+                # cloud inference solely for local warm-state management.
+                return
             import requests as _requests
+            headers_fn = getattr(adapter, "_headers", None)
+            headers = headers_fn() if callable(headers_fn) else dict(
+                getattr(bridge, "_authorization_headers", {}) or {}
+            )
             t0 = time.time()
             _requests.post(
                 native,
@@ -214,6 +224,7 @@ def create_app(
                     "keep_alive": "30m",
                     "options": {"num_predict": 1},
                 },
+                headers=headers,
                 timeout=60,
             )
             dt = (time.time() - t0) * 1000.0

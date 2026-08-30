@@ -23,15 +23,14 @@ Gary Leckey & GitHub Copilot | November 2025
 "The Truth is in the Anomalies"
 """
 
-from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
 import os
+import builtins
+import math
 import sys
-import json
 import time
 import requests
-import numpy as np
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Tuple, Any
+from datetime import datetime, timezone
+from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
 from collections import deque
 from enum import Enum
@@ -43,6 +42,28 @@ import statistics
 
 COINAPI_BASE_URL = "https://rest.coinapi.io/v1"
 COINAPI_API_KEY = os.getenv('COINAPI_KEY', '')  # Set in .env
+COINAPI_QUOTE_TTL_SECONDS = max(
+    1.0,
+    float(os.getenv("COINAPI_QUOTE_TTL_SECONDS", "120") or 120),
+)
+COINAPI_FUTURE_SKEW_SECONDS = 300.0
+COINAPI_TRADE_TTL_SECONDS = max(
+    1.0,
+    float(os.getenv("COINAPI_TRADE_TTL_SECONDS", "900") or 900),
+)
+
+
+def _console_print(message: Any = "") -> None:
+    """Write Unicode diagnostics without failing on legacy Windows consoles."""
+    try:
+        builtins.print(message)
+    except UnicodeEncodeError:
+        encoding = getattr(sys.stdout, "encoding", None) or "utf-8"
+        rendered = str(message).encode(encoding, errors="replace").decode(
+            encoding,
+            errors="replace",
+        )
+        sys.stdout.write(rendered + "\n")
 
 # Anomaly detection thresholds
 ANOMALY_THRESHOLDS = {
@@ -56,6 +77,60 @@ ANOMALY_THRESHOLDS = {
 
 # Prime-based confidence scoring
 PRIMES = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47]
+
+
+def _finite_number(value: Any, *, positive: bool = False, nonnegative: bool = False) -> Optional[float]:
+    if isinstance(value, bool):
+        return None
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    if not math.isfinite(number):
+        return None
+    if positive and number <= 0:
+        return None
+    if nonnegative and number < 0:
+        return None
+    return number
+
+
+def _provider_datetime(value: Any) -> Optional[datetime]:
+    if not isinstance(value, str) or not value.strip():
+        return None
+    raw = value.strip()
+    if raw.endswith("Z"):
+        raw = raw[:-1] + "+00:00"
+    try:
+        parsed = datetime.fromisoformat(raw)
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+
+def _is_fresh_provider_datetime(value: Optional[datetime], *, now: Optional[datetime] = None) -> bool:
+    if value is None or value.tzinfo is None:
+        return False
+    received_at = now or datetime.now(timezone.utc)
+    age = (received_at - value).total_seconds()
+    return -COINAPI_FUTURE_SKEW_SECONDS <= age <= COINAPI_QUOTE_TTL_SECONDS
+
+
+def _is_fresh_trade_datetime(value: Optional[datetime], *, now: Optional[datetime] = None) -> bool:
+    if value is None or value.tzinfo is None:
+        return False
+    received_at = now or datetime.now(timezone.utc)
+    age = (received_at - value).total_seconds()
+    return -COINAPI_FUTURE_SKEW_SECONDS <= age <= COINAPI_TRADE_TTL_SECONDS
+
+
+def _link_runtime_system() -> None:
+    """Join the baton only from an explicit live runtime entrypoint."""
+    from aureon.core.aureon_baton_link import link_system
+
+    link_system(__name__)
 
 
 class AnomalyType(Enum):
@@ -83,11 +158,18 @@ class MarketAnomaly:
     description: str
     evidence: Dict[str, Any]
     recommendation: str
+    truth_status: str
+    source_id: str
+    source_timestamp: datetime
+    received_at: datetime
+    generated_values: bool = False
+    eligible_for_learning: bool = True
+    eligible_for_external_action: bool = False
     
     # Refinement data
-    expected_value: float = 0.0
-    actual_value: float = 0.0
-    deviation_pct: float = 0.0
+    expected_value: Optional[float] = None
+    actual_value: Optional[float] = None
+    deviation_pct: Optional[float] = None
     
     def to_dict(self) -> Dict:
         return {
@@ -100,6 +182,13 @@ class MarketAnomaly:
             'description': self.description,
             'evidence': self.evidence,
             'recommendation': self.recommendation,
+            'truth_status': self.truth_status,
+            'source_id': self.source_id,
+            'source_timestamp': self.source_timestamp.isoformat(),
+            'received_at': self.received_at.isoformat(),
+            'generated_values': self.generated_values,
+            'eligible_for_learning': self.eligible_for_learning,
+            'eligible_for_external_action': self.eligible_for_external_action,
             'expected': self.expected_value,
             'actual': self.actual_value,
             'deviation': self.deviation_pct,
@@ -112,17 +201,58 @@ class ExchangeDataPoint:
     exchange_id: str
     symbol: str
     price: float
-    volume_24h: float
+    volume_24h: Optional[float]
     bid: float
     ask: float
     timestamp: datetime
-    latency_ms: float = 0.0
+    received_at: datetime
+    source_id: str
+    truth_status: str = "real_derived"
+    generated_values: bool = False
+    latency_ms: Optional[float] = None
     
-    def spread_pct(self) -> float:
+    def spread_pct(self) -> Optional[float]:
         """Calculate bid-ask spread percentage"""
         if self.bid <= 0:
-            return 0.0
+            return None
         return ((self.ask - self.bid) / self.bid) * 100
+
+
+def _eligible_exchange_points(data_points: List[ExchangeDataPoint]) -> List[ExchangeDataPoint]:
+    """Return only fresh, provider-backed quote observations."""
+    received_at = datetime.now(timezone.utc)
+    eligible: List[ExchangeDataPoint] = []
+    for point in data_points:
+        if not isinstance(point, ExchangeDataPoint):
+            continue
+        if point.truth_status not in {"real_observed", "real_derived"} or point.generated_values:
+            continue
+        if not point.source_id or not _is_fresh_provider_datetime(point.timestamp, now=received_at):
+            continue
+        if (
+            _finite_number(point.price, positive=True) is None
+            or _finite_number(point.bid, positive=True) is None
+            or _finite_number(point.ask, positive=True) is None
+            or point.ask <= point.bid
+        ):
+            continue
+        eligible.append(point)
+    return eligible
+
+
+def _validated_book_side(raw_levels: Any) -> Optional[List[Dict[str, float]]]:
+    if not isinstance(raw_levels, list) or not raw_levels:
+        return None
+    levels: List[Dict[str, float]] = []
+    for raw_level in raw_levels[:10]:
+        if not isinstance(raw_level, dict):
+            return None
+        price = _finite_number(raw_level.get("price"), positive=True)
+        size = _finite_number(raw_level.get("size"), positive=True)
+        if price is None or size is None:
+            return None
+        levels.append({"price": price, "size": size})
+    return levels or None
 
 
 class CoinAPIClient:
@@ -173,17 +303,17 @@ class CoinAPIClient:
                 return response.json()
             elif response.status_code == 429:
                 self.last_error_text = str(getattr(response, "text", "") or "")
-                print("⚠️  CoinAPI rate limit hit")
+                _console_print("⚠️  CoinAPI rate limit hit")
                 return None
             else:
                 self.last_error_text = str(getattr(response, "text", "") or "")
                 snippet = self.last_error_text[:200].replace("\n", " ")
-                print(f"⚠️  CoinAPI error: {response.status_code} ({snippet})")
+                _console_print(f"⚠️  CoinAPI error: {response.status_code} ({snippet})")
                 return None
         except Exception as e:
             self.last_status_code = None
             self.last_error_text = str(e)
-            print(f"⚠️  CoinAPI request failed: {e}")
+            _console_print(f"⚠️  CoinAPI request failed: {e}")
             return None
     
     def get_exchanges(self) -> List[Dict]:
@@ -309,25 +439,36 @@ class AnomalyDetector:
         symbol_filter = f"*_{base_asset}_{quote_asset}"
         quotes = self.client.get_quotes_current(symbol_filter)
         
+        received_at = datetime.now(timezone.utc)
         for quote in quotes:
             try:
-                exchange_id = quote.get('symbol_id', '').split('_')[0]
-                price = float(quote.get('ask', 0))
-                bid = float(quote.get('bid', 0))
-                ask = float(quote.get('ask', 0))
-                timestamp = datetime.fromisoformat(quote.get('time_exchange', '').replace('Z', '+00:00'))
-                
-                if price > 0 and bid > 0 and ask > 0:
-                    data_points.append(ExchangeDataPoint(
-                        exchange_id=exchange_id,
-                        symbol=f"{base_asset}/{quote_asset}",
-                        price=price,
-                        volume_24h=0,  # Would need separate query
-                        bid=bid,
-                        ask=ask,
-                        timestamp=timestamp,
-                    ))
-            except:
+                symbol_id = str(quote.get('symbol_id') or '').strip()
+                exchange_id = symbol_id.split('_')[0]
+                bid = _finite_number(quote.get('bid'), positive=True)
+                ask = _finite_number(quote.get('ask'), positive=True)
+                timestamp = _provider_datetime(quote.get('time_exchange'))
+                if (
+                    not exchange_id
+                    or bid is None
+                    or ask is None
+                    or ask <= bid
+                    or not _is_fresh_provider_datetime(timestamp, now=received_at)
+                ):
+                    continue
+                data_points.append(ExchangeDataPoint(
+                    exchange_id=exchange_id,
+                    symbol=f"{base_asset}/{quote_asset}",
+                    price=(bid + ask) / 2.0,
+                    volume_24h=None,
+                    bid=bid,
+                    ask=ask,
+                    timestamp=timestamp,
+                    received_at=received_at,
+                    source_id=f"coinapi_quote:{symbol_id}",
+                    truth_status="real_derived",
+                    generated_values=False,
+                ))
+            except (TypeError, ValueError, AttributeError):
                 continue
         
         # Cache for later analysis
@@ -341,20 +482,24 @@ class AnomalyDetector:
         Detect price manipulation by comparing prices across exchanges.
         Large discrepancies indicate manipulation or wash trading.
         """
+        data_points = _eligible_exchange_points(data_points)
         if len(data_points) < 2:
             return []
         
         anomalies = []
         prices = [dp.price for dp in data_points]
         mean_price = statistics.mean(prices)
-        std_price = statistics.stdev(prices) if len(prices) > 1 else 0
+        std_price = statistics.stdev(prices)
+        source_timestamp = min(point.timestamp for point in data_points)
+        received_at = max(point.received_at for point in data_points)
+        source_ids = sorted({point.source_id for point in data_points})
         
         for dp in data_points:
-            deviation = abs(dp.price - mean_price) / mean_price if mean_price > 0 else 0
+            deviation = abs(dp.price - mean_price) / mean_price
             
             if deviation > ANOMALY_THRESHOLDS['PRICE_SPREAD']:
                 severity = min(1.0, deviation / (ANOMALY_THRESHOLDS['PRICE_SPREAD'] * 2))
-                confidence = 0.7 + (0.3 * min(1.0, len(data_points) / 10))
+                confidence = min(1.0, len(data_points) / 10.0)
                 
                 anomaly = MarketAnomaly(
                     anomaly_type=AnomalyType.PRICE_MANIPULATION,
@@ -369,8 +514,19 @@ class AnomalyDetector:
                         'mean_price': mean_price,
                         'std_dev': std_price,
                         'num_exchanges': len(data_points),
+                        'source_ids': source_ids,
+                        'source_timestamp': source_timestamp.isoformat(),
+                        'confidence_basis': 'fresh_exchange_count/10',
+                        'execution_eligible': False,
                     },
                     recommendation="AVOID" if severity > 0.5 else "CAUTION",
+                    truth_status="real_derived",
+                    source_id="|".join(source_ids),
+                    source_timestamp=source_timestamp,
+                    received_at=received_at,
+                    generated_values=False,
+                    eligible_for_learning=True,
+                    eligible_for_external_action=False,
                     expected_value=mean_price,
                     actual_value=dp.price,
                     deviation_pct=deviation * 100,
@@ -389,47 +545,59 @@ class AnomalyDetector:
             return None
         
         try:
-            bids = orderbook.get('bids', [])
-            asks = orderbook.get('asks', [])
-            
-            if not bids or not asks:
+            received_at = datetime.now(timezone.utc)
+            source_timestamp = _provider_datetime(orderbook.get('time_exchange'))
+            bids = _validated_book_side(orderbook.get('bids'))
+            asks = _validated_book_side(orderbook.get('asks'))
+            if (
+                bids is None
+                or asks is None
+                or not _is_fresh_provider_datetime(source_timestamp, now=received_at)
+            ):
                 return None
-            
-            # Calculate total volume on each side
-            bid_volume = sum(float(b.get('size', 0)) for b in bids[:10])
-            ask_volume = sum(float(a.get('size', 0)) for a in asks[:10])
+
+            bid_volume = sum(level['size'] for level in bids)
+            ask_volume = sum(level['size'] for level in asks)
             total_volume = bid_volume + ask_volume
-            
-            if total_volume == 0:
+            if total_volume <= 0:
                 return None
-            
+
             bid_ratio = bid_volume / total_volume
-            
-            # Check for extreme imbalance (spoofing indicator)
             if bid_ratio > ANOMALY_THRESHOLDS['ORDERBOOK_IMBALANCE'] or bid_ratio < (1 - ANOMALY_THRESHOLDS['ORDERBOOK_IMBALANCE']):
-                severity = abs(bid_ratio - 0.5) * 2  # Scale to 0-1
-                
+                severity = abs(bid_ratio - 0.5) * 2
+                confidence = min(1.0, (len(bids) + len(asks)) / 20.0)
                 return MarketAnomaly(
                     anomaly_type=AnomalyType.ORDERBOOK_SPOOFING,
                     symbol=symbol_id,
                     exchange=symbol_id.split('_')[0],
-                    timestamp=datetime.now(),
+                    timestamp=source_timestamp,
                     severity=severity,
-                    confidence=0.75,
+                    confidence=confidence,
                     description=f"Orderbook imbalance: {bid_ratio:.0%} bids vs {1-bid_ratio:.0%} asks",
                     evidence={
                         'bid_volume': bid_volume,
                         'ask_volume': ask_volume,
                         'bid_ratio': bid_ratio,
-                        'top_bid': bids[0] if bids else None,
-                        'top_ask': asks[0] if asks else None,
+                        'top_bid': bids[0],
+                        'top_ask': asks[0],
+                        'levels_observed': len(bids) + len(asks),
+                        'confidence_basis': 'observed_depth_levels/20',
+                        'source_timestamp': source_timestamp.isoformat(),
+                        'execution_eligible': False,
                     },
                     recommendation="WAIT" if severity > 0.6 else "CAUTION",
+                    truth_status="real_derived",
+                    source_id=f"coinapi_orderbook:{symbol_id}",
+                    source_timestamp=source_timestamp,
+                    received_at=received_at,
+                    generated_values=False,
+                    eligible_for_learning=True,
+                    eligible_for_external_action=False,
                     expected_value=0.5,
                     actual_value=bid_ratio,
                     deviation_pct=(bid_ratio - 0.5) * 200,
                 )
-        except:
+        except (TypeError, ValueError, AttributeError):
             return None
     
     def detect_wash_trading(self, symbol_id: str) -> Optional[MarketAnomaly]:
@@ -442,40 +610,71 @@ class AnomalyDetector:
             return None
         
         try:
-            # Look for repeated prices and volumes
-            prices = [float(t.get('price', 0)) for t in trades]
-            volumes = [float(t.get('size', 0)) for t in trades]
-            
-            # Count price repetitions
-            price_counts = {}
-            for p in prices:
-                rounded = round(p, 8)
+            received_at = datetime.now(timezone.utc)
+            validated_trades: List[Dict[str, Any]] = []
+            for trade in trades:
+                if not isinstance(trade, dict):
+                    continue
+                price = _finite_number(trade.get('price'), positive=True)
+                size = _finite_number(trade.get('size'), positive=True)
+                source_timestamp = _provider_datetime(trade.get('time_exchange'))
+                if (
+                    price is None
+                    or size is None
+                    or not _is_fresh_trade_datetime(source_timestamp, now=received_at)
+                ):
+                    continue
+                validated_trades.append({
+                    'price': price,
+                    'size': size,
+                    'source_timestamp': source_timestamp,
+                })
+
+            if len(validated_trades) < 10:
+                return None
+
+            price_counts: Dict[float, int] = {}
+            for trade in validated_trades:
+                rounded = round(trade['price'], 8)
                 price_counts[rounded] = price_counts.get(rounded, 0) + 1
-            
+
             max_repetitions = max(price_counts.values())
-            repetition_ratio = max_repetitions / len(prices)
-            
-            if repetition_ratio > ANOMALY_THRESHOLDS['WASH_TRADE_RATIO']:
+            repetition_ratio = max_repetitions / len(validated_trades)
+            threshold = ANOMALY_THRESHOLDS['WASH_TRADE_RATIO']
+            if repetition_ratio > threshold:
+                source_timestamp = min(trade['source_timestamp'] for trade in validated_trades)
+                confidence = min(1.0, len(validated_trades) / 100.0)
                 return MarketAnomaly(
                     anomaly_type=AnomalyType.WASH_TRADING,
                     symbol=symbol_id,
                     exchange=symbol_id.split('_')[0],
-                    timestamp=datetime.now(),
-                    severity=repetition_ratio,
-                    confidence=0.65,
-                    description=f"{repetition_ratio:.0%} of trades at identical prices",
+                    timestamp=source_timestamp,
+                    severity=min(1.0, repetition_ratio),
+                    confidence=confidence,
+                    description=f"{repetition_ratio:.0%} of fresh observed trades share one price",
                     evidence={
                         'max_repetitions': max_repetitions,
-                        'total_trades': len(trades),
+                        'total_trades': len(validated_trades),
+                        'total_observed_volume': sum(trade['size'] for trade in validated_trades),
                         'repetition_ratio': repetition_ratio,
                         'unique_prices': len(price_counts),
+                        'confidence_basis': 'fresh_trade_count/100',
+                        'source_timestamp': source_timestamp.isoformat(),
+                        'execution_eligible': False,
                     },
-                    recommendation="AVOID",
-                    expected_value=0.1,
+                    recommendation="REVIEW",
+                    truth_status="real_derived",
+                    source_id=f"coinapi_trades:{symbol_id}",
+                    source_timestamp=source_timestamp,
+                    received_at=received_at,
+                    generated_values=False,
+                    eligible_for_learning=True,
+                    eligible_for_external_action=False,
+                    expected_value=threshold,
                     actual_value=repetition_ratio,
-                    deviation_pct=(repetition_ratio - 0.1) * 100,
+                    deviation_pct=((repetition_ratio - threshold) / threshold) * 100,
                 )
-        except:
+        except (TypeError, ValueError, AttributeError, statistics.StatisticsError):
             return None
     
     def detect_cross_exchange_arbitrage(self, data_points: List[ExchangeDataPoint]) -> List[MarketAnomaly]:
@@ -483,6 +682,7 @@ class AnomalyDetector:
         Detect arbitrage opportunities from price discrepancies.
         These reveal the "real" price vs manipulated prices.
         """
+        data_points = _eligible_exchange_points(data_points)
         if len(data_points) < 2:
             return []
         
@@ -493,26 +693,40 @@ class AnomalyDetector:
         min_dp = sorted_points[0]
         max_dp = sorted_points[-1]
         
-        spread_pct = (max_dp.price - min_dp.price) / min_dp.price if min_dp.price > 0 else 0
+        spread_pct = (max_dp.price - min_dp.price) / min_dp.price
         
         if spread_pct > ANOMALY_THRESHOLDS['PRICE_SPREAD']:
-            # This is an arbitrage opportunity
+            source_timestamp = min(point.timestamp for point in data_points)
+            received_at = max(point.received_at for point in data_points)
+            source_ids = sorted({point.source_id for point in data_points})
             anomaly = MarketAnomaly(
                 anomaly_type=AnomalyType.CROSS_EXCHANGE_SPREAD,
                 symbol=min_dp.symbol,
                 exchange=f"{min_dp.exchange_id}→{max_dp.exchange_id}",
-                timestamp=datetime.now(),
-                severity=min(1.0, spread_pct / 0.05),
-                confidence=0.9,
-                description=f"{spread_pct:.2%} arbitrage spread between exchanges",
+                timestamp=source_timestamp,
+                severity=min(1.0, spread_pct / (ANOMALY_THRESHOLDS['PRICE_SPREAD'] * 2)),
+                confidence=min(1.0, len(data_points) / 10.0),
+                description=f"{spread_pct:.2%} observed cross-exchange price spread",
                 evidence={
                     'buy_exchange': min_dp.exchange_id,
                     'buy_price': min_dp.price,
                     'sell_exchange': max_dp.exchange_id,
                     'sell_price': max_dp.price,
                     'profit_pct': spread_pct * 100,
+                    'source_ids': source_ids,
+                    'source_timestamp': source_timestamp.isoformat(),
+                    'confidence_basis': 'fresh_exchange_count/10',
+                    'fees_transfers_and_fillability_verified': False,
+                    'execution_eligible': False,
                 },
-                recommendation="ARBITRAGE OPPORTUNITY",
+                recommendation="OBSERVE; REQUIRE LIVE COST AND FILL RECEIPTS BEFORE ACTION",
+                truth_status="real_derived",
+                source_id="|".join(source_ids),
+                source_timestamp=source_timestamp,
+                received_at=received_at,
+                generated_values=False,
+                eligible_for_learning=True,
+                eligible_for_external_action=False,
                 expected_value=min_dp.price,
                 actual_value=max_dp.price,
                 deviation_pct=spread_pct * 100,
@@ -526,11 +740,45 @@ class AnomalyDetector:
         Use detected anomaly to refine our trading algorithms.
         Returns refinement recommendations.
         """
+        received_at = datetime.now(timezone.utc)
+        freshness_check = (
+            _is_fresh_trade_datetime
+            if anomaly.anomaly_type == AnomalyType.WASH_TRADING
+            else _is_fresh_provider_datetime
+        )
+        if (
+            anomaly.truth_status not in {"real_observed", "real_derived"}
+            or anomaly.generated_values
+            or not anomaly.eligible_for_learning
+            or not anomaly.source_id
+            or not freshness_check(anomaly.source_timestamp, now=received_at)
+        ):
+            return {
+                'received_at': received_at.isoformat(),
+                'source_timestamp': None,
+                'source_id': None,
+                'anomaly_type': anomaly.anomaly_type.value,
+                'symbol': anomaly.symbol,
+                'adjustment': {},
+                'truth_status': 'no_data',
+                'generated_values': False,
+                'eligible_for_learning': False,
+                'eligible_for_external_action': False,
+                'reason': 'fresh_provider_anomaly_required',
+            }
+
         refinement = {
-            'timestamp': datetime.now().isoformat(),
+            'received_at': received_at.isoformat(),
+            'source_timestamp': anomaly.source_timestamp.isoformat(),
+            'source_id': anomaly.source_id,
             'anomaly_type': anomaly.anomaly_type.value,
             'symbol': anomaly.symbol,
             'adjustment': {},
+            'truth_status': 'real_derived',
+            'generated_values': False,
+            'eligible_for_learning': True,
+            'eligible_for_external_action': False,
+            'policy_source': 'coinapi_anomaly_refinement_policy',
         }
         
         if anomaly.anomaly_type == AnomalyType.PRICE_MANIPULATION:
@@ -558,22 +806,35 @@ class AnomalyDetector:
             }
         
         elif anomaly.anomaly_type == AnomalyType.CROSS_EXCHANGE_SPREAD:
-            # Use mean price instead of single exchange
             refinement['adjustment'] = {
                 'price_source': 'multi_exchange_mean',
-                'position_size': '×1.2',
-                'reason': 'Arbitrage opportunity - use aggregated price',
+                'external_action': 'blocked_pending_cost_and_fill_receipts',
+                'reason': 'Observed spread requires venue-cost and fill validation',
             }
         
         elif anomaly.anomaly_type == AnomalyType.LATENCY_ARBITRAGE:
-            # Adjust for latency
+            latency_ms = _finite_number(anomaly.evidence.get("latency_ms"), nonnegative=True)
+            if latency_ms is None:
+                refinement.update({
+                    'truth_status': 'no_data',
+                    'eligible_for_learning': False,
+                    'reason': 'observed_latency_required',
+                })
+                return refinement
             refinement['adjustment'] = {
-                'latency_compensation': f'+{anomaly.evidence.get("latency_ms", 0)}ms',
+                'latency_compensation': f'+{latency_ms}ms',
                 'position_size': '×0.8',
                 'reason': 'High latency detected - adjust timing',
             }
-        
-        # Log refinement
+
+        if not refinement['adjustment']:
+            refinement.update({
+                'truth_status': 'no_data',
+                'eligible_for_learning': False,
+                'reason': 'unsupported_anomaly_type',
+            })
+            return refinement
+
         self.refinement_log.append(refinement)
         
         return refinement
@@ -583,16 +844,34 @@ class AnomalyDetector:
         Complete anomaly analysis for a symbol.
         Returns all detected anomalies and refinement recommendations.
         """
-        print(f"\n🔍 Analyzing {base_asset}/{quote_asset} across exchanges...")
+        _console_print(f"\n🔍 Analyzing {base_asset}/{quote_asset} across exchanges...")
         
         # Fetch multi-exchange data
-        data_points = self.fetch_multi_exchange_data(base_asset, quote_asset)
+        received_at = datetime.now(timezone.utc)
+        data_points = _eligible_exchange_points(
+            self.fetch_multi_exchange_data(base_asset, quote_asset)
+        )
         
         if not data_points:
-            print("   ⚠️  No data available")
-            return {'anomalies': [], 'refinements': []}
+            _console_print("   ⚠️  No data available")
+            return {
+                'symbol': f"{base_asset}/{quote_asset}",
+                'exchanges_analyzed': 0,
+                'anomalies': [],
+                'refinements': [],
+                'mean_price': None,
+                'price_std': None,
+                'truth_status': 'no_data',
+                'source_id': None,
+                'source_timestamp': None,
+                'received_at': received_at.isoformat(),
+                'generated_values': False,
+                'eligible_for_learning': False,
+                'eligible_for_external_action': False,
+                'reason': 'fresh_coinapi_quotes_unavailable',
+            }
         
-        print(f"   📊 Found data from {len(data_points)} exchanges")
+        _console_print(f"   📊 Found data from {len(data_points)} exchanges")
         
         all_anomalies = []
         all_refinements = []
@@ -611,171 +890,127 @@ class AnomalyDetector:
             
             # Refine algorithm based on anomaly
             refinement = self.refine_algorithm(anomaly)
-            all_refinements.append(refinement)
+            if refinement.get('truth_status') == 'real_derived':
+                all_refinements.append(refinement)
+
+        source_timestamp = min(point.timestamp for point in data_points)
+        source_ids = sorted({point.source_id for point in data_points})
+        prices = [point.price for point in data_points]
         
         return {
             'symbol': f"{base_asset}/{quote_asset}",
             'exchanges_analyzed': len(data_points),
             'anomalies': [a.to_dict() for a in all_anomalies],
             'refinements': all_refinements,
-            'mean_price': statistics.mean([dp.price for dp in data_points]) if data_points else 0,
-            'price_std': statistics.stdev([dp.price for dp in data_points]) if len(data_points) > 1 else 0,
+            'mean_price': statistics.mean(prices),
+            'price_std': statistics.stdev(prices) if len(prices) > 1 else None,
+            'truth_status': 'real_derived',
+            'source_id': '|'.join(source_ids),
+            'source_timestamp': source_timestamp.isoformat(),
+            'received_at': received_at.isoformat(),
+            'generated_values': False,
+            'eligible_for_learning': True,
+            'eligible_for_external_action': False,
         }
     
     def print_anomaly_report(self, analysis: Dict):
         """Print formatted anomaly report"""
-        print(f"""
+        mean_price = _finite_number(analysis.get('mean_price'), positive=True)
+        price_std = _finite_number(analysis.get('price_std'), nonnegative=True)
+        mean_display = f"${mean_price:.6f}" if mean_price is not None else "NO DATA"
+        std_display = f"${price_std:.6f}" if price_std is not None else "NO DATA"
+        _console_print(f"""
 ╔══════════════════════════════════════════════════════════════════════════╗
 ║  🌍⚡ COINAPI ANOMALY REPORT: {analysis['symbol']:20s}            ║
 ╠══════════════════════════════════════════════════════════════════════════╣
 ║  Exchanges Analyzed: {analysis['exchanges_analyzed']:2d}                                               ║
-║  Mean Price: ${analysis['mean_price']:.6f}                                           ║
-║  Price StdDev: ${analysis['price_std']:.6f}                                         ║
+║  Mean Price: {mean_display:48s}                 ║
+║  Price StdDev: {std_display:45s}                 ║
 ╠══════════════════════════════════════════════════════════════════════════╣""")
         
         if analysis['anomalies']:
-            print("║  DETECTED ANOMALIES:                                                     ║")
-            print("╠══════════════════════════════════════════════════════════════════════════╣")
+            _console_print("║  DETECTED ANOMALIES:                                                     ║")
+            _console_print("╠══════════════════════════════════════════════════════════════════════════╣")
             
             for i, anom in enumerate(analysis['anomalies'][:5], 1):
                 severity_bar = "█" * int(anom['severity'] * 10) + "░" * (10 - int(anom['severity'] * 10))
-                print(f"║  {i}. {anom['type']:30s}                                  ║")
-                print(f"║     Severity: {severity_bar} {anom['severity']:.0%}                               ║")
-                print(f"║     {anom['description'][:68]:68s} ║")
-                print(f"║     → {anom['recommendation']:64s} ║")
-                print("╠══════════════════════════════════════════════════════════════════════════╣")
+                _console_print(f"║  {i}. {anom['type']:30s}                                  ║")
+                _console_print(f"║     Severity: {severity_bar} {anom['severity']:.0%}                               ║")
+                _console_print(f"║     {anom['description'][:68]:68s} ║")
+                _console_print(f"║     → {anom['recommendation']:64s} ║")
+                _console_print("╠══════════════════════════════════════════════════════════════════════════╣")
+        elif analysis.get('truth_status') == 'no_data':
+            _console_print("║  ⚠️  NO DATA - no anomaly conclusion was produced                         ║")
+            _console_print("╠══════════════════════════════════════════════════════════════════════════╣")
         else:
-            print("║  ✅ No anomalies detected - data looks clean                             ║")
-            print("╠══════════════════════════════════════════════════════════════════════════╣")
+            _console_print("║  ✅ No threshold breaches observed in fresh provider data                ║")
+            _console_print("╠══════════════════════════════════════════════════════════════════════════╣")
         
         if analysis['refinements']:
-            print("║  ALGORITHM REFINEMENTS:                                                  ║")
-            print("╠══════════════════════════════════════════════════════════════════════════╣")
+            _console_print("║  ALGORITHM REFINEMENTS:                                                  ║")
+            _console_print("╠══════════════════════════════════════════════════════════════════════════╣")
             
             for i, ref in enumerate(analysis['refinements'][:3], 1):
                 adj = ref['adjustment']
-                print(f"║  {i}. {adj.get('reason', 'No reason')[:68]:68s} ║")
+                _console_print(f"║  {i}. {adj.get('reason', 'No reason')[:68]:68s} ║")
                 for key, value in adj.items():
                     if key != 'reason':
-                        print(f"║     • {key}: {str(value)[:58]:58s} ║")
-                print("╠══════════════════════════════════════════════════════════════════════════╣")
+                        _console_print(f"║     • {key}: {str(value)[:58]:58s} ║")
+                _console_print("╠══════════════════════════════════════════════════════════════════════════╣")
         
-        print("╚══════════════════════════════════════════════════════════════════════════╝")
+        _console_print("╚══════════════════════════════════════════════════════════════════════════╝")
 
 
 # ═══════════════════════════════════════════════════════════════
-# DEMO / TEST
+# LIVE RUNTIME ENTRYPOINT
 # ═══════════════════════════════════════════════════════════════
 
-def demo_anomaly_detection():
-    """Demonstrate the anomaly detection system"""
-    print("""
-╔══════════════════════════════════════════════════════════════════════════╗
-║  🌍⚡ COINAPI ANOMALY DETECTOR DEMONSTRATION ⚡🌍                        ║
-║  Cross-Exchange Analysis & Algorithm Refinement                          ║
-╚══════════════════════════════════════════════════════════════════════════╝
-    """)
-    
-    api_key = os.getenv('COINAPI_KEY')
+def run_live_anomaly_detection() -> Dict[str, Any]:
+    """Run provider-backed anomaly analysis with no substitute data path."""
+    api_key = str(os.getenv('COINAPI_KEY') or '').strip()
     if not api_key:
-        from aureon.observer.live_data_policy import (
-            simulation_fallback_allowed, log_blocked_fallback,
-        )
-        if not simulation_fallback_allowed():
-            log_blocked_fallback("coinapi_anomaly_detector", "no_api_key")
-            raise RuntimeError(
-                "COINAPI_KEY missing; refusing to emit synthetic anomalies in "
-                "production. Set COINAPI_KEY (https://www.coinapi.io/, free "
-                "tier 100 req/day) or AUREON_ALLOW_SIM_FALLBACK=1 for dev demo."
-            )
-        print("""
-⚠️  No CoinAPI key found!
+        raise RuntimeError("COINAPI_KEY missing; live anomaly detection unavailable")
 
-To use this feature:
-1. Get free API key from https://www.coinapi.io/
-2. Add to .env file: COINAPI_KEY=your-key-here
-3. Free tier: 100 requests/day
-
-DEV ONLY (AUREON_ALLOW_SIM_FALLBACK=1): showing demo with simulated data...
-""")
-        # DEV-ONLY synthetic data, gated above
-        return demo_with_simulated_data()
-    
-    # Real API test
+    _link_runtime_system()
     client = CoinAPIClient(api_key)
     detector = AnomalyDetector(client)
-    
-    # Analyze popular pairs
-    test_pairs = [
+    live_pairs = [
         ('BTC', 'USD'),
         ('ETH', 'USD'),
         ('BNB', 'USD'),
     ]
-    
-    for base, quote in test_pairs:
-        try:
-            analysis = detector.analyze_symbol(base, quote)
-            detector.print_anomaly_report(analysis)
-            time.sleep(1)
-        except Exception as e:
-            print(f"   ⚠️  Analysis failed for {base}/{quote}: {e}")
-    
-    print("\n✨ Anomaly Detection Complete!")
-    print(f"📊 Total Anomalies Detected: {len(detector.detected_anomalies)}")
-    print(f"🔧 Algorithm Refinements Made: {len(detector.refinement_log)}")
+    analyses: List[Dict[str, Any]] = []
+    for base, quote in live_pairs:
+        analysis = detector.analyze_symbol(base, quote)
+        detector.print_anomaly_report(analysis)
+        analyses.append(analysis)
+        time.sleep(1)
 
-
-def demo_with_simulated_data():
-    """Demo with simulated data when no API key"""
-    print("\n🎭 Running with simulated data...\n")
-    
-    # Simulate anomalies
-    simulated_analysis = {
-        'symbol': 'BTC/USD',
-        'exchanges_analyzed': 5,
-        'mean_price': 69420.50,
-        'price_std': 350.25,
-        'anomalies': [
-            {
-                'type': '💰 Price Manipulation',
-                'severity': 0.75,
-                'description': 'Price 4.2% away from cross-exchange mean',
-                'recommendation': 'AVOID',
-                'exchange': 'EXCHANGE_X',
-            },
-            {
-                'type': '🌐 Cross-Exchange Spread',
-                'severity': 0.45,
-                'description': '2.8% arbitrage spread between exchanges',
-                'recommendation': 'ARBITRAGE OPPORTUNITY',
-                'exchange': 'BINANCE→KRAKEN',
-            },
-        ],
-        'refinements': [
-            {
-                'adjustment': {
-                    'coherence_threshold': '+0.1',
-                    'position_size': '×0.5',
-                    'reason': 'Price manipulation detected - require higher confidence',
-                }
-            },
-            {
-                'adjustment': {
-                    'price_source': 'multi_exchange_mean',
-                    'position_size': '×1.2',
-                    'reason': 'Arbitrage opportunity - use aggregated price',
-                }
-            },
-        ],
+    provider_analyses = [
+        analysis for analysis in analyses
+        if analysis.get('truth_status') == 'real_derived'
+        and analysis.get('source_timestamp')
+        and analysis.get('source_id')
+    ]
+    received_at = datetime.now(timezone.utc)
+    return {
+        'truth_status': 'real_derived' if provider_analyses else 'no_data',
+        'source_id': (
+            '|'.join(sorted({analysis['source_id'] for analysis in provider_analyses}))
+            if provider_analyses else None
+        ),
+        'source_timestamp': (
+            min(analysis['source_timestamp'] for analysis in provider_analyses)
+            if provider_analyses else None
+        ),
+        'received_at': received_at.isoformat(),
+        'generated_values': False,
+        'eligible_for_external_action': False,
+        'analyses': analyses,
+        'anomalies_detected': len(detector.detected_anomalies),
+        'refinements_recorded': len(detector.refinement_log),
     }
-    
-    # Create detector just for printing
-    client = CoinAPIClient('')
-    detector = AnomalyDetector(client)
-    detector.print_anomaly_report(simulated_analysis)
-    
-    print("\n✨ Simulated Demo Complete!")
 
 
 if __name__ == "__main__":
-    demo_anomaly_detection()
+    run_live_anomaly_detection()

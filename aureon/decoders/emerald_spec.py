@@ -15,32 +15,6 @@ Usage:
     python -m aureon.decoders.emerald_spec [--json] [--stage N] [--verse KEY]
 """
 
-import sys
-import os
-
-if sys.platform == 'win32':
-    os.environ['PYTHONIOENCODING'] = 'utf-8'
-    try:
-        import io
-
-        def _is_utf8_wrapper(stream):
-            return (
-                isinstance(stream, io.TextIOWrapper)
-                and hasattr(stream, 'encoding')
-                and stream.encoding
-                and stream.encoding.lower().replace('-', '') == 'utf8'
-            )
-
-        if hasattr(sys.stdout, 'buffer') and not _is_utf8_wrapper(sys.stdout):
-            sys.stdout = io.TextIOWrapper(
-                sys.stdout.buffer,
-                encoding='utf-8',
-                errors='replace',
-                line_buffering=True,
-            )
-    except Exception:
-        pass
-
 import argparse
 import json
 import math
@@ -1544,7 +1518,20 @@ class ProjectDruidManifest:
     Overall integrity   → P5 Stabilization         (Σ tensor guard Γ ≥ 0.945)
     """
 
-    timestamp: str
+    status: str
+    data_origin: str
+    truth_status: str
+    source_id: Optional[str]
+    source_timestamp: Optional[object]
+    received_at: Optional[object]
+    receipt_id: Optional[str]
+    generated_values: bool
+    freshness_sec: Optional[float]
+    operational_eligible: bool
+    actionable: bool
+    accounting_eligible: bool
+    learning_eligible: bool
+    timestamp: Optional[object]
 
     # ── Chamber parameters ──────────────────────────────────────────────────
     chamber_diameter_m: float
@@ -1581,7 +1568,36 @@ class ProjectDruidManifest:
     druid_summary: str
 
     def to_dict(self) -> Dict[str, object]:
+        evidence = {
+            'source_id': self.source_id,
+            'source_timestamp': self.source_timestamp,
+            'received_at': self.received_at,
+            'receipt_id': self.receipt_id,
+            'truth_status': self.truth_status,
+            'generated_values': self.generated_values,
+            'freshness_sec': self.freshness_sec,
+        }
+        controls = {
+            'operational_eligible': self.operational_eligible,
+            'actionable': self.actionable,
+            'accounting_eligible': self.accounting_eligible,
+            'learning_eligible': self.learning_eligible,
+        }
+        if self.status == 'no_data':
+            return {
+                'status': self.status,
+                'data_origin': self.data_origin,
+                'truth_status': self.truth_status,
+                'evidence': evidence,
+                'controls': controls,
+                'device_ready': False,
+                'druid_summary': self.druid_summary,
+            }
         return {
+            'status': self.status,
+            'data_origin': self.data_origin,
+            'evidence': evidence,
+            'controls': controls,
             'timestamp': self.timestamp,
             'chamber': {
                 'diameter_m': self.chamber_diameter_m,
@@ -1623,30 +1639,106 @@ class ProjectDruidManifest:
         }
 
 
+_EPAS_MAX_FRESHNESS_SEC = 300.0
+_EPAS_SCORE_FIELDS = ('layer1_field_score', 'layer2_score', 'layer3_score', 'shield_integrity', 'radar_score')
+
+
+def _receipt_epoch(value: object) -> Optional[float]:
+    """Return a timezone-aware receipt clock as epoch seconds, or None."""
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        return float(value) if math.isfinite(value) else None
+    if not isinstance(value, str):
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.replace('Z', '+00:00'))
+    except ValueError:
+        return None
+    return parsed.timestamp() if parsed.tzinfo is not None else None
+
+
+def _no_data_project_druid_manifest(reason: str) -> ProjectDruidManifest:
+    """Return a numeric-free, non-operational result for invalid EPAS evidence."""
+    return ProjectDruidManifest(
+        status='no_data', data_origin='unavailable', truth_status='no_data',
+        source_id=None, source_timestamp=None, received_at=None, receipt_id=None,
+        generated_values=False, freshness_sec=None, operational_eligible=False,
+        actionable=False, accounting_eligible=False, learning_eligible=False,
+        timestamp=None, chamber_diameter_m=None, chamber_volume_m3=None,
+        fill_gas='NO_DATA', fill_pressure_mbar=None, paschen_pd_torr_cm=None,
+        breakdown_voltage_v=None, plasma_density_m3=None, plasma_status='NO_DATA',
+        rf_carrier_hz=None, rf_modulation_hz=None, rf_power_w=None,
+        auxiliary_power_w=None, total_power_w=None, output_voltage_vdc=None,
+        haarp_power_w=None, concentration_factor=None, power_density_w_m3=None,
+        phase_scores=tuple(), phase_statuses=tuple(), shield_coherence=None,
+        device_ready=False, druid_summary=f'NO_DATA: {reason}',
+    )
+
+
+def _valid_epas_receipt(epas_state: object) -> tuple[bool, str, Dict[str, float], float]:
+    """Validate a complete, fresh provider receipt before model evaluation."""
+    if not isinstance(epas_state, dict):
+        return False, 'complete EPAS receipt required', {}, 0.0
+    if (
+        not isinstance(epas_state.get('source_id'), str)
+        or not epas_state['source_id'].strip()
+        or not isinstance(epas_state.get('receipt_id'), str)
+        or not epas_state['receipt_id'].strip()
+        or epas_state.get('truth_status') not in {'real_observed', 'real_derived'}
+        or epas_state.get('generated_values') is not False
+    ):
+        return False, 'EPAS receipt provenance is incomplete or untrusted', {}, 0.0
+
+    source_epoch = _receipt_epoch(epas_state.get('source_timestamp'))
+    received_epoch = _receipt_epoch(epas_state.get('received_at'))
+    now_epoch = datetime.now(timezone.utc).timestamp()
+    if source_epoch is None or received_epoch is None:
+        return False, 'EPAS receipt timestamps must be timezone-aware', {}, 0.0
+    freshness_sec = max(now_epoch - source_epoch, now_epoch - received_epoch)
+    if source_epoch > now_epoch or received_epoch > now_epoch or freshness_sec > _EPAS_MAX_FRESHNESS_SEC:
+        return False, 'EPAS receipt is stale or future-dated', {}, 0.0
+
+    scores: Dict[str, float] = {}
+    for field_name in _EPAS_SCORE_FIELDS:
+        value = epas_state.get(field_name)
+        if isinstance(value, bool):
+            return False, f'EPAS receipt {field_name} is not numeric', {}, 0.0
+        try:
+            numeric_value = float(value)
+        except (TypeError, ValueError):
+            return False, f'EPAS receipt {field_name} is missing or invalid', {}, 0.0
+        if not math.isfinite(numeric_value) or not 0.0 <= numeric_value <= 1.0:
+            return False, f'EPAS receipt {field_name} is outside [0, 1]', {}, 0.0
+        scores[field_name] = numeric_value
+    return True, '', scores, freshness_sec
+
+
 def compute_project_druid_manifest(
     epas_state: Optional[Dict[str, object]] = None,
 ) -> 'ProjectDruidManifest':
     """Compute the physical EPOS device specification from an EPAS shield state.
 
-    When *epas_state* is ``None`` the function uses the baseline harmonic scores
-    from the live EPAS smoke test (SHIELDS_STRESSED, integrity 0.545) so the
-    manifest is always computable without a live trading runtime.
+    The calculation runs only after a complete, fresh EPAS receipt passes the
+    provenance boundary. Missing, stale, malformed, or generated input returns
+    a numeric-free no_data manifest; deterministic equations are never
+    presented as current EPAS state.
 
     Parameters
     ----------
     epas_state:
-        Optional dict with keys matching ``EPASShieldState`` fields.
-        Expected: layer1_field_score, layer2_score, layer3_score,
-                  shield_integrity, (optional) radar_score.
+        Dict with five [0, 1] scores plus source_id, source_timestamp,
+        received_at, receipt_id, truth_status (real_observed or real_derived),
+        and generated_values=False.
     """
-    s = epas_state or {}
+    valid, reason, scores, freshness_sec = _valid_epas_receipt(epas_state)
+    if not valid:
+        return _no_data_project_druid_manifest(reason)
 
     # ── Extract EPAS scores (or use live baseline) ─────────────────────────
-    l1 = float(s.get('layer1_field_score', 0.646))   # L1 field  — live default
-    l2 = float(s.get('layer2_score',       0.500))   # L2 equity — UNKNOWN baseline
-    l3 = float(s.get('layer3_score',       0.508))   # L3 premise — live CRACKING
-    integrity = float(s.get('shield_integrity', 0.545))
-    radar = float(s.get('radar_score', 0.728))        # RADAR_BULLISH current default
+    l1 = scores['layer1_field_score']
+    l2 = scores['layer2_score']
+    l3 = scores['layer3_score']
+    integrity = scores['shield_integrity']
+    radar = scores['radar_score']
 
     # ── Six Illumination Phases ────────────────────────────────────────────
     # P1 Spark       — nanosecond field prime (L1 harmonic detection)
@@ -1733,7 +1825,20 @@ def compute_project_druid_manifest(
         )
 
     return ProjectDruidManifest(
-        timestamp=datetime.now(timezone.utc).isoformat(),
+        status='modeled',
+        data_origin='modeled_from_real_epas_receipt',
+        truth_status=str(epas_state['truth_status']),
+        source_id=str(epas_state['source_id']),
+        source_timestamp=epas_state['source_timestamp'],
+        received_at=epas_state['received_at'],
+        receipt_id=str(epas_state['receipt_id']),
+        generated_values=False,
+        freshness_sec=round(freshness_sec, 3),
+        operational_eligible=False,
+        actionable=False,
+        accounting_eligible=False,
+        learning_eligible=False,
+        timestamp=epas_state['source_timestamp'],
         chamber_diameter_m=EPOS_CHAMBER_DIAMETER_M,
         chamber_volume_m3=EPOS_CHAMBER_VOLUME_M3,
         fill_gas='Argon',
@@ -4460,6 +4565,8 @@ class EmeraldSeer:
 
 
 def _format_console_druid(manifest: ProjectDruidManifest) -> str:
+    if manifest.status == 'no_data':
+        return f'PROJECT DRUID: {manifest.druid_summary}'
     lines = [
         '=' * 72,
         'PROJECT DRUID — PHYSICAL EPAS MANIFESTATION',

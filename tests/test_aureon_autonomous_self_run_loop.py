@@ -39,6 +39,7 @@ def _self_run_overrides(**updates):
         "goal_contract_dispatcher": _runner("goal_contract_dispatched"),
         "coding_capability_unblocker": _runner("gates_ready"),
         "creative_process_guardian": _runner("creative_ready"),
+        "unified_self_evolution": _runner("unified_self_evolution_reasoned"),
         "autonomous_self_fix_director": _runner("self_fix_autonomous_safe_ready"),
         "autonomous_job_executor": _runner("autonomous_jobs_ready"),
         "evolution_queue_certification": _runner("evolution_queue_584_autonomous_certified"),
@@ -62,7 +63,7 @@ def test_self_run_loop_runs_safe_autonomous_organs_and_writes_artifacts(tmp_path
     assert report["summary"]["loop_active"] is True
     assert report["summary"]["heartbeat_status"] == "fresh"
     assert report["heartbeat"]["status"] == "fresh"
-    assert report["summary"]["latest_task_ok_count"] == 8
+    assert report["summary"]["latest_task_ok_count"] == 9
     assert report["summary"]["hard_boundary_hold_count"] == 0
     assert (tmp_path / "state" / "aureon_autonomous_self_run_loop_last_run.json").exists()
     assert (tmp_path / "docs" / "audits" / "aureon_autonomous_self_run_loop.md").exists()
@@ -92,6 +93,7 @@ def test_self_run_loop_keeps_only_true_authority_as_hard_hold(tmp_path: Path) ->
             goal_contract_dispatcher=_runner(),
             coding_capability_unblocker=_runner(),
             creative_process_guardian=_runner(),
+            unified_self_evolution=_runner(),
             autonomous_self_fix_director=_runner(),
             autonomous_job_executor=_runner(),
             evolution_queue_certification=_runner(),
@@ -119,6 +121,7 @@ def test_self_run_loop_attaches_compact_state_to_coding_bridge(tmp_path: Path) -
             goal_contract_dispatcher=_runner(),
             coding_capability_unblocker=_runner(),
             creative_process_guardian=_runner(),
+            unified_self_evolution=_runner(),
             autonomous_self_fix_director=_runner(),
             autonomous_job_executor=_runner(),
             evolution_queue_certification=_runner(),
@@ -169,8 +172,31 @@ def test_goal_contract_dispatcher_queues_safe_code_when_route_is_code(tmp_path: 
     assert report["completed_work_order"]["payload"]["result"]["route_decision"]["selected_route"] == "safe_code_repair"
 
 
+def test_goal_contract_dispatcher_services_capability_growth_nerve_queue(tmp_path: Path) -> None:
+    from aureon.core.organism_contracts import OrganismContractStack
+
+    stack = OrganismContractStack(state_path=tmp_path / "state" / "organism_contract_stack.json")
+    growth = stack.enqueue_work_order(
+        "Repair capability queue wiring",
+        "execute_internal_task",
+        queue="organism.capability_growth",
+        payload={"gap": {"proposed_action": "service every organism nerve queue"}},
+    )
+    report = run_goal_contract_dispatcher(
+        root=tmp_path,
+        prompt="continue the organism cycle",
+        route_runner_overrides={"capability_growth_loop": _route_runner("growth_route_called")},
+    )
+
+    assert report["claimed_work_order"]["contract_id"] == growth.contract_id
+    assert report["route_decision"]["claimed_queue"] == "organism.capability_growth"
+    assert report["route_decision"]["selected_route"] == "capability_growth_loop"
+    assert report["execution"]["status"] == "growth_route_called"
+
+
 def test_production_launcher_supervises_autonomous_self_run_loop() -> None:
-    script = Path("AUREON_WAKE_UP_FULL_AUTONOMOUS.ps1").read_text(encoding="utf-8")
+    # The launcher moved to scripts/launchers/ in the repository reorganisation.
+    script = Path("scripts/launchers/AUREON_WAKE_UP_FULL_AUTONOMOUS.ps1").read_text(encoding="utf-8")
 
     assert "SkipAutonomousSelfRun" in script
     assert "SelfRunIntervalSec" in script

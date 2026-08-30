@@ -25,7 +25,7 @@ import os
 # ═══════════════════════════════════════════════════════════════════════════
 # WINDOWS UTF-8 FIX - MUST BE BEFORE OTHER IMPORTS
 # ═══════════════════════════════════════════════════════════════════════════
-if sys.platform == 'win32':
+if sys.platform == 'win32' and sys.stdout is sys.__stdout__ and sys.stdout.isatty():
     os.environ['PYTHONIOENCODING'] = 'utf-8'
     try:
         import io
@@ -61,19 +61,332 @@ except Exception:
     SERO_AVAILABLE = False
 
 # ═══════════════════════════════════════════════════════════════════════════
-# ENIGMA INTEGRATION CLASS (DEFINED EARLY TO AVOID CIRCULAR IMPORTS)
+# ENHANCED NEXUS CLASSES (DEFINED EARLY TO AVOID CIRCULAR IMPORTS)
+#
+# ProfitFilter / CompoundingEngine / OptimalExitFinder / AureonProbabilityNexus /
+# EnhancedProbabilityNexus are the classes every consumer lazily imports from
+# this module (aureon_unified_ecosystem._lazy_load_enhanced_nexus, aureon_mycelium,
+# mycelium_conversion_hub). They were declared but never defined here, so every
+# consumer's try/except quietly set ENHANCED_NEXUS_AVAILABLE=False and the
+# fee-aware profit filter stayed dormant repo-wide. All predictions below are
+# derived from the REAL candles the caller provides — no candles means an honest
+# NEUTRAL / not-profitable answer, never an invented one.
 # ═══════════════════════════════════════════════════════════════════════════
 
+from collections import deque as _deque
+from dataclasses import dataclass as _dataclass, field as _field
+
+
+@_dataclass
+class NexusPrediction:
+    """One directional prediction, always traceable to the data that made it."""
+
+    direction: str = 'NEUTRAL'          # LONG / SHORT / NEUTRAL
+    probability: float = 0.5            # P(up) estimate from observed patterns
+    confidence: float = 0.0             # |probability - 0.5| * 2, damped by data size
+    suggested_size: float = 0.0         # fraction of equity (pre-leverage)
+    stop_loss_pct: float = 0.02
+    take_profit_pct: float = 0.04
+    reason: str = 'no market data'
+    factors: dict = _field(default_factory=dict)
+
+
+class ProfitFilter:
+    """Fee-aware exit filter: a trade only passes when the caller's own candle
+    data contains an exit that clears round-trip fees within the hold window."""
+
+    def __init__(self, fee_rate: float = 0.001, max_hold: int = 15):
+        self.fee_rate = float(fee_rate)
+        self.round_trip_fees = self.fee_rate * 2.0
+        self.max_hold = int(max_hold)
+
+    def is_exit_profitable(self, entry_price: float, exit_price: float, direction: str = 'LONG') -> bool:
+        if not entry_price or not exit_price:
+            return False
+        move = (exit_price - entry_price) / entry_price
+        if direction == 'SHORT':
+            move = -move
+        return move > self.round_trip_fees
+
+    def check_profitability(self, candles, idx: int, direction: str) -> tuple:
+        """Scan the REAL future candles after ``idx`` for a fee-clearing exit.
+
+        Returns (is_profitable, optimal_hold, expected_profit). Without candles
+        there is nothing to scan, so the honest answer is (False, 0, 0.0).
+        """
+        if not candles or idx is None or direction == 'NEUTRAL':
+            return False, 0, 0.0
+        try:
+            entry = float(candles[idx].get('close') or 0)
+        except (IndexError, AttributeError, TypeError, ValueError):
+            return False, 0, 0.0
+        if entry <= 0:
+            return False, 0, 0.0
+        best_profit, best_hold = 0.0, 0
+        horizon = candles[idx + 1: idx + 1 + self.max_hold]
+        for hold, candle in enumerate(horizon, start=1):
+            try:
+                exit_price = float(candle.get('close') or 0)
+            except (AttributeError, TypeError, ValueError):
+                continue
+            if exit_price <= 0:
+                continue
+            move = (exit_price - entry) / entry
+            if direction == 'SHORT':
+                move = -move
+            net = move - self.round_trip_fees
+            if net > best_profit:
+                best_profit, best_hold = net, hold
+        return best_profit > 0.0, best_hold, round(best_profit, 6)
+
+
+class CompoundingEngine:
+    """Kelly-style position sizing over a tracked balance."""
+
+    def __init__(self, starting_balance: float = 1000.0, leverage: float = 1.0,
+                 kelly_fraction: float = 0.25, max_position_fraction: float = 0.10):
+        self.starting_balance = float(starting_balance)
+        self.balance = float(starting_balance)
+        self.leverage = float(leverage)
+        self.kelly_fraction = float(kelly_fraction)
+        self.max_position_fraction = float(max_position_fraction)
+
+    def calculate_position_size(self, confidence: float) -> float:
+        """Fractional-Kelly size in account currency, capped at max fraction."""
+        edge = max(0.0, min(1.0, float(confidence)))
+        fraction = min(self.max_position_fraction, edge * self.kelly_fraction)
+        return round(self.balance * fraction * self.leverage, 2)
+
+    def record_pnl(self, net_pnl: float) -> float:
+        self.balance += float(net_pnl)
+        return self.balance
+
+
+class OptimalExitFinder:
+    """Locate the best fee-adjusted exit inside a real candle window."""
+
+    def __init__(self, fee_rate: float = 0.001, max_hold: int = 15):
+        self._filter = ProfitFilter(fee_rate=fee_rate, max_hold=max_hold)
+
+    def find_optimal_exit(self, candles, idx: int, direction: str) -> tuple:
+        """Returns (optimal_hold, expected_profit) from the caller's candles."""
+        _, hold, profit = self._filter.check_profitability(candles, idx, direction)
+        return hold, profit
+
+
+class AureonProbabilityNexus:
+    """Per-pair probability predictor over the caller-fed candle history.
+
+    Implements the documented pattern matrix (momentum, price position in the
+    observed range, streaks) using the module's tuned constants. With no fed
+    history it answers NEUTRAL with zero confidence — it never invents a market.
+    """
+
+    def __init__(self, pair: str = '', fee_rate: float = 0.001, max_history: int = 500):
+        self.pair = pair
+        self.fee_rate = float(fee_rate)
+        self.history: _deque = _deque(maxlen=max_history)
+
+    def update_history(self, candle: dict) -> None:
+        if isinstance(candle, dict) and candle.get('close') is not None:
+            self.history.append(candle)
+
+    def predict(self) -> NexusPrediction:
+        closes = [float(c.get('close') or 0) for c in self.history]
+        closes = [c for c in closes if c > 0]
+        if len(closes) < 6:
+            return NexusPrediction(reason=f'insufficient history ({len(closes)} candles)')
+
+        # Momentum: bullish candles in the last 6
+        bullish = sum(1 for a, b in zip(closes[-7:-1], closes[-6:]) if b > a)
+        if bullish >= 5:
+            p_momentum = MOMENTUM_HIGH
+        elif bullish <= 1:
+            p_momentum = MOMENTUM_LOW
+        else:
+            p_momentum = MOMENTUM_MID
+
+        # Price position within the observed range
+        lo, hi = min(closes), max(closes)
+        pos = (closes[-1] - lo) / (hi - lo) if hi > lo else 0.5
+        if pos >= 0.9:
+            p_position = PRICE_VERY_HIGH
+        elif pos >= 0.7:
+            p_position = PRICE_HIGH
+        elif pos <= 0.1:
+            p_position = PRICE_VERY_LOW
+        elif pos <= 0.3:
+            p_position = PRICE_LOW
+        else:
+            p_position = PRICE_MID
+
+        # Streaks
+        streak = 0
+        for a, b in zip(reversed(closes[:-1]), reversed(closes[1:])):
+            if (b > a) == (closes[-1] > closes[-2]):
+                streak += 1
+            else:
+                break
+        p_streak = 0.5
+        rising = closes[-1] > closes[-2]
+        if streak >= 4:
+            p_streak = STREAK_BULL_4PLUS if rising else STREAK_BEAR_4PLUS
+        elif streak == 3 and not rising:
+            p_streak = STREAK_BEAR_3
+
+        probability = (p_momentum + p_position + p_streak) / 3.0
+        # NOTE: pattern constants encode P(next candle up); >0.5 favours LONG.
+        direction = 'LONG' if probability > 0.5 else 'SHORT' if probability < 0.5 else 'NEUTRAL'
+        # damp confidence when the history is thin — data size is part of the truth
+        data_factor = min(1.0, len(closes) / 24.0)
+        confidence = round(abs(probability - 0.5) * 2.0 * data_factor, 4)
+        if confidence < MIN_CONFIDENCE:
+            direction = 'NEUTRAL'
+
+        return NexusPrediction(
+            direction=direction,
+            probability=round(probability, 4),
+            confidence=confidence,
+            suggested_size=round(min(MAX_POSITION_SIZE, BASE_POSITION_SIZE * (1 + confidence * 4)), 4),
+            stop_loss_pct=MIN_STOP_LOSS * 2,
+            take_profit_pct=MIN_STOP_LOSS * 2 * TAKE_PROFIT_MULTIPLIER,
+            reason=(f'{bullish}/6 bullish momentum, range position {pos:.0%}, '
+                    f'streak {streak} ({len(closes)} candles observed)'),
+            factors={
+                'p_momentum': p_momentum,
+                'p_position': p_position,
+                'p_streak': p_streak,
+                'candles_observed': len(closes),
+            },
+        )
+
+    def should_trade(self, prediction: NexusPrediction) -> bool:
+        return prediction.direction != 'NEUTRAL' and prediction.confidence >= MIN_CONFIDENCE
+
+
+# Tracked pair universe: majors quoted in USD, GBP, and EUR (Binance listings).
+_NEXUS_BASES = (
+    'BTC', 'ETH', 'SOL', 'XRP', 'ADA', 'DOGE', 'DOT', 'LINK', 'LTC', 'AVAX',
+    'MATIC', 'ATOM', 'UNI', 'XLM', 'ALGO', 'FIL', 'NEAR', 'APT', 'ARB', 'OP',
+    'INJ', 'SUI', 'SEI', 'TIA', 'RNDR', 'FET', 'GRT', 'IMX', 'STX', 'HBAR',
+    'VET', 'SAND', 'MANA', 'AAVE', 'MKR', 'SNX', 'CRV', 'COMP', 'ENJ', 'CHZ',
+)
+_NEXUS_QUOTES = ('USD', 'GBP', 'EUR')
+ALL_NEXUS_PAIRS = tuple(
+    f'{base}/{quote}'
+    for quote in _NEXUS_QUOTES
+    for base in (_NEXUS_BASES if quote == 'USD' else _NEXUS_BASES[:17])
+)
+
+
 class EnhancedProbabilityNexus:
-    """ Wrapper class for Aureon Enigma Integration. """
-    def __init__(self): pass
+    """Profit-filtered, fee-aware, compounding prediction engine.
+
+    Wraps a per-pair :class:`AureonProbabilityNexus` behind a
+    :class:`ProfitFilter` (only fee-clearing exits pass) and a
+    :class:`CompoundingEngine` (Kelly-style sizing on the tracked balance).
+    Also keeps the original ``get_signal()`` bridge to the module-level
+    prediction loop for back-compat.
+    """
+
+    FEE_RATES = {'binance': 0.001, 'kraken': 0.0026, 'alpaca': 0.0025, 'capital': 0.001}
+
+    def __init__(self, exchange: str = 'binance', leverage: float = 1.0,
+                 starting_balance: float = 1000.0):
+        self.exchange = str(exchange or 'binance').lower()
+        self.fee_rate = self.FEE_RATES.get(self.exchange, 0.001)
+        self.ALL_PAIRS = list(ALL_NEXUS_PAIRS)
+        self.profit_filter = ProfitFilter(fee_rate=self.fee_rate)
+        self.compounding = CompoundingEngine(starting_balance=starting_balance, leverage=leverage)
+        self.exit_finder = OptimalExitFinder(fee_rate=self.fee_rate)
+        self.total_pnl = 0.0
+        self.trades: list = []
+        self._pair_nexus: dict = {}
+
+    # ── per-pair predictors ──────────────────────────────────────────────────
+    def get_nexus_for_pair(self, pair: str) -> AureonProbabilityNexus:
+        key = str(pair or '').upper()
+        if key not in self._pair_nexus:
+            self._pair_nexus[key] = AureonProbabilityNexus(pair=key, fee_rate=self.fee_rate)
+        return self._pair_nexus[key]
+
+    def predict_with_profit_filter(self, pair: str, candles=None, candle_idx=None):
+        """(prediction, is_profitable, optimal_hold, expected_profit).
+
+        The profit half only ever reads the candles the CALLER supplies; with
+        no candles the answer is honestly not-profitable, never a guess.
+        """
+        nexus = self.get_nexus_for_pair(pair)
+        if candles:
+            window = candles if candle_idx is None else candles[: candle_idx + 1]
+            for candle in window[-nexus.history.maxlen:]:
+                nexus.update_history(candle)
+        prediction = nexus.predict()
+        idx = candle_idx if candle_idx is not None else (len(candles) - 1 if candles else None)
+        is_profitable, optimal_hold, expected_profit = self.profit_filter.check_profitability(
+            candles, idx, prediction.direction
+        )
+        return prediction, is_profitable, optimal_hold, expected_profit
+
+    # ── trade accounting (real prices in, real pnl out) ─────────────────────
+    def execute_trade(self, pair: str, direction: str, entry_price: float,
+                      exit_price: float, confidence: float) -> dict:
+        size = self.compounding.calculate_position_size(confidence)
+        entry_price = float(entry_price)
+        exit_price = float(exit_price)
+        move = (exit_price - entry_price) / entry_price if entry_price else 0.0
+        if str(direction).upper() in ('SHORT', 'SELL'):
+            move = -move
+        gross_pnl = size * move
+        fees = size * self.profit_filter.round_trip_fees
+        net_pnl = gross_pnl - fees
+        self.compounding.record_pnl(net_pnl)
+        self.total_pnl += net_pnl
+        trade = {
+            'pair': pair,
+            'direction': direction,
+            'entry_price': entry_price,
+            'exit_price': exit_price,
+            'confidence': float(confidence),
+            'position_size': size,
+            'gross_pnl': round(gross_pnl, 8),
+            'fees': round(fees, 8),
+            'net_pnl': round(net_pnl, 8),
+            'balance_after': round(self.compounding.balance, 8),
+        }
+        self.trades.append(trade)
+        return trade
+
+    def get_win_rate(self) -> float:
+        if not self.trades:
+            return 0.0
+        wins = sum(1 for t in self.trades if t['net_pnl'] > 0)
+        return round(100.0 * wins / len(self.trades), 2)
+
+    def get_performance_report(self) -> dict:
+        return {
+            'win_rate': self.get_win_rate(),
+            'total_trades': len(self.trades),
+            'current_balance': round(self.compounding.balance, 2),
+            'total_pnl': round(self.total_pnl, 8),
+            'total_return_pct': round(
+                100.0 * (self.compounding.balance - self.compounding.starting_balance)
+                / self.compounding.starting_balance, 4
+            ) if self.compounding.starting_balance else 0.0,
+            'pairs_tracked': len(self._pair_nexus),
+            'fee_rate': self.fee_rate,
+        }
+
+    # ── legacy bridge to the module-level prediction loop ────────────────────
     def get_signal(self):
         try:
             if 'make_predictions' in globals():
                 # Call prediction logic (relies on global state)
                 preds = globals()['make_predictions']()
-                if preds: return preds[0]
-        except Exception: pass
+                if preds:
+                    return preds[0]
+        except Exception:
+            pass
         return None
 
 # ═══════════════════════════════════════════════════════════════════════════

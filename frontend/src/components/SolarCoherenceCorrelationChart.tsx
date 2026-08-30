@@ -129,8 +129,8 @@ export const SolarCoherenceCorrelationChart = () => {
     Math.abs(correlationStrength) > 0.2 ? 'Weak' : 'Minimal';
 
   const correlationColor = 
-    Math.abs(correlationStrength) > 0.7 ? 'text-green-500' :
-    Math.abs(correlationStrength) > 0.4 ? 'text-yellow-500' :
+    Math.abs(correlationStrength) > 0.7 ? 'text-success' :
+    Math.abs(correlationStrength) > 0.4 ? 'text-warning' :
     'text-muted-foreground';
 
   return (
@@ -145,9 +145,9 @@ export const SolarCoherenceCorrelationChart = () => {
         </div>
         <div className="text-right space-y-1">
           <div className="flex items-center gap-2">
-            {trendDirection === 'up' && <TrendingUp className="w-5 h-5 text-green-500" />}
-            {trendDirection === 'down' && <TrendingDown className="w-5 h-5 text-red-500" />}
-            {trendDirection === 'stable' && <Activity className="w-5 h-5 text-yellow-500" />}
+            {trendDirection === 'up' && <TrendingUp className="w-5 h-5 text-success" />}
+            {trendDirection === 'down' && <TrendingDown className="w-5 h-5 text-destructive" />}
+            {trendDirection === 'stable' && <Activity className="w-5 h-5 text-warning" />}
             <Badge variant={trendDirection === 'up' ? 'default' : 'secondary'}>
               {trendDirection === 'up' ? 'Uptrend' : trendDirection === 'down' ? 'Downtrend' : 'Stable'}
             </Badge>

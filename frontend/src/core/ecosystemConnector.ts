@@ -215,18 +215,23 @@ class EcosystemConnectorCore {
     
     // 5b. Compute QGITA Signal (using singleton)
     this.qgitaSignalState = qgitaSignalGenerator.generateSignal(
-      Date.now(),
+      marketSnapshot.timestamp,
       marketSnapshot.price,
       marketSnapshot.volume,
       lambdaState.lambda,
       lambdaState.coherence,
       lambdaState.substrate,
       lambdaState.observer,
-      lambdaState.echo
+      lambdaState.echo,
+      marketSnapshot,
     );
-    // Convert to legacy LighthouseEvent for backwards compatibility
-    this.qgitaState = convertToLighthouseEvent(this.qgitaSignalState);
-    this.publishQGITA(this.qgitaSignalState);
+    // No signal is published or persisted until enough real observations exist.
+    if (this.qgitaSignalState) {
+      this.qgitaState = convertToLighthouseEvent(this.qgitaSignalState);
+      this.publishQGITA(this.qgitaSignalState);
+    } else {
+      this.qgitaState = null;
+    }
 
     // 6. Compute 6D Harmonic Waveform
     this.waveform6D = sixDimensionalEngine.updateAsset(

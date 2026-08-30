@@ -95,22 +95,22 @@ export function ProbabilityReconstructionPanel() {
   const getDataStatusBadge = () => {
     switch (dataStatus) {
       case 'LIVE':
-        return <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[10px]">LIVE</Badge>;
+        return <Badge className="bg-success/20 text-success border-success/30 text-[10px]">LIVE</Badge>;
       case 'STALE':
-        return <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30 text-[10px]">STALE</Badge>;
+        return <Badge className="bg-warning/20 text-warning border-warning/30 text-[10px]">STALE</Badge>;
       default:
-        return <Badge className="bg-red-500/20 text-red-400 border-red-500/30 text-[10px]">NO DATA</Badge>;
+        return <Badge className="bg-destructive/20 text-destructive border-destructive/30 text-[10px]">NO DATA</Badge>;
     }
   };
 
   const getStatusIcon = (status: DataStream['status']) => {
     switch (status) {
       case 'valid':
-        return <CheckCircle2 className="h-3 w-3 text-green-400" />;
+        return <CheckCircle2 className="h-3 w-3 text-success" />;
       case 'suspect':
-        return <AlertCircle className="h-3 w-3 text-yellow-400" />;
+        return <AlertCircle className="h-3 w-3 text-warning" />;
       case 'invalid':
-        return <AlertCircle className="h-3 w-3 text-red-400" />;
+        return <AlertCircle className="h-3 w-3 text-destructive" />;
       case 'no_data':
         return <AlertTriangle className="h-3 w-3 text-muted-foreground" />;
       default:
@@ -124,11 +124,11 @@ export function ProbabilityReconstructionPanel() {
     }
     switch (reconstructionStatus) {
       case 'valid':
-        return <Badge className="bg-green-500/20 text-green-400 border-green-500/30 gap-1"><CheckCircle2 className="h-3 w-3" /> VALIDATED</Badge>;
+        return <Badge className="bg-success/20 text-success border-success/30 gap-1"><CheckCircle2 className="h-3 w-3" /> VALIDATED</Badge>;
       case 'suspect':
-        return <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30 gap-1"><AlertCircle className="h-3 w-3" /> SUSPECT</Badge>;
+        return <Badge className="bg-warning/20 text-warning border-warning/30 gap-1"><AlertCircle className="h-3 w-3" /> SUSPECT</Badge>;
       default:
-        return <Badge className="bg-red-500/20 text-red-400 border-red-500/30 gap-1"><AlertCircle className="h-3 w-3" /> DIVERGENT</Badge>;
+        return <Badge className="bg-destructive/20 text-destructive border-destructive/30 gap-1"><AlertCircle className="h-3 w-3" /> DIVERGENT</Badge>;
     }
   };
 
@@ -144,7 +144,7 @@ export function ProbabilityReconstructionPanel() {
           {getReconstructionBadge()}
         </div>
         {dataStatus === 'NO_DATA' && (
-          <div className="flex items-center gap-1 text-[10px] text-yellow-500 mt-1">
+          <div className="flex items-center gap-1 text-[10px] text-warning mt-1">
             <AlertTriangle className="h-3 w-3" />
             <span>Awaiting probability matrix streams...</span>
           </div>
@@ -168,9 +168,9 @@ export function ProbabilityReconstructionPanel() {
                 value={stream.value * 100} 
                 className={cn(
                   "h-1",
-                  stream.status === 'valid' && "[&>div]:bg-green-500",
-                  stream.status === 'suspect' && "[&>div]:bg-yellow-500",
-                  stream.status === 'invalid' && "[&>div]:bg-red-500"
+                  stream.status === 'valid' && "[&>div]:bg-success",
+                  stream.status === 'suspect' && "[&>div]:bg-warning",
+                  stream.status === 'invalid' && "[&>div]:bg-destructive"
                 )}
               />
             </div>
@@ -182,9 +182,9 @@ export function ProbabilityReconstructionPanel() {
           <div className={cn(
             "flex items-center gap-2 px-3 py-1 rounded-full border",
             isAnimating && "animate-pulse",
-            reconstructionStatus === 'valid' && "border-green-500/30 bg-green-500/10",
-            reconstructionStatus === 'suspect' && "border-yellow-500/30 bg-yellow-500/10",
-            reconstructionStatus === 'invalid' && "border-red-500/30 bg-red-500/10"
+            reconstructionStatus === 'valid' && "border-success/30 bg-success/10",
+            reconstructionStatus === 'suspect' && "border-warning/30 bg-warning/10",
+            reconstructionStatus === 'invalid' && "border-destructive/30 bg-destructive/10"
           )}>
             <span className="text-[10px] text-muted-foreground">MATRIX FUSION</span>
             <span className="text-lg">→</span>
@@ -197,7 +197,7 @@ export function ProbabilityReconstructionPanel() {
             <span className="text-xs text-muted-foreground">Reconstructed Probability</span>
             <span className={cn(
               "text-lg font-mono font-bold",
-              fusedValue > 0.6 ? "text-green-400" : fusedValue > 0.4 ? "text-yellow-400" : "text-red-400"
+              fusedValue > 0.6 ? "text-success" : fusedValue > 0.4 ? "text-warning" : "text-destructive"
             )}>
               {(fusedValue * 100).toFixed(1)}%
             </span>
@@ -206,9 +206,9 @@ export function ProbabilityReconstructionPanel() {
             value={fusedValue * 100} 
             className={cn(
               "h-2",
-              fusedValue > 0.6 && "[&>div]:bg-gradient-to-r [&>div]:from-green-600 [&>div]:to-green-400",
-              fusedValue <= 0.6 && fusedValue > 0.4 && "[&>div]:bg-gradient-to-r [&>div]:from-yellow-600 [&>div]:to-yellow-400",
-              fusedValue <= 0.4 && "[&>div]:bg-gradient-to-r [&>div]:from-red-600 [&>div]:to-red-400"
+              fusedValue > 0.6 && "[&>div]:bg-gradient-to-r [&>div]:from-success [&>div]:to-success",
+              fusedValue <= 0.6 && fusedValue > 0.4 && "[&>div]:bg-gradient-to-r [&>div]:from-warning [&>div]:to-warning",
+              fusedValue <= 0.4 && "[&>div]:bg-gradient-to-r [&>div]:from-destructive [&>div]:to-destructive"
             )}
           />
           <div className="flex justify-between mt-2 text-[10px] text-muted-foreground">

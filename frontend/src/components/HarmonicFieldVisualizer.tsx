@@ -126,14 +126,14 @@ export const HarmonicFieldVisualizer: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <Card className="bg-gradient-to-r from-violet-900 to-primary text-white">
+      <Card className="bg-gradient-to-r from-primary to-primary text-white">
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span className="flex items-center space-x-2">
               <span className="text-2xl">🌊</span>
               <span>Harmonic Field Visualizer</span>
             </span>
-            <Badge variant={harmonicLock ? "default" : "secondary"} className={harmonicLock ? "bg-emerald-500" : ""}>
+            <Badge variant={harmonicLock ? "default" : "secondary"} className={harmonicLock ? "bg-success" : ""}>
               {harmonicLock ? "🔒 528 Hz LOCKED" : `${waveState}`}
             </Badge>
           </CardTitle>
@@ -153,28 +153,28 @@ export const HarmonicFieldVisualizer: React.FC = () => {
 
       {/* Metrics Dashboard */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="bg-gradient-to-br from-violet-500 to-violet-700 text-white">
+        <Card className="bg-gradient-to-br from-primary to-primary text-white">
           <CardContent className="p-4 text-center">
             <div className="text-2xl font-bold">{fmt(fieldMetrics.coherence * 100, 1)}%</div>
             <div className="text-sm opacity-80">Field Coherence</div>
           </CardContent>
         </Card>
         
-        <Card className="bg-gradient-to-br from-primary to-blue-700 text-white">
+        <Card className="bg-gradient-to-br from-primary to-primary text-white">
           <CardContent className="p-4 text-center">
             <div className="text-2xl font-bold">{fmt(fieldMetrics.phaseAlignment * 100, 1)}%</div>
             <div className="text-sm opacity-80">Phase Alignment</div>
           </CardContent>
         </Card>
         
-        <Card className="bg-gradient-to-br from-emerald-500 to-emerald-700 text-white">
+        <Card className="bg-gradient-to-br from-success to-success text-white">
           <CardContent className="p-4 text-center">
             <div className="text-2xl font-bold">{fmt(fieldMetrics.resonanceStrength * 100, 1)}%</div>
             <div className="text-sm opacity-80">Resonance Strength</div>
           </CardContent>
         </Card>
         
-        <Card className="bg-gradient-to-br from-amber-500 to-orange-600 text-white">
+        <Card className="bg-gradient-to-br from-warning to-warning text-white">
           <CardContent className="p-4 text-center">
             <div className="text-2xl font-bold">{fmt(fieldMetrics.unityFactor * 100, 1)}%</div>
             <div className="text-sm opacity-80">Unity Factor</div>

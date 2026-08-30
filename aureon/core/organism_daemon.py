@@ -28,6 +28,7 @@ from __future__ import annotations
 import logging
 import os
 import signal
+import sys
 import time
 from typing import Any
 
@@ -97,6 +98,87 @@ def boot() -> dict[str, Any]:
             logger.info("🔭 Dr. Auris Throne started — auris.throne.cosmic_state now flows live")
         except Exception as exc:  # noqa: BLE001
             logger.warning("Dr. Auris Throne not started: %s", exc)
+
+    # Bind the process-owned organism map without provisioning cloud brains,
+    # creating governance receipts, or waking an exchange. The root is useful
+    # even while incomplete because every consumer sees the same explicit HOLD
+    # reason instead of inferring readiness from bus membership.
+    try:
+        from aureon.core.organism_composition import (
+            bind_canonical_organism_composition,
+            configure_canonical_organism_composition,
+            get_canonical_organism_composition,
+        )
+        from aureon.core.soul import get_soul
+
+        organs["soul"] = get_soul()
+        present_subsystems = {
+            "thought_bus": "shared nervous system",
+            "connectome": "whole-repository body map",
+            "soul": "multi-voice deliberation",
+            "hnc": "canonical coherence field",
+            "celtic_voice_bank": "source-bound council language",
+        }
+        mycelium_module = sys.modules.get("aureon.core.aureon_mycelium")
+        existing_mycelium = getattr(mycelium_module, "_mycelium_instance", None)
+        if existing_mycelium is not None:
+            organs["mycelium"] = existing_mycelium
+            present_subsystems["mycelium"] = "existing hive propagation mesh"
+        if "auris_throne" in organs:
+            present_subsystems["auris"] = "live Auris cosmic-state producer"
+        composition = get_canonical_organism_composition()
+        if composition is None:
+            composition = configure_canonical_organism_composition(
+                bind_canonical_organism_composition(
+                    present_subsystems=present_subsystems,
+                )
+            )
+        organs["organism_composition"] = composition
+        composition_status = composition.status()
+        organs["organism_composition_status"] = composition_status
+        from aureon.queen.queen_process_roof import (
+            bind_queen_process_roof,
+            configure_canonical_queen_process_roof,
+        )
+
+        queen_roof = configure_canonical_queen_process_roof(
+            bind_queen_process_roof(composition=composition)
+        )
+        organs["queen_process_roof"] = queen_roof
+        organs["queen_process_roof_status"] = queen_roof.status()
+        from aureon.queen.queen_mind import get_canonical_queen_mind
+
+        queen_mind = get_canonical_queen_mind()
+        if queen_mind is None:
+            organs["queen_mind_status"] = {
+                "status": "hold",
+                "reason": "canonical_queen_mind_required",
+                "action_eligible": False,
+                "economic_mutation": False,
+            }
+        else:
+            activation = queen_roof.activate(
+                "aureon.queen.queen_mind",
+                lambda: queen_mind,
+            )
+            if activation.status == "ACTIVE":
+                organs["queen_mind"] = queen_mind
+                organs["queen_mind_status"] = queen_mind.start()
+            else:
+                organs["queen_mind_status"] = {
+                    "status": "hold",
+                    "reason": activation.reason,
+                    "action_eligible": False,
+                    "economic_mutation": False,
+                }
+        logger.info(
+            "Canonical organism composition %s — missing=%s calibration=%s",
+            composition_status["status"].upper(),
+            ",".join(composition_status["missing_subsystem_ids"]) or "none",
+            composition_status["calibration_status"],
+        )
+    except Exception as exc:  # noqa: BLE001 - composition failure remains an honest HOLD
+        logger.warning("Canonical organism composition unavailable: %s", exc)
 
     return organs
 

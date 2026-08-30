@@ -15,6 +15,7 @@ import json
 import math
 import os
 import sqlite3
+import time
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
@@ -74,6 +75,7 @@ CSV_FIELDS = [
 ]
 
 FIAT_QUOTES = {"USD", "USDC", "USDT", "EUR", "GBP", "CAD", "AUD", "JPY", "CHF"}
+TICKER_RECEIPT_MAX_AGE_SECONDS = 60.0
 
 
 def utc_now() -> str:
@@ -95,6 +97,55 @@ def _as_int(value: Any, default: int = 0) -> int:
         return int(float(value))
     except Exception:
         return default
+
+
+def _numeric_free_no_data(reason: str) -> dict[str, Any]:
+    return {
+        "data_status": "no_data",
+        "truth_status": "no_data",
+        "generated_values": False,
+        "action": False,
+        "accounting": False,
+        "learning": False,
+        "reason": reason,
+    }
+
+
+def _complete_ticker_receipt(receipt: Any, *, now: Optional[float] = None) -> tuple[Optional[dict[str, Any]], str]:
+    """Accept only a complete fresh provider ticker receipt without defaults."""
+    if not isinstance(receipt, dict):
+        return None, "ticker_receipt_missing"
+    if (
+        receipt.get("data_status") != "live"
+        or receipt.get("truth_status") != "real_observed"
+        or receipt.get("generated_values") is not False
+        or receipt.get("action") is not False
+        or receipt.get("accounting") is not False
+        or receipt.get("learning") is not False
+    ):
+        return None, "ticker_receipt_provenance_invalid"
+    source_id = receipt.get("source_id")
+    receipt_id = receipt.get("receipt_id")
+    if not isinstance(source_id, str) or not source_id.strip() or not isinstance(receipt_id, str) or not receipt_id.strip():
+        return None, "ticker_receipt_identifiers_missing"
+    values: dict[str, float] = {}
+    for field in ("price", "bid", "ask", "open_price", "volume_24h", "source_timestamp", "received_at"):
+        value = _as_float(receipt.get(field), float("nan"))
+        if not math.isfinite(value):
+            return None, f"ticker_receipt_{field}_invalid"
+        values[field] = value
+    if values["price"] <= 0 or values["bid"] <= 0 or values["ask"] <= 0 or values["open_price"] <= 0 or values["volume_24h"] < 0:
+        return None, "ticker_receipt_numeric_invalid"
+    if values["ask"] < values["bid"]:
+        return None, "ticker_receipt_crossed_book"
+    checked_at = time.time() if now is None else now
+    if not math.isfinite(checked_at) or values["source_timestamp"] > checked_at + 5.0:
+        return None, "ticker_receipt_source_time_future"
+    if checked_at - values["source_timestamp"] > TICKER_RECEIPT_MAX_AGE_SECONDS:
+        return None, "ticker_receipt_source_time_stale"
+    if values["received_at"] + 5.0 < values["source_timestamp"]:
+        return None, "ticker_receipt_received_before_source"
+    return values, ""
 
 
 def _clean_text(value: Any) -> str:
@@ -185,24 +236,29 @@ def _snapshot_budget(max_tickers: Optional[int], total_pairs: int) -> int:
     return max_tickers
 
 
-def _ticker_snapshot(client: KrakenClient, symbol: str) -> tuple[dict[str, float], str, str]:
+def _ticker_snapshot(client: KrakenClient, symbol: str) -> tuple[dict[str, Any], str, str]:
     try:
-        ticker = client.get_ticker(symbol)
-        if not isinstance(ticker, dict):
-            return {"bid": 0.0, "ask": 0.0, "mid_price": 0.0, "spread": 0.0, "spread_pct": 0.0}, "ticker_unavailable", ""
-        bid = _as_float(ticker.get("bid"), 0.0)
-        ask = _as_float(ticker.get("ask"), 0.0)
-        price = _as_float(ticker.get("price") or ticker.get("last") or ticker.get("lastPrice"), 0.0)
-        if bid <= 0 and ask <= 0 and price > 0:
-            bid = price
-            ask = price
-        mid = ((bid + ask) / 2.0) if bid > 0 and ask > 0 else price
-        spread = max(0.0, ask - bid) if bid > 0 and ask > 0 else 0.0
-        spread_pct = (spread / mid * 100.0) if mid > 0 else 0.0
-        status = "fresh_ticker" if mid > 0 else "ticker_zero_price"
-        return {"bid": bid, "ask": ask, "mid_price": mid, "spread": spread, "spread_pct": spread_pct}, status, ""
+        adapter = getattr(client, "get_ticker_receipt", None)
+        if not callable(adapter):
+            return {}, "no_data", "ticker_receipt_adapter_unavailable"
+        receipt = adapter(symbol)
+        values, reason = _complete_ticker_receipt(receipt)
+        if values is None:
+            return {}, "no_data", reason
+        bid = values["bid"]
+        ask = values["ask"]
+        mid = (bid + ask) / 2.0
+        spread = ask - bid
+        return {
+            "bid": bid,
+            "ask": ask,
+            "mid_price": mid,
+            "spread": spread,
+            "spread_pct": spread / mid * 100.0,
+            "receipt": receipt,
+        }, "fresh_ticker", ""
     except Exception as exc:
-        return {"bid": 0.0, "ask": 0.0, "mid_price": 0.0, "spread": 0.0, "spread_pct": 0.0}, "ticker_error", str(exc)
+        return {}, "no_data", f"ticker_receipt_error:{exc}"
 
 
 def _asset_from_pair(
@@ -237,8 +293,8 @@ def _asset_from_pair(
     if maker_fees["entry_fee_pct"] <= 0 and taker_fees["entry_fee_pct"] > 0:
         maker_fees = {**maker_fees, "entry_fee_pct": taker_fees["entry_fee_pct"], "lowest_fee_pct": taker_fees["lowest_fee_pct"]}
 
-    mid_price = _as_float(ticker.get("mid_price"), 0.0)
-    min_notional = costmin if costmin > 0 else (ordermin * mid_price if ordermin > 0 and mid_price > 0 else 0.0)
+    mid_price = ticker.get("mid_price") if snapshot_status == "fresh_ticker" else None
+    min_notional = costmin if costmin > 0 else (ordermin * mid_price if ordermin > 0 and isinstance(mid_price, float) and mid_price > 0 else 0.0)
     min_margin = (min_notional / max_leverage) if margin_supported and max_leverage > 0 else 0.0
 
     blockers: list[str] = []
@@ -267,11 +323,13 @@ def _asset_from_pair(
         "asset_class": _asset_class(base, quote),
         "snapshot_status": snapshot_status,
         "snapshot_error": snapshot_error,
-        "bid": ticker.get("bid", 0.0),
-        "ask": ticker.get("ask", 0.0),
+        "market_receipt": ticker.get("receipt") if snapshot_status == "fresh_ticker" else _numeric_free_no_data(snapshot_error or snapshot_status),
+        "market_data_status": "live" if snapshot_status == "fresh_ticker" else "no_data",
+        "bid": ticker.get("bid") if snapshot_status == "fresh_ticker" else None,
+        "ask": ticker.get("ask") if snapshot_status == "fresh_ticker" else None,
         "mid_price": mid_price,
-        "spread": ticker.get("spread", 0.0),
-        "spread_pct": ticker.get("spread_pct", 0.0),
+        "spread": ticker.get("spread") if snapshot_status == "fresh_ticker" else None,
+        "spread_pct": ticker.get("spread_pct") if snapshot_status == "fresh_ticker" else None,
         "ordermin": ordermin,
         "costmin": costmin,
         "lot_decimals": lot_decimals,
@@ -292,6 +350,9 @@ def _asset_from_pair(
         "min_margin_required_estimate": min_margin,
         "spot_trade_ready": spot_trade_ready,
         "margin_trade_ready": margin_trade_ready,
+        "action": False,
+        "accounting": False,
+        "learning": False,
         "blockers": blockers,
         **routes,
     }
@@ -322,8 +383,8 @@ def build_kraken_asset_registry(
             ticker, snapshot_status, snapshot_error = _ticker_snapshot(client, symbol)
         else:
             ticker, snapshot_status, snapshot_error = (
-                {"bid": 0.0, "ask": 0.0, "mid_price": 0.0, "spread": 0.0, "spread_pct": 0.0},
-                "ticker_not_sampled_budget",
+                {},
+                "no_data",
                 "",
             )
         assets.append(
@@ -348,7 +409,7 @@ def build_kraken_asset_registry(
         "total_pairs": len(assets),
         "ticker_budget": budget,
         "ticker_enriched_count": sum(1 for asset in assets if asset.get("snapshot_status") == "fresh_ticker"),
-        "known_but_not_sampled_count": sum(1 for asset in assets if asset.get("snapshot_status") == "ticker_not_sampled_budget"),
+        "known_but_not_sampled_count": max(0, len(assets) - min(budget, len(assets))),
         "spot_trade_ready_count": len(spot_ready),
         "margin_pair_count": len(margin_pairs),
         "margin_trade_ready_count": len(margin_ready),
@@ -386,7 +447,15 @@ def build_kraken_asset_registry(
         "summary": summary,
         "errors": errors,
         "assets": assets,
+        "data_status": "live" if assets and all(asset.get("market_data_status") == "live" for asset in assets) else "no_data",
+        "truth_status": "real_derived" if assets and all(asset.get("market_data_status") == "live" for asset in assets) else "no_data",
+        "generated_values": False,
+        "action": False,
+        "accounting": False,
+        "learning": False,
     }
+    if report["data_status"] != "live":
+        report["no_data_reason"] = "incomplete_or_unobserved_ticker_receipts"
     report["audit"] = audit_kraken_asset_registry(report)
     return report
 
@@ -854,6 +923,18 @@ def write_kraken_asset_registry(
     output_db: Path = DEFAULT_OUTPUT_DB,
     public_json: Path = DEFAULT_PUBLIC_JSON,
 ) -> dict[str, str]:
+    if (
+        report.get("data_status") != "live"
+        or report.get("truth_status") != "real_derived"
+        or report.get("generated_values") is not False
+        or report.get("action") is not False
+        or report.get("accounting") is not False
+        or report.get("learning") is not False
+    ):
+        return {
+            "status": "no_data",
+            "reason": str(report.get("no_data_reason") or "incomplete_ticker_receipts"),
+        }
     assets = list(report.get("assets", []) or [])
     return {
         "state_json": str(_write_json(state_json, report)),

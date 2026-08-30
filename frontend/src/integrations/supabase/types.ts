@@ -142,12 +142,18 @@ export type Database = {
           kraken_iv: string | null
           last_quantum_update_at: string | null
           last_trade_at: string | null
+          measurement_collected_at: string | null
+          measurement_generated_values: boolean
+          measurement_source_id: string | null
+          measurement_source_timestamp: string | null
+          measurement_truth_status: string
           payment_completed: boolean | null
           payment_completed_at: string | null
           prism_level: number | null
           prism_state: string | null
           recent_trades: Json | null
           total_equity_usdt: number | null
+          total_equity_usd: number | null
           total_pnl_usdt: number | null
           total_trades: number | null
           trading_mode: string | null
@@ -180,12 +186,18 @@ export type Database = {
           kraken_iv?: string | null
           last_quantum_update_at?: string | null
           last_trade_at?: string | null
+          measurement_collected_at?: string | null
+          measurement_generated_values?: boolean
+          measurement_source_id?: string | null
+          measurement_source_timestamp?: string | null
+          measurement_truth_status?: string
           payment_completed?: boolean | null
           payment_completed_at?: string | null
           prism_level?: number | null
           prism_state?: string | null
           recent_trades?: Json | null
           total_equity_usdt?: number | null
+          total_equity_usd?: number | null
           total_pnl_usdt?: number | null
           total_trades?: number | null
           trading_mode?: string | null
@@ -218,12 +230,18 @@ export type Database = {
           kraken_iv?: string | null
           last_quantum_update_at?: string | null
           last_trade_at?: string | null
+          measurement_collected_at?: string | null
+          measurement_generated_values?: boolean
+          measurement_source_id?: string | null
+          measurement_source_timestamp?: string | null
+          measurement_truth_status?: string
           payment_completed?: boolean | null
           payment_completed_at?: string | null
           prism_level?: number | null
           prism_state?: string | null
           recent_trades?: Json | null
           total_equity_usdt?: number | null
+          total_equity_usd?: number | null
           total_pnl_usdt?: number | null
           total_trades?: number | null
           trading_mode?: string | null
@@ -4075,60 +4093,81 @@ export type Database = {
           closed_at: string | null
           current_price: number | null
           entry_price: number
+          exchange: string
           execution_id: string | null
+          exit_price: number | null
           id: string
           opened_at: string
           position_value_usdt: number
           quantity: number
           realized_pnl: number | null
+          realized_pnl_pct: number | null
           side: string
           status: string
           stop_loss_price: number | null
           symbol: string
+          source_id: string
+          source_timestamp: string
           take_profit_price: number | null
+          truth_status: string
           unrealized_pnl: number | null
           updated_at: string
-          user_id: string | null
+          user_id: string
+          generated_values: boolean
         }
         Insert: {
           close_reason?: string | null
           closed_at?: string | null
           current_price?: number | null
           entry_price: number
+          exchange: string
           execution_id?: string | null
+          exit_price?: number | null
           id?: string
           opened_at?: string
           position_value_usdt: number
           quantity: number
           realized_pnl?: number | null
+          realized_pnl_pct?: number | null
           side: string
           status?: string
           stop_loss_price?: number | null
           symbol: string
+          source_id: string
+          source_timestamp: string
           take_profit_price?: number | null
+          truth_status: string
           unrealized_pnl?: number | null
           updated_at?: string
-          user_id?: string | null
+          user_id: string
+          generated_values?: boolean
         }
         Update: {
           close_reason?: string | null
           closed_at?: string | null
           current_price?: number | null
           entry_price?: number
+          exchange?: string
           execution_id?: string | null
+          exit_price?: number | null
           id?: string
           opened_at?: string
           position_value_usdt?: number
           quantity?: number
           realized_pnl?: number | null
+          realized_pnl_pct?: number | null
           side?: string
           status?: string
           stop_loss_price?: number | null
           symbol?: string
+          source_id?: string
+          source_timestamp?: string
           take_profit_price?: number | null
+          truth_status?: string
           unrealized_pnl?: number | null
           updated_at?: string
-          user_id?: string | null
+          user_id?: string
+          generated_values?: boolean
         }
         Relationships: [
           {

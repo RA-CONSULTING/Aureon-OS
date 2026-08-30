@@ -23,12 +23,12 @@ type ApiResponse = {
 };
 
 const AURA_COLORS = [
-  { value: 'gold', label: 'Gold', bg: 'bg-yellow-400' },
+  { value: 'gold', label: 'Gold', bg: 'bg-warning' },
   { value: 'white', label: 'White', bg: 'bg-gray-100' },
-  { value: 'blue', label: 'Blue', bg: 'bg-blue-400' },
-  { value: 'green', label: 'Green', bg: 'bg-green-400' },
-  { value: 'purple', label: 'Purple', bg: 'bg-purple-400' },
-  { value: 'red', label: 'Red', bg: 'bg-red-400' }
+  { value: 'blue', label: 'Blue', bg: 'bg-primary' },
+  { value: 'green', label: 'Green', bg: 'bg-success' },
+  { value: 'purple', label: 'Purple', bg: 'bg-primary' },
+  { value: 'red', label: 'Red', bg: 'bg-destructive' }
 ];
 
 export default function SourceReadingPage() {
@@ -65,15 +65,15 @@ export default function SourceReadingPage() {
 
   const getBorderColor = (color?: string) => {
     switch (color) {
-      case 'blue': return 'border-blue-400';
-      case 'gold': return 'border-yellow-400';
-      case 'purple': return 'border-purple-400';
+      case 'blue': return 'border-primary';
+      case 'gold': return 'border-warning';
+      case 'purple': return 'border-primary';
       default: return 'border-gray-300';
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-warning to-white">
       <header className="sticky top-0 backdrop-blur bg-white/70 border-b border-black/5 z-10">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <h1 className="text-3xl font-bold tracking-tight">🔥 Reading from Source</h1>
@@ -109,7 +109,7 @@ export default function SourceReadingPage() {
             </div>
 
             <Button onClick={runReading} disabled={loading || !name || !dob} className="w-full">{loading ? 'Channeling...' : 'Begin Reading from Source'}</Button>
-            {error && <div className="text-red-600 text-sm p-3 bg-red-50 rounded-lg">{error}</div>}
+            {error && <div className="text-destructive text-sm p-3 bg-destructive rounded-lg">{error}</div>}
           </CardContent>
         </Card>
 
@@ -176,7 +176,7 @@ export default function SourceReadingPage() {
                               <div className="text-xs text-black/50">ex: {n.examples.join(', ')}</div>
                             ) : null}
                           </div>
-                          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200">
+                          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-success border border-success">
                             support {Number(n.support ?? 0)}
                           </span>
                         </div>
@@ -194,21 +194,21 @@ export default function SourceReadingPage() {
               <Card>
                 <CardHeader><CardTitle>72-Hour Action Plan</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="rounded-xl border border-green-200 bg-green-50 p-3">
-                    <div className="text-sm font-medium text-green-800 mb-2">Day 1 (Today)</div>
-                    <ul className="text-sm text-green-700 space-y-1">
+                  <div className="rounded-xl border border-success bg-success p-3">
+                    <div className="text-sm font-medium text-success mb-2">Day 1 (Today)</div>
+                    <ul className="text-sm text-success space-y-1">
                       {data.plan.day1?.map((action: string, i: number) => <li key={i}>• {action}</li>)}
                     </ul>
                   </div>
-                  <div className="rounded-xl border border-blue-200 bg-blue-50 p-3">
-                    <div className="text-sm font-medium text-blue-800 mb-2">Day 2 (Tomorrow)</div>
-                    <ul className="text-sm text-blue-700 space-y-1">
+                  <div className="rounded-xl border border-primary bg-primary p-3">
+                    <div className="text-sm font-medium text-primary mb-2">Day 2 (Tomorrow)</div>
+                    <ul className="text-sm text-primary space-y-1">
                       {data.plan.day2?.map((action: string, i: number) => <li key={i}>• {action}</li>)}
                     </ul>
                   </div>
-                  <div className="rounded-xl border border-purple-200 bg-purple-50 p-3">
-                    <div className="text-sm font-medium text-purple-800 mb-2">Day 3 (72h Mark)</div>
-                    <ul className="text-sm text-purple-700 space-y-1">
+                  <div className="rounded-xl border border-primary bg-primary p-3">
+                    <div className="text-sm font-medium text-primary mb-2">Day 3 (72h Mark)</div>
+                    <ul className="text-sm text-primary space-y-1">
                       {data.plan.day3?.map((action: string, i: number) => <li key={i}>• {action}</li>)}
                     </ul>
                   </div>

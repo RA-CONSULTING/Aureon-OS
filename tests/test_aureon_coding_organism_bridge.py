@@ -4,7 +4,9 @@ import json
 import sys
 from pathlib import Path
 
+import aureon.autonomous.aureon_coding_organism_bridge as coding_bridge
 from aureon.autonomous.aureon_coding_organism_bridge import (
+    DEFAULT_INTERNAL_WORK_LEDGER_PATH,
     get_coding_organism_status,
     submit_coding_prompt,
 )
@@ -51,6 +53,48 @@ class FakeGoalEngine:
 class RaisingGoalEngine:
     def submit_goal(self, prompt: str):
         raise AssertionError("goal engine should not run before scope is locked")
+
+
+class StubInternalWorkforce:
+    def __init__(self, *, ready: bool) -> None:
+        self.ready = ready
+        self.deliberation_calls = 0
+
+    def deliberate_coding_goal(self, prompt: str, *, scope_locked: bool = True):
+        self.deliberation_calls += 1
+        return {
+            "schema_version": "aureon-internal-coding-deliberation-v1",
+            "status": "complete",
+            "scope_locked": scope_locked,
+            "decision_count": 18,
+            "active_agent_count": 9,
+            "decisions": [
+                {
+                    "role": "Implementation Worker",
+                    "process_id": "build_execution",
+                    "lane": "coding",
+                    "agent_decision": f"inspect {prompt}",
+                    "process_decision": "apply the smallest safe patch and prove it with focused tests",
+                }
+            ],
+            "action_eligible": False,
+            "economic_eligible": False,
+        }
+
+    def report(self):
+        return {
+            "schema_version": "aureon-internal-coding-workforce-v1",
+            "status": "ready" if self.ready else "hold",
+            "ready": self.ready,
+            "brain_fabric_ready": True,
+            "internal_share_ppm": 990_000 if self.ready else 947_368,
+            "minimum_internal_share_ppm": 990_000,
+            "codex_role": "senior_review_and_veto_only",
+            "codex_implementation_allowed": False,
+            "cloud_fallback_used": False,
+            "action_eligible": False,
+            "economic_eligible": False,
+        }
 
 
 def _write_hnc_fixture(root: Path, *, passed: bool = True) -> None:
@@ -151,6 +195,140 @@ def test_scope_approval_turns_client_answers_into_route_context(tmp_path: Path, 
     assert "Client-approved scope answers" in captured["prompt"]
     assert result["finished_product_audit"]["ready_for_client"] is True
     assert result["finished_product_audit"]["handover_status"]["blocking_snag_count"] == 0
+
+
+def test_required_internal_workforce_holds_handover_below_99_percent(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(
+        "aureon.autonomous.aureon_safe_code_control.build_code_expression_context",
+        _fake_expression_context,
+    )
+    _write_hnc_fixture(tmp_path)
+    workforce = StubInternalWorkforce(ready=False)
+
+    result = submit_coding_prompt(
+        "Aureon should improve its own coding loop and prove the change with focused tests.",
+        source="test",
+        run_tests=False,
+        root=tmp_path,
+        goal_engine=FakeGoalEngine(),
+        internal_workforce=workforce,
+        require_internal_workforce=True,
+    )
+
+    assert workforce.deliberation_calls == 1
+    assert result["ok"] is False
+    assert result["summary"]["internal_coding_workforce_required"] is True
+    assert result["summary"]["internal_coding_workforce_ready"] is False
+    assert result["summary"]["internal_deliberation_decision_count"] == 18
+    assert result["client_job"]["internal_coding_workforce"]["internal_share_ppm"] == 947_368
+    assert any(item["id"] == "internal_coding_workforce" and not item["ok"] for item in result["client_job"]["proof_checklist"])
+    assert any(item["id"] == "snag_internal_coding_workforce" for item in result["client_job"]["snagging_list"])
+
+
+def test_ready_internal_workforce_steers_route_and_clears_proof(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(
+        "aureon.autonomous.aureon_safe_code_control.build_code_expression_context",
+        _fake_expression_context,
+    )
+    _write_hnc_fixture(tmp_path)
+    captured = {}
+
+    class CapturingGoalEngine(FakeGoalEngine):
+        def submit_goal(self, prompt: str):
+            captured["prompt"] = prompt
+            return super().submit_goal(prompt)
+
+    workforce = StubInternalWorkforce(ready=True)
+    result = submit_coding_prompt(
+        "Aureon should improve its own coding loop and prove the change with focused tests.",
+        source="test",
+        run_tests=False,
+        root=tmp_path,
+        goal_engine=CapturingGoalEngine(),
+        internal_workforce=workforce,
+        require_internal_workforce=True,
+    )
+
+    assert result["ok"] is True
+    assert result["summary"]["internal_coding_workforce_ready"] is True
+    assert result["summary"]["internal_work_share_ppm"] == 990_000
+    assert result["summary"]["codex_role"] == "senior_review_and_veto_only"
+    assert "Aureon internal seat/process deliberation" in captured["prompt"]
+    assert "smallest safe patch" in captured["prompt"]
+    proof = next(item for item in result["client_job"]["proof_checklist"] if item["id"] == "internal_coding_workforce")
+    assert proof["ok"] is True
+
+
+def test_required_workforce_uses_restart_durable_ledger_when_not_injected(
+    tmp_path: Path, monkeypatch
+) -> None:
+    monkeypatch.setattr(
+        "aureon.autonomous.aureon_safe_code_control.build_code_expression_context",
+        _fake_expression_context,
+    )
+    _write_hnc_fixture(tmp_path)
+
+    class LedgerBackedWorkforce(StubInternalWorkforce):
+        def __init__(self) -> None:
+            super().__init__(ready=False)
+
+    created = []
+
+    class StubLedger:
+        def __init__(self, path: Path) -> None:
+            created.append(path)
+            self.generation = 0
+
+        def bind_workforce(self):
+            self.generation = 18
+            return LedgerBackedWorkforce()
+
+        def status(self):
+            return {
+                "schema_version": "aureon-internal-work-ledger-v1",
+                "healthy": True,
+                "generation": self.generation,
+                "receipt_count": self.generation,
+                "action_eligible": False,
+                "economic_eligible": False,
+            }
+
+    monkeypatch.setattr(
+        "aureon.autonomous.aureon_coding_organism_bridge.DurableInternalWorkLedger",
+        StubLedger,
+    )
+    result = submit_coding_prompt(
+        "Aureon should improve its own coding loop with durable internal evidence.",
+        source="test",
+        run_tests=False,
+        include_desktop=False,
+        root=tmp_path,
+        goal_engine=FakeGoalEngine(),
+        require_internal_workforce=True,
+    )
+
+    assert created == [(tmp_path / DEFAULT_INTERNAL_WORK_LEDGER_PATH).resolve()]
+    assert result["summary"]["internal_work_ledger_healthy"] is True
+    assert result["summary"]["internal_work_ledger_generation"] == 18
+    assert result["client_job"]["internal_coding_work_ledger"]["receipt_count"] == 18
+    assert result["ok"] is False
+
+
+def test_cli_always_requires_internal_workforce_without_an_opt_out(monkeypatch, capsys) -> None:
+    captured = {}
+
+    def fake_submit(prompt: str, **kwargs):
+        captured["prompt"] = prompt
+        captured.update(kwargs)
+        return {"ok": True, "status": "test"}
+
+    monkeypatch.setattr(coding_bridge, "submit_coding_prompt", fake_submit)
+    exit_code = coding_bridge.main(["--prompt", "bounded coding goal", "--no-tests", "--no-desktop"])
+
+    assert exit_code == 0
+    assert captured["prompt"] == "bounded coding goal"
+    assert captured["require_internal_workforce"] is True
+    assert json.loads(capsys.readouterr().out)["ok"] is True
 
 
 def test_submit_coding_prompt_writes_evidence_and_proposal(tmp_path: Path, monkeypatch) -> None:
@@ -298,6 +476,10 @@ def test_submit_coding_prompt_visual_artifact_wins_over_coding_ui_words(tmp_path
 
 
 def test_submit_coding_prompt_video_artifact_survives_scope_wrapper(tmp_path: Path, monkeypatch) -> None:
+    # video artifacts render through the cv2-only visual asset worker; without
+    # cv2 the pipeline honestly refuses handover instead of faking a video
+    import pytest
+    pytest.importorskip("cv2")
     monkeypatch.setattr(
         "aureon.autonomous.aureon_safe_code_control.build_code_expression_context",
         _fake_expression_context,

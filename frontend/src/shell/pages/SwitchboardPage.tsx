@@ -127,7 +127,7 @@ export default function SwitchboardPage() {
 
   function effectBadge(f: Flag) {
     return f.effect === "live" ? (
-      <Badge className="bg-emerald-600 hover:bg-emerald-600">live</Badge>
+      <Badge className="bg-success hover:bg-success">live</Badge>
     ) : (
       <Badge variant="outline">restart</Badge>
     );
@@ -156,13 +156,13 @@ export default function SwitchboardPage() {
             className={
               summary.armed > 0
                 ? "bg-destructive hover:bg-destructive"
-                : "bg-emerald-600 hover:bg-emerald-600"
+                : "bg-success hover:bg-success"
             }
           >
             {summary.armed} armed / {summary.hard_boundary_total} hard-boundary
           </Badge>
           {summary.pending_restart > 0 && (
-            <Badge variant="outline" className="border-amber-500 text-amber-600 dark:text-amber-400">
+            <Badge variant="outline" className="border-warning/50 text-warning">
               {summary.pending_restart} pending restart
             </Badge>
           )}
@@ -220,7 +220,7 @@ export default function SwitchboardPage() {
                         {f.pending_restart === true && (
                           <Badge
                             variant="outline"
-                            className="border-amber-500 text-amber-600 dark:text-amber-400"
+                            className="border-warning/50 text-warning"
                             title="Saved — but the consuming process must restart to pick it up"
                           >
                             pending restart

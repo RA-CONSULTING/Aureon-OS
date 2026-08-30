@@ -2,6 +2,12 @@
 """
 Direct Kill Chain Test - Real Data Only
 Tests Queen -> Dr. Auris -> Sniper workflow with actual exchange data
+
+NOTE: this is a LIVE-VENUE CLI script (run `python tests/test_kill_chain_real.py` with real
+credentials), not a pytest suite. Its per-exchange probes used to be named ``test_*``, so
+pytest collected them and failed trying to inject the exchange clients as fixtures — 4
+guaranteed errors on every offline run. They are ``probe_*`` now; pytest collects nothing
+here and the CLI behaviour is unchanged.
 """
 import os
 os.environ['MINIMAL_MODE'] = '1'  # Skip heavy imports
@@ -86,7 +92,7 @@ def validate_with_dr_auris(dr_auris, exchange, symbol, pnl, entry_price, current
         'method': 'fallback_after_api_error'
     }
 
-def test_capital(capital, dr_auris):
+def probe_capital(capital, dr_auris):
     """Test Capital.com scanning and kill logic."""
     log('👑', 'QUEEN', 'Scanning Capital.com reality branches...')
     
@@ -149,7 +155,7 @@ def test_capital(capital, dr_auris):
         log('⚠️', 'WARN', f'Capital scan failed: {e}')
         return False
 
-def test_binance(binance, dr_auris):
+def probe_binance(binance, dr_auris):
     """Test Binance scanning and kill logic."""
     log('👑', 'QUEEN', 'Scanning Binance chain...')
     
@@ -226,7 +232,7 @@ def test_binance(binance, dr_auris):
         log('⚠️', 'WARN', f'Binance scan failed: {e}')
         return False
 
-def test_kraken(kraken, dr_auris):
+def probe_kraken(kraken, dr_auris):
     """Test Kraken scanning and kill logic."""
     log('👑', 'QUEEN', 'Scanning Kraken depths...')
     
@@ -323,7 +329,7 @@ def test_kraken(kraken, dr_auris):
         log('⚠️', 'WARN', f'Kraken scan failed: {e}')
         return False
 
-def test_alpaca(alpaca, dr_auris):
+def probe_alpaca(alpaca, dr_auris):
     """Test Alpaca scanning and kill logic."""
     log('👑', 'QUEEN', 'Scanning Alpaca streams...')
     
@@ -418,22 +424,22 @@ def main():
     # Test each platform
     if capital.enabled and capital.cst:
         print("\n" + "-"*80)
-        results['Capital.com'] = test_capital(capital, dr_auris)
+        results['Capital.com'] = probe_capital(capital, dr_auris)
         print("-"*80)
     
     if binance.api_key:
         print("\n" + "-"*80)
-        results['Binance'] = test_binance(binance, dr_auris)
+        results['Binance'] = probe_binance(binance, dr_auris)
         print("-"*80)
     
     if kraken.api_key:
         print("\n" + "-"*80)
-        results['Kraken'] = test_kraken(kraken, dr_auris)
+        results['Kraken'] = probe_kraken(kraken, dr_auris)
         print("-"*80)
     
     if alpaca.api_key:
         print("\n" + "-"*80)
-        results['Alpaca'] = test_alpaca(alpaca, dr_auris)
+        results['Alpaca'] = probe_alpaca(alpaca, dr_auris)
         print("-"*80)
     
     # Summary

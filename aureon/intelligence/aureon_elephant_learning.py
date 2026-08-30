@@ -20,28 +20,18 @@
 ╚══════════════════════════════════════════════════════════════════════════════════════╝
 """
 
-from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
 import os
-import sys
 import json
 import time
 import logging
+import math
 import requests
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 # ═══════════════════════════════════════════════════════════════════════════
 # WINDOWS UTF-8 FIX - Must be at top before any logging/printing
 # ═══════════════════════════════════════════════════════════════════════════
-if sys.platform == 'win32':
-    os.environ['PYTHONIOENCODING'] = 'utf-8'
-    try:
-        # Avoid replacing sys.stdout with a new TextIOWrapper around stdout.buffer:
-        # that pattern can close stdout in some Windows shells.
-        if hasattr(sys.stdout, "reconfigure"):
-            sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-    except Exception:
-        pass
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Callable, Dict, List, Optional, Set, Any, Tuple
 from dataclasses import dataclass, field, asdict
 from collections import defaultdict
 import hashlib
@@ -57,13 +47,234 @@ try:
 except ImportError:
     CHIRP_BUS_AVAILABLE = False
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s [%(levelname)s] %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
-)
 logger = logging.getLogger(__name__)
+
+MARKET_RECEIPT_MAX_AGE_SECONDS = 120.0
+EXECUTION_RECEIPT_MAX_AGE_SECONDS = 300.0
+
+
+def _finite_number(
+    value: Any,
+    *,
+    positive: bool = False,
+    nonnegative: bool = False,
+) -> Optional[float]:
+    if value is None or isinstance(value, bool):
+        return None
+    try:
+        number = float(value)
+    except (TypeError, ValueError, OverflowError):
+        return None
+    if not math.isfinite(number):
+        return None
+    if positive and number <= 0.0:
+        return None
+    if nonnegative and number < 0.0:
+        return None
+    return number
+
+
+def _timestamp_epoch(value: Any) -> Optional[float]:
+    if value is None or isinstance(value, bool):
+        return None
+    if isinstance(value, (int, float)):
+        timestamp = float(value)
+        if not math.isfinite(timestamp) or timestamp <= 0.0:
+            return None
+        if timestamp >= 1e17:
+            timestamp /= 1e9
+        elif timestamp >= 1e14:
+            timestamp /= 1e6
+        elif timestamp >= 1e11:
+            timestamp /= 1e3
+        return timestamp
+    if isinstance(value, str):
+        text = value.strip()
+        if not text:
+            return None
+        try:
+            parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
+        except ValueError:
+            return None
+        if parsed.tzinfo is None:
+            return None
+        timestamp = parsed.timestamp()
+        return timestamp if math.isfinite(timestamp) and timestamp > 0.0 else None
+    return None
+
+
+def _iso_timestamp(timestamp: float) -> str:
+    return datetime.fromtimestamp(timestamp, tz=timezone.utc).isoformat()
+
+
+def _fresh_receipt_times(
+    source_timestamp: Any,
+    received_at: Any,
+    *,
+    now: float,
+    max_age_seconds: float,
+) -> Optional[Tuple[float, float]]:
+    source = _timestamp_epoch(source_timestamp)
+    received = _timestamp_epoch(received_at)
+    if source is None or received is None or not math.isfinite(now):
+        return None
+    if source >= received or received > now + 5.0:
+        return None
+    if now - source > max_age_seconds:
+        return None
+    return source, received
+
+
+def _no_data_receipt(reason: str, *, now: float, purpose: str) -> Dict[str, Any]:
+    return {
+        "purpose": purpose,
+        "data_status": "no_data",
+        "truth_status": "no_data",
+        "reason": reason,
+        "source_id": None,
+        "source_timestamp": None,
+        "received_at": _iso_timestamp(now),
+        "generated_values": False,
+        "should_trade": False,
+        "recorded": False,
+        "action_eligible": False,
+        "eligible_for_accounting": False,
+        "eligible_for_learning": False,
+    }
+
+
+def _normalize_market_receipt(
+    receipt: Any,
+    *,
+    from_asset: str,
+    to_asset: str,
+    now: float,
+) -> Optional[Dict[str, Any]]:
+    if not isinstance(receipt, dict):
+        return None
+    if (
+        receipt.get("data_status") != "live"
+        or receipt.get("truth_status") not in {"real_observed", "real_derived", "real_provider"}
+        or receipt.get("generated_values") is not False
+    ):
+        return None
+    base_currency = str(receipt.get("base_currency") or "").strip().upper()
+    quote_currency = str(receipt.get("quote_currency") or "").strip().upper()
+    symbol = str(receipt.get("symbol") or "").strip().upper()
+    source_id = str(receipt.get("source_id") or "").strip()
+    if (
+        not base_currency
+        or not quote_currency
+        or base_currency != str(to_asset).strip().upper()
+        or quote_currency != str(from_asset).strip().upper()
+        or not symbol
+        or not source_id
+    ):
+        return None
+    price = _finite_number(receipt.get("price"), positive=True)
+    price_change = _finite_number(receipt.get("price_change_1h"))
+    volume_change = _finite_number(receipt.get("volume_change_pct"))
+    times = _fresh_receipt_times(
+        receipt.get("source_timestamp"),
+        receipt.get("received_at"),
+        now=now,
+        max_age_seconds=MARKET_RECEIPT_MAX_AGE_SECONDS,
+    )
+    if price is None or price_change is None or volume_change is None or times is None:
+        return None
+    source_timestamp, received_at = times
+    return {
+        **receipt,
+        "symbol": symbol,
+        "base_currency": base_currency,
+        "quote_currency": quote_currency,
+        "price": price,
+        "price_change_1h": price_change,
+        "volume_change_pct": volume_change,
+        "source_id": source_id,
+        "source_timestamp": source_timestamp,
+        "received_at": received_at,
+        "generated_values": False,
+    }
+
+
+def _normalize_terminal_execution_receipt(
+    receipt: Any,
+    *,
+    now: float,
+) -> Optional[Dict[str, Any]]:
+    if not isinstance(receipt, dict):
+        return None
+    if (
+        str(receipt.get("status") or "").strip().lower() not in {"filled", "closed", "settled"}
+        or receipt.get("terminal_fill_receipt_complete") is not True
+        or receipt.get("data_status") != "live"
+        or receipt.get("truth_status") not in {"real_observed", "real_derived", "real_provider"}
+        or receipt.get("generated_values") is not False
+        or receipt.get("eligible_for_accounting") is not True
+        or receipt.get("eligible_for_learning") is not True
+        or receipt.get("pnl_net_of_fees") is not True
+    ):
+        return None
+    provider_order_id = str(
+        receipt.get("provider_order_id") or receipt.get("order_id") or ""
+    ).strip()
+    provider_fill_id = str(
+        receipt.get("provider_fill_id") or receipt.get("fill_id") or receipt.get("trade_id") or ""
+    ).strip()
+    from_asset = str(receipt.get("from_asset") or "").strip().upper()
+    to_asset = str(receipt.get("to_asset") or "").strip().upper()
+    fee_currency = str(receipt.get("fee_currency") or "").strip().upper()
+    pnl_currency = str(receipt.get("pnl_currency") or "").strip().upper()
+    source_id = str(receipt.get("source_id") or "").strip()
+    quantity = _finite_number(receipt.get("filled_qty"), positive=True)
+    price = _finite_number(receipt.get("filled_avg_price"), positive=True)
+    notional = _finite_number(receipt.get("filled_notional"), positive=True)
+    fee = _finite_number(receipt.get("fee"), nonnegative=True)
+    realized_pnl = _finite_number(receipt.get("realized_pnl"))
+    times = _fresh_receipt_times(
+        receipt.get("provider_timestamp") or receipt.get("source_timestamp"),
+        receipt.get("received_at"),
+        now=now,
+        max_age_seconds=EXECUTION_RECEIPT_MAX_AGE_SECONDS,
+    )
+    if (
+        not provider_order_id
+        or not provider_fill_id
+        or not from_asset
+        or not to_asset
+        or not fee_currency
+        or not pnl_currency
+        or fee_currency != pnl_currency
+        or not source_id
+        or quantity is None
+        or price is None
+        or notional is None
+        or fee is None
+        or realized_pnl is None
+        or times is None
+        or not math.isclose(notional, quantity * price, rel_tol=1e-6, abs_tol=1e-8)
+    ):
+        return None
+    source_timestamp, received_at = times
+    return {
+        **receipt,
+        "provider_order_id": provider_order_id,
+        "provider_fill_id": provider_fill_id,
+        "from_asset": from_asset,
+        "to_asset": to_asset,
+        "filled_qty": quantity,
+        "filled_avg_price": price,
+        "filled_notional": notional,
+        "fee": fee,
+        "fee_currency": fee_currency,
+        "realized_pnl": realized_pnl,
+        "pnl_currency": pnl_currency,
+        "source_id": source_id,
+        "source_timestamp": source_timestamp,
+        "received_at": received_at,
+        "generated_values": False,
+    }
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # 🐘 ELEPHANT MEMORY - PERMANENT PATTERN STORAGE
@@ -103,6 +314,14 @@ class LearnedPattern:
     
     # Confidence
     confidence: float = 0.0  # Based on sample size and consistency
+    evidence_scope: str = "legacy_unproven"
+    fee_model: Optional[str] = None
+    source_id: Optional[str] = None
+    source_timestamp: Optional[float] = None
+    received_at: Optional[str] = None
+    generated_values: bool = False
+    action_eligible: bool = False
+    eligible_for_learning: bool = False
     
     def to_dict(self) -> Dict:
         return asdict(self)
@@ -181,8 +400,16 @@ class ElephantMemory:
     - Market conditions that work
     """
     
-    def __init__(self, memory_file: str = ELEPHANT_MEMORY_FILE):
+    def __init__(
+        self,
+        memory_file: str = ELEPHANT_MEMORY_FILE,
+        *,
+        clock: Optional[Callable[[], float]] = None,
+        autoload: bool = False,
+    ):
         self.memory_file = memory_file
+        self._clock = clock or time.time
+        self._loaded = False
         self.patterns: Dict[str, LearnedPattern] = {}
         self.wisdom: Dict[str, TradingWisdom] = {}
         self.blocked_paths: Dict[str, Dict] = {}  # Paths that ALWAYS lose
@@ -200,11 +427,19 @@ class ElephantMemory:
         
         # Asset insights
         self.asset_performance: Dict[str, Dict] = {}  # symbol -> stats
+        self.processed_execution_ids: Set[str] = set()
         
-        self._load_memory()
+        if autoload:
+            self.ensure_loaded()
+
+    def ensure_loaded(self) -> None:
+        """Load persisted memory lazily, never as a constructor side effect."""
+        if not self._loaded:
+            self._load_memory()
     
     def _load_memory(self):
         """Load elephant memory from disk"""
+        self._loaded = True
         if os.path.exists(self.memory_file):
             try:
                 with open(self.memory_file, 'r') as f:
@@ -233,6 +468,11 @@ class ElephantMemory:
                 self.worst_hours = {int(k): v for k, v in data.get('worst_hours', {}).items()}
                 self.best_days = {int(k): v for k, v in data.get('best_days', {}).items()}
                 self.asset_performance = data.get('asset_performance', {})
+                processed = data.get('processed_execution_ids')
+                if isinstance(processed, list):
+                    self.processed_execution_ids = {
+                        str(value) for value in processed if str(value).strip()
+                    }
                 
                 logger.info(f"🐘 Elephant Memory loaded: {len(self.patterns)} patterns, {len(self.wisdom)} wisdoms")
                 logger.info(f"   📊 Historical trades: {self.total_historical_trades:,}")
@@ -245,6 +485,7 @@ class ElephantMemory:
     
     def _save_memory(self):
         """Save elephant memory to disk - NEVER FORGET!"""
+        self.ensure_loaded()
         data = {
             'patterns': {pid: p.to_dict() for pid, p in self.patterns.items()},
             'wisdom': {wid: w.to_dict() for wid, w in self.wisdom.items()},
@@ -257,7 +498,8 @@ class ElephantMemory:
             'worst_hours': self.worst_hours,
             'best_days': self.best_days,
             'asset_performance': self.asset_performance,
-            'last_saved': datetime.now().isoformat()
+            'processed_execution_ids': sorted(self.processed_execution_ids),
+            'last_saved': _iso_timestamp(float(self._clock()))
         }
         
         with open(self.memory_file, 'w') as f:
@@ -267,12 +509,13 @@ class ElephantMemory:
     
     def remember_pattern(self, pattern: LearnedPattern):
         """Remember a new pattern FOREVER"""
+        self.ensure_loaded()
         self.patterns[pattern.pattern_id] = pattern
         self._save_memory()
         
         # 🐦 CHIRP EMISSION - kHz-Speed Memory Signals
         # Emit pattern learning chirps for system-wide awareness
-        if CHIRP_BUS_AVAILABLE and get_chirp_bus:
+        if pattern.action_eligible and CHIRP_BUS_AVAILABLE and get_chirp_bus:
             try:
                 chirp_bus = get_chirp_bus()
                 
@@ -291,6 +534,7 @@ class ElephantMemory:
     
     def remember_wisdom(self, wisdom: TradingWisdom):
         """Remember wisdom FOREVER"""
+        self.ensure_loaded()
         self.wisdom[wisdom.wisdom_id] = wisdom
         self._save_memory()
         
@@ -320,6 +564,7 @@ class ElephantMemory:
         🔓 FULL AUTONOMOUS MODE: DO NOT BLOCK - Just log for learning!
         Queen Sero needs all paths available to explore and learn!
         """
+        self.ensure_loaded()
         path_key = f"{from_asset}→{to_asset}"
         # 🔓 DISABLED: Don't actually block, just log
         logger.info(f"🐘📝 NOTED (not blocked): {path_key} - {reason} (losses: {loss_count}, total: ${total_loss:.2f})")
@@ -328,8 +573,10 @@ class ElephantMemory:
         # self._save_memory()
     
     def mark_golden_path(self, from_asset: str, to_asset: str, 
-                         win_count: int, total_profit: float, win_rate: float):
+                         win_count: int, total_profit: float, win_rate: float,
+                         *, evidence_scope: str = "legacy_unproven"):
         """Mark a consistently winning path"""
+        self.ensure_loaded()
         path_key = f"{from_asset}→{to_asset}"
         self.golden_paths[path_key] = {
             'from': from_asset,
@@ -337,6 +584,7 @@ class ElephantMemory:
             'win_count': win_count,
             'total_profit': total_profit,
             'win_rate': win_rate,
+            'evidence_scope': evidence_scope,
             'discovered_at': datetime.now().isoformat()
         }
         self._save_memory()
@@ -348,18 +596,22 @@ class ElephantMemory:
         🔓 FULL AUTONOMOUS MODE: NEVER BLOCK ANY PATH!
         Queen Sero must be free to explore ALL possibilities!
         """
+        self.ensure_loaded()
         # 🔓 DISABLED FOR FULL AUTONOMOUS TRADING - Let Queen try everything!
         return False, None
     
-    def is_golden_path(self, from_asset: str, to_asset: str) -> Tuple[bool, float]:
+    def is_golden_path(self, from_asset: str, to_asset: str) -> Tuple[bool, Optional[float]]:
         """Check if a path is a golden winner"""
+        self.ensure_loaded()
         path_key = f"{from_asset}→{to_asset}"
         if path_key in self.golden_paths:
-            return True, self.golden_paths[path_key].get('win_rate', 0)
-        return False, 0.0
+            win_rate = _finite_number(self.golden_paths[path_key].get('win_rate'), nonnegative=True)
+            return (win_rate is not None), win_rate
+        return False, None
     
     def get_best_trading_hours(self) -> List[int]:
         """Get the best hours to trade based on personal history AND ingrested wisdom"""
+        self.ensure_loaded()
         # 1. Gather Personal Experience (Self-Learning)
         personal_best = []
         if self.best_hours:
@@ -389,6 +641,7 @@ class ElephantMemory:
 
     def get_worst_trading_hours(self) -> List[int]:
         """Get hours to AVOID based on history and wisdom"""
+        self.ensure_loaded()
         avoid = []
         # Wisdom avoids (e.g. "coinbase_avoid_hour_X")
         for wid, w in self.wisdom.items():
@@ -400,14 +653,28 @@ class ElephantMemory:
                     pass
         return list(set(avoid))
     
-    def get_asset_score(self, symbol: str) -> float:
+    def get_asset_score(
+        self,
+        symbol: str,
+        *,
+        as_of_timestamp: Optional[float] = None,
+    ) -> Optional[float]:
         """Get historical performance score for an asset (0-100)"""
+        self.ensure_loaded()
         # 1. Base Score from Personal Stats
         if symbol in self.asset_performance:
             stats = self.asset_performance[symbol]
-            win_rate = stats.get('win_rate', 50)
-            profit_factor = stats.get('profit_factor', 1.0)
-            sample_size = stats.get('trades', 0)
+            win_rate = _finite_number(stats.get('win_rate'), nonnegative=True)
+            profit_factor = _finite_number(stats.get('profit_factor'), nonnegative=True)
+            sample_size = _finite_number(stats.get('trades'), nonnegative=True)
+            if (
+                win_rate is None
+                or win_rate > 100.0
+                or profit_factor is None
+                or sample_size is None
+                or not sample_size.is_integer()
+            ):
+                return None
             
             # Score based on win rate and profit factor
             base_score = (win_rate + (profit_factor - 1) * 20) / 2
@@ -424,19 +691,23 @@ class ElephantMemory:
             
             final_score = 50 + (base_score - 50) * confidence
         else:
-            final_score = 50.0  # Neutral if unknown
+            return None
             
         # 2. Apply Wisdom Modifiers (Macro Context)
-        current_date = datetime.now()
+        current_date = (
+            datetime.fromtimestamp(as_of_timestamp, tz=timezone.utc)
+            if as_of_timestamp is not None
+            else None
+        )
         
         # September Effect (Bearish) - Slight penalty
-        if current_date.month == 9:
+        if current_date is not None and current_date.month == 9:
             sept_wisdom = self.wisdom.get('wiki_september_effect')
             if sept_wisdom:
                 final_score *= 0.9 
                 
         # Weekend Effect (Sunday Dump) - Slight penalty for buys
-        if current_date.weekday() == 6: # Sunday
+        if current_date is not None and current_date.weekday() == 6: # Sunday
             sunday_wisdom = self.wisdom.get('wiki_sunday_dump')
             if sunday_wisdom:
                 final_score *= 0.95
@@ -452,6 +723,12 @@ class ElephantMemory:
     def get_pattern_signals(self, symbol: str, current_price: float, 
                            price_change_1h: float, volume_change: float) -> List[Dict]:
         """Get signals from learned patterns"""
+        self.ensure_loaded()
+        current_price = _finite_number(current_price, positive=True)
+        price_change_1h = _finite_number(price_change_1h)
+        volume_change = _finite_number(volume_change)
+        if current_price is None or price_change_1h is None or volume_change is None:
+            return []
         signals = []
         
         for pattern in self.patterns.values():
@@ -466,7 +743,9 @@ class ElephantMemory:
             
             # Momentum pattern
             if pattern.pattern_type == 'momentum':
-                min_change = conditions.get('min_change_1h', 0.5)
+                min_change = _finite_number(conditions.get('min_change_1h'))
+                if min_change is None:
+                    continue
                 if price_change_1h >= min_change:
                     signals.append({
                         'pattern_id': pattern.pattern_id,
@@ -475,12 +754,16 @@ class ElephantMemory:
                         'confidence': pattern.confidence,
                         'win_rate': pattern.win_rate,
                         'avg_profit': pattern.avg_profit_per_trade,
+                        'evidence_scope': pattern.evidence_scope,
+                        'action_eligible': pattern.action_eligible,
                         'reason': f"Momentum pattern ({pattern.win_rate:.1f}% win rate)"
                     })
             
             # Reversal pattern
             elif pattern.pattern_type == 'reversal':
-                max_drop = conditions.get('max_drop_1h', -2.0)
+                max_drop = _finite_number(conditions.get('max_drop_1h'))
+                if max_drop is None:
+                    continue
                 if price_change_1h <= max_drop:
                     signals.append({
                         'pattern_id': pattern.pattern_id,
@@ -489,12 +772,16 @@ class ElephantMemory:
                         'confidence': pattern.confidence,
                         'win_rate': pattern.win_rate,
                         'avg_profit': pattern.avg_profit_per_trade,
+                        'evidence_scope': pattern.evidence_scope,
+                        'action_eligible': pattern.action_eligible,
                         'reason': f"Reversal pattern ({pattern.win_rate:.1f}% win rate)"
                     })
             
             # Volume breakout
             elif pattern.pattern_type == 'volume_breakout':
-                min_volume = conditions.get('min_volume_change', 200)
+                min_volume = _finite_number(conditions.get('min_volume_change'), nonnegative=True)
+                if min_volume is None:
+                    continue
                 if volume_change >= min_volume:
                     signals.append({
                         'pattern_id': pattern.pattern_id,
@@ -503,6 +790,8 @@ class ElephantMemory:
                         'confidence': pattern.confidence,
                         'win_rate': pattern.win_rate,
                         'avg_profit': pattern.avg_profit_per_trade,
+                        'evidence_scope': pattern.evidence_scope,
+                        'action_eligible': pattern.action_eligible,
                         'reason': f"Volume breakout ({pattern.win_rate:.1f}% win rate)"
                     })
         
@@ -510,6 +799,7 @@ class ElephantMemory:
     
     def summarize(self) -> str:
         """Get a summary of elephant memory"""
+        self.ensure_loaded()
         lines = [
             "🐘 QUEEN'S ELEPHANT MEMORY SUMMARY 🐘",
             "=" * 50,
@@ -567,26 +857,130 @@ class HistoricalLearner:
     # Trading fee assumption
     TRADING_FEE = 0.001  # 0.1% per trade
     
-    def __init__(self, elephant_memory: ElephantMemory):
+    def __init__(
+        self,
+        elephant_memory: ElephantMemory,
+        *,
+        session=None,
+        cache_file: str = "historical_candles_cache.json",
+        clock: Optional[Callable[[], float]] = None,
+    ):
         self.memory = elephant_memory
-        self.session = requests.Session()
-        self.cache_file = "historical_candles_cache.json"
-        self.cached_data: Dict[str, List] = self._load_cache()
+        self.session = session
+        self.cache_file = cache_file
+        self._clock = clock or time.time
+        self.cached_data: Dict[str, Dict[str, Any]] = {}
+        self._cache_loaded = False
+
+    def _ensure_cache_loaded(self) -> None:
+        if not self._cache_loaded:
+            self.cached_data = self._load_cache()
+            self._cache_loaded = True
     
     def _load_cache(self) -> Dict:
-        """Load cached historical data"""
+        """Load only the provenance-bearing historical cache schema."""
         if os.path.exists(self.cache_file):
             try:
                 with open(self.cache_file, 'r') as f:
-                    return json.load(f)
-            except:
-                pass
+                    payload = json.load(f)
+                if (
+                    isinstance(payload, dict)
+                    and payload.get("schema_version") == "aureon-historical-candles-v2"
+                    and payload.get("generated_values") is False
+                    and isinstance(payload.get("entries"), dict)
+                ):
+                    return payload["entries"]
+            except Exception:
+                logger.warning("Historical candle cache is unreadable; ignoring it")
         return {}
     
     def _save_cache(self):
-        """Save historical data to cache"""
+        """Save historical data with explicit research-only provenance."""
         with open(self.cache_file, 'w') as f:
-            json.dump(self.cached_data, f)
+            json.dump(
+                {
+                    "schema_version": "aureon-historical-candles-v2",
+                    "generated_values": False,
+                    "action_eligible": False,
+                    "eligible_for_accounting": False,
+                    "eligible_for_learning": False,
+                    "entries": self.cached_data,
+                    "saved_at": _iso_timestamp(float(self._clock())),
+                },
+                f,
+            )
+
+    def _normalize_historical_candles(
+        self,
+        candles: Any,
+        *,
+        expected_symbol: str,
+    ) -> List[Dict[str, Any]]:
+        if not isinstance(candles, list):
+            return []
+        normalized: List[Dict[str, Any]] = []
+        previous_source_timestamp: Optional[float] = None
+        for raw in candles:
+            if not isinstance(raw, dict):
+                return []
+            if (
+                raw.get("truth_status") != "real_observed"
+                or raw.get("generated_values") is not False
+                or raw.get("action_eligible") is not False
+                or raw.get("source_id") != "binance:/api/v3/klines"
+                or str(raw.get("symbol") or "").upper() != expected_symbol.upper()
+            ):
+                return []
+            source_timestamp = _timestamp_epoch(raw.get("source_timestamp"))
+            open_timestamp = _timestamp_epoch(raw.get("open_timestamp"))
+            received_at = _timestamp_epoch(raw.get("received_at"))
+            open_price = _finite_number(raw.get("open"), positive=True)
+            high = _finite_number(raw.get("high"), positive=True)
+            low = _finite_number(raw.get("low"), positive=True)
+            close = _finite_number(raw.get("close"), positive=True)
+            volume = _finite_number(raw.get("volume"), nonnegative=True)
+            quote_volume = _finite_number(raw.get("quote_volume"), nonnegative=True)
+            trade_count = _finite_number(raw.get("trade_count"), nonnegative=True)
+            if (
+                source_timestamp is None
+                or open_timestamp is None
+                or received_at is None
+                or source_timestamp <= open_timestamp
+                or source_timestamp >= received_at
+                or open_price is None
+                or high is None
+                or low is None
+                or close is None
+                or volume is None
+                or quote_volume is None
+                or trade_count is None
+                or not trade_count.is_integer()
+                or not (low <= open_price <= high and low <= close <= high)
+                or (
+                    previous_source_timestamp is not None
+                    and source_timestamp <= previous_source_timestamp
+                )
+            ):
+                return []
+            normalized.append({
+                **raw,
+                "open_timestamp": open_timestamp,
+                "source_timestamp": source_timestamp,
+                "received_at": _iso_timestamp(received_at),
+                "open": open_price,
+                "high": high,
+                "low": low,
+                "close": close,
+                "volume": volume,
+                "quote_volume": quote_volume,
+                "trade_count": int(trade_count),
+                "generated_values": False,
+                "action_eligible": False,
+                "eligible_for_accounting": False,
+                "eligible_for_learning": False,
+            })
+            previous_source_timestamp = source_timestamp
+        return normalized
     
     def fetch_binance_history(self, symbol: str, interval: str = '1h', 
                               days: int = 30) -> List[Dict]:
@@ -594,11 +988,22 @@ class HistoricalLearner:
         Fetch historical candles from Binance (PUBLIC API)
         """
         cache_key = f"binance_{symbol}_{interval}_{days}d"
+        self._ensure_cache_loaded()
         
         # Check cache first
-        if cache_key in self.cached_data:
-            logger.info(f"📦 Using cached data for {symbol}")
-            return self.cached_data[cache_key]
+        cached = self.cached_data.get(cache_key)
+        if (
+            isinstance(cached, dict)
+            and cached.get("generated_values") is False
+            and cached.get("action_eligible") is False
+        ):
+            normalized_cached = self._normalize_historical_candles(
+                cached.get("candles"),
+                expected_symbol=symbol,
+            )
+            if normalized_cached:
+                logger.info(f"📦 Using provenance-verified cached data for {symbol}")
+                return normalized_cached
         
         try:
             # Calculate time range
@@ -614,23 +1019,56 @@ class HistoricalLearner:
                 'limit': 1000
             }
             
+            if self.session is None:
+                self.session = requests.Session()
             response = self.session.get(url, params=params, timeout=30)
             response.raise_for_status()
+            received_at = float(self._clock())
             
             candles = []
             for k in response.json():
+                if not isinstance(k, list) or len(k) < 11:
+                    return []
                 candles.append({
                     'timestamp': k[0],
+                    'open_timestamp': k[0],
+                    'source_timestamp': k[6],
+                    'received_at': _iso_timestamp(received_at),
                     'open': float(k[1]),
                     'high': float(k[2]),
                     'low': float(k[3]),
                     'close': float(k[4]),
                     'volume': float(k[5]),
-                    'symbol': symbol
+                    'quote_volume': float(k[7]),
+                    'trade_count': k[8],
+                    'taker_buy_base_volume': float(k[9]),
+                    'taker_buy_quote_volume': float(k[10]),
+                    'symbol': symbol,
+                    'source_id': "binance:/api/v3/klines",
+                    'truth_status': "real_observed",
+                    'data_status': "historical",
+                    'generated_values': False,
+                    'action_eligible': False,
+                    'eligible_for_accounting': False,
+                    'eligible_for_learning': False,
                 })
+            candles = self._normalize_historical_candles(candles, expected_symbol=symbol)
+            if not candles:
+                return []
             
             # Cache it
-            self.cached_data[cache_key] = candles
+            self.cached_data[cache_key] = {
+                "source_id": "binance:/api/v3/klines",
+                "symbol": symbol,
+                "interval": interval,
+                "days": days,
+                "candles": candles,
+                "generated_values": False,
+                "action_eligible": False,
+                "eligible_for_accounting": False,
+                "eligible_for_learning": False,
+                "fee_model": "research_assumption_only",
+            }
             self._save_cache()
             
             logger.info(f"📊 Fetched {len(candles)} candles for {symbol}")
@@ -644,11 +1082,18 @@ class HistoricalLearner:
         """
         Analyze historical candles for patterns
         """
-        if len(candles) < 100:
+        if not candles or not isinstance(candles[0], dict):
+            return {}
+        expected_symbol = str(candles[0].get("symbol") or "").strip().upper()
+        candles = self._normalize_historical_candles(
+            candles,
+            expected_symbol=expected_symbol,
+        )
+        if not expected_symbol or len(candles) < 100:
             return {}
         
         patterns = {}
-        symbol = candles[0]['symbol'] if candles else 'UNKNOWN'
+        symbol = candles[0]['symbol']
         
         # Track simulated trades
         trades = []
@@ -808,7 +1253,7 @@ class HistoricalLearner:
         # Analyze best hours
         hourly_profits = defaultdict(list)
         for i, candle in enumerate(candles[:-1]):
-            ts = datetime.fromtimestamp(candle['timestamp'] / 1000)
+            ts = datetime.fromtimestamp(candle['timestamp'] / 1000, tz=timezone.utc)
             hour = ts.hour
             
             next_close = candles[i + 1]['close']
@@ -823,6 +1268,17 @@ class HistoricalLearner:
             elif avg_profit < -0.1:
                 self.memory.worst_hours[hour] = avg_profit
         
+        for pattern in patterns.values():
+            pattern.evidence_scope = "historical_backtest"
+            pattern.fee_model = "assumed_binance_spot_0.1pct_per_leg"
+            pattern.source_id = "binance:/api/v3/klines"
+            pattern.source_timestamp = candles[-1]["source_timestamp"]
+            pattern.received_at = candles[-1]["received_at"]
+            pattern.first_seen = _iso_timestamp(candles[0]["source_timestamp"])
+            pattern.last_updated = _iso_timestamp(candles[-1]["source_timestamp"])
+            pattern.generated_values = False
+            pattern.action_eligible = False
+            pattern.eligible_for_learning = False
         return patterns
     
     def learn_from_symbol(self, symbol: str, days: int = 90) -> Dict:
@@ -833,10 +1289,20 @@ class HistoricalLearner:
         candles = self.fetch_binance_history(symbol, '1h', days)
         
         if not candles:
-            return {'success': False, 'reason': 'No data available'}
+            return _no_data_receipt(
+                "complete_provenance_bearing_historical_candles_required",
+                now=float(self._clock()),
+                purpose="historical_research",
+            )
         
         # Analyze patterns
         patterns = self.analyze_patterns(candles)
+        if not patterns:
+            return _no_data_receipt(
+                "no_proven_historical_pattern_sample",
+                now=float(self._clock()),
+                purpose="historical_research",
+            )
         
         # Store in elephant memory
         for pattern in patterns.values():
@@ -850,10 +1316,15 @@ class HistoricalLearner:
         self.memory.asset_performance[symbol] = {
             'trades': total_trades,
             'wins': total_wins,
-            'win_rate': (total_wins / total_trades * 100) if total_trades > 0 else 50,
+            'win_rate': (total_wins / total_trades * 100),
             'total_profit': total_profit,
-            'profit_factor': sum(p.profit_factor for p in patterns.values()) / len(patterns) if patterns else 1.0,
-            'last_analyzed': datetime.now().isoformat()
+            'profit_factor': sum(p.profit_factor for p in patterns.values()) / len(patterns),
+            'last_analyzed': _iso_timestamp(candles[-1]["source_timestamp"]),
+            'evidence_scope': "historical_backtest",
+            'fee_model': "assumed_binance_spot_0.1pct_per_leg",
+            'action_eligible': False,
+            'eligible_for_learning': False,
+            'generated_values': False,
         }
         
         # Update stats
@@ -864,12 +1335,19 @@ class HistoricalLearner:
         
         return {
             'success': True,
+            'data_status': "historical_research",
+            'truth_status': "real_derived",
             'symbol': symbol,
             'candles_analyzed': len(candles),
             'patterns_found': len(patterns),
             'total_trades': total_trades,
             'win_rate': (total_wins / total_trades * 100) if total_trades > 0 else 0,
-            'profit': total_profit
+            'profit': total_profit,
+            'fee_model': "assumed_binance_spot_0.1pct_per_leg",
+            'action_eligible': False,
+            'eligible_for_accounting': False,
+            'eligible_for_learning': False,
+            'generated_values': False,
         }
     
     def learn_all_major_pairs(self, days: int = 30):

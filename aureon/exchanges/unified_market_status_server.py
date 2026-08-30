@@ -106,9 +106,19 @@ def _runtime_watchdog(payload: dict[str, Any], status_file_age_sec: float | None
     if active_tick and tick_running_sec > TICK_RUNNING_STALE_AFTER_SEC:
         tick_stale = True
         stale_reason = "tick_in_progress_stalled"
-    if not tick_stale and existing_reason not in {"", "last_tick_age_exceeded", "tick_in_progress_stalled"}:
-        tick_stale = bool(payload.get("stale") or watchdog.get("tick_stale"))
-        stale_reason = existing_reason
+    # Honor the runtime's own stale flag unless fresh tick-age data proves
+    # otherwise. The old gate required a NON-empty custom reason, so an
+    # explicit ``stale: true`` with no reason string was silently ignored —
+    # with open positions that downgraded a critical position-monitor hold
+    # to "healthy".
+    tick_provably_fresh = (
+        not active_tick
+        and last_tick_age is not None
+        and last_tick_age <= TICK_STALE_AFTER_SEC
+    )
+    if not tick_stale and not tick_provably_fresh and bool(payload.get("stale") or watchdog.get("tick_stale")):
+        tick_stale = True
+        stale_reason = existing_reason or "runtime_reported_stale"
 
     status_file_fresh = status_file_age_sec is None or status_file_age_sec <= STATUS_FILE_STALE_AFTER_SEC
     open_positions = _has_open_positions(payload)

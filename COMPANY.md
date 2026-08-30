@@ -76,7 +76,7 @@ and a self-building coding organism. See the
 ## Contact
 
 - **Website** — [aureonzorzatechnologies.pl](https://aureonzorzatechnologies.pl)
-- **Repository** — [github.com/RA-CONSULTING/aureon-trading](https://github.com/RA-CONSULTING/aureon-trading)
+- **Repository** — [github.com/RA-CONSULTING/Aureon-OS](https://github.com/RA-CONSULTING/Aureon-OS)
 - **License** — [MIT](LICENSE) · © 2025 R&A Consulting and Brokerage Services Ltd
 
 ---

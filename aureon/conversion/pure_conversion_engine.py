@@ -37,8 +37,8 @@ import json
 import asyncio
 import signal
 import time
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Tuple, Set
+from datetime import datetime, timedelta, timezone
+from typing import Any, Dict, List, Optional, Tuple, Set
 from dataclasses import dataclass, field
 from collections import defaultdict, deque
 from enum import Enum
@@ -46,6 +46,69 @@ import math
 
 import logging
 logger = logging.getLogger(__name__)
+
+
+def _configured_price_max_age_seconds() -> float:
+    try:
+        value = float(os.getenv("AUREON_CONVERSION_PRICE_MAX_AGE_SECONDS", "120"))
+    except (TypeError, ValueError):
+        return 120.0
+    return value if math.isfinite(value) and value > 0 else 120.0
+
+
+CONVERSION_PRICE_MAX_AGE_SECONDS = _configured_price_max_age_seconds()
+
+
+def _finite_number(value: Any, *, minimum: Optional[float] = None,
+                   maximum: Optional[float] = None) -> Optional[float]:
+    if isinstance(value, bool):
+        return None
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError):
+        return None
+    if not math.isfinite(numeric):
+        return None
+    if minimum is not None and numeric < minimum:
+        return None
+    if maximum is not None and numeric > maximum:
+        return None
+    return numeric
+
+
+def _coerce_source_timestamp(value: Any) -> Optional[datetime]:
+    if isinstance(value, datetime):
+        parsed = value
+    elif isinstance(value, (int, float)) and not isinstance(value, bool):
+        numeric = float(value)
+        if not math.isfinite(numeric):
+            return None
+        if numeric > 10_000_000_000:
+            numeric /= 1000.0
+        try:
+            parsed = datetime.fromtimestamp(numeric, tz=timezone.utc)
+        except (OSError, OverflowError, ValueError):
+            return None
+    elif isinstance(value, str) and value.strip():
+        try:
+            parsed = datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
+        except ValueError:
+            return None
+    else:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+
+def _fresh_source_timestamp(value: Any) -> Optional[datetime]:
+    parsed = _coerce_source_timestamp(value)
+    if parsed is None:
+        return None
+    age = (datetime.now(timezone.utc) - parsed).total_seconds()
+    if age < -5.0 or age > CONVERSION_PRICE_MAX_AGE_SECONDS:
+        return None
+    return parsed
 
 try:
     import websockets
@@ -227,6 +290,10 @@ class ConversionOpportunity:
     # Combined
     unified_score: float = 0.0
     confidence: float = 0.0
+    data_status: str = "no_data"
+    no_data_reason: str = "unscored"
+    proof_eligible: bool = False
+    evidence: Dict[str, Any] = field(default_factory=dict)
     
     # Metrics
     from_momentum: float = 0.0
@@ -270,6 +337,9 @@ class CompletedConversion:
     # Track if this conversion was profitable
     to_price_at_check: float = 0.0
     realized_gain_pct: float = 0.0
+    provider_receipt_id: Optional[str] = None
+    source_timestamp: Optional[datetime] = None
+    proof_eligible: bool = False
 
 
 class UnifiedConversionBrain:
@@ -410,149 +480,138 @@ class UnifiedConversionBrain:
         
         print("   🧠 Unified Brain ONLINE!\n")
     
-    def score_conversion(self, opp: ConversionOpportunity, 
-                         prices: Dict[str, float],
-                         price_history: Dict[str, deque]) -> ConversionOpportunity:
+    def score_conversion(
+        self,
+        opp: ConversionOpportunity,
+        prices: Dict[str, float],
+        price_history: Dict[str, deque],
+        price_timestamps: Optional[Dict[str, Any]] = None,
+        volumes: Optional[Dict[str, float]] = None,
+    ) -> ConversionOpportunity:
+        """Score only a complete, fresh Mycelium evidence packet.
+
+        The Mycelium hub is the conversion nervous system. If it is absent,
+        errors, or returns incomplete evidence, the opportunity stays visible
+        as no_data but cannot become executable or train adaptive pathways.
         """
-        Score a conversion opportunity using ALL systems through Mycelium Hub.
-        """
-        
-        # ═══════════════════════════════════════════════════════════════════════
-        # 🍄 USE MYCELIUM HUB IF AVAILABLE (ALL SYSTEMS WIRED)
-        # ═══════════════════════════════════════════════════════════════════════
-        if self.mycelium_hub:
-            try:
-                hub_signal = self.mycelium_hub.get_conversion_signal(
-                    from_asset=opp.from_asset,
-                    to_asset=opp.to_asset,
-                    from_price=opp.from_price,
-                    to_price=opp.to_price,
-                    volume=0.0
-                )
-                
-                # Apply hub signal to opportunity
-                opp.unified_score = hub_signal.unified_score
-                opp.confidence = hub_signal.unified_confidence
-                
-                # Extract individual scores
-                if hub_signal.v14_signal:
-                    opp.v14_score = int(hub_signal.v14_signal.score)
-                if hub_signal.mycelium_signal:
-                    opp.mycelium_score = hub_signal.mycelium_signal.confidence
-                if hub_signal.probability_signal:
-                    opp.probability_score = hub_signal.probability_signal.confidence
-                if hub_signal.miner_signal:
-                    opp.miner_score = hub_signal.miner_signal.confidence
-                
-                return opp
-                
-            except Exception as e:
-                logger.warning(f"Mycelium Hub error, falling back: {e}")
-        
-        # ═══════════════════════════════════════════════════════════════════════
-        # FALLBACK: Score manually with individual systems
-        # ═══════════════════════════════════════════════════════════════════════
-        scores = []
-        weights = []
-        
-        # ═══════════════════════════════════════════════════════════════════
-        # V14 SCORING - Technical analysis (weight: 30%)
-        # ═══════════════════════════════════════════════════════════════════
-        if self.v14:
-            # Score the TO asset (what we're converting INTO)
-            to_symbol = f"{opp.to_asset}USDT"
-            v14_eval = self.v14.evaluate_entry(to_symbol, opp.to_price)
-            opp.v14_score = v14_eval['score']
-            
-            # Normalize to 0-1
-            v14_normalized = min(1.0, opp.v14_score / 12.0)  # Max ~12 points
-            scores.append(v14_normalized)
-            weights.append(0.30)
-        
-        # ═══════════════════════════════════════════════════════════════════
-        # MYCELIUM CONSENSUS - Network agreement (weight: 25%)
-        # ═══════════════════════════════════════════════════════════════════
-        if self.mycelium:
-            try:
-                # Get network signal for the TO asset
-                signal = self.mycelium.get_queen_signal()
-                coherence = self.mycelium.get_network_coherence() if hasattr(self.mycelium, 'get_network_coherence') else 0.5
-                
-                # Positive signal + high coherence = good conversion
-                mycelium_score = (signal + 1) / 2 * coherence  # Normalize -1,1 to 0,1
-                opp.mycelium_score = mycelium_score
-                scores.append(mycelium_score)
-                weights.append(0.25)
-            except:
-                pass
-        
-        # ═══════════════════════════════════════════════════════════════════
-        # PROBABILITY MATRIX - Future forecast (weight: 25%)
-        # ═══════════════════════════════════════════════════════════════════
-        if self.probability:
-            try:
-                forecast = self.probability.get_symbol_forecast(opp.to_asset) if hasattr(self.probability, 'get_symbol_forecast') else None
-                if forecast:
-                    bullish_prob = forecast.get('bullish_probability', 0.5)
-                    opp.probability_score = bullish_prob
-                    scores.append(bullish_prob)
-                    weights.append(0.25)
-            except:
-                pass
-        
-        # ═══════════════════════════════════════════════════════════════════
-        # ADAPTIVE LEARNING - Historical patterns (weight: 10%)
-        # ═══════════════════════════════════════════════════════════════════
-        # Check our own conversion history
-        pair_key = f"{opp.from_asset}→{opp.to_asset}"
-        historical_success = self.successful_pairs.get(pair_key, 0)
-        total_conversions = sum(self.successful_pairs.values()) or 1
-        
-        adaptive_score = 0.5 + (historical_success / total_conversions) * 0.5
-        opp.adaptive_score = adaptive_score
-        scores.append(adaptive_score)
-        weights.append(0.10)
-        
-        # ═══════════════════════════════════════════════════════════════════
-        # MINER BRAIN - Cognitive patterns (weight: 10%)
-        # ═══════════════════════════════════════════════════════════════════
-        if self.miner:
-            try:
-                # Get miner's assessment
-                miner_signal = 0.5  # Default neutral
-                if hasattr(self.miner, 'get_signal'):
-                    miner_signal = (self.miner.get_signal(opp.to_asset) + 1) / 2
-                opp.miner_score = miner_signal
-                scores.append(miner_signal)
-                weights.append(0.10)
-            except:
-                pass
-        
-        # ═══════════════════════════════════════════════════════════════════
-        # CALCULATE UNIFIED SCORE
-        # ═══════════════════════════════════════════════════════════════════
-        if scores and weights:
-            # Weighted average
-            total_weight = sum(weights)
-            opp.unified_score = sum(s * w for s, w in zip(scores, weights)) / total_weight
-            
-            # Confidence is based on how many systems agree (variance)
-            if len(scores) > 1:
-                mean = sum(scores) / len(scores)
-                variance = sum((s - mean) ** 2 for s in scores) / len(scores)
-                opp.confidence = 1.0 - min(1.0, math.sqrt(variance) * 2)
-            else:
-                opp.confidence = 0.5
-        
+        opp.unified_score = 0.0
+        opp.confidence = 0.0
+        opp.data_status = 'no_data'
+        opp.no_data_reason = 'unscored'
+        opp.proof_eligible = False
+        opp.evidence = {}
+
+        from_symbol = f"{opp.from_asset}USDT"
+        to_symbol = f"{opp.to_asset}USDT"
+        feed_from_price = _finite_number(prices.get(from_symbol), minimum=0.000000000001)
+        feed_to_price = _finite_number(prices.get(to_symbol), minimum=0.000000000001)
+        clean_from_price = _finite_number(opp.from_price, minimum=0.000000000001)
+        clean_to_price = _finite_number(opp.to_price, minimum=0.000000000001)
+        if (
+            feed_from_price is None
+            or feed_to_price is None
+            or clean_from_price is None
+            or clean_to_price is None
+            or not math.isclose(feed_from_price, clean_from_price, rel_tol=1e-12)
+            or not math.isclose(feed_to_price, clean_to_price, rel_tol=1e-12)
+        ):
+            opp.no_data_reason = 'missing_or_malformed_provider_price'
+            return opp
+
+        timestamps = price_timestamps or {}
+        from_observed_at = _fresh_source_timestamp(timestamps.get(from_symbol))
+        to_observed_at = _fresh_source_timestamp(timestamps.get(to_symbol))
+        if from_observed_at is None or to_observed_at is None:
+            opp.no_data_reason = 'missing_or_stale_provider_timestamp'
+            return opp
+
+        if not self.mycelium_hub:
+            opp.no_data_reason = 'mycelium_hub_unavailable'
+            return opp
+
+        clean_volumes = volumes or {}
+        try:
+            hub_signal = self.mycelium_hub.get_conversion_signal(
+                from_asset=opp.from_asset,
+                to_asset=opp.to_asset,
+                from_price=clean_from_price,
+                to_price=clean_to_price,
+                from_source_timestamp=from_observed_at,
+                to_source_timestamp=to_observed_at,
+                from_volume=clean_volumes.get(from_symbol),
+                to_volume=clean_volumes.get(to_symbol),
+            )
+        except Exception as exc:
+            logger.warning("Mycelium Hub evidence error: %s", exc)
+            opp.no_data_reason = 'mycelium_hub_error'
+            return opp
+
+        if (
+            getattr(hub_signal, 'data_status', 'no_data') != 'ok'
+            or not getattr(hub_signal, 'proof_eligible', False)
+        ):
+            opp.no_data_reason = str(
+                getattr(hub_signal, 'no_data_reason', 'incomplete_mycelium_evidence')
+            )
+            return opp
+
+        unified_score = _finite_number(
+            getattr(hub_signal, 'unified_score', None), minimum=0.0, maximum=1.0
+        )
+        confidence = _finite_number(
+            getattr(hub_signal, 'unified_confidence', None), minimum=0.0, maximum=1.0
+        )
+        if unified_score is None or confidence is None:
+            opp.no_data_reason = 'malformed_mycelium_score'
+            return opp
+
+        opp.unified_score = unified_score
+        opp.confidence = confidence
+        opp.data_status = 'ok'
+        opp.no_data_reason = ''
+        opp.proof_eligible = True
+        opp.evidence = {
+            'from_price_source_timestamp': from_observed_at.isoformat(),
+            'to_price_source_timestamp': to_observed_at.isoformat(),
+            'mycelium_source_timestamps': dict(
+                getattr(hub_signal, 'source_timestamps', {})
+            ),
+            'participating_systems': list(
+                getattr(hub_signal, 'participating_systems', [])
+            ),
+        }
+
+        if hub_signal.v14_signal:
+            opp.v14_score = int(hub_signal.v14_signal.score)
+        if hub_signal.mycelium_signal:
+            opp.mycelium_score = hub_signal.mycelium_signal.confidence
+        if hub_signal.probability_signal:
+            opp.probability_score = hub_signal.probability_signal.confidence
+        if hub_signal.miner_signal:
+            opp.miner_score = hub_signal.miner_signal.confidence
+
         return opp
-    
-    def record_conversion(self, conversion: CompletedConversion, was_profitable: bool):
-        """Record conversion outcome for learning"""
+
+    def record_conversion(
+        self,
+        conversion: CompletedConversion,
+        was_profitable: bool,
+    ) -> bool:
+        """Learn only from a fresh provider-proven conversion outcome."""
+        if (
+            not isinstance(was_profitable, bool)
+            or not conversion.proof_eligible
+            or not conversion.provider_receipt_id
+            or _fresh_source_timestamp(conversion.source_timestamp) is None
+            or _finite_number(conversion.realized_gain_pct) is None
+        ):
+            return False
         self.conversion_history.append(conversion)
         
         pair_key = f"{conversion.from_asset}→{conversion.to_asset}"
         if was_profitable:
             self.successful_pairs[pair_key] += 1
+        return True
 
 
 class PureConversionEngine:
@@ -632,6 +691,8 @@ class PureConversionEngine:
         
         # Price tracking
         self.prices: Dict[str, float] = {}
+        self.volumes: Dict[str, float] = {}
+        self.price_source_timestamps: Dict[str, datetime] = {}
         self.price_history: Dict[str, deque] = defaultdict(lambda: deque(maxlen=200))
         self.momentum: Dict[str, float] = {}  # 5-min momentum
         self.strength: Dict[str, float] = {}  # Relative strength vs BTC
@@ -697,15 +758,8 @@ class PureConversionEngine:
         print("\n   📊 Loading portfolio...")
         
         if self.dry_run or not self.kraken:
-            # Simulate portfolio for dry run
-            self.portfolio = {
-                'BTC': Asset('BTC', 0.01, 95000, 97000),
-                'ETH': Asset('ETH', 0.5, 3200, 3400),
-                'SOL': Asset('SOL', 5.0, 160, 170),
-                'ATOM': Asset('ATOM', 20.0, 8.5, 9.0),
-                'DOT': Asset('DOT', 30.0, 5.5, 6.0),
-            }
-            print("      🔵 DRY RUN - Simulated portfolio")
+            print("      ⚠️ no_data - provider portfolio receipt unavailable")
+            return False
         else:
             try:
                 balance = self.kraken.get_account_balance()
@@ -750,24 +804,40 @@ class PureConversionEngine:
         
         try:
             response = requests.get('https://api.binance.com/api/v3/ticker/24hr', timeout=10)
+            response.raise_for_status()
             data = response.json()
+            if not isinstance(data, list):
+                raise ValueError("Binance ticker response is not a list")
             
             symbols = {v['binance'] for v in self.UNIVERSE.values()}
             
             for ticker in data:
+                if not isinstance(ticker, dict):
+                    continue
+                required = {'symbol', 'lastPrice', 'volume', 'closeTime'}
+                if not required.issubset(ticker):
+                    continue
                 symbol = ticker['symbol']
                 if symbol in symbols:
-                    price = float(ticker['lastPrice'])
+                    price = _finite_number(ticker['lastPrice'], minimum=0.000000000001)
+                    volume = _finite_number(ticker['volume'], minimum=0.0)
+                    observed_at = _fresh_source_timestamp(ticker['closeTime'])
+                    if price is None or volume is None or observed_at is None:
+                        continue
                     self.prices[symbol] = price
+                    self.volumes[symbol] = volume
+                    self.price_source_timestamps[symbol] = observed_at
                     self.price_history[symbol].append({
                         'price': price,
-                        'time': datetime.now()
+                        'volume': volume,
+                        'source_time': observed_at,
+                        'received_at': datetime.now(timezone.utc),
                     })
                     
                     # Update V14 scoring
                     if self.brain.v14:
                         self.brain.v14.scoring_engine.update_price_history(
-                            symbol, price, float(ticker.get('volume', 0))
+                            symbol, price, volume
                         )
             
             print(f"      ✅ Loaded {len(self.prices)} prices")
@@ -798,15 +868,32 @@ class PureConversionEngine:
                             data = json.loads(message)
                             if 'data' in data:
                                 ticker = data['data']
-                                symbol = ticker.get('s', '')
-                                price = float(ticker.get('c', 0))
-                                volume = float(ticker.get('v', 0))
+                                if not isinstance(ticker, dict):
+                                    continue
+                                required = {'s', 'c', 'v', 'E'}
+                                if not required.issubset(ticker):
+                                    continue
+                                symbol = ticker['s']
+                                price = _finite_number(
+                                    ticker['c'], minimum=0.000000000001
+                                )
+                                volume = _finite_number(ticker['v'], minimum=0.0)
+                                observed_at = _fresh_source_timestamp(ticker['E'])
                                 
-                                if price > 0:
+                                if (
+                                    symbol in {v['binance'] for v in self.UNIVERSE.values()}
+                                    and price is not None
+                                    and volume is not None
+                                    and observed_at is not None
+                                ):
                                     self.prices[symbol] = price
+                                    self.volumes[symbol] = volume
+                                    self.price_source_timestamps[symbol] = observed_at
                                     self.price_history[symbol].append({
                                         'price': price,
-                                        'time': datetime.now()
+                                        'volume': volume,
+                                        'source_time': observed_at,
+                                        'received_at': datetime.now(timezone.utc),
                                     })
                                     
                                     # Update V14
@@ -836,25 +923,42 @@ class PureConversionEngine:
         """Calculate 5-minute momentum"""
         history = list(self.price_history[symbol])
         if len(history) < 10:
+            self.momentum.pop(symbol, None)
             return
         
-        now = datetime.now()
-        five_min_ago = [h for h in history if (now - h['time']).total_seconds() < 300]
+        five_min_ago = []
+        for observation in history:
+            if not isinstance(observation, dict):
+                continue
+            observed_at = _fresh_source_timestamp(observation.get('source_time'))
+            price = _finite_number(
+                observation.get('price'), minimum=0.000000000001
+            )
+            if observed_at is not None and price is not None:
+                five_min_ago.append((observed_at, price))
         
         if len(five_min_ago) >= 2:
-            old_price = five_min_ago[0]['price']
-            new_price = five_min_ago[-1]['price']
+            five_min_ago.sort(key=lambda item: item[0])
+            old_price = five_min_ago[0][1]
+            new_price = five_min_ago[-1][1]
             self.momentum[symbol] = (new_price - old_price) / old_price
+        else:
+            self.momentum.pop(symbol, None)
     
     def _update_relative_strength(self):
         """Update relative strength vs BTC"""
-        btc_momentum = self.momentum.get('BTCUSDT', 0)
+        btc_momentum = self.momentum.get('BTCUSDT')
+        if btc_momentum is None:
+            self.strength.clear()
+            return
         
         for asset, info in self.UNIVERSE.items():
             symbol = info['binance']
             if symbol in self.momentum:
                 # Relative strength = asset momentum - BTC momentum
                 self.strength[asset] = self.momentum[symbol] - btc_momentum
+            else:
+                self.strength.pop(asset, None)
     
     async def find_conversion_opportunities(self) -> List[ConversionOpportunity]:
         """Find all conversion opportunities (for display/testing)"""
@@ -868,21 +972,18 @@ class PureConversionEngine:
         
         opportunities = []
         
-        for from_asset in list(self.portfolio.keys()) + ['BTC', 'ETH', 'SOL']:
-            if from_asset not in self.portfolio:
-                # Create simulated holding for testing
-                self.portfolio[from_asset] = Asset(from_asset, 1.0, 
-                    self.prices.get(self.UNIVERSE.get(from_asset, {}).get('binance', ''), 100), 
-                    self.prices.get(self.UNIVERSE.get(from_asset, {}).get('binance', ''), 100))
-            
-            from_holding = self.portfolio[from_asset]
-            from_strength = self.strength.get(from_asset, 0)
+        for from_asset in list(self.portfolio.keys()):
+            if from_asset not in self.UNIVERSE or from_asset not in self.strength:
+                continue
+            from_strength = self.strength[from_asset]
             
             for to_asset, info in self.UNIVERSE.items():
                 if to_asset == from_asset:
                     continue
+                if to_asset not in self.strength:
+                    continue
                 
-                to_strength = self.strength.get(to_asset, 0)
+                to_strength = self.strength[to_asset]
                 strength_diff = to_strength - from_strength
                 
                 # Only consider if TO asset is stronger
@@ -902,25 +1003,54 @@ class PureConversionEngine:
                 # Create opportunity
                 from_symbol = self.UNIVERSE.get(from_asset, {}).get('binance', f'{from_asset}USDT')
                 to_symbol = self.UNIVERSE.get(to_asset, {}).get('binance', f'{to_asset}USDT')
+                from_price = _finite_number(
+                    self.prices.get(from_symbol), minimum=0.000000000001
+                )
+                to_price = _finite_number(
+                    self.prices.get(to_symbol), minimum=0.000000000001
+                )
+                if (
+                    from_price is None
+                    or to_price is None
+                    or _fresh_source_timestamp(
+                        self.price_source_timestamps.get(from_symbol)
+                    )
+                    is None
+                    or _fresh_source_timestamp(
+                        self.price_source_timestamps.get(to_symbol)
+                    )
+                    is None
+                ):
+                    continue
                 
                 opp = ConversionOpportunity(
                     from_asset=from_asset,
                     to_asset=to_asset,
                     conversion_type=conv_type,
-                    from_momentum=self.momentum.get(from_symbol, 0),
-                    to_momentum=self.momentum.get(to_symbol, 0),
+                    from_momentum=self.momentum[from_symbol],
+                    to_momentum=self.momentum[to_symbol],
                     relative_strength=strength_diff,
-                    from_price=self.prices.get(from_symbol, 0),
-                    to_price=self.prices.get(to_symbol, 0),
+                    from_price=from_price,
+                    to_price=to_price,
                     from_strength=from_strength,
                     to_strength=to_strength,
                     strength_diff=strength_diff,
                 )
                 
                 # Score with unified brain
-                opp = self.brain.score_conversion(opp, self.prices, self.price_history)
+                opp = self.brain.score_conversion(
+                    opp,
+                    self.prices,
+                    self.price_history,
+                    self.price_source_timestamps,
+                    self.volumes,
+                )
                 
-                if opp.unified_score >= self.MIN_UNIFIED_SCORE * 0.5:  # Lower threshold
+                if (
+                    opp.data_status == 'ok'
+                    and opp.proof_eligible
+                    and opp.unified_score >= self.MIN_UNIFIED_SCORE * 0.5
+                ):
                     opportunities.append(opp)
         
         # Sort by unified score
@@ -930,41 +1060,49 @@ class PureConversionEngine:
     def _calculate_all_metrics(self):
         """Calculate momentum and strength for all assets.
 
-        Production: derives momentum from the rolling delta of self.prices
-        (real reads). Synthetic-fallback path is gated behind
-        AUREON_ALLOW_SIM_FALLBACK — if no price history is present and the
-        gate is off, the symbol's momentum is simply left at its previous
-        value rather than fabricated.
+        Derives momentum only from the rolling delta of provider-observed
+        prices. Missing history clears the value so stale or invented
+        momentum cannot influence conversion routing.
         """
-        import random
-        from aureon.observer.live_data_policy import simulation_fallback_allowed
-
-        _allow_sim = simulation_fallback_allowed()
         for asset, info in self.UNIVERSE.items():
             symbol = info['binance']
-            if symbol in self.prices:
+            if (
+                symbol in self.prices
+                and _fresh_source_timestamp(
+                    getattr(self, 'price_source_timestamps', {}).get(symbol)
+                )
+                is not None
+            ):
                 history = getattr(self, "price_history", {}).get(symbol)
-                if history and len(history) >= 2:
-                    # Real momentum from price delta: (latest - oldest) / oldest
-                    try:
-                        first, last = float(history[0]), float(history[-1])
-                        if first:
-                            self.momentum[symbol] = (last - first) / first
-                            continue
-                    except (TypeError, ValueError, ZeroDivisionError):
-                        pass
-                if _allow_sim:
-                    # DEV-ONLY synthetic momentum, gated
-                    self.momentum[symbol] = random.uniform(-0.02, 0.03)
-                # else: leave previous value (no fabrication in production)
+                clean_history = []
+                for observation in history or ():
+                    if not isinstance(observation, dict):
+                        continue
+                    observed_at = _fresh_source_timestamp(observation.get('source_time'))
+                    price = _finite_number(
+                        observation.get('price'), minimum=0.000000000001
+                    )
+                    if observed_at is not None and price is not None:
+                        clean_history.append((observed_at, price))
+                if len(clean_history) >= 2:
+                    clean_history.sort(key=lambda item: item[0])
+                    first, last = clean_history[0][1], clean_history[-1][1]
+                    self.momentum[symbol] = (last - first) / first
+                    continue
+            self.momentum.pop(symbol, None)
         
         # Update relative strength
-        btc_momentum = self.momentum.get('BTCUSDT', 0)
+        btc_momentum = self.momentum.get('BTCUSDT')
+        if btc_momentum is None:
+            self.strength.clear()
+            return
         
         for asset, info in self.UNIVERSE.items():
             symbol = info['binance']
             if symbol in self.momentum:
                 self.strength[asset] = self.momentum[symbol] - btc_momentum
+            else:
+                self.strength.pop(asset, None)
     
     async def _check_conversions(self):
         """Check for conversion opportunities"""
@@ -985,7 +1123,9 @@ class PureConversionEngine:
             if self.portfolio[from_asset].usd_value < self.MIN_CONVERSION_USD:
                 continue
             
-            from_strength = self.strength.get(from_asset, 0)
+            if from_asset not in self.strength:
+                continue
+            from_strength = self.strength[from_asset]
             
             for to_asset, info in self.UNIVERSE.items():
                 if to_asset == from_asset:
@@ -993,7 +1133,9 @@ class PureConversionEngine:
                 if to_asset in self.portfolio and self.portfolio[to_asset].usd_value > 1000:
                     continue  # Don't over-concentrate
                 
-                to_strength = self.strength.get(to_asset, 0)
+                if to_asset not in self.strength:
+                    continue
+                to_strength = self.strength[to_asset]
                 strength_diff = to_strength - from_strength
                 
                 # Only consider if TO asset is significantly stronger
@@ -1013,22 +1155,52 @@ class PureConversionEngine:
                 # Create opportunity
                 from_symbol = self.UNIVERSE[from_asset]['binance']
                 to_symbol = self.UNIVERSE[to_asset]['binance']
+                from_price = _finite_number(
+                    self.prices.get(from_symbol), minimum=0.000000000001
+                )
+                to_price = _finite_number(
+                    self.prices.get(to_symbol), minimum=0.000000000001
+                )
+                if (
+                    from_price is None
+                    or to_price is None
+                    or _fresh_source_timestamp(
+                        self.price_source_timestamps.get(from_symbol)
+                    )
+                    is None
+                    or _fresh_source_timestamp(
+                        self.price_source_timestamps.get(to_symbol)
+                    )
+                    is None
+                ):
+                    continue
                 
                 opp = ConversionOpportunity(
                     from_asset=from_asset,
                     to_asset=to_asset,
                     conversion_type=conv_type,
-                    from_momentum=self.momentum.get(from_symbol, 0),
-                    to_momentum=self.momentum.get(to_symbol, 0),
+                    from_momentum=self.momentum[from_symbol],
+                    to_momentum=self.momentum[to_symbol],
                     relative_strength=strength_diff,
-                    from_price=self.prices.get(from_symbol, 0),
-                    to_price=self.prices.get(to_symbol, 0),
+                    from_price=from_price,
+                    to_price=to_price,
                 )
                 
                 # Score with unified brain
-                opp = self.brain.score_conversion(opp, self.prices, self.price_history)
+                opp = self.brain.score_conversion(
+                    opp,
+                    self.prices,
+                    self.price_history,
+                    self.price_source_timestamps,
+                    self.volumes,
+                )
                 
-                if opp.unified_score >= self.MIN_UNIFIED_SCORE and opp.unified_score > best_score:
+                if (
+                    opp.data_status == 'ok'
+                    and opp.proof_eligible
+                    and opp.unified_score >= self.MIN_UNIFIED_SCORE
+                    and opp.unified_score > best_score
+                ):
                     best_opp = opp
                     best_score = opp.unified_score
         
@@ -1036,12 +1208,27 @@ class PureConversionEngine:
             self.stats['opportunities_found'] += 1
             await self._execute_conversion(best_opp)
     
-    async def _execute_conversion(self, opp: ConversionOpportunity):
-        """Execute a conversion"""
+    async def _execute_conversion(self, opp: ConversionOpportunity) -> bool:
+        """Execute only a complete, provider-proven conversion opportunity."""
+        if opp.data_status != 'ok' or not opp.proof_eligible:
+            logger.warning(
+                "Conversion blocked: %s",
+                opp.no_data_reason or 'unproven_conversion_evidence',
+            )
+            return False
+        if self.dry_run:
+            logger.info("Dry run: conversion was not submitted and state was not mutated")
+            return False
         
         from_holding = self.portfolio.get(opp.from_asset)
         if not from_holding:
-            return
+            return False
+        if (
+            _finite_number(opp.from_price, minimum=0.000000000001) is None
+            or _finite_number(opp.to_price, minimum=0.000000000001) is None
+            or _finite_number(from_holding.amount, minimum=0.000000000001) is None
+        ):
+            return False
         
         # Calculate amounts
         convert_pct = min(self.MAX_CONVERSION_PCT, 0.15 + opp.unified_score * 0.15)
@@ -1050,7 +1237,7 @@ class PureConversionEngine:
         
         usd_value = opp.from_amount * opp.from_price
         if usd_value < self.MIN_CONVERSION_USD:
-            return
+            return False
         
         opp.reason = f"{opp.conversion_type.value}: {opp.from_asset}→{opp.to_asset} (str diff: {opp.relative_strength:.2%})"
         
@@ -1063,7 +1250,7 @@ class PureConversionEngine:
                 
                 if not sell_result:
                     print(f"\n   ⚠️ Sell failed")
-                    return
+                    return False
                 
                 # Buy TO asset
                 to_pair = self.UNIVERSE[opp.to_asset]['kraken']
@@ -1071,11 +1258,33 @@ class PureConversionEngine:
                 
                 if not buy_result:
                     print(f"\n   ⚠️ Buy failed")
-                    return
+                    return False
+
+                def receipt_is_filled(receipt: Any) -> bool:
+                    if not isinstance(receipt, dict) or receipt.get('error'):
+                        return False
+                    order_id = receipt.get('orderId')
+                    executed = _finite_number(
+                        receipt.get('executedQty'), minimum=0.000000000001
+                    )
+                    observed_at = _fresh_source_timestamp(receipt.get('transactTime'))
+                    return bool(
+                        order_id
+                        and str(order_id).lower() != 'unknown'
+                        and receipt.get('status') == 'FILLED'
+                        and executed is not None
+                        and observed_at is not None
+                    )
+
+                if not receipt_is_filled(sell_result) or not receipt_is_filled(buy_result):
+                    logger.error("Conversion blocked from local accounting: malformed fill receipt")
+                    return False
                     
             except Exception as e:
                 print(f"\n   ❌ Conversion error: {e}")
-                return
+                return False
+        else:
+            return False
         
         # Update portfolio
         from_holding.amount -= opp.from_amount
@@ -1101,6 +1310,14 @@ class PureConversionEngine:
             conversion_type=opp.conversion_type,
             unified_score=opp.unified_score,
             timestamp=datetime.now(),
+            provider_receipt_id=(
+                f"{sell_result['orderId']}:{buy_result['orderId']}"
+            ),
+            source_timestamp=min(
+                _coerce_source_timestamp(sell_result['transactTime']),
+                _coerce_source_timestamp(buy_result['transactTime']),
+            ),
+            proof_eligible=True,
         )
         self.completed_conversions.append(completed)
         
@@ -1121,6 +1338,7 @@ class PureConversionEngine:
         print(f"      Type: {opp.conversion_type.value} | Score: {opp.unified_score:.2f}")
         print(f"      V14: {opp.v14_score} | Mycelium: {opp.mycelium_score:.2f} | Prob: {opp.probability_score:.2f}")
         print(f"      USD Value: ${usd_value:.2f} | Snowball: {self.stats['snowball_gain_pct']:+.2f}%")
+        return True
     
     async def _display_loop(self):
         """Display stats"""
@@ -1192,6 +1410,11 @@ class PureConversionEngine:
     async def run(self):
         """Main run loop"""
         self.banner()
+
+        await self._fetch_initial_prices()
+        if not self.prices:
+            print("\n   ❌ no_data - no fresh provider prices")
+            return
         
         if not self.load_portfolio():
             print("\n   ❌ No portfolio to convert!")
@@ -1213,8 +1436,6 @@ class PureConversionEngine:
         
         self.running = True
         self.start_time = time.time()
-        
-        await self._fetch_initial_prices()
         
         try:
             await asyncio.gather(

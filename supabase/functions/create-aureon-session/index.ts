@@ -1,20 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { encryptCredentialPacked } from "../_shared/credential_crypto.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-async function encryptCredential(value: string, cryptoKey: CryptoKey, iv: Uint8Array): Promise<string> {
-  const encoder = new TextEncoder();
-  const encrypted = await crypto.subtle.encrypt(
-    { name: 'AES-GCM', iv: iv as unknown as BufferSource },
-    cryptoKey,
-    encoder.encode(value)
-  );
-  return btoa(String.fromCharCode(...new Uint8Array(encrypted)));
-}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -55,10 +46,6 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY');
-    // Use consistent text-based encryption key - fallback to default if not set
-    const encryptionKeyRaw = Deno.env.get('MASTER_ENCRYPTION_KEY');
-    const encryptionKey = 'aureon-default-key-32chars!!'; // Always use text-padded key for consistency
-
     if (!supabaseUrl || !supabaseServiceKey || !supabaseAnonKey) {
       console.error('[create-aureon-session] Missing env vars');
       return new Response(
@@ -102,60 +89,41 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Prepare crypto key for encryption
-    const encoder = new TextEncoder();
-    const keyData = encoder.encode(encryptionKey.padEnd(32, '0').slice(0, 32));
-    const cryptoKey = await crypto.subtle.importKey(
-      'raw',
-      keyData,
-      { name: 'AES-GCM' },
-      false,
-      ['encrypt']
-    );
-
     const sessionData: Record<string, any> = {
-      user_id: userId,
-      payment_completed: false,
-      gas_tank_balance: 100,
-      trading_mode: 'paper',
-      is_trading_active: false
+      user_id: userId
     };
 
     // Encrypt Binance credentials (required)
     if (apiKey && apiSecret) {
       console.log('[create-aureon-session] Encrypting Binance credentials...');
-      const binanceIv = crypto.getRandomValues(new Uint8Array(12));
-      sessionData.binance_api_key_encrypted = await encryptCredential(apiKey, cryptoKey, binanceIv);
-      sessionData.binance_api_secret_encrypted = await encryptCredential(apiSecret, cryptoKey, binanceIv);
-      sessionData.binance_iv = btoa(String.fromCharCode(...binanceIv));
+      sessionData.binance_api_key_encrypted = await encryptCredentialPacked(apiKey);
+      sessionData.binance_api_secret_encrypted = await encryptCredentialPacked(apiSecret);
+      sessionData.binance_iv = 'v2';
     }
 
     // Encrypt Kraken credentials (optional)
     if (krakenApiKey && krakenApiSecret) {
       console.log('[create-aureon-session] Encrypting Kraken credentials...');
-      const krakenIv = crypto.getRandomValues(new Uint8Array(12));
-      sessionData.kraken_api_key_encrypted = await encryptCredential(krakenApiKey, cryptoKey, krakenIv);
-      sessionData.kraken_api_secret_encrypted = await encryptCredential(krakenApiSecret, cryptoKey, krakenIv);
-      sessionData.kraken_iv = btoa(String.fromCharCode(...krakenIv));
+      sessionData.kraken_api_key_encrypted = await encryptCredentialPacked(krakenApiKey);
+      sessionData.kraken_api_secret_encrypted = await encryptCredentialPacked(krakenApiSecret);
+      sessionData.kraken_iv = 'v2';
     }
 
     // Encrypt Alpaca credentials (optional)
     if (alpacaApiKey && alpacaSecretKey) {
       console.log('[create-aureon-session] Encrypting Alpaca credentials...');
-      const alpacaIv = crypto.getRandomValues(new Uint8Array(12));
-      sessionData.alpaca_api_key_encrypted = await encryptCredential(alpacaApiKey, cryptoKey, alpacaIv);
-      sessionData.alpaca_secret_key_encrypted = await encryptCredential(alpacaSecretKey, cryptoKey, alpacaIv);
-      sessionData.alpaca_iv = btoa(String.fromCharCode(...alpacaIv));
+      sessionData.alpaca_api_key_encrypted = await encryptCredentialPacked(alpacaApiKey);
+      sessionData.alpaca_secret_key_encrypted = await encryptCredentialPacked(alpacaSecretKey);
+      sessionData.alpaca_iv = 'v2';
     }
 
     // Encrypt Capital.com credentials (optional)
     if (capitalApiKey && capitalPassword && capitalIdentifier) {
       console.log('[create-aureon-session] Encrypting Capital.com credentials...');
-      const capitalIv = crypto.getRandomValues(new Uint8Array(12));
-      sessionData.capital_api_key_encrypted = await encryptCredential(capitalApiKey, cryptoKey, capitalIv);
-      sessionData.capital_password_encrypted = await encryptCredential(capitalPassword, cryptoKey, capitalIv);
-      sessionData.capital_identifier_encrypted = await encryptCredential(capitalIdentifier, cryptoKey, capitalIv);
-      sessionData.capital_iv = btoa(String.fromCharCode(...capitalIv));
+      sessionData.capital_api_key_encrypted = await encryptCredentialPacked(capitalApiKey);
+      sessionData.capital_password_encrypted = await encryptCredentialPacked(capitalPassword);
+      sessionData.capital_identifier_encrypted = await encryptCredentialPacked(capitalIdentifier);
+      sessionData.capital_iv = 'v2';
     }
 
     console.log('[create-aureon-session] Upserting session...');

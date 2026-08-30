@@ -1,168 +1,47 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Progress } from './ui/progress';
 import { Badge } from './ui/badge';
 import { useAurisMetrics, useBasicEcosystemMetrics } from '@/hooks/useEcosystemData';
 
-// 9 Auris nodes with their frequencies
-const AURIS_SYMBOLS = [
-  { symbol: '🐯', name: 'Tiger', frequency: 174 },
-  { symbol: '🦅', name: 'Falcon', frequency: 285 },
-  { symbol: '🐦', name: 'Hummingbird', frequency: 396 },
-  { symbol: '🐬', name: 'Dolphin', frequency: 417 },
-  { symbol: '🦌', name: 'Deer', frequency: 528 },
-  { symbol: '🦉', name: 'Owl', frequency: 639 },
-  { symbol: '🐼', name: 'Panda', frequency: 741 },
-  { symbol: '🚢', name: 'CargoShip', frequency: 852 },
-  { symbol: '🐠', name: 'Clownfish', frequency: 963 },
-];
+const AURIS_SYMBOLS = ['Tiger', 'Falcon', 'Hummingbird', 'Dolphin', 'Deer', 'Owl', 'Panda', 'CargoShip', 'Clownfish'];
 
 export const AurisAnalytics = () => {
-  const {
-    compilationRate,
-    symbolProcessing,
-    quantumEntanglement,
-    dataIntegrity,
-    dominantNode,
-    isInitialized,
-  } = useAurisMetrics();
-  
-  const { coherence, systemsOnline } = useBasicEcosystemMetrics();
-
-  // Generate symbol activity based on dominant node and coherence
-  const symbols = AURIS_SYMBOLS.map((s, i) => ({
-    ...s,
-    resonance: s.name === dominantNode 
-      ? 0.9 + coherence * 0.1 
-      : 0.5 + coherence * 0.4 + (Math.sin(Date.now() / 1000 + i) * 0.05),
-    active: s.name === dominantNode || coherence > 0.6 + (i * 0.03),
-  }));
-
-  const streamData = {
-    packetsProcessed: 15847 + Math.floor(Date.now() / 500) % 5000,
-    errorRate: (1 - dataIntegrity) * 0.1,
-    throughput: 1.5 + compilationRate * 1.5,
-    latency: Math.max(5, 15 - compilationRate * 8),
-  };
-
-  if (!isInitialized) {
-    return (
-      <div className="flex items-center justify-center h-48">
-        <div className="text-muted-foreground">Initializing Auris nodes...</div>
-      </div>
-    );
-  }
+  const auris = useAurisMetrics();
+  const basic = useBasicEcosystemMetrics();
+  const hasObservation = auris.dominantNode != null && basic.coherence != null;
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Compilation Rate</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-primary">
-              {(compilationRate * 100).toFixed(1)}%
-            </div>
-            <Progress value={compilationRate * 100} className="mt-2" />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Symbol Processing</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-emerald-500">
-              {(symbolProcessing * 100).toFixed(1)}%
-            </div>
-            <Progress value={symbolProcessing * 100} className="mt-2" />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Quantum Link</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-violet-500">
-              {(quantumEntanglement * 100).toFixed(1)}%
-            </div>
-            <Progress value={quantumEntanglement * 100} className="mt-2" />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Data Integrity</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-amber-500">
-              {(dataIntegrity * 100).toFixed(1)}%
-            </div>
-            <Progress value={dataIntegrity * 100} className="mt-2" />
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Auris Nodes ({symbols.filter(s => s.active).length}/9 Active)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3 max-h-96 overflow-y-auto">
-              {symbols.map((symbol, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="text-2xl">{symbol.symbol}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {symbol.name} • {symbol.frequency} Hz
-                    </div>
-                    <Badge variant={symbol.active ? "default" : "secondary"}>
-                      {symbol.name === dominantNode ? "DOMINANT" : symbol.active ? "Active" : "Idle"}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm w-12">{(symbol.resonance * 100).toFixed(0)}%</span>
-                    <Progress value={symbol.resonance * 100} className="w-20" />
-                  </div>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Auris Nodes</CardTitle>
+            <Badge variant={hasObservation ? 'default' : 'secondary'}>
+              {hasObservation ? 'real_derived' : 'no_data'}
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {!hasObservation && (
+            <p className="text-muted-foreground">
+              No fresh market observation has completed the Auris calculation. Activity, throughput, latency, and resonance are not fabricated.
+            </p>
+          )}
+          {hasObservation && (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              {AURIS_SYMBOLS.map((name) => (
+                <div key={name} className="rounded border p-2 flex justify-between gap-2">
+                  <span>{name}</span>
+                  <Badge variant={name === auris.dominantNode ? 'default' : 'outline'}>
+                    {name === auris.dominantNode ? 'Dominant' : 'Observed'}
+                  </Badge>
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Stream Analytics</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Packets Processed</span>
-                <span className="font-bold">{streamData.packetsProcessed.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Error Rate</span>
-                <span className="font-bold text-destructive">{(streamData.errorRate * 100).toFixed(3)}%</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Throughput</span>
-                <span className="font-bold text-emerald-500">{streamData.throughput.toFixed(1)} MB/s</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Latency</span>
-                <span className="font-bold text-primary">{streamData.latency.toFixed(0)} ms</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Systems Online</span>
-                <span className="font-bold text-violet-500">{systemsOnline}</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          )}
+          <div className="text-sm text-muted-foreground">Evidence-bearing systems online: {basic.systemsOnline}</div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

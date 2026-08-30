@@ -39,7 +39,7 @@ import os
 import sys
 import io
 
-if sys.platform == 'win32':
+if sys.platform == 'win32' and sys.stdout is sys.__stdout__ and sys.stdout.isatty():
     # Set environment variable for Python's default encoding
     os.environ['PYTHONIOENCODING'] = 'utf-8'
     
@@ -68,9 +68,11 @@ import json
 import time
 import math
 import random
+import uuid
 import asyncio
 import tempfile
 import logging
+from aureon.trading.scalper_policy import resolve_scalper_targets
 from aureon.core.aureon_memory_core import memory as spiral_memory  # 🧠 MEMORY CORE INTEGRATION
 
 # 🪞 SELF-AWARENESS - I KNOW WHAT I AM 🪞
@@ -346,7 +348,7 @@ except ImportError:
             return (sum((x - m) ** 2 for x in data) / (len(data) - 1)) ** 0.5
     statistics = Statistics()
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Tuple, Any, Set, Deque
 from dataclasses import dataclass, field
 from collections import deque, defaultdict
@@ -369,7 +371,11 @@ PSI_FILTER = 0.037          # Top 3.7% opportunities only
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ROOT_DIR)
 try:
-    from aureon.trading.unified_exchange_client import UnifiedExchangeClient, MultiExchangeClient
+    from aureon.trading.unified_exchange_client import (
+        GovernedMultiExchangeClient,
+        MultiExchangeClient,
+        UnifiedExchangeClient,
+    )
 except ImportError as e:
     print(f"⚠️  Unified Exchange Client not available: {e}")
     # Define dummy classes to prevent crash if critical module is missing
@@ -384,6 +390,9 @@ except ImportError as e:
         def get_ticker(self, *args): return {}
         def place_market_order(self, *args, **kwargs): return {}
         def convert_to_quote(self, *args): return 0.0
+    class GovernedMultiExchangeClient(MultiExchangeClient):
+        def __init__(self, *args, **kwargs):
+            raise RuntimeError("canonical_unified_exchange_unity_runtime_required")
 
 # 🇮🇪🎯 IRA SNIPER MODE - Core imports (top-level for reliability)
 from aureon.scanners.ira_sniper_mode import (
@@ -1835,79 +1844,451 @@ def max_positions_label() -> str:
     return "unlimited" if limit is None else str(limit)
 
 
-def has_one_minute_profit_consensus(opp: Dict) -> Tuple[bool, str, Dict[str, float]]:
-    """🪙 PENNY PROFIT MODE: Super relaxed consensus check.
-    
-    The penny profit math is the REAL gate. This function is now very lenient
-    to allow the bot to actually trade and let the penny math do its job.
+MARKET_DATA_MAX_AGE_SECONDS = 120.0
+MARKET_DATA_FUTURE_SKEW_SECONDS = 5.0
+ACCOUNT_DATA_MAX_AGE_SECONDS = 60.0
+
+
+def _finite_number(value: Any, *, positive: bool = False) -> Optional[float]:
+    """Return a finite provider number, never a fabricated numeric default."""
+    if isinstance(value, bool):
+        return None
+    try:
+        number = float(value)
+    except (TypeError, ValueError, OverflowError):
+        return None
+    if not math.isfinite(number) or (positive and number <= 0.0):
+        return None
+    return number
+
+
+def _timestamp_seconds(value: Any) -> Optional[float]:
+    """Parse an explicit provider timestamp (epoch seconds/ms or ISO-8601)."""
+    number = _finite_number(value)
+    if number is not None:
+        if number > 10_000_000_000:
+            number /= 1000.0
+        return number if number > 0.0 else None
+    if not isinstance(value, str) or not value.strip():
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.strip().replace('Z', '+00:00'))
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
+        return parsed.timestamp()
+    except (TypeError, ValueError, OverflowError):
+        return None
+
+
+def _explicit_provider_timestamp(record: Dict[str, Any]) -> Optional[float]:
+    """Read provider time without laundering the local receipt clock."""
+    for key in (
+        'source_timestamp', 'provider_timestamp', 'eventTime', 'closeTime',
+        'transactTime', 'filled_at', 'trade_time', 'bar_timestamp',
+    ):
+        if key in record:
+            parsed = _timestamp_seconds(record.get(key))
+            if parsed is not None:
+                return parsed
+    return None
+
+
+def _validate_market_evidence(
+    record: Any,
+    *,
+    required_fields: Tuple[str, ...] = ('price',),
+    max_age_seconds: float = MARKET_DATA_MAX_AGE_SECONDS,
+    now: Optional[float] = None,
+) -> Tuple[bool, Dict[str, Any]]:
+    """Validate a provenance-bearing market observation and its freshness."""
+    evidence: Dict[str, Any] = {
+        'truth_status': 'no_data',
+        'source_id': None,
+        'source_timestamp': None,
+        'received_at': None,
+        'generated_values': False,
+        'reason': 'market evidence missing',
+    }
+    if not isinstance(record, dict):
+        return False, evidence
+
+    source_id = record.get('source_id')
+    truth_status = record.get('truth_status')
+    source_timestamp = _explicit_provider_timestamp(record)
+    received_at = _timestamp_seconds(record.get('received_at'))
+    generated_values = record.get('generated_values')
+    evidence.update({
+        'truth_status': truth_status or 'no_data',
+        'source_id': source_id,
+        'source_timestamp': source_timestamp,
+        'received_at': received_at,
+        'generated_values': False,
+    })
+
+    if truth_status not in {'live', 'real_derived'}:
+        evidence['reason'] = 'truth_status is not live/real_derived'
+        return False, evidence
+    if not isinstance(source_id, str) or not source_id.strip():
+        evidence['reason'] = 'source_id missing'
+        return False, evidence
+    if generated_values is not False:
+        evidence['reason'] = 'generated_values must be explicitly false'
+        return False, evidence
+    if source_timestamp is None:
+        evidence['reason'] = 'provider source_timestamp missing'
+        return False, evidence
+
+    observed_now = time.time() if now is None else float(now)
+    age = observed_now - source_timestamp
+    if age < -MARKET_DATA_FUTURE_SKEW_SECONDS:
+        evidence['reason'] = 'provider timestamp is in the future'
+        return False, evidence
+    if age > max_age_seconds:
+        evidence['reason'] = f'provider observation stale ({age:.1f}s)'
+        return False, evidence
+    if received_at is not None and received_at + MARKET_DATA_FUTURE_SKEW_SECONDS < source_timestamp:
+        evidence['reason'] = 'receipt predates provider observation'
+        return False, evidence
+
+    missing = [field for field in required_fields if _finite_number(record.get(field), positive=(field in {'price', 'bid', 'ask', 'high', 'low', 'volume'})) is None]
+    if missing:
+        evidence['reason'] = f"invalid provider fields: {', '.join(missing)}"
+        return False, evidence
+
+    evidence['truth_status'] = 'live' if truth_status == 'live' else 'real_derived'
+    evidence['reason'] = 'fresh provider evidence'
+    return True, evidence
+
+
+def _validate_account_evidence(
+    record: Any,
+    *,
+    required_fields: Tuple[str, ...],
+    now: Optional[float] = None,
+) -> Tuple[bool, str]:
+    """Validate an authenticated, synchronous account read receipt."""
+    if not isinstance(record, dict):
+        return False, 'account evidence missing'
+    if record.get('truth_status') != 'live':
+        return False, 'account truth_status is not live'
+    if not isinstance(record.get('source_id'), str) or not record['source_id'].strip():
+        return False, 'account source_id missing'
+    if record.get('generated_values') is not False:
+        return False, 'account generated_values must be explicitly false'
+    received_at = _timestamp_seconds(record.get('received_at'))
+    if received_at is None:
+        return False, 'account receipt timestamp missing'
+    observed_now = time.time() if now is None else float(now)
+    age = observed_now - received_at
+    if age < -MARKET_DATA_FUTURE_SKEW_SECONDS:
+        return False, 'account receipt timestamp is in the future'
+    if age > ACCOUNT_DATA_MAX_AGE_SECONDS:
+        return False, f'account evidence stale ({age:.1f}s)'
+    for field in required_fields:
+        value = _finite_number(record.get(field))
+        if value is None or value < 0.0:
+            return False, f'account field {field} is invalid'
+    return True, 'fresh authenticated account evidence'
+
+
+def _normalise_provider_ticker(
+    raw: Any,
+    *,
+    source_id: str,
+    field_map: Dict[str, Tuple[str, ...]],
+    received_at: float,
+) -> Optional[Dict[str, Any]]:
+    """Build a market envelope only from values and time present in a provider row."""
+    if not isinstance(raw, dict):
+        return None
+    normalised: Dict[str, Any] = {}
+    for target, candidates in field_map.items():
+        value = None
+        for candidate in candidates:
+            if candidate in raw:
+                value = _finite_number(raw.get(candidate), positive=(target in {'price', 'bid', 'ask', 'high', 'low', 'volume'}))
+                if value is not None:
+                    break
+        if value is None:
+            return None
+        normalised[target] = value
+
+    source_timestamp = _explicit_provider_timestamp(raw)
+    if source_timestamp is None:
+        return None
+    normalised.update({
+        'truth_status': 'live',
+        'source_id': source_id,
+        'source_timestamp': source_timestamp,
+        'received_at': received_at,
+        'generated_values': False,
+    })
+    valid, _ = _validate_market_evidence(
+        normalised,
+        required_fields=tuple(field_map),
+        now=received_at,
+    )
+    return normalised if valid else None
+
+
+def _provider_fill_receipt(exchange: str, result: Any) -> Dict[str, Any]:
+    """Separate a provider submission acknowledgement from a verifiable fill."""
+    receipt: Dict[str, Any] = {
+        'execution_status': 'not_submitted',
+        'truth_status': 'no_data',
+        'provider_order_id': None,
+        'fill_id': None,
+        'filled_quantity': None,
+        'filled_price': None,
+        'filled_quote_value': None,
+        'actual_fee': None,
+        'actual_fee_asset': None,
+        'source_id': None,
+        'source_timestamp': None,
+        'received_at': time.time(),
+        'generated_values': False,
+    }
+    if not isinstance(result, dict):
+        receipt['reason'] = 'provider response missing'
+        return receipt
+    if result.get('dryRun') or result.get('dry_run') or result.get('status') == 'SIMULATED':
+        receipt.update({'execution_status': 'not_submitted', 'truth_status': 'dry_run', 'reason': 'dry run is not a provider fill'})
+        return receipt
+    if result.get('rejected') or result.get('error'):
+        receipt.update({'execution_status': 'rejected', 'reason': str(result.get('reason') or result.get('error'))})
+        return receipt
+
+    nested = result.get('result') if isinstance(result.get('result'), dict) else {}
+    txids = nested.get('txid', result.get('txid'))
+    if isinstance(txids, list):
+        provider_order_id = next((str(value) for value in txids if value), None)
+    elif txids:
+        provider_order_id = str(txids)
+    else:
+        provider_order_id = result.get('order_id') or result.get('orderId') or result.get('id') or result.get('dealId')
+        provider_order_id = str(provider_order_id) if provider_order_id else None
+    receipt['provider_order_id'] = provider_order_id
+    if not provider_order_id:
+        receipt['reason'] = 'provider order id missing'
+        return receipt
+
+    status = str(result.get('status') or nested.get('status') or '').strip().lower()
+    filled_statuses = {'filled', 'closed', 'done', 'completed', 'executed'}
+    if status not in filled_statuses:
+        receipt.update({
+            'execution_status': 'submitted',
+            'truth_status': 'live',
+            'source_id': f'{exchange.lower()}_order_submission',
+            'reason': f'provider acknowledged order with status {status or "unknown"}; fill reconciliation required',
+        })
+        return receipt
+
+    fills = result.get('fills') if isinstance(result.get('fills'), list) else []
+    filled_quantity = None
+    filled_quote_value = None
+    actual_fee = None
+    fill_id = None
+    fee_assets: set[str] = set()
+    if fills:
+        quantity_total = 0.0
+        quote_total = 0.0
+        fee_total = 0.0
+        fee_complete = True
+        for fill in fills:
+            if not isinstance(fill, dict):
+                fee_complete = False
+                continue
+            qty = _finite_number(fill.get('qty') if 'qty' in fill else fill.get('quantity'), positive=True)
+            fill_price = _finite_number(fill.get('price'), positive=True)
+            if qty is None or fill_price is None:
+                continue
+            quantity_total += qty
+            quote_total += qty * fill_price
+            commission = _finite_number(fill.get('commission'))
+            commission_asset = fill.get('commissionAsset') or fill.get('commission_asset')
+            if commission is None or commission < 0.0 or not commission_asset:
+                fee_complete = False
+            else:
+                fee_total += commission
+                fee_assets.add(str(commission_asset).upper())
+            if fill_id is None:
+                raw_fill_id = fill.get('tradeId') or fill.get('id')
+                fill_id = str(raw_fill_id) if raw_fill_id is not None else None
+        if quantity_total > 0.0 and quote_total > 0.0:
+            filled_quantity = quantity_total
+            filled_quote_value = quote_total
+            if fee_complete and len(fee_assets) == 1:
+                receipt['actual_fee_asset'] = next(iter(fee_assets))
+                actual_fee = fee_total
+
+    if filled_quantity is None:
+        filled_quantity = _finite_number(
+            result.get('executed_qty') if 'executed_qty' in result else result.get('executedQty', result.get('filled_qty')),
+            positive=True,
+        )
+    if filled_quote_value is None:
+        filled_quote_value = _finite_number(
+            result.get('executed_quote_qty') if 'executed_quote_qty' in result else result.get('cummulativeQuoteQty'),
+            positive=True,
+        )
+    filled_price = _finite_number(result.get('avg_price') if 'avg_price' in result else result.get('filled_avg_price'), positive=True)
+    if filled_price is None and filled_quantity and filled_quote_value:
+        filled_price = filled_quote_value / filled_quantity
+    if filled_quote_value is None and filled_quantity and filled_price:
+        filled_quote_value = filled_quantity * filled_price
+    if actual_fee is None:
+        explicit_fee = _finite_number(result.get('fee') if 'fee' in result else result.get('commission'))
+        explicit_fee_asset = result.get('fee_asset') or result.get('feeAsset') or result.get('commissionAsset')
+        if explicit_fee is not None and explicit_fee >= 0.0 and explicit_fee_asset:
+            actual_fee = explicit_fee
+            receipt['actual_fee_asset'] = str(explicit_fee_asset).upper()
+
+    symbol = str(result.get('symbol') or nested.get('symbol') or '').upper().replace('/', '')
+    quote_asset = result.get('quoteAsset') or result.get('quote_asset') or nested.get('quoteAsset')
+    if not quote_asset and symbol:
+        quote_asset = next(
+            (suffix for suffix in ('FDUSD', 'USDT', 'USDC', 'BUSD', 'TUSD', 'GBP', 'EUR', 'USD', 'BTC', 'ETH') if symbol.endswith(suffix)),
+            None,
+        )
+    if actual_fee is not None:
+        fee_asset = receipt.get('actual_fee_asset')
+        if not quote_asset or not fee_asset or str(fee_asset).upper() != str(quote_asset).upper():
+            actual_fee = None
+
+    source_timestamp = _explicit_provider_timestamp(result)
+    if source_timestamp is None and fills:
+        for fill in fills:
+            if isinstance(fill, dict):
+                source_timestamp = _explicit_provider_timestamp(fill)
+                if source_timestamp is not None:
+                    break
+    if filled_quantity is None or filled_price is None or source_timestamp is None:
+        receipt.update({
+            'execution_status': 'reconciliation_required',
+            'truth_status': 'no_data',
+            'source_id': f'{exchange.lower()}_order_fill',
+            'reason': 'filled status lacks provider quantity, price, or fill timestamp',
+        })
+        return receipt
+
+    if source_timestamp > receipt['received_at'] + MARKET_DATA_FUTURE_SKEW_SECONDS:
+        receipt.update({
+            'execution_status': 'reconciliation_required',
+            'truth_status': 'no_data',
+            'source_id': f'{exchange.lower()}_order_fill',
+            'reason': 'provider fill timestamp is in the future',
+        })
+        return receipt
+
+    receipt.update({
+        'execution_status': 'filled',
+        'truth_status': 'live',
+        'fill_id': fill_id,
+        'filled_quantity': filled_quantity,
+        'filled_price': filled_price,
+        'filled_quote_value': filled_quote_value,
+        'actual_fee': actual_fee,
+        'source_id': f'{exchange.lower()}_order_fill',
+        'source_timestamp': source_timestamp,
+        'reason': 'provider fill verified',
+    })
+    return receipt
+
+
+def _provider_cancel_acknowledged(result: Any, expected_order_id: str) -> bool:
+    """Require an explicit provider/client acknowledgement for a cancellation."""
+    if result is True:
+        return True
+    if not isinstance(result, dict) or result.get('error') or result.get('rejected'):
+        return False
+    status = str(result.get('status') or result.get('result') or '').strip().lower()
+    acknowledged = result.get('success') is True or status in {'cancelled', 'canceled', 'deleted'}
+    returned_id = result.get('order_id') or result.get('orderId') or result.get('id') or result.get('txid')
+    if isinstance(returned_id, list):
+        returned_id = returned_id[0] if returned_id else None
+    return bool(acknowledged and (returned_id is None or str(returned_id) == str(expected_order_id)))
+
+
+def has_one_minute_profit_consensus(opp: Dict) -> Tuple[bool, str, Dict[str, Any]]:
+    """Evaluate quick-profit consensus from provenance-bearing evidence.
+
+    Aggressive mode may tune thresholds; it cannot invent measurements or
+    bypass provider-integrity requirements.
     
     Returns (ok, reason, details) where `ok` indicates entry is allowed.
     """
 
-    # 🦾 AGGRESSIVE ONE-GOAL: never block entries here.
-    if CONFIG.get('AGGRESSIVE_ONE_GOAL', False):
-        details = {
-            'prob_quick': float((opp.get('quick_kill') or {}).get('prob_quick_kill', 0.5) or 0.5),
-            'confidence': float((opp.get('quick_kill') or {}).get('confidence', 0.5) or 0.5),
-            'estimated_seconds': float((opp.get('quick_kill') or {}).get('estimated_seconds', 300) or 300),
-        }
-        return True, "aggressive override", details
+    qk = opp.get('quick_kill')
+    if not isinstance(qk, dict):
+        qk = {}
 
-    qk = opp.get('quick_kill') or {}
+    def read_number(key: str) -> Optional[float]:
+        value = qk.get(key)
+        if isinstance(value, (int, float)) and math.isfinite(float(value)):
+            return float(value)
+        return None
 
-    # Pull estimates from opportunity
-    prob_quick = qk.get('prob_quick_kill') or qk.get('prob_penny_profit', 0.0)
-    confidence = qk.get('confidence', 0.0) if isinstance(qk.get('confidence'), (int, float)) else 0.0
-    est_seconds = qk.get('estimated_seconds')
-    if est_seconds is None and isinstance(qk.get('estimated_minutes'), (int, float)):
-        est_seconds = qk['estimated_minutes'] * 60
+    prob_quick = read_number('prob_quick_kill')
+    if prob_quick is None:
+        prob_quick = read_number('prob_penny_profit')
+    confidence = read_number('confidence')
+    est_seconds = read_number('estimated_seconds')
+    estimated_minutes = read_number('estimated_minutes')
+    if est_seconds is None and estimated_minutes is not None:
+        est_seconds = estimated_minutes * 60.0
 
-    # Refresh estimate from War Strategy if missing/weak
-    if (est_seconds is None or prob_quick <= 0) and WAR_STRATEGY_AVAILABLE:
-        try:
-            estimate = get_quick_kill_estimate(
-                opp.get('symbol'),
-                opp.get('exchange', 'unknown'),
-                opp.get('prices'),
-            )
-            est_seconds = estimate.estimated_seconds
-            prob_quick = max(prob_quick, estimate.prob_quick_kill)
-            confidence = max(confidence, estimate.confidence)
-            opp['quick_kill'] = {**estimate.to_dict(), **qk}
-        except Exception as e:
-            logger.debug(f"Quick kill refresh failed for {opp.get('symbol')}: {e}")
-
-    # 🪙 PENNY MODE: Provide defaults if missing - DON'T BLOCK
-    if est_seconds is None:
-        est_seconds = 300  # Assume 5 minutes if unknown
-    if prob_quick <= 0:
-        prob_quick = 0.5  # Assume 50/50 if unknown
-    if confidence <= 0:
-        confidence = 0.5  # Assume medium confidence if unknown
+    qk_timestamp = _timestamp_seconds(qk.get('source_timestamp'))
+    qk_age = (time.time() - qk_timestamp) if qk_timestamp is not None else None
+    provenance_ok = (
+        qk.get('truth_status') in {'live', 'real_derived'}
+        and bool(qk.get('source_id'))
+        and qk_timestamp is not None
+        and qk_age is not None
+        and -MARKET_DATA_FUTURE_SKEW_SECONDS <= qk_age <= MARKET_DATA_MAX_AGE_SECONDS
+        and qk.get('generated_values') is False
+    )
 
     details = {
         'prob_quick': prob_quick,
         'confidence': confidence,
         'estimated_seconds': est_seconds,
+        'truth_status': qk.get('truth_status', 'no_data'),
+        'source_id': qk.get('source_id'),
+        'source_timestamp': qk_timestamp,
+        'generated_values': False,
     }
 
-    # 🪙 PENNY PROFIT MODE: Very relaxed thresholds
-    # Time: Allow up to 10 minutes (penny profit doesn't need to be instant)
-    # Prob: Allow 30% or higher (the penny math protects us)
-    # Conf: Allow 20% or higher (we're betting on math, not predictions)
-    meets_time = est_seconds <= 600  # 10 minutes instead of 1
-    meets_prob = prob_quick >= 0.30  # 30% instead of 50%
-    meets_confidence = confidence >= 0.20  # 20% instead of 50%
+    missing = []
+    if not provenance_ok:
+        missing.append('provenance')
+    if prob_quick is None:
+        missing.append('prob_quick')
+    if confidence is None:
+        missing.append('confidence')
+    if est_seconds is None:
+        missing.append('estimated_seconds')
+    if missing:
+        return False, f"NO_DATA: missing quick-profit {', '.join(missing)}", details
+
+    if not 0.0 <= prob_quick <= 1.0:
+        return False, 'INVALID_DATA: prob_quick outside [0,1]', details
+    if not 0.0 <= confidence <= 1.0:
+        return False, 'INVALID_DATA: confidence outside [0,1]', details
+    if est_seconds <= 0:
+        return False, 'INVALID_DATA: estimated_seconds must be positive', details
+
+    aggressive = bool(CONFIG.get('AGGRESSIVE_ONE_GOAL', False))
+    max_seconds = 900.0 if aggressive else 600.0
+    min_probability = 0.20 if aggressive else 0.30
+    min_confidence = 0.10 if aggressive else 0.20
+    meets_time = est_seconds <= max_seconds
+    meets_prob = prob_quick >= min_probability
+    meets_confidence = confidence >= min_confidence
 
     if meets_time and meets_prob and meets_confidence:
-        return True, "penny profit consensus", details
+        reason = 'aggressive evidence-backed consensus' if aggressive else 'penny profit consensus'
+        return True, reason, details
     
-    # 🪙 FALLBACK: Even if conditions not met, allow trade if score is decent
-    # This ensures we don't block trades just because predictions are missing
-    score = opp.get('score', 0)
-    if score >= 30:  # If opportunity has decent score, let it through
-        return True, "score override", details
-
     unmet = []
     if not meets_time:
         unmet.append(f"time {est_seconds/60:.1f}m")
@@ -2606,12 +2987,18 @@ class SmartOrderRouter:
                 if hasattr(self.client, 'normalize_symbol'):
                     ex_symbol = self.client.normalize_symbol(exchange, symbol)
                 ticker = self.client.get_ticker(exchange, ex_symbol)
-                if not ticker or ticker.get('price', 0) <= 0:
+                evidence_ok, evidence = _validate_market_evidence(
+                    ticker,
+                    required_fields=('price', 'bid', 'ask'),
+                )
+                if not evidence_ok:
                     continue
-                    
-                price = float(ticker.get('price', 0))
-                bid = float(ticker.get('bid', price))
-                ask = float(ticker.get('ask', price))
+
+                price = _finite_number(ticker.get('price'), positive=True)
+                bid = _finite_number(ticker.get('bid'), positive=True)
+                ask = _finite_number(ticker.get('ask'), positive=True)
+                if price is None or bid is None or ask is None or bid > ask:
+                    continue
                 
                 # Calculate effective price including fees
                 fee_rate = self.exchange_fees.get(exchange, 0.002)
@@ -2627,7 +3014,11 @@ class SmartOrderRouter:
                     'bid': bid,
                     'ask': ask,
                     'effective_price': exec_price,
-                    'fee_rate': fee_rate
+                    'fee_rate': fee_rate,
+                    **{key: evidence[key] for key in (
+                        'truth_status', 'source_id', 'source_timestamp',
+                        'received_at', 'generated_values',
+                    )},
                 })
             except Exception as e:
                 logger.debug(f"Quote error for {exchange}/{symbol}: {e}")
@@ -2660,7 +3051,8 @@ class SmartOrderRouter:
         return best
         
     def route_order(self, symbol: str, side: str, quantity: float = None, quote_qty: float = None,
-                    preferred_exchange: str = None) -> Dict[str, Any]:
+                    preferred_exchange: str = None,
+                    account_evidence: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
         Route and execute order on best exchange.
         Returns order result with routing metadata.
@@ -2681,55 +3073,52 @@ class SmartOrderRouter:
         exchange = best['exchange']
         ex_symbol = best['symbol']
 
-        # 💰 ADDITIVE BUYING (SMART ROUTER): scale to available cash on the routed venue.
-        if side.upper() == 'BUY' and callable(self.get_cash_balance):
-            bf = (self.battlefields.get(exchange) or {})
-            min_order = float(bf.get('min_trade_usd', self.default_min_order_usd) or self.default_min_order_usd)
-            try:
-                available_cash = float(self.get_cash_balance(exchange))
-            except Exception:
-                available_cash = 0.0
-
-            available_cash *= 0.995
-
-            if available_cash < min_order:
-                # Try alternatives in order (already sorted by best effective price)
-                for alt in best.get('alternatives', []):
-                    alt_ex = alt.get('exchange')
-                    if not alt_ex:
-                        continue
-                    bf = (self.battlefields.get(alt_ex) or {})
-                    alt_min = float(bf.get('min_trade_usd', self.default_min_order_usd) or self.default_min_order_usd)
-                    try:
-                        alt_cash = float(self.get_cash_balance(alt_ex)) * 0.995
-                    except Exception:
-                        alt_cash = 0.0
-                    if alt_cash >= alt_min:
-                        exchange = alt_ex
-                        ex_symbol = alt.get('symbol', ex_symbol)
-                        best = alt
-                        available_cash = alt_cash
-                        min_order = alt_min
-                        break
-
-            if available_cash >= min_order and quote_qty is not None:
-                try:
-                    if float(quote_qty) > available_cash:
-                        quote_qty = available_cash
-                except Exception:
-                    pass
+        side_upper = str(side or '').upper()
+        quantity_value = _finite_number(quantity, positive=True)
+        quote_value = _finite_number(quote_qty, positive=True)
+        required_field = 'available_quote' if side_upper == 'BUY' else 'available_base'
+        account_ok, account_reason = _validate_account_evidence(
+            account_evidence,
+            required_fields=(required_field,),
+        )
+        if not account_ok or str(account_evidence.get('exchange') or '').lower() != exchange:
+            return {
+                'execution_status': 'not_submitted', 'truth_status': 'no_data',
+                'reason': account_reason if not account_ok else 'account evidence exchange does not match route',
+                'symbol': symbol,
+            }
+        if side_upper == 'BUY':
+            required_quote = quote_value
+            if required_quote is None and quantity_value is not None:
+                required_quote = quantity_value * float(best['ask'])
+            available_quote = float(account_evidence['available_quote'])
+            if required_quote is None or required_quote > available_quote:
+                return {'execution_status': 'denied', 'truth_status': 'live', 'reason': 'authenticated quote balance is insufficient', 'symbol': symbol}
+        elif side_upper == 'SELL':
+            available_base = float(account_evidence['available_base'])
+            if quantity_value is None or quantity_value > available_base:
+                return {'execution_status': 'denied', 'truth_status': 'live', 'reason': 'authenticated base balance is insufficient', 'symbol': symbol}
+        else:
+            return {'execution_status': 'not_submitted', 'truth_status': 'no_data', 'reason': 'side must be BUY or SELL', 'symbol': symbol}
         
         try:
             result = self.client.place_market_order(
                 exchange, ex_symbol, side,
                 quantity=quantity, quote_qty=quote_qty
             )
-            
-            # Add routing metadata
-            result['routed_to'] = exchange
-            result['symbol'] = ex_symbol
-            result['effective_price'] = best['effective_price']
-            result['savings_pct'] = best.get('savings_pct', 0)
+
+            receipt_input = dict(result) if isinstance(result, dict) else result
+            if isinstance(receipt_input, dict):
+                receipt_input.setdefault('symbol', ex_symbol)
+            fill_receipt = _provider_fill_receipt(exchange, receipt_input)
+            routed_result = {
+                **fill_receipt,
+                'routed_to': exchange,
+                'symbol': ex_symbol,
+                'effective_price': best['effective_price'],
+                'savings_pct': best.get('savings_pct', 0),
+                'raw_response': result,
+            }
             
             # Record route
             self.route_history.append({
@@ -2738,10 +3127,12 @@ class SmartOrderRouter:
                 'side': side,
                 'exchange': exchange,
                 'price': best['price'],
-                'savings_pct': best.get('savings_pct', 0)
+                'savings_pct': best.get('savings_pct', 0),
+                'execution_status': fill_receipt['execution_status'],
+                'provider_order_id': fill_receipt['provider_order_id'],
             })
-            
-            return result
+
+            return routed_result
         except Exception as e:
             return {'error': str(e), 'exchange': exchange, 'symbol': ex_symbol}
             
@@ -2806,11 +3197,21 @@ class CrossExchangeArbitrageScanner:
                     # Normalize canonical symbol to exchange-specific
                     ex_symbol = self.client.normalize_symbol(exchange, symbol)
                     ticker = self.client.get_ticker(exchange, ex_symbol)
-                    if ticker and ticker.get('bid', 0) > 0:
+                    evidence_ok, evidence = _validate_market_evidence(
+                        ticker,
+                        required_fields=('bid', 'ask'),
+                    )
+                    bid = _finite_number(ticker.get('bid'), positive=True) if isinstance(ticker, dict) else None
+                    ask = _finite_number(ticker.get('ask'), positive=True) if isinstance(ticker, dict) else None
+                    if evidence_ok and bid is not None and ask is not None and bid <= ask:
                         prices[exchange] = {
-                            'bid': float(ticker.get('bid', 0)),
-                            'ask': float(ticker.get('ask', 0)),
-                            'symbol': ex_symbol
+                            'bid': bid,
+                            'ask': ask,
+                            'symbol': ex_symbol,
+                            **{key: evidence[key] for key in (
+                                'truth_status', 'source_id', 'source_timestamp',
+                                'received_at', 'generated_values',
+                            )},
                         }
                 except Exception:
                     continue
@@ -2829,10 +3230,13 @@ class CrossExchangeArbitrageScanner:
                     spread_1 = (sell_price - buy_price) / buy_price * 100
                     spread_2 = (prices[buy_ex]['bid'] - prices[sell_ex]['ask']) / prices[sell_ex]['ask'] * 100
                     
-                    # Apply CASCADE amplification to profit confidence
+                    estimated_cost_pct = (
+                        get_exchange_fee_rate(buy_ex) + get_exchange_fee_rate(sell_ex)
+                    ) * 100.0 + self.fee_buffer
+                    # CASCADE remains a ranking signal; it never inflates market spread or P&L.
                     cascaded_1 = min(spread_1 * CASCADE_FACTOR, 95.0)
-                    if cascaded_1 > self.min_spread_pct + self.fee_buffer:
-                        net_profit = (cascaded_1 - self.fee_buffer)
+                    net_profit = spread_1 - estimated_cost_pct
+                    if net_profit > self.min_spread_pct:
                         opportunities.append({
                             'type': 'direct',
                             'symbol': symbol,
@@ -2842,14 +3246,22 @@ class CrossExchangeArbitrageScanner:
                             'sell_price': sell_price,
                             'spread_pct': spread_1,
                             'cascaded_confidence_pct': cascaded_1,
-                            'net_profit_pct': net_profit,
+                            'estimated_net_profit_pct': net_profit,
+                            'estimated_cost_pct': estimated_cost_pct,
                             'brain_mult': brain_mult,
-                            'timestamp': time.time()
+                            'truth_status': 'real_derived',
+                            'source_id': f"{prices[buy_ex]['source_id']}+{prices[sell_ex]['source_id']}",
+                            'source_timestamp': min(prices[buy_ex]['source_timestamp'], prices[sell_ex]['source_timestamp']),
+                            'received_at': time.time(),
+                            'generated_values': False,
                         })
                     
                     cascaded_2 = min(spread_2 * CASCADE_FACTOR, 95.0)
-                    if cascaded_2 > self.min_spread_pct + self.fee_buffer:
-                        net_profit = (cascaded_2 - self.fee_buffer)
+                    reverse_cost_pct = (
+                        get_exchange_fee_rate(sell_ex) + get_exchange_fee_rate(buy_ex)
+                    ) * 100.0 + self.fee_buffer
+                    net_profit = spread_2 - reverse_cost_pct
+                    if net_profit > self.min_spread_pct:
                         opportunities.append({
                             'type': 'direct',
                             'symbol': symbol,
@@ -2859,9 +3271,14 @@ class CrossExchangeArbitrageScanner:
                             'sell_price': prices[buy_ex]['bid'],
                             'spread_pct': spread_2,
                             'cascaded_confidence_pct': cascaded_2,
-                            'net_profit_pct': net_profit,
+                            'estimated_net_profit_pct': net_profit,
+                            'estimated_cost_pct': reverse_cost_pct,
                             'brain_mult': brain_mult,
-                            'timestamp': time.time()
+                            'truth_status': 'real_derived',
+                            'source_id': f"{prices[sell_ex]['source_id']}+{prices[buy_ex]['source_id']}",
+                            'source_timestamp': min(prices[sell_ex]['source_timestamp'], prices[buy_ex]['source_timestamp']),
+                            'received_at': time.time(),
+                            'generated_values': False,
                         })
         
         # Sort by profit potential
@@ -2886,33 +3303,99 @@ class CrossExchangeArbitrageScanner:
         Execute an arbitrage opportunity.
         Returns: {'success': bool, 'profit': float, 'details': dict}
         """
+        evidence_record = {
+            **opportunity,
+            'price': opportunity.get('buy_price'),
+        }
+        evidence_ok, evidence = _validate_market_evidence(evidence_record)
+        if not evidence_ok:
+            return {
+                'success': False,
+                'execution_status': 'not_submitted',
+                'truth_status': 'no_data',
+                'reason': evidence['reason'],
+                'buy': None,
+                'sell': None,
+                'realized_profit': None,
+            }
+
         buy_ex = opportunity['buy_exchange']
         sell_ex = opportunity['sell_exchange']
         symbol = opportunity['symbol']
         
         # Calculate quantity
-        buy_price = opportunity['buy_price']
-        quantity = amount_usd / buy_price
+        buy_price = _finite_number(opportunity.get('buy_price'), positive=True)
+        sell_price = _finite_number(opportunity.get('sell_price'), positive=True)
+        amount_value = _finite_number(amount_usd, positive=True)
+        if buy_price is None or sell_price is None or amount_value is None:
+            return {'success': False, 'execution_status': 'not_submitted', 'truth_status': 'no_data', 'reason': 'arbitrage price/amount evidence is invalid', 'buy': None, 'sell': None, 'realized_profit': None}
+        quantity = amount_value / buy_price
+        buy_account = opportunity.get('buy_account_evidence')
+        sell_account = opportunity.get('sell_account_evidence')
+        buy_account_ok, buy_account_reason = _validate_account_evidence(buy_account, required_fields=('available_quote',))
+        sell_account_ok, sell_account_reason = _validate_account_evidence(sell_account, required_fields=('available_base',))
+        if (
+            not buy_account_ok or not sell_account_ok
+            or str(buy_account.get('exchange') or '').lower() != buy_ex
+            or str(sell_account.get('exchange') or '').lower() != sell_ex
+        ):
+            return {
+                'success': False, 'execution_status': 'not_submitted', 'truth_status': 'no_data',
+                'reason': buy_account_reason if not buy_account_ok else sell_account_reason if not sell_account_ok else 'account evidence exchange mismatch',
+                'buy': None, 'sell': None, 'realized_profit': None,
+            }
+        if float(buy_account['available_quote']) < amount_value or float(sell_account['available_base']) < quantity:
+            return {'success': False, 'execution_status': 'denied', 'truth_status': 'live', 'reason': 'authenticated arbitrage balances are insufficient', 'buy': None, 'sell': None, 'realized_profit': None}
         
-        results = {'buy': None, 'sell': None, 'profit': 0, 'success': False}
+        results = {
+            'buy': None,
+            'sell': None,
+            'realized_profit': None,
+            'success': False,
+            'execution_status': 'not_submitted',
+            'truth_status': 'no_data',
+        }
         
         try:
             # Execute buy
             buy_symbol = self.client.normalize_symbol(buy_ex, symbol)
             buy_result = self.client.place_market_order(buy_ex, buy_symbol, 'BUY', quantity=quantity)
-            results['buy'] = buy_result
-            
-            if not buy_result or buy_result.get('error'):
+            buy_receipt_input = dict(buy_result) if isinstance(buy_result, dict) else buy_result
+            if isinstance(buy_receipt_input, dict):
+                buy_receipt_input.setdefault('symbol', buy_symbol)
+            buy_receipt = _provider_fill_receipt(buy_ex, buy_receipt_input)
+            results['buy'] = buy_receipt
+            results['execution_status'] = buy_receipt['execution_status']
+            if buy_receipt['execution_status'] != 'filled':
                 return results
                 
             # Execute sell
+            filled_buy_quantity = float(buy_receipt['filled_quantity'])
+            if filled_buy_quantity > float(sell_account['available_base']):
+                results['execution_status'] = 'reconciliation_required'
+                results['reason'] = 'verified buy fill exceeds authenticated sell-leg balance'
+                return results
             sell_symbol = self.client.normalize_symbol(sell_ex, symbol)
-            sell_result = self.client.place_market_order(sell_ex, sell_symbol, 'SELL', quantity=quantity)
-            results['sell'] = sell_result
-            
-            if sell_result and not sell_result.get('error'):
-                results['success'] = True
-                results['profit'] = amount_usd * (opportunity['net_profit_pct'] / 100)
+            sell_result = self.client.place_market_order(sell_ex, sell_symbol, 'SELL', quantity=filled_buy_quantity)
+            sell_receipt_input = dict(sell_result) if isinstance(sell_result, dict) else sell_result
+            if isinstance(sell_receipt_input, dict):
+                sell_receipt_input.setdefault('symbol', sell_symbol)
+            sell_receipt = _provider_fill_receipt(sell_ex, sell_receipt_input)
+            results['sell'] = sell_receipt
+            results['execution_status'] = sell_receipt['execution_status']
+
+            if sell_receipt['execution_status'] == 'filled':
+                buy_value = buy_receipt.get('filled_quote_value')
+                sell_value = sell_receipt.get('filled_quote_value')
+                buy_fee = buy_receipt.get('actual_fee')
+                sell_fee = sell_receipt.get('actual_fee')
+                if all(_finite_number(value) is not None for value in (buy_value, sell_value, buy_fee, sell_fee)):
+                    results['realized_profit'] = float(sell_value) - float(sell_fee) - float(buy_value) - float(buy_fee)
+                    results['success'] = True
+                    results['truth_status'] = 'live'
+                else:
+                    results['execution_status'] = 'reconciliation_required'
+                    results['reason'] = 'both fills verified but provider fees are incomplete'
                 
         except Exception as e:
             results['error'] = str(e)
@@ -2973,15 +3456,28 @@ class UnifiedTradeConfirmation:
             confirmation.update(self._parse_alpaca_response(result))
         else:
             confirmation['status'] = 'UNKNOWN'
-            confirmation['order_id'] = str(result.get('orderId', result.get('id', 'unknown')))
+            raw_order_id = result.get('orderId') or result.get('id')
+            confirmation['order_id'] = str(raw_order_id) if raw_order_id else None
 
-        if confirmation.get('status') in ['FILLED', 'ACCEPTED', 'OPEN', 'NEW', 'PENDING_NEW']:
+        receipt_payload = dict(result)
+        receipt_payload.setdefault('symbol', symbol)
+        for key in ('status', 'order_id', 'executed_qty', 'executed_quote_qty', 'avg_price', 'fills', 'filled_at'):
+            if key not in receipt_payload and confirmation.get(key) is not None:
+                receipt_payload[key] = confirmation[key]
+        fill_receipt = _provider_fill_receipt(exchange_l, receipt_payload)
+        confirmation['fill_receipt'] = fill_receipt
+        confirmation['execution_status'] = fill_receipt['execution_status']
+        confirmation['truth_status'] = fill_receipt['truth_status']
+        if fill_receipt['execution_status'] == 'filled':
             self.confirmed_trades.append(confirmation)
+        elif fill_receipt.get('provider_order_id'):
+            self.pending_confirmations[fill_receipt['provider_order_id']] = confirmation
 
         return confirmation
         
     def submit_order(self, exchange: str, symbol: str, side: str,
-                    quantity: float = None, quote_qty: float = None) -> Dict[str, Any]:
+                    quantity: float = None, quote_qty: float = None,
+                    market_evidence: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
         Submit order and return unified confirmation.
         Validates lot sizes and minimum notional before submission.
@@ -3000,16 +3496,25 @@ class UnifiedTradeConfirmation:
         except Exception:
             symbol = original_symbol
 
+        side = str(side or '').upper()
+        if side not in {'BUY', 'SELL'}:
+            return {'status': 'REJECTED', 'execution_status': 'not_submitted', 'truth_status': 'no_data', 'error': 'side must be BUY or SELL', 'pre_flight': True}
+        ticker = market_evidence
+        evidence_ok, evidence = _validate_market_evidence(ticker)
+        if not evidence_ok:
+            return {
+                'status': 'NO_DATA',
+                'execution_status': 'not_submitted',
+                'truth_status': 'no_data',
+                'error': evidence['reason'],
+                'pre_flight': True,
+            }
+        price = _finite_number(ticker.get('price'), positive=True)
+        if price is None:
+            return {'status': 'NO_DATA', 'execution_status': 'not_submitted', 'truth_status': 'no_data', 'error': 'provider price invalid', 'pre_flight': True}
+
         # Validate quantity for SELL orders (lot size + notional)
-        if side.upper() == 'SELL' and quantity is not None:
-            # Get current price for notional check
-            price = 0
-            try:
-                ticker = self.client.get_ticker(exchange, symbol)
-                if ticker:
-                    price = float(ticker.get('price', ticker.get('lastPrice', 0)))
-            except Exception:
-                pass
+        if side == 'SELL' and quantity is not None:
                 
             adjusted_qty, error = validate_order_quantity(exchange, symbol, quantity, price, self.client)
             if error:
@@ -3018,7 +3523,9 @@ class UnifiedTradeConfirmation:
             quantity = adjusted_qty
             
         # Safety: never submit an order with no size.
-        if (quantity is None or float(quantity) <= 0.0) and (quote_qty is None or float(quote_qty) <= 0.0):
+        quantity_value = _finite_number(quantity, positive=True)
+        quote_quantity_value = _finite_number(quote_qty, positive=True)
+        if quantity_value is None and quote_quantity_value is None:
             return {
                 'status': 'REJECTED',
                 'error': 'Must provide quantity or quote_qty',
@@ -3044,13 +3551,14 @@ class UnifiedTradeConfirmation:
                 'error': result.get('reason', 'UK restricted')
             }
             
-        status = result.get('status', 'UNKNOWN')
+        status = str(result.get('status') or 'UNKNOWN').upper()
+        raw_order_id = result.get('orderId')
         return {
             'status': status,
-            'order_id': str(result.get('orderId', '')),
-            'executed_qty': float(result.get('executedQty', 0)),
-            'executed_quote_qty': float(result.get('cummulativeQuoteQty', 0)),
-            'avg_price': float(result.get('price', 0)) if result.get('price') else None,
+            'order_id': str(raw_order_id) if raw_order_id else None,
+            'executed_qty': _finite_number(result.get('executedQty'), positive=True),
+            'executed_quote_qty': _finite_number(result.get('cummulativeQuoteQty'), positive=True),
+            'avg_price': _finite_number(result.get('price'), positive=True),
             'fills': result.get('fills', [])
         }
         
@@ -3059,15 +3567,16 @@ class UnifiedTradeConfirmation:
         txid = result.get('txid', [])
         if isinstance(txid, list) and txid:
             order_id = txid[0]
-            status = 'FILLED'  # Kraken market orders fill immediately
+            status = str(result.get('status') or 'SUBMITTED').upper()
         else:
-            order_id = str(result.get('orderId', result.get('id', '')))
-            status = result.get('status', 'UNKNOWN')
+            raw_order_id = result.get('orderId') or result.get('id')
+            order_id = str(raw_order_id) if raw_order_id else None
+            status = str(result.get('status') or 'UNKNOWN').upper()
             
         return {
             'status': status,
             'order_id': order_id,
-            'executed_qty': float(result.get('executedQty', result.get('vol_exec', 0))),
+            'executed_qty': _finite_number(result.get('executedQty') if 'executedQty' in result else result.get('vol_exec'), positive=True),
             'descr': result.get('descr', {})
         }
         
@@ -3131,7 +3640,7 @@ class UnifiedTradeConfirmation:
             }
         
         # Map Alpaca status to our standard format
-        alpaca_status = result.get('status', 'unknown').lower()
+        alpaca_status = str(result.get('status') or 'unknown').lower()
         status_map = {
             'new': 'NEW',
             'accepted': 'ACCEPTED',
@@ -3146,10 +3655,10 @@ class UnifiedTradeConfirmation:
         
         return {
             'status': status,
-            'order_id': str(result.get('id', '')),
+            'order_id': str(result.get('id')) if result.get('id') else None,
             'client_order_id': result.get('client_order_id'),
-            'executed_qty': float(result.get('filled_qty', 0)),
-            'avg_price': float(result.get('filled_avg_price', 0)) if result.get('filled_avg_price') else None,
+            'executed_qty': _finite_number(result.get('filled_qty'), positive=True),
+            'avg_price': _finite_number(result.get('filled_avg_price'), positive=True),
             'symbol': result.get('symbol'),
             'side': result.get('side'),
             'order_type': result.get('type'),
@@ -3372,10 +3881,13 @@ class PortfolioRebalancer:
             return {'success': True, 'trades_executed': 0, 'message': 'Portfolio within tolerance'}
             
         results = {
-            'success': True,
+            'success': False if dry_run else True,
             'trades_executed': 0,
+            'orders_submitted': 0,
             'trades': [],
-            'dry_run': dry_run
+            'dry_run': dry_run,
+            'execution_status': 'not_submitted' if dry_run else 'pending',
+            'truth_status': 'dry_run' if dry_run else 'no_data',
         }
         
         for trade in trades:
@@ -3388,22 +3900,46 @@ class PortfolioRebalancer:
             symbol = f"{asset}USDT" if exchange == 'binance' else f"{asset}USD"
             
             if dry_run:
-                result = {'status': 'DRY_RUN', 'would_execute': trade}
+                result = {
+                    'status': 'DRY_RUN',
+                    'execution_status': 'not_submitted',
+                    'truth_status': 'dry_run',
+                    'provider_order_id': None,
+                    'fill_id': None,
+                    'would_execute': trade,
+                }
             else:
                 try:
+                    ticker = self.client.get_ticker(exchange, symbol)
+                    evidence_ok, evidence = _validate_market_evidence(ticker)
+                    price = _finite_number(ticker.get('price'), positive=True) if isinstance(ticker, dict) else None
+                    if not evidence_ok or price is None:
+                        result = {'execution_status': 'not_submitted', 'truth_status': 'no_data', 'reason': evidence['reason']}
+                        results['success'] = False
+                        results['trades'].append({'trade': trade, 'result': result})
+                        continue
                     if action == 'BUY':
                         result = self.client.place_market_order(
                             exchange, symbol, 'BUY', quote_qty=amount_usd
                         )
                     else:
                         # Calculate quantity from USD value
-                        ticker = self.client.get_ticker(exchange, symbol)
-                        price = float(ticker.get('price', 1))
                         quantity = amount_usd / price
                         result = self.client.place_market_order(
                             exchange, symbol, 'SELL', quantity=quantity
                         )
-                    results['trades_executed'] += 1
+                    receipt_input = dict(result) if isinstance(result, dict) else result
+                    if isinstance(receipt_input, dict):
+                        receipt_input.setdefault('symbol', symbol)
+                    fill_receipt = _provider_fill_receipt(exchange, receipt_input)
+                    result = {**fill_receipt, 'raw_response': result}
+                    if fill_receipt.get('provider_order_id'):
+                        results['orders_submitted'] += 1
+                    if fill_receipt['execution_status'] == 'filled':
+                        results['trades_executed'] += 1
+                        results['truth_status'] = 'live'
+                    else:
+                        results['success'] = False
                 except Exception as e:
                     result = {'error': str(e)}
                     results['success'] = False
@@ -3414,6 +3950,8 @@ class PortfolioRebalancer:
             })
             
         self.last_rebalance = time.time()
+        if not dry_run:
+            results['execution_status'] = 'filled' if results['success'] else 'reconciliation_required'
         self.rebalance_history.append({
             'timestamp': time.time(),
             'trades': len(trades),
@@ -4127,6 +4665,9 @@ class MultiExchangeOrchestrator:
         try:
             if exchange == 'binance':
                 raw = client.client.session.get(f"{client.client.base}/api/v3/ticker/24hr", timeout=10).json()
+                received_at = time.time()
+                if not isinstance(raw, list):
+                    return {}
                 # 🇬🇧 If UK mode, filter to allowed trade groups to avoid restricted pairs
                 allowed_pairs = set()
                 try:
@@ -4140,15 +4681,20 @@ class MultiExchangeOrchestrator:
                         continue
                     for q in quote_currencies:
                         if sym.endswith(q):
-                            tickers[sym] = {
-                                'price': float(t['lastPrice']),
-                                'change': float(t['priceChangePercent']),
-                                'volume': float(t['quoteVolume']),
-                                'high': float(t['highPrice']),
-                                'low': float(t['lowPrice']),
-                                'exchange': 'binance',
-                                'quote': q,
-                            }
+                            normalised = _normalise_provider_ticker(
+                                t,
+                                source_id='binance_public_24h_ticker',
+                                field_map={
+                                    'price': ('lastPrice',),
+                                    'change': ('priceChangePercent',),
+                                    'volume': ('quoteVolume',),
+                                    'high': ('highPrice',),
+                                    'low': ('lowPrice',),
+                                },
+                                received_at=received_at,
+                            )
+                            if normalised is not None:
+                                tickers[sym] = {**normalised, 'exchange': 'binance', 'quote': q}
                             break
                             
             elif exchange == 'kraken':
@@ -4160,22 +4706,25 @@ class MultiExchangeOrchestrator:
                 try:
                     if hasattr(client.client, 'get_24h_tickers'):
                         raw = client.client.get_24h_tickers() or []
+                        received_at = time.time()
                         for t in raw:
                             sym = t.get('symbol', '')
                             for q in quote_currencies:
                                 if sym.endswith(q):
-                                    price = float(t.get('lastPrice', 0) or 0)
-                                    change = float(t.get('priceChangePercent', 0) or 0)
-                                    volume = float(t.get('quoteVolume', 0) or 0)
-                                    tickers[sym] = {
-                                        'price': price,
-                                        'change': change,
-                                        'volume': volume,
-                                        'high': price,  # Alpaca 24h high/low not provided here; use price as placeholder
-                                        'low': price,
-                                        'exchange': 'alpaca',
-                                        'quote': q,
-                                    }
+                                    normalised = _normalise_provider_ticker(
+                                        t,
+                                        source_id='alpaca_crypto_24h_bars',
+                                        field_map={
+                                            'price': ('lastPrice', 'price'),
+                                            'change': ('priceChangePercent', 'change24h'),
+                                            'volume': ('quoteVolume', 'volume'),
+                                            'high': ('highPrice', 'high'),
+                                            'low': ('lowPrice', 'low'),
+                                        },
+                                        received_at=received_at,
+                                    )
+                                    if normalised is not None:
+                                        tickers[sym] = {**normalised, 'exchange': 'alpaca', 'quote': q}
                                     break
                 except Exception as e:
                     logger.debug(f"Alpaca ticker error: {e}")
@@ -4195,49 +4744,36 @@ class MultiExchangeOrchestrator:
         try:
             if hasattr(client.client, 'get_24h_tickers'):
                 raw_tickers = client.client.get_24h_tickers() or []
+                received_at = time.time()
                 for t in raw_tickers:
                     sym = t.get('symbol', '')
                     if not sym:
                         continue
                     for q in quote_currencies:
                         if sym.endswith(q):
-                            price = float(t.get('lastPrice', t.get('price', 0)) or 0)
-                            change = float(t.get('priceChangePercent', t.get('change24h', 0)) or 0)
-                            volume = float(t.get('quoteVolume', t.get('volume', 0)) or 0)
-                            tickers[sym] = {
-                                'price': price,
-                                'change': change,
-                                'volume': volume,
-                                'high': price,  # Kraken 24h endpoint here doesn’t return high/low; keep price to avoid zeroes
-                                'low': price,
-                                'exchange': 'kraken',
-                                'quote': q,
-                            }
+                            normalised = _normalise_provider_ticker(
+                                t,
+                                source_id='kraken_public_24h_ticker',
+                                field_map={
+                                    'price': ('lastPrice', 'price'),
+                                    'change': ('priceChangePercent', 'change24h'),
+                                    'volume': ('quoteVolume', 'volume'),
+                                    'high': ('highPrice', 'high'),
+                                    'low': ('lowPrice', 'low'),
+                                },
+                                received_at=received_at,
+                            )
+                            if normalised is not None:
+                                tickers[sym] = {**normalised, 'exchange': 'kraken', 'quote': q}
                             break
         except Exception as e:
             logger.debug(f"Kraken ticker error: {e}")
         return tickers
         
     def _get_capital_tickers(self, client) -> Dict[str, Dict]:
-        """Get Capital.com CFD tickers."""
-        tickers = {}
-        # Capital markets to scan
-        markets = ['EURUSD', 'GBPUSD', 'GOLD', 'US500', 'UK100', 'OIL_CRUDE']
-        
-        try:
-            for market in markets:
-                # Simplified - actual implementation would use Capital API
-                tickers[market] = {
-                    'price': 0,  # Would be fetched from API
-                    'change': 0,
-                    'volume': 1000000,
-                    'exchange': 'capital',
-                    'quote': 'USD',
-                    'asset_class': self._get_asset_class(market)
-                }
-        except Exception as e:
-            logger.debug(f"Capital ticker error: {e}")
-        return tickers
+        """Capital remains no_data until its adapter returns fresh OHLCV evidence."""
+        logger.debug("Capital ticker scan skipped: provenance-bearing OHLCV unavailable")
+        return {}
         
     def _get_asset_class(self, symbol: str) -> str:
         """Determine asset class from symbol."""
@@ -4259,12 +4795,17 @@ class MultiExchangeOrchestrator:
         The penny profit math (exact fee calculation) is the TRUE gate.
         We log warnings but don't block entries.
         """
-        price = ticker.get('price', 0)
-        change = ticker.get('change', 0)
-        volume = ticker.get('volume', 0)
-        
-        if price <= 0:
-            return None  # Can't trade without a price
+        evidence_ok, evidence = _validate_market_evidence(
+            ticker,
+            required_fields=('price', 'change', 'volume', 'high', 'low'),
+        )
+        if not evidence_ok:
+            return None
+        price = _finite_number(ticker.get('price'), positive=True)
+        change = _finite_number(ticker.get('change'))
+        volume = _finite_number(ticker.get('volume'), positive=True)
+        if price is None or change is None or volume is None:
+            return None
             
         # Calculate coherence
         asset_class = ticker.get('asset_class', cfg.get('asset_class', 'crypto'))
@@ -4303,13 +4844,13 @@ class MultiExchangeOrchestrator:
         if hasattr(self, 'harmonic_fusion') and self.harmonic_fusion:
             try:
                 harmonic_state = self.harmonic_fusion.get_harmonic_state()
-                global_coherence = harmonic_state.get('global_coherence', 0.5)
-                schumann_bias = harmonic_state.get('schumann_bias', 1.0)
-                phase_alignment = harmonic_state.get('phase_alignment', 0.5)
+                global_coherence = _finite_number(harmonic_state.get('global_coherence'))
+                schumann_bias = _finite_number(harmonic_state.get('schumann_bias'))
+                phase_alignment = _finite_number(harmonic_state.get('phase_alignment'))
                 
                 # Check if this symbol is in harmonic convergence
                 symbol_phase = self.harmonic_fusion.get_symbol_phase(symbol)
-                if symbol_phase:
+                if symbol_phase and global_coherence is not None and schumann_bias is not None and phase_alignment is not None:
                     # Boost if symbol aligns with global dominant frequency
                     if abs(symbol_phase.get('phase', 0) - harmonic_state.get('dominant_phase', 0)) < 0.3:
                         harmonic_boost = 1.0 + (global_coherence * 0.15)  # Up to 15% boost
@@ -4335,33 +4876,52 @@ class MultiExchangeOrchestrator:
             'harmonic_state': harmonic_state,
             'asset_class': asset_class,
             'quote': ticker.get('quote', 'USD'),
-            'timestamp': time.time()
+            'truth_status': 'real_derived',
+            'source_id': evidence['source_id'],
+            'source_timestamp': evidence['source_timestamp'],
+            'received_at': evidence['received_at'],
+            'generated_values': False,
         }
         
     def _calculate_coherence(self, change: float, volume: float, ticker: Dict, asset_class: str) -> float:
-        """Calculate coherence with asset-class awareness."""
-        high = ticker.get('high', ticker.get('price', 1))
-        low = ticker.get('low', ticker.get('price', 1))
-        price = ticker.get('price', 1)
-        
+        """Calculate coherence with asset-class awareness.
+
+        P4 inversion fix: the E (energy) term used to be raw range —
+        E = min(1, (high−low)/low / denom) — so a violent chop with zero net
+        direction RAISED coherence toward the entry threshold, rewarding
+        exactly the volatility the sentinel exists to veto. Energy is now the
+        range scaled by directional STRUCTURE (|net change| / range traversed,
+        the classic efficiency ratio): a clean directional move keeps its
+        energy, churn is discounted toward zero. structure ∈ [0,1] means
+        E_new ≤ E_old for identical inputs, so the resulting coherence can
+        only be lower — formula-level tighten-only (b46), proven by
+        regression test.
+        """
+        high = _finite_number(ticker.get('high'), positive=True)
+        low = _finite_number(ticker.get('low'), positive=True)
+        price = _finite_number(ticker.get('price'), positive=True)
+        if high is None or low is None or price is None or high < low:
+            raise ValueError('complete provider high/low/price evidence required')
+
         volatility = ((high - low) / low * 100) if low > 0 else 0
-        
+        structure = min(1.0, abs(change) / volatility) if volatility > 0 else 0.0
+
         if asset_class == 'forex':
             S = min(1.0, volume / 50.0)
             O = min(1.0, abs(change) / 0.3)
-            E = min(1.0, volatility / 0.5)
+            E = min(1.0, volatility / 0.5) * structure
             Lambda = (S + O + E) / 3.0
             return 1 / (1 + math.exp(-6 * (Lambda - 0.35)))
         elif asset_class == 'indices':
             S = min(1.0, volume / 50.0)
             O = min(1.0, abs(change) / 1.0)
-            E = min(1.0, volatility / 2.0)
+            E = min(1.0, volatility / 2.0) * structure
             Lambda = (S + O + E) / 3.0
             return 1 / (1 + math.exp(-6 * (Lambda - 0.35)))
         else:  # crypto
             S = min(1.0, volume / 50000.0)
             O = min(1.0, abs(change) / 15.0)
-            E = min(1.0, volatility / 25.0)
+            E = min(1.0, volatility / 25.0) * structure
             Lambda = (S + O + E) / 3.0
             return 1 / (1 + math.exp(-5 * (Lambda - 0.5)))
             
@@ -11536,7 +12096,10 @@ class AurisEngine:
         Returns (should_trade, reason, prediction_data)
         """
         if not ENHANCED_NEXUS_AVAILABLE or not self.enhanced_probability_nexus:
-            return True, "Enhanced Nexus not available - trade allowed", {}
+            return False, 'NO_DATA: Enhanced Nexus unavailable', {
+                'truth_status': 'no_data',
+                'generated_values': False,
+            }
         
         try:
             # Get prediction with profit filter
@@ -11572,8 +12135,11 @@ class AurisEngine:
             return True, f"🔱 {prediction.direction} approved - {prediction.reason}", prediction_data
             
         except Exception as e:
-            logger.warning(f"⚠️ Enhanced Nexus error: {e} - allowing trade")
-            return True, f"Enhanced Nexus error ({e})", {}
+            logger.warning(f"⚠️ Enhanced Nexus error: {e} - trade not approved")
+            return False, f'NO_DATA: Enhanced Nexus error ({e})', {
+                'truth_status': 'no_data',
+                'generated_values': False,
+            }
     
     def get_enhanced_nexus_signal(self, symbol: str) -> Dict[str, Any]:
         """
@@ -11592,7 +12158,7 @@ class AurisEngine:
             candles = self.price_history.get(symbol, [])
             if candles:
                 for price in candles[-24:]:
-                    nexus.update_history({'close': price, 'open': price, 'high': price, 'low': price, 'volume': 1000})
+                    nexus.update_history({'close': price})
             
             # Get prediction
             prediction = nexus.predict()
@@ -12793,17 +13359,33 @@ class Position:
     learned_confidence: str = 'low'  # Confidence level of learned parameters
     
     # 🔮 NEXUS PREDICTOR DATA - For learning feedback
-    nexus_prob: float = 0.5  # Nexus prediction probability at entry
-    nexus_edge: float = 0.0  # Nexus edge at entry
+    nexus_prob: Optional[float] = None  # Nexus prediction probability at entry
+    nexus_edge: Optional[float] = None  # Nexus edge at entry
     nexus_patterns: List[str] = field(default_factory=list)  # Patterns triggered at entry
-    
+
+    # 🎚️ Signal tier at entry (FAST/STANDARD/PREMIUM). The tier-routing path constructed
+    # Position(signal_tier=...) and the sizing/exit code read getattr(pos, 'signal_tier',
+    # 'STANDARD') — but the field was never declared, so every tier-routed entry crashed
+    # with TypeError at the constructor. Live order path, real crash.
+    signal_tier: str = 'STANDARD'
+
     # 🚀 SERVER-SIDE ORDER IDs (Kraken/Alpaca native TP/SL - execute even if bot offline)
     server_sl_order_id: Optional[str] = None  # Kraken/Alpaca stop-loss order ID (or OCO ID for Alpaca)
     server_tp_order_id: Optional[str] = None  # Kraken take-profit order ID
     server_trailing_order_id: Optional[str] = None  # Kraken/Alpaca trailing stop order ID
+    provider_order_id: Optional[str] = None
+    provider_fill_id: Optional[str] = None
+    fill_source_id: Optional[str] = None
+    fill_source_timestamp: Optional[float] = None
+    truth_status: str = 'no_data'
+    hnc_frequency: Optional[float] = None
+    score: Optional[float] = None
+    hnc_action: Optional[str] = None
+    probability: Optional[float] = None
+    metadata: Dict[str, Any] = field(default_factory=dict)
     
     # Generate unique ID for position
-    id: str = field(default_factory=lambda: f"pos_{int(time.time()*1000)}_{random.randint(1000,9999)}")
+    id: str = field(default_factory=lambda: f"pos_{uuid.uuid4().hex}")
     
     # Convenience properties
     @property
@@ -13405,9 +13987,47 @@ class AureonKrakenEcosystem:
     - 51%+ win rate strategy
     """
     
-    def __init__(self, initial_balance: float = 1000.0, dry_run: bool = False, target_equity_gbp: Optional[float] = 100000.0):
-        # Initialize Multi-Exchange Client
-        self.client = MultiExchangeClient()
+    def __init__(
+        self,
+        initial_balance: float = 1000.0,
+        dry_run: bool = False,
+        target_equity_gbp: Optional[float] = 100000.0,
+        *,
+        unity_composition: Any = None,
+        unity_plan_supplier: Any = None,
+        trusted_unity_plan_supplier_ids: Optional[Set[str]] = None,
+    ):
+        # The default client retains read-only analytics and fails every
+        # mutation closed inside UnifiedExchangeClient.  A live organism must
+        # receive the canonical HNC/Auris/Council/Crown composition plus an
+        # independently allowlisted strategy-plan supplier as one pair.
+        trusted_plan_ids = frozenset(trusted_unity_plan_supplier_ids or ())
+        if unity_composition is None:
+            if unity_plan_supplier is not None or trusted_plan_ids:
+                raise ValueError(
+                    "unity_composition_plan_supplier_and_allowlist_required_together"
+                )
+            self.client = MultiExchangeClient()
+            self.unity_governance_status = {
+                "status": "HOLD",
+                "reason": "canonical_unified_exchange_unity_composition_required",
+                "economic_mutation": False,
+            }
+        else:
+            if unity_plan_supplier is None or not trusted_plan_ids:
+                raise ValueError(
+                    "unity_composition_plan_supplier_and_allowlist_required_together"
+                )
+            self.client = GovernedMultiExchangeClient(
+                base_client=getattr(unity_composition, "client", None),
+                plan_supplier=unity_plan_supplier,
+                trusted_plan_supplier_ids=trusted_plan_ids,
+            )
+            self.unity_governance_status = {
+                "status": "READY",
+                "reason": "hnc_auris_council_crown_unity_composed",
+                "economic_mutation": False,
+            }
         self.dry_run = self.client.dry_run
 
         # Positions must exist before any subsystem syncs that may reference it
@@ -13571,6 +14191,13 @@ class AureonKrakenEcosystem:
         self.total_equity_gbp = initial_balance
         self.cash_balance_gbp = initial_balance
         self.holdings_gbp: Dict[str, float] = {}
+        self.account_truth_status = 'no_data'
+        self.account_evidence: Dict[str, Any] = {
+            'truth_status': 'no_data',
+            'source_id': None,
+            'received_at': None,
+            'generated_values': False,
+        }
         self.quote_currency_suffixes: List[str] = sorted(CONFIG['QUOTE_CURRENCIES'], key=len, reverse=True)
 
         # 🎯 100K target (or custom): when reached, block NEW BUY orders (sells are still allowed).
@@ -13585,6 +14212,7 @@ class AureonKrakenEcosystem:
         self.ticker_cache: Dict[str, Dict] = {}
         self.price_history: Dict[str, List[float]] = {}
         self.realtime_prices: Dict[str, float] = {}
+        self.realtime_price_evidence: Dict[str, Dict[str, Any]] = {}
         self.price_lock = Lock()
         self._liquidity_warnings: set[Tuple[str, str]] = set()
 
@@ -13607,7 +14235,7 @@ class AureonKrakenEcosystem:
         
         # WebSocket
         self.ws_connected = False
-        self.ws_last_message = time.time()
+        self.ws_last_message = 0.0
         self.ws_reconnect_count = 0
         self.symbol_to_ws: Dict[str, str] = {}
         self.ws_to_symbol: Dict[str, str] = {}
@@ -15071,10 +15699,11 @@ class AureonKrakenEcosystem:
                     try:
                         # Try to get ticker for this pair
                         ticker = self.client.get_ticker(exchange, try_symbol)
-                        tick_price = ticker.get('price', 0) or ticker.get('last', 0) or ticker.get('c', 0)
-                        if tick_price and float(tick_price) > 0:
+                        ticker_ok, _ = _validate_market_evidence(ticker)
+                        tick_price = _finite_number(ticker.get('price'), positive=True) if ticker_ok else None
+                        if tick_price is not None:
                             symbol = try_symbol
-                            price = float(tick_price)
+                            price = tick_price
                             gbp_value = amount * price
                             self._mark_symbol_valid(try_symbol, exchange)
                             print(f"   📍 Found valid pair: {symbol} @ ${price:.6f}")
@@ -15093,58 +15722,53 @@ class AureonKrakenEcosystem:
                     continue
                 
                 # 💰 TRY TO GET REAL COST BASIS FROM VERIFIED FILLS
-                verified_entry_price = None
-                if hasattr(cost_tracker, 'get_verified_entry_price'):
-                    verified_entry_price = cost_tracker.get_verified_entry_price(symbol, exchange)
-
-                real_entry_price = verified_entry_price or cost_tracker.get_entry_price(symbol)
-                if real_entry_price and real_entry_price > 0 and verified_entry_price:
-                    entry_price = real_entry_price
-                    entry_value = amount * entry_price
-                    is_historical = False  # We have real data!
-                    cost_source = "VERIFIED"
-                    print(f"   💰 {symbol}: Using VERIFIED entry price ${entry_price:.6f} from fills/order IDs")
-                elif real_entry_price and real_entry_price > 0:
-                    entry_price = real_entry_price
-                    entry_value = amount * entry_price
-                    is_historical = False  # We have real data, but not verified
-                    cost_source = "REAL_UNVERIFIED"
-                    print(f"   ⚠️ {symbol}: Using entry price ${entry_price:.6f} (unverified, no fills/order ID)")
-                else:
-                    entry_price = price  # Fall back to current price
-                    entry_value = gbp_value
-                    is_historical = True  # No real data - treat as historical
-                    cost_source = "CURRENT"
-                    
-                # Create position from existing holding
-                # Use combined rate (fee + slippage + spread) to match penny profit formula
-                fee_rate = get_platform_fee(exchange, 'taker')
-                slippage = CONFIG.get('SLIPPAGE_PCT', 0.0020)
-                spread = CONFIG.get('SPREAD_COST_PCT', 0.0010)
-                estimated_entry_fee = entry_value * (fee_rate + slippage + spread)
+                cost_basis = cost_tracker.get_cost_basis(symbol, exchange) if hasattr(cost_tracker, 'get_cost_basis') else None
+                verified_entry_price = (
+                    cost_tracker.get_verified_entry_price(symbol, exchange)
+                    if hasattr(cost_tracker, 'get_verified_entry_price') else None
+                )
+                cost_basis = cost_basis if isinstance(cost_basis, dict) else {}
+                entry_price = _finite_number(verified_entry_price, positive=True)
+                provider_order_id = cost_basis.get('last_order_id')
+                entry_fee = _finite_number(cost_basis.get('total_fees'))
+                entry_timestamp = _explicit_provider_timestamp(cost_basis)
+                quote_asset = str(cost_basis.get('quote') or '').upper()
+                fee_asset = str(cost_basis.get('fee_asset') or '').upper()
+                coherence = _finite_number(ticker.get('coherence'))
+                momentum = _finite_number(ticker.get('change24h'))
+                if (
+                    entry_price is None or not provider_order_id or entry_fee is None
+                    or entry_timestamp is None or not quote_asset or fee_asset != quote_asset
+                    or coherence is None or momentum is None
+                ):
+                    print(f"   ⚠️ {symbol}: provider fill/cost/HNC provenance incomplete; leaving holding unmanaged")
+                    continue
+                entry_value = amount * entry_price
+                print(f"   💰 {symbol}: Using provider-backed entry fill ${entry_price:.6f}")
                 
                 self.positions[symbol] = Position(
                     symbol=symbol,
                     entry_price=entry_price,
                     quantity=amount,
-                    entry_fee=estimated_entry_fee,
+                    entry_fee=entry_fee,
                     entry_value=entry_value,
-                    momentum=0.0,
-                    coherence=0.5,
-                    entry_time=time.time(),
+                    momentum=momentum,
+                    coherence=coherence,
+                    entry_time=entry_timestamp,
                     dominant_node='Portfolio',
                     exchange=exchange,
-                    is_historical=is_historical
+                    is_historical=False,
+                    provider_order_id=str(provider_order_id),
+                    fill_source_id=f'{exchange}_cost_basis_fill',
+                    fill_source_timestamp=entry_timestamp,
+                    truth_status='live',
                 )
                 imported += 1
                 
                 # Show profit/loss status
-                if cost_source == "REAL":
-                    pnl_pct = ((price - entry_price) / entry_price * 100) if entry_price > 0 else 0
-                    pnl_icon = "🟢" if pnl_pct >= 0 else "🔴"
-                    print(f"   📦 Imported {symbol} ({exchange}): {amount:.6f} @ £{entry_price:.4f} (now £{price:.4f}) {pnl_icon} {pnl_pct:+.2f}%")
-                else:
-                    print(f"   📦 Imported {symbol} ({exchange}): {amount:.6f} @ £{price:.4f} = £{gbp_value:.2f} [HISTORICAL - no cost basis]")
+                pnl_pct = ((price - entry_price) / entry_price * 100) if entry_price > 0 else 0
+                pnl_icon = "🟢" if pnl_pct >= 0 else "🔴"
+                print(f"   📦 Imported {symbol} ({exchange}): {amount:.6f} @ £{entry_price:.4f} (now £{price:.4f}) {pnl_icon} {pnl_pct:+.2f}%")
             
         if imported > 0:
             print(f"   ✅ Imported {imported} existing holdings as managed positions")
@@ -15161,11 +15785,18 @@ class AureonKrakenEcosystem:
                         try:
                             # Capital.com position structure
                             epic = cfd_pos.get('market', {}).get('epic') or cfd_pos.get('epic', '')
-                            direction = cfd_pos.get('position', {}).get('direction') or cfd_pos.get('direction', 'BUY')
-                            size = float(cfd_pos.get('position', {}).get('size') or cfd_pos.get('size', 0))
-                            open_level = float(cfd_pos.get('position', {}).get('openLevel') or cfd_pos.get('openLevel', 0))
+                            direction = cfd_pos.get('position', {}).get('direction') or cfd_pos.get('direction')
+                            size = _finite_number(cfd_pos.get('position', {}).get('size') or cfd_pos.get('size'), positive=True)
+                            open_level = _finite_number(cfd_pos.get('position', {}).get('openLevel') or cfd_pos.get('openLevel'), positive=True)
+                            provider_order_id = cfd_pos.get('dealId') or cfd_pos.get('orderId')
+                            entry_timestamp = _explicit_provider_timestamp(cfd_pos)
+                            entry_fee = _finite_number(cfd_pos.get('fee'))
+                            fee_asset = cfd_pos.get('fee_asset') or cfd_pos.get('currency')
                             
-                            if not epic or size <= 0:
+                            if (
+                                not epic or size is None or open_level is None or direction not in {'BUY', 'SELL'}
+                                or not provider_order_id or entry_timestamp is None or entry_fee is None or not fee_asset
+                            ):
                                 continue
                             
                             # Skip if already tracked
@@ -15173,35 +15804,36 @@ class AureonKrakenEcosystem:
                                 continue
                             
                             # Get current price
-                            current_price = open_level
-                            try:
-                                ticker = capital_client.client.get_ticker(epic)
-                                current_price = ticker.get('price', open_level)
-                            except:
-                                pass
+                            ticker = capital_client.client.get_ticker(epic)
+                            ticker_ok, _ = _validate_market_evidence(ticker, required_fields=('price', 'change24h', 'coherence'))
+                            if not ticker_ok:
+                                continue
+                            current_price = _finite_number(ticker.get('price'), positive=True)
+                            momentum = _finite_number(ticker.get('change24h'))
+                            coherence = _finite_number(ticker.get('coherence'))
+                            if current_price is None or momentum is None or coherence is None:
+                                continue
                             
                             # Calculate value
                             position_value = size * current_price
-                            
-                            # Use combined rate (fee + slippage + spread) to match penny profit formula
-                            capital_fee = CONFIG.get('CAPITAL_FEE', 0.001)
-                            slippage = CONFIG.get('SLIPPAGE_PCT', 0.002)
-                            spread = CONFIG.get('SPREAD_COST_PCT', 0.001)
-                            total_rate = capital_fee + slippage + spread
                             
                             # Create position
                             self.positions[epic] = Position(
                                 symbol=epic,
                                 entry_price=open_level,
                                 quantity=size if direction == 'BUY' else -size,  # Negative for shorts
-                                entry_fee=position_value * total_rate,
+                                entry_fee=entry_fee,
                                 entry_value=position_value,
-                                momentum=0.0,
-                                coherence=0.5,
-                                entry_time=time.time(),
+                                momentum=momentum,
+                                coherence=coherence,
+                                entry_time=entry_timestamp,
                                 dominant_node='Capital.com',
                                 exchange='capital',
-                                is_historical=False  # CFD positions have known entry
+                                is_historical=False,
+                                provider_order_id=str(provider_order_id),
+                                fill_source_id='capital_position_fill',
+                                fill_source_timestamp=entry_timestamp,
+                                truth_status='live',
                             )
                             imported += 1
                             
@@ -15233,26 +15865,30 @@ class AureonKrakenEcosystem:
                             symbol_raw = alp_pos.get('symbol', '')
                             # Convert BTC/USD -> BTCUSD
                             symbol = symbol_raw.replace('/', '')
-                            qty = float(alp_pos.get('qty', 0))
-                            avg_entry = float(alp_pos.get('avg_entry_price', 0))
-                            current_price = float(alp_pos.get('current_price', 0))
-                            market_value = float(alp_pos.get('market_value', 0))
-                            unrealized_pl = float(alp_pos.get('unrealized_pl', 0))
-                            side = alp_pos.get('side', 'long')
-                            asset_class = alp_pos.get('asset_class', 'crypto')
+                            qty = _finite_number(alp_pos.get('qty'), positive=True)
+                            avg_entry = _finite_number(alp_pos.get('avg_entry_price'), positive=True)
+                            current_price = _finite_number(alp_pos.get('current_price'), positive=True)
+                            unrealized_pl = _finite_number(alp_pos.get('unrealized_pl'))
+                            side = alp_pos.get('side')
+                            asset_class = alp_pos.get('asset_class')
+                            provider_order_id = alp_pos.get('order_id') or alp_pos.get('orderId')
+                            entry_timestamp = _explicit_provider_timestamp(alp_pos)
+                            entry_fee = _finite_number(alp_pos.get('fee'))
+                            momentum = _finite_number(alp_pos.get('change24h'))
+                            coherence = _finite_number(alp_pos.get('coherence'))
                             
-                            if not symbol or qty <= 0:
+                            if (
+                                not symbol or qty is None or avg_entry is None or current_price is None
+                                or unrealized_pl is None or side not in {'long', 'short'} or not asset_class
+                                or not provider_order_id or entry_timestamp is None or entry_fee is None
+                                or momentum is None or coherence is None
+                            ):
                                 continue
                             
                             # Skip if already tracked
                             if symbol in self.positions:
                                 continue
                             
-                            # Use combined rate (fee + slippage + spread) to match penny profit formula
-                            alpaca_fee = CONFIG.get('ALPACA_FEE', 0.0025)
-                            slippage = CONFIG.get('SLIPPAGE_PCT', 0.002)
-                            spread = CONFIG.get('SPREAD_COST_PCT', 0.001)
-                            total_rate = alpaca_fee + slippage + spread
                             entry_value = qty * avg_entry
                             
                             # Create position
@@ -15260,14 +15896,18 @@ class AureonKrakenEcosystem:
                                 symbol=symbol,
                                 entry_price=avg_entry,
                                 quantity=qty if side == 'long' else -qty,
-                                entry_fee=entry_value * total_rate,
+                                entry_fee=entry_fee,
                                 entry_value=entry_value,
-                                momentum=0.0,
-                                coherence=0.5,
-                                entry_time=time.time(),
+                                momentum=momentum,
+                                coherence=coherence,
+                                entry_time=entry_timestamp,
                                 dominant_node='Alpaca',
                                 exchange='alpaca',
-                                is_historical=False  # Alpaca has real entry prices
+                                is_historical=False,
+                                provider_order_id=str(provider_order_id),
+                                fill_source_id='alpaca_position_fill',
+                                fill_source_timestamp=entry_timestamp,
+                                truth_status='live',
                             )
                             imported += 1
                             
@@ -15312,8 +15952,9 @@ class AureonKrakenEcosystem:
             # Don't filter by exchange for big losers - we want to cut ANY dead capital
             try:
                 ticker = self.client.get_ticker(pos.exchange, sym)
-                curr_price = float(ticker.get('price', 0) or ticker.get('last', 0) or ticker.get('c', 0))
-                if curr_price > 0 and pos.entry_price > 0:
+                ticker_ok, _ = _validate_market_evidence(ticker)
+                curr_price = _finite_number(ticker.get('price'), positive=True) if ticker_ok else None
+                if curr_price is not None and pos.entry_price > 0:
                     pnl_pct = (curr_price - pos.entry_price) / pos.entry_price * 100
                     if pnl_pct < -50:  # Down more than 50%
                         print(f"      🔥 Found big loser: {sym} @ {pnl_pct:.1f}%")
@@ -15375,16 +16016,12 @@ class AureonKrakenEcosystem:
                 print(f"   🔥 CUTTING LOSS {sym}: {pnl_pct:.1f}% down - selling {sell_qty:.6f} @ £{curr_price:.4f} = £{current_value:.2f}")
                 
                 try:
-                    res = self.client.place_market_order(pos.exchange, sym, 'SELL', quantity=sell_qty)
-                    
-                    if isinstance(res, dict) and not res.get('rejected') and res.get('status') not in ['REJECTED', 'FAILED', None]:
-                        net_value = current_value * 0.998
+                    fill_receipt = self.close_position(
+                        sym, 'DEAD_CAPITAL_CUT', pnl_pct, curr_price, market_evidence=ticker,
+                    )
+                    if fill_receipt['execution_status'] == 'filled' and fill_receipt.get('actual_fee') is not None:
+                        net_value = float(fill_receipt['filled_quote_value']) - float(fill_receipt['actual_fee'])
                         freed_cash += net_value
-                        pos.quantity = max(pos.quantity - sell_qty, 0.0)
-                        if pos.quantity <= 1e-12:
-                            self.positions.pop(sym, None)
-                        else:
-                            pos.entry_value = pos.quantity * curr_price
                         self._clear_symbol_dust(sym)
                         print(f"   ✅ CUT LOSS {sym} - freed £{net_value:.2f} (was {pnl_pct:.1f}% down)")
                         
@@ -15402,8 +16039,7 @@ class AureonKrakenEcosystem:
                                 }
                             ))
                     else:
-                        self._mark_symbol_invalid(sym)
-                        print(f"   ⚠️ Failed to cut {sym}")
+                        print(f"   ⚠️ {sym} not reconciled as a provider fill; position unchanged")
                 except Exception as e:
                     self._mark_symbol_invalid(sym)
                     print(f"   ⚠️ Error cutting {sym}: {e}")
@@ -15427,8 +16063,9 @@ class AureonKrakenEcosystem:
             # Get current price
             try:
                 ticker = self.client.get_ticker(pos.exchange, sym)
-                curr_price = float(ticker.get('price', 0) or ticker.get('last', 0) or ticker.get('c', 0))
-                if curr_price <= 0:
+                ticker_ok, _ = _validate_market_evidence(ticker)
+                curr_price = _finite_number(ticker.get('price'), positive=True) if ticker_ok else None
+                if curr_price is None:
                     continue
             except:
                 continue
@@ -15502,25 +16139,17 @@ class AureonKrakenEcosystem:
                 print(f"      ↳ {adj_note}")
             
             try:
-                # Execute sell - use quantity parameter (not base_qty)
-                res = self.client.place_market_order(pos.exchange, sym, 'SELL', quantity=sell_qty)
-                
-                if isinstance(res, dict) and not res.get('rejected') and res.get('status') not in ['REJECTED', 'FAILED', None]:
-                    net_value = current_value * 0.998  # Account for fees
+                pnl_pct = ((curr_price - pos.entry_price) / pos.entry_price * 100) if pos.entry_price > 0 else 0.0
+                fill_receipt = self.close_position(
+                    sym, 'FUNDING_OPPORTUNITY', pnl_pct, curr_price, market_evidence=ticker,
+                )
+                if fill_receipt['execution_status'] == 'filled' and fill_receipt.get('actual_fee') is not None:
+                    net_value = float(fill_receipt['filled_quote_value']) - float(fill_receipt['actual_fee'])
                     freed_cash += net_value
-                    pos.quantity = max(pos.quantity - sell_qty, 0.0)
-                    if pos.quantity <= 1e-12:
-                        self.positions.pop(sym, None)
-                    else:
-                        pos.entry_value = pos.quantity * curr_price
                     self._clear_symbol_dust(sym)
                     print(f"   ✅ Liquidated {sym} - freed £{net_value:.2f}")
-                    if pos.quantity > 0:
-                        print(f"      ↪️ Remaining {sym}: {pos.quantity:.6f} (unsellable remainder)")
                 else:
-                    # Failed - blacklist to stop retry spam
-                    self._mark_symbol_invalid(sym)
-                    print(f"   ⚠️ Failed to liquidate {sym} - blacklisted for 1hr")
+                    print(f"   ⚠️ {sym} not reconciled as a provider fill; position unchanged")
             except Exception as e:
                 err_msg = str(e)
                 # Mark as invalid for any liquidation error - stop retry spam
@@ -16015,7 +16644,7 @@ class AureonKrakenEcosystem:
                             'change24h': 0.0  # Default momentum for forced scouts
                         }
                         result = self.open_position(opp)
-                        if result:
+                        if isinstance(result, dict) and result.get('execution_status') == 'filled':
                             real_positions += 1
                             bf = scout.exchange.lower()
                             positions_by_battlefield[bf] = positions_by_battlefield.get(bf, 0) + 1
@@ -16356,17 +16985,15 @@ class AureonKrakenEcosystem:
                 # Try to get price history from ticker cache
                 if symbol in self.ticker_cache:
                     ticker = self.ticker_cache[symbol]
-                    current_price = ticker.get('price', 0)
-                    high24h = ticker.get('high', current_price)
-                    low24h = ticker.get('low', current_price)
-                    
-                    # Synthesize rough price range from 24h data
-                    if current_price > 0 and high24h > 0 and low24h > 0:
-                        # Create synthetic price history from 24h high/low
-                        prices = [low24h, (low24h + current_price) / 2, current_price, 
-                                  (high24h + current_price) / 2, high24h, current_price]
-                    else:
-                        prices = [current_price] * 2
+                    ticker_ok, _ = _validate_market_evidence(ticker, required_fields=('price', 'high', 'low'))
+                    if ticker_ok:
+                        c['market_source_id'] = ticker.get('source_id')
+                        c['market_source_timestamp'] = _explicit_provider_timestamp(ticker)
+
+                    # A 24-hour summary is not a time series. Without observed
+                    # candles, leave history unavailable instead of inventing
+                    # an ordering or interpolated midpoint observations.
+                    prices = []
                 
                 c['prices'] = prices
                 c['exchange'] = (c.get('source') or 'unknown').lower()
@@ -16406,7 +17033,7 @@ class AureonKrakenEcosystem:
             
             # Call open_position - it will handle the actual trade
             result = self.open_position(candidate)
-            if result:
+            if isinstance(result, dict) and result.get('execution_status') == 'filled':
                 scouts_deployed += 1
                 deployed_per_quote[candidate['quote_currency']] = deployed_per_quote.get(candidate['quote_currency'], 0) + 1
                 print(f"   ✅ Scout #{scouts_deployed} DEPLOYED!")
@@ -16477,125 +17104,41 @@ class AureonKrakenEcosystem:
         return CONFIG['BASE_CURRENCY'].upper()
 
     def ensure_quote_liquidity(self, exchange: str, quote_asset: str, required: float) -> Tuple[bool, float, Optional[str]]:
-        if self.dry_run or required <= 0:
-            return True, required, None
+        required_amount = _finite_number(required, positive=True)
+        if self.dry_run:
+            return False, 0.0, 'dry run does not create live quote liquidity'
+        if required_amount is None:
+            return False, 0.0, 'required quote amount is invalid'
+        required = required_amount
 
         exchange = exchange.lower()
         if exchange not in ('binance', 'kraken'):
-            return True, required, None
+            return False, 0.0, f'quote conversion is unsupported on {exchange}'
 
         exchange_client = self.client.clients.get(exchange)
         if exchange_client is None:
             return False, 0.0, None
 
-        def _balance(asset: str) -> float:
+        def _balance(asset: str) -> Optional[float]:
             try:
-                return float(exchange_client.get_balance(asset.upper()))
+                value = _finite_number(exchange_client.get_balance(asset.upper()))
+                return value if value is not None and value >= 0.0 else None
             except Exception:
-                return 0.0
+                return None
 
         warn_key = (exchange, quote_asset)
 
         available = _balance(quote_asset)
+        if available is None:
+            return False, 0.0, f'authenticated {quote_asset} balance unavailable'
         if available >= required:
             return True, available, None
 
-        if warn_key in self._liquidity_warnings:
-            return False, available, None
-
-        deficit = max(0.0, required - available)
-        exchange_marker = exchange.upper()
-        candidate_assets = [CONFIG['BASE_CURRENCY'].upper(), 'USDC', 'USDT', 'USD']
-        suggestions: List[str] = []
-        for candidate in candidate_assets:
-            candidate = candidate.upper()
-            if candidate == quote_asset:
-                continue
-
-            candidate_balance = _balance(candidate)
-            if candidate_balance <= 0:
-                continue
-
-            symbol = exchange_client.get_standardized_pair(quote_asset, candidate)
-            ticker = exchange_client.get_ticker(symbol)
-            try:
-                price = float(ticker.get('price', 0) or ticker.get('lastPrice', 0) or 0)
-            except Exception:
-                price = 0.0
-            if price <= 0:
-                continue
-
-            # Calculate desired base amount (quote asset) with small buffer
-            filters = exchange_client.get_symbol_filters(symbol)
-            min_qty = filters.get('min_qty', 0.0) if filters else 0.0
-            min_notional = filters.get('min_notional', 0.0) if filters else 0.0
-            desired_base = max(deficit * 1.05, min_qty)
-            if min_notional and price > 0:
-                desired_base = max(desired_base, min_notional / price)
-            max_affordable = candidate_balance / price
-            desired_base = min(desired_base, max_affordable)
-            if desired_base <= 0:
-                continue
-
-            desired_base = exchange_client.adjust_quantity(symbol, desired_base)
-            if desired_base <= 0:
-                continue
-
-            if (
-                min_notional and price > 0 and desired_base * price < min_notional
-            ):
-                step_size = filters.get('step_size', 0.0) if filters else 0.0
-                target_base = min_notional / price
-                bumped = desired_base
-                if step_size > 0:
-                    steps_needed = math.ceil(max(0.0, target_base - desired_base) / step_size)
-                    if steps_needed > 0:
-                        bumped = min(desired_base + steps_needed * step_size, max_affordable)
-                else:
-                    bumped = min(target_base, max_affordable)
-
-                if bumped > desired_base:
-                    adjusted_bump = exchange_client.adjust_quantity(symbol, bumped)
-                    if (
-                        adjusted_bump > desired_base and
-                        adjusted_bump * price <= candidate_balance + 1e-8
-                    ):
-                        desired_base = adjusted_bump
-
-            quotes_needed = desired_base * price
-            if quotes_needed <= 0 or quotes_needed > candidate_balance:
-                continue
-
-            if min_notional and quotes_needed < min_notional:
-                suggestions.append(
-                    f"need at least {min_notional:.2f} {candidate} notional for {symbol}"
-                )
-                continue
-
-            try:
-                print(
-                    f"   🔁 Auto-converting {desired_base:.2f} {quote_asset} using {symbol} on {exchange_marker}"
-                )
-                self.client.place_market_order(exchange, symbol, 'BUY', quantity=desired_base)
-            except Exception as conv_err:
-                suggestion = (
-                    f"{candidate_balance:.2f} {candidate} ≈ {desired_base * price:.2f} {quote_asset}"
-                )
-                suggestions.append(suggestion)
-                print(f"   ⚠️ Conversion failed ({candidate}->{quote_asset}): {conv_err}")
-                continue
-
-            time.sleep(0.5)
-            available = _balance(quote_asset)
-            if available >= required * 0.995:
-                return True, available, None
-            deficit = max(0.0, required - available)
-
-        tip = None
-        if suggestions:
-            tip = f"convert {suggestions[0]} on {exchange_marker} to fund {quote_asset}"
-
-        return False, available, tip
+        # An underfunded account is an explicit denial. Automated conversion
+        # is withheld until a dedicated fill-reconciliation path can prove the
+        # conversion and its account read-back end to end.
+        self._liquidity_warnings.add(warn_key)
+        return False, available, f'prefund {quote_asset}; automatic conversion is disabled pending fill reconciliation'
 
     # ─────────────────────────────────────────────────────────
     # Equity Management
@@ -16655,30 +17198,8 @@ class AureonKrakenEcosystem:
                             converted = self.client.convert_to_quote(exchange, asset_upper, amount, base)
                             if converted > 0:
                                 cash_balance += converted
-                            else:
-                                # 🔧 FIX: Use fallback FX rates when conversion fails
-                                FALLBACK_FX = {
-                                    ('USD', 'GBP'): 0.79, ('USDC', 'GBP'): 0.79, ('USDT', 'GBP'): 0.79,
-                                    ('EUR', 'GBP'): 0.84, ('GBP', 'USD'): 1.27, ('EUR', 'USD'): 1.06,
-                                }
-                                fx_key = (asset_upper, base.upper())
-                                if fx_key in FALLBACK_FX:
-                                    cash_balance += amount * FALLBACK_FX[fx_key]
-                                elif base.upper() == 'USD' and asset_upper in {'USD', 'USDC', 'USDT'}:
-                                    cash_balance += amount  # 1:1 for USD stables to USD
-                                else:
-                                    cash_balance += amount  # Last resort: assume 1:1
-                        except:
-                            # Fallback: use FX rates
-                            FALLBACK_FX = {
-                                ('USD', 'GBP'): 0.79, ('USDC', 'GBP'): 0.79, ('USDT', 'GBP'): 0.79,
-                                ('EUR', 'GBP'): 0.84, ('GBP', 'USD'): 1.27, ('EUR', 'USD'): 1.06,
-                            }
-                            fx_key = (asset_upper, base.upper())
-                            if fx_key in FALLBACK_FX:
-                                cash_balance += amount * FALLBACK_FX[fx_key]
-                            else:
-                                cash_balance += amount
+                        except Exception:
+                            continue
                     else:
                         cash_balance += amount
             
@@ -16691,7 +17212,7 @@ class AureonKrakenEcosystem:
             logger.debug(f"Error getting {exchange} cash balance: {e}")
             return 0.0
 
-    def compute_total_equity(self) -> Tuple[float, float, Dict[str, float]]:
+    def compute_total_equity(self) -> Tuple[Optional[float], Optional[float], Dict[str, float]]:
         """Return (total_equity, cash_in_base, holdings_map)
         
         Always fetches real balances from exchanges, regardless of dry_run mode.
@@ -16701,41 +17222,53 @@ class AureonKrakenEcosystem:
         holdings_value: Dict[str, float] = {}
         total_equity = 0.0
         cash_balance = 0.0
+        observed_balance_rows = 0
+        incomplete_rows: List[str] = []
         
         try:
             all_balances = self.client.get_all_balances()
         except Exception as e:
             print(f"   ⚠️ Equity refresh error: {e}")
-            return self.total_equity_gbp, self.cash_balance_gbp, self.holdings_gbp
-        
-        # If no balances returned, fall back to tracker (simulation mode)
-        if not any(all_balances.values()):
-            total_equity = self.tracker.balance
-            used_capital = sum(pos.entry_value for pos in self.positions.values())
-            cash_balance = max(0.0, total_equity - used_capital)
-            for sym, pos in self.positions.items():
-                holdings_value[sym] = pos.entry_value
-            if cash_balance > 0:
-                holdings_value[base] = holdings_value.get(base, 0.0) + cash_balance
-            return total_equity, cash_balance, holdings_value
+            self.account_truth_status = 'no_data'
+            self.account_evidence = {
+                'truth_status': 'no_data',
+                'source_id': 'authenticated_exchange_balances',
+                'received_at': time.time(),
+                'generated_values': False,
+                'reason': str(e),
+            }
+            return None, None, {}
+
+        if not isinstance(all_balances, dict) or not any(isinstance(value, dict) and value for value in all_balances.values()):
+            self.account_truth_status = 'no_data'
+            self.account_evidence = {
+                'truth_status': 'no_data',
+                'source_id': 'authenticated_exchange_balances',
+                'received_at': time.time(),
+                'generated_values': False,
+                'reason': 'provider returned no balance rows',
+            }
+            return None, None, {}
         
         for exchange, balances in all_balances.items():
             # Skip Alpaca if it's analytics-only (paper trading, not real funds)
             if exchange == 'alpaca' and CONFIG.get('ALPACA_ANALYTICS_ONLY', True):
                 continue
+            if not isinstance(balances, dict):
+                incomplete_rows.append(f'{exchange}:malformed_balance_collection')
+                continue
                 
             for asset_raw, amount in balances.items():
                 if not asset_raw:
                     continue
-                try:
-                    amount = float(amount)
-                except Exception:
-                    amount = 0.0
-                if amount <= 0:
+                if isinstance(amount, dict):
+                    amount = amount.get('free') if 'free' in amount else amount.get('available')
+                amount = _finite_number(amount)
+                if amount is None or amount < 0.0:
+                    incomplete_rows.append(f'{exchange}:{asset_raw}:invalid_balance')
                     continue
-                    
-                # Skip dust amounts for Binance (< $1 equivalent)
-                if exchange == 'binance' and amount < 1.0 and asset_raw not in ['BTC', 'ETH', 'USDC', 'USDT', 'USD', 'BNB']:
+                observed_balance_rows += 1
+                if amount <= 0:
                     continue
                     
                 asset_clean = asset_raw.replace('Z', '').upper()  # Keep X prefix (XXBT stays XXBT)
@@ -16747,64 +17280,58 @@ class AureonKrakenEcosystem:
                     conversion_asset = asset_raw[2:]
                     asset_clean = conversion_asset
                 
-                # Check if this is the base currency OR a stable coin (cash equivalent)
+                # A stable-coin label is not a conversion rate. Only the actual
+                # base asset can be counted 1:1; every other asset needs a live
+                # provider conversion result.
                 stable_coins = {'USD', 'USDC', 'USDT', 'EUR', 'GBP', 'ZUSD', 'ZEUR', 'ZGBP'}
                 is_cash = (conversion_asset == base or asset_clean == base or 
                            conversion_asset in stable_coins or asset_clean in stable_coins)
-                if is_cash:
-                    # Convert stable coins to base currency value
-                    if conversion_asset != base and asset_clean != base:
-                        converted = 0.0
-                        try:
-                            converted = self.client.convert_to_quote(exchange, conversion_asset, amount, base)
-                        except Exception:
-                            converted = 0.0
-                        if converted > 0:
-                            cash_balance += converted
-                            total_equity += converted
-                            holdings_value[asset_clean] = holdings_value.get(asset_clean, 0.0) + converted
-                            continue
-                        # 🔧 FIX: Fallback FX rates when exchange conversions fail
-                        # These prevent missing cash when pricing APIs are down
-                        FALLBACK_FX = {
-                            ('USD', 'GBP'): 0.79,   # $1 = £0.79
-                            ('USDC', 'GBP'): 0.79,
-                            ('USDT', 'GBP'): 0.79,
-                            ('EUR', 'GBP'): 0.84,   # €1 = £0.84
-                            ('GBP', 'USD'): 1.27,   # £1 = $1.27
-                            ('EUR', 'USD'): 1.06,   # €1 = $1.06
-                        }
-                        fx_key = (conversion_asset, base.upper())
-                        if fx_key in FALLBACK_FX:
-                            fallback_converted = amount * FALLBACK_FX[fx_key]
-                            cash_balance += fallback_converted
-                            total_equity += fallback_converted
-                            holdings_value[asset_clean] = holdings_value.get(asset_clean, 0.0) + fallback_converted
-                            continue
-                        # Original fallback for USD base
-                        if base.upper() == 'USD' and conversion_asset in {'USD', 'USDC', 'USDT'}:
-                            cash_balance += amount
-                            total_equity += amount
-                            holdings_value[asset_clean] = holdings_value.get(asset_clean, 0.0) + amount
-                            continue
-                    else:
-                        cash_balance += amount
-                        total_equity += amount
-                        holdings_value[asset_clean] = holdings_value.get(asset_clean, 0.0) + amount
-                        continue
-                try:
-                    converted = self.client.convert_to_quote(exchange, conversion_asset, amount, base)
-                    if converted > 0:
-                        total_equity += converted
-                        holdings_value[asset_clean] = holdings_value.get(asset_clean, 0.0) + converted
-                except Exception:
+                if conversion_asset == base or asset_clean == base:
+                    converted = amount
+                else:
+                    try:
+                        converted = _finite_number(
+                            self.client.convert_to_quote(exchange, conversion_asset, amount, base),
+                            positive=True,
+                        )
+                    except Exception:
+                        converted = None
+                if converted is None:
+                    incomplete_rows.append(f'{exchange}:{asset_raw}:conversion_unavailable')
                     continue
+                total_equity += converted
+                holdings_value[asset_clean] = holdings_value.get(asset_clean, 0.0) + converted
+                if is_cash:
+                    cash_balance += converted
+
+        if observed_balance_rows == 0 or incomplete_rows:
+            self.account_truth_status = 'no_data'
+            self.account_evidence = {
+                'truth_status': 'no_data',
+                'source_id': 'authenticated_exchange_balances',
+                'received_at': time.time(),
+                'generated_values': False,
+                'reason': 'account snapshot incomplete',
+                'incomplete_rows': incomplete_rows,
+            }
+            return None, None, {}
                     
+        self.account_truth_status = 'live'
+        self.account_evidence = {
+            'truth_status': 'live',
+            'source_id': 'authenticated_exchange_balances',
+            'received_at': time.time(),
+            'generated_values': False,
+            'balance_rows': observed_balance_rows,
+        }
         return total_equity, cash_balance, holdings_value
 
-    def refresh_equity(self, mark_cycle: bool = False) -> float:
+    def refresh_equity(self, mark_cycle: bool = False) -> Optional[float]:
         self._liquidity_warnings.clear()
         total, cash, holdings = self.compute_total_equity()
+        if total is None or cash is None:
+            logger.warning('Equity state is no_data; retaining no provider-derived totals and blocking new entries')
+            return None
         
         # 🛠️ FIX: Auto-correct "Fake $1000 Balance" on first run
         # If we are using the default 1000, but the wallet shows something else (e.g. ~55),
@@ -17601,8 +18128,9 @@ class AureonKrakenEcosystem:
                     # Check if we can get a price for this pair
                     try:
                         ticker = self.client.get_ticker(exchange_name, symbol)
-                        price = ticker.get('price', 0) or ticker.get('last', 0)
-                        if not price or price <= 0:
+                        ticker_ok, _ = _validate_market_evidence(ticker)
+                        price = _finite_number(ticker.get('price'), positive=True) if ticker_ok else None
+                        if price is None:
                             continue
                     except:
                         continue
@@ -17624,42 +18152,22 @@ class AureonKrakenEcosystem:
                     # If no position data, we DON'T harvest (can't prove profit)
                     
                     # Check if we have this symbol tracked with entry price
-                    position_entry = None
-                    for pos_symbol, pos in self.positions.items():
-                        # Match the asset in the position symbol
-                        if base_asset in pos_symbol or asset in pos_symbol:
-                            position_entry = pos
-                            break
-                    
-                    # Also check elephant memory for historical entry data
-                    if not position_entry and hasattr(self, 'elephant_memory'):
-                        mem_data = (
-                            self.elephant_memory.get_symbol_data(canonical)
-                            or self.elephant_memory.get_symbol_data(symbol)
-                            or self.elephant_memory.get_symbol_data(f"{base_asset}USDC")
-                            or self.elephant_memory.get_symbol_data(f"{base_asset}USD")
-                        )
-                        if mem_data and mem_data.get('last_entry_price'):
-                            # Create a pseudo-position for calculation
-                            # Use combined rate (fee + slippage + spread) to match penny profit formula
-                            combined_rate = fee_rate + CONFIG.get('SLIPPAGE_PCT', 0.002) + CONFIG.get('SPREAD_COST_PCT', 0.001)
-                            class PseudoPos:
-                                def __init__(self, entry_price, entry_value, combined_rate, exchange):
-                                    self.entry_price = entry_price
-                                    self.entry_value = entry_value
-                                    self.entry_fee = entry_value * combined_rate  # Uses combined rate!
-                                    self.exchange = exchange
-                            position_entry = PseudoPos(
-                                mem_data.get('last_entry_price', price),
-                                mem_data.get('last_entry_value', gross_value),
-                                combined_rate,
-                                exchange_name
-                            )
+                    position_entry = self.positions.get(symbol) or self.positions.get(canonical)
+                    if (
+                        position_entry is None
+                        or getattr(position_entry, 'truth_status', None) != 'live'
+                        or not getattr(position_entry, 'provider_order_id', None)
+                        or _timestamp_seconds(getattr(position_entry, 'fill_source_timestamp', None)) is None
+                        or _finite_number(getattr(position_entry, 'entry_value', None), positive=True) is None
+                        or _finite_number(getattr(position_entry, 'entry_fee', None)) is None
+                    ):
+                        print(f"   ⚠️ {asset}: provider-backed entry cost is incomplete - HOLDING")
+                        break
                     
                     # If we have position data, check for penny profit
                     if position_entry:
-                        entry_value = getattr(position_entry, 'entry_value', gross_value)
-                        entry_fee = getattr(position_entry, 'entry_fee', 0)
+                        entry_value = float(position_entry.entry_value)
+                        entry_fee = float(position_entry.entry_fee)
                         
                         # Calculate true P&L using combined rate
                         # entry_fee should already include slippage+spread if from PseudoPos
@@ -17680,16 +18188,6 @@ class AureonKrakenEcosystem:
                             break
                         
                         print(f"   🌾 Found: {bal:.4f} {asset} = ${gross_value:.2f} (net P&L: ${net_pnl:.2f} ✅)")
-                    else:
-                        # No position data - we can't prove profit, so don't harvest blindly
-                        # Only harvest if very small dust (< $2) that's not worth tracking
-                        if gross_value >= 2.0:
-                            print(f"   ⚠️ {asset}: ${gross_value:.2f} but NO entry data - HOLDING (can't prove profit)")
-                            break
-                        else:
-                            # Dust cleanup for tiny amounts
-                            print(f"   🧹 Dust: {bal:.4f} {asset} = ${gross_value:.2f} (cleaning up)")
-                    
                     # Universal lot size handling for ALL exchanges
                     sell_qty, block_reason, adj_note = self._prepare_liquidation_quantity(
                         exchange_name, symbol, bal, price
@@ -17706,24 +18204,37 @@ class AureonKrakenEcosystem:
                             exchange_name, symbol, 'SELL', quantity=sell_qty
                         )
                         
-                        if result and not result.get('rejected') and not result.get('error'):
-                            # Extract actual fill value
-                            fills = result.get('fills', [])
-                            if fills:
-                                actual_value = sum(float(f.get('qty', 0)) * float(f.get('price', 0)) for f in fills)
-                            else:
-                                actual_value = float(result.get('cummulativeQuoteQty', net_value))
-                            
+                        receipt_input = dict(result) if isinstance(result, dict) else result
+                        if isinstance(receipt_input, dict):
+                            receipt_input.setdefault('symbol', symbol)
+                        fill_receipt = _provider_fill_receipt(exchange_name, receipt_input)
+                        if fill_receipt['execution_status'] == 'filled' and fill_receipt.get('actual_fee') is not None:
+                            actual_value = float(fill_receipt['filled_quote_value']) - float(fill_receipt['actual_fee'])
                             harvested_total += actual_value
                             harvested_count += 1
                             print(f"   ✅ SOLD: {asset} → {quote} for ${actual_value:.2f}")
                             
-                            # Clear the position from tracking
-                            self.positions.pop(symbol, None)
+                            filled_quantity = float(fill_receipt['filled_quantity'])
+                            original_quantity = float(position_entry.quantity)
+                            remaining_fraction = max(original_quantity - filled_quantity, 0.0) / original_quantity
+                            if remaining_fraction <= 1e-12:
+                                self.positions.pop(symbol, None)
+                                self.positions.pop(canonical, None)
+                            else:
+                                position_entry.quantity = original_quantity * remaining_fraction
+                                position_entry.entry_value *= remaining_fraction
+                                position_entry.entry_fee *= remaining_fraction
                             self._clear_symbol_dust(symbol)
                         else:
-                            reason = result.get('reason', 'Unknown error') if result else 'No response'
-                            print(f"   ⚠️ Failed to sell {asset}: {reason}")
+                            if fill_receipt.get('provider_order_id'):
+                                pending = getattr(self, 'pending_execution_reconciliation', None)
+                                if not isinstance(pending, dict):
+                                    pending = {}
+                                    self.pending_execution_reconciliation = pending
+                                pending[fill_receipt['provider_order_id']] = {
+                                    'symbol': symbol, 'exchange': exchange_name, 'side': 'SELL', 'receipt': fill_receipt,
+                                }
+                            print(f"   ⚠️ {asset}: sell fill/fee not proven; position unchanged")
                     except Exception as e:
                         print(f"   ⚠️ Error selling {asset}: {e}")
                     
@@ -18406,9 +18917,23 @@ class AureonKrakenEcosystem:
                                     if 'e' in data and data['e'] == '24hrTicker':
                                         symbol = data['s']
                                         price = float(data['c'])
+                                        evidence = {
+                                            'price': price,
+                                            'truth_status': 'live',
+                                            'source_id': 'binance_websocket_24hr_ticker',
+                                            'source_timestamp': _timestamp_seconds(data.get('E')),
+                                            'received_at': time.time(),
+                                            'generated_values': False,
+                                        }
+                                        evidence_ok, _ = _validate_market_evidence(evidence)
+                                        if not evidence_ok:
+                                            continue
                                         with self.price_lock:
-                                            self.realtime_prices[symbol] = price
-                                            self.realtime_prices[symbol.lower()] = price
+                                            for key in (symbol, symbol.lower()):
+                                                self.realtime_prices[key] = price
+                                                self.realtime_price_evidence[key] = dict(evidence)
+                                            self.ws_connected = True
+                                            self.ws_last_message = evidence['received_at']
                                         # ⚡ FEED QGITA on every live tick
                                         if self.qgita is not None:
                                             try:
@@ -18421,12 +18946,29 @@ class AureonKrakenEcosystem:
                                         for msg in data:
                                             if msg.get('T') == 'q':
                                                 symbol = msg.get('S')
-                                                bid = float(msg.get('bp', 0))
-                                                ask = float(msg.get('ap', 0))
-                                                price = (bid + ask) / 2
-                                                if price > 0:
+                                                bid = _finite_number(msg.get('bp'), positive=True)
+                                                ask = _finite_number(msg.get('ap'), positive=True)
+                                                source_timestamp = _timestamp_seconds(msg.get('t'))
+                                                if bid is not None and ask is not None and bid <= ask and source_timestamp is not None:
+                                                    price = (bid + ask) / 2
+                                                    evidence = {
+                                                        'price': price,
+                                                        'bid': bid,
+                                                        'ask': ask,
+                                                        'truth_status': 'live',
+                                                        'source_id': 'alpaca_websocket_quote',
+                                                        'source_timestamp': source_timestamp,
+                                                        'received_at': time.time(),
+                                                        'generated_values': False,
+                                                    }
+                                                    evidence_ok, _ = _validate_market_evidence(evidence)
+                                                    if not evidence_ok:
+                                                        continue
                                                     with self.price_lock:
                                                         self.realtime_prices[symbol] = price
+                                                        self.realtime_price_evidence[symbol] = evidence
+                                                        self.ws_connected = True
+                                                        self.ws_last_message = evidence['received_at']
                                                     # ⚡ FEED QGITA on every live tick
                                                     if self.qgita is not None:
                                                         try:
@@ -18440,17 +18982,9 @@ class AureonKrakenEcosystem:
                                         ws_pair = data[3]
                                         ticker_data = data[1]
                                         if 'c' in ticker_data:
-                                            price = float(ticker_data['c'][0])
-                                            with self.price_lock:
-                                                self.realtime_prices[ws_pair] = price
-                                                # Map back to internal symbol if possible
-                                                pass
-                                            # ⚡ FEED QGITA on every live tick
-                                            if self.qgita is not None:
-                                                try:
-                                                    self.qgita.feed_price(price, time.time())
-                                                except Exception:
-                                                    pass
+                                            # Kraken v1 ticker messages have no provider event
+                                            # timestamp. Do not present receipt time as source time.
+                                            logger.debug(f"Kraken WS quote ignored for {ws_pair}: provider timestamp unavailable")
                             except:
                                 pass
                                 
@@ -18490,10 +19024,14 @@ class AureonKrakenEcosystem:
         """Get real-time price from WebSocket"""
         with self.price_lock:
             if symbol in self.realtime_prices:
-                return self.realtime_prices[symbol]
+                evidence = self.realtime_price_evidence.get(symbol)
+                valid, _ = _validate_market_evidence(evidence)
+                return self.realtime_prices[symbol] if valid else None
             ws_pair = self.symbol_to_ws.get(symbol)
             if ws_pair and ws_pair in self.realtime_prices:
-                return self.realtime_prices[ws_pair]
+                evidence = self.realtime_price_evidence.get(ws_pair)
+                valid, _ = _validate_market_evidence(evidence)
+                return self.realtime_prices[ws_pair] if valid else None
         return None
 
     # ─────────────────────────────────────────────────────────
@@ -18505,16 +19043,12 @@ class AureonKrakenEcosystem:
         try:
             tickers_list = self.client.get_24h_tickers()
             
-            # Safety check: if no tickers, use cached tickers or hardcoded fallback
+            # A failed refresh is no_data. Never preserve an unverified cache or
+            # manufacture ticker rows from hardcoded historical prices.
             if not tickers_list:
-                if self.ticker_cache:
-                    print(f"   ⚠️ No tickers returned, using cache ({len(self.ticker_cache)} symbols)")
-                    return len(self.ticker_cache)
-                else:
-                    print(f"   ⚠️ API returned 0 tickers! Using hardcoded fallback pairs...")
-                    # FALLBACK: Create synthetic ticker data for common pairs we can trade
-                    tickers_list = self._get_hardcoded_fallback_tickers()
-                    print(f"   ✅ Fallback loaded {len(tickers_list)} pairs")
+                self.ticker_cache = {}
+                print("   ⚠️ API returned no ticker observations; market state is no_data")
+                return 0
             
             self.ticker_cache = {}
             
@@ -18531,31 +19065,49 @@ class AureonKrakenEcosystem:
                 logger.debug(f"Orchestrator scan skipped: {e}")
             
             # STEP 2: Merge with standard tickers
+            received_at = time.time()
             for t in tickers_list:
                 symbol = t.get('symbol', '')
                 if not symbol:
                     continue
                 try:
-                    price = float(t.get('lastPrice', 0))
-                    change = float(t.get('priceChangePercent', 0))
-                    volume = float(t.get('quoteVolume', 0))
-                    source = t.get('source', 'kraken')
-                    
-                    # Base ticker data
-                    self.ticker_cache[symbol] = {
-                        'price': price,
-                        'change24h': change,
-                        'volume': volume,
-                        'source': source
-                    }
+                    source = t.get('source')
+                    if not isinstance(source, str) or not source.strip():
+                        continue
+                    normalised = _normalise_provider_ticker(
+                        t,
+                        source_id=f'{source.lower()}_public_24h_ticker',
+                        field_map={
+                            'price': ('lastPrice', 'price'),
+                            'change24h': ('priceChangePercent', 'change24h'),
+                            'volume': ('quoteVolume', 'volume'),
+                            'high': ('highPrice', 'high'),
+                            'low': ('lowPrice', 'low'),
+                            'bid': ('bidPrice', 'bid'),
+                            'ask': ('askPrice', 'ask'),
+                        },
+                        received_at=received_at,
+                    )
+                    if normalised is None:
+                        continue
+                    price = normalised['price']
+                    change = normalised['change24h']
+                    self.ticker_cache[symbol] = {**normalised, 'source': source.lower()}
                     
                     # 🌐 ENRICH: Add orchestrator insights if available
                     if symbol in orchestrator_opportunities:
                         opp = orchestrator_opportunities[symbol]
-                        self.ticker_cache[symbol]['orchestrator_score'] = opp.get('score', 0)
-                        self.ticker_cache[symbol]['orchestrator_coherence'] = opp.get('coherence', 0)
-                        self.ticker_cache[symbol]['orchestrator_probability'] = opp.get('probability', 0.5)
-                        self.ticker_cache[symbol]['asset_class'] = opp.get('asset_class', 'crypto')
+                        if opp.get('source_id') == normalised.get('source_id') and opp.get('source_timestamp') == normalised.get('source_timestamp'):
+                            for source_key, target_key in (
+                                ('score', 'orchestrator_score'),
+                                ('coherence', 'orchestrator_coherence'),
+                                ('probability', 'orchestrator_probability'),
+                            ):
+                                value = _finite_number(opp.get(source_key))
+                                if value is not None:
+                                    self.ticker_cache[symbol][target_key] = value
+                            if isinstance(opp.get('asset_class'), str):
+                                self.ticker_cache[symbol]['asset_class'] = opp['asset_class']
                     
                     # Update price history
                     if symbol not in self.price_history:
@@ -18567,7 +19119,7 @@ class AureonKrakenEcosystem:
                     # Feed mycelium network
                     signal = 0.5 + (change / 20)  # Normalize change to 0-1
                     self.mycelium.add_signal(symbol, max(0, min(1, signal)))
-                except:
+                except Exception:
                     continue
             
             # 🌐 UNIVERSAL MARKET INTELLIGENCE: Scan ALL assets and feed to brain
@@ -18581,117 +19133,16 @@ class AureonKrakenEcosystem:
             return len(self.ticker_cache)
         except Exception as e:
             print(f"   ⚠️ Ticker refresh error: {e}")
-            # Return cached count to allow system to continue
-            return len(self.ticker_cache)
+            self.ticker_cache = {}
+            return 0
 
     def _get_hardcoded_fallback_tickers(self) -> List[Dict]:
-        """
-        Fallback ticker list when API fails.
-
-        Two paths:
-          1. Prefer the recent snapshot file (real prices captured earlier).
-          2. If no snapshot, the synthetic random-perturbation block below
-             only runs when AUREON_ALLOW_SIM_FALLBACK is set. Production
-             posture raises rather than fabricating tickers — callers must
-             handle the empty-list / raise instead of trading on synthetic.
-        """
-        import random
-        from aureon.observer.live_data_policy import (
-            simulation_fallback_allowed, log_blocked_fallback,
+        """Retained compatibility surface; generated tickers are prohibited."""
+        logger.warning(
+            "No live ticker observations are available; hardcoded fallback disabled"
         )
+        return []
 
-        # If we have a recent snapshot file, prefer using it as fallback
-        snapshot_path = os.path.join('/workspaces/aureon-trading', 'market_snapshots_30.json')
-        if os.path.exists(snapshot_path):
-            try:
-                with open(snapshot_path, 'r') as f:
-                    data = json.load(f)
-                pairs = []
-                for item in data if isinstance(data, list) else data.get('snapshots', []):
-                    symbol = item.get('symbol')
-                    price = float(item.get('price', 0)) if item.get('price') is not None else 0
-                    change = float(item.get('change24h', item.get('priceChangePercent', 0))) if item.get('priceChangePercent') is not None or item.get('change24h') is not None else 0
-                    volume = float(item.get('quoteVolume', item.get('volume', 0))) if item.get('quoteVolume') is not None or item.get('volume') is not None else 0
-                    if symbol and price > 0 and volume > 0:
-                        pairs.append((symbol, price, change, volume))
-                if pairs:
-                    return [
-                        {
-                            'symbol': sym,
-                            'lastPrice': price,
-                            'priceChangePercent': change,
-                            'quoteVolume': vol,
-                        }
-                        for sym, price, change, vol in pairs
-                    ]
-            except Exception:
-                pass
-        
-        # Common pairs we trade on (covering major assets)
-        pairs = [
-            ('BTCUSD', 45000, 2.5),      # BTC stable
-            ('ETHUSD', 2500, 1.8),       # ETH stable  
-            ('XRPUSD', 2.1, 3.2),        # XRP more volatile
-            ('ADAUSD', 0.95, 2.8),       # ADA mid-volatility
-            ('SOLUSD', 195, 4.5),        # SOL higher volatility
-            ('DOTUSD', 9.2, 3.1),        # DOT mid-volatility
-            ('LINKUSD', 22.5, 2.9),      # LINK mid-volatility
-            ('AVAXUSD', 38.5, 3.6),      # AVAX higher volatility
-            ('DOGEUSD', 0.38, 4.2),      # DOGE high volatility
-            ('DOGEUSD', 0.38, 4.2),      # DOGE high volatility
-            ('LTCUSD', 185, 2.4),        # LTC stable
-            ('BCHUSD', 580, 2.7),        # BCH stable
-            ('XLMUSD', 0.12, 3.5),       # XLM mid-volatility
-            ('XLMUSD', 0.12, 3.5),       # XLM mid-volatility
-            ('UNIUSD', 18.5, 3.3),       # UNI mid-volatility
-            ('MKRUSD', 2200, 2.6),       # MKR stable
-            ('AAVEUSD', 350, 3.1),       # AAVE mid-volatility
-            ('GTCUSD', 12.5, 3.8),       # GTC higher volatility
-            ('SNXUSD', 3.2, 4.1),        # SNX high volatility
-            ('CRVUSD', 0.65, 5.2),       # CRV volatile
-            ('COMPUSD', 155, 3.4),       # COMP mid-volatility
-            ('YFIUSD', 8500, 3.9),       # YFI higher volatility
-            ('CHZUSD', 0.32, 6.8),       # CHZ very volatile
-            ('MATICUSD', 0.88, 5.5),     # MATIC volatile
-            ('FTMUSD', 0.75, 4.9),       # FTM volatile
-            ('ONEUSD', 0.032, 5.1),      # ONE volatile
-            ('ZECUSD', 60, 3.3),         # ZEC mid-volatility
-            ('DASHUSDC', 35, 2.8),       # DASH stable
-            ('STORJUSD', 0.55, 4.5),     # STORJ higher volatility
-            ('RENUSDT', 0.38, 5.8),      # REN very volatile
-        ]
-        
-        if not simulation_fallback_allowed():
-            log_blocked_fallback("aureon_unified_ecosystem._get_hardcoded_fallback_tickers",
-                                 "no_snapshot_no_live")
-            raise RuntimeError(
-                "_get_hardcoded_fallback_tickers: no market snapshot and no live "
-                "API; refusing to fabricate synthetic tickers in production. "
-                "Set AUREON_ALLOW_SIM_FALLBACK=1 to allow the synthetic path "
-                "for dev / backtest, or restore live API connectivity."
-            )
-
-        fallback_tickers = []
-        for symbol, base_price, volatility in pairs:
-            # DEV-ONLY synthetic perturbation, gated above
-            price = base_price * (1 + random.uniform(-0.01, 0.01))
-            change = random.uniform(-volatility, volatility)
-            volume = random.uniform(100000, 5000000)
-            
-            fallback_tickers.append({
-                'symbol': symbol,
-                'lastPrice': str(price),
-                'priceChangePercent': str(change),
-                'quoteVolume': str(volume * price),
-                'source': 'fallback'
-            })
-        
-        return fallback_tickers
-
-    # ─────────────────────────────────────────────────────────
-    # 🌉 Bridge Integration Methods
-    # ─────────────────────────────────────────────────────────
-    
     def sync_bridge(self):
         """Sync state with Aureon Bridge for Ultimate ↔ Unified communication"""
         if not self.bridge_enabled or not self.bridge:
@@ -19588,13 +20039,14 @@ class AureonKrakenEcosystem:
     # ─────────────────────────────────────────────────────────
     
     def smart_route_order(self, symbol: str, side: str, quantity: float = None, 
-                          quote_qty: float = None, preferred_exchange: str = None) -> Dict[str, Any]:
+                          quote_qty: float = None, preferred_exchange: str = None,
+                          account_evidence: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
         Route an order through SmartOrderRouter for best execution.
         Automatically selects best exchange based on price/fees.
         """
         result = self.smart_router.route_order(
-            symbol, side, quantity, quote_qty, preferred_exchange
+            symbol, side, quantity, quote_qty, preferred_exchange, account_evidence
         )
         
         # Track in confirmation system (do NOT place a second order)
@@ -20126,13 +20578,53 @@ class AureonKrakenEcosystem:
         
         🏴⚔️ MULTI-BATTLEFIELD: Routes to correct exchange and prevents duplicates!
         """
-        symbol = opp['symbol']
-        price = opp['price']
+        def deny(status: str, reason: str, truth_status: str = 'no_data') -> Dict[str, Any]:
+            receipt = {
+                'execution_status': status,
+                'truth_status': truth_status,
+                'reason': reason,
+                'provider_order_id': None,
+                'fill_id': None,
+                'generated_values': False,
+            }
+            opp['execution_receipt'] = receipt
+            return receipt
+
+        symbol = opp.get('symbol')
+        market_ok, market_evidence = _validate_market_evidence(opp)
+        price = _finite_number(opp.get('price'), positive=True)
+        if not isinstance(symbol, str) or not symbol.strip() or not market_ok or price is None:
+            return deny('not_submitted', market_evidence['reason'])
+
+        consensus_ok, consensus_reason, consensus_details = has_one_minute_profit_consensus(opp)
+        opp['entry_consensus'] = {
+            'ok': bool(consensus_ok),
+            'reason': str(consensus_reason),
+            'prob_quick': consensus_details.get('prob_quick'),
+            'confidence': consensus_details.get('confidence'),
+            'estimated_seconds': consensus_details.get('estimated_seconds'),
+            'truth_status': consensus_details.get('truth_status', 'no_data'),
+            'source_id': consensus_details.get('source_id'),
+            'source_timestamp': consensus_details.get('source_timestamp'),
+            'generated_values': False,
+        }
+        if not consensus_ok:
+            return deny('denied', consensus_reason)
+
+        if self.dry_run:
+            return deny('not_submitted', 'dry run does not submit or mutate live state', 'dry_run')
+
+        account_received_at = _timestamp_seconds((getattr(self, 'account_evidence', {}) or {}).get('received_at'))
+        account_fresh = account_received_at is not None and (time.time() - account_received_at) <= 60.0
+        if getattr(self, 'account_truth_status', 'no_data') != 'live' or not account_fresh:
+            return deny('not_submitted', 'authenticated account balance is missing or stale')
+
         # 🎯 BID/ASK REALISM — use ask price for entry (what we actually pay)
         ticker = self.ticker_cache.get(symbol, {})
-        ask = ticker.get('ask', 0)
-        if ask and ask > 0:
-            price = float(ask)
+        ticker_ok, _ = _validate_market_evidence(ticker, required_fields=('ask',))
+        ask = _finite_number(ticker.get('ask'), positive=True) if ticker_ok else None
+        if ask is not None:
+            price = ask
             opp['price'] = price
         hint_source = opp.get('source')
         exchange = self._detect_exchange_for_symbol(symbol, hint_source)
@@ -20152,21 +20644,29 @@ class AureonKrakenEcosystem:
                 if isinstance(normalized, str) and normalized.strip():
                     symbol = normalized.strip()
                     opp['symbol'] = symbol
-        except Exception:
-            symbol = canonical_symbol
+        except Exception as exc:
+            return deny('not_submitted', f'symbol normalization failed: {exc}')
 
         # If normalization changed the symbol (or price is missing/invalid),
         # refresh the price from the routed exchange to keep sizing accurate.
         if symbol != canonical_symbol or not price or float(price) <= 0:
             try:
                 ticker = self.client.get_ticker(exchange, symbol)
-                if ticker:
-                    t_price = float(ticker.get('price', 0) or 0)
-                    if t_price > 0:
-                        price = t_price
-                        opp['price'] = price
-            except Exception:
-                pass
+                routed_ok, routed_evidence = _validate_market_evidence(ticker)
+                t_price = _finite_number(ticker.get('price'), positive=True) if isinstance(ticker, dict) else None
+                if not routed_ok or t_price is None:
+                    return deny('not_submitted', routed_evidence['reason'])
+                price = t_price
+                opp.update({
+                    'price': price,
+                    'truth_status': routed_evidence['truth_status'],
+                    'source_id': routed_evidence['source_id'],
+                    'source_timestamp': routed_evidence['source_timestamp'],
+                    'received_at': routed_evidence['received_at'],
+                    'generated_values': False,
+                })
+            except Exception as exc:
+                return deny('not_submitted', f'routed quote failed: {exc}')
 
         quote_asset = self._get_quote_asset(symbol)
         # Some callers (notably force-scout deployment) provide a quote hint.
@@ -20215,115 +20715,84 @@ class AureonKrakenEcosystem:
         is_fast_path = (signal_tier == 'FAST')
         is_premium_path = (signal_tier == 'PREMIUM')
 
-        # ⏱️ 1-minute penny-profit consensus gate (unlimited entries need this)
-        consensus_ok, consensus_reason, consensus_details = has_one_minute_profit_consensus(opp)
-        # Persist the "why" so downstream systems (sniper/scanner/thoughtbus) share the same intent.
-        try:
-            opp['entry_consensus'] = {
-                'ok': bool(consensus_ok),
-                'reason': str(consensus_reason),
-                'prob_quick': float(consensus_details.get('prob_quick', 0.0) or 0.0),
-                'confidence': float(consensus_details.get('confidence', 0.0) or 0.0),
-                'estimated_seconds': float(consensus_details.get('estimated_seconds', 0.0) or 0.0),
-            }
-        except Exception:
-            pass
-        allow_force_bypass = CONFIG.get('ALLOW_FORCE_SCOUT_BYPASS_CONSENSUS', False)
-        if not consensus_ok and (not is_force_scout or not allow_force_bypass):
-            self._emit_mycelium_event('entry.rejected', {
-                'symbol': symbol,
-                'exchange': exchange,
-                'reason': 'consensus',
-                'entry_consensus': opp.get('entry_consensus'),
-                'dominant_node': dominant_node,
-            })
-            print(
-                f"   ⏱️❌ SKIP {symbol}: lacks 1-minute penny consensus "
-                f"({consensus_reason}) [p={consensus_details['prob_quick']:.2f}, "
-                f"conf={consensus_details['confidence']:.2f}, "
-                f"eta={consensus_details['estimated_seconds']/60:.2f}m]"
-            )
-            return None
-        elif consensus_ok:
-            print(
-                f"   ⏱️✅ 1-minute penny consensus for {symbol} "
-                f"(p={consensus_details['prob_quick']:.2f}, "
-                f"conf={consensus_details['confidence']:.2f}, "
-                f"eta={consensus_details['estimated_seconds']/60:.2f}m)"
-            )
+        print(
+            f"   ⏱️✅ Evidence-backed penny consensus for {symbol} "
+            f"(p={consensus_details['prob_quick']:.2f}, "
+            f"conf={consensus_details['confidence']:.2f}, "
+            f"eta={consensus_details['estimated_seconds']/60:.2f}m)"
+        )
 
         # ☘️ CELTIC SNIPER ENTRY VALIDATION
-        # Skip for fast path (we want minimal latency for validation trades)
-        if hasattr(self, 'celtic_sniper') and self.celtic_sniper is not None and not is_force_scout and not is_fast_path:
+        if hasattr(self, 'celtic_sniper') and self.celtic_sniper is not None:
             try:
+                signal_volume = _finite_number(opp.get('volume'), positive=True)
+                signal_change = _finite_number(opp.get('change24h'))
+                signal_coherence = _finite_number(opp.get('coherence'))
+                if signal_volume is None or signal_change is None or signal_coherence is None:
+                    return deny('denied', 'Celtic validation requires complete signal evidence')
                 entry_check = self.celtic_sniper.validate_entry(
                     symbol=symbol,
                     price=price,
-                    volume=opp.get('volume', 0),
-                    change_24h=opp.get('change24h', 0),
-                    coherence=opp.get('coherence', 0.5)
+                    volume=signal_volume,
+                    change_24h=signal_change,
+                    coherence=signal_coherence,
                 )
                 
                 # 🔧 FIX #2: Celtic Sniper now ENFORCES vetoes (was advisory-only)
                 # When Celtic says no, the trade does not execute.
-                if not entry_check.get('approved', True):
+                if not isinstance(entry_check, dict) or entry_check.get('approved') is not True:
                     reason = entry_check.get('reason', 'Celtic intelligence hesitant')
                     print(f"   ☘️🛑 CELTIC SNIPER BLOCKED {symbol}: {reason}")
                     self._emit_mycelium_event('entry.blocked_celtic', {
                         'symbol': symbol, 'exchange': exchange, 'reason': reason,
                     })
-                    return None
+                    return deny('denied', reason)
                     
                 # Apply Celtic modifier to sizing
-                celtic_modifier = entry_check.get('size_modifier', 1.0)
-                if celtic_modifier != 1.0:
+                celtic_modifier = _finite_number(entry_check.get('size_modifier'))
+                if celtic_modifier is not None and celtic_modifier > 0.0 and celtic_modifier != 1.0:
                     opp['celtic_modifier'] = celtic_modifier
                     if celtic_modifier > 1.0:
                         print(f"   ☘️✅ CELTIC SNIPER APPROVES {symbol}: +{(celtic_modifier-1)*100:.0f}% size")
-            except Exception:
-                pass  # Celtic check failed - proceed with normal entry
+            except Exception as exc:
+                return deny('denied', f'Celtic validation failed: {exc}')
         
         # 🦙 Skip Alpaca trades if in analytics-only mode
         if exchange == 'alpaca' and CONFIG.get('ALPACA_ANALYTICS_ONLY', True):
-            return None
+            return deny('denied', 'Alpaca is configured analytics-only')
         
-        # 🔥 FORCE TRADE MODE - Skip halt check
-        if not is_force_scout and self.tracker.trading_halted:
-            return None
+        if self.tracker.trading_halted:
+            return deny('denied', f'trading halted: {self.tracker.halt_reason}')
 
         # 🔧 OPERATIONAL CORE: Signal Gate + Circuit Breaker + Trade Lock
         # This is THE connection between the analysis brain and execution body.
         # If the brain says NO, the body stops. If the exchange is broken, we wait.
-        if OPS_CORE_AVAILABLE and OPS_CORE is not None and not is_force_scout:
-            queen_guidance = None
-            if hasattr(self, 'autonomy_hub') and self.autonomy_hub:
-                try:
-                    hub = self.autonomy_hub
-                    if hasattr(hub, 'last_decision') and hub.last_decision:
-                        queen_guidance = {
-                            'direction': getattr(hub.last_decision, 'direction', 'NEUTRAL'),
-                            'confidence': getattr(hub.last_decision, 'confidence', 0.5),
-                        }
-                except Exception:
-                    pass
+        if not OPS_CORE_AVAILABLE or OPS_CORE is None:
+            return deny('denied', 'operational risk core unavailable')
+        queen_guidance = None
+        if hasattr(self, 'autonomy_hub') and self.autonomy_hub:
+            try:
+                hub = self.autonomy_hub
+                if hasattr(hub, 'last_decision') and hub.last_decision:
+                    direction = getattr(hub.last_decision, 'direction', None)
+                    confidence = _finite_number(getattr(hub.last_decision, 'confidence', None))
+                    if isinstance(direction, str) and confidence is not None:
+                        queen_guidance = {'direction': direction, 'confidence': confidence}
+            except Exception as exc:
+                return deny('denied', f'queen guidance unavailable: {exc}')
 
-            # Skip OPS_CORE for fast path to reduce latency
-            if not is_fast_path:
-                allowed, ops_reason = OPS_CORE.check_trade_allowed(
-                    symbol=symbol, price=price, exchange=exchange,
-                    queen_guidance=queen_guidance,
-                )
-            else:
-                allowed = True
-                ops_reason = "fast_path_bypass"
-            if not allowed:
-                self._emit_mycelium_event('entry.blocked_ops', {
-                    'symbol': symbol,
-                    'exchange': exchange,
-                    'reason': ops_reason,
-                })
-                print(f"   🔧🛑 OPS GATE BLOCKED {symbol}: {ops_reason}")
-                return None
+        allowed, ops_reason = OPS_CORE.check_trade_allowed(
+            symbol=symbol, price=price, exchange=exchange,
+            queen_guidance=queen_guidance,
+        )
+        if not allowed:
+            self._emit_mycelium_event('entry.blocked_ops', {
+                'symbol': symbol,
+                'exchange': exchange,
+                'reason': ops_reason,
+            })
+            print(f"   🔧🛑 OPS GATE BLOCKED {symbol}: {ops_reason}")
+            return deny('denied', f'operational risk gate: {ops_reason}')
 
         # ═══════════════════════════════════════════════════════════════════════
         # ☉ SOURCE LAW / ZPE / AURIS GATE ROUTING
@@ -20336,10 +20805,21 @@ class AureonKrakenEcosystem:
                 print(f"   ⚡🛑 FAST PATH BLOCKED {symbol}: coherence={opp.get('coherence', 0):.3f} < 0.85")
                 return None
         elif not is_force_scout:
-            # Full hard gates for STANDARD and PREMIUM
-            sl = (self._last_cognitive_report or {}).get("source_law", {})
-            market_gamma = (self._last_cognitive_report or {}).get("coherence_gamma", 0.0)
+            # Full hard gates for STANDARD and PREMIUM. getattr, not raw access:
+            # an ecosystem that has not produced a cognitive report yet crashed
+            # here with AttributeError (every other consumer in this file already
+            # uses the getattr pattern).
+            _cog_report = getattr(self, '_last_cognitive_report', None) or {}
+            sl = _cog_report.get("source_law", {})
+            market_gamma = _cog_report.get("coherence_gamma", 0.0)
             effective_coherence = max(sl.get("coherence_gamma", 0.0), market_gamma)
+            # Reconcile with the canonical HNC field: the shared Γ can only
+            # tighten this entry gate, never loosen it (b46 order-path wiring).
+            try:
+                from aureon.core.hnc_field import reconcile_gamma
+                effective_coherence = reconcile_gamma(effective_coherence)
+            except Exception:
+                pass
             if effective_coherence < ENTRY_COHERENCE:
                 print(f"   ☉🛑 SOURCE LAW BLOCKED {symbol}: effective_coherence={effective_coherence:.3f} < {ENTRY_COHERENCE}")
                 self._emit_mycelium_event('entry.blocked_source_law', {
@@ -20348,7 +20828,7 @@ class AureonKrakenEcosystem:
                 })
                 return None
 
-            tg = (self._last_cognitive_report or {}).get("temporal_ground", {})
+            tg = _cog_report.get("temporal_ground", {})
             if tg and not tg.get('grounded', True):
                 print(f"   ⏳🛑 TEMPORAL GROUND BLOCKED {symbol}: ZPE de-grounded (dist={tg.get('zpe_distance',0):.4f})")
                 self._emit_mycelium_event('entry.blocked_zpe', {
@@ -20357,7 +20837,7 @@ class AureonKrakenEcosystem:
                 })
                 return None
 
-            auris = (self._last_cognitive_report or {}).get("auris", {})
+            auris = _cog_report.get("auris", {})
             if not auris.get('lighthouse_cleared', False):
                 print(f"   🔮🛑 AURIS BLOCKED {symbol}: lighthouse not cleared (conf={auris.get('confidence',0):.2f})")
                 self._emit_mycelium_event('entry.blocked_auris', {
@@ -20756,172 +21236,79 @@ class AureonKrakenEcosystem:
             except Exception as e:
                 print(f"   ⚠️ Kraken filter check failed for {symbol}: {e}")
         
-        if not self.dry_run:
-            # 🔧 FIX #6: Acquire trade lock before placing order
-            _lock_acquired = False
-            if OPS_CORE_AVAILABLE and OPS_CORE is not None:
-                _lock_acquired, _lock_reason = OPS_CORE.trade_lock.acquire(symbol, timeout=3.0)
-                if not _lock_acquired:
-                    print(f"   🔒🛑 TRADE LOCK: Cannot acquire lock for {symbol}: {_lock_reason}")
-                    return None
+        quote_amount_needed = _finite_number(quote_amount_needed, positive=True)
+        if quote_amount_needed is None:
+            return deny('not_submitted', 'computed quote quantity is missing or non-positive')
 
+        _lock_acquired, _lock_reason = OPS_CORE.trade_lock.acquire(symbol, timeout=3.0)
+        if not _lock_acquired:
+            return deny('denied', f'trade lock unavailable: {_lock_reason}')
+
+        try:
             try:
-                # Safety: never submit a BUY without a positive size.
-                # Some upstream sizing paths (especially force scouts) can produce 0/None
-                # when env/config overrides are mis-set; exchanges reject such orders.
-                if quote_amount_needed is None or float(quote_amount_needed) <= 0.0:
-                    fallback_quote = float(max(CONFIG.get('MIN_TRADE_USD', 1.0), 1.0))
-                    logger.warning(
-                        f"{symbol}: computed non-positive quote_qty={quote_amount_needed}; "
-                        f"falling back to {fallback_quote:.2f}"
-                    )
-                    quote_amount_needed = fallback_quote
                 res = self.client.place_market_order(exchange, symbol, 'BUY', quote_qty=quote_amount_needed)
-                # Some exchange adapters or older code paths can still end up passing
-                # a falsy quote_qty through; if we get the explicit "missing size" reject,
-                # retry once using base-asset quantity.
-                if isinstance(res, dict) and res.get('rejected'):
-                    reason = (res.get('reason') or '').lower()
-                    if 'must provide quantity' in reason and quantity and quantity > 0:
-                        res = self.client.place_market_order(exchange, symbol, 'BUY', quantity=quantity)
+            except Exception as exc:
+                OPS_CORE.record_api_failure(exchange, str(exc))
+                return deny('not_submitted', f'provider submission failed: {exc}')
 
-                # 🔧 FIX #3: Record success/failure for circuit breaker
-                if OPS_CORE_AVAILABLE and OPS_CORE is not None:
-                    if isinstance(res, dict) and (res.get('rejected') or res.get('error')):
-                        OPS_CORE.record_api_failure(exchange, str(res.get('reason', res.get('error', ''))))
-                    else:
-                        OPS_CORE.record_api_success(exchange)
+            receipt_input = dict(res) if isinstance(res, dict) else res
+            if isinstance(receipt_input, dict):
+                receipt_input.setdefault('symbol', symbol)
+            fill_receipt = _provider_fill_receipt(exchange, receipt_input)
+            opp['execution_receipt'] = fill_receipt
+            if fill_receipt['execution_status'] in {'rejected', 'not_submitted'}:
+                OPS_CORE.record_api_failure(exchange, fill_receipt.get('reason', 'provider rejected order'))
+                return fill_receipt
 
-            except Exception as e:
-                print(f"   ⚠️ Execution error for {symbol}: {e}")
-                # 🔧 FIX #3: Record failure for circuit breaker
-                if OPS_CORE_AVAILABLE and OPS_CORE is not None:
-                    OPS_CORE.record_api_failure(exchange, str(e))
-                # 🔧 FIX #6: Release trade lock on failure
-                if _lock_acquired and OPS_CORE_AVAILABLE and OPS_CORE is not None:
-                    OPS_CORE.trade_lock.release(symbol)
-                return
-
-            if isinstance(res, dict):
-                if res.get('rejected'):
-                    reason = res.get('reason') or 'exchange rejected order'
-                    print(f"   ⚠️ Order rejected for {symbol}: {reason}")
-                    self._emit_mycelium_event('order.rejected', {
+            OPS_CORE.record_api_success(exchange)
+            if fill_receipt['execution_status'] != 'filled' or fill_receipt.get('actual_fee') is None:
+                if fill_receipt['execution_status'] == 'filled':
+                    fill_receipt['execution_status'] = 'reconciliation_required'
+                    fill_receipt['truth_status'] = 'no_data'
+                    fill_receipt['reason'] = 'provider fill fee is unavailable; P&L state not created'
+                pending = getattr(self, 'pending_execution_reconciliation', None)
+                if not isinstance(pending, dict):
+                    pending = {}
+                    self.pending_execution_reconciliation = pending
+                provider_order_id = fill_receipt.get('provider_order_id')
+                if provider_order_id:
+                    pending[provider_order_id] = {
                         'symbol': symbol,
                         'exchange': exchange,
                         'side': 'BUY',
-                        'reason': reason,
-                    })
-                    return
-                
-                # Handle Kraken volume minimum error
-                if res.get('error') == 'volume_minimum':
-                    print(f"   ⚠️ Kraken volume minimum not met for {symbol} (need {res.get('ordermin')} units)")
-                    return
+                        'receipt': dict(fill_receipt),
+                    }
+                return fill_receipt
 
-                if res.get('dryRun'):
-                    order_id = 'dry_run'
-                else:
-                    order_id = res.get('orderId') or res.get('id')
-                    result = res.get('result') if isinstance(res.get('result'), dict) else {}
-                    if not order_id and result:
-                        txids = result.get('txid')
-                        if isinstance(txids, list) and txids:
-                            order_id = txids[0]
-                        elif isinstance(txids, str) and txids:
-                            order_id = txids
-                    if not order_id:
-                        # Preserve response payload for diagnosing filter/permission issues.
-                        if isinstance(res, dict) and (res.get('error') or res.get('code') or res.get('msg') or res.get('reason')):
-                            print(f"   ⚠️ Order failed for {symbol}: {res.get('reason') or res.get('msg') or res.get('error') or 'No order ID'}")
-                            # Keep this short; full payload can be large.
-                            safe_keys = {k: res.get(k) for k in ('exchange', 'error', 'code', 'msg', 'reason', 'status_code', 'rejected') if k in res}
-                            if safe_keys:
-                                print(f"      ↳ details: {safe_keys}")
-                        else:
-                            print(f"   ⚠️ Order failed for {symbol}: No order ID returned")
-                        return
-                    
-                    # 🔥 CRITICAL FIX: Use ACTUAL fill price, not pre-order price!
-                    # This ensures P&L calculations are accurate
-                    fills = res.get('fills', [])
-                    if fills:
-                        # Calculate weighted average fill price
-                        total_qty = sum(float(f.get('qty', 0)) for f in fills)
-                        total_value = sum(float(f.get('qty', 0)) * float(f.get('price', 0)) for f in fills)
-                        if total_qty > 0:
-                            actual_fill_price = total_value / total_qty
-                            actual_qty = total_qty
-                            actual_value = total_value
-                            # Calculate actual fee from fills
-                            actual_fee = sum(
-                                float(f.get('commission', 0)) * (float(f.get('price', price)) if f.get('commissionAsset') == symbol.replace(quote_asset, '') else 1.0)
-                                for f in fills
-                            )
-                            print(f"   📊 Fill: {actual_qty:.2f} @ {actual_fill_price:.8f} (pre-order: {price:.8f})")
-                            price = actual_fill_price
-                            quantity = actual_qty
-                            pos_size = actual_value
-                            entry_fee = actual_fee if actual_fee > 0 else pos_size * total_rate
-                    elif res.get('cummulativeQuoteQty') and res.get('executedQty'):
-                        # Fallback: use order response totals
-                        exec_qty = float(res.get('executedQty', 0))
-                        cumm_quote = float(res.get('cummulativeQuoteQty', 0))
-                        if exec_qty > 0:
-                            actual_fill_price = cumm_quote / exec_qty
-                            print(f"   📊 Fill: {exec_qty:.2f} @ {actual_fill_price:.8f} (pre-order: {price:.8f})")
-                            price = actual_fill_price
-                            quantity = exec_qty
-                            pos_size = cumm_quote
-                            entry_fee = pos_size * total_rate
+            price = float(fill_receipt['filled_price'])
+            quantity = float(fill_receipt['filled_quantity'])
+            pos_size = float(fill_receipt['filled_quote_value'])
+            entry_fee = float(fill_receipt['actual_fee'])
+            print(f"   📊 Provider fill: {quantity:.8f} @ {price:.8f}")
+        finally:
+            OPS_CORE.trade_lock.release(symbol)
 
-                    # 🔧 FIX #7: Execution confirmation — verify order actually filled
-                    if OPS_CORE_AVAILABLE and OPS_CORE is not None and order_id and order_id != 'dry_run':
-                        confirm_result = OPS_CORE.confirm_order(
-                            self.client, exchange, order_id, symbol
-                        )
-                        if not confirm_result.get('confirmed'):
-                            print(f"   ⚠️🔧 ORDER NOT CONFIRMED for {symbol}: {confirm_result.get('status')}")
-                            # Release trade lock and abort position creation
-                            if _lock_acquired:
-                                OPS_CORE.trade_lock.release(symbol)
-                            return
-                        # Use confirmed fill price if available
-                        if confirm_result.get('fill_price') and confirm_result['fill_price'] > 0:
-                            price = confirm_result['fill_price']
-                        if confirm_result.get('fill_qty') and confirm_result['fill_qty'] > 0:
-                            quantity = confirm_result['fill_qty']
-                            pos_size = quantity * price
-
-            # 🔧 FIX #6: Release trade lock after order processing
-            if _lock_acquired and OPS_CORE_AVAILABLE and OPS_CORE is not None:
-                OPS_CORE.trade_lock.release(symbol)
-
+        # Sizing decisions stop at submission. Never resize a provider fill afterward.
         prime_multiplier = 1.0
-        if len(self.positions) < 3:  # Apply prime sizing to first few positions
-            prime_multiplier = self.prime_sizer.get_next_size(1.0) / CONFIG['BASE_POSITION_SIZE']
-            pos_size *= prime_multiplier
-            pos_size = min(pos_size, available_risk, cash_available)
-            quantity = pos_size / price
-            entry_fee = pos_size * total_rate
+        actual_fraction = (pos_size / self.tracker.balance) if self.tracker.balance > 0 else 0.0
         
         # Create position with swarm enhancements
         is_scout = len(self.positions) == 0  # First position becomes scout
         
-        entry_time = time.time()
+        entry_time = float(fill_receipt['source_timestamp'])
         
         # 🧠 GET LEARNED PARAMETERS FROM RECOMMENDATION
         learned_rec = opp.get('learned_recommendation', {})
         
         # 🎯 SCALPER MODE: If Queen is urgent, tighten targets!
         queen_signal = opp.get('queen_signal', 0.0)
-        tp_pct = learned_rec.get('suggested_take_profit')
-        sl_pct = learned_rec.get('suggested_stop_loss')
-        
-        if queen_signal > 0.8:
+        tp_pct, sl_pct, scalper_active = resolve_scalper_targets(
+            queen_signal,
+            learned_rec,
+        )
+
+        if scalper_active:
             # Hyper-Scalping: In and out in seconds!
-            tp_pct = 0.005  # 0.5% profit target
-            sl_pct = 0.002  # 0.2% stop loss
             print(f"   ⚡ SCALPER MODE ACTIVE for {symbol}: Queen Signal {queen_signal:.2f} -> TP 0.5% / SL 0.2%")
         
         self.positions[symbol] = Position(
@@ -20946,9 +21333,27 @@ class AureonKrakenEcosystem:
             learned_win_rate=learned_rec.get('expected_win_rate'),
             learned_confidence=learned_rec.get('confidence', 'low'),
             # 🔮 NEXUS PREDICTOR DATA - For learning feedback
-            nexus_prob=opp.get('nexus_prob', 0.5),
-            nexus_edge=opp.get('nexus_edge', 0.0),
+            nexus_prob=_finite_number(opp.get('nexus_prob')),
+            nexus_edge=_finite_number(opp.get('nexus_edge')),
             nexus_patterns=opp.get('nexus_patterns', []),
+            provider_order_id=fill_receipt.get('provider_order_id'),
+            provider_fill_id=fill_receipt.get('fill_id'),
+            fill_source_id=fill_receipt.get('source_id'),
+            fill_source_timestamp=fill_receipt.get('source_timestamp'),
+            truth_status='live',
+            hnc_frequency=(
+                _finite_number(hnc_enhanced.get('hnc_frequency'))
+                if isinstance(hnc_enhanced, dict) else None
+            ),
+            score=_finite_number(opp.get('score')),
+            hnc_action=(
+                str(hnc_enhanced.get('hnc_action'))
+                if isinstance(hnc_enhanced, dict) and hnc_enhanced.get('hnc_action') else None
+            ),
+            probability=_finite_number(opp.get('probability')),
+            metadata={
+                'hnc_frequency': _finite_number(hnc_enhanced.get('hnc_frequency')),
+            } if isinstance(hnc_enhanced, dict) and _finite_number(hnc_enhanced.get('hnc_frequency')) is not None else {},
         )
 
         # Attach current cognitive snapshot to the opened event
@@ -21286,6 +21691,8 @@ class AureonKrakenEcosystem:
         # 🔮 Add Nexus predictor probability
         nexus_marker = f" 🔮{opp.get('nexus_prob', 0.5)*100:.0f}%" if self.nexus_predictor and 'nexus_prob' in opp else ""
         print(f"   {icon} BUY  {symbol:12s} @ {curr_sym}{price:.6f} | {curr_sym}{pos_size:.2f} ({actual_fraction*100:.1f}%) | Γ={opp['coherence']:.2f} | +{opp['change24h']:.1f}%{hnc_marker}{nexus_marker}{flux_marker}{scout_marker}{prime_marker}{exch_marker}")
+        fill_receipt['position_id'] = self.positions[symbol].id
+        return fill_receipt
         
     def check_positions(self):
         """Check all positions for TP/SL with HNC frequency optimization and Earth Resonance"""
@@ -21381,42 +21788,24 @@ class AureonKrakenEcosystem:
             # Get current price (prefer WebSocket)
             current_price = self.get_realtime_price(symbol)
             source = "WS"
+            market_evidence = getattr(self, 'realtime_price_evidence', {}).get(symbol) if current_price is not None else None
             
             if current_price is None:
-                # Fallback to ticker cache
-                current_price = self.ticker_cache.get(symbol, {}).get('price')
-                source = "CACHE"
-                
-            # If still None, force a fresh lookup for this specific symbol
-            if current_price is None:
-                try:
-                    # Force single ticker lookup
-                    if pos.exchange == 'binance':
-                        ticker = self.client.get_ticker(symbol, exchange='binance')
-                        if ticker:
-                            current_price = float(ticker.get('lastPrice', 0))
-                            source = "REST_FORCE_BINANCE"
-                    else:
-                        # Kraken logic
-                        ticker_symbol = self._normalize_ticker_symbol(symbol)
-                        ticker = self.client._ticker([ticker_symbol])
-                        if ticker:
-                            t_data = list(ticker.values())[0]
-                            current_price = float(t_data.get('c', [0])[0])
-                            source = "REST_FORCE_KRAKEN"
-                except Exception as e:
-                    print(f"   ⚠️ Failed to force price check for {symbol}: {e}")
+                cached = self.ticker_cache.get(symbol)
+                cached_ok, _ = _validate_market_evidence(cached)
+                if cached_ok:
+                    market_evidence = cached
+                    current_price = _finite_number(cached.get('price'), positive=True)
+                    source = "CACHE"
 
-            # Final fallback
-            if current_price is None or current_price == 0:
-                current_price = pos.entry_price
-                source = "ENTRY (STALE)"
+            if current_price is None or market_evidence is None:
+                logger.warning(f"NO_DATA: no fresh provider exit price for {symbol}; position unchanged")
+                continue
 
             # 🎯 BID/ASK REALISM — use bid price for exit (what we actually receive)
-            ticker = self.ticker_cache.get(symbol, {})
-            bid = ticker.get('bid', 0)
-            if bid and bid > 0:
-                current_price = float(bid)
+            bid = _finite_number(market_evidence.get('bid'), positive=True)
+            if bid is not None:
+                current_price = bid
                 source += "/BID"
 
             # 🛡️ SAFETY: Prevent division by zero
@@ -21898,13 +22287,53 @@ class AureonKrakenEcosystem:
             
         return freed_capital
             
-    def close_position(self, symbol: str, reason: str, pct: float, price: float):
+    def close_position(self, symbol: str, reason: str, pct: float, price: float,
+                       market_evidence: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Close a position"""
+        def close_receipt(status: str, detail: str, truth_status: str = 'no_data') -> Dict[str, Any]:
+            return {
+                'execution_status': status,
+                'truth_status': truth_status,
+                'reason': detail,
+                'provider_order_id': None,
+                'fill_id': None,
+                'realized_pnl': None,
+                'generated_values': False,
+            }
+
         # Don't pop yet! Wait for confirmation.
         if symbol not in self.positions:
-            return
+            return close_receipt('not_submitted', 'position is not tracked')
             
         pos = self.positions[symbol]
+        if (
+            getattr(pos, 'truth_status', None) != 'live'
+            or not getattr(pos, 'provider_order_id', None)
+            or not getattr(pos, 'fill_source_id', None)
+            or _timestamp_seconds(getattr(pos, 'fill_source_timestamp', None)) is None
+            or _finite_number(getattr(pos, 'entry_fee', None)) is None
+            or _finite_number(getattr(pos, 'entry_price', None), positive=True) is None
+            or _finite_number(getattr(pos, 'entry_value', None), positive=True) is None
+            or _finite_number(getattr(pos, 'quantity', None), positive=True) is None
+            or _finite_number(getattr(pos, 'coherence', None)) is None
+        ):
+            return close_receipt('denied', 'tracked position lacks provider-backed entry fill/accounting evidence')
+        evidence_record = market_evidence
+        if evidence_record is None:
+            realtime_evidence = getattr(self, 'realtime_price_evidence', {}).get(symbol)
+            realtime_ok, _ = _validate_market_evidence(realtime_evidence)
+            evidence_record = realtime_evidence if realtime_ok else self.ticker_cache.get(symbol)
+        evidence_ok, evidence = _validate_market_evidence(evidence_record)
+        if not evidence_ok:
+            return close_receipt('not_submitted', evidence['reason'])
+        exit_bid = _finite_number(evidence_record.get('bid'), positive=True)
+        exit_price = exit_bid if exit_bid is not None else _finite_number(evidence_record.get('price'), positive=True)
+        if exit_price is None:
+            return close_receipt('not_submitted', 'fresh provider exit price is invalid')
+        price = exit_price
+
+        if self.dry_run:
+            return close_receipt('not_submitted', 'dry run does not submit or mutate live state', 'dry_run')
 
         self._emit_mycelium_event('position.close_requested', {
             'symbol': symbol,
@@ -21917,38 +22346,45 @@ class AureonKrakenEcosystem:
         
         # � SMART EXCHANGE CORRECTION: If position has wrong exchange, fix it!
         # This prevents errors like trying to sell DOGEUSDC on Kraken
-        correct_exchange = self._detect_exchange_for_symbol(symbol, pos.exchange)
-        if correct_exchange != pos.exchange.lower():
-            print(f"   🔧 Exchange correction: {symbol} was {pos.exchange.upper()} → {correct_exchange.upper()}")
-            pos.exchange = correct_exchange
+        # The entry fill binds the position to its provider venue. Never move a
+        # live sell to a heuristically inferred exchange.
+        if not isinstance(pos.exchange, str) or not pos.exchange.strip():
+            return close_receipt('denied', 'provider-backed entry exchange is missing')
+        pos.exchange = pos.exchange.lower()
         
         # �🚀 CANCEL SERVER-SIDE ORDERS (Kraken/Alpaca native TP/SL) before manual close
-        if not self.dry_run and pos.exchange.lower() in ['kraken', 'alpaca']:
+        if pos.exchange.lower() in ['kraken', 'alpaca']:
             try:
                 # Cancel stop-loss order if exists (for Alpaca, this might be OCO ID)
                 if pos.server_sl_order_id:
-                    self.client.cancel_order(pos.exchange, pos.server_sl_order_id)
+                    cancel_result = self.client.cancel_order(pos.exchange, pos.server_sl_order_id)
+                    if not _provider_cancel_acknowledged(cancel_result, pos.server_sl_order_id):
+                        return close_receipt('not_submitted', 'provider did not acknowledge stop-loss cancellation')
                     logger.info(f"Cancelled server SL order {pos.server_sl_order_id} for {symbol}")
                 
                 # Cancel take-profit order if exists (Kraken only, Alpaca uses OCO)
                 if pos.server_tp_order_id:
-                    self.client.cancel_order(pos.exchange, pos.server_tp_order_id)
+                    cancel_result = self.client.cancel_order(pos.exchange, pos.server_tp_order_id)
+                    if not _provider_cancel_acknowledged(cancel_result, pos.server_tp_order_id):
+                        return close_receipt('not_submitted', 'provider did not acknowledge take-profit cancellation')
                     logger.info(f"Cancelled server TP order {pos.server_tp_order_id} for {symbol}")
                 
                 # Cancel trailing stop order if exists
                 if pos.server_trailing_order_id:
-                    self.client.cancel_order(pos.exchange, pos.server_trailing_order_id)
+                    cancel_result = self.client.cancel_order(pos.exchange, pos.server_trailing_order_id)
+                    if not _provider_cancel_acknowledged(cancel_result, pos.server_trailing_order_id):
+                        return close_receipt('not_submitted', 'provider did not acknowledge trailing-stop cancellation')
                     logger.info(f"Cancelled server trailing order {pos.server_trailing_order_id} for {symbol}")
             except Exception as e:
                 logger.warning(f"Failed to cancel server orders for {symbol}: {e}")
+                return close_receipt('not_submitted', f'protective-order cancellation failed: {e}')
         
         # 🌟 CHECK EXIT GATE: Only sell if profitable
         if not self.should_exit_trade(pos, price, reason):
-            return  # Hold position, don't sell at a loss
+            return close_receipt('denied', 'exit gate rejected sale')
         
         # 🧹 DUST PROTECTION: Check actual balance on exchange to prevent "Insufficient Balance" and clean dust
-        if not self.dry_run:
-            try:
+        try:
                 # Infer base asset
                 base_asset = symbol
                 # Sort quotes by length desc to match longest first (e.g. FDUSD before USD)
@@ -21960,66 +22396,102 @@ class AureonKrakenEcosystem:
                 
                 # Get actual free balance from the specific exchange client
                 # We need to route this to the correct exchange client instance
-                free_balance = 0.0
+                free_balance = None
                 if isinstance(self.client, MultiExchangeClient):
                     if pos.exchange in self.client.clients:
                         free_balance = self.client.clients[pos.exchange].get_balance(base_asset)
                 elif hasattr(self.client, 'get_balance'):
                     free_balance = self.client.get_balance(base_asset)
-                
+                free_balance = _finite_number(free_balance, positive=True)
+                if free_balance is None:
+                    return close_receipt('not_submitted', 'authenticated free balance unavailable')
+                quantity_to_sell = min(pos.quantity, free_balance)
+                if quantity_to_sell <= 0.0:
+                    return close_receipt('not_submitted', 'authenticated free balance is zero')
                 if free_balance > 0:
                     # Case 1: Actual balance is LESS than tracked (e.g. fees deducted from asset)
                     if free_balance < pos.quantity:
                         # If it's within 10% (fees are small), assume it's fee deduction and adjust
                         if free_balance > pos.quantity * 0.90:
                             print(f"   🧹 Adjusting sell qty for {symbol}: {pos.quantity:.8f} -> {free_balance:.8f} (Fees/Dust)")
-                            pos.quantity = free_balance
+                            quantity_to_sell = free_balance
                         else:
                             # Significant difference - safer to sell what we have to close the position
                             print(f"   ⚠️ Balance mismatch for {symbol}: Tracked {pos.quantity:.8f}, Actual {free_balance:.8f}. Selling Actual.")
-                            pos.quantity = free_balance
+                            quantity_to_sell = free_balance
                     
                     # Case 2: Actual balance is slightly MORE than tracked (leftover dust)
                     # Clean it up if it's within 5% excess
                     elif free_balance > pos.quantity and free_balance < pos.quantity * 1.05:
                         print(f"   🧹 Cleaning dust for {symbol}: {pos.quantity:.8f} -> {free_balance:.8f}")
-                        pos.quantity = free_balance
-            except Exception as e:
-                print(f"   ⚠️ Failed to check balance for {symbol}: {e}")
+                        quantity_to_sell = pos.quantity
+        except Exception as e:
+            return close_receipt('not_submitted', f'authenticated balance check failed: {e}')
 
         # EXECUTE TRADE - Use unified confirmation for all exchanges
-        success = False
-        if not self.dry_run:
-            try:
+        try:
                 # Use unified trade confirmation for proper handling across exchanges
                 confirmation = self.trade_confirmation.submit_order(
-                    pos.exchange, symbol, 'SELL', quantity=pos.quantity
+                    pos.exchange, symbol, 'SELL', quantity=quantity_to_sell,
+                    market_evidence=evidence_record,
                 )
-                
-                status = confirmation.get('status', '').upper()
-                order_id = confirmation.get('order_id')
-                
-                if status in ['FILLED', 'ACCEPTED', 'OPEN', 'CLOSED']:
-                    success = True
-                    logger.info(f"Trade confirmed: {pos.exchange}/{symbol} -> {order_id}")
-                elif status == 'REJECTED' and confirmation.get('pre_flight'):
-                    print(f"   🗑️ Dust detected for {symbol}: {confirmation.get('error')}. Removing from active tracking.")
-                    # Remove from active positions to stop infinite loop
-                    self.positions.pop(symbol, None)
-                    self.save_state()  # 🔄 Save state after dust removal
-                    return
-                else:
-                    print(f"   ⚠️ Sell failed for {symbol}: {status}. Retrying next cycle.")
-                    return # Don't remove position, try again later
+        except Exception as e:
+            return close_receipt('not_submitted', f'sell submission failed: {e}')
+
+        raw_response = confirmation.get('raw_response') if isinstance(confirmation, dict) else None
+        receipt_input = dict(raw_response) if isinstance(raw_response, dict) else raw_response
+        if isinstance(receipt_input, dict):
+            receipt_input.setdefault('symbol', symbol)
+        fill_receipt = _provider_fill_receipt(pos.exchange, receipt_input)
+        if fill_receipt['execution_status'] != 'filled' or fill_receipt.get('actual_fee') is None:
+            if fill_receipt['execution_status'] == 'filled':
+                fill_receipt['execution_status'] = 'reconciliation_required'
+                fill_receipt['truth_status'] = 'no_data'
+                fill_receipt['reason'] = 'provider fill fee is not proven in the quote asset'
+            pending = getattr(self, 'pending_execution_reconciliation', None)
+            if not isinstance(pending, dict):
+                pending = {}
+                self.pending_execution_reconciliation = pending
+            if fill_receipt.get('provider_order_id'):
+                pending[fill_receipt['provider_order_id']] = {
+                    'symbol': symbol, 'exchange': pos.exchange, 'side': 'SELL',
+                    'receipt': dict(fill_receipt),
+                }
+            return {**fill_receipt, 'realized_pnl': None}
+
+        price = float(fill_receipt['filled_price'])
+        sold_quantity = float(fill_receipt['filled_quantity'])
+        exit_value = float(fill_receipt['filled_quote_value'])
+        original_quantity = float(pos.quantity)
+        if sold_quantity > original_quantity + 1e-12:
+            pos.truth_status = 'reconciliation_required'
+            return {**fill_receipt, 'execution_status': 'reconciliation_required', 'truth_status': 'no_data', 'realized_pnl': None, 'reason': 'provider fill exceeds tracked quantity'}
+        allocation_ratio = min(sold_quantity / original_quantity, 1.0)
+        allocated_entry_value = float(pos.entry_value) * allocation_ratio
+        allocated_entry_fee = float(pos.entry_fee) * allocation_ratio
+        actual_exit_fee = float(fill_receipt['actual_fee'])
+        realized_pnl = exit_value - actual_exit_fee - allocated_entry_value - allocated_entry_fee
+        self.positions.pop(symbol)
+        if sold_quantity + 1e-12 < original_quantity:
+            remaining_ratio = 1.0 - allocation_ratio
+            pos.quantity = original_quantity - sold_quantity
+            pos.entry_value = float(pos.entry_value) * remaining_ratio
+            pos.entry_fee = float(pos.entry_fee) * remaining_ratio
+            self.positions[symbol] = pos
+            try:
+                self.save_state()
             except Exception as e:
-                print(f"   ⚠️ Sell execution error for {symbol}: {e}")
-                return # Don't remove position, try again later
+                logger.warning(f"State save failed after partial close: {e}")
+            return {
+                **fill_receipt,
+                'realized_pnl': realized_pnl,
+                'accounting_status': 'partial_fill_recorded',
+                'learning_status': 'withheld_until_position_fully_closed',
+            }
         else:
-            success = True # Dry run always succeeds
-            
-        # Only remove if successful
-        if success:
-            self.positions.pop(symbol)
+            pos.quantity = sold_quantity
+            pos.entry_value = allocated_entry_value
+            pos.entry_fee = allocated_entry_fee
             # 🔄 IMMEDIATE STATE SAVE: Persist position removal right away!
             try:
                 self.save_state()
@@ -22033,8 +22505,6 @@ class AureonKrakenEcosystem:
                 try:
                     # Calculate bars held (assuming 1-min bars)
                     bars_held = int((time.time() - pos.entry_time) / 60)
-                    exit_value = pos.quantity * price
-                    
                     completed_raid = complete_raid(symbol, price, exit_value, bars_held)
                     if completed_raid:
                         if completed_raid.was_quick_kill:
@@ -22056,7 +22526,7 @@ class AureonKrakenEcosystem:
         #
         # Since the threshold already accounts for all fees, we compute ACTUAL net P&L here
         
-        exit_value = pos.quantity * price
+        exit_value = float(fill_receipt['filled_quote_value'])
         gross_pnl = exit_value - pos.entry_value
         
         # Get the combined fee rate used in penny threshold calculation
@@ -22067,13 +22537,22 @@ class AureonKrakenEcosystem:
         
         # Calculate actual fees (linear approximation for accounting purposes)
         # Entry fee was already calculated on pos.entry_fee using entry_value
-        exit_fee = exit_value * total_rate  # All costs on exit leg
+        exit_fee = float(fill_receipt['actual_fee'])
         total_expenses = pos.entry_fee + exit_fee
         
         net_pnl = gross_pnl - total_expenses
         
         # Calculate hold time
-        exit_time = time.time()
+        exit_time = float(fill_receipt['source_timestamp'])
+        if exit_time < pos.entry_time:
+            return {
+                **fill_receipt,
+                'execution_status': 'reconciliation_required',
+                'truth_status': 'no_data',
+                'realized_pnl': None,
+                'reason': 'provider exit timestamp predates provider entry fill',
+                'learning_status': 'withheld',
+            }
         hold_time_sec = exit_time - pos.entry_time
         hold_time_min = hold_time_sec / 60.0
         
@@ -22093,7 +22572,14 @@ class AureonKrakenEcosystem:
             # Only exit early on stops (-5%) or massive gains (+20%)
             if reason not in ['STOP_LOSS', 'CIRCUIT_BREAKER'] and abs(pnl_pct) < 20:
                 logger.debug(f"🌊 {symbol}: Holding for resonance ({hold_time_min:.1f}/{MIN_HOLD_MINUTES} min), PnL {pnl_pct:+.1f}%")
-                return  # Keep position open
+                return {
+                    **fill_receipt,
+                    'realized_pnl': net_pnl,
+                    'gross_pnl': gross_pnl,
+                    'total_fees': total_expenses,
+                    'accounting_status': 'provider_backed',
+                    'learning_status': 'withheld_by_resonance_gate',
+                }
         
         # 📊 FEED POSITION CLOSE TO PROBABILITY MATRIX 📊
         # This helps the matrix validate predictions and learn from outcomes
@@ -22166,8 +22652,10 @@ class AureonKrakenEcosystem:
                         # Get what the matrix predicted for this symbol
                         if symbol in self.prob_matrix.matrices:
                             matrix = self.prob_matrix.matrices[symbol]
-                            predicted_direction = matrix.day_plus_1.predicted_direction if matrix.day_plus_1 else "NEUTRAL"
-                            confidence = matrix.confidence_score if hasattr(matrix, 'confidence_score') else 0.5
+                            predicted_direction = matrix.day_plus_1.predicted_direction if matrix.day_plus_1 else None
+                            confidence = _finite_number(getattr(matrix, 'confidence_score', None))
+                            if not predicted_direction or confidence is None:
+                                raise ValueError('prediction evidence incomplete; learning withheld')
                             
                             # Validate and learn
                             validation = self.prob_matrix.validate_and_learn(
@@ -22178,9 +22666,10 @@ class AureonKrakenEcosystem:
                             )
                             
                             if validation['validated']:
-                                accuracy = validation.get('accuracy', 0.5) * 100
-                                trend = validation.get('trend', 'UNKNOWN')
-                                logger.info(f"🔮 {symbol} validation: predicted {predicted_direction}, actual {actual_direction}, accuracy now {accuracy:.0f}% ({trend})")
+                                accuracy = _finite_number(validation.get('accuracy'))
+                                trend = validation.get('trend')
+                                if accuracy is not None and trend:
+                                    logger.info(f"🔮 {symbol} validation: predicted {predicted_direction}, actual {actual_direction}, accuracy now {accuracy * 100:.0f}% ({trend})")
                     except Exception as e:
                         logger.debug(f"Matrix learning error for {symbol}: {e}")
             except Exception as e:
@@ -22231,43 +22720,55 @@ class AureonKrakenEcosystem:
         # Feed learning back to Mycelium Network
         # Learn on REALIZED NET outcome (after costs), not raw price-change %.
         # This aligns the network with the ethos: net pennies and no-loss by default.
-        try:
-            net_pct_for_mycelium = (net_pnl / pos.entry_value * 100) if pos.entry_value > 0 else 0.0
-        except Exception:
-            net_pct_for_mycelium = 0.0
+        net_pct_for_mycelium = net_pnl / pos.entry_value * 100
         self.mycelium.learn(symbol, net_pct_for_mycelium)
         
         # 🐘 Record trade result in Elephant Memory
         self.elephant_memory.record(symbol, net_pnl)
         
         # 🧠 Record trade in Adaptive Learning Engine WITH NEWS/KNOWLEDGE CORRELATION
-        ticker_snapshot = self.ticker_cache.get(symbol, {}) if hasattr(self, 'ticker_cache') else {}
-        news_context = getattr(self, '_last_news_sentiment', {})
-        ADAPTIVE_LEARNER.enhanced_record_trade({
-            'symbol': symbol,
-            'entry_price': pos.entry_price,
-            'exit_price': price,
-            'pnl': net_pnl,
-            'frequency': getattr(pos, 'frequency', 256),
-            'coherence': pos.coherence,
-            'score': getattr(pos, 'score', 50),
-            'entry_time': pos.entry_time,
-            'exit_time': time.time(),
-            'hnc_action': getattr(pos, 'hnc_action', 'HOLD'),
-            'probability': getattr(pos, 'probability', 0.5),
-            'reason': reason,
-            'exchange': pos.exchange,
-            'hold_time_sec': hold_time_sec,
-            # Inject latest ticker context so adaptive learning can correlate
-            'ticker_price': ticker_snapshot.get('price'),
-            'ticker_change24h': ticker_snapshot.get('change24h'),
-            'ticker_volume': ticker_snapshot.get('volume'),
-            'ticker_source': ticker_snapshot.get('source', 'unknown'),
-            # 📰 NEWS CORRELATION CONTEXT - Learn from market sentiment at trade time
-            'news_sentiment': news_context.get('sentiment', 0.0),
-            'news_label': news_context.get('label', 'unknown'),
-            'news_confidence': news_context.get('confidence', 0.0),
-        })
+        ticker_snapshot = evidence_record
+        adaptive_market_ok, _ = _validate_market_evidence(
+            ticker_snapshot, required_fields=('price', 'change24h', 'volume'),
+        )
+        adaptive_frequency = _finite_number(getattr(pos, 'hnc_frequency', None))
+        adaptive_score = _finite_number(getattr(pos, 'score', None))
+        adaptive_probability = _finite_number(getattr(pos, 'probability', None))
+        adaptive_action = getattr(pos, 'hnc_action', None)
+        if (
+            adaptive_market_ok and adaptive_frequency is not None and adaptive_score is not None
+            and adaptive_probability is not None and adaptive_action
+        ):
+            news_context = getattr(self, '_last_news_sentiment', {})
+            adaptive_payload = {
+                'symbol': symbol,
+                'entry_price': pos.entry_price,
+                'exit_price': price,
+                'pnl': net_pnl,
+                'frequency': adaptive_frequency,
+                'coherence': pos.coherence,
+                'score': adaptive_score,
+                'entry_time': pos.entry_time,
+                'exit_time': fill_receipt['source_timestamp'],
+                'hnc_action': adaptive_action,
+                'probability': adaptive_probability,
+                'reason': reason,
+                'exchange': pos.exchange,
+                'hold_time_sec': hold_time_sec,
+                'ticker_price': ticker_snapshot.get('price'),
+                'ticker_change24h': ticker_snapshot.get('change24h'),
+                'ticker_volume': ticker_snapshot.get('volume'),
+                'ticker_source': ticker_snapshot.get('source_id'),
+            }
+            if isinstance(news_context, dict) and news_context.get('truth_status') in {'live', 'real_derived'}:
+                adaptive_payload.update({
+                    'news_sentiment': _finite_number(news_context.get('sentiment')),
+                    'news_label': news_context.get('label'),
+                    'news_confidence': _finite_number(news_context.get('confidence')),
+                })
+            ADAPTIVE_LEARNER.enhanced_record_trade(adaptive_payload)
+        else:
+            logger.info(f"Adaptive learning withheld for {symbol}: entry/market strategy evidence incomplete")
         
         # 🌊 CASCADE AMPLIFIER - Update win/loss streak for signal amplification
         pnl_pct = (net_pnl / pos.entry_value * 100) if pos.entry_value > 0 else 0
@@ -22282,22 +22783,25 @@ class AureonKrakenEcosystem:
             asset_class = 'cfd'
         elif pos.exchange == 'alpaca':
             asset_class = 'stocks'
-        self.multi_exchange.record_trade_result(
-            exchange=pos.exchange,
-            symbol=symbol,
-            pnl=net_pnl,
-            asset_class=asset_class,
-            frequency=getattr(pos, 'frequency', 432),
-            coherence=pos.coherence
-        )
+        if adaptive_frequency is not None:
+            self.multi_exchange.record_trade_result(
+                exchange=pos.exchange,
+                symbol=symbol,
+                pnl=net_pnl,
+                asset_class=asset_class,
+                frequency=adaptive_frequency,
+                coherence=pos.coherence
+            )
         
         # 🔮 NEXUS PREDICTOR LEARNING - Update patterns from trade outcome 🔮
-        if self.nexus_predictor is not None:
+        nexus_probability = _finite_number(getattr(pos, 'nexus_prob', None))
+        nexus_edge = _finite_number(getattr(pos, 'nexus_edge', None))
+        if self.nexus_predictor is not None and nexus_probability is not None and nexus_edge is not None:
             try:
                 entry_prediction = {
                     'direction': 'LONG',  # We only go long currently
-                    'probability': getattr(pos, 'nexus_prob', 0.5),
-                    'edge': getattr(pos, 'nexus_edge', 0.0),
+                    'probability': nexus_probability,
+                    'edge': nexus_edge,
                     'patterns_triggered': getattr(pos, 'nexus_patterns', []),
                 }
                 self.nexus_predictor.record_trade_outcome(
@@ -22381,7 +22885,7 @@ class AureonKrakenEcosystem:
                 "gross_pnl": gross_pnl,
                 "hold_time_min": hold_time_min,
                 "reason": reason,
-                "coherence_at_entry": getattr(pos, 'coherence', 0.5),
+                "coherence_at_entry": pos.coherence,
                 "penny_hit": bool(net_pnl >= 0.0001),
                 "success": net_pnl > 0,
             }
@@ -22402,6 +22906,14 @@ class AureonKrakenEcosystem:
 
         # Refresh equity to keep tracker in sync with realised trade
         self.refresh_equity()
+        return {
+            **fill_receipt,
+            'realized_pnl': net_pnl,
+            'gross_pnl': gross_pnl,
+            'total_fees': total_expenses,
+            'accounting_status': 'provider_backed',
+            'learning_status': 'recorded_from_verified_fill',
+        }
         
     def get_signal_tier(self, opp: Dict, cog_report: Optional[Dict] = None) -> str:
         """
@@ -23122,27 +23634,28 @@ class AureonKrakenEcosystem:
                                 logger.debug(f"Skipping {exchange} for {symbol} - {reason}")
                                 continue
 
-                # 🎯 PRE-FLIGHT PRICE VALIDATION — reject if price slipped >1%
-                expected_price = 0.0  # intent path carries no opportunity dict; slip check applies only when a price is known
-                current_ticker = self.ticker_cache.get(symbol, {})
-                current_ask = float(current_ticker.get('ask', current_ticker.get('price', expected_price)) or expected_price)
-                if expected_price > 0 and current_ask > 0:
-                    slip_pct = abs(current_ask - expected_price) / expected_price
-                    max_slip = 0.01 if not self._loop_timing.get("fast_mode", False) else 0.02
-                    if slip_pct > max_slip:
-                        print(f"   🚫 PRE-FLIGHT REJECT {symbol}: price slipped {slip_pct*100:.2f}% (ask={current_ask} expected={expected_price})")
-                        self._emit_mycelium_event('order.preflight_rejected', {
-                            'symbol': symbol, 'slip_pct': slip_pct,
-                            'expected': expected_price, 'actual': current_ask,
-                        })
-                        return {'status': 'REJECTED', 'error': f'price_slipped_{slip_pct*100:.2f}%', 'pre_flight': True}
+                current_ticker = self.ticker_cache.get(symbol)
+                ticker_ok, ticker_evidence = _validate_market_evidence(current_ticker)
+                if not ticker_ok:
+                    return {
+                        'status': 'NO_DATA', 'execution_status': 'not_submitted',
+                        'truth_status': 'no_data', 'error': ticker_evidence['reason'], 'pre_flight': True,
+                    }
+                current_ask = _finite_number(current_ticker.get('ask'), positive=True)
+                current_price = _finite_number(current_ticker.get('price'), positive=True)
+                if current_ask is None and current_price is None:
+                    return {
+                        'status': 'NO_DATA', 'execution_status': 'not_submitted',
+                        'truth_status': 'no_data', 'error': 'fresh provider ask/price unavailable', 'pre_flight': True,
+                    }
 
                 _order_submit_t0 = time.time()
                 result = self.trade_confirmation.submit_order(
                     exchange=exchange,
                     symbol=symbol,
                     side=side.upper(),
-                    quote_qty=position_size_usd
+                    quote_qty=position_size_usd,
+                    market_evidence=current_ticker,
                 )
                 _order_elapsed = time.time() - _order_submit_t0
                 if _order_elapsed > 5.0:
@@ -23383,43 +23896,76 @@ class AureonKrakenEcosystem:
                 # Sort by volume if available
                 usdc_pairs_with_vol = []
                 for pair in usdc_pairs:
-                    ticker = self.ticker_cache.get(pair, {})
-                    vol = float(ticker.get('quoteVolume', ticker.get('volume', 0)) or 0)
-                    usdc_pairs_with_vol.append((pair, vol))
+                    ticker = self.ticker_cache.get(pair)
+                    ticker_ok, _ = _validate_market_evidence(ticker, required_fields=('price', 'volume'))
+                    vol = _finite_number(ticker.get('volume'), positive=True) if ticker_ok else None
+                    if vol is not None:
+                        usdc_pairs_with_vol.append((pair, vol))
                 usdc_pairs_with_vol.sort(key=lambda x: x[1], reverse=True)
                 top_pairs = [p[0] for p in usdc_pairs_with_vol[:30]]
             
             if not top_pairs:
-                top_pairs = ['BTCUSDC', 'ETHUSDC', 'SOLUSDC', 'BNBUSDC', 'XRPUSDC']
+                print("   ⚠️ NO_DATA: no fresh provider-ranked symbols; historical request withheld")
+                return
             
             # Fetch 24h historical data
             historical = binance_client.get_24h_historical(symbols=top_pairs, interval='1h')
+            if not isinstance(historical, dict):
+                print("   ⚠️ NO_DATA: malformed historical provider response")
+                return
             
             # Populate price history for each symbol
             loaded_count = 0
             for symbol, klines in historical.items():
-                if klines:
-                    # Extract close prices for price_history
-                    closes = [k['close'] for k in klines]
-                    self.price_history[symbol] = closes
-                    
-                    # Also cache latest price
-                    if closes:
-                        self.realtime_prices[symbol] = closes[-1]
-                    
-                    loaded_count += 1
+                if not isinstance(klines, list) or not klines:
+                    continue
+                validated_rows = []
+                for row in klines:
+                    if not isinstance(row, dict):
+                        validated_rows = []
+                        break
+                    bar_timestamp = _timestamp_seconds(row.get('timestamp') if 'timestamp' in row else row.get('close_time'))
+                    envelope = {
+                        'open': _finite_number(row.get('open'), positive=True),
+                        'high': _finite_number(row.get('high'), positive=True),
+                        'low': _finite_number(row.get('low'), positive=True),
+                        'price': _finite_number(row.get('close'), positive=True),
+                        'volume': _finite_number(row.get('volume'), positive=True),
+                        'truth_status': 'live',
+                        'source_id': 'binance_klines',
+                        'bar_timestamp': bar_timestamp,
+                        'received_at': time.time(),
+                        'generated_values': False,
+                    }
+                    row_ok, _ = _validate_market_evidence(
+                        envelope,
+                        required_fields=('open', 'high', 'low', 'price', 'volume'),
+                        max_age_seconds=30 * 60 * 60,
+                    )
+                    if not row_ok or envelope['low'] > envelope['high']:
+                        validated_rows = []
+                        break
+                    validated_rows.append(envelope)
+                timestamps = [row['bar_timestamp'] for row in validated_rows]
+                if not validated_rows or timestamps != sorted(set(timestamps)):
+                    continue
+                self.price_history[symbol] = [row['price'] for row in validated_rows]
+                if not hasattr(self, 'historical_price_evidence'):
+                    self.historical_price_evidence = {}
+                self.historical_price_evidence[symbol] = validated_rows
+                loaded_count += 1
             
             print(f"   ✅ Loaded 24h history for {loaded_count} symbols")
-            print(f"   📈 Price history populated: {list(historical.keys())[:5]}...")
+            print(f"   📈 Price history populated: {list(self.price_history.keys())[:5]}...")
             
             # Log statistics
-            if historical:
-                first_symbol = list(historical.keys())[0]
-                first_klines = historical[first_symbol]
-                if first_klines:
-                    oldest = first_klines[0].get('timestamp', 0)
-                    newest = first_klines[-1].get('timestamp', 0)
-                    hours_of_data = (newest - oldest) / (1000 * 60 * 60) if oldest and newest else 0
+            if getattr(self, 'historical_price_evidence', None):
+                first_symbol = next(iter(self.historical_price_evidence))
+                first_klines = self.historical_price_evidence[first_symbol]
+                if len(first_klines) >= 2:
+                    oldest = first_klines[0]['bar_timestamp']
+                    newest = first_klines[-1]['bar_timestamp']
+                    hours_of_data = (newest - oldest) / (60 * 60)
                     print(f"   ⏰ Historical span: ~{hours_of_data:.1f} hours of data")
             
         except Exception as e:
@@ -23439,7 +23985,9 @@ class AureonKrakenEcosystem:
         # 🛠️ CRITICAL: Compute REAL wallet balance BEFORE banner!
         # This fixes the "Fake $1000 Balance" bug by detecting actual portfolio value first.
         total, cash, holdings = self.compute_total_equity()
-        if self.tracker.initial_balance == 1000.0 and self.tracker.total_trades == 0:
+        if total is None or cash is None:
+            logger.warning("NO_DATA: authenticated account equity unavailable; live entries remain blocked")
+        elif self.tracker.initial_balance == 1000.0 and self.tracker.total_trades == 0:
             if abs(total - 1000.0) > 1.0 and total > 0:
                 print(f"\n   ⚖️  AUTO-CORRECTING BALANCE: ${self.tracker.initial_balance:.2f} -> ${total:.2f} (Actual Wallet)\n")
                 self.tracker.initial_balance = total
@@ -23966,11 +24514,12 @@ class AureonKrakenEcosystem:
                             """Get current price for validation."""
                             # Try ticker cache first
                             if symbol in self.ticker_cache:
-                                return self.ticker_cache[symbol].get('price', 0)
+                                ticker = self.ticker_cache[symbol]
+                                ticker_ok, _ = _validate_market_evidence(ticker)
+                                if ticker_ok:
+                                    return _finite_number(ticker.get('price'), positive=True)
                             # Try realtime prices
-                            if symbol in self.realtime_prices:
-                                return self.realtime_prices[symbol]
-                            return None
+                            return self.get_realtime_price(symbol)
 
                         validated = self.prediction_validator.validate_predictions(get_price)
                         if validated:
@@ -24277,7 +24826,7 @@ class AureonKrakenEcosystem:
                             print(f"   {tier_emoji} ROUTE {opp['symbol']} → {tier} (Γ={opp.get('coherence', 0):.3f})")
 
                         _order_result = self.open_position(opp)
-                        if _order_result:
+                        if isinstance(_order_result, dict) and _order_result.get('execution_status') == 'filled':
                             self._loop_timing["order_fired_timestamp"] = time.time()
                             self._loop_timing["signal_to_order_sec"] = round(
                                 self._loop_timing["order_fired_timestamp"] - self._loop_timing["signal_timestamp"], 3

@@ -1,0 +1,227 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aureonzorzatechnologies.pl/schemas/website-operator-config-v1.json",
+  "title": "Aureon Website Operator configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "site",
+    "ethos",
+    "budgets",
+    "checks",
+    "packaging",
+    "deployment"
+  ],
+  "properties": {
+    "schema": {
+      "const": "aureon.website-operator.config.v1"
+    },
+    "site": {
+      "type": "object",
+      "required": [
+        "root",
+        "base_url",
+        "critical_routes"
+      ],
+      "properties": {
+        "root": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "base_url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://"
+        },
+        "capacity_receipt": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "canonical_overrides": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "format": "uri",
+            "pattern": "^https://"
+          }
+        },
+        "critical_routes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/relativePath"
+          }
+        }
+      }
+    },
+    "ethos": {
+      "type": "object",
+      "required": [
+        "principles",
+        "required_site_signals",
+        "prohibited_claim_patterns",
+        "claim_inputs"
+      ]
+    },
+    "budgets": {
+      "type": "object",
+      "required": [
+        "site_total_bytes",
+        "site_file_count",
+        "critical_page_direct_bytes",
+        "per_file_bytes"
+      ],
+      "properties": {
+        "site_total_bytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "site_file_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "critical_page_direct_bytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "per_file_bytes": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      }
+    },
+    "checks": {
+      "type": "object"
+    },
+    "design": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "policy",
+        "minimum_score",
+        "competitor_source_target",
+        "competitor_max_age_days",
+        "nexus_weights",
+        "viewport_matrix",
+        "competitor_sources"
+      ],
+      "properties": {
+        "policy": {
+          "type": "string",
+          "minLength": 1
+        },
+        "minimum_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "competitor_source_target": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "competitor_max_age_days": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "nexus_weights": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "source_strength",
+            "coherence",
+            "repeatability",
+            "feasibility",
+            "contradiction_control"
+          ],
+          "properties": {
+            "source_strength": {"type": "number", "minimum": 0},
+            "coherence": {"type": "number", "minimum": 0},
+            "repeatability": {"type": "number", "minimum": 0},
+            "feasibility": {"type": "number", "minimum": 0},
+            "contradiction_control": {"type": "number", "minimum": 0}
+          }
+        },
+        "viewport_matrix": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*x[1-9][0-9]*$"
+          }
+        },
+        "competitor_sources": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "name", "url", "checked_at", "patterns"],
+            "properties": {
+              "id": {"type": "string", "minLength": 1},
+              "name": {"type": "string", "minLength": 1},
+              "url": {"type": "string", "format": "uri", "pattern": "^https://"},
+              "checked_at": {"type": "string", "format": "date-time"},
+              "patterns": {
+                "type": "array",
+                "minItems": 1,
+                "items": {"type": "string", "minLength": 1}
+              }
+            }
+          }
+        }
+      }
+    },
+    "packaging": {
+      "type": "object",
+      "required": [
+        "command",
+        "receipt_glob",
+        "required_release_paths",
+        "blocked_file_names",
+        "blocked_extensions",
+        "allowed_file_names",
+        "allowed_extensions"
+      ]
+    },
+    "deployment": {
+      "type": "object",
+      "required": [
+        "remote_root",
+        "backup_script",
+        "publish_script",
+        "readback_script",
+        "publish_command",
+        "readback_command",
+        "credential_env_names",
+        "required_backup_paths",
+        "audit_max_age_hours",
+        "backup_max_age_hours",
+        "approval_max_age_hours",
+        "automatic_rollback",
+        "credentials_in_receipts"
+      ],
+      "properties": {
+        "remote_root": {
+          "const": "/"
+        },
+        "automatic_rollback": {
+          "const": false
+        },
+        "credentials_in_receipts": {
+          "const": false
+        }
+      }
+    }
+  },
+  "$defs": {
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?![A-Za-z]:)(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+    }
+  }
+}

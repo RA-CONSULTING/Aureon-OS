@@ -108,9 +108,9 @@ export const CelestialAlignments = () => {
   }
 
   const getPowerColor = (power: number) => {
-    if (power >= 1.7) return 'text-purple-500';
-    if (power >= 1.4) return 'text-blue-500';
-    if (power >= 1.2) return 'text-green-500';
+    if (power >= 1.7) return 'text-primary';
+    if (power >= 1.4) return 'text-primary';
+    if (power >= 1.2) return 'text-success';
     return 'text-muted-foreground';
   };
 
@@ -198,12 +198,12 @@ export const CelestialAlignments = () => {
             <Progress value={celestialData.solar.activity * 100} className="h-2 mb-2" />
             
             {celestialData.solar.dominantFlare ? (
-              <div className="mt-2 p-2 rounded bg-orange-500/10 border border-orange-500/20">
+              <div className="mt-2 p-2 rounded bg-warning/10 border border-warning/20">
                 <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="font-bold text-orange-400">
+                  <span className="font-bold text-warning">
                     {celestialData.solar.dominantFlare.class} FLARE DETECTED
                   </span>
-                  <span className="text-orange-300">
+                  <span className="text-warning">
                     {celestialData.solar.dominantFlare.power.toFixed(1)}x
                   </span>
                 </div>
@@ -230,8 +230,8 @@ export const CelestialAlignments = () => {
                       key={i} 
                       variant="outline" 
                       className={`text-xs ${
-                        flare.class.startsWith('X') ? 'border-orange-500 text-orange-500' :
-                        flare.class.startsWith('M') ? 'border-yellow-500 text-yellow-500' :
+                        flare.class.startsWith('X') ? 'border-warning text-warning' :
+                        flare.class.startsWith('M') ? 'border-warning text-warning' :
                         'border-muted'
                       }`}
                     >

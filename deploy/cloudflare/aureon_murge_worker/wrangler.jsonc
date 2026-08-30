@@ -1,17 +1,36 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "codexprosparrow",
-  "main": "workers/index.mjs",
+  "main": "index.mjs",
   "compatibility_date": "2026-05-13",
   "workers_dev": true,
   "observability": {
     "enabled": true
   },
+  "ratelimits": [
+    {
+      "name": "API_PREAUTH_RATE_LIMITER",
+      "namespace_id": "2026081102",
+      "simple": {
+        "limit": 20,
+        "period": 60
+      }
+    },
+    {
+      "name": "API_RATE_LIMITER",
+      "namespace_id": "2026081101",
+      "simple": {
+        "limit": 60,
+        "period": 60
+      }
+    }
+  ],
   "assets": {
     "directory": "./dist-workers",
     "binding": "ASSETS",
     "not_found_handling": "single-page-application",
     "run_worker_first": [
+      "/api",
       "/api/*"
     ]
   }

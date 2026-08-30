@@ -51,6 +51,8 @@ AUREON_UI_CONFIG = {
     'BASE_URL': 'https://aureoninstitute.com',
     'SUPABASE_URL': os.getenv('SUPABASE_URL', ''),
     'SUPABASE_KEY': os.getenv('SUPABASE_ANON_KEY', ''),
+    'SUPABASE_ACCESS_TOKEN': os.getenv('AUREON_SUPABASE_ACCESS_TOKEN', ''),
+    'INGEST_TOKEN': os.getenv('AUREON_INGEST_TOKEN', ''),
     
     # ═══════════════════════════════════════════════════════════════════════
     # PULL ENDPOINTS - Get aggregated data FROM the UI (what other users generated)
@@ -384,11 +386,14 @@ class AureonUIValidator:
             return False
         
         url = f"{self.config['SUPABASE_URL']}{endpoint}"
+        bearer = self.config['SUPABASE_ACCESS_TOKEN'] or self.config['SUPABASE_KEY']
         headers = {
             'apikey': self.config['SUPABASE_KEY'],
-            'Authorization': f"Bearer {self.config['SUPABASE_KEY']}",
+            'Authorization': f"Bearer {bearer}",
             'Content-Type': 'application/json'
         }
+        if self.config['INGEST_TOKEN']:
+            headers['x-aureon-ingest-token'] = self.config['INGEST_TOKEN']
         
         try:
             async with self.session.post(url, json=payload, headers=headers, timeout=10) as resp:
@@ -411,19 +416,24 @@ class AureonUIValidator:
         - Your P&L contributes to leaderboard
         - Your Kill Scanner state improves predictions
         """
-        payload = {
-            'temporal_id': datetime.now().strftime('%Y%m%d_%H%M%S'),
-            'terminal_id': state.get('terminal_id', 'default'),
-            'positions': state.get('positions', []),
-            'cash_balance': state.get('cash_balance', 0),
-            'total_equity': state.get('total_equity', 0),
-            'active_signals': state.get('active_signals', []),
-            'kill_scanner_targets': state.get('kill_scanner_targets', []),
-            'patriot_scouts': state.get('patriot_scouts', []),
-            'mycelium_state': state.get('mycelium_state', {}),
-            'coherence': state.get('coherence', 0.5),
-            'metadata': state.get('metadata', {})
+        required = {
+            'user_id', 'truth_status', 'source_id', 'source_timestamp', 'generated_values',
+            'portfolio_value', 'portfolio_currency', 'peak_equity', 'current_drawdown',
+            'max_drawdown', 'total_trades', 'wins', 'win_rate', 'avg_hold_time',
+            'coherence', 'lambda', 'gaia_state', 'gaia_frequency', 'gaia_purity',
+            'gaia_carrier_phi', 'gaia_432_lock', 'hnc_frequency', 'hnc_market_state',
+            'hnc_coherence_percent', 'hnc_modifier', 'mycelium_hives',
+            'mycelium_agents', 'mycelium_generation', 'max_generation', 'queen_state',
+            'queen_pnl', 'compounded', 'harvested', 'pool_available', 'scout_count',
+            'split_count', 'trading_mode', 'is_trading_active', 'entry_threshold',
+            'exit_threshold', 'risk_multiplier', 'tp_multiplier', 'runtime_minutes',
+            'ws_connected', 'ws_message_count', 'latest_monitor_line', 'status_lines',
         }
+        missing = sorted(key for key in required if key not in state or state[key] is None)
+        if missing or state.get('generated_values') is not False:
+            logger.error("Terminal state not sent: missing fresh production fields: %s", ', '.join(missing))
+            return False
+        payload = dict(state)
         
         return await self._push_supabase(
             self.config['PUSH_ENDPOINTS']['terminal_state'],
@@ -439,21 +449,20 @@ class AureonUIValidator:
         - Global P&L statistics
         - Pattern correlations
         """
-        payload = {
-            'temporal_id': datetime.now().strftime('%Y%m%d_%H%M%S'),
-            'symbol': trade.get('symbol'),
-            'exchange': trade.get('exchange'),
-            'side': trade.get('side'),
-            'quantity': trade.get('quantity', 0),
-            'price': trade.get('price', 0),
-            'value_usd': trade.get('value_usd', 0),
-            'pnl': trade.get('pnl', 0),
-            'is_kill': trade.get('is_kill', False),
-            'kill_eta_accuracy': trade.get('kill_eta_accuracy', None),
-            'sniper_name': trade.get('sniper_name', 'Unknown'),
-            'province': trade.get('province', 'Ulster'),
-            'metadata': trade.get('metadata', {})
+        envelope_fields = {'user_id', 'truth_status', 'source_id', 'source_timestamp', 'generated_values'}
+        receipt_fields = {
+            'transaction_id', 'exchange', 'symbol', 'side', 'price', 'quantity',
+            'fee', 'fee_asset', 'timestamp',
         }
+        missing = sorted(key for key in envelope_fields | receipt_fields if key not in trade or trade[key] is None)
+        if missing or trade.get('generated_values') is not False:
+            logger.error("Trade not sent: incomplete provider receipt: %s", ', '.join(missing))
+            return False
+        receipt = {key: value for key, value in trade.items() if key not in envelope_fields}
+        payload = {
+            key: trade[key] for key in envelope_fields
+        }
+        payload['trades'] = [receipt]
         
         return await self._push_supabase(
             self.config['PUSH_ENDPOINTS']['trades'],
@@ -471,19 +480,19 @@ class AureonUIValidator:
         - Kill Scanner targets
         - Performance metrics
         """
-        payload = {
-            'temporal_id': datetime.now().strftime('%Y%m%d_%H%M%S'),
-            'systems_online': ecosystem.get('systems_online', 0),
-            'total_systems': ecosystem.get('total_systems', 25),
-            'hive_mind_coherence': ecosystem.get('coherence', 0),
-            'bus_consensus': ecosystem.get('consensus', 'HOLD'),
-            'bus_confidence': ecosystem.get('confidence', 0),
-            'system_states': ecosystem.get('system_states', {}),
-            'kill_scanner': ecosystem.get('kill_scanner', {}),
-            'patriots': ecosystem.get('patriots', {}),
-            'mycelium': ecosystem.get('mycelium', {}),
-            'metadata': ecosystem.get('metadata', {})
+        required = {
+            'temporal_id', 'systems_online', 'total_systems', 'hive_mind_coherence',
+            'bus_consensus', 'bus_confidence', 'json_enhancements_loaded',
+            'system_states', 'truth_status', 'source_id', 'source_event_id',
+            'source_timestamp', 'generated_values',
         }
+        missing = sorted(key for key in required if key not in ecosystem or ecosystem[key] is None)
+        if missing or ecosystem.get('generated_values') is not False:
+            logger.error("Ecosystem snapshot not sent: missing fresh production fields: %s", ', '.join(missing))
+            return False
+        payload = {key: ecosystem[key] for key in required}
+        if 'metadata' in ecosystem:
+            payload['metadata'] = ecosystem['metadata']
         
         return await self._push_supabase(
             self.config['PUSH_ENDPOINTS']['ecosystem_snapshot'],
@@ -496,19 +505,10 @@ class AureonUIValidator:
         
         Your kills update the Sniper Leaderboard that everyone sees.
         """
-        payload = {
-            'temporal_id': datetime.now().strftime('%Y%m%d_%H%M%S'),
-            'symbol': kill.get('symbol'),
-            'exchange': kill.get('exchange'),
-            'pnl': kill.get('pnl', 0),
-            'hold_time_seconds': kill.get('hold_time', 0),
-            'eta_prediction': kill.get('eta_prediction', None),
-            'eta_actual': kill.get('eta_actual', None),
-            'probability_at_kill': kill.get('probability', 0),
-            'sniper_name': kill.get('sniper_name', 'Unknown'),
-            'province': kill.get('province', 'Ulster'),
-            'velocity_at_kill': kill.get('velocity', 0),
-        }
+        if kill.get('action') not in {'log_entry', 'log_exit'} or not isinstance(kill.get('trade'), dict):
+            logger.error("Calibration event not sent: action and complete provider trade receipt are required")
+            return False
+        payload = {'action': kill['action'], 'trade': kill['trade']}
         
         # This updates sniper leaderboard
         return await self._push_supabase(
@@ -940,21 +940,23 @@ class AureonUIBridge:
             harmonic_data = sync_result['pull_data'].get('harmonic', {})
             
             # Insight: Is global coherence better than your local view?
-            local_coherence = local_state.get('coherence', 0.5)
-            global_coherence = harmonic_data.get('coherence', 0.5)
-            
-            sync_result['insights']['coherence_delta'] = global_coherence - local_coherence
-            sync_result['insights']['global_is_stronger'] = global_coherence > local_coherence
+            local_coherence = local_state.get('coherence')
+            global_coherence = harmonic_data.get('coherence')
+            if isinstance(local_coherence, (int, float)) and isinstance(global_coherence, (int, float)):
+                sync_result['insights']['coherence_delta'] = global_coherence - local_coherence
+                sync_result['insights']['global_is_stronger'] = global_coherence > local_coherence
             
             # Insight: Entry conditions
-            entry_score = harmonic_data.get('entry_score', 50)
-            sync_result['insights']['entry_optimal'] = entry_score >= 70
-            sync_result['insights']['entry_score'] = entry_score
+            entry_score = harmonic_data.get('entry_score')
+            if isinstance(entry_score, (int, float)):
+                sync_result['insights']['entry_optimal'] = entry_score >= 70
+                sync_result['insights']['entry_score'] = entry_score
             
             # Insight: Frequency alignment
-            freq_band = harmonic_data.get('band', 'NEUTRAL')
-            sync_result['insights']['market_in_harmony'] = freq_band in ['HARMONY', 'LOVE']
-            sync_result['insights']['market_distorted'] = freq_band == 'DISTORTION'
+            freq_band = harmonic_data.get('band')
+            if isinstance(freq_band, str) and freq_band:
+                sync_result['insights']['market_in_harmony'] = freq_band in ['HARMONY', 'LOVE']
+                sync_result['insights']['market_distorted'] = freq_band == 'DISTORTION'
         
         logger.info(f"🪞 Mirror sync: PUSH={sync_result['pushed']} PULL={sync_result['pulled']}")
         return sync_result
@@ -1152,33 +1154,15 @@ async def mirror_sync_terminal(local_state: Dict[str, Any]) -> Dict[str, Any]:
     return await bridge.mirror_sync(local_state)
 
 
-async def push_kill_to_leaderboard(
-    symbol: str,
-    exchange: str,
-    pnl: float,
-    hold_time: float,
-    sniper_name: str = "The Silent",
-    province: str = "Ulster"
-) -> bool:
+async def push_kill_to_leaderboard(calibration_event: Dict[str, Any]) -> bool:
     """
-    🎯 Push a successful kill to update the global sniper leaderboard.
-    
-    Your kills contribute to the collective stats that everyone sees.
+    A leaderboard result is accepted only as a complete calibration entry/exit
+    event carrying the exchange order receipt and live provenance required by
+    ingest-calibration-trade. This helper no longer invents identity,
+    probability, velocity, or missing receipt fields.
     """
     bridge = get_ui_bridge()
-    
-    kill = {
-        'symbol': symbol,
-        'exchange': exchange,
-        'pnl': pnl,
-        'hold_time': hold_time,
-        'sniper_name': sniper_name,
-        'province': province,
-        'probability': 1.0,  # It happened!
-        'velocity': pnl / max(hold_time, 1),
-    }
-    
-    return await bridge.push_kill_to_leaderboard(kill)
+    return await bridge.push_kill_to_leaderboard(calibration_event)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════

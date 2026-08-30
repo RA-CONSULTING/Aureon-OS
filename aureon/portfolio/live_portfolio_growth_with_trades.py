@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 🔴 LIVE PORTFOLIO GROWTH WITH REAL TRADES 🔴
-Combines portfolio tracking with live trading to PROVE growth.
+Combines live trading with provenance-gated portfolio growth evidence.
 
 Features:
 - Real-time portfolio tracking across exchanges
@@ -11,7 +11,7 @@ Features:
 - Russian doll validation
 - Real money movements
 
-Shows actual growth from $115.48 GBP to billions!
+Reports growth only when complete provider-valued snapshots support it.
 """
 
 from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
@@ -144,17 +144,25 @@ class LivePortfolioGrowthTrader:
             except Exception as e:
                 print(f"⚠️  Could not save session: {e}")
     
-    def start_new_session(self):
-        """Start a new live trading session."""
+    async def start_new_session(self) -> bool:
+        """Start only from a complete provider-valued portfolio receipt."""
         session_id = f"live_growth_{int(time.time())}"
-        
-        # Get initial balance
-        initial_balance = 0.0
+
         try:
-            snapshot = asyncio.run(self.portfolio_tracker.get_full_portfolio_snapshot())
-            initial_balance = snapshot.total_usd_value
-        except:
-            initial_balance = 115.48  # GBP converted to USD approx
+            snapshot = await self.portfolio_tracker.get_full_portfolio_snapshot()
+        except Exception as exc:
+            print(f"❌ NO_DATA: cannot start growth session ({type(exc).__name__})")
+            return False
+        if (
+            snapshot.valuation_status != 'complete'
+            or snapshot.truth_status != 'real_derived'
+            or snapshot.generated_values
+            or snapshot.total_usd_value is None
+            or snapshot.total_usd_value <= 0.0
+        ):
+            print(f"❌ NO_DATA: cannot start growth session ({snapshot.reason or 'incomplete valuation'})")
+            return False
+        initial_balance = snapshot.total_usd_value
         
         self.session = LiveGrowthSession(
             session_id=session_id,
@@ -170,6 +178,7 @@ class LivePortfolioGrowthTrader:
         self._save_session()
         print(f"🆕 NEW SESSION STARTED: {session_id}")
         print(f"   💰 Starting Balance: ${initial_balance:,.2f}")
+        return True
     
     async def execute_live_trade(self, prediction: Dict) -> Optional[LiveTradeResult]:
         """
@@ -302,7 +311,8 @@ class LivePortfolioGrowthTrader:
         print("   🎯 Only 306° perfection trades allowed")
         
         # Start new session
-        self.start_new_session()
+        if not await self.start_new_session():
+            return
         
         start_time = time.time()
         end_time = start_time + (duration_minutes * 60)
@@ -313,7 +323,21 @@ class LivePortfolioGrowthTrader:
             while time.time() < end_time and self.session.is_active:
                 # Get portfolio snapshot
                 portfolio_snapshot = await self.portfolio_tracker.get_full_portfolio_snapshot()
-                
+
+                if (
+                    portfolio_snapshot.valuation_status != 'complete'
+                    or portfolio_snapshot.truth_status != 'real_derived'
+                    or portfolio_snapshot.generated_values
+                    or portfolio_snapshot.total_usd_value is None
+                ):
+                    print(
+                        f"⚠️  NO_DATA: portfolio valuation incomplete; "
+                        f"session proof and trading cycle paused "
+                        f"({portfolio_snapshot.reason or 'provider read unavailable'})"
+                    )
+                    await asyncio.sleep(10)
+                    continue
+
                 # Update session balance with real portfolio value
                 self.session.current_balance_usd = portfolio_snapshot.total_usd_value
                 self._save_session()
@@ -353,14 +377,26 @@ class LivePortfolioGrowthTrader:
         self.display_live_status()
         self.portfolio_tracker.display_snapshot(final_snapshot)
         self.portfolio_tracker.display_growth_proof()
-        
+
+        final_is_complete = (
+            final_snapshot.valuation_status == 'complete'
+            and final_snapshot.truth_status == 'real_derived'
+            and not final_snapshot.generated_values
+            and final_snapshot.total_usd_value is not None
+        )
+        if final_is_complete:
+            self.session.current_balance_usd = final_snapshot.total_usd_value
+            self._save_session()
+
         # Calculate final growth
-        if self.session.start_balance_usd > 0:
+        if final_is_complete and self.session.start_balance_usd > 0:
             final_growth = ((self.session.current_balance_usd / self.session.start_balance_usd) - 1) * 100
             print(f"\n🎉 FINAL RESULT: {final_growth:+.2f}% growth from REAL trades!")
             print(f"   Started: ${self.session.start_balance_usd:,.2f}")
             print(f"   Ended:   ${self.session.current_balance_usd:,.2f}")
             print(f"   P&L:    ${self.session.total_pnl:+,.2f}")
+        else:
+            print("\nNO_DATA: final growth proof not calculated or persisted")
 
 
 async def main():

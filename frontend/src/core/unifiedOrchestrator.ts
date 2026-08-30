@@ -26,7 +26,6 @@ import { portfolioRebalancer } from './portfolioRebalancer';
 import { adaptiveFilterThresholds } from './adaptiveFilterThresholds';
 import { unifiedStateAggregator } from './unifiedStateAggregator';
 import { notificationManager } from './notificationManager';
-import { exchangeLearningTracker } from './exchangeLearningTracker';
 import { tradeLogger } from './tradeLogger';
 import { adaptiveLearningEngine } from './adaptiveLearningEngine';
 import { tickerCacheManager, type CachedTicker } from './tickerCacheManager';
@@ -47,6 +46,10 @@ export interface TradeExecutionResult {
   quantity?: number;
   error?: string;
   exchange?: string;
+  truthStatus?: 'live';
+  sourceId?: string;
+  sourceTimestamp?: string;
+  generatedValues?: false;
 }
 
 export interface OrchestrationResult {
@@ -69,14 +72,14 @@ export interface OrchestrationResult {
   routingDecision: RoutingDecision | null;
   qgitaSignal: QGITASignal | null;
   positionSizing: {
-    positionSizeUsd: number;
-    availableBalance: number;
-    riskAmount: number;
+    positionSizeUsd: number | null;
+    availableBalance: number | null;
+    riskAmount: number | null;
   } | null;
   finalDecision: {
     action: 'BUY' | 'SELL' | 'HOLD';
     symbol: string;
-    confidence: number;
+    confidence: number | null;
     reason: string;
     recommendedExchange?: string;
     positionSizeUsd?: number;
@@ -97,8 +100,8 @@ export interface OrchestratorConfig {
 }
 
 const DEFAULT_CONFIG: OrchestratorConfig = {
-  minCoherence: 0.35, // Lowered from 0.70 for demo mode
-  minConfidence: 0.40, // Lowered from 0.50 for demo mode
+  minCoherence: 0.70,
+  minConfidence: 0.50,
   requireLHE: false,
   dryRun: true,
 };
@@ -108,6 +111,7 @@ export class UnifiedOrchestrator {
   private lighthouse: LighthouseConsensus;
   private rainbowBridge: RainbowBridge;
   private config: OrchestratorConfig;
+  private liveExecutionConfirmed = false;
   private isRunning: boolean = false;
   private currentSymbol: string = 'BTCUSDT';
   
@@ -142,13 +146,28 @@ export class UnifiedOrchestrator {
   /**
    * Fetch Schumann resonance data from edge function
    */
-  private async fetchSchumannData(): Promise<{ coherenceBoost: number; fundamentalHz: number } | null> {
+  private async fetchSchumannData(): Promise<{
+    coherenceBoost: number;
+    fundamentalHz: number;
+    truthStatus: 'real_derived';
+    sourceId: string;
+    sourceTimestamp: string;
+    generatedValues: false;
+  } | null> {
     try {
       const { data, error } = await supabase.functions.invoke('fetch-schumann-data');
-      if (error || !data) return null;
+      const sourceTime = Date.parse(String(data?.sourceTimestamp || ''));
+      if (error || data?.truthStatus !== 'real_derived' || data?.generatedValues !== false ||
+          !data?.sourceId || !Number.isFinite(sourceTime) || Date.now() - sourceTime < 0 ||
+          Date.now() - sourceTime > 20 * 60 * 1000 || !Number.isFinite(data?.coherenceBoost) ||
+          !Number.isFinite(data?.fundamentalHz)) return null;
       return {
-        coherenceBoost: data.coherenceBoost || 0,
-        fundamentalHz: data.fundamentalHz || 7.83
+        coherenceBoost: data.coherenceBoost,
+        fundamentalHz: data.fundamentalHz,
+        truthStatus: 'real_derived',
+        sourceId: data.sourceId,
+        sourceTimestamp: data.sourceTimestamp,
+        generatedValues: false,
       };
     } catch (err) {
       console.debug('[Orchestrator] Schumann data unavailable');
@@ -166,13 +185,13 @@ export class UnifiedOrchestrator {
     // Step 0: Fetch Earth streams and Schumann data to feed into MasterEquation
     try {
       const earthStreams = await this.fetchEarthStreams();
-      if (earthStreams) {
+      if (earthStreams && earthStreams.truthStatus !== 'no_data') {
         this.masterEquation.setEarthStreams(earthStreams);
       }
       
       const schumannData = await this.fetchSchumannData();
-      if (schumannData && schumannData.coherenceBoost) {
-        this.masterEquation.setUserLocation(0, 0, 0, schumannData.coherenceBoost);
+      if (schumannData) {
+        this.masterEquation.setSchumannBoost(schumannData.coherenceBoost);
       }
     } catch (err) {
       // Non-critical - continue with cycle
@@ -184,7 +203,7 @@ export class UnifiedOrchestrator {
     
     // Step 2: Compute Master Equation Λ(t)
     const lambdaState = await this.masterEquation.step(marketSnapshot);
-    this.publishMasterEquation(lambdaState);
+    this.publishMasterEquation(lambdaState, marketSnapshot);
     
     // Step 3: Compute Lighthouse consensus
     const lighthouseState = this.lighthouse.validate(
@@ -199,11 +218,11 @@ export class UnifiedOrchestrator {
       Math.abs(marketSnapshot.spread) * 10, // spreadExpansion
       Math.abs(marketSnapshot.momentum) // priceAcceleration
     );
-    this.publishLighthouse(lighthouseState, lambdaState.coherence);
+    this.publishLighthouse(lighthouseState, lambdaState.coherence, marketSnapshot);
     
     // Step 4: Compute Rainbow Bridge emotional state
     const rainbowState = this.rainbowBridge.map(lambdaState.lambda, lambdaState.coherence);
-    this.publishRainbowBridge(rainbowState);
+    this.publishRainbowBridge(rainbowState, marketSnapshot);
     
     // Step 5: Compute The Prism transformation (Fear → Love)
     const prismOutput = thePrism.transform({
@@ -229,38 +248,29 @@ export class UnifiedOrchestrator {
       prismOutput
     );
     
-    // Step 6b: Wire fullEcosystemConnector to persist ALL states to database
-    fullEcosystemConnector.processMarketData(
-      marketSnapshot.price,
-      marketSnapshot.volume,
-      marketSnapshot.volatility,
-      marketSnapshot.momentum,
-      lambdaState.lambda,
-      lambdaState.coherence,
-      lambdaState.substrate,
-      lambdaState.observer,
-      lambdaState.echo
-    ).catch(err => console.warn('[UnifiedOrchestrator] Ecosystem persistence error:', err));
-    
-    // Step 6c: Generate QGITA signal directly in orchestrator
-    const qgitaSignal = qgitaSignalGenerator.generateSignal(
-      timestamp,
-      marketSnapshot.price,
-      marketSnapshot.volume,
-      lambdaState.lambda,
-      lambdaState.coherence,
-      lambdaState.substrate,
-      lambdaState.observer,
-      lambdaState.echo
-    );
-    this.publishQGITA(qgitaSignal);
+    // Step 6b: Reuse the single QGITA computation performed by ecosystemConnector.
+    // Recomputing here used to count one provider observation multiple times.
+    const qgitaSignal = ecosystemConnector.getQGITASignal();
+    if (qgitaSignal) this.publishQGITA(qgitaSignal);
+
+    // Step 6c: persist only the evidence-bearing market, field, and QGITA state.
+    fullEcosystemConnector.processMarketData({
+      symbol,
+      marketSnapshot,
+      lambda: lambdaState.lambda,
+      coherence: lambdaState.coherence,
+      substrate: lambdaState.substrate,
+      observer: lambdaState.observer,
+      echo: lambdaState.echo,
+      qgitaSignal,
+    }).catch(err => console.warn('[UnifiedOrchestrator] Evidence persistence error:', err));
     
     // Step 6d: Publish Prism state to UnifiedBus
-    this.publishPrism(prismOutput);
+    this.publishPrism(prismOutput, marketSnapshot);
     
     // Step 6e: Run Hocus→Pattern→Template Pipeline (background automation)
     const hocusPatternState = hocusPatternPipeline.step(lambdaState.lambda);
-    this.publishHocusPattern(hocusPatternState);
+    this.publishHocusPattern(hocusPatternState, marketSnapshot);
     temporalLadder.heartbeat(SYSTEMS.HOCUS_PATTERN, hocusPatternState.totalCoherence);
     
     // Step 6f: HNC Probability Matrix - 2-hour temporal forecasting
@@ -281,7 +291,7 @@ export class UnifiedOrchestrator {
     };
     const probabilityMatrix = hncProbabilityMatrix.generateMatrix(symbol, { ...currentMarketData, resonance: prismOutput.resonance });
     const probabilitySignal = hncProbabilityMatrix.getTradingSignal(symbol, currentMarketData);
-    this.publishProbabilityMatrix(probabilityMatrix, probabilitySignal);
+    this.publishProbabilityMatrix(probabilityMatrix, probabilitySignal, marketSnapshot);
     temporalLadder.heartbeat(SYSTEMS.PROBABILITY_MATRIX, probabilitySignal.confidence);
     
     // Step 7: Quantum Telescope - Geometric light analysis
@@ -306,7 +316,11 @@ export class UnifiedOrchestrator {
     
     // Step 10: Cross-Exchange Arbitrage Scanner
     // Update price cache with current market snapshot
-    crossExchangeArbitrageScanner.updatePrice(symbol, 'binance', marketSnapshot.price);
+    const snapshotExchange = marketSnapshot.sourceId.startsWith('kraken:') ? 'kraken' :
+      marketSnapshot.sourceId.startsWith('binance:') ? 'binance' : null;
+    if (snapshotExchange) {
+      crossExchangeArbitrageScanner.updatePrice(symbol, snapshotExchange, marketSnapshot.price);
+    }
     const arbitrageScan = crossExchangeArbitrageScanner.scanDirectArbitrage([symbol]);
     if (arbitrageScan.bestOpportunity?.isViable) {
       console.log(`[Orchestrator:Arbitrage] 💰 Opportunity: ${arbitrageScan.bestOpportunity.symbol} ` +
@@ -315,9 +329,13 @@ export class UnifiedOrchestrator {
     }
     
     // Step 11: Position Heat Tracker - Check correlation concentration
-    positionHeatTracker.setCapital(exchangeState.totalEquityUsd || 10000);
-    const heatState = positionHeatTracker.getHeatState();
-    const heatCheck = positionHeatTracker.canAddPosition(symbol, positionSizing.positionSizeUsd);
+    const hasVerifiedCapital = exchangeState.truthStatus === 'real_derived' &&
+      Number.isFinite(exchangeState.totalEquityUsd) && (exchangeState.totalEquityUsd as number) >= 0;
+    if (hasVerifiedCapital) positionHeatTracker.setCapital(exchangeState.totalEquityUsd as number);
+    const heatState = hasVerifiedCapital ? positionHeatTracker.getHeatState() : null;
+    const heatCheck = hasVerifiedCapital && Number.isFinite(positionSizing.positionSizeUsd)
+      ? positionHeatTracker.canAddPosition(symbol, positionSizing.positionSizeUsd as number)
+      : { allowed: false, reason: 'NO_VERIFIED_CAPITAL_OR_POSITION_SIZE', projectedHeat: null };
     if (!heatCheck.allowed) {
       console.log(`[Orchestrator:Heat] 🔥 Position blocked: ${heatCheck.reason}`);
     }
@@ -334,9 +352,15 @@ export class UnifiedOrchestrator {
     // Step 13: Get Smart Order Router recommendation
     let routingDecision: RoutingDecision | null = null;
     try {
-      routingDecision = await smartOrderRouter.getBestQuote(symbol, 'BUY', positionSizing.positionSizeUsd / marketSnapshot.price);
+      if (Number.isFinite(positionSizing.positionSizeUsd) && (positionSizing.positionSizeUsd as number) > 0) {
+        routingDecision = await smartOrderRouter.getBestQuote(
+          symbol,
+          'BUY',
+          (positionSizing.positionSizeUsd as number) / marketSnapshot.price,
+        );
+      }
     } catch (err) {
-      console.warn('[UnifiedOrchestrator] Smart routing failed, using default:', err);
+      console.warn('[UnifiedOrchestrator] No verified smart-routing quote:', err);
     }
     
     // Step 14: Check Elephant Memory for avoidance
@@ -406,24 +430,28 @@ export class UnifiedOrchestrator {
     
     // Step 17: Apply adaptive learning engine before trade
     const frequencyBand = tradeLogger.classifyFrequencyBand(prismOutput.frequency);
-    const adaptiveCheck = adaptiveLearningEngine.shouldTrade({
-      coherence: lambdaState.coherence,
-      confidence: finalDecision.confidence,
-      frequencyBand,
-      regime: regimeResult.regime,
-      hour: new Date().getHours(),
-    });
+    const adaptiveCheck = finalDecision.action !== 'HOLD' && Number.isFinite(finalDecision.confidence)
+      ? adaptiveLearningEngine.shouldTrade({
+          coherence: lambdaState.coherence,
+          confidence: finalDecision.confidence as number,
+          frequencyBand,
+          regime: regimeResult.regime,
+          hour: new Date().getHours(),
+        })
+      : { allowed: false, reason: 'NO_ACTIONABLE_EVIDENCE', modifier: 1 };
     
     // Step 18: Execute trade if conditions met (also check adaptive thresholds)
     let tradeExecuted = false;
     let tradeResult: TradeExecutionResult | null = null;
     // Also check imperial should trade, heat allows, and adaptive thresholds pass
-    if (finalDecision.action !== 'HOLD' && !this.config.dryRun && cosmicState.shouldTrade && heatCheck.allowed && passesAdaptiveThresholds && adaptiveCheck.allowed) {
+    if (finalDecision.action !== 'HOLD' && !this.config.dryRun && this.liveExecutionConfirmed &&
+        cosmicState.shouldTrade && heatCheck.allowed && passesAdaptiveThresholds && adaptiveCheck.allowed &&
+        Number.isFinite(finalDecision.positionSizeUsd) && routingDecision) {
       // Apply adaptive position size modifier
-      const adjustedPositionSize = adaptiveLearningEngine.adjustPositionSize(finalDecision.positionSizeUsd || positionSizing.positionSizeUsd) * adaptiveCheck.modifier;
+      const adjustedPositionSize = adaptiveLearningEngine.adjustPositionSize(finalDecision.positionSizeUsd as number) * adaptiveCheck.modifier;
       
       tradeResult = await this.executeTrade(
-        { ...finalDecision, positionSizeUsd: adjustedPositionSize }, 
+        { ...finalDecision, confidence: finalDecision.confidence as number, positionSizeUsd: adjustedPositionSize },
         symbol, 
         marketSnapshot, 
         lambdaState, 
@@ -432,51 +460,15 @@ export class UnifiedOrchestrator {
       );
       tradeExecuted = tradeResult.success;
       
-      if (tradeResult.success) {
-        // Log trade entry via TradeLogger
-        await tradeLogger.logEntry({
-          symbol,
-          side: finalDecision.action as 'BUY' | 'SELL',
-          price: tradeResult.executedPrice || marketSnapshot.price,
-          quantity: tradeResult.quantity || adjustedPositionSize / marketSnapshot.price,
-          positionSizeUsd: adjustedPositionSize,
-          prismFrequency: prismOutput.frequency,
-          coherence: lambdaState.coherence,
-          lambda: lambdaState.lambda,
-          lighthouseConfidence: lighthouseState.confidence,
-          hncProbability: probabilitySignal.probability,
-          qgitaTier: qgitaSignal?.tier || 3,
-          exchange: tradeResult.exchange || 'binance',
-          orderId: tradeResult.orderId,
-          regime: regimeResult.regime,
-          cosmicPhase: cosmicState.phase,
-        });
-        
-        // Add position to heat tracker
-        positionHeatTracker.addPosition(symbol, adjustedPositionSize);
-        // Create trailing stop for new position
-        trailingStopManager.createStop(symbol, marketSnapshot.price, marketSnapshot.price);
-        // Record to adaptive thresholds for learning
-        adaptiveFilterThresholds.recordTrade({
-          symbol,
-          profit: 0, // Will be updated on close
-          coherenceAtEntry: lambdaState.coherence,
-          momentumAtEntry: marketSnapshot.momentum,
-          volumeAtEntry: marketSnapshot.volume,
-          regime: regimeResult.regime,
-          timestamp: Date.now(),
-        });
-        // Update state aggregator
-        unifiedStateAggregator.updateSymbolInsight(symbol, 0, true);
-        // Record to exchange learning tracker
-        const routedExchange = (routingDecision?.bestQuote?.exchange || 'binance') as 'binance' | 'kraken' | 'alpaca' | 'capital';
-        exchangeLearningTracker.recordTrade(routedExchange, symbol, 0, true, 50);
-        // Send notification
+      if (tradeResult.success && tradeResult.executedPrice && tradeResult.quantity && tradeResult.exchange) {
+        // The Edge Function owns persistence of the immutable exchange receipt
+        // and live position. Do not manufacture entry P&L or duplicate it locally.
+        positionHeatTracker.addPosition(symbol, tradeResult.executedPrice * tradeResult.quantity);
         await notificationManager.notifyTrade(
           symbol, 
           finalDecision.action as 'BUY' | 'SELL', 
-          marketSnapshot.price, 
-          adjustedPositionSize / marketSnapshot.price
+          tradeResult.executedPrice,
+          tradeResult.quantity,
         );
       } else {
         console.warn('[UnifiedOrchestrator] Trade failed:', tradeResult.error);
@@ -521,7 +513,7 @@ export class UnifiedOrchestrator {
   /**
    * Publish HNC Probability Matrix state to bus
    */
-  private publishProbabilityMatrix(matrix: ProbabilityMatrix, signal: ProbabilitySignal): void {
+  private publishProbabilityMatrix(matrix: ProbabilityMatrix, signal: ProbabilitySignal, source: MarketSnapshot): void {
     let busSignal: SignalType = 'NEUTRAL';
     if (signal.action === 'BUY') busSignal = 'BUY';
     else if (signal.action === 'SELL') busSignal = 'SELL';
@@ -553,6 +545,10 @@ export class UnifiedOrchestrator {
         fineTunedProbability: matrix.fineTunedProbability,
         positionModifier: matrix.positionModifier,
         recommendedAction: matrix.recommendedAction,
+        truthStatus: 'real_derived',
+        sourceId: source.sourceId,
+        sourceTimestamp: source.sourceTimestamp,
+        generatedValues: false,
       },
     });
   }
@@ -598,6 +594,10 @@ export class UnifiedOrchestrator {
         lighthouseL: signal.lighthouse.L,
         isLHE: signal.lighthouse.isLHE,
         anomalyPointer: signal.anomalyPointer,
+        truthStatus: signal.truthStatus,
+        sourceId: signal.sourceId,
+        sourceTimestamp: signal.sourceTimestamp,
+        generatedValues: false,
       },
     });
   }
@@ -606,20 +606,28 @@ export class UnifiedOrchestrator {
    * Publish DataIngestion state to bus
    */
   private publishDataIngestion(snapshot: MarketSnapshot): void {
-    const hasData = snapshot.price > 0 && snapshot.volume > 0;
+    const requiredValues = [snapshot.price, snapshot.volume, snapshot.volatility, snapshot.momentum, snapshot.spread];
+    const validCount = requiredValues.filter(Number.isFinite).length;
+    const completeness = validCount / requiredValues.length;
+    const hasData = snapshot.price > 0 && snapshot.volume >= 0 && completeness === 1 &&
+      snapshot.truthStatus === 'real_derived' && snapshot.generatedValues === false;
     
     unifiedBus.publish({
       systemName: 'DataIngestion',
       timestamp: Date.now(),
       ready: hasData,
-      coherence: hasData ? 0.9 : 0,
-      confidence: hasData ? 0.95 : 0,
+      coherence: hasData ? completeness : null,
+      confidence: hasData ? completeness : null,
       signal: 'NEUTRAL',
       data: {
         price: snapshot.price,
         volume: snapshot.volume,
         volatility: snapshot.volatility,
         momentum: snapshot.momentum,
+        truthStatus: snapshot.truthStatus,
+        sourceId: snapshot.sourceId,
+        sourceTimestamp: snapshot.sourceTimestamp,
+        generatedValues: false,
       },
     });
   }
@@ -627,7 +635,7 @@ export class UnifiedOrchestrator {
   /**
    * Publish Master Equation state to bus
    */
-  private publishMasterEquation(state: LambdaState): void {
+  private publishMasterEquation(state: LambdaState, source: MarketSnapshot): void {
     // Determine signal from Lambda
     let signal: SignalType = 'NEUTRAL';
     if (state.lambda > 0.5 && state.coherence > this.config.minCoherence) {
@@ -649,6 +657,10 @@ export class UnifiedOrchestrator {
         observer: state.observer,
         echo: state.echo,
         dominantNode: state.dominantNode,
+        truthStatus: 'real_derived',
+        sourceId: source.sourceId,
+        sourceTimestamp: source.sourceTimestamp,
+        generatedValues: false,
       },
     });
   }
@@ -656,7 +668,7 @@ export class UnifiedOrchestrator {
   /**
    * Publish Lighthouse state to bus
    */
-  private publishLighthouse(state: LighthouseState, coherence: number): void {
+  private publishLighthouse(state: LighthouseState, coherence: number, source: MarketSnapshot): void {
     let signal: SignalType = 'NEUTRAL';
     if (state.isLHE) {
       signal = state.L > 0.5 ? 'BUY' : 'SELL';
@@ -674,6 +686,10 @@ export class UnifiedOrchestrator {
         isLHE: state.isLHE,
         threshold: state.threshold,
         metrics: state.metrics,
+        truthStatus: 'real_derived',
+        sourceId: source.sourceId,
+        sourceTimestamp: source.sourceTimestamp,
+        generatedValues: false,
       },
     });
   }
@@ -681,7 +697,7 @@ export class UnifiedOrchestrator {
   /**
    * Publish Rainbow Bridge state to bus
    */
-  private publishRainbowBridge(state: RainbowState): void {
+  private publishRainbowBridge(state: RainbowState, source: MarketSnapshot): void {
     // Map phase to signal
     let signal: SignalType = 'NEUTRAL';
     if (state.phase === 'LOVE' || state.phase === 'AWE' || state.phase === 'UNITY') {
@@ -701,6 +717,10 @@ export class UnifiedOrchestrator {
         frequency: state.frequency,
         phase: state.phase,
         intensity: state.intensity,
+        truthStatus: 'real_derived',
+        sourceId: source.sourceId,
+        sourceTimestamp: source.sourceTimestamp,
+        generatedValues: false,
       },
     });
   }
@@ -708,7 +728,7 @@ export class UnifiedOrchestrator {
   /**
    * Publish Prism state to bus
    */
-  private publishPrism(output: PrismOutput): void {
+  private publishPrism(output: PrismOutput, source: MarketSnapshot): void {
     let signal: SignalType = 'NEUTRAL';
     if (output.state === 'MANIFEST' && output.isLoveLocked) {
       signal = 'BUY';
@@ -731,6 +751,10 @@ export class UnifiedOrchestrator {
         isLoveLocked: output.isLoveLocked,
         harmonicPurity: output.harmonicPurity,
         layers: output.layers,
+        truthStatus: 'real_derived',
+        sourceId: source.sourceId,
+        sourceTimestamp: source.sourceTimestamp,
+        generatedValues: false,
       },
     });
   }
@@ -738,7 +762,7 @@ export class UnifiedOrchestrator {
   /**
    * Publish Hocus→Pattern→Template Pipeline state to bus (background automation)
    */
-  private publishHocusPattern(state: PipelineState): void {
+  private publishHocusPattern(state: PipelineState, source: MarketSnapshot): void {
     // Determine signal based on pipeline stage and dominant template
     let signal: SignalType = 'NEUTRAL';
     if (state.pipelineStage === 'TEMPLATE' && state.totalCoherence > 0.7) {
@@ -765,6 +789,10 @@ export class UnifiedOrchestrator {
         dominantEmotionalPhase: state.dominantEmotionalPhase,
         harmonicResonance: state.harmonicResonance,
         codexEnhanced: state.codexEnhanced,
+        truthStatus: 'real_derived',
+        sourceId: source.sourceId,
+        sourceTimestamp: source.sourceTimestamp,
+        generatedValues: false,
       },
     });
   }
@@ -773,30 +801,33 @@ export class UnifiedOrchestrator {
    * Make final trading decision based on all inputs including QGITA tier and heat check
    */
   private makeFinalDecision(
-    consensus: { ready: boolean; signal: SignalType; confidence: number },
+    consensus: { ready: boolean; signal: SignalType | null; confidence: number | null },
     lambdaState: LambdaState,
     lighthouseState: LighthouseState,
     avoidance: { avoid: boolean; reason: string | null },
     symbol: string,
     ecosystemState: EcosystemState | null,
     routingDecision: RoutingDecision | null,
-    positionSizing: { positionSizeUsd: number; availableBalance: number; riskAmount: number } | null,
+    positionSizing: { positionSizeUsd: number | null; availableBalance: number | null; riskAmount: number | null } | null,
     qgitaSignal: QGITASignal | null,
-    heatCheck?: { allowed: boolean; reason: string; projectedHeat: number }
-  ): { action: 'BUY' | 'SELL' | 'HOLD'; symbol: string; confidence: number; reason: string; harmonic6D?: { score: number; waveState: string; harmonicLock: boolean }; recommendedExchange?: string; positionSizeUsd?: number; qgitaTier?: 1 | 2 | 3 } {
+    heatCheck?: { allowed: boolean; reason: string; projectedHeat: number | null }
+  ): { action: 'BUY' | 'SELL' | 'HOLD'; symbol: string; confidence: number | null; reason: string; harmonic6D?: { score: number; waveState: string; harmonicLock: boolean }; recommendedExchange?: string; positionSizeUsd?: number; qgitaTier?: 1 | 2 | 3 } {
     // Extract 6D probability fusion from ecosystem state
     const probabilityFusion = ecosystemState?.probabilityFusion ?? null;
-    const waveState = probabilityFusion?.waveState ?? 'RESONANT';
+    const waveState = probabilityFusion?.waveState ?? null;
     const harmonicLock = probabilityFusion?.harmonicLock ?? false;
-    const harmonic6DScore = probabilityFusion ? (probabilityFusion.fusedProbability - 0.5) * 2 : 0;
-    const harmonic6DData = { score: harmonic6DScore, waveState, harmonicLock };
+    const harmonic6DData = probabilityFusion ? {
+      score: (probabilityFusion.fusedProbability - 0.5) * 2,
+      waveState: probabilityFusion.waveState,
+      harmonicLock: probabilityFusion.harmonicLock,
+    } : undefined;
 
     // Check heat limit first
     if (heatCheck && !heatCheck.allowed) {
       return {
         action: 'HOLD',
         symbol,
-        confidence: 0,
+        confidence: null,
         reason: `Heat Limit: ${heatCheck.reason}`,
         harmonic6D: harmonic6DData,
       };
@@ -807,19 +838,29 @@ export class UnifiedOrchestrator {
       return {
         action: 'HOLD',
         symbol,
-        confidence: 0,
+        confidence: null,
         reason: `Elephant Memory: ${avoidance.reason}`,
         harmonic6D: harmonic6DData,
       };
     }
     
     // Check if we have sufficient balance for trading
-    if (positionSizing && positionSizing.positionSizeUsd < 10) {
+    if (!positionSizing || !Number.isFinite(positionSizing.positionSizeUsd)) {
       return {
         action: 'HOLD',
         symbol,
-        confidence: 0,
-        reason: `Insufficient balance: $${positionSizing.positionSizeUsd.toFixed(2)} (min $10)`,
+        confidence: null,
+        reason: 'No verified provider balance is available for position sizing',
+        harmonic6D: harmonic6DData,
+      };
+    }
+
+    if ((positionSizing.positionSizeUsd as number) < 10) {
+      return {
+        action: 'HOLD',
+        symbol,
+        confidence: null,
+        reason: `Insufficient verified balance: $${(positionSizing.positionSizeUsd as number).toFixed(2)} (min $10)`,
         harmonic6D: harmonic6DData,
       };
     }
@@ -829,8 +870,38 @@ export class UnifiedOrchestrator {
       return {
         action: 'HOLD',
         symbol,
-        confidence: 0,
+        confidence: null,
         reason: 'Systems not ready for consensus',
+        harmonic6D: harmonic6DData,
+      };
+    }
+
+    if (!Number.isFinite(consensus.confidence) || consensus.signal === null) {
+      return {
+        action: 'HOLD',
+        symbol,
+        confidence: null,
+        reason: 'Consensus has no fresh evidence-backed confidence',
+        harmonic6D: harmonic6DData,
+      };
+    }
+
+    if (!qgitaSignal) {
+      return {
+        action: 'HOLD',
+        symbol,
+        confidence: null,
+        reason: 'QGITA has not accumulated enough fresh provider observations',
+        harmonic6D: harmonic6DData,
+      };
+    }
+
+    if (!routingDecision) {
+      return {
+        action: 'HOLD',
+        symbol,
+        confidence: null,
+        reason: 'No live exchange-specific routing quote is available',
         harmonic6D: harmonic6DData,
       };
     }
@@ -857,7 +928,7 @@ export class UnifiedOrchestrator {
     }
     
     // Apply harmonic lock confidence boost
-    let effectiveConfidence = consensus.confidence;
+    let effectiveConfidence = consensus.confidence as number;
     if (harmonicLock) {
       effectiveConfidence = Math.min(1, effectiveConfidence + 0.1);
     }
@@ -901,7 +972,7 @@ export class UnifiedOrchestrator {
     }
 
     // QGITA tier-based position sizing and thresholds
-    const qgitaTier = qgitaSignal?.tier || 3;
+    const qgitaTier = qgitaSignal.tier;
     const qgitaPositionMultiplier = qgitaSignalGenerator.getPositionSizeMultiplier(qgitaTier);
     
     // Tier 1: Lower confidence threshold, full position
@@ -950,7 +1021,7 @@ export class UnifiedOrchestrator {
     }
     
     // Apply QGITA position sizing
-    let finalPositionSize = positionSizing?.positionSizeUsd || 0;
+    let finalPositionSize = positionSizing.positionSizeUsd as number;
     if (qgitaPositionMultiplier < 1) {
       finalPositionSize *= qgitaPositionMultiplier;
       console.log(`[UnifiedOrchestrator] QGITA Tier ${qgitaTier} reducing position: $${finalPositionSize.toFixed(2)}`);
@@ -958,10 +1029,10 @@ export class UnifiedOrchestrator {
     
     // Build reason with QGITA context
     const lockStatus = harmonicLock ? ' [528Hz LOCKED]' : '';
-    const exchangeInfo = routingDecision ? ` | Route: ${routingDecision.recommendedExchange}` : '';
-    const positionInfo = finalPositionSize > 0 ? ` | Size: $${finalPositionSize.toFixed(2)}` : '';
-    const qgitaInfo = ` | QGITA: T${qgitaTier} ${qgitaSignal?.signalType || 'N/A'} ${qgitaSignal?.lighthouse.isLHE ? '🔥LHE' : ''}`;
-    const reason = `Consensus: ${consensus.signal} at ${(effectiveConfidence * 100).toFixed(1)}% | 6D: ${waveState}${lockStatus}${qgitaInfo}${exchangeInfo}${positionInfo}`;
+    const exchangeInfo = ` | Route: ${routingDecision.recommendedExchange}`;
+    const positionInfo = ` | Size: $${finalPositionSize.toFixed(2)}`;
+    const qgitaInfo = ` | QGITA: T${qgitaTier} ${qgitaSignal.signalType} ${qgitaSignal.lighthouse.isLHE ? '🔥LHE' : ''}`;
+    const reason = `Consensus: ${consensus.signal} at ${(effectiveConfidence * 100).toFixed(1)}% | 6D: ${waveState ?? 'NO_DATA'}${lockStatus}${qgitaInfo}${exchangeInfo}${positionInfo}`;
     
     return {
       action: consensus.signal,
@@ -987,8 +1058,12 @@ export class UnifiedOrchestrator {
     lighthouseState?: LighthouseState | null,
     prismOutput?: PrismOutput | null
   ): Promise<TradeExecutionResult> {
-    const exchange = decision.recommendedExchange || 'binance';
-    const positionSize = decision.positionSizeUsd || 100;
+    const exchange = decision.recommendedExchange;
+    const positionSize = decision.positionSizeUsd;
+    if (!exchange || !Number.isFinite(positionSize) || (positionSize as number) <= 0 ||
+        !marketSnapshot || !lambdaState || !lighthouseState || !prismOutput) {
+      return { success: false, error: 'LIVE_EXECUTION_INPUTS_REQUIRED' };
+    }
     
     console.log(`[UnifiedOrchestrator] Executing ${decision.action} on ${symbol} via ${exchange} | Size: $${positionSize.toFixed(2)}`);
     
@@ -1022,7 +1097,7 @@ export class UnifiedOrchestrator {
 
       // Prepare trade payload
       const signalType = decision.action === 'BUY' ? 'LONG' : 'SHORT';
-      const currentPrice = marketSnapshot?.price || 0;
+      const currentPrice = marketSnapshot.price;
       
       // GAP CLOSURE: Validate lot size before execution
       const quantity = positionSize / currentPrice;
@@ -1036,15 +1111,20 @@ export class UnifiedOrchestrator {
       const payload = {
         symbol,
         signalType,
-        coherence: lambdaState?.coherence || 0,
-        lighthouseValue: lighthouseState?.L || 0,
-        lighthouseConfidence: lighthouseState?.confidence || 0,
-        prismLevel: prismOutput?.level || 1,
+        liveExecutionConfirmed: this.liveExecutionConfirmed,
+        coherence: lambdaState.coherence,
+        lighthouseValue: lighthouseState.L,
+        lighthouseConfidence: lighthouseState.confidence,
+        prismLevel: prismOutput.level,
         currentPrice: lotValidation.adjustedPrice,
         price: lotValidation.adjustedPrice,
         quantity: lotValidation.adjustedQuantity,
         recommendedExchange: exchange,
         positionSizeUsd: lotValidation.adjustedQuantity * lotValidation.adjustedPrice,
+        truthStatus: marketSnapshot.truthStatus,
+        sourceId: marketSnapshot.sourceId,
+        sourceTimestamp: marketSnapshot.sourceTimestamp,
+        generatedValues: false,
       };
 
       console.log('[UnifiedOrchestrator] Calling execute-trade edge function:', payload);
@@ -1064,6 +1144,18 @@ export class UnifiedOrchestrator {
         return { success: false, error: data?.error || 'Trade rejected' };
       }
 
+      const execution = data.execution;
+      const receiptTime = Date.parse(String(data.sourceTimestamp || execution?.source_timestamp || ''));
+      const orderId = String(execution?.exchange_order_id || '');
+      const executedPrice = Number(execution?.executed_price);
+      const executedQuantity = Number(execution?.quantity);
+      if (data.truthStatus !== 'live' || data.generatedValues !== false || !data.sourceId ||
+          !orderId || !Number.isFinite(executedPrice) || executedPrice <= 0 ||
+          !Number.isFinite(executedQuantity) || executedQuantity <= 0 ||
+          !Number.isFinite(receiptTime) || Date.now() - receiptTime < 0 || Date.now() - receiptTime > 300_000) {
+        return { success: false, error: 'INVALID_OR_STALE_EXCHANGE_EXECUTION_RECEIPT' };
+      }
+
       console.log('[UnifiedOrchestrator] Trade executed successfully:', data);
 
       // Broadcast the trade event with full routing info
@@ -1073,20 +1165,25 @@ export class UnifiedOrchestrator {
         confidence: decision.confidence,
         exchange,
         positionSizeUsd: positionSize,
-        orderId: data.execution?.exchange_order_id,
-        executedPrice: data.execution?.executed_price,
+        orderId,
+        executedPrice,
+        executedQuantity,
+        truthStatus: 'live',
+        sourceId: data.sourceId,
+        sourceTimestamp: data.sourceTimestamp,
+        generatedValues: false,
       });
-
-      // Update elephant memory with trade result
-      const estimatedProfit = positionSize * 0.01; // Assume small profit for now, will be updated on close
-      elephantMemory.recordTrade(symbol, estimatedProfit, decision.action === 'BUY' ? 'BUY' : 'SELL');
 
       return {
         success: true,
-        orderId: data.execution?.exchange_order_id,
-        executedPrice: data.execution?.executed_price,
-        quantity: data.execution?.quantity,
+        orderId,
+        executedPrice,
+        quantity: executedQuantity,
         exchange,
+        truthStatus: 'live',
+        sourceId: data.sourceId,
+        sourceTimestamp: data.sourceTimestamp,
+        generatedValues: false,
       };
 
     } catch (err: any) {
@@ -1100,7 +1197,12 @@ export class UnifiedOrchestrator {
    */
   setDryRun(dryRun: boolean): void {
     this.config.dryRun = dryRun;
+    if (dryRun) this.liveExecutionConfirmed = false;
     console.log(`[UnifiedOrchestrator] DryRun mode set to: ${dryRun}`);
+  }
+
+  setLiveExecutionConfirmation(confirmed: boolean): void {
+    this.liveExecutionConfirmed = confirmed === true;
   }
   
   /**
@@ -1136,18 +1238,26 @@ export class UnifiedOrchestrator {
     result: OrchestrationResult | null;
     positionsChecked: number;
     positionsClosed: number;
-    capitalState: { availableCapital: number; positionCount: number };
-    latticePhase: string;
+    capitalState: { availableCapital: number | null; positionCount: number | null };
+    latticePhase: string | null;
+    truthStatus: 'real_derived' | 'no_data';
   }> {
     const startTime = Date.now();
     
     // Step 1: Update Capital Pool with latest equity
     const exchangeState = multiExchangeClient.getState();
-    capitalPool.updateEquity(exchangeState.totalEquityUsd || 1000, 0);
-    const capitalState = capitalPool.getState();
+    const verifiedEquity = exchangeState.truthStatus === 'real_derived' && Number.isFinite(exchangeState.totalEquityUsd)
+      ? exchangeState.totalEquityUsd as number
+      : null;
+    if (verifiedEquity !== null) {
+      capitalPool.updateEquity(verifiedEquity, positionManager.getState().totalUnrealizedPnl);
+    }
+    const capitalState = verifiedEquity !== null ? capitalPool.getState() : null;
     
     // Step 2: Check if we can open new positions
-    const canOpen = capitalPool.canOpenPosition();
+    const canOpen = capitalState
+      ? capitalPool.canOpenPosition()
+      : { allowed: false, reason: 'NO_VERIFIED_PROVIDER_EQUITY' };
     if (!canOpen.allowed) {
       console.log(`[Orchestrator:FullCycle] ⚠️ Cannot open positions: ${canOpen.reason}`);
     }
@@ -1157,17 +1267,46 @@ export class UnifiedOrchestrator {
     await tickerCacheManager.refreshAll();
     const allTickers = tickerCacheManager.getAllTickers();
     const tickerCount = allTickers.length;
+    if (tickerCount === 0) {
+      return {
+        tickersScanned: 0,
+        opportunitiesFound: 0,
+        filteredOpportunities: 0,
+        bestOpportunity: null,
+        result: null,
+        positionsChecked: 0,
+        positionsClosed: 0,
+        capitalState: {
+          availableCapital: capitalState?.availableCapital ?? null,
+          positionCount: capitalState?.positionCount ?? null,
+        },
+        latticePhase: null,
+        truthStatus: 'no_data',
+      };
+    }
     temporalLadder.heartbeat(SYSTEMS.TICKER_CACHE, 1.0);
     
     // Step 4: Update Gaia Lattice with current market coherence
-    const avgMomentum = allTickers.reduce((s, t) => s + Math.abs(t.momentum), 0) / Math.max(allTickers.length, 1);
-    const marketCoherence = Math.max(0.3, Math.min(0.95, 1 - avgMomentum * 10));
-    const latticeState = gaiaLatticeEngine.update(marketCoherence);
+    const avgMomentum = allTickers.reduce((s, t) => s + Math.abs(t.momentum), 0) / allTickers.length;
+    const marketCoherence = Math.max(0, Math.min(1, 1 - avgMomentum * 10));
+    const sourceTimes = allTickers.map(t => Date.parse(t.sourceTimestamp)).filter(Number.isFinite);
+    if (!sourceTimes.length) {
+      throw new Error('NO_FRESH_TICKER_SOURCE_TIMESTAMPS');
+    }
+    const latticeState = gaiaLatticeEngine.update({
+      coherence: marketCoherence,
+      sourceId: 'ticker_cache_composite',
+      sourceEventIds: allTickers.map(t => `${t.sourceId}:${t.symbol}:${t.sourceTimestamp}`),
+      sourceTimestamp: Math.min(...sourceTimes),
+      truthStatus: 'real_derived',
+      generated: false,
+      schumannPower: null,
+    });
     
     // Step 5: Update position manager current prices for all tickers
     console.log(`[Orchestrator:FullCycle] 📊 Scanning ${tickerCount} tickers for opportunities...`);
     for (const ticker of allTickers) {
-      positionManager.updatePrice(ticker.symbol, ticker.price);
+      positionManager.updatePrice(ticker);
     }
     
     // Step 6: Scan for opportunities
@@ -1187,20 +1326,15 @@ export class UnifiedOrchestrator {
     console.log(`[Orchestrator:FullCycle] 🎯 Found ${filteredCount} valid opportunities`);
     
     // Step 8: Log market sweep
-    console.log(`[MarketSweep] 📊 ${tickerCount} tickers | ${preFilterCount}→${filteredCount} opps | Lattice: ${latticeState.phase} | Capital: $${capitalState.availableCapital.toFixed(2)}`);
+    console.log(`[MarketSweep] ${tickerCount} verified tickers | ${preFilterCount}→${filteredCount} opportunities | Lattice: ${latticeState.phase} | Capital: ${capitalState ? `$${capitalState.availableCapital.toFixed(2)}` : 'Unavailable'}`);
     
     // Step 9: Check existing positions for TP/SL exits
     const positionsChecked = positionManager.getPositions().length;
     const positionsToClose = positionManager.checkAllPositions();
-    temporalLadder.heartbeat(SYSTEMS.POSITION_MANAGER, 1.0);
-    
-    // Release capital for closed positions
-    for (const pos of positionsToClose) {
-      capitalPool.release(pos.symbol, pos.unrealizedPnl);
-    }
+    if (positionsChecked > 0) temporalLadder.heartbeat(SYSTEMS.POSITION_MANAGER, 1.0);
     
     if (positionsToClose.length > 0) {
-      console.log(`[Orchestrator:FullCycle] 💰 Closed ${positionsToClose.length} positions`);
+      console.log(`[Orchestrator:FullCycle] ${positionsToClose.length} positions meet an exit condition; provider close receipts are still required`);
     }
     
     // Step 10: Run full cycle on best opportunity
@@ -1227,13 +1361,14 @@ export class UnifiedOrchestrator {
             momentum: ticker.momentum,
             spread: ticker.spread,
             timestamp: ticker.timestamp,
+            truthStatus: ticker.truthStatus,
+            sourceId: ticker.sourceId,
+            sourceTimestamp: ticker.sourceTimestamp,
+            generatedValues: false,
           };
           
           result = await this.runCycle(marketSnapshot, bestOpportunity.symbol);
           
-          if (result.tradeExecuted) {
-            capitalPool.reserve(bestOpportunity.symbol, positionSize.sizeUsd);
-          }
         }
       }
     } else if (!bestOpportunity) {
@@ -1250,9 +1385,13 @@ export class UnifiedOrchestrator {
       bestOpportunity,
       result,
       positionsChecked,
-      positionsClosed: positionsToClose.length,
-      capitalState: { availableCapital: capitalState.availableCapital, positionCount: capitalState.positionCount },
+      positionsClosed: 0,
+      capitalState: {
+        availableCapital: capitalState?.availableCapital ?? null,
+        positionCount: capitalState?.positionCount ?? null,
+      },
       latticePhase: latticeState.phase,
+      truthStatus: 'real_derived',
     };
   }
   

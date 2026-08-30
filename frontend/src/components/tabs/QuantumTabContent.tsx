@@ -1,26 +1,41 @@
 /**
- * Quantum Tab Content - Displays quantum state visualizations
- * 
- * This component is a PURE VIEW that reads from global state.
- * All systems run continuously in GlobalSystemsManager regardless of which tab is active.
+ * HNC/Auris view over evidence-backed state. Canonical node frequencies are
+ * shown as reference constants; they are never presented as sensor readings.
  */
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
-import { Activity, Waves, Radio, Sparkles, Target, Atom } from 'lucide-react';
+import { Activity, Sparkles, Target, Atom } from 'lucide-react';
 import type { GlobalState } from '@/core/globalSystemsManager';
 
 interface QuantumTabContentProps {
   globalState: GlobalState;
 }
 
+const finite = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isFinite(value);
+
+const display = (value: number | null | undefined, decimals = 4): string =>
+  finite(value) ? value.toFixed(decimals) : 'Unavailable';
+
+const AURIS_REFERENCES = [
+  { name: 'Tiger', frequency: 741, role: 'Momentum' },
+  { name: 'Falcon', frequency: 852, role: 'Trend' },
+  { name: 'Hummingbird', frequency: 963, role: 'HF Signals' },
+  { name: 'Dolphin', frequency: 528, role: 'Harmony' },
+  { name: 'Deer', frequency: 396, role: 'Fear/Greed' },
+  { name: 'Owl', frequency: 432, role: 'Night' },
+  { name: 'Panda', frequency: 412, role: 'Patience' },
+  { name: 'Cargoship', frequency: 174, role: 'Volume' },
+  { name: 'Clownfish', frequency: 639, role: 'Connection' },
+] as const;
+
 export function QuantumTabContent({ globalState }: QuantumTabContentProps) {
   const {
     coherence,
     lambda,
-    lighthouseSignal,
     dominantNode,
     prismLevel,
     prismState,
@@ -31,222 +46,101 @@ export function QuantumTabContent({ globalState }: QuantumTabContentProps) {
     busSnapshot,
   } = globalState;
 
-  const getPrismColor = () => {
-    switch (prismState) {
-      case 'MANIFEST': return 'text-green-400';
-      case 'CONVERGING': return 'text-yellow-400';
-      default: return 'text-muted-foreground';
-    }
-  };
-
-  // Get frequency from prism output or calculate from coherence
-  const frequency = prismOutput?.frequency || (432 + coherence * 96);
-  const is528Lock = frequency >= 520 && frequency <= 536;
+  const frequency = finite(prismOutput?.frequency) ? prismOutput.frequency : null;
+  const resonance = finite(prismOutput?.resonance) ? prismOutput.resonance : null;
+  const is528Lock = finite(frequency) && frequency >= 520 && frequency <= 536;
+  const coherenceReady = finite(coherence) && coherence >= 0.7;
 
   return (
     <div className="space-y-4">
-      {/* Master Equation Components */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Lambda Field */}
         <Card className="border-border/50">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Atom className="h-4 w-4 text-primary" />
-              Λ(t) Master Equation
-            </CardTitle>
+            <CardTitle className="text-sm font-medium flex items-center gap-2"><Atom className="h-4 w-4 text-primary" />Λ(t) Master Equation</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="text-3xl font-mono font-bold text-center">
-              {lambda.toFixed(4)}
-            </div>
-            <div className="space-y-2 text-xs">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Substrate S(t)</span>
-                <span className="font-mono">{substrate.toFixed(4)}</span>
-              </div>
-              <Progress value={Math.abs(substrate) * 100} className="h-1" />
-              
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Observer O(t)</span>
-                <span className="font-mono">{observer.toFixed(4)}</span>
-              </div>
-              <Progress value={Math.abs(observer) * 100} className="h-1" />
-              
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Echo E(t)</span>
-                <span className="font-mono">{echo.toFixed(4)}</span>
-              </div>
-              <Progress value={Math.abs(echo) * 100} className="h-1" />
-            </div>
+            <div className="text-3xl font-mono font-bold text-center">{display(lambda)}</div>
+            <EquationRow label="Substrate S(t)" value={substrate} />
+            <EquationRow label="Observer O(t)" value={observer} />
+            <EquationRow label="Echo E(t)" value={echo} />
           </CardContent>
         </Card>
 
-        {/* Coherence Metric */}
         <Card className="border-border/50">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Activity className="h-4 w-4 text-primary" />
-              Γ Coherence Metric
-            </CardTitle>
+            <CardTitle className="text-sm font-medium flex items-center gap-2"><Activity className="h-4 w-4 text-primary" />Γ Coherence Metric</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className={cn(
-              "text-3xl font-mono font-bold text-center",
-              coherence >= 0.7 ? "text-green-400" : coherence >= 0.45 ? "text-yellow-400" : "text-red-400"
-            )}>
-              {coherence.toFixed(4)}
+            <div className={cn('text-3xl font-mono font-bold text-center', coherenceReady && 'text-success')}>
+              {display(coherence)}
             </div>
-            <Progress 
-              value={coherence * 100} 
-              className={cn(
-                "h-3",
-                coherence >= 0.7 ? "[&>div]:bg-green-500" : coherence >= 0.45 ? "[&>div]:bg-yellow-500" : "[&>div]:bg-red-500"
-              )}
-            />
+            {finite(coherence) && <Progress value={Math.max(0, Math.min(100, coherence * 100))} className="h-3" />}
             <div className="flex justify-between text-xs text-muted-foreground">
               <span>Trade threshold: 0.70</span>
-              <span className={coherence >= 0.7 ? "text-green-400" : "text-red-400"}>
-                {coherence >= 0.7 ? '✓ READY' : '✗ WAITING'}
+              <span className={coherenceReady ? 'text-success' : 'text-muted-foreground'}>
+                {!finite(coherence) ? 'NO DATA' : coherenceReady ? 'READY' : 'WAITING'}
               </span>
             </div>
           </CardContent>
         </Card>
 
-        {/* Prism Frequency */}
         <Card className="border-border/50">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-primary" />
-              The Prism
-            </CardTitle>
+            <CardTitle className="text-sm font-medium flex items-center gap-2"><Sparkles className="h-4 w-4 text-primary" />The Prism</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="text-center">
-              <div className={cn(
-                "text-3xl font-mono font-bold",
-                is528Lock ? "text-green-400" : "text-foreground"
-              )}>
-                {frequency.toFixed(1)} Hz
-              </div>
-              <div className="text-xs text-muted-foreground">
-                {is528Lock ? '🔒 528 Hz Love Lock' : 'Converging to 528 Hz'}
-              </div>
+          <CardContent className="space-y-3 text-xs">
+            <div className={cn('text-3xl font-mono font-bold text-center', is528Lock && 'text-success')}>
+              {finite(frequency) ? `${frequency.toFixed(1)} Hz` : 'Unavailable'}
             </div>
-            
-            <div className="flex justify-between text-xs">
-              <span className="text-muted-foreground">Level</span>
-              <Badge variant="outline" className="text-xs">{prismLevel}/5</Badge>
-            </div>
-            <div className="flex justify-between text-xs">
-              <span className="text-muted-foreground">State</span>
-              <span className={getPrismColor()}>{prismState}</span>
-            </div>
-            <div className="flex justify-between text-xs">
-              <span className="text-muted-foreground">Resonance</span>
-              <span className="font-mono">{((prismOutput?.resonance || 0) * 100).toFixed(0)}%</span>
-            </div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Lock</span><span>{!finite(frequency) ? 'No data' : is528Lock ? '528 Hz band' : 'Not locked'}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Level</span><span>{finite(prismLevel) ? `${prismLevel}/5` : 'Unavailable'}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">State</span><span>{prismState ?? 'Unavailable'}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Resonance</span><span>{finite(resonance) ? `${(resonance * 100).toFixed(0)}%` : 'Unavailable'}</span></div>
           </CardContent>
         </Card>
       </div>
 
-      {/* 9 Auris Nodes */}
       <Card className="border-border/50">
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <Target className="h-4 w-4 text-primary" />
-            9 Auris Nodes (Animal Totems)
-          </CardTitle>
+          <CardTitle className="text-sm font-medium flex items-center gap-2"><Target className="h-4 w-4 text-primary" />9 Auris node references</CardTitle>
         </CardHeader>
         <CardContent>
+          <p className="text-xs text-muted-foreground mb-3">Frequencies below are native HNC reference constants, not live sensor measurements.</p>
           <div className="grid grid-cols-3 md:grid-cols-9 gap-2">
-            {[
-              { name: 'Tiger', emoji: '🐅', freq: '741 Hz', role: 'Momentum' },
-              { name: 'Falcon', emoji: '🦅', freq: '852 Hz', role: 'Trend' },
-              { name: 'Hummingbird', emoji: '🐦', freq: '963 Hz', role: 'HF Signals' },
-              { name: 'Dolphin', emoji: '🐬', freq: '528 Hz', role: 'Harmony' },
-              { name: 'Deer', emoji: '🦌', freq: '396 Hz', role: 'Fear/Greed' },
-              { name: 'Owl', emoji: '🦉', freq: '432 Hz', role: 'Night' },
-              { name: 'Panda', emoji: '🐼', freq: '412 Hz', role: 'Patience' },
-              { name: 'Cargoship', emoji: '🚢', freq: '174 Hz', role: 'Volume' },
-              { name: 'Clownfish', emoji: '🐠', freq: '639 Hz', role: 'Connection' },
-            ].map((node) => (
-              <div 
-                key={node.name}
-                className={cn(
-                  "flex flex-col items-center p-2 rounded-lg border transition-all",
-                  dominantNode === node.name 
-                    ? "border-primary bg-primary/10" 
-                    : "border-border/30 hover:border-border"
-                )}
-              >
-                <span className="text-xl">{node.emoji}</span>
+            {AURIS_REFERENCES.map((node) => (
+              <div key={node.name} className={cn('flex flex-col items-center p-2 rounded-lg border', dominantNode === node.name ? 'border-primary bg-primary/10' : 'border-border/30')}>
                 <span className="text-[10px] font-medium">{node.name}</span>
-                <span className="text-[8px] text-muted-foreground">{node.freq}</span>
-                {dominantNode === node.name && (
-                  <Badge variant="default" className="text-[8px] mt-1 px-1">ACTIVE</Badge>
-                )}
+                <span className="text-[8px] text-muted-foreground">{node.frequency} Hz ref</span>
+                <span className="text-[8px] text-muted-foreground">{node.role}</span>
+                {dominantNode === node.name && <Badge className="text-[8px] mt-1 px-1">OBSERVED</Badge>}
               </div>
             ))}
           </div>
+          {!dominantNode && <p className="text-xs text-muted-foreground text-center mt-3">No dominant Auris node has been observed.</p>}
         </CardContent>
       </Card>
 
-      {/* Lighthouse & Bus */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Lighthouse Signal */}
-        <Card className="border-border/50">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Radio className="h-4 w-4 text-primary" />
-              Lighthouse Consensus
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className={cn(
-              "text-3xl font-mono font-bold text-center",
-              lighthouseSignal >= 0.7 ? "text-green-400" : "text-yellow-400"
-            )}>
-              L = {lighthouseSignal.toFixed(4)}
+      <Card className="border-border/50">
+        <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Evidence-publishing systems</CardTitle></CardHeader>
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          {Object.entries(busSnapshot?.states ?? {}).map(([name, state]) => (
+            <div key={name} className="flex justify-between p-2 rounded border border-border/30 text-xs">
+              <span>{name}</span>
+              <span className="font-mono">Γ {display(state.coherence, 3)}</span>
             </div>
-            <Progress value={lighthouseSignal * 100} className="h-2" />
-            <div className="text-xs text-muted-foreground text-center">
-              {lighthouseSignal >= 0.7 ? '✓ Lighthouse Event Detected' : 'Monitoring for LHE...'}
-            </div>
-          </CardContent>
-        </Card>
+          ))}
+          {Object.keys(busSnapshot?.states ?? {}).length === 0 && <p className="text-xs text-muted-foreground">No evidence-backed system observations are available.</p>}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
 
-        {/* Bus Consensus */}
-        <Card className="border-border/50">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Waves className="h-4 w-4 text-primary" />
-              Unified Bus Consensus
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center justify-center gap-3">
-              <Badge 
-                variant={
-                  busSnapshot?.consensusSignal === 'BUY' ? 'default' : 
-                  busSnapshot?.consensusSignal === 'SELL' ? 'destructive' : 
-                  'secondary'
-                }
-                className="text-lg px-4 py-1"
-              >
-                {busSnapshot?.consensusSignal || 'NEUTRAL'}
-              </Badge>
-            </div>
-            <div className="flex justify-between text-xs">
-              <span className="text-muted-foreground">Confidence</span>
-              <span className="font-mono">{((busSnapshot?.consensusConfidence || 0) * 100).toFixed(0)}%</span>
-            </div>
-            <div className="flex justify-between text-xs">
-              <span className="text-muted-foreground">Systems Publishing</span>
-              <span className="font-mono">{Object.keys(busSnapshot?.states || {}).length}</span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+function EquationRow({ label, value }: { label: string; value: number | null | undefined }) {
+  return (
+    <div>
+      <div className="flex justify-between text-xs"><span className="text-muted-foreground">{label}</span><span className="font-mono">{display(value)}</span></div>
+      {finite(value) && <Progress value={Math.max(0, Math.min(100, Math.abs(value) * 100))} className="h-1 mt-1" />}
     </div>
   );
 }

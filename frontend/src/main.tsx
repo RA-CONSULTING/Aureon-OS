@@ -7,28 +7,36 @@ import { ThemeProvider } from "./components/theme-provider";
 import { TooltipProvider } from "./components/ui/tooltip";
 import { Toaster } from "./components/ui/toaster";
 import { Toaster as Sonner } from "./components/ui/sonner";
-import { AuthGate } from "./components/AuthGate";
-import { SupportProjectPrompt } from "./components/SupportProjectPrompt";
 import { router } from "./shell/routes";
+import { setAuthTokenProvider } from "./services/apiClient";
+import { supabase } from "./integrations/supabase/client";
 
 // Initialize network monitoring before app renders
 initNetworkMonitoring();
 
+// Forward the end-user session token to every /api/* call so the operator can
+// identify the tenant. No session ⇒ no header ⇒ single-operator path unchanged.
+setAuthTokenProvider(async () => {
+  try {
+    const { data } = await supabase.auth.getSession();
+    return data.session?.access_token ?? null;
+  } catch {
+    return null;
+  }
+});
+
 const queryClient = new QueryClient();
 
-// Providers wrap the whole shell so every routed surface gets them.
-// AuthGate is a no-op unless VITE_REQUIRE_AUTH=1 (the production build sets it).
-// SupportProjectPrompt is the timer-based, non-blocking support-the-project card.
+// Providers wrap the whole app. Auth is enforced per-route (the operator console
+// only) inside the router, so the public front door stays open even in production;
+// the support-the-project card is mounted inside the console, not globally.
 createRoot(document.getElementById("root")!).render(
   <ThemeProvider defaultTheme="dark">
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <AuthGate>
-          <RouterProvider router={router} />
-          <SupportProjectPrompt />
-        </AuthGate>
+        <RouterProvider router={router} />
       </TooltipProvider>
     </QueryClientProvider>
   </ThemeProvider>

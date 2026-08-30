@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "moltbook-local": {
+      "cwd": ".",
+      "command": "node",
+      "args": [
+        "./mcp/server.mjs"
+      ]
+    }
+  }
+}

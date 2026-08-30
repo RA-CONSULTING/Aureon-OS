@@ -73,8 +73,7 @@ export function useSystemsIntegration(): UseSystemsIntegrationReturn {
 
 /**
  * useQueenHiveBrowser Hook
- * React hook for the browser-based Queen Hive simulation (standalone, no Supabase)
- * Note: For Supabase-connected Queen Hive, use useQueenHive from ./useQueenHive.ts
+ * Compatibility hook for provider-observed Queen Hive snapshots.
  */
 import { getGlobalQueenHive, type QueenHiveState } from '../core/queenHiveBrowser';
 
@@ -83,9 +82,9 @@ export interface UseQueenHiveBrowserReturn {
   step: () => void;
   simulate: (steps: number) => void;
   reset: () => void;
-  totalEquity: number;
-  hiveCount: number;
-  generation: number;
+  totalEquity: number | null;
+  hiveCount: number | null;
+  generation: number | null;
 }
 
 export function useQueenHiveBrowser(): UseQueenHiveBrowserReturn {
@@ -122,9 +121,9 @@ export function useQueenHiveBrowser(): UseQueenHiveBrowserReturn {
     step,
     simulate,
     reset,
-    totalEquity: state?.totalEquity ?? 0,
-    hiveCount: state?.totalHives ?? 0,
-    generation: state?.generation ?? 1
+    totalEquity: state?.totalEquity ?? null,
+    hiveCount: state?.totalHives ?? null,
+    generation: state?.generation ?? null
   };
 }
 

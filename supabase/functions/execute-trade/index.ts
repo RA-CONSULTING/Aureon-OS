@@ -1,5 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { decryptCredential } from "../_shared/credential_crypto.ts";
+import { fetchLiveJson, requireFiniteNumber, requireFreshTimestamp } from "../_shared/real_data.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -77,14 +79,67 @@ serve(async (req) => {
       prismLevel,
       currentPrice,
       price, // Alias for currentPrice
+      liveExecutionConfirmed,
+      truthStatus,
+      sourceId,
+      sourceTimestamp: requestedSourceTimestamp,
+      generatedValues,
     } = await req.json();
 
-    const validatedPrice = currentPrice || price;
+    if (liveExecutionConfirmed !== true) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'LIVE_EXECUTION_CONFIRMATION_REQUIRED' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 409 },
+      );
+    }
+    const requestedPrice = Number(currentPrice ?? price);
+    if (!/^[A-Z0-9]{5,20}$/.test(String(symbol || '')) ||
+        truthStatus !== 'real_derived' || !String(sourceId || '').trim() ||
+        generatedValues !== false) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'FRESH_REAL_MARKET_PROVENANCE_REQUIRED' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 409 },
+      );
+    }
+    try {
+      requireFreshTimestamp(String(requestedSourceTimestamp || ''), 5 * 60 * 1000, 'sourceTimestamp');
+    } catch (error) {
+      return new Response(
+        JSON.stringify({ success: false, error: error instanceof Error ? error.message : String(error) }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 409 },
+      );
+    }
+
+    const maxDeviationBps = Number(Deno.env.get('EXECUTION_MAX_PRICE_DEVIATION_BPS'));
+    if (!Number.isFinite(maxDeviationBps) || maxDeviationBps <= 0 || maxDeviationBps > 1000) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'EXECUTION_MAX_PRICE_DEVIATION_BPS_NOT_CONFIGURED' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 503 },
+      );
+    }
+    let validatedPrice: number;
+    try {
+      const ticker = await fetchLiveJson<any>(
+        `https://api.binance.com/api/v3/ticker/24hr?symbol=${encodeURIComponent(symbol)}`,
+      );
+      validatedPrice = requireFiniteNumber(Number(ticker.lastPrice), 'binance.lastPrice');
+      const providerTimestamp = new Date(requireFiniteNumber(Number(ticker.closeTime), 'binance.closeTime')).toISOString();
+      requireFreshTimestamp(providerTimestamp, 5 * 60 * 1000, 'binance.closeTime');
+      if (validatedPrice <= 0 || !Number.isFinite(requestedPrice) || requestedPrice <= 0 ||
+          Math.abs(requestedPrice - validatedPrice) / validatedPrice * 10_000 > maxDeviationBps) {
+        throw new Error('REQUEST_PRICE_DOES_NOT_MATCH_LIVE_BINANCE_PRICE');
+      }
+    } catch (error) {
+      return new Response(
+        JSON.stringify({ success: false, error: error instanceof Error ? error.message : String(error) }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 409 },
+      );
+    }
 
     // === CRITICAL FAIL-SAFES (Strategic Plan Requirements) ===
     
     // 1. PRICE VALIDATION: Reject invalid or stale prices
-    if (!validatedPrice || isNaN(validatedPrice) || validatedPrice <= 0) {
+    if (!Number.isFinite(validatedPrice) || validatedPrice <= 0) {
       console.error('🛑 FAIL-SAFE: Invalid price', validatedPrice);
       return new Response(
         JSON.stringify({ success: false, error: 'Invalid price provided' }),
@@ -149,12 +204,19 @@ serve(async (req) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
-    const { data: todayExecutions } = await supabase
+    const { data: todayExecutions, error: todayExecutionsError } = await supabase
       .from('trading_executions')
       .select('*')
+      .eq('user_id', user.id)
       .gte('executed_at', today.toISOString());
+    if (todayExecutionsError) {
+      return new Response(
+        JSON.stringify({ success: false, error: `DAILY_EXECUTION_READ_FAILED:${todayExecutionsError.message}` }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 503 },
+      );
+    }
 
-    const tradeCount = todayExecutions?.length || 0;
+    const tradeCount = todayExecutions.length;
     if (tradeCount >= configData.max_daily_trades) {
       return new Response(
         JSON.stringify({ success: false, error: 'Daily trade limit reached' }),
@@ -163,9 +225,16 @@ serve(async (req) => {
     }
 
     // Calculate daily P&L
-    const dailyPnL = todayExecutions?.reduce((sum, ex) => {
-      return sum + (parseFloat(ex.realized_pnl as any) || 0);
-    }, 0) || 0;
+    const realizedPnLRows = todayExecutions
+      .filter((execution) => execution.realized_pnl != null)
+      .map((execution) => Number(execution.realized_pnl));
+    if (realizedPnLRows.some((value) => !Number.isFinite(value))) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'INVALID_REALIZED_PNL_HISTORY' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 503 },
+      );
+    }
+    const dailyPnL = realizedPnLRows.reduce((sum, value) => sum + value, 0);
 
     if (dailyPnL < -Math.abs(configData.max_daily_loss_usdt)) {
       return new Response(
@@ -198,18 +267,20 @@ serve(async (req) => {
 
     const side = signalType === 'LONG' ? 'BUY' : 'SELL';
 
-    let executionResult;
-    if (configData.trading_mode === 'paper') {
-      // Paper trading - simulate execution
-      console.log('Paper trading execution:', { side, symbol, quantity, price: validatedPrice, userId: user.id });
-      executionResult = {
-        success: true,
-        orderId: `PAPER_${Date.now()}`,
-        executedQty: quantity.toString(),
-        executedPrice: validatedPrice.toString(),
-        status: 'FILLED',
-      };
-    } else {
+    if (configData.trading_mode !== 'live') {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'PRODUCTION_LIVE_MODE_REQUIRED',
+          truthStatus: 'no_data',
+          generatedValues: false,
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 409 }
+      );
+    }
+
+    let executionResult: any;
+    {
       // Live trading - use user's credentials from their session
       console.log('🔄 Using user credentials for live trading...');
       
@@ -221,22 +292,8 @@ serve(async (req) => {
         );
       }
 
-      // Decrypt user's credentials
-      const encryptionKey = Deno.env.get('MASTER_ENCRYPTION_KEY') || 'aureon-default-key-32chars!!';
-      
-      function decryptCredential(encrypted: string, iv: string): string {
-        try {
-          // For simplified demo encryption (base64 with IV)
-          // In production, use proper AES-GCM decryption
-          const decoded = atob(encrypted);
-          return decoded.split('::')[0] || decoded;
-        } catch {
-          return '';
-        }
-      }
-
-      const binanceApiKey = decryptCredential(userSession.binance_api_key_encrypted, userSession.binance_iv || '');
-      const binanceApiSecret = decryptCredential(userSession.binance_api_secret_encrypted, userSession.binance_iv || '');
+      const binanceApiKey = await decryptCredential(userSession.binance_api_key_encrypted, userSession.binance_iv || '');
+      const binanceApiSecret = await decryptCredential(userSession.binance_api_secret_encrypted, userSession.binance_iv || '');
 
       if (!binanceApiKey || !binanceApiSecret) {
         console.error('[execute-trade] Failed to decrypt credentials for user:', user.id);
@@ -329,6 +386,39 @@ serve(async (req) => {
       }
     }
 
+    const executedQuantity = Number(executionResult.executedQty);
+    const cumulativeQuote = Number(executionResult.cummulativeQuoteQty);
+    const fillRows = Array.isArray(executionResult.fills) ? executionResult.fills : [];
+    const fillQuote = fillRows.reduce(
+      (sum: number, fill: any) => sum + Number(fill.price) * Number(fill.qty),
+      0,
+    );
+    const fillQuantity = fillRows.reduce((sum: number, fill: any) => sum + Number(fill.qty), 0);
+    const executedPrice = fillQuantity > 0
+      ? fillQuote / fillQuantity
+      : executedQuantity > 0 && cumulativeQuote > 0
+        ? cumulativeQuote / executedQuantity
+        : Number.NaN;
+    const providerTimestampMs = Number(executionResult.transactTime);
+    const sourceTimestamp = Number.isFinite(providerTimestampMs)
+      ? new Date(providerTimestampMs).toISOString()
+      : '';
+
+    if (executionResult.status !== 'FILLED' || !Number.isFinite(executedQuantity) || executedQuantity <= 0 ||
+        !Number.isFinite(executedPrice) || executedPrice <= 0 || !sourceTimestamp) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'EXCHANGE_EXECUTION_NOT_FILLED',
+          exchangeOrderId: executionResult.orderId ?? null,
+          exchangeStatus: executionResult.status ?? null,
+          truthStatus: 'live',
+          generatedValues: false,
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 409 }
+      );
+    }
+
     // Save execution to database with user_id
     const { data: execution, error: execError } = await supabase
       .from('trading_executions')
@@ -339,18 +429,24 @@ serve(async (req) => {
         side,
         signal_type: signalType,
         order_type: 'MARKET',
-        quantity,
+        quantity: executedQuantity,
         price: validatedPrice,
-        executed_price: parseFloat(executionResult.executedPrice || validatedPrice),
-        position_size_usdt: positionSizeUsdt,
+        executed_price: executedPrice,
+        position_size_usdt: executedQuantity * executedPrice,
         stop_loss_price: stopLossPrice,
         take_profit_price: takeProfitPrice,
-        status: 'filled',
+        status: String(executionResult.status).toLowerCase(),
         exchange_order_id: executionResult.orderId,
         coherence,
         lighthouse_value: lighthouseValue,
         lighthouse_confidence: lighthouseConfidence,
         prism_level: prismLevel,
+        user_id: user.id,
+        exchange: 'binance',
+        truth_status: 'live',
+        source_id: 'binance:/api/v3/order',
+        source_timestamp: sourceTimestamp,
+        generated_values: false,
       })
       .select()
       .single();
@@ -364,20 +460,40 @@ serve(async (req) => {
     }
 
     // Create position
-    await supabase
+    const { error: positionError } = await supabase
       .from('trading_positions')
       .insert({
+        user_id: user.id,
         execution_id: execution.id,
         symbol,
         side: signalType,
-        entry_price: validatedPrice,
-        quantity,
-        position_value_usdt: positionSizeUsdt,
+        entry_price: executedPrice,
+        quantity: executedQuantity,
+        position_value_usdt: executedQuantity * executedPrice,
         stop_loss_price: stopLossPrice,
         take_profit_price: takeProfitPrice,
-        current_price: validatedPrice,
+        current_price: executedPrice,
         status: 'open',
+        exchange: 'binance',
+        truth_status: 'live',
+        source_id: 'binance:/api/v3/order',
+        source_timestamp: sourceTimestamp,
+        generated_values: false,
       });
+    if (positionError) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: `LIVE_ORDER_RECORDED_POSITION_WRITE_FAILED:${positionError.message}`,
+          exchangeOrderId: String(executionResult.orderId),
+          truthStatus: 'live',
+          sourceId: 'binance:/api/v3/order',
+          sourceTimestamp,
+          generatedValues: false,
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 },
+      );
+    }
 
     console.log('Trade executed successfully:', execution.id, 'for user:', user.id);
 
@@ -385,7 +501,11 @@ serve(async (req) => {
       JSON.stringify({
         success: true,
         execution: execution,
-        message: `${configData.trading_mode === 'paper' ? 'Paper' : 'Live'} trade executed: ${side} ${quantity.toFixed(8)} ${symbol} @ $${validatedPrice.toFixed(2)}`
+        message: `Live trade executed: ${side} ${executedQuantity.toFixed(8)} ${symbol} @ $${executedPrice.toFixed(2)}`,
+        truthStatus: 'live',
+        sourceId: 'binance:/api/v3/order',
+        sourceTimestamp,
+        generatedValues: false,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

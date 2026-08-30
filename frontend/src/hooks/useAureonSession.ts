@@ -78,52 +78,49 @@ export interface MarketData {
   momentum: number;
   spread: number;
   timestamp: number;
+  truthStatus: 'live' | 'real_derived';
+  sourceId: string;
+  sourceTimestamp: string;
+  generatedValues: false;
 }
 
 export function useAureonSession(userId: string | null) {
   const [quantumState, setQuantumState] = useState<QuantumState>({
-    coherence: 0,
-    lambda: 0,
-    lighthouseSignal: 0,
-    dominantNode: 'Tiger',
-    prismLevel: 0,
-    prismState: 'FORMING',
-    substrate: 0,
-    observer: 0,
-    echo: 0
+    coherence: null,
+    lambda: null,
+    lighthouseSignal: null,
+    dominantNode: null,
+    prismLevel: null,
+    prismState: null,
+    substrate: null,
+    observer: null,
+    echo: null,
   });
 
   const [prismState, setPrismState] = useState<PrismState>({
     output: null,
-    frequency: 0,
-    resonance: 0,
-    isLoveLocked: false
+    frequency: null,
+    resonance: null,
+    isLoveLocked: null,
   });
 
-  const [marketData, setMarketData] = useState<MarketData>({
-    price: 0,
-    volume: 0,
-    volatility: 0,
-    momentum: 0,
-    spread: 0,
-    timestamp: 0
-  });
+  const [marketData, setMarketData] = useState<MarketData | null>(null);
 
   const [routingState, setRoutingState] = useState<RoutingState>({
     recommendedExchange: null,
-    positionSizeUsd: 0,
-    availableBalance: 0,
+    positionSizeUsd: null,
+    availableBalance: null,
     reasoning: null
   });
   
   const [tradingState, setTradingState] = useState<TradingState>({
     isActive: false,
-    totalEquity: 0,
-    availableBalance: 0,
+    totalEquity: null,
+    availableBalance: null,
     totalTrades: 0,
     winningTrades: 0,
-    totalPnl: 0,
-    gasTankBalance: 100,
+    totalPnl: null,
+    gasTankBalance: null,
     recentTrades: []
   });
   
@@ -137,13 +134,13 @@ export function useAureonSession(userId: string | null) {
 
   const [busState, setBusState] = useState<BusState>({
     snapshot: null,
-    consensusSignal: 'NEUTRAL',
-    consensusConfidence: 0,
+    consensusSignal: null,
+    consensusConfidence: null,
     systemsReady: 0
   });
 
   const [exchangeState, setExchangeState] = useState<ExchangeState>({
-    totalEquityUsd: 0,
+    totalEquityUsd: null,
     exchanges: []
   });
   
@@ -167,7 +164,11 @@ export function useAureonSession(userId: string | null) {
       throw new Error(`LIVE_DATA_REQUIRED: Failed to fetch market data for ${symbol}. Check exchange credentials.`);
     }
     
-    if (!data || !data.price) {
+    const sourceAgeMs = Date.now() - Date.parse(String(data?.sourceTimestamp || ''));
+    if (!data || !Number.isFinite(Number(data.price)) || Number(data.price) <= 0 ||
+        !['live', 'real_derived'].includes(String(data.truthStatus)) ||
+        !data.sourceId || data.generatedValues !== false ||
+        !Number.isFinite(sourceAgeMs) || sourceAgeMs < -300000 || sourceAgeMs > 300000) {
       throw new Error(`LIVE_DATA_REQUIRED: Invalid market data response for ${symbol}. No simulation allowed.`);
     }
     
@@ -177,11 +178,6 @@ export function useAureonSession(userId: string | null) {
   // Initialize all systems
   const initializeSystems = useCallback(async () => {
     try {
-      // Register systems with Temporal Ladder
-      temporalLadder.registerSystem(SYSTEMS.MASTER_EQUATION);
-      temporalLadder.registerSystem(SYSTEMS.HARMONIC_NEXUS);
-      temporalLadder.registerSystem(SYSTEMS.QUANTUM_QUACKERS);
-
       // Initialize multi-exchange client
       await multiExchangeClient.initialize();
 
@@ -192,6 +188,13 @@ export function useAureonSession(userId: string | null) {
           consensusSignal: snapshot.consensusSignal,
           consensusConfidence: snapshot.consensusConfidence,
           systemsReady: snapshot.systemsReady
+        });
+        setSystemStatus({
+          masterEquation: snapshot.states.MasterEquation?.ready === true,
+          lighthouse: snapshot.states.Lighthouse?.ready === true,
+          rainbowBridge: snapshot.states.RainbowBridge?.ready === true,
+          elephantMemory: snapshot.states.ElephantMemory?.ready === true,
+          orderRouter: snapshot.states.SmartRouter?.ready === true,
         });
       });
 
@@ -207,15 +210,7 @@ export function useAureonSession(userId: string | null) {
         });
       });
 
-      setSystemStatus({
-        masterEquation: true,
-        lighthouse: true,
-        rainbowBridge: true,
-        elephantMemory: true,
-        orderRouter: true
-      });
-
-      console.log('[Aureon] All systems initialized and registered with Temporal Ladder');
+      console.log('[Aureon] Connectors initialized; systems remain offline until evidence is published');
       return true;
     } catch (error) {
       console.error('[Aureon] Failed to initialize systems:', error);
@@ -281,8 +276,8 @@ export function useAureonSession(userId: string | null) {
         if (result.routingDecision) {
           setRoutingState({
             recommendedExchange: result.routingDecision.recommendedExchange,
-            positionSizeUsd: result.positionSizing?.positionSizeUsd || 0,
-            availableBalance: result.positionSizing?.availableBalance || 0,
+            positionSizeUsd: result.positionSizing?.positionSizeUsd ?? null,
+            availableBalance: result.positionSizing?.availableBalance ?? null,
             reasoning: result.routingDecision.reasoning
           });
         }
@@ -297,43 +292,20 @@ export function useAureonSession(userId: string | null) {
             dominant_node: newQuantumState.dominantNode,
             prism_level: newQuantumState.prismLevel,
             prism_state: newQuantumState.prismState,
-            last_quantum_update_at: new Date().toISOString()
+            last_quantum_update_at: marketData.sourceTimestamp,
+            measurement_truth_status: 'real_derived',
+            measurement_source_id: marketData.sourceId,
+            measurement_source_timestamp: marketData.sourceTimestamp,
+            measurement_collected_at: new Date().toISOString(),
+            measurement_generated_values: false,
           })
           .eq('user_id', userId);
       }
 
-      // Handle trade signals
-      if (result.finalDecision.action !== 'HOLD' && tradingState.gasTankBalance > 0) {
-        const signal = `${result.finalDecision.action} BTCUSDT @ $${marketData.price.toFixed(2)}`;
-        setLastSignal(signal);
-
-        // Broadcast trade signal to Temporal Ladder
-        temporalLadder.broadcast(SYSTEMS.QUANTUM_QUACKERS, 'TRADE_SIGNAL', {
-          action: result.finalDecision.action,
-          symbol: 'BTCUSDT',
-          confidence: result.finalDecision.confidence,
-          reason: result.finalDecision.reason
-        });
-        
-        // No synthetic PnL: keep the trade record neutral until broker/paper
-        // execution returns a real fill and realized/unrealized result.
-        const pnl = 0;
-        const newTrade = {
-          time: new Date().toLocaleTimeString(),
-          side: result.finalDecision.action,
-          symbol: 'BTCUSDT',
-          quantity: 0.01,
-          pnl,
-          success: pnl > 0
-        };
-        
-        setTradingState(prev => ({
-          ...prev,
-          totalTrades: prev.totalTrades + 1,
-          winningTrades: pnl > 0 ? prev.winningTrades + 1 : prev.winningTrades,
-          totalPnl: prev.totalPnl + pnl,
-          recentTrades: [newTrade, ...prev.recentTrades.slice(0, 9)]
-        }));
+      // A decision is not a trade. Counts, P&L, quantities, and success remain
+      // unchanged until an exchange execution receipt is read back.
+      if (result.finalDecision.action !== 'HOLD') {
+        setLastSignal(`${result.finalDecision.action} BTCUSDT @ $${marketData.price.toFixed(2)} (advisory; not executed)`);
       }
       
     } catch (error) {
@@ -405,7 +377,7 @@ export function useAureonSession(userId: string | null) {
     toast.info('Trading stopped');
   }, []);
 
-  // Load user session data and AUTO-START on login
+  // Load provider-backed session data. Missing rows remain no_data.
   useEffect(() => {
     if (!userId) return;
 
@@ -417,57 +389,36 @@ export function useAureonSession(userId: string | null) {
         .single();
 
       if (error && error.code === 'PGRST116') {
-        // No session exists - create one and auto-start
-        console.log('[Aureon] No session found, creating new session...');
-        const { error: insertError } = await supabase
-          .from('aureon_user_sessions')
-          .insert({
-            user_id: userId,
-            payment_completed: true,
-            is_trading_active: true,
-            gas_tank_balance: 100,
-            trading_mode: 'paper'
-          });
-        
-        if (!insertError) {
-          console.log('[Aureon] Session created, auto-starting trading...');
-          startTrading();
-        }
+        console.info('[Aureon] No session exists; provider setup is required');
         return;
       }
 
       if (data) {
-        setQuantumState({
-          coherence: Number(data.current_coherence) || 0,
-          lambda: Number(data.current_lambda) || 0,
-          lighthouseSignal: Number(data.current_lighthouse_signal) || 0,
-          dominantNode: data.dominant_node || 'Tiger',
-          prismLevel: data.prism_level || 0,
-          prismState: data.prism_state || 'FORMING',
-          substrate: 0,
-          observer: 0,
-          echo: 0
-        });
+        const hasMeasurements = ['live', 'real_derived'].includes(String(data.measurement_truth_status));
+        if (hasMeasurements) {
+          setQuantumState({
+            coherence: data.current_coherence == null ? null : Number(data.current_coherence),
+            lambda: data.current_lambda == null ? null : Number(data.current_lambda),
+            lighthouseSignal: data.current_lighthouse_signal == null ? null : Number(data.current_lighthouse_signal),
+            dominantNode: data.dominant_node ?? null,
+            prismLevel: data.prism_level ?? null,
+            prismState: data.prism_state ?? null,
+            substrate: null,
+            observer: null,
+            echo: null,
+          });
+        }
         
         setTradingState({
-          isActive: data.is_trading_active || false,
-          totalEquity: Number(data.total_equity_usdt) || 0,
-          availableBalance: Number(data.available_balance_usdt) || 0,
-          totalTrades: data.total_trades || 0,
-          winningTrades: data.winning_trades || 0,
-          totalPnl: Number(data.total_pnl_usdt) || 0,
-          gasTankBalance: Number(data.gas_tank_balance) || 100,
-          recentTrades: (data.recent_trades as any[]) || []
+          isActive: data.is_trading_active === true,
+          totalEquity: data.total_equity_usd == null ? null : Number(data.total_equity_usd),
+          availableBalance: data.available_balance_usdt == null ? null : Number(data.available_balance_usdt),
+          totalTrades: data.total_trades ?? null,
+          winningTrades: data.winning_trades ?? null,
+          totalPnl: data.total_pnl_usdt == null ? null : Number(data.total_pnl_usdt),
+          gasTankBalance: data.gas_tank_balance == null ? null : Number(data.gas_tank_balance),
+          recentTrades: Array.isArray(data.recent_trades) ? data.recent_trades as any[] : [],
         });
-
-        // AUTO-START: If payment completed, start trading automatically
-        if (data.payment_completed && !data.is_trading_active) {
-          console.log('[Aureon] Payment verified, auto-starting trading...');
-          startTrading();
-        } else if (data.is_trading_active) {
-          // Resume if was already active
-          startTrading();
-        }
       }
     };
 
@@ -486,10 +437,10 @@ export function useAureonSession(userId: string | null) {
         },
         (payload) => {
           const data = payload.new as any;
+          if (!['live', 'real_derived'].includes(String(data.measurement_truth_status))) return;
           setTradingState(prev => ({
             ...prev,
-            totalEquity: Number(data.total_equity_usdt) || prev.totalEquity,
-            gasTankBalance: Number(data.gas_tank_balance) || prev.gasTankBalance,
+            totalEquity: data.total_equity_usd == null ? prev.totalEquity : Number(data.total_equity_usd),
           }));
         }
       )

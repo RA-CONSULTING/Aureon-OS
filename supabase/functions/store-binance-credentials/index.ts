@@ -1,46 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.81.1';
+import { encryptCredentialPacked } from '../_shared/credential_crypto.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-// AES-256-GCM encryption using Web Crypto API with provided IV
-async function encryptCredentialWithIV(credential: string, iv: Uint8Array): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(credential);
-  
-  // Get master encryption key from environment
-  const masterKeyString = Deno.env.get('MASTER_ENCRYPTION_KEY');
-  if (!masterKeyString) {
-    throw new Error('MASTER_ENCRYPTION_KEY not configured');
-  }
-  
-  // Import master key for AES-GCM
-  const masterKeyData = encoder.encode(masterKeyString);
-  const masterKey = await crypto.subtle.importKey(
-    'raw',
-    masterKeyData.slice(0, 32), // Use first 32 bytes for AES-256
-    { name: 'AES-GCM', length: 256 },
-    false,
-    ['encrypt']
-  );
-  
-  // Encrypt the credential with provided IV
-  const encryptedData = await crypto.subtle.encrypt(
-    { 
-      name: 'AES-GCM', 
-      iv: iv as BufferSource
-    },
-    masterKey,
-    data
-  );
-  
-  // Convert to base64 for storage
-  const encryptedArray = new Uint8Array(encryptedData);
-  return btoa(String.fromCharCode(...encryptedArray));
-}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -58,41 +23,27 @@ serve(async (req) => {
       throw new Error('Missing required fields: userId, apiKey, apiSecret');
     }
 
+    const token = req.headers.get('Authorization')?.replace('Bearer ', '');
+    if (!token) throw new Error('Unauthorized');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !user || user.id !== userId) throw new Error('Unauthorized');
+
     console.log('[store-binance-credentials] Encrypting credentials for user:', userId);
 
-    // Encrypt the credentials with AES-256-GCM using a single shared IV
-    const iv = crypto.getRandomValues(new Uint8Array(12)); // Generate once for both
-    const encryptedApiKey = await encryptCredentialWithIV(apiKey, iv);
-    const encryptedApiSecret = await encryptCredentialWithIV(apiSecret, iv);
+    const encryptedApiKey = await encryptCredentialPacked(apiKey);
+    const encryptedApiSecret = await encryptCredentialPacked(apiSecret);
 
-    // Store encrypted credentials with shared IV
     const { error: insertError } = await supabase
       .from('user_binance_credentials')
-      .insert({
+      .upsert({
         user_id: userId,
         api_key_encrypted: encryptedApiKey,
         api_secret_encrypted: encryptedApiSecret,
-        iv: btoa(String.fromCharCode(...iv)), // Store the shared IV
+        iv: 'v2',
         last_used_at: new Date().toISOString()
-      });
+      }, { onConflict: 'user_id' });
 
-    if (insertError) {
-      // If insert fails due to duplicate, try update
-      const { error: updateError } = await supabase
-        .from('user_binance_credentials')
-        .update({
-          api_key_encrypted: encryptedApiKey,
-          api_secret_encrypted: encryptedApiSecret,
-          iv: btoa(String.fromCharCode(...iv)),
-          updated_at: new Date().toISOString(),
-          last_used_at: new Date().toISOString()
-        })
-        .eq('user_id', userId);
-
-      if (updateError) {
-        throw new Error(`Failed to store credentials: ${updateError.message}`);
-      }
-    }
+    if (insertError) throw new Error(`Failed to store credentials: ${insertError.message}`);
 
     // Log audit trail
     await supabase

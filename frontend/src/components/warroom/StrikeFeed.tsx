@@ -21,22 +21,22 @@ export function StrikeFeed({ events, executionCount, onClear }: StrikeFeedProps)
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'success':
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
+        return <CheckCircle className="h-4 w-4 text-success" />;
       case 'failed':
-        return <XCircle className="h-4 w-4 text-red-500" />;
+        return <XCircle className="h-4 w-4 text-destructive" />;
       default:
-        return <Clock className="h-4 w-4 text-yellow-500" />;
+        return <Clock className="h-4 w-4 text-warning" />;
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'success':
-        return 'border-l-green-500 bg-green-500/5';
+        return 'border-l-green-500 bg-success/5';
       case 'failed':
-        return 'border-l-red-500 bg-red-500/5';
+        return 'border-l-red-500 bg-destructive/5';
       default:
-        return 'border-l-yellow-500 bg-yellow-500/5';
+        return 'border-l-yellow-500 bg-warning/5';
     }
   };
 
@@ -72,7 +72,7 @@ export function StrikeFeed({ events, executionCount, onClear }: StrikeFeedProps)
         </div>
         <p className="text-sm">{event.message}</p>
         {event.pnl !== undefined && (
-          <p className={`text-xs mt-1 ${event.pnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+          <p className={`text-xs mt-1 ${event.pnl >= 0 ? 'text-success' : 'text-destructive'}`}>
             P&L: {event.pnl >= 0 ? '+' : ''}${event.pnl.toFixed(2)}
           </p>
         )}
@@ -88,14 +88,14 @@ export function StrikeFeed({ events, executionCount, onClear }: StrikeFeedProps)
     <Card className="p-4 bg-card/50 backdrop-blur border-primary/20">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold flex items-center gap-2">
-          <Zap className="h-5 w-5 text-yellow-500" />
+          <Zap className="h-5 w-5 text-warning" />
           📋 LIVE STRIKE FEED ({events.length})
         </h3>
         <div className="flex items-center gap-2">
-          <Badge variant="outline" className="bg-green-500/10">
+          <Badge variant="outline" className="bg-success/10">
             ✅ {executionCount.success}
           </Badge>
-          <Badge variant="outline" className="bg-red-500/10">
+          <Badge variant="outline" className="bg-destructive/10">
             ❌ {executionCount.failed}
           </Badge>
           <Button size="sm" variant="ghost" onClick={onClear}>

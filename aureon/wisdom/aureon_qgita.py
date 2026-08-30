@@ -19,12 +19,24 @@ Key Features:
 Author: Gary Leckey / Aureon System
 Date: November 28, 2025
 """
-from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
 import os, sys, json, time, logging, argparse, random, math
 from datetime import datetime
 from typing import List, Dict, Any, Optional
 from aureon.exchanges.binance_client import BinanceClient, get_binance_client
 from decimal import Decimal, ROUND_DOWN
+
+_IMPORT_SIDE_EFFECTS_SUPPRESSED = any(
+    os.getenv(name, "").strip().lower() in {"1", "true", "yes", "on"}
+    for name in (
+        "AUREON_AUDIT_MODE",
+        "AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS",
+        "PYTHON_DOTENV_DISABLED",
+    )
+)
+if not _IMPORT_SIDE_EFFECTS_SUPPRESSED:
+    from aureon.core.aureon_baton_link import link_system as _baton_link
+
+    _baton_link(__name__)
 
 # Safe print for Windows multi-module imports
 def _safe_print(*args, **kwargs):
@@ -35,6 +47,8 @@ def _safe_print(*args, **kwargs):
 
 # 🪙 PENNY PROFIT ENGINE
 try:
+    if _IMPORT_SIDE_EFFECTS_SUPPRESSED:
+        raise ImportError("audit import")
     from aureon.trading.penny_profit_engine import check_penny_exit, get_penny_engine
     PENNY_PROFIT_AVAILABLE = True
     _penny_engine = get_penny_engine()
@@ -46,6 +60,8 @@ except ImportError:
 
 # 🧠 WISDOM COGNITION ENGINE - 11 Civilizations
 try:
+    if _IMPORT_SIDE_EFFECTS_SUPPRESSED:
+        raise ImportError("audit import")
     from aureon.utils.aureon_miner_brain import WisdomCognitionEngine
     WISDOM_AVAILABLE = True
     _wisdom_engine = WisdomCognitionEngine()
@@ -56,19 +72,21 @@ except ImportError:
     _safe_print("⚠️ Wisdom Engine not available")
 
 try:
-    from dotenv import load_dotenv
-    load_dotenv()
+    if not _IMPORT_SIDE_EFFECTS_SUPPRESSED:
+        from dotenv import load_dotenv
+        load_dotenv()
 except Exception:
     pass
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s [%(levelname)s] %(message)s',
-    handlers=[
-        logging.FileHandler('qgita.log'),
-        logging.StreamHandler(sys.stdout)
-    ]
-)
+if not _IMPORT_SIDE_EFFECTS_SUPPRESSED:
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s [%(levelname)s] %(message)s',
+        handlers=[
+            logging.FileHandler('qgita.log'),
+            logging.StreamHandler(sys.stdout)
+        ]
+    )
 logger = logging.getLogger(__name__)
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -349,49 +367,107 @@ class QGITAEngine:
 # ═══════════════════════════════════════════════════════════════════════════
 
 class DecisionFusion:
-    """Fuses ensemble model signals with QGITA lighthouse"""
-    def __init__(self):
+    """Fuses ensemble model signals with QGITA lighthouse.
+
+    Model signals are adopted only when the snapshot includes provider-receipted
+    outputs. A deterministic generated ensemble remains available only through
+    the explicit paper-only flag and is marked non-actionable throughout.
+    """
+
+    def __init__(self, allow_simulated_models: bool = False):
+        self.allow_simulated_models = allow_simulated_models
         self.weights = {
             'ensemble': 0.6,
             'sentiment': 0.2,
             'qgita': 0.2,
         }
-    
-    def generate_model_signal(self, snapshot: Dict) -> Dict:
-        """Simulate ensemble model signals (lstm, rf, xgb, transformer)"""
-        trend = snapshot.get('momentum', 0)
-        volatility = snapshot.get('volatility', 0.01)
-        normalized_trend = math.tanh(trend / volatility) if volatility > 0 else 0
-        
-        # Simulate 4 models
-        models = ['lstm', 'randomForest', 'xgboost', 'transformer']
+
+    def generate_model_signal(self, snapshot: Dict) -> List[Dict]:
+        """Return validated provider signals or an explicit paper-only ensemble."""
+        raw_signals = snapshot.get('model_signals')
+        if raw_signals is None and self.allow_simulated_models:
+            try:
+                momentum = float(snapshot.get('momentum', 0.0))
+                volatility = float(snapshot.get('volatility', 0.01))
+            except (TypeError, ValueError):
+                return []
+            if not math.isfinite(momentum) or not math.isfinite(volatility):
+                return []
+            normalized_trend = math.tanh(momentum / volatility) if volatility > 0 else 0.0
+            profiles = (
+                ('lstm', 0.20, 0.72),
+                ('randomForest', -0.10, 0.66),
+                ('xgboost', 0.10, 0.70),
+                ('transformer', 0.00, 0.74),
+            )
+            return [
+                {
+                    'model': model,
+                    'score': max(-1.0, min(1.0, normalized_trend + bias)),
+                    'confidence': confidence,
+                    'source_id': f'qgita:paper_simulation:{model}',
+                    'source_event_id': f'qgita:paper_simulation:{model}:deterministic-v1',
+                    'source_timestamp': None,
+                    'truth_status': 'simulated',
+                    'generated_values': True,
+                    'action_eligible': False,
+                    'economic_eligible': False,
+                }
+                for model, bias, confidence in profiles
+            ]
+        if not isinstance(raw_signals, list):
+            return []
         signals = []
-        for model in models:
-            bias = {'lstm': 0.2, 'randomForest': -0.1, 'xgboost': 0.1, 'transformer': 0}[model]
-            score = normalized_trend + bias + (random.random() - 0.5) * 0.1
-            confidence = max(0.2, min(0.95, 0.4 + random.random() * 0.5 - abs(score) * 0.1))
-            signals.append({'model': model, 'score': score, 'confidence': confidence})
+        for item in raw_signals:
+            if not isinstance(item, dict):
+                continue
+            required = ('model', 'score', 'confidence', 'source_id',
+                        'source_event_id', 'source_timestamp', 'truth_status',
+                        'generated_values')
+            if any(item.get(name) is None for name in required):
+                continue
+            if item['truth_status'] not in {'live', 'provider_observed'}:
+                continue
+            if item['generated_values'] is not False:
+                continue
+            signals.append(item)
         return signals
-    
+
     def decide(self, snapshot: Dict, lighthouse_event: Optional[Dict]) -> Dict:
         model_signals = self.generate_model_signal(snapshot)
-        
+
         # Aggregate ensemble
         agg_score = sum(s['score'] * s['confidence'] for s in model_signals)
         total_conf = sum(s['confidence'] for s in model_signals)
         normalized = agg_score / total_conf if total_conf > 0 else 0
-        
+
+        # No ensemble to weigh, and no lighthouse event either: nothing real to decide on,
+        # so hold and name the reason rather than emit a coin-flip.
+        if not model_signals and not lighthouse_event:
+            return {
+                'action': 'hold',
+                'score': 0.0,
+                'confidence': 0.0,
+                'ensemble': 'absent',
+                'blocker': 'no_model_ensemble_connected',
+            }
+
         # QGITA boost
         qgita_boost = 0
         if lighthouse_event:
             direction_mult = 1 if lighthouse_event['direction'] == 'long' else -1
             qgita_boost = lighthouse_event['confidence'] * direction_mult
         
-        # Weighted final score
+        # Weighted final score. With no ensemble present its weight is dropped rather
+        # than filled with a zero score, which would drag every decision toward hold and
+        # misreport the lighthouse's own strength.
         w = self.weights
-        w_total = w['ensemble'] + w['qgita']
-        final_score = (normalized * w['ensemble'] + qgita_boost * w['qgita']) / w_total
-        
+        if model_signals:
+            w_total = w['ensemble'] + w['qgita']
+            final_score = (normalized * w['ensemble'] + qgita_boost * w['qgita']) / w_total
+        else:
+            final_score = qgita_boost
+
         # Action
         if final_score > CONFIG['BUY_THRESHOLD']:
             action = 'buy'
@@ -399,11 +475,18 @@ class DecisionFusion:
             action = 'sell'
         else:
             action = 'hold'
-        
+
         return {
             'action': action,
             'score': final_score,
             'confidence': min(1.0, abs(final_score) + 0.3),
+            'ensemble': (
+                'simulated'
+                if model_signals and model_signals[0].get('truth_status') == 'simulated'
+                else 'provider_observed'
+                if model_signals
+                else 'absent'
+            ),
         }
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -422,7 +505,25 @@ class RiskManager:
         self.peak_equity = initial_equity
         self.max_drawdown = 0
         self.positions = []
-    
+        # Realized outcomes, so Kelly can use a measured win rate instead of a guess.
+        self.wins = 0
+        self.losses = 0
+
+    def record_outcome(self, pnl_pct: float) -> None:
+        """Feed a closed trade back in, so the win rate becomes observed rather than assumed."""
+        if pnl_pct > 0:
+            self.wins += 1
+        else:
+            self.losses += 1
+
+    def measured_win_rate(self) -> Optional[float]:
+        """The realized win rate, or None until there are enough closed trades to mean anything."""
+        total = self.wins + self.losses
+        if total < 20:
+            return None
+        return self.wins / total
+
+
     def evaluate(self, decision: Dict, snapshot: Dict, available_balance: float) -> Optional[Dict]:
         if decision['action'] == 'hold':
             return None
@@ -434,8 +535,13 @@ class RiskManager:
         volatility = snapshot.get('volatility', 0.02)
         normalized_vol = max(0.001, volatility)
         
-        # Kelly sizing
-        win_rate = 0.55 * confidence + 0.45 * random.random()
+        # Kelly sizing. The win rate used to be ``0.55*confidence + 0.45*random()`` — a
+        # coin flip contributing 45% of the input to a position-size calculation, so the
+        # same signal could size wildly differently twice in a row for no reason anyone
+        # could name. Use the measured win rate once there are enough closed trades, and
+        # until then a deterministic, conservative function of confidence alone.
+        measured = self.measured_win_rate()
+        win_rate = measured if measured is not None else 0.55 * confidence
         reward_risk = 1.5 + confidence
         kelly_frac = kelly_criterion(win_rate, reward_risk) * CONFIG['KELLY_MULTIPLIER']
         
@@ -557,12 +663,17 @@ class LotSizeManager:
 # ═══════════════════════════════════════════════════════════════════════════
 
 class AureonQGITATrader:
-    def __init__(self, dry_run: bool = False):
+    def __init__(self, dry_run: bool = False, allow_simulated_models: bool = False):
         self.dry_run = dry_run
+        # The simulated ensemble is only ever available on paper, and only when asked for.
+        # Live money is never sized from a stand-in model — see DecisionFusion.
+        self.allow_simulated_models = bool(allow_simulated_models and dry_run)
+        if allow_simulated_models and not dry_run:
+            logger.warning("⚠️ Simulated model ensemble refused: live mode uses real signals only")
         self.client = get_binance_client()
         self.lot_manager = LotSizeManager(self.client)
         self.qgita = QGITAEngine()
-        self.decision_fusion = DecisionFusion()
+        self.decision_fusion = DecisionFusion(allow_simulated_models=self.allow_simulated_models)
         self.risk_manager = RiskManager()
         self.positions = {}
         self.total_profit = 0.0
@@ -717,16 +828,15 @@ class AureonQGITATrader:
                     should_exit = True
                     exit_reason = f"🐯 TIGER CUT (phase disruption)"
             
-            # Random status log
-            if random.random() < 0.02:
-                logger.info(f"📊 {symbol}: Prism={prism} | PnL={pnl_pct*100:.2f}% | State={state.emotionalState}")
-            
             if should_exit:
                 logger.info(f"⚡ {symbol}: {exit_reason}")
                 self.close_position(symbol, pos, price, pnl_pct)
     
     def close_position(self, symbol: str, pos: Dict, price: float, pnl_pct: float):
         """Close a position with proper LOT_SIZE handling"""
+        # Feed the outcome back so Kelly sizing converges on this session's observed win
+        # rate instead of a standing assumption.
+        self.risk_manager.record_outcome(pnl_pct)
         if self.dry_run:
             logger.info(f"📝 DRY-RUN SELL: {symbol}")
             del self.positions[symbol]
@@ -914,15 +1024,19 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dry-run', action='store_true', help='Paper trading mode')
     parser.add_argument('--duration', type=int, default=3600, help='Run duration in seconds')
+    parser.add_argument('--simulated-models', action='store_true',
+                        help='Paper mode only: stand in for the model ensemble with simulated '
+                             'signals. Refused in live mode.')
     args = parser.parse_args()
-    
+
     if not args.dry_run:
         if os.getenv('CONFIRM_LIVE', '').lower() != 'yes':
             logger.error("❌ Set CONFIRM_LIVE=yes for live trading")
             sys.exit(1)
         logger.warning("⚠️  LIVE TRADING MODE - REAL MONEY")
-    
-    trader = AureonQGITATrader(dry_run=args.dry_run)
+
+    trader = AureonQGITATrader(dry_run=args.dry_run,
+                              allow_simulated_models=args.simulated_models)
     trader.run(duration_sec=args.duration)
 
 if __name__ == "__main__":

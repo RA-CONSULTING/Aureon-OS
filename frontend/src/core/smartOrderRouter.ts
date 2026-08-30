@@ -27,6 +27,10 @@ export interface OrderQuote {
   spread: number;
   available: boolean;
   timestamp: number;
+  truthStatus: 'real_derived';
+  sourceId: string;
+  sourceTimestamp: string;
+  generatedValues: false;
 }
 
 export interface RoutingDecision {
@@ -95,31 +99,16 @@ export class SmartOrderRouter {
         effectivePrice,
         spread: ticker.askPrice - ticker.bidPrice,
         available: true,
-        timestamp: Date.now()
+        timestamp: ticker.timestamp,
+        truthStatus: ticker.truthStatus,
+        sourceId: ticker.sourceId,
+        sourceTimestamp: ticker.sourceTimestamp,
+        generatedValues: false,
       });
     }
 
     if (quotes.length === 0) {
-      // Return a default routing decision with Binance as fallback
-      const defaultQuote: OrderQuote = {
-        exchange: 'binance',
-        symbol,
-        side,
-        price: 0,
-        estimatedFee: 0,
-        effectivePrice: 0,
-        spread: 0,
-        available: false,
-        timestamp: Date.now()
-      };
-      
-      return {
-        recommendedExchange: 'binance',
-        quotes: [defaultQuote],
-        bestQuote: defaultQuote,
-        savings: 0,
-        reasoning: 'DEFAULT: No live quotes available, using Binance fallback'
-      };
+      throw new Error(`NO_LIVE_ROUTING_QUOTES:${symbol}`);
     }
 
     // Sort by effective price (best first)
@@ -214,7 +203,7 @@ export class SmartOrderRouter {
   /**
    * Quick route - returns best exchange without full analysis
    */
-  public quickRoute(symbol: string): ExchangeType {
+  public quickRoute(symbol: string): ExchangeType | null {
     return multiExchangeClient.getBestExchangeForSymbol(symbol);
   }
 

@@ -237,9 +237,9 @@ export default function FullPortfolioDisplay() {
                       {exchange.exchange.toUpperCase()}
                     </Badge>
                     {exchange.connected ? (
-                      <span className="w-2 h-2 rounded-full bg-green-500" />
+                      <span className="w-2 h-2 rounded-full bg-success" />
                     ) : (
-                      <span className="w-2 h-2 rounded-full bg-red-500" />
+                      <span className="w-2 h-2 rounded-full bg-destructive" />
                     )}
                   </CardTitle>
                   <span className="text-xl font-bold font-mono">
@@ -247,7 +247,7 @@ export default function FullPortfolioDisplay() {
                   </span>
                 </div>
                 {exchange.error && (
-                  <p className="text-xs text-yellow-500">{exchange.error}</p>
+                  <p className="text-xs text-warning">{exchange.error}</p>
                 )}
               </CardHeader>
               <CardContent>
@@ -268,9 +268,9 @@ export default function FullPortfolioDisplay() {
                           <tr key={asset.asset} className="border-b border-border/20 hover:bg-muted/20">
                             <td className="py-2 px-2 font-bold">{asset.asset}</td>
                             <td className="py-2 px-2 text-right font-mono">{asset.free.toFixed(8)}</td>
-                            <td className="py-2 px-2 text-right font-mono text-yellow-500">{asset.locked.toFixed(8)}</td>
+                            <td className="py-2 px-2 text-right font-mono text-warning">{asset.locked.toFixed(8)}</td>
                             <td className="py-2 px-2 text-right font-mono">{(asset.free + asset.locked).toFixed(8)}</td>
-                            <td className="py-2 px-2 text-right font-mono text-green-400">${asset.usdValue.toFixed(2)}</td>
+                            <td className="py-2 px-2 text-right font-mono text-success">${asset.usdValue.toFixed(2)}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -404,9 +404,9 @@ export default function FullPortfolioDisplay() {
 // Stat Card Component
 function StatCard({ title, value, icon, status }: { title: string; value: string; icon: React.ReactNode; status: 'success' | 'error' | 'warning' | 'neutral' }) {
   const statusColors = {
-    success: 'text-green-400 border-green-500/30 bg-green-500/5',
-    error: 'text-red-400 border-red-500/30 bg-red-500/5',
-    warning: 'text-yellow-400 border-yellow-500/30 bg-yellow-500/5',
+    success: 'text-success border-success/30 bg-success/5',
+    error: 'text-destructive border-destructive/30 bg-destructive/5',
+    warning: 'text-warning border-warning/30 bg-warning/5',
     neutral: 'text-foreground border-border/50 bg-card/50',
   };
 
@@ -429,7 +429,7 @@ function PositionCard({ position }: { position: Position }) {
   const pnlPositive = (pnl || 0) >= 0;
 
   return (
-    <div className={`p-3 rounded-lg border ${pnlPositive ? 'border-green-500/30 bg-green-500/5' : 'border-red-500/30 bg-red-500/5'}`}>
+    <div className={`p-3 rounded-lg border ${pnlPositive ? 'border-success/30 bg-success/5' : 'border-destructive/30 bg-destructive/5'}`}>
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <Badge variant={position.side === 'BUY' ? 'default' : 'destructive'}>
@@ -438,7 +438,7 @@ function PositionCard({ position }: { position: Position }) {
           <span className="font-bold">{position.symbol}</span>
           <Badge variant="outline">{position.status.toUpperCase()}</Badge>
         </div>
-        <span className={`font-mono font-bold ${pnlPositive ? 'text-green-400' : 'text-red-400'}`}>
+        <span className={`font-mono font-bold ${pnlPositive ? 'text-success' : 'text-destructive'}`}>
           {pnlPositive ? '+' : ''}${(pnl || 0).toFixed(2)}
         </span>
       </div>
@@ -450,8 +450,8 @@ function PositionCard({ position }: { position: Position }) {
       </div>
       <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground mt-1">
         <div><Clock className="w-3 h-3 inline mr-1" />{format(new Date(position.opened_at), 'MMM dd HH:mm:ss')}</div>
-        {position.stop_loss_price && <div className="text-red-400">SL: ${position.stop_loss_price.toFixed(4)}</div>}
-        {position.take_profit_price && <div className="text-green-400">TP: ${position.take_profit_price.toFixed(4)}</div>}
+        {position.stop_loss_price && <div className="text-destructive">SL: ${position.stop_loss_price.toFixed(4)}</div>}
+        {position.take_profit_price && <div className="text-success">TP: ${position.take_profit_price.toFixed(4)}</div>}
       </div>
       <div className="text-xs text-muted-foreground mt-1">
         <Hash className="w-3 h-3 inline mr-1" />ID: {position.id.slice(0, 8)}...
@@ -489,9 +489,9 @@ function ExecutionCard({ execution }: { execution: TradeExecution }) {
         {execution.exchange_order_id && <div><span className="text-muted-foreground">Order:</span> <span className="font-mono text-xs">{execution.exchange_order_id.slice(0, 12)}...</span></div>}
       </div>
       <div className="grid grid-cols-3 gap-2 text-xs mt-1">
-        {execution.stop_loss_price && <div className="text-red-400">SL: ${execution.stop_loss_price.toFixed(4)}</div>}
-        {execution.take_profit_price && <div className="text-green-400">TP: ${execution.take_profit_price.toFixed(4)}</div>}
-        {execution.error_message && <div className="text-red-400 truncate">{execution.error_message}</div>}
+        {execution.stop_loss_price && <div className="text-destructive">SL: ${execution.stop_loss_price.toFixed(4)}</div>}
+        {execution.take_profit_price && <div className="text-success">TP: ${execution.take_profit_price.toFixed(4)}</div>}
+        {execution.error_message && <div className="text-destructive truncate">{execution.error_message}</div>}
       </div>
       <div className="flex items-center gap-4 text-xs text-muted-foreground mt-2">
         <div><Calendar className="w-3 h-3 inline mr-1" />{format(new Date(execution.created_at), 'MMM dd HH:mm:ss.SSS')}</div>
@@ -504,13 +504,13 @@ function ExecutionCard({ execution }: { execution: TradeExecution }) {
 // Audit Card Component
 function AuditCard({ audit }: { audit: TradeAudit }) {
   const stageColors: Record<string, string> = {
-    SIGNAL_GENERATED: 'bg-blue-500/20 text-blue-400',
-    ORDER_SUBMITTED: 'bg-yellow-500/20 text-yellow-400',
-    ORDER_CONFIRMED: 'bg-cyan-500/20 text-cyan-400',
-    PARTIALLY_FILLED: 'bg-purple-500/20 text-purple-400',
-    FILLED: 'bg-green-500/20 text-green-400',
-    SETTLED: 'bg-green-500/20 text-green-400',
-    FAILED: 'bg-red-500/20 text-red-400',
+    SIGNAL_GENERATED: 'bg-primary/20 text-primary',
+    ORDER_SUBMITTED: 'bg-warning/20 text-warning',
+    ORDER_CONFIRMED: 'bg-primary/20 text-primary',
+    PARTIALLY_FILLED: 'bg-primary/20 text-primary',
+    FILLED: 'bg-success/20 text-success',
+    SETTLED: 'bg-success/20 text-success',
+    FAILED: 'bg-destructive/20 text-destructive',
   };
 
   return (
@@ -534,13 +534,13 @@ function AuditCard({ audit }: { audit: TradeAudit }) {
         <div><span className="text-muted-foreground">Exec Price:</span> <span className="font-mono">${audit.executed_price?.toFixed(4) || '-'}</span></div>
       </div>
       <div className="grid grid-cols-4 gap-2 text-xs mt-1">
-        {audit.commission !== null && <div><span className="text-muted-foreground">Commission:</span> <span className="text-yellow-400">{audit.commission?.toFixed(8)} {audit.commission_asset}</span></div>}
+        {audit.commission !== null && <div><span className="text-muted-foreground">Commission:</span> <span className="text-warning">{audit.commission?.toFixed(8)} {audit.commission_asset}</span></div>}
         {audit.external_order_id && <div><span className="text-muted-foreground">Ext Order:</span> <span className="font-mono">{audit.external_order_id}</span></div>}
         {audit.client_order_id && <div><span className="text-muted-foreground">Client:</span> <span className="font-mono">{audit.client_order_id?.slice(0, 12)}...</span></div>}
         <div><span className="text-muted-foreground">Trade ID:</span> <span className="font-mono">{audit.trade_id?.slice(0, 8)}...</span></div>
       </div>
       {audit.error_message && (
-        <div className="mt-2 p-2 rounded bg-red-500/10 text-red-400 text-xs">{audit.error_message}</div>
+        <div className="mt-2 p-2 rounded bg-destructive/10 text-destructive text-xs">{audit.error_message}</div>
       )}
       {audit.exchange_response && (
         <details className="mt-2">
@@ -597,7 +597,7 @@ function ConsolidatedPortfolio({ balances }: { balances: any[] }) {
             <Wallet className="w-5 h-5" />
             Consolidated Portfolio
           </CardTitle>
-          <span className="text-2xl font-bold font-mono text-green-400">
+          <span className="text-2xl font-bold font-mono text-success">
             ${totalValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}
           </span>
         </div>
@@ -621,9 +621,9 @@ function ConsolidatedPortfolio({ balances }: { balances: any[] }) {
                 <tr key={asset.asset} className="border-b border-border/20 hover:bg-muted/20">
                   <td className="py-2 px-2 font-bold">{asset.asset}</td>
                   <td className="py-2 px-2 text-right font-mono">{asset.free.toFixed(8)}</td>
-                  <td className="py-2 px-2 text-right font-mono text-yellow-500">{asset.locked.toFixed(8)}</td>
+                  <td className="py-2 px-2 text-right font-mono text-warning">{asset.locked.toFixed(8)}</td>
                   <td className="py-2 px-2 text-right font-mono">{(asset.free + asset.locked).toFixed(8)}</td>
-                  <td className="py-2 px-2 text-right font-mono text-green-400">${asset.usdValue.toFixed(2)}</td>
+                  <td className="py-2 px-2 text-right font-mono text-success">${asset.usdValue.toFixed(2)}</td>
                   <td className="py-2 px-2 text-right font-mono">{((asset.usdValue / totalValue) * 100).toFixed(1)}%</td>
                   <td className="py-2 px-2">
                     {asset.exchanges.map(ex => (

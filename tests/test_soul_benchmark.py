@@ -11,6 +11,8 @@ rung with a pass/fail gate.
 
 from __future__ import annotations
 
+import json
+
 from aureon.core.soul_benchmark import build_report, run_soul_benchmark
 
 _CORPUS = [
@@ -58,6 +60,24 @@ def test_small_goal_resolves_and_plans():
     assert by["resolve:t-small"]["ok"] and by["stance:t-small"]["ok"]
     assert by["plan:t-small"]["ok"]           # a resolved goal yields role-assigned work-orders
     assert by["dry_run:t-small"]["ok"]        # directing stayed dry-run, nothing executed
+
+
+def test_external_runtime_blockers_do_not_leak_into_coherent_case(monkeypatch, tmp_path):
+    external = tmp_path / "external-runtime.json"
+    external.write_text(
+        json.dumps({"preflight_critical_failures": ["outside-a", "outside-b"]}),
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("AUREON_RUNTIME_STATUS_PATH", str(external))
+
+    report = run_soul_benchmark(cases=[_CORPUS[0]])
+    by = {c["check"]: c for c in report["checks"]}
+
+    assert by["resolve:t-small"]["ok"]
+    assert by["stance:t-small"]["ok"]
+    assert json.loads(external.read_text(encoding="utf-8")) == {
+        "preflight_critical_failures": ["outside-a", "outside-b"]
+    }
 
 
 def test_grand_goal_defers_to_human():

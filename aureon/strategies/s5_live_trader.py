@@ -11,10 +11,10 @@ Gary Leckey & GitHub Copilot | January 2026
 Press Ctrl+C to stop.
 """
 
-from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
 import asyncio
 import json
 import time
+import math
 import signal
 import sys
 from datetime import datetime, timedelta
@@ -30,8 +30,68 @@ except ImportError:
 
 import requests
 
-# Import our systems
-from aureon.core.aureon_mycelium import MyceliumNetwork
+MAX_RECEIPT_AGE_SECONDS = 30.0
+
+
+def _finite(value: Any, *, positive: bool = False, nonnegative: bool = False) -> Optional[float]:
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    if not math.isfinite(number):
+        return None
+    if positive and number <= 0.0:
+        return None
+    if nonnegative and number < 0.0:
+        return None
+    return number
+
+
+def _binance_ticker_receipt(ticker: Any, received_at: float) -> Optional[Dict[str, Any]]:
+    if not isinstance(ticker, dict):
+        return None
+    symbol = str(ticker.get("symbol") or ticker.get("s") or "").strip().upper()
+    provider_ms = _finite(ticker.get("closeTime") if "closeTime" in ticker else ticker.get("E"), positive=True)
+    raw_provider_id = ticker.get("lastId") if "lastId" in ticker else ticker.get("L")
+    provider_id = str(raw_provider_id or "").strip()
+    price = _finite(ticker.get("lastPrice") if "lastPrice" in ticker else ticker.get("c"), positive=True)
+    bid = _finite(ticker.get("bidPrice") if "bidPrice" in ticker else ticker.get("b"), positive=True)
+    ask = _finite(ticker.get("askPrice") if "askPrice" in ticker else ticker.get("a"), positive=True)
+    volume = _finite(ticker.get("volume") if "volume" in ticker else ticker.get("v"), nonnegative=True)
+    change = _finite(ticker.get("priceChangePercent") if "priceChangePercent" in ticker else ticker.get("P"))
+    if provider_ms is None:
+        return None
+    source_timestamp = provider_ms / 1000.0
+    if (
+        not symbol
+        or not provider_id
+        or price is None
+        or bid is None
+        or ask is None
+        or volume is None
+        or change is None
+        or ask < bid
+        or source_timestamp > received_at + 5.0
+        or received_at - source_timestamp > MAX_RECEIPT_AGE_SECONDS
+    ):
+        return None
+    return {
+        "symbol": symbol,
+        "price": price,
+        "bid": bid,
+        "ask": ask,
+        "volume_24h": volume,
+        "change_24h": change,
+        "source_id": "binance:public:ticker",
+        "source_timestamp": source_timestamp,
+        "received_at": received_at,
+        "receipt_id": f"binance:{symbol}:{provider_id}:{int(provider_ms)}",
+        "truth_status": "real_observed",
+        "generated_values": False,
+        "actionable": False,
+        "accounting_eligible": False,
+        "learning_eligible": False,
+    }
 
 
 @dataclass
@@ -45,6 +105,14 @@ class LivePrice:
     change_24h: float = 0.0
     timestamp: datetime = field(default_factory=datetime.now)
     source: str = 'unknown'
+    source_timestamp: Optional[float] = None
+    received_at: Optional[float] = None
+    receipt_id: Optional[str] = None
+    truth_status: str = "no_data"
+    generated_values: bool = False
+    actionable: bool = False
+    accounting_eligible: bool = False
+    learning_eligible: bool = False
 
 
 @dataclass
@@ -59,6 +127,14 @@ class ConversionOpportunity:
     timestamp: datetime
     opportunity_type: str
     s5_score: float = 0.0
+    source_timestamp: Optional[float] = None
+    received_at: Optional[float] = None
+    input_receipt_ids: tuple[str, ...] = ()
+    truth_status: str = "no_data"
+    generated_values: bool = False
+    actionable: bool = False
+    accounting_eligible: bool = False
+    learning_eligible: bool = False
 
 
 class S5LiveTrader:
@@ -89,10 +165,20 @@ class S5LiveTrader:
     MIN_VOLATILITY = 0.0005    # 0.05% minimum volatility
     MIN_PROFIT = 0.00001       # $0.00001 minimum profit (micro profits)
     
-    def __init__(self, starting_capital: float = 1000.0, dry_run: bool = False):
+    def __init__(
+        self,
+        starting_capital: float = 1000.0,
+        dry_run: bool = True,
+        *,
+        network: Any = None,
+        clock: Any = time.time,
+        register_signals: bool = False,
+    ):
         self.starting_capital = starting_capital
         self.dry_run = dry_run
-        self.network = MyceliumNetwork(initial_capital=starting_capital)
+        self.network = network
+        self._clock = clock
+        self.last_no_data: Optional[Dict[str, Any]] = None
         
         # Price tracking
         self.prices: Dict[str, LivePrice] = {}
@@ -120,8 +206,9 @@ class S5LiveTrader:
         self.hourly_stats = defaultdict(lambda: {'conversions': 0, 'profit': 0.0})
         
         # Signal handling
-        signal.signal(signal.SIGINT, self._signal_handler)
-        signal.signal(signal.SIGTERM, self._signal_handler)
+        if register_signals:
+            signal.signal(signal.SIGINT, self._signal_handler)
+            signal.signal(signal.SIGTERM, self._signal_handler)
         
     def _signal_handler(self, signum, frame):
         """Handle shutdown gracefully"""
@@ -163,20 +250,28 @@ class S5LiveTrader:
             data = response.json()
             
             for ticker in data:
-                symbol = ticker['symbol']
+                receipt = _binance_ticker_receipt(ticker, self._clock())
+                if receipt is None:
+                    continue
+                symbol = receipt["symbol"]
                 if symbol in self.BINANCE_PAIRS:
-                    price = float(ticker['lastPrice'])
-                    self.prices[symbol] = LivePrice(
+                    live_price = LivePrice(
                         symbol=symbol,
-                        price=price,
-                        bid=float(ticker.get('bidPrice', price)),
-                        ask=float(ticker.get('askPrice', price)),
-                        volume_24h=float(ticker.get('volume', 0)),
-                        change_24h=float(ticker.get('priceChangePercent', 0)),
-                        timestamp=datetime.now(),
-                        source='binance_rest'
+                        price=receipt["price"],
+                        bid=receipt["bid"],
+                        ask=receipt["ask"],
+                        volume_24h=receipt["volume_24h"],
+                        change_24h=receipt["change_24h"],
+                        timestamp=datetime.fromtimestamp(receipt["source_timestamp"]),
+                        source=receipt["source_id"],
+                        source_timestamp=receipt["source_timestamp"],
+                        received_at=receipt["received_at"],
+                        receipt_id=receipt["receipt_id"],
+                        truth_status="real_observed",
+                        generated_values=False,
                     )
-                    self.prev_prices[symbol] = price
+                    self.prices[symbol] = live_price
+                    self.prev_prices[symbol] = live_price.price
                     
             print(f"      ✅ Loaded {len(self.prices)} initial prices")
             
@@ -215,9 +310,8 @@ class S5LiveTrader:
                                 symbol = ticker.get('s')
                                 
                                 if symbol and symbol in self.BINANCE_PAIRS:
-                                    price = float(ticker.get('c', 0))  # Last price
-                                    
-                                    if price > 0:
+                                    receipt = _binance_ticker_receipt(ticker, self._clock())
+                                    if receipt is not None:
                                         # Store previous price
                                         if symbol in self.prices:
                                             self.prev_prices[symbol] = self.prices[symbol].price
@@ -225,17 +319,25 @@ class S5LiveTrader:
                                         # Update current price
                                         self.prices[symbol] = LivePrice(
                                             symbol=symbol,
-                                            price=price,
-                                            bid=float(ticker.get('b', price)),
-                                            ask=float(ticker.get('a', price)),
-                                            volume_24h=float(ticker.get('v', 0)),
-                                            change_24h=float(ticker.get('P', 0)),
-                                            timestamp=datetime.now(),
-                                            source='binance_ws'
+                                            price=receipt["price"],
+                                            bid=receipt["bid"],
+                                            ask=receipt["ask"],
+                                            volume_24h=receipt["volume_24h"],
+                                            change_24h=receipt["change_24h"],
+                                            timestamp=datetime.fromtimestamp(receipt["source_timestamp"]),
+                                            source=receipt["source_id"],
+                                            source_timestamp=receipt["source_timestamp"],
+                                            received_at=receipt["received_at"],
+                                            receipt_id=receipt["receipt_id"],
+                                            truth_status="real_observed",
+                                            generated_values=False,
                                         )
                                         
                                         # Track history (last 100 prices per symbol)
-                                        self.price_history[symbol].append((datetime.now(), price))
+                                        self.price_history[symbol].append((
+                                            datetime.fromtimestamp(receipt["source_timestamp"]),
+                                            receipt["price"],
+                                        ))
                                         if len(self.price_history[symbol]) > 100:
                                             self.price_history[symbol].pop(0)
                                         

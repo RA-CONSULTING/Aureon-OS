@@ -353,7 +353,7 @@ interface AutonomousFrontendManifest {
   summary: Record<string, string | number | boolean | null>;
 }
 
-const REPO_BASE_URL = "https://github.com/RA-CONSULTING/aureon-trading";
+const REPO_BASE_URL = "https://github.com/RA-CONSULTING/Aureon-OS";
 const AUTONOMOUS_MANIFEST_LABELS: Record<string, string> = {
   aureon_saas_system_inventory: "SaaS System Inventory",
   aureon_frontend_unification_plan: "Frontend Unification Plan",
@@ -399,7 +399,7 @@ function PathLink({ path }: { path: string }) {
       href={repoUrl(path)}
       target="_blank"
       rel="noreferrer"
-      className="inline-flex max-w-full items-center gap-1 truncate rounded-md border border-border/60 bg-background/50 px-2 py-1 font-mono text-[11px] text-cyan-100 hover:border-cyan-400/60"
+      className="inline-flex max-w-full items-center gap-1 truncate rounded-md border border-border/60 bg-background/50 px-2 py-1 font-mono text-[11px] text-primary hover:border-primary/60"
     >
       <span className="truncate">{path}</span>
       <ExternalLink className="h-3 w-3 shrink-0" />
@@ -409,7 +409,7 @@ function PathLink({ path }: { path: string }) {
 
 function ContractPill({ label, clear }: { label: string; clear: boolean }) {
   return (
-    <Badge variant="outline" className={clear ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-100" : "border-red-500/40 bg-red-500/10 text-red-100"}>
+    <Badge variant="outline" className={clear ? "border-success/40 bg-success/10 text-success" : "border-destructive/40 bg-destructive/10 text-destructive"}>
       {label}: {clear ? "clear" : "review"}
     </Badge>
   );
@@ -693,7 +693,7 @@ export function RepoNavigationPanel() {
         <Card className="border-border/60 bg-card/90">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-lg">
-              <GitBranch className="h-5 w-5 text-cyan-200" />
+              <GitBranch className="h-5 w-5 text-primary" />
               Repository Map
             </CardTitle>
           </CardHeader>
@@ -742,7 +742,7 @@ export function RepoNavigationPanel() {
             </div>
 
             {error ? (
-              <div className="rounded-md border border-yellow-500/40 bg-yellow-500/10 p-3 text-sm text-yellow-100">{error}</div>
+              <div className="rounded-md border border-warning/40 bg-warning/10 p-3 text-sm text-warning">{error}</div>
             ) : null}
           </CardContent>
         </Card>
@@ -750,7 +750,7 @@ export function RepoNavigationPanel() {
         <Card className="border-border/60 bg-card/90">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-lg">
-              <ShieldCheck className="h-5 w-5 text-emerald-200" />
+              <ShieldCheck className="h-5 w-5 text-success" />
               Public Contract
             </CardTitle>
           </CardHeader>
@@ -761,58 +761,58 @@ export function RepoNavigationPanel() {
               <ContractPill label="customer data" clear={!contract?.contains_customer_data} />
             </div>
             <div className="grid gap-2 text-xs">
-              <a className="inline-flex items-center gap-2 text-cyan-100 hover:text-cyan-50" href="/aureon_repo_sitemap.json" target="_blank" rel="noreferrer">
+              <a className="inline-flex items-center gap-2 text-primary hover:text-primary" href="/aureon_repo_sitemap.json" target="_blank" rel="noreferrer">
                 <FileJson className="h-4 w-4" />
                 /aureon_repo_sitemap.json
               </a>
-              <a className="inline-flex items-center gap-2 text-cyan-100 hover:text-cyan-50" href="/aureon_end_user_access_map.json" target="_blank" rel="noreferrer">
+              <a className="inline-flex items-center gap-2 text-primary hover:text-primary" href="/aureon_end_user_access_map.json" target="_blank" rel="noreferrer">
                 <FileJson className="h-4 w-4" />
                 /aureon_end_user_access_map.json
               </a>
-              <a className="inline-flex items-center gap-2 text-cyan-100 hover:text-cyan-50" href="/aureon_capability_access_matrix.json" target="_blank" rel="noreferrer">
+              <a className="inline-flex items-center gap-2 text-primary hover:text-primary" href="/aureon_capability_access_matrix.json" target="_blank" rel="noreferrer">
                 <FileJson className="h-4 w-4" />
                 /aureon_capability_access_matrix.json
               </a>
-              <a className="inline-flex items-center gap-2 text-cyan-100 hover:text-cyan-50" href={publicUrl("frontend/public/aureon_capability_registry.json")} target="_blank" rel="noreferrer">
+              <a className="inline-flex items-center gap-2 text-primary hover:text-primary" href={publicUrl("frontend/public/aureon_capability_registry.json")} target="_blank" rel="noreferrer">
                 <FileJson className="h-4 w-4" />
                 /aureon_capability_registry.json
               </a>
-              <a className="inline-flex items-center gap-2 text-cyan-100 hover:text-cyan-50" href={publicUrl("frontend/public/aureon_repo_navigation_index.json")} target="_blank" rel="noreferrer">
+              <a className="inline-flex items-center gap-2 text-primary hover:text-primary" href={publicUrl("frontend/public/aureon_repo_navigation_index.json")} target="_blank" rel="noreferrer">
                 <FileJson className="h-4 w-4" />
                 /aureon_repo_navigation_index.json
               </a>
-              <a className="inline-flex items-center gap-2 text-cyan-100 hover:text-cyan-50" href={publicUrl("frontend/public/aureon_repo_organization_tree.json")} target="_blank" rel="noreferrer">
+              <a className="inline-flex items-center gap-2 text-primary hover:text-primary" href={publicUrl("frontend/public/aureon_repo_organization_tree.json")} target="_blank" rel="noreferrer">
                 <FileJson className="h-4 w-4" />
                 /aureon_repo_organization_tree.json
               </a>
-              <a className="inline-flex items-center gap-2 text-cyan-100 hover:text-cyan-50" href={publicUrl("frontend/public/aureon_repo_navigation_readiness.json")} target="_blank" rel="noreferrer">
+              <a className="inline-flex items-center gap-2 text-primary hover:text-primary" href={publicUrl("frontend/public/aureon_repo_navigation_readiness.json")} target="_blank" rel="noreferrer">
                 <FileJson className="h-4 w-4" />
                 /aureon_repo_navigation_readiness.json
               </a>
-              <a className="inline-flex items-center gap-2 text-cyan-100 hover:text-cyan-50" href={publicUrl("frontend/public/aureon_repo_navigation_completion_audit.json")} target="_blank" rel="noreferrer">
+              <a className="inline-flex items-center gap-2 text-primary hover:text-primary" href={publicUrl("frontend/public/aureon_repo_navigation_completion_audit.json")} target="_blank" rel="noreferrer">
                 <FileJson className="h-4 w-4" />
                 /aureon_repo_navigation_completion_audit.json
               </a>
-              <a className="inline-flex items-center gap-2 text-cyan-100 hover:text-cyan-50" href={publicUrl("frontend/public/aureon_system_integration_map.json")} target="_blank" rel="noreferrer">
+              <a className="inline-flex items-center gap-2 text-primary hover:text-primary" href={publicUrl("frontend/public/aureon_system_integration_map.json")} target="_blank" rel="noreferrer">
                 <FileJson className="h-4 w-4" />
                 /aureon_system_integration_map.json
               </a>
-              <a className="inline-flex items-center gap-2 text-cyan-100 hover:text-cyan-50" href={publicUrl("frontend/public/aureon_saas_integration_manifest.json")} target="_blank" rel="noreferrer">
+              <a className="inline-flex items-center gap-2 text-primary hover:text-primary" href={publicUrl("frontend/public/aureon_saas_integration_manifest.json")} target="_blank" rel="noreferrer">
                 <FileJson className="h-4 w-4" />
                 /aureon_saas_integration_manifest.json
               </a>
-              <a className="inline-flex items-center gap-2 text-cyan-100 hover:text-cyan-50" href={publicUrl("frontend/public/aureon_saas_integration_handoff.json")} target="_blank" rel="noreferrer">
+              <a className="inline-flex items-center gap-2 text-primary hover:text-primary" href={publicUrl("frontend/public/aureon_saas_integration_handoff.json")} target="_blank" rel="noreferrer">
                 <FileJson className="h-4 w-4" />
                 /aureon_saas_integration_handoff.json
               </a>
-              <a className="inline-flex items-center gap-2 text-cyan-100 hover:text-cyan-50" href={publicUrl("frontend/public/aureon_supabase_hardening_manifest.json")} target="_blank" rel="noreferrer">
+              <a className="inline-flex items-center gap-2 text-primary hover:text-primary" href={publicUrl("frontend/public/aureon_supabase_hardening_manifest.json")} target="_blank" rel="noreferrer">
                 <FileJson className="h-4 w-4" />
                 /aureon_supabase_hardening_manifest.json
               </a>
               {filteredAutonomousManifests.map((manifest) => (
                 <a
                   key={manifest.path}
-                  className="inline-flex min-w-0 items-center gap-2 text-cyan-100 hover:text-cyan-50"
+                  className="inline-flex min-w-0 items-center gap-2 text-primary hover:text-primary"
                   href={publicUrl(manifest.path)}
                   target="_blank"
                   rel="noreferrer"
@@ -834,7 +834,7 @@ export function RepoNavigationPanel() {
       <Card className="border-border/60 bg-card/90">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <ShieldCheck className="h-5 w-5 text-emerald-200" />
+            <ShieldCheck className="h-5 w-5 text-success" />
             Navigation Readiness Audit
           </CardTitle>
         </CardHeader>
@@ -878,10 +878,10 @@ export function RepoNavigationPanel() {
                     variant="outline"
                     className={
                       gate.status === "pass"
-                        ? "w-fit border-emerald-500/30 bg-emerald-500/10 text-emerald-100"
+                        ? "w-fit border-success/30 bg-success/10 text-success"
                         : gate.status === "warn"
-                          ? "w-fit border-yellow-500/30 bg-yellow-500/10 text-yellow-100"
-                          : "w-fit border-red-500/30 bg-red-500/10 text-red-100"
+                          ? "w-fit border-warning/30 bg-warning/10 text-warning"
+                          : "w-fit border-destructive/30 bg-destructive/10 text-destructive"
                     }
                   >
                     {gate.status}
@@ -904,7 +904,7 @@ export function RepoNavigationPanel() {
       <Card className="border-border/60 bg-card/90">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <BookOpen className="h-5 w-5 text-emerald-200" />
+            <BookOpen className="h-5 w-5 text-success" />
             Capability Route Matrix
           </CardTitle>
         </CardHeader>
@@ -941,7 +941,7 @@ export function RepoNavigationPanel() {
                       <div className="font-medium">{capability.label}</div>
                       <div className="mt-1 text-xs text-muted-foreground">{capability.description}</div>
                     </div>
-                    <Badge variant="outline" className="w-fit max-w-full whitespace-normal border-emerald-500/30 bg-emerald-500/10 text-[10px] leading-snug text-emerald-100">
+                    <Badge variant="outline" className="w-fit max-w-full whitespace-normal border-success/30 bg-success/10 text-[10px] leading-snug text-success">
                       {capability.readiness_status}
                     </Badge>
                   </div>
@@ -976,7 +976,7 @@ export function RepoNavigationPanel() {
                     ))}
                   </div>
                   {capability.safety_gates.length ? (
-                    <div className="mt-3 rounded-md border border-yellow-500/30 bg-yellow-500/10 px-3 py-2 text-xs text-yellow-100">
+                    <div className="mt-3 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-xs text-warning">
                       {capability.safety_gates.join(" / ")}
                     </div>
                   ) : null}
@@ -994,7 +994,7 @@ export function RepoNavigationPanel() {
         <Card className="border-border/60 bg-card/90">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-lg">
-              <FileJson className="h-5 w-5 text-emerald-200" />
+              <FileJson className="h-5 w-5 text-success" />
               Operational Manifests
             </CardTitle>
           </CardHeader>
@@ -1005,16 +1005,16 @@ export function RepoNavigationPanel() {
                 href={publicUrl(manifest.path)}
                 target="_blank"
                 rel="noreferrer"
-                className="flex min-h-[190px] flex-col gap-3 rounded-md border border-border/50 bg-background/45 p-3 hover:border-cyan-400/60"
+                className="flex min-h-[190px] flex-col gap-3 rounded-md border border-border/50 bg-background/45 p-3 hover:border-primary/60"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <div className="text-sm font-medium leading-snug">{manifest.label}</div>
                     <div className="mt-1 truncate font-mono text-[10px] text-muted-foreground">{manifest.path}</div>
                   </div>
-                  <ExternalLink className="h-4 w-4 shrink-0 text-cyan-100" />
+                  <ExternalLink className="h-4 w-4 shrink-0 text-primary" />
                 </div>
-                <Badge variant="outline" className="w-fit max-w-full whitespace-normal border-emerald-500/30 bg-emerald-500/10 text-left text-[10px] leading-snug text-emerald-100">
+                <Badge variant="outline" className="w-fit max-w-full whitespace-normal border-success/30 bg-success/10 text-left text-[10px] leading-snug text-success">
                   {manifest.status}
                 </Badge>
                 <div className="mt-auto flex flex-wrap gap-2">
@@ -1033,7 +1033,7 @@ export function RepoNavigationPanel() {
       <Card className="border-border/60 bg-card/90">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <GitBranch className="h-5 w-5 text-sky-200" />
+            <GitBranch className="h-5 w-5 text-primary" />
             Directory Hierarchy
           </CardTitle>
         </CardHeader>
@@ -1099,7 +1099,7 @@ export function RepoNavigationPanel() {
       <Card className="border-border/60 bg-card/90">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <CheckCircle2 className="h-5 w-5 text-emerald-200" />
+            <CheckCircle2 className="h-5 w-5 text-success" />
             SaaS Integration Handoff
           </CardTitle>
         </CardHeader>
@@ -1138,7 +1138,7 @@ export function RepoNavigationPanel() {
                     <div className="font-medium">{step.label}</div>
                     <div className="mt-1 text-xs text-muted-foreground">{step.action}</div>
                   </div>
-                  <Badge variant="outline" className="w-fit max-w-full whitespace-normal border-emerald-500/30 bg-emerald-500/10 text-[10px] leading-snug text-emerald-100">
+                  <Badge variant="outline" className="w-fit max-w-full whitespace-normal border-success/30 bg-success/10 text-[10px] leading-snug text-success">
                     {step.id}
                   </Badge>
                 </div>
@@ -1153,7 +1153,7 @@ export function RepoNavigationPanel() {
               </div>
             ))}
           </div>
-          <a className="inline-flex max-w-full items-center gap-2 text-cyan-100 hover:text-cyan-50" href={publicUrl("frontend/public/aureon_saas_integration_handoff.json")} target="_blank" rel="noreferrer">
+          <a className="inline-flex max-w-full items-center gap-2 text-primary hover:text-primary" href={publicUrl("frontend/public/aureon_saas_integration_handoff.json")} target="_blank" rel="noreferrer">
             <FileJson className="h-4 w-4 shrink-0" />
             <span className="truncate">/aureon_saas_integration_handoff.json</span>
           </a>
@@ -1164,7 +1164,7 @@ export function RepoNavigationPanel() {
         <Card className="border-border/60 bg-card/90">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-lg">
-              <Server className="h-5 w-5 text-emerald-200" />
+              <Server className="h-5 w-5 text-success" />
               SaaS Integration Contract
             </CardTitle>
           </CardHeader>
@@ -1185,7 +1185,7 @@ export function RepoNavigationPanel() {
             </div>
             <div className="flex flex-wrap gap-2">
               {(saasManifest?.deployment_surfaces || []).map((surface) => (
-                <Badge key={surface.id} variant="outline" className={surface.tracked ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-100" : "border-yellow-500/30 bg-yellow-500/10 text-yellow-100"}>
+                <Badge key={surface.id} variant="outline" className={surface.tracked ? "border-success/30 bg-success/10 text-success" : "border-warning/30 bg-warning/10 text-warning"}>
                   {surface.label}
                 </Badge>
               ))}
@@ -1196,7 +1196,7 @@ export function RepoNavigationPanel() {
         <Card className="border-border/60 bg-card/90">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-lg">
-              <ShieldCheck className="h-5 w-5 text-yellow-200" />
+              <ShieldCheck className="h-5 w-5 text-warning" />
               Integration Gates
             </CardTitle>
           </CardHeader>
@@ -1213,7 +1213,7 @@ export function RepoNavigationPanel() {
             <div className="space-y-2">
               <div className="text-[11px] uppercase text-muted-foreground">Public endpoint review</div>
               {(saasManifest?.supabase?.public_endpoint_review_required || []).slice(0, 8).map((endpoint) => (
-                <div key={endpoint} className="rounded-md border border-yellow-500/30 bg-yellow-500/10 px-3 py-2 font-mono text-xs text-yellow-100">
+                <div key={endpoint} className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 font-mono text-xs text-warning">
                   {endpoint}
                 </div>
               ))}
@@ -1225,7 +1225,7 @@ export function RepoNavigationPanel() {
       <Card className="border-border/60 bg-card/90">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <BookOpen className="h-5 w-5 text-violet-200" />
+            <BookOpen className="h-5 w-5 text-primary" />
             Current Capability Registry
           </CardTitle>
         </CardHeader>
@@ -1276,18 +1276,18 @@ export function RepoNavigationPanel() {
                       </Badge>
                     ))}
                     {capability.generated_refs.map((ref) => (
-                      <Badge key={`${capability.id}-generated-${ref}`} variant="outline" className="max-w-full whitespace-normal border-emerald-500/30 bg-emerald-500/10 font-mono text-[10px] leading-snug text-emerald-100">
+                      <Badge key={`${capability.id}-generated-${ref}`} variant="outline" className="max-w-full whitespace-normal border-success/30 bg-success/10 font-mono text-[10px] leading-snug text-success">
                         {ref}
                       </Badge>
                     ))}
                     {capability.code_symbol_refs.map((symbol) => (
-                      <Badge key={`${capability.id}-symbol-${symbol.ref}`} variant="outline" className="max-w-full whitespace-normal border-sky-500/30 bg-sky-500/10 font-mono text-[10px] leading-snug text-sky-100">
+                      <Badge key={`${capability.id}-symbol-${symbol.ref}`} variant="outline" className="max-w-full whitespace-normal border-primary/30 bg-primary/10 font-mono text-[10px] leading-snug text-primary">
                         {symbol.ref}
                       </Badge>
                     ))}
                   </div>
                   {capability.unresolved_refs.length ? (
-                    <div className="mt-3 text-xs text-yellow-100">
+                    <div className="mt-3 text-xs text-warning">
                       Review refs: {capability.unresolved_refs.join(", ")}
                     </div>
                   ) : null}
@@ -1304,7 +1304,7 @@ export function RepoNavigationPanel() {
       <Card className="border-border/60 bg-card/90">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Server className="h-5 w-5 text-sky-200" />
+            <Server className="h-5 w-5 text-primary" />
             System Integration Matrix
           </CardTitle>
         </CardHeader>
@@ -1377,33 +1377,33 @@ export function RepoNavigationPanel() {
       <Card className="border-border/60 bg-card/90">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <ShieldCheck className="h-5 w-5 text-amber-200" />
+            <ShieldCheck className="h-5 w-5 text-warning" />
             Supabase Hardening Review
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <div className="rounded-md border border-red-500/30 bg-red-500/10 p-3">
-              <div className="text-[11px] uppercase text-red-100/80">Production blockers</div>
-              <div className="mt-1 text-2xl font-semibold text-red-50">
+            <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3">
+              <div className="text-[11px] uppercase text-destructive/80">Production blockers</div>
+              <div className="mt-1 text-2xl font-semibold text-destructive">
                 {(hardeningManifest?.summary?.production_blocker_count || 0).toLocaleString()}
               </div>
             </div>
-            <div className="rounded-md border border-yellow-500/30 bg-yellow-500/10 p-3">
-              <div className="text-[11px] uppercase text-yellow-100/80">High-risk public</div>
-              <div className="mt-1 text-2xl font-semibold text-yellow-50">
+            <div className="rounded-md border border-warning/30 bg-warning/10 p-3">
+              <div className="text-[11px] uppercase text-warning/80">High-risk public</div>
+              <div className="mt-1 text-2xl font-semibold text-warning">
                 {(hardeningManifest?.summary?.public_high_risk_count || 0).toLocaleString()}
               </div>
             </div>
-            <div className="rounded-md border border-cyan-500/30 bg-cyan-500/10 p-3">
-              <div className="text-[11px] uppercase text-cyan-100/80">Medium public</div>
-              <div className="mt-1 text-2xl font-semibold text-cyan-50">
+            <div className="rounded-md border border-primary/30 bg-primary/10 p-3">
+              <div className="text-[11px] uppercase text-primary/80">Medium public</div>
+              <div className="mt-1 text-2xl font-semibold text-primary">
                 {(hardeningManifest?.summary?.public_medium_risk_count || 0).toLocaleString()}
               </div>
             </div>
-            <div className="rounded-md border border-violet-500/30 bg-violet-500/10 p-3">
-              <div className="text-[11px] uppercase text-violet-100/80">JWT review</div>
-              <div className="mt-1 text-2xl font-semibold text-violet-50">
+            <div className="rounded-md border border-primary/30 bg-primary/10 p-3">
+              <div className="text-[11px] uppercase text-primary/80">JWT review</div>
+              <div className="mt-1 text-2xl font-semibold text-primary">
                 {(hardeningManifest?.summary?.jwt_review_required_count || 0).toLocaleString()}
               </div>
             </div>
@@ -1412,7 +1412,7 @@ export function RepoNavigationPanel() {
           <div className="grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
             <div className="rounded-md border border-border/50 bg-background/45 p-3">
               <div className="text-[11px] uppercase text-muted-foreground">Production status</div>
-              <div className="mt-2 font-mono text-xs text-yellow-100">
+              <div className="mt-2 font-mono text-xs text-warning">
                 {hardeningManifest?.production_status || "pending"}
               </div>
               <div className="mt-3 text-xs text-muted-foreground">
@@ -1423,7 +1423,7 @@ export function RepoNavigationPanel() {
               <div className="text-[11px] uppercase text-muted-foreground">High-risk public routes</div>
               <div className="grid gap-2 sm:grid-cols-2">
                 {(hardeningManifest?.public_high_risk_routes || []).map((route) => (
-                  <div key={route} className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 font-mono text-xs text-red-100">
+                  <div key={route} className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 font-mono text-xs text-destructive">
                     {route}
                   </div>
                 ))}
@@ -1437,7 +1437,7 @@ export function RepoNavigationPanel() {
         <Card className="border-border/60 bg-card/90">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-lg">
-              <FileJson className="h-5 w-5 text-cyan-200" />
+              <FileJson className="h-5 w-5 text-primary" />
               Index Categories
             </CardTitle>
           </CardHeader>
@@ -1454,7 +1454,7 @@ export function RepoNavigationPanel() {
         <Card className="border-border/60 bg-card/90">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-lg">
-              <Search className="h-5 w-5 text-cyan-200" />
+              <Search className="h-5 w-5 text-primary" />
               Indexed Files
             </CardTitle>
           </CardHeader>
@@ -1500,7 +1500,7 @@ export function RepoNavigationPanel() {
         <Card className="border-border/60 bg-card/90">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-lg">
-              <Server className="h-5 w-5 text-sky-200" />
+              <Server className="h-5 w-5 text-primary" />
               System Zones
             </CardTitle>
           </CardHeader>
@@ -1526,7 +1526,7 @@ export function RepoNavigationPanel() {
         <Card className="border-border/60 bg-card/90">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-lg">
-              <BookOpen className="h-5 w-5 text-violet-200" />
+              <BookOpen className="h-5 w-5 text-primary" />
               Capability Access
             </CardTitle>
           </CardHeader>
@@ -1540,7 +1540,7 @@ export function RepoNavigationPanel() {
                         <div className="font-medium">{capability.label}</div>
                         <div className="mt-1 text-sm text-muted-foreground">{capability.user_action}</div>
                         <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-                          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-300" />
+                          <CheckCircle2 className="h-3.5 w-3.5 text-success" />
                           {capability.safety_gate}
                         </div>
                       </div>

@@ -322,6 +322,11 @@ def run_hnc_demo():
     with real exchange ticks.
     """
 
+    raise RuntimeError(
+        "Generated HNC input has been retired. Feed provider-observed ticks "
+        "to HncSurgeDetector.add_price_tick() with source provenance."
+    )
+
     print("\n" + "="*80)
     print("🌊🎶 HNC SURGE DETECTOR - SYNTHETIC DEMO (DEV ONLY) 🎶🌊")
     print("="*80 + "\n")
@@ -340,7 +345,7 @@ def run_hnc_demo():
     time_vector = np.linspace(0, duration_seconds, num_samples)
     
     # Base price movement (random walk)
-    base_price = 60000 + np.random.randn(num_samples).cumsum() * 0.1
+    base_price = np.full(num_samples, np.nan)
     
     # --- Inject a Resonance Cascade halfway through ---
     surge_start_time = 10 # seconds

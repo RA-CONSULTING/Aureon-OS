@@ -31,17 +31,17 @@ export const GasTankDisplay = ({ userId, onEmpty }: GasTankDisplayProps) => {
   // Determine gauge color
   const getGaugeColor = () => {
     if (gasTank.status === 'EMPTY') return 'from-gray-600 to-gray-800';
-    if (gasTank.status === 'CRITICAL') return 'from-red-600 to-red-800';
-    if (gasTank.status === 'LOW') return 'from-yellow-600 to-yellow-800';
-    return 'from-green-600 to-green-800';
+    if (gasTank.status === 'CRITICAL') return 'from-destructive to-destructive';
+    if (gasTank.status === 'LOW') return 'from-warning to-warning';
+    return 'from-success to-success';
   };
 
   // Determine status emoji
   const getStatusEmoji = () => {
-    if (gasTank.status === 'EMPTY') return '⚫';
-    if (gasTank.status === 'CRITICAL') return '🔴';
-    if (gasTank.status === 'LOW') return '🟡';
-    return '🟢';
+    if (gasTank.status === 'EMPTY') return '';
+    if (gasTank.status === 'CRITICAL') return '';
+    if (gasTank.status === 'LOW') return '';
+    return '';
   };
 
   const handleTopUp = async () => {
@@ -82,7 +82,7 @@ export const GasTankDisplay = ({ userId, onEmpty }: GasTankDisplayProps) => {
             {/* Header */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="text-xl">⛽</span>
+                <span className="text-xl"></span>
                 <h3 className="font-bold text-sm">GAS TANK</h3>
               </div>
               <div className="flex items-center gap-2">
@@ -120,11 +120,11 @@ export const GasTankDisplay = ({ userId, onEmpty }: GasTankDisplayProps) => {
               </div>
               <div>
                 <p className="text-muted-foreground">Today's Fees</p>
-                <p className="font-bold text-red-500">£{gasTank.feesPaidToday.toFixed(2)}</p>
+                <p className="font-bold text-destructive">£{gasTank.feesPaidToday.toFixed(2)}</p>
               </div>
               <div>
                 <p className="text-muted-foreground">Total Fees Paid</p>
-                <p className="font-bold text-red-500">£{gasTank.totalFeesPaid.toFixed(2)}</p>
+                <p className="font-bold text-destructive">£{gasTank.totalFeesPaid.toFixed(2)}</p>
               </div>
               <div>
                 <p className="text-muted-foreground">Status</p>
@@ -140,15 +140,15 @@ export const GasTankDisplay = ({ userId, onEmpty }: GasTankDisplayProps) => {
               className="w-full bg-gradient-to-r from-primary to-primary/80"
               size="sm"
             >
-              ➕ Top Up
+               Top Up
             </Button>
 
             {/* Empty Overlay */}
             {gasTank.status === 'EMPTY' && (
               <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center rounded-lg">
                 <div className="text-center p-4">
-                  <p className="text-2xl mb-2">⛽</p>
-                  <p className="font-bold text-red-500 mb-2">GAS TANK EMPTY</p>
+                  <p className="text-2xl mb-2"></p>
+                  <p className="font-bold text-destructive mb-2">GAS TANK EMPTY</p>
                   <p className="text-xs text-muted-foreground mb-3">Trading Paused</p>
                   <Button
                     onClick={() => setShowTopUpModal(true)}
@@ -168,7 +168,7 @@ export const GasTankDisplay = ({ userId, onEmpty }: GasTankDisplayProps) => {
       <Dialog open={showTopUpModal} onOpenChange={setShowTopUpModal}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>⛽ Top Up Gas Tank</DialogTitle>
+            <DialogTitle> Top Up Gas Tank</DialogTitle>
             <DialogDescription>
               Add credits to your gas tank to continue trading
             </DialogDescription>

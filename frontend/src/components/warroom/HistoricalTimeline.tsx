@@ -9,7 +9,7 @@ export function HistoricalTimeline() {
     return (
       <Card className="bg-card/50 backdrop-blur border-primary/20">
         <CardHeader>
-          <CardTitle>📊 Historical Performance (24h)</CardTitle>
+          <CardTitle> Historical Performance (24h)</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-64 flex items-center justify-center">
@@ -23,7 +23,7 @@ export function HistoricalTimeline() {
   return (
     <Card className="bg-card/50 backdrop-blur border-primary/20">
       <CardHeader>
-        <CardTitle>📊 Historical Performance (24h)</CardTitle>
+        <CardTitle> Historical Performance (24h)</CardTitle>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={250}>
@@ -53,8 +53,8 @@ export function HistoricalTimeline() {
             <Line 
               yAxisId="left"
               type="monotone" 
-              dataKey="lighthouse" 
-              stroke="#3b82f6" 
+              dataKey="lighthouse"
+              stroke="hsl(var(--chart-2))"
               strokeWidth={2}
               name="Lighthouse"
               dot={false}
@@ -62,8 +62,8 @@ export function HistoricalTimeline() {
             <Line 
               yAxisId="right"
               type="monotone" 
-              dataKey="balance" 
-              stroke="#10b981" 
+              dataKey="balance"
+              stroke="hsl(var(--success))"
               strokeWidth={2}
               name="Balance ($)"
               dot={false}

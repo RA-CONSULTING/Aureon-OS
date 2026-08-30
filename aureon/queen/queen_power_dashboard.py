@@ -43,6 +43,7 @@ if sys.platform == 'win32':
         pass
 
 import asyncio
+import hmac
 import json
 import os
 import time
@@ -660,6 +661,95 @@ class QueenPowerDashboard:
 # ═══════════════════════════════════════════════════════════════════════════════
 # WEB SERVER - Health Check & API for DigitalOcean
 # ═══════════════════════════════════════════════════════════════════════════════
+#
+# ACCESS CONTROL. This server binds 0.0.0.0 (required for containerised / DigitalOcean
+# deploys, whose health check reaches it from outside the container) and served
+# `/api/status` to anyone with no credential at all. That payload is not cosmetic: it
+# carries `total_reserves` / `total_deployed` / `net_energy_gained` and every open
+# position with symbol, exchange, entry, current and target price and live PnL.
+#
+# Three knobs, all defaulting to today's behaviour so no running deployment changes:
+#
+#   AUREON_DASHBOARD_TOKEN   when set, `/` and `/api/status` require
+#                            `Authorization: Bearer <token>` (or `?token=`, since a
+#                            browser opening the dashboard cannot set a header).
+#                            `/health` stays open — it is a liveness probe and carries
+#                            no financial data.
+#   AUREON_DASHBOARD_PUBLIC  "1" ⇒ serve a redacted `/api/status`: the organism view
+#                            (cycle, uptime, harmonics, counts) stays, the money does
+#                            not. This is the setting to use when streaming the
+#                            dashboard publicly.
+#   AUREON_DASHBOARD_BIND    interface to bind (default "0.0.0.0", unchanged). Set
+#                            "127.0.0.1" for loopback-only behind a reverse proxy.
+#
+# Redaction is HONEST — redacted keys are set to None and named in `redacted`, never
+# replaced with plausible-looking numbers.
+
+#: Financial fields removed from the top level of a public/redacted status payload.
+_MONEY_FIELDS = (
+    "total_energy", "total_reserves", "total_deployed", "net_energy_gained",
+    "energy_conserved", "energy_growth",
+)
+#: Financial fields removed from each open-position entry.
+_POSITION_MONEY_FIELDS = (
+    "entry_price", "current_price", "target_price", "current_pnl", "current_pnl_pct",
+)
+
+
+def _dashboard_token() -> str:
+    return str(os.environ.get("AUREON_DASHBOARD_TOKEN", "") or "").strip()
+
+
+def _dashboard_public_mode() -> bool:
+    return str(os.environ.get("AUREON_DASHBOARD_PUBLIC", "") or "").strip() == "1"
+
+
+def _authorized(request) -> bool:
+    """True when no token is configured (the default) or the caller presents it."""
+    token = _dashboard_token()
+    if not token:
+        return True
+    header = str(request.headers.get("Authorization", "") or "")
+    if header.startswith("Bearer "):
+        presented = header[len("Bearer "):].strip()
+        if hmac.compare_digest(presented.encode("utf-8"), token.encode("utf-8")):
+            return True
+    # A browser cannot set a header on a plain navigation, so accept a query token too.
+    q = str(request.query.get("token", "") or "").strip()
+    return bool(q) and hmac.compare_digest(q.encode("utf-8"), token.encode("utf-8"))
+
+
+def _redact_money(data: Dict) -> Dict:
+    """Strip financial figures from a status payload, naming what was removed."""
+    out = dict(data)
+    removed = []
+    for key in _MONEY_FIELDS:
+        if key in out:
+            out[key] = None
+            removed.append(key)
+    positions = out.get("positions")
+    if isinstance(positions, list):
+        scrubbed = []
+        for p in positions:
+            if not isinstance(p, dict):
+                scrubbed.append(p)
+                continue
+            q = dict(p)
+            for key in _POSITION_MONEY_FIELDS:
+                if key in q:
+                    q[key] = None
+            scrubbed.append(q)
+        out["positions"] = scrubbed
+        removed.extend(f"positions[].{k}" for k in _POSITION_MONEY_FIELDS)
+    if isinstance(out.get("relay_energy"), dict):
+        count = out["relay_energy"].get("positions_count", 0)
+        out["relay_energy"] = {"positions_count": count}
+        removed.append("relay_energy.*")
+    out["redacted"] = removed
+    out["redaction_note"] = ("financial figures withheld (AUREON_DASHBOARD_PUBLIC=1); "
+                             "nulls mean withheld, not zero")
+    return out
+
 
 async def handle_health(request):
     """Health check endpoint for DigitalOcean."""
@@ -677,18 +767,26 @@ async def handle_health(request):
 
 
 async def handle_api_status(request):
-    """Get full dashboard status as JSON."""
+    """Full dashboard status as JSON. Token-gated / money-redacted when configured."""
     global _dashboard_instance
-    
+
+    if not _authorized(request):
+        return web.json_response(
+            {'error': 'unauthorized', 'detail': 'a token is required'}, status=401)
+
     if not _dashboard_instance:
         return web.json_response({'error': 'Dashboard not initialized'}, status=503)
-    
+
     data = _dashboard_instance.get_dashboard_data()
+    if _dashboard_public_mode():
+        data = _redact_money(data)
     return web.json_response(data)
 
 
 async def handle_root(request):
     """Serve enhanced HTML dashboard with visualizations."""
+    if not _authorized(request):
+        return web.Response(status=401, text="This dashboard requires a token.")
     html = """<!DOCTYPE html>
 <html>
 <head>
@@ -1527,13 +1625,17 @@ async def start_web_server(dashboard, port):
     
     runner = web.AppRunner(app)
     await runner.setup()
-    
+
+    # Default unchanged (0.0.0.0) because containerised / DigitalOcean deploys need it;
+    # set AUREON_DASHBOARD_BIND=127.0.0.1 to make this loopback-only behind a proxy.
+    bind = str(os.environ.get("AUREON_DASHBOARD_BIND", "") or "").strip() or "0.0.0.0"
+
     # Try the requested port, if fail, try port+1, then port+2
     max_retries = 3
     for i in range(max_retries):
         try:
             current_port = port + i
-            site = web.TCPSite(runner, '0.0.0.0', current_port, reuse_address=True)
+            site = web.TCPSite(runner, bind, current_port, reuse_address=True)
             await site.start()
             port = current_port # Update port if we shifted
             break
@@ -1544,10 +1646,26 @@ async def start_web_server(dashboard, port):
             print(f"⚠️ Port {current_port} busy, trying {current_port + 1}...")
             await asyncio.sleep(1)
     
-    print(f"🌐 Web server started on http://0.0.0.0:{port}")
+    print(f"🌐 Web server started on http://{bind}:{port}")
     print(f"   💚 Health: http://localhost:{port}/health")
     print(f"   📊 Status: http://localhost:{port}/api/status")
-    
+
+    # Say plainly what is exposed: /api/status carries reserves, deployed capital and
+    # every open position with live prices and PnL. Do not make an operator guess.
+    _tokened, _public = bool(_dashboard_token()), _dashboard_public_mode()
+    _loopback = bind in ("127.0.0.1", "localhost", "::1")
+    if _tokened:
+        print("   🔒 Token required (AUREON_DASHBOARD_TOKEN set)")
+    if _public:
+        print("   🙈 Public-safe mode: financial figures redacted from /api/status")
+    if not _loopback and not _tokened and not _public:
+        print(f"   ⚠️  OPEN TO THE NETWORK on {bind}:{port} with NO token.")
+        print("       /api/status is serving reserves, deployed capital and live open")
+        print("       positions to anyone who can reach this port.")
+        print("       Set AUREON_DASHBOARD_TOKEN to require a credential,")
+        print("       AUREON_DASHBOARD_PUBLIC=1 to redact the money, or")
+        print("       AUREON_DASHBOARD_BIND=127.0.0.1 to keep it off the network.")
+
     return runner
 
 

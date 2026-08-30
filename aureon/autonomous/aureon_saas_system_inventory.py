@@ -18,6 +18,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional, Sequence
 
+from aureon.obsidian_paths import resolve_obsidian_note_path
+
 
 SCHEMA_VERSION = "aureon-saas-system-inventory-v1"
 DEFAULT_OUTPUT_MD = Path("docs/audits/aureon_saas_system_inventory.md")
@@ -648,7 +650,7 @@ def write_inventory(
     md_path = markdown_path if markdown_path.is_absolute() else root / markdown_path
     js_path = json_path if json_path.is_absolute() else root / json_path
     public_path = public_json_path if public_json_path.is_absolute() else root / public_json_path
-    note_path = vault_path if vault_path.is_absolute() else root / vault_path
+    note_path = resolve_obsidian_note_path(vault_path, repo_root=root)
     for path in (md_path, js_path, public_path, note_path):
         path.parent.mkdir(parents=True, exist_ok=True)
     rendered = render_markdown(inventory)

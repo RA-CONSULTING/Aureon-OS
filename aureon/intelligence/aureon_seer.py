@@ -563,6 +563,24 @@ class OracleOfHarmony:
                 phase    = "RESONATING"
                 dominant = f"Field resonating — {dom_bot} bots in structured flow ({flow_pred})"
 
+        # ── HNC direction: reconcile onto the ONE canonical field ────────────
+        # The Oracle's own waveform scan is a real local reading, but the signal that reaches
+        # traders must be directed by the shared harmonic core, not a private field. Blend the
+        # canonical symbolic.life.pulse coherence (Γ) into the score at a modest weight so the two
+        # readings agree, and record it for provenance. Guarded/offline-safe — a missing daemon
+        # leaves the scanner-derived score untouched.
+        try:
+            from aureon.core.hnc_field import read_canonical_field
+
+            _field = read_canonical_field()
+            if getattr(_field, "available", False) and _field.coherence_gamma is not None:
+                _canon = max(0.0, min(1.0, float(_field.coherence_gamma)))
+                details["canonical_field_gamma"] = _canon
+                details["canonical_field_source"] = getattr(_field, "source", None) or "canonical"
+                score = max(0.0, min(1.0, score * 0.75 + _canon * 0.25))
+        except Exception as e:  # noqa: BLE001 — canonical field is best-effort enrichment
+            logger.debug(f"Seer Harmony canonical-field reconcile skipped: {e}")
+
         # Confidence: highest when harmonic relays + wave scanner both present
         _has_wave = bool(wave_ctx and wave_ctx.get('available'))
         _has_relays = details.get("relay_count", 0) > 0
@@ -755,6 +773,20 @@ class OracleOfSpirits:
             _spirit_conf = 0.75
         elif self._auris_engine and details.get("node_scores"):
             _spirit_conf = 0.55
+
+        # P5 Pattern B: blend the spirits' score with the canonical field Γ
+        # (same 0.75/0.25 shape as OracleOfHarmony) so the Auris reading is
+        # grounded in the one shared field. Dark field → spirits unchanged.
+        score = max(0.0, min(1.0, score))
+        try:
+            from aureon.core.hnc_field import read_canonical_field
+            _cf = read_canonical_field()
+            if getattr(_cf, "available", False) and _cf.coherence_gamma is not None:
+                _g = max(0.0, min(1.0, float(_cf.coherence_gamma)))
+                score = 0.75 * score + 0.25 * _g
+                details["canonical_gamma"] = _g
+        except Exception:
+            pass
 
         return OracleReading(
             oracle="SPIRITS",
@@ -1014,7 +1046,9 @@ class OracleOfRunes:
         Supports both single-file traditions and multi-file merged traditions
         (e.g., norse_celtic loads both Futhark runes and Ogham feda as one voice).
         """
-        base = os.path.dirname(os.path.abspath(__file__))
+        # The catalogues are repository assets shared by the Seer and frontend,
+        # not package-private files under aureon/intelligence.
+        base = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         for tradition, cfg in self._TRADITIONS.items():
             # Multi-file tradition (merged cultures)
             if "files" in cfg:
@@ -2564,7 +2598,31 @@ class OracleOfMaeshowe:
             except Exception as e:
                 logger.debug(f"OracleOfMaeshowe read error: {e}")
 
-        # Fallback: neutral reading when module unavailable
+        # P5: when the decoder module is unavailable, ground the fallback in
+        # the canonical HNC field — a REAL live Γ instead of an invented
+        # neutral. Uses the lattice's own thresholds for the phase label.
+        try:
+            from aureon.core.hnc_field import read_canonical_field
+            _cf = read_canonical_field()
+            if getattr(_cf, "available", False) and _cf.coherence_gamma is not None:
+                _g = max(0.0, min(1.0, float(_cf.coherence_gamma)))
+                _status = ("LIGHTHOUSE" if _g >= 0.945
+                           else "DEAD_FIELD" if _g < 0.35 else "ACTIVE_FIELD")
+                return OracleReading(
+                    oracle          = "MAESHOWE",
+                    timestamp       = time.time(),
+                    score           = _g,
+                    phase           = _status,
+                    dominant_signal = ("Maeshowe decoder unavailable — lattice Γ "
+                                       "read from the canonical HNC field"),
+                    details         = {"gamma": _g, "gamma_status": _status,
+                                       "source": "canonical_field"},
+                    confidence      = 0.5,
+                )
+        except Exception:
+            pass
+
+        # Fallback: neutral reading when module AND field are unavailable
         return OracleReading(
             oracle          = "MAESHOWE",
             timestamp       = time.time(),
@@ -3040,8 +3098,15 @@ class AureonTheSeer:
     # ─────────────────────────────────────────────────────────
 
     def start_autonomous(self):
-        """Start the Seer's autonomous scanning loop + prediction validator."""
+        """Start the Seer's autonomous scanning loop + prediction validator.
+
+        Honors AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS: under the flag (audits,
+        tests) the Seer stays fully usable synchronously but no background
+        threads are started. Live runs don't set the flag — unchanged behavior."""
         if self._running:
+            return
+        if os.getenv("AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS", "").lower() in {"1", "true", "yes", "on"}:
+            logger.debug("Seer autonomous threads suppressed (AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS)")
             return
         self._running = True
         self._monitor_thread = threading.Thread(

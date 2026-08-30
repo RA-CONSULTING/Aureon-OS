@@ -46,12 +46,15 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from aureon.obsidian_paths import (
+    default_obsidian_vault_path,
+    resolve_obsidian_vault_path,
+)
+
 logger = logging.getLogger("aureon.integrations.obsidian")
 
 DEFAULT_BASE_URL = "https://localhost:27124"
-DEFAULT_VAULT_PATH = os.path.join(
-    os.path.expanduser("~"), "AureonObsidianVault"
-)
+DEFAULT_VAULT_PATH = str(default_obsidian_vault_path())
 DEFAULT_TIMEOUT_S = 10.0
 
 
@@ -102,10 +105,7 @@ class ObsidianBridge:
         self.base_url = (
             base_url or os.environ.get("AUREON_OBSIDIAN_BASE_URL", DEFAULT_BASE_URL)
         ).rstrip("/")
-        self.vault_path = Path(
-            vault_path
-            or os.environ.get("AUREON_OBSIDIAN_VAULT_PATH", DEFAULT_VAULT_PATH)
-        )
+        self.vault_path = resolve_obsidian_vault_path(vault_path)
         env_verify = os.environ.get("AUREON_OBSIDIAN_VERIFY_TLS", "").strip()
         if verify_tls is None:
             self.verify_tls = env_verify == "1"

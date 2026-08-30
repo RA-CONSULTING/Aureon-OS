@@ -149,7 +149,7 @@ async def _validate_move_after_wait(start_price: float, move_pct: float, horizon
     }
 
 
-async def test_decision_scenario(
+async def run_decision_scenario(
     scenario_name: str,
     symbol: str,
     side: str,
@@ -282,7 +282,7 @@ async def main():
         else:
             print(f"  Validation skipped: {validation.get('reason')}")
 
-    scenarios.append(await test_decision_scenario(
+    scenarios.append(await run_decision_scenario(
         scenario_name="Live ETH Direction + Validation",
         symbol="ETH/USD",
         side=direction,

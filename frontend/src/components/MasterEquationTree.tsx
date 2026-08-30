@@ -97,17 +97,17 @@ export function MasterEquationTree() {
           <div className="flex items-center gap-2">
             <Badge 
               variant={isLocked ? 'default' : 'outline'} 
-              className={isLocked ? 'bg-green-500 animate-pulse' : ''}
+              className={isLocked ? 'bg-success animate-pulse' : ''}
             >
               Γ = {coherence.toFixed(3)}
             </Badge>
-            {isLocked && <span className="text-green-500 text-sm">🔒 LOCKED</span>}
+            {isLocked && <span className="text-success text-sm">🔒 LOCKED</span>}
           </div>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Level 5 - Master Equation */}
-        <div className="p-4 bg-gradient-to-r from-purple-500/20 via-primary/20 to-cyan-500/20 rounded-lg border border-primary/30">
+        <div className="p-4 bg-gradient-to-r from-primary/20 via-primary/20 to-primary/20 rounded-lg border border-primary/30">
           <div className="flex items-center justify-between mb-2">
             <Badge className="bg-primary">Level 5 — Master</Badge>
             <span className="text-lg font-bold text-primary">Λ = {lambda.toFixed(4)}</span>
@@ -129,7 +129,7 @@ export function MasterEquationTree() {
             description="Nonlinear saturation prevents runaway. Bounded output [-1,1]."
             value={observerResponse}
             isActive={Math.abs(observerResponse) > 0.3}
-            color="text-cyan-500"
+            color="text-primary"
           />
           <EquationLevel
             level={3}
@@ -138,7 +138,7 @@ export function MasterEquationTree() {
             description="Memory loop creates frequency comb at 1/τ (Lighthouse Echo)"
             value={echo}
             isActive={echo > 0.1}
-            color="text-blue-500"
+            color="text-primary"
           />
           <EquationLevel
             level={2}
@@ -147,7 +147,7 @@ export function MasterEquationTree() {
             description="Harmonic scaffold: 7.83Hz, 528Hz, 963Hz synchronized"
             value={substrate}
             isActive={substrate > 0.2}
-            color="text-purple-500"
+            color="text-primary"
           />
           <EquationLevel
             level={1}
@@ -156,7 +156,7 @@ export function MasterEquationTree() {
             description="Fundamental tone — the initial reality seed"
             value={0.5}
             isActive={true}
-            color="text-green-500"
+            color="text-success"
           />
         </div>
 
@@ -174,8 +174,8 @@ export function MasterEquationTree() {
           <div className="mt-2 h-2 bg-muted rounded-full overflow-hidden">
             <div 
               className={`h-full rounded-full transition-all duration-500 ${
-                coherence >= gammaTarget ? 'bg-green-500' : 
-                coherence >= 0.7 ? 'bg-yellow-500' : 'bg-red-500'
+                coherence >= gammaTarget ? 'bg-success' : 
+                coherence >= 0.7 ? 'bg-warning' : 'bg-destructive'
               }`}
               style={{ width: `${coherence * 100}%` }}
             />
@@ -184,16 +184,16 @@ export function MasterEquationTree() {
 
         {/* Harmonic Interference Ratio */}
         <div className="grid grid-cols-2 gap-3">
-          <div className="p-3 bg-gradient-to-r from-green-500/10 to-green-500/5 rounded-lg border border-green-500/20">
+          <div className="p-3 bg-gradient-to-r from-success/10 to-success/5 rounded-lg border border-success/20">
             <div className="flex items-center gap-2 mb-1">
-              <div className={`w-2 h-2 rounded-full ${is528Dominant ? 'bg-green-500 animate-pulse' : 'bg-green-500/30'}`} />
+              <div className={`w-2 h-2 rounded-full ${is528Dominant ? 'bg-success animate-pulse' : 'bg-success/30'}`} />
               <span className="text-sm font-medium">528 Hz (Gaia)</span>
             </div>
             <p className="text-xs text-muted-foreground">Love frequency — coherent attractor</p>
           </div>
-          <div className="p-3 bg-gradient-to-r from-red-500/10 to-red-500/5 rounded-lg border border-red-500/20">
+          <div className="p-3 bg-gradient-to-r from-destructive/10 to-destructive/5 rounded-lg border border-destructive/20">
             <div className="flex items-center gap-2 mb-1">
-              <div className={`w-2 h-2 rounded-full ${!is528Dominant ? 'bg-red-500 animate-pulse' : 'bg-red-500/30'}`} />
+              <div className={`w-2 h-2 rounded-full ${!is528Dominant ? 'bg-destructive animate-pulse' : 'bg-destructive/30'}`} />
               <span className="text-sm font-medium">440 Hz (Parasite)</span>
             </div>
             <p className="text-xs text-muted-foreground">ρ = {rho.toFixed(3)} — dissonant ratio</p>

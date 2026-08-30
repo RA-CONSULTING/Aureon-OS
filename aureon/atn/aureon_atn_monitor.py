@@ -138,27 +138,47 @@ class EarthHazardState:
                  1.0 = clear Earth field    → normal sizing
     """
     timestamp: float
-    risk_factor: float        # weighted composite of all streams
+    risk_factor: Optional[float]  # weighted composite; None when data is unavailable
     veto: bool                # any single veto → True
     reason: str               # brief justification
     active_alerts: List[str]  # all active alert strings
     streams: Dict[str, StreamResult]
+    actionable: bool = True
+    non_actionable_streams: List[str] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:
+        stream_controls = {k: _stream_control(v) for k, v in self.streams.items()}
+        non_actionable = sorted(
+            set(self.non_actionable_streams)
+            | {name for name, control in stream_controls.items() if control["non_actionable"]}
+        )
+        actionable = self.actionable and not self.veto and not non_actionable
         return {
             "timestamp":     self.timestamp,
-            "risk_factor":   round(self.risk_factor, 4),
+            "received_at":   self.timestamp,
+            "source_timestamp": None,  # An aggregate has no provider event time.
+            "risk_factor":   round(self.risk_factor, 4) if actionable and self.risk_factor is not None else None,
             "veto":          self.veto,
+            "actionable":    actionable,
             "reason":        self.reason,
             "active_alerts": self.active_alerts[:10],
+            "provenance": {
+                "truth_status": "no_data" if not actionable else "available",
+                "non_actionable_streams": non_actionable,
+                "source_timestamp": None,
+                "received_at": self.timestamp,
+            },
             "streams":       {k: {
                 "score": round(v.score, 4),
                 "veto":  v.veto,
                 "alerts":v.alerts[:3],
                 "error": v.error,
-                "truth_status": v.raw.get("real_data", {}).get("truth_status") if isinstance(v.raw, dict) else None,
-                "source_id": v.raw.get("real_data", {}).get("source_id") if isinstance(v.raw, dict) else None,
-                "blocker": v.raw.get("real_data", {}).get("blocker") if isinstance(v.raw, dict) else None,
+                "truth_status": stream_controls[k]["truth_status"],
+                "source_id": stream_controls[k]["source_id"],
+                "blocker": stream_controls[k]["blocker"],
+                "source_timestamp": stream_controls[k]["source_timestamp"],
+                "received_at": stream_controls[k]["received_at"],
+                "actionable": not stream_controls[k]["non_actionable"],
             } for k, v in self.streams.items()},
         }
 
@@ -169,6 +189,24 @@ class EarthHazardState:
 
 def _clamp(v: float, lo: float = 0.0, hi: float = 1.0) -> float:
     return max(lo, min(hi, v))
+
+
+def _stream_control(result: StreamResult) -> Dict[str, Any]:
+    """Return provenance controls without turning a receipt clock into source time."""
+    raw = result.raw if isinstance(result.raw, dict) else {}
+    metric = raw.get("real_data") if isinstance(raw.get("real_data"), dict) else {}
+    truth_status = metric.get("truth_status")
+    blocker = metric.get("blocker") or result.error or ""
+    missing = not raw
+    no_data = truth_status == "no_data"
+    return {
+        "truth_status": truth_status,
+        "source_id": metric.get("source_id"),
+        "blocker": blocker,
+        "source_timestamp": raw.get("source_timestamp"),
+        "received_at": result.timestamp,
+        "non_actionable": bool(result.error) or no_data or missing,
+    }
 
 
 def _get(url: str, params: Optional[Dict] = None, timeout: int = 10) -> Any:
@@ -705,14 +743,20 @@ class ATNMonitor:
         for name in _FETCHERS:
             streams[name] = self._get_stream(name)
 
-        # Weighted composite risk_factor
-        total_w = sum(_WEIGHTS.values())
-        risk_factor = sum(
-            _WEIGHTS[n] * streams[n].score for n in streams
-        ) / total_w
+        controls = {name: _stream_control(stream) for name, stream in streams.items()}
+        non_actionable_streams = [
+            name for name, control in controls.items() if control["non_actionable"]
+        ]
+        if non_actionable_streams:
+            risk_factor = None
+        else:
+            total_w = sum(_WEIGHTS.values())
+            risk_factor = sum(
+                _WEIGHTS[n] * streams[n].score for n in streams
+            ) / total_w
 
-        # Hard veto if any stream triggers it
-        veto = any(s.veto for s in streams.values())
+        # Missing, errored, or no-data streams never become clear-field evidence.
+        veto = any(s.veto for s in streams.values()) or bool(non_actionable_streams)
 
         # Collect all active alerts + build reason
         active_alerts: List[str] = []
@@ -722,7 +766,9 @@ class ATNMonitor:
             if s.veto:
                 veto_reasons.append(f"{n}:{s.alerts[0] if s.alerts else 'VETO'}")
 
-        if veto:
+        if non_actionable_streams:
+            reason = "NO DATA - action blocked: " + ", ".join(sorted(non_actionable_streams))
+        elif veto:
             reason = "EARTH VETO — " + "; ".join(veto_reasons)
         elif risk_factor < 0.5:
             reason = "HIGH HAZARD FIELD — elevated risk across streams"
@@ -733,11 +779,13 @@ class ATNMonitor:
 
         return EarthHazardState(
             timestamp=time.time(),
-            risk_factor=_clamp(risk_factor),
+            risk_factor=_clamp(risk_factor) if risk_factor is not None else None,
             veto=veto,
             reason=reason,
             active_alerts=active_alerts,
             streams=streams,
+            actionable=not veto,
+            non_actionable_streams=non_actionable_streams,
         )
 
     def get_trading_impact(self) -> Dict[str, Any]:

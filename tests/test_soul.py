@@ -12,10 +12,49 @@ and only ever acts through the doubly-gated LocalActionBridge.
 from __future__ import annotations
 
 import json
+import time
 
 import pytest
 
 from aureon.core.aureon_thought_bus import Thought, get_thought_bus
+
+
+def _hnc_envelope(symbolic_life_score, coherence_gamma, consciousness_psi=None):
+    received_at = time.time()
+    psi = coherence_gamma if consciousness_psi is None else consciousness_psi
+    return {
+        "data_status": "live",
+        "source": "hnc_live_daemon",
+        "source_id": "aureon:hnc:live_daemon",
+        "source_timestamp": received_at,
+        "received_at": received_at,
+        "ts": received_at,
+        "receipt_id": "hnc:live_field:test-soul",
+        "receipt_type": "hnc_live_field",
+        "provider_receipt_type": "hnc_live_field",
+        "truth_status": "real_derived",
+        "generated_values": False,
+        "input_receipt_ids": ["test.provider:soul"],
+        "freshness_status": "fresh",
+        "symbolic_life_score": symbolic_life_score,
+        "coherence_gamma": coherence_gamma,
+        "consciousness_psi": psi,
+        "consciousness_level": "AWARE",
+        "lambda_t": symbolic_life_score,
+        "source_count": 1,
+        "operational_eligible": False,
+        "provider_eligible": False,
+        "action_eligible": False,
+        "actionable": False,
+        "accounting_eligible": False,
+        "learning_eligible": False,
+        "eligible_for_action": False,
+        "eligible_for_accounting": False,
+        "eligible_for_learning": False,
+        "equation_inputs_complete": True,
+        "action_gate_passed": False,
+        "action_gate_reason": "route_specific_market_link_required",
+    }
 
 
 @pytest.fixture(autouse=True)
@@ -34,6 +73,13 @@ def _isolate(tmp_path, monkeypatch):
     monkeypatch.setenv("AUREON_SOUL_CONTRACT_PATH", str(tmp_path / "contracts.json"))
     monkeypatch.delenv("AUREON_SOUL_ACT", raising=False)
     monkeypatch.delenv("AUREON_LOCAL_ACTIONS_ARMED", raising=False)
+    # Pin the offline posture EXPLICITLY: earlier tests can flip
+    # AUREON_LLM_OFFLINE in os.environ for the whole process (the feature
+    # switchboard applies flags directly). If it leaks in falsy, _self_author
+    # routes through AureonCognition — hijacking the determination text and
+    # booting pulse-publishing machinery that makes the blind soul "see".
+    # These tests assert the deterministic offline authorship path.
+    monkeypatch.setenv("AUREON_LLM_OFFLINE", "1")
     # reset every singleton the soul reads so tests are deterministic
     import aureon.core.affect_monitor as am
     import aureon.core.aureon_thought_bus as tb
@@ -60,9 +106,8 @@ def _isolate(tmp_path, monkeypatch):
 
 def _coherent_field(tmp_path):
     b = get_thought_bus()
-    b.publish(Thought(source="hnc", topic="symbolic.life.pulse",
-                      payload={"symbolic_life_score": 0.8, "coherence_gamma": 0.8,
-                               "consciousness_psi": 0.7, "source": "live"}))
+    b.publish(Thought(source="hnc_live_daemon", topic="symbolic.life.pulse",
+                      payload=_hnc_envelope(0.8, 0.8, 0.7)))
     (tmp_path / "gfs.json").write_text(json.dumps({"last_snapshot": {"crypto_fear_greed": 70}}), encoding="utf-8")
     (tmp_path / "preds.json").write_text(
         json.dumps({"predictions": [{"validated": True, "was_correct": True} for _ in range(7)]
@@ -71,8 +116,8 @@ def _coherent_field(tmp_path):
 
 def _divided_field(tmp_path):
     b = get_thought_bus()
-    b.publish(Thought(source="hnc", topic="symbolic.life.pulse",
-                      payload={"symbolic_life_score": 0.1, "coherence_gamma": 0.1, "source": "live"}))
+    b.publish(Thought(source="hnc_live_daemon", topic="symbolic.life.pulse",
+                      payload=_hnc_envelope(0.1, 0.1)))
     b.publish(Thought(source="q", topic="symbolic.life.subfield",
                       payload={"source": "q", "symbolic_life_score": 0.9}))  # divergence 0.8
     (tmp_path / "gfs.json").write_text(json.dumps({"last_snapshot": {"crypto_fear_greed": 8}}), encoding="utf-8")

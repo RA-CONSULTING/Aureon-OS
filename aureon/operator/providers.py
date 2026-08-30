@@ -34,6 +34,7 @@ from aureon.inhouse_ai.llm_adapter import (
     StreamChunk,
     _llm_http_disabled,
 )
+from aureon.ollama_config import ensure_ollama_runtime_config
 
 logger = logging.getLogger("aureon.operator.providers")
 
@@ -243,7 +244,12 @@ def _build_from_spec(spec) -> LLMAdapter | None:
             adapter = AureonAnthropicAdapter(model=spec.model or None)
             return adapter if adapter.health_check() else None
         if kind == "local":
-            adapter = AureonLocalAdapter(model=spec.model or None)
+            from aureon.integrations.ollama import OllamaModelSwitchboard
+
+            adapter, _selection = OllamaModelSwitchboard().compatible_adapter_for(
+                "general",
+                preferred=spec.model or "",
+            )
             return adapter if adapter.health_check() else None
         if kind == "stub":
             return AureonStubAdapter(spec.options.get("message", _OFFLINE_STUB_ANSWER), model=spec.model or "stub")
@@ -270,6 +276,8 @@ def build_registry(
     from aureon.operator.config import default_registry
 
     if specs is None:
+        if force_offline is not True:
+            ensure_ollama_runtime_config()
         specs = default_registry()
     offline = _llm_http_disabled() if force_offline is None else bool(force_offline)
 
@@ -299,6 +307,58 @@ def build_provider_set(
     return build_registry(allow_local=allow_local, force_offline=force_offline)
 
 
+def build_adapter(kind: str, *, api_key: str, base_url: Any = None, model: str = "") -> LLMAdapter:
+    """Construct one adapter of ``kind`` from an EXPLICIT key — no ``os.environ`` read or write.
+
+    The single source of truth for the catalog-kind → adapter-class mapping, shared by the live
+    ``/api/providers/<id>/test`` round-trip and the per-tenant provider-set builder below. Because it
+    never touches the process env, it is safe to call per-request with a tenant's own key.
+    """
+    if kind in ("openai", "openai_compat"):
+        return AureonOpenAIAdapter(api_key=api_key, base_url=base_url, model=model)
+    if kind == "grok":
+        return AureonGrokAdapter(api_key=api_key, base_url=base_url, model=model)
+    if kind == "gemini":
+        return AureonGeminiAdapter(api_key=api_key, model=model, base_url=base_url)
+    if kind == "anthropic":
+        from aureon.inhouse_ai.llm_adapter import AureonAnthropicAdapter
+
+        return AureonAnthropicAdapter(api_key=api_key, model=model)
+    from aureon.inhouse_ai.llm_adapter import AureonLocalAdapter  # local / self-hosted (Ollama)
+
+    return AureonLocalAdapter(api_key=api_key, base_url=base_url, model=model)
+
+
+def build_provider_set_from_entries(entries: Dict[str, Dict[str, Any]]) -> Dict[str, LLMAdapter]:
+    """Assemble a switchboard from explicit keystore ``entries`` — **no ``os.environ`` reads/writes**.
+
+    ``entries`` is a keystore dict (``{provider_id: {api_key, base_url, model, enabled}}``), e.g.
+    ``keystore.load(tenant)``. Only enabled LLM providers with a key are built. Keyed by the provider's
+    registry name, matching ``build_registry``. This is the seam for per-tenant live reasoning: a future
+    ``AureonOperator(providers=build_provider_set_from_entries(keystore.load(tenant)))`` runs a tenant's
+    own models without ever mutating the shared process env.
+    """
+    from aureon.operator.provider_catalog import get_provider
+
+    out: Dict[str, LLMAdapter] = {}
+    for provider_id, entry in entries.items():
+        if not bool(entry.get("enabled", True)):
+            continue
+        api_key = str(entry.get("api_key", "") or "")
+        info = get_provider(provider_id)
+        if info is None or not api_key:
+            continue
+        try:
+            out[info.registry_name] = build_adapter(
+                info.kind, api_key=api_key,
+                base_url=str(entry.get("base_url", "") or "") or info.default_base_url,
+                model=str(entry.get("model", "") or "") or info.default_model,
+            )
+        except Exception:  # noqa: BLE001 — a bad entry is skipped, never sinks the set
+            logger.warning("could not build adapter for provider %s", provider_id)
+    return out
+
+
 def describe_provider_set(providers: Dict[str, LLMAdapter]) -> List[Dict[str, str]]:
     """Compact, log-safe description of the active switchboard (no secrets)."""
     described = []
@@ -319,5 +379,7 @@ __all__ = [
     "AureonGeminiAdapter",
     "build_registry",
     "build_provider_set",
+    "build_adapter",
+    "build_provider_set_from_entries",
     "describe_provider_set",
 ]

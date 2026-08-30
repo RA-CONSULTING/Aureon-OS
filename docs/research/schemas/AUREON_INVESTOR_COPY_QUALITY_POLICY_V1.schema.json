@@ -1,0 +1,165 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aureon.example/schemas/AUREON_INVESTOR_COPY_QUALITY_POLICY_V1.schema.json",
+  "title": "Aureon investor copy quality policy v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "policy_id",
+    "issued_at",
+    "refresh_by",
+    "authority",
+    "snapshot_max_age_days",
+    "routes"
+  ],
+  "properties": {
+    "schema": {
+      "const": "aureon.investor-copy-quality-policy.v1"
+    },
+    "policy_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{2,127}$"
+    },
+    "issued_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "refresh_by": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scope",
+        "canonical_website_mutation",
+        "candidate_staging",
+        "claim_register_mutation",
+        "release_eligible",
+        "package_authority",
+        "deployment_authority",
+        "credential_access",
+        "network_access",
+        "human_review"
+      ],
+      "properties": {
+        "scope": {
+          "const": "read-only local investor-copy quality audit"
+        },
+        "canonical_website_mutation": {
+          "const": "never"
+        },
+        "candidate_staging": {
+          "const": "never"
+        },
+        "claim_register_mutation": {
+          "const": "never"
+        },
+        "release_eligible": {
+          "const": false
+        },
+        "package_authority": {
+          "const": "none"
+        },
+        "deployment_authority": {
+          "const": "none"
+        },
+        "credential_access": {
+          "const": "none"
+        },
+        "network_access": {
+          "const": "none"
+        },
+        "human_review": {
+          "const": "required before public copy changes"
+        }
+      }
+    },
+    "snapshot_max_age_days": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 31
+    },
+    "routes": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "route",
+          "path",
+          "rule_ids",
+          "required_concept_groups"
+        ],
+        "properties": {
+          "route": {
+            "type": "string",
+            "pattern": "^/(?:[A-Za-z0-9._~-]+/)*$"
+          },
+          "path": {
+            "type": "string",
+            "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+\\.html$"
+          },
+          "rule_ids": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "enum": [
+                "category-language",
+                "claim-boundary",
+                "financial-figure",
+                "hype-language",
+                "meta-description",
+                "page-title",
+                "single-h1",
+                "snapshot-date",
+                "static-operating-count",
+                "static-research-count",
+                "static-traction-count"
+              ]
+            }
+          },
+          "required_concept_groups": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "concept_id",
+                "severity",
+                "alternatives"
+              ],
+              "properties": {
+                "concept_id": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9][a-z0-9-]{2,127}$"
+                },
+                "severity": {
+                  "enum": [
+                    "blocker",
+                    "warning"
+                  ]
+                },
+                "alternatives": {
+                  "type": "array",
+                  "minItems": 1,
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

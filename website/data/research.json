@@ -1,60 +1,78 @@
 {
+  "schema_version": 3,
+  "coverage": {
+    "scope": "A curated public reading set that orients investors, collaborators and technical reviewers across Aureon's research programme.",
+    "breadth": [
+      "Evidence governance and trustworthy AI",
+      "Space systems and mission assurance",
+      "Photonics, sensing and signal analysis",
+      "Complex systems and coherence modelling",
+      "Evidence-led engineering methods"
+    ],
+    "selection_policy": "The formal records below are selected for strategic relevance, source clarity and their value in understanding the company's research-to-validation method. ORCID and Zenodo remain the public routes for the wider record.",
+    "record_status_policy": "Each listed item is identified by its public source link and stated record type. A source link does not itself establish peer review, engineering validation, commercial readiness, or performance.",
+    "public_research_notes": "Gary Leckey's public Substack research-notes channel is linked as contextual commentary. It is kept separate from the formal record index and is not presented as peer review, validation, or company performance evidence.",
+    "repository_working_material_note": "The repository has a larger working-material library that is not presented as an independently validated publication list."
+  },
   "profiles": [
     {
       "id": "gary",
+      "public_role": "Research author and company director",
       "name": "Gary Leckey",
-      "role": "Director & Owner · Aureon Institute (HNC research identity)",
-      "summary": "Founder of the Harmonic Nexus Core (HNC) research programme. Public preprints, whitepapers, and archived records across Zenodo, ResearchGate, and Academia.",
+      "role": "Director · Aureon Institute (company research programme; not a separate legal or accredited institution)",
+      "summary": "Public research records attributed to Gary Leckey, linked to ORCID, Zenodo, ResearchGate, the public research-notes channel, and the company GitHub organisation.",
       "links": [
         {
           "label": "ORCID",
           "url": "https://orcid.org/0009-0004-2792-4649"
         },
         {
-          "label": "Zenodo — Aureon Institute community",
-          "url": "https://zenodo.org/communities/aureon-institute/"
+          "label": "Zenodo",
+          "url": "https://zenodo.org/search?q=metadata.creators.person_or_org.name%3A%22Leckey%2C%20Gary%22"
         },
         {
           "label": "ResearchGate",
           "url": "https://www.researchgate.net/profile/Gary-Leckey"
         },
         {
-          "label": "Academia.edu",
-          "url": "https://gleckey.academia.edu"
+          "label": "Substack research notes",
+          "url": "https://garyleckey.substack.com/"
         },
         {
           "label": "GitHub",
           "url": "https://github.com/RA-CONSULTING"
-        },
-        {
-          "label": "Aureon Institute",
-          "url": "https://trading.aureoninstitute.co.uk/"
         }
       ],
       "collections": [
         {
           "label": "Whitepaper library (GitHub)",
           "url": "https://github.com/RA-CONSULTING/Aureon-OS/tree/main/docs/research/whitepapers",
-          "note": "The full HNC / EPAS / QGITA / Tandem-in-Unity whitepaper corpus (source PDFs/DOCX)."
+          "note": "Repository working-material library. Its files are not an independently validated publication list."
         }
       ]
+    }
+  ],
+  "featured_notes": [
+    {
+      "title": "The Harmonic Nexus Research Index",
+      "channel": "The Harmonic Nexus",
+      "record_type": "Public research-index note",
+      "url": "https://garyleckey.substack.com/p/the-harmonic-nexus-research-index",
+      "verification_status": "Direct author-published Substack source. Commentary and index only; not peer review or independent validation."
     },
     {
-      "id": "lukasz",
-      "name": "Łukasz (LuciferSun)",
-      "role": "Chief Researcher & site creator · Project Envision",
-      "summary": "Independent research and engineering — AOIA-Core (human-gated AI workflows), MHLM/MDLH (AI-safety), and LSC research — with archived Zenodo records.",
-      "links": [
-        {
-          "label": "GitHub",
-          "url": "https://github.com/luciferprosun"
-        },
-        {
-          "label": "Zenodo — Aureon Institute community",
-          "url": "https://zenodo.org/communities/aureon-institute/"
-        }
-      ],
-      "collections": []
+      "title": "Can One Framework Link AI, Propulsion and Protection Without Claiming One Physics?",
+      "channel": "The Harmonic Nexus",
+      "record_type": "Public systems-architecture note",
+      "url": "https://garyleckey.substack.com/p/can-one-framework-link-ai-propulsion",
+      "verification_status": "Direct author-published Substack source. Commentary only; not evidence that a proposed system has been completed or independently validated."
+    },
+    {
+      "title": "Can a Trading System Be an Observatory Before It Is a Strategy?",
+      "channel": "The Harmonic Nexus",
+      "record_type": "Public methods-and-controls note",
+      "url": "https://garyleckey.substack.com/p/can-a-trading-system-be-an-observatory",
+      "verification_status": "Direct author-published Substack source. Commentary only; not performance, trading or investment evidence."
     }
   ],
   "papers": [
@@ -63,6 +81,7 @@
       "title": "The Harmonic Nexus Core (HNC): A Unified Framework for Emergent Spacetime and Coherent Information Dynamics",
       "type": "Framework preprint",
       "platform": "Zenodo",
+      "verification_status": "Zenodo source link and DOI listed; a preprint record is not peer review or independent validation.",
       "doi": "https://doi.org/10.5281/zenodo.17546501",
       "url": "https://zenodo.org/records/17546501"
     },
@@ -71,22 +90,25 @@
       "title": "The Harmonic Nexus Core and Auris Conjecture: A Unified Framework for Emergent Spacetime, Symbolic Cognition, and Field-Consciousness Interaction",
       "type": "Framework preprint",
       "platform": "Zenodo",
+      "verification_status": "Zenodo source link and DOI listed; a preprint record is not peer review or independent validation.",
       "doi": "https://doi.org/10.5281/zenodo.17546413",
       "url": "https://zenodo.org/records/17546413"
     },
     {
       "author": "gary",
-      "title": "The Harmonic Nexus Core and the Aureon Trading Framework: Substrate Coherence, Asymmetric Market Resistance, and the Restoration of Planetary Harmonics",
-      "type": "Application whitepaper",
+      "title": "The Harmonic Nexus Core and the Aureon Trading Framework: A Unified White Paper on Substrate Coherence, Asymmetric Market Resistance, and the Restoration of Planetary Harmonics",
+      "type": "Public full-text record",
       "platform": "ResearchGate",
       "doi": "",
-      "url": "https://www.researchgate.net/publication/400536498"
+      "url": "https://www.researchgate.net/publication/400536498",
+      "verification_status": "Public ResearchGate source link listed; direct automated access may be restricted. This is not peer review or independent validation."
     },
     {
       "author": "gary",
       "title": "Tandem in Unity: Unifying Resonant Fields in Physics, AI, and Consciousness",
       "type": "Framework preprint",
       "platform": "Zenodo",
+      "verification_status": "Zenodo source link and DOI listed; a preprint record is not peer review or independent validation.",
       "doi": "https://doi.org/10.5281/zenodo.17546276",
       "url": "https://zenodo.org/records/17546276"
     },
@@ -95,6 +117,7 @@
       "title": "Quantum Gravity in the Act (QGITA): A Two-Stage Consensus Framework for Detecting Structural Events in Complex Signals",
       "type": "Methods preprint",
       "platform": "Zenodo",
+      "verification_status": "Zenodo source link and DOI listed; a preprint record is not peer review or independent validation.",
       "doi": "https://doi.org/10.5281/zenodo.17531249",
       "url": "https://zenodo.org/records/17531249"
     },
@@ -103,6 +126,7 @@
       "title": "Quantum Gravity in the Act (QGITA): A Two-Stage Framework for High-Fidelity Event Detection in Complex Signals",
       "type": "Methods preprint",
       "platform": "Zenodo",
+      "verification_status": "Zenodo source link and DOI listed; a preprint record is not peer review or independent validation.",
       "doi": "https://doi.org/10.5281/zenodo.17531133",
       "url": "https://zenodo.org/records/17531133"
     },
@@ -111,6 +135,7 @@
       "title": "Electro-Plasma-Acoustic Shield (EPAS): A Multi-Layer Active Defense System for Spacecraft Protection Against Hypervelocity Micrometeoroids and Orbital Debris",
       "type": "Engineering preprint",
       "platform": "Zenodo",
+      "verification_status": "Zenodo source link and DOI listed; a preprint record is not peer review or independent validation.",
       "doi": "https://doi.org/10.5281/zenodo.17548802",
       "url": "https://zenodo.org/records/17548802"
     },
@@ -119,6 +144,7 @@
       "title": "The LuminaCell v2 Architecture: A High-Power Coherent Light Source Based on a Contactless Quantum Interference Core",
       "type": "Engineering preprint",
       "platform": "Zenodo",
+      "verification_status": "Zenodo source link and DOI listed; a preprint record is not peer review or independent validation.",
       "doi": "https://doi.org/10.5281/zenodo.17573586",
       "url": "https://zenodo.org/records/17573586"
     },
@@ -127,30 +153,25 @@
       "title": "The Math Angel Protocol: A Mathematical Framework for Quantifying and Visualizing Consciousness as the Fundamental Substrate of Reality",
       "type": "Framework preprint",
       "platform": "Zenodo",
+      "verification_status": "Zenodo source link and DOI listed; a preprint record is not peer review or independent validation.",
       "doi": "https://doi.org/10.5281/zenodo.17531331",
       "url": "https://zenodo.org/records/17531331"
     },
     {
       "author": "gary",
-      "title": "Harmonic Reality Framework and the Master Equations Tree (preprint)",
+      "title": "Harmonic Reality Framework and the Master Equations Tree",
       "type": "Framework preprint",
       "platform": "Zenodo",
+      "verification_status": "Zenodo source link and DOI listed; a preprint record is not peer review or independent validation.",
       "doi": "https://doi.org/10.5281/zenodo.17527831",
       "url": "https://zenodo.org/records/17527831"
-    },
-    {
-      "author": "gary",
-      "title": "Harmonic Reality Framework and the Master Equations Tree (dataset)",
-      "type": "Dataset",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.17527830",
-      "url": "https://zenodo.org/records/17527830"
     },
     {
       "author": "gary",
       "title": "A Dynamic Systems Model of Coherence Grounded in Astronomical Phenomena",
       "type": "Research preprint",
       "platform": "Zenodo",
+      "verification_status": "Zenodo source link and DOI listed; a preprint record is not peer review or independent validation.",
       "doi": "https://doi.org/10.5281/zenodo.17529554",
       "url": "https://zenodo.org/records/17529554"
     },
@@ -159,6 +180,7 @@
       "title": "Modeling Light Dynamics Through Astronomical Phenomena",
       "type": "Research preprint",
       "platform": "Zenodo",
+      "verification_status": "Zenodo source link and DOI listed; a preprint record is not peer review or independent validation.",
       "doi": "https://doi.org/10.5281/zenodo.17529232",
       "url": "https://zenodo.org/records/17529232"
     },
@@ -167,536 +189,9 @@
       "title": "The Barons' Banner: The Hidden Architecture of Mathematical Deception",
       "type": "Essay / preprint",
       "platform": "Zenodo",
+      "verification_status": "Zenodo source link and DOI listed; an essay or preprint record is not peer review or independent validation.",
       "doi": "https://doi.org/10.5281/zenodo.17529246",
       "url": "https://zenodo.org/records/17529246"
-    },
-    {
-      "author": "lukasz",
-      "title": "AOIA-Core / AIOA Whitehat — Controlled Agent MVP Prototype",
-      "type": "Software / prototype archive",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21233163",
-      "url": "https://zenodo.org/records/21233163"
-    },
-    {
-      "author": "lukasz",
-      "title": "MHLM / MDLH — AI-safety research archive",
-      "type": "Research archive",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.20388541",
-      "url": "https://zenodo.org/records/20388541"
-    },
-    {
-      "author": "lukasz",
-      "title": "LSC Research — candidate record 19843361",
-      "type": "Research material (TO VERIFY)",
-      "platform": "Zenodo",
-      "doi": "",
-      "url": "https://zenodo.org/records/19843361"
-    },
-    {
-      "author": "lukasz",
-      "title": "LSC Research — candidate record 20377427",
-      "type": "Research material (TO VERIFY)",
-      "platform": "Zenodo",
-      "doi": "",
-      "url": "https://zenodo.org/records/20377427"
-    },
-    {
-      "author": "gary",
-      "title": "Emergent Symbolic Resonance and Algorithmic Life: Experimental Validation of the Harmonic Nexus Core Framework in the Auris System",
-      "type": "Framework preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526346",
-      "url": "https://zenodo.org/records/21526346"
-    },
-    {
-      "author": "gary",
-      "title": "Emergent Symbolic Resonance and Lifelike Behavior in the Auris System",
-      "type": "Framework preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526350",
-      "url": "https://zenodo.org/records/21526350"
-    },
-    {
-      "author": "gary",
-      "title": "HNC Aureon Unified WhitePaper",
-      "type": "Framework preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526354",
-      "url": "https://zenodo.org/records/21526354"
-    },
-    {
-      "author": "gary",
-      "title": "HNC Grand Unified v4 Fixed Leckey 2026",
-      "type": "Framework preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526360",
-      "url": "https://zenodo.org/records/21526360"
-    },
-    {
-      "author": "gary",
-      "title": "HNC MYCELIUM WHITEPAPER",
-      "type": "Framework preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526368",
-      "url": "https://zenodo.org/records/21526368"
-    },
-    {
-      "author": "gary",
-      "title": "Computational Verification of Selected Falsifiable Predictions in the Harmonic Nexus Core Framework: A Primary-Source Audit Protocol Applied to the Aureon Trading System",
-      "type": "Framework preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526372",
-      "url": "https://zenodo.org/records/21526372"
-    },
-    {
-      "author": "gary",
-      "title": "Harmonic Nexus Theory Part 2 Validation",
-      "type": "Framework preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526374",
-      "url": "https://zenodo.org/records/21526374"
-    },
-    {
-      "author": "gary",
-      "title": "Harmonic Nexus Theory of Becoming",
-      "type": "Framework preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526378",
-      "url": "https://zenodo.org/records/21526378"
-    },
-    {
-      "author": "gary",
-      "title": "Lambda Materialization Gradient Integrity",
-      "type": "Framework preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526382",
-      "url": "https://zenodo.org/records/21526382"
-    },
-    {
-      "author": "gary",
-      "title": "Leckey HNC Evolutionary Framework arXiv",
-      "type": "Framework preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526386",
-      "url": "https://zenodo.org/records/21526386"
-    },
-    {
-      "author": "gary",
-      "title": "Lumina Subsystem Integrated Quantum Amplifier",
-      "type": "Framework preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526406",
-      "url": "https://zenodo.org/records/21526406"
-    },
-    {
-      "author": "gary",
-      "title": "Quantum Gravity in the Act QGITA Lighthouse",
-      "type": "Framework preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526408",
-      "url": "https://zenodo.org/records/21526408"
-    },
-    {
-      "author": "gary",
-      "title": "The φ² Chain: From Sumerian Ziggurats to Roman Roads to GitHub Nodes — How the Same Pattern Has Expressed for 4,100 Years",
-      "type": "Framework preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526412",
-      "url": "https://zenodo.org/records/21526412"
-    },
-    {
-      "author": "gary",
-      "title": "The Source Oscillator Constraint Whitepaper",
-      "type": "Framework preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526414",
-      "url": "https://zenodo.org/records/21526414"
-    },
-    {
-      "author": "gary",
-      "title": "Unified Framework of Symbolic Emergence",
-      "type": "Framework preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526418",
-      "url": "https://zenodo.org/records/21526418"
-    },
-    {
-      "author": "gary",
-      "title": "EPAS Unified Architecture Project Druid",
-      "type": "Framework preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526423",
-      "url": "https://zenodo.org/records/21526423"
-    },
-    {
-      "author": "gary",
-      "title": "EPAS Unified Architecture",
-      "type": "Framework preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526427",
-      "url": "https://zenodo.org/records/21526427"
-    },
-    {
-      "author": "gary",
-      "title": "EPAS ZPE White Paper Leckey 2026",
-      "type": "Framework preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526433",
-      "url": "https://zenodo.org/records/21526433"
-    },
-    {
-      "author": "gary",
-      "title": "Feasibility Assessment of the Electro Plasma",
-      "type": "Framework preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526435",
-      "url": "https://zenodo.org/records/21526435"
-    },
-    {
-      "author": "gary",
-      "title": "HNC 2026 Prediction Of 2026 WOW Signal B",
-      "type": "Framework preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526439",
-      "url": "https://zenodo.org/records/21526439"
-    },
-    {
-      "author": "gary",
-      "title": "HNC Project Druid EPAS Technical Framework",
-      "type": "Framework preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526441",
-      "url": "https://zenodo.org/records/21526441"
-    },
-    {
-      "author": "gary",
-      "title": "Harmonic Solar System Survey Leckey",
-      "type": "Framework preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526443",
-      "url": "https://zenodo.org/records/21526443"
-    },
-    {
-      "author": "gary",
-      "title": "Maeshowe Seer Decode Report rev2",
-      "type": "Framework preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526445",
-      "url": "https://zenodo.org/records/21526445"
-    },
-    {
-      "author": "gary",
-      "title": "Project Alfie A Theoretical Framework",
-      "type": "Framework preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526447",
-      "url": "https://zenodo.org/records/21526447"
-    },
-    {
-      "author": "gary",
-      "title": "Project Druid Technical Architecture",
-      "type": "Framework preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526449",
-      "url": "https://zenodo.org/records/21526449"
-    },
-    {
-      "author": "gary",
-      "title": "The Doorbell Hypothesis Leckey",
-      "type": "Framework preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526470",
-      "url": "https://zenodo.org/records/21526470"
-    },
-    {
-      "author": "gary",
-      "title": "The Dormant Seed",
-      "type": "Framework preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526472",
-      "url": "https://zenodo.org/records/21526472"
-    },
-    {
-      "author": "gary",
-      "title": "The Sagittarius Convergence v2 Corrected",
-      "type": "Framework preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526476",
-      "url": "https://zenodo.org/records/21526476"
-    },
-    {
-      "author": "gary",
-      "title": "AUREON WHITE PAPER RESEARCH HUB",
-      "type": "Framework preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526480",
-      "url": "https://zenodo.org/records/21526480"
-    },
-    {
-      "author": "gary",
-      "title": "COMPLETE EVIDENCE SYNTHESIS",
-      "type": "Framework preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526482",
-      "url": "https://zenodo.org/records/21526482"
-    },
-    {
-      "author": "gary",
-      "title": "What Does Life Mean To You Validation",
-      "type": "Framework preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526486",
-      "url": "https://zenodo.org/records/21526486"
-    },
-    {
-      "author": "gary",
-      "title": "HNC Harmonic LIDAR v2 AluminiumFluid Leckey",
-      "type": "Framework preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526488",
-      "url": "https://zenodo.org/records/21526488"
-    },
-    {
-      "author": "gary",
-      "title": "The HNC and the Aureon Trading Framework",
-      "type": "Framework preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526494",
-      "url": "https://zenodo.org/records/21526494"
-    },
-    {
-      "author": "gary",
-      "title": "Acceptance Criteria",
-      "type": "Technical note",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526500",
-      "url": "https://zenodo.org/records/21526500"
-    },
-    {
-      "author": "gary",
-      "title": "B.SEER Validation Framework",
-      "type": "Technical note",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526502",
-      "url": "https://zenodo.org/records/21526502"
-    },
-    {
-      "author": "gary",
-      "title": "Coherence Maintenance Evidence",
-      "type": "Technical note",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526504",
-      "url": "https://zenodo.org/records/21526504"
-    },
-    {
-      "author": "gary",
-      "title": "Experimental Protocol Document",
-      "type": "Technical note",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526508",
-      "url": "https://zenodo.org/records/21526508"
-    },
-    {
-      "author": "gary",
-      "title": "Experimental Validation Plan UTRE",
-      "type": "Technical note",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526512",
-      "url": "https://zenodo.org/records/21526512"
-    },
-    {
-      "author": "gary",
-      "title": "HNC Claims to Evidence Traceability",
-      "type": "Technical note",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526514",
-      "url": "https://zenodo.org/records/21526514"
-    },
-    {
-      "author": "gary",
-      "title": "HNC Methodology Summary",
-      "type": "Technical note",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526518",
-      "url": "https://zenodo.org/records/21526518"
-    },
-    {
-      "author": "gary",
-      "title": "HNC Replication Process System",
-      "type": "Technical note",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526538",
-      "url": "https://zenodo.org/records/21526538"
-    },
-    {
-      "author": "gary",
-      "title": "Independent Computational Verification of the Harmonic Nexus Core (HNC) Framework: A Full-System Primary-Source Audit of the Aureon Trading System (Version 2.0)",
-      "type": "Technical note",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526540",
-      "url": "https://zenodo.org/records/21526540"
-    },
-    {
-      "author": "gary",
-      "title": "MATRIX VERIFICATION",
-      "type": "Technical note",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526542",
-      "url": "https://zenodo.org/records/21526542"
-    },
-    {
-      "author": "gary",
-      "title": "Measurement Instrumentation Details",
-      "type": "Technical note",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526544",
-      "url": "https://zenodo.org/records/21526544"
-    },
-    {
-      "author": "gary",
-      "title": "Multi Lab Testing Procedures UTRE",
-      "type": "Technical note",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526547",
-      "url": "https://zenodo.org/records/21526547"
-    },
-    {
-      "author": "gary",
-      "title": "Mythology → Method Test Plan",
-      "type": "Technical note",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526549",
-      "url": "https://zenodo.org/records/21526549"
-    },
-    {
-      "author": "gary",
-      "title": "Replication Guidelines HNC",
-      "type": "Technical note",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526551",
-      "url": "https://zenodo.org/records/21526551"
-    },
-    {
-      "author": "gary",
-      "title": "Test Methodologies (HNC Program)",
-      "type": "Technical note",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21526555",
-      "url": "https://zenodo.org/records/21526555"
-    },
-    {
-      "author": "gary",
-      "title": "AUREON Quantum Trading System (AQTS) — software archive",
-      "type": "Software archive",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.17666082",
-      "url": "https://zenodo.org/records/17666082"
-    },
-    {
-      "author": "gary",
-      "title": "The People of the Threshold: Who They Were, What They Wanted, What They Gave Back, How the Knowledge Shaped the World",
-      "type": "Research preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21529282",
-      "url": "https://zenodo.org/records/21529282"
-    },
-    {
-      "author": "gary",
-      "title": "The Arctic Threshold: A Multi-Cultural Destination for Knowledge — The Integrated Story Timeline with Every Validated Fact",
-      "type": "Research preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21529284",
-      "url": "https://zenodo.org/records/21529284"
-    },
-    {
-      "author": "gary",
-      "title": "The Atlantic Substrate: The Full Story — From Origin Through Transmission, Integration, Fragmentation, Dispersion, and Recovery",
-      "type": "Research preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21529286",
-      "url": "https://zenodo.org/records/21529286"
-    },
-    {
-      "author": "gary",
-      "title": "From A to B: The Substrate Walk-Through — Every Finding, Every Evidence Record, Every Ledger Entry, in Narrative Order",
-      "type": "Research preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21529291",
-      "url": "https://zenodo.org/records/21529291"
-    },
-    {
-      "author": "gary",
-      "title": "The Atlantic Substrate: How the Kindred Network Ran from the Iberian Mesolithic to the Hebridean Corridor",
-      "type": "Research preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21529300",
-      "url": "https://zenodo.org/records/21529300"
-    },
-    {
-      "author": "gary",
-      "title": "The Atlantic Seaboard Substrate: Reconstructing a Pre-Modern Cultural Transmission Network from Six Independent Evidential Streams",
-      "type": "Research preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21529306",
-      "url": "https://zenodo.org/records/21529306"
-    },
-    {
-      "author": "gary",
-      "title": "Validation Metrics Ledger: Atlantic Substrate Corpus — Every Date, Every Provenance, Every Source",
-      "type": "Research preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21529317",
-      "url": "https://zenodo.org/records/21529317"
-    },
-    {
-      "author": "gary",
-      "title": "Pattern Recognition Archaeology: A Unified Report on the Maeshowe Chamber, the Antarctic Candidate Site, and the Ogham-Futhork Substrate Hypothesis",
-      "type": "Research preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21529333",
-      "url": "https://zenodo.org/records/21529333"
-    },
-    {
-      "author": "gary",
-      "title": "The Harmonic Nexus Core: Empirical Audit and Cross-Channel Validation, 2025–2026 — A Unified White Paper",
-      "type": "Research preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21529341",
-      "url": "https://zenodo.org/records/21529341"
-    },
-    {
-      "author": "gary",
-      "title": "The Harmonic Nexus Core Empirical Audit and Cross-Channel Validation, 2025",
-      "type": "Research preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21529345",
-      "url": "https://zenodo.org/records/21529345"
-    },
-    {
-      "author": "gary",
-      "title": "LSSP Pre-Registration: Detecting φ-Spaced Phase-Coherence Peaks in Open Neural Recordings — The Leckey Substrate Scaling Protocol (v1.0)",
-      "type": "Research preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21530644",
-      "url": "https://zenodo.org/records/21530644"
-    },
-    {
-      "author": "gary",
-      "title": "The Position of Echo-Feedback Cognitive φ-Substrate (PEFCφS): A Four-Layer Architecture for the Harmonic Nexus Core Framework",
-      "type": "Research preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21530780",
-      "url": "https://zenodo.org/records/21530780"
-    },
-    {
-      "author": "gary",
-      "title": "HNC BioMolecule Adjacent Frequency Packet: White Paper (v1)",
-      "type": "Research preprint",
-      "platform": "Zenodo",
-      "doi": "https://doi.org/10.5281/zenodo.21530783",
-      "url": "https://zenodo.org/records/21530783"
     }
   ]
 }

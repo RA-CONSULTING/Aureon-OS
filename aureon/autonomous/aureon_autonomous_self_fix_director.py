@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
 from aureon.autonomous.aureon_capability_forge import REPO_ROOT
+from aureon.operator.coherence_gate import compute_evolution_flow
 
 
 DEFAULT_STATE_PATH = Path("state/aureon_autonomous_self_fix_director_last_run.json")
@@ -164,6 +165,40 @@ def _scan_patch_for_secrets(patch_text: str) -> List[str]:
     return findings
 
 
+def _resolve_evolution_flow(
+    coherence_inputs: Optional[Dict[str, Any]] = None,
+) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """Read the fresh shared field and derive a non-closing repair rhythm."""
+    inputs = dict(coherence_inputs or {})
+    if coherence_inputs is None:
+        try:
+            from aureon.autonomous.aureon_unified_self_evolution_loop import (
+                read_evolution_field_inputs,
+            )
+
+            inputs = read_evolution_field_inputs()
+        except Exception as exc:
+            inputs = {
+                "gamma": None,
+                "advisory_open": None,
+                "lighthouse_severity": None,
+                "auris_confidence": None,
+                "beta": None,
+                "sources": {
+                    "status": "no_data",
+                    "reason": f"{type(exc).__name__}: {exc}",
+                },
+            }
+    flow = compute_evolution_flow(
+        inputs.get("gamma"),
+        inputs.get("advisory_open"),
+        inputs.get("lighthouse_severity"),
+        auris_confidence=inputs.get("auris_confidence"),
+        beta=inputs.get("beta"),
+    )
+    return inputs, flow
+
+
 def _proposal_id(proposal: Dict[str, Any], index: int) -> str:
     return str(proposal.get("id") or proposal.get("title") or proposal.get("kind") or f"proposal_{index}")
 
@@ -177,7 +212,9 @@ def _load_proposals(root: Path, state_paths: Sequence[Path]) -> List[Dict[str, A
             continue
         for key in ("pending_proposals", "recent_reviews"):
             for item in payload.get(key, []) if isinstance(payload.get(key), list) else []:
-                if isinstance(item, dict):
+                # Only an explicit approval is executable.  Pending and rejected
+                # records remain audit evidence but never become patch candidates.
+                if isinstance(item, dict) and str(item.get("status") or "").casefold() == "approved":
                     proposals.append({**item, "_proposal_state_path": str(path), "_proposal_state_bucket": key})
     return proposals
 
@@ -188,6 +225,8 @@ class GuardedPatchApplier:
     allowlist: Sequence[str] = field(default_factory=lambda: list(DEFAULT_PATCH_ALLOWLIST))
     test_commands: Sequence[Sequence[str]] = field(default_factory=list)
     timeout_sec: int = 120
+    required_test_layers: Sequence[str] = field(default_factory=lambda: ["focused", "integration", "regression"])
+    review_cycles: int = 1
 
     def apply_proposal(self, proposal: Dict[str, Any], *, index: int = 0) -> Dict[str, Any]:
         patch_text = str(proposal.get("patch_text") or "")
@@ -204,12 +243,27 @@ class GuardedPatchApplier:
             "applied": False,
             "target_files": target_files,
             "allowlist": list(self.allowlist),
+            "coherence_proof": {
+                "required_test_layers": list(self.required_test_layers),
+                "review_cycles": max(1, int(self.review_cycles)),
+            },
             "checks": [],
             "test_results": [],
         }
 
         def add_check(check_id: str, ok: bool, detail: str) -> None:
             evidence["checks"].append({"id": check_id, "ok": bool(ok), "detail": detail})
+
+        proposal_status = str(proposal.get("status") or "").strip().casefold()
+        explicitly_approved = proposal_status == "approved"
+        add_check(
+            "proposal_explicitly_approved",
+            explicitly_approved,
+            f"status={proposal_status or 'missing'}",
+        )
+        if not explicitly_approved:
+            evidence["blocked_reason"] = "proposal_not_explicitly_approved"
+            return evidence
 
         if not patch_text.strip():
             add_check("patch_text_present", False, "proposal has no unified diff")
@@ -243,6 +297,29 @@ class GuardedPatchApplier:
             evidence["blocked_reason"] = "secret_scan_failed"
             return evidence
 
+        validation_ready = bool(self.test_commands)
+        add_check(
+            "validation_commands_present",
+            validation_ready,
+            f"{len(self.test_commands)} validation command(s)",
+        )
+        if not validation_ready:
+            evidence["blocked_reason"] = "validation_commands_missing"
+            return evidence
+
+        proof_depth_valid = bool(self.required_test_layers) and int(self.review_cycles) >= 1
+        add_check(
+            "coherence_proof_depth",
+            proof_depth_valid,
+            (
+                f"layers={','.join(self.required_test_layers)}; "
+                f"review_cycles={max(1, int(self.review_cycles))}"
+            ),
+        )
+        if not proof_depth_valid:
+            evidence["blocked_reason"] = "coherence_proof_depth_invalid"
+            return evidence
+
         check = self._run_git_apply(patch_text, check_only=True)
         evidence["git_apply_check"] = check
         add_check("git_apply_check", bool(check.get("ok")), check.get("stderr") or check.get("stdout") or "git apply --check passed")
@@ -256,15 +333,26 @@ class GuardedPatchApplier:
         if not apply.get("ok"):
             evidence["blocked_reason"] = "git_apply_failed"
             return evidence
+        evidence["ever_applied"] = True
 
         tests = self._run_tests()
         evidence["test_results"] = tests
         tests_ok = bool(tests) and all(item.get("ok") for item in tests)
         add_check("tests_ran_and_passed", tests_ok, f"{len(tests)} command(s)")
         if not tests_ok:
-            evidence["status"] = "applied_tests_failed"
-            evidence["applied"] = True
-            evidence["blocked_reason"] = "tests_failed_or_missing"
+            rollback = self._run_git_apply(patch_text, check_only=False, reverse=True)
+            evidence["rollback"] = rollback
+            rollback_ok = bool(rollback.get("ok"))
+            add_check(
+                "rollback_after_failed_tests",
+                rollback_ok,
+                rollback.get("stderr") or rollback.get("stdout") or "failed patch rolled back",
+            )
+            evidence["status"] = "rolled_back_tests_failed" if rollback_ok else "rollback_failed"
+            evidence["applied"] = not rollback_ok
+            evidence["blocked_reason"] = (
+                "tests_failed_patch_rolled_back" if rollback_ok else "tests_failed_and_rollback_failed"
+            )
             return evidence
 
         evidence["status"] = "applied"
@@ -272,10 +360,18 @@ class GuardedPatchApplier:
         evidence["blocked_reason"] = ""
         return evidence
 
-    def _run_git_apply(self, patch_text: str, *, check_only: bool) -> Dict[str, Any]:
+    def _run_git_apply(
+        self,
+        patch_text: str,
+        *,
+        check_only: bool,
+        reverse: bool = False,
+    ) -> Dict[str, Any]:
         command = ["git", "apply", "--whitespace=nowarn"]
         if check_only:
             command.append("--check")
+        if reverse:
+            command.append("--reverse")
         try:
             proc = subprocess.run(
                 command,
@@ -297,26 +393,38 @@ class GuardedPatchApplier:
 
     def _run_tests(self) -> List[Dict[str, Any]]:
         results: List[Dict[str, Any]] = []
-        for command in self.test_commands:
-            try:
-                proc = subprocess.run(
-                    list(command),
-                    cwd=self.root,
-                    text=True,
-                    capture_output=True,
-                    timeout=self.timeout_sec,
-                )
-                results.append(
-                    {
-                        "ok": proc.returncode == 0,
-                        "command": list(command),
-                        "returncode": proc.returncode,
-                        "stdout": proc.stdout[-2000:],
-                        "stderr": proc.stderr[-2000:],
-                    }
-                )
-            except Exception as exc:
-                results.append({"ok": False, "command": list(command), "error": f"{type(exc).__name__}: {exc}"})
+        cycles = max(1, int(self.review_cycles))
+        for cycle in range(1, cycles + 1):
+            for command in self.test_commands:
+                try:
+                    proc = subprocess.run(
+                        list(command),
+                        cwd=self.root,
+                        text=True,
+                        capture_output=True,
+                        timeout=self.timeout_sec,
+                    )
+                    results.append(
+                        {
+                            "ok": proc.returncode == 0,
+                            "review_cycle": cycle,
+                            "required_test_layers": list(self.required_test_layers),
+                            "command": list(command),
+                            "returncode": proc.returncode,
+                            "stdout": proc.stdout[-2000:],
+                            "stderr": proc.stderr[-2000:],
+                        }
+                    )
+                except Exception as exc:
+                    results.append(
+                        {
+                            "ok": False,
+                            "review_cycle": cycle,
+                            "required_test_layers": list(self.required_test_layers),
+                            "command": list(command),
+                            "error": f"{type(exc).__name__}: {exc}",
+                        }
+                    )
         return results
 
 
@@ -447,6 +555,11 @@ def _make_markdown(report: Dict[str, Any]) -> str:
         f"- status: {report.get('status')}",
         f"- handover_ready: {report.get('handover_ready')}",
         f"- codex_audit_state: {(report.get('codex_audit_state') or {}).get('state')}",
+        f"- coherence_flow: {(report.get('coherence_flow') or {}).get('flow')}",
+        f"- coherence_field_status: {(report.get('coherence_flow') or {}).get('field_status')}",
+        f"- patch_batch_limit: {(report.get('summary') or {}).get('patch_batch_limit')}",
+        f"- required_test_layers: {', '.join((report.get('coherence_flow') or {}).get('required_test_layers') or [])}",
+        f"- minimum_review_cycles: {(report.get('coherence_flow') or {}).get('minimum_review_cycles')}",
         f"- repairs selected: {len(report.get('selected_repairs') or [])}",
         f"- patches applied: {sum(1 for item in report.get('patch_apply_evidence', []) if item.get('applied'))}",
         f"- snags: {len(report.get('snags') or [])}",
@@ -473,25 +586,35 @@ def build_and_write_autonomous_self_fix_director(
     codex_audit_state: str = "autonomous_safe",
     proposal_state_paths: Sequence[Path] = DEFAULT_PROPOSAL_STATE_PATHS,
     patch_allowlist: Sequence[str] = DEFAULT_PATCH_ALLOWLIST,
-    max_patch_proposals: int = 3,
+    max_patch_proposals: Optional[int] = None,
+    coherence_inputs: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     root = Path(root or _default_root()).resolve()
+    field_inputs, coherence_flow = _resolve_evolution_flow(coherence_inputs)
+    flow_batch_limit = max(1, int(coherence_flow.get("patch_batch_limit") or 1))
+    patch_batch_limit = (
+        flow_batch_limit
+        if max_patch_proposals is None
+        else min(flow_batch_limit, max(0, int(max_patch_proposals)))
+    )
     evidence = _load_evidence(root)
     swot = build_swot(evidence)
     repair_backlog = _repair_backlog_from_swot(swot, evidence)
-    selected_repairs = repair_backlog[:3]
+    selected_repairs = repair_backlog[:patch_batch_limit]
     proposals = _load_proposals(root, proposal_state_paths)
     patch_candidates = [
         item
         for item in proposals
         if str(item.get("patch_text") or "").strip()
-    ][:max_patch_proposals]
+    ][:patch_batch_limit]
     patch_apply_evidence: List[Dict[str, Any]] = []
     if apply_safe_fixes and patch_candidates:
         applier = GuardedPatchApplier(
             root=root,
             allowlist=patch_allowlist,
             test_commands=list(test_commands or []),
+            required_test_layers=list(coherence_flow.get("required_test_layers") or []),
+            review_cycles=max(1, int(coherence_flow.get("minimum_review_cycles") or 1)),
         )
         for index, proposal in enumerate(patch_candidates, start=1):
             patch_apply_evidence.append(applier.apply_proposal(proposal, index=index))
@@ -518,7 +641,7 @@ def build_and_write_autonomous_self_fix_director(
             "next_action": item.get("blocked_reason", "inspect patch evidence"),
         }
         for item in patch_apply_evidence
-        if not item.get("applied") or item.get("status") == "applied_tests_failed"
+        if item.get("status") != "applied"
     )
     codex_audit = {
         "state": codex_audit_state,
@@ -547,16 +670,30 @@ def build_and_write_autonomous_self_fix_director(
         "ok": handover_ready,
         "generated_at": _utc_now(),
         "operator_prompt": operator_prompt,
+        "coherence_inputs": field_inputs,
+        "coherence_flow": coherence_flow,
         "swot": swot,
         "repair_backlog": repair_backlog,
         "selected_repairs": selected_repairs,
         "safe_apply_policy": {
             "repair_authority": "auto_apply_safe_local_fixes",
+            "repair_rhythm": "HNC/Auris coherence changes batch size and proof depth without closing internal repair",
             "audit_policy": "codex_user_audit_is_post_hoc_for_safe_local_repairs",
             "diff_source": "SafeCodeControl/QueenCodeBridge unified diffs only",
             "allowlist": list(patch_allowlist),
             "blocked_authority": ["live_trading", "payments", "filings", "credential_reveal", "destructive_os_actions"],
-            "requires": ["unified_diff", "target_allowlist", "secret_scan", "git_apply_check", "git_apply", "tests"],
+            "requires": [
+                "unified_diff",
+                "target_allowlist",
+                "secret_scan",
+                "validation_commands",
+                "coherence_required_test_layers",
+                "coherence_review_cycles",
+                "git_apply_check",
+                "git_apply",
+                "tests",
+                "automatic_rollback_on_failure",
+            ],
         },
         "patch_apply_evidence": patch_apply_evidence,
         "test_evidence": test_evidence,
@@ -567,6 +704,11 @@ def build_and_write_autonomous_self_fix_director(
             "evidence_file_count": len(evidence),
             "repair_backlog_count": len(repair_backlog),
             "selected_repair_count": len(selected_repairs),
+            "coherence_flow": coherence_flow.get("flow"),
+            "coherence_field_status": coherence_flow.get("field_status"),
+            "patch_batch_limit": patch_batch_limit,
+            "required_test_layers": list(coherence_flow.get("required_test_layers") or []),
+            "minimum_review_cycles": coherence_flow.get("minimum_review_cycles"),
             "patch_candidate_count": len(patch_candidates),
             "patch_applied_count": sum(1 for item in patch_apply_evidence if item.get("applied") and item.get("status") == "applied"),
             "blocking_snag_count": sum(1 for item in snags if item.get("blocking")),

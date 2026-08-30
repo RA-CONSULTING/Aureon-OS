@@ -46,12 +46,12 @@ def test_system_coordinator():
         state = coordinator.get_coordination_state()
         print(f"✅ Coordination state: {state['total_systems']} systems, Orca ready: {state['orca_ready']}")
 
-        return True
+        assert state["total_systems"] == len(coordinator.systems)
     except Exception as e:
         print(f"❌ Error: {e}")
         import traceback
         traceback.print_exc()
-        return False
+        raise AssertionError("system coordinator contract failed") from e
 
 
 def test_decision_engine():
@@ -89,12 +89,12 @@ def test_decision_engine():
             print(f"   Type: {decision.decision_type.value}")
             print(f"   Confidence: {decision.confidence:.2f}")
 
-        return True
+        assert decision is not None
     except Exception as e:
         print(f"❌ Error: {e}")
         import traceback
         traceback.print_exc()
-        return False
+        raise AssertionError("decision engine contract failed") from e
 
 
 def test_feed_hub():
@@ -113,14 +113,26 @@ def test_feed_hub():
         status = hub.get_consolidated_feeds_status()
         print(f"✅ Consolidated feed streams:")
         for stream_name, stream_info in status.items():
-            print(f"   - {stream_name}: {stream_info['stream_type']} (healthy={stream_info['is_healthy']})")
+            assert stream_info["stream_type"] == stream_name
+            assert stream_info["data_status"] in {"live", "no_data"}
+            if stream_info["data_status"] == "live":
+                assert isinstance(stream_info["is_healthy"], bool)
+            else:
+                assert stream_info["truth_status"] == "no_data"
+                assert stream_info["generated_values"] is False
+                assert stream_info["operational_eligible"] is False
+                assert stream_info["actionable"] is False
+            print(
+                f"   - {stream_name}: {stream_info['stream_type']} "
+                f"(status={stream_info['data_status']})"
+            )
 
-        return True
+        assert isinstance(status, dict)
     except Exception as e:
         print(f"❌ Error: {e}")
         import traceback
         traceback.print_exc()
-        return False
+        raise AssertionError("feed hub contract failed") from e
 
 
 def test_orca_monitor():
@@ -150,12 +162,12 @@ def test_orca_monitor():
         print(f"   Active positions: {status['active_positions']}")
         print(f"   Total P&L: ${status['total_pnl']:.2f}")
 
-        return True
+        assert status["active_positions"] == 1
     except Exception as e:
         print(f"❌ Error: {e}")
         import traceback
         traceback.print_exc()
-        return False
+        raise AssertionError("Orca monitor contract failed") from e
 
 
 async def test_api_server():

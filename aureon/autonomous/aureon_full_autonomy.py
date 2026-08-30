@@ -45,7 +45,7 @@ import logging
 import argparse
 import traceback
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple
 
@@ -74,6 +74,9 @@ logging.basicConfig(
     ]
 )
 logger = logging.getLogger('AUREON_AUTONOMY')
+
+EPAS_MAX_EVIDENCE_AGE_SECONDS = 300.0
+EPAS_MAX_FUTURE_SKEW_SECONDS = 30.0
 
 
 @dataclass
@@ -311,34 +314,40 @@ class EPASShieldState:
     timestamp:              str
 
     # ── Layer 1: EM Deflection ──────────────────────────────────────────────────
-    layer1_field_score:     float   # 0-1: blended cosmic (now) + radar (incoming)
+    layer1_field_score:     Optional[float]   # 0-1: blended cosmic (now) + radar (incoming)
     layer1_status:          str     # CLEAR | DEFLECTING | OVERLOADED
-    layer1_threat_count:    int     # tense aspects incoming within 7d
+    layer1_threat_count:    Optional[int]     # tense aspects incoming within 7d
     layer1_threats:         List    # List[str] — top threat descriptions
     layer1_recommendation:  str
 
     # ── Layer 2: Plasma Ablation ────────────────────────────────────────────────
-    layer2_buffer_pct:      float   # % drop-to-liquidation (positive = safe room)
-    layer2_days_protected:  float   # days equity buffer survives at rollover burn rate
-    layer2_daily_burn:      float   # $/day rollover cost
-    layer2_score:           float   # 0-1: structural integrity of equity buffer
+    layer2_buffer_pct:      Optional[float]   # % drop-to-liquidation (positive = safe room)
+    layer2_days_protected:  Optional[float]   # days equity buffer survives at rollover burn rate
+    layer2_daily_burn:      Optional[float]   # $/day rollover cost
+    layer2_score:           Optional[float]   # 0-1: structural integrity of equity buffer
     layer2_status:          str     # INTACT | ABLATING | CRITICAL | TERMINAL
     layer2_recommendation:  str
 
     # ── Layer 3: Acoustic Fragmentation ────────────────────────────────────────
-    layer3_entry_cosmic:    float   # cosmic field score at entry (VSOP87 reconstructed)
-    layer3_now_cosmic:      float   # cosmic field score now
-    layer3_premise_delta:   float   # now − entry: negative = field degraded since entry
-    layer3_score:           float   # 0-1: how coherent is the harmonic premise
+    layer3_entry_cosmic:    Optional[float]   # cosmic field score at entry (VSOP87 reconstructed)
+    layer3_now_cosmic:      Optional[float]   # cosmic field score now
+    layer3_premise_delta:   Optional[float]   # now − entry: negative = field degraded since entry
+    layer3_score:           Optional[float]   # 0-1: how coherent is the harmonic premise
     layer3_status:          str     # COHERENT | CRACKING | FRAGMENTED
     layer3_recommendation:  str
 
     # ── Overall shield ──────────────────────────────────────────────────────────
-    shield_integrity:       float   # 0-1 weighted composite (L2 × 0.50, L1 × 0.30, L3 × 0.20)
+    shield_integrity:       Optional[float]   # 0-1 weighted composite (L2 × 0.50, L1 × 0.30, L3 × 0.20)
     shield_status:          str     # SHIELDS_UP | SHIELDS_STRESSED | SHIELDS_FAILING
     priority_action:        str     # highest-urgency recommendation across all layers
     new_entry_blocked:      bool    # True if shield status prohibits opening new positions
     epas_summary:           str     # human-readable one-line shield assessment
+    truth_status:           str = 'no_data'  # real_derived | no_data
+    source_id:              Optional[str] = None
+    source_timestamp:       Optional[str] = None
+    generated_values:       bool = False
+    eligible_for_external_action: bool = False
+    no_data_reason:         Optional[str] = None
 
 
 @dataclass
@@ -1117,6 +1126,183 @@ class AutonomyExecutor:
     #   Layer 3 — Acoustic Frag.    : harmonic premise coherence lock
     # ════════════════════════════════════════════════════════════════════════════
 
+    @staticmethod
+    def _epas_numeric(
+        value: object,
+        label: str,
+        minimum: Optional[float] = None,
+        maximum: Optional[float] = None,
+    ) -> float:
+        """Validate one observed EPAS input without manufacturing a fallback."""
+        if isinstance(value, bool):
+            raise ValueError(f'{label} must be numeric')
+        try:
+            number = float(value)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f'{label} must be numeric') from exc
+        if not math.isfinite(number):
+            raise ValueError(f'{label} must be finite')
+        if minimum is not None and number < minimum:
+            raise ValueError(f'{label} is below {minimum}')
+        if maximum is not None and number > maximum:
+            raise ValueError(f'{label} is above {maximum}')
+        return number
+
+    @staticmethod
+    def _epas_evidence_time(
+        value: object,
+        label: str,
+        *,
+        historical: bool = False,
+    ) -> datetime:
+        """Parse and freshness-check a receipt timestamp used by EPAS."""
+        if not isinstance(value, str) or not value.strip():
+            raise ValueError(f'{label} timestamp is missing')
+        try:
+            parsed = datetime.fromisoformat(value.strip().replace('Z', '+00:00'))
+        except ValueError as exc:
+            raise ValueError(f'{label} timestamp is malformed') from exc
+        if parsed.tzinfo is None:
+            parsed = parsed.astimezone()
+        parsed = parsed.astimezone(timezone.utc)
+        age_seconds = (datetime.now(timezone.utc) - parsed).total_seconds()
+        if age_seconds < -EPAS_MAX_FUTURE_SKEW_SECONDS:
+            raise ValueError(f'{label} timestamp is in the future')
+        if not historical and age_seconds > EPAS_MAX_EVIDENCE_AGE_SECONDS:
+            raise ValueError(
+                f'{label} evidence is stale ({age_seconds:.1f}s old; '
+                f'max {EPAS_MAX_EVIDENCE_AGE_SECONDS:.0f}s)'
+            )
+        return parsed
+
+    def _epas_no_data(
+        self,
+        reason: str,
+        *,
+        source_timestamp: Optional[str] = None,
+    ) -> 'EPASShieldState':
+        """Return an explicit fail-closed state with no plausible substitute values."""
+        state = EPASShieldState(
+            timestamp=datetime.now(timezone.utc).isoformat(),
+            layer1_field_score=None,
+            layer1_status='NO_DATA',
+            layer1_threat_count=None,
+            layer1_threats=[],
+            layer1_recommendation=reason,
+            layer2_buffer_pct=None,
+            layer2_days_protected=None,
+            layer2_daily_burn=None,
+            layer2_score=None,
+            layer2_status='NO_DATA',
+            layer2_recommendation=reason,
+            layer3_entry_cosmic=None,
+            layer3_now_cosmic=None,
+            layer3_premise_delta=None,
+            layer3_score=None,
+            layer3_status='NO_DATA',
+            layer3_recommendation=reason,
+            shield_integrity=None,
+            shield_status='NO_DATA',
+            priority_action='Restore fresh EPAS evidence before any new entry',
+            new_entry_blocked=True,
+            epas_summary=f'EPAS NO DATA - {reason}',
+            truth_status='no_data',
+            source_id='epas_input_validation',
+            source_timestamp=source_timestamp,
+            generated_values=False,
+            eligible_for_external_action=False,
+            no_data_reason=reason,
+        )
+        self._epas_state = state
+        return state
+
+    def _epas_evidence_root(self) -> Path:
+        override = getattr(self, '_epas_state_root', None)
+        if override:
+            return Path(override)
+        configured = os.environ.get('AUREON_STATE_DIR', '').strip()
+        if configured:
+            return Path(configured)
+        return Path(__file__).resolve().parents[2]
+
+    def _load_epas_entry_premise(self) -> Tuple[float, str, str]:
+        """Load a recorded entry premise or reconstruct it from its real timestamp."""
+        state_root = self._epas_evidence_root()
+        queue_path = state_root / 'intent_feedback_queue.json'
+        if queue_path.exists():
+            try:
+                queue = json.loads(queue_path.read_text(encoding='utf-8'))
+            except (OSError, json.JSONDecodeError) as exc:
+                raise ValueError('intent feedback evidence is unreadable') from exc
+            if not isinstance(queue, list):
+                raise ValueError('intent feedback evidence must be a list')
+            pending = [item for item in queue if isinstance(item, dict) and item.get('status') == 'pending']
+            if pending:
+                latest = pending[-1]
+                queued_at = latest.get('queued_at')
+                self._epas_evidence_time(queued_at, 'entry premise', historical=True)
+                receipt = latest.get('epas_receipt')
+                if not isinstance(receipt, dict):
+                    raise ValueError('entry premise EPAS receipt is missing')
+                if (
+                    receipt.get('truth_status') != 'real_derived'
+                    or receipt.get('generated_values') is not False
+                    or receipt.get('eligible_for_external_action') is not True
+                ):
+                    raise ValueError('entry premise EPAS receipt is not externally eligible')
+                self._epas_evidence_time(
+                    receipt.get('source_timestamp'),
+                    'entry premise EPAS source',
+                    historical=True,
+                )
+                neural_input = latest.get('neural_input')
+                if not isinstance(neural_input, dict):
+                    raise ValueError('entry premise neural input is malformed')
+                entry_cosmic = self._epas_numeric(
+                    neural_input.get('gaia_resonance'),
+                    'entry gaia resonance',
+                    0.0,
+                    1.0,
+                )
+                return entry_cosmic, 'intent_feedback_queue', str(queued_at)
+
+        active_path = state_root / 'active_position.json'
+        if not active_path.exists():
+            raise ValueError('entry premise evidence is unavailable')
+        try:
+            active_position = json.loads(active_path.read_text(encoding='utf-8'))
+        except (OSError, json.JSONDecodeError) as exc:
+            raise ValueError('active position evidence is unreadable') from exc
+        if not isinstance(active_position, dict):
+            raise ValueError('active position evidence must be an object')
+        entry_timestamp = active_position.get('timestamp')
+        entry_dt = self._epas_evidence_time(
+            entry_timestamp,
+            'active position entry',
+            historical=True,
+        )
+        days_since = (datetime.now(timezone.utc) - entry_dt).total_seconds() / 86400.0
+        entry_positions = self._compute_planet_positions_math(days_offset=-days_since)
+        entry_aspects = self._detect_planetary_aspects(entry_positions)
+        entry_state = self._score_harmonic_fluid(entry_aspects, entry_positions)
+        entry_cosmic = self._epas_numeric(
+            entry_state.schumann_modulated_score,
+            'reconstructed entry cosmic score',
+            0.0,
+            1.0,
+        )
+        return entry_cosmic, 'active_position_vsop87', str(entry_timestamp)
+
+    @staticmethod
+    def _epas_allows_external_entry(epas: Optional['EPASShieldState']) -> bool:
+        return bool(
+            epas is not None
+            and epas.truth_status == 'real_derived'
+            and epas.generated_values is False
+            and epas.eligible_for_external_action
+            and not epas.new_entry_blocked
+        )
+
     async def run_epas_shield(
         self,
         health: Optional['PositionHealthReport'] = None,
@@ -1133,28 +1319,73 @@ class AutonomyExecutor:
         """
         try:
             # ── LAYER 1: EM Deflection — Harmonic Field Noise Filter ──────────
-            cosmic_ref = self._cosmic_state
-            radar_ref  = self._radar_state
+            cosmic_ref = getattr(self, '_cosmic_state', None)
+            radar_ref = getattr(self, '_radar_state', None)
+            if cosmic_ref is None:
+                return self._epas_no_data('current cosmic evidence is unavailable')
+            if radar_ref is None:
+                return self._epas_no_data('solar radar evidence is unavailable')
+            if health is None:
+                return self._epas_no_data('live position health evidence is unavailable')
 
-            if cosmic_ref is not None:
-                cs  = cosmic_ref.schumann_modulated_score
-            else:
-                cs  = 0.5
-
-            if radar_ref is not None:
-                rs  = radar_ref.radar_score
-            else:
-                rs  = 0.5
+            cosmic_time = self._epas_evidence_time(
+                getattr(cosmic_ref, 'timestamp', None),
+                'cosmic field',
+            )
+            radar_time = self._epas_evidence_time(
+                getattr(radar_ref, 'scan_timestamp', None),
+                'solar radar',
+            )
+            health_time = self._epas_evidence_time(
+                getattr(health, 'timestamp', None),
+                'position health',
+            )
+            cs = self._epas_numeric(
+                getattr(cosmic_ref, 'schumann_modulated_score', None),
+                'cosmic field score',
+                0.0,
+                1.0,
+            )
+            rs = self._epas_numeric(
+                getattr(radar_ref, 'radar_score', None),
+                'solar radar score',
+                0.0,
+                1.0,
+            )
+            radar_interpretation = getattr(radar_ref, 'interpretation', None)
+            if radar_interpretation not in {
+                'RADAR_BULLISH',
+                'RADAR_TENSE',
+                'RADAR_NEUTRAL',
+            }:
+                raise ValueError('solar radar interpretation is malformed')
+            events_7d = getattr(radar_ref, 'events_7d', None)
+            if not isinstance(events_7d, list):
+                raise ValueError('solar radar events_7d evidence is malformed')
 
             # Incoming field weighted slightly more — what's arriving matters most
             l1_score = cs * 0.45 + rs * 0.55
 
             # Identify tense incoming aspects within 7 days
             tense_threats: List[str] = []
-            if radar_ref is not None:
-                for ev in radar_ref.events_7d:
-                    if ev.harmonic_value <= -0.25 and ev.pair_weight >= 0.50:
-                        tense_threats.append(ev.description)
+            for index, ev in enumerate(events_7d):
+                harmonic_value = self._epas_numeric(
+                    getattr(ev, 'harmonic_value', None),
+                    f'solar radar event {index} harmonic value',
+                    -1.0,
+                    1.0,
+                )
+                pair_weight = self._epas_numeric(
+                    getattr(ev, 'pair_weight', None),
+                    f'solar radar event {index} pair weight',
+                    0.0,
+                    1.0,
+                )
+                description = getattr(ev, 'description', None)
+                if not isinstance(description, str) or not description.strip():
+                    raise ValueError(f'solar radar event {index} description is malformed')
+                if harmonic_value <= -0.25 and pair_weight >= 0.50:
+                    tense_threats.append(description)
 
             if l1_score >= 0.62:
                 l1_status = 'CLEAR'
@@ -1167,81 +1398,54 @@ class AutonomyExecutor:
                 l1_rec    = 'HOSTILE FIELD — defer new entries, tighten stops'
 
             # ── LAYER 2: Plasma Ablation — Equity Buffer Guard ───────────────
-            if health is not None:
-                buffer_pct     = abs(health.pct_drop_to_liq_at_target)  # positive = room to fall
-                daily_burn     = max(health.rollover_per_day, 0.001)
-                days_protected = health.equity_buffer / daily_burn
+            buffer_pct = abs(self._epas_numeric(
+                getattr(health, 'pct_drop_to_liq_at_target', None),
+                'liquidation buffer percentage',
+            ))
+            daily_burn = self._epas_numeric(
+                getattr(health, 'rollover_per_day', None),
+                'daily rollover burn',
+                0.0,
+            )
+            equity_buffer = self._epas_numeric(
+                getattr(health, 'equity_buffer', None),
+                'equity buffer',
+            )
+            positions = getattr(health, 'positions', None)
+            if not isinstance(positions, list) or not positions:
+                raise ValueError('position health contains no observed open positions')
 
-                # Composite score: 70% distance to liq, 30% days remaining
-                dist_score = min(buffer_pct / 10.0, 1.0)
-                time_score = min(days_protected / 14.0, 1.0)
-                l2_score   = dist_score * 0.70 + time_score * 0.30
-
-                if l2_score >= 0.80:
-                    l2_status = 'INTACT'
-                    l2_rec    = 'Buffer healthy — ride to target'
-                elif l2_score >= 0.50:
-                    l2_status = 'ABLATING'
-                    l2_rec    = 'Buffer eroding — consider adding free margin'
-                elif l2_score >= 0.20:
-                    l2_status = 'CRITICAL'
-                    l2_rec    = 'CRITICAL — add margin or partial close NOW'
-                else:
-                    l2_status = 'TERMINAL'
-                    l2_rec    = 'EMERGENCY — liquidation imminent, close position'
+            if daily_burn > 0.0:
+                days_protected: Optional[float] = equity_buffer / daily_burn
+                time_score = max(0.0, min(days_protected / 14.0, 1.0))
             else:
-                # No health data — degraded mode; assume moderate risk
-                buffer_pct     = 0.0
-                daily_burn     = 0.0
-                days_protected = 0.0
-                l2_score       = 0.5
-                l2_status      = 'UNKNOWN'
-                l2_rec         = 'No position health data — fetch balance to assess'
+                days_protected = None
+                time_score = 1.0 if equity_buffer > 0.0 else 0.0
+
+            # Composite score: 70% distance to liq, 30% days remaining.
+            dist_score = max(0.0, min(buffer_pct / 10.0, 1.0))
+            l2_score = dist_score * 0.70 + time_score * 0.30
+
+            if l2_score >= 0.80:
+                l2_status = 'INTACT'
+                l2_rec = 'Buffer healthy — ride to target'
+            elif l2_score >= 0.50:
+                l2_status = 'ABLATING'
+                l2_rec = 'Buffer eroding — consider adding free margin'
+            elif l2_score >= 0.20:
+                l2_status = 'CRITICAL'
+                l2_rec = 'CRITICAL — add margin or partial close NOW'
+            else:
+                l2_status = 'TERMINAL'
+                l2_rec = 'EMERGENCY — liquidation imminent, close position'
 
             # ── LAYER 3: Acoustic Fragmentation — Premise Coherence Lock ─────
             # Reconstruct the cosmic field at the entry timestamp of any live
             # position using VSOP87 time-offset engine.  Compare entry field
             # to current field — a large drop = harmonic premise has fragmented.
-            entry_cosmic = 0.5  # default: unknown entry state
-
-            # Try intent_feedback_queue.json first (most precise — has gaia at BUY)
-            queue_path = Path('/workspaces/aureon-trading/intent_feedback_queue.json')
-            if queue_path.exists():
-                try:
-                    with open(queue_path) as fq:
-                        queue = json.load(fq)
-                    pending = [q for q in queue if q.get('status') == 'pending']
-                    if pending:
-                        # Use the most recent pending trade's gaia_resonance
-                        last_snap = pending[-1].get('neural_input', {})
-                        entry_cosmic = float(last_snap.get('gaia_resonance', 0.5))
-                except Exception:
-                    pass
-
-            # If no queue entry, reconstruct from active_position.json entry timestamp
-            if entry_cosmic == 0.5:
-                ap_path = Path('/workspaces/aureon-trading/active_position.json')
-                if ap_path.exists():
-                    try:
-                        with open(ap_path) as f:
-                            ap = json.load(f)
-                        entry_ts_str = ap.get('timestamp', '')
-                        if entry_ts_str:
-                            from datetime import timezone
-                            entry_dt  = datetime.fromisoformat(
-                                entry_ts_str.replace('Z', '+00:00')
-                            )
-                            now_dt    = datetime.now(timezone.utc)
-                            days_since = (now_dt - entry_dt).total_seconds() / 86400.0
-                            # Ping backward in time to the entry moment
-                            entry_pos  = self._compute_planet_positions_math(
-                                days_offset=-days_since
-                            )
-                            entry_asp  = self._detect_planetary_aspects(entry_pos)
-                            entry_state = self._score_harmonic_fluid(entry_asp, entry_pos)
-                            entry_cosmic = entry_state.schumann_modulated_score
-                    except Exception:
-                        pass
+            entry_cosmic, entry_source, entry_source_timestamp = (
+                self._load_epas_entry_premise()
+            )
 
             now_cosmic    = cs  # current schumann-modulated score from Layer 1
             premise_delta = now_cosmic - entry_cosmic  # negative = field degraded
@@ -1252,7 +1456,7 @@ class AutonomyExecutor:
             l3_score      = max(0.0, min(1.0, l3_raw_score))
 
             # Also penalise if radar is RADAR_TENSE (incoming field hostile)
-            if radar_ref is not None and radar_ref.interpretation == 'RADAR_TENSE':
+            if radar_interpretation == 'RADAR_TENSE':
                 l3_score = max(0.0, l3_score - 0.15)   # incoming headwind
 
             if l3_score >= 0.65:
@@ -1294,16 +1498,19 @@ class AutonomyExecutor:
                 f"L2={l2_status}({l2_score:.2f})  "
                 f"L3={l3_status}({l3_score:.2f})"
             )
+            oldest_source_time = min(cosmic_time, radar_time, health_time).isoformat()
 
             state = EPASShieldState(
-                timestamp=datetime.now().isoformat(),
+                timestamp=datetime.now(timezone.utc).isoformat(),
                 layer1_field_score=round(l1_score, 4),
                 layer1_status=l1_status,
                 layer1_threat_count=len(tense_threats),
                 layer1_threats=tense_threats[:5],
                 layer1_recommendation=l1_rec,
                 layer2_buffer_pct=round(buffer_pct, 3),
-                layer2_days_protected=round(days_protected, 1),
+                layer2_days_protected=(
+                    round(days_protected, 1) if days_protected is not None else None
+                ),
                 layer2_daily_burn=round(daily_burn, 4),
                 layer2_score=round(l2_score, 4),
                 layer2_status=l2_status,
@@ -1319,35 +1526,24 @@ class AutonomyExecutor:
                 priority_action=priority_action,
                 new_entry_blocked=new_entry_blocked,
                 epas_summary=epas_summary,
+                truth_status='real_derived',
+                source_id=(
+                    'epas:cosmic_harmonic+solar_radar+position_health+'
+                    f'{entry_source}'
+                ),
+                source_timestamp=oldest_source_time,
+                generated_values=False,
+                eligible_for_external_action=not new_entry_blocked,
+                no_data_reason=None,
             )
             self._epas_state = state
             return state
 
         except Exception as e:
             logger.warning(f"EPAS shield assessment failed: {e}")
-            traceback.print_exc()
-            self._epas_state = None
-            # Return a max-safe fallback — do not block on EPAS failure
-            fallback = EPASShieldState(
-                timestamp=datetime.now().isoformat(),
-                layer1_field_score=0.5, layer1_status='UNKNOWN',
-                layer1_threat_count=0, layer1_threats=[],
-                layer1_recommendation='EPAS Layer 1 unavailable',
-                layer2_buffer_pct=0.0, layer2_days_protected=0.0,
-                layer2_daily_burn=0.0, layer2_score=0.5,
-                layer2_status='UNKNOWN',
-                layer2_recommendation='EPAS Layer 2 unavailable',
-                layer3_entry_cosmic=0.5, layer3_now_cosmic=0.5,
-                layer3_premise_delta=0.0, layer3_score=0.5,
-                layer3_status='UNKNOWN',
-                layer3_recommendation='EPAS Layer 3 unavailable',
-                shield_integrity=0.5,
-                shield_status='SHIELDS_STRESSED',
-                priority_action='EPAS offline — manual assessment required',
-                new_entry_blocked=False,
-                epas_summary='EPAS OFFLINE — fallback state',
+            return self._epas_no_data(
+                f'EPAS assessment exception: {type(e).__name__}: {e}'
             )
-            return fallback
 
     # ════════════════════════════════════════════════════════════════════════════
     # INTENT-COHERENCE FEEDBACK LOOP
@@ -1395,22 +1591,52 @@ class AutonomyExecutor:
         detects it and calls feed_outcome_to_queen() with the original snapshot.
         This creates the closed loop: decision → outcome → weight update.
         """
-        queue_path = Path('/workspaces/aureon-trading/intent_feedback_queue.json')
+        epas = getattr(self, '_epas_state', None)
+        if not self._epas_allows_external_entry(epas):
+            raise RuntimeError('EPAS evidence is not eligible for an external entry')
+        if not isinstance(neural_input, dict):
+            raise ValueError('intent neural input must be an object')
+        gaia_resonance = self._epas_numeric(
+            neural_input.get('gaia_resonance'),
+            'intent gaia resonance',
+            0.0,
+            1.0,
+        )
+        if (
+            epas.layer3_now_cosmic is None
+            or not math.isclose(
+                gaia_resonance,
+                epas.layer3_now_cosmic,
+                rel_tol=0.0,
+                abs_tol=1e-4,
+            )
+        ):
+            raise ValueError('intent gaia resonance does not match the validated EPAS field')
+
+        queue_path = self._epas_evidence_root() / 'intent_feedback_queue.json'
         queue: list = []
         if queue_path.exists():
             try:
-                with open(queue_path) as fq:
-                    queue = json.load(fq)
-            except Exception:
-                queue = []
+                queue = json.loads(queue_path.read_text(encoding='utf-8'))
+            except (OSError, json.JSONDecodeError) as exc:
+                raise RuntimeError('intent feedback queue is unreadable') from exc
+            if not isinstance(queue, list):
+                raise RuntimeError('intent feedback queue must be a list')
         queue.append({
-            'queued_at':        datetime.now().isoformat(),
+            'queued_at':        datetime.now(timezone.utc).isoformat(),
             'symbol':           symbol,
             'entry_price':      entry_price,
             'target_price':     target_price,
             'stop_price':       stop_price,
             'net_pnl_at_target': net_pnl_at_target,
             'neural_input':     neural_input,
+            'epas_receipt': {
+                'truth_status': epas.truth_status,
+                'source_id': epas.source_id,
+                'source_timestamp': epas.source_timestamp,
+                'generated_values': epas.generated_values,
+                'eligible_for_external_action': epas.eligible_for_external_action,
+            },
             'status':           'pending',
         })
         tmp = queue_path.with_suffix('.tmp')
@@ -2282,6 +2508,7 @@ class AutonomyExecutor:
         map_result = {
             'existing_positions_clear': True,
             'new_entry_justified': False,
+            'eligible_for_external_action': False,
             'health': None,
             'alignment': 0.0,
             'signals': {},
@@ -2455,38 +2682,51 @@ class AutonomyExecutor:
         epas = await self.run_epas_shield(health)
         map_result['epas'] = epas
 
-        # Shield status icon
-        epas_icon = (
-            '🛡️  SHIELDS UP   '
-            if epas.shield_status == 'SHIELDS_UP' else
-            '⚡  SHIELDS STRESSED'
-            if epas.shield_status == 'SHIELDS_STRESSED' else
-            '🚨  SHIELDS FAILING'
-        )
-        logger.info(f"  {epas_icon}  integrity={epas.shield_integrity:.3f}")
-        logger.info(
-            f"  L1 EM-Deflection:  {epas.layer1_status:<12}  "
-            f"field={epas.layer1_field_score:.3f}  threats={epas.layer1_threat_count}"
-        )
-        logger.info(
-            f"  L2 Plasma-Ablation:{epas.layer2_status:<12}  "
-            f"score={epas.layer2_score:.3f}  "
-            f"buffer={epas.layer2_buffer_pct:.1f}%  "
-            f"days={epas.layer2_days_protected:.1f}  "
-            f"burn=${epas.layer2_daily_burn:.2f}/d"
-        )
-        logger.info(
-            f"  L3 Acoustic-Frag:  {epas.layer3_status:<12}  "
-            f"score={epas.layer3_score:.3f}  "
-            f"premise_delta={epas.layer3_premise_delta:+.4f}  "
-            f"(entry={epas.layer3_entry_cosmic:.3f} → now={epas.layer3_now_cosmic:.3f})"
-        )
-        if epas.layer1_threats:
-            logger.info(f"  L1 threats: {epas.layer1_threats[0][:70]}")
+        if epas.truth_status == 'no_data':
+            logger.warning(
+                f"  EPAS NO DATA - {epas.no_data_reason or 'evidence unavailable'}"
+            )
+        else:
+            # Shield status icon
+            epas_icon = (
+                '🛡️  SHIELDS UP   '
+                if epas.shield_status == 'SHIELDS_UP' else
+                '⚡  SHIELDS STRESSED'
+                if epas.shield_status == 'SHIELDS_STRESSED' else
+                '🚨  SHIELDS FAILING'
+            )
+            logger.info(f"  {epas_icon}  integrity={epas.shield_integrity:.3f}")
+            logger.info(
+                f"  L1 EM-Deflection:  {epas.layer1_status:<12}  "
+                f"field={epas.layer1_field_score:.3f}  threats={epas.layer1_threat_count}"
+            )
+            protected_days = (
+                f'{epas.layer2_days_protected:.1f}'
+                if epas.layer2_days_protected is not None
+                else 'unbounded-at-zero-burn'
+            )
+            logger.info(
+                f"  L2 Plasma-Ablation:{epas.layer2_status:<12}  "
+                f"score={epas.layer2_score:.3f}  "
+                f"buffer={epas.layer2_buffer_pct:.1f}%  "
+                f"days={protected_days}  "
+                f"burn=${epas.layer2_daily_burn:.2f}/d"
+            )
+            logger.info(
+                f"  L3 Acoustic-Frag:  {epas.layer3_status:<12}  "
+                f"score={epas.layer3_score:.3f}  "
+                f"premise_delta={epas.layer3_premise_delta:+.4f}  "
+                f"(entry={epas.layer3_entry_cosmic:.3f} → now={epas.layer3_now_cosmic:.3f})"
+            )
+            if epas.layer1_threats:
+                logger.info(f"  L1 threats: {epas.layer1_threats[0][:70]}")
         logger.info(f"  Priority action: {epas.priority_action}")
         if epas.new_entry_blocked and not map_result['block_reason']:
-            map_result['block_reason'] = f'EPAS shield failing — {epas.shield_status}'
-            logger.warning(f"  🚨 EPAS BLOCK: new entries suppressed (shield integrity {epas.shield_integrity:.3f})")
+            map_result['block_reason'] = (
+                epas.no_data_reason
+                or f'EPAS shield failing — {epas.shield_status}'
+            )
+            logger.warning('  🚨 EPAS BLOCK: new entries suppressed')
 
         # ── Step 3: Trinity alignment ──
         logger.info("")
@@ -2517,7 +2757,7 @@ class AutonomyExecutor:
         book_ok    = map_result['existing_positions_clear']
         align_ok   = alignment >= self.config.execution_threshold
         signals_ok = signals['buy'] > 0
-        epas_ok    = not (epas.new_entry_blocked if epas else False)
+        epas_ok    = self._epas_allows_external_entry(epas)
 
         gates = [
             (book_ok,    "Existing book safe",        "PASS ✅", "BLOCK ❌ — fix existing positions first"),
@@ -2534,6 +2774,7 @@ class AutonomyExecutor:
                     map_result['block_reason'] = no
 
         map_result['new_entry_justified'] = all_pass
+        map_result['eligible_for_external_action'] = all_pass
         signals['position_health'] = health   # carry health forward
 
         # Inject scan-based STRONG_BUY / BUY coins into the signal predictions
@@ -2940,6 +3181,23 @@ class AutonomyExecutor:
           4. Skipped plays are logged with the reason the map rejected them
         """
         trades = {'executed': [], 'skipped': [], 'failed': []}
+
+        epas = getattr(self, '_epas_state', None)
+        if not self._epas_allows_external_entry(epas):
+            reason = (
+                epas.no_data_reason
+                if epas is not None and epas.no_data_reason
+                else 'EPAS evidence is unavailable or not externally eligible'
+            )
+            logger.warning(f'EPAS_EXTERNAL_ENTRY_BLOCKED: {reason}')
+            trades['failed'].append({
+                'symbol': None,
+                'error': 'EPAS_EXTERNAL_ENTRY_BLOCKED',
+                'reason': reason,
+                'truth_status': epas.truth_status if epas is not None else 'no_data',
+                'eligible_for_external_action': False,
+            })
+            return trades
 
         if self.config.dry_run:
             logger.info("🔬 DRY RUN MODE — maps will run, orders will not fire")

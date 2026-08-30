@@ -22,9 +22,9 @@ interface SystemDisplayProps {
 function SystemDisplay({ name, icon: Icon, active, coherence, color }: SystemDisplayProps) {
   const getStatusColor = () => {
     if (!active) return 'bg-muted-foreground';
-    if (coherence > 0.8) return 'bg-green-400';
-    if (coherence > 0.5) return 'bg-yellow-400';
-    return 'bg-orange-400';
+    if (coherence > 0.8) return 'bg-success';
+    if (coherence > 0.5) return 'bg-warning';
+    return 'bg-warning';
   };
 
   return (
@@ -79,9 +79,9 @@ export function EcosystemStatus() {
   };
 
   const getHealthColor = (health: number) => {
-    if (health > 0.8) return 'text-green-400';
-    if (health > 0.5) return 'text-yellow-400';
-    return 'text-orange-400';
+    if (health > 0.8) return 'text-success';
+    if (health > 0.5) return 'text-warning';
+    return 'text-warning';
   };
 
   return (
@@ -114,35 +114,35 @@ export function EcosystemStatus() {
               icon={Sparkles} 
               active={!!state?.harmonicNexus}
               coherence={state?.harmonicNexus?.substrateCoherence || 0}
-              color="text-purple-400"
+              color="text-primary"
             />
             <SystemDisplay 
               name="Omega Equation" 
               icon={Activity} 
               active={!!state?.omega}
               coherence={state?.omega?.coherence || 0}
-              color="text-blue-400"
+              color="text-primary"
             />
             <SystemDisplay 
               name="QGITA Engine" 
               icon={Brain} 
               active={!!state?.qgita}
               coherence={state?.qgita?.confidence || 0}
-              color="text-cyan-400"
+              color="text-primary"
             />
             <SystemDisplay 
               name="Master Equation" 
               icon={Zap} 
               active={true}
               coherence={state?.omega?.love || 0}
-              color="text-yellow-400"
+              color="text-warning"
             />
             <SystemDisplay 
               name="Lighthouse" 
               icon={Radio} 
               active={true}
               coherence={state?.harmonicNexus?.lighthouseSignal || 0.7}
-              color="text-amber-400"
+              color="text-warning"
             />
           </div>
 
@@ -153,35 +153,35 @@ export function EcosystemStatus() {
               icon={Waves} 
               active={!!state?.eckoushic}
               coherence={state?.eckoushic?.echoResonance || 0}
-              color="text-teal-400"
+              color="text-primary"
             />
             <SystemDisplay 
               name="Unity Detector" 
               icon={Target} 
               active={!!state?.unity}
               coherence={state?.unity?.unityStrength || 0}
-              color="text-green-400"
+              color="text-success"
             />
             <SystemDisplay 
               name="Fibonacci Lattice" 
               icon={Layers} 
               active={!!state?.fibonacci}
               coherence={state?.fibonacci?.ratioAlignment || 0}
-              color="text-orange-400"
+              color="text-warning"
             />
             <SystemDisplay 
               name="Rainbow Bridge" 
               icon={Sparkles} 
               active={true}
               coherence={0.85}
-              color="text-pink-400"
+              color="text-primary"
             />
             <SystemDisplay 
               name="The Prism" 
               icon={Sparkles} 
               active={true}
               coherence={state?.harmonicNexus?.prismLevel ? state.harmonicNexus.prismLevel / 5 : 0.8}
-              color="text-emerald-400"
+              color="text-success"
             />
           </div>
         </div>
@@ -213,14 +213,14 @@ export function EcosystemStatus() {
 
         {/* Unity Detection Status */}
         {state?.unity?.isUnityDetected && (
-          <div className="bg-green-500/10 border border-green-500/30 rounded-md p-2 text-center">
+          <div className="bg-success/10 border border-success/30 rounded-md p-2 text-center">
             <div className="flex items-center justify-center gap-1">
-              <Target className="h-3 w-3 text-green-400" />
-              <span className="text-[10px] font-medium text-green-400 uppercase tracking-wider">
+              <Target className="h-3 w-3 text-success" />
+              <span className="text-[10px] font-medium text-success uppercase tracking-wider">
                 Unity Detected
               </span>
             </div>
-            <p className="text-[9px] text-green-400/70 mt-0.5">528 Hz Lock Active</p>
+            <p className="text-[9px] text-success/70 mt-0.5">528 Hz Lock Active</p>
           </div>
         )}
 

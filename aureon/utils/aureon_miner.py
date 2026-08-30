@@ -23,7 +23,7 @@ from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_lin
 import sys
 import os
 
-if sys.platform == 'win32':
+if sys.platform == 'win32' and sys.stdout is sys.__stdout__ and sys.stdout.isatty():
     # Set environment variable for Python's default encoding
     os.environ['PYTHONIOENCODING'] = 'utf-8'
     try:
@@ -2048,13 +2048,13 @@ class AstronomicalCoherenceSimulator:
                 event_name=current_event[1]
             )
             
-            # Add meteor perturbation during Orionids active period
+            # Apply a reproducible model perturbation during the declared
+            # Orionids scenario window. This is model state, not sensor data.
             stress = False
             if 6.0 <= self.simulation_time <= 10.0:
-                # Random meteor with ~20% chance per step
-                if np.random.random() < 0.2:
-                    C_t.transient += np.random.uniform(0.2, 0.5)
-                    stress = True  # Startle response
+                phase = (self.simulation_time - 6.0) / 4.0
+                C_t.transient += 0.2 + 0.3 * math.sin(math.pi * phase) ** 2
+                stress = True
             
             # Update state
             result = self.update(C_t, stress_event=stress)
@@ -3079,10 +3079,11 @@ class QuantumMirrorArray:
         for i in range(self.SERIES_MIRRORS):
             stage = []
             for j in range(self.PARALLEL_MIRRORS):
+                phase_offset = ((i * self.PARALLEL_MIRRORS + j + 1) / self.total_mirrors) - 0.5
                 mirror = MirrorState(
                     mirror_id=i * self.PARALLEL_MIRRORS + j,
-                    phase_angle=np.pi/2 + np.random.uniform(-0.1, 0.1),  # Slight detuning
-                    orthogonality=0.9 + np.random.uniform(0, 0.1),
+                    phase_angle=np.pi/2 + 0.2 * phase_offset,
+                    orthogonality=0.9 + 0.1 * (phase_offset + 0.5),
                     amplification=1.0
                 )
                 stage.append(mirror)

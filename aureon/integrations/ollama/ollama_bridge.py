@@ -42,10 +42,20 @@ import time
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, Generator, List, Optional
 
+from aureon.ollama_config import (
+    DEFAULT_OLLAMA_NATIVE_BASE_URL,
+    ensure_ollama_runtime_config,
+    is_ollama_cloud_url,
+    ollama_authorization_headers,
+    resolve_ollama_api_key,
+    resolve_ollama_native_base_url,
+    resolve_ollama_reasoning_effort,
+)
+
 logger = logging.getLogger("aureon.integrations.ollama")
 
 # Default values — all overridable via env
-DEFAULT_BASE_URL = "http://localhost:11434"
+DEFAULT_BASE_URL = DEFAULT_OLLAMA_NATIVE_BASE_URL
 DEFAULT_CHAT_MODEL = "llama3"
 DEFAULT_EMBED_MODEL = "nomic-embed-text"
 DEFAULT_KEEP_ALIVE = "5m"
@@ -126,10 +136,17 @@ class OllamaBridge:
         embed_model: Optional[str] = None,
         keep_alive: Optional[str] = None,
         timeout_s: Optional[float] = None,
+        api_key: Optional[str] = None,
     ):
-        self.base_url = (
-            base_url or os.environ.get("AUREON_OLLAMA_BASE_URL", DEFAULT_BASE_URL)
-        ).rstrip("/")
+        ensure_ollama_runtime_config(
+            explicit_config=base_url is not None or api_key is not None,
+        )
+        self.base_url = resolve_ollama_native_base_url(base_url)
+        self.api_key = resolve_ollama_api_key(api_key)
+        self._authorization_headers = ollama_authorization_headers(
+            base_url=self.base_url,
+            api_key=api_key,
+        )
         self.chat_model = chat_model or os.environ.get(
             "AUREON_OLLAMA_MODEL", DEFAULT_CHAT_MODEL
         )
@@ -164,7 +181,9 @@ class OllamaBridge:
         if not self._requests_available:
             raise OllamaBridgeError("requests library not available")
         resp = self._session.get(
-            f"{self.base_url}{path}", timeout=timeout or self.timeout_s
+            f"{self.base_url}{path}",
+            headers=self._authorization_headers,
+            timeout=timeout or self.timeout_s,
         )
         resp.raise_for_status()
         return resp.json()
@@ -178,7 +197,10 @@ class OllamaBridge:
         if not self._requests_available:
             raise OllamaBridgeError("requests library not available")
         resp = self._session.post(
-            f"{self.base_url}{path}", json=body, timeout=timeout or self.timeout_s
+            f"{self.base_url}{path}",
+            json=body,
+            headers=self._authorization_headers,
+            timeout=timeout or self.timeout_s,
         )
         resp.raise_for_status()
         return resp.json()
@@ -194,6 +216,7 @@ class OllamaBridge:
         resp = self._session.post(
             f"{self.base_url}{path}",
             json=body,
+            headers=self._authorization_headers,
             stream=True,
             timeout=timeout or self.timeout_s,
         )
@@ -304,7 +327,7 @@ class OllamaBridge:
         tools: Optional[List[Dict[str, Any]]] = None,
         options: Optional[Dict[str, Any]] = None,
         format: Optional[Any] = None,
-        think: Optional[bool] = None,
+        think: Optional[Any] = None,
         keep_alive: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
@@ -324,6 +347,9 @@ class OllamaBridge:
             body["options"] = options
         if format is not None:
             body["format"] = format
+        if think is None and is_ollama_cloud_url(self.base_url):
+            effort = resolve_ollama_reasoning_effort()
+            think = False if effort == "none" else effort
         if think is not None:
             body["think"] = think
 
@@ -347,7 +373,7 @@ class OllamaBridge:
         tools: Optional[List[Dict[str, Any]]] = None,
         options: Optional[Dict[str, Any]] = None,
         format: Optional[Any] = None,
-        think: Optional[bool] = None,
+        think: Optional[Any] = None,
         keep_alive: Optional[str] = None,
     ) -> Generator[Dict[str, Any], None, None]:
         """POST /api/chat — streaming variant. Yields raw Ollama chunks."""
@@ -363,6 +389,9 @@ class OllamaBridge:
             body["options"] = options
         if format is not None:
             body["format"] = format
+        if think is None and is_ollama_cloud_url(self.base_url):
+            effort = resolve_ollama_reasoning_effort()
+            think = False if effort == "none" else effort
         if think is not None:
             body["think"] = think
         try:
@@ -379,6 +408,7 @@ class OllamaBridge:
         options: Optional[Dict[str, Any]] = None,
         format: Optional[Any] = None,
         keep_alive: Optional[str] = None,
+        think: Optional[Any] = None,
     ) -> Dict[str, Any]:
         """POST /api/generate — single-shot prompt completion."""
         body: Dict[str, Any] = {
@@ -393,6 +423,11 @@ class OllamaBridge:
             body["options"] = options
         if format is not None:
             body["format"] = format
+        if think is None and is_ollama_cloud_url(self.base_url):
+            effort = resolve_ollama_reasoning_effort()
+            think = False if effort == "none" else effort
+        if think is not None:
+            body["think"] = think
         try:
             return self._post("/api/generate", body)
         except Exception as e:
@@ -476,6 +511,10 @@ class OllamaBridge:
             "embed_model": self.embed_model,
             "version": self._last_version,
             "requests_installed": self._requests_available,
+            "cloud": is_ollama_cloud_url(self.base_url),
+            "auth_required": is_ollama_cloud_url(self.base_url),
+            "api_key_configured": bool(self.api_key),
+            "authorization_header_enabled": bool(self._authorization_headers),
             "models": [],
             "running": [],
         }

@@ -1,12 +1,17 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 from aureon.harmonic import aureon_schumann_resonance_bridge as schumann
 
 
 def test_schumann_bridge_uses_labelled_noaa_kp_derived_path(monkeypatch):
     class FakeSpaceWeatherBridge:
         def _fetch_kp_index(self):
-            return {"current_kp": 4.0}
+            return {
+                "current_kp": 4.0,
+                "source_timestamp": datetime.now(timezone.utc).isoformat(),
+            }
 
     monkeypatch.setattr(
         "aureon.data_feeds.aureon_space_weather_bridge.SpaceWeatherBridge",

@@ -5,13 +5,13 @@ This document describes the current public runtime surfaces and capability map. 
 ## Current Full-System Entrypoint
 
 ```powershell
-.\AUREON_PRODUCTION_LIVE.cmd -WaitForRefresh -MarketStatusPort 8791
+.\scripts\launchers\AUREON_PRODUCTION_LIVE.cmd -WaitForRefresh -MarketStatusPort 8791
 ```
 
 Safe launcher validation:
 
 ```powershell
-.\AUREON_PRODUCTION_LIVE.cmd -ValidateOnly -NoOpen -MarketStatusPort 8791
+.\scripts\launchers\AUREON_PRODUCTION_LIVE.cmd -ValidateOnly -NoOpen -MarketStatusPort 8791
 ```
 
 Dev/audit ignition:
@@ -23,16 +23,16 @@ python scripts/aureon_ignition.py --audit-only
 Low-priority data ocean supervisor:
 
 ```powershell
-.\AUREON_DATA_OCEAN.cmd -Adaptive -CoverageProfile LicensedReachable
+.\scripts\launchers\AUREON_DATA_OCEAN.cmd -Adaptive -CoverageProfile LicensedReachable
 ```
 
 ## Capability Table
 
 | Capability | What it does | Primary surfaces |
 |---|---|---|
-| Live/safe runtime supervision | Starts and supervises the organism from one terminal, publishes manifests, and keeps reboot timing visible. | `AUREON_PRODUCTION_LIVE.cmd`, `AUREON_WAKE_UP_FULL_AUTONOMOUS.ps1` |
+| Live/safe runtime supervision | Starts and supervises the organism from one terminal, publishes manifests, and keeps reboot timing visible. | `scripts/launchers/AUREON_PRODUCTION_LIVE.cmd`, `scripts/launchers/AUREON_WAKE_UP_FULL_AUTONOMOUS.ps1` |
 | Multi-exchange market coverage | Runs unified market telemetry and exchange readiness for Kraken, Binance, Alpaca, and Capital. | `aureon/exchanges/unified_market_trader.py`, `aureon/exchanges/unified_market_status_server.py` |
-| Planetary financial data ocean | Maps configured/licensed financial signals across exchanges, history, macro, news, on-chain, forecasts, and internal knowledge without competing with execution/risk loops. | `AUREON_DATA_OCEAN.cmd`, `aureon/autonomous/aureon_data_ocean.py`, `aureon_global_financial_coverage_map.py` |
+| Planetary financial data ocean | Maps configured/licensed financial signals across exchanges, history, macro, news, on-chain, forecasts, and internal knowledge without competing with execution/risk loops. | `scripts/launchers/AUREON_DATA_OCEAN.cmd`, `aureon/autonomous/aureon_data_ocean.py`, `aureon_global_financial_coverage_map.py` |
 | Official exchange rate budgets | Records Binance, Kraken, Alpaca, and Capital provider limits, then builds cash-aware call plans that reserve execution capacity and boost idle/no-cash venue discovery safely. | `aureon/core/exchange_rate_limit_registry.py`, `api_governor`, `state/aureon_data_ocean_status.json` |
 | Exchange data capability matrix | Shows what each exchange can observe, trade, leverage, and optimize: data channels, modes, feed freshness, decision-fed state, call budget, gaps, and next optimization. | `aureon/autonomous/aureon_exchange_data_capability_matrix.py`, `docs/audits/aureon_exchange_data_capability_matrix.json`, `frontend/public/aureon_exchange_data_capability_matrix.json` |
 | Capital wave-validated portfolio brain | Lets Capital expand beyond fixed buy/sell lanes only when portfolio memory, margin survival, stress buffer, cross-exchange waveform checks, and confidence ratchet pass. | `aureon/exchanges/capital_cfd_trader.py`, `/api/terminal-state#capital_risk_envelope`, Trading console Capital Survival Brain |
@@ -78,7 +78,7 @@ The Harmonic Nexus Core is the coherence and evidence logic layer used by Aureon
 
 | Subsystem | End-user purpose | Where to start |
 |---|---|---|
-| Launcher/supervisor | Start the whole organism once and know what is alive. | `AUREON_PRODUCTION_LIVE.cmd`, wake-up manifests |
+| Launcher/supervisor | Start the whole organism once and know what is alive. | `scripts/launchers/AUREON_PRODUCTION_LIVE.cmd`, wake-up manifests |
 | Exchange runtime | Bring Kraken, Binance, Alpaca, and Capital into one market state. | `aureon/exchanges/`, `/api/terminal-state` |
 | Trading/portfolio/risk | Convert market state into readiness, intent, position, and execution evidence. | `aureon/trading/`, `aureon/portfolio/`, `aureon/strategies/` |
 | Scanners/analytics | Find movement, anomalies, backtest context, and opportunity candidates. | `aureon/scanners/`, `aureon/analytics/` |

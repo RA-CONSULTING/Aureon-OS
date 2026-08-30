@@ -16,9 +16,8 @@ When the env var is unset OR set to a falsy value, the gate returns
 False — production posture. Live data sources should raise / return
 None when their fetch fails rather than substituting synthetic values.
 
-When the env var is set to a truthy value, the gate returns True —
-dev / test / backtest posture. Existing simulation paths fire as
-before.
+The flag is honoured only in an explicit test/backtest process. A production
+process cannot enable generated operational data accidentally or by env drift.
 
 Why a separate module rather than inlining ``os.environ.get`` at each
 site: every fallback path needs the same gate, and bundling them
@@ -40,7 +39,7 @@ _TRUTHY = ("1", "true", "yes", "on", "y", "t")
 
 
 def simulation_fallback_allowed() -> bool:
-    """True iff AUREON_ALLOW_SIM_FALLBACK is set truthy. Default False.
+    """Allow fixtures only in an explicit test/backtest process.
 
     Production deployments leave this unset → no simulation fallback
     fires → live data sources fail loudly when unavailable. Dev /
@@ -48,7 +47,11 @@ def simulation_fallback_allowed() -> bool:
     to restore the old simulation-on-failure behaviour.
     """
     raw = os.environ.get(ENV_ALLOW_SIM_FALLBACK, "").strip().lower()
-    return raw in _TRUTHY
+    if raw not in _TRUTHY:
+        return False
+    profile = os.environ.get("AUREON_RUNTIME_PROFILE", "").strip().lower()
+    under_pytest = bool(os.environ.get("PYTEST_CURRENT_TEST"))
+    return under_pytest or profile in {"test", "fixture", "backtest"}
 
 
 def log_blocked_fallback(source: str, reason: str = "live_unavailable") -> None:

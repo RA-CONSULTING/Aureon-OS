@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { decryptCredential as decryptStoredCredential } from "../_shared/credential_crypto.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -48,13 +49,19 @@ async function getDbCachedBalance(
     const rateLimit = RATE_LIMITS[exchange as keyof typeof RATE_LIMITS] || 30000;
 
     const balanceData = data.balance_data as ExchangeBalance | null;
+    const sourceTime = balanceData?.sourceTimestamp ? new Date(balanceData.sourceTimestamp).getTime() : Number.NaN;
+    const sourceAge = Number.isFinite(sourceTime) ? Date.now() - sourceTime : Number.POSITIVE_INFINITY;
 
     // If the cached payload is an error/offline result, avoid hammering the exchange.
     // We allow quicker retry for "Invalid nonce" (fixable), but respect strict backoff for rate limits.
     const isErrorPayload =
       !balanceData ||
       balanceData.connected === false ||
-      !Array.isArray(balanceData.assets);
+      !Array.isArray(balanceData.assets) ||
+      balanceData.truthStatus !== 'live' ||
+      balanceData.generatedValues !== false ||
+      sourceAge < 0 ||
+      sourceAge >= 300000;
 
     if (isErrorPayload) {
       const errorText = typeof balanceData?.error === 'string' ? balanceData.error : '';
@@ -119,7 +126,16 @@ async function acquireFetchLock(
 ): Promise<boolean> {
   const nowIso = new Date().toISOString();
   const placeholder: ExchangeBalance =
-    existingData ?? ({ exchange, connected: false, assets: [], totalUsd: 0, error: 'Fetching...' } as ExchangeBalance);
+    existingData ?? ({
+      exchange,
+      connected: false,
+      assets: [],
+      totalUsd: null,
+      truthStatus: 'no_data',
+      sourceTimestamp: null,
+      generatedValues: false,
+      error: 'Fetching...',
+    } as ExchangeBalance);
 
   // If a row exists, attempt a compare-and-swap on cached_at.
   if (prevCachedAt) {
@@ -176,36 +192,45 @@ async function setDbCachedBalance(
 interface ExchangeBalance {
   exchange: string;
   connected: boolean;
-  assets: Array<{ asset: string; free: number; locked: number; usdValue: number }>;
-  totalUsd: number;
+  assets: Array<{ asset: string; free: number; locked: number; usdValue: number | null; valuationTruthStatus: "real_derived" | "no_data" }>;
+  totalUsd: number | null;
+  truthStatus: "live" | "no_data";
+  sourceTimestamp: string | null;
+  generatedValues: false;
   error?: string;
 }
 
-async function decryptCredential(
-  encrypted: string, 
-  cryptoKey: CryptoKey, 
-  legacyCryptoKey: CryptoKey,
-  iv: Uint8Array
-): Promise<string> {
-  const encryptedBytes = Uint8Array.from(atob(encrypted), c => c.charCodeAt(0));
-  
-  // Try new base64 key first, then fall back to legacy text-padded key
-  try {
-    const decrypted = await crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv: iv as unknown as BufferSource },
-      cryptoKey,
-      encryptedBytes
-    );
-    return new TextDecoder().decode(decrypted);
-  } catch {
-    // Fall back to legacy key
-    const decrypted = await crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv: iv as unknown as BufferSource },
-      legacyCryptoKey,
-      encryptedBytes
-    );
-    return new TextDecoder().decode(decrypted);
-  }
+function noDataBalance(exchange: string, error: string): ExchangeBalance {
+  return {
+    exchange,
+    connected: false,
+    assets: [],
+    totalUsd: null,
+    truthStatus: "no_data",
+    sourceTimestamp: null,
+    generatedValues: false,
+    error,
+  };
+}
+
+function liveBalance(
+  exchange: string,
+  assets: ExchangeBalance["assets"],
+  sourceTimestamp: string,
+): ExchangeBalance {
+  const valuations = assets.map((asset) => asset.usdValue);
+  const totalUsd = valuations.every((value) => value !== null && Number.isFinite(value))
+    ? (valuations as number[]).reduce((sum, value) => sum + value, 0)
+    : null;
+  return {
+    exchange,
+    connected: true,
+    assets,
+    totalUsd,
+    truthStatus: "live",
+    sourceTimestamp,
+    generatedValues: false,
+  };
 }
 
 
@@ -240,36 +265,47 @@ async function fetchBinanceBalances(apiKey: string, apiSecret: string): Promise<
     
     // Get prices for USD conversion
     const pricesRes = await fetch('https://api.binance.com/api/v3/ticker/price');
+    if (!pricesRes.ok) throw new Error(`Binance ticker API error: ${pricesRes.status}`);
     const prices = await pricesRes.json();
     const priceMap: Record<string, number> = {};
     prices.forEach((p: { symbol: string; price: string }) => {
       priceMap[p.symbol] = parseFloat(p.price);
     });
 
+    const tetherRes = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=usd');
+    if (!tetherRes.ok) throw new Error(`CoinGecko tether price error: ${tetherRes.status}`);
+    const tetherPayload = await tetherRes.json();
+    const tetherUsd = Number(tetherPayload?.tether?.usd);
+    if (!Number.isFinite(tetherUsd) || tetherUsd <= 0) throw new Error('CoinGecko tether USD price missing');
+
     const assets: ExchangeBalance['assets'] = [];
-    let totalUsd = 0;
 
     for (const bal of data.balances) {
       const free = parseFloat(bal.free);
       const locked = parseFloat(bal.locked);
       if (free > 0 || locked > 0) {
-        let usdValue = 0;
-        if (bal.asset === 'USDT' || bal.asset === 'USDC' || bal.asset === 'BUSD') {
+        let usdValue: number | null = null;
+        if (bal.asset === 'USD') {
           usdValue = free + locked;
+        } else if (bal.asset === 'USDT') {
+          usdValue = (free + locked) * tetherUsd;
         } else if (priceMap[`${bal.asset}USDT`]) {
-          usdValue = (free + locked) * priceMap[`${bal.asset}USDT`];
-        } else if (priceMap[`${bal.asset}BUSD`]) {
-          usdValue = (free + locked) * priceMap[`${bal.asset}BUSD`];
+          usdValue = (free + locked) * priceMap[`${bal.asset}USDT`] * tetherUsd;
         }
-        assets.push({ asset: bal.asset, free, locked, usdValue });
-        totalUsd += usdValue;
+        assets.push({
+          asset: bal.asset,
+          free,
+          locked,
+          usdValue,
+          valuationTruthStatus: usdValue === null ? 'no_data' : 'real_derived',
+        });
       }
     }
 
-    return { exchange: 'binance', connected: true, assets, totalUsd };
+    return liveBalance('binance', assets, response.headers.get('date') || new Date().toISOString());
   } catch (error) {
     console.error('[get-user-balances] Binance error:', error);
-    return { exchange: 'binance', connected: false, assets: [], totalUsd: 0, error: String(error) };
+    return noDataBalance('binance', String(error));
   }
 }
 
@@ -408,6 +444,7 @@ async function fetchKrakenBalances(apiKey: string, apiSecret: string): Promise<E
       },
       body: postData,
     });
+    if (!response.ok) throw new Error(`Kraken balance API error: ${response.status}`);
 
     const data = await response.json();
     console.log('[get-user-balances] Kraken raw balances:', JSON.stringify(data.result));
@@ -420,12 +457,13 @@ async function fetchKrakenBalances(apiKey: string, apiSecret: string): Promise<E
     const priceMap: Record<string, number> = {};
     try {
       const tickerRes = await fetch('https://api.kraken.com/0/public/Ticker');
+      if (!tickerRes.ok) throw new Error(`Kraken ticker API error: ${tickerRes.status}`);
       const tickerData = await tickerRes.json();
       
       if (tickerData.result) {
         for (const [pair, ticker] of Object.entries(tickerData.result)) {
           const t = ticker as any;
-          const price = parseFloat(t.c?.[0] || '0');
+          const price = Number(t.c?.[0]);
           
           // Store USD pairs for conversion
           if (pair.includes('USD')) {
@@ -439,9 +477,10 @@ async function fetchKrakenBalances(apiKey: string, apiSecret: string): Promise<E
             // Clean the base using our mapping
             const cleanBase = cleanKrakenAsset(base);
             
-            priceMap[cleanBase] = price;
-            // Also store with original Kraken name for fallback
-            priceMap[base] = price;
+            if (Number.isFinite(price) && price > 0) {
+              priceMap[cleanBase] = price;
+              priceMap[base] = price;
+            }
           }
         }
       }
@@ -451,7 +490,6 @@ async function fetchKrakenBalances(apiKey: string, apiSecret: string): Promise<E
     }
 
     const assets: ExchangeBalance['assets'] = [];
-    let totalUsd = 0;
 
     // Process ALL balances from Kraken
     for (const [rawAsset, balance] of Object.entries(data.result || {})) {
@@ -460,44 +498,35 @@ async function fetchKrakenBalances(apiKey: string, apiSecret: string): Promise<E
       if (amount > 0) {
         // Use proper asset mapping
         const displayAsset = cleanKrakenAsset(rawAsset);
-        let usdValue = 0;
+        let usdValue: number | null = null;
         
-        // Handle fiat and stablecoins
-        if (displayAsset === 'USD' || displayAsset === 'USDT' || displayAsset === 'USDC' || displayAsset === 'DAI') {
+        if (displayAsset === 'USD') {
           usdValue = amount;
-        } else if (displayAsset === 'EUR') {
-          usdValue = amount * 1.05; // EUR to USD approx
-        } else if (displayAsset === 'GBP') {
-          usdValue = amount * 1.27; // GBP to USD approx
-        } else if (displayAsset === 'CAD') {
-          usdValue = amount * 0.74; // CAD to USD approx
-        } else if (displayAsset === 'AUD') {
-          usdValue = amount * 0.65; // AUD to USD approx
-        } else if (displayAsset === 'JPY') {
-          usdValue = amount * 0.0067; // JPY to USD approx
         } else {
-          // Look up price - try display name first, then raw name
-          const price = priceMap[displayAsset] || priceMap[rawAsset] || 0;
-          usdValue = amount * price;
+          const price = priceMap[displayAsset] ?? priceMap[rawAsset];
+          usdValue = Number.isFinite(price) && price > 0 ? amount * price : null;
         }
         
-        assets.push({ asset: displayAsset, free: amount, locked: 0, usdValue });
-        totalUsd += usdValue;
-        console.log(`[get-user-balances] Kraken: ${rawAsset} -> ${displayAsset} = ${amount}, USD: $${usdValue.toFixed(2)}`);
+        assets.push({
+          asset: displayAsset,
+          free: amount,
+          locked: 0,
+          usdValue,
+          valuationTruthStatus: usdValue === null ? 'no_data' : 'real_derived',
+        });
       }
     }
 
-    console.log(`[get-user-balances] Kraken total: $${totalUsd.toFixed(2)} from ${assets.length} assets`);
-    return { exchange: 'kraken', connected: true, assets, totalUsd };
+    return liveBalance('kraken', assets, response.headers.get('date') || new Date().toISOString());
   } catch (error) {
     console.error('[get-user-balances] Kraken error:', error);
-    return { exchange: 'kraken', connected: false, assets: [], totalUsd: 0, error: String(error) };
+    return noDataBalance('kraken', String(error));
   }
 }
 
 async function fetchAlpacaBalances(apiKey: string, secretKey: string): Promise<ExchangeBalance> {
   try {
-    const response = await fetch('https://paper-api.alpaca.markets/v2/account', {
+    const response = await fetch('https://api.alpaca.markets/v2/account', {
       headers: {
         'APCA-API-KEY-ID': apiKey,
         'APCA-API-SECRET-KEY': secretKey,
@@ -509,20 +538,19 @@ async function fetchAlpacaBalances(apiKey: string, secretKey: string): Promise<E
     }
 
     const data = await response.json();
-    const equity = parseFloat(data.equity || '0');
-    const cash = parseFloat(data.cash || '0');
+    const equity = Number(data.equity);
+    if (!Number.isFinite(equity)) throw new Error('Alpaca equity missing');
 
-    return {
-      exchange: 'alpaca',
-      connected: true,
-      assets: [
-        { asset: 'USD', free: cash, locked: equity - cash, usdValue: equity }
-      ],
-      totalUsd: equity
-    };
+    return liveBalance('alpaca', [{
+      asset: 'USD_EQUITY',
+      free: equity,
+      locked: 0,
+      usdValue: equity,
+      valuationTruthStatus: 'real_derived',
+    }], response.headers.get('date') || new Date().toISOString());
   } catch (error) {
     console.error('[get-user-balances] Alpaca error:', error);
-    return { exchange: 'alpaca', connected: false, assets: [], totalUsd: 0, error: String(error) };
+    return noDataBalance('alpaca', String(error));
   }
 }
 
@@ -557,28 +585,35 @@ async function fetchCapitalBalances(apiKey: string, password: string, identifier
         'X-SECURITY-TOKEN': securityToken,
       },
     });
+    if (!accountsRes.ok) throw new Error(`Capital.com accounts API error: ${accountsRes.status}`);
 
     const accountsData = await accountsRes.json();
     const accounts = accountsData.accounts || [];
-    
-    let totalUsd = 0;
+    const fxRes = await fetch('https://open.er-api.com/v6/latest/USD');
+    if (!fxRes.ok) throw new Error(`FX provider error: ${fxRes.status}`);
+    const fxData = await fxRes.json();
+    const fxRates = fxData?.rates ?? {};
     const assets: ExchangeBalance['assets'] = [];
 
     for (const acc of accounts) {
-      const balance = parseFloat(acc.balance?.balance || '0');
+      const balance = Number(acc.balance?.balance);
+      if (!Number.isFinite(balance)) throw new Error('Capital.com account balance missing');
+      const currency = String(acc.currency || '').toUpperCase();
+      const fxRate = currency === 'USD' ? 1 : Number(fxRates[currency]);
+      const usdValue = Number.isFinite(fxRate) && fxRate > 0 ? balance / fxRate : null;
       assets.push({
-        asset: acc.currency || 'USD',
+        asset: currency || 'UNKNOWN',
         free: balance,
         locked: 0,
-        usdValue: balance // Simplified, would need conversion
+        usdValue,
+        valuationTruthStatus: usdValue === null ? 'no_data' : 'real_derived',
       });
-      totalUsd += balance;
     }
 
-    return { exchange: 'capital', connected: true, assets, totalUsd };
+    return liveBalance('capital', assets, accountsRes.headers.get('date') || new Date().toISOString());
   } catch (error) {
     console.error('[get-user-balances] Capital.com error:', error);
-    return { exchange: 'capital', connected: false, assets: [], totalUsd: 0, error: String(error) };
+    return noDataBalance('capital', String(error));
   }
 }
 
@@ -632,26 +667,8 @@ serve(async (req) => {
       );
     }
 
-    // Use consistent text-padded encryption key (matches create-aureon-session and update-user-credentials)
-    const encryptionKey = 'aureon-default-key-32chars!!';
-    const encoder = new TextEncoder();
-    const keyData = encoder.encode(encryptionKey.padEnd(32, '0').slice(0, 32));
-    
-    const cryptoKey = await crypto.subtle.importKey(
-      'raw',
-      keyData,
-      { name: 'AES-GCM' },
-      false,
-      ['decrypt']
-    );
-    
-    // Legacy key is same as primary now - unified encryption
-    const legacyCryptoKey = cryptoKey;
-
     const balances: ExchangeBalance[] = [];
     const fetchPromises: Promise<ExchangeBalance>[] = [];
-
-    const decodeIvFromB64 = (ivB64: string) => Uint8Array.from(atob(ivB64), c => c.charCodeAt(0));
 
     // === Use USER-SAVED credentials (never global/shared secrets) ===
     const userCreds = {
@@ -663,31 +680,27 @@ serve(async (req) => {
 
     // Binance
     if (session.binance_api_key_encrypted && session.binance_api_secret_encrypted && session.binance_iv) {
-      const iv = decodeIvFromB64(session.binance_iv);
-      userCreds.binance.apiKey = await decryptCredential(session.binance_api_key_encrypted, cryptoKey, legacyCryptoKey, iv);
-      userCreds.binance.apiSecret = await decryptCredential(session.binance_api_secret_encrypted, cryptoKey, legacyCryptoKey, iv);
+      userCreds.binance.apiKey = await decryptStoredCredential(session.binance_api_key_encrypted, session.binance_iv);
+      userCreds.binance.apiSecret = await decryptStoredCredential(session.binance_api_secret_encrypted, session.binance_iv);
     }
 
     // Kraken
     if (session.kraken_api_key_encrypted && session.kraken_api_secret_encrypted && session.kraken_iv) {
-      const iv = decodeIvFromB64(session.kraken_iv);
-      userCreds.kraken.apiKey = await decryptCredential(session.kraken_api_key_encrypted, cryptoKey, legacyCryptoKey, iv);
-      userCreds.kraken.apiSecret = await decryptCredential(session.kraken_api_secret_encrypted, cryptoKey, legacyCryptoKey, iv);
+      userCreds.kraken.apiKey = await decryptStoredCredential(session.kraken_api_key_encrypted, session.kraken_iv);
+      userCreds.kraken.apiSecret = await decryptStoredCredential(session.kraken_api_secret_encrypted, session.kraken_iv);
     }
 
     // Alpaca
     if (session.alpaca_api_key_encrypted && session.alpaca_secret_key_encrypted && session.alpaca_iv) {
-      const iv = decodeIvFromB64(session.alpaca_iv);
-      userCreds.alpaca.apiKey = await decryptCredential(session.alpaca_api_key_encrypted, cryptoKey, legacyCryptoKey, iv);
-      userCreds.alpaca.apiSecret = await decryptCredential(session.alpaca_secret_key_encrypted, cryptoKey, legacyCryptoKey, iv);
+      userCreds.alpaca.apiKey = await decryptStoredCredential(session.alpaca_api_key_encrypted, session.alpaca_iv);
+      userCreds.alpaca.apiSecret = await decryptStoredCredential(session.alpaca_secret_key_encrypted, session.alpaca_iv);
     }
 
     // Capital.com
     if (session.capital_api_key_encrypted && session.capital_password_encrypted && session.capital_identifier_encrypted && session.capital_iv) {
-      const iv = decodeIvFromB64(session.capital_iv);
-      userCreds.capital.apiKey = await decryptCredential(session.capital_api_key_encrypted, cryptoKey, legacyCryptoKey, iv);
-      userCreds.capital.password = await decryptCredential(session.capital_password_encrypted, cryptoKey, legacyCryptoKey, iv);
-      userCreds.capital.identifier = await decryptCredential(session.capital_identifier_encrypted, cryptoKey, legacyCryptoKey, iv);
+      userCreds.capital.apiKey = await decryptStoredCredential(session.capital_api_key_encrypted, session.capital_iv);
+      userCreds.capital.password = await decryptStoredCredential(session.capital_password_encrypted, session.capital_iv);
+      userCreds.capital.identifier = await decryptStoredCredential(session.capital_identifier_encrypted, session.capital_iv);
     }
 
     console.log('[get-user-balances] Using user credentials:', {
@@ -711,10 +724,10 @@ serve(async (req) => {
       } else if (binanceCache.data) {
         balances.push(binanceCache.data);
       } else {
-        balances.push({ exchange: 'binance', connected: false, assets: [], totalUsd: 0, error: 'Rate limited, no cache' });
+        balances.push(noDataBalance('binance', 'Rate limited, no cache'));
       }
     } else {
-      balances.push({ exchange: 'binance', connected: false, assets: [], totalUsd: 0, error: 'Not configured' });
+      balances.push(noDataBalance('binance', 'Not configured'));
     }
 
     // Fetch Kraken balances with database-backed rate limiting (2 MINUTES to avoid rate limit)
@@ -747,16 +760,16 @@ serve(async (req) => {
             error: krakenCache.data.error || 'Fetch in progress',
           });
         } else {
-          balances.push({ exchange: 'kraken', connected: false, assets: [], totalUsd: 0, error: 'Fetch in progress' });
+          balances.push(noDataBalance('kraken', 'Fetch in progress'));
         }
       } else if (krakenCache.data) {
         console.log('[get-user-balances] Kraken: using cached data (rate limited)');
         balances.push(krakenCache.data);
       } else {
-        balances.push({ exchange: 'kraken', connected: false, assets: [], totalUsd: 0, error: 'Rate limited, no cache' });
+        balances.push(noDataBalance('kraken', 'Rate limited, no cache'));
       }
     } else {
-      balances.push({ exchange: 'kraken', connected: false, assets: [], totalUsd: 0, error: 'Not configured' });
+      balances.push(noDataBalance('kraken', 'Not configured'));
     }
 
     // Fetch Alpaca balances with database-backed rate limiting
@@ -773,10 +786,10 @@ serve(async (req) => {
       } else if (alpacaCache.data) {
         balances.push(alpacaCache.data);
       } else {
-        balances.push({ exchange: 'alpaca', connected: false, assets: [], totalUsd: 0, error: 'Rate limited, no cache' });
+        balances.push(noDataBalance('alpaca', 'Rate limited, no cache'));
       }
     } else {
-      balances.push({ exchange: 'alpaca', connected: false, assets: [], totalUsd: 0, error: 'Not configured' });
+      balances.push(noDataBalance('alpaca', 'Not configured'));
     }
 
     // Fetch Capital.com balances with database-backed rate limiting (60s minimum)
@@ -794,29 +807,50 @@ serve(async (req) => {
         console.log('[get-user-balances] Capital.com: using cached data (rate limited)');
         balances.push(capitalCache.data);
       } else {
-        balances.push({ exchange: 'capital', connected: false, assets: [], totalUsd: 0, error: 'Rate limited, no cache' });
+        balances.push(noDataBalance('capital', 'Rate limited, no cache'));
       }
     } else {
-      balances.push({ exchange: 'capital', connected: false, assets: [], totalUsd: 0, error: 'Not configured' });
+      balances.push(noDataBalance('capital', 'Not configured'));
     }
 
     // Wait for all fetches
     const fetchedBalances = await Promise.all(fetchPromises);
     balances.push(...fetchedBalances);
 
-    // Calculate totals
-    const totalEquityUsd = balances.reduce((sum, b) => sum + b.totalUsd, 0);
+    const configuredExchanges = Object.entries(userCreds)
+      .filter(([, credentials]) => Boolean(credentials.apiKey))
+      .map(([exchange]) => exchange);
     const connectedExchanges = balances.filter(b => b.connected).map(b => b.exchange);
+    const configuredBalanceRows = configuredExchanges.map(
+      (exchange) => balances.find((balance) => balance.exchange === exchange),
+    );
+    const allConfiguredLive = configuredBalanceRows.length > 0 && configuredBalanceRows.every(
+      (balance) => balance?.connected === true &&
+        balance.truthStatus === 'live' &&
+        balance.generatedValues === false &&
+        balance.totalUsd !== null,
+    );
+    const totalEquityUsd = allConfiguredLive
+      ? configuredBalanceRows.reduce((sum, balance) => sum + (balance?.totalUsd as number), 0)
+      : null;
 
     console.log('[get-user-balances] Fetched balances from', connectedExchanges.length, 'exchanges, total:', totalEquityUsd);
 
     // CRITICAL: Update aureon_user_sessions with fetched balance so trading system can use it
-    if (totalEquityUsd > 0) {
+    if (totalEquityUsd !== null) {
+      const sourceTimestamps = configuredBalanceRows
+        .map((balance) => balance?.sourceTimestamp)
+        .filter((value): value is string => Boolean(value));
+      const oldestSourceTimestamp = sourceTimestamps.sort()[0];
       const { error: updateError } = await supabase
         .from('aureon_user_sessions')
         .update({
-          total_equity_usdt: totalEquityUsd,
-          available_balance_usdt: totalEquityUsd, // Use total as available for now
+          total_equity_usd: totalEquityUsd,
+          measurement_truth_status: 'real_derived',
+          measurement_source_id: configuredExchanges.map((exchange) => `${exchange}:account`).join(','),
+          measurement_source_timestamp: oldestSourceTimestamp,
+          measurement_collected_at: new Date().toISOString(),
+          measurement_generated_values: false,
           updated_at: new Date().toISOString()
         })
         .eq('user_id', user.id);
@@ -830,12 +864,15 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({
-        success: true,
+        success: totalEquityUsd !== null,
         balances,
         totalEquityUsd,
-        connectedExchanges
+        connectedExchanges,
+        configuredExchanges,
+        truthStatus: totalEquityUsd === null ? 'no_data' : 'real_derived',
+        generatedValues: false,
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: totalEquityUsd === null ? 503 : 200 }
     );
 
   } catch (error) {

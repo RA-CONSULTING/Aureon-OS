@@ -1,0 +1,47 @@
+{
+  "schema_version": "aureon.synthetic-company-fixtures.v1",
+  "profiles": [
+    {
+      "profile_id": "SYNTHETIC-NI-AI-SME",
+      "jurisdiction": "Northern Ireland",
+      "organisation_type": "limited company",
+      "organisation_size": "micro",
+      "sector": "technology",
+      "innovative_project": true,
+      "grant_requested_gbp": 15000,
+      "can_fund_required_share": false,
+      "venture_age_months": 8,
+      "go_succeed_registered": true,
+      "available_for_heats": true,
+      "eoi_ready": false
+    },
+    {
+      "profile_id": "SYNTHETIC-SCOTTISH-RESEARCH-LEAD",
+      "jurisdiction": "Scotland",
+      "organisation_type": "EPSRC-eligible research organisation",
+      "organisation_size": "large",
+      "sector": "higher education",
+      "innovative_project": true,
+      "grant_requested_gbp": 2800000,
+      "can_fund_required_share": true,
+      "venture_age_months": 120,
+      "go_succeed_registered": false,
+      "available_for_heats": false,
+      "eoi_ready": true
+    },
+    {
+      "profile_id": "SYNTHETIC-ROI-DATA-SME",
+      "jurisdiction": "Republic of Ireland",
+      "organisation_type": "limited company",
+      "organisation_size": "small",
+      "sector": "professional services",
+      "innovative_project": true,
+      "grant_requested_gbp": 10000,
+      "can_fund_required_share": true,
+      "venture_age_months": 36,
+      "go_succeed_registered": false,
+      "available_for_heats": false,
+      "eoi_ready": false
+    }
+  ]
+}

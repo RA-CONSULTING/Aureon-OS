@@ -23,7 +23,7 @@ cd ..
 ## 2. Validate The Launcher
 
 ```powershell
-.\AUREON_PRODUCTION_LIVE.cmd -ValidateOnly -NoOpen -MarketStatusPort 8791
+.\scripts\launchers\AUREON_PRODUCTION_LIVE.cmd -ValidateOnly -NoOpen -MarketStatusPort 8791
 ```
 
 Use this command after pulling from `main`, before a live session, or after any launcher/doc change.
@@ -31,7 +31,7 @@ Use this command after pulling from `main`, before a live session, or after any 
 ## 3. Run The Full Organism
 
 ```powershell
-.\AUREON_PRODUCTION_LIVE.cmd -WaitForRefresh -MarketStatusPort 8791
+.\scripts\launchers\AUREON_PRODUCTION_LIVE.cmd -WaitForRefresh -MarketStatusPort 8791
 ```
 
 Leave the terminal open. It supervises the live runtime, market feed, frontend console, mind hub, self-questioning loop, observer, and manifest refresh.
@@ -66,13 +66,13 @@ frontend/public/aureon_wake_up_manifest.json
 Run this in a second low-priority terminal when you want Aureon to widen live/history/context coverage without blocking the trading runtime:
 
 ```powershell
-.\AUREON_DATA_OCEAN.cmd -Adaptive -CoverageProfile LicensedReachable
+.\scripts\launchers\AUREON_DATA_OCEAN.cmd -Adaptive -CoverageProfile LicensedReachable
 ```
 
 If Kraken or another private account endpoint starts rate-limiting, keep the public/context ocean running without private account-history sync:
 
 ```powershell
-.\AUREON_DATA_OCEAN.cmd -Adaptive -CoverageProfile LicensedReachable -SkipAccountSync
+.\scripts\launchers\AUREON_DATA_OCEAN.cmd -Adaptive -CoverageProfile LicensedReachable -SkipAccountSync
 ```
 
 The data ocean uses `aureon/core/exchange_rate_limit_registry.py` to expose official provider limits and cash-aware call budgets. Check `state/aureon_data_ocean_status.json` for each live exchange row's `official_rate_limit`, `cash_aware_call_plan`, and `rate_budget`.
@@ -100,7 +100,7 @@ The data ocean also runs this automatically with `-KrakenAssetRegistryTickers`.
 Validation-only:
 
 ```powershell
-.\AUREON_DATA_OCEAN.cmd -ValidateOnly -DryRun -RunOnce -NoIngest
+.\scripts\launchers\AUREON_DATA_OCEAN.cmd -ValidateOnly -DryRun -RunOnce -NoIngest
 ```
 
 ## 6. Prompt Aureon To Code
@@ -143,8 +143,8 @@ This is the development/audit ignition path. The production launcher is the full
 
 | Area | Paths |
 |---|---|
-| Production launcher | `AUREON_PRODUCTION_LIVE.cmd`, `AUREON_WAKE_UP_FULL_AUTONOMOUS.ps1` |
-| Data ocean | `AUREON_DATA_OCEAN.cmd`, `aureon/autonomous/aureon_data_ocean.py`, `aureon/autonomous/aureon_global_financial_coverage_map.py` |
+| Production launcher | `scripts/launchers/AUREON_PRODUCTION_LIVE.cmd`, `scripts/launchers/AUREON_WAKE_UP_FULL_AUTONOMOUS.ps1` |
+| Data ocean | `scripts/launchers/AUREON_DATA_OCEAN.cmd`, `aureon/autonomous/aureon_data_ocean.py`, `aureon/autonomous/aureon_global_financial_coverage_map.py` |
 | Official exchange rate budgets | `aureon/core/exchange_rate_limit_registry.py` |
 | Exchange data capability matrix | `aureon/autonomous/aureon_exchange_data_capability_matrix.py` |
 | Market runtime | `aureon/exchanges/unified_market_trader.py`, `aureon/exchanges/unified_market_status_server.py` |

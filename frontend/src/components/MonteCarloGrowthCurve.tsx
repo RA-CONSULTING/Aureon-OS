@@ -84,7 +84,7 @@ export function MonteCarloGrowthCurve() {
             </div>
           </div>
           <div className="flex gap-2">
-            <Badge variant="outline" className="text-green-500">
+            <Badge variant="outline" className="text-success">
               100% Success Rate
             </Badge>
             <Badge variant="outline" className="text-primary">
@@ -162,7 +162,7 @@ export function MonteCarloGrowthCurve() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div className="p-3 bg-muted/30 rounded-lg border border-border/30">
             <div className="flex items-center gap-2 mb-1">
-              <Target className="h-4 w-4 text-green-500" />
+              <Target className="h-4 w-4 text-success" />
               <p className="text-xs text-muted-foreground">Week 2</p>
             </div>
             <p className="text-lg font-bold font-mono text-foreground">$100</p>
@@ -171,7 +171,7 @@ export function MonteCarloGrowthCurve() {
 
           <div className="p-3 bg-muted/30 rounded-lg border border-border/30">
             <div className="flex items-center gap-2 mb-1">
-              <Target className="h-4 w-4 text-yellow-500" />
+              <Target className="h-4 w-4 text-warning" />
               <p className="text-xs text-muted-foreground">Month 2</p>
             </div>
             <p className="text-lg font-bold font-mono text-foreground">$47K</p>
@@ -189,10 +189,10 @@ export function MonteCarloGrowthCurve() {
 
           <div className="p-3 bg-muted/30 rounded-lg border border-border/30">
             <div className="flex items-center gap-2 mb-1">
-              <TrendingUp className="h-4 w-4 text-green-500" />
+              <TrendingUp className="h-4 w-4 text-success" />
               <p className="text-xs text-muted-foreground">Month 6</p>
             </div>
-            <p className="text-lg font-bold font-mono text-green-500">$13.62M</p>
+            <p className="text-lg font-bold font-mono text-success">$13.62M</p>
             <p className="text-xs text-muted-foreground">Target reached 🏁</p>
           </div>
         </div>
@@ -219,7 +219,7 @@ export function MonteCarloGrowthCurve() {
             </div>
             <div>
               <p className="text-muted-foreground">Maximum</p>
-              <p className="font-mono font-semibold text-green-500">$35.34M</p>
+              <p className="font-mono font-semibold text-success">$35.34M</p>
             </div>
           </div>
         </div>
@@ -229,27 +229,27 @@ export function MonteCarloGrowthCurve() {
           <h4 className="text-sm font-semibold mb-2 text-foreground">Realistic Constraints Applied</h4>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs text-muted-foreground">
             <div className="flex items-center gap-2">
-              <div className="h-1.5 w-1.5 rounded-full bg-green-500" />
+              <div className="h-1.5 w-1.5 rounded-full bg-success" />
               Trading fees: 0.1% per trade
             </div>
             <div className="flex items-center gap-2">
-              <div className="h-1.5 w-1.5 rounded-full bg-green-500" />
+              <div className="h-1.5 w-1.5 rounded-full bg-success" />
               Slippage: 0.01%-1% based on size
             </div>
             <div className="flex items-center gap-2">
-              <div className="h-1.5 w-1.5 rounded-full bg-green-500" />
+              <div className="h-1.5 w-1.5 rounded-full bg-success" />
               Exchange limits: $50M max
             </div>
             <div className="flex items-center gap-2">
-              <div className="h-1.5 w-1.5 rounded-full bg-green-500" />
+              <div className="h-1.5 w-1.5 rounded-full bg-success" />
               API rate limits: 50 trades/day
             </div>
             <div className="flex items-center gap-2">
-              <div className="h-1.5 w-1.5 rounded-full bg-green-500" />
+              <div className="h-1.5 w-1.5 rounded-full bg-success" />
               Market variance: ±10%
             </div>
             <div className="flex items-center gap-2">
-              <div className="h-1.5 w-1.5 rounded-full bg-green-500" />
+              <div className="h-1.5 w-1.5 rounded-full bg-success" />
               Position sizing: 98% compound
             </div>
           </div>

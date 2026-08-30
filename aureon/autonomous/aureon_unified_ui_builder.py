@@ -364,10 +364,10 @@ function derivedEndpoint(base: string, suffix: string): string {
 }
 
 function pillTone(kind: "good" | "warn" | "bad" | "info" | "quiet" = "quiet"): string {
-  if (kind === "good") return "border-green-500/30 bg-green-500/10 text-green-200";
-  if (kind === "warn") return "border-yellow-500/30 bg-yellow-500/10 text-yellow-100";
-  if (kind === "bad") return "border-red-500/30 bg-red-500/10 text-red-100";
-  if (kind === "info") return "border-cyan-500/30 bg-cyan-500/10 text-cyan-100";
+  if (kind === "good") return "border-success/30 bg-success/10 text-success";
+  if (kind === "warn") return "border-warning/30 bg-warning/10 text-warning";
+  if (kind === "bad") return "border-destructive/30 bg-destructive/10 text-destructive";
+  if (kind === "info") return "border-primary/30 bg-primary/10 text-primary";
   return "border-border/60 bg-muted/20 text-muted-foreground";
 }
 
@@ -389,7 +389,7 @@ function Stat({ label, value, icon: Icon, kind = "quiet" }: { label: string; val
     <div className="rounded-lg border border-border/50 bg-background/55 p-3">
       <div className="flex items-center justify-between gap-3">
         <div className="text-[11px] uppercase text-muted-foreground">{label}</div>
-        <Icon className={`h-4 w-4 ${kind === "good" ? "text-green-300" : kind === "warn" ? "text-yellow-200" : kind === "bad" ? "text-red-200" : "text-primary"}`} />
+        <Icon className={`h-4 w-4 ${kind === "good" ? "text-success" : kind === "warn" ? "text-warning" : kind === "bad" ? "text-destructive" : "text-primary"}`} />
       </div>
       <div className="mt-3 truncate text-xl font-semibold">{value}</div>
     </div>
@@ -529,13 +529,13 @@ export function AureonGeneratedOperationalConsole() {
 
   return (
     <section className="mb-5 space-y-4">
-      <Card className="overflow-hidden border-cyan-500/20 bg-card/90">
+      <Card className="overflow-hidden border-primary/20 bg-card/90">
         <CardHeader className="border-b border-border/50 pb-4">
           <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
             <div>
               <div className="flex flex-wrap items-center gap-2">
                 <CardTitle className="flex items-center gap-2 text-xl">
-                  <Sparkles className="h-5 w-5 text-cyan-300" />
+                  <Sparkles className="h-5 w-5 text-primary" />
                   Aureon Designed Live Operations Interface
                 </CardTitle>
                 <Badge variant={runtimeConnected ? (guarded ? "warning" : "success") : "destructive"}>
@@ -641,7 +641,7 @@ export function AureonGeneratedOperationalConsole() {
                           <Datum label="equity" value={row.equity !== undefined ? compact(row.equity) : "unknown"} />
                           <Datum label="api use" value={row.governor?.utilization !== undefined ? percent(row.governor.utilization) : "unknown"} />
                         </div>
-                        {row.error ? <div className="mt-2 text-xs text-red-200">{row.error}</div> : null}
+                        {row.error ? <div className="mt-2 text-xs text-destructive">{row.error}</div> : null}
                       </div>
                     ))}
                   </div>
@@ -743,7 +743,7 @@ export function AureonGeneratedOperationalConsole() {
                   <div className="grid gap-2 md:grid-cols-2">
                     {(uiSpec.capability_labels || []).map((label: string) => (
                       <div key={label} className="flex items-center gap-2 rounded-lg border border-border/50 bg-background/50 px-3 py-2 text-sm">
-                        <ShieldCheck className="h-4 w-4 text-green-300" />
+                        <ShieldCheck className="h-4 w-4 text-success" />
                         <span>{label}</span>
                       </div>
                     ))}
@@ -832,7 +832,7 @@ export function AureonGeneratedOperationalConsole() {
           </Tabs>
 
           {snapshot.errors.length ? (
-            <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-3 text-xs text-yellow-100">
+            <div className="rounded-lg border border-warning/30 bg-warning/10 p-3 text-xs text-warning">
               {snapshot.errors.slice(0, 8).join(" | ")}
             </div>
           ) : null}

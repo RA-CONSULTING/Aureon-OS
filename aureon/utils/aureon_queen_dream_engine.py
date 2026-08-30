@@ -264,6 +264,15 @@ HORIZON_24H = 86400
 HORIZON_7D = 604800
 
 
+def _deterministic_standard_normal(path_index: int, step_index: int, path_count: int) -> float:
+    """Return a reproducible scenario-grid shock, never a claimed observation."""
+    denominator = max(2, path_count * 2)
+    sequence_index = (path_index * 104729 + step_index * 13007) % denominator
+    quantile = (sequence_index + 0.5) / denominator
+    quantile = min(1.0 - 1e-9, max(1e-9, quantile))
+    return statistics.NormalDist().inv_cdf(quantile)
+
+
 # ═══════════════════════════════════════════════════════════════
 # 📊 DATA STRUCTURES
 # ═══════════════════════════════════════════════════════════════
@@ -593,11 +602,13 @@ class QueenDreamEngine:
         
         if len(candles) < 24:  # Need at least 24 hours
             return {
-                'momentum': 0.0,
-                'volatility': 0.0,
-                'win_rate': 0.5,
-                'avg_move': 0.0,
-                'trend': 0.0
+                'momentum': None,
+                'volatility': None,
+                'win_rate': None,
+                'avg_move': None,
+                'trend': None,
+                'candle_count': len(candles),
+                'truth_status': 'no_data',
             }
         
         # Calculate returns
@@ -662,6 +673,8 @@ class QueenDreamEngine:
         """
         # Get historical stats for calibration
         hist = self._analyze_historical(symbol)
+        if hist.get('truth_status') == 'no_data' or hist.get('candle_count', 0) < 24:
+            raise RuntimeError(f"NO_FRESH_HISTORICAL_CANDLES:{symbol}")
         
         # Calibration from historical data
         hourly_drift = hist['momentum'] / 24  # Per-hour drift
@@ -688,8 +701,8 @@ class QueenDreamEngine:
             
             for hour in range(horizon_hours):
                 # Geometric Brownian Motion step
-                random_shock = random.gauss(0, 1)
-                pct_change = hourly_drift + hourly_vol * random_shock
+                scenario_shock = _deterministic_standard_normal(i, hour, num_simulations)
+                pct_change = hourly_drift + hourly_vol * scenario_shock
                 price = price * (1 + pct_change)
                 
                 max_price = max(max_price, price)
@@ -801,6 +814,8 @@ class QueenDreamEngine:
         """
         # Get historical stats for calibration
         hist = self._analyze_historical(symbol)
+        if hist.get('truth_status') == 'no_data' or hist.get('candle_count', 0) < 24:
+            raise RuntimeError(f"NO_FRESH_HISTORICAL_CANDLES:{symbol}")
         
         # Scale hourly volatility to 30-second intervals
         # 30 seconds = 1/120 of an hour
@@ -840,8 +855,8 @@ class QueenDreamEngine:
             
             for tick in range(30):  # 30 seconds
                 # Random walk with drift
-                random_shock = random.gauss(0, 1)
-                pct_change = thirty_sec_drift + thirty_sec_vol * random_shock
+                scenario_shock = _deterministic_standard_normal(i, tick, num_simulations)
+                pct_change = thirty_sec_drift + thirty_sec_vol * scenario_shock
                 price = price * (1 + pct_change)
                 
                 max_price = max(max_price, price)

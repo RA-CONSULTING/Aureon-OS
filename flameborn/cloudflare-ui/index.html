@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Aureon Cloud Console</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <main class="shell">
+    <header class="masthead">
+      <div>
+        <p class="eyebrow">flAmeBornLLC</p>
+        <h1>Aureon Cloud Console</h1>
+        <p class="lede">A narrow Cloudflare surface for authenticated model chat and bridge status.</p>
+      </div>
+      <span id="connectionState" class="badge">Token required</span>
+    </header>
+
+    <section class="panel" aria-labelledby="accessHeading">
+      <h2 id="accessHeading">Worker access</h2>
+      <p>Provider credentials stay in Worker secrets. This access token is retained only in this tab.</p>
+      <div class="row">
+        <label class="grow" for="workerAccessToken">
+          Access token
+          <input id="workerAccessToken" type="password" autocomplete="new-password" spellcheck="false">
+        </label>
+        <button id="saveToken" type="button">Use for this tab</button>
+        <button id="clearToken" type="button" class="secondary">Clear</button>
+      </div>
+      <p id="accessMessage" class="message" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="panel" aria-labelledby="statusHeading">
+      <div class="section-title">
+        <h2 id="statusHeading">Bridge status</h2>
+        <button id="refreshStatus" type="button" class="secondary">Refresh</button>
+      </div>
+      <pre id="statusOutput" class="output">Status has not been requested.</pre>
+    </section>
+
+    <section class="panel" aria-labelledby="chatHeading">
+      <h2 id="chatHeading">Authenticated chat</h2>
+      <form id="chatForm">
+        <div class="grid">
+          <label>
+            Provider
+            <select id="provider">
+              <option value="gemini">Gemini</option>
+              <option value="openrouter">OpenRouter</option>
+              <option value="aureon">Aureon Brain</option>
+            </select>
+          </label>
+          <p class="free-only">This console is free-only. Paid providers require a separate server-side opt-in.</p>
+        </div>
+        <label>
+          System role
+          <textarea id="rolePrompt" rows="2" maxlength="2000">You are a helpful, careful assistant.</textarea>
+        </label>
+        <label>
+          Message
+          <textarea id="message" rows="7" maxlength="8000" required></textarea>
+        </label>
+        <button id="sendMessage" type="submit">Send</button>
+      </form>
+      <pre id="chatOutput" class="output" aria-live="polite">No response yet.</pre>
+    </section>
+
+    <footer>
+      Classroom memory and local host-control routes are intentionally unavailable on this shared edge surface.
+    </footer>
+  </main>
+</body>
+</html>

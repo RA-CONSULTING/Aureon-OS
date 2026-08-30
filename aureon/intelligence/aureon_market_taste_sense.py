@@ -33,20 +33,19 @@
 ║    functional_groups → market breadth (correlated assets moving)            ║
 ║    heteroatom_count  → market anomalies (volume spikes, news events)        ║
 ║    molecular_weight  → asset size (BTC=heavy/stable, altcoins=light)        ║
-║    origin            → synthetic (pump) | natural (organic) | placebo       ║
+║    origin            → provider-observed or receipt-derived provenance      ║
 ║                                                                              ║
 ║  Gary Leckey | March 2026 | "The balance of the great question"             ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 """
 
-from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
-
+import hashlib
 import math
 import time
 import logging
 from collections import deque
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Mapping, Optional, Tuple, Union
 
 from aureon.intelligence.aureon_taste_sense import (
     MolecularData,
@@ -77,23 +76,60 @@ MAX_BREADTH = 25
 # Max anomaly events (volume spikes, gap fills, news) in window
 MAX_ANOMALY_COUNT = 15
 
-# Asset "molecular weight" proxy: mapped from market-cap tiers
-# BTC ~500 g/mol equiv, major alts ~200, small caps ~50
-ASSET_WEIGHT_TABLE: Dict[str, float] = {
-    # Large — heavy, move slowly, stable taste
-    "BTC": 520.0, "ETH": 460.0, "BNB": 380.0, "SOL": 320.0,
-    "XRP": 310.0, "ADA": 290.0, "AVAX": 280.0, "DOT": 260.0,
-    # Mid
-    "LINK": 180.0, "MATIC": 170.0, "UNI": 160.0, "ATOM": 155.0,
-    "AAVE": 150.0, "MKR": 145.0, "ARB": 140.0, "OP": 135.0,
-    # Small / meme — light, volatile, erratic taste
-    "DOGE": 80.0, "SHIB": 50.0, "PEPE": 45.0, "FLOKI": 42.0,
-}
-DEFAULT_ASSET_WEIGHT = 120.0  # unknown assets
+# Evidence freshness is deliberately short because taste outputs can become
+# action-facing through the sensory framework. The clock is injectable so
+# offline tests never need network or wall-clock access.
+MAX_RECEIPT_AGE_SECONDS = 120.0
+FUTURE_SKEW_SECONDS = 5.0
+REAL_TRUTH_STATUSES = {"real_observed", "real_derived"}
 
 # Hz decay threshold per period that signals "turning sour"
 HZ_DECAY_THRESHOLD = 50.0     # drop of 50+ Hz per observation = turning sour
 TOO_MUCH_THRESHOLD  = 0.72    # Too-Much Index above this → overextended
+
+
+def _finite(
+    value: Any,
+    *,
+    positive: bool = False,
+    nonnegative: bool = False,
+) -> Optional[float]:
+    """Return a finite numeric value without substituting missing evidence."""
+    if isinstance(value, bool):
+        return None
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    if not math.isfinite(number):
+        return None
+    if positive and number <= 0.0:
+        return None
+    if nonnegative and number < 0.0:
+        return None
+    return number
+
+
+def _canonical_symbol(value: Any) -> str:
+    return str(value or "").strip().upper().replace("/", "").replace("-", "")
+
+
+def _no_data(reason: str, *, symbol: Any = None) -> Dict[str, Any]:
+    """Return a numeric-free, non-mutating operational no-data envelope."""
+    canonical_symbol = _canonical_symbol(symbol)
+    return {
+        "status": "no_data",
+        "truth_status": "no_data",
+        "reason": reason,
+        "symbol": canonical_symbol or None,
+        "generated_values": False,
+        "action": False,
+        "accounting": False,
+        "learning": False,
+        "eligible_for_action": False,
+        "eligible_for_accounting": False,
+        "eligible_for_learning": False,
+    }
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -134,20 +170,21 @@ class MarketMolecule:
       receptor_kd_um    = 10 / max(trend_persistence, 0.1)   (how sticky the move is)
       functional_group_count = n_correlated_assets            (breadth)
       heteroatom_count  = n_anomaly_events                    (disruption count)
-      molecular_weight  = asset_weight_proxy                  (size / stability)
-      origin            = "synthetic"|"natural"|"placebo"     (organic vs pump vs flat)
+      molecular_weight  = receipt-backed asset weight         (size / stability)
+      origin            = receipt truth status                 (observed vs derived)
     """
     symbol: str
     timeframe: str
 
-    # Raw market inputs (filled by caller or fetched internally)
-    price_change_24h_pct: float = 0.0       # % change, signed
-    price_change_7d_pct: float  = 0.0       # % change 7d, signed
-    trend_persistence: float    = 1.0       # consecutive bars in same direction
-    n_correlated_moving: int    = 5         # breadth: assets moving together
-    n_anomaly_events: int       = 0         # volume spikes / news / gaps in window
-    market_cap_tier: str        = "mid"     # "large" | "mid" | "small" | "micro"
-    is_organic_growth: bool     = True      # False = pump/manipulation detected
+    # Every input is required from the accepted market receipt. There are no
+    # operational numeric defaults and no symbol-to-weight lookup table.
+    price_change_24h_pct: float
+    price_change_7d_pct: float
+    trend_persistence: float
+    n_correlated_moving: int
+    n_anomaly_events: int
+    asset_weight: float
+    origin: str
 
     def to_molecular_data(self) -> MolecularData:
         """Convert market state → MolecularData for the taste sequencer."""
@@ -177,26 +214,16 @@ class MarketMolecule:
         heteroatom_count = max(0, min(MAX_ANOMALY_COUNT, self.n_anomaly_events))
 
         # ── molecular_weight: asset stability proxy ───────────────────────────
-        mw = ASSET_WEIGHT_TABLE.get(self.symbol.upper(), DEFAULT_ASSET_WEIGHT)
-
-        # ── origin: classify as organic / pump / flat ─────────────────────────
-        if abs(self.price_change_24h_pct) < 0.5:
-            origin = "placebo"          # Essentially flat
-        elif self.is_organic_growth:
-            origin = "natural"          # Genuine growth
-        else:
-            origin = "synthetic"        # Pump / manipulation
-
         return MolecularData(
             name=f"{self.symbol} ({self.timeframe})",
             formula=f"MKT-{self.symbol}",
-            molecular_weight=mw,
-            sweetness_potency=max(0.001, sweetness_potency),
+            molecular_weight=self.asset_weight,
+            sweetness_potency=max(0.0, sweetness_potency),
             receptor_kd_um=receptor_kd_um,
             functional_group_count=functional_group_count,
             heteroatom_count=heteroatom_count,
-            smiles=f"[{self.symbol}]",
-            origin=origin,
+            smiles=f"[MKT:{self.symbol}]",
+            origin=self.origin,
             notes=(
                 f"24h={self.price_change_24h_pct:+.2f}% "
                 f"7d={self.price_change_7d_pct:+.2f}% "
@@ -239,14 +266,34 @@ class MarketTasteProfile:
                                 # "sweet_turning_sour"
     turning_point_score: float  # 0–1: probability sweet→sour reversal imminent
     too_much_index: float       # 0–1: overextension of the good thing
+    duration_factor: float      # Exact Too-Much duration component
+    extension_factor: float     # Exact Too-Much extension component
+    binding_factor: float       # Exact Too-Much binding component
+    anomaly_factor: float       # Exact Too-Much anomaly component
     balance_score: float        # 0–1: peaks at 0.5 (savoury = perfect balance)
 
     # ── Queen's verdict ───────────────────────────────────────────────────────
     queen_verdict: str          # Natural language summary
     action_hint: str            # e.g. "hold_sweet" | "prepare_sour" | "savoury_caution"
 
-    # ── Molecular origin ─────────────────────────────────────────────────────
-    origin: str                 # "synthetic" | "natural" | "placebo"
+    # ── Evidence and receipt provenance ──────────────────────────────────────
+    origin: str                 # "provider_observed" | "receipt_derived"
+    venue: str
+    source_id: str
+    source_timestamp: float
+    received_at: float
+    receipt_id: str
+    input_receipt_ids: Tuple[str, ...]
+    truth_status: str
+    generated_values: bool
+    evidence_complete: bool
+    eligible_for_action: bool
+    eligible_for_accounting: bool
+    eligible_for_learning: bool
+    hnc_coherence: float
+    auris_coherence: float
+    hnc_gate_open: bool
+    auris_gate_open: bool
 
     # ── Raw taste experience (from MolecularSequencer) ───────────────────────
     taste_experience: Optional[TasteExperience] = None
@@ -278,6 +325,12 @@ class SweetToSourAnalysis:
     estimated_bars_to_turn: Optional[int]  # None if not turning
     diagnosis: str                  # Human-readable diagnosis
     action: str                     # Recommended action
+    input_receipt_ids: Tuple[str, ...] = field(default_factory=tuple)
+    truth_status: str = "no_data"
+    generated_values: bool = False
+    eligible_for_action: bool = False
+    eligible_for_accounting: bool = False
+    eligible_for_learning: bool = False
 
 
 @dataclass
@@ -302,6 +355,12 @@ class TooMuchAnalysis:
     sweetness_quota_remaining: float = 1.0  # How much "sweet" is left
     verdict: str = ""
     the_answer: str = ""            # Direct answer to "how much is too much"
+    input_receipt_ids: Tuple[str, ...] = field(default_factory=tuple)
+    truth_status: str = "no_data"
+    generated_values: bool = False
+    eligible_for_action: bool = False
+    eligible_for_accounting: bool = False
+    eligible_for_learning: bool = False
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -312,42 +371,236 @@ class MarketTasteSense:
     """
     Queen Sero tastes the market.
 
-    Quick start::
-
-        taste = MarketTasteSense()
-
-        # Taste a single symbol's current condition
-        profile = taste.taste_market("BTC", {
-            "price_change_24h_pct": +12.5,
-            "price_change_7d_pct":  +32.0,
-            "trend_persistence":    7,          # 7 bars up in a row
-            "n_correlated_moving":  18,          # broad rally
-            "n_anomaly_events":     1,           # one unusual spike
-            "is_organic_growth":    True,
-        })
-
-        # Detect the sweet→sour turning point
-        analysis = taste.detect_sweet_to_sour("BTC")
-
-        # Answer: how much more of this good thing can we take?
-        quota = taste.how_much_is_too_much("BTC")
-
-        # The grand unified view across all symbols
-        grand = taste.balance_of_great_question(["BTC", "ETH", "SOL"])
+    Operational calls require linked market, HNC, and Auris receipts. Raw
+    feature dictionaries are not interpreted as provider observations.
     """
 
-    def __init__(self, history_depth: int = 50):
-        self._sequencer = MolecularSequencer()
+    def __init__(
+        self,
+        history_depth: int = 50,
+        *,
+        sequencer: Optional[MolecularSequencer] = None,
+        clock: Callable[[], float] = time.time,
+        max_receipt_age_seconds: float = MAX_RECEIPT_AGE_SECONDS,
+        future_skew_seconds: float = FUTURE_SKEW_SECONDS,
+    ):
+        if isinstance(history_depth, bool) or history_depth < 1:
+            raise ValueError("history_depth must be a positive integer")
+        self._sequencer = sequencer or MolecularSequencer()
+        self._clock = clock
+        self._max_receipt_age_seconds = float(max_receipt_age_seconds)
+        self._future_skew_seconds = float(future_skew_seconds)
         self._history_depth = history_depth
         # Per-symbol deque of MarketTasteProfile (most recent last)
         self._profiles: Dict[str, deque] = {}
+        self._seen_receipt_ids: set[str] = set()
+        self._last_market_source_timestamp: Dict[Tuple[str, str, str], float] = {}
 
     # ── Internal helpers ─────────────────────────────────────────────────────
 
-    def _get_history(self, symbol: str) -> deque:
+    def _history_for_write(self, symbol: str) -> deque:
         if symbol not in self._profiles:
             self._profiles[symbol] = deque(maxlen=self._history_depth)
         return self._profiles[symbol]
+
+    def _history_for_read(self, symbol: str) -> Tuple[MarketTasteProfile, ...]:
+        history = self._profiles.get(_canonical_symbol(symbol))
+        return tuple(history) if history is not None else ()
+
+    def _receipt_times(
+        self,
+        receipt: Mapping[str, Any],
+        now: float,
+    ) -> Optional[Tuple[float, float]]:
+        source_timestamp = _finite(receipt.get("source_timestamp"), positive=True)
+        received_at = _finite(receipt.get("received_at"), positive=True)
+        if (
+            source_timestamp is None
+            or received_at is None
+            or source_timestamp > received_at + self._future_skew_seconds
+            or received_at > now + self._future_skew_seconds
+            or now - source_timestamp > self._max_receipt_age_seconds
+            or now - received_at > self._max_receipt_age_seconds
+        ):
+            return None
+        return source_timestamp, received_at
+
+    @staticmethod
+    def _linked_ids(receipt: Mapping[str, Any]) -> Optional[set[str]]:
+        values = receipt.get("input_receipt_ids")
+        if not isinstance(values, (list, tuple, set)) or not values:
+            return None
+        linked = {str(value).strip() for value in values if str(value).strip()}
+        return linked or None
+
+    def _validate_evidence(
+        self,
+        symbol: str,
+        timeframe: str,
+        market_data: Mapping[str, Any],
+    ) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
+        """Validate one linked, fresh, same-venue evidence chain."""
+        canonical_symbol = _canonical_symbol(symbol)
+        canonical_timeframe = str(timeframe or "").strip().lower()
+        if not canonical_symbol or not canonical_timeframe:
+            return None, "symbol_and_timeframe_required"
+        if not isinstance(market_data, Mapping):
+            return None, "market_data_mapping_required"
+
+        receipt_specs = (
+            ("market", market_data.get("market_receipt"), "market_snapshot"),
+            ("hnc", market_data.get("hnc_receipt"), "hnc_coherence"),
+            ("auris", market_data.get("auris_receipt"), "auris_coherence"),
+        )
+        now = _finite(self._clock(), positive=True)
+        if now is None:
+            return None, "valid_clock_required"
+
+        normalized: Dict[str, Dict[str, Any]] = {}
+        for label, candidate, expected_type in receipt_specs:
+            if not isinstance(candidate, Mapping):
+                return None, f"{label}_receipt_required"
+            receipt_id = str(candidate.get("receipt_id") or "").strip()
+            source_id = str(candidate.get("source_id") or "").strip()
+            venue = str(candidate.get("venue") or "").strip().lower()
+            receipt_symbol = _canonical_symbol(candidate.get("symbol"))
+            receipt_timeframe = str(candidate.get("timeframe") or "").strip().lower()
+            times = self._receipt_times(candidate, now)
+            if (
+                str(candidate.get("receipt_type") or "").strip().lower() != expected_type
+                or not receipt_id
+                or not source_id
+                or not venue
+                or receipt_symbol != canonical_symbol
+                or receipt_timeframe != canonical_timeframe
+                or times is None
+                or candidate.get("truth_status") not in REAL_TRUTH_STATUSES
+                or candidate.get("generated_values") is not False
+                or type(candidate.get("eligible_for_action")) is not bool
+                or type(candidate.get("eligible_for_accounting")) is not bool
+                or type(candidate.get("eligible_for_learning")) is not bool
+            ):
+                return None, f"{label}_receipt_incomplete_or_untrusted"
+            normalized[label] = {
+                **candidate,
+                "receipt_id": receipt_id,
+                "source_id": source_id,
+                "venue": venue,
+                "symbol": receipt_symbol,
+                "timeframe": receipt_timeframe,
+                "source_timestamp": times[0],
+                "received_at": times[1],
+            }
+
+        market = normalized["market"]
+        hnc = normalized["hnc"]
+        auris = normalized["auris"]
+        ids = (market["receipt_id"], hnc["receipt_id"], auris["receipt_id"])
+        if len(set(ids)) != len(ids):
+            return None, "receipt_ids_must_be_unique"
+        if any(receipt_id in self._seen_receipt_ids for receipt_id in ids):
+            return None, "receipt_replay_rejected"
+        if len({market["venue"], hnc["venue"], auris["venue"]}) != 1:
+            return None, "same_venue_receipts_required"
+        if not (
+            market["source_timestamp"]
+            <= hnc["source_timestamp"]
+            <= auris["source_timestamp"]
+            and market["received_at"]
+            <= hnc["received_at"]
+            <= auris["received_at"]
+        ):
+            return None, "monotonic_receipt_chain_required"
+
+        hnc_links = self._linked_ids(hnc)
+        auris_links = self._linked_ids(auris)
+        if hnc_links is None or market["receipt_id"] not in hnc_links:
+            return None, "hnc_receipt_must_link_market_receipt"
+        if (
+            auris_links is None
+            or market["receipt_id"] not in auris_links
+            or hnc["receipt_id"] not in auris_links
+        ):
+            return None, "auris_receipt_must_link_market_and_hnc_receipts"
+
+        price_change_24h_pct = _finite(market.get("price_change_24h_pct"))
+        price_change_7d_pct = _finite(market.get("price_change_7d_pct"))
+        trend_persistence = _finite(market.get("trend_persistence"), positive=True)
+        breadth = _finite(market.get("n_correlated_moving"), nonnegative=True)
+        anomalies = _finite(market.get("n_anomaly_events"), nonnegative=True)
+        asset_weight = _finite(market.get("asset_weight"), positive=True)
+        if (
+            any(
+                value is None
+                for value in (
+                    price_change_24h_pct,
+                    price_change_7d_pct,
+                    trend_persistence,
+                    breadth,
+                    anomalies,
+                    asset_weight,
+                )
+            )
+            or not breadth.is_integer()
+            or not anomalies.is_integer()
+        ):
+            return None, "complete_finite_market_metrics_required"
+
+        hnc_coherence = _finite(hnc.get("coherence"), nonnegative=True)
+        auris_coherence = _finite(auris.get("coherence"), nonnegative=True)
+        if (
+            hnc_coherence is None
+            or auris_coherence is None
+            or hnc_coherence > 1.0
+            or auris_coherence > 1.0
+            or type(hnc.get("gate_open")) is not bool
+            or type(auris.get("gate_open")) is not bool
+        ):
+            return None, "complete_finite_hnc_auris_metrics_required"
+
+        chronology_key = (market["venue"], canonical_symbol, canonical_timeframe)
+        last_timestamp = self._last_market_source_timestamp.get(chronology_key)
+        if last_timestamp is not None and market["source_timestamp"] <= last_timestamp:
+            return None, "newer_market_receipt_required"
+        existing = self._profiles.get(canonical_symbol)
+        if existing and (
+            existing[-1].venue != market["venue"]
+            or existing[-1].timeframe.lower() != canonical_timeframe
+        ):
+            return None, "history_requires_same_venue_and_timeframe"
+
+        market.update(
+            {
+                "price_change_24h_pct": price_change_24h_pct,
+                "price_change_7d_pct": price_change_7d_pct,
+                "trend_persistence": trend_persistence,
+                "n_correlated_moving": int(breadth),
+                "n_anomaly_events": int(anomalies),
+                "asset_weight": asset_weight,
+            }
+        )
+        hnc["coherence"] = hnc_coherence
+        auris["coherence"] = auris_coherence
+        return {
+            "market": market,
+            "hnc": hnc,
+            "auris": auris,
+            "chronology_key": chronology_key,
+            "receipt_ids": ids,
+        }, None
+
+    def _profile_is_fresh(self, profile: MarketTasteProfile) -> bool:
+        now = _finite(self._clock(), positive=True)
+        return bool(
+            now is not None
+            and profile.truth_status == "real_derived"
+            and profile.generated_values is False
+            and profile.evidence_complete
+            and profile.source_timestamp <= profile.received_at + self._future_skew_seconds
+            and profile.received_at <= now + self._future_skew_seconds
+            and now - profile.source_timestamp <= self._max_receipt_age_seconds
+            and now - profile.received_at <= self._max_receipt_age_seconds
+        )
 
     @staticmethod
     def _flavour_from_score(taste_score: float) -> str:
@@ -445,123 +698,240 @@ class MarketTasteSense:
 
     # ── PUBLIC API ────────────────────────────────────────────────────────────
 
-    def taste_market(self, symbol: str, market_data: dict,
-                     timeframe: str = "24h") -> MarketTasteProfile:
+    def taste_market(
+        self,
+        symbol: str,
+        market_data: Mapping[str, Any],
+        timeframe: str = "24h",
+    ) -> Union[MarketTasteProfile, Dict[str, Any]]:
         """
-        Taste a market condition.
+        Taste one market observation only after validating the complete evidence
+        chain. The market metrics live in market_receipt; hnc_receipt must link
+        that receipt and auris_receipt must link both upstream receipts.
+        """
+        evidence, reason = self._validate_evidence(symbol, timeframe, market_data)
+        if evidence is None:
+            return _no_data(reason or "complete_fresh_receipts_required", symbol=symbol)
 
-        market_data keys (all optional, sensible defaults):
-            price_change_24h_pct : float  — signed % price change (last 24h)
-            price_change_7d_pct  : float  — signed % price change (7d)
-            trend_persistence    : float  — consecutive bars in same direction
-            n_correlated_moving  : int    — correlated assets moving together
-            n_anomaly_events     : int    — unusual volume/gap/news events
-            is_organic_growth    : bool   — False if pump suspected
-        """
-        mm = MarketMolecule(
-            symbol=symbol,
-            timeframe=timeframe,
-            price_change_24h_pct=float(market_data.get("price_change_24h_pct", 0.0)),
-            price_change_7d_pct =float(market_data.get("price_change_7d_pct",  0.0)),
-            trend_persistence   =float(market_data.get("trend_persistence",    1.0)),
-            n_correlated_moving =int  (market_data.get("n_correlated_moving",  5)),
-            n_anomaly_events    =int  (market_data.get("n_anomaly_events",     0)),
-            is_organic_growth   =bool (market_data.get("is_organic_growth",    True)),
+        market = evidence["market"]
+        hnc = evidence["hnc"]
+        auris = evidence["auris"]
+        canonical_symbol = market["symbol"]
+        canonical_timeframe = market["timeframe"]
+
+        # Only still-fresh, already accepted observations influence a new taste.
+        history = [
+            profile
+            for profile in self._history_for_read(canonical_symbol)
+            if self._profile_is_fresh(profile)
+            and profile.venue == market["venue"]
+            and profile.timeframe.lower() == canonical_timeframe
+        ]
+        recent_hz = [profile.primary_hz for profile in history]
+
+        origin = (
+            "provider_observed"
+            if market["truth_status"] == "real_observed"
+            else "receipt_derived"
         )
+        molecule = MarketMolecule(
+            symbol=canonical_symbol,
+            timeframe=canonical_timeframe,
+            price_change_24h_pct=market["price_change_24h_pct"],
+            price_change_7d_pct=market["price_change_7d_pct"],
+            trend_persistence=market["trend_persistence"],
+            n_correlated_moving=market["n_correlated_moving"],
+            n_anomaly_events=market["n_anomaly_events"],
+            asset_weight=market["asset_weight"],
+            origin=origin,
+        ).to_molecular_data()
 
-        mol  = mm.to_molecular_data()
-        exp  = self._sequencer.build_experience(mol)
+        # Use the genuine canonical sequencing and PHI equations, but deliberately
+        # do not call build_experience(): that legacy method creates a BrainInput
+        # with a local timestamp and no linked operational receipt.
+        properties = self._sequencer.sequence(molecule)
+        hz, emotional_state, emotional_band = self._sequencer.map_to_frequency(properties)
+        taste_score = properties.taste_score
 
-        taste_score = exp.taste_score
-        hz          = exp.primary_frequency
-
-        # ── Normalise raw inputs for TMI / decomposition ──────────────────────
-        kd_norm     = mol.receptor_kd_um / 10.0                    # 0–1
-        anomaly_norm= mol.heteroatom_count / MAX_ANOMALY_COUNT      # 0–1
-
-        # ── Flavour decomposition ─────────────────────────────────────────────
+        kd_norm = molecule.receptor_kd_um / 10.0
+        anomaly_norm = molecule.heteroatom_count / MAX_ANOMALY_COUNT
         sweetness, sourness, savouriness, bitterness = self._decompose_flavours(
             taste_score, kd_norm, anomaly_norm
         )
 
-        # ── Hz history for turning-point detection ────────────────────────────
-        hist = self._get_history(symbol)
-        recent_hz = [p.primary_hz for p in hist] if hist else []
-
-        periods_at_sweet = sum(1 for p in hist if p.taste_score > 0.55)
+        periods_at_sweet = sum(1 for profile in history if profile.taste_score > 0.55)
         hz_decay = 0.0
         if len(recent_hz) >= 2:
-            hz_decay = max(0.0, recent_hz[-1] - hz)   # positive = Hz dropped = decaying
+            hz_decay = max(0.0, recent_hz[-1] - hz)
 
-        # ── Too-Much Index ────────────────────────────────────────────────────
-        tmi, dur_f, ext_f, bind_f, ano_f = self._too_much_index(
+        (
+            too_much_index,
+            duration_factor,
+            extension_factor,
+            binding_factor,
+            anomaly_factor,
+        ) = self._too_much_index(
             taste_score, periods_at_sweet, kd_norm, anomaly_norm
         )
+        turning_point_score = self._turning_point_score(
+            taste_score, hz_decay, too_much_index, bitterness
+        )
+        base_category = self._flavour_from_score(taste_score)
+        taste_category = (
+            "sweet_turning_sour"
+            if turning_point_score >= 0.60 and taste_score >= 0.55
+            else base_category
+        )
+        balance_score = max(
+            0.0,
+            round(1.0 - abs(taste_score - 0.475) / 0.475, 4),
+        )
 
-        # ── Turning-point score ───────────────────────────────────────────────
-        tp_score = self._turning_point_score(taste_score, hz_decay, tmi, bitterness)
+        gates_open = hnc["gate_open"] and auris["gate_open"]
+        eligible_for_action = bool(
+            gates_open
+            and market["eligible_for_action"]
+            and hnc["eligible_for_action"]
+            and auris["eligible_for_action"]
+        )
+        eligible_for_learning = bool(
+            gates_open
+            and market["eligible_for_learning"]
+            and hnc["eligible_for_learning"]
+            and auris["eligible_for_learning"]
+        )
 
-        # ── Flavour category (refined with turning-point) ─────────────────────
-        base_cat = self._flavour_from_score(taste_score)
-        if tp_score >= 0.60 and taste_score >= 0.55:
-            taste_category = "sweet_turning_sour"
-        else:
-            taste_category = base_cat
+        queen_verdict, candidate_action = self._queen_verdict(
+            canonical_symbol,
+            taste_score,
+            taste_category,
+            turning_point_score,
+            too_much_index,
+            sweetness,
+            sourness,
+            savouriness,
+            hz,
+        )
+        action_hint = candidate_action if eligible_for_action else "observe_only"
+        if not eligible_for_action:
+            queen_verdict = (
+                f"{queen_verdict} Complete coherence evidence is observational "
+                "and does not authorise an action."
+            )
 
-        # ── Balance score: peaks at 0.475 (the savoury Goldilocks zone) ───────
-        balance_score = round(1.0 - abs(taste_score - 0.475) / 0.475, 4)
-        balance_score = max(0.0, balance_score)
-
-        # ── Queen's verdict ───────────────────────────────────────────────────
-        queen_verdict, action_hint = self._queen_verdict(
-            symbol, taste_score, taste_category, tp_score, tmi,
-            sweetness, sourness, savouriness, hz
+        input_receipt_ids = evidence["receipt_ids"]
+        digest = hashlib.sha256("|".join(input_receipt_ids).encode("utf-8")).hexdigest()[:24]
+        receipt_id = f"market-taste:{digest}"
+        source_id = f"market-taste:{market['venue']}"
+        harmonics = [
+            round(hz * PHI, 2),
+            round(hz * PHI ** 2, 2),
+            round(hz * PHI ** 3, 2),
+        ]
+        molecular_resonance = round(
+            (molecule.molecular_weight / 1000.0) * LOVE_FREQUENCY,
+            3,
+        )
+        emotional_weight = round(taste_score * 2.0 - 1.0, 4)
+        experience = TasteExperience(
+            molecule_name=molecule.name,
+            formula=molecule.formula,
+            primary_frequency=hz,
+            emotional_state=emotional_state,
+            emotional_band=emotional_band,
+            emotional_weight=emotional_weight,
+            taste_score=taste_score,
+            taste_intensity=properties.sweetness_norm,
+            binding_strength=properties.binding_norm,
+            harmonic_signature=harmonics,
+            molecular_resonance=molecular_resonance,
+            sensory_description=queen_verdict,
+            brain_input=None,
+            data_status="real_derived",
+            truth_status="real_derived",
+            source_id=source_id,
+            source_timestamp=market["source_timestamp"],
+            received_at=auris["received_at"],
+            receipt_id=receipt_id,
+            generated_values=False,
+            eligible_for_action=eligible_for_action,
+            eligible_for_accounting=False,
+            eligible_for_learning=eligible_for_learning,
+            sequenced_at=auris["source_timestamp"],
         )
 
         profile = MarketTasteProfile(
-            symbol=symbol,
-            timeframe=timeframe,
-            timestamp=time.time(),
+            symbol=canonical_symbol,
+            timeframe=canonical_timeframe,
+            timestamp=market["source_timestamp"],
             taste_score=round(taste_score, 4),
             primary_hz=hz,
-            emotional_state=exp.emotional_state,
-            emotional_band=exp.emotional_band,
+            emotional_state=emotional_state,
+            emotional_band=emotional_band,
             sweetness=sweetness,
             sourness=sourness,
             savouriness=savouriness,
             bitterness=bitterness,
             taste_category=taste_category,
-            turning_point_score=tp_score,
-            too_much_index=tmi,
+            turning_point_score=turning_point_score,
+            too_much_index=too_much_index,
+            duration_factor=duration_factor,
+            extension_factor=extension_factor,
+            binding_factor=binding_factor,
+            anomaly_factor=anomaly_factor,
             balance_score=balance_score,
             queen_verdict=queen_verdict,
             action_hint=action_hint,
-            origin=mol.origin,
-            taste_experience=exp,
+            origin=origin,
+            venue=market["venue"],
+            source_id=source_id,
+            source_timestamp=market["source_timestamp"],
+            received_at=auris["received_at"],
+            receipt_id=receipt_id,
+            input_receipt_ids=input_receipt_ids,
+            truth_status="real_derived",
+            generated_values=False,
+            evidence_complete=True,
+            eligible_for_action=eligible_for_action,
+            eligible_for_accounting=False,
+            eligible_for_learning=eligible_for_learning,
+            hnc_coherence=hnc["coherence"],
+            auris_coherence=auris["coherence"],
+            hnc_gate_open=hnc["gate_open"],
+            auris_gate_open=auris["gate_open"],
+            taste_experience=experience,
             hz_history=recent_hz + [hz],
         )
 
-        hist.append(profile)
+        # Mutate internal state only after the complete profile exists. A gate
+        # can be observational without being a hard block, but only an explicitly
+        # learning-eligible chain may enter taste history.
+        self._seen_receipt_ids.update(input_receipt_ids)
+        self._last_market_source_timestamp[evidence["chronology_key"]] = market[
+            "source_timestamp"
+        ]
+        if eligible_for_learning:
+            self._history_for_write(canonical_symbol).append(profile)
         return profile
 
-    def detect_sweet_to_sour(self, symbol: str) -> SweetToSourAnalysis:
+    def detect_sweet_to_sour(
+        self,
+        symbol: str,
+    ) -> Union[SweetToSourAnalysis, Dict[str, Any]]:
         """
         Answer: "When does this good thing turn bad?"
 
-        Requires at least 2 previous `taste_market` calls for the symbol.
-        Falls back gracefully if history is sparse.
+        Only still-fresh accepted receipt history can produce an analysis.
         """
-        hist = list(self._get_history(symbol))
-
+        hist = [
+            profile
+            for profile in self._history_for_read(symbol)
+            if self._profile_is_fresh(profile)
+        ]
         if not hist:
-            return SweetToSourAnalysis(
-                symbol=symbol, currently_sweet=False,
-                turning_point_imminent=False, turning_point_score=0.0,
-                hz_trend="unknown", hz_decay_per_period=0.0,
-                periods_at_sweet=0, too_much_index=0.0,
-                bitterness_trend="unknown", estimated_bars_to_turn=None,
-                diagnosis="No taste history yet — run taste_market() first.",
-                action="collect_more_data",
+            return _no_data(
+                "fresh_learning_eligible_taste_history_required",
+                symbol=symbol,
             )
 
         latest = hist[-1]
@@ -642,6 +1012,16 @@ class MarketTasteSense:
             )
             action = "wait_for_recovery" if latest.sourness > 0.4 else "monitor"
 
+        input_receipt_ids = tuple(
+            dict.fromkeys(
+                receipt_id
+                for profile in hist
+                for receipt_id in profile.input_receipt_ids
+            )
+        )
+        eligible_for_action = all(profile.eligible_for_action for profile in hist)
+        if not eligible_for_action:
+            action = "observe_only"
         return SweetToSourAnalysis(
             symbol=symbol,
             currently_sweet=currently_sweet,
@@ -655,23 +1035,35 @@ class MarketTasteSense:
             estimated_bars_to_turn=estimated_bars,
             diagnosis=diagnosis,
             action=action,
+            input_receipt_ids=input_receipt_ids,
+            truth_status="real_derived",
+            generated_values=False,
+            eligible_for_action=eligible_for_action,
+            eligible_for_accounting=False,
+            eligible_for_learning=all(
+                profile.eligible_for_learning for profile in hist
+            ),
         )
 
-    def how_much_is_too_much(self, symbol: str) -> TooMuchAnalysis:
+    def how_much_is_too_much(
+        self,
+        symbol: str,
+    ) -> Union[TooMuchAnalysis, Dict[str, Any]]:
         """
         Answer: "How much of a good thing until it leaves a bad taste?"
 
         Returns a TooMuchAnalysis with the Too-Much Index broken down into its
         four contributing factors and the remaining "sweetness quota".
         """
-        hist = list(self._get_history(symbol))
+        hist = [
+            profile
+            for profile in self._history_for_read(symbol)
+            if self._profile_is_fresh(profile)
+        ]
         if not hist:
-            return TooMuchAnalysis(
-                symbol=symbol, too_much_index=0.0,
-                duration_factor=0.0, extension_factor=0.0,
-                binding_factor=0.0, anomaly_factor=0.0,
-                verdict="No data yet.",
-                the_answer="Taste the market first.",
+            return _no_data(
+                "fresh_learning_eligible_taste_history_required",
+                symbol=symbol,
             )
 
         latest = hist[-1]
@@ -719,33 +1111,27 @@ class MarketTasteSense:
         else:
             verdict = f"Within bounds (TMI={tmi:.2f}, {quota_remaining:.0%} quota left)"
 
-        # Reconstruct factors from latest profile for transparency
-        dur_f  = min(1.0, latest.too_much_index * 1.43)  # duration contributes ~40%
-        ext_f  = min(1.0, max(0.0, latest.taste_score - 0.55) / 0.45)
-        # binding and anomaly recovered from taste experience if available
-        if latest.taste_experience:
-            mol = latest.taste_experience
-            bind_f = mol.binding_strength   # 0–1 inverse persistence
-            ano_f  = max(0.0, 1.0 - mol.binding_strength)
-        else:
-            bind_f = latest.bitterness
-            ano_f  = latest.bitterness
-
         return TooMuchAnalysis(
             symbol=symbol,
             too_much_index=tmi,
-            duration_factor=round(dur_f, 4),
-            extension_factor=round(ext_f, 4),
-            binding_factor=round(bind_f, 4),
-            anomaly_factor=round(ano_f, 4),
+            duration_factor=latest.duration_factor,
+            extension_factor=latest.extension_factor,
+            binding_factor=latest.binding_factor,
+            anomaly_factor=latest.anomaly_factor,
             threshold=TOO_MUCH_THRESHOLD,
             is_overextended=is_over,
             sweetness_quota_remaining=round(quota_remaining, 4),
             verdict=verdict,
             the_answer=the_answer,
+            input_receipt_ids=latest.input_receipt_ids,
+            truth_status="real_derived",
+            generated_values=False,
+            eligible_for_action=latest.eligible_for_action,
+            eligible_for_accounting=False,
+            eligible_for_learning=latest.eligible_for_learning,
         )
 
-    def balance_of_great_question(self, symbols: List[str]) -> Dict:
+    def balance_of_great_question(self, symbols: List[str]) -> Dict[str, Any]:
         """
         The Grand Unified View — taste the entire market simultaneously.
 
@@ -753,16 +1139,26 @@ class MarketTasteSense:
           "Is it sustainably savoury, or dangerously sweet about to turn sour?"
         """
         if not symbols:
-            return {"error": "No symbols provided"}
+            return _no_data("symbols_required")
 
-        profiles = []
+        profiles: List[MarketTasteProfile] = []
         for sym in symbols:
-            hist = list(self._get_history(sym))
-            if hist:
-                profiles.append(hist[-1])
-
-        if not profiles:
-            return {"error": "No taste history for any symbol — run taste_market() first"}
+            hist = [
+                profile
+                for profile in self._history_for_read(sym)
+                if self._profile_is_fresh(profile)
+            ]
+            if not hist:
+                return _no_data(
+                    "fresh_learning_eligible_history_required_for_every_symbol",
+                    symbol=sym,
+                )
+            profiles.append(hist[-1])
+        if (
+            len({profile.venue for profile in profiles}) != 1
+            or len({profile.timeframe.lower() for profile in profiles}) != 1
+        ):
+            return _no_data("same_venue_and_timeframe_history_required")
 
         # ── Aggregate across all symbols ──────────────────────────────────────
         n = len(profiles)
@@ -830,7 +1226,31 @@ class MarketTasteSense:
             )
             grand_action = "selective_positioning"
 
+        eligible_for_action = all(
+            profile.eligible_for_action for profile in profiles
+        )
+        if not eligible_for_action:
+            grand_action = "observe_only"
+        input_receipt_ids = tuple(
+            dict.fromkeys(
+                receipt_id
+                for profile in profiles
+                for receipt_id in profile.input_receipt_ids
+            )
+        )
         return {
+            "status": "ok",
+            "truth_status": "real_derived",
+            "generated_values": False,
+            "evidence_complete": True,
+            "eligible_for_action": eligible_for_action,
+            "eligible_for_accounting": False,
+            "eligible_for_learning": all(
+                profile.eligible_for_learning for profile in profiles
+            ),
+            "input_receipt_ids": input_receipt_ids,
+            "venue": profiles[0].venue,
+            "timeframe": profiles[0].timeframe,
             "grand_verdict": grand_verdict,
             "grand_action": grand_action,
             "symbols_tasted": n,
@@ -938,106 +1358,3 @@ def get_market_taste_sense() -> MarketTasteSense:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# DEMO / SELF-TEST
-# ─────────────────────────────────────────────────────────────────────────────
-
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
-
-    taste = MarketTasteSense()
-
-    # ── Simulate a market going from savoury → sweet → dangerously sweet → sour
-    BTC_SCENARIOS = [
-        # (label,       pct24h, persist, breadth, anomaly, organic)
-        ("early_bull",  +5.2,  4,  12, 0, True),
-        ("strong_bull", +12.4, 7,  18, 1, True),
-        ("peak_mania",  +28.7, 11, 22, 3, False),   # pump, anomalies
-        ("early_crack", +8.1,  4,  14, 4, True),    # still positive but anomalies rising
-        ("turning",     +1.2,  2,   8, 6, True),    # barely positive, trend breaking
-        ("sour",        -9.5,  1,   5, 8, True),    # went sour
-    ]
-
-    print("\n" + "═" * 72)
-    print("  MARKET TASTE SENSE — BTC JOURNEY: SWEET → SOUR")
-    print("═" * 72)
-
-    for label, pct, persist, breadth, anomaly, organic in BTC_SCENARIOS:
-        profile = taste.taste_market("BTC", {
-            "price_change_24h_pct": pct,
-            "trend_persistence":    persist,
-            "n_correlated_moving":  breadth,
-            "n_anomaly_events":     anomaly,
-            "is_organic_growth":    organic,
-        })
-        print(f"\n  [{label}]")
-        print(f"    Flavour    : {profile.taste_category:<22}  "
-              f"Taste score: {profile.taste_score:.3f}")
-        print(f"    Hz         : {profile.primary_hz:.0f} Hz  ({profile.emotional_state})")
-        print(f"    Sweet/Sour/Savoury/Bitter: "
-              f"{profile.sweetness:.2f} / {profile.sourness:.2f} / "
-              f"{profile.savouriness:.2f} / {profile.bitterness:.2f}")
-        print(f"    Too-Much   : {profile.too_much_index:.3f}   "
-              f"Turning-point: {profile.turning_point_score:.3f}")
-        print(f"    Verdict    : {profile.queen_verdict}")
-        print(f"    Action     : {profile.action_hint}")
-
-    print("\n" + "─" * 72)
-    print("  SWEET → SOUR ANALYSIS")
-    print("─" * 72)
-    sts = taste.detect_sweet_to_sour("BTC")
-    print(f"  Currently sweet   : {sts.currently_sweet}")
-    print(f"  Turning imminent  : {sts.turning_point_imminent}")
-    print(f"  Hz trend          : {sts.hz_trend}  ({sts.hz_decay_per_period:+.1f} Hz/period)")
-    print(f"  Periods at sweet  : {sts.periods_at_sweet}")
-    print(f"  Bitterness trend  : {sts.bitterness_trend}")
-    print(f"  Diagnosis         : {sts.diagnosis}")
-    print(f"  Action            : {sts.action}")
-
-    print("\n" + "─" * 72)
-    print("  HOW MUCH IS TOO MUCH")
-    print("─" * 72)
-    tma = taste.how_much_is_too_much("BTC")
-    print(f"  Too-Much Index    : {tma.too_much_index:.3f}")
-    print(f"  Overextended      : {tma.is_overextended}")
-    print(f"  Quota remaining   : {tma.sweetness_quota_remaining:.0%}")
-    print(f"  The Answer        : {tma.the_answer}")
-
-    # ── Now taste the broader market ──────────────────────────────────────────
-    symbols = ["BTC", "ETH", "SOL", "DOGE", "LINK"]
-    scenarios = [
-        (+12.4, 7, 18, 1, True),    # BTC: already tasted above (taken from history)
-        (+18.2, 9, 20, 2, True),    # ETH: strong
-        (+31.5, 12, 21, 5, False),  # SOL: pump
-        (-14.2, 1, 3, 8, True),     # DOGE: sour
-        (+4.1,  4, 10, 0, True),    # LINK: savoury
-    ]
-    for sym, (pct, persist, breadth, anomaly, organic) in zip(symbols, scenarios):
-        if sym != "BTC":  # BTC already tasted
-            taste.taste_market(sym, {
-                "price_change_24h_pct": pct,
-                "trend_persistence": persist,
-                "n_correlated_moving": breadth,
-                "n_anomaly_events": anomaly,
-                "is_organic_growth": organic,
-            })
-
-    print("\n" + "─" * 72)
-    print("  BALANCE OF THE GREAT QUESTION — FULL MARKET VIEW")
-    print("─" * 72)
-    grand = taste.balance_of_great_question(symbols)
-    print(f"  Grand verdict     : {grand['grand_verdict']}")
-    print(f"  Grand action      : {grand['grand_action']}")
-    print(f"  Avg Hz            : {grand['average_hz']:.0f} Hz  ({grand['average_emotional_state']})")
-    print(f"  Avg taste         : {grand['average_taste_score']:.3f}")
-    print(f"  Flavour profile   : "
-          f"Sweet {grand['flavour_profile']['sweetness']:.2f} / "
-          f"Sour {grand['flavour_profile']['sourness']:.2f} / "
-          f"Savoury {grand['flavour_profile']['savouriness']:.2f} / "
-          f"Bitter {grand['flavour_profile']['bitterness']:.2f}")
-    print(f"  Sweetest          : {grand['sweetest_symbol']['symbol']} "
-          f"@ {grand['sweetest_symbol']['hz']:.0f} Hz")
-    print(f"  Sourest           : {grand['sourest_symbol']['symbol']} "
-          f"@ {grand['sourest_symbol']['hz']:.0f} Hz")
-    print(f"  Most at risk      : {grand['most_at_risk_of_turning']['symbol']} "
-          f"(TP={grand['most_at_risk_of_turning']['turning_point_score']:.0%})")
-    print("═" * 72 + "\n")

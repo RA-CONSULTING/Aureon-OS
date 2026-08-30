@@ -15,12 +15,13 @@ Metric names follow the repo's ``aureon_*`` convention.
 
 from __future__ import annotations
 
-import json
 import logging
 import threading
 import time
 from contextlib import contextmanager
 from typing import Any, Dict
+
+from aureon.observability import emit_local_event, normalize_correlation_id
 
 logger = logging.getLogger("aureon.operator.metrics")
 
@@ -114,13 +115,31 @@ class OperatorMetrics:
     def __init__(self, enabled: bool = True, structured_logs: bool = True, trace_id: str = ""):
         self.enabled = enabled
         self.structured_logs = structured_logs
-        self.trace_id = trace_id
+        self.trace_id = normalize_correlation_id(trace_id)
 
     def _log(self, event: str, **fields: Any) -> None:
         if not self.structured_logs:
             return
-        record = {"event": event, "trace_id": self.trace_id, **fields}
-        logger.info(json.dumps(record, default=str))
+        emit_local_event(
+            logger,
+            logging.INFO,
+            event,
+            correlation_id=self.trace_id,
+            fields={"trace_id": self.trace_id, **fields},
+        )
+
+    def exception(self, component: str, exc: BaseException, **fields: Any) -> None:
+        """Record a sanitized local failure without exception text or traceback."""
+        if not self.structured_logs:
+            return
+        emit_local_event(
+            logger,
+            logging.ERROR,
+            "operator_exception",
+            correlation_id=self.trace_id,
+            fields={"trace_id": self.trace_id, "component": component, **fields},
+            exception=exc,
+        )
 
     @contextmanager
     def phase(self, name: str):

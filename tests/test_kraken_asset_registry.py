@@ -1,5 +1,6 @@
 import json
 import sqlite3
+import time
 
 from aureon.exchanges.kraken_asset_registry import (
     SCHEMA_VERSION,
@@ -8,6 +9,7 @@ from aureon.exchanges.kraken_asset_registry import (
     build_kraken_order_survival_envelope,
     write_kraken_asset_registry,
 )
+from aureon.exchanges.kraken_client import KrakenClient
 
 
 class FakeKrakenClient:
@@ -66,6 +68,29 @@ class FakeKrakenClient:
     def get_ticker(self, symbol):
         return dict(self.tickers.get(symbol, {}))
 
+    def get_ticker_receipt(self, symbol):
+        ticker = self.get_ticker(symbol)
+        if not ticker:
+            return {
+                "data_status": "no_data", "truth_status": "no_data",
+                "generated_values": False, "action": False, "accounting": False, "learning": False,
+            }
+        return {
+            **ticker,
+            "open_price": ticker["price"],
+            "volume_24h": 1.0,
+            "data_status": "live",
+            "truth_status": "real_observed",
+            "generated_values": False,
+            "source_id": "kraken:test_ticker",
+            "source_timestamp": time.time(),
+            "received_at": time.time(),
+            "receipt_id": "kraken:test:" + symbol,
+            "action": False,
+            "accounting": False,
+            "learning": False,
+        }
+
 
 def test_kraken_asset_registry_maps_spot_margin_costs_and_routes():
     report = build_kraken_asset_registry(client=FakeKrakenClient(), max_tickers=-1)
@@ -100,13 +125,13 @@ def test_kraken_asset_registry_maps_spot_margin_costs_and_routes():
     assert report["audit"]["score_pct"] == 100.0
 
 
-def test_kraken_asset_registry_marks_unsampled_pairs_as_known_but_not_ready():
+def test_kraken_asset_registry_marks_unsampled_pairs_as_no_data_and_not_ready():
     report = build_kraken_asset_registry(client=FakeKrakenClient(), max_tickers=1)
 
     assets = {asset["symbol"]: asset for asset in report["assets"]}
-    assert assets["DOGEUSD"]["snapshot_status"] == "ticker_not_sampled_budget"
+    assert assets["DOGEUSD"]["snapshot_status"] == "no_data"
     assert assets["DOGEUSD"]["spot_trade_ready"] is False
-    assert "ticker_not_sampled_budget" in assets["DOGEUSD"]["blockers"]
+    assert "no_data" in assets["DOGEUSD"]["blockers"]
     assert report["summary"]["known_but_not_sampled_count"] == 2
 
 
@@ -260,3 +285,40 @@ def test_kraken_registry_audit_detects_missing_routes_or_sensitive_keys():
     assert audit["status"] == "attention"
     assert checks["margin_route_declared"]["passed"] is False
     assert checks["secret_key_scan"]["passed"] is False
+
+
+def test_kraken_ticker_receipt_and_registry_reject_incomplete_evidence(tmp_path):
+    client = object.__new__(KrakenClient)
+    client._ticker = lambda _symbols: {
+        "XXBTZUSD": {"c": ["100"], "b": ["99"], "a": ["101"], "o": "98", "v": ["1", "2"]}
+    }
+    client._public_get = lambda _path: {"unixtime": time.time()}
+    client._int_to_alt = {"XXBTZUSD": "XBTUSD"}
+    receipt = client.get_ticker_receipt("XBTUSD")
+    assert receipt["data_status"] == "live"
+    assert receipt["truth_status"] == "real_observed"
+    assert receipt["bid"] == 99.0 and receipt["ask"] == 101.0
+    assert receipt["receipt_id"].startswith("kraken_ticker:")
+
+    bad = FakeKrakenClient()
+    bad.get_ticker_receipt = lambda _symbol: {
+        "data_status": "live", "truth_status": "real_observed", "generated_values": True,
+        "action": False, "accounting": False, "learning": False,
+    }
+    report = build_kraken_asset_registry(client=bad, max_tickers=-1)
+    asset = report["assets"][0]
+    assert report["data_status"] == "no_data"
+    assert asset["market_data_status"] == "no_data"
+    assert asset["bid"] is None and asset["ask"] is None and asset["mid_price"] is None
+    assert asset["action"] is False and asset["accounting"] is False and asset["learning"] is False
+    paths = write_kraken_asset_registry(
+        report,
+        state_json=tmp_path / "state.json",
+        output_json=tmp_path / "output.json",
+        output_csv=tmp_path / "output.csv",
+        output_md=tmp_path / "output.md",
+        output_db=tmp_path / "output.sqlite",
+        public_json=tmp_path / "public.json",
+    )
+    assert paths["status"] == "no_data"
+    assert not any(tmp_path.iterdir())

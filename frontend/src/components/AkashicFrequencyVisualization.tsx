@@ -21,7 +21,7 @@ export function AkashicFrequencyVisualization({
       <Card className="bg-card/50 backdrop-blur border-border/50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Waves className="w-5 h-5 text-cyan-500" />
+            <Waves className="w-5 h-5 text-primary" />
             Akashic Frequency Mapper
           </CardTitle>
           <CardDescription>Attuning to foundational layer of reality...</CardDescription>
@@ -36,9 +36,9 @@ export function AkashicFrequencyVisualization({
   }
 
   const getQualityStatus = (stability: number) => {
-    if (stability > 0.8) return { level: 'HIGH', color: 'text-green-500', bg: 'bg-green-500/20' };
-    if (stability > 0.5) return { level: 'MODERATE', color: 'text-yellow-500', bg: 'bg-yellow-500/20' };
-    return { level: 'LOW', color: 'text-orange-500', bg: 'bg-orange-500/20' };
+    if (stability > 0.8) return { level: 'HIGH', color: 'text-success', bg: 'bg-success/20' };
+    if (stability > 0.5) return { level: 'MODERATE', color: 'text-warning', bg: 'bg-warning/20' };
+    return { level: 'LOW', color: 'text-warning', bg: 'bg-warning/20' };
   };
 
   const quality = getQualityStatus(attunement.stabilityIndex);
@@ -46,13 +46,13 @@ export function AkashicFrequencyVisualization({
 
   return (
     <Card className="bg-card/50 backdrop-blur border-border/50 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-blue-500/5 to-indigo-500/5" />
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-primary/5 to-primary/5" />
       
       <CardHeader className="relative">
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <Waves className="w-5 h-5 text-cyan-500" />
+              <Waves className="w-5 h-5 text-primary" />
               Akashic Frequency Mapper
             </CardTitle>
             <CardDescription>
@@ -80,13 +80,13 @@ export function AkashicFrequencyVisualization({
 
       <CardContent className="relative space-y-4">
         {/* Final Frequency Display */}
-        <div className="flex items-center justify-center p-6 bg-gradient-to-br from-cyan-500/10 to-indigo-500/10 rounded-lg border border-border/50">
+        <div className="flex items-center justify-center p-6 bg-gradient-to-br from-primary/10 to-primary/10 rounded-lg border border-border/50">
           <div className="text-center">
             <div className="flex items-center justify-center gap-2 mb-2">
-              <Sparkles className="w-6 h-6 text-cyan-500" />
+              <Sparkles className="w-6 h-6 text-primary" />
               <span className="text-sm text-muted-foreground font-medium">Attuned Akashic Frequency</span>
             </div>
-            <div className="text-5xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent">
+            <div className="text-5xl font-bold bg-gradient-to-r from-primary via-primary to-primary bg-clip-text text-transparent">
               {attunement.finalFrequency.toFixed(4)} Hz
             </div>
             <div className="text-xs text-muted-foreground mt-1">
@@ -100,7 +100,7 @@ export function AkashicFrequencyVisualization({
           {/* Convergence Rate */}
           <div className="p-4 bg-background/50 rounded-lg border border-border/50">
             <div className="text-xs text-muted-foreground mb-2">Convergence Rate</div>
-            <div className="text-2xl font-bold text-cyan-500 mb-2">
+            <div className="text-2xl font-bold text-primary mb-2">
               {(attunement.convergenceRate * 100).toFixed(1)}%
             </div>
             <Progress value={attunement.convergenceRate * 100} className="h-2" />
@@ -109,7 +109,7 @@ export function AkashicFrequencyVisualization({
           {/* Stability Index */}
           <div className="p-4 bg-background/50 rounded-lg border border-border/50">
             <div className="text-xs text-muted-foreground mb-2">Stability Index</div>
-            <div className="text-2xl font-bold text-blue-500 mb-2">
+            <div className="text-2xl font-bold text-primary mb-2">
               {attunement.stabilityIndex.toFixed(3)}
             </div>
             <Progress value={attunement.stabilityIndex * 100} className="h-2" />
@@ -118,7 +118,7 @@ export function AkashicFrequencyVisualization({
           {/* Akashic Boost */}
           <div className="p-4 bg-background/50 rounded-lg border border-border/50">
             <div className="text-xs text-muted-foreground mb-2">Field Boost</div>
-            <div className="text-2xl font-bold text-indigo-500 mb-2">
+            <div className="text-2xl font-bold text-primary mb-2">
               {(akashicBoost * 100).toFixed(1)}%
             </div>
             <Progress value={akashicBoost * 100} className="h-2" />
@@ -128,7 +128,7 @@ export function AkashicFrequencyVisualization({
         {/* Reflection Cycles */}
         <div className="p-4 bg-background/50 rounded-lg border border-border/50">
           <div className="text-sm font-medium mb-3 flex items-center gap-2">
-            <RefreshCw className="w-4 h-4 text-cyan-500" />
+            <RefreshCw className="w-4 h-4 text-primary" />
             Meditative Reflection Cycles
           </div>
           <div className="space-y-2 max-h-48 overflow-y-auto">
@@ -139,7 +139,7 @@ export function AkashicFrequencyVisualization({
                   cycle.cycle === 0 
                     ? 'bg-muted/50 text-muted-foreground' 
                     : cycle.cycle === numCycles
-                    ? 'bg-cyan-500/10 border border-cyan-500/30 text-cyan-500'
+                    ? 'bg-primary/10 border border-primary/30 text-primary'
                     : 'bg-background/50 text-foreground'
                 }`}
               >
@@ -147,7 +147,7 @@ export function AkashicFrequencyVisualization({
                   {cycle.cycle === 0 ? '⚡ BASE' : `🔄 C${cycle.cycle}`}: {cycle.frequency.toFixed(4)} Hz
                 </div>
                 {cycle.cycle === numCycles && (
-                  <div className="text-xs text-cyan-400 mt-1">✨ Final Attunement</div>
+                  <div className="text-xs text-primary mt-1">✨ Final Attunement</div>
                 )}
               </div>
             ))}
@@ -155,7 +155,7 @@ export function AkashicFrequencyVisualization({
         </div>
 
         {/* Theory */}
-        <div className="p-4 bg-gradient-to-r from-cyan-500/10 to-indigo-500/10 rounded-lg border border-border/50">
+        <div className="p-4 bg-gradient-to-r from-primary/10 to-primary/10 rounded-lg border border-border/50">
           <p className="text-sm text-muted-foreground">
             <span className="font-medium text-foreground">Ping-Pong Reflection:</span>{' '}
             Each cycle reflects the current frequency against the Point of Intent (9.0), creating a meditative

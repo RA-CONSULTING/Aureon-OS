@@ -191,9 +191,11 @@ def _ollama_snapshot() -> Dict[str, Any]:
         timeout_s = float(os.environ.get("AUREON_OLLAMA_BRIDGE_TIMEOUT_S", "2") or 2)
         return OllamaBridge(timeout_s=max(0.25, timeout_s)).snapshot()
     except Exception as exc:
+        from aureon.ollama_config import resolve_ollama_native_base_url
+
         return {
             "reachable": False,
-            "base_url": os.environ.get("AUREON_OLLAMA_BASE_URL", "http://localhost:11434"),
+            "base_url": resolve_ollama_native_base_url(),
             "chat_model": os.environ.get("AUREON_LLM_MODEL") or os.environ.get("AUREON_OLLAMA_MODEL") or "",
             "models": [],
             "running": [],
@@ -288,14 +290,14 @@ def _proof_checklist(
     return [
         {
             "id": "ollama_server_reachable",
-            "label": "Ollama server is reachable on the local machine",
+            "label": "Configured Ollama local/cloud endpoint is reachable",
             "ok": bool(snapshot.get("reachable")),
             "blocking": True,
             "evidence": snapshot.get("base_url", ""),
         },
         {
             "id": "local_model_library_visible",
-            "label": "Ollama model library is visible",
+            "label": "Ollama model catalog is visible",
             "ok": bool(snapshot.get("models")),
             "blocking": True,
             "evidence": ", ".join([str(item) for item in snapshot.get("models", [])[:6]]),
@@ -352,14 +354,24 @@ def _next_actions(
 ) -> List[Dict[str, Any]]:
     actions: List[Dict[str, Any]] = []
     if not snapshot.get("reachable"):
-        actions.append(
-            {
-                "id": "start_ollama",
-                "severity": "blocking",
-                "action": "Start Ollama locally, then refresh the mind hub.",
-                "powershell": "ollama serve",
-            }
-        )
+        if snapshot.get("cloud") or snapshot.get("auth_required"):
+            actions.append(
+                {
+                    "id": "inspect_ollama_cloud",
+                    "severity": "repair",
+                    "action": "Recheck the configured Ollama Cloud endpoint and runtime credential bootstrap.",
+                    "powershell": "python scripts/validation/audit_external_llm_fallback.py",
+                }
+            )
+        else:
+            actions.append(
+                {
+                    "id": "start_ollama",
+                    "severity": "repair",
+                    "action": "Start Ollama locally, then refresh the mind hub.",
+                    "powershell": "ollama serve",
+                }
+            )
     if snapshot.get("reachable") and not snapshot.get("models"):
         actions.append(
             {
@@ -458,8 +470,8 @@ def build_ollama_cognitive_bridge(*, root: Optional[Path] = None) -> Dict[str, A
         "status": status,
         "ok": ok,
         "generated_at": generated_at,
-        "bridge_mode": "local_ollama_plus_aureon_cognition",
-        "provider_policy": "local_only",
+        "bridge_mode": "configured_ollama_endpoint_plus_aureon_cognition",
+        "provider_policy": "configured_local_or_ollama_cloud",
         "recommended_voice_backend": "ollama_hybrid",
         "ollama": snapshot,
         "model_resolution": model_resolution,
@@ -479,7 +491,7 @@ def build_ollama_cognitive_bridge(*, root: Optional[Path] = None) -> Dict[str, A
                 "fallback": "Aureon Brain Fallback",
             },
             "what": {
-                "job": "Make local Ollama and Aureon's internal cognitive systems work as one agent crew.",
+                "job": "Make configured Ollama local/cloud reasoning and Aureon's internal cognitive systems work as one agent crew.",
                 "model": model_resolution.get("resolved_model") or model_resolution.get("configured_model"),
                 "status": status,
             },
@@ -549,6 +561,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     args = parser.parse_args(argv)
 
     root = Path(args.repo_root).resolve() if args.repo_root else None
+    from aureon.core.aureon_env import bootstrap_credentials
+
+    bootstrap_credentials(root)
     report = build_and_write_ollama_cognitive_bridge(root=root)
     print(json.dumps(report, indent=2, sort_keys=True, default=str) if args.json else _make_markdown(report))
     return 0 if report.get("ok") else 1

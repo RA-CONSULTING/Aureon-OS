@@ -26,6 +26,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable, Optional, Sequence
 
+from aureon.obsidian_paths import resolve_obsidian_note_path
 from aureon.autonomous.repo_wide_organization_audit import (
     SKIP_DIRS,
     classify_path,
@@ -654,7 +655,11 @@ def build_repo_self_catalog(
     elif safety_counts:
         status = "catalog_complete_with_attention_items"
 
-    vault_path = root / vault_note if vault_note and not vault_note.is_absolute() else vault_note
+    vault_path = (
+        resolve_obsidian_note_path(vault_note, repo_root=root)
+        if vault_note
+        else None
+    )
     summary = {
         "total_project_files_discovered": total_labels,
         "cataloged_file_count": len(labels),

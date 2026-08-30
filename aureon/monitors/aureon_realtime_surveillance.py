@@ -575,89 +575,6 @@ class AureonSurveillanceSystem:
         }
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# SIMULATED DATA FEED (for testing)
-# ═══════════════════════════════════════════════════════════════════════════════
-
-class SimulatedFeed:
-    """Simulate market data for testing"""
-    
-    def __init__(self, surveillance: AureonSurveillanceSystem):
-        self.surveillance = surveillance
-        self.running = False
-        self.base_prices = {
-            "BTC/USD": 95000.0,
-            "ETH/USD": 3200.0,
-            "SOL/USD": 180.0,
-            "DOGE/USD": 0.35
-        }
-        
-    async def start(self):
-        """Start simulated feed.
-
-        ⚠ Synthetic-only feed — generates random.gauss price walks plus
-        scripted whale/coordinated/manipulation events. Gated behind
-        AUREON_ALLOW_SIM_FALLBACK so production refuses to start. Wire a
-        real exchange feed before enabling in production.
-        """
-        from aureon.observer.live_data_policy import (
-            simulation_fallback_allowed, log_blocked_fallback,
-        )
-        if not simulation_fallback_allowed():
-            log_blocked_fallback("aureon_realtime_surveillance.start",
-                                 "synthetic_feed")
-            raise RuntimeError(
-                "aureon_realtime_surveillance.start() emits a synthetic "
-                "market feed (random.gauss). Set AUREON_ALLOW_SIM_FALLBACK=1 "
-                "for dev, or wire a real exchange feed."
-            )
-        self.running = True
-        logger.info("📡 Starting simulated market feed...")
-
-        while self.running:
-            for symbol, base_price in self.base_prices.items():
-                # Add some randomness with bot-like patterns
-                hour = datetime.now(timezone.utc).hour
-                
-                # Simulate bot activity during peak hours
-                if hour in [13, 14, 15, 16]:
-                    volatility = 0.002  # Higher volatility during bot hours
-                else:
-                    volatility = 0.0005
-                    
-                # Random walk with drift
-                import random
-                change = random.gauss(0, volatility)
-                
-                # Add periodic component (simulate bot cycles)
-                t = time.time()
-                bot_cycle = 0.0005 * math.sin(2 * math.pi * t / (8 * 3600))  # 8h cycle
-                
-                price = base_price * (1 + change + bot_cycle)
-                self.base_prices[symbol] = price
-                
-                # Create tick
-                spread = price * 0.0001
-                tick = MarketTick(
-                    symbol=symbol,
-                    price=price,
-                    bid=price - spread,
-                    ask=price + spread,
-                    volume=random.uniform(0.1, 10.0),
-                    timestamp=time.time(),
-                    exchange="simulated",
-                    side=random.choice(["buy", "sell"]),
-                    size=random.uniform(0.01, 1.0)
-                )
-                
-                self.surveillance.process_tick(tick)
-                
-            await asyncio.sleep(0.5)  # 2 ticks per second
-            
-    def stop(self):
-        """Stop simulated feed"""
-        self.running = False
-
-# ═══════════════════════════════════════════════════════════════════════════════
 # CLI INTERFACE
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -776,18 +693,15 @@ async def main():
     # Initialize surveillance
     surveillance = AureonSurveillanceSystem()
     
-    # Start simulated feed (replace with real feed later)
-    feed = SimulatedFeed(surveillance)
-    
-    # Run feed and dashboard concurrently
+    logger.warning(
+        "No live market adapter is connected. Ingest provider MarketTick "
+        "receipts through process_tick(); missing observations remain no_data."
+    )
+
     try:
-        await asyncio.gather(
-            feed.start(),
-            run_cli_dashboard(surveillance)
-        )
+        await run_cli_dashboard(surveillance)
     except KeyboardInterrupt:
         print("\n\n👁️ Surveillance system shutting down...")
-        feed.stop()
         
         # Print final stats
         data = surveillance.get_dashboard_data()

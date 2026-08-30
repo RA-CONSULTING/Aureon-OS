@@ -51,7 +51,7 @@ try:
 except Exception:
     print("⚠️ websocket-client not installed - Binance WS cache may fail")
 PY
-start_bg "unified_market_cache" "python -u unified_market_cache.py --write-interval 1.0"
+start_bg "unified_market_cache" "python -u -m aureon.data_feeds.unified_market_cache --write-interval 1.0"
 
 # Wait briefly for unified cache to produce first file
 for i in {1..10}; do
@@ -63,9 +63,9 @@ for i in {1..10}; do
     sleep 2
 done
 
-# NOTE: Queen Power Dashboard is DISABLED - using aureon_pro_dashboard.py instead (priority=1 in supervisord)
+# NOTE: Queen Power Dashboard is DISABLED - using aureon.monitors.aureon_pro_dashboard instead (priority=1 in supervisord)
 # Power dashboard was conflicting with Pro Dashboard for port 8080
-# start_bg "queen_power_dashboard" "python -u queen_power_dashboard.py"
+# start_bg "queen_power_dashboard" "python -u -m aureon.queen.queen_power_dashboard"
 
 # Ensure critical Python deps are installed (websocket-client, prometheus_client)
 python - <<'PY'
@@ -89,11 +89,11 @@ if [ $? -ne 0 ]; then
 fi
 
 # Power Redistribution Engine (Autonomous profit harvesting & reinvestment)
-start_bg "power_redistribution_engine" "python -u aureon_power_redistribution_engine.py"
+start_bg "power_redistribution_engine" "python -u -m aureon.utils.aureon_power_redistribution_engine"
 
 # Optional: Queen Web Dashboard (if used)
 if [ "${START_QUEEN_WEB_DASHBOARD:-false}" = "true" ]; then
-    start_bg "queen_web_dashboard" "python -u queen_web_dashboard.py"
+    start_bg "queen_web_dashboard" "python -u -m aureon.queen.queen_web_dashboard"
 fi
 
 # Display API key status
@@ -155,7 +155,7 @@ def check_alpaca():
     if not require_env(["ALPACA_API_KEY", "ALPACA_SECRET_KEY"], "Alpaca"):
         return
     try:
-        from alpaca_client import AlpacaClient
+        from aureon.exchanges.alpaca_client import AlpacaClient
         client = AlpacaClient()
         balance = client.get_account_balance()
         if not balance:
@@ -174,7 +174,7 @@ def check_kraken():
     if not require_env(["KRAKEN_API_KEY", "KRAKEN_API_SECRET"], "Kraken"):
         return
     try:
-        from kraken_client import KrakenClient
+        from aureon.exchanges.kraken_client import KrakenClient
         client = KrakenClient()
         balance = client.get_balance()
         if balance is None:
@@ -188,7 +188,7 @@ def check_binance():
     if not require_env(["BINANCE_API_KEY", "BINANCE_API_SECRET"], "Binance"):
         return
     try:
-        from binance_client import BinanceClient
+        from aureon.exchanges.binance_client import BinanceClient
         client = BinanceClient()
         balance = client.get_balance()
         if balance is None:
@@ -202,7 +202,7 @@ def check_capital():
     if not require_env(["CAPITAL_API_KEY", "CAPITAL_IDENTIFIER", "CAPITAL_PASSWORD"], "Capital.com"):
         return
     try:
-        from capital_client import CapitalClient
+        from aureon.exchanges.capital_client import CapitalClient
         client = CapitalClient()
         balance = client.get_account_balance()
         if not balance:
@@ -285,7 +285,7 @@ while true; do
     # 👑 QUEEN'S PARAMETERS: 50 positions, $10 each, 1% minimum target, IRA Sniper armed
     # Increased to 50 to handle full portfolio: 19 Binance + 18 Kraken + Alpaca
     # Margin trading is ALWAYS-ON: spot + margin fire simultaneously on Kraken
-    $PYTHON_CMD -u orca_complete_kill_cycle.py --autonomous 50 10.0 1.0
+    $PYTHON_CMD -u -m aureon.bots.orca_complete_kill_cycle --autonomous 50 10.0 1.0
     EXIT_CODE=$?
     echo "$(date): Orca exited with code $EXIT_CODE"
     

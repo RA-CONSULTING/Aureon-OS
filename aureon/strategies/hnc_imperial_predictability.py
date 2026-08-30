@@ -289,26 +289,15 @@ class CosmicStateEngine:
         except Exception:
             pass
         if flare is None or kp is None:
-            from aureon.observer.live_data_policy import (
-                simulation_fallback_allowed, log_blocked_fallback,
+            from aureon.observer.live_data_policy import log_blocked_fallback
+            log_blocked_fallback("hnc_imperial_predictability", "no_space_weather")
+            raise RuntimeError(
+                "fresh NOAA/provider solar flare and Kp observations are required"
             )
-            if not simulation_fallback_allowed():
-                log_blocked_fallback("hnc_imperial_predictability", "no_space_weather")
-                # Use deterministic mid-band defaults rather than random — keeps
-                # downstream math working without injecting fakery into the field.
-                if flare is None:
-                    flare = 1.95 * np.exp(-0.1 * (t % 7))
-                if kp is None:
-                    kp = 1.5 + 3.5 * np.sin(2 * np.pi * (t + 2) / 7)
-            else:
-                if flare is None:
-                    flare = 1.95 * np.exp(-0.1 * (t % 7)) + 0.5 * np.random.uniform(0, 1)
-                if kp is None:
-                    kp = 1.5 + 3.5 * np.sin(2 * np.pi * (t + 2) / 7)
         
         # If we have market data, modulate based on VIX/fear
-        if market_data:
-            vix = market_data.get('vix', 20)
+        if market_data and market_data.get('vix') is not None:
+            vix = float(market_data['vix'])
             fear_mod = 1.0 - (vix - 20) / 100  # VIX 20 = neutral
             C *= max(0.5, min(1.2, fear_mod))
             D *= max(0.5, min(2.0, 2.0 - fear_mod))

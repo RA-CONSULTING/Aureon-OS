@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-04-06T12:14:15.707739",
+  "timestamp": "2026-07-28T06:17:57.310451",
   "base_camps": {},
   "learners": {
     "BTC/USDT": {
@@ -7,7 +7,7 @@
       "total_climbs": 2,
       "successful_climbs": 2,
       "avg_climb_height": 0.1009090909090909,
-      "avg_climb_duration": "0:00:00.000158",
+      "avg_climb_duration": "0:00:00.000351",
       "fib_238_hit_rate": 0.0,
       "fib_382_hit_rate": 0.0,
       "fib_500_hit_rate": 0.0,

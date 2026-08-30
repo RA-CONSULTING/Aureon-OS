@@ -7,10 +7,8 @@
  *     - VITE_AURIS_SANDBOX_KEY  -> bearer token (or any header value expected by your endpoint)
  *     Expected response for batch classify: { items: Array<{ valence:number, arousal:number, emotion:string, tags:string[] }> }
  *
- *  B) OpenAI GPT fallback (if your Auris sandbox is a custom GPT):
- *     - VITE_OPENAI_API_KEY     -> OpenAI key
- *     - VITE_AURIS_MODEL        -> e.g. "gpt-4o-mini" / "gpt-4.1"
- *     The prompt below asks the model for deterministic JSON.
+ *  B) Authenticated Supabase Edge Function fallback. Provider credentials
+ *     remain server-side; Ollama Cloud is the repo-wide final route.
  *
  * Both modes expose the same API:
  *   - classifyWithAuris(text: string): Promise<AurisClassification>
@@ -30,8 +28,6 @@ export type AurisClassification = {
 const ENV = {
   AURIS_URL: import.meta.env.VITE_AURIS_SANDBOX_URL as string | undefined,
   AURIS_KEY: import.meta.env.VITE_AURIS_SANDBOX_KEY as string | undefined,
-  OPENAI_KEY: import.meta.env.VITE_OPENAI_API_KEY as string | undefined,
-  AURIS_MODEL: (import.meta.env.VITE_AURIS_MODEL as string | undefined) || "gpt-4o-mini",
 };
 
 /**
@@ -54,11 +50,13 @@ export async function classifyBatchWithAuris(texts: string[], opts?: Partial<Req
     try {
       return await classifyViaWebhook(clean, opts);
     } catch (e) {
-      console.warn("Auris webhook failed, falling back to OpenAI:", e);
+      console.warn("Auris webhook failed, falling back to the server LLM route:", e);
     }
   }
-  if (ENV.OPENAI_KEY) {
+  try {
     return await classifyViaOpenAI(clean, opts);
+  } catch (e) {
+    console.warn("Auris server LLM route unavailable; using neutral defaults:", e);
   }
 
   // Last resort: return neutral defaults to keep the UI stable.

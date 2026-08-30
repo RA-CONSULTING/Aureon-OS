@@ -29,9 +29,9 @@ export default function RegionsTimelinePanel() {
   ];
 
   return (
-    <Card className="bg-black/40 border-purple-500/30">
+    <Card className="bg-black/40 border-primary/30">
       <CardHeader>
-        <CardTitle className="text-purple-300 flex items-center gap-2">
+        <CardTitle className="text-primary flex items-center gap-2">
           <Globe className="w-5 h-5" />
           Regions & Timeline Playback
         </CardTitle>
@@ -40,12 +40,12 @@ export default function RegionsTimelinePanel() {
         {/* Region Selection */}
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <div className="text-sm text-purple-400">Region</div>
+            <div className="text-sm text-primary">Region</div>
             <Select value={selectedRegion} onValueChange={setSelectedRegion}>
-              <SelectTrigger className="bg-black/60 border-purple-500/30">
+              <SelectTrigger className="bg-black/60 border-primary/30">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-black border-purple-500/30">
+              <SelectContent className="bg-black border-primary/30">
                 {regions.map(region => (
                   <SelectItem key={region.value} value={region.value}>
                     {region.label}
@@ -56,12 +56,12 @@ export default function RegionsTimelinePanel() {
           </div>
 
           <div className="space-y-2">
-            <div className="text-sm text-purple-400">Time Window</div>
+            <div className="text-sm text-primary">Time Window</div>
             <Select value={timeWindow} onValueChange={setTimeWindow}>
-              <SelectTrigger className="bg-black/60 border-purple-500/30">
+              <SelectTrigger className="bg-black/60 border-primary/30">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-black border-purple-500/30">
+              <SelectContent className="bg-black border-primary/30">
                 {timeWindows.map(window => (
                   <SelectItem key={window.value} value={window.value}>
                     {window.label}
@@ -78,7 +78,7 @@ export default function RegionsTimelinePanel() {
             <Button
               size="sm"
               variant="outline"
-              className="border-purple-500/30"
+              className="border-primary/30"
               onClick={() => setCurrentFrame([Math.max(0, currentFrame[0] - 10)])}
             >
               <SkipBack className="w-4 h-4" />
@@ -87,7 +87,7 @@ export default function RegionsTimelinePanel() {
             <Button
               size="sm"
               onClick={() => setIsPlaying(!isPlaying)}
-              className={isPlaying ? 'bg-red-600 hover:bg-red-700' : 'bg-purple-600 hover:bg-purple-700'}
+              className={isPlaying ? 'bg-destructive hover:bg-destructive' : 'bg-primary hover:bg-primary'}
             >
               {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
             </Button>
@@ -95,15 +95,15 @@ export default function RegionsTimelinePanel() {
             <Button
               size="sm"
               variant="outline"
-              className="border-purple-500/30"
+              className="border-primary/30"
               onClick={() => setCurrentFrame([Math.min(100, currentFrame[0] + 10)])}
             >
               <SkipForward className="w-4 h-4" />
             </Button>
 
             <div className="flex items-center gap-2 ml-auto">
-              <Clock className="w-4 h-4 text-purple-400" />
-              <span className="text-sm text-purple-300">
+              <Clock className="w-4 h-4 text-primary" />
+              <span className="text-sm text-primary">
                 Frame {currentFrame[0]}/100
               </span>
             </div>
@@ -118,7 +118,7 @@ export default function RegionsTimelinePanel() {
               step={1}
               className="w-full"
             />
-            <div className="flex justify-between text-xs text-purple-400">
+            <div className="flex justify-between text-xs text-primary">
               <span>Start</span>
               <span>Current: {currentFrame[0]}%</span>
               <span>End</span>
@@ -129,27 +129,27 @@ export default function RegionsTimelinePanel() {
         {/* Current Status */}
         <div className="grid grid-cols-3 gap-4 text-sm">
           <div>
-            <div className="text-purple-400">Lock Quality</div>
-            <Badge variant="default" className="bg-green-600">
+            <div className="text-primary">Lock Quality</div>
+            <Badge variant="default" className="bg-success">
               High
             </Badge>
           </div>
           <div>
-            <div className="text-purple-400">Coherence Trend</div>
-            <Badge variant="default" className="bg-blue-600">
+            <div className="text-primary">Coherence Trend</div>
+            <Badge variant="default" className="bg-primary">
               Rising
             </Badge>
           </div>
           <div>
-            <div className="text-purple-400">Anomalies</div>
-            <Badge variant="outline" className="border-yellow-500 text-yellow-400">
+            <div className="text-primary">Anomalies</div>
+            <Badge variant="outline" className="border-warning text-warning">
               2 Detected
             </Badge>
           </div>
         </div>
 
         {/* Info Panel */}
-        <div className="bg-purple-900/30 p-3 rounded-lg text-xs text-purple-300">
+        <div className="bg-primary/30 p-3 rounded-lg text-xs text-primary">
           <div className="font-semibold mb-1">Timeline Features:</div>
           <ul className="space-y-1 list-disc list-inside">
             <li>Geospatial window playback with regional focus</li>

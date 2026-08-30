@@ -264,7 +264,7 @@ def _role_process(role: Dict[str, Any], mind_contract: Dict[str, Any], goal: str
             "sensory_systems": mind_contract.get("sensory_sources", []),
             "hnc_auris_systems": mind_contract.get("hnc_auris_sources", []),
             "sentient_style_systems": mind_contract.get("sentient_style_sources", []),
-            "sentience_boundary": "synthetic state and self-model evidence only; no claim of human consciousness",
+            "sentience_boundary": "computational state and self-model evidence only; no claim of human consciousness",
         },
         "authority_boundaries": list(AUTHORITY_BOUNDARIES),
         "goal_context": goal,
@@ -375,7 +375,7 @@ def _build_mind_contract(root: Path, max_age_sec: float) -> Dict[str, Any]:
         },
         "blockers": blockers,
         "warnings": warnings,
-        "sentience_boundary": "Aureon uses synthetic self-monitoring, metacognition, voice, HNC/Auris, and sensory-state reports as operating evidence; this report does not assert human subjective consciousness.",
+        "sentience_boundary": "Aureon uses computational self-monitoring, metacognition, voice, HNC/Auris, and sensory-state reports as operating evidence; this report does not assert human subjective consciousness.",
     }
 
 

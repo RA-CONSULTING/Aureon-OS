@@ -236,6 +236,7 @@ PROBE_SYMBOL_STALE_TTL_SEC = max(
     PROBE_SYMBOL_MIN_INTERVAL_SEC,
     _env_float("UNIFIED_PROBE_SYMBOL_STALE_TTL_SEC", 30.0),
 )
+PROVIDER_CLOCK_SKEW_SEC = max(0.0, _env_float("UNIFIED_PROVIDER_CLOCK_SKEW_SEC", 5.0))
 STREAM_CACHE_MAX_AGE_SEC = max(0.5, _env_float("UNIFIED_STREAM_PRICE_MAX_AGE_SEC", 5.0))
 GOLD_PRIORITY_STREAM_MAX_AGE_SEC = max(
     STREAM_CACHE_MAX_AGE_SEC,
@@ -661,11 +662,15 @@ class ExchangeCallGovernor:
         now = time.time()
         with self._lock:
             cached = self._cache.get(cache_key)
-            if cached and now - float(cached.get("at", 0.0) or 0.0) < min_interval_sec:
+            try:
+                cached_age = now - float(cached.get("at")) if isinstance(cached, dict) else None
+            except (TypeError, ValueError, OverflowError):
+                cached_age = None
+            if cached and cached_age is not None and 0.0 <= cached_age < min_interval_sec:
                 self._stats_for(exchange)["cache_hits"] += 1
                 return cached.get("value")
             if not self._allow(exchange, priority, now):
-                if cached and now - float(cached.get("at", 0.0) or 0.0) <= stale_ttl_sec:
+                if cached and cached_age is not None and 0.0 <= cached_age <= stale_ttl_sec:
                     self._stats_for(exchange)["cache_hits"] += 1
                     return cached.get("value")
                 return None
@@ -676,7 +681,11 @@ class ExchangeCallGovernor:
             self.record_error(exchange, e)
             with self._lock:
                 cached = self._cache.get(cache_key)
-                if cached and now - float(cached.get("at", 0.0) or 0.0) <= stale_ttl_sec:
+                try:
+                    cached_age = time.time() - float(cached.get("at")) if isinstance(cached, dict) else None
+                except (TypeError, ValueError, OverflowError):
+                    cached_age = None
+                if cached and cached_age is not None and 0.0 <= cached_age <= stale_ttl_sec:
                     self._stats_for(exchange)["cache_hits"] += 1
                     return cached.get("value")
             return None
@@ -685,6 +694,69 @@ class ExchangeCallGovernor:
             with self._lock:
                 self._cache[cache_key] = {"at": time.time(), "value": value}
         return value
+
+    def call_with_receipt(
+        self,
+        exchange: str,
+        priority: str,
+        cache_key: str,
+        fn: Callable[[], Any],
+        *,
+        min_interval_sec: float,
+        stale_ttl_sec: float,
+    ) -> Dict[str, Any]:
+        """Return provider data with the original local receipt time.
+
+        ``call`` intentionally returns only the provider payload for legacy
+        callers. Decision paths need the cache insertion time as separate
+        evidence so a cache hit cannot be relabelled with the current clock.
+        """
+
+        with self._lock:
+            prior = self._cache.get(cache_key)
+            try:
+                prior_received_at = float(prior.get("at")) if isinstance(prior, dict) and prior.get("at") is not None else None
+            except (TypeError, ValueError, OverflowError):
+                prior_received_at = None
+        value = self.call(
+            exchange,
+            priority,
+            cache_key,
+            fn,
+            min_interval_sec=min_interval_sec,
+            stale_ttl_sec=stale_ttl_sec,
+        )
+        checked_at = time.time()
+        with self._lock:
+            cached = self._cache.get(cache_key)
+            try:
+                received_at = float(cached.get("at")) if isinstance(cached, dict) and cached.get("at") is not None else None
+            except (TypeError, ValueError, OverflowError):
+                received_at = None
+        if value is None or received_at is None or not math.isfinite(received_at):
+            return {
+                "status": "no_data",
+                "data_status": "no_data",
+                "reason": "provider_receipt_unavailable",
+                "value": None,
+            }
+        age_sec = checked_at - received_at
+        if age_sec < -PROVIDER_CLOCK_SKEW_SEC or age_sec > stale_ttl_sec:
+            return {
+                "status": "no_data",
+                "data_status": "no_data",
+                "reason": "provider_receipt_stale_or_future",
+                "value": None,
+                "receipt_age_sec": age_sec,
+            }
+        return {
+            "status": "live",
+            "data_status": "live",
+            "value": value,
+            "received_at_epoch": received_at,
+            "receipt_age_sec": max(0.0, age_sec),
+            "from_cache": prior_received_at is not None and received_at == prior_received_at,
+        }
 
     def should_run_cycle(self, exchange: str, priority: str, cycle_key: str, min_interval_sec: float) -> bool:
         now = time.time()
@@ -816,7 +888,16 @@ class _UnifiedDashboardHandler(BaseHTTPRequestHandler):
 
 
 class UnifiedMarketTrader:
-    def __init__(self, dry_run: bool = False, setup_kraken_cli: bool = False):
+    def __init__(
+        self,
+        dry_run: bool = False,
+        setup_kraken_cli: bool = False,
+        *,
+        unity_composition: Any = None,
+        unity_plan_supplier: Any = None,
+        trusted_unity_plan_supplier_ids=(),
+        hive_state: Any = None,
+    ):
         os.environ.setdefault("AUREON_DISABLE_LOCAL_DASHBOARD", "1")
         self.dry_run = dry_run
         self.setup_kraken_cli = setup_kraken_cli
@@ -940,6 +1021,13 @@ class UnifiedMarketTrader:
             self._thought_bus = None
             self._mycelium = None
 
+        self._install_unity_exchange_brains(
+            unity_composition=unity_composition,
+            unity_plan_supplier=unity_plan_supplier,
+            trusted_unity_plan_supplier_ids=trusted_unity_plan_supplier_ids,
+            hive_state=hive_state,
+        )
+
         if self.setup_kraken_cli:
             self._ensure_kraken_cli()
         if EXCHANGE_BOOT_ASYNC_ENABLED:
@@ -948,6 +1036,80 @@ class UnifiedMarketTrader:
             self._init_exchanges()
         self._latest_dashboard_payload = self._build_bootstrap_dashboard_payload()
         self._write_runtime_status_file()
+
+    def _install_unity_exchange_brains(
+        self,
+        *,
+        unity_composition: Any,
+        unity_plan_supplier: Any,
+        trusted_unity_plan_supplier_ids,
+        hive_state: Any = None,
+    ) -> None:
+        """Bind every market mutation to one Queen/Council authority plane."""
+
+        from aureon.core.economic_sensation import OrganismEconomicSensationRouter
+        from aureon.queen.unity_exchange_brain import build_queen_exchange_brains
+
+        if hive_state is None:
+            try:
+                from aureon.core.aureon_hive_state import get_hive
+
+                hive_state = get_hive()
+            except Exception:
+                hive_state = None
+        self._hive_state = hive_state
+        self._economic_sensation_router = OrganismEconomicSensationRouter(
+            bus_getter=lambda: getattr(self, "_thought_bus", None),
+            hive_getter=lambda: getattr(self, "_hive_state", None),
+            mycelium_getter=lambda: getattr(self, "_mycelium", None),
+        )
+        fallback_read_clients = None
+        if unity_composition is None:
+            fallback_read_clients = {
+                exchange: client
+                for exchange, client in {
+                    "alpaca": getattr(self, "alpaca", None),
+                    "binance": getattr(self, "binance", None),
+                    "capital": getattr(self, "capital", None),
+                    "kraken": getattr(self, "kraken", None),
+                }.items()
+                if client is not None
+            }
+        brains, governed, status = build_queen_exchange_brains(
+            unity_composition=unity_composition,
+            unity_plan_supplier=unity_plan_supplier,
+            trusted_unity_plan_supplier_ids=trusted_unity_plan_supplier_ids,
+            fallback_read_clients=fallback_read_clients,
+            outcome_observer=self._economic_sensation_router.observe,
+        )
+        self._queen_exchange_brains = brains
+        self._queen_governed_exchange_client = governed
+        self._queen_exchange_governance_status = status
+
+    def _governed_client_for(self, exchange: str):
+        """Return the canonical mutation brain, never a raw provider client."""
+
+        brain = getattr(self, "_queen_exchange_brains", {}).get(exchange)
+        if brain is None:
+            from aureon.queen.unity_exchange_brain import QueenGovernedExchangeBrain
+
+            brain = QueenGovernedExchangeBrain(
+                exchange=exchange,
+                read_client=getattr(self, exchange, None),
+                governed_client=None,
+                outcome_observer=getattr(
+                    getattr(self, "_economic_sensation_router", None),
+                    "observe",
+                    None,
+                ),
+            )
+        return brain
+
+    def recent_economic_sensations(self) -> List[Dict[str, Any]]:
+        """Return bounded feedback receipts; never mutation authority."""
+
+        router = getattr(self, "_economic_sensation_router", None)
+        return router.recent() if router is not None else []
 
     def _governor(self) -> ExchangeCallGovernor:
         governor = getattr(self, "_api_governor", None)
@@ -2852,19 +3014,14 @@ class UnifiedMarketTrader:
         }
 
     def _kraken_equity_from_payload(self, payload: Dict[str, Any]) -> float:
-        for key in ("equity", "equity_usd", "portfolio_value_usd", "portfolio_value"):
-            try:
-                value = float(payload.get(key, 0.0) or 0.0)
-                if value > 0:
-                    return value
-            except Exception:
-                continue
+        for key in ("equity_usd", "portfolio_value_usd"):
+            value = self._finite_number(payload.get(key), positive=True)
+            if value is not None:
+                return value
         balance_snapshot = payload.get("balance_snapshot") or payload.get("portfolio_balances")
         if isinstance(balance_snapshot, dict):
-            try:
-                return float(balance_snapshot.get("total_usd_estimate", 0.0) or 0.0)
-            except Exception:
-                return 0.0
+            value = self._finite_number(balance_snapshot.get("total_usd_estimate"), positive=True)
+            return value if value is not None else 0.0
         return 0.0
 
     def _api_governor_snapshot(self) -> Dict[str, Any]:
@@ -2876,12 +3033,8 @@ class UnifiedMarketTrader:
 
     def _quote_asset_usd_multiplier(self, asset: Any) -> float:
         asset_norm = str(asset or "").upper().strip()
-        if asset_norm in {"USD", "ZUSD", "USDC", "USDT", "DAI", "BUSD"}:
+        if asset_norm in {"USD", "ZUSD"}:
             return 1.0
-        if asset_norm in {"GBP", "ZGBP"}:
-            return max(0.0, _env_float("UNIFIED_GBP_USD_REFERENCE_RATE", 1.25))
-        if asset_norm in {"EUR", "ZEUR"}:
-            return max(0.0, _env_float("UNIFIED_EUR_USD_REFERENCE_RATE", 1.08))
         return 0.0
 
     def _balance_entry_usd_value(self, asset: Any, entry: Any) -> float:
@@ -2948,6 +3101,25 @@ class UnifiedMarketTrader:
 
     def _balance_snapshot_values(self, payload: Dict[str, Any], *, default_currency: str = "USD") -> Dict[str, Any]:
         payload = payload if isinstance(payload, dict) else {}
+        timestamp_present, timestamp_raw = self._payload_provider_timestamp(payload)
+        receipt_epoch = self._strict_timestamp_epoch(payload.get("_provider_receipt_at_epoch"))
+        snapshot_epoch = self._strict_timestamp_epoch(payload.get("generated_at"))
+        evidence_epoch = self._strict_timestamp_epoch(timestamp_raw) if timestamp_present else snapshot_epoch or receipt_epoch
+        evidence_age = time.time() - evidence_epoch if evidence_epoch is not None else None
+        if (
+            not payload
+            or evidence_age is None
+            or evidence_age < -PROVIDER_CLOCK_SKEW_SEC
+            or evidence_age > INTELLIGENCE_BALANCE_MIN_INTERVAL_SEC * 3.0
+        ):
+            return {
+                "known": False,
+                "data_status": "no_data",
+                "reason": "balance_snapshot_timestamp_missing_stale_or_future",
+                "deployable_cash_usd": 0.0,
+                "portfolio_value_usd": 0.0,
+                "source": "",
+            }
         snapshots = [
             payload,
             payload.get("portfolio_balances"),
@@ -2968,15 +3140,15 @@ class UnifiedMarketTrader:
             "buying_power_usd",
             "crypto_buying_power_usd",
         )
-        portfolio_keys = (
+        portfolio_keys: Tuple[str, ...] = (
             "total_usd_estimate",
             "portfolio_value_usd",
             "equity_usd",
-            "equity",
-            "portfolio_value",
             "account_value_usd",
             "balance_usd",
         )
+        if str(default_currency or "").upper().strip() in {"USD", "ZUSD"}:
+            portfolio_keys += ("equity", "portfolio_value")
         for snapshot in snapshots:
             if isinstance(snapshot, list):
                 for row in snapshot:
@@ -3003,11 +3175,6 @@ class UnifiedMarketTrader:
                     portfolio_usd = max(portfolio_usd, float(snapshot.get(key, 0.0) or 0.0))
                 except Exception:
                     pass
-            if "equity_gbp" in snapshot:
-                try:
-                    portfolio_usd = max(portfolio_usd, float(snapshot.get("equity_gbp", 0.0) or 0.0) * self._quote_asset_usd_multiplier("GBP"))
-                except Exception:
-                    pass
             if "cash" in snapshot:
                 try:
                     cash_usd = max(cash_usd, float(snapshot.get("cash", 0.0) or 0.0) * self._quote_asset_usd_multiplier(default_currency))
@@ -3019,6 +3186,8 @@ class UnifiedMarketTrader:
                 portfolio_usd = max(portfolio_usd, sum(balance_values.values()))
         return {
             "known": bool(known and (cash_usd > 0 or portfolio_usd > 0)),
+            "data_status": "live" if known and (cash_usd > 0 or portfolio_usd > 0) else "no_data",
+            "reason": "" if known and (cash_usd > 0 or portfolio_usd > 0) else "finite_usd_account_value_unavailable",
             "deployable_cash_usd": round(float(cash_usd), 6),
             "portfolio_value_usd": round(float(max(portfolio_usd, cash_usd)), 6),
             "source": source or "runtime_payload_or_cached_balance",
@@ -3042,7 +3211,7 @@ class UnifiedMarketTrader:
                 return method()
             return {}
 
-        result = self._governor().call(
+        envelope = self._governor().call_with_receipt(
             exchange_norm,
             "positions",
             f"{exchange_norm}:balance_snapshot",
@@ -3050,7 +3219,19 @@ class UnifiedMarketTrader:
             min_interval_sec=INTELLIGENCE_BALANCE_MIN_INTERVAL_SEC,
             stale_ttl_sec=INTELLIGENCE_BALANCE_MIN_INTERVAL_SEC * 3.0,
         )
-        return result if isinstance(result, dict) else {}
+        evidence = self._validate_provider_receipt(
+            envelope,
+            source=f"{exchange_norm}.account_balance",
+            max_age_sec=INTELLIGENCE_BALANCE_MIN_INTERVAL_SEC * 3.0,
+        )
+        result = evidence.get("payload")
+        if evidence.get("status") != "live" or not isinstance(result, dict):
+            return {}
+        payload = dict(result)
+        payload["_provider_receipt_at_epoch"] = evidence.get("receipt_at_epoch")
+        payload["_provider_receipt_source"] = evidence.get("source")
+        payload["_provider_receipt_from_cache"] = evidence.get("from_cache")
+        return payload
 
     def _exchange_connected_for_budget(self, exchange: str) -> bool:
         exchange_norm = str(exchange or "").lower().strip()
@@ -3062,7 +3243,7 @@ class UnifiedMarketTrader:
             return bool(self.alpaca is not None and not bool(getattr(self.alpaca, "init_error", "") or self.alpaca_error))
         if exchange_norm == "binance":
             diag = getattr(self, "_binance_diag", {}) or {}
-            return bool(self.binance is not None and (diag.get("network_ok", True) or diag.get("account_ok", False)))
+            return bool(self.binance is not None and (diag.get("network_ok") is True or diag.get("account_ok") is True))
         return False
 
     def _build_dynamic_intelligence_budget(
@@ -3626,8 +3807,8 @@ class UnifiedMarketTrader:
                 continue
             if price <= 0 or timestamp <= 0:
                 continue
-            age_sec = max(0.0, now - timestamp)
-            if age_sec > GOLD_PRIORITY_STREAM_MAX_AGE_SEC:
+            age_sec = now - timestamp
+            if age_sec < -PROVIDER_CLOCK_SKEW_SEC or age_sec > GOLD_PRIORITY_STREAM_MAX_AGE_SEC:
                 continue
             priority = 1.0 if base_norm in watch_bases or normalized in watchlist else 0.0
             volume_score = min(1.0, max(0.0, volume_24h) / 1_000_000_000.0)
@@ -3645,6 +3826,7 @@ class UnifiedMarketTrader:
                     "change_pct": change_pct,
                     "volume_24h": volume_24h,
                     "age_sec": age_sec,
+                    "provider_timestamp": timestamp,
                 }
             )
 
@@ -3668,6 +3850,9 @@ class UnifiedMarketTrader:
                 "change_pct": round(change_pct, 6),
                 "volume_24h": round(float(item["volume_24h"]), 6),
                 "age_sec": round(float(item["age_sec"]), 3),
+                "provider_timestamp": float(item["provider_timestamp"]),
+                "source_timestamp": float(item["provider_timestamp"]),
+                "timestamp_kind": "provider_event",
                 "source": str(getattr(ticker, "source", "stream_cache")),
                 "reason": "fresh_websocket_cache",
             }
@@ -3713,12 +3898,14 @@ class UnifiedMarketTrader:
 
     def _build_central_beat_feed(self, kraken_payload: Dict[str, Any], capital_payload: Dict[str, Any]) -> Dict[str, Any]:
         now = time.time()
-        if self._central_beat_feed and (now - self._central_beat_at) < CENTRAL_BEAT_REFRESH_SEC:
+        central_cache_age = now - self._central_beat_at
+        if self._central_beat_feed and 0.0 <= central_cache_age < CENTRAL_BEAT_REFRESH_SEC:
             return dict(self._central_beat_feed)
 
         trader_sources: List[Dict[str, Any]] = []
         probe_sources: List[Dict[str, Any]] = []
         sources: List[Dict[str, Any]] = []
+        probe_failures: Dict[str, Dict[str, Any]] = {}
 
         kraken_source = self._extract_trader_source_snapshot("kraken", kraken_payload)
         if kraken_source:
@@ -3734,19 +3921,27 @@ class UnifiedMarketTrader:
         if stream_source:
             probe_sources.append(stream_source)
         alpaca_source = self._extract_alpaca_source_snapshot(watchlist)
-        if alpaca_source:
+        if alpaca_source.get("ready") and alpaca_source.get("actionable", True):
             probe_sources.append(alpaca_source)
+        else:
+            probe_failures["alpaca"] = alpaca_source
         binance_source = self._extract_binance_source_snapshot(watchlist)
-        if binance_source:
+        if binance_source.get("ready") and binance_source.get("actionable", True):
             probe_sources.append(binance_source)
+        else:
+            probe_failures["binance"] = binance_source
         probe_sources = self._stabilize_sources("probe", probe_sources)
         sources.extend(probe_sources)
 
         symbols: Dict[str, Dict[str, Any]] = {}
         buy_pressure = 0.0
         sell_pressure = 0.0
+        actionable_source_names: List[str] = []
         for source in sources:
             source_name = str(source.get("source") or "?")
+            if source.get("stale") or source.get("ready") is False or source.get("actionable") is False:
+                continue
+            actionable_source_names.append(source_name)
             source_symbols = source.get("symbols", {})
             if not isinstance(source_symbols, dict):
                 continue
@@ -3830,6 +4025,8 @@ class UnifiedMarketTrader:
             price_count = int(item.get("price_count", 0) or 0)
             reference_price = float(item.get("price_sum", 0.0) or 0.0) / price_count if price_count > 0 else 0.0
             normalized_symbols[normalized] = {
+                "data_status": "live",
+                "actionable": True,
                 "confidence": round(avg_confidence, 4),
                 "support_count": support_count,
                 "side": side,
@@ -3933,6 +4130,11 @@ class UnifiedMarketTrader:
             "generated_at": datetime.now().isoformat(),
             "sources": sources,
             "source_count": len(sources),
+            "actionable_source_count": len(set(actionable_source_names)),
+            "actionable_source_names": sorted(set(actionable_source_names)),
+            "provider_probe_failures": probe_failures,
+            "data_status": "live" if normalized_symbols and actionable_source_names else "no_data",
+            "actionable": bool(normalized_symbols and actionable_source_names),
             "symbols": normalized_symbols,
             "regime": regime,
             "model_signal_feed": model_signal_feed,
@@ -4073,20 +4275,203 @@ class UnifiedMarketTrader:
         try:
             if isinstance(value, (int, float)):
                 number = float(value)
+                if not math.isfinite(number):
+                    return None
                 if number > 1_000_000_000:
-                    return max(0.0, time.time() - number)
-                return max(0.0, number)
+                    return time.time() - number
+                return number
             if isinstance(value, datetime):
-                return max(0.0, (datetime.now() - value.replace(tzinfo=None)).total_seconds())
+                return (datetime.now() - value.replace(tzinfo=None)).total_seconds()
             text = str(value).strip()
             if not text:
                 return None
             if text.isdigit():
-                return max(0.0, time.time() - float(text))
+                return time.time() - float(text)
             parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
-            return max(0.0, (datetime.now() - parsed.replace(tzinfo=None)).total_seconds())
+            return (datetime.now() - parsed.replace(tzinfo=None)).total_seconds()
         except Exception:
             return None
+
+    def _finite_number(
+        self,
+        value: Any,
+        *,
+        positive: bool = False,
+        nonnegative: bool = False,
+    ) -> Optional[float]:
+        if isinstance(value, bool) or value is None:
+            return None
+        try:
+            number = float(value)
+        except (TypeError, ValueError, OverflowError):
+            return None
+        if not math.isfinite(number):
+            return None
+        if positive and number <= 0.0:
+            return None
+        if nonnegative and number < 0.0:
+            return None
+        return number
+
+    def _strict_timestamp_epoch(self, value: Any) -> Optional[float]:
+        if isinstance(value, bool) or value is None:
+            return None
+        if isinstance(value, datetime):
+            try:
+                epoch = value.timestamp()
+            except (OverflowError, OSError, ValueError):
+                return None
+        elif isinstance(value, (int, float)):
+            epoch = self._finite_number(value, positive=True)
+        else:
+            text = str(value).strip()
+            if not text:
+                return None
+            try:
+                numeric = float(text)
+            except (TypeError, ValueError, OverflowError):
+                try:
+                    epoch = datetime.fromisoformat(text.replace("Z", "+00:00")).timestamp()
+                except (OverflowError, OSError, TypeError, ValueError):
+                    return None
+            else:
+                epoch = self._finite_number(numeric, positive=True)
+        if epoch is None:
+            return None
+        if epoch >= 100_000_000_000.0:
+            epoch /= 1000.0
+        if epoch < 1_000_000_000.0 or not math.isfinite(epoch):
+            return None
+        return epoch
+
+    def _payload_provider_timestamp(self, payload: Dict[str, Any]) -> Tuple[bool, Any]:
+        keys = (
+            "provider_timestamp",
+            "source_timestamp",
+            "closeTime",
+            "closedTime",
+            "eventTime",
+            "timestamp",
+            "updated_at",
+            "fetched_at",
+        )
+        for key in keys:
+            if key in payload:
+                return True, payload.get(key)
+        raw = payload.get("raw")
+        if isinstance(raw, dict):
+            for key in keys:
+                if key in raw:
+                    return True, raw.get(key)
+        return False, None
+
+    def _validate_provider_receipt(
+        self,
+        envelope: Dict[str, Any],
+        *,
+        source: str,
+        max_age_sec: float,
+    ) -> Dict[str, Any]:
+        if not isinstance(envelope, dict) or envelope.get("status") != "live":
+            reason = envelope.get("reason") if isinstance(envelope, dict) else None
+            return {
+                "status": "no_data",
+                "data_status": "no_data",
+                "source": source,
+                "reason": str(reason or "provider_receipt_unavailable"),
+            }
+        payload = envelope.get("value")
+        received_at = self._finite_number(envelope.get("received_at_epoch"), positive=True)
+        if not isinstance(payload, dict) or received_at is None:
+            return {
+                "status": "no_data",
+                "data_status": "no_data",
+                "source": source,
+                "reason": "malformed_provider_receipt",
+            }
+        now = time.time()
+        receipt_age = now - received_at
+        if receipt_age < -PROVIDER_CLOCK_SKEW_SEC or receipt_age > max_age_sec:
+            return {
+                "status": "no_data",
+                "data_status": "no_data",
+                "source": source,
+                "reason": "provider_receipt_stale_or_future",
+                "receipt_age_sec": receipt_age,
+            }
+        timestamp_present, timestamp_raw = self._payload_provider_timestamp(payload)
+        provider_epoch: Optional[float] = None
+        provider_age: Optional[float] = None
+        if timestamp_present:
+            provider_epoch = self._strict_timestamp_epoch(timestamp_raw)
+            if provider_epoch is None:
+                return {
+                    "status": "no_data",
+                    "data_status": "no_data",
+                    "source": source,
+                    "reason": "malformed_provider_timestamp",
+                }
+            provider_age = now - provider_epoch
+            if provider_age < -PROVIDER_CLOCK_SKEW_SEC:
+                return {
+                    "status": "no_data",
+                    "data_status": "no_data",
+                    "source": source,
+                    "reason": "future_provider_timestamp",
+                    "provider_age_sec": provider_age,
+                }
+            if provider_age > max_age_sec:
+                return {
+                    "status": "no_data",
+                    "data_status": "no_data",
+                    "source": source,
+                    "reason": "stale_provider_timestamp",
+                    "provider_age_sec": provider_age,
+                }
+        evidence = {
+            "status": "live",
+            "data_status": "live",
+            "source": source,
+            "payload": payload,
+            "receipt_at_epoch": received_at,
+            "receipt_age_sec": max(0.0, receipt_age),
+            "from_cache": bool(envelope.get("from_cache")),
+            "timestamp_kind": "provider_event" if timestamp_present else "local_provider_receipt",
+        }
+        if provider_epoch is not None:
+            evidence["provider_timestamp"] = provider_epoch
+            evidence["source_timestamp"] = provider_epoch
+            evidence["provider_age_sec"] = max(0.0, float(provider_age))
+        return evidence
+
+    def _first_finite_field(
+        self,
+        payload: Dict[str, Any],
+        keys: Tuple[str, ...],
+        *,
+        positive: bool = False,
+        nonnegative: bool = False,
+    ) -> Optional[float]:
+        for key in keys:
+            if key not in payload:
+                continue
+            number = self._finite_number(payload.get(key), positive=positive, nonnegative=nonnegative)
+            if number is not None:
+                return number
+        return None
+
+    def _no_data_source(self, source: str, reason: str, **details: Any) -> Dict[str, Any]:
+        payload: Dict[str, Any] = {
+            "source": source,
+            "ready": False,
+            "status": "no_data",
+            "data_status": "no_data",
+            "actionable": False,
+            "symbols": {},
+            "reason": reason,
+        }
+        payload.update(details)
+        return payload
 
     def _world_source_row(
         self,
@@ -4297,7 +4682,8 @@ class UnifiedMarketTrader:
         now = time.time()
         cached = getattr(self, "_world_macro_snapshot_cache", {}) or {}
         cached_at = float(getattr(self, "_world_macro_snapshot_at", 0.0) or 0.0)
-        if cached and now - cached_at < WORLD_ECOSYSTEM_MACRO_MIN_INTERVAL_SEC:
+        macro_cache_age = now - cached_at
+        if cached and 0.0 <= macro_cache_age < WORLD_ECOSYSTEM_MACRO_MIN_INTERVAL_SEC:
             return dict(cached)
 
         state_snapshot = self._read_global_financial_state()
@@ -4367,33 +4753,6 @@ class UnifiedMarketTrader:
     ) -> List[Dict[str, Any]]:
         observations: List[Dict[str, Any]] = []
         now_ms = int(time.time() * 1000)
-        for normalized, item in normalized_symbols.items():
-            if not isinstance(item, dict):
-                continue
-            price = float(item.get("reference_price", 0.0) or 0.0)
-            if price <= 0:
-                source_prices = item.get("source_prices", {})
-                if isinstance(source_prices, dict):
-                    for candidate_price in source_prices.values():
-                        try:
-                            price = float(candidate_price or 0.0)
-                        except Exception:
-                            price = 0.0
-                        if price > 0:
-                            break
-            if price <= 0:
-                continue
-            observations.append(
-                {
-                    "symbol": normalized,
-                    "ts_ms": now_ms,
-                    "close": price,
-                    "high": price,
-                    "low": price,
-                    "volume": float(item.get("volume_24h", 0.0) or 0.0),
-                    "source": "central_beat_live",
-                }
-            )
         for source in sources:
             source_name = str(source.get("source") or "source")
             source_symbols = source.get("symbols", {}) if isinstance(source, dict) else {}
@@ -4402,31 +4761,39 @@ class UnifiedMarketTrader:
             for normalized, item in source_symbols.items():
                 if not isinstance(item, dict):
                     continue
-                try:
-                    price = float(item.get("price", item.get("reference_price", 0.0)) or 0.0)
-                except Exception:
-                    price = 0.0
-                if price <= 0:
+                price = self._finite_number(item.get("price", item.get("reference_price")), positive=True)
+                volume = self._finite_number(item.get("volume_24h", item.get("volume")), nonnegative=True)
+                source_timestamp = self._strict_timestamp_epoch(
+                    item.get("source_timestamp") or item.get("provider_timestamp")
+                )
+                if source_timestamp is None and item.get("timestamp_kind") == "local_provider_receipt":
+                    source_timestamp = self._strict_timestamp_epoch(item.get("receipt_at_epoch"))
+                source_age = time.time() - source_timestamp if source_timestamp is not None else None
+                if (
+                    price is None
+                    or volume is None
+                    or source_age is None
+                    or source_age < -PROVIDER_CLOCK_SKEW_SEC
+                    or source_age > CENTRAL_BEAT_STALE_AFTER_SEC
+                ):
                     continue
-                try:
-                    age_sec = float(item.get("age_sec", 0.0) or 0.0)
-                except Exception:
-                    age_sec = 0.0
                 observations.append(
                     {
                         "symbol": normalized,
-                        "ts_ms": int(now_ms - max(0.0, age_sec) * 1000),
+                        "ts_ms": int(source_timestamp * 1000),
                         "close": price,
-                        "high": float(item.get("high", price) or price),
-                        "low": float(item.get("low", price) or price),
-                        "volume": float(item.get("volume_24h", item.get("volume", 0.0)) or 0.0),
+                        "high": price,
+                        "low": price,
+                        "volume": volume,
                         "source": source_name,
                     }
                 )
         for history_item in list(getattr(self, "_central_beat_history", []) or [])[-CENTRAL_BEAT_HISTORY_LIMIT:]:
             if not isinstance(history_item, dict):
                 continue
-            ts_ms = self._timestamp_to_ms(history_item.get("generated_at")) or now_ms
+            ts_ms = self._timestamp_to_ms(history_item.get("generated_at"))
+            if ts_ms is None or ts_ms > now_ms + int(PROVIDER_CLOCK_SKEW_SEC * 1000):
+                continue
             hist_symbols = history_item.get("symbols", {})
             if not isinstance(hist_symbols, dict):
                 continue
@@ -4798,7 +5165,12 @@ class UnifiedMarketTrader:
         macro_snapshot = self._load_world_macro_snapshot()
         macro_timestamp = macro_snapshot.get("timestamp") or macro_snapshot.get("updated") or macro_snapshot.get("generated_at")
         macro_age = self._timestamp_age_seconds(macro_timestamp)
-        macro_fresh = bool(macro_snapshot) and (macro_age is None or macro_age <= WORLD_ECOSYSTEM_FRESH_SEC)
+        macro_fresh = bool(
+            macro_snapshot
+            and not macro_snapshot.get("error")
+            and macro_age is not None
+            and -PROVIDER_CLOCK_SKEW_SEC <= macro_age <= WORLD_ECOSYSTEM_FRESH_SEC
+        )
         macro_risk = str(macro_snapshot.get("risk_on_off") or macro_snapshot.get("risk_sentiment") or "").upper()
         macro_regime = str(macro_snapshot.get("market_regime") or "").upper()
         macro_side = "BUY" if "RISK_ON" in macro_risk or "BULL" in macro_regime else "SELL" if "RISK_OFF" in macro_risk or "BEAR" in macro_regime else ""
@@ -4839,13 +5211,23 @@ class UnifiedMarketTrader:
 
         news_signal = self._load_world_news_signal()
         news_age = self._timestamp_age_seconds(news_signal.get("fetched_at") or news_signal.get("generated_at"))
-        try:
-            news_sentiment = float(news_signal.get("sentiment", 0.0) or news_signal.get("score", 0.0) or 0.0)
-        except Exception:
-            news_sentiment = 0.0
+        news_sentiment = self._first_finite_field(news_signal, ("sentiment", "score"))
         news_stale_flag = bool(news_signal.get("is_stale", False))
-        news_fresh = bool(news_signal) and not news_stale_flag and (news_age is None or news_age <= WORLD_ECOSYSTEM_FRESH_SEC)
-        news_side = "BUY" if news_sentiment > 0.05 else "SELL" if news_sentiment < -0.05 else ""
+        news_fresh = bool(
+            news_signal
+            and not news_signal.get("error")
+            and not news_stale_flag
+            and news_sentiment is not None
+            and news_age is not None
+            and -PROVIDER_CLOCK_SKEW_SEC <= news_age <= WORLD_ECOSYSTEM_FRESH_SEC
+        )
+        news_side = (
+            "BUY"
+            if news_sentiment is not None and news_sentiment > 0.05
+            else "SELL"
+            if news_sentiment is not None and news_sentiment < -0.05
+            else ""
+        )
         if news_fresh and news_side and normalized_symbols:
             for normalized, symbol_state in sorted(
                 normalized_symbols.items(),
@@ -4854,14 +5236,14 @@ class UnifiedMarketTrader:
             )[: min(4, WORLD_ECOSYSTEM_MAX_DECISION_SYMBOLS)]:
                 candidate = self._world_decision_symbol(
                     symbol=normalized,
-                    confidence=min(0.22, 0.08 + abs(news_sentiment) * 0.25),
+                    confidence=min(0.22, 0.08 + abs(float(news_sentiment)) * 0.25),
                     side=news_side,
                     reason="world_news_sentiment",
                     downstream_stage="shadow_validation",
                     existing_symbols=normalized_symbols,
                     price=float(symbol_state.get("reference_price", 0.0) or 0.0),
                     change_pct=float(symbol_state.get("change_pct", 0.0) or 0.0),
-                    extra={"news_sentiment": round(news_sentiment, 6), "headline_count": news_signal.get("headline_count")},
+                    extra={"news_sentiment": round(float(news_sentiment), 6), "headline_count": news_signal.get("headline_count")},
                 )
                 decision_symbols.setdefault(normalized, candidate)
         rows.append(
@@ -5075,23 +5457,17 @@ class UnifiedMarketTrader:
 
     def _kraken_quote_usd_value(self, client: Any, asset: str, amount: float) -> float:
         asset_norm = self._normalize_kraken_quote_asset(asset)
-        amount = max(0.0, float(amount or 0.0))
-        if amount <= 0:
+        amount_value = self._finite_number(amount, positive=True)
+        if amount_value is None:
             return 0.0
-        if asset_norm in {"USD", "USDC", "USDT"}:
-            return amount
-        if client is not None and hasattr(client, "convert_to_quote"):
-            try:
-                converted = float(client.convert_to_quote(asset_norm, amount, "USD") or 0.0)
-                if converted > 0:
-                    return converted
-            except Exception:
-                pass
-        fallback_rates = {
-            "GBP": _env_float("KRAKEN_GBP_USD_FALLBACK_RATE", 1.27),
-            "EUR": _env_float("KRAKEN_EUR_USD_FALLBACK_RATE", 1.08),
-        }
-        return amount * float(fallback_rates.get(asset_norm, 0.0) or 0.0)
+        if asset_norm == "USD":
+            return amount_value
+        symbol = self._kraken_spot_inventory_symbol(asset_norm)
+        price_receipt = self._fresh_route_price_receipt("kraken", symbol)
+        price = self._finite_number(price_receipt.get("price"), positive=True)
+        if price_receipt.get("status") != "live" or price is None:
+            return 0.0
+        return amount_value * price
 
     def _kraken_spot_symbol_for_quote(self, symbol: str, quote_asset: str) -> str:
         base = self._base_from_route_symbol(symbol)
@@ -5102,31 +5478,34 @@ class UnifiedMarketTrader:
         return f"{base_part}{quote}"
 
     def _kraken_spot_quote_options(self, client: Any) -> List[Dict[str, Any]]:
-        if client is None:
+        if client is None or not hasattr(client, "get_account_balance"):
+            return []
+        try:
+            balance_envelope = self._governor().call_with_receipt(
+                "kraken",
+                "private",
+                "kraken:spot-account-balance",
+                lambda: client.get_account_balance(),
+                min_interval_sec=KRAKEN_SPOT_POSTURE_CACHE_TTL_SEC,
+                stale_ttl_sec=KRAKEN_SPOT_POSTURE_CACHE_TTL_SEC,
+            )
+        except Exception:
+            return []
+        balance_evidence = self._validate_provider_receipt(
+            balance_envelope,
+            source="kraken.get_account_balance",
+            max_age_sec=KRAKEN_SPOT_POSTURE_CACHE_TTL_SEC,
+        )
+        balances = balance_evidence.get("payload")
+        if balance_evidence.get("status") != "live" or not isinstance(balances, dict):
             return []
         raw_balances: Dict[str, float] = {}
-        if hasattr(client, "get_account_balance"):
-            try:
-                balances = client.get_account_balance()
-            except Exception:
-                balances = {}
-            if isinstance(balances, dict):
-                for asset, amount in balances.items():
-                    asset_norm = self._normalize_kraken_quote_asset(asset)
-                    if asset_norm in {"USD", "USDC", "USDT", "GBP", "EUR"}:
-                        try:
-                            raw_balances[asset_norm] = raw_balances.get(asset_norm, 0.0) + float(amount or 0.0)
-                        except Exception:
-                            pass
-        if hasattr(client, "get_free_balance"):
-            for asset in ("USD", "ZUSD", "USDC", "USDT", "GBP", "ZGBP", "EUR", "ZEUR"):
-                asset_norm = self._normalize_kraken_quote_asset(asset)
-                try:
-                    value = float(client.get_free_balance(asset) or 0.0)
-                except Exception:
-                    value = 0.0
-                if value > 0:
-                    raw_balances[asset_norm] = max(raw_balances.get(asset_norm, 0.0), value)
+        for asset, amount in balances.items():
+            asset_norm = self._normalize_kraken_quote_asset(asset)
+            if asset_norm in {"USD", "USDC", "USDT", "GBP", "EUR"}:
+                value = self._finite_number(amount, positive=True)
+                if value is not None:
+                    raw_balances[asset_norm] = raw_balances.get(asset_norm, 0.0) + value
         options: List[Dict[str, Any]] = []
         for asset, amount in raw_balances.items():
             usd_value = self._kraken_quote_usd_value(client, asset, amount)
@@ -5141,93 +5520,155 @@ class UnifiedMarketTrader:
                 )
         return sorted(options, key=lambda item: float(item.get("available_usd", 0.0) or 0.0), reverse=True)
 
-    def _estimate_route_price(self, venue: str, symbol: str) -> float:
-        venue = str(venue or "").lower()
-        symbol = str(symbol or "").upper().strip()
-        if not symbol:
-            return 0.0
-        try:
-            if venue == "kraken":
-                client = self._kraken_spot_client()
-                probe_interval = self._dynamic_probe_interval("kraken")
-                if client is not None and hasattr(client, "best_price"):
-                    ticker = self._governor().call(
-                        "kraken",
-                        "quotes",
-                        f"kraken:best:{symbol}",
-                        lambda: client.best_price(symbol),
-                        min_interval_sec=probe_interval,
-                        stale_ttl_sec=PROBE_SYMBOL_STALE_TTL_SEC,
-                    )
-                    if isinstance(ticker, dict):
-                        price = float(ticker.get("price") or ticker.get("lastPrice") or ticker.get("last") or 0.0)
-                        if price > 0:
-                            return price
-                if client is not None and hasattr(client, "get_ticker"):
-                    ticker = self._governor().call(
-                        "kraken",
-                        "quotes",
-                        f"kraken:ticker:{symbol}",
-                        lambda: client.get_ticker(symbol),
-                        min_interval_sec=probe_interval,
-                        stale_ttl_sec=PROBE_SYMBOL_STALE_TTL_SEC,
-                    )
-                    if isinstance(ticker, dict):
-                        price = float(ticker.get("price") or ticker.get("lastPrice") or ticker.get("last") or 0.0)
-                        if price > 0:
-                            return price
-            if venue == "alpaca" and self.alpaca is not None:
-                probe_interval = self._dynamic_probe_interval("alpaca")
-                ticker = self._governor().call(
-                    "alpaca",
-                    "quotes",
-                    f"alpaca:ticker:{symbol}",
-                    lambda: self.alpaca.get_ticker(symbol),
-                    min_interval_sec=probe_interval,
-                    stale_ttl_sec=PROBE_SYMBOL_STALE_TTL_SEC,
-                )
-                if isinstance(ticker, dict):
-                    price = float(ticker.get("price") or ticker.get("last") or ticker.get("mark_price") or 0.0)
-                    if price > 0:
-                        return price
-            if venue == "binance" and self.binance is not None:
-                probe_interval = self._dynamic_probe_interval("binance")
-                ticker = self._governor().call(
-                    "binance",
-                    "quotes",
-                    f"binance:24h:{symbol}",
-                    lambda: self.binance.get_24h_ticker(symbol),
-                    min_interval_sec=probe_interval,
-                    stale_ttl_sec=PROBE_SYMBOL_STALE_TTL_SEC,
-                )
-                if isinstance(ticker, dict):
-                    price = float(ticker.get("lastPrice") or ticker.get("weightedAvgPrice") or ticker.get("price") or 0.0)
-                    if price > 0:
-                        return price
-            stream_price = self._estimate_stream_price(symbol)
-            if stream_price > 0:
-                return stream_price
-        except Exception as e:
-            logger.debug("Price estimate failed for %s %s: %s", venue, symbol, e)
-        return 0.0
+    def _fresh_route_price_receipt(self, venue: str, symbol: str) -> Dict[str, Any]:
+        venue_norm = str(venue or "").lower()
+        symbol_norm = str(symbol or "").upper().strip()
+        if not symbol_norm:
+            return {
+                "status": "no_data",
+                "data_status": "no_data",
+                "reason": "route_symbol_missing",
+                "actionable": False,
+            }
 
-    def _spot_sell_quantity(self, client: Any, symbol: str, quote_usd: float, price: float) -> float:
-        if client is None or price <= 0:
+        stream_ticker = self._stream_price_ticker(symbol_norm)
+        if stream_ticker is not None:
+            stream_price = self._finite_number(getattr(stream_ticker, "price", None), positive=True)
+            stream_timestamp = self._strict_timestamp_epoch(getattr(stream_ticker, "timestamp", None))
+            if stream_price is not None and stream_timestamp is not None:
+                stream_age = time.time() - stream_timestamp
+                if -PROVIDER_CLOCK_SKEW_SEC <= stream_age <= STREAM_CACHE_MAX_AGE_SEC:
+                    return {
+                        "status": "live",
+                        "data_status": "live",
+                        "actionable": True,
+                        "source": "live_stream_cache",
+                        "price": stream_price,
+                        "provider_timestamp": stream_timestamp,
+                        "source_timestamp": stream_timestamp,
+                        "provider_age_sec": max(0.0, stream_age),
+                        "timestamp_kind": "provider_event",
+                    }
+
+        if venue_norm == "kraken":
+            client = self._kraken_spot_client()
+            probes = (
+                ("best", "best_price"),
+                ("ticker", "get_ticker"),
+            )
+        elif venue_norm == "alpaca":
+            client = self.alpaca
+            probes = (("ticker", "get_ticker"),)
+        elif venue_norm == "binance":
+            client = self.binance
+            probes = (
+                ("best", "best_price"),
+                ("24h", "get_24h_ticker"),
+            )
+        else:
+            return {
+                "status": "no_data",
+                "data_status": "no_data",
+                "reason": "unsupported_route_price_provider",
+                "actionable": False,
+            }
+        if client is None:
+            return {
+                "status": "no_data",
+                "data_status": "no_data",
+                "reason": "route_price_provider_unavailable",
+                "actionable": False,
+            }
+
+        last_reason = "route_price_receipt_unavailable"
+        probe_interval = self._dynamic_probe_interval(venue_norm)
+        for probe_name, method_name in probes:
+            method = getattr(client, method_name, None)
+            if not callable(method):
+                continue
+            cache_key = f"{venue_norm}:action-price:{probe_name}:{symbol_norm}"
+            envelope = self._governor().call_with_receipt(
+                venue_norm,
+                "quotes",
+                cache_key,
+                lambda method=method: method(symbol_norm),
+                min_interval_sec=probe_interval,
+                stale_ttl_sec=PROBE_SYMBOL_STALE_TTL_SEC,
+            )
+            evidence = self._validate_provider_receipt(
+                envelope,
+                source=f"{venue_norm}.{method_name}",
+                max_age_sec=PROBE_SYMBOL_STALE_TTL_SEC,
+            )
+            if evidence.get("status") != "live":
+                last_reason = str(evidence.get("reason") or last_reason)
+                continue
+            provider_payload = evidence.get("payload")
+            if not isinstance(provider_payload, dict):
+                last_reason = "malformed_route_price_payload"
+                continue
+            price = self._first_finite_field(
+                provider_payload,
+                ("price", "lastPrice", "weightedAvgPrice", "bid", "last"),
+                positive=True,
+            )
+            if price is None:
+                last_reason = "missing_or_malformed_route_price"
+                continue
+            receipt = dict(evidence)
+            receipt.pop("payload", None)
+            receipt.update({"actionable": True, "price": price, "symbol": symbol_norm})
+            return receipt
+        return {
+            "status": "no_data",
+            "data_status": "no_data",
+            "reason": last_reason,
+            "actionable": False,
+            "symbol": symbol_norm,
+        }
+
+    def _estimate_route_price(self, venue: str, symbol: str) -> float:
+        receipt = self._fresh_route_price_receipt(venue, symbol)
+        price = self._finite_number(receipt.get("price"), positive=True)
+        return price if receipt.get("status") == "live" and price is not None else 0.0
+
+    def _spot_sell_quantity(self, client: Any, venue: str, symbol: str, quote_usd: float, price: float) -> float:
+        price_value = self._finite_number(price, positive=True)
+        quote_value = self._finite_number(quote_usd, positive=True)
+        if client is None or price_value is None or quote_value is None:
             return 0.0
         base = self._base_from_route_symbol(symbol)
-        if not base:
+        venue_norm = str(venue or "").lower().strip()
+        if not base or not venue_norm or not hasattr(client, "get_free_balance"):
             return 0.0
         available = 0.0
         for candidate in self._asset_balance_candidates(base):
             try:
-                available = float(client.get_free_balance(candidate) or 0.0)
+                balance_envelope = self._governor().call_with_receipt(
+                    venue_norm,
+                    "private",
+                    f"{venue_norm}:free-balance:{candidate}",
+                    lambda candidate=candidate: {"balance": client.get_free_balance(candidate)},
+                    min_interval_sec=0.0,
+                    stale_ttl_sec=0.0,
+                )
             except Exception:
-                available = 0.0
-            if available > 0:
+                continue
+            balance_evidence = self._validate_provider_receipt(
+                balance_envelope,
+                source=f"{venue_norm}.get_free_balance",
+                max_age_sec=PROBE_SYMBOL_STALE_TTL_SEC,
+            )
+            balance_payload = balance_evidence.get("payload")
+            if balance_evidence.get("status") != "live" or not isinstance(balance_payload, dict):
+                continue
+            available_value = self._finite_number(balance_payload.get("balance"), positive=True)
+            if available_value is not None:
+                available = available_value
                 break
         if available <= 0:
             return 0.0
-        target_qty = max(0.0, float(quote_usd or 0.0) / price)
+        target_qty = quote_value / price_value
         if target_qty <= 0:
             return 0.0
         return max(0.0, min(available, target_qty) * 0.999)
@@ -5304,7 +5745,7 @@ class UnifiedMarketTrader:
                 "kraken:spot-trade-history",
                 lambda: client.get_trades_history_dict(),
                 min_interval_sec=KRAKEN_SPOT_POSTURE_CACHE_TTL_SEC,
-                stale_ttl_sec=max(KRAKEN_SPOT_POSTURE_CACHE_TTL_SEC, 1800.0),
+                stale_ttl_sec=KRAKEN_SPOT_POSTURE_CACHE_TTL_SEC,
             )
         except Exception as e:
             logger.debug("Kraken spot trade history unavailable: %s", e)
@@ -5332,6 +5773,7 @@ class UnifiedMarketTrader:
         total_cost = 0.0
         total_fees = 0.0
         buy_count = 0
+        latest_buy_timestamp: Optional[float] = None
         for trade in trades.values():
             if not isinstance(trade, dict):
                 continue
@@ -5348,6 +5790,9 @@ class UnifiedMarketTrader:
             if qty <= 0 or price <= 0:
                 continue
             if side == "buy":
+                trade_timestamp = self._strict_timestamp_epoch(trade.get("time"))
+                if trade_timestamp is not None:
+                    latest_buy_timestamp = max(latest_buy_timestamp or trade_timestamp, trade_timestamp)
                 total_qty += qty
                 total_cost += qty * price
                 total_fees += fee
@@ -5371,7 +5816,8 @@ class UnifiedMarketTrader:
             "total_cost": total_cost,
             "total_fees": total_fees,
             "trade_count": buy_count,
-            "source": "cached_trade_history",
+            "latest_buy_timestamp": latest_buy_timestamp,
+            "source": "provider_trade_history_derived",
         }
 
     def _kraken_spot_inventory_cost_basis(self, client: Any, symbol: str) -> Dict[str, Any]:
@@ -5393,7 +5839,7 @@ class UnifiedMarketTrader:
                 f"kraken:spot-cost-basis:{symbol_norm}",
                 lambda: client.calculate_cost_basis(symbol_norm),
                 min_interval_sec=KRAKEN_SPOT_POSTURE_CACHE_TTL_SEC,
-                stale_ttl_sec=max(KRAKEN_SPOT_POSTURE_CACHE_TTL_SEC, 1800.0),
+                stale_ttl_sec=KRAKEN_SPOT_POSTURE_CACHE_TTL_SEC,
             )
         except Exception as e:
             logger.debug("Kraken spot cost basis unavailable for %s: %s", symbol_norm, e)
@@ -5404,15 +5850,18 @@ class UnifiedMarketTrader:
         now = time.time()
         cached = getattr(self, "_kraken_spot_portfolio_posture_cache", {}) or {}
         cached_at = float(getattr(self, "_kraken_spot_portfolio_posture_at", 0.0) or 0.0)
-        if cached and not force and (now - cached_at) < KRAKEN_SPOT_POSTURE_CACHE_TTL_SEC:
+        cached_age = now - cached_at
+        if cached and not force and 0.0 <= cached_age < KRAKEN_SPOT_POSTURE_CACHE_TTL_SEC:
             return dict(cached)
 
         client = self._kraken_spot_client()
         posture: Dict[str, Any] = {
             "schema_version": 1,
             "generated_at": datetime.now().isoformat(),
-            "mode": "spot_and_margin_unified",
-            "spot_buy_allowed": True,
+            "mode": "pending_reconciliation",
+            "status": "no_data",
+            "data_status": "no_data",
+            "spot_buy_allowed": False,
             "margin_only": False,
             "reason": "",
             "asset_count": 0,
@@ -5424,7 +5873,6 @@ class UnifiedMarketTrader:
         if client is None or not hasattr(client, "get_account_balance"):
             posture.update(
                 {
-                    "spot_buy_allowed": True,
                     "reason": "kraken_spot_client_or_balance_unavailable",
                 }
             )
@@ -5433,11 +5881,17 @@ class UnifiedMarketTrader:
             return dict(posture)
 
         try:
-            raw_balances = client.get_account_balance()
+            balance_envelope = self._governor().call_with_receipt(
+                "kraken",
+                "private",
+                "kraken:spot-account-balance",
+                lambda: client.get_account_balance(),
+                min_interval_sec=0.0 if force else KRAKEN_SPOT_POSTURE_CACHE_TTL_SEC,
+                stale_ttl_sec=KRAKEN_SPOT_POSTURE_CACHE_TTL_SEC,
+            )
         except Exception as e:
             posture.update(
                 {
-                    "spot_buy_allowed": True,
                     "reason": f"kraken_balance_read_failed:{e}",
                 }
             )
@@ -5445,6 +5899,45 @@ class UnifiedMarketTrader:
             self._kraken_spot_portfolio_posture_at = now
             return dict(posture)
 
+        balance_evidence = self._validate_provider_receipt(
+            balance_envelope,
+            source="kraken.get_account_balance",
+            max_age_sec=KRAKEN_SPOT_POSTURE_CACHE_TTL_SEC,
+        )
+        if balance_evidence.get("status") != "live":
+            posture["reason"] = str(balance_evidence.get("reason") or "kraken_balance_receipt_unavailable")
+            self._kraken_spot_portfolio_posture_cache = posture
+            self._kraken_spot_portfolio_posture_at = now
+            return dict(posture)
+        raw_balances = balance_evidence.get("payload")
+        if not isinstance(raw_balances, dict):
+            posture["reason"] = "kraken_balance_receipt_malformed"
+            self._kraken_spot_portfolio_posture_cache = posture
+            self._kraken_spot_portfolio_posture_at = now
+            return dict(posture)
+        client_cache_raw = getattr(client, "_balance_cache_time", None)
+        if client_cache_raw is not None:
+            client_cache_at = self._finite_number(client_cache_raw, positive=True)
+            client_cache_age = now - client_cache_at if client_cache_at is not None else None
+            if (
+                client_cache_age is None
+                or client_cache_age < -PROVIDER_CLOCK_SKEW_SEC
+                or client_cache_age > KRAKEN_SPOT_POSTURE_CACHE_TTL_SEC
+            ):
+                posture["reason"] = "kraken_balance_client_cache_stale_or_future"
+                self._kraken_spot_portfolio_posture_cache = posture
+                self._kraken_spot_portfolio_posture_at = now
+                return dict(posture)
+
+        posture.update(
+            {
+                "mode": "spot_and_margin_unified",
+                "status": "live",
+                "data_status": "live",
+                "balance_receipt_at_epoch": balance_evidence.get("receipt_at_epoch"),
+                "balance_receipt_age_sec": balance_evidence.get("receipt_age_sec"),
+            }
+        )
         quote_assets = {"USD", "ZUSD", "USDC", "USDT", "DAI", "GBP", "ZGBP", "EUR", "ZEUR"}
         assets: List[Dict[str, Any]] = []
         for asset, amount_value in sorted((raw_balances or {}).items()):
@@ -5467,11 +5960,15 @@ class UnifiedMarketTrader:
             avg_entry = 0.0
             total_qty = 0.0
             total_fees = 0.0
+            latest_buy_timestamp: Optional[float] = None
             if cost_available:
                 try:
                     avg_entry = float(cost_basis.get("avg_entry_price", 0.0) or 0.0)
                     total_qty = float(cost_basis.get("total_quantity", 0.0) or 0.0)
                     total_fees = float(cost_basis.get("total_fees", 0.0) or 0.0)
+                    latest_buy_timestamp = self._strict_timestamp_epoch(
+                        cost_basis.get("latest_buy_timestamp") or cost_basis.get("opened_at") or cost_basis.get("timestamp")
+                    )
                 except Exception:
                     avg_entry = total_qty = total_fees = 0.0
                     cost_available = False
@@ -5507,6 +6004,7 @@ class UnifiedMarketTrader:
                     "avg_entry_price": round(avg_entry, 8),
                     "entry_value_usd": round(entry_value, 8),
                     "entry_fee_usd": round(entry_fee, 8),
+                    "latest_buy_timestamp": latest_buy_timestamp,
                     "estimated_exit_fee_usd": round(exit_fee, 8),
                     "true_net_profit_usd": round(true_net, 8),
                     "state": state,
@@ -5524,7 +6022,18 @@ class UnifiedMarketTrader:
                     "reason": "spot_inventory_underwater; route new Kraken risk through margin until spot inventory is profitable or protected",
                 }
             )
+        elif posture["unknown_cost_basis_count"] > 0:
+            posture.update(
+                {
+                    "mode": "pending_reconciliation",
+                    "status": "pending_reconciliation",
+                    "data_status": "pending_reconciliation",
+                    "spot_buy_allowed": False,
+                    "reason": "spot_inventory_cost_basis_pending_reconciliation",
+                }
+            )
         else:
+            posture["spot_buy_allowed"] = True
             posture["reason"] = "spot inventory has no known negative-cost positions"
         self._kraken_spot_portfolio_posture_cache = posture
         self._kraken_spot_portfolio_posture_at = now
@@ -5556,17 +6065,95 @@ class UnifiedMarketTrader:
             "cost_basis": "entry_fee_plus_exit_fee_plus_min_true_profit",
         }
 
-    def _extract_order_quantity(self, result: Any, fallback_quantity: float) -> float:
+    def _provider_order_id(self, result: Dict[str, Any]) -> Optional[str]:
+        for key in ("orderId", "order_id", "id", "txid"):
+            raw = result.get(key)
+            if isinstance(raw, (list, tuple)):
+                if len(raw) != 1:
+                    return None
+                raw = raw[0]
+            text = str(raw or "").strip()
+            if text and text.lower() not in {"none", "null", "unknown", "pending", "dry-run"}:
+                return text
+        return None
+
+    def _confirmed_fill_receipt(self, result: Any) -> Dict[str, Any]:
         if not isinstance(result, dict):
-            return max(0.0, float(fallback_quantity or 0.0))
-        for key in ("executedQty", "origQty", "quantity", "volume"):
-            try:
-                value = float(result.get(key, 0.0) or 0.0)
-            except Exception:
-                value = 0.0
-            if value > 0:
-                return value
-        return max(0.0, float(fallback_quantity or 0.0))
+            return {"status": "no_data", "data_status": "no_data", "reason": "fill_receipt_missing"}
+        status = str(result.get("status") or "").strip().upper()
+        if result.get("generated_values") is True or result.get("fill_receipt_complete") is not True:
+            pending = bool(result.get("submitted")) or status in {"ACCEPTED", "NEW", "OPEN", "PENDING_RECONCILIATION"}
+            return {
+                "status": "pending_reconciliation" if pending else "no_data",
+                "data_status": "pending_reconciliation" if pending else "no_data",
+                "reason": "terminal_provider_fill_receipt_required",
+            }
+        if result.get("data_status") != "live" or status not in {"FILLED", "PARTIALLY_FILLED"}:
+            return {"status": "no_data", "data_status": "no_data", "reason": "terminal_fill_status_not_observed"}
+        provider_id = self._provider_order_id(result)
+        timestamp_present, timestamp_raw = self._payload_provider_timestamp(result)
+        provider_timestamp = self._strict_timestamp_epoch(timestamp_raw) if timestamp_present else None
+        if provider_id is None or provider_timestamp is None:
+            return {"status": "no_data", "data_status": "no_data", "reason": "fill_identity_or_timestamp_missing"}
+        age_sec = time.time() - provider_timestamp
+        if age_sec < -PROVIDER_CLOCK_SKEW_SEC or age_sec > PROBE_SYMBOL_STALE_TTL_SEC:
+            return {"status": "no_data", "data_status": "no_data", "reason": "fill_receipt_stale_or_future"}
+        quantity = self._first_finite_field(result, ("filled_qty", "executedQty"), positive=True)
+        price = self._first_finite_field(result, ("filled_avg_price", "avgPrice", "price"), positive=True)
+        notional = self._first_finite_field(result, ("filled_notional", "cummulativeQuoteQty"), positive=True)
+        fee = self._first_finite_field(result, ("fee", "commission"), nonnegative=True)
+        if quantity is None or price is None or notional is None or fee is None:
+            return {"status": "no_data", "data_status": "no_data", "reason": "fill_numeric_evidence_incomplete"}
+        tolerance = max(0.00000001, notional * 0.001)
+        if abs((quantity * price) - notional) > tolerance:
+            return {"status": "no_data", "data_status": "no_data", "reason": "fill_notional_inconsistent"}
+        return {
+            "status": status,
+            "data_status": "live",
+            "truth_status": "real_observed",
+            "order_id": provider_id,
+            "quantity": quantity,
+            "price": price,
+            "notional": notional,
+            "fee": fee,
+            "provider_timestamp": provider_timestamp,
+            "source_timestamp": provider_timestamp,
+            "provider_age_sec": max(0.0, age_sec),
+            "eligible_for_learning": bool(result.get("eligible_for_learning")),
+            "raw_receipt": result,
+        }
+
+    def _submission_receipt_state(self, result: Any) -> Dict[str, Any]:
+        if not isinstance(result, dict):
+            return {"ok": False, "submitted": False, "status": "no_data", "reason": "provider_submission_receipt_missing"}
+        if result.get("generated_values") is True or result.get("error") or result.get("rejected"):
+            return {
+                "ok": False,
+                "submitted": False,
+                "status": "denied",
+                "reason": str(result.get("reason") or result.get("error") or "provider_submission_rejected"),
+            }
+        provider_id = self._provider_order_id(result)
+        status = str(result.get("status") or "").strip().upper()
+        if provider_id is None or status in {"NO_DATA", "DENIED", "DRY_RUN", "NOT_SUBMITTED", "REJECTED"}:
+            return {"ok": False, "submitted": False, "status": "no_data", "reason": "provider_submission_identity_missing"}
+        fill = self._confirmed_fill_receipt(result)
+        if fill.get("data_status") == "live":
+            return {"ok": True, "submitted": True, "status": str(fill.get("status")), "order_id": provider_id, "fill": fill}
+        return {
+            "ok": True,
+            "submitted": True,
+            "status": "pending_reconciliation",
+            "order_id": provider_id,
+            "fill": fill,
+            "reason": "terminal_provider_fill_receipt_required",
+        }
+
+    def _extract_order_quantity(self, result: Any, fallback_quantity: float = 0.0) -> float:
+        if not isinstance(result, dict):
+            return 0.0
+        quantity = self._first_finite_field(result, ("filled_qty", "executedQty"), positive=True)
+        return quantity if quantity is not None else 0.0
 
     def _record_kraken_spot_buy_position(
         self,
@@ -5577,25 +6164,28 @@ class UnifiedMarketTrader:
         result: Dict[str, Any],
         cost_profile: Dict[str, Any],
     ) -> Dict[str, Any]:
-        if price <= 0 or quote_usd <= 0:
+        fill = self._confirmed_fill_receipt(result)
+        if fill.get("data_status") != "live":
             return {}
-        order_id = str(result.get("orderId") or result.get("txid") or f"kraken-spot-{int(time.time() * 1000)}")
-        quantity = self._extract_order_quantity(result, quote_usd / price)
-        entry_value = quantity * price
-        if entry_value <= 0:
-            entry_value = quote_usd
+        order_id = str(fill["order_id"])
+        quantity = float(fill["quantity"])
+        entry_price = float(fill["price"])
+        entry_value = float(fill["notional"])
+        entry_fee = float(fill["fee"])
+        opened_at_epoch = float(fill["provider_timestamp"])
         position = {
             "id": order_id,
             "symbol": str(symbol or "").upper(),
             "base_asset": self._base_from_route_symbol(symbol),
             "side": "long_spot",
             "quantity": round(quantity, 12),
-            "entry_price": round(price, 8),
+            "entry_price": round(entry_price, 8),
             "entry_value_usd": round(entry_value, 8),
-            "entry_fee_usd": round(entry_value * KRAKEN_SPOT_TAKER_FEE_RATE, 8),
-            "opened_at": datetime.now().isoformat(),
-            "opened_at_epoch": round(time.time(), 6),
+            "entry_fee_usd": round(entry_fee, 8),
+            "opened_at": datetime.fromtimestamp(opened_at_epoch).isoformat(),
+            "opened_at_epoch": round(opened_at_epoch, 6),
             "source_order_id": order_id,
+            "fill_receipt": fill,
             "cost_profile": cost_profile,
             "status": "open",
         }
@@ -5607,20 +6197,39 @@ class UnifiedMarketTrader:
         self._save_kraken_spot_fast_profit_state(state)
         return position
 
+    def _kraken_spot_exit_price_receipt(self, client: Any, symbol: str) -> Dict[str, Any]:
+        if client is None or not hasattr(client, "get_ticker"):
+            return {"status": "no_data", "data_status": "no_data", "reason": "kraken_ticker_provider_unavailable"}
+        envelope = self._governor().call_with_receipt(
+            "kraken",
+            "quotes",
+            f"kraken:spot-exit:{symbol}",
+            lambda: client.get_ticker(symbol),
+            min_interval_sec=self._dynamic_probe_interval("kraken"),
+            stale_ttl_sec=PROBE_SYMBOL_STALE_TTL_SEC,
+        )
+        evidence = self._validate_provider_receipt(
+            envelope,
+            source="kraken.get_ticker",
+            max_age_sec=PROBE_SYMBOL_STALE_TTL_SEC,
+        )
+        if evidence.get("status") != "live":
+            return evidence
+        ticker = evidence.get("payload")
+        if not isinstance(ticker, dict):
+            return {"status": "no_data", "data_status": "no_data", "reason": "malformed_kraken_ticker"}
+        price = self._first_finite_field(ticker, ("bid", "price", "lastPrice"), positive=True)
+        if price is None:
+            return {"status": "no_data", "data_status": "no_data", "reason": "kraken_exit_price_unavailable"}
+        receipt = dict(evidence)
+        receipt.pop("payload", None)
+        receipt.update({"price": price, "actionable": True, "symbol": symbol})
+        return receipt
+
     def _kraken_spot_exit_price(self, client: Any, symbol: str) -> float:
-        try:
-            if client is not None and hasattr(client, "get_ticker"):
-                ticker = client.get_ticker(symbol)
-                if isinstance(ticker, dict):
-                    bid = float(ticker.get("bid", 0.0) or 0.0)
-                    if bid > 0:
-                        return bid
-                    price = float(ticker.get("price", 0.0) or ticker.get("lastPrice", 0.0) or 0.0)
-                    if price > 0:
-                        return price
-        except Exception:
-            pass
-        return self._estimate_route_price("kraken", symbol)
+        receipt = self._kraken_spot_exit_price_receipt(client, symbol)
+        price = self._finite_number(receipt.get("price"), positive=True)
+        return price if price is not None else 0.0
 
     def _kraken_spot_fast_profit_decision(self, position: Dict[str, Any], current_price: float) -> Dict[str, Any]:
         now = time.time()
@@ -5669,6 +6278,8 @@ class UnifiedMarketTrader:
 
     def _sync_kraken_spot_inventory_positions(self, client: Any, state: Dict[str, Any]) -> Dict[str, Any]:
         posture = self._kraken_spot_portfolio_posture(force=False)
+        if posture.get("data_status") != "live":
+            return state
         assets = posture.get("assets", []) if isinstance(posture, dict) else []
         if not isinstance(assets, list):
             return state
@@ -5681,17 +6292,20 @@ class UnifiedMarketTrader:
         for asset in assets:
             if not isinstance(asset, dict) or not asset.get("cost_basis_available"):
                 continue
-            amount = max(0.0, float(asset.get("amount", 0.0) or 0.0))
-            current_value = max(0.0, float(asset.get("current_value_usd", 0.0) or 0.0))
-            if amount <= 0 or current_value < KRAKEN_SPOT_MANAGED_MIN_USD:
+            amount = self._finite_number(asset.get("amount"), positive=True)
+            current_value = self._finite_number(asset.get("current_value_usd"), positive=True)
+            opened_at_epoch = self._strict_timestamp_epoch(asset.get("latest_buy_timestamp"))
+            if amount is None or current_value is None or opened_at_epoch is None or current_value < KRAKEN_SPOT_MANAGED_MIN_USD:
                 continue
             symbol = str(asset.get("symbol") or "").upper().strip()
             asset_name = str(asset.get("asset") or self._base_from_route_symbol(symbol)).upper().strip()
             position_id = f"kraken-spot-inventory-{asset_name}"
             position = dict(by_id.get(position_id) or {})
-            opened_at_epoch = float(position.get("opened_at_epoch", 0.0) or 0.0)
-            if opened_at_epoch <= 0:
-                opened_at_epoch = time.time() - KRAKEN_SPOT_FAST_PROFIT_MIN_HOLD_SEC - 1.0
+            avg_entry = self._finite_number(asset.get("avg_entry_price"), positive=True)
+            entry_value = self._finite_number(asset.get("entry_value_usd"), positive=True)
+            entry_fee = self._finite_number(asset.get("entry_fee_usd"), nonnegative=True)
+            if avg_entry is None or entry_value is None or entry_fee is None:
+                continue
             position.update(
                 {
                     "id": position_id,
@@ -5699,13 +6313,15 @@ class UnifiedMarketTrader:
                     "base_asset": asset_name,
                     "side": "long_spot",
                     "quantity": round(amount, 12),
-                    "entry_price": round(float(asset.get("avg_entry_price", 0.0) or 0.0), 8),
-                    "entry_value_usd": round(float(asset.get("entry_value_usd", 0.0) or 0.0), 8),
-                    "entry_fee_usd": round(float(asset.get("entry_fee_usd", 0.0) or 0.0), 8),
-                    "opened_at": position.get("opened_at") or datetime.fromtimestamp(opened_at_epoch).isoformat(),
+                    "entry_price": round(avg_entry, 8),
+                    "entry_value_usd": round(entry_value, 8),
+                    "entry_fee_usd": round(entry_fee, 8),
+                    "opened_at": datetime.fromtimestamp(opened_at_epoch).isoformat(),
                     "opened_at_epoch": opened_at_epoch,
-                    "source_order_id": position.get("source_order_id") or position_id,
-                    "source": "live_balance_cost_basis",
+                    "opened_at_source": "provider_trade_history",
+                    "source_order_id": position.get("source_order_id"),
+                    "source": "live_balance_and_provider_trade_history",
+                    "truth_status": "real_observed_and_derived",
                     "status": "open",
                     "inventory_state": asset.get("state"),
                     "last_inventory_sync": datetime.now().isoformat(),
@@ -5715,7 +6331,7 @@ class UnifiedMarketTrader:
             synced.append(position)
         explicit_positions = [
             p for p in existing
-            if str(p.get("source") or "") != "live_balance_cost_basis"
+            if str(p.get("source") or "") not in {"live_balance_cost_basis", "live_balance_and_provider_trade_history"}
             and not str(p.get("id") or "").startswith("kraken-spot-inventory-")
         ]
         state["open_positions"] = (explicit_positions + synced)[-20:]
@@ -5742,7 +6358,7 @@ class UnifiedMarketTrader:
             return {"ok": False, "reason": "deadman_symbol_or_quantity_unavailable"}
         try:
             if hasattr(client, "place_trailing_stop_order"):
-                result = client.place_trailing_stop_order(
+                result = self._governed_client_for("kraken").place_trailing_stop_order(
                     symbol,
                     "sell",
                     quantity=quantity,
@@ -5754,24 +6370,35 @@ class UnifiedMarketTrader:
                 price = float(decision.get("current_price", 0.0) or 0.0)
                 if price <= 0:
                     return {"ok": False, "reason": "deadman_price_unavailable"}
-                result = client.place_take_profit_order(symbol, "sell", quantity=quantity, take_profit_price=price)
+                result = self._governed_client_for("kraken").place_take_profit_order(
+                    symbol, "sell", quantity=quantity, take_profit_price=price
+                )
                 order_type = "take_profit"
             else:
                 return {"ok": False, "reason": "kraken_deadman_order_api_missing"}
         except Exception as e:
             return {"ok": False, "reason": "kraken_deadman_order_failed", "error": str(e)}
-        rejected = isinstance(result, dict) and bool(result.get("error") or result.get("rejected"))
+        receipt_state = self._submission_receipt_state(result)
         return {
-            "ok": bool(result) and not rejected,
+            "ok": bool(receipt_state.get("submitted")),
+            "submitted": bool(receipt_state.get("submitted")),
+            "status": str(receipt_state.get("status") or "no_data"),
+            "order_id": receipt_state.get("order_id"),
             "order_type": order_type,
             "symbol": symbol,
             "quantity": round(quantity, 12),
             "trailing_offset_pct": KRAKEN_SPOT_DEADMAN_TRAILING_PCT if order_type == "trailing_stop" else None,
             "result": result,
-            "reason": "deadman_switch_armed_for_profitable_spot_inventory" if result and not rejected else "deadman_switch_rejected",
+            "reason": (
+                "deadman_switch_submitted_pending_reconciliation"
+                if receipt_state.get("submitted")
+                else str(receipt_state.get("reason") or "deadman_switch_rejected")
+            ),
         }
 
     def _monitor_kraken_spot_fast_profit(self) -> List[Dict[str, Any]]:
+        if not self._runtime_real_orders_allowed():
+            return []
         state = self._load_kraken_spot_fast_profit_state()
         client = self._kraken_spot_client()
         if client is not None:
@@ -5792,8 +6419,24 @@ class UnifiedMarketTrader:
         remaining: List[Dict[str, Any]] = []
         for position in open_positions:
             symbol = str(position.get("symbol") or "").upper().strip()
-            price = self._kraken_spot_exit_price(client, symbol)
+            price_receipt = self._kraken_spot_exit_price_receipt(client, symbol)
+            price = self._finite_number(price_receipt.get("price"), positive=True)
+            if price_receipt.get("status") != "live" or price is None:
+                checks.append(
+                    {
+                        "status": "no_data",
+                        "data_status": "no_data",
+                        "action": "denied",
+                        "symbol": symbol,
+                        "position_id": position.get("id"),
+                        "reason": str(price_receipt.get("reason") or "fresh_exit_price_required"),
+                        "price_evidence": price_receipt,
+                    }
+                )
+                remaining.append(position)
+                continue
             decision = self._kraken_spot_fast_profit_decision(position, price)
+            decision["price_evidence"] = price_receipt
             checks.append(decision)
             if not decision.get("ready_to_capture"):
                 remaining.append(position)
@@ -5806,26 +6449,87 @@ class UnifiedMarketTrader:
                 remaining.append(position)
                 continue
             try:
-                result = client.place_market_order(symbol, "sell", quantity=quantity)
+                result = self._governed_client_for("kraken").place_market_order(
+                    symbol, "sell", quantity=quantity
+                )
             except Exception as e:
                 result = {"error": str(e)}
-            rejected = isinstance(result, dict) and bool(result.get("error") or result.get("rejected"))
-            if result and not rejected:
+            receipt_state = self._submission_receipt_state(result)
+            if receipt_state.get("status") == "pending_reconciliation" and hasattr(client, "get_order_status"):
+                order_id = receipt_state.get("order_id")
+                if order_id:
+                    try:
+                        reconciled_result = client.get_order_status(str(order_id))
+                    except Exception:
+                        reconciled_result = None
+                    if isinstance(reconciled_result, dict):
+                        result = reconciled_result
+                        receipt_state = self._submission_receipt_state(result)
+            fill = receipt_state.get("fill") if isinstance(receipt_state.get("fill"), dict) else {}
+            fill_quantity = self._finite_number(fill.get("quantity"), positive=True)
+            position_quantity = self._finite_number(position.get("quantity"), positive=True)
+            if (
+                fill.get("data_status") == "live"
+                and fill.get("eligible_for_learning") is True
+                and fill_quantity is not None
+                and position_quantity is not None
+                and fill_quantity <= position_quantity * 1.001
+            ):
+                fill_price = float(fill["price"])
+                fill_notional = float(fill["notional"])
+                fill_fee = float(fill["fee"])
+                realized_ratio = min(1.0, fill_quantity / position_quantity)
+                entry_value = self._finite_number(position.get("entry_value_usd"), nonnegative=True)
+                entry_fee = self._finite_number(position.get("entry_fee_usd"), nonnegative=True)
+                if entry_value is None or entry_fee is None:
+                    decision.update({"status": "no_data", "ready_to_capture": False, "reason": "entry_fill_evidence_incomplete"})
+                    remaining.append(position)
+                    continue
+                realized_entry_value = entry_value * realized_ratio
+                realized_entry_fee = entry_fee * realized_ratio
+                realized_net = fill_notional - realized_entry_value - realized_entry_fee - fill_fee
                 completed = dict(position)
                 completed.update(
                     {
-                        "status": "closed",
-                        "closed_at": datetime.now().isoformat(),
-                        "exit_price": decision.get("current_price", 0.0),
-                        "exit_quantity": round(quantity, 12),
+                        "status": "closed" if realized_ratio >= 0.999999 else "partially_closed",
+                        "closed_at": datetime.fromtimestamp(float(fill["provider_timestamp"])).isoformat(),
+                        "closed_at_epoch": float(fill["provider_timestamp"]),
+                        "exit_price": round(fill_price, 8),
+                        "exit_quantity": round(fill_quantity, 12),
+                        "exit_notional_usd": round(fill_notional, 8),
+                        "exit_fee_usd": round(fill_fee, 8),
+                        "realized_entry_value_usd": round(realized_entry_value, 8),
+                        "realized_entry_fee_usd": round(realized_entry_fee, 8),
                         "close_result": result,
+                        "fill_receipt": fill,
+                        "fill_receipt_complete": True,
+                        "data_status": "live",
+                        "truth_status": "real_observed_and_derived",
                         "reason": "KRAKEN_SPOT_FAST_PROFIT_CAPTURE",
-                        "net_pnl": decision.get("true_net_profit_usd", 0.0),
+                        "net_pnl": round(realized_net, 8),
+                        "eligible_for_learning": True,
                         "fast_profit_capture": decision,
                     }
                 )
                 closed.append(completed)
+                residual_quantity = max(0.0, position_quantity - fill_quantity)
+                if residual_quantity > max(0.00000001, position_quantity * 0.000001):
+                    residual = dict(position)
+                    residual["quantity"] = round(residual_quantity, 12)
+                    residual["entry_value_usd"] = round(entry_value - realized_entry_value, 8)
+                    residual["entry_fee_usd"] = round(entry_fee - realized_entry_fee, 8)
+                    residual["last_realized_fill"] = fill
+                    remaining.append(residual)
             else:
+                decision.update(
+                    {
+                        "status": receipt_state.get("status") or "no_data",
+                        "data_status": receipt_state.get("status") or "no_data",
+                        "ready_to_capture": False,
+                        "reason": receipt_state.get("reason") or "terminal_provider_fill_receipt_required",
+                        "reconciliation_required": receipt_state.get("status") == "pending_reconciliation",
+                    }
+                )
                 position["last_close_error"] = result
                 deadman = self._arm_kraken_spot_deadman_switch(client, position, decision)
                 if deadman.get("ok"):
@@ -5856,28 +6560,100 @@ class UnifiedMarketTrader:
             self._record_trade_profit(item)
         return closed
 
+    def _validated_route_order_request(self, side: Any, symbol: Any, quote_usd: Any) -> Dict[str, Any]:
+        side_norm = str(side or "").upper().strip()
+        symbol_norm = str(symbol or "").upper().strip()
+        quote_value = self._finite_number(quote_usd, positive=True)
+        if side_norm not in {"BUY", "SELL"}:
+            return {"status": "no_data", "reason": "route_side_missing_or_invalid"}
+        if not symbol_norm:
+            return {"status": "no_data", "reason": "route_symbol_missing"}
+        if quote_value is None:
+            return {"status": "no_data", "reason": "route_quote_value_missing_or_malformed"}
+        return {
+            "status": "live",
+            "data_status": "live",
+            "side": side_norm,
+            "symbol": symbol_norm,
+            "quote_usd": quote_value,
+        }
+
+    def _provider_submission_exception(
+        self,
+        *,
+        venue: str,
+        market_type: str,
+        symbol: str,
+        side: str,
+        error: Exception,
+    ) -> Dict[str, Any]:
+        return {
+            "ok": False,
+            "submitted": False,
+            "status": "pending_reconciliation",
+            "data_status": "pending_reconciliation",
+            "reconciliation_required": True,
+            "submission_state_unknown": True,
+            "venue": venue,
+            "market_type": market_type,
+            "symbol": symbol,
+            "side": side,
+            "reason": "provider_order_submission_exception_requires_reconciliation",
+            "error": str(error),
+        }
+
     def _execute_kraken_spot_route(self, side: str, symbol: str, quote_usd: float) -> Dict[str, Any]:
+        if not self._runtime_real_orders_allowed():
+            return {
+                "ok": False,
+                "submitted": False,
+                "status": "denied",
+                "venue": "kraken",
+                "market_type": "spot",
+                "symbol": symbol,
+                "reason": "real_orders_not_allowed_by_runtime",
+            }
+        request = self._validated_route_order_request(side, symbol, quote_usd)
+        if request.get("status") != "live":
+            return {"ok": False, "submitted": False, "status": "no_data", "venue": "kraken", "market_type": "spot", "symbol": str(symbol or ""), "reason": request.get("reason")}
+        symbol = str(request["symbol"])
+        requested_quote_usd = float(request["quote_usd"])
         client = self._kraken_spot_client()
         if client is None or not hasattr(client, "place_market_order"):
-            return {"ok": False, "venue": "kraken", "market_type": "spot", "symbol": symbol, "reason": "kraken_spot_client_missing"}
-        side_norm = "buy" if str(side or "BUY").upper() == "BUY" else "sell"
+            return {"ok": False, "submitted": False, "status": "no_data", "venue": "kraken", "market_type": "spot", "symbol": symbol, "reason": "kraken_spot_client_missing"}
+        side_norm = str(request["side"]).lower()
+        price_symbol = self._to_kraken_spot_symbol(self._normalize_symbol(symbol)) or symbol
+        price_receipt = self._fresh_route_price_receipt("kraken", price_symbol)
+        price = self._finite_number(price_receipt.get("price"), positive=True)
+        if price_receipt.get("status") != "live" or price is None:
+            return {
+                "ok": False,
+                "submitted": False,
+                "status": "no_data",
+                "venue": "kraken",
+                "market_type": "spot",
+                "symbol": symbol,
+                "side": side_norm,
+                "reason": str(price_receipt.get("reason") or "fresh_price_receipt_required"),
+                "price_evidence": price_receipt,
+            }
         if side_norm == "buy":
             posture = self._kraken_spot_portfolio_posture(force=False)
-            if not bool(posture.get("spot_buy_allowed", True)):
+            if not bool(posture.get("spot_buy_allowed")):
                 return {
                     "ok": False,
+                    "submitted": False,
+                    "status": str(posture.get("status") or "pending_reconciliation"),
                     "venue": "kraken",
                     "market_type": "spot",
                     "symbol": symbol,
                     "side": side_norm,
-                    "reason": "kraken_spot_inventory_underwater_margin_only",
+                    "reason": str(posture.get("reason") or "kraken_spot_inventory_pending_reconciliation"),
                     "portfolio_unity": posture,
                 }
-            spot_quote_usd = max(float(quote_usd or 0.0), KRAKEN_SPOT_QUOTE_USD)
+            spot_quote_usd = max(requested_quote_usd, KRAKEN_SPOT_QUOTE_USD)
             quote_options = self._kraken_spot_quote_options(client)
-            usd_price_symbol = self._to_kraken_spot_symbol(self._normalize_symbol(symbol)) or symbol
-            price = self._estimate_route_price("kraken", usd_price_symbol)
-            cost_profile = self._kraken_spot_cost_profile(side_norm, usd_price_symbol, spot_quote_usd, price)
+            cost_profile = self._kraken_spot_cost_profile(side_norm, price_symbol, spot_quote_usd, price)
             required_usd_with_reserve = spot_quote_usd + cost_profile["estimated_entry_fee_usd"] + KRAKEN_SPOT_COLLATERAL_RESERVE_USD
             quote_cash = sum(float(option.get("available_usd", 0.0) or 0.0) for option in quote_options)
             quote_option = next(
@@ -5892,6 +6668,8 @@ class UnifiedMarketTrader:
             if not quote_option:
                 return {
                     "ok": False,
+                    "submitted": False,
+                    "status": "no_data",
                     "venue": "kraken",
                     "market_type": "spot",
                     "symbol": symbol,
@@ -5903,32 +6681,63 @@ class UnifiedMarketTrader:
                     "collateral_reserve_usd": KRAKEN_SPOT_COLLATERAL_RESERVE_USD,
                     "cost_profile": cost_profile,
                 }
-            quote_asset = str(quote_option.get("asset") or "USD")
+            quote_asset = str(quote_option.get("asset") or "").strip().upper()
+            usd_per_quote = self._finite_number(quote_option.get("usd_per_quote"), positive=True)
+            if not quote_asset or usd_per_quote is None:
+                return {
+                    "ok": False,
+                    "submitted": False,
+                    "status": "no_data",
+                    "venue": "kraken",
+                    "market_type": "spot",
+                    "symbol": symbol,
+                    "side": side_norm,
+                    "reason": "quote_balance_receipt_malformed",
+                }
             execution_symbol = self._kraken_spot_symbol_for_quote(symbol, quote_asset)
-            quote_qty = spot_quote_usd / float(quote_option.get("usd_per_quote", 1.0) or 1.0)
-            result = client.place_market_order(execution_symbol, side_norm, quote_qty=quote_qty)
+            quote_qty = spot_quote_usd / usd_per_quote
+            try:
+                result = self._governed_client_for("kraken").place_market_order(
+                    execution_symbol, side_norm, quote_qty=quote_qty
+                )
+            except Exception as error:
+                return self._provider_submission_exception(
+                    venue="kraken", market_type="spot", symbol=execution_symbol, side=side_norm, error=error
+                )
             order_value = spot_quote_usd
-            position = {}
-            if isinstance(result, dict) and not bool(result.get("error") or result.get("rejected")):
+            receipt_state = self._submission_receipt_state(result)
+            position: Dict[str, Any] = {}
+            if isinstance(receipt_state.get("fill"), dict) and receipt_state["fill"].get("data_status") == "live":
                 position = self._record_kraken_spot_buy_position(
                     symbol=execution_symbol,
                     quote_usd=spot_quote_usd,
-                    price=price if price > 0 else self._estimate_route_price("kraken", symbol),
+                    price=price,
                     result=result,
                     cost_profile=cost_profile,
                 )
         else:
-            price = self._estimate_route_price("kraken", symbol)
-            cost_profile = self._kraken_spot_cost_profile(side_norm, symbol, max(float(quote_usd or 0.0), KRAKEN_SPOT_QUOTE_USD), price)
-            quantity = self._spot_sell_quantity(client, symbol, max(float(quote_usd or 0.0), KRAKEN_SPOT_QUOTE_USD), price)
+            cost_profile = self._kraken_spot_cost_profile(side_norm, symbol, max(requested_quote_usd, KRAKEN_SPOT_QUOTE_USD), price)
+            quantity = self._spot_sell_quantity(client, "kraken", symbol, max(requested_quote_usd, KRAKEN_SPOT_QUOTE_USD), price)
             if quantity <= 0:
-                return {"ok": False, "venue": "kraken", "market_type": "spot", "symbol": symbol, "side": side_norm, "reason": "no_spot_balance_to_sell"}
-            result = client.place_market_order(symbol, side_norm, quantity=quantity)
-            order_value = quantity * price if price > 0 else 0.0
+                return {"ok": False, "submitted": False, "status": "no_data", "venue": "kraken", "market_type": "spot", "symbol": symbol, "side": side_norm, "reason": "no_verified_spot_balance_to_sell"}
+            try:
+                result = self._governed_client_for("kraken").place_market_order(
+                    symbol, side_norm, quantity=quantity
+                )
+            except Exception as error:
+                return self._provider_submission_exception(
+                    venue="kraken", market_type="spot", symbol=symbol, side=side_norm, error=error
+                )
+            receipt_state = self._submission_receipt_state(result)
+            order_value = quantity * price
             position = {}
-        rejected = isinstance(result, dict) and bool(result.get("error") or result.get("rejected"))
         return {
-            "ok": bool(result) and not rejected,
+            "ok": bool(receipt_state.get("ok")),
+            "submitted": bool(receipt_state.get("submitted")),
+            "status": receipt_state.get("status"),
+            "fill_confirmed": bool(isinstance(receipt_state.get("fill"), dict) and receipt_state["fill"].get("data_status") == "live"),
+            "reconciliation_required": receipt_state.get("status") == "pending_reconciliation",
+            "reason": receipt_state.get("reason"),
             "venue": "kraken",
             "market_type": "spot",
             "symbol": execution_symbol if side_norm == "buy" else symbol,
@@ -5937,42 +6746,119 @@ class UnifiedMarketTrader:
             "quote_asset": quote_option.get("asset") if side_norm == "buy" else None,
             "quote_qty": quote_qty if side_norm == "buy" else None,
             "cost_profile": cost_profile,
+            "price_evidence": price_receipt,
             "fast_profit_position": position,
             "result": result,
         }
 
     def _execute_alpaca_spot_route(self, side: str, symbol: str, quote_usd: float) -> Dict[str, Any]:
+        if not self._runtime_real_orders_allowed():
+            return {"ok": False, "submitted": False, "status": "denied", "venue": "alpaca", "market_type": "spot", "symbol": symbol, "reason": "real_orders_not_allowed_by_runtime"}
+        request = self._validated_route_order_request(side, symbol, quote_usd)
+        if request.get("status") != "live":
+            return {"ok": False, "submitted": False, "status": "no_data", "venue": "alpaca", "market_type": "spot", "symbol": str(symbol or ""), "reason": request.get("reason")}
+        symbol = str(request["symbol"])
+        quote_usd = float(request["quote_usd"])
         if self.alpaca is None:
-            return {"ok": False, "venue": "alpaca", "symbol": symbol, "reason": "alpaca_client_missing"}
-        side_norm = "buy" if str(side).upper() == "BUY" else "sell"
+            return {"ok": False, "submitted": False, "status": "no_data", "venue": "alpaca", "symbol": symbol, "reason": "alpaca_client_missing"}
+        side_norm = str(request["side"]).lower()
+        price_receipt = self._fresh_route_price_receipt("alpaca", symbol)
+        price = self._finite_number(price_receipt.get("price"), positive=True)
+        if price_receipt.get("status") != "live" or price is None:
+            return {"ok": False, "submitted": False, "status": "no_data", "venue": "alpaca", "market_type": "spot", "symbol": symbol, "side": side_norm, "reason": str(price_receipt.get("reason") or "fresh_price_receipt_required"), "price_evidence": price_receipt}
         if side_norm == "buy":
-            result = self.alpaca.place_market_order(symbol, side_norm, quote_qty=quote_usd)
+            try:
+                result = self._governed_client_for("alpaca").place_market_order(
+                    symbol, side_norm, quote_qty=quote_usd
+                )
+            except Exception as error:
+                return self._provider_submission_exception(
+                    venue="alpaca", market_type="spot", symbol=symbol, side=side_norm, error=error
+                )
         else:
-            price = self._estimate_route_price("alpaca", symbol)
-            quantity = self._spot_sell_quantity(self.alpaca, symbol, quote_usd, price)
+            quantity = self._spot_sell_quantity(self.alpaca, "alpaca", symbol, quote_usd, price)
             if quantity <= 0:
-                return {"ok": False, "venue": "alpaca", "symbol": symbol, "side": side_norm, "reason": "no_spot_balance_to_sell"}
-            result = self.alpaca.place_market_order(symbol, side_norm, quantity=quantity)
-        return {"ok": bool(result), "venue": "alpaca", "market_type": "spot", "symbol": symbol, "side": side_norm, "result": result}
+                return {"ok": False, "submitted": False, "status": "no_data", "venue": "alpaca", "symbol": symbol, "side": side_norm, "reason": "no_verified_spot_balance_to_sell"}
+            try:
+                result = self._governed_client_for("alpaca").place_market_order(
+                    symbol, side_norm, quantity=quantity
+                )
+            except Exception as error:
+                return self._provider_submission_exception(
+                    venue="alpaca", market_type="spot", symbol=symbol, side=side_norm, error=error
+                )
+        receipt_state = self._submission_receipt_state(result)
+        return {
+            "ok": bool(receipt_state.get("ok")),
+            "submitted": bool(receipt_state.get("submitted")),
+            "status": receipt_state.get("status"),
+            "fill_confirmed": bool(isinstance(receipt_state.get("fill"), dict) and receipt_state["fill"].get("data_status") == "live"),
+            "reconciliation_required": receipt_state.get("status") == "pending_reconciliation",
+            "reason": receipt_state.get("reason"),
+            "venue": "alpaca",
+            "market_type": "spot",
+            "symbol": symbol,
+            "side": side_norm,
+            "price_evidence": price_receipt,
+            "result": result,
+        }
 
     def _execute_binance_spot_route(self, side: str, symbol: str, quote_usd: float) -> Dict[str, Any]:
+        if not self._runtime_real_orders_allowed():
+            return {"ok": False, "submitted": False, "status": "denied", "venue": "binance", "market_type": "spot", "symbol": symbol, "reason": "real_orders_not_allowed_by_runtime"}
+        request = self._validated_route_order_request(side, symbol, quote_usd)
+        if request.get("status") != "live":
+            return {"ok": False, "submitted": False, "status": "no_data", "venue": "binance", "market_type": "spot", "symbol": str(symbol or ""), "reason": request.get("reason")}
+        symbol = str(request["symbol"])
+        quote_usd = float(request["quote_usd"])
         if self.binance is None:
-            return {"ok": False, "venue": "binance", "symbol": symbol, "reason": "binance_client_missing"}
-        side_norm = str(side or "BUY").upper()
+            return {"ok": False, "submitted": False, "status": "no_data", "venue": "binance", "symbol": symbol, "reason": "binance_client_missing"}
+        side_norm = str(request["side"])
+        price_receipt = self._fresh_route_price_receipt("binance", symbol)
+        price = self._finite_number(price_receipt.get("price"), positive=True)
+        if price_receipt.get("status") != "live" or price is None:
+            return {"ok": False, "submitted": False, "status": "no_data", "venue": "binance", "market_type": "spot", "symbol": symbol, "side": side_norm, "reason": str(price_receipt.get("reason") or "fresh_price_receipt_required"), "price_evidence": price_receipt}
         if side_norm == "BUY":
-            result = self.binance.place_market_order(symbol, side_norm, quote_qty=quote_usd)
+            try:
+                result = self._governed_client_for("binance").place_market_order(
+                    symbol, side_norm, quote_qty=quote_usd
+                )
+            except Exception as error:
+                return self._provider_submission_exception(
+                    venue="binance", market_type="spot", symbol=symbol, side=side_norm, error=error
+                )
         else:
-            price = self._estimate_route_price("binance", symbol)
-            quantity = self._spot_sell_quantity(self.binance, symbol, quote_usd, price)
+            quantity = self._spot_sell_quantity(self.binance, "binance", symbol, quote_usd, price)
             if quantity <= 0:
-                return {"ok": False, "venue": "binance", "symbol": symbol, "side": side_norm, "reason": "no_spot_balance_to_sell"}
-            result = self.binance.place_market_order(symbol, side_norm, quantity=quantity)
-        return {"ok": bool(result), "venue": "binance", "market_type": "spot", "symbol": symbol, "side": side_norm, "result": result}
+                return {"ok": False, "submitted": False, "status": "no_data", "venue": "binance", "symbol": symbol, "side": side_norm, "reason": "no_verified_spot_balance_to_sell"}
+            try:
+                result = self._governed_client_for("binance").place_market_order(
+                    symbol, side_norm, quantity=quantity
+                )
+            except Exception as error:
+                return self._provider_submission_exception(
+                    venue="binance", market_type="spot", symbol=symbol, side=side_norm, error=error
+                )
+        receipt_state = self._submission_receipt_state(result)
+        return {
+            "ok": bool(receipt_state.get("ok")),
+            "submitted": bool(receipt_state.get("submitted")),
+            "status": receipt_state.get("status"),
+            "fill_confirmed": bool(isinstance(receipt_state.get("fill"), dict) and receipt_state["fill"].get("data_status") == "live"),
+            "reconciliation_required": receipt_state.get("status") == "pending_reconciliation",
+            "reason": receipt_state.get("reason"),
+            "venue": "binance",
+            "market_type": "spot",
+            "symbol": symbol,
+            "side": side_norm,
+            "price_evidence": price_receipt,
+            "result": result,
+        }
 
     def _kraken_margin_leverage_for_route(self, client: Any, symbol: str, side: str) -> int:
         preferred = max(1, int(KRAKEN_MARGIN_LEVERAGE or 1))
         if client is None or not hasattr(client, "get_pair_leverage"):
-            return preferred
+            return 0
         try:
             info = client.get_pair_leverage(symbol)
         except Exception:
@@ -5991,31 +6877,49 @@ class UnifiedMarketTrader:
         return max(eligible) if eligible else min(valid)
 
     def _execute_kraken_margin_route(self, side: str, symbol: str, quote_usd: float) -> Dict[str, Any]:
+        if not self._runtime_real_orders_allowed():
+            return {"ok": False, "submitted": False, "status": "denied", "venue": "kraken", "market_type": "margin", "symbol": symbol, "reason": "real_orders_not_allowed_by_runtime"}
+        request = self._validated_route_order_request(side, symbol, quote_usd)
+        if request.get("status") != "live":
+            return {"ok": False, "submitted": False, "status": "no_data", "venue": "kraken", "market_type": "margin", "symbol": str(symbol or ""), "reason": request.get("reason")}
+        symbol = str(request["symbol"])
+        quote_usd = float(request["quote_usd"])
         client = self._kraken_spot_client()
         if client is None or not hasattr(client, "place_margin_order"):
-            return {"ok": False, "venue": "kraken", "market_type": "margin", "symbol": symbol, "reason": "kraken_margin_client_missing"}
+            return {"ok": False, "submitted": False, "status": "no_data", "venue": "kraken", "market_type": "margin", "symbol": symbol, "reason": "kraken_margin_client_missing"}
         if not self._env_enabled("KRAKEN_MARGIN_ENABLED", True):
-            return {"ok": False, "venue": "kraken", "market_type": "margin", "symbol": symbol, "reason": "KRAKEN_MARGIN_ENABLED_not_true"}
-        side_norm = "buy" if str(side or "BUY").upper() == "BUY" else "sell"
-        price = self._estimate_route_price("kraken", symbol)
-        if price <= 0:
-            return {"ok": False, "venue": "kraken", "market_type": "margin", "symbol": symbol, "side": side_norm, "reason": "price_unavailable"}
+            return {"ok": False, "submitted": False, "status": "denied", "venue": "kraken", "market_type": "margin", "symbol": symbol, "reason": "KRAKEN_MARGIN_ENABLED_not_true"}
+        side_norm = str(request["side"]).lower()
+        price_receipt = self._fresh_route_price_receipt("kraken", symbol)
+        price = self._finite_number(price_receipt.get("price"), positive=True)
+        if price_receipt.get("status") != "live" or price is None:
+            return {"ok": False, "submitted": False, "status": "no_data", "venue": "kraken", "market_type": "margin", "symbol": symbol, "side": side_norm, "reason": str(price_receipt.get("reason") or "fresh_price_receipt_required"), "price_evidence": price_receipt}
         leverage = self._kraken_margin_leverage_for_route(client, symbol, side_norm)
         if leverage <= 0:
-            return {"ok": False, "venue": "kraken", "market_type": "margin", "symbol": symbol, "side": side_norm, "reason": "margin_pair_leverage_unavailable"}
+            return {"ok": False, "submitted": False, "status": "no_data", "venue": "kraken", "market_type": "margin", "symbol": symbol, "side": side_norm, "reason": "margin_pair_leverage_unavailable"}
         margin_quote_usd = max(float(quote_usd or 0.0), KRAKEN_MARGIN_QUOTE_USD)
         quantity = max(0.0, margin_quote_usd / price)
         if quantity <= 0:
-            return {"ok": False, "venue": "kraken", "market_type": "margin", "symbol": symbol, "side": side_norm, "reason": "quantity_unavailable"}
-        result = client.place_margin_order(
-            symbol=symbol,
-            side=side_norm,
-            quantity=quantity,
-            leverage=leverage,
-        )
-        rejected = isinstance(result, dict) and bool(result.get("error") or result.get("rejected"))
+            return {"ok": False, "submitted": False, "status": "no_data", "venue": "kraken", "market_type": "margin", "symbol": symbol, "side": side_norm, "reason": "quantity_unavailable"}
+        try:
+            result = self._governed_client_for("kraken").place_margin_order(
+                symbol=symbol,
+                side=side_norm,
+                quantity=quantity,
+                leverage=leverage,
+            )
+        except Exception as error:
+            return self._provider_submission_exception(
+                venue="kraken", market_type="margin", symbol=symbol, side=side_norm, error=error
+            )
+        receipt_state = self._submission_receipt_state(result)
         return {
-            "ok": bool(result) and not rejected,
+            "ok": bool(receipt_state.get("ok")),
+            "submitted": bool(receipt_state.get("submitted")),
+            "status": receipt_state.get("status"),
+            "fill_confirmed": bool(isinstance(receipt_state.get("fill"), dict) and receipt_state["fill"].get("data_status") == "live"),
+            "reconciliation_required": receipt_state.get("status") == "pending_reconciliation",
+            "reason": receipt_state.get("reason"),
             "venue": "kraken",
             "market_type": "margin",
             "symbol": symbol,
@@ -6024,28 +6928,57 @@ class UnifiedMarketTrader:
             "quantity": quantity,
             "leverage": leverage,
             "price": price,
+            "price_evidence": price_receipt,
             "result": result,
         }
 
     def _execute_binance_margin_route(self, side: str, symbol: str, quote_usd: float) -> Dict[str, Any]:
+        if not self._runtime_real_orders_allowed():
+            return {"ok": False, "submitted": False, "status": "denied", "venue": "binance", "market_type": "margin", "symbol": symbol, "reason": "real_orders_not_allowed_by_runtime"}
+        request = self._validated_route_order_request(side, symbol, quote_usd)
+        if request.get("status") != "live":
+            return {"ok": False, "submitted": False, "status": "no_data", "venue": "binance", "market_type": "margin", "symbol": str(symbol or ""), "reason": request.get("reason")}
+        symbol = str(request["symbol"])
+        quote_usd = float(request["quote_usd"])
         if self.binance is None:
-            return {"ok": False, "venue": "binance", "symbol": symbol, "reason": "binance_client_missing"}
+            return {"ok": False, "submitted": False, "status": "no_data", "venue": "binance", "symbol": symbol, "reason": "binance_client_missing"}
         if not self._env_enabled("BINANCE_MARGIN_ENABLED"):
-            return {"ok": False, "venue": "binance", "market_type": "margin", "symbol": symbol, "reason": "BINANCE_MARGIN_ENABLED_not_true"}
-        price = self._estimate_route_price("binance", symbol)
-        if price <= 0:
-            return {"ok": False, "venue": "binance", "market_type": "margin", "symbol": symbol, "reason": "price_unavailable"}
+            return {"ok": False, "submitted": False, "status": "denied", "venue": "binance", "market_type": "margin", "symbol": symbol, "reason": "BINANCE_MARGIN_ENABLED_not_true"}
+        price_receipt = self._fresh_route_price_receipt("binance", symbol)
+        price = self._finite_number(price_receipt.get("price"), positive=True)
+        if price_receipt.get("status") != "live" or price is None:
+            return {"ok": False, "submitted": False, "status": "no_data", "venue": "binance", "market_type": "margin", "symbol": symbol, "reason": str(price_receipt.get("reason") or "fresh_price_receipt_required"), "price_evidence": price_receipt}
         quantity = max(0.0, quote_usd / price)
         if quantity <= 0:
-            return {"ok": False, "venue": "binance", "market_type": "margin", "symbol": symbol, "reason": "quantity_unavailable"}
-        side_norm = str(side or "BUY").upper()
-        result = self.binance.place_margin_order(
-            symbol=symbol,
-            side=side_norm,
-            quantity=quantity,
-            leverage=BINANCE_MARGIN_LEVERAGE,
-        )
-        return {"ok": bool(result and not result.get("rejected") and not result.get("error")), "venue": "binance", "market_type": "margin", "symbol": symbol, "side": side_norm, "quantity": quantity, "result": result}
+            return {"ok": False, "submitted": False, "status": "no_data", "venue": "binance", "market_type": "margin", "symbol": symbol, "reason": "quantity_unavailable"}
+        side_norm = str(request["side"])
+        try:
+            result = self._governed_client_for("binance").place_margin_order(
+                symbol=symbol,
+                side=side_norm,
+                quantity=quantity,
+                leverage=BINANCE_MARGIN_LEVERAGE,
+            )
+        except Exception as error:
+            return self._provider_submission_exception(
+                venue="binance", market_type="margin", symbol=symbol, side=side_norm, error=error
+            )
+        receipt_state = self._submission_receipt_state(result)
+        return {
+            "ok": bool(receipt_state.get("ok")),
+            "submitted": bool(receipt_state.get("submitted")),
+            "status": receipt_state.get("status"),
+            "fill_confirmed": bool(isinstance(receipt_state.get("fill"), dict) and receipt_state["fill"].get("data_status") == "live"),
+            "reconciliation_required": receipt_state.get("status") == "pending_reconciliation",
+            "reason": receipt_state.get("reason"),
+            "venue": "binance",
+            "market_type": "margin",
+            "symbol": symbol,
+            "side": side_norm,
+            "quantity": quantity,
+            "price_evidence": price_receipt,
+            "result": result,
+        }
 
     def _execution_blockers(self, payload: Dict[str, Any], action_plan: Dict[str, Any]) -> List[str]:
         blockers: List[str] = []
@@ -6524,17 +7457,18 @@ class UnifiedMarketTrader:
     def _extract_alpaca_source_snapshot(self, watchlist: List[str]) -> Dict[str, Any]:
         client = self.alpaca
         if client is None:
-            return {}
+            return self._no_data_source("alpaca", "alpaca_client_unavailable")
         if getattr(client, "init_error", "") or not getattr(client, "is_authenticated", True):
-            return {}
+            return self._no_data_source("alpaca", "alpaca_authentication_unavailable")
         symbols: Dict[str, Dict[str, Any]] = {}
+        failure_reasons: List[str] = []
         probe_interval = self._dynamic_probe_interval("alpaca")
         for normalized in watchlist:
             crypto_symbol = self._to_alpaca_crypto_symbol(normalized)
             if not crypto_symbol:
                 continue
             try:
-                ticker = self._governor().call(
+                envelope = self._governor().call_with_receipt(
                     "alpaca",
                     "quotes",
                     f"alpaca:ticker:{crypto_symbol}",
@@ -6542,14 +7476,45 @@ class UnifiedMarketTrader:
                     min_interval_sec=probe_interval,
                     stale_ttl_sec=PROBE_SYMBOL_STALE_TTL_SEC,
                 )
-            except Exception:
-                ticker = None
-            if not ticker:
+            except Exception as error:
+                failure_reasons.append(f"provider_call_failed:{error}")
                 continue
-            price = float(ticker.get("price", 0.0) or ticker.get("last", 0.0) or 0.0)
-            change_pct = float(ticker.get("change_pct", 0.0) or ticker.get("priceChangePercent", 0.0) or 0.0)
-            if price <= 0 or abs(change_pct) <= 0.0:
+            evidence = self._validate_provider_receipt(
+                envelope,
+                source="alpaca.get_ticker",
+                max_age_sec=PROBE_SYMBOL_STALE_TTL_SEC,
+            )
+            if evidence.get("status") != "live":
+                failure_reasons.append(str(evidence.get("reason") or "provider_receipt_unavailable"))
                 continue
+            ticker = evidence.get("payload")
+            if not isinstance(ticker, dict):
+                failure_reasons.append("malformed_provider_ticker")
+                continue
+            price = self._first_finite_field(ticker, ("price", "lastPrice"), positive=True)
+            change_pct = self._first_finite_field(ticker, ("change_pct", "priceChangePercent"))
+            raw = ticker.get("raw")
+            if change_pct is None and isinstance(raw, dict):
+                change_pct = self._first_finite_field(raw, ("todaysChangePerc", "priceChangePercent"))
+            if price is None or change_pct is None:
+                failure_reasons.append("missing_or_malformed_provider_price_or_change")
+                continue
+            if change_pct == 0.0:
+                failure_reasons.append("live_quote_has_no_directional_change")
+                continue
+            row_evidence = {
+                key: evidence[key]
+                for key in (
+                    "receipt_at_epoch",
+                    "receipt_age_sec",
+                    "provider_timestamp",
+                    "source_timestamp",
+                    "provider_age_sec",
+                    "timestamp_kind",
+                    "from_cache",
+                )
+                if key in evidence
+            }
             symbols[normalized] = {
                 "symbol": normalized,
                 "raw_symbol": crypto_symbol,
@@ -6559,13 +7524,20 @@ class UnifiedMarketTrader:
                 "change_pct": change_pct,
                 "budget_role": self._dynamic_exchange_budget("alpaca").get("role", "static"),
                 "probe_min_interval_sec": probe_interval,
+                "data_status": "live",
+                "actionable": True,
+                **row_evidence,
             }
         if not symbols:
-            return {}
-        strongest = max(symbols.values(), key=lambda item: float(item.get("confidence", 0.0) or 0.0))
+            reason = failure_reasons[0] if failure_reasons else "no_routeable_alpaca_symbols"
+            return self._no_data_source("alpaca", reason, failure_reasons=sorted(set(failure_reasons)))
+        strongest = max(symbols.values(), key=lambda item: float(item.get("confidence") or 0.0))
         return {
             "source": "alpaca",
             "ready": True,
+            "status": "live",
+            "data_status": "live",
+            "actionable": True,
             "symbols": symbols,
             "top_symbol": strongest.get("symbol"),
             "top_side": strongest.get("side"),
@@ -6577,18 +7549,19 @@ class UnifiedMarketTrader:
     def _extract_binance_source_snapshot(self, watchlist: List[str]) -> Dict[str, Any]:
         client = self.binance
         if client is None:
-            return {}
+            return self._no_data_source("binance", "binance_client_unavailable")
         binance_diag = getattr(self, "_binance_diag", {}) or {}
         if binance_diag.get("init_error") == "socket_blocked" or not bool(binance_diag.get("network_ok", False)):
-            return {}
+            return self._no_data_source("binance", "binance_network_or_initialization_unavailable")
         symbols: Dict[str, Dict[str, Any]] = {}
+        failure_reasons: List[str] = []
         probe_interval = self._dynamic_probe_interval("binance")
         for normalized in watchlist:
             binance_symbol = self._to_binance_symbol(normalized)
             if not binance_symbol:
                 continue
             try:
-                ticker = self._governor().call(
+                envelope = self._governor().call_with_receipt(
                     "binance",
                     "quotes",
                     f"binance:24h:{binance_symbol}",
@@ -6596,29 +7569,65 @@ class UnifiedMarketTrader:
                     min_interval_sec=probe_interval,
                     stale_ttl_sec=PROBE_SYMBOL_STALE_TTL_SEC,
                 )
-            except Exception:
-                ticker = None
-            if not ticker:
+            except Exception as error:
+                failure_reasons.append(f"provider_call_failed:{error}")
                 continue
-            change_pct = float(ticker.get("priceChangePercent", 0.0) or 0.0)
-            if abs(change_pct) <= 0.0:
+            evidence = self._validate_provider_receipt(
+                envelope,
+                source="binance.get_24h_ticker",
+                max_age_sec=PROBE_SYMBOL_STALE_TTL_SEC,
+            )
+            if evidence.get("status") != "live":
+                failure_reasons.append(str(evidence.get("reason") or "provider_receipt_unavailable"))
                 continue
+            ticker = evidence.get("payload")
+            if not isinstance(ticker, dict):
+                failure_reasons.append("malformed_provider_ticker")
+                continue
+            change_pct = self._first_finite_field(ticker, ("priceChangePercent", "change_pct"))
+            price = self._first_finite_field(ticker, ("lastPrice", "weightedAvgPrice", "price"), positive=True)
+            if price is None or change_pct is None:
+                failure_reasons.append("missing_or_malformed_provider_price_or_change")
+                continue
+            if change_pct == 0.0:
+                failure_reasons.append("live_quote_has_no_directional_change")
+                continue
+            row_evidence = {
+                key: evidence[key]
+                for key in (
+                    "receipt_at_epoch",
+                    "receipt_age_sec",
+                    "provider_timestamp",
+                    "source_timestamp",
+                    "provider_age_sec",
+                    "timestamp_kind",
+                    "from_cache",
+                )
+                if key in evidence
+            }
             symbols[normalized] = {
                 "symbol": normalized,
                 "raw_symbol": binance_symbol,
                 "confidence": min(1.0, abs(change_pct) / 5.0),
                 "side": "BUY" if change_pct >= 0 else "SELL",
-                "price": float(ticker.get("lastPrice", 0.0) or ticker.get("weightedAvgPrice", 0.0) or 0.0),
+                "price": price,
                 "change_pct": change_pct,
                 "budget_role": self._dynamic_exchange_budget("binance").get("role", "static"),
                 "probe_min_interval_sec": probe_interval,
+                "data_status": "live",
+                "actionable": True,
+                **row_evidence,
             }
         if not symbols:
-            return {}
-        strongest = max(symbols.values(), key=lambda item: float(item.get("confidence", 0.0) or 0.0))
+            reason = failure_reasons[0] if failure_reasons else "no_routeable_binance_symbols"
+            return self._no_data_source("binance", reason, failure_reasons=sorted(set(failure_reasons)))
+        strongest = max(symbols.values(), key=lambda item: float(item.get("confidence") or 0.0))
         return {
             "source": "binance",
             "ready": True,
+            "status": "live",
+            "data_status": "live",
+            "actionable": True,
             "symbols": symbols,
             "top_symbol": strongest.get("symbol"),
             "top_side": strongest.get("side"),
@@ -6721,8 +7730,8 @@ class UnifiedMarketTrader:
                 continue
             if timestamp <= 0.0:
                 continue
-            age_sec = max(0.0, now - timestamp)
-            if age_sec > GOLD_PRIORITY_STREAM_MAX_AGE_SEC:
+            age_sec = now - timestamp
+            if age_sec < -PROVIDER_CLOCK_SKEW_SEC or age_sec > GOLD_PRIORITY_STREAM_MAX_AGE_SEC:
                 continue
             if bid <= 0.0:
                 bid = price
@@ -6988,9 +7997,9 @@ class UnifiedMarketTrader:
                 str(venue or "").lower() == "kraken"
                 and str(market_type or "").lower() == "spot"
                 and str(side or "BUY").upper() == "BUY"
-                and not bool(kraken_spot_posture.get("spot_buy_allowed", True))
+                and not bool(kraken_spot_posture.get("spot_buy_allowed"))
             ):
-                clearances.append("kraken_spot_inventory_underwater_margin_only")
+                clearances.append(str(kraken_spot_posture.get("reason") or "kraken_spot_inventory_pending_reconciliation"))
             route_ready = bool(ready and not clearances)
             trade_clearance_state = "available" if route_ready else "held"
             cash_capability = self._route_cash_capability(
@@ -7277,7 +8286,31 @@ class UnifiedMarketTrader:
             confidence = max(0.0, min(1.0, float(item.get("confidence", 0.0) or 0.0)))
             profit_velocity_score = self._clamp01(item.get("profit_velocity_score", 0.0))
             fast_money_score = self._clamp01(item.get("fast_money_score", 0.0))
-            decision_score = max(confidence, profit_velocity_score, fast_money_score)
+            # P4 inversion fix: fast_money_score rewards raw volatility, which is
+            # a fine RANKING signal but must not raise the published gate
+            # confidence — downstream order-intent thresholds compare against
+            # this number. Ranking keeps the score (metadata below); the gate
+            # number is the max of measured confidence signals only. The change
+            # is audited whenever the old formula would have scored higher.
+            decision_score = max(confidence, profit_velocity_score)
+            if fast_money_score > decision_score:
+                try:
+                    from aureon.observer.production_mode import audit as _pm_audit
+                    _pm_audit(
+                        "fast_money_gate_rank_separation",
+                        {
+                            "symbol": symbol,
+                            "fast_money_score": round(fast_money_score, 4),
+                            "decision_score": round(decision_score, 4),
+                            "confidence": round(confidence, 4),
+                            "profit_velocity_score": round(profit_velocity_score, 4),
+                        },
+                        decision="signal_confidence",
+                        would_have_blocked=None,
+                        actually_blocked=None,
+                    )
+                except Exception:
+                    pass
             metadata = {
                 "source": "unified_market_trader.shared_order_flow",
                 "kraken_symbol": item.get("kraken_symbol"),
@@ -7947,7 +8980,11 @@ class UnifiedMarketTrader:
         cache_key = f"{symbol}:{side}"
         now = time.time()
         cached = cache.get(cache_key)
-        if isinstance(cached, dict) and now - float(cached.get("_cached_at", 0.0) or 0.0) <= ORDERBOOK_PROBE_STALE_TTL_SEC:
+        try:
+            cache_age = now - float(cached.get("_cached_at")) if isinstance(cached, dict) else None
+        except (TypeError, ValueError, OverflowError):
+            cache_age = None
+        if isinstance(cached, dict) and cache_age is not None and 0.0 <= cache_age <= ORDERBOOK_PROBE_STALE_TTL_SEC:
             payload = dict(cached)
             payload.pop("_cached_at", None)
             payload["from_cache"] = True
@@ -8149,6 +9186,13 @@ class UnifiedMarketTrader:
         intelligence_mesh: Dict[str, Any],
     ) -> List[Dict[str, Any]]:
         central = central_beat if isinstance(central_beat, dict) else {}
+        central_timestamp_raw = central.get("generated_at")
+        central_timestamp = self._strict_timestamp_epoch(central_timestamp_raw)
+        central_age_sec = time.time() - central_timestamp if central_timestamp is not None else None
+        central_fresh = bool(
+            central_age_sec is not None
+            and -PROVIDER_CLOCK_SKEW_SEC <= central_age_sec <= CENTRAL_BEAT_STALE_AFTER_SEC
+        )
         active_order_flow_count = sum(1 for item in ranked if isinstance(item, dict))
         profiles = [
             item.get("fast_money_profile", {})
@@ -8233,7 +9277,7 @@ class UnifiedMarketTrader:
             name = str(descriptor.get("name") or "")
             present = self._capability_present(str(descriptor.get("path") or ""))
             active, downstream_stage, reason = active_reason(name)
-            active = bool(active and present and SCANNER_FUSION_MATRIX_ENABLED)
+            active = bool(active and present and SCANNER_FUSION_MATRIX_ENABLED and central_fresh)
             fresh = bool(active)
             usable = bool(active)
             blocker = ""
@@ -8241,6 +9285,8 @@ class UnifiedMarketTrader:
                 blocker = "scanner_fusion_matrix_disabled"
             elif not present:
                 blocker = "repo_capability_missing"
+            elif not central_fresh:
+                blocker = "central_beat_timestamp_missing_stale_or_future"
             elif not active:
                 blocker = "awaiting_fresh_cross_reference_evidence"
             rows.append(
@@ -8250,7 +9296,7 @@ class UnifiedMarketTrader:
                     "wire_path": descriptor.get("wire"),
                     "repo_path": descriptor.get("path"),
                     "evidence_source": "state/unified_runtime_status.json#shared_order_flow.scanner_fusion_matrix",
-                    "last_timestamp": central.get("generated_at") or datetime.now().isoformat(),
+                    "last_timestamp": central_timestamp_raw if central_timestamp is not None else None,
                     "present": present,
                     "active_this_cycle": active,
                     "fresh": fresh,
@@ -8683,6 +9729,8 @@ class UnifiedMarketTrader:
     ) -> Dict[str, Any]:
         generated_at = datetime.now().isoformat()
         enabled = self._shadow_trade_enabled()
+        dry_run = bool(getattr(self, "dry_run", False))
+        persist = bool(persist and not dry_run)
         active = order_flow_feed.get("active_order_flow", []) if isinstance(order_flow_feed, dict) else []
         if not isinstance(active, list):
             active = []
@@ -8811,13 +9859,14 @@ class UnifiedMarketTrader:
         held_count = sum(1 for shadow in new_shadows if shadow.get("status") == "shadow_held")
         report = {
             "generated_at": generated_at,
-            "mode": "shadow_validation_non_mutating",
+            "mode": "shadow_validation_dry_run_non_persistent" if dry_run else "shadow_validation_non_mutating",
             "enabled": enabled,
+            "persistent": persist,
             "status": "shadow_reporting_active" if enabled else "shadow_reporting_disabled",
             "who": "unified_market_trader plus route/model/HNC validation agents",
             "what": "create non-mutating shadow trades, validate logic, verify prior shadows, and report back to runtime state",
             "where": str(SHADOW_TRADE_STATE_PATH),
-            "how": "active order flow plus route readiness, model alignment, HNC synthetic agent review, price target, and ETA verification",
+            "how": "active order flow plus route readiness, model alignment, HNC evidence-backed agent review, price target, and ETA verification",
             "candidates_seen": len(active),
             "shadow_count": len(new_shadows),
             "shadow_opened_count": opened_count,
@@ -8930,32 +9979,51 @@ class UnifiedMarketTrader:
         if not isinstance(active, list):
             active = []
 
-        symbol_rows = [row for row in symbols.values() if isinstance(row, dict)]
-        active_rows = [row for row in active if isinstance(row, dict)]
-        rows = active_rows or symbol_rows
-        confidences = [self._clamp01(row.get("confidence", 0.0)) for row in rows]
-        changes = []
-        prices = []
-        support_counts = []
+        central_timestamp = self._strict_timestamp_epoch(central_beat.get("generated_at")) if isinstance(central_beat, dict) else None
+        central_age = time.time() - central_timestamp if central_timestamp is not None else None
+        central_fresh = bool(
+            central_age is not None
+            and central_age >= -PROVIDER_CLOCK_SKEW_SEC
+            and central_age <= CENTRAL_BEAT_STALE_AFTER_SEC
+        )
+        fresh_sources = [
+            source
+            for source in sources
+            if isinstance(source, dict)
+            and not source.get("stale")
+            and source.get("ready") is not False
+            and source.get("actionable") is not False
+            and source.get("data_status") not in {"no_data", "pending_reconciliation"}
+        ]
+        raw_symbol_rows = [row for row in symbols.values() if isinstance(row, dict)]
+        raw_active_rows = [row for row in active if isinstance(row, dict)]
+        candidate_rows = raw_active_rows or raw_symbol_rows
+        rows: List[Dict[str, Any]] = []
+        confidences: List[float] = []
+        changes: List[float] = []
+        prices: List[float] = []
+        support_counts: List[int] = []
         model_aligned = 0
-        for row in rows:
-            try:
-                changes.append(float(row.get("change_pct", 0.0) or 0.0))
-            except Exception:
-                changes.append(0.0)
-            try:
-                price = float(row.get("reference_price", 0.0) or 0.0)
-            except Exception:
-                price = 0.0
-            if price > 0:
-                prices.append(price)
-            support_counts.append(int(row.get("support_count", 0) or 0))
+        for row in candidate_rows:
+            if row.get("data_status") in {"no_data", "pending_reconciliation"} or row.get("actionable") is False:
+                continue
+            confidence = self._finite_number(row.get("confidence"), nonnegative=True)
+            change = self._finite_number(row.get("change_pct"))
+            price = self._finite_number(row.get("reference_price"), positive=True)
+            support = self._finite_number(row.get("support_count"), nonnegative=True)
+            if confidence is None or change is None or price is None or support is None:
+                continue
+            rows.append(row)
+            confidences.append(self._clamp01(confidence))
+            changes.append(change)
+            prices.append(price)
+            support_counts.append(int(support))
             if bool(row.get("model_alignment")):
                 model_aligned += 1
 
-        source_count = int(central_beat.get("source_count", 0) or len(sources) or 0) if isinstance(central_beat, dict) else 0
-        active_count = len(active_rows)
-        symbol_count = len(symbol_rows)
+        source_count = len(fresh_sources)
+        active_count = len([row for row in raw_active_rows if row in rows])
+        symbol_count = len(rows)
         price_count = len(prices)
         avg_confidence = sum(confidences) / len(confidences) if confidences else 0.0
         avg_change = sum(changes) / len(changes) if changes else 0.0
@@ -8964,17 +10032,29 @@ class UnifiedMarketTrader:
         model_alignment_rate = model_aligned / len(rows) if rows else 0.0
         simulation_fallback_disabled = os.getenv("AUREON_ALLOW_SIM_FALLBACK", "0").strip().lower() in {"0", "false", "no", "off"}
         live_env_enabled = os.getenv("AUREON_LIVE_TRADING", "0").strip().lower() in {"1", "true", "yes", "on"}
-        data_passed = bool(source_count > 0 and symbol_count > 0 and price_count > 0 and simulation_fallback_disabled)
+        data_passed = bool(central_fresh and source_count > 0 and symbol_count > 0 and price_count > 0 and simulation_fallback_disabled)
+        blockers: List[str] = []
+        if not central_fresh:
+            blockers.append("central_beat_timestamp_missing_stale_or_future")
+        if source_count <= 0:
+            blockers.append("fresh_provider_sources_unavailable")
+        if symbol_count <= 0 or price_count <= 0:
+            blockers.append("finite_provider_market_rows_unavailable")
+        if not simulation_fallback_disabled:
+            blockers.append("simulation_fallback_enabled")
 
         return {
             "passed": data_passed,
+            "status": "live" if data_passed else "no_data",
+            "data_status": "live" if data_passed else "no_data",
+            "actionable": data_passed,
+            "blockers": blockers,
+            "central_beat_timestamp": central_timestamp,
+            "central_beat_age_sec": max(0.0, float(central_age)) if central_age is not None and central_age >= 0.0 else central_age,
             "source_count": source_count,
             "source_names": [
                 str(source.get("source") or source.get("name") or "")
-                if isinstance(source, dict)
-                else str(source)
-                for source in sources
-                if isinstance(source, (dict, str))
+                for source in fresh_sources
             ][:12],
             "symbol_count": symbol_count,
             "active_signal_count": active_count,
@@ -8989,21 +10069,38 @@ class UnifiedMarketTrader:
             "data_source_kind": "live_exchange_runtime" if data_passed else "awaiting_live_price_evidence",
         }
 
-    def _hnc_market_texture(self, metrics: Dict[str, Any], action_plan: Dict[str, Any]) -> Dict[str, float]:
+    def _hnc_market_texture(self, metrics: Dict[str, Any], action_plan: Dict[str, Any]) -> Dict[str, Any]:
+        if not isinstance(metrics, dict) or not metrics.get("passed"):
+            return {
+                "status": "no_data",
+                "data_status": "no_data",
+                "actionable": False,
+                "reason": "fresh_hnc_market_metrics_required",
+            }
         venues = action_plan.get("venues", {}) if isinstance(action_plan, dict) else {}
         venue_count = len(venues) if isinstance(venues, dict) else int(action_plan.get("venue_count", 0) or 0)
         ready_venue_count = int(action_plan.get("ready_venue_count", 0) or 0) if isinstance(action_plan, dict) else 0
         route_unity = self._clamp01(ready_venue_count / max(1, venue_count))
-        avg_confidence = self._clamp01(metrics.get("avg_confidence", 0.0))
-        avg_support = float(metrics.get("avg_support_count", 0.0) or 0.0)
-        avg_change = float(metrics.get("avg_change_pct", 0.0) or 0.0)
-        avg_abs_change = float(metrics.get("avg_abs_change_pct", 0.0) or 0.0)
-        model_alignment = self._clamp01(metrics.get("model_alignment_rate", 0.0))
+        avg_confidence = self._finite_number(metrics.get("avg_confidence"), nonnegative=True)
+        avg_support = self._finite_number(metrics.get("avg_support_count"), nonnegative=True)
+        avg_change = self._finite_number(metrics.get("avg_change_pct"))
+        avg_abs_change = self._finite_number(metrics.get("avg_abs_change_pct"), nonnegative=True)
+        model_alignment_raw = self._finite_number(metrics.get("model_alignment_rate"), nonnegative=True)
+        source_count = self._finite_number(metrics.get("source_count"), positive=True)
+        if None in {avg_confidence, avg_support, avg_change, avg_abs_change, model_alignment_raw, source_count}:
+            return {
+                "status": "no_data",
+                "data_status": "no_data",
+                "actionable": False,
+                "reason": "hnc_market_metrics_malformed",
+            }
+        avg_confidence = self._clamp01(avg_confidence)
+        model_alignment = self._clamp01(model_alignment_raw)
 
         return {
             "volatility": self._clamp01(avg_abs_change / 5.0),
             "momentum": max(-1.0, min(1.0, avg_change / 5.0)),
-            "volume": self._clamp01((avg_support + float(metrics.get("source_count", 0) or 0)) / 8.0),
+            "volume": self._clamp01((avg_support + source_count) / 8.0),
             "spread": self._clamp01(1.0 - avg_confidence),
             "route_unity": route_unity,
             "model_alignment": model_alignment,
@@ -9023,12 +10120,26 @@ class UnifiedMarketTrader:
             "Clownfish": {"freq": 963.0, "role": "symbiosis", "weight": 1.0, "domain": "connection"},
         }
 
-        volatility = self._clamp01(market_data.get("volatility", 0.5), 0.5)
-        momentum = max(-1.0, min(1.0, float(market_data.get("momentum", 0.0) or 0.0)))
-        volume = self._clamp01(market_data.get("volume", 0.5), 0.5)
-        spread = self._clamp01(market_data.get("spread", 0.5), 0.5)
-        route_unity = self._clamp01(market_data.get("route_unity", 0.0))
-        model_alignment = self._clamp01(market_data.get("model_alignment", 0.0))
+        required_fields = ("volatility", "momentum", "volume", "spread", "route_unity", "model_alignment", "confidence")
+        parsed = {key: self._finite_number(market_data.get(key)) for key in required_fields}
+        if any(value is None for value in parsed.values()):
+            return {
+                "source": "aureon/utils/aureon_queen_hive_mind.py::AURIS_NODES",
+                "evaluated": False,
+                "passed": False,
+                "status": "no_data",
+                "data_status": "no_data",
+                "reason": "complete_finite_market_texture_required",
+                "node_count": 0,
+                "coherence": 0.0,
+                "nodes": {},
+            }
+        volatility = self._clamp01(parsed["volatility"])
+        momentum = max(-1.0, min(1.0, float(parsed["momentum"])))
+        volume = self._clamp01(parsed["volume"])
+        spread = self._clamp01(parsed["spread"])
+        route_unity = self._clamp01(parsed["route_unity"])
+        model_alignment = self._clamp01(parsed["model_alignment"])
 
         nodes: Dict[str, Any] = {}
         for name, node in node_defs.items():
@@ -9052,8 +10163,18 @@ class UnifiedMarketTrader:
             elif role == "symbiosis":
                 value = 0.5 + (route_unity * 0.25) + (model_alignment * 0.25)
             else:
-                value = 0.5
-            value = self._clamp01(value, 0.5)
+                return {
+                    "source": "aureon/utils/aureon_queen_hive_mind.py::AURIS_NODES",
+                    "evaluated": False,
+                    "passed": False,
+                    "status": "no_data",
+                    "data_status": "no_data",
+                    "reason": "unknown_auris_node_role",
+                    "node_count": 0,
+                    "coherence": 0.0,
+                    "nodes": {},
+                }
+            value = self._clamp01(value)
             weight = float(node["weight"])
             nodes[name] = {
                 "value": round(value, 6),
@@ -9081,6 +10202,7 @@ class UnifiedMarketTrader:
             "source": "aureon/utils/aureon_queen_hive_mind.py::AURIS_NODES",
             "evaluated": True,
             "passed": len(nodes) == 9,
+            "data_status": "live",
             "node_count": len(nodes),
             "coherence": round(coherence, 6),
             "status": status,
@@ -9134,7 +10256,9 @@ class UnifiedMarketTrader:
                     )
         route_scope = list(dict.fromkeys(item for item in route_scope if item))
 
-        if top_symbol and ready_venue_count > 0 and not runtime_clearances:
+        if not metrics.get("passed"):
+            action_state = "denied_no_fresh_provider_data"
+        elif top_symbol and ready_venue_count > 0 and not runtime_clearances:
             action_state = "runtime_gated_order_intent_ready"
         elif top_symbol:
             action_state = "shadow_validate_and_measure"
@@ -9149,7 +10273,7 @@ class UnifiedMarketTrader:
         where_passed = bool(ready_venue_count > 0 or route_scope)
         when_passed = bool(metrics.get("passed") and generated_at)
         how_passed = bool(master_formula.get("evaluated") and master_formula.get("passed"))
-        act_passed = bool(action_state and isinstance(action_plan, dict))
+        act_passed = bool(metrics.get("passed") and action_state and isinstance(action_plan, dict))
 
         question_rows = [
             {
@@ -9267,7 +10391,7 @@ class UnifiedMarketTrader:
             "schema_version": "aureon-hnc-operating-cycle-v1",
             "generated_at": generated_at,
             "mode": "harmonic_nexus_core_operating_cycle",
-            "status": "passing" if passed_count == len(question_rows) else "attention",
+            "status": "no_data" if not metrics.get("passed") else ("passing" if passed_count == len(question_rows) else "attention"),
             "passed": passed_count == len(question_rows),
             "passed_count": passed_count,
             "step_count": len(question_rows),
@@ -9356,13 +10480,13 @@ class UnifiedMarketTrader:
                     candidates.append(candidate)
             if candidates:
                 top = max(candidates, key=lambda row: float(row.get("confidence", 0.0) or 0.0))
+        if not metrics.get("passed"):
+            top = {}
         ready_route_count = int(action_plan.get("ready_venue_count", 0) or 0) if isinstance(action_plan, dict) else 0
         venue_count = int(action_plan.get("venue_count", 0) or len(action_plan.get("venues", {}) or {})) if isinstance(action_plan, dict) else 0
         route_unity = self._clamp01(ready_route_count / max(1, venue_count))
         shadow_measure = shadow_trade_report.get("self_measurement", {}) if isinstance(shadow_trade_report, dict) else {}
         shadow_score = self._clamp01(shadow_measure.get("agent_average_score", 0.0), 0.0)
-        if shadow_score <= 0 and int(shadow_trade_report.get("active_shadow_count", 0) or 0) > 0:
-            shadow_score = 0.5
 
         real_data_score = 1.0 if metrics.get("passed") else 0.0
         source_unity = self._clamp01(float(metrics.get("source_count", 0) or 0) / 4.0)
@@ -9397,7 +10521,7 @@ class UnifiedMarketTrader:
             "timestamp": generated_at,
         }
         king_runtime = {
-            "evaluated": True,
+            "evaluated": bool(metrics.get("passed") and top_symbol),
             "executor_quote_usd": ORDER_EXECUTOR_QUOTE_USD,
             "max_open_positions": ORDER_EXECUTOR_MAX_OPEN_POSITIONS,
             "route_unity": round(route_unity, 6),
@@ -9413,7 +10537,7 @@ class UnifiedMarketTrader:
 
         master_formula = {
             "source": "unified runtime blend over HNC/Auris/Seer/Lyra/King contracts",
-            "evaluated": True,
+            "evaluated": bool(metrics.get("passed") and auris.get("evaluated")),
             "formula": "HNC = 0.22*real_data + 0.16*source_unity + 0.22*auris + 0.14*model_alignment + 0.12*shadow + 0.14*route_unity",
             "inputs": {
                 "real_data": real_data_score,
@@ -9487,7 +10611,7 @@ class UnifiedMarketTrader:
             },
             {
                 "step": "shadow_trade_self_validation",
-                "passed": bool(isinstance(shadow_trade_report, dict) and shadow_trade_report.get("enabled", True)),
+                "passed": bool(metrics.get("passed") and isinstance(shadow_trade_report, dict) and shadow_trade_report.get("enabled", True)),
                 "evidence": (
                     f"{shadow_trade_report.get('shadow_opened_count', 0)} opened, "
                     f"{shadow_trade_report.get('active_shadow_count', 0)} active, "
@@ -9497,19 +10621,23 @@ class UnifiedMarketTrader:
             },
             {
                 "step": "public_state_publication",
-                "passed": True,
+                "passed": bool(metrics.get("passed")),
                 "evidence": str(HNC_COGNITIVE_PROOF_PUBLIC_PATH),
                 "timestamp": generated_at,
             },
         ]
         passed_count = sum(1 for step in flow if step.get("passed"))
-        status = "passing" if passed_count == len(flow) else "attention"
+        status = "no_data" if not metrics.get("passed") else ("passing" if passed_count == len(flow) else "attention")
         report = {
             "generated_at": generated_at,
             "status": status,
             "passed": passed_count == len(flow),
             "who": "HNC master formula plus Auris nodes, Seer, Lyra, King, shadow agents, and unified exchange runtime",
-            "what": "timestamped proof that cognitive logic evaluated real market data and moved through the intended flow",
+            "what": (
+                "timestamped proof that cognitive logic evaluated real market data and moved through the intended flow"
+                if metrics.get("passed")
+                else "no-data proof: cognitive action denied until fresh finite provider evidence is available"
+            ),
             "where": str(HNC_COGNITIVE_PROOF_STATE_PATH),
             "when": generated_at,
             "how": "HNC formula, Auris node coherence, Seer/Lyra/King readings, route state, and shadow validation were evaluated together.",
@@ -10564,7 +11692,37 @@ class UnifiedMarketTrader:
         except Exception:
             pass
 
-    def _record_trade_profit(self, trade: dict) -> None:
+    def _verified_trade_fill_for_learning(self, trade: Any) -> Dict[str, Any]:
+        if not isinstance(trade, dict) or trade.get("eligible_for_learning") is not True:
+            return {}
+        fill_receipt = trade.get("fill_receipt")
+        raw_receipt = fill_receipt.get("raw_receipt") if isinstance(fill_receipt, dict) else None
+        if not isinstance(raw_receipt, dict) and trade.get("fill_receipt_complete") is True:
+            raw_receipt = trade
+        confirmed = self._confirmed_fill_receipt(raw_receipt)
+        if confirmed.get("data_status") != "live" or confirmed.get("eligible_for_learning") is not True:
+            return {}
+        net_pnl = self._finite_number(trade.get("net_pnl", trade.get("pnl_gbp")))
+        realized_entry = self._finite_number(
+            trade.get("realized_entry_value_usd", trade.get("entry_value_usd")),
+            nonnegative=True,
+        )
+        realized_entry_fee = self._finite_number(
+            trade.get("realized_entry_fee_usd", trade.get("entry_fee_usd")),
+            nonnegative=True,
+        )
+        if net_pnl is None or realized_entry is None or realized_entry_fee is None:
+            return {}
+        expected_net = float(confirmed["notional"]) - realized_entry - realized_entry_fee - float(confirmed["fee"])
+        tolerance = max(0.00000001, abs(expected_net) * 0.000001)
+        if abs(net_pnl - expected_net) > tolerance:
+            return {}
+        return confirmed
+
+    def _record_trade_profit(self, trade: dict) -> bool:
+        if not self._verified_trade_fill_for_learning(trade):
+            return False
+        recorded = False
         try:
             from aureon.autonomous.aureon_cognitive_trade_evidence import append_trade_evidence
 
@@ -10573,18 +11731,21 @@ class UnifiedMarketTrader:
                 source="unified_market_trader.closed_trade",
                 runtime_snapshot=self.get_runtime_health(),
             )
+            recorded = True
         except Exception:
             pass
         if self._mycelium is None:
-            return
+            return recorded
         try:
             if hasattr(self._mycelium, "record_trade_profit"):
                 self._mycelium.record_trade_profit(
                     net_profit=float(trade.get("net_pnl", 0) or 0),
                     trade_data=trade,
                 )
+                recorded = True
         except Exception:
             pass
+        return recorded
 
     def tick(self) -> Dict[str, Any]:
         self._last_tick_started_at = time.time()
@@ -10655,6 +11816,8 @@ class UnifiedMarketTrader:
         # ── Publish closed trades to Thought Bus + record in Mycelium ─────
         self._set_tick_phase("publish_closed_trades")
         for trade in kraken_closed:
+            if not self._verified_trade_fill_for_learning(trade):
+                continue
             self._publish_thought("execution.trade.closed", {
                 "pair": str(trade.get("pair") or trade.get("symbol") or "?"),
                 "net_pnl": float(trade.get("net_pnl", 0) or 0),
@@ -10663,6 +11826,8 @@ class UnifiedMarketTrader:
             })
             self._record_trade_profit(trade)
         for trade in kraken_spot_closed:
+            if not self._verified_trade_fill_for_learning(trade):
+                continue
             self._publish_thought("execution.trade.closed", {
                 "pair": str(trade.get("symbol") or trade.get("pair") or "?"),
                 "net_pnl": float(trade.get("net_pnl", 0) or 0),
@@ -10670,6 +11835,8 @@ class UnifiedMarketTrader:
                 "exchange": "kraken_spot",
             })
         for trade in capital_closed:
+            if not self._verified_trade_fill_for_learning(trade):
+                continue
             self._publish_thought("execution.trade.closed", {
                 "pair": str(trade.get("symbol") or trade.get("pair") or "?"),
                 "net_pnl": float(trade.get("pnl_gbp", 0) or 0),

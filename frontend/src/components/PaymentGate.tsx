@@ -127,7 +127,7 @@ export default function PaymentGate({ userId, onPaymentComplete }: PaymentGatePr
       <Card className="max-w-md mx-auto">
         <CardHeader>
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-6 h-6 text-green-500" />
+            <CheckCircle2 className="w-6 h-6 text-success" />
             <CardTitle>Payment Verified</CardTitle>
           </div>
           <CardDescription>
@@ -157,31 +157,31 @@ export default function PaymentGate({ userId, onPaymentComplete }: PaymentGatePr
             <p className="text-xs text-muted-foreground mt-1">One-time payment</p>
           </div>
           
-          <div className="mb-4 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+          <div className="mb-4 p-3 bg-success/10 border border-success/20 rounded-lg">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-green-700 dark:text-green-400 font-medium">💚 Charitable Contribution</span>
-              <span className="font-bold text-green-700 dark:text-green-400">£10.00</span>
+              <span className="text-success dark:text-success font-medium">💚 Charitable Contribution</span>
+              <span className="font-bold text-success dark:text-success">£10.00</span>
             </div>
-            <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+            <p className="text-xs text-success dark:text-success mt-1">
               10% of your payment supports charitable causes
             </p>
           </div>
 
           <div className="space-y-2 text-sm">
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-green-500" />
+              <CheckCircle2 className="w-4 h-4 text-success" />
               <span>Full access to AUREON trading system</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-green-500" />
+              <CheckCircle2 className="w-4 h-4 text-success" />
               <span>Real-time market analysis & signals</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-green-500" />
+              <CheckCircle2 className="w-4 h-4 text-success" />
               <span>Portfolio management tools</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-green-500" />
+              <CheckCircle2 className="w-4 h-4 text-success" />
               <span>Priority KYC verification</span>
             </div>
           </div>

@@ -40,6 +40,9 @@ SECRET_KEYS = {
     "XAI_API_KEY",
     "GEMINI_API_KEY",
     "ANTHROPIC_API_KEY",
+    "OLLAMA_API_KEY",
+    "AUREON_OLLAMA_API_KEY",
+    "AUREON_LLM_API_KEY",
     MASTER_KEY_ENV,
     LEGACY_MASTER_KEY_ENV,
 }
@@ -47,6 +50,9 @@ SECRET_KEYS = {
 KRAKEN_REQUIRED_ENV = ("KRAKEN_API_KEY", "KRAKEN_API_SECRET")
 
 CREDENTIAL_ALIASES: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("OLLAMA_API_KEY", ("AUREON_OLLAMA_API_KEY", "AUREON_LLM_API_KEY")),
+    ("AUREON_OLLAMA_API_KEY", ("OLLAMA_API_KEY", "AUREON_LLM_API_KEY")),
+    ("AUREON_LLM_API_KEY", ("OLLAMA_API_KEY", "AUREON_OLLAMA_API_KEY")),
     ("ALPACA_API_SECRET", ("ALPACA_SECRET_KEY", "ALPACA_SECRET")),
     ("ALPACA_KEY", ("ALPACA_API_KEY",)),
     ("ALPACA_SECRET", ("ALPACA_SECRET_KEY", "ALPACA_API_SECRET")),
@@ -245,6 +251,19 @@ def load_aureon_environment(
         candidate_paths=[str(path) for path in candidates],
     )
 
+    dotenv_disabled = str(
+        env.get("PYTHON_DOTENV_DISABLED") or ""
+    ).strip().lower() in {"1", "true", "yes", "on"}
+    if dotenv_disabled:
+        # Audit/test subprocesses deliberately scrub provider credentials.
+        # Reloading the checkout's .env here would undo that boundary during
+        # import, make collection depend on local secrets, and could activate
+        # live-only module paths. Existing explicit environment values still
+        # receive packet decoding and compatibility aliases.
+        report.packets_decoded, report.packet_errors = decode_hnc_env_packets(env)
+        report.aliases_applied = apply_env_aliases(env, override=False)
+        return report
+
     for path in candidates:
         try:
             if not path.exists() or not path.is_file():
@@ -279,6 +298,8 @@ HNC_RUNTIME_KEYS: tuple[str, ...] = (
     "FIRMS_MAP_KEY",
     "FRED_API_KEY",
     "AUREON_LLM_API_KEY",
+    "OLLAMA_API_KEY",
+    "AUREON_OLLAMA_API_KEY",
     "OPENAI_API_KEY",
     "ANTHROPIC_API_KEY",
     "GEMINI_API_KEY",

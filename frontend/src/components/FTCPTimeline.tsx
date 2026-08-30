@@ -92,11 +92,11 @@ export const FTCPTimeline = ({ ftcpPoint, currentPrice, currentSymbol }: FTCPTim
   return (
     <div className="space-y-6">
       {/* Header */}
-      <Card className="p-6 bg-gradient-to-br from-yellow-500/5 to-background border-2 border-yellow-500/20">
+      <Card className="p-6 bg-gradient-to-br from-warning/5 to-background border-2 border-warning/20">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="text-xl font-bold flex items-center gap-2">
-              <Sparkles className="h-6 w-6 text-yellow-500" />
+              <Sparkles className="h-6 w-6 text-warning" />
               FTCP Timeline
             </h3>
             <p className="text-sm text-muted-foreground mt-1">
@@ -104,16 +104,16 @@ export const FTCPTimeline = ({ ftcpPoint, currentPrice, currentSymbol }: FTCPTim
             </p>
           </div>
           <div className="text-right">
-            <div className="text-2xl font-bold text-yellow-500">{ftcpEvents.length}</div>
+            <div className="text-2xl font-bold text-warning">{ftcpEvents.length}</div>
             <div className="text-xs text-muted-foreground">FTCP Events</div>
           </div>
         </div>
 
         {/* Current FTCP Status */}
         {ftcpPoint && ftcpPoint.isFTCP && (
-          <div className="p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/30 animate-pulse">
+          <div className="p-4 rounded-lg bg-warning/10 border border-warning/30 animate-pulse">
             <div className="flex items-center gap-3">
-              <Zap className="h-8 w-8 text-yellow-500" />
+              <Zap className="h-8 w-8 text-warning" />
               <div>
                 <div className="font-bold text-lg">FTCP Detected!</div>
                 <div className="text-sm text-muted-foreground">
@@ -202,7 +202,7 @@ export const FTCPTimeline = ({ ftcpPoint, currentPrice, currentSymbol }: FTCPTim
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="p-4 rounded-lg bg-muted/50 border border-border">
             <div className="text-xs text-muted-foreground mb-1">Golden Ratio (φ)</div>
-            <div className="text-3xl font-bold text-yellow-500">1.618</div>
+            <div className="text-3xl font-bold text-warning">1.618</div>
           </div>
           
           <div className="p-4 rounded-lg bg-muted/50 border border-border">
@@ -279,25 +279,25 @@ export const FTCPTimeline = ({ ftcpPoint, currentPrice, currentSymbol }: FTCPTim
                 const isRecent = idx === 0;
                 const priceDirection = point.priceChange > 0 ? 'up' : point.priceChange < 0 ? 'down' : 'neutral';
                 const DirectionIcon = priceDirection === 'up' ? TrendingUp : priceDirection === 'down' ? TrendingDown : Minus;
-                const directionColor = priceDirection === 'up' ? 'text-green-500' : priceDirection === 'down' ? 'text-red-500' : 'text-muted-foreground';
+                const directionColor = priceDirection === 'up' ? 'text-success' : priceDirection === 'down' ? 'text-destructive' : 'text-muted-foreground';
                 
                 return (
                   <div 
                     key={point.timestamp}
                     className={`p-4 rounded-lg border transition-all ${
                       isRecent 
-                        ? 'bg-yellow-500/10 border-yellow-500/30 animate-pulse' 
-                        : 'bg-muted/30 border-border hover:border-yellow-500/30'
+                        ? 'bg-warning/10 border-warning/30 animate-pulse' 
+                        : 'bg-muted/30 border-border hover:border-warning/30'
                     }`}
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex items-center gap-2">
-                        <Sparkles className="h-4 w-4 text-yellow-500" />
+                        <Sparkles className="h-4 w-4 text-warning" />
                         <span className="text-sm font-semibold">
                           {format(new Date(point.timestamp), 'HH:mm:ss.SSS')}
                         </span>
                         {isRecent && (
-                          <Badge variant="default" className="text-xs bg-yellow-500">
+                          <Badge variant="default" className="text-xs bg-warning">
                             LATEST
                           </Badge>
                         )}
@@ -337,7 +337,7 @@ export const FTCPTimeline = ({ ftcpPoint, currentPrice, currentSymbol }: FTCPTim
                           <span className="font-mono font-semibold">
                             {point.timeIntervalRatio.toFixed(3)}
                             {Math.abs(point.timeIntervalRatio - PHI) / PHI < 0.1 && (
-                              <span className="ml-2 text-yellow-500">≈ φ</span>
+                              <span className="ml-2 text-warning">≈ φ</span>
                             )}
                           </span>
                         </div>

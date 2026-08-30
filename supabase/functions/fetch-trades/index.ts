@@ -1,34 +1,13 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { createHmac } from "https://deno.land/std@0.177.0/node/crypto.ts";
+import { decryptCredential } from "../_shared/credential_crypto.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-function decodeIv(ivB64: string): Uint8Array {
-  return Uint8Array.from(atob(ivB64), (c) => c.charCodeAt(0));
-}
-
-async function decryptCredential(encryptedB64: string, cryptoKey: CryptoKey, iv: Uint8Array): Promise<string> {
-  const encryptedBytes = Uint8Array.from(atob(encryptedB64), (c) => c.charCodeAt(0));
-  const decrypted = await crypto.subtle.decrypt(
-    { name: 'AES-GCM', iv: iv as unknown as BufferSource },
-    cryptoKey,
-    encryptedBytes
-  );
-  return new TextDecoder().decode(decrypted);
-}
-
-async function getCryptoKey(): Promise<CryptoKey> {
-  const encryptionKey = 'aureon-default-key-32chars!!';
-  const encoder = new TextEncoder();
-  const keyData = encoder.encode(encryptionKey.padEnd(32, '0').slice(0, 32));
-  return crypto.subtle.importKey('raw', keyData, { name: 'AES-GCM' }, false, ['decrypt']);
-}
-
-const DEFAULT_SYMBOLS = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'XRPUSDT', 'BNBUSDT', 'ADAUSDT', 'DOGEUSDT'];
 const EXCLUDED_ASSETS = new Set(['USDT', 'USDC', 'BUSD', 'TUSD', 'FDUSD', 'USDP', 'DAI', 'EUR', 'GBP', 'USD']);
 
 const normalizeSymbols = (input: string[]) =>
@@ -129,17 +108,25 @@ serve(async (req) => {
     }
 
     // Decrypt credentials FIRST
-    const cryptoKey = await getCryptoKey();
-    const iv = decodeIv(session.binance_iv);
-    const apiKey = await decryptCredential(session.binance_api_key_encrypted, cryptoKey, iv);
-    const apiSecret = await decryptCredential(session.binance_api_secret_encrypted, cryptoKey, iv);
+    const apiKey = await decryptCredential(session.binance_api_key_encrypted, session.binance_iv);
+    const apiSecret = await decryptCredential(session.binance_api_secret_encrypted, session.binance_iv);
     console.log('[fetch-trades] Credentials decrypted successfully');
 
     // NOW derive symbols using the decrypted credentials
     let symbols = symbolsRaw && symbolsRaw.length > 0 ? normalizeSymbols(symbolsRaw) : [];
     if (symbols.length === 0) {
       const discovered = await deriveSymbolsFromBalances(apiKey, apiSecret, 25);
-      symbols = discovered.length > 0 ? discovered : DEFAULT_SYMBOLS;
+      symbols = discovered;
+    }
+    if (symbols.length === 0) {
+      return new Response(JSON.stringify({
+        error: 'TRADE_SYMBOL_UNIVERSE_REQUIRED',
+        truthStatus: 'no_data',
+        generatedValues: false,
+      }), {
+        status: 409,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const limit = Number.isFinite(limitRaw) ? Math.min(500, Math.max(1, limitRaw)) : 50;
@@ -182,7 +169,7 @@ serve(async (req) => {
 
     // Store new trades in database
     const tradeRecords = trades.map((t: any) => ({
-      transaction_id: String(t.id),
+      transaction_id: `binance:${t.symbol}:${String(t.id)}`,
       exchange: 'binance',
       symbol: t.symbol,
       side: t.isBuyer ? 'BUY' : 'SELL',
@@ -193,6 +180,10 @@ serve(async (req) => {
       fee_asset: t.commissionAsset,
       timestamp: new Date(t.time).toISOString(),
       user_id: user.id,
+      truth_status: 'live',
+      source_id: 'binance:/api/v3/myTrades',
+      source_timestamp: new Date(t.time).toISOString(),
+      generated_values: false,
     }));
 
     // Upsert trades (avoid duplicates)
@@ -208,7 +199,14 @@ serve(async (req) => {
 
     console.log(`[fetch-trades] Upserted ${upsertedCount}/${tradeRecords.length} trades to DB`);
 
-    return new Response(JSON.stringify({ trades: tradeRecords, count: tradeRecords.length }), {
+    return new Response(JSON.stringify({
+      trades: tradeRecords,
+      count: tradeRecords.length,
+      truthStatus: 'live',
+      sourceId: 'binance:/api/v3/myTrades',
+      sourceTimestamp: tradeRecords.length > 0 ? tradeRecords[0].source_timestamp : null,
+      generatedValues: false,
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error: unknown) {

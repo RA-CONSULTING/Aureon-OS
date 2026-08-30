@@ -69,7 +69,7 @@ The repo should be read in five zones:
 | Zone | Purpose | Main paths |
 |---|---|---|
 | Front door and diligence | Public explanation, investor/funder paths, claim discipline, archive access. | `README.md`, `docs/INDEX.md`, `docs/investor/`, `docs/archive/` |
-| Operator runtime | Local services, launchers, trading runtime, workflow controllers, status endpoints. | `AUREON_PRODUCTION_LIVE.cmd`, `AUREON_DATA_OCEAN.cmd`, `aureon/`, `scripts/`, `cli/` |
+| Operator runtime | Local services, launchers, trading runtime, workflow controllers, status endpoints. | `scripts/launchers/AUREON_PRODUCTION_LIVE.cmd`, `scripts/launchers/AUREON_DATA_OCEAN.cmd`, `aureon/`, `scripts/`, `cli/` |
 | Product surfaces | Browser console, static/public artifacts, local/serverless APIs, deploy surfaces. | `frontend/`, `public/`, `flameborn/`, `api/`, `server/`, `functions/`, `netlify/`, `supabase/` |
 | Evidence and research | Audits, research packets, grants evidence, validation files, copied local evidence. | `data/`, `docs/research/`, `VERIFICATION AND VALIDATION/`, `imports/`, `archive/` |
 | Operations and packaging | Accounting support, deployment, production packaging, tests, CI, templates. | `Kings_Accounting_Suite/`, `deploy/`, `production/`, `packaging/`, `tests/`, `.github/`, `templates/` |
@@ -126,9 +126,9 @@ The repo should be read in five zones:
 | [`../DATA_FLOW.md`](../DATA_FLOW.md) | Data flow and architecture notes. |
 | [`../LIVE_PROOF.md`](../LIVE_PROOF.md) | Proof and runtime evidence guide. |
 | [`../AUDIT_SUMMARY.md`](../AUDIT_SUMMARY.md) | Consolidated audit summary. |
-| [`../AUREON_PRODUCTION_LIVE.cmd`](../AUREON_PRODUCTION_LIVE.cmd) | Windows production supervisor entrypoint. |
-| [`../AUREON_DATA_OCEAN.cmd`](../AUREON_DATA_OCEAN.cmd) | Data/research supervisor entrypoint. |
-| [`../AUREON_WAKE_UP_FULL_AUTONOMOUS.ps1`](../AUREON_WAKE_UP_FULL_AUTONOMOUS.ps1) | Full local runtime launcher. |
+| [`scripts/launchers/AUREON_PRODUCTION_LIVE.cmd`](../scripts/launchers/AUREON_PRODUCTION_LIVE.cmd) | Windows production supervisor entrypoint. |
+| [`scripts/launchers/AUREON_DATA_OCEAN.cmd`](../scripts/launchers/AUREON_DATA_OCEAN.cmd) | Data/research supervisor entrypoint. |
+| [`scripts/launchers/AUREON_WAKE_UP_FULL_AUTONOMOUS.ps1`](../scripts/launchers/AUREON_WAKE_UP_FULL_AUTONOMOUS.ps1) | Full local runtime launcher. |
 
 ## Capability-To-System Map
 

@@ -3,20 +3,8 @@
 AUREON POWER STATION TURBO - MAXIMUM ENERGY THROUGHPUT
 No talk. Pure execution. Results only.
 """
-from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
-import sys, os
-if sys.platform == 'win32':
-    os.environ['PYTHONIOENCODING'] = 'utf-8'
-    try:
-        import io
-        if hasattr(sys.stdout, 'buffer') and sys.stdout.buffer:
-            sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace', line_buffering=True)
-        if hasattr(sys.stderr, 'buffer') and sys.stderr.buffer:
-            sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace', line_buffering=True)
-    except:
-        pass
-
 import asyncio
+import math
 import time
 import json
 import threading
@@ -61,13 +49,19 @@ class EnergyPulse:
     symbol: str
     side: str
     quantity: float
-    price: float
-    value: float
-    fee: float
-    net_gain: float
-    latency_ms: float
+    price: Optional[float]
+    value: Optional[float]
+    fee: Optional[float]
+    net_gain: Optional[float]
+    latency_ms: Optional[float]
     success: bool
     error: str = ""
+    status: str = "no_data"
+    truth_status: str = "no_data"
+    generated_values: bool = False
+    action_enabled: bool = False
+    accounting_enabled: bool = False
+    learning_enabled: bool = False
 
 @dataclass
 class PowerStationState:
@@ -130,7 +124,7 @@ class PowerStationTurbo:
             'CAP': ['BTCUSD', 'ETHUSD'],
         }
         
-        self._init_relays()
+        # Construction is inert: an authorized adapter must inject any client.
     
     def _init_relays(self):
         """Initialize all available relays"""
@@ -164,6 +158,24 @@ class PowerStationTurbo:
         
         log.info(f"⚡ {len(self.relays)} relays initialized")
     
+    @staticmethod
+    def _finite_positive(value: object) -> Optional[float]:
+        try:
+            parsed = float(value)
+        except (TypeError, ValueError):
+            return None
+        return parsed if math.isfinite(parsed) and parsed > 0 else None
+
+    def _ticker_prices(self, ticker: object) -> Optional[Tuple[float, float, float]]:
+        if not isinstance(ticker, dict):
+            return None
+        bid = self._finite_positive(ticker.get("bid", ticker.get("bidPrice")))
+        ask = self._finite_positive(ticker.get("ask", ticker.get("askPrice")))
+        last = self._finite_positive(ticker.get("last", ticker.get("price")))
+        if bid is None or ask is None or last is None or ask < bid:
+            return None
+        return last, bid, ask
+
     def _refresh_balances(self):
         """Parallel balance refresh across all relays"""
         def get_balance(relay_name, client):
@@ -261,11 +273,10 @@ class PowerStationTurbo:
                 else:
                     continue
                 
-                if ticker:
-                    bid = float(ticker.get('bid', 0) or ticker.get('bidPrice', 0) or 0)
-                    ask = float(ticker.get('ask', 0) or ticker.get('askPrice', 0) or 0)
-                    if bid > 0 and ask > 0:
-                        prices[relay] = {'bid': bid, 'ask': ask}
+                parsed = self._ticker_prices(ticker)
+                if parsed is not None:
+                    _last, bid, ask = parsed
+                    prices[relay] = {'bid': bid, 'ask': ask}
             
             # Find arbitrage: buy low on one relay, sell high on another
             if len(prices) >= 2:
@@ -297,82 +308,10 @@ class PowerStationTurbo:
         return opportunities
     
     def _execute_pulse(self, relay: str, symbol: str, side: str, quantity: float) -> EnergyPulse:
-        """Execute single energy pulse (trade)"""
-        start = time.time()
-        
-        try:
-            client = self.relays.get(relay)
-            if not client:
-                return EnergyPulse(relay, symbol, side, quantity, 0, 0, 0, 0, 0, False, "No client")
-            
-            # Get current price
-            ticker = self._get_ticker(relay, symbol)
-            if not ticker:
-                return EnergyPulse(relay, symbol, side, quantity, 0, 0, 0, 0, 0, False, "No ticker")
-            
-            price = float(ticker.get('last', 0) or ticker.get('price', 0) or 
-                         ticker.get('bid', 0) if side == 'sell' else ticker.get('ask', 0))
-            
-            if price <= 0:
-                return EnergyPulse(relay, symbol, side, quantity, 0, 0, 0, 0, 0, False, "Invalid price")
-            
-            value = quantity * price
-            fee = value * self.fee_rates.get(relay, 0.002)
-            
-            if self.dry_run:
-                # Simulate execution
-                latency = (time.time() - start) * 1000
-                # Simulate 0.02-0.1% edge capture
-                simulated_gain = value * 0.0005  # 0.05% average
-                net_gain = simulated_gain - fee
-                
-                return EnergyPulse(
-                    relay=relay,
-                    symbol=symbol,
-                    side=side,
-                    quantity=quantity,
-                    price=price,
-                    value=value,
-                    fee=fee,
-                    net_gain=net_gain,
-                    latency_ms=latency,
-                    success=True
-                )
-            else:
-                # LIVE EXECUTION
-                if relay == 'BIN':
-                    result = client.create_order(symbol, side, 'market', quantity)
-                elif relay == 'KRK':
-                    result = client.create_order(symbol, side, 'market', quantity)
-                elif relay == 'ALP':
-                    result = client.create_order(symbol, side, 'market', quantity)
-                elif relay == 'CAP':
-                    result = client.create_order(symbol, side, 'market', quantity)
-                
-                latency = (time.time() - start) * 1000
-                
-                # Calculate actual gain from fill
-                fill_price = float(result.get('price', price))
-                actual_value = quantity * fill_price
-                actual_fee = actual_value * self.fee_rates.get(relay, 0.002)
-                
-                return EnergyPulse(
-                    relay=relay,
-                    symbol=symbol,
-                    side=side,
-                    quantity=quantity,
-                    price=fill_price,
-                    value=actual_value,
-                    fee=actual_fee,
-                    net_gain=actual_value - value - actual_fee if side == 'sell' else 0,
-                    latency_ms=latency,
-                    success=True
-                )
-                
-        except Exception as e:
-            latency = (time.time() - start) * 1000
-            return EnergyPulse(relay, symbol, side, quantity, 0, 0, 0, 0, latency, False, str(e))
-    
+        """Fail closed: no simulated gain, state update, or provider submission."""
+        status = "dry_run_not_submitted" if self.dry_run else "live_submission_disabled"
+        return EnergyPulse(relay, symbol, side, quantity, None, None, None, None, None, False, status, status=status, truth_status="no_data", generated_values=False, action_enabled=False, accounting_enabled=False, learning_enabled=False)
+
     def _run_turbo_cycle(self) -> List[EnergyPulse]:
         """
         Execute one turbo cycle across all relays in parallel.
@@ -428,14 +367,11 @@ class PowerStationTurbo:
                 if not ticker:
                     continue
                 
-                # Simple momentum: if price moved >0.1% in last tick, follow
-                last = float(ticker.get('last', 0) or ticker.get('price', 0) or 0)
-                bid = float(ticker.get('bid', 0) or ticker.get('bidPrice', 0) or 0)
-                ask = float(ticker.get('ask', 0) or ticker.get('askPrice', 0) or 0)
-                
-                if last > 0 and bid > 0 and ask > 0:
+                parsed = self._ticker_prices(ticker)
+                if parsed is not None:
+                    last, bid, ask = parsed
                     spread = (ask - bid) / last
-                    
+
                     # Only trade tight spreads
                     if spread < 0.002:  # <0.2% spread
                         available = self.balances.get(relay, {}).get('USD', 0) or \

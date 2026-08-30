@@ -279,9 +279,9 @@ export function SchedulerHistoryCharts() {
               >
                 <div className="flex-shrink-0">
                   <div className={`w-3 h-3 rounded-full mt-1 ${
-                    decision.action === 'enable' ? 'bg-green-500' :
-                    decision.action === 'disable' ? 'bg-red-500' :
-                    'bg-yellow-500'
+                    decision.action === 'enable' ? 'bg-success' :
+                    decision.action === 'disable' ? 'bg-destructive' :
+                    'bg-warning'
                   }`} />
                 </div>
                 <div className="flex-1 space-y-1">

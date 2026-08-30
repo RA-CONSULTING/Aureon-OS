@@ -1,0 +1,597 @@
+{
+  "schema": "aureon.visual-regression-manifest.v1",
+  "run_id": "v45-final-local-browser-20260821T011720Z",
+  "captured_at_utc": "2026-08-21T01:17:20Z",
+  "scope": "local-preview-only-not-homepl-live",
+  "baseline_policy": "First V45 run: baseline=current by explicit policy; future runs compare against these files.",
+  "cases": [
+    {
+      "id": "home-desktop",
+      "route": "/",
+      "baseline": "artifacts/website-operator/capability-evidence/v45-final-local-browser-20260821T011720Z/visual/baseline/home-desktop.png",
+      "current": "artifacts/website-operator/capability-evidence/v45-final-local-browser-20260821T011720Z/visual/current/home-desktop.png",
+      "baseline_sha256": "48fa39e83bb10b1e5557c619428e6df5a308d55e79a41e1bb932594d775575f5",
+      "current_sha256": "48fa39e83bb10b1e5557c619428e6df5a308d55e79a41e1bb932594d775575f5",
+      "difference_ratio": 0,
+      "threshold": 0.005,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "javascript": "enabled",
+      "baseline_state": "first V45 visual baseline established from this same current capture",
+      "overflow": {
+        "horizontal_overflow_px": 0,
+        "overflow_offenders": [],
+        "scroll_height": 12511,
+        "scroll_width": 1425,
+        "contained_offender_count": 0,
+        "document_scroll_width": 1425,
+        "offender_count": 0,
+        "sample": [],
+        "uncontained_offender_count": 0,
+        "viewport_width": 1440
+      },
+      "image_dimensions": {
+        "width": 1425,
+        "height": 891
+      },
+      "capture_method": "Chrome extension browser screenshot at declared layout viewport",
+      "capture_dimension_note": "PNG excludes scrollbar/browser viewport chrome; layout viewport was verified separately"
+    },
+    {
+      "id": "investor-desktop",
+      "route": "/funding/investor-deck/",
+      "baseline": "artifacts/website-operator/capability-evidence/v45-final-local-browser-20260821T011720Z/visual/baseline/investor-desktop.png",
+      "current": "artifacts/website-operator/capability-evidence/v45-final-local-browser-20260821T011720Z/visual/current/investor-desktop.png",
+      "baseline_sha256": "b80468a17ab1bd6082f59b154e5e7a71775b188b03cb83697cb3ddfca8a0bbd8",
+      "current_sha256": "b80468a17ab1bd6082f59b154e5e7a71775b188b03cb83697cb3ddfca8a0bbd8",
+      "difference_ratio": 0,
+      "threshold": 0.005,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "javascript": "enabled",
+      "baseline_state": "first V45 visual baseline established from this same current capture",
+      "overflow": {
+        "horizontal_overflow_px": 0,
+        "overflow_offenders": [],
+        "scroll_height": 13583,
+        "scroll_width": 1425,
+        "contained_offender_count": 0,
+        "document_scroll_width": 1425,
+        "offender_count": 0,
+        "sample": [],
+        "uncontained_offender_count": 0,
+        "viewport_width": 1440
+      },
+      "image_dimensions": {
+        "width": 1425,
+        "height": 891
+      },
+      "capture_method": "Chrome extension browser screenshot at declared layout viewport",
+      "capture_dimension_note": "PNG excludes scrollbar/browser viewport chrome; layout viewport was verified separately"
+    },
+    {
+      "id": "projects-desktop",
+      "route": "/projects/",
+      "baseline": "artifacts/website-operator/capability-evidence/v45-final-local-browser-20260821T011720Z/visual/baseline/projects-desktop.png",
+      "current": "artifacts/website-operator/capability-evidence/v45-final-local-browser-20260821T011720Z/visual/current/projects-desktop.png",
+      "baseline_sha256": "ff5442140c70f258aa62e6090df7de6ede9342fc6bcbe5ec44800406ebf18350",
+      "current_sha256": "ff5442140c70f258aa62e6090df7de6ede9342fc6bcbe5ec44800406ebf18350",
+      "difference_ratio": 0,
+      "threshold": 0.005,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "javascript": "enabled",
+      "baseline_state": "first V45 visual baseline established from this same current capture",
+      "overflow": {
+        "horizontal_overflow_px": 0,
+        "overflow_offenders": [],
+        "scroll_height": 9136,
+        "scroll_width": 1425,
+        "contained_offender_count": 0,
+        "document_scroll_width": 1425,
+        "offender_count": 0,
+        "sample": [],
+        "uncontained_offender_count": 0,
+        "viewport_width": 1440
+      },
+      "image_dimensions": {
+        "width": 1425,
+        "height": 891
+      },
+      "capture_method": "Chrome extension browser screenshot at declared layout viewport",
+      "capture_dimension_note": "PNG excludes scrollbar/browser viewport chrome; layout viewport was verified separately"
+    },
+    {
+      "id": "research-desktop",
+      "route": "/research/",
+      "baseline": "artifacts/website-operator/capability-evidence/v45-final-local-browser-20260821T011720Z/visual/baseline/research-desktop.png",
+      "current": "artifacts/website-operator/capability-evidence/v45-final-local-browser-20260821T011720Z/visual/current/research-desktop.png",
+      "baseline_sha256": "b4c23882bdd77400bfeff3e4a122adebe71c1660ddef79c2c9024248f79f99cf",
+      "current_sha256": "b4c23882bdd77400bfeff3e4a122adebe71c1660ddef79c2c9024248f79f99cf",
+      "difference_ratio": 0,
+      "threshold": 0.005,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "javascript": "enabled",
+      "baseline_state": "first V45 visual baseline established from this same current capture",
+      "overflow": {
+        "horizontal_overflow_px": 0,
+        "overflow_offenders": [],
+        "scroll_height": 14118,
+        "scroll_width": 1425,
+        "contained_offender_count": 0,
+        "document_scroll_width": 1425,
+        "offender_count": 0,
+        "sample": [],
+        "uncontained_offender_count": 0,
+        "viewport_width": 1440
+      },
+      "image_dimensions": {
+        "width": 1425,
+        "height": 891
+      },
+      "capture_method": "Chrome extension browser screenshot at declared layout viewport",
+      "capture_dimension_note": "PNG excludes scrollbar/browser viewport chrome; layout viewport was verified separately"
+    },
+    {
+      "id": "home-mobile",
+      "route": "/",
+      "baseline": "artifacts/website-operator/capability-evidence/v45-final-local-browser-20260821T011720Z/visual/baseline/home-mobile.png",
+      "current": "artifacts/website-operator/capability-evidence/v45-final-local-browser-20260821T011720Z/visual/current/home-mobile.png",
+      "baseline_sha256": "39e9a197ad0f5eb5ce714abf77008eac0080695899ee8192733be917e5f4bd5a",
+      "current_sha256": "39e9a197ad0f5eb5ce714abf77008eac0080695899ee8192733be917e5f4bd5a",
+      "difference_ratio": 0,
+      "threshold": 0.005,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "javascript": "enabled",
+      "baseline_state": "first V45 visual baseline established from this same current capture",
+      "overflow": {
+        "horizontal_overflow_px": 0,
+        "overflow_offenders": [
+          {
+            "cls": "research-table",
+            "left": 16,
+            "right": 752,
+            "tag": "TABLE"
+          },
+          {
+            "cls": "",
+            "left": 16,
+            "right": 752,
+            "tag": "CAPTION"
+          },
+          {
+            "cls": "",
+            "left": 16,
+            "right": 752,
+            "tag": "THEAD"
+          },
+          {
+            "cls": "",
+            "left": 16,
+            "right": 752,
+            "tag": "TR"
+          },
+          {
+            "cls": "",
+            "left": 384,
+            "right": 568,
+            "tag": "TH"
+          },
+          {
+            "cls": "",
+            "left": 568,
+            "right": 752,
+            "tag": "TH"
+          },
+          {
+            "cls": "",
+            "left": 16,
+            "right": 752,
+            "tag": "TBODY"
+          },
+          {
+            "cls": "",
+            "left": 16,
+            "right": 752,
+            "tag": "TR"
+          },
+          {
+            "cls": "",
+            "left": 384,
+            "right": 568,
+            "tag": "TD"
+          },
+          {
+            "cls": "state-label state-source",
+            "left": 397,
+            "right": 499,
+            "tag": "SPAN"
+          },
+          {
+            "cls": "",
+            "left": 568,
+            "right": 752,
+            "tag": "TD"
+          },
+          {
+            "cls": "",
+            "left": 581,
+            "right": 660,
+            "tag": "TIME"
+          }
+        ],
+        "scroll_height": 20679,
+        "scroll_width": 375,
+        "contained_offender_count": 27,
+        "document_scroll_width": 375,
+        "offender_count": 27,
+        "sample": [
+          {
+            "ancestor": "DIV.research-table-wrap",
+            "cls": "research-table",
+            "contained": true,
+            "overflow_x": "auto",
+            "tag": "TABLE"
+          },
+          {
+            "ancestor": "DIV.research-table-wrap",
+            "cls": "",
+            "contained": true,
+            "overflow_x": "auto",
+            "tag": "CAPTION"
+          },
+          {
+            "ancestor": "DIV.research-table-wrap",
+            "cls": "",
+            "contained": true,
+            "overflow_x": "auto",
+            "tag": "THEAD"
+          },
+          {
+            "ancestor": "DIV.research-table-wrap",
+            "cls": "",
+            "contained": true,
+            "overflow_x": "auto",
+            "tag": "TR"
+          },
+          {
+            "ancestor": "DIV.research-table-wrap",
+            "cls": "",
+            "contained": true,
+            "overflow_x": "auto",
+            "tag": "TH"
+          },
+          {
+            "ancestor": "DIV.research-table-wrap",
+            "cls": "",
+            "contained": true,
+            "overflow_x": "auto",
+            "tag": "TH"
+          },
+          {
+            "ancestor": "DIV.research-table-wrap",
+            "cls": "",
+            "contained": true,
+            "overflow_x": "auto",
+            "tag": "TBODY"
+          },
+          {
+            "ancestor": "DIV.research-table-wrap",
+            "cls": "",
+            "contained": true,
+            "overflow_x": "auto",
+            "tag": "TR"
+          },
+          {
+            "ancestor": "DIV.research-table-wrap",
+            "cls": "",
+            "contained": true,
+            "overflow_x": "auto",
+            "tag": "TD"
+          },
+          {
+            "ancestor": "DIV.research-table-wrap",
+            "cls": "state-label state-source",
+            "contained": true,
+            "overflow_x": "auto",
+            "tag": "SPAN"
+          },
+          {
+            "ancestor": "DIV.research-table-wrap",
+            "cls": "",
+            "contained": true,
+            "overflow_x": "auto",
+            "tag": "TD"
+          },
+          {
+            "ancestor": "DIV.research-table-wrap",
+            "cls": "",
+            "contained": true,
+            "overflow_x": "auto",
+            "tag": "TIME"
+          }
+        ],
+        "uncontained_offender_count": 0,
+        "viewport_width": 390
+      },
+      "image_dimensions": {
+        "width": 375,
+        "height": 812
+      },
+      "capture_method": "Chrome extension browser screenshot at declared layout viewport",
+      "capture_dimension_note": "PNG excludes scrollbar/browser viewport chrome; layout viewport was verified separately"
+    },
+    {
+      "id": "investor-mobile",
+      "route": "/funding/investor-deck/",
+      "baseline": "artifacts/website-operator/capability-evidence/v45-final-local-browser-20260821T011720Z/visual/baseline/investor-mobile.png",
+      "current": "artifacts/website-operator/capability-evidence/v45-final-local-browser-20260821T011720Z/visual/current/investor-mobile.png",
+      "baseline_sha256": "ccb167d706de96963b4b7dd54477ff8eb36eacb5286c8addfbe6ec980c7fa166",
+      "current_sha256": "ccb167d706de96963b4b7dd54477ff8eb36eacb5286c8addfbe6ec980c7fa166",
+      "difference_ratio": 0,
+      "threshold": 0.005,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "javascript": "enabled",
+      "baseline_state": "first V45 visual baseline established from this same current capture",
+      "overflow": {
+        "horizontal_overflow_px": 0,
+        "overflow_offenders": [],
+        "scroll_height": 23822,
+        "scroll_width": 375,
+        "contained_offender_count": 0,
+        "document_scroll_width": 375,
+        "offender_count": 0,
+        "sample": [],
+        "uncontained_offender_count": 0,
+        "viewport_width": 390
+      },
+      "image_dimensions": {
+        "width": 375,
+        "height": 812
+      },
+      "capture_method": "Chrome extension browser screenshot at declared layout viewport",
+      "capture_dimension_note": "PNG excludes scrollbar/browser viewport chrome; layout viewport was verified separately"
+    },
+    {
+      "id": "projects-mobile",
+      "route": "/projects/",
+      "baseline": "artifacts/website-operator/capability-evidence/v45-final-local-browser-20260821T011720Z/visual/baseline/projects-mobile.png",
+      "current": "artifacts/website-operator/capability-evidence/v45-final-local-browser-20260821T011720Z/visual/current/projects-mobile.png",
+      "baseline_sha256": "4d4422243da3942cd3572cc6eaf0be86f053f268204435e8bd8ead92ce367862",
+      "current_sha256": "4d4422243da3942cd3572cc6eaf0be86f053f268204435e8bd8ead92ce367862",
+      "difference_ratio": 0,
+      "threshold": 0.005,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "javascript": "enabled",
+      "baseline_state": "first V45 visual baseline established from this same current capture",
+      "overflow": {
+        "horizontal_overflow_px": 0,
+        "overflow_offenders": [],
+        "scroll_height": 18100,
+        "scroll_width": 375,
+        "contained_offender_count": 0,
+        "document_scroll_width": 375,
+        "offender_count": 0,
+        "sample": [],
+        "uncontained_offender_count": 0,
+        "viewport_width": 390
+      },
+      "image_dimensions": {
+        "width": 375,
+        "height": 812
+      },
+      "capture_method": "Chrome extension browser screenshot at declared layout viewport",
+      "capture_dimension_note": "PNG excludes scrollbar/browser viewport chrome; layout viewport was verified separately"
+    },
+    {
+      "id": "research-mobile",
+      "route": "/research/",
+      "baseline": "artifacts/website-operator/capability-evidence/v45-final-local-browser-20260821T011720Z/visual/baseline/research-mobile.png",
+      "current": "artifacts/website-operator/capability-evidence/v45-final-local-browser-20260821T011720Z/visual/current/research-mobile.png",
+      "baseline_sha256": "56da76d5df5235a80cdcf63ce833a424013d520fb7f87493a09e7bf93fabafa4",
+      "current_sha256": "56da76d5df5235a80cdcf63ce833a424013d520fb7f87493a09e7bf93fabafa4",
+      "difference_ratio": 0,
+      "threshold": 0.005,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "javascript": "enabled",
+      "baseline_state": "first V45 visual baseline established from this same current capture",
+      "overflow": {
+        "horizontal_overflow_px": 0,
+        "overflow_offenders": [
+          {
+            "cls": "",
+            "left": 345,
+            "right": 509,
+            "tag": "BUTTON"
+          },
+          {
+            "cls": "",
+            "left": 363,
+            "right": 490,
+            "tag": "SPAN"
+          },
+          {
+            "cls": "",
+            "left": 509,
+            "right": 673,
+            "tag": "BUTTON"
+          },
+          {
+            "cls": "",
+            "left": 527,
+            "right": 655,
+            "tag": "SPAN"
+          },
+          {
+            "cls": "",
+            "left": 188,
+            "right": 583,
+            "tag": "svg"
+          },
+          {
+            "cls": "",
+            "left": 244,
+            "right": 527,
+            "tag": "circle"
+          },
+          {
+            "cls": "",
+            "left": 296,
+            "right": 475,
+            "tag": "circle"
+          },
+          {
+            "cls": "",
+            "left": 244,
+            "right": 527,
+            "tag": "path"
+          },
+          {
+            "cls": "research-catalogue-rings",
+            "left": 188,
+            "right": 467,
+            "tag": "DIV"
+          },
+          {
+            "cls": "",
+            "left": 327,
+            "right": 538,
+            "tag": "I"
+          },
+          {
+            "cls": "",
+            "left": 327,
+            "right": 472,
+            "tag": "I"
+          },
+          {
+            "cls": "",
+            "left": 327,
+            "right": 405,
+            "tag": "I"
+          }
+        ],
+        "scroll_height": 22503,
+        "scroll_width": 375,
+        "contained_offender_count": 137,
+        "document_scroll_width": 375,
+        "offender_count": 137,
+        "sample": [
+          {
+            "ancestor": "DIV.research-stage-tabs",
+            "cls": "",
+            "contained": true,
+            "overflow_x": "auto",
+            "tag": "BUTTON"
+          },
+          {
+            "ancestor": "DIV.research-stage-tabs",
+            "cls": "",
+            "contained": true,
+            "overflow_x": "auto",
+            "tag": "SPAN"
+          },
+          {
+            "ancestor": "DIV.research-stage-tabs",
+            "cls": "",
+            "contained": true,
+            "overflow_x": "auto",
+            "tag": "BUTTON"
+          },
+          {
+            "ancestor": "DIV.research-stage-tabs",
+            "cls": "",
+            "contained": true,
+            "overflow_x": "auto",
+            "tag": "SPAN"
+          },
+          {
+            "ancestor": "DIV.research-proof-map",
+            "cls": "",
+            "contained": true,
+            "overflow_x": "hidden",
+            "tag": "svg"
+          },
+          {
+            "ancestor": "svg.",
+            "cls": "",
+            "contained": true,
+            "overflow_x": "hidden",
+            "tag": "circle"
+          },
+          {
+            "ancestor": "svg.",
+            "cls": "",
+            "contained": true,
+            "overflow_x": "hidden",
+            "tag": "circle"
+          },
+          {
+            "ancestor": "svg.",
+            "cls": "",
+            "contained": true,
+            "overflow_x": "hidden",
+            "tag": "path"
+          },
+          {
+            "ancestor": "DIV.research-catalogue-signal",
+            "cls": "research-catalogue-rings",
+            "contained": true,
+            "overflow_x": "hidden",
+            "tag": "DIV"
+          },
+          {
+            "ancestor": "DIV.research-catalogue-signal",
+            "cls": "",
+            "contained": true,
+            "overflow_x": "hidden",
+            "tag": "I"
+          },
+          {
+            "ancestor": "DIV.research-catalogue-signal",
+            "cls": "",
+            "contained": true,
+            "overflow_x": "hidden",
+            "tag": "I"
+          },
+          {
+            "ancestor": "DIV.research-catalogue-signal",
+            "cls": "",
+            "contained": true,
+            "overflow_x": "hidden",
+            "tag": "I"
+          }
+        ],
+        "uncontained_offender_count": 0,
+        "viewport_width": 390
+      },
+      "image_dimensions": {
+        "width": 375,
+        "height": 812
+      },
+      "capture_method": "Chrome extension browser screenshot at declared layout viewport",
+      "capture_dimension_note": "PNG excludes scrollbar/browser viewport chrome; layout viewport was verified separately"
+    }
+  ]
+}

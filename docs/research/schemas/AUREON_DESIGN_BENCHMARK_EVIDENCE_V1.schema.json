@@ -1,0 +1,250 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aureonzorzatechnologies.pl/schemas/aureon-design-benchmark-evidence-v1.json",
+  "title": "Aureon local competitor benchmark evidence",
+  "description": "A source-bound, local-only provenance record for abstract competitor design-pattern research. It never verifies current remote content and has no release or deployment authority.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "generated_at",
+    "snapshot_kind",
+    "authority",
+    "config",
+    "freshness_policy",
+    "sources",
+    "verification"
+  ],
+  "properties": {
+    "schema": {
+      "const": "aureon.design-benchmark-evidence.v1"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "snapshot_kind": {
+      "const": "local-config-provenance-not-remote-content-verification"
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scope",
+        "release_eligibility",
+        "package_authority",
+        "deployment_authority",
+        "credential_access",
+        "remote_fetch",
+        "human_research_review"
+      ],
+      "properties": {
+        "scope": {
+          "const": "local competitor-metadata provenance and design-feedback evidence only"
+        },
+        "release_eligibility": {
+          "const": "always-false"
+        },
+        "package_authority": {
+          "const": "none"
+        },
+        "deployment_authority": {
+          "const": "none"
+        },
+        "credential_access": {
+          "const": "none"
+        },
+        "remote_fetch": {
+          "const": "not performed"
+        },
+        "human_research_review": {
+          "const": "required when refreshing source observations"
+        }
+      }
+    },
+    "config": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "properties": {
+        "path": {
+          "const": "aureon/operator/website_operator.defaults.json"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "freshness_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_age_days",
+        "minimum_fresh_sources",
+        "clock",
+        "refresh_when_stale",
+        "source_requirement",
+        "copying_prohibited",
+        "trade_dress_prohibited",
+        "store_remote_content"
+      ],
+      "properties": {
+        "max_age_days": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "minimum_fresh_sources": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "clock": {
+          "const": "UTC"
+        },
+        "refresh_when_stale": {
+          "const": true
+        },
+        "source_requirement": {
+          "const": "credential-free HTTPS source metadata"
+        },
+        "copying_prohibited": {
+          "const": true
+        },
+        "trade_dress_prohibited": {
+          "const": true
+        },
+        "store_remote_content": {
+          "const": false
+        }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/source"
+      }
+    },
+    "verification": {
+      "$ref": "#/$defs/verification"
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[A-F0-9]{64}$"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "official_url",
+        "official_host",
+        "checked_at",
+        "metadata_sha256",
+        "observation_type",
+        "patterns",
+        "use_boundary",
+        "metadata_verification",
+        "remote_content_fetched"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "official_url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://"
+        },
+        "official_host": {
+          "type": "string",
+          "minLength": 1
+        },
+        "checked_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "metadata_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "observation_type": {
+          "const": "abstract-design-pattern"
+        },
+        "patterns": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 180,
+            "not": {
+              "pattern": "(<|>|https?://|www\\.|\\{|\\}|```|data:)"
+            }
+          }
+        },
+        "use_boundary": {
+          "const": "Abstract pattern notes only; never retain or copy competitor code, copy, imagery, screenshots, assets, CSS, HTML, or trade dress."
+        },
+        "metadata_verification": {
+          "const": "Local configuration provenance only; remote page content is not fetched or asserted unchanged by this validator."
+        },
+        "remote_content_fetched": {
+          "const": false
+        }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "verified_at",
+        "state",
+        "passed",
+        "release_eligible",
+        "deployment_authority",
+        "checks"
+      ],
+      "properties": {
+        "schema": {
+          "const": "aureon.design-benchmark-evidence-verification.v1"
+        },
+        "verified_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "state": {
+          "enum": [
+            "pass",
+            "fail"
+          ]
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "release_eligible": {
+          "const": false
+        },
+        "deployment_authority": {
+          "const": "none"
+        },
+        "checks": {
+          "type": "array",
+          "minItems": 1
+        }
+      }
+    }
+  }
+}

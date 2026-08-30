@@ -168,11 +168,14 @@ class QueenNeuronV2:
             self.happiness_engine = None
             logger.warning("⚠️ Grand Big Wheel not available - running without happiness integration")
         
-        # Initialize weights with Xavier initialization
-        self.weights_input_hidden = np.random.randn(input_size, hidden_size) * 0.1
+        # Deterministic HNC/Xavier scaffold; verified persisted weights supersede it.
+        phi = (1.0 + np.sqrt(5.0)) / 2.0
+        input_grid = np.arange(1, input_size * hidden_size + 1, dtype=np.float32).reshape(input_size, hidden_size)
+        self.weights_input_hidden = np.sin(input_grid * phi) * np.sqrt(2.0 / (input_size + hidden_size))
         self.bias_hidden = np.zeros((1, hidden_size), dtype=np.float32)
         
-        self.weights_hidden_output = np.random.randn(hidden_size, 1) * 0.1
+        output_grid = np.arange(1, hidden_size + 1, dtype=np.float32).reshape(hidden_size, 1)
+        self.weights_hidden_output = np.sin(output_grid * phi) * np.sqrt(2.0 / (hidden_size + 1))
         self.bias_output = np.zeros((1, 1), dtype=np.float32)
         
         # Cache for backpropagation
@@ -588,8 +591,10 @@ class QueenNeuronV2:
             old_weights = np.array(v1_data['weights_input_hidden'], dtype=np.float32)
             
             # Old weights are 6x12, we need 7x12
-            # Add a new row for happiness input (initialized small random)
-            new_row = np.random.randn(1, self.hidden_size) * 0.1
+            # Add the deterministic HNC row for the verified happiness input.
+            phi = (1.0 + np.sqrt(5.0)) / 2.0
+            positions = np.arange(6 * self.hidden_size + 1, 7 * self.hidden_size + 1, dtype=np.float32)
+            new_row = (np.sin(positions * phi) * np.sqrt(2.0 / (7 + self.hidden_size))).reshape(1, self.hidden_size)
             self.weights_input_hidden = np.vstack([old_weights, new_row])
             
             self.bias_hidden = np.array(v1_data['bias_hidden'], dtype=np.float32)

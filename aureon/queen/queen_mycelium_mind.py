@@ -357,6 +357,12 @@ class MyceliumMind:
                     SubsystemReading("avg_coherence", avg_coh, 0.9, "coherence"),
                     SubsystemReading("spawn_rate", min(1.0, len(children) / max(len(spores), 1)), 0.7, "spawning"),
                 ]
+                # P5 Pattern A: the shared field enters the local Λ inputs —
+                # the read half of the loop this producer only ever published.
+                from aureon.core.hnc_field import canonical_field_reading
+                _cfr = canonical_field_reading()
+                if _cfr is not None:
+                    readings.append(_cfr)
                 ls = self._lambda_engine.step(readings, volatility=0.02)
                 from aureon.core.hnc_field import publish_subfield
                 publish_subfield("queen_mycelium_mind", ls)

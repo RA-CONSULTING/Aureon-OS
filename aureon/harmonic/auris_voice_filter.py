@@ -266,6 +266,14 @@ class AurisVoiceFilter:
         # This mirrors the LambdaEngine's (1 - σ/μ) intuition without running
         # the full engine on every reply.
         approx_gamma = max(0.0, min(1.0, 0.5 * gamma + 0.3 * love + 0.2 * grat))
+        # P5 Pattern C: the approximation is reconciled with the canonical HNC
+        # field — the shared Γ can only TIGHTEN the voice gate (b46 min); with
+        # no field flowing the local approximation passes unchanged.
+        try:
+            from aureon.core.hnc_field import reconcile_gamma
+            approx_gamma = reconcile_gamma(approx_gamma)
+        except Exception:
+            pass
         report.field_gamma = approx_gamma
         report.field_love = love
         report.field_lambda_t = lamb

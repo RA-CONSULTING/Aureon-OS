@@ -3014,9 +3014,6 @@ class AureonUnifiedMasterHub:
                 # Update portfolio from all exchanges
                 await self._update_portfolio()
                 
-                # Generate test signals
-                await self._generate_test_data()
-                
                 # Broadcast system status updates
                 await self.broadcast({
                     'type': 'systems_update',
@@ -3091,20 +3088,20 @@ class AureonUnifiedMasterHub:
     async def _update_warroom(self):
         """Update War Room data from Orca Kill Cycle, state files, and real-time systems."""
         try:
-            import random
-            import math
-            
             # Initialize war room data
             warroom_data = {
                 'runtime': '0:00:00',
-                'cycles': 0,
-                'total_pnl': 0.0,
-                'wins': 0,
-                'losses': 0,
-                'total_boost': 1.0,
+                'cycles': None,
+                'total_pnl': None,
+                'wins': None,
+                'losses': None,
+                'total_boost': None,
                 'positions': [],
                 'quantum': {},
-                'firms': {}
+                'firms': {},
+                'truth_status': 'no_data',
+                'generated_values': False,
+                'reason': 'NO_FRESH_WARROOM_PROVIDER_SNAPSHOT',
             }
             
             # Calculate runtime from hub start
@@ -3141,56 +3138,24 @@ class AureonUnifiedMasterHub:
             warroom_data['losses'] = int(orca_state.get('total_losses', orca_state.get('queen_vetoes', 0)))
             warroom_data['cycles'] = int(orca_state.get('hunt_count', orca_state.get('total_trades', 0)))
             
-            # Generate demo positions with live progress bars (DEV ONLY).
-            # Production posture leaves warroom_data['positions'] empty rather
-            # than broadcasting fabricated symbols/values to the operator.
-            import random
-            from aureon.observer.live_data_policy import simulation_fallback_allowed
-            demo_symbols = ['BTC/USD', 'ETH/USD', 'SOL/USD', 'AAPL', 'TSLA', 'NVDA', 'MSFT', 'GOOGL']
-            demo_firms = ['Citadel Securities', 'Jane Street', 'Two Sigma', 'Jump Trading', 'DRW', 'Optiver', 'Tower Research', 'IMC Trading']
-
-            if simulation_fallback_allowed():
-              for i, symbol in enumerate(demo_symbols[:random.randint(2, 5)]):
-                # Create realistic position data with varying progress
-                t_offset = (time.time() + i * 1000) % 100  # Different phase per position
-                progress = min(100, max(5, 30 + 60 * math.sin(t_offset * 0.02) + random.uniform(-5, 5)))
-                value = random.uniform(50, 500)
-                pnl = value * (progress / 100) * 0.005  # Up to 0.5% profit
-                
-                # Calculate ETA based on progress
-                remaining = 100 - progress
-                eta_mins = max(1, int(remaining / max(1, progress) * random.randint(3, 8)))
-                eta_str = f"{eta_mins}m" if eta_mins < 60 else f"{eta_mins // 60}h {eta_mins % 60}m"
-                
-                warroom_data['positions'].append({
-                    'symbol': symbol,
-                    'exchange': 'Alpaca' if '/' not in symbol else 'Kraken',
-                    'value': value,
-                    'pnl': pnl if progress > 20 else -abs(pnl) * 0.3,  # Negative at start
-                    'progress': progress,
-                    'eta': eta_str if progress < 95 else 'READY',
-                    'firm': demo_firms[i % len(demo_firms)]
-                })
-            
             # Generate live quantum system scores from real intelligence systems
             quantum_scores = {}
-            t = time.time()
-            
-            # Luck Field - oscillating value based on time
-            luck_val = 0.5 + 0.3 * math.sin(t * 0.1)
+            # Each score is published only when its owning system supplied it.
+            luck_val = None
             if 'LuckTracker' in self.intelligence_systems:
                 try:
                     tracker = self.intelligence_systems['LuckTracker']
                     if hasattr(tracker, 'calculate_luck_field'):
-                        luck_val = tracker.calculate_luck_field().get('total_luck', luck_val)
+                        luck_val = tracker.calculate_luck_field().get('total_luck')
                     elif hasattr(tracker, 'luck_field'):
                         luck_val = tracker.luck_field
                 except:
                     pass
-            quantum_scores['luck'] = max(0, min(1, luck_val))
+            if isinstance(luck_val, (int, float)):
+                quantum_scores['luck'] = max(0, min(1, luck_val))
             
             # Phantom Detection
-            phantom_val = 0.6 + 0.2 * math.sin(t * 0.15)
+            phantom_val = None
             if 'BotProfiler' in self.intelligence_systems:
                 try:
                     profiler = self.intelligence_systems['BotProfiler']
@@ -3198,10 +3163,11 @@ class AureonUnifiedMasterHub:
                         phantom_val = profiler.detection_confidence
                 except:
                     pass
-            quantum_scores['phantom'] = max(0, min(1, phantom_val))
+            if isinstance(phantom_val, (int, float)):
+                quantum_scores['phantom'] = max(0, min(1, phantom_val))
             
             # Inception Depth
-            inception_val = 0.4 + 0.3 * math.sin(t * 0.08)
+            inception_val = None
             if 'QuantumTelescope' in self.intelligence_systems:
                 try:
                     qt = self.intelligence_systems['QuantumTelescope']
@@ -3209,10 +3175,11 @@ class AureonUnifiedMasterHub:
                         inception_val = qt.inception_depth / 5.0
                 except:
                     pass
-            quantum_scores['inception'] = max(0, min(1, inception_val))
+            if isinstance(inception_val, (int, float)):
+                quantum_scores['inception'] = max(0, min(1, inception_val))
             
             # Elephant Memory
-            elephant_val = 0.7 + 0.15 * math.sin(t * 0.05)
+            elephant_val = None
             if 'ElephantLearning' in self.intelligence_systems:
                 try:
                     el = self.intelligence_systems['ElephantLearning']
@@ -3220,10 +3187,11 @@ class AureonUnifiedMasterHub:
                         elephant_val = el.memory_strength
                 except:
                     pass
-            quantum_scores['elephant'] = max(0, min(1, elephant_val))
+            if isinstance(elephant_val, (int, float)):
+                quantum_scores['elephant'] = max(0, min(1, elephant_val))
             
             # Russian Doll
-            russian_val = 0.55 + 0.25 * math.sin(t * 0.12)
+            russian_val = None
             if 'UltimateIntelligence' in self.intelligence_systems:
                 try:
                     ui = self.intelligence_systems['UltimateIntelligence']
@@ -3231,20 +3199,22 @@ class AureonUnifiedMasterHub:
                         russian_val = ui.confidence * 0.9
                 except:
                     pass
-            quantum_scores['russian_doll'] = max(0, min(1, russian_val))
+            if isinstance(russian_val, (int, float)):
+                quantum_scores['russian_doll'] = max(0, min(1, russian_val))
             
             # Immune System Health
-            immune_val = 0.85 + 0.1 * math.sin(t * 0.03)
+            immune_val = None
             if hasattr(self, 'immune_system') and self.immune_system:
                 try:
                     if hasattr(self.immune_system, 'health'):
                         immune_val = self.immune_system.health
                 except:
                     pass
-            quantum_scores['immune'] = max(0, min(1, immune_val))
+            if isinstance(immune_val, (int, float)):
+                quantum_scores['immune'] = max(0, min(1, immune_val))
             
             # Moby Dick - whale alignment
-            moby_val = 0.5 + 0.35 * math.sin(t * 0.07)
+            moby_val = None
             if 'WhaleTracker' in self.intelligence_systems:
                 try:
                     wt = self.intelligence_systems['WhaleTracker']
@@ -3252,10 +3222,11 @@ class AureonUnifiedMasterHub:
                         moby_val = wt.whale_alignment
                 except:
                     pass
-            quantum_scores['moby_dick'] = max(0, min(1, moby_val))
+            if isinstance(moby_val, (int, float)):
+                quantum_scores['moby_dick'] = max(0, min(1, moby_val))
             
             # Stargate Coherence
-            stargate_val = 0.6 + 0.25 * math.sin(t * 0.09)
+            stargate_val = None
             if 'StargateProtocol' in self.intelligence_systems:
                 try:
                     sg = self.intelligence_systems['StargateProtocol']
@@ -3263,10 +3234,11 @@ class AureonUnifiedMasterHub:
                         stargate_val = sg.coherence
                 except:
                     pass
-            quantum_scores['stargate'] = max(0, min(1, stargate_val))
+            if isinstance(stargate_val, (int, float)):
+                quantum_scores['stargate'] = max(0, min(1, stargate_val))
             
             # Quantum Mirror
-            qm_val = 0.65 + 0.2 * math.sin(t * 0.11)
+            qm_val = None
             if 'QuantumMirror' in self.intelligence_systems:
                 try:
                     qm = self.intelligence_systems['QuantumMirror']
@@ -3274,13 +3246,15 @@ class AureonUnifiedMasterHub:
                         qm_val = qm.mirror_strength
                 except:
                     pass
-            quantum_scores['quantum_mirror'] = max(0, min(1, qm_val))
+            if isinstance(qm_val, (int, float)):
+                quantum_scores['quantum_mirror'] = max(0, min(1, qm_val))
             
             warroom_data['quantum'] = quantum_scores
             
             # Calculate total boost from quantum scores
-            avg_quantum = sum(quantum_scores.values()) / len(quantum_scores) if quantum_scores else 0.5
-            warroom_data['total_boost'] = 0.8 + (avg_quantum * 0.6)  # 0.8x to 1.4x range
+            if quantum_scores:
+                avg_quantum = sum(quantum_scores.values()) / len(quantum_scores)
+                warroom_data['total_boost'] = 0.8 + (avg_quantum * 0.6)
             
             # Get active firms from recent thoughts and firm intelligence
             firms_detected = {}
@@ -3299,28 +3273,10 @@ class AureonUnifiedMasterHub:
                 except Exception:
                     pass
             
-            # Add some known firm activity from signatures
-            if FIRM_SIGNATURES_AVAILABLE and TRADING_FIRM_SIGNATURES:
-                try:
-                    firm_list = list(TRADING_FIRM_SIGNATURES.items())[:12]
-                    actions = ['ACCUMULATING', 'DISTRIBUTING', 'MONITORING', 'ACTIVE', 'SCALING IN']
-                    directions = ['bullish', 'bearish', 'neutral']
-                    for firm_id, firm_info in firm_list:
-                        if len(firms_detected) >= 8:
-                            break
-                        if firm_id not in firms_detected:
-                            # Simulate activity based on time
-                            idx = hash(firm_id + str(int(t / 60))) % len(actions)
-                            dir_idx = hash(firm_id + str(int(t / 120))) % len(directions)
-                            firm_name = firm_info.get('name', firm_id) if isinstance(firm_info, dict) else str(firm_id)
-                            firms_detected[firm_name] = {
-                                'action': actions[idx],
-                                'direction': directions[dir_idx]
-                            }
-                except Exception:
-                    pass
-            
             warroom_data['firms'] = firms_detected
+            if orca_state or quantum_scores or firms_detected:
+                warroom_data['truth_status'] = 'real_derived'
+                warroom_data['reason'] = None
             
             await self.broadcast({
                 'type': 'warroom_update',
@@ -3351,39 +3307,13 @@ class AureonUnifiedMasterHub:
                         'crypto_focus': any(s in str(firm_info.get('patterns', {}).get('symbols_preference', [])).lower() 
                                            for s in ['btc', 'eth', 'crypto'])
                     })
-            else:
-                # Generate sample data if not available
-                sample_firms = [
-                    {'id': 'jane_street', 'name': 'Jane Street Capital', 'country': 'USA', 'hq_location': 'New York, NY', 
-                     'animal': '🦈 Shark', 'estimated_capital': 50_000_000_000, 'known_strategies': ['market_making', 'arbitrage', 'hft'],
-                     'patterns': {'hft_frequency': [50, 200], 'market_making_ratio': 0.8, 'latency_profile': 'ultra_low'}, 'crypto_focus': True},
-                    {'id': 'citadel', 'name': 'Citadel Securities', 'country': 'USA', 'hq_location': 'Chicago, IL',
-                     'animal': '🦁 Lion', 'estimated_capital': 60_000_000_000, 'known_strategies': ['market_making', 'statistical_arbitrage'],
-                     'patterns': {'hft_frequency': [100, 500], 'market_making_ratio': 0.85, 'latency_profile': 'ultra_low'}, 'crypto_focus': True},
-                    {'id': 'renaissance', 'name': 'Renaissance Technologies', 'country': 'USA', 'hq_location': 'East Setauket, NY',
-                     'animal': '🦉 Owl', 'estimated_capital': 130_000_000_000, 'known_strategies': ['statistical_arbitrage', 'mean_reversion'],
-                     'patterns': {'hft_frequency': [20, 100], 'market_making_ratio': 0.3, 'latency_profile': 'low'}, 'crypto_focus': False},
-                    {'id': 'two_sigma', 'name': 'Two Sigma Investments', 'country': 'USA', 'hq_location': 'New York, NY',
-                     'animal': '🐺 Wolf', 'estimated_capital': 60_000_000_000, 'known_strategies': ['machine_learning', 'momentum'],
-                     'patterns': {'hft_frequency': [30, 150], 'market_making_ratio': 0.5, 'latency_profile': 'low'}, 'crypto_focus': False},
-                    {'id': 'jump_trading', 'name': 'Jump Trading', 'country': 'USA', 'hq_location': 'Chicago, IL',
-                     'animal': '🐆 Cheetah', 'estimated_capital': 20_000_000_000, 'known_strategies': ['market_making', 'arbitrage', 'hft'],
-                     'patterns': {'hft_frequency': [100, 300], 'market_making_ratio': 0.75, 'latency_profile': 'ultra_low'}, 'crypto_focus': True},
-                    {'id': 'optiver', 'name': 'Optiver', 'country': 'Netherlands', 'hq_location': 'Amsterdam',
-                     'animal': '🐙 Octopus', 'estimated_capital': 8_000_000_000, 'known_strategies': ['options_market_making', 'etf_arbitrage'],
-                     'patterns': {'hft_frequency': [100, 350], 'market_making_ratio': 0.92, 'latency_profile': 'ultra_low'}, 'crypto_focus': False},
-                    {'id': 'wintermute', 'name': 'Wintermute Trading', 'country': 'UK', 'hq_location': 'London',
-                     'animal': '❄️ Ice Dragon', 'estimated_capital': 2_000_000_000, 'known_strategies': ['crypto_market_making', 'defi'],
-                     'patterns': {'hft_frequency': [50, 200], 'market_making_ratio': 0.9, 'latency_profile': 'low'}, 'crypto_focus': True},
-                    {'id': 'blackrock', 'name': 'BlackRock', 'country': 'USA', 'hq_location': 'New York, NY',
-                     'animal': '🦍 Gorilla', 'estimated_capital': 10_000_000_000_000, 'known_strategies': ['index_tracking', 'etf', 'systematic'],
-                     'patterns': {'hft_frequency': [5, 50], 'market_making_ratio': 0.2, 'latency_profile': 'medium'}, 'crypto_focus': True},
-                ]
-                firms_data = sample_firms
-            
             await self.broadcast({
                 'type': 'firms_update',
-                'firms': firms_data
+                'firms': firms_data,
+                'truth_status': 'real_derived' if firms_data else 'no_data',
+                'generated_values': False,
+                'activity_observed': False,
+                'reason': None if firms_data else 'FIRM_REFERENCE_SOURCE_UNAVAILABLE',
             })
             
         except Exception as e:
@@ -3440,52 +3370,14 @@ class AureonUnifiedMasterHub:
                 # leaves ocean_data empty rather than broadcasting fabricated
                 # firms/symbols to the operator UI. The whole `else:` body
                 # is short-circuited via the flag below.
-                from aureon.observer.live_data_policy import simulation_fallback_allowed
-                _ocean_demo_ok = simulation_fallback_allowed()
-
-                symbols = ['BTC/USD', 'ETH/USD', 'SOL/USD', 'DOGE/USD', 'XRP/USD', 'PEPE/USD']
-                owners = ['Jane Street', 'Citadel', 'Jump Trading', 'Wintermute', 'Unknown', 'Retail']
-                sizes = ['megalodon', 'whale', 'whale', 'shark', 'shark', 'shark', 'minnow', 'minnow', 'minnow', 'minnow']
-
-                for i in range(random.randint(5, 12) if _ocean_demo_ok else 0):
-                    size = random.choice(sizes)
-                    ocean_data['bots'].append({
-                        'bot_id': f'BOT-{random.randint(1000, 9999)}',
-                        'symbol': random.choice(symbols),
-                        'size_class': size,
-                        'total_volume': random.uniform(10000, 5000000) if size != 'minnow' else random.uniform(100, 10000),
-                        'trade_count': random.randint(10, 500),
-                        'owner': random.choice(owners),
-                    })
-                    if size in ['megalodon', 'whale']: ocean_data['whale_count'] += 1
-                    elif size == 'shark': ocean_data['shark_count'] += 1
-                    else: ocean_data['minnow_count'] += 1
-                
-                ocean_data['total_volume'] = sum(b['total_volume'] for b in ocean_data['bots'])
-                ocean_data['hive_count'] = random.randint(1, 4) if _ocean_demo_ok else 0
-                ocean_data['battle_count'] = random.randint(0, 3) if _ocean_demo_ok else 0
-
-                # Sample hives
-                for i in range(ocean_data['hive_count']):
-                    ocean_data['hives'].append({
-                        'hive_id': f'HIVE-{random.choice(["ALPHA", "BETA", "GAMMA", "DELTA"])}{random.randint(1, 9)}',
-                        'member_count': random.randint(3, 12),
-                        'strategy': random.choice(['accumulation', 'distribution', 'market_making', 'arbitrage']),
-                        'mode': random.choice(['hunting', 'defending', 'coordinating'])
-                    })
-                
-                # Sample battles
-                for i in range(ocean_data['battle_count']):
-                    ocean_data['battles'].append({
-                        'attacker': random.choice(owners),
-                        'defender': random.choice(owners),
-                        'symbol': random.choice(symbols),
-                        'intensity': random.choice(['low', 'moderate', 'high', 'extreme'])
-                    })
+                logger.debug("NO_DATA: OceanWaveScanner has no observed bot feed")
             
             await self.broadcast({
                 'type': 'ocean_update',
-                'ocean': ocean_data
+                'ocean': ocean_data,
+                'truth_status': 'real_derived' if ocean_data['bots'] else 'no_data',
+                'generated_values': False,
+                'reason': None if ocean_data['bots'] else 'NO_FRESH_OCEAN_SCANNER_OBSERVATION',
             })
             
         except Exception as e:
@@ -3501,73 +3393,21 @@ class AureonUnifiedMasterHub:
         operator-facing data. To restore in prod, wire a real surveillance
         feed and remove the gate.
         """
-        from aureon.observer.live_data_policy import (
-            simulation_fallback_allowed, log_blocked_fallback,
-        )
-        if not simulation_fallback_allowed():
-            log_blocked_fallback("aureon_unified_master_hub._update_surveillance",
-                                 "synthetic_surveillance")
-            return
         try:
-            import random
-
             surv_data = {
                 'connections': len(self.clients),
-                'messages_per_sec': random.randint(50, 200),
-                'latency_ms': random.randint(5, 50),
-                'alert_count': random.randint(0, 10),
-                'bots_detected': sum(1 for s in self.systems_status if 'Bot' in s),
-                'spectrogram': [random.uniform(20, 90) for _ in range(8)],
-                'flow': {
-                    'BTC/USD': {'buy_pct': random.uniform(40, 70)},
-                    'ETH/USD': {'buy_pct': random.uniform(35, 65)},
-                    'SOL/USD': {'buy_pct': random.uniform(45, 75)},
-                    'DOGE/USD': {'buy_pct': random.uniform(30, 60)},
-                },
+                'messages_per_sec': None,
+                'latency_ms': None,
+                'alert_count': None,
+                'bots_detected': None,
+                'spectrogram': None,
+                'flow': {},
                 'alerts': [],
-                'prices': {}
+                'prices': {},
+                'truth_status': 'no_data',
+                'generated_values': False,
+                'reason': 'NO_FRESH_SURVEILLANCE_PROVIDER_OBSERVATION',
             }
-            
-            # Generate some alerts
-            alert_types = [
-                {'level': 'info', 'icon': '🔍', 'message': 'Scanning market activity...'},
-                {'level': 'info', 'icon': '📊', 'message': 'Volume spike detected on BTC'},
-                {'level': 'warning', 'icon': '⚠️', 'message': 'Unusual bot activity on ETH'},
-                {'level': 'warning', 'icon': '🐋', 'message': 'Whale movement detected'},
-                {'level': 'danger', 'icon': '🚨', 'message': 'Potential manipulation on SOL'},
-                {'level': 'info', 'icon': '🤖', 'message': 'New bot signature identified'},
-            ]
-            
-            for _ in range(random.randint(2, 5)):
-                surv_data['alerts'].append(random.choice(alert_types))
-            
-            # Get real prices if available
-            try:
-                if 'Alpaca' in self.exchange_clients:
-                    client = self.exchange_clients['Alpaca']
-                    for symbol in ['BTC/USD', 'ETH/USD', 'SOL/USD', 'DOGE/USD']:
-                        try:
-                            ticker = client.get_ticker(symbol)
-                            if ticker:
-                                surv_data['prices'][symbol.replace('/USD', '')] = {
-                                    'price': ticker.get('last', ticker.get('bid', 0)),
-                                    'change': random.uniform(-3, 5)  # Simulated change
-                                }
-                        except:
-                            pass
-            except:
-                pass
-            
-            # Fallback sample prices
-            if not surv_data['prices']:
-                surv_data['prices'] = {
-                    'BTC': {'price': 104500 + random.uniform(-500, 500), 'change': random.uniform(-2, 3)},
-                    'ETH': {'price': 3350 + random.uniform(-30, 30), 'change': random.uniform(-2, 3)},
-                    'SOL': {'price': 265 + random.uniform(-5, 5), 'change': random.uniform(-3, 4)},
-                    'DOGE': {'price': 0.38 + random.uniform(-0.02, 0.02), 'change': random.uniform(-4, 5)},
-                    'XRP': {'price': 3.15 + random.uniform(-0.1, 0.1), 'change': random.uniform(-2, 3)},
-                    'PEPE': {'price': 0.000021 + random.uniform(-0.000002, 0.000002), 'change': random.uniform(-5, 8)},
-                }
             
             await self.broadcast({
                 'type': 'surveillance_update',
@@ -3576,53 +3416,6 @@ class AureonUnifiedMasterHub:
             
         except Exception as e:
             logger.debug(f"Surveillance update error: {e}")
-    
-    async def _generate_test_data(self):
-        """Generate test data for demonstration.
-
-        ⚠ Broadcasts synthetic Thoughts and Queen messages to the dashboard.
-        Gated behind AUREON_ALLOW_SIM_FALLBACK so production refuses to
-        emit fake Queen voice / fake confidence values to the operator.
-        """
-        from aureon.observer.live_data_policy import simulation_fallback_allowed
-        if not simulation_fallback_allowed():
-            return
-        if time.time() % 10 < 1:  # Every 10 seconds
-            import random
-            
-            # Generate test thought
-            sources = ['Queen', 'UltimateIntel', 'ProbabilityNexus', 'TimelineOracle']
-            topics = ['market.snapshot', 'signal.buy', 'signal.sell', 'queen.decision']
-            
-            thought = Thought(
-                source=random.choice(sources),
-                topic=random.choice(topics),
-                payload={
-                    'message': f'Test from {random.choice(sources)}',
-                    'confidence': random.uniform(0.7, 0.99),
-                    'value': random.randint(1, 100)
-                }
-            )
-            
-            self.thought_bus.publish(thought)
-        
-        if time.time() % 15 < 1:  # Every 15 seconds
-            # Generate Queen message
-            messages = [
-                "All systems operational. Market conditions favorable.",
-                "Multiple opportunities detected across exchanges.",
-                "Quantum coherence analysis complete. High confidence zone.",
-                "Timeline oracle predicts bullish trend in next 7 days.",
-                "Harmonic fusion optimal. Sacred frequencies aligned.",
-                "Neural pathways converging on high-probability trade.",
-                "Risk management protocols active. All positions secure."
-            ]
-            
-            import random
-            await self.broadcast({
-                'type': 'queen_message',
-                'message': random.choice(messages)
-            })
     
     async def _update_luck_field(self):
         """Update Luck Field data."""

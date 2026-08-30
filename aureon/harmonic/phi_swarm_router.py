@@ -271,7 +271,7 @@ class PhiSwarmRouter(LLMAdapter):
         if self._llm_adapter is None and self.allow_llm_fallback:
             try:
                 from aureon.inhouse_ai.llm_adapter import build_voice_adapter
-                self._llm_adapter = build_voice_adapter()
+                self._llm_adapter = build_voice_adapter(lane="fast")
             except Exception as e:
                 logger.debug("PhiSwarmRouter: no LLM fallback available: %s", e)
                 self._llm_adapter = None

@@ -38,6 +38,7 @@ import math
 import os
 import time
 from dataclasses import dataclass, field
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -234,6 +235,65 @@ class SoulDeliberation:
             voices["elders"] = {"stance": "wait", "truth_status": "no_data"}
             return "wait", 0.3, 0.3
 
+    def _voice_celtic_wisdom(self, voices: dict) -> None:
+        """Seat the canonical Celtic bank as context, never as authority.
+
+        The voice bank supplies language, triad structure, and the current
+        seasonal gate. It deliberately contributes no deliberation weight and
+        cannot make an otherwise blind soul available or resolved.
+        """
+
+        false_flags = {
+            "action_eligible": False,
+            "accounting_eligible": False,
+            "learning_eligible": False,
+            "actionable": False,
+            "operational_eligible": False,
+            "provider_eligible": False,
+            "economic_mutation": False,
+        }
+        try:
+            from aureon.governance.celtic_voice_bank import (
+                celtic_seat_context,
+                read_canonical_celtic_voice_bank,
+                seasonal_gate_for_date,
+            )
+
+            bank = read_canonical_celtic_voice_bank()
+            seasonal_gate = seasonal_gate_for_date(date.today())
+            seats = [item["seat"] for item in bank["seat_profiles"]]
+            contexts = {
+                seat: celtic_seat_context(
+                    bank,
+                    seat=seat,
+                    seasonal_gate=seasonal_gate,
+                )
+                for seat in seats
+            }
+            voices["celtic_wisdom"] = {
+                "stance": "context",
+                "voice_bank_receipt_id": bank["receipt_id"],
+                "dataset_sha256": bank["dataset_sha256"],
+                "seasonal_gate": seasonal_gate,
+                "seat_context_digests": {
+                    seat: context["context_digest"]
+                    for seat, context in contexts.items()
+                },
+                "triad_required_confirming_voices": bank["triad_logic"][
+                    "required_confirming_voices"
+                ],
+                "truth_status": "source_bound_context",
+                "generated_values": False,
+                **false_flags,
+            }
+        except Exception:  # noqa: BLE001 - absent wisdom stays numeric-free/no-data
+            voices["celtic_wisdom"] = {
+                "stance": "context",
+                "truth_status": "no_data",
+                "generated_values": False,
+                **false_flags,
+            }
+
     def _voice_goals(self, intent: str, voices: dict) -> tuple[str, float, float]:
         try:
             from aureon.autonomous.aureon_goal_capability_map import recommend_goal_routes
@@ -288,6 +348,7 @@ class SoulDeliberation:
     # ── the arbiter: weigh many voices, collapse to one, honour dissent ─────
     def _gather_and_determine(self, intent: str, ctx: dict) -> tuple[Determination, dict]:
         voices: dict[str, dict[str, Any]] = {}
+        self._voice_celtic_wisdom(voices)
         leanings = [
             self._voice_feeling(voices),
             self._voice_thought(voices),
@@ -309,7 +370,11 @@ class SoulDeliberation:
         stance = stance_names[idx]
         agreement = round(probs[idx], 4)
 
-        operational = [n for n, v in voices.items() if v.get("truth_status") not in (None, "no_data")]
+        operational = [
+            name
+            for name, voice in voices.items()
+            if voice.get("truth_status") in {"live", "real_observed", "real_derived"}
+        ]
         dissent = [n for n, v in voices.items() if v.get("stance") in ("wait", "refuse")
                    and v.get("truth_status") not in (None, "no_data")]
 

@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { fetchExternalLlm } from "../_shared/external_llm_fallback.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -84,10 +85,6 @@ serve(async (req) => {
     const { ecosystemContext } = await req.json();
     
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      console.error("LOVABLE_API_KEY is not configured");
-      throw new Error("AI service not configured");
-    }
 
     const messages = [
       { role: 'system', content: FREQUENCY_INTERPRETER_PROMPT },
@@ -100,17 +97,13 @@ serve(async (req) => {
       phase: ecosystemContext?.rainbowBridgePhase
     });
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
+    const response = await fetchExternalLlm({
+      primaryApiKey: LOVABLE_API_KEY,
+      primaryBody: {
         model: "google/gemini-2.5-flash",
         messages,
         stream: true,
-      }),
+      },
     });
 
     if (!response.ok) {

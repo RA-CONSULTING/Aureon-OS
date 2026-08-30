@@ -182,6 +182,18 @@ def _adapter_rows(track_rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 
 def build_unity_bridge() -> Dict[str, Any]:
     checklist = _read_json(CHECKLIST_PUBLIC)
+    if not _collision_rows(checklist):
+        # A missing/empty published checklist is NOT evidence of zero collisions —
+        # rebuild the merge map live from the staged MURGE package so collisions
+        # stay visible instead of failing open to "nothing to review".
+        try:
+            from aureon.autonomous.aureon_murge_merge_checklist import build_report
+
+            live = build_report()
+            if isinstance(live, dict) and _collision_rows(live):
+                checklist = live
+        except Exception:  # noqa: BLE001 — no staging package → keep the (empty) artifact view
+            pass
     track_rows = [_track_row(track) for track in TRACKS]
     collisions = _collision_rows(checklist)
     staged_count = sum(1 for row in track_rows if row["staged"])

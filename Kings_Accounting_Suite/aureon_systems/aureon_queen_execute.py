@@ -524,6 +524,8 @@ class QueenExecutionEngine:
         self.total_profit = 0.0
         self.scout_finds = 0
         self.sniper_kills = 0
+        self._execution_cycles = 0
+        self._wisdom_topic_index = 0
 
         print("═" * 70 + "\n")
 
@@ -818,14 +820,15 @@ class QueenExecutionEngine:
             return None
 
         try:
-            # Scan a random civilization for new insights
-            import random
+            # Deterministic round-robin scheduling; research results still
+            # come from the configured live provider.
             civilizations = [
                 "Celtic_mythology", "Aztec_mythology", "Egyptian_mythology",
                 "Pythagorean", "Chinese_philosophy", "Hindu_philosophy",
                 "Mayan_civilization", "Norse_mythology"
             ]
-            topic = random.choice(civilizations)
+            topic = civilizations[self._wisdom_topic_index % len(civilizations)]
+            self._wisdom_topic_index += 1
 
             # Trigger async scan if available
             if hasattr(self.wisdom_scanner, 'scan_topic'):
@@ -1366,6 +1369,7 @@ class QueenExecutionEngine:
         6. Sniper (Precision execution)
         7. ThoughtBus emit result
         """
+        self._execution_cycles += 1
         print("\n" + "=" * 70)
         print(f"👑 QUEEN CYCLE @ {datetime.now().strftime('%H:%M:%S')}")
         print("=" * 70)
@@ -1397,14 +1401,16 @@ class QueenExecutionEngine:
         rainbow_modifier = 1.0
         if self.rainbow_bridge:
             # Get coherence from mycelium if available
-            coherence = 0.5
+            coherence = None
             if self.mycelium:
                 try:
                     coherence = self.mycelium.get_network_coherence()
                 except:
                     pass
 
-            state = self.get_rainbow_state(lambda_val=0.5, coherence=coherence, volatility=0.2)
+            # Lambda and volatility are not available at this point in the
+            # cycle, so do not substitute values or alter position sizing.
+            state = None
             if state:
                 rainbow_modifier = state.trading_modifier
                 symbol = self.rainbow_bridge.get_cycle_symbol()
@@ -1420,9 +1426,8 @@ class QueenExecutionEngine:
         # ═══════════════════════════════════════════════════════════════════════════════
         if self.miner_brain:
             try:
-                # Trigger periodic wisdom learning (every ~10th cycle)
-                import random
-                if random.random() < 0.1:
+                # Trigger learning on a deterministic ten-cycle cadence.
+                if self._execution_cycles % 10 == 0:
                     self.trigger_wisdom_learning()
             except Exception:
                 pass

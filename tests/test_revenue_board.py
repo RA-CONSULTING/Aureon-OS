@@ -24,8 +24,9 @@ def test_revenue_board():
     rb.record_sweep('WORLD_1', 10.0, 'PROFIT_SWEEP')
     rb.record_sweep('WORLD_2', 5.0, 'PROFIT_SWEEP')
     
-    # Update equity
-    rb.update_equity()
+    # Compute equity — the board's real API is compute_equity() (returns an
+    # EquitySnapshot); update_equity() never existed on RevenueBoard.
+    rb.compute_equity()
     
     # Print board
     rb.print_board()
@@ -33,12 +34,12 @@ def test_revenue_board():
     # Test get_status
     status = rb.get_status()
     print(f"\n📊 Status Dict: {len(status)} keys")
-    print(f"   Realized PnL: ${status['realized_pnl']:.2f}")
-    print(f"   Sweep PnL: ${status['sweep_pnl']:.2f}")
-    print(f"   Trade Count: {status['trade_count']}")
+    # get_status nests these under 'pnl' and 'trading' — the flat keys never existed.
+    print(f"   Realized PnL: ${status['pnl']['realized']:.2f}")
+    print(f"   Sweep PnL: ${status['pnl']['sweep']:.2f}")
+    print(f"   Trade Count: {status['trading']['trades']}")
     
     print("\n✅ Revenue Board Test Complete!")
-    return True
 
 if __name__ == "__main__":
     test_revenue_board()

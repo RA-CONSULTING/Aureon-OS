@@ -529,20 +529,9 @@ async def run_queen_command_center():
         print("The Queen never truly sleeps. She watches always.")
 
     except ImportError:
-        # Run in standalone mode
-        print("Running in standalone mode (no aiohttp)")
-        while True:
-            # Simulate some data
-            import random
-            analyzer.feed_price('BTC/USD', 96000 + random.uniform(-500, 500), time.time())
-            analyzer.feed_price('ETH/USD', 3300 + random.uniform(-50, 50), time.time())
-            analyzer.feed_flow('BTC/USD', random.uniform(100000, 500000), random.uniform(80000, 400000))
-
-            if random.random() > 0.7:
-                analyzer.feed_bot_detection('MICROSTRATEGY_BOT', random.uniform(0.4, 0.7), 'BTC/USD')
-
-            print_queen_dashboard(analyzer)
-            time.sleep(3)
+        raise RuntimeError(
+            "LIVE_SURVEILLANCE_CONNECTOR_UNAVAILABLE: install aiohttp; generated fallback data is prohibited"
+        )
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # MAIN

@@ -1,5 +1,6 @@
 import unittest
 
+import aureon.core.aureon_thought_bus as thought_bus_module
 from aureon.core.aureon_thought_bus import Thought, ThoughtBus
 
 
@@ -40,6 +41,18 @@ class TestThoughtBusCompat(unittest.TestCase):
         self.assertEqual(published.topic, "whale.sonar.BTCUSD")
         self.assertEqual(published.payload["code"], "...")
         self.assertEqual(published.meta["origin"], "foreign")
+
+
+def test_singleton_honours_supported_environment_persist_path(tmp_path, monkeypatch):
+    persist_path = tmp_path / "isolated-thoughts.jsonl"
+    monkeypatch.setenv("AUREON_THOUGHT_BUS_PATH", str(persist_path))
+    monkeypatch.setattr(thought_bus_module, "_thought_bus_instance", None)
+
+    bus = thought_bus_module.get_thought_bus()
+    bus.publish("test.isolated", {"safe": True}, source="test")
+
+    assert persist_path.is_file()
+    assert '"topic": "test.isolated"' in persist_path.read_text(encoding="utf-8")
 
 
 if __name__ == "__main__":

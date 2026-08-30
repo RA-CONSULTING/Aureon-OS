@@ -6,8 +6,9 @@ import { FTCPDetector, CurvaturePoint } from './ftcpDetector';
 import { LighthouseConsensus, LighthouseState } from './lighthouseConsensus';
 import { QGITACoherenceEngine, calculateAnomalyPointer, CoherenceMetrics } from './qgitaCoherence';
 import { FibonacciLattice } from './fibonacciLattice';
+import { asDerivedProvenance, assertFreshProvenance, type DataProvenance } from './liveDataContract';
 
-export type QGITASignal = {
+export type QGITASignal = DataProvenance & {
   timestamp: number;
   signalType: 'BUY' | 'SELL' | 'HOLD';
   confidence: number; // 0-100%
@@ -20,6 +21,7 @@ export type QGITASignal = {
   goldenRatioScore: number;
   anomalyPointer: number;
   reasoning: string;
+  observedSampleCount: number;
 };
 
 export class QGITASignalGenerator {
@@ -69,26 +71,21 @@ export class QGITASignalGenerator {
     coherenceValue: number,
     substrate: number,
     observer: number,
-    echo: number
-  ): QGITASignal {
-    // === CRITICAL DATA VALIDATION: Fail Safe, Not Fail Open ===
-    if (!price || isNaN(price) || price <= 0) {
-      console.error('🛑 Invalid price data:', price);
-      return this.createFailSafeSignal(timestamp, 'Invalid price data');
+    echo: number,
+    provenance: DataProvenance,
+  ): QGITASignal | null {
+    assertFreshProvenance(provenance);
+    if (!Number.isFinite(timestamp) || timestamp <= 0 || Math.abs(timestamp - Date.parse(provenance.sourceTimestamp)) > 60_000) {
+      throw new Error('LIVE_DATA_REQUIRED: QGITA timestamp must match the provider observation');
     }
-    if (!volume || isNaN(volume) || volume < 0) {
-      console.error('🛑 Invalid volume data:', volume);
-      return this.createFailSafeSignal(timestamp, 'Invalid volume data');
+    if (!Number.isFinite(price) || price <= 0) {
+      throw new Error('LIVE_DATA_REQUIRED: QGITA price must be a positive observed value');
     }
-    if (isNaN(lambda) || isNaN(coherenceValue) || isNaN(substrate) || isNaN(observer) || isNaN(echo)) {
-      console.error('🛑 Invalid Master Equation data');
-      return this.createFailSafeSignal(timestamp, 'Invalid field metrics');
+    if (!Number.isFinite(volume) || volume < 0) {
+      throw new Error('LIVE_DATA_REQUIRED: QGITA volume must be an observed nonnegative value');
     }
-    
-    // === DATA QUALITY CHECK: Insufficient History ===
-    if (this.priceHistory.length < 10) {
-      console.warn('⏳ Insufficient historical data. Collecting...');
-      // Still process to build history, but force HOLD
+    if (![lambda, coherenceValue, substrate, observer, echo].every(Number.isFinite)) {
+      throw new Error('LIVE_DATA_REQUIRED: QGITA field metrics must be finite real-derived values');
     }
     
     // Update history
@@ -103,6 +100,9 @@ export class QGITASignalGenerator {
       this.volumeHistory.shift();
       this.timestampHistory.shift();
     }
+
+    // Absence of sufficient observed history is no_data, not a fabricated HOLD.
+    if (this.priceHistory.length < 10) return null;
     
     // Stage 1: FTCP Detection
     const ftcpResult = this.ftcpDetector.addPoint(timestamp, price);
@@ -144,6 +144,7 @@ export class QGITASignalGenerator {
     if (lighthouseState.L < 0.05 && this.priceHistory.length >= 20) {
       console.warn(`🛑 Lighthouse consensus very low (L=${lighthouseState.L.toFixed(3)}). Forcing HOLD.`);
       return {
+        ...asDerivedProvenance(provenance),
         timestamp,
         signalType: 'HOLD',
         confidence: 0,
@@ -156,6 +157,7 @@ export class QGITASignalGenerator {
         goldenRatioScore,
         anomalyPointer,
         reasoning: `🛑 KILL SWITCH: Lighthouse consensus too low (L=${lighthouseState.L.toFixed(3)}). Need more data.`,
+        observedSampleCount: this.priceHistory.length,
       };
     }
     
@@ -168,7 +170,8 @@ export class QGITASignalGenerator {
       coherence,
       ftcpDetected,
       goldenRatioScore,
-      normalizedQ
+      normalizedQ,
+      provenance,
     );
     
     return signal;
@@ -214,32 +217,6 @@ export class QGITASignalGenerator {
   }
 
   /**
-   * Create fail-safe HOLD signal when data is invalid
-   */
-  private createFailSafeSignal(timestamp: number, reason: string): QGITASignal {
-    return {
-      timestamp,
-      signalType: 'HOLD',
-      confidence: 0,
-      tier: 3,
-      curvature: 0,
-      curvatureDirection: 'NEUTRAL',
-      lighthouse: {
-        L: 0,
-        metrics: { Q: 0, Geff: 0, Clin: 0, Cnonlin: 0 },
-        isLHE: false,
-        threshold: 0,
-        confidence: 0,
-      },
-      coherence: { linearCoherence: 0, nonlinearCoherence: 0, crossScaleCoherence: 0 },
-      ftcpDetected: false,
-      goldenRatioScore: 0,
-      anomalyPointer: 0,
-      reasoning: `🛑 FAIL-SAFE: ${reason}. Trading halted.`,
-    };
-  }
-  
-  /**
    * Interpret all metrics to generate final signal
    */
   private interpretSignal(
@@ -250,28 +227,11 @@ export class QGITASignalGenerator {
     coherence: CoherenceMetrics,
     ftcpDetected: boolean,
     goldenRatioScore: number,
-    anomalyPointer: number
+    anomalyPointer: number,
+    provenance: DataProvenance,
   ): QGITASignal {
     let signalType: 'BUY' | 'SELL' | 'HOLD' = 'HOLD';
     let reasoning = '';
-    
-    // Force HOLD if insufficient history
-    if (this.priceHistory.length < 10) {
-      return {
-        timestamp,
-        signalType: 'HOLD',
-        confidence: 0,
-        tier: 3,
-        curvature,
-        curvatureDirection,
-        lighthouse,
-        coherence,
-        ftcpDetected,
-        goldenRatioScore,
-        anomalyPointer,
-        reasoning: '⏳ Insufficient historical data. Collecting...',
-      };
-    }
     
     // BUY Signal Conditions:
     // - FTCP detected with positive curvature (upward bend)
@@ -325,6 +285,7 @@ export class QGITASignalGenerator {
     const tier = this.determineSignalTier(confidence);
     
     return {
+      ...asDerivedProvenance(provenance),
       timestamp,
       signalType,
       confidence,
@@ -337,6 +298,7 @@ export class QGITASignalGenerator {
       goldenRatioScore,
       anomalyPointer,
       reasoning,
+      observedSampleCount: this.priceHistory.length,
     };
   }
   

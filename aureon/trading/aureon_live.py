@@ -7,7 +7,7 @@ Bridges Python binance_client.py with Aureon's Master Equation & 9 Auris nodes.
 Workflow:
   1. Validates environment & Binance credentials (testnet first, then live).
   2. Fetches current balance & deposit address.
-  3. Runs pre-flight coherence tests with sample market data.
+  3. Runs the pre-flight coherence gate with a fresh provider candle.
   4. Executes controlled live trades respecting risk limits.
   5. Logs all activity to trade_audit.log for compliance & review.
 
@@ -28,7 +28,7 @@ Author: Aureon System
 Date: November 28, 2025
 """
 from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
-import os, sys, json, time, logging, argparse
+import os, sys, json, time, logging, argparse, math
 try:
     from dotenv import load_dotenv  # type: ignore
     load_dotenv()
@@ -50,6 +50,8 @@ logging.basicConfig(
     ]
 )
 logger = logging.getLogger(__name__)
+
+COHERENCE_MARKET_TTL_SECONDS = 180
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # 9 AURIS NODES - Simplified Python adaptation
@@ -134,9 +136,16 @@ class MasterEquation:
         lambda_t = s_t + o_t + e_t
         self.lambda_history.append(lambda_t)
         
-        # Coherence Γ = alignment measure (variance normalized)
+        # Coherence Γ = alignment measure (variance normalized), reconciled
+        # conservatively with the organism's canonical field — the shared Γ can
+        # only tighten this live gate, never loosen it (b46 order-path wiring).
         variance = max(abs(market_data['high'] - market_data['low']) / market_data['price'], 0.001)
         coherence = max(1 - (variance / 10), 0.0)
+        try:
+            from aureon.core.hnc_field import reconcile_gamma
+            coherence = reconcile_gamma(coherence)
+        except Exception:
+            pass
         
         return {
             'lambda': lambda_t,
@@ -193,29 +202,90 @@ class AureonLiveTrader:
             return False
 
     def run_coherence_test(self) -> bool:
-        """Test Master Equation with sample market data."""
-        logger.info("\n📊 Running coherence test with sample market data...")
+        """Run the Master Equation only from a fresh, complete provider candle."""
+        logger.info("\n📊 Running coherence gate with live Binance candle data...")
         try:
-            price_data = self.client.best_price(self.symbol)
-            current_price = float(price_data['price'])
-            
-            # Simulated market snapshot for test
-            test_data = {
-                'price': current_price,
-                'volume': 1500000,
-                'high': current_price * 1.02,
-                'low': current_price * 0.98,
-                'open': current_price * 0.99,
-                'change': 1.2,
+            candles = self.client.get_klines(self.symbol, interval="1m", limit=3)
+            now = time.time()
+            closed = [
+                candle
+                for candle in candles
+                if isinstance(candle, dict)
+                and float(candle['close_time']) / 1000.0 <= now
+            ]
+            if not closed:
+                logger.error("NO_DATA: Binance returned no closed candle")
+                return False
+
+            candle = closed[-1]
+            required_fields = {
+                'open',
+                'high',
+                'low',
+                'close',
+                'quote_volume',
+                'timestamp',
+                'close_time',
             }
-            
-            result = self.master_eq.compute_lambda(test_data)
+            missing = sorted(required_fields.difference(candle))
+            if missing:
+                logger.error(f"NO_DATA: Binance candle missing {missing}")
+                return False
+
+            observed = {
+                key: float(candle[key])
+                for key in ('open', 'high', 'low', 'close', 'quote_volume')
+            }
+            if (
+                not all(math.isfinite(value) for value in observed.values())
+                or observed['open'] <= 0
+                or observed['close'] <= 0
+                or observed['high'] < observed['low']
+                or observed['quote_volume'] < 0
+            ):
+                logger.error("NO_DATA: Binance candle contains invalid observations")
+                return False
+
+            source_timestamp = float(candle['close_time']) / 1000.0
+            age = now - source_timestamp
+            if age < -5 or age > COHERENCE_MARKET_TTL_SECONDS:
+                logger.error(
+                    f"NO_DATA: Binance candle freshness invalid ({age:.1f}s)"
+                )
+                return False
+
+            market_data = {
+                'price': observed['close'],
+                'volume': observed['quote_volume'],
+                'high': observed['high'],
+                'low': observed['low'],
+                'open': observed['open'],
+                'change': (
+                    (observed['close'] - observed['open'])
+                    / observed['open']
+                    * 100.0
+                ),
+            }
+            self.last_coherence_receipt = {
+                'truth_status': 'live',
+                'source_id': f'binance:klines:{self.symbol}:1m',
+                'source_timestamp': source_timestamp,
+                'received_at': now,
+                'freshness_ttl_sec': COHERENCE_MARKET_TTL_SECONDS,
+                'generated_values': False,
+            }
+
+            result = self.master_eq.compute_lambda(market_data)
+            coherence = result.get('coherence')
+            if not isinstance(coherence, (int, float)) or not math.isfinite(float(coherence)):
+                logger.error("NO_DATA: Master Equation returned no finite coherence")
+                return False
             logger.info(f"  Λ(t): {result['lambda']:.4f}")
             logger.info(f"  Γ (coherence): {result['coherence']:.4f}")
             logger.info(f"  S(t) [substrate]: {result['substrate']:.4f}")
             logger.info(f"  Entry threshold: Γ > 0.938")
             
-            if result['coherence'] > 0.938:
+            if coherence > 0.938:
                 logger.info("  ✅ Coherence sufficient for entry signal")
                 return True
             else:
@@ -249,7 +319,10 @@ class AureonLiveTrader:
             sys.exit(1)
         
         if not self.run_coherence_test():
-            logger.warning("Coherence test inconclusive, but proceeding anyway (Stage {}).".format(self.stage))
+            logger.error(
+                "Coherence gate denied or has NO_DATA; no orders will be submitted."
+            )
+            return False
         
         logger.info(f"\n🚀 Starting {num_trades} trade(s) on stage {self.stage}...")
         for i in range(num_trades):
@@ -260,6 +333,7 @@ class AureonLiveTrader:
         
         logger.info(f"\n✅ Execution complete. {len(self.trades_executed)} trades logged.")
         logger.info(f"📋 Trade audit: {len(self.trades_executed)} entries in trade_audit.log")
+        return True
 
 def main():
     parser = argparse.ArgumentParser(description="Aureon Live Trading Launcher")

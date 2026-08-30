@@ -158,8 +158,6 @@ class QueenCognitiveActionPlanner:
 
     def _synthesise_and_submit(self) -> None:
         with self._lock:
-            ollama = self._ollama
-            goal_engine = self._goal_engine
             dialogues = list(self._dialogues)
             insights = list(self._insights)
             mood = self._last_mood
@@ -169,54 +167,48 @@ class QueenCognitiveActionPlanner:
             lambda_phase = self._last_lambda_phase
             lambda_t = self._last_lambda_t
 
-        if ollama is None or goal_engine is None:
-            return
+        try:
+            from aureon.queen.queen_mind import get_canonical_queen_mind
 
-        goal_text = self._ask_ollama(
-            ollama=ollama,
-            dialogues=dialogues,
-            insights=insights,
-            mood=mood,
-            urgency=urgency,
-            coherence=coherence,
-            consciousness=consciousness,
-            lambda_phase=lambda_phase,
-            lambda_t=lambda_t,
-        )
-        if not goal_text or len(goal_text) < 10:
+            mind = get_canonical_queen_mind()
+            if mind is None:
+                raise RuntimeError("canonical_queen_mind_required")
+            receipt = mind.submit_action_proposal(
+                module_name=__name__,
+                proposal={
+                    "intent": "synthesise_next_goal",
+                    "dialogues": [str(item)[:500] for item in dialogues[-6:]],
+                    "insights": [str(item)[:500] for item in insights[-4:]],
+                    "mood": str(mood),
+                    "urgency": str(urgency),
+                    "coherence": str(coherence),
+                    "consciousness": str(consciousness),
+                    "lambda_phase": str(lambda_phase),
+                    "lambda_t": str(lambda_t),
+                },
+            )
+        except Exception as exc:
+            logger.debug("QueenMind goal proposal held: %s", type(exc).__name__)
             return
 
         self._plan_count += 1
         logger.info(
-            "Cognitive planner submitting goal #%d: %s",
-            self._plan_count, goal_text[:80],
+            "Cognitive planner proposed governed goal context #%d",
+            self._plan_count,
         )
-
-        # Publish intent to ThoughtBus before execution
         if self._thought_bus is not None:
             try:
                 self._thought_bus.publish(
-                    "queen.cognitive_planner.goal_submitted",
+                    "queen.cognitive_planner.goal_proposed",
                     {
-                        "goal": goal_text,
+                        "proposal_receipt_id": receipt["receipt_id"],
                         "plan_count": self._plan_count,
-                        "mood": mood,
-                        "coherence": coherence,
-                        "consciousness": consciousness,
-                        "lambda_phase": lambda_phase,
+                        "action_eligible": False,
                     },
                     source="cognitive_planner",
                 )
             except Exception:
                 pass
-
-        # Submit in a daemon thread so we don't block the plan loop
-        def _run():
-            try:
-                goal_engine.submit_goal(goal_text)
-            except Exception as exc:
-                logger.debug("Goal execution error: %s", exc)
-        threading.Thread(target=_run, daemon=True, name="cap-goal-exec").start()
 
     def _ask_ollama(
         self,

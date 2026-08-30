@@ -9,71 +9,20 @@ Purpose:
 - Integrate harmonic resonance analysis (Hz frequencies)
 - Generate predictions based on REAL MARKET INTELLIGENCE
 - Validate predictions against actual outcomes
-- Feed validation results back to probability learning
+- Expose receipt-backed validation results without mutating a learning system
 
 ⚠️ REAL DATA ONLY. NO SIMULATIONS. NO LINEAR GUESSES.
 """
 
-from aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
-import sys
-import os
-if sys.platform == 'win32':
-    os.environ['PYTHONIOENCODING'] = 'utf-8'
-    try:
-        import io
-        def _is_utf8_wrapper(stream):
-            return (isinstance(stream, io.TextIOWrapper) and
-                    hasattr(stream, 'encoding') and stream.encoding and
-                    stream.encoding.lower().replace('-', '') == 'utf8')
-        def _is_buffer_valid(stream):
-            if not hasattr(stream, 'buffer'):
-                return False
-            try:
-                return stream.buffer is not None and not stream.buffer.closed
-            except (ValueError, AttributeError):
-                return False
-        if _is_buffer_valid(sys.stdout) and not _is_utf8_wrapper(sys.stdout):
-            sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace', line_buffering=True)
-        if _is_buffer_valid(sys.stderr) and not _is_utf8_wrapper(sys.stderr):
-            sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace', line_buffering=True)
-    except Exception:
-        pass
-
-import json
-import time
 import math
-from dataclasses import dataclass, asdict
-from pathlib import Path
-from typing import Dict, List, Optional, Tuple
-from collections import deque
-from datetime import datetime
+from dataclasses import dataclass
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple, Union
 
 # Sacred constants
 PHI = (1 + math.sqrt(5)) / 2
 SCHUMANN_BASE = 7.83
 LOVE_FREQUENCY = 528.0
 PERFECTION_ANGLE = 306.0  # 360° - 54° golden angle
-STATE_FILE = Path("aureon_truth_prediction_state.json")
-
-# Import Queen's intelligence
-try:
-    from probability_ultimate_intelligence import (
-        ProbabilityUltimateIntelligence,
-        UltimatePrediction
-    )
-    PROBABILITY_AVAILABLE = True
-except ImportError:
-    PROBABILITY_AVAILABLE = False
-    UltimatePrediction = None
-
-# Import Queen↔Auris validation
-try:
-    from metatrons_cube_knowledge_exchange import QueenAurisPingPong
-    PINGPONG_AVAILABLE = True
-except ImportError:
-    PINGPONG_AVAILABLE = False
-
-
 @dataclass
 class MarketSnapshot:
     """Current market state for a symbol."""
@@ -85,6 +34,42 @@ class MarketSnapshot:
     volatility_30s: float  # Standard deviation as %
     hz_frequency: float  # Harmonic encoding
     timestamp: float
+
+
+@dataclass(frozen=True)
+class NoDataPrediction:
+    """Falsey, numeric-free refusal returned when provenance is incomplete."""
+
+    data_status: str
+    truth_status: str
+    reason: str
+    eligible_for_action: bool
+    eligible_for_accounting: bool
+    eligible_for_learning: bool
+    generated_values: bool
+
+    def __bool__(self) -> bool:
+        return False
+
+
+class PredictionValidationBatch(list):
+    """List-compatible validation response with explicit provenance status."""
+
+    def __init__(
+        self,
+        values: Iterable["TruthPrediction"] = (),
+        *,
+        data_status: str,
+        truth_status: str,
+        reason: str,
+        eligible_for_learning: bool,
+    ) -> None:
+        super().__init__(values)
+        self.data_status = data_status
+        self.truth_status = truth_status
+        self.reason = reason
+        self.eligible_for_learning = eligible_for_learning
+        self.generated_values = False
 
 
 @dataclass
@@ -112,15 +97,23 @@ class TruthPrediction:
     predicted_change_pct: float
     horizon_seconds: float
 
+    # Complete linked provider provenance
+    market_receipt_id: str
+    hnc_receipt_id: str
+    auris_receipt_id: str
+
     # Validation (filled later)
     validated: bool = False
-    actual_price: float = 0.0
-    actual_change_pct: float = 0.0
+    actual_price: Optional[float] = None
+    actual_change_pct: Optional[float] = None
     correct: Optional[bool] = None
 
     # Truth metrics
     queen_approved: bool = False
     geometric_truth: Optional[float] = None  # From crystallization
+
+
+PredictionResult = Union[TruthPrediction, NoDataPrediction]
 
 
 class TruthPredictionEngine:
@@ -134,76 +127,127 @@ class TruthPredictionEngine:
     4. Check harmonic resonance (Hz analysis)
     5. Generate prediction ONLY if all 3 layers approve
     6. Validate prediction after horizon elapsed
-    7. Feed outcome back to probability learning
+    7. Return the validated outcome for an explicit downstream learning gate
     """
 
-    def __init__(self):
-        self.probability_intel: Optional[ProbabilityUltimateIntelligence] = None
-        self.pingpong: Optional[QueenAurisPingPong] = None
+    def __init__(self, *, max_receipt_age_seconds: float = 30.0):
+        if not self._is_finite_number(max_receipt_age_seconds) or max_receipt_age_seconds <= 0:
+            raise ValueError("max_receipt_age_seconds must be finite and positive")
+        self.max_receipt_age_seconds = float(max_receipt_age_seconds)
         self.pending_predictions: Dict[str, List[TruthPrediction]] = {}
+        self.validated_predictions: List[TruthPrediction] = []
 
-        if PROBABILITY_AVAILABLE:
-            try:
-                self.probability_intel = ProbabilityUltimateIntelligence()
-                print("✅ Probability Ultimate Intelligence loaded (95% accuracy)")
-            except Exception as e:
-                print(f"⚠️ Failed to load probability intelligence: {e}")
+    @staticmethod
+    def _is_finite_number(value: Any) -> bool:
+        return (
+            not isinstance(value, bool)
+            and isinstance(value, (int, float))
+            and math.isfinite(float(value))
+        )
 
-        if PINGPONG_AVAILABLE:
-            try:
-                self.pingpong = QueenAurisPingPong()
-                print("✅ Queen↔Auris PingPong validation loaded")
-            except Exception as e:
-                print(f"⚠️ Failed to load pingpong: {e}")
+    @staticmethod
+    def _receipt_id(receipt: Mapping[str, Any]) -> Optional[str]:
+        for key in ("receipt_id", "provider_receipt_id", "event_id"):
+            value = receipt.get(key)
+            if isinstance(value, str) and value.strip():
+                return value.strip()
+        return None
 
-    def _save_state(self):
-        """Save prediction state to JSON for Orca to read."""
-        try:
-            state = {
-                "last_updated": time.time(),
-                "predictions": {},
-                "validations": []
-            }
+    @staticmethod
+    def _normalise_symbol(value: Any) -> str:
+        return "".join(character for character in str(value).upper() if character.isalnum())
 
-            # Save all pending predictions
-            for symbol, preds in self.pending_predictions.items():
-                state["predictions"][symbol] = []
-                for pred in preds:
-                    state["predictions"][symbol].append({
-                        "symbol": pred.symbol,
-                        "start_time": pred.start_time,
-                        "start_price": pred.start_price,
-                        "win_probability": pred.win_probability,
-                        "pattern_confidence": pred.pattern_confidence,
-                        "auris_approved": pred.auris_approved,
-                        "auris_resonance": pred.auris_resonance,
-                        "predicted_direction": pred.predicted_direction,
-                        "predicted_change_pct": pred.predicted_change_pct,
-                        "horizon_seconds": pred.horizon_seconds,
-                        "queen_approved": pred.queen_approved,
-                        "validated": pred.validated,
-                        "actual_change_pct": pred.actual_change_pct if pred.validated else None,
-                        "correct": pred.correct if pred.validated else None,
-                        "geometric_truth": pred.geometric_truth if pred.validated else None
-                    })
+    @staticmethod
+    def _no_data(reason: str) -> NoDataPrediction:
+        return NoDataPrediction(
+            data_status="no_data",
+            truth_status="unverified",
+            reason=reason,
+            eligible_for_action=False,
+            eligible_for_accounting=False,
+            eligible_for_learning=False,
+            generated_values=False,
+        )
 
-                    # Add to validations list if validated
-                    if pred.validated:
-                        state["validations"].append({
-                            "symbol": pred.symbol,
-                            "timestamp": pred.start_time,
-                            "predicted_direction": pred.predicted_direction,
-                            "correct": pred.correct,
-                            "geometric_truth": pred.geometric_truth
-                        })
+    def _common_receipt(
+        self,
+        receipt: Optional[Mapping[str, Any]],
+        *,
+        symbol: str,
+        observed_at: float,
+    ) -> Tuple[bool, str, Optional[str], Optional[float]]:
+        if not isinstance(receipt, Mapping):
+            return False, "receipt_missing", None, None
+        provider = receipt.get("provider")
+        receipt_type = receipt.get("provider_receipt_type")
+        receipt_id = self._receipt_id(receipt)
+        if not isinstance(provider, str) or not provider.strip():
+            return False, "provider_missing", None, None
+        if not isinstance(receipt_type, str) or not receipt_type.strip():
+            return False, "provider_receipt_type_missing", None, None
+        if receipt_id is None:
+            return False, "receipt_id_missing", None, None
+        if self._normalise_symbol(receipt.get("symbol")) != self._normalise_symbol(symbol):
+            return False, "receipt_symbol_mismatch", None, None
+        if receipt.get("data_status") not in {"live", "complete", "real_observed"}:
+            return False, "receipt_not_live", None, None
+        if receipt.get("truth_status") != "real_observed":
+            return False, "receipt_not_observed", None, None
+        if receipt.get("generated_values") is not False:
+            return False, "generated_values_not_explicitly_false", None, None
+        if receipt.get("eligible_for_prediction") is not True:
+            return False, "receipt_not_prediction_eligible", None, None
 
-            # Atomic write
-            temp_file = STATE_FILE.with_suffix(".tmp")
-            temp_file.write_text(json.dumps(state, indent=2), encoding="utf-8")
-            temp_file.replace(STATE_FILE)
+        timestamp = receipt.get("provider_timestamp")
+        if timestamp is None:
+            timestamp = receipt.get("source_timestamp")
+        if not self._is_finite_number(timestamp):
+            return False, "provider_timestamp_missing", None, None
+        timestamp = float(timestamp)
+        if timestamp > observed_at:
+            return False, "provider_timestamp_in_future", None, None
+        if observed_at - timestamp > self.max_receipt_age_seconds:
+            return False, "provider_receipt_stale", None, None
+        return True, "complete", receipt_id, timestamp
 
-        except Exception as e:
-            print(f"⚠️ Failed to save prediction state: {e}")
+    @staticmethod
+    def _same_number(left: Any, right: Any) -> bool:
+        return (
+            TruthPredictionEngine._is_finite_number(left)
+            and TruthPredictionEngine._is_finite_number(right)
+            and math.isclose(float(left), float(right), rel_tol=1e-12, abs_tol=1e-12)
+        )
+
+    def _validate_market_receipt(
+        self,
+        snapshot: MarketSnapshot,
+        receipt: Optional[Mapping[str, Any]],
+        *,
+        observed_at: float,
+    ) -> Tuple[bool, str, Optional[str], Optional[float]]:
+        complete, reason, receipt_id, timestamp = self._common_receipt(
+            receipt,
+            symbol=snapshot.symbol,
+            observed_at=observed_at,
+        )
+        if not complete or not isinstance(receipt, Mapping):
+            return complete, reason, receipt_id, timestamp
+        values = {
+            "price": snapshot.price,
+            "change_24h": snapshot.change_24h,
+            "volume_24h": snapshot.volume_24h,
+            "momentum_30s": snapshot.momentum_30s,
+            "volatility_30s": snapshot.volatility_30s,
+            "hz_frequency": snapshot.hz_frequency,
+        }
+        for field, snapshot_value in values.items():
+            if not self._same_number(receipt.get(field), snapshot_value):
+                return False, f"market_{field}_mismatch", None, None
+        if not self._same_number(snapshot.timestamp, timestamp):
+            return False, "market_timestamp_mismatch", None, None
+        if float(snapshot.price) <= 0 or float(snapshot.volume_24h) < 0:
+            return False, "market_values_out_of_range", None, None
+        return True, "complete", receipt_id, timestamp
 
     def _classify_scenario(self, snapshot: MarketSnapshot) -> str:
         """Classify market scenario for probability matrix."""
@@ -255,86 +299,101 @@ class TruthPredictionEngine:
         self,
         snapshot: MarketSnapshot,
         horizon_seconds: float = 30.0,
-        min_confidence: float = 0.65
-    ) -> Optional[TruthPrediction]:
+        min_confidence: float = 0.65,
+        *,
+        market_receipt: Optional[Mapping[str, Any]] = None,
+        hnc_receipt: Optional[Mapping[str, Any]] = None,
+        auris_receipt: Optional[Mapping[str, Any]] = None,
+        observed_at: Optional[float] = None,
+    ) -> PredictionResult:
         """
         Generate a prediction with FULL validation.
 
         Returns:
-            TruthPrediction if all gates approve, else None
+            TruthPrediction only for a complete linked receipt chain; otherwise
+            a falsey, numeric-free NoDataPrediction.
         """
+        if not self._is_finite_number(observed_at):
+            return self._no_data("observed_at_missing")
+        observed_at = float(observed_at)
+        if not self._is_finite_number(horizon_seconds) or float(horizon_seconds) <= 0:
+            return self._no_data("horizon_invalid")
+        if (
+            not self._is_finite_number(min_confidence)
+            or not 0 <= float(min_confidence) <= 1
+        ):
+            return self._no_data("minimum_confidence_invalid")
 
-        # Gate 1: Check probability intelligence available
-        if not self.probability_intel:
-            return None
+        market_ok, reason, market_id, market_timestamp = self._validate_market_receipt(
+            snapshot,
+            market_receipt,
+            observed_at=observed_at,
+        )
+        if not market_ok or market_id is None or market_timestamp is None:
+            return self._no_data(reason)
 
-        # Build pattern key (5D)
-        scenario = self._classify_scenario(snapshot)
-        risk = "none"  # Would come from risk flags in real system
-        proximity = "far"  # Would come from target proximity
-        momentum_band = self._classify_momentum_band(snapshot.momentum_30s)
+        hnc_ok, reason, hnc_id, hnc_timestamp = self._common_receipt(
+            hnc_receipt,
+            symbol=snapshot.symbol,
+            observed_at=observed_at,
+        )
+        if not hnc_ok or hnc_id is None or hnc_timestamp is None:
+            return self._no_data(f"hnc_{reason}")
+        if not isinstance(hnc_receipt, Mapping):
+            return self._no_data("hnc_receipt_missing")
+        if hnc_receipt.get("market_receipt_id") != market_id:
+            return self._no_data("hnc_market_link_mismatch")
+        if hnc_timestamp < market_timestamp:
+            return self._no_data("hnc_precedes_market_receipt")
 
-        # Clownfish classification (based on volatility for now)
-        if snapshot.volatility_30s < 0.35:
-            clownfish = "danger"
-        elif snapshot.volatility_30s < 0.55:
-            clownfish = "weak"
-        elif snapshot.volatility_30s < 0.75:
-            clownfish = "neutral"
-        else:
-            clownfish = "strong"
+        raw_pattern_key = hnc_receipt.get("pattern_key")
+        if not (
+            isinstance(raw_pattern_key, (list, tuple))
+            and len(raw_pattern_key) == 5
+            and all(isinstance(value, str) and value.strip() for value in raw_pattern_key)
+        ):
+            return self._no_data("hnc_pattern_key_incomplete")
+        pattern_key = tuple(value.strip() for value in raw_pattern_key)
+        win_probability = hnc_receipt.get("win_probability")
+        pattern_confidence = hnc_receipt.get("pattern_confidence")
+        if not (
+            self._is_finite_number(win_probability)
+            and self._is_finite_number(pattern_confidence)
+            and 0 <= float(win_probability) <= 1
+            and 0 <= float(pattern_confidence) <= 1
+        ):
+            return self._no_data("hnc_probability_values_incomplete")
+        win_probability = float(win_probability)
+        pattern_confidence = float(pattern_confidence)
+        if hnc_receipt.get("queen_approved") is not True or win_probability < 0.65:
+            return self._no_data("queen_probability_gate_rejected")
+        if pattern_confidence < float(min_confidence):
+            return self._no_data("hnc_confidence_below_threshold")
 
-        pattern_key = (scenario, risk, proximity, momentum_band, clownfish)
-
-        # Query probability matrices
-        try:
-            # Build mock data for probability query (would be real in production)
-            intel = self.probability_intel.get_prediction(
-                current_price=snapshot.price,
-                entry_price=snapshot.price,  # Mock entry
-                target_price=snapshot.price * 1.02,  # Mock 2% target
-                current_time=snapshot.timestamp,
-                entry_time=snapshot.timestamp - 3600,  # Mock 1h ago
-                prediction_time=snapshot.timestamp + horizon_seconds,
-                queen_flags=[],  # Would be real flags
-                probability_base=0.5,  # Neutral start
-                momentum=snapshot.momentum_30s / 100.0,  # Convert % to decimal
-                accel=0.0  # Would calculate from history
-            )
-
-            win_probability = intel.final_probability
-            pattern_confidence = intel.pattern_confidence
-
-        except Exception as e:
-            print(f"⚠️ Probability query failed for {snapshot.symbol}: {e}")
-            return None
-
-        # Gate 2: Minimum confidence threshold
-        if pattern_confidence < min_confidence:
-            return None
-
-        # Gate 3: Dr. Auris validation (if available)
-        auris_approved = True
-        auris_resonance = 1.0
-
-        if self.pingpong:
-            try:
-                reasoning = f"Predict {snapshot.symbol} {snapshot.momentum_30s:+.3f}% momentum, " \
-                           f"{snapshot.volatility_30s:.3f}% volatility, pattern {pattern_key}"
-
-                result = self.pingpong.validate_reasoning(reasoning)
-                auris_approved = result.get("approved", False)
-                auris_resonance = result.get("geometric_truth", 0.0)
-
-                # Block if Auris rejects
-                if not auris_approved or auris_resonance < 0.618:  # PHI threshold
-                    return None
-
-            except Exception as e:
-                print(f"⚠️ Auris validation failed for {snapshot.symbol}: {e}")
-                # Don't block on validation failure, but flag it
-                auris_approved = True
-                auris_resonance = 0.5
+        auris_ok, reason, auris_id, auris_timestamp = self._common_receipt(
+            auris_receipt,
+            symbol=snapshot.symbol,
+            observed_at=observed_at,
+        )
+        if not auris_ok or auris_id is None or auris_timestamp is None:
+            return self._no_data(f"auris_{reason}")
+        if not isinstance(auris_receipt, Mapping):
+            return self._no_data("auris_receipt_missing")
+        if auris_receipt.get("market_receipt_id") != market_id:
+            return self._no_data("auris_market_link_mismatch")
+        if auris_receipt.get("hnc_receipt_id") != hnc_id:
+            return self._no_data("auris_hnc_link_mismatch")
+        if auris_timestamp < hnc_timestamp:
+            return self._no_data("auris_precedes_hnc_receipt")
+        auris_resonance = auris_receipt.get("geometric_truth")
+        if (
+            auris_receipt.get("approved") is not True
+            or not self._is_finite_number(auris_resonance)
+            or not 0 <= float(auris_resonance) <= 1
+            or float(auris_resonance) < (PHI - 1.0)
+        ):
+            return self._no_data("auris_gate_rejected")
+        auris_resonance = float(auris_resonance)
 
         # Determine predicted direction and magnitude
         if snapshot.momentum_30s > 0.1:
@@ -356,14 +415,17 @@ class TruthPredictionEngine:
             win_probability=win_probability,
             pattern_key=pattern_key,
             pattern_confidence=pattern_confidence,
-            auris_approved=auris_approved,
+            auris_approved=True,
             auris_resonance=auris_resonance,
             hz_strength=(abs(snapshot.momentum_30s) + snapshot.volatility_30s) / 10.0,
             hz_band=self._classify_hz_band(snapshot.hz_frequency),
             predicted_direction=predicted_direction,
             predicted_change_pct=predicted_change_pct,
             horizon_seconds=horizon_seconds,
-            queen_approved=win_probability >= 0.65  # Queen's threshold
+            market_receipt_id=market_id,
+            hnc_receipt_id=hnc_id,
+            auris_receipt_id=auris_id,
+            queen_approved=True,
         )
 
         # Track for validation
@@ -371,20 +433,55 @@ class TruthPredictionEngine:
             self.pending_predictions[snapshot.symbol] = []
         self.pending_predictions[snapshot.symbol].append(prediction)
 
-        # Save state for Orca to read
-        self._save_state()
-
         return prediction
 
-    def validate_predictions(self, snapshot: MarketSnapshot) -> List[TruthPrediction]:
+    def validate_predictions(
+        self,
+        snapshot: MarketSnapshot,
+        *,
+        market_receipt: Optional[Mapping[str, Any]] = None,
+        observed_at: Optional[float] = None,
+    ) -> PredictionValidationBatch:
         """
         Validate any pending predictions for this symbol.
 
         Returns:
             List of validated predictions
         """
+        if not self._is_finite_number(observed_at):
+            return PredictionValidationBatch(
+                data_status="no_data",
+                truth_status="unverified",
+                reason="observed_at_missing",
+                eligible_for_learning=False,
+            )
+        observed_at = float(observed_at)
+        market_ok, reason, _market_id, market_timestamp = self._validate_market_receipt(
+            snapshot,
+            market_receipt,
+            observed_at=observed_at,
+        )
+        if not market_ok or market_timestamp is None or not isinstance(market_receipt, Mapping):
+            return PredictionValidationBatch(
+                data_status="no_data",
+                truth_status="unverified",
+                reason=reason,
+                eligible_for_learning=False,
+            )
+        if market_receipt.get("eligible_for_learning") is not True:
+            return PredictionValidationBatch(
+                data_status="no_data",
+                truth_status="unverified",
+                reason="outcome_not_learning_eligible",
+                eligible_for_learning=False,
+            )
         if snapshot.symbol not in self.pending_predictions:
-            return []
+            return PredictionValidationBatch(
+                data_status="no_data",
+                truth_status="real_observed",
+                reason="no_pending_predictions",
+                eligible_for_learning=False,
+            )
 
         validated = []
         still_pending = []
@@ -394,7 +491,10 @@ class TruthPredictionEngine:
                 continue  # Already validated
 
             # Check if horizon elapsed
-            elapsed = snapshot.timestamp - pred.start_time
+            if market_receipt.get("prediction_receipt_id") != pred.auris_receipt_id:
+                still_pending.append(pred)
+                continue
+            elapsed = market_timestamp - pred.start_time
             if elapsed >= pred.horizon_seconds:
                 # Validate!
                 pred.validated = True
@@ -417,89 +517,55 @@ class TruthPredictionEngine:
                     pred.geometric_truth = 1.0 if abs(pred.predicted_change_pct) < 0.01 else 0.0
 
                 validated.append(pred)
-
-                # Feed back to probability learning
-                if self.probability_intel:
-                    try:
-                        outcome = "win" if pred.correct else "loss"
-                        self.probability_intel.record_outcome(
-                            pattern_key=pred.pattern_key,
-                            outcome=outcome,
-                            probability=pred.win_probability,
-                            momentum=pred.predicted_change_pct / 100.0
-                        )
-                    except Exception as e:
-                        print(f"⚠️ Failed to record outcome for {snapshot.symbol}: {e}")
+                self.validated_predictions.append(pred)
             else:
                 still_pending.append(pred)
 
         # Update pending list
         self.pending_predictions[snapshot.symbol] = still_pending
 
-        # Save state after validation
         if validated:
-            self._save_state()
+            return PredictionValidationBatch(
+                validated,
+                data_status="live",
+                truth_status="real_observed",
+                reason="validated_from_linked_provider_receipt",
+                eligible_for_learning=True,
+            )
+        return PredictionValidationBatch(
+            data_status="no_data",
+            truth_status="real_observed",
+            reason="no_linked_prediction_horizon_elapsed",
+            eligible_for_learning=False,
+        )
 
-        return validated
-
-    def get_accuracy_stats(self) -> Dict[str, float]:
+    def get_accuracy_stats(self) -> Dict[str, Any]:
         """Get overall prediction accuracy statistics."""
         total = 0
         correct = 0
         avg_geometric_truth = 0.0
 
-        for symbol_preds in self.pending_predictions.values():
-            for pred in symbol_preds:
-                if pred.validated:
-                    total += 1
-                    if pred.correct:
-                        correct += 1
-                    if pred.geometric_truth is not None:
-                        avg_geometric_truth += pred.geometric_truth
+        for pred in self.validated_predictions:
+            total += 1
+            if pred.correct:
+                correct += 1
+            if pred.geometric_truth is not None:
+                avg_geometric_truth += pred.geometric_truth
 
+        if total == 0:
+            return {
+                "data_status": "no_data",
+                "truth_status": "unverified",
+                "eligible_for_learning": False,
+                "generated_values": False,
+            }
         return {
+            "data_status": "live",
+            "truth_status": "real_observed",
             "total_validated": total,
             "correct": correct,
-            "accuracy_pct": (correct / total * 100.0) if total > 0 else 0.0,
-            "avg_geometric_truth": (avg_geometric_truth / total) if total > 0 else 0.0
+            "accuracy_pct": correct / total * 100.0,
+            "avg_geometric_truth": avg_geometric_truth / total,
+            "eligible_for_learning": True,
+            "generated_values": False,
         }
-
-
-if __name__ == "__main__":
-    print("🎯 Truth Prediction Engine - Test Mode")
-    print("=" * 60)
-
-    engine = TruthPredictionEngine()
-
-    # Test with mock snapshot
-    test_snapshot = MarketSnapshot(
-        symbol="BTCUSD",
-        price=88250.0,
-        change_24h=0.38,
-        volume_24h=1000000.0,
-        momentum_30s=0.15,  # 0.15% up
-        volatility_30s=0.05,
-        hz_frequency=275.0,
-        timestamp=time.time()
-    )
-
-    print(f"\n📊 Test snapshot: {test_snapshot.symbol} @ ${test_snapshot.price}")
-    print(f"   Momentum: {test_snapshot.momentum_30s:+.3f}%")
-    print(f"   Volatility: {test_snapshot.volatility_30s:.3f}%")
-    print(f"   Hz: {test_snapshot.hz_frequency:.1f}")
-
-    pred = engine.generate_prediction(test_snapshot, horizon_seconds=30.0)
-
-    if pred:
-        print(f"\n✅ PREDICTION APPROVED:")
-        print(f"   Direction: {pred.predicted_direction}")
-        print(f"   Magnitude: {pred.predicted_change_pct:+.3f}%")
-        print(f"   Win Probability: {pred.win_probability:.1%}")
-        print(f"   Pattern Confidence: {pred.pattern_confidence:.1%}")
-        print(f"   Auris Approved: {pred.auris_approved} (resonance={pred.auris_resonance:.2f})")
-        print(f"   Queen Approved: {pred.queen_approved}")
-        print(f"   Pattern: {pred.pattern_key}")
-    else:
-        print(f"\n❌ PREDICTION REJECTED (confidence too low or gates failed)")
-
-    print(f"\n" + "=" * 60)

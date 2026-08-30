@@ -49,7 +49,9 @@ def _ensure_adapter():
     try:
         from aureon.inhouse_ai.llm_adapter import AureonHybridAdapter, AureonBrainAdapter
         try:
-            _adapter = AureonHybridAdapter()
+            from aureon.integrations.ollama import OllamaModelSwitchboard
+
+            _adapter, _selection = OllamaModelSwitchboard().hybrid_adapter_for("fast")
             if not _adapter.health_check():
                 _adapter = AureonBrainAdapter()
         except Exception:

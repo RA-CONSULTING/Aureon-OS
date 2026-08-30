@@ -70,11 +70,11 @@ echo "✅ State files initialized"
 # Check critical Python files exist
 echo "🐍 Checking critical files..."
 critical_files=(
-    "queen_power_redistribution.py"
-    "queen_power_dashboard.py"
-    "aureon_queen_true_consciousness.py"
-    "adaptive_prime_profit_gate.py"
-    "kraken_cache_feeder.py"
+    "aureon/queen/queen_power_redistribution.py"
+    "aureon/queen/queen_power_dashboard.py"
+    "aureon/utils/aureon_queen_true_consciousness.py"
+    "aureon/utils/adaptive_prime_profit_gate.py"
+    "aureon/exchanges/kraken_cache_feeder.py"
 )
 
 for file in "${critical_files[@]}"; do
@@ -93,7 +93,7 @@ import sys
 import os
 sys.path.insert(0, '/app')
 try:
-    from adaptive_prime_profit_gate import AdaptivePrimeProfitGate
+    from aureon.utils.adaptive_prime_profit_gate import AdaptivePrimeProfitGate
     print('✅ AdaptivePrimeProfitGate imported')
 except Exception as e:
     print(f'❌ Import failed: {e}')
@@ -128,7 +128,7 @@ except:
 if needs_seeding:
     print('🔄 Seeding Kraken positions from live API...')
     try:
-        from kraken_client import KrakenClient
+        from aureon.exchanges.kraken_client import KrakenClient
         client = KrakenClient()
         time.sleep(2)  # Rate limit protection
         balance = client._private('/0/private/Balance', {})

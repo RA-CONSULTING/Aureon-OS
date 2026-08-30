@@ -5,8 +5,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const NASA_API_KEY = Deno.env.get('NASA_API_KEY') || 'DEMO_KEY';
-
 type SolarFlare = {
   flrID: string;
   beginTime: string;
@@ -18,14 +16,14 @@ type SolarFlare = {
 };
 
 async function fetchNASASolarFlares(startDate: string, endDate: string): Promise<SolarFlare[]> {
-  try {
-    const url = `https://api.nasa.gov/DONKI/FLR?startDate=${startDate}&endDate=${endDate}&api_key=${NASA_API_KEY}`;
-    const response = await fetch(url);
-    if (!response.ok) return [];
-    return await response.json();
-  } catch {
-    return [];
-  }
+  const apiKey = Deno.env.get('NASA_API_KEY')?.trim();
+  if (!apiKey) throw new Error('NASA_API_KEY_NOT_CONFIGURED');
+  const url = `https://api.nasa.gov/DONKI/FLR?startDate=${startDate}&endDate=${endDate}&api_key=${apiKey}`;
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`NASA_DONKI_HTTP_${response.status}`);
+  const payload = await response.json();
+  if (!Array.isArray(payload)) throw new Error('NASA_DONKI_INVALID_PAYLOAD');
+  return payload;
 }
 
 function parseSolarFlareClass(classType: string): { class: string; magnitude: number; power: number } {
@@ -186,20 +184,27 @@ serve(async (req) => {
       timestamp: now.toISOString(),
       moon: { phase: moonPhase, name: moonInfo.name, power: moonInfo.power, influence: moonInfo.influence, illumination: Math.abs(moonPhase - 0.5) * 200 },
       solar: {
-        activity: solarPower > 1.0 ? Math.min(1.0, 0.5 + (solarPower - 1.0) * 0.3) : 0.5,
+        activity: recentFlares.length === 0 ? 0 : Math.min(1.0, (solarPower - 1.0) * 0.3),
         phase: solarPhase,
         power: solarPower,
-        cycleDay: 0,
         recentFlares: recentFlares.map(f => ({ class: f.classType, time: f.peakTime || f.beginTime, source: f.sourceLocation, power: parseSolarFlareClass(f.classType).power })),
         dominantFlare: topFlare
       },
       planetary: { alignmentScore: planetary.score, alignedPlanets: planetary.alignedPlanets, power: 1 + planetary.score * 0.5 },
       seasonal: { name: seasonal.name, proximity: seasonal.proximity, power: seasonal.power, daysUntil: Math.round(seasonal.proximity * 30) },
-      cosmic: { overallPower: cosmicPower, coherenceBoost: (cosmicPower - 1) * 0.15, sacredFrequencies: [...new Set(sacredFrequencies)].sort((a, b) => a - b) }
+      cosmic: { overallPower: cosmicPower, coherenceBoost: (cosmicPower - 1) * 0.15, sacredFrequencies: [...new Set(sacredFrequencies)].sort((a, b) => a - b) },
+      truthStatus: 'real_derived',
+      sourceId: 'NASA_DONKI_FLR_AND_ASTRONOMICAL_CALCULATION',
+      sourceTimestamp: now.toISOString(),
+      generatedValues: false,
     }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   } catch (error) {
-    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }), {
-      status: 500,
+    return new Response(JSON.stringify({
+      error: error instanceof Error ? error.message : 'Unknown error',
+      truthStatus: 'no_data',
+      generatedValues: false,
+    }), {
+      status: 503,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }

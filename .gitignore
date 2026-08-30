@@ -178,7 +178,7 @@ frontend/public/aureon_visual_artifacts/
 frontend/test-results/
 frontend/vite.config.ts.timestamp-*.mjs
 autonomy/
-accounting/
+/accounting/
 uploads/
 bussiness accounts/
 data/exchange_account_archives/
@@ -232,6 +232,20 @@ bussiness accounts/
 data/exchange_account_archives/
 loveavblr/
 uploads/
+
+# Keep the reviewed QuickBooks control-plane source trackable while continuing
+# to ignore other untracked copies/artifacts under the duplicate root pattern.
+!Kings_Accounting_Suite/
+Kings_Accounting_Suite/*
+!Kings_Accounting_Suite/tools/
+Kings_Accounting_Suite/tools/*
+!Kings_Accounting_Suite/tools/quickbooks_accounting_integration.py
+!Kings_Accounting_Suite/tools/aureon_accounting_control_plane.py
+!Kings_Accounting_Suite/tools/aureon_accounting_reconciliation.py
+!Kings_Accounting_Suite/tests/
+Kings_Accounting_Suite/tests/*
+!Kings_Accounting_Suite/tests/test_aureon_accounting_control_plane.py
+!Kings_Accounting_Suite/tests/test_aureon_accounting_reconciliation.py
 
 # Python packaging build artifacts
 *.egg-info/

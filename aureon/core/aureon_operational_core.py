@@ -33,7 +33,7 @@ from pathlib import Path
 # ═══════════════════════════════════════════════════════════════════════════
 # WINDOWS UTF-8 FIX
 # ═══════════════════════════════════════════════════════════════════════════
-if sys.platform == 'win32':
+if sys.platform == 'win32' and sys.stdout is sys.__stdout__ and sys.stdout.isatty():
     os.environ['PYTHONIOENCODING'] = 'utf-8'
     try:
         def _is_utf8_wrapper(stream):
@@ -110,28 +110,52 @@ class SignalGate:
         """
         now = time.time()
 
-        # 1. Phase Transition Detector check
+        # 1. Phase Transition Detector check. The detector's API is
+        # ingest()/predict() — this block used to call update()/get_state()/
+        # get_curvature(), none of which exist, so every call raised into the
+        # except below and the PHASE_CRITICAL block had never once fired.
+        # Because arming a never-executed veto on live paths is itself a risk,
+        # the actual block follows the production_mode contract (acts in LIVE,
+        # audits would_have_blocked everywhere else).
         if self.phase_detector is not None:
             try:
                 if now - self._last_check_time > self._cache_ttl:
-                    # Feed price to detector
-                    self.phase_detector.update(price)
+                    self.phase_detector.ingest(price, now)
                     self._last_check_time = now
 
-                state = self.phase_detector.get_state()
-                self._last_phase_state = state
+                prediction = self.phase_detector.predict()
+                self._last_phase_state = prediction.state if prediction else None
 
-                # CRITICAL phase = market regime change detected = DO NOT ENTER
-                if hasattr(state, 'name') and state.name == 'CRITICAL':
-                    self._blocked_count += 1
-                    return False, f"PHASE_CRITICAL: Market regime change detected (state={state.name})"
-
-                # If phase detector reports high curvature, reduce to HOLD
-                if hasattr(self.phase_detector, 'get_curvature'):
-                    kappa = self.phase_detector.get_curvature()
-                    if kappa is not None and kappa > 10.0:
-                        self._blocked_count += 1
-                        return False, f"HIGH_CURVATURE: kappa={kappa:.2f} > 10.0 (geometric stress)"
+                if prediction is not None:
+                    is_critical = prediction.state.name == 'CRITICAL'
+                    high_kappa = prediction.curvature > 10.0
+                    if is_critical or high_kappa:
+                        from aureon.observer.production_mode import audit as _pm_audit
+                        from aureon.observer.production_mode import phase_veto_active
+                        veto = phase_veto_active()
+                        _pm_audit(
+                            "signal_gate_phase_check",
+                            {
+                                "symbol": symbol,
+                                "state": prediction.state.value,
+                                "probability": round(prediction.probability, 4),
+                                "curvature": round(prediction.curvature, 4),
+                            },
+                            decision="entry_veto",
+                            would_have_blocked=True,
+                            actually_blocked=veto,
+                        )
+                        if veto:
+                            self._blocked_count += 1
+                            if is_critical:
+                                return False, (
+                                    f"PHASE_CRITICAL: Market regime change detected "
+                                    f"(p={prediction.probability:.2f})"
+                                )
+                            return False, (
+                                f"HIGH_CURVATURE: kappa={prediction.curvature:.2f} "
+                                f"> 10.0 (geometric stress)"
+                            )
             except Exception as e:
                 logger.debug(f"Phase detector check failed (allowing trade): {e}")
 
@@ -159,6 +183,52 @@ class SignalGate:
                             return False, "SOLAR_STORM: Active flare detected (cross-substrate caution)"
             except Exception as e:
                 logger.debug(f"Solar monitor check failed (allowing trade): {e}")
+
+        # 4. Volatility sentinel check (P4). The sentinel PREDICTS high
+        # volatility from four measured factors (EWMA expansion, phase
+        # transition, QGITA regime, spectral surge); at VOL_RISK_BLOCK with
+        # enough factor coverage the entry is vetoed. Same production_mode
+        # contract as the phase check: acts in LIVE, audits
+        # would_have_blocked everywhere else. No assessment / stale /
+        # thin coverage → honest passthrough (never a substituted risk).
+        try:
+            from aureon.intelligence.volatility_sentinel import (
+                VOL_MIN_CONFIDENCE_GATE,
+                VOL_RISK_BLOCK,
+                read_latest_assessment,
+            )
+
+            vol = read_latest_assessment()
+            if (vol is not None and vol.status == "ok"
+                    and vol.volatility_risk is not None
+                    and vol.confidence >= VOL_MIN_CONFIDENCE_GATE
+                    and vol.volatility_risk >= VOL_RISK_BLOCK):
+                from aureon.observer.production_mode import audit as _pm_audit
+                from aureon.observer.production_mode import volatility_veto_active
+                veto = volatility_veto_active()
+                factors = ",".join(
+                    f.name for f in vol.factors if f.status == "ok") or "none"
+                _pm_audit(
+                    "signal_gate_volatility_check",
+                    {
+                        "symbol": symbol,
+                        "volatility_risk": round(vol.volatility_risk, 4),
+                        "confidence": round(vol.confidence, 4),
+                        "factors": factors,
+                    },
+                    decision="entry_veto",
+                    would_have_blocked=True,
+                    actually_blocked=veto,
+                )
+                if veto:
+                    self._blocked_count += 1
+                    return False, (
+                        f"VOLATILITY_PREDICTED: sentinel risk="
+                        f"{vol.volatility_risk:.2f} >= {VOL_RISK_BLOCK} "
+                        f"(factors: {factors})"
+                    )
+        except Exception as e:
+            logger.debug(f"Volatility sentinel check failed (allowing trade): {e}")
 
         self._allowed_count += 1
         return True, "CLEAR"

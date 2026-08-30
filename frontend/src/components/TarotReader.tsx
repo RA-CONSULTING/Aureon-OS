@@ -38,7 +38,7 @@ export function TarotReader({ name = "Seeker", dob = "1990-01-01" }: TarotReader
     return (
       <div className="flex items-center justify-center p-8">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Drawing cards...</p>
         </div>
       </div>
@@ -70,7 +70,7 @@ export function TarotReader({ name = "Seeker", dob = "1990-01-01" }: TarotReader
           {data.orientation === 'upright' ? data.card.upright : data.card.reversed}
         </p>
         <p className="text-sm font-medium mb-1">Lesson: {data.card.lesson}</p>
-        <p className="text-sm text-amber-600">Warning: {data.card.warning}</p>
+        <p className="text-sm text-warning">Warning: {data.card.warning}</p>
         <div className="flex flex-wrap gap-1 mt-2">
           {data.card.keywords.map((keyword: string) => (
             <Badge key={keyword} variant="outline" className="text-xs">
@@ -139,7 +139,7 @@ export function TarotReader({ name = "Seeker", dob = "1990-01-01" }: TarotReader
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {Object.entries(reading.practices).map(([practice, weight]) => (
               <div key={practice} className="text-center">
-                <div className="text-2xl font-bold text-purple-600">
+                <div className="text-2xl font-bold text-primary">
                   {Math.round(weight * 100)}%
                 </div>
                 <div className="text-sm text-muted-foreground capitalize">

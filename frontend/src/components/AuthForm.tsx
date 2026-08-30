@@ -57,23 +57,15 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
       if (authError) throw authError;
       if (!authData.user) throw new Error("Failed to create account");
 
-      try {
-        await supabase.functions.invoke('create-aureon-session', {
-          body: {
-            userId: authData.user.id,
-            apiKey: binanceApiKey || null,
-            apiSecret: binanceApiSecret || null,
-          }
-        });
-      } catch (fnError) {
-        console.warn('Edge function failed, creating session directly:', fnError);
-        await supabase.from('aureon_user_sessions').insert({
-          user_id: authData.user.id,
-          payment_completed: true,
-          is_trading_active: false,
-          gas_tank_balance: 100,
-          trading_mode: 'paper'
-        });
+      const { data: sessionData, error: sessionError } = await supabase.functions.invoke('create-aureon-session', {
+        body: {
+          userId: authData.user.id,
+          apiKey: binanceApiKey || null,
+          apiSecret: binanceApiSecret || null,
+        },
+      });
+      if (sessionError || !sessionData?.success) {
+        throw new Error(sessionError?.message || sessionData?.error || 'Session creation failed');
       }
 
       toast.success("Account created! Welcome.");

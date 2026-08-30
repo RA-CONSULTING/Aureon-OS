@@ -7,7 +7,7 @@ const corsHeaders = {
 
 interface ExchangeStatus {
   exchange: string;
-  status: 'LIVE' | 'DEMO' | 'OFFLINE' | 'ERROR';
+  status: 'LIVE' | 'UNCONFIGURED' | 'OFFLINE' | 'ERROR';
   hasCredentials: boolean;
   lastPrice?: number;
   lastTimestamp?: number;
@@ -19,9 +19,11 @@ interface VerificationResult {
   success: boolean;
   timestamp: number;
   exchanges: ExchangeStatus[];
-  overallStatus: 'ALL_LIVE' | 'PARTIAL_LIVE' | 'ALL_DEMO' | 'OFFLINE';
+  overallStatus: 'ALL_LIVE' | 'PARTIAL_LIVE' | 'UNCONFIGURED' | 'OFFLINE';
   priceVariance?: number;
   warnings: string[];
+  truthStatus: 'live' | 'no_data';
+  generatedValues: false;
 }
 
 /**
@@ -45,29 +47,29 @@ serve(async (req) => {
     // ============= BINANCE VERIFICATION =============
     const binanceStatus = await verifyBinance();
     exchanges.push(binanceStatus);
-    if (binanceStatus.status === 'DEMO') {
-      warnings.push('BINANCE: Running in DEMO mode - no real API credentials');
+    if (binanceStatus.status === 'UNCONFIGURED') {
+      warnings.push('BINANCE: No production API credentials configured');
     }
 
     // ============= KRAKEN VERIFICATION =============
     const krakenStatus = await verifyKraken();
     exchanges.push(krakenStatus);
-    if (krakenStatus.status === 'DEMO') {
-      warnings.push('KRAKEN: Running in DEMO mode - no real API credentials');
+    if (krakenStatus.status === 'UNCONFIGURED') {
+      warnings.push('KRAKEN: No production API credentials configured');
     }
 
     // ============= ALPACA VERIFICATION =============
     const alpacaStatus = await verifyAlpaca();
     exchanges.push(alpacaStatus);
-    if (alpacaStatus.status === 'DEMO') {
-      warnings.push('ALPACA: Running in DEMO mode - no real API credentials');
+    if (alpacaStatus.status === 'UNCONFIGURED') {
+      warnings.push('ALPACA: No production API credentials configured');
     }
 
     // ============= CAPITAL.COM VERIFICATION =============
     const capitalStatus = await verifyCapital();
     exchanges.push(capitalStatus);
-    if (capitalStatus.status === 'DEMO') {
-      warnings.push('CAPITAL.COM: Running in DEMO mode - no real API credentials');
+    if (capitalStatus.status === 'UNCONFIGURED') {
+      warnings.push('CAPITAL.COM: No production API credentials configured');
     }
 
     // Calculate price variance between exchanges (sanity check)
@@ -88,32 +90,35 @@ serve(async (req) => {
 
     // Determine overall status
     const liveCount = exchanges.filter(e => e.status === 'LIVE').length;
-    const demoCount = exchanges.filter(e => e.status === 'DEMO').length;
+    const unconfiguredCount = exchanges.filter(e => e.status === 'UNCONFIGURED').length;
     
     let overallStatus: VerificationResult['overallStatus'];
     if (liveCount === exchanges.length) {
       overallStatus = 'ALL_LIVE';
     } else if (liveCount > 0) {
       overallStatus = 'PARTIAL_LIVE';
-    } else if (demoCount > 0) {
-      overallStatus = 'ALL_DEMO';
+    } else if (unconfiguredCount === exchanges.length) {
+      overallStatus = 'UNCONFIGURED';
     } else {
       overallStatus = 'OFFLINE';
     }
 
     const result: VerificationResult = {
-      success: true,
+      success: overallStatus === 'ALL_LIVE',
       timestamp: Date.now(),
       exchanges,
       overallStatus,
       priceVariance,
       warnings,
+      truthStatus: overallStatus === 'ALL_LIVE' ? 'live' : 'no_data',
+      generatedValues: false,
     };
 
     console.log(`[verify-exchange-connectivity] Status: ${overallStatus} | Live: ${liveCount}/${exchanges.length} | Latency: ${Date.now() - startTime}ms`);
 
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: result.success ? 200 : 503,
     });
 
   } catch (error) {
@@ -138,7 +143,7 @@ async function verifyBinance(): Promise<ExchangeStatus> {
   if (!apiKey || !apiSecret) {
     return {
       exchange: 'binance',
-      status: 'DEMO',
+      status: 'UNCONFIGURED',
       hasCredentials: false,
       errorMessage: 'No API credentials configured',
     };
@@ -187,7 +192,7 @@ async function verifyKraken(): Promise<ExchangeStatus> {
   if (!apiKey || !apiSecret) {
     return {
       exchange: 'kraken',
-      status: 'DEMO',
+      status: 'UNCONFIGURED',
       hasCredentials: false,
       errorMessage: 'No API credentials configured',
     };
@@ -248,7 +253,7 @@ async function verifyAlpaca(): Promise<ExchangeStatus> {
   if (!apiKey || !apiSecret) {
     return {
       exchange: 'alpaca',
-      status: 'DEMO',
+      status: 'UNCONFIGURED',
       hasCredentials: false,
       errorMessage: 'No API credentials configured',
     };
@@ -256,7 +261,7 @@ async function verifyAlpaca(): Promise<ExchangeStatus> {
 
   try {
     const startMs = Date.now();
-    const response = await fetch('https://paper-api.alpaca.markets/v2/account', {
+    const response = await fetch('https://api.alpaca.markets/v2/account', {
       headers: {
         'APCA-API-KEY-ID': apiKey,
         'APCA-API-SECRET-KEY': apiSecret,
@@ -299,7 +304,7 @@ async function verifyCapital(): Promise<ExchangeStatus> {
   if (!apiKey || !password || !identifier) {
     return {
       exchange: 'capital',
-      status: 'DEMO',
+      status: 'UNCONFIGURED',
       hasCredentials: false,
       errorMessage: 'No API credentials configured',
     };

@@ -550,8 +550,8 @@ class EnigmaDreamer:
                 self.dream_depth = 0.2
                 self._lucid_dream()
                 
-            # Occasionally have prophetic dreams
-            if random.random() < 0.1:
+            # Deterministic cadence; no random event is presented as insight.
+            if int(elapsed) > 0 and int(elapsed) % 10 == 0:
                 self._prophetic_dream()
                 
             time.sleep(1.0)  # Dream cycle
@@ -594,9 +594,9 @@ class EnigmaDreamer:
         if not trades:
             return
             
-        # Sample random trades
+        # Use the most recent observed trades deterministically.
         sample_size = min(5, len(trades))
-        sample = random.sample(trades, sample_size)
+        sample = trades[-sample_size:]
         
         # Generate dream from the sample
         symbols = list(set(t.get("symbol", "") for t in sample))

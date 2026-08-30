@@ -17,7 +17,6 @@ Day 30: £25,000 → £100K+ (NUCLEAR MODE)
 """
 
 from aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
-import random
 from dataclasses import dataclass
 from typing import List
 import math
@@ -73,9 +72,15 @@ class CompoundKing:
             # Base building phase
             return self.base_daily_return
 
-    def simulate_day(self, day: int) -> DayResult:
-        """Simulate a single trading day"""
+    def simulate_day(self, day: int, observation: dict | None = None) -> DayResult:
+        """Record one provider-observed trading day; simulation is not permitted."""
         starting_capital = self.current_capital
+        if not observation or observation.get("generated_values") is not False:
+            raise ValueError("LIVE_DAY_OBSERVATION_REQUIRED")
+        source_id = str(observation.get("source_id") or "").strip()
+        source_timestamp = str(observation.get("source_timestamp") or "").strip()
+        if not source_id or not source_timestamp:
+            raise ValueError("DAY_OBSERVATION_PROVENANCE_REQUIRED")
 
         # Check for milestone unlocks
         if not self.has_margin and self.current_capital >= self.margin_threshold:
@@ -91,31 +96,13 @@ class CompoundKing:
             print(f"    • Daily target increases to {self.pdt_unlocked_return*100:.0f}%")
             print(f"    • NUCLEAR MODE ACTIVATED")
 
-        # Get target return
-        target_return = self.get_daily_return_target()
-
-        # Simulate realistic variance (85% of days hit target, 15% miss)
-        if random.random() < 0.85:
-            # Hit or exceed target
-            actual_return = target_return * random.uniform(0.90, 1.15)
-        else:
-            # Miss target but still positive
-            actual_return = target_return * random.uniform(0.50, 0.90)
-
-        # Apply return
-        profit = starting_capital * actual_return
-        ending_capital = starting_capital + profit
-
-        # Estimate trades based on status
-        if self.pdt_unlocked:
-            trades = random.randint(40, 100)  # Nuclear mode
-            win_rate = random.uniform(0.72, 0.82)
-        elif self.has_margin:
-            trades = random.randint(25, 45)  # Margin mode
-            win_rate = random.uniform(0.68, 0.78)
-        else:
-            trades = random.randint(15, 25)  # Building mode
-            win_rate = random.uniform(0.65, 0.75)
+        ending_capital = float(observation["ending_capital"])
+        trades = int(observation["trades"])
+        winning_trades = int(observation["winning_trades"])
+        if ending_capital < 0 or trades < 0 or winning_trades < 0 or winning_trades > trades:
+            raise ValueError("INVALID_LIVE_DAY_OBSERVATION")
+        actual_return = (ending_capital - starting_capital) / starting_capital if starting_capital > 0 else 0.0
+        win_rate = winning_trades / trades if trades > 0 else 0.0
 
         # Determine status
         if self.pdt_unlocked:

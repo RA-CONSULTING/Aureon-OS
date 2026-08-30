@@ -64,12 +64,12 @@ export function TemporalLadderDashboard() {
 
   return (
     <div className="space-y-4">
-      <Card className="bg-gradient-to-br from-indigo-900/20 via-black to-purple-900/20 border-indigo-500/30">
+      <Card className="bg-gradient-to-br from-primary/20 via-black to-primary/20 border-primary/30">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2 text-2xl">
-                <Radio className="w-6 h-6 text-indigo-400" />
+                <Radio className="w-6 h-6 text-primary" />
                 Temporal Ladder
                 <Badge variant={ladderState.hiveMindCoherence > 0.7 ? "default" : "secondary"}>
                   {ladderState.fallbackInProgress ? 'FAILOVER' : 'OPERATIONAL'}
@@ -81,7 +81,7 @@ export function TemporalLadderDashboard() {
             </div>
             <div className="text-right">
               <div className="text-xs text-muted-foreground mb-1">Hive Mind Coherence</div>
-              <div className="text-2xl font-bold text-indigo-400">
+              <div className="text-2xl font-bold text-primary">
                 {(ladderState.hiveMindCoherence * 100).toFixed(1)}%
               </div>
             </div>
@@ -89,9 +89,9 @@ export function TemporalLadderDashboard() {
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Active Chain */}
-          <div className="bg-black/40 p-4 rounded-lg border border-indigo-500/30">
+          <div className="bg-black/40 p-4 rounded-lg border border-primary/30">
             <div className="flex items-center gap-2 mb-3">
-              <Activity className="w-4 h-4 text-indigo-400" />
+              <Activity className="w-4 h-4 text-primary" />
               <h3 className="text-sm font-semibold">Active System Chain</h3>
               <Badge variant="outline">{activeSystems.length} systems</Badge>
             </div>
@@ -106,7 +106,7 @@ export function TemporalLadderDashboard() {
                       <div className="flex items-center gap-3 p-2 bg-black/30 rounded">
                         <div className="flex items-center gap-2 flex-1">
                           <span className="text-xs text-muted-foreground">#{i + 1}</span>
-                          <CheckCircle className="w-4 h-4 text-green-400" />
+                          <CheckCircle className="w-4 h-4 text-success" />
                           <span className="font-mono text-sm">{systemName}</span>
                           {systemName === ladderState.primarySystem && (
                             <Badge variant="default" className="ml-2 text-xs">PRIMARY</Badge>
@@ -119,7 +119,7 @@ export function TemporalLadderDashboard() {
                       </div>
                       {i < ladderState.activeChain.length - 1 && (
                         <div className="flex justify-center my-1">
-                          <ArrowDown className="w-4 h-4 text-indigo-400/50" />
+                          <ArrowDown className="w-4 h-4 text-primary/50" />
                         </div>
                       )}
                     </div>
@@ -145,9 +145,9 @@ export function TemporalLadderDashboard() {
 
           {/* Fallback History */}
           {recentFallbacks.length > 0 && (
-            <div className="bg-black/40 p-4 rounded-lg border border-orange-500/30">
+            <div className="bg-black/40 p-4 rounded-lg border border-warning/30">
               <div className="flex items-center gap-2 mb-3">
-                <AlertTriangle className="w-4 h-4 text-orange-400" />
+                <AlertTriangle className="w-4 h-4 text-warning" />
                 <h3 className="text-sm font-semibold">Recent Fallback Events</h3>
                 <Badge variant="outline">{recentFallbacks.length}</Badge>
               </div>
@@ -168,7 +168,7 @@ export function TemporalLadderDashboard() {
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="font-mono">{event.fromSystem}</span>
-                        <ArrowDown className="w-3 h-3 text-orange-400" />
+                        <ArrowDown className="w-3 h-3 text-warning" />
                         <span className="font-mono">{event.toSystem}</span>
                       </div>
                       <div className="text-muted-foreground mt-1">
@@ -182,9 +182,9 @@ export function TemporalLadderDashboard() {
           )}
 
           {/* System Info */}
-          <div className="bg-gradient-to-r from-indigo-500/10 to-purple-500/10 p-3 rounded-lg border border-border/30">
+          <div className="bg-gradient-to-r from-primary/10 to-primary/10 p-3 rounded-lg border border-border/30">
             <div className="flex items-start gap-2">
-              <Zap className="w-4 h-4 text-indigo-400 mt-0.5" />
+              <Zap className="w-4 h-4 text-primary mt-0.5" />
               <div className="text-xs text-muted-foreground">
                 <strong>Temporal Ladder Protocol:</strong> Each system monitors its health and can request 
                 assistance from others in the chain. When a system fails or degrades, the ladder automatically 
@@ -201,15 +201,15 @@ export function TemporalLadderDashboard() {
 
 function SystemCard({ system }: { system: SystemStatus }) {
   const getHealthColor = (health: number) => {
-    if (health > 0.8) return 'text-green-400 border-green-500/50';
-    if (health > 0.5) return 'text-yellow-400 border-yellow-500/50';
-    return 'text-red-400 border-red-500/50';
+    if (health > 0.8) return 'text-success border-success/50';
+    if (health > 0.5) return 'text-warning border-warning/50';
+    return 'text-destructive border-destructive/50';
   };
 
   const getHealthBg = (health: number) => {
-    if (health > 0.8) return 'from-green-500/10 to-green-500/5';
-    if (health > 0.5) return 'from-yellow-500/10 to-yellow-500/5';
-    return 'from-red-500/10 to-red-500/5';
+    if (health > 0.8) return 'from-success/10 to-success/5';
+    if (health > 0.5) return 'from-warning/10 to-warning/5';
+    return 'from-destructive/10 to-destructive/5';
   };
 
   const timeSinceHeartbeat = Date.now() - system.lastHeartbeat;
@@ -229,7 +229,7 @@ function SystemCard({ system }: { system: SystemStatus }) {
           {(system.health * 100).toFixed(0)}%
         </span>
         <div className="flex items-center gap-1">
-          <Radio className={`w-3 h-3 ${isRecent ? 'text-green-400 animate-pulse' : 'text-gray-500'}`} />
+          <Radio className={`w-3 h-3 ${isRecent ? 'text-success animate-pulse' : 'text-gray-500'}`} />
           <span className="text-muted-foreground text-xs">
             {isRecent ? 'live' : `${Math.floor(timeSinceHeartbeat / 1000)}s`}
           </span>

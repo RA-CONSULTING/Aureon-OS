@@ -3,6 +3,13 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
+pytest.importorskip(
+    "reportlab",
+    reason="these suites assert rendered PDF artifacts; reportlab is the renderer",
+)
+
 from Kings_Accounting_Suite.tools.accounting_swarm_data_wave_scan import (
     file_readability_record,
     run_accounting_swarm_data_wave_scan,

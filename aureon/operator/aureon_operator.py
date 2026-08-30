@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import logging
 import re
+import sys
 import time
 import uuid
 from concurrent.futures import ThreadPoolExecutor
@@ -116,9 +117,18 @@ _OPERATOR_PERSONA = (
     "claims. Do not invent trade executions, balances, filings, or credentials."
 )
 
-# Hard authority boundaries (mirrors PUBLIC_BOUNDARIES in the dynamic prompt
-# filter). These are deterministic, prompt-level refusals: the operator will not
-# emit an answer that helps cross them, regardless of the soft conscience verdict.
+_ISOLATED_TENANT_PERSONA = (
+    "You are Aureon answering on an isolated tenant-owned model plane. Answer "
+    "helpfully from the user's prompt and the model's general knowledge. No instance "
+    "repository, research corpus, operator memory, provider credentials, trading state, "
+    "or organism field is available on this plane. Never claim or infer access to it. "
+    "Do not invent trade executions, balances, filings, or credentials."
+)
+
+# Consequential-intent detectors (mirrors PUBLIC_BOUNDARIES in the dynamic
+# prompt filter). They mark content that must use a typed governed route; they do
+# not prevent the cognition from explaining or preparing that route. Generic
+# mutation tools independently reuse these patterns as a bypass wall.
 _HARD_BOUNDARY_PATTERNS = (
     r"\b(disable|bypass|ignore|override|turn off|switch off|remove)\b[^.]{0,40}\b(safety|gate|gates|guard|guardrail|risk limit|risk-limit|limits|conscience|governance|veto)\b",
     r"\b(execute|place|open|run|make|do)\b[^.]{0,40}\b(live|real|all[- ]?in|leveraged)\b[^.]{0,20}\btrade\b",
@@ -151,13 +161,23 @@ def join_organism(subsystem: Any, name: str) -> Dict[str, bool]:
         report["mycelium"] = True
     except Exception as exc:  # noqa: BLE001
         logger.debug("mycelium join skipped for %s: %s", name, exc)
-    try:
-        from aureon.utils.aureon_queen_hive_mind import get_queen
-
-        get_queen()._register_child(name, "OPERATOR", subsystem)
-        report["queen"] = True
-    except Exception as exc:  # noqa: BLE001
-        logger.debug("queen register skipped for %s: %s", name, exc)
+    # Organism membership must not create the Queen as a registration side
+    # effect. Importing this large module can itself import provider clients,
+    # so only consult it when an explicit Queen startup already loaded it.
+    queen_module = sys.modules.get("aureon.utils.aureon_queen_hive_mind")
+    if queen_module is None:
+        logger.debug("queen register deferred for %s: Queen not started", name)
+    else:
+        try:
+            get_existing_queen = getattr(queen_module, "get_existing_queen", None)
+            queen = get_existing_queen() if callable(get_existing_queen) else None
+            if queen is None:
+                logger.debug("queen register deferred for %s: Queen not started", name)
+            else:
+                queen._register_child(name, "OPERATOR", subsystem)
+                report["queen"] = True
+        except Exception as exc:  # noqa: BLE001
+            logger.debug("queen register skipped for %s: %s", name, exc)
     return report
 
 
@@ -203,7 +223,14 @@ class AureonOperator:
         cache: ResponseCache | None = None,
         source: str = "aureon.operator",
         join_mesh: bool = False,
+        mesh_broadcast: bool = True,
+        allow_repo_grounding: bool = True,
     ) -> None:
+        # ``join_mesh`` is inbound membership; ``mesh_broadcast`` is the outbound signal. Kept
+        # separate so the default stays exactly today's behavior (this class already ships
+        # ``join_mesh=False`` while still broadcasting). A per-tenant operator passes False.
+        self._mesh_broadcast = bool(mesh_broadcast)
+        self._allow_repo_grounding = bool(allow_repo_grounding)
         self.config = config or OperatorConfig.from_env()
         self.last_mesh_message: Dict[str, Any] = {}
         if join_mesh:
@@ -279,10 +306,11 @@ class AureonOperator:
         self._cache_set(resp)
         self._metrics.request("blocked" if resp.blocked else "ok", resp.elapsed_ms)
         self._publish(resp, "complete", resp.to_dict())
-        broadcast_to_mesh(
-            "operator.answer",
-            {"trace_id": resp.trace_id, "blocked": resp.blocked, "verdict": resp.conscience_verdict},
-        )
+        if self._mesh_broadcast:
+            broadcast_to_mesh(
+                "operator.answer",
+                {"trace_id": resp.trace_id, "blocked": resp.blocked, "verdict": resp.conscience_verdict},
+            )
         return resp
 
     def receive_mycelium_message(self, message_type: str, payload: Dict[str, Any]) -> None:
@@ -367,6 +395,16 @@ class AureonOperator:
         sources: List[Dict[str, str]] = []
         lane = task_family = ""
         filter_block = ""
+        if not self._allow_repo_grounding:
+            resp.grounding = GroundingContext(
+                sources=[],
+                lane="tenant_isolated",
+                task_family="",
+                system_prompt_chars=len(_ISOLATED_TENANT_PERSONA),
+            )
+            self._publish(resp, "ground", resp.grounding.to_dict())
+            return _ISOLATED_TENANT_PERSONA
+
         messages = [{"role": "user", "content": prompt}]
         try:
             from aureon.autonomous.aureon_dynamic_prompt_filter import (
@@ -612,31 +650,25 @@ class AureonOperator:
             self._publish(resp, "veto", {"verdict": "SKIPPED", "available": False})
             return
 
-        # ── Hard authority boundary: deterministic refusal, no soft override ──
+        # Consequential content is allowed through the reasoning plane. The
+        # detector is carried into the conscience record, while actual effects
+        # remain confined to proposal-bound HNC/route/provider boundaries.
         boundary = _hard_boundary_violation(prompt)
-        if boundary is not None:
-            resp.blocked = True
-            resp.conscience_verdict = "VETO"
-            resp.conscience_message = (
-                "This request crosses a hard Aureon authority boundary "
-                "(live trading, payment movement, safety-gate bypass, credential reveal, "
-                "or official filing). The operator will not assist with it."
-            )
-            resp.text = f"🦗 Blocked at the Aureon authority boundary.\nReason: {resp.conscience_message}"
-            if self._metrics is not None:
-                self._metrics.veto("VETO", True)
-            self._publish(
-                resp, "veto",
-                {"verdict": "VETO", "blocked": True, "boundary": True, "message": resp.conscience_message},
-            )
-            return
+
+        # ── Outbound brain-reply membrane: the flagship reply is data, never instructions ──
+        # Screen the collapsed reply for prompt-injection / false blocked-action claims / false
+        # self-claims. A flagged reply is recorded and fed to the conscience as a caution signal; a
+        # clean reply changes nothing (bit-identical answer). Best-effort, never fatal.
+        reply_contained = self._screen_brain_reply(resp)
 
         conscience = self._get_conscience()
         if conscience is None:
             resp.conscience_verdict = "APPROVED"
+            self._append_reply_caution(resp)
             if self._metrics is not None:
                 self._metrics.veto("APPROVED", False)
-            self._publish(resp, "veto", {"verdict": "APPROVED", "available": False})
+            self._publish(resp, "veto",
+                          {"verdict": "APPROVED", "available": False, "reply_contained": reply_contained})
             return
 
         action = f"answer operator question: {prompt[:160]}"
@@ -645,12 +677,15 @@ class AureonOperator:
             "n_providers": len(resp.answers),
             "agreement": resp.consensus.agreement if resp.consensus else 0.0,
             "sources": [s.get("path", "") for s in (resp.grounding.sources if resp.grounding else [])],
+            "reply_contained": reply_contained,
+            "consequential_intent_detected": boundary is not None,
         }
         try:
             whisper = conscience.ask_why(action, context)
             verdict = getattr(whisper.verdict, "name", str(whisper.verdict))
             resp.conscience_verdict = verdict
             resp.conscience_message = str(getattr(whisper, "message", "") or "")
+            self._append_reply_caution(resp)
             if verdict == "VETO":
                 resp.blocked = True
                 resp.text = (
@@ -660,13 +695,48 @@ class AureonOperator:
         except Exception as exc:  # noqa: BLE001 — conscience failure is non-fatal
             logger.debug("conscience unavailable: %s", exc)
             resp.conscience_verdict = "APPROVED"
+            self._append_reply_caution(resp)
             resp.errors.append({"phase": "veto", "error": str(exc)})
         if self._metrics is not None:
             self._metrics.veto(resp.conscience_verdict, resp.blocked)
         self._publish(
             resp,
             "veto",
-            {"verdict": resp.conscience_verdict, "blocked": resp.blocked, "message": resp.conscience_message},
+            {"verdict": resp.conscience_verdict, "blocked": resp.blocked,
+             "message": resp.conscience_message, "reply_contained": resp.reply_contained},
+        )
+
+    _REPLY_CAUTION = "model reply carried injection / false-action content — treated as untrusted data"
+
+    @staticmethod
+    def _screen_brain_reply(resp: OperatorResponse) -> bool:
+        """Screen the collapsed flagship reply as data-not-instructions (the outbound bridge face, b44).
+
+        Sets ``resp.reply_contained`` and returns whether the reply was flagged. Does NOT touch the answer
+        text or the conscience message — the caution is appended by the caller after the conscience has
+        finalized its message, so a contained reply can never surface as an unqualified pass while a clean
+        reply stays bit-identical. Best-effort — a screening failure is a conservative clean verdict; the
+        authority veto is the backstop.
+        """
+        try:
+            from aureon.bio.brain_reply_membrane import screen_reply
+
+            winner = resp.consensus.winner if resp.consensus else "model"
+            verdict = screen_reply(resp.text, provider=winner or "model")
+            resp.reply_contained = bool(verdict.contained)
+            return resp.reply_contained
+        except Exception as exc:  # noqa: BLE001 - screening is best-effort, never fatal
+            logger.debug("brain-reply screen unavailable: %s", exc)
+            return False
+
+    @classmethod
+    def _append_reply_caution(cls, resp: OperatorResponse) -> None:
+        """Append the untrusted-data caution to the finalized conscience message (only when flagged)."""
+        if not resp.reply_contained:
+            return
+        resp.conscience_message = (
+            f"{resp.conscience_message} · {cls._REPLY_CAUTION}"
+            if resp.conscience_message else cls._REPLY_CAUTION
         )
 
     def _get_conscience(self):

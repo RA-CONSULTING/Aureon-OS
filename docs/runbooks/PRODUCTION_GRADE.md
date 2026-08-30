@@ -45,14 +45,22 @@ CI **blocks** on all three (`.github/workflows/operator-ci.yml`).
 | Readiness | `GET /readyz` | providers + repo index; 503 until usable |
 | Metrics | `GET /metrics` | Prometheus exposition of `aureon_operator_*` |
 | Config validation | `OperatorConfig.validate()` | fail-fast at boot on bad values |
-| Auth | `AUREON_OPERATOR_API_KEY` | bearer on `/api/*`; **off by default**; probes open |
-| Rate limit | `AUREON_OPERATOR_RATE_RPS` | token bucket → 429 + Retry-After; off by default |
+| Mode | `AUREON_OPERATOR_ENV` | production is fail-closed; development/test must be explicit |
+| Auth | `AUREON_OPERATOR_API_KEY` | nonempty bearer required in production; probes stay open |
+| Rate limit | `AUREON_OPERATOR_RATE_RPS` / `AUREON_OPERATOR_RATE_BURST` | positive production default → 429 + Retry-After |
 | Body cap / errors | `AUREON_OPERATOR_MAX_BODY` | uniform JSON `{error:{code,message}}` |
+| Trusted proxy | `AUREON_OPERATOR_TRUSTED_PROXY_CIDRS` | X-Forwarded-For ignored unless the direct peer matches |
+| Limiter topology | `AUREON_OPERATOR_HTTP_PROCESSES=1` / `AUREON_OPERATOR_REPLICAS=1` | startup refuses wider production topology while limiter state is process-local |
 
 Guardrails from earlier phases still hold: hard authority boundaries
 (live-trade / payment / gate-bypass / credential / filing) are refused
 deterministically; `AUREON_LLM_OFFLINE` / `AUREON_AUDIT_MODE` disable all network;
 `AUREON_SOVEREIGN_MODE` stays off.
+
+The in-memory bucket is shared by waitress threads inside one process, not by
+multiple WSGI processes or replicas. Production therefore fails startup unless
+the declared HTTP process and replica counts are both one. Horizontal scaling
+requires a shared limiter/cache before either count can be raised.
 
 ---
 

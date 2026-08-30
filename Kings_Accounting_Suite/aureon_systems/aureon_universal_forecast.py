@@ -23,34 +23,15 @@ Aureon Creator & GitHub Copilot | December 2025
 "All Systems. All Platforms. One Forecast."
 """
 
-from aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
-import os
-import sys
 import time
 import math
 import numpy as np
 from datetime import datetime, timedelta
-from typing import Dict, List, Tuple, Optional, Any
+from typing import Callable, Dict, List, Mapping, Optional, Tuple, Any
 from dataclasses import dataclass, field
 from collections import deque
 from enum import Enum
 import json
-
-# Force LIVE mode for real trading
-os.environ['LIVE'] = '1'
-os.environ['DRY_RUN'] = '0'
-
-# Import all prediction systems
-from earth_resonance_engine import EarthResonanceEngine, get_earth_engine
-from hnc_imperial_predictability import CosmicStateEngine, PredictabilityEngine, CosmicPhase, CosmicState
-from hnc_probability_matrix import TemporalFrequencyAnalyzer, ProbabilityMatrix, ProbabilityState
-
-# Import all exchange clients
-from binance_client import BinanceClient, get_binance_client
-from kraken_client import KrakenClient, get_kraken_client
-from aureon.exchanges.alpaca_client import AlpacaClient
-from capital_client import CapitalClient
-from unified_exchange_client import MultiExchangeClient
 
 # ═══════════════════════════════════════════════════════════════════════════
 # CONSTANTS
@@ -73,16 +54,42 @@ FREQ_MAP = {
     'UNITY': 963.0,
 }
 
-# Platform Fee Structures
-PLATFORM_FEES = {
-    'binance': {'maker': 0.001, 'taker': 0.001},    # 0.1%
-    'kraken': {'maker': 0.0016, 'taker': 0.0026},   # 0.16%/0.26%
-    'alpaca': {'maker': 0.0, 'taker': 0.0015},      # 0%/0.15% crypto
-    'capital': {'spread': 0.0008},                   # ~0.08% spread
-}
-
 # Minimum profit thresholds (above fees)
 MIN_PROFIT_PCT = 0.0005  # 0.05%
+MAX_RECEIPT_AGE_SECONDS = 120.0
+
+
+def _finite(value: Any, *, positive: bool = False, nonnegative: bool = False) -> Optional[float]:
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    if not math.isfinite(number):
+        return None
+    if positive and number <= 0.0:
+        return None
+    if nonnegative and number < 0.0:
+        return None
+    return number
+
+
+def _fresh_receipt_times(receipt: Mapping[str, Any], now: float) -> Optional[tuple[float, float]]:
+    source_timestamp = _finite(receipt.get("source_timestamp"), positive=True)
+    received_at = _finite(receipt.get("received_at"), positive=True)
+    if (
+        source_timestamp is None
+        or received_at is None
+        or source_timestamp > received_at + 5.0
+        or received_at > now + 5.0
+        or now - source_timestamp > MAX_RECEIPT_AGE_SECONDS
+        or now - received_at > MAX_RECEIPT_AGE_SECONDS
+    ):
+        return None
+    return source_timestamp, received_at
+
+
+def _canonical_symbol(value: Any) -> str:
+    return str(value or "").upper().replace("/", "").replace("-", "")
 
 
 class Platform(Enum):
@@ -111,6 +118,15 @@ class PriceSnapshot:
     ask: float = 0.0
     volume: float = 0.0
     momentum: float = 0.0  # % change
+    source_id: Optional[str] = None
+    source_timestamp: Optional[float] = None
+    received_at: Optional[float] = None
+    receipt_id: Optional[str] = None
+    truth_status: str = "no_data"
+    generated_values: bool = False
+    actionable: bool = False
+    accounting_eligible: bool = False
+    learning_eligible: bool = False
 
 
 @dataclass
@@ -118,27 +134,37 @@ class CosmicGateStatus:
     """Complete cosmic gate status"""
     # Earth Resonance
     earth_open: bool = False
-    earth_coherence: float = 0.0
-    earth_phase_lock: float = 0.0
-    earth_phi_boost: float = 1.0
+    earth_coherence: Optional[float] = None
+    earth_phase_lock: Optional[float] = None
+    earth_phi_boost: Optional[float] = None
     earth_reason: str = ""
 
     # Cosmic State
     cosmic_open: bool = False
     cosmic_phase: str = "UNKNOWN"
-    cosmic_coherence: float = 0.0
-    cosmic_distortion: float = 0.0
-    cosmic_boost: float = 1.0
-    cosmic_joy: float = 0.0
-    cosmic_reciprocity: float = 0.0
+    cosmic_coherence: Optional[float] = None
+    cosmic_distortion: Optional[float] = None
+    cosmic_boost: Optional[float] = None
+    cosmic_joy: Optional[float] = None
+    cosmic_reciprocity: Optional[float] = None
 
     # Planetary
-    planetary_torque: float = 1.0
-    lunar_phase: float = 0.0
+    planetary_torque: Optional[float] = None
+    lunar_phase: Optional[float] = None
 
     # Combined
     all_gates_open: bool = False
-    combined_multiplier: float = 1.0
+    combined_multiplier: Optional[float] = None
+    source_id: Optional[str] = None
+    source_timestamp: Optional[float] = None
+    received_at: Optional[float] = None
+    receipt_id: Optional[str] = None
+    truth_status: str = "no_data"
+    generated_values: bool = False
+    evidence_complete: bool = False
+    actionable: bool = False
+    accounting_eligible: bool = False
+    learning_eligible: bool = False
 
 
 @dataclass
@@ -181,6 +207,15 @@ class ProbabilityForecast:
     # Timing
     forecast_window_sec: int = 60
     generated_at: datetime = field(default_factory=datetime.now)
+    source_timestamp: Optional[float] = None
+    received_at: Optional[float] = None
+    receipt_id: Optional[str] = None
+    input_receipt_ids: Tuple[str, ...] = ()
+    truth_status: str = "no_data"
+    generated_values: bool = False
+    actionable: bool = False
+    accounting_eligible: bool = False
+    learning_eligible: bool = False
 
 
 @dataclass
@@ -214,6 +249,16 @@ class UniversalForecast:
     # Timing
     entry_window_sec: int = 60
     generated_at: datetime = field(default_factory=datetime.now)
+    data_status: str = "no_data"
+    truth_status: str = "no_data"
+    source_timestamp: Optional[float] = None
+    received_at: Optional[float] = None
+    receipt_id: Optional[str] = None
+    input_receipt_ids: Tuple[str, ...] = ()
+    generated_values: bool = False
+    actionable: bool = False
+    accounting_eligible: bool = False
+    learning_eligible: bool = False
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -226,24 +271,40 @@ class UniversalForecastEngine:
     across ALL trading platforms.
     """
 
-    def __init__(self):
-        print("\n🌌 Initializing Universal Forecast Engine...")
+    def __init__(
+        self,
+        *,
+        clients: Optional[Mapping[str, Any]] = None,
+        earth_engine: Any = None,
+        cosmic_engine: Any = None,
+        predictability_engine: Any = None,
+        temporal_analyzer: Any = None,
+        gate_receipt_supplier: Optional[Callable[[], Mapping[str, Any]]] = None,
+        fee_receipt_supplier: Optional[Callable[[str, str], Mapping[str, Any]]] = None,
+        clock: Callable[[], float] = time.time,
+        sleeper: Callable[[float], None] = time.sleep,
+        verbose: bool = False,
+    ):
+        emit = print if verbose else (lambda *args, **kwargs: None)
+        emit("\n🌌 Initializing Universal Forecast Engine...")
 
         # Initialize prediction systems
-        self.earth_engine = EarthResonanceEngine()
-        self.earth_engine.COHERENCE_THRESHOLD = 0.45  # Lowered for current cycle
-        self.cosmic_engine = CosmicStateEngine()
-        self.predictability_engine = PredictabilityEngine()
-        self.temporal_analyzer = TemporalFrequencyAnalyzer()
+        self.earth_engine = earth_engine
+        self.cosmic_engine = cosmic_engine
+        self.predictability_engine = predictability_engine
+        self.temporal_analyzer = temporal_analyzer
+        self.gate_receipt_supplier = gate_receipt_supplier
+        self.fee_receipt_supplier = fee_receipt_supplier
+        self._clock = clock
+        self._sleep = sleeper
 
-        print("   ✅ Earth Resonance Engine")
-        print("   ✅ Cosmic State Engine")
-        print("   ✅ Imperial Predictability Engine")
-        print("   ✅ Temporal Frequency Analyzer")
+        emit("   ✅ Earth Resonance Engine")
+        emit("   ✅ Cosmic State Engine")
+        emit("   ✅ Imperial Predictability Engine")
+        emit("   ✅ Temporal Frequency Analyzer")
 
         # Initialize exchange clients
-        self.clients = {}
-        self._init_exchanges()
+        self.clients = dict(clients or {})
 
         # Price history for each symbol
         self.price_history: Dict[str, deque] = {}
@@ -253,47 +314,9 @@ class UniversalForecastEngine:
         self.forecast_cache: Dict[str, UniversalForecast] = {}
         self.cache_ttl = 30  # seconds
 
-        print("\n🌌 Universal Forecast Engine Ready!")
+        emit("\n🌌 Universal Forecast Engine Ready!")
 
-    def _init_exchanges(self):
-        """Initialize all exchange clients"""
-        # Binance
-        try:
-            self.clients['binance'] = BinanceClient()
-            print("   ✅ Binance Client")
-        except Exception as e:
-            print(f"   ⚠️ Binance: {e}")
-            self.clients['binance'] = None
 
-        # Kraken
-        try:
-            self.clients['kraken'] = get_kraken_client()
-            print("   ✅ Kraken Client")
-        except Exception as e:
-            print(f"   ⚠️ Kraken: {e}")
-            self.clients['kraken'] = None
-
-        # Alpaca
-        try:
-            self.clients['alpaca'] = AlpacaClient()
-            print("   ✅ Alpaca Client")
-        except Exception as e:
-            print(f"   ⚠️ Alpaca: {e}")
-            self.clients['alpaca'] = None
-
-        # Capital.com
-        try:
-            self.clients['capital'] = CapitalClient()
-            if self.clients['capital'].enabled:
-                print("   ✅ Capital.com Client")
-            else:
-                print("   ⚠️ Capital.com: Disabled (no credentials)")
-                self.clients['capital'] = None
-        except Exception as e:
-            print(f"   ⚠️ Capital.com: {e}")
-            self.clients['capital'] = None
-
-    # ═══════════════════════════════════════════════════════════════════════
     # LAYER 1: COSMIC GATE CHECKS
     # ═══════════════════════════════════════════════════════════════════════
 
@@ -303,128 +326,160 @@ class UniversalForecastEngine:
         Returns complete gate status with all metrics.
         """
         status = CosmicGateStatus()
-
-        # ─────────────────────────────────────────────────────────────────
-        # 1A. EARTH RESONANCE ENGINE
-        # ─────────────────────────────────────────────────────────────────
-        self.earth_engine.update_schumann_state(market_volatility=0.0)
-        gate_dict = self.earth_engine.get_trading_gate_status_dict()
-
-        status.earth_coherence = gate_dict['coherence']
-        status.earth_phase_lock = 0.7 if gate_dict['phase_locked'] else 0.4
-        status.earth_phi_boost = self.earth_engine.get_phi_position_multiplier()
-        status.earth_open = gate_dict['gate_open']
-        status.earth_reason = gate_dict['reason']
-
-        # ─────────────────────────────────────────────────────────────────
-        # 1B. COSMIC STATE ENGINE (Imperial Predictability)
-        # ─────────────────────────────────────────────────────────────────
-        cosmic_state = self.cosmic_engine.compute_state()
-
-        status.cosmic_phase = cosmic_state.phase.name
-        status.cosmic_coherence = cosmic_state.coherence
-        status.cosmic_distortion = cosmic_state.distortion
-        status.cosmic_joy = cosmic_state.joy
-        status.cosmic_reciprocity = cosmic_state.reciprocity
-        status.lunar_phase = cosmic_state.lunar_phase
-
-        # Cosmic gate logic (with early-day override)
-        if cosmic_state.phase == CosmicPhase.DISTORTION:
-            # Allow trading if distortion is actually low
-            if cosmic_state.distortion < 0.02 and cosmic_state.coherence > 0.30:
-                status.cosmic_open = True
-                status.cosmic_phase = "TRANSITION"  # Upgrade
-            else:
-                status.cosmic_open = False
-        else:
-            status.cosmic_open = True
-
-        # Cosmic boost based on phase
-        boost_map = {
-            'UNITY': 1.5,
-            'COHERENCE': 1.3,
-            'HARMONIC': 1.1,
-            'TRANSITION': 0.9,
-            'DISTORTION': 0.5,
-        }
-        status.cosmic_boost = boost_map.get(status.cosmic_phase, 1.0)
-
-        # ─────────────────────────────────────────────────────────────────
-        # 1C. PLANETARY TORQUE
-        # ─────────────────────────────────────────────────────────────────
-        status.planetary_torque = self.cosmic_engine.compute_planetary_torque(datetime.now())
-
-        # ─────────────────────────────────────────────────────────────────
-        # COMBINED STATUS
-        # ─────────────────────────────────────────────────────────────────
+        supplier = self.gate_receipt_supplier
+        if not callable(supplier):
+            status.earth_reason = "complete_fresh_hnc_auris_gate_receipt_required"
+            return status
+        try:
+            receipt = supplier()
+        except Exception:
+            status.earth_reason = "hnc_auris_gate_receipt_unavailable"
+            return status
+        now = self._clock()
+        if not isinstance(receipt, Mapping):
+            status.earth_reason = "hnc_auris_gate_receipt_malformed"
+            return status
+        times = _fresh_receipt_times(receipt, now)
+        source_id = str(receipt.get("source_id") or "").strip()
+        receipt_id = str(receipt.get("receipt_id") or "").strip()
+        earth_coherence = _finite(receipt.get("earth_coherence"), nonnegative=True)
+        earth_phase_lock = _finite(receipt.get("earth_phase_lock"), nonnegative=True)
+        earth_phi_boost = _finite(receipt.get("earth_phi_boost"), positive=True)
+        cosmic_coherence = _finite(receipt.get("cosmic_coherence"), nonnegative=True)
+        cosmic_distortion = _finite(receipt.get("cosmic_distortion"), nonnegative=True)
+        cosmic_boost = _finite(receipt.get("cosmic_boost"), positive=True)
+        cosmic_joy = _finite(receipt.get("cosmic_joy"))
+        cosmic_reciprocity = _finite(receipt.get("cosmic_reciprocity"))
+        planetary_torque = _finite(receipt.get("planetary_torque"), positive=True)
+        lunar_phase = _finite(receipt.get("lunar_phase"), nonnegative=True)
+        cosmic_phase = str(receipt.get("cosmic_phase") or "").strip()
+        if (
+            times is None
+            or not source_id
+            or not receipt_id
+            or receipt.get("truth_status") not in {"real_observed", "real_derived"}
+            or receipt.get("generated_values") is not False
+            or receipt.get("eligible_for_action") is not True
+            or type(receipt.get("earth_open")) is not bool
+            or type(receipt.get("cosmic_open")) is not bool
+            or not cosmic_phase
+            or any(
+                value is None
+                for value in (
+                    earth_coherence,
+                    earth_phase_lock,
+                    earth_phi_boost,
+                    cosmic_coherence,
+                    cosmic_distortion,
+                    cosmic_boost,
+                    cosmic_joy,
+                    cosmic_reciprocity,
+                    planetary_torque,
+                    lunar_phase,
+                )
+            )
+            or earth_coherence > 1.0
+            or earth_phase_lock > 1.0
+            or cosmic_coherence > 1.0
+            or lunar_phase > 1.0
+        ):
+            status.earth_reason = "hnc_auris_gate_receipt_incomplete"
+            return status
+        status.earth_open = receipt["earth_open"]
+        status.earth_coherence = earth_coherence
+        status.earth_phase_lock = earth_phase_lock
+        status.earth_phi_boost = earth_phi_boost
+        status.earth_reason = str(receipt.get("earth_reason") or "provider_receipt")
+        status.cosmic_open = receipt["cosmic_open"]
+        status.cosmic_phase = cosmic_phase
+        status.cosmic_coherence = cosmic_coherence
+        status.cosmic_distortion = cosmic_distortion
+        status.cosmic_boost = cosmic_boost
+        status.cosmic_joy = cosmic_joy
+        status.cosmic_reciprocity = cosmic_reciprocity
+        status.planetary_torque = planetary_torque
+        status.lunar_phase = lunar_phase
         status.all_gates_open = status.earth_open and status.cosmic_open
-
-        # Combined multiplier
         status.combined_multiplier = (
             status.earth_phi_boost *
             status.cosmic_boost *
-            min(2.0, status.planetary_torque)  # Cap torque boost
+            min(2.0, status.planetary_torque)
         )
-
+        status.source_id = source_id
+        status.source_timestamp, status.received_at = times
+        status.receipt_id = receipt_id
+        status.truth_status = "real_derived"
+        status.generated_values = False
+        status.evidence_complete = True
+        status.actionable = status.all_gates_open
         return status
 
     # ═══════════════════════════════════════════════════════════════════════
     # LAYER 2: PRICE DATA COLLECTION
     # ═══════════════════════════════════════════════════════════════════════
 
-    def get_price(self, platform: str, symbol: str) -> Tuple[float, float, float]:
+    def get_price_receipt(self, platform: str, symbol: str) -> Optional[Dict[str, Any]]:
+        """Normalize only a complete fresh same-venue provider quote receipt."""
+        client = self.clients.get(platform)
+        if client is None:
+            return None
+        getter = getattr(client, "get_ticker_receipt", None)
+        if not callable(getter):
+            getter = getattr(client, "get_ticker", None)
+        if not callable(getter):
+            return None
+        try:
+            receipt = getter(symbol)
+        except Exception:
+            return None
+        if not isinstance(receipt, Mapping):
+            return None
+        now = self._clock()
+        times = _fresh_receipt_times(receipt, now)
+        price = _finite(receipt.get("price"), positive=True)
+        bid = _finite(receipt.get("bid"), positive=True)
+        ask = _finite(receipt.get("ask"), positive=True)
+        source_id = str(receipt.get("source_id") or "").strip()
+        receipt_id = str(receipt.get("receipt_id") or "").strip()
+        receipt_symbol = _canonical_symbol(receipt.get("symbol"))
+        if (
+            times is None
+            or price is None
+            or bid is None
+            or ask is None
+            or ask < bid
+            or not source_id.lower().startswith(platform.lower())
+            or not receipt_id
+            or (receipt_symbol and receipt_symbol != _canonical_symbol(symbol))
+            or receipt.get("truth_status") not in {"real_observed", "real_derived"}
+            or receipt.get("generated_values") is not False
+        ):
+            return None
+        source_timestamp, received_at = times
+        return {
+            **receipt,
+            "symbol": symbol,
+            "price": price,
+            "bid": bid,
+            "ask": ask,
+            "source_timestamp": source_timestamp,
+            "received_at": received_at,
+            "truth_status": receipt["truth_status"],
+            "generated_values": False,
+            "actionable": False,
+            "accounting_eligible": False,
+            "learning_eligible": False,
+        }
+
+    def get_price(self, platform: str, symbol: str) -> Optional[Tuple[float, float, float]]:
         """
         Get current price from platform.
         Returns (price, bid, ask)
         """
-        client = self.clients.get(platform)
-        if not client:
-            return 0.0, 0.0, 0.0
-
-        try:
-            if platform == 'binance':
-                ticker = client.get_24h_ticker(symbol)
-                price = float(ticker.get('lastPrice', 0))
-                bid = float(ticker.get('bidPrice', price))
-                ask = float(ticker.get('askPrice', price))
-                return price, bid, ask
-
-            elif platform == 'kraken':
-                ticker = client.get_24h_ticker(symbol)
-                if ticker:
-                    price = float(ticker.get('lastPrice', 0))
-                    # Kraken doesn't provide bid/ask in 24h ticker, use price
-                    bid = price * 0.9999  # Approximate
-                    ask = price * 1.0001
-                    return price, bid, ask
-                return 0.0, 0.0, 0.0
-
-            elif platform == 'alpaca':
-                quotes = client.get_latest_crypto_quotes([symbol])
-                if quotes and 'quotes' in quotes:
-                    q = quotes['quotes'].get(symbol, {})
-                    bid = float(q.get('bp', 0))
-                    ask = float(q.get('ap', 0))
-                    price = (bid + ask) / 2 if bid and ask else 0
-                    return price, bid, ask
-                return 0.0, 0.0, 0.0
-
-            elif platform == 'capital':
-                if not client.enabled:
-                    return 0.0, 0.0, 0.0
-                market = client.get_market(symbol)
-                if market:
-                    bid = float(market.get('bid', 0))
-                    ask = float(market.get('offer', market.get('ask', 0)))
-                    price = (bid + ask) / 2 if bid and ask else 0
-                    return price, bid, ask
-                return 0.0, 0.0, 0.0
-
-        except Exception as e:
-            print(f"   ⚠️ Price error {platform}/{symbol}: {e}")
-            return 0.0, 0.0, 0.0
-
-        return 0.0, 0.0, 0.0
+        receipt = self.get_price_receipt(platform, symbol)
+        if receipt is None:
+            return None
+        return receipt["price"], receipt["bid"], receipt["ask"]
 
     def collect_price_data(self, platform: str, symbol: str,
                            duration_sec: int = 30,
@@ -437,30 +492,51 @@ class UniversalForecastEngine:
             self.price_history[key] = deque(maxlen=self.max_history)
 
         snapshots = []
+        seen_receipts: set[str] = set()
         prev_price = None
 
-        for i in range(int(duration_sec / interval_sec)):
-            price, bid, ask = self.get_price(platform, symbol)
-            if price <= 0:
-                time.sleep(interval_sec)
+        for _ in range(int(duration_sec / interval_sec)):
+            receipt = self.get_price_receipt(platform, symbol)
+            if receipt is None:
+                self._sleep(interval_sec)
                 continue
-
-            momentum = 0.0
-            if prev_price and prev_price > 0:
-                momentum = ((price - prev_price) / prev_price) * 100
+            receipt_id = str(receipt["receipt_id"])
+            if receipt_id in seen_receipts:
+                self._sleep(interval_sec)
+                continue
+            seen_receipts.add(receipt_id)
+            price = receipt["price"]
+            bid = receipt["bid"]
+            ask = receipt["ask"]
+            if prev_price is None:
+                prev_price = price
+                self._sleep(interval_sec)
+                continue
+            momentum = ((price - prev_price) / prev_price) * 100
+            volume = _finite(receipt.get("volume"), nonnegative=True)
 
             snapshot = PriceSnapshot(
-                timestamp=time.time(),
+                timestamp=receipt["source_timestamp"],
                 price=price,
                 bid=bid,
                 ask=ask,
-                momentum=momentum
+                volume=volume,
+                momentum=momentum,
+                source_id=str(receipt["source_id"]),
+                source_timestamp=receipt["source_timestamp"],
+                received_at=receipt["received_at"],
+                receipt_id=receipt_id,
+                truth_status=str(receipt["truth_status"]),
+                generated_values=False,
+                actionable=False,
+                accounting_eligible=False,
+                learning_eligible=False,
             )
             snapshots.append(snapshot)
             self.price_history[key].append(snapshot)
 
             prev_price = price
-            time.sleep(interval_sec)
+            self._sleep(interval_sec)
 
         return snapshots
 
@@ -496,22 +572,112 @@ class UniversalForecastEngine:
         return alignment
 
     def _compute_fibonacci_alignment(self, prices: List[float]) -> float:
-        """Compute Fibonacci retracement alignment"""
+        """Compute Fibonacci alignment only for a sufficient non-flat series."""
         if len(prices) < 3:
-            return 0.5
+            raise ValueError("at least three observed prices are required")
 
         high = max(prices)
         low = min(prices)
         current = prices[-1]
 
         if high == low:
-            return 0.5
+            raise ValueError("a non-flat observed price range is required")
 
         retracement = (high - current) / (high - low)
         fib_levels = [0.0, 0.236, 0.382, 0.5, 0.618, 0.786, 1.0]
 
         min_dist = min(abs(retracement - level) for level in fib_levels)
         return 1.0 - min(1.0, min_dist * 3)
+
+    def _validated_snapshot_sequence(
+        self,
+        platform: str,
+        snapshots: List[PriceSnapshot],
+    ) -> bool:
+        if len(snapshots) < 5:
+            return False
+        now = self._clock()
+        receipt_ids: set[str] = set()
+        observed_prices: set[float] = set()
+        previous_timestamp: Optional[float] = None
+        for snapshot in snapshots:
+            source_timestamp = _finite(snapshot.source_timestamp, positive=True)
+            received_at = _finite(snapshot.received_at, positive=True)
+            price = _finite(snapshot.price, positive=True)
+            bid = _finite(snapshot.bid, positive=True)
+            ask = _finite(snapshot.ask, positive=True)
+            momentum = _finite(snapshot.momentum)
+            receipt_id = str(snapshot.receipt_id or "").strip()
+            source_id = str(snapshot.source_id or "").strip().lower()
+            if (
+                source_timestamp is None
+                or received_at is None
+                or price is None
+                or bid is None
+                or ask is None
+                or momentum is None
+                or ask < bid
+                or not source_id.startswith(platform.lower())
+                or not receipt_id
+                or receipt_id in receipt_ids
+                or snapshot.truth_status not in {"real_observed", "real_derived"}
+                or snapshot.generated_values is not False
+                or source_timestamp > received_at + 5.0
+                or received_at > now + 5.0
+                or now - source_timestamp > MAX_RECEIPT_AGE_SECONDS
+                or now - received_at > MAX_RECEIPT_AGE_SECONDS
+                or (previous_timestamp is not None and source_timestamp <= previous_timestamp)
+            ):
+                return False
+            receipt_ids.add(receipt_id)
+            observed_prices.add(price)
+            previous_timestamp = source_timestamp
+        return len(observed_prices) > 1
+
+    def _validated_fee_evidence(
+        self,
+        platform: str,
+        symbol: str,
+        snapshots: List[PriceSnapshot],
+    ) -> Optional[Dict[str, Any]]:
+        supplier = self.fee_receipt_supplier
+        if not callable(supplier):
+            return None
+        try:
+            receipt = supplier(platform, symbol)
+        except Exception:
+            return None
+        if not isinstance(receipt, Mapping):
+            return None
+        now = self._clock()
+        times = _fresh_receipt_times(receipt, now)
+        round_trip_fee_pct = _finite(receipt.get("round_trip_fee_pct"), nonnegative=True)
+        source_id = str(receipt.get("source_id") or "").strip().lower()
+        receipt_id = str(receipt.get("receipt_id") or "").strip()
+        linked_ids = receipt.get("input_receipt_ids")
+        required_ids = {str(snapshot.receipt_id) for snapshot in snapshots}
+        if (
+            times is None
+            or round_trip_fee_pct is None
+            or not source_id.startswith(platform.lower())
+            or not receipt_id
+            or _canonical_symbol(receipt.get("symbol")) != _canonical_symbol(symbol)
+            or receipt.get("truth_status") not in {"real_observed", "real_derived"}
+            or receipt.get("generated_values") is not False
+            or receipt.get("eligible_for_action") is not True
+            or not isinstance(linked_ids, (list, tuple, set))
+            or not required_ids.issubset({str(value) for value in linked_ids})
+        ):
+            return None
+        source_timestamp, received_at = times
+        return {
+            **receipt,
+            "round_trip_fee_pct": round_trip_fee_pct,
+            "source_timestamp": source_timestamp,
+            "received_at": received_at,
+            "receipt_id": receipt_id,
+        }
+
 
     def generate_probability_forecast(self, platform: str, symbol: str,
                                        snapshots: List[PriceSnapshot],
@@ -524,12 +690,41 @@ class UniversalForecastEngine:
             symbol=symbol,
             platform=platform,
             asset_class=asset_class,
-            generated_at=datetime.now()
+            generated_at=datetime.fromtimestamp(self._clock())
         )
 
-        if len(snapshots) < 5:
-            forecast.recommended_action = "INSUFFICIENT_DATA"
+        if (
+            not self._validated_snapshot_sequence(platform, snapshots)
+            or not cosmic_gates.evidence_complete
+            or cosmic_gates.truth_status not in {"real_observed", "real_derived"}
+            or cosmic_gates.generated_values is not False
+        ):
+            forecast.current_price = None
+            forecast.bid = None
+            forecast.ask = None
+            forecast.spread_pct = None
+            forecast.forecast_price = None
+            forecast.price_change_pct = None
+            forecast.bullish_probability = None
+            forecast.bearish_probability = None
+            forecast.confidence = None
+            forecast.frequency = None
+            forecast.prime_alignment = None
+            forecast.fibonacci_alignment = None
+            forecast.golden_ratio_proximity = None
+            forecast.position_multiplier = None
+            forecast.expected_profit_pct = None
+            forecast.recommended_action = "NO_DATA"
             return forecast
+        forecast.source_timestamp = snapshots[-1].source_timestamp
+        forecast.received_at = snapshots[-1].received_at
+        forecast.receipt_id = f"universal-forecast:{snapshots[-1].receipt_id}"
+        forecast.input_receipt_ids = tuple(
+            [str(snapshot.receipt_id) for snapshot in snapshots]
+            + [str(cosmic_gates.receipt_id)]
+        )
+        forecast.truth_status = "real_derived"
+        forecast.generated_values = False
 
         prices = [s.price for s in snapshots]
         momentums = [s.momentum for s in snapshots]
@@ -560,7 +755,7 @@ class UniversalForecastEngine:
         # ─────────────────────────────────────────────────────────────────
         # PATTERN ALIGNMENT
         # ─────────────────────────────────────────────────────────────────
-        forecast.prime_alignment = self._compute_prime_alignment(time.time())
+        forecast.prime_alignment = self._compute_prime_alignment(snapshots[-1].source_timestamp)
         forecast.fibonacci_alignment = self._compute_fibonacci_alignment(prices)
 
         # Golden ratio proximity
@@ -641,8 +836,13 @@ class UniversalForecastEngine:
         # ─────────────────────────────────────────────────────────────────
         # TRADING DECISION
         # ─────────────────────────────────────────────────────────────────
-        fees = PLATFORM_FEES.get(platform, {'taker': 0.001})
-        fee_pct = fees.get('taker', fees.get('spread', 0.001)) * 2 * 100
+        fee_evidence = self._validated_fee_evidence(platform, symbol, snapshots)
+        if fee_evidence is None:
+            forecast.recommended_action = "NO_DATA"
+            forecast.expected_profit_pct = None
+            forecast.actionable = False
+            return forecast
+        fee_pct = fee_evidence["round_trip_fee_pct"]
         min_profit_pct = fee_pct + MIN_PROFIT_PCT * 100
 
         forecast.position_multiplier = cosmic_gates.combined_multiplier
@@ -660,6 +860,10 @@ class UniversalForecastEngine:
         else:
             forecast.recommended_action = "HOLD"
             forecast.expected_profit_pct = 0
+        forecast.input_receipt_ids = tuple(
+            [*forecast.input_receipt_ids, str(fee_evidence["receipt_id"])]
+        )
+        forecast.actionable = forecast.recommended_action in {"BUY", "SELL"}
 
         return forecast
 
@@ -677,16 +881,24 @@ class UniversalForecastEngine:
             symbol=symbol,
             platform=Platform(platform),
             asset_class=AssetClass(asset_class),
-            generated_at=datetime.now()
+            generated_at=datetime.fromtimestamp(self._clock())
         )
 
         # Layer 1: Cosmic Gates
         forecast.cosmic_gates = self.check_cosmic_gates()
 
-        if not forecast.cosmic_gates.all_gates_open:
+        if (
+            not forecast.cosmic_gates.evidence_complete
+            or not forecast.cosmic_gates.all_gates_open
+        ):
             forecast.should_trade = False
-            forecast.reason = f"Gates closed: Earth={forecast.cosmic_gates.earth_open}, Cosmic={forecast.cosmic_gates.cosmic_open}"
-            forecast.action = "HOLD"
+            forecast.reason = "complete_fresh_hnc_auris_gate_receipt_required"
+            forecast.action = "NO_DATA"
+            forecast.position_usd = None
+            forecast.quantity = None
+            forecast.stop_loss_pct = None
+            forecast.take_profit_pct = None
+            forecast.risk_reward_ratio = None
             return forecast
 
         # Layer 2: Collect Price Data
@@ -695,8 +907,13 @@ class UniversalForecastEngine:
 
         if len(snapshots) < 10:
             forecast.should_trade = False
-            forecast.reason = f"Insufficient data: {len(snapshots)} snapshots"
-            forecast.action = "HOLD"
+            forecast.reason = "ten_unique_fresh_provider_price_receipts_required"
+            forecast.action = "NO_DATA"
+            forecast.position_usd = None
+            forecast.quantity = None
+            forecast.stop_loss_pct = None
+            forecast.take_profit_pct = None
+            forecast.risk_reward_ratio = None
             return forecast
 
         # Layer 3: Probability Forecast
@@ -705,7 +922,19 @@ class UniversalForecastEngine:
         )
 
         # Final Decision
-        if forecast.probability.recommended_action == "BUY":
+        if (
+            forecast.probability.truth_status != "real_derived"
+            or not forecast.probability.actionable
+        ):
+            forecast.should_trade = False
+            forecast.action = "NO_DATA"
+            forecast.reason = "complete_linked_price_gate_and_fee_receipts_required"
+            forecast.position_usd = None
+            forecast.quantity = None
+            forecast.stop_loss_pct = None
+            forecast.take_profit_pct = None
+            forecast.risk_reward_ratio = None
+        elif forecast.probability.recommended_action == "BUY":
             forecast.should_trade = True
             forecast.action = "BUY"
             forecast.reason = (f"Bullish {forecast.probability.bullish_probability:.1%} "
@@ -722,7 +951,14 @@ class UniversalForecastEngine:
             forecast.action = "HOLD"
             forecast.reason = (f"No edge: Bull {forecast.probability.bullish_probability:.1%} "
                               f"| Conf {forecast.probability.confidence:.1%}")
-
+        forecast.data_status = "live"
+        forecast.truth_status = "real_derived"
+        forecast.source_timestamp = forecast.probability.source_timestamp
+        forecast.received_at = forecast.probability.received_at
+        forecast.receipt_id = forecast.probability.receipt_id
+        forecast.input_receipt_ids = forecast.probability.input_receipt_ids
+        forecast.generated_values = False
+        forecast.actionable = forecast.should_trade
         return forecast
 
     # ═══════════════════════════════════════════════════════════════════════
@@ -836,67 +1072,20 @@ class UniversalForecastEngine:
 # MAIN EXECUTION
 # ═══════════════════════════════════════════════════════════════════════════
 
-def main():
-    print("\n" + "="*70)
-    print("🌌🎯 AUREON UNIVERSAL FORECAST SYSTEM 🎯🌌")
-    print("="*70)
-    print("\nThis system uses ALL prediction engines across ALL platforms:")
-    print("  • Earth Resonance Engine (Schumann, PHI)")
-    print("  • Imperial Predictability (Cosmic state, torque)")
-    print("  • Probability Matrix (Temporal frequency)")
-    print("  • Multi-Platform Support (Binance, Kraken, Alpaca, Capital)")
-
-    # Initialize
-    engine = UniversalForecastEngine()
-
-    # Check cosmic gates first
-    print("\n" + "="*70)
-    print("LAYER 1: COSMIC GATE CHECK")
-    print("="*70)
-
-    gates = engine.check_cosmic_gates()
-    engine.print_cosmic_status(gates)
-
-    if not gates.all_gates_open:
-        print("\n⚠️ COSMIC GATES NOT FULLY OPEN")
-        print("   Trading not recommended at this time.")
-        proceed = input("\n   Type 'OVERRIDE' to scan anyway: ")
-        if proceed != 'OVERRIDE':
-            print("\n   Exiting. Try again when gates align.")
-            return
-
-    # Scan all platforms
-    print("\n" + "="*70)
-    print("LAYER 2-3: MULTI-PLATFORM PROBABILITY SCAN")
-    print("="*70)
-
-    results = engine.scan_all_platforms()
-
-    # Get best opportunities
-    print("\n" + "="*70)
-    print("🏆 TOP OPPORTUNITIES")
-    print("="*70)
-
-    best = engine.get_best_opportunities(results, top_n=5)
-
-    if not best:
-        print("\n   No high-probability opportunities found.")
-        print("   Markets may be flat or conditions unfavorable.")
-    else:
-        for i, opp in enumerate(best, 1):
-            prob = opp.probability
-            print(f"\n   #{i} {opp.platform.value.upper()}:{opp.symbol}")
-            print(f"      Action: {opp.action}")
-            print(f"      Probability: {prob.bullish_probability:.1%} bullish")
-            print(f"      Confidence: {prob.confidence:.1%}")
-            print(f"      Expected: +{prob.expected_profit_pct:.3f}%")
-            print(f"      Price: ${prob.current_price:.5f}")
-            print(f"      Frequency: {prob.frequency:.1f}Hz ({prob.frequency_state})")
-
-    print("\n" + "="*70)
-    print("FORECAST COMPLETE")
-    print("="*70 + "\n")
+def main(argv: Optional[List[str]] = None) -> int:
+    """Report the inert legacy boundary; runtime dependencies must be injected."""
+    del argv
+    print(json.dumps({
+        "data_status": "not_started",
+        "truth_status": "no_data",
+        "generated_values": False,
+        "actionable": False,
+        "accounting_eligible": False,
+        "learning_eligible": False,
+        "reason": "injected_fresh_provider_receipts_required",
+    }, sort_keys=True))
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

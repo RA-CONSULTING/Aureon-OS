@@ -28,7 +28,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Any
 
 # UTF-8 fix for Windows
-if sys.platform == 'win32':
+if sys.platform == 'win32' and sys.stdout is sys.__stdout__ and sys.stdout.isatty():
     os.environ['PYTHONIOENCODING'] = 'utf-8'
     try:
         import io
@@ -44,6 +44,46 @@ if sys.platform == 'win32':
         pass
 
 logger = logging.getLogger(__name__)
+
+_TRUE_VALUES = {"1", "true", "yes", "on"}
+
+
+def _operational_io_suppressed() -> bool:
+    """Audit/import probes may inspect this module but must not touch providers or state."""
+    return any(
+        os.getenv(name, "").strip().lower() in _TRUE_VALUES
+        for name in ("AUREON_AUDIT_MODE", "AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS")
+    )
+
+
+def _suppressed_portfolio_view() -> Dict[str, Any]:
+    """Return an explicit no-data envelope without inventing numeric balances."""
+    return {
+        "status": "NO_DATA",
+        "status_emoji": "",
+        "total_usd": "NO_DATA",
+        "starting_capital": "NO_DATA",
+        "cumulative_net": "NO_DATA",
+        "floating": "NO_DATA",
+        "lifetime_realized": "NO_DATA",
+        "pnl": "NO_DATA",
+        "pnl_pct": "NO_DATA",
+        "total_trades": None,
+        "dream_progress": "NO_DATA",
+        "treasury": "NO_DATA",
+        "exchanges": {
+            "alpaca": "NO_DATA",
+            "kraken": "NO_DATA",
+            "binance": "NO_DATA",
+            "capital": "NO_DATA",
+        },
+        "timestamp": None,
+        "data_status": "suppressed",
+        "truth_status": "no_data",
+        "action_eligible": False,
+        "generated_values": False,
+        "reason": "audit_or_import_side_effect_suppression",
+    }
 
 
 @dataclass
@@ -136,8 +176,16 @@ class RealPortfolioTracker:
     STATE_FILE = "real_portfolio_state.json"
     HISTORY_FILE = "real_portfolio_history.json"
     
-    def __init__(self, starting_capital: float = 78.51):
+    def __init__(
+        self,
+        starting_capital: float = 78.51,
+        state_file: Optional[str] = None,
+        history_file: Optional[str] = None,
+    ):
         """Initialize with REAL starting capital."""
+        self.STATE_FILE = state_file or os.getenv("AUREON_PORTFOLIO_STATE_PATH") or type(self).STATE_FILE
+        self.HISTORY_FILE = history_file or os.getenv("AUREON_PORTFOLIO_HISTORY_PATH") or type(self).HISTORY_FILE
+        self._operational_io_suppressed = _operational_io_suppressed()
         self.starting_capital = starting_capital
         self.last_snapshot: Optional[RealPortfolioSnapshot] = None
         self.history: List[Dict] = []
@@ -155,11 +203,14 @@ class RealPortfolioTracker:
         self._kraken_trades_cache_ttl = int(os.getenv("KRAKEN_TRADES_CACHE_TTL", "300"))
         self._kraken_trades_since = int(os.getenv("KRAKEN_TRADES_SINCE", "0") or 0)
         
-        # Load previous state if exists
-        self._load_state()
+        if not self._operational_io_suppressed:
+            self._load_state()
         
         logger.info("💰👁️ Real Portfolio Tracker initialized")
-        logger.info(f"   Starting Capital: ${self.starting_capital:.2f}")
+        if self._operational_io_suppressed:
+            logger.info("   Provider and state I/O suppressed")
+        else:
+            logger.info(f"   Starting Capital: ${self.starting_capital:.2f}")
 
     def set_clients(self, clients: Dict[str, Any]) -> None:
         """Inject existing clients to avoid nonce issues."""
@@ -175,6 +226,8 @@ class RealPortfolioTracker:
     
     def _load_state(self) -> None:
         """Load previous state from disk."""
+        if self._operational_io_suppressed:
+            return
         try:
             state_path = Path(self.STATE_FILE)
             if state_path.exists():
@@ -188,6 +241,8 @@ class RealPortfolioTracker:
     
     def _save_state(self) -> None:
         """Save state to disk (atomic write - temp file then rename)."""
+        if self._operational_io_suppressed:
+            return
         try:
             data = {
                 'starting_capital': self.starting_capital,
@@ -511,12 +566,15 @@ class RealPortfolioTracker:
             pass
         return None
 
-    def get_real_portfolio(self) -> RealPortfolioSnapshot:
+    def get_real_portfolio(self) -> Optional[RealPortfolioSnapshot]:
         """
         Get REAL portfolio snapshot from ALL exchanges.
         
         This is the TRUTH - what Queen and Orca should see.
         """
+        if self._operational_io_suppressed:
+            return None
+
         # Get balances from all exchanges (basic checks)
         alpaca = self._get_alpaca_balance()
         kraken = self._get_kraken_balance()
@@ -609,7 +667,11 @@ class RealPortfolioTracker:
     
     def get_quick_summary(self) -> Dict:
         """Get a quick summary for Queen/Orca display."""
+        if self._operational_io_suppressed:
+            return _suppressed_portfolio_view()
         snapshot = self.get_real_portfolio()
+        if snapshot is None:
+            return _suppressed_portfolio_view()
         
         # Determine status
         if snapshot.cumulative_net_pnl > 0:

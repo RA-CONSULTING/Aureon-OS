@@ -58,9 +58,6 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 from pathlib import Path
 
-ANTHROPIC_AVAILABLE = bool(os.getenv("ANTHROPIC_API_KEY"))
-
-
 # Windows UTF-8 fix
 if sys.platform == 'win32':
     os.environ['PYTHONIOENCODING'] = 'utf-8'
@@ -116,7 +113,9 @@ _inhouse_adapter = None
 try:
     from aureon.inhouse_ai.llm_adapter import AureonHybridAdapter, AureonBrainAdapter
     try:
-        _inhouse_adapter = AureonHybridAdapter()
+        from aureon.integrations.ollama import OllamaModelSwitchboard
+
+        _inhouse_adapter, _selection = OllamaModelSwitchboard().hybrid_adapter_for("fast")
         if _inhouse_adapter.health_check():
             INHOUSE_AI_AVAILABLE = True
             logger.info("In-House AI connected (Hybrid) — Samuel AI ONLINE")
@@ -134,6 +133,21 @@ except Exception as e:
     logger.warning(f"In-House AI init error: {e} — Samuel AI in LOCAL mode")
 
 # ─── In-House AI Status ──────────────────────────────────────────────────────
+def _samuel_ai_mode() -> str:
+    """Describe the effective adapter route without exposing credentials."""
+
+    adapter = _inhouse_adapter
+    local = getattr(adapter, "local", adapter)
+    base_url = str(getattr(local, "base_url", "") or "")
+    if "ollama.com" in base_url.lower():
+        return "ollama_cloud"
+    if adapter is not None and type(adapter).__name__ == "AureonBrainAdapter":
+        return "aureon_brain"
+    if adapter is not None:
+        return "configured_llm"
+    return "unavailable"
+
+
 # Validates the in-house AI adapter on startup and caches the result.
 
 _api_key_status: Dict[str, Any] = {
@@ -553,7 +567,7 @@ async def ws_handler(request):
                                 "type": "chat_reply",
                                 "message": reply,
                                 "timestamp": time.time(),
-                                "ai_mode": "claude" if ANTHROPIC_AVAILABLE else "local",
+                                "ai_mode": _samuel_ai_mode(),
                             })
                 except json.JSONDecodeError:
                     pass
@@ -614,7 +628,7 @@ async def api_chat(request):
     reply = await samuel_brain.chat(user_msg, intel)
     return web.json_response({
         "reply": reply,
-        "ai_mode": "claude" if ANTHROPIC_AVAILABLE else "local",
+        "ai_mode": _samuel_ai_mode(),
         "timestamp": time.time(),
     })
 
@@ -623,7 +637,7 @@ async def api_health(request):
     """GET /api/health — health check."""
     return web.json_response({
         "status": "OPERATIONAL",
-        "samuel_ai": "claude" if ANTHROPIC_AVAILABLE else "local",
+        "samuel_ai": _samuel_ai_mode(),
         "thought_bus": THOUGHT_BUS_AVAILABLE,
         "api_key": get_api_key_status(),
         "uptime": time.time(),
@@ -2228,7 +2242,7 @@ def main():
 ║   Health:    http://localhost:{WARZONE_PORT}/api/health             ║
 ║   WebSocket: ws://localhost:{WARZONE_PORT}/ws                      ║
 ║                                                              ║
-║   Samuel AI: {"CLAUDE (Opus)" if ANTHROPIC_AVAILABLE else "LOCAL MODE (no API key)":45s}║
+║   Samuel AI: {_samuel_ai_mode().upper():45s}║
 ║   ThoughtBus: {"READ-ONLY" if THOUGHT_BUS_AVAILABLE else "OFFLINE":44s}║
 ║                                                              ║
 ║   "We don't quit. We compound. We conquer." ⚔️               ║

@@ -41,10 +41,10 @@ export function MarginSentimentPanel({ symbol = 'BTC' }: MarginSentimentPanelPro
   if (!marginData) return null;
 
   const { crossMargin, recentLiquidations, sentiment } = marginData;
-  const healthColor = sentiment.marketHealth > 0.7 ? 'text-green-500' : 
-                      sentiment.marketHealth > 0.4 ? 'text-yellow-500' : 'text-red-500';
-  const riskColor = sentiment.leverageRisk < 0.3 ? 'text-green-500' :
-                    sentiment.leverageRisk < 0.6 ? 'text-yellow-500' : 'text-red-500';
+  const healthColor = sentiment.marketHealth > 0.7 ? 'text-success' : 
+                      sentiment.marketHealth > 0.4 ? 'text-warning' : 'text-destructive';
+  const riskColor = sentiment.leverageRisk < 0.3 ? 'text-success' :
+                    sentiment.leverageRisk < 0.6 ? 'text-warning' : 'text-destructive';
 
   return (
     <Card>
@@ -98,9 +98,9 @@ export function MarginSentimentPanel({ symbol = 'BTC' }: MarginSentimentPanelPro
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">Recent Liquidations</span>
             {recentLiquidations.count > 0 ? (
-              <TrendingDown className="h-4 w-4 text-red-500" />
+              <TrendingDown className="h-4 w-4 text-destructive" />
             ) : (
-              <TrendingUp className="h-4 w-4 text-green-500" />
+              <TrendingUp className="h-4 w-4 text-success" />
             )}
           </div>
           <div className="grid grid-cols-2 gap-2 text-sm">

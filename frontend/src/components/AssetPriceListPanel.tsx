@@ -81,9 +81,9 @@ export function AssetPriceListPanel() {
   const getDataSourceBadge = (source: AssetPrice['dataSource']) => {
     switch (source) {
       case 'LIVE':
-        return <Badge variant="default" className="text-[9px] bg-green-600">LIVE</Badge>;
+        return <Badge variant="default" className="text-[9px] bg-success">LIVE</Badge>;
       case 'CACHED':
-        return <Badge variant="secondary" className="text-[9px] bg-yellow-600">CACHED</Badge>;
+        return <Badge variant="secondary" className="text-[9px] bg-warning">CACHED</Badge>;
       case 'STALE':
         return <Badge variant="destructive" className="text-[9px]">STALE</Badge>;
       case 'NO_DATA':
@@ -122,9 +122,9 @@ export function AssetPriceListPanel() {
               <div className="flex items-center gap-3">
                 {/* Quick Stats */}
                 <div className="hidden md:flex items-center gap-2 text-[10px]">
-                  <span className="text-green-400">● {stats.liveAssets} live</span>
-                  <span className="text-yellow-400">● {stats.cachedAssets} cached</span>
-                  <span className="text-red-400">● {stats.staleAssets} stale</span>
+                  <span className="text-success">● {stats.liveAssets} live</span>
+                  <span className="text-warning">● {stats.cachedAssets} cached</span>
+                  <span className="text-destructive">● {stats.staleAssets} stale</span>
                 </div>
                 <Badge 
                   variant={stats.dataFreshness > 80 ? 'default' : stats.dataFreshness > 50 ? 'secondary' : 'destructive'}
@@ -203,9 +203,9 @@ export function AssetPriceListPanel() {
                 <p className="text-[10px] text-muted-foreground">Top Gainer</p>
                 {stats.topGainer && (
                   <div className="flex items-center gap-1">
-                    <TrendingUp className="h-3 w-3 text-green-400" />
+                    <TrendingUp className="h-3 w-3 text-success" />
                     <span className="text-xs font-mono">{stats.topGainer.symbol}</span>
-                    <span className="text-xs text-green-400">+{stats.topGainer.change.toFixed(2)}%</span>
+                    <span className="text-xs text-success">+{stats.topGainer.change.toFixed(2)}%</span>
                   </div>
                 )}
               </div>
@@ -213,9 +213,9 @@ export function AssetPriceListPanel() {
                 <p className="text-[10px] text-muted-foreground">Top Loser</p>
                 {stats.topLoser && (
                   <div className="flex items-center gap-1">
-                    <TrendingDown className="h-3 w-3 text-red-400" />
+                    <TrendingDown className="h-3 w-3 text-destructive" />
                     <span className="text-xs font-mono">{stats.topLoser.symbol}</span>
-                    <span className="text-xs text-red-400">{stats.topLoser.change.toFixed(2)}%</span>
+                    <span className="text-xs text-destructive">{stats.topLoser.change.toFixed(2)}%</span>
                   </div>
                 )}
               </div>
@@ -223,7 +223,7 @@ export function AssetPriceListPanel() {
                 <p className="text-[10px] text-muted-foreground">Top Volume</p>
                 {stats.topVolume && (
                   <div className="flex items-center gap-1">
-                    <BarChart3 className="h-3 w-3 text-blue-400" />
+                    <BarChart3 className="h-3 w-3 text-primary" />
                     <span className="text-xs font-mono">{stats.topVolume.symbol}</span>
                     <span className="text-xs text-muted-foreground">{formatVolume(stats.topVolume.volume)}</span>
                   </div>
@@ -232,7 +232,7 @@ export function AssetPriceListPanel() {
               <div className="bg-muted/30 rounded-lg p-2">
                 <p className="text-[10px] text-muted-foreground">Avg Volatility</p>
                 <div className="flex items-center gap-1">
-                  <Activity className="h-3 w-3 text-purple-400" />
+                  <Activity className="h-3 w-3 text-primary" />
                   <span className="text-xs font-mono">{stats.avgVolatility.toFixed(2)}%</span>
                 </div>
               </div>
@@ -289,7 +289,7 @@ export function AssetPriceListPanel() {
                     </div>
                     <div className={cn(
                       "col-span-2 text-right font-mono",
-                      asset.change >= 0 ? "text-green-400" : "text-red-400"
+                      asset.change >= 0 ? "text-success" : "text-destructive"
                     )}>
                       {asset.change >= 0 ? '+' : ''}{asset.change.toFixed(2)}%
                     </div>

@@ -36,7 +36,6 @@
 from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
 import math
 import time
-import random
 import logging
 import numpy as np
 from typing import Dict, List, Any, Optional, Tuple
@@ -74,6 +73,8 @@ DEFAULT_BETA = 0.90     # Feedback/retention gain
 DEFAULT_TAU = 0.050     # Memory delay (50ms)
 DEFAULT_G = 1.5         # Observer nonlinearity gain
 DEFAULT_DELTA_T = 0.010 # Integration window (10ms)
+MARKET_RECEIPT_MAX_AGE_SECONDS = 300.0
+MARKET_RECEIPT_FUTURE_SKEW_SECONDS = 5.0
 
 # Coherence thresholds
 COHERENCE_CRITICAL = 0.7    # Minimum for stable branch
@@ -198,8 +199,6 @@ class RealityBranch:
             'stability': self.stability,
             'timestamp': self.timestamp
         }
-
-
 @dataclass 
 class LEVEvent:
     """A LEV (Limit-cycle Eigenvalue) Stabilization Event"""
@@ -240,8 +239,10 @@ class HarmonicSubstrate:
         for i, freq in enumerate(freqs):
             # Weight inversely proportional to frequency (lower = stronger)
             weight = 1.0 / (1 + math.log(freq / SCHUMANN_BASE))
-            # Random initial phase
-            phase = random.uniform(0, 2 * math.pi)
+            # A deterministic phase lattice keeps the native harmonic equation
+            # reproducible. Runtime observations may still provide an explicit
+            # phase through add_mode(); initialization never invents telemetry.
+            phase = (2 * math.pi * i / len(freqs)) if freqs else 0.0
             
             mode = HarmonicMode(
                 frequency=freq,
@@ -272,7 +273,7 @@ class HarmonicSubstrate:
     def add_mode(self, frequency: float, weight: float, phase: float = None):
         """Add a new harmonic mode"""
         if phase is None:
-            phase = random.uniform(0, 2 * math.pi)
+            phase = 0.0
         mode = HarmonicMode(frequency=frequency, weight=weight, phase=phase)
         self.modes.append(mode)
 
@@ -440,7 +441,14 @@ class TranslationMap:
         
         logger.debug(f"🌌 Translation Map initialized: {n_hidden_dims}D→3D projection")
     
-    def project_to_3d(self, psi_5d: float, phi: float, delta_phi: float, F: float) -> Tuple[float, float]:
+    def project_to_3d(
+        self,
+        psi_5d: float,
+        phi: float,
+        delta_phi: float,
+        F: float,
+        observed_residual: Optional[float] = None,
+    ) -> Tuple[float, float]:
         """
         Project high-dimensional state to 3D observable.
         
@@ -462,8 +470,9 @@ class TranslationMap:
         # Projection = weighted average over hidden dimensions
         projection = psi_5d * phi_factor * delta_phi_factor * F_factor
         
-        # Add projection noise (residuals from dimensional reduction)
-        noise = self.noise_level * random.gauss(0, 1) * abs(psi_5d)
+        # A residual is data only when supplied by the measurement path. The
+        # old Gaussian generator fabricated a new observation on every call.
+        noise = 0.0 if observed_residual is None else float(observed_residual)
         
         psi_3d = projection + noise
         
@@ -531,9 +540,11 @@ class MultiversalEngine:
         self.echo_history: deque = deque(maxlen=200)
         self.ontological_history: deque = deque(maxlen=100)
         
-        # Parallel universe phases (random initialization)
-        self.universe_phases = [random.uniform(0, 2*math.pi) for _ in range(n_parallel_universes)]
-        self.universe_amplitudes = [random.uniform(0.7, 1.0) for _ in range(n_parallel_universes)]
+        # Deterministic phase basis: model coordinates, never presented as
+        # provider observations or randomly generated telemetry.
+        denominator = max(1, n_parallel_universes)
+        self.universe_phases = [2 * math.pi * i / denominator for i in range(n_parallel_universes)]
+        self.universe_amplitudes = [1.0 for _ in range(n_parallel_universes)]
         
         logger.debug(f"🌈 Multiversal Engine initialized: {n_parallel_universes} parallel universes")
     
@@ -1224,6 +1235,59 @@ class HarmonicRealityAnalyzer:
         self.volume_weight = 0.3
         
         logger.info("🌊📊 Harmonic Reality Analyzer initialized for market consciousness")
+
+    @staticmethod
+    def _no_data(reason: str) -> Dict[str, Any]:
+        """Refuse unproven market input without fabricating field outputs."""
+        return {
+            'status': 'no_data',
+            'truth_status': 'no_data',
+            'generated_values': False,
+            'eligible_for_action': False,
+            'eligible_for_accounting': False,
+            'eligible_for_learning': False,
+            'reason': reason,
+        }
+
+    @staticmethod
+    def _valid_market_receipt(market_data: Any) -> Optional[Dict[str, Any]]:
+        if not isinstance(market_data, dict):
+            return None
+        source_id = market_data.get('source_id')
+        receipt_id = market_data.get('receipt_id')
+        if (
+            not isinstance(source_id, str) or not source_id.strip()
+            or not isinstance(receipt_id, str) or not receipt_id.strip()
+            or market_data.get('truth_status') != 'real_observed'
+            or market_data.get('generated_values') is not False
+        ):
+            return None
+        try:
+            source_timestamp = float(market_data.get('source_timestamp'))
+            received_at = float(market_data.get('received_at'))
+            price = float(market_data.get('price'))
+            volume = float(market_data.get('volume'))
+        except (TypeError, ValueError):
+            return None
+        now = time.time()
+        if (
+            not all(math.isfinite(value) and value > 0 for value in (
+                source_timestamp, received_at, price, volume,
+            ))
+            or source_timestamp > now + MARKET_RECEIPT_FUTURE_SKEW_SECONDS
+            or received_at < source_timestamp - MARKET_RECEIPT_FUTURE_SKEW_SECONDS
+            or received_at > now + MARKET_RECEIPT_FUTURE_SKEW_SECONDS
+            or now - source_timestamp > MARKET_RECEIPT_MAX_AGE_SECONDS
+        ):
+            return None
+        return {
+            'source_id': source_id,
+            'receipt_id': receipt_id,
+            'source_timestamp': source_timestamp,
+            'received_at': received_at,
+            'price': price,
+            'volume': volume,
+        }
     
     def analyze(self, market_data: Dict = None) -> Dict[str, Any]:
         """
@@ -1234,12 +1298,13 @@ class HarmonicRealityAnalyzer:
         - Volume patterns → Observer integration
         - Trend persistence → Causal echo
         """
-        if market_data is None:
-            market_data = {}
+        receipt = self._valid_market_receipt(market_data)
+        if receipt is None:
+            return self._no_data('missing_invalid_or_stale_market_receipt')
         
         # Extract market features
-        price = market_data.get('price', 100000)
-        volume = market_data.get('volume', 1000000)
+        price = receipt['price']
+        volume = receipt['volume']
         momentum = market_data.get('momentum', 0)
         volatility = market_data.get('volatility', 0.02)
         
@@ -1274,6 +1339,15 @@ class HarmonicRealityAnalyzer:
         
         analysis = {
             'timestamp': time.time(),
+            'source_id': receipt['source_id'],
+            'source_timestamp': receipt['source_timestamp'],
+            'received_at': receipt['received_at'],
+            'receipt_id': receipt['receipt_id'],
+            'truth_status': 'real_derived',
+            'generated_values': False,
+            'eligible_for_action': False,
+            'eligible_for_accounting': False,
+            'eligible_for_learning': False,
             'field_state': field_state,
             'coherence': field_state['coherence'],
             'state': field_state['state'],
@@ -1422,99 +1496,3 @@ class HarmonicRealityAnalyzer:
             'latest_analysis': self.analysis_history[-1] if self.analysis_history else None,
             'equation': "Λ(t) = Σwᵢsin(2πfᵢt+φᵢ) + α·tanh(g·Λ_∆t) + β·Λ(t-τ)"
         }
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# DEMONSTRATION
-# ═══════════════════════════════════════════════════════════════════════════════
-
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO, format='%(message)s')
-    
-    print("=" * 80)
-    print("🌊 HARMONIC REALITY FRAMEWORK - MASTER EQUATIONS TREE 🌊")
-    print("Author: Gary Leckey - Aureon Institute - November 2025")
-    print("=" * 80)
-    print()
-    print("THE MASTER FORMULA:")
-    print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-    print()
-    print("  Λ(t) = Σ wᵢsin(2πfᵢt + φᵢ) + α·tanh(g·Λ_∆t) + β·Λ(t-τ)")
-    print("         ─────────────────────   ──────────────   ─────────")
-    print("              SUBSTRATE            OBSERVER      CAUSAL ECHO")
-    print()
-    print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-    print()
-    
-    # Initialize the analyzer
-    print("🔬 Initializing Harmonic Reality Field...")
-    analyzer = HarmonicRealityAnalyzer()
-    
-    # Run simulation
-    print("\n🌀 Running reality field simulation (2 seconds)...")
-    print("   Parameters: α=0.85, β=0.90, τ=50ms, g=1.5")
-    print()
-    
-    # Simulate with market data
-    for i in range(20):
-        market_data = {
-            'price': 95000 + i * 200 + random.uniform(-300, 300),
-            'volume': 1000000 + random.uniform(-100000, 100000),
-            'momentum': 5 + i * 0.5 + random.uniform(-2, 2),
-            'volatility': 0.02 + random.uniform(-0.005, 0.005)
-        }
-        
-        analysis = analyzer.analyze(market_data)
-        
-        if i % 4 == 0:
-            print(f"   Step {i+1:2d}: C={analysis['coherence']:.4f} | "
-                  f"State={analysis['state']:12s} | "
-                  f"Branches={analysis['branch_count']} | "
-                  f"Λ={analyzer.field.lambda_current:+.4f}")
-    
-    # Run field simulation
-    print("\n🌊 Running pure field dynamics (longer simulation)...")
-    field = HarmonicRealityField()
-    results = field.run(duration=2.0)
-    
-    print(f"\n📊 SIMULATION RESULTS:")
-    print(f"   Final State: {field.state.value}")
-    print(f"   Coherence: {field.coherence:.4f}")
-    print(f"   Boundedness: {field.boundedness:.4f}")
-    print(f"   Echo Strength: {field.echo_strength:.4f}")
-    print(f"   Saturation Level: {field.observer.get_saturation_level():.4f}")
-    print(f"   Reality Branches: {len(field.branches)}")
-    print(f"   LEV Events: {len(field.lev_events)}")
-    
-    if field.branches:
-        print(f"\n🌿 DETECTED REALITY BRANCHES:")
-        for branch in field.branches[:3]:
-            print(f"   Branch {branch.branch_id}: f={branch.dominant_frequency:.2f}Hz, "
-                  f"A={branch.amplitude:.4f}, φ={math.degrees(branch.phase):.1f}°")
-    
-    # Get potential landscape
-    print(f"\n⚡ UNIFIED POTENTIAL LANDSCAPE:")
-    potential = UnifiedPotential()
-    landscape = potential.get_landscape()
-    print(f"   Equilibria (stable realities): {landscape['n_attractors']}")
-    if landscape['equilibria']:
-        for i, eq in enumerate(landscape['equilibria'][:3]):
-            print(f"   Attractor {i+1}: Λ* = {eq:.4f}")
-    
-    # Final prophecy
-    print("\n" + "=" * 80)
-    print("📜 PROPHECY FROM THE HARMONIC FIELD:")
-    print("-" * 80)
-    status = analyzer.get_full_status()
-    if status['latest_analysis']:
-        print(f"   {status['latest_analysis']['prophecy']}")
-    print()
-    
-    print("=" * 80)
-    print("🌊 'Reality is a spectrum of coupled modes;")
-    print("    the raw DNA is a superposition of harmonics.'")
-    print()
-    print("   The observer's tanh prevents blow-up when α + β > 1")
-    print("   and drives the system into a coherent limit cycle.")
-    print("   This is the LEV stabilization event.")
-    print("=" * 80)

@@ -1,6 +1,6 @@
 param(
-    [string]$RepoRoot = "C:\Users\ayman kattan\aureon-trading",
-    [string]$PythonExe = "C:\Users\ayman kattan\aureon-trading\.venv\Scripts\python.exe",
+    [string]$RepoRoot = "",
+    [string]$PythonExe = "",
     [string]$SpeechBackend = "google_first",
     [int]$MicDeviceIndex = 1,
     [int]$GoogleRetries = 3,
@@ -10,15 +10,34 @@ param(
 
 $ErrorActionPreference = "Continue"
 
-$stateDir = Join-Path $RepoRoot "state"
-$null = New-Item -ItemType Directory -Force -Path $stateDir
+if ([string]::IsNullOrWhiteSpace($RepoRoot)) {
+    $RepoRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot "..\..") -ErrorAction Stop).Path
+} else {
+    $RepoRoot = (Resolve-Path -LiteralPath $RepoRoot -ErrorAction Stop).Path
+}
+if (-not (Test-Path -LiteralPath (Join-Path $RepoRoot "pyproject.toml") -PathType Leaf)) {
+    throw "Resolved voice runner repo root is invalid: $RepoRoot"
+}
+if ([string]::IsNullOrWhiteSpace($PythonExe)) {
+    $PythonExe = Join-Path $RepoRoot ".venv\Scripts\python.exe"
+}
 
+$stateDir = Join-Path $RepoRoot "state"
 $stopFile = Join-Path $stateDir "aureon_voice_agent.stop"
 $lockFile = Join-Path $stateDir "aureon_voice_agent_supervisor.lock"
 $supervisorLog = Join-Path $stateDir "aureon_voice_agent_supervisor.log"
 $agentOut = Join-Path $stateDir "aureon_voice_agent_runtime.out.log"
 $agentErr = Join-Path $stateDir "aureon_voice_agent_runtime.err.log"
 $agentScript = Join-Path $RepoRoot "aureon\autonomous\aureon_unified_voice_agent.py"
+
+if (-not (Test-Path -LiteralPath $PythonExe -PathType Leaf)) {
+    throw "Python venv not found: $PythonExe"
+}
+if (-not (Test-Path -LiteralPath $agentScript -PathType Leaf)) {
+    throw "Voice agent script not found: $agentScript"
+}
+
+$null = New-Item -ItemType Directory -Force -Path $stateDir
 
 if (Test-Path $lockFile) {
     exit 0

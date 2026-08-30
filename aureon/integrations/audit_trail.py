@@ -163,12 +163,18 @@ def _check_ollama_bridge() -> Any:
 
 def _check_ollama_adapter_interface() -> Any:
     """Probe: OllamaLLMAdapter implements the LLMAdapter protocol."""
-    from aureon.integrations.ollama import OllamaLLMAdapter
+    from aureon.integrations.ollama import OllamaModelSwitchboard
     from aureon.inhouse_ai.llm_adapter import LLMAdapter
-    adapter = OllamaLLMAdapter()
+    adapter, selection = OllamaModelSwitchboard().adapter_for("general")
     if not isinstance(adapter, LLMAdapter):
         raise TypeError("OllamaLLMAdapter is not an LLMAdapter")
-    return {"adapter": "OllamaLLMAdapter", "interface": "LLMAdapter"}
+    return {
+        "adapter": "OllamaLLMAdapter",
+        "interface": "LLMAdapter",
+        "lane": selection.lane,
+        "model": selection.model,
+        "catalog_size": selection.catalog_size,
+    }
 
 
 def _check_obsidian_bridge() -> Any:

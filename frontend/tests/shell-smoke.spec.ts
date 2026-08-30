@@ -11,10 +11,14 @@
 
 import { test, expect, type Page } from "@playwright/test";
 
+test.beforeEach(async ({ page }) => {
+  await page.route("**/api/**", (route) => route.abort("connectionrefused"));
+});
+
 // A representative slice of the 24 shell routes: the new/honest surfaces plus a
 // heavy trading dashboard (WarRoom) and the billing page.
 const ROUTES = [
-  { path: "/", label: "Overview" },
+  { path: "/console", label: "Overview" },
   { path: "/ops/connections", label: "Connections" },
   { path: "/cognition/metacognition", label: "Metacognition" },
   { path: "/ops/affect", label: "Affect" },
@@ -52,7 +56,7 @@ for (const route of ROUTES) {
 }
 
 test("sidebar navigation switches routes", async ({ page }) => {
-  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await page.goto("/console", { waitUntil: "domcontentloaded" });
   // Click a stable nav entry and confirm the URL changed to its route.
   await page.getByRole("link", { name: /Connections/i }).first().click();
   await expect(page).toHaveURL(/\/ops\/connections/);

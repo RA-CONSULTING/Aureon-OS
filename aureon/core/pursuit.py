@@ -208,6 +208,12 @@ class Pursuit:
         from aureon.core.aureon_lambda_engine import SubsystemReading
 
         readings = [SubsystemReading(k, v, 0.8, "pillar") for k, v in pillars.items()]
+        # P5 Pattern A: the shared field enters the local Λ inputs — the read
+        # half of the loop this producer only ever published.
+        from aureon.core.hnc_field import canonical_field_reading
+        _cfr = canonical_field_reading()
+        if _cfr is not None:
+            readings.append(_cfr)
         state = self._engine.step(readings)
 
         creator = hq if hq is not None else _mean(list(pillars.values()))

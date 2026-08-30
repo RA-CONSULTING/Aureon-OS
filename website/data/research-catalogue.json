@@ -1,0 +1,88 @@
+{
+  "schema_version": 2,
+  "record_type": "public_research_orientation",
+  "snapshot": {
+    "as_of": "2026-08-20",
+    "source": "ORCID public API",
+    "work_group_count": 74,
+    "scope": "Public work groups returned for the stated ORCID iD; count establishes attribution and availability only."
+  },
+  "orcid": {
+    "id": "0009-0004-2792-4649",
+    "url": "https://orcid.org/0009-0004-2792-4649",
+    "role": "Persistent researcher identity and public work index"
+  },
+  "zenodo": {
+    "url": "https://zenodo.org/search?q=metadata.creators.person_or_org.name%3A%22Leckey%2C%20Gary%22",
+    "role": "Formal public repository and DOI source"
+  },
+  "research_breadth": {
+    "themes": [
+      "Trustworthy AI and evidence governance",
+      "Space systems and mission assurance",
+      "Photonics, sensing and signal analysis",
+      "Complex systems and coherence modelling",
+      "Evidence-led engineering and falsifiable experimentation"
+    ],
+    "method": "Separate observation, interpretation and hypothesis; connect each proposition to an attributable source, a testable next step and an explicit stopping condition.",
+    "review_posture": "Public records establish authorship and availability. Independent challenge, reproduction and domain-qualified review remain the relevant proof gates.",
+    "translation_gate": "Research enters a company proposition only when the use case, authority boundary, test method and evidence required for a bounded evaluation are explicit."
+  },
+  "evidence_boundary": "A public ORCID, Zenodo or ResearchGate record establishes attribution and source availability only. It does not establish peer review, independent scientific or engineering validation, product readiness, commercial performance, customer adoption, funding or endorsement.",
+  "recent_records": [
+    {
+      "id": "zenodo-21540072",
+      "title": "Experimental Protocol v2: Illumination Chip Concept — Bench Test Procedure and Null Criteria",
+      "record_type": "Technical note",
+      "publication_date": "2026-07-24",
+      "doi": "10.5281/zenodo.21540072",
+      "doi_url": "https://doi.org/10.5281/zenodo.21540072",
+      "url": "https://zenodo.org/records/21540072"
+    },
+    {
+      "id": "zenodo-21540051",
+      "title": "EPAS Unified Architecture v2: A Theoretical Four-Wave Mixing Architecture with Computational Checks",
+      "record_type": "Preprint",
+      "publication_date": "2026-07-24",
+      "doi": "10.5281/zenodo.21540051",
+      "doi_url": "https://doi.org/10.5281/zenodo.21540051",
+      "url": "https://zenodo.org/records/21540051"
+    },
+    {
+      "id": "zenodo-21539997",
+      "title": "The HNC Matrix Framework v2: Formal Consistency Review and Theoretical Interpretation",
+      "record_type": "Technical note",
+      "publication_date": "2026-07-24",
+      "doi": "10.5281/zenodo.21539997",
+      "doi_url": "https://doi.org/10.5281/zenodo.21539997",
+      "url": "https://zenodo.org/records/21539997"
+    },
+    {
+      "id": "zenodo-21530783",
+      "title": "HNC BioMolecule Adjacent Frequency Packet: White Paper (v1)",
+      "record_type": "Preprint",
+      "publication_date": "2026-07-24",
+      "doi": "10.5281/zenodo.21530783",
+      "doi_url": "https://doi.org/10.5281/zenodo.21530783",
+      "url": "https://zenodo.org/records/21530783"
+    },
+    {
+      "id": "zenodo-21530780",
+      "title": "The Position of Echo-Feedback Cognitive φ-Substrate (PEFCφS): A Four-Layer Architecture for the Harmonic Nexus Core Framework",
+      "record_type": "Preprint",
+      "publication_date": "2026-07-24",
+      "doi": "10.5281/zenodo.21530780",
+      "doi_url": "https://doi.org/10.5281/zenodo.21530780",
+      "url": "https://zenodo.org/records/21530780"
+    },
+    {
+      "id": "zenodo-21530644",
+      "title": "LSSP Pre-Registration: Detecting φ-Spaced Phase-Coherence Peaks in Open Neural Recordings — The Leckey Substrate Scaling Protocol (v1.0)",
+      "record_type": "Preprint",
+      "publication_date": "2026-04-23",
+      "doi": "10.5281/zenodo.21530644",
+      "doi_url": "https://doi.org/10.5281/zenodo.21530644",
+      "url": "https://zenodo.org/records/21530644"
+    }
+  ]
+}

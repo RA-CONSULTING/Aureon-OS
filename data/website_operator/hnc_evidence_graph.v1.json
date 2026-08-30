@@ -1,0 +1,84 @@
+{
+  "schema": "aureon.hnc-evidence-graph-contract.v1",
+  "component_id": "hnc-evidence-control-graph-v1-r2-20260730",
+  "issued_at": "2026-07-30T00:00:00Z",
+  "authority": {
+    "scope": "source-neutral local HNC evidence-control component only",
+    "canonical_website_mutation": "never",
+    "candidate_mutation": "never",
+    "release_eligible": false,
+    "package_authority": "none",
+    "deployment_authority": "none",
+    "credential_access": "none",
+    "network_access": "none",
+    "human_visual_acceptance": "required before candidate transplant"
+  },
+  "route": "/",
+  "placement": "after-homepage-proof-rail",
+  "claim_register": {
+    "path": "data/website_operator/public_claim_evidence_register.v1.json",
+    "sha256": "78032392BD3ECED2C5C9B294415AD6D2C6380FF903F7E43844C191AFD99C99A7"
+  },
+  "claim_ids": [
+    "hnc-research-framework",
+    "aureon-os-evidence-system"
+  ],
+  "process_steps": [
+    {
+      "step_id": "research-record",
+      "index": "01",
+      "label": "Research record",
+      "state_label": "Research proposition",
+      "body": "Harmonic Nexus Core is Aureon's evolving research and systems-method framework.",
+      "claim_id": "hnc-research-framework"
+    },
+    {
+      "step_id": "source-claim-state",
+      "index": "02",
+      "label": "Source + claim state",
+      "state_label": "Control state",
+      "body": "Record origin, freshness, permission and the part of the source actually used. Separate observed fact, interpretation, company record and unresolved gap.",
+      "claim_id": null
+    },
+    {
+      "step_id": "aureon-os-control",
+      "index": "03",
+      "label": "Aureon OS control",
+      "state_label": "Company-built",
+      "body": "Aureon OS is a company-built engineering and evidence operating system.",
+      "claim_id": "aureon-os-evidence-system"
+    },
+    {
+      "step_id": "human-gate",
+      "index": "04",
+      "label": "Human gate",
+      "state_label": "Authority gate",
+      "body": "An authorised reviewer accepts, rejects or returns the record before action.",
+      "claim_id": null
+    },
+    {
+      "step_id": "bounded-decision",
+      "index": "05",
+      "label": "Bounded decision",
+      "state_label": "Retained decision",
+      "body": "Retain the result, evidence basis, authority and any condition still open.",
+      "claim_id": null
+    }
+  ],
+  "motion": {
+    "trigger_ratio": 0.35,
+    "phase_interval_ms": 180,
+    "settled_by_ms": 900,
+    "maximum_displacement_px": 6,
+    "minimum_content_opacity": 0.72,
+    "repeats": false,
+    "reduced_motion": "static-complete"
+  },
+  "budgets": {
+    "html_bytes": 2500,
+    "css_bytes": 5500,
+    "javascript_bytes": 1800,
+    "additional_requests": 0,
+    "binary_bytes": 0
+  }
+}

@@ -12,6 +12,7 @@ from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence
 from aureon.autonomous.aureon_agent_creative_process_guardian import (
     build_and_write_agent_creative_process_guardian,
 )
+from aureon.autonomous.aureon_autonomous_job_executor import tick_autonomous_jobs
 from aureon.autonomous.aureon_autonomous_self_fix_director import (
     build_and_write_autonomous_self_fix_director,
 )
@@ -22,7 +23,6 @@ from aureon.autonomous.aureon_coding_capability_unblocker import (
 from aureon.autonomous.aureon_complex_build_stress_audit import (
     build_and_write_complex_build_stress_audit,
 )
-from aureon.autonomous.aureon_autonomous_job_executor import tick_autonomous_jobs
 from aureon.autonomous.aureon_evolution_queue_autonomous_certification import (
     build_and_write_evolution_queue_autonomous_certification,
 )
@@ -30,7 +30,13 @@ from aureon.autonomous.aureon_frontend_work_order_executor import execute_fronte
 from aureon.autonomous.aureon_gold_capital_intelligence_company import (
     build_and_write_gold_capital_intelligence_company,
 )
-
+from aureon.autonomous.aureon_self_run_coding_task import (
+    run_self_coding_task,
+    self_coding_patch_lane_blocked,
+)
+from aureon.autonomous.aureon_unified_self_evolution_loop import (
+    build_and_write_unified_self_evolution_loop,
+)
 
 SCHEMA_VERSION = "aureon-autonomous-self-run-loop-v1"
 GOAL_DISPATCHER_SCHEMA_VERSION = "aureon-goal-contract-dispatcher-v1"
@@ -41,6 +47,13 @@ DEFAULT_PUBLIC_JSON = Path("frontend/public/aureon_autonomous_self_run_loop.json
 DEFAULT_GOAL_DISPATCHER_STATE_PATH = Path("state/aureon_goal_contract_dispatcher_last_run.json")
 DEFAULT_GOAL_DISPATCHER_AUDIT_JSON = Path("docs/audits/aureon_goal_contract_dispatcher.json")
 DEFAULT_GOAL_DISPATCHER_PUBLIC_JSON = Path("frontend/public/aureon_goal_contract_dispatcher.json")
+INTERNAL_SELF_CODING_TASK_ID = "internal_self_coding"
+SELF_CODING_PENDING_SUPPRESSED_TASK_IDS = frozenset(
+    {
+        "autonomous_self_fix_director",
+        "frontend_work_order_execution",
+    }
+)
 CODING_BRIDGE_EVIDENCE_PATHS = [
     Path("state/aureon_coding_organism_last_run.json"),
     Path("docs/audits/aureon_coding_organism_bridge.json"),
@@ -346,13 +359,34 @@ def run_goal_contract_dispatcher(
             route_surfaces=_route_surfaces_from_routes(routes),
             source="aureon_goal_contract_dispatcher",
         )
-        claimed = stack.claim_next(worker="aureon_goal_contract_dispatcher")
+        claimed = stack.claim_next_available(
+            ("organism.capability_growth", "organism.default"),
+            worker="aureon_goal_contract_dispatcher",
+        )
         route_names = _goal_route_names(routes)
-        selected_route = _select_goal_route(route_names, objective)
+        claimed_payload = dict(claimed.payload) if claimed else {}
+        claimed_gap = claimed_payload.get("gap") if isinstance(claimed_payload.get("gap"), dict) else {}
+        execution_objective = (
+            " ".join(
+                part
+                for part in (
+                    claimed.title if claimed else "",
+                    str(claimed_gap.get("proposed_action") or claimed_gap.get("title") or ""),
+                )
+                if part
+            )
+            or objective
+        )
+        selected_route = (
+            "capability_growth_loop"
+            if claimed and claimed.queue == "organism.capability_growth"
+            else _select_goal_route(route_names, objective)
+        )
         route_decision = {
             "objective": objective,
             "route_names": route_names,
             "selected_route": selected_route,
+            "claimed_queue": claimed.queue if claimed else "",
             "route_surfaces": _route_surfaces_from_routes(routes),
             "codex_required_inside_cycle": False,
         }
@@ -368,7 +402,7 @@ def run_goal_contract_dispatcher(
         runner = runners.get(selected_route) or runners["autonomous_job_executor"]
         if claimed:
             try:
-                execution = runner(root, objective, context)
+                execution = runner(root, execution_objective, context)
             except Exception as exc:
                 execution = {
                     "ok": False,
@@ -381,7 +415,7 @@ def run_goal_contract_dispatcher(
             execution = {
                 "ok": False,
                 "status": "no_claimed_work_order",
-                "reason": "No queued organism.default work order was available to claim.",
+                "reason": "No queued default or capability-growth work order was available to claim.",
             }
         completed = None
         if claimed:
@@ -461,6 +495,11 @@ def _default_runners(*, include_stress: bool, max_stress_attempts: int) -> Dict[
         "creative_process_guardian": lambda root, prompt: build_and_write_agent_creative_process_guardian(
             root=root, goal=prompt, refresh_inputs=True
         ),
+        "unified_self_evolution": lambda root, prompt: build_and_write_unified_self_evolution_loop(
+            root=root,
+            prompt=prompt,
+            run_ollama=True,
+        ),
         "autonomous_self_fix_director": lambda root, prompt: build_and_write_autonomous_self_fix_director(
             root=root,
             operator_prompt=prompt,
@@ -502,6 +541,11 @@ def _task_contract(task_id: str) -> Dict[str, Any]:
             "authority": "safe_local_autonomy",
             "critical": True,
         },
+        "unified_self_evolution": {
+            "title": "Unified HNC/Auris self-evolution reasoning",
+            "authority": "safe_local_observe_reason_repair",
+            "critical": True,
+        },
         "complex_build_stress_audit": {
             "title": "Complex build stress certification",
             "authority": "safe_local_autonomy",
@@ -510,6 +554,11 @@ def _task_contract(task_id: str) -> Dict[str, Any]:
         "autonomous_self_fix_director": {
             "title": "Autonomous self-fix director",
             "authority": "safe_local_patch_apply",
+            "critical": True,
+        },
+        INTERNAL_SELF_CODING_TASK_ID: {
+            "title": "Aureon internal self-coding cycle",
+            "authority": "safe_local_patch_apply_pending_senior_review",
             "critical": True,
         },
         "autonomous_job_executor": {
@@ -608,10 +657,13 @@ def _build_cycle(
     include_stress: bool,
     max_stress_attempts: int,
     runner_overrides: Optional[Dict[str, Runner]] = None,
+    suppressed_task_ids: Sequence[str] = (),
 ) -> Dict[str, Any]:
     runners = _default_runners(include_stress=include_stress, max_stress_attempts=max_stress_attempts)
     if runner_overrides:
         runners.update(runner_overrides)
+    for task_id in suppressed_task_ids:
+        runners.pop(task_id, None)
     tasks = [_run_task(task_id, runner, root, prompt) for task_id, runner in runners.items()]
     critical_failures = [task for task in tasks if task.get("critical") and not task.get("ok")]
     soft_failures = [task for task in tasks if not task.get("critical") and not task.get("ok")]
@@ -676,10 +728,31 @@ def build_and_write_autonomous_self_run_loop(
     interval_seconds: float = 0.0,
     include_stress: bool = True,
     max_stress_attempts: int = 2,
+    enable_internal_self_coding: bool = False,
+    internal_self_coder_target_path: str = "",
+    internal_self_coder_test_commands: Sequence[Sequence[str]] = (),
+    internal_self_coder_resolver: Any = None,
     runner_overrides: Optional[Dict[str, Runner]] = None,
 ) -> Dict[str, Any]:
     root = Path(root or _default_root()).resolve()
     hard_holds = _detect_hard_holds(prompt)
+    patch_lane_blocked = bool(
+        enable_internal_self_coding
+        and self_coding_patch_lane_blocked(root)
+    )
+    effective_runner_overrides = dict(runner_overrides or {})
+    injected_self_coder = effective_runner_overrides.pop(INTERNAL_SELF_CODING_TASK_ID, None)
+    if enable_internal_self_coding and not hard_holds:
+        effective_runner_overrides[INTERNAL_SELF_CODING_TASK_ID] = injected_self_coder or (
+            lambda cycle_root, cycle_prompt: run_self_coding_task(
+                cycle_root,
+                cycle_prompt,
+                enabled=True,
+                target_path=internal_self_coder_target_path,
+                test_commands=internal_self_coder_test_commands,
+                resolver=internal_self_coder_resolver,
+            )
+        )
     cycle_records: List[Dict[str, Any]] = []
     cycle_count = max(1, int(cycles or 1))
     for index in range(1, cycle_count + 1):
@@ -690,7 +763,12 @@ def build_and_write_autonomous_self_run_loop(
                 cycle_index=index,
                 include_stress=include_stress,
                 max_stress_attempts=max_stress_attempts,
-                runner_overrides=runner_overrides,
+                runner_overrides=effective_runner_overrides,
+                suppressed_task_ids=(
+                    SELF_CODING_PENDING_SUPPRESSED_TASK_IDS
+                    if patch_lane_blocked
+                    else ()
+                ),
             )
         )
         if index < cycle_count and interval_seconds > 0:
@@ -698,10 +776,29 @@ def build_and_write_autonomous_self_run_loop(
 
     latest = cycle_records[-1]
     work_orders = _work_orders_from_cycle(latest, hard_holds)
+    pending_review_tasks = [
+        task
+        for task in latest.get("tasks", [])
+        if isinstance(task.get("summary"), dict)
+        and task["summary"].get("pending_senior_review") is True
+    ]
+    for task in pending_review_tasks:
+        work_orders.append(
+            {
+                "id": f"senior_review_{task.get('id')}",
+                "priority": "manual",
+                "title": f"Senior review required: {task.get('title')}",
+                "owner": "codex_senior_reviewer",
+                "autonomous": False,
+                "next_action": "Review the exact self-coder evidence digest and record the bounded release receipt.",
+                "source_status": task.get("status"),
+                "evidence_digest": task["summary"].get("evidence_digest"),
+            }
+        )
     hard_hold_count = len(hard_holds)
     critical_failure_count = sum(1 for task in latest.get("tasks", []) if task.get("critical") and not task.get("ok"))
     loop_active = hard_hold_count == 0
-    handover_ready = loop_active and critical_failure_count == 0
+    handover_ready = loop_active and critical_failure_count == 0 and not pending_review_tasks
     written_at = _utc_now()
     heartbeat = {
         "status": "fresh" if loop_active else "held",
@@ -715,6 +812,8 @@ def build_and_write_autonomous_self_run_loop(
         if hard_hold_count
         else "self_run_repairing"
         if critical_failure_count
+        else "self_run_pending_senior_review"
+        if pending_review_tasks
         else "self_run_autonomous_safe"
     )
 
@@ -729,6 +828,19 @@ def build_and_write_autonomous_self_run_loop(
         "loop_contract": {
             "principle": "Aureon runs its safe local coding, stress, creative-process, and self-fix organs without waiting for Codex.",
             "no_false_blocks": "Coding/tool/skill/test gaps become autonomous work orders and rerun targets.",
+            "coherence_membrane": "HNC/Auris changes internal pace, patch batch size, test depth, and rollback depth; it never closes introspection or repair.",
+            "internal_self_coding": {
+                "enabled": bool(enable_internal_self_coding),
+                "one_cycle_per_loop_cycle": True,
+                "pending_review_blocks_next_patch": True,
+                "patch_lane_blocked": patch_lane_blocked,
+                "suppressed_mutation_tasks": (
+                    sorted(SELF_CODING_PENDING_SUPPRESSED_TASK_IDS)
+                    if patch_lane_blocked
+                    else []
+                ),
+                "codex_role": "senior_review_and_veto_only",
+            },
             "hard_boundaries": list(HARD_BOUNDARY_PATTERNS.keys()),
             "hard_boundary_policy": "Only credential reveal, live trading, payments, official filings, and destructive OS actions are human-only.",
         },
@@ -744,6 +856,12 @@ def build_and_write_autonomous_self_run_loop(
             "critical_failure_count": critical_failure_count,
             "soft_failure_count": sum(1 for task in latest.get("tasks", []) if not task.get("critical") and not task.get("ok")),
             "hard_boundary_hold_count": hard_hold_count,
+            "pending_senior_review_count": len(pending_review_tasks),
+            "patch_tasks_suppressed_for_review": (
+                len(SELF_CODING_PENDING_SUPPRESSED_TASK_IDS)
+                if patch_lane_blocked
+                else 0
+            ),
             "autonomous_work_order_count": len([order for order in work_orders if order.get("autonomous")]),
             "heartbeat_status": heartbeat["status"],
         },
@@ -786,6 +904,16 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--interval-seconds", type=float, default=0.0, help="Delay between cycles.")
     parser.add_argument("--no-stress", action="store_true", help="Skip the complex build stress audit in this run.")
     parser.add_argument("--max-stress-attempts", type=int, default=2, help="Repair attempt budget for stress certification.")
+    parser.add_argument(
+        "--internal-self-code",
+        action="store_true",
+        help="Run one bounded Aureon-authored patch cycle; disabled unless explicitly supplied.",
+    )
+    parser.add_argument(
+        "--internal-self-code-target",
+        default="",
+        help="Optional clean tracked Python target; Aureon selects a target when omitted.",
+    )
     parser.add_argument("--json", action="store_true", help="Print the full JSON report.")
     args = parser.parse_args(argv)
     root = Path(args.root).resolve() if args.root else None
@@ -799,6 +927,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                 interval_seconds=interval,
                 include_stress=not args.no_stress,
                 max_stress_attempts=max(1, args.max_stress_attempts),
+                enable_internal_self_coding=args.internal_self_code,
+                internal_self_coder_target_path=args.internal_self_code_target,
             )
             summary = report.get("summary", {})
             print(
@@ -816,6 +946,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         interval_seconds=max(0.0, args.interval_seconds),
         include_stress=not args.no_stress,
         max_stress_attempts=max(1, args.max_stress_attempts),
+        enable_internal_self_coding=args.internal_self_code,
+        internal_self_coder_target_path=args.internal_self_code_target,
     )
     if args.json:
         print(json.dumps(report, indent=2, sort_keys=True, default=str))

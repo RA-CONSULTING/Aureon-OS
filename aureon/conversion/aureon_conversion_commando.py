@@ -37,8 +37,6 @@ Gary Leckey's 1885 CAPM Game | January 2026
 """
 
 from __future__ import annotations
-from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
-
 import logging
 import os
 import time
@@ -59,6 +57,72 @@ GROWTH_AGGRESSION = 0.9999  # 99.99% MAXIMUM AGGRESSION - SPEED TO MILLION 👑
 COMPOUND_RATE = 0.99        # 99% of profits compound back
 # Global epsilon profit policy: accept any net-positive edge after costs.
 MIN_PROFIT_TARGET = 0.0001
+MAX_RECEIPT_AGE_SECONDS = 120.0
+
+
+def _finite(value: Any, *, positive: bool = False, nonnegative: bool = False) -> Optional[float]:
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    if not math.isfinite(number):
+        return None
+    if positive and number <= 0.0:
+        return None
+    if nonnegative and number < 0.0:
+        return None
+    return number
+
+
+def _market_receipt(
+    symbol: str,
+    ticker: Any,
+    now: float,
+) -> Optional[Dict[str, Any]]:
+    if not isinstance(ticker, dict):
+        return None
+    exchange = str(ticker.get("exchange") or "").strip().lower()
+    source_id = str(ticker.get("source_id") or "").strip().lower()
+    receipt_id = str(ticker.get("receipt_id") or "").strip()
+    source_timestamp = _finite(ticker.get("source_timestamp"), positive=True)
+    received_at = _finite(ticker.get("received_at"), positive=True)
+    price = _finite(ticker.get("price"), positive=True)
+    volume = _finite(ticker.get("volume"), nonnegative=True)
+    change24h = _finite(ticker.get("change24h"))
+    receipt_symbol = str(ticker.get("symbol") or "").upper().replace("/", "").replace("-", "")
+    expected_symbol = str(symbol).upper().replace("/", "").replace("-", "")
+    if (
+        not exchange
+        or not source_id.startswith(exchange)
+        or not receipt_id
+        or receipt_symbol != expected_symbol
+        or source_timestamp is None
+        or received_at is None
+        or price is None
+        or volume is None
+        or change24h is None
+        or ticker.get("truth_status") not in {"real_observed", "real_derived"}
+        or ticker.get("generated_values") is not False
+        or source_timestamp > received_at + 5.0
+        or received_at > now + 5.0
+        or now - source_timestamp > MAX_RECEIPT_AGE_SECONDS
+        or now - received_at > MAX_RECEIPT_AGE_SECONDS
+    ):
+        return None
+    return {
+        **ticker,
+        "exchange": exchange,
+        "price": price,
+        "volume": volume,
+        "change24h": change24h,
+        "source_timestamp": source_timestamp,
+        "received_at": received_at,
+        "receipt_id": receipt_id,
+        "generated_values": False,
+        "actionable": False,
+        "accounting_eligible": False,
+        "learning_eligible": False,
+    }
 
 # ALL exchanges we connect to - NO LIMITS
 ALL_EXCHANGES = ['binance', 'kraken', 'alpaca', 'capital']
@@ -257,6 +321,7 @@ class PairScanner:
         # Stats
         self.total_pairs_scanned = 0
         self.profitable_pairs = 0
+        self.last_no_data: Optional[Dict[str, Any]] = None
 
     def _get_weight(self, symbol: str) -> float:
         """Get pair weight (like synapse weight) - starts at 1.0, grows with wins."""
@@ -306,24 +371,15 @@ class PairScanner:
           - weight (learned from history)
         """
         now = time.time()
-        if now - self.last_scan_ts < self.scan_interval_s:
-            return self.scored_targets  # Return cached results
-        
-        self.last_scan_ts = now
-        self.scan_count += 1
-        
         targets = []
         
         for symbol, ticker in (ticker_cache or {}).items():
-            if not isinstance(ticker, dict):
+            receipt = _market_receipt(symbol, ticker, now)
+            if receipt is None:
                 continue
-            
-            try:
-                change24h = float(ticker.get("change24h", 0) or 0)
-                volume = float(ticker.get("volume", 0) or 0)
-                price = float(ticker.get("price", ticker.get("lastPrice", 0)) or 0)
-            except Exception:
-                continue
+            change24h = receipt["change24h"]
+            volume = receipt["volume"]
+            price = receipt["price"]
             
             # Extract base/quote
             base = None
@@ -336,13 +392,7 @@ class PairScanner:
             if not base or not quote:
                 continue
             
-            # Determine exchange from balances or default to binance
-            exchange = "binance"
-            if balances:
-                for ex in balances:
-                    if base in (balances.get(ex) or {}):
-                        exchange = ex
-                        break
+            exchange = receipt["exchange"]
             
             # Track universe
             if exchange not in self.universe:
@@ -380,14 +430,42 @@ class PairScanner:
                 "profit_score": profit_score,
                 "weight": weight,
                 "total_score": total_score,
+                "source_id": receipt["source_id"],
+                "source_timestamp": receipt["source_timestamp"],
+                "received_at": receipt["received_at"],
+                "receipt_id": receipt["receipt_id"],
+                "truth_status": "real_derived",
+                "generated_values": False,
+                "input_receipt_ids": [receipt["receipt_id"]],
+                "actionable": False,
+                "accounting_eligible": False,
+                "learning_eligible": False,
             })
         
         # Sort by total score (highest first for UP, can reverse for DOWN)
         targets.sort(key=lambda x: x["total_score"], reverse=True)
+        if not targets:
+            self.scored_targets = []
+            self.last_scan_results = []
+            self.last_no_data = {
+                "data_status": "no_data",
+                "truth_status": "no_data",
+                "source_timestamp": None,
+                "received_at": now,
+                "generated_values": False,
+                "actionable": False,
+                "accounting_eligible": False,
+                "learning_eligible": False,
+                "reason": "complete_fresh_same_venue_ticker_receipts_required",
+            }
+            return []
         
+        self.last_scan_ts = now
+        self.scan_count += 1
         self.scored_targets = targets
         self.last_scan_results = targets  # Alias for status display
         self.total_pairs_scanned += len(targets)
+        self.last_no_data = None
         
         logger.debug(f"🔭 SCAN #{self.scan_count}: {len(targets)} pairs | Universe: {sum(len(s) for s in self.universe.values())} total")
         
@@ -445,14 +523,13 @@ class FalconCommando:
     def scout_prey(self, ticker_cache: Dict[str, Dict[str, Any]], top_n: int = 5) -> List[Dict]:
         """Scout top momentum targets from ticker cache."""
         targets = []
+        now = time.time()
         for sym, t in (ticker_cache or {}).items():
-            if not isinstance(t, dict):
+            receipt = _market_receipt(sym, t, now)
+            if receipt is None:
                 continue
-            try:
-                change = float(t.get("change24h", 0) or 0)
-                volume = float(t.get("volume", 0) or 0)
-            except Exception:
-                continue
+            change = receipt["change24h"]
+            volume = receipt["volume"]
             if change > 0 and volume > 100_000:
                 score = change * (1.0 + min(volume / 1e7, 5.0) * 0.1)
                 # Extract base asset (strip quote)
@@ -463,6 +540,16 @@ class FalconCommando:
                     "change24h": change,
                     "volume": volume,
                     "score": score,
+                    "exchange": receipt["exchange"],
+                    "source_id": receipt["source_id"],
+                    "source_timestamp": receipt["source_timestamp"],
+                    "received_at": receipt["received_at"],
+                    "receipt_id": receipt["receipt_id"],
+                    "truth_status": "real_derived",
+                    "generated_values": False,
+                    "actionable": False,
+                    "accounting_eligible": False,
+                    "learning_eligible": False,
                 })
         targets.sort(key=lambda x: x["score"], reverse=True)
         logger.debug(f"🦅 FALCON scouted {len(targets)} momentum targets")

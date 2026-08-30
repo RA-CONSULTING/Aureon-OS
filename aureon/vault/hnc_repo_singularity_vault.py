@@ -19,6 +19,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 
+from aureon.obsidian_paths import resolve_obsidian_note_path
 from aureon.harmonic.hnc_quantum_packet_crypto import (
     HNCPacketError,
     build_hnc_swarm_packet,
@@ -34,7 +35,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUTPUT_JSON = REPO_ROOT / "docs/audits/aureon_repo_singularity_vault.json"
 DEFAULT_OUTPUT_MD = REPO_ROOT / "docs/audits/aureon_repo_singularity_vault.md"
 DEFAULT_PUBLIC_JSON = REPO_ROOT / "frontend/public/aureon_repo_singularity_vault.json"
-DEFAULT_OBSIDIAN_NOTE = REPO_ROOT / ".obsidian/Aureon Self Understanding/aureon_hnc_singularity_vault.md"
+DEFAULT_OBSIDIAN_NOTE = Path(".obsidian/Aureon Self Understanding/aureon_hnc_singularity_vault.md")
 DEFAULT_SEALED_PACKET_BLOB = REPO_ROOT / "state/aureon_repo_singularity_vault_packet.json"
 
 DEFAULT_EXCLUDES = (
@@ -228,7 +229,9 @@ def build_repo_singularity_manifest(
             "skipped_count": len(skipped),
             "total_bytes": total_bytes,
             "root_sha256": root_hash,
-            "obsidian_key_holder": str(DEFAULT_OBSIDIAN_NOTE),
+            "obsidian_key_holder": str(
+                resolve_obsidian_note_path(DEFAULT_OBSIDIAN_NOTE, repo_root=repo_root)
+            ),
             "can_rebuild_active_repo_from_manifest_only": False,
         },
         "files": [record.__dict__ for record in records],
@@ -415,13 +418,17 @@ def write_repo_singularity_vault(
 ) -> tuple[Path, Path, Path, Path]:
     report = externalize_sealed_packet_blob(report)
     public_report = sanitize_report_for_repository(report)
-    for path in (output_json, output_md, public_json, obsidian_note):
+    resolved_obsidian_note = resolve_obsidian_note_path(
+        obsidian_note,
+        repo_root=REPO_ROOT,
+    )
+    for path in (output_json, output_md, public_json, resolved_obsidian_note):
         path.parent.mkdir(parents=True, exist_ok=True)
     output_json.write_text(json.dumps(public_report, indent=2, sort_keys=True, default=str), encoding="utf-8")
     output_md.write_text(render_markdown(public_report), encoding="utf-8")
     public_json.write_text(json.dumps(public_report, indent=2, sort_keys=True, default=str), encoding="utf-8")
-    obsidian_note.write_text(build_obsidian_key_holder_note(public_report), encoding="utf-8")
-    return output_json, output_md, public_json, obsidian_note
+    resolved_obsidian_note.write_text(build_obsidian_key_holder_note(public_report), encoding="utf-8")
+    return output_json, output_md, public_json, resolved_obsidian_note
 
 
 def build_repo_singularity_vault(

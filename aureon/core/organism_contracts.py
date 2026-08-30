@@ -58,6 +58,7 @@ CONTRACT_TOPICS = {
     "claimed": "organism.contract.work_order.claimed",
     "completed": "organism.contract.work_order.completed",
     "failed": "organism.contract.work_order.failed",
+    "superseded": "organism.contract.work_order.superseded",
 }
 
 DEFAULT_STATE_PATH = Path("state/organism_contract_stack.json")
@@ -547,6 +548,112 @@ class OrganismContractStack:
             return contract
         return None
 
+    def claim_next_available(
+        self,
+        queues: Iterable[str],
+        *,
+        worker: str = "organism",
+    ) -> Optional[ContractEnvelope]:
+        """Claim fairly from multiple organism nerve queues.
+
+        The deepest backlog is serviced first; the caller's queue order breaks
+        ties. This prevents specialist queues from becoming disconnected while
+        retaining deterministic behavior and the existing per-queue claim path.
+        """
+
+        queue_order = [str(item) for item in queues if str(item)]
+        counts = {
+            queue: sum(
+                1
+                for contract_id in self.queue
+                for item in [self.contracts.get(contract_id, {})]
+                if item.get("contract_type") == "work_order"
+                and item.get("status") == "queued"
+                and not item.get("blocked")
+                and item.get("queue") == queue
+            )
+            for queue in queue_order
+        }
+        available = [queue for queue in queue_order if counts.get(queue, 0) > 0]
+        if not available:
+            return None
+        selected = max(available, key=lambda queue: counts[queue])
+        return self.claim_next(queue=selected, worker=worker)
+
+    def deduplicate_queued_work_orders(
+        self,
+        queue: str,
+        *,
+        payload_path: Iterable[str],
+        worker: str = "organism",
+    ) -> Dict[str, Any]:
+        """Cancel duplicate queued orders while preserving every envelope."""
+
+        path = [str(item) for item in payload_path if str(item)]
+
+        def identity(item: Dict[str, Any]) -> str:
+            value: Any = item.get("payload") or {}
+            for key in path:
+                if not isinstance(value, dict):
+                    return ""
+                value = value.get(key)
+            return str(value or "").strip().lower()
+
+        candidates = sorted(
+            (
+                (contract_id, item)
+                for contract_id, item in self.contracts.items()
+                if item.get("contract_type") == "work_order"
+                and item.get("status") == "queued"
+                and not item.get("blocked")
+                and item.get("queue") == queue
+            ),
+            key=lambda pair: (str(pair[1].get("created_at") or ""), pair[0]),
+        )
+        keepers: Dict[str, str] = {}
+        superseded: list[Dict[str, str]] = []
+        for contract_id, raw in candidates:
+            key = identity(raw)
+            if not key:
+                continue
+            keeper_id = keepers.get(key)
+            if keeper_id is None:
+                keepers[key] = contract_id
+                continue
+            contract = ContractEnvelope.from_dict(raw)
+            contract.mark(
+                "cancelled",
+                superseded_by=keeper_id,
+                superseded_reason="duplicate_open_work_order_identity",
+                superseded_by_worker=worker,
+            )
+            self.contracts[contract_id] = contract.to_dict()
+            if contract_id in self.queue:
+                self.queue.remove(contract_id)
+            event = {
+                "ts": utc_now(),
+                "event": CONTRACT_TOPICS["superseded"],
+                "contract_id": contract_id,
+                "superseded_by": keeper_id,
+                "identity": key,
+                "worker": worker,
+            }
+            self.history.append(event)
+            superseded.append(
+                {"contract_id": contract_id, "superseded_by": keeper_id, "identity": key}
+            )
+        if superseded:
+            self.history = self.history[-500:]
+            self._persist()
+        return {
+            "queue": queue,
+            "identity_path": path,
+            "keeper_count": len(keepers),
+            "superseded_count": len(superseded),
+            "superseded": superseded,
+            "contracts_preserved": True,
+        }
+
     def complete_work_order(
         self,
         contract_id: str,
@@ -609,6 +716,71 @@ class OrganismContractStack:
             except Exception:
                 pass
         return status
+
+    def import_state(self, state_path: str | Path) -> Dict[str, Any]:
+        """Merge a compatible legacy contract state into this canonical stack.
+
+        Existing contracts always win.  Imported queue membership is preserved
+        only for work orders that are still queued and not blocked, so a
+        completed or failed legacy order can never be accidentally reactivated.
+        The source file is left untouched as an audit/recovery surface.
+        """
+
+        source_path = Path(state_path)
+        result = {
+            "source_path": str(source_path),
+            "target_path": str(self.state_path),
+            "source_available": source_path.exists(),
+            "imported_contract_count": 0,
+            "imported_queue_count": 0,
+            "skipped_contract_count": 0,
+            "source_preserved": True,
+        }
+        if not source_path.exists() or source_path.resolve() == self.state_path.resolve():
+            return result
+        try:
+            data = json.loads(source_path.read_text(encoding="utf-8", errors="replace"))
+        except Exception as exc:
+            result["error"] = f"{type(exc).__name__}: {exc}"
+            return result
+
+        source_contracts = data.get("contracts") or {}
+        source_queue = {str(item) for item in (data.get("queue") or [])}
+        for contract_id, raw in source_contracts.items():
+            contract_id = str(contract_id)
+            if contract_id in self.contracts or not isinstance(raw, dict):
+                result["skipped_contract_count"] += 1
+                continue
+            try:
+                contract = validate_contract(ContractEnvelope.from_dict(raw))
+            except Exception:
+                result["skipped_contract_count"] += 1
+                continue
+            self.contracts[contract_id] = contract.to_dict()
+            result["imported_contract_count"] += 1
+            if (
+                contract_id in source_queue
+                and contract.contract_type == "work_order"
+                and contract.status == "queued"
+                and not contract.blocked
+                and contract_id not in self.queue
+            ):
+                self.queue.append(contract_id)
+                result["imported_queue_count"] += 1
+
+        if result["imported_contract_count"]:
+            self.history.append(
+                {
+                    "ts": utc_now(),
+                    "event": "organism.contract.state_imported",
+                    "source_path": str(source_path),
+                    "imported_contract_count": result["imported_contract_count"],
+                    "imported_queue_count": result["imported_queue_count"],
+                }
+            )
+            self.history = self.history[-500:]
+            self._persist()
+        return result
 
     def _publish(self, topic: str, contract: ContractEnvelope) -> None:
         if self.thought_bus is None:

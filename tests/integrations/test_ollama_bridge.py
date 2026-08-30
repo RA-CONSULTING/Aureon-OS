@@ -126,6 +126,7 @@ def _install_fake(bridge, responses):
 def test_construction_defaults():
     print("\n[1] OllamaBridge construction + env defaults")
     os.environ.pop("AUREON_OLLAMA_BASE_URL", None)
+    prior_compatible_url = os.environ.pop("AUREON_LLM_BASE_URL", None)
     bridge = OllamaBridge()
     check(bridge.base_url == "http://localhost:11434",
           f"default base_url = {bridge.base_url}")
@@ -140,6 +141,8 @@ def test_construction_defaults():
         f"env override respected: {bridge2.base_url}",
     )
     os.environ.pop("AUREON_OLLAMA_BASE_URL")
+    if prior_compatible_url is not None:
+        os.environ["AUREON_LLM_BASE_URL"] = prior_compatible_url
 
 
 # ─────────────────────────────────────────────────────────────────────────────

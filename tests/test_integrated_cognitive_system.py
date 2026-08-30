@@ -5,26 +5,71 @@ Covers: boot, goals, swarm, commands, temporal tick, graceful degradation.
 """
 
 import logging
-import time
+import os
+import threading
+from pathlib import Path
 
 import pytest
 
+from scripts.validation.pytest_no_skip_shards import (
+    fingerprint_operational_paths,
+    isolate_runtime_writers,
+    safe_subprocess_environment,
+)
+
 logging.basicConfig(level=logging.WARNING)
+
+_REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 # ── Shared fixture ──────────────────────────────────────────────────────────
 
-@pytest.fixture(scope="module")
-def ics():
-    """Boot the ICS once for the entire module — expensive but realistic."""
-    from aureon.core.integrated_cognitive_system import IntegratedCognitiveSystem
+@pytest.fixture(scope="module", autouse=True)
+def _isolated_runtime(tmp_path_factory):
+    """Keep the realistic boot offline and prove it cannot touch operator state."""
 
-    system = IntegratedCognitiveSystem()
+    before = fingerprint_operational_paths(_REPO_ROOT)
+    runtime_root = tmp_path_factory.mktemp("integrated-cognitive-system")
+    (runtime_root / "README.md").write_text("# Isolated ICS fixture", encoding="utf-8")
+    patcher = pytest.MonkeyPatch()
+    safe_env, scrubbed = safe_subprocess_environment(dict(os.environ))
+    safe_env = isolate_runtime_writers(safe_env, runtime_root)
+    for name in scrubbed:
+        patcher.delenv(name, raising=False)
+    for name, value in safe_env.items():
+        patcher.setenv(name, value)
+    patcher.chdir(runtime_root)
+    try:
+        yield runtime_root, patcher
+    finally:
+        patcher.undo()
+        after = fingerprint_operational_paths(_REPO_ROOT)
+        assert after == before
+
+
+@pytest.fixture(scope="module")
+def ics(_isolated_runtime):
+    """Boot the ICS once for the entire module — expensive but realistic."""
+    runtime_root, patcher = _isolated_runtime
+    from aureon.core import integrated_cognitive_system as ics_module
+
+    lambda_engine = ics_module.LambdaEngine
+    patcher.setattr(
+        ics_module,
+        "LambdaEngine",
+        lambda: lambda_engine(state_path=runtime_root / "state" / "lambda_history.json"),
+    )
+    system = ics_module.IntegratedCognitiveSystem()
     system.boot()
     system._start_tick_thread()
-    time.sleep(1)  # let ticks settle
-    yield system
-    system.shutdown()
+    assert system._tick_thread is None
+    system._unified_cognitive_tick()
+    try:
+        yield system
+    finally:
+        system.shutdown()
+        active_names = {thread.name for thread in threading.enumerate() if thread.is_alive()}
+        assert not active_names.intersection({"ICS.auto_ctrl", "ICS.integrations", "ics-tick"})
 
 
 # ── Boot tests ──────────────────────────────────────────────────────────────
@@ -58,6 +103,18 @@ class TestBoot:
 
     def test_temporal_ground_alive(self, ics):
         assert ics.temporal_ground is not None
+
+    def test_autonomous_threads_are_suppressed_in_audit_mode(self, ics):
+        assert ics._tick_thread is None
+        active_names = {thread.name for thread in threading.enumerate() if thread.is_alive()}
+        assert not active_names.intersection({"ICS.auto_ctrl", "ICS.integrations", "ics-tick"})
+
+    def test_normal_runtime_retains_background_capability(self, monkeypatch):
+        from aureon.core.integrated_cognitive_system import _background_side_effects_suppressed
+
+        monkeypatch.delenv("AUREON_AUDIT_MODE")
+        monkeypatch.delenv("AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS")
+        assert _background_side_effects_suppressed() is False
 
     def test_self_dialogue_booted(self, ics):
         """SelfDialogueEngine should be booted (not None)."""

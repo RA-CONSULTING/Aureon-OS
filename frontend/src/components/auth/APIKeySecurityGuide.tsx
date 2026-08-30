@@ -15,7 +15,7 @@ interface ExchangeGuide {
 const exchangeGuides: ExchangeGuide[] = [
   {
     name: "Binance",
-    color: "text-yellow-500",
+    color: "text-warning",
     url: "https://www.binance.com/en/my/settings/api-management",
     permissions: [
       { name: "Enable Reading", enabled: true, reason: "Required to check balances" },
@@ -35,7 +35,7 @@ const exchangeGuides: ExchangeGuide[] = [
   },
   {
     name: "Kraken",
-    color: "text-purple-500",
+    color: "text-primary",
     url: "https://www.kraken.com/u/security/api",
     permissions: [
       { name: "Query Funds", enabled: true, reason: "Required to check balances" },
@@ -56,7 +56,7 @@ const exchangeGuides: ExchangeGuide[] = [
   },
   {
     name: "Alpaca",
-    color: "text-green-500",
+    color: "text-success",
     url: "https://app.alpaca.markets/brokerage/dashboard/overview",
     permissions: [
       { name: "Trading", enabled: true, reason: "Required for stock trades" },
@@ -73,7 +73,7 @@ const exchangeGuides: ExchangeGuide[] = [
   },
   {
     name: "Capital.com",
-    color: "text-blue-500",
+    color: "text-primary",
     url: "https://capital.com/trading/platform",
     permissions: [
       { name: "API Access", enabled: true, reason: "Required for CFD trading" },
@@ -131,7 +131,7 @@ export function APIKeySecurityGuide() {
                 {guide.permissions.map((perm) => (
                   <div key={perm.name} className="flex items-start gap-2 text-xs">
                     {perm.enabled ? (
-                      <Check className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+                      <Check className="h-3 w-3 text-success mt-0.5 shrink-0" />
                     ) : (
                       <X className="h-3 w-3 text-destructive mt-0.5 shrink-0" />
                     )}
@@ -156,7 +156,7 @@ export function APIKeySecurityGuide() {
               </div>
 
               {/* Warning */}
-              <div className="flex items-start gap-2 text-xs text-amber-500 bg-amber-500/10 rounded p-2">
+              <div className="flex items-start gap-2 text-xs text-warning bg-warning/10 rounded p-2">
                 <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0" />
                 <span>{guide.warning}</span>
               </div>

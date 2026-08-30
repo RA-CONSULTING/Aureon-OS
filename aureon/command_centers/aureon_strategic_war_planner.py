@@ -59,8 +59,6 @@ Gary Leckey & Claude | February 2026
 =============================================================================
 """
 
-from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
-
 import json
 import os
 import time
@@ -121,7 +119,7 @@ class MoveType(Enum):
     HOLD = "HOLD"            # Maintain position
     RETREAT = "RETREAT"      # Exit at loss (cut losses)
     AMBUSH = "AMBUSH_WAIT"   # Wait for better entry
-    FEINT = "FEINT"          # Fake move to test waters
+    FEINT = "FEINT"          # Deceptive probe used to test market response
 
 
 @dataclass
@@ -245,7 +243,7 @@ class LookbackEngine:
     1. Direction change patterns (was accelerating? decelerating?)
     2. Volume confirmation (did volume support the move?)
     3. Momentum divergence (is momentum confirming or diverging?)
-    4. Enemy behavior (was the move predatory — stop hunt, fake breakout?)
+    4. Enemy behavior (was the move predatory — stop hunt, failed breakout?)
     """
 
     def __init__(self, max_history: int = 200):
@@ -454,7 +452,7 @@ class LookbackEngine:
 
         Trap signals:
         1. Price moving one way while smart money moves opposite (whale divergence)
-        2. Volume spike without price follow-through (fake breakout)
+        2. Volume spike without price follow-through (failed breakout)
         3. Orca predator detected (someone hunting our stops)
         4. Sudden sentiment shift without fundamental cause
         """
@@ -686,7 +684,7 @@ class AdversarialChessEngine:
         trap_prob = prediction.get('trap_probability', 0.0)
         if trap_prob > 0.3:
             counter_moves.append(
-                f"Trap detected ({trap_prob:.0%}). The move may be a fake-out."
+                f"Trap detected ({trap_prob:.0%}). The move may be an unconfirmed reversal."
             )
 
         # 4. VOLATILITY SPIKE — sudden adverse move
@@ -1307,57 +1305,4 @@ def war_status() -> Dict:
     return planner.get_status()
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# MAIN — Demo / Test
-# ═══════════════════════════════════════════════════════════════════════════════
-
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
-
-    print("=" * 70)
-    print("  AUREON STRATEGIC WAR PLANNER — THE MIND")
-    print("  Sun Tzu + IRA + Boyd OODA = Adversarial Chess Engine")
-    print("  2 Steps Back → 1 Step Forward")
-    print("=" * 70)
-
-    planner = get_war_planner()
-
-    # Simulate 5 market cycles with realistic price action
-    prices = [97500.0, 97650.0, 97580.0, 97720.0, 97690.0]
-    volumes = [150000, 180000, 120000, 200000, 160000]
-
-    for i, (price, vol) in enumerate(zip(prices, volumes)):
-        change = ((price - prices[max(0, i-1)]) / prices[max(0, i-1)]) * 100 if i > 0 else 0
-
-        plan = planner.plan(
-            symbol="BTCUSD",
-            price=price,
-            volume=vol,
-            change_pct=change,
-            has_position=(i >= 2),  # Simulate position from step 3
-            position_pnl=(price - 97580.0) * 0.0001 if i >= 2 else 0,
-            position_side="long" if i >= 2 else "none",
-        )
-
-        print(f"\nCycle {i+1}: ${price:.0f}")
-        print(f"  Pattern: {plan.step_forward.get('pattern', 'N/A')}")
-        print(f"  Prediction: {plan.step_forward.get('direction', 'N/A')} "
-              f"({plan.step_forward.get('confidence', 0):.0%})")
-        if plan.final_move:
-            print(f"  Move: {plan.final_move.move_type.value}")
-            print(f"  Confidence: {plan.final_move.confidence:.0%}")
-            print(f"  Survival: {plan.final_move.survival_probability:.0%}")
-            print(f"  Reasoning: {plan.final_move.reasoning}")
-        print(f"  Stance: {plan.stance.value}")
-        print(f"  Systems: {plan.systems_consulted}")
-
-    # Simulate outcomes
-    planner.record_outcome("BTCUSD", 0.01)  # Win
-    planner.record_outcome("BTCUSD", -0.005)  # Loss
-    planner.record_outcome("BTCUSD", 0.015)  # Win
-
-    print(f"\nPlanner Status: {json.dumps(planner.get_status(), indent=2)}")
-
-    print("\n" + "=" * 70)
-    print("  THE MIND PLANS. THE HAND ACTS. THE WHEEL TURNS.")
-    print("=" * 70)
+# Deliberately no standalone runtime: production callers must supply live context.

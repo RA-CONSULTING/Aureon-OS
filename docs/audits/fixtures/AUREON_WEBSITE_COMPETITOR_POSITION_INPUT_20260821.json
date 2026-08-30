@@ -1,0 +1,76 @@
+{
+  "as_of": "2026-08-21",
+  "max_age_days": 366,
+  "records": [
+    {
+      "id": "palantir-uk-home-20260821",
+      "competitor": "Palantir",
+      "source_type": "primary",
+      "source_url": "https://www.palantir.com/uk",
+      "captured_at": "2026-08-21",
+      "observation": "The regional home page combines an outcome-led statement, technical video, impact and trust routes, and an explicit investor-relations path.",
+      "aureon_inference": "Keep Aureon's legal and regional identity visible, lead with the buyer outcome, and treat evidence controls as product substance.",
+      "copy_instruction": "do-not-copy"
+    },
+    {
+      "id": "truepic-home-20260821",
+      "competitor": "Truepic",
+      "source_type": "primary",
+      "source_url": "https://www.truepic.com/",
+      "captured_at": "2026-08-21",
+      "observation": "The home page keeps one visual-authenticity product stable while changing buyer contexts and showing annotated product interfaces, proof and named use cases.",
+      "aureon_inference": "Bring Aureon's concrete review packet closer to the investor entry and translate the same mechanism into bounded buyer contexts.",
+      "copy_instruction": "do-not-copy"
+    },
+    {
+      "id": "chainalysis-home-20260821",
+      "competitor": "Chainalysis",
+      "source_type": "primary",
+      "source_url": "https://www.chainalysis.com/",
+      "captured_at": "2026-08-21",
+      "observation": "The home page presents one intelligence layer, names buyer problems immediately, uses an animated network field, and places quantified proof before its industry catalogue.",
+      "aureon_inference": "Preserve one-core-many-applications logic while giving Aureon's buyer problem and proof ladder a more dominant early position.",
+      "copy_instruction": "do-not-copy"
+    },
+    {
+      "id": "anthropic-home-20260821",
+      "competitor": "Anthropic",
+      "source_type": "primary",
+      "source_url": "https://www.anthropic.com/",
+      "captured_at": "2026-08-21",
+      "observation": "The home page pairs research and products while keeping distinct routes, using an editorial visual system and little continuous motion.",
+      "aureon_inference": "Keep research proposition and product implementation distinct, and use restraint as a credibility signal.",
+      "copy_instruction": "do-not-copy"
+    },
+    {
+      "id": "sandboxaq-home-20260821",
+      "competitor": "SandboxAQ",
+      "source_type": "primary",
+      "source_url": "https://www.sandboxaq.com/",
+      "captured_at": "2026-08-21",
+      "observation": "The home page explains one named modelling thesis, visualises its architecture, and applies it to several scientific markets with publications and attributed external proof.",
+      "aureon_inference": "Organise Aureon's breadth under HNC, Aureon OS and Evidence OS while keeping each application's evidence state separate.",
+      "copy_instruction": "do-not-copy"
+    },
+    {
+      "id": "quantinuum-home-20260821",
+      "competitor": "Quantinuum",
+      "source_type": "primary",
+      "source_url": "https://www.quantinuum.com/",
+      "captured_at": "2026-08-21",
+      "observation": "The home page qualifies its leading technical claim, separates hardware, platform and domain software, then supports sector relevance with named projects and publications.",
+      "aureon_inference": "Keep qualifiers beside ambitious claims and present core, control plane and applications as a legible stack.",
+      "copy_instruction": "do-not-copy"
+    },
+    {
+      "id": "darktrace-home-20260821",
+      "competitor": "Darktrace",
+      "source_type": "primary",
+      "source_url": "https://www.darktrace.com/",
+      "captured_at": "2026-08-21",
+      "observation": "The home page moves from one urgent buyer problem through platform, third-party recognition, named customer outcomes, technical method and a repeated demo action.",
+      "aureon_inference": "Make buyer consequence as clear as Aureon's mechanism, but retain evidence-led motion and avoid generic cyber spectacle.",
+      "copy_instruction": "do-not-copy"
+    }
+  ]
+}

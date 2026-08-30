@@ -27,7 +27,9 @@ try:
 except Exception:
     pass
 import os
+import re
 import sys
+import threading
 import time
 import json
 import logging
@@ -36,6 +38,12 @@ from datetime import datetime, timedelta
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Any, Tuple
 from enum import Enum
+
+from aureon.governance.economic_boundary import (
+    EconomicGovernanceBlocked,
+    _claim_economic_transport_context,
+    _economic_transport_body_digest,
+)
 
 # Load .env file if present
 try:
@@ -69,6 +77,42 @@ if sys.platform == 'win32':
         pass
 
 logger = logging.getLogger(__name__)
+
+ALPACA_OPTIONS_LIVE_BASE = "https://api.alpaca.markets"
+ALPACA_OPTIONS_PAPER_BASE = "https://paper-api.alpaca.markets"
+_SAFE_ALPACA_PATH_ID = re.compile(r"[A-Za-z0-9._~-]{1,160}")
+
+
+def _is_alpaca_options_mutation_path(method: str, path: str) -> bool:
+    normalized_method = str(method).strip().upper()
+    if not isinstance(path, str) or not path.startswith("/"):
+        return False
+    if "?" in path or "#" in path or "//" in path:
+        return False
+    if normalized_method == "POST" and path == "/v2/orders":
+        return True
+    parts = path.split("/")
+    if (
+        normalized_method == "DELETE"
+        and len(parts) == 4
+        and parts[1:3] == ["v2", "orders"]
+    ):
+        return _SAFE_ALPACA_PATH_ID.fullmatch(parts[3]) is not None
+    if (
+        normalized_method == "POST"
+        and len(parts) == 5
+        and parts[1:3] == ["v2", "positions"]
+        and parts[4] == "exercise"
+    ):
+        return _SAFE_ALPACA_PATH_ID.fullmatch(parts[3]) is not None
+    return False
+
+
+@dataclass(frozen=True, slots=True)
+class _OptionsMutationDispatch:
+    method: str
+    path: str
+    body_digest: str
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # ENUMS & DATA CLASSES
@@ -256,11 +300,12 @@ class AlpacaOptionsClient:
         self.api_key = os.getenv('ALPACA_API_KEY')
         self.secret_key = os.getenv('ALPACA_SECRET_KEY')
         self.use_paper = os.getenv('ALPACA_PAPER', 'false').lower() == 'true'
+        self.dry_run = os.getenv('ALPACA_DRY_RUN', 'false').lower() == 'true'
         
         if self.use_paper:
-            self.base_url = "https://paper-api.alpaca.markets"
+            self.base_url = ALPACA_OPTIONS_PAPER_BASE
         else:
-            self.base_url = "https://api.alpaca.markets"
+            self.base_url = ALPACA_OPTIONS_LIVE_BASE
             
         self.data_url = "https://data.alpaca.markets"
         
@@ -273,6 +318,8 @@ class AlpacaOptionsClient:
         
         self.timeout = 10.0
         self.trading_level: Optional[TradingLevel] = None
+        self._economic_dispatch_lock = threading.RLock()
+        self._economic_dispatches: Dict[object, _OptionsMutationDispatch] = {}
         
         # Cache for contracts
         self._contract_cache: Dict[str, OptionContract] = {}
@@ -280,6 +327,109 @@ class AlpacaOptionsClient:
         
         logger.info("🎯 Alpaca Options Client initialized")
         logger.info(f"   Mode: {'PAPER' if self.use_paper else 'LIVE'}")
+
+    def _prepare_options_mutation(
+        self,
+        *,
+        method: str,
+        path: str,
+        body: Dict[str, Any],
+    ) -> object:
+        normalized_method = str(method).strip().upper()
+        if not _is_alpaca_options_mutation_path(normalized_method, path):
+            raise EconomicGovernanceBlocked(
+                "canonical_alpaca_options_mutation_method_and_path_required"
+            )
+        if not isinstance(body, dict):
+            raise EconomicGovernanceBlocked(
+                "exact_alpaca_options_mutation_body_required"
+            )
+        if self.dry_run:
+            raise EconomicGovernanceBlocked(
+                "alpaca_options_dry_run_mutation_transport_forbidden"
+            )
+        expected_base = (
+            ALPACA_OPTIONS_PAPER_BASE
+            if self.use_paper
+            else ALPACA_OPTIONS_LIVE_BASE
+        )
+        if self.base_url != expected_base:
+            raise EconomicGovernanceBlocked(
+                "canonical_alpaca_options_environment_endpoint_required"
+            )
+        if self.use_paper:
+            body_digest = _economic_transport_body_digest(body)
+        else:
+            body_digest = _claim_economic_transport_context(
+                method=normalized_method,
+                path=path,
+                body=body,
+            )
+        dispatch = object()
+        state = _OptionsMutationDispatch(
+            method=normalized_method,
+            path=path,
+            body_digest=body_digest,
+        )
+        with self._economic_dispatch_lock:
+            self._economic_dispatches[dispatch] = state
+        return dispatch
+
+    def _discard_options_mutation_dispatch(self, dispatch: object | None) -> None:
+        if dispatch is None:
+            return
+        with self._economic_dispatch_lock:
+            self._economic_dispatches.pop(dispatch, None)
+
+    def _options_mutation_request(
+        self,
+        method: str,
+        path: str,
+        *,
+        body: Dict[str, Any],
+        _economic_dispatch: object | None = None,
+    ) -> requests.Response:
+        """Burn an exact one-use capability immediately before HTTP."""
+
+        normalized_method = str(method).strip().upper()
+        if not _is_alpaca_options_mutation_path(normalized_method, path):
+            raise EconomicGovernanceBlocked(
+                "canonical_alpaca_options_mutation_method_and_path_required"
+            )
+        expected_base = (
+            ALPACA_OPTIONS_PAPER_BASE
+            if self.use_paper
+            else ALPACA_OPTIONS_LIVE_BASE
+        )
+        if self.base_url != expected_base or self.dry_run:
+            raise EconomicGovernanceBlocked(
+                "canonical_alpaca_options_environment_endpoint_required"
+            )
+        with self._economic_dispatch_lock:
+            state = self._economic_dispatches.pop(_economic_dispatch, None)
+        if state is None:
+            raise EconomicGovernanceBlocked(
+                "alpaca_options_mutation_dispatch_capability_required"
+            )
+        if not isinstance(body, dict):
+            raise EconomicGovernanceBlocked(
+                "exact_alpaca_options_mutation_body_required"
+            )
+        observed = _OptionsMutationDispatch(
+            method=normalized_method,
+            path=path,
+            body_digest=_economic_transport_body_digest(body),
+        )
+        if observed != state:
+            raise EconomicGovernanceBlocked(
+                "exact_alpaca_options_mutation_method_path_body_required"
+            )
+        return self.session.request(
+            normalized_method,
+            f"{self.base_url}{path}",
+            json=body or None,
+            timeout=self.timeout,
+        )
         
     # ═══════════════════════════════════════════════════════════════════════
     # ACCOUNT & CONFIGURATION
@@ -593,11 +743,18 @@ class AlpacaOptionsClient:
             
             logger.info(f"🎯 Placing options order: {side} {qty}x {symbol}")
             
-            resp = self.session.post(
-                f"{self.base_url}/v2/orders",
-                json=order_data,
-                timeout=self.timeout
+            dispatch = self._prepare_options_mutation(
+                method="POST", path="/v2/orders", body=order_data
             )
+            try:
+                resp = self._options_mutation_request(
+                    "POST",
+                    "/v2/orders",
+                    body=order_data,
+                    _economic_dispatch=dispatch,
+                )
+            finally:
+                self._discard_options_mutation_dispatch(dispatch)
             resp.raise_for_status()
             data = resp.json()
             
@@ -605,6 +762,8 @@ class AlpacaOptionsClient:
             logger.info(f"✅ Order placed: {order.id} - {order.status}")
             return order
             
+        except EconomicGovernanceBlocked:
+            raise
         except requests.exceptions.HTTPError as e:
             error_detail = ""
             try:
@@ -825,14 +984,23 @@ class AlpacaOptionsClient:
         By default, Alpaca auto-exercises ITM contracts at expiry.
         """
         try:
-            resp = self.session.post(
-                f"{self.base_url}/v2/positions/{symbol}/exercise",
-                timeout=self.timeout
+            path = f"/v2/positions/{symbol}/exercise"
+            body: Dict[str, Any] = {}
+            dispatch = self._prepare_options_mutation(
+                method="POST", path=path, body=body
             )
+            try:
+                resp = self._options_mutation_request(
+                    "POST", path, body=body, _economic_dispatch=dispatch
+                )
+            finally:
+                self._discard_options_mutation_dispatch(dispatch)
             resp.raise_for_status()
             logger.info(f"✅ Exercised {symbol}")
             return True
             
+        except EconomicGovernanceBlocked:
+            raise
         except Exception as e:
             logger.error(f"❌ Failed to exercise {symbol}: {e}")
             return False
@@ -868,14 +1036,23 @@ class AlpacaOptionsClient:
     def cancel_order(self, order_id: str) -> bool:
         """Cancel an options order."""
         try:
-            resp = self.session.delete(
-                f"{self.base_url}/v2/orders/{order_id}",
-                timeout=self.timeout
+            path = f"/v2/orders/{order_id}"
+            body: Dict[str, Any] = {}
+            dispatch = self._prepare_options_mutation(
+                method="DELETE", path=path, body=body
             )
+            try:
+                resp = self._options_mutation_request(
+                    "DELETE", path, body=body, _economic_dispatch=dispatch
+                )
+            finally:
+                self._discard_options_mutation_dispatch(dispatch)
             resp.raise_for_status()
             logger.info(f"✅ Cancelled order {order_id}")
             return True
             
+        except EconomicGovernanceBlocked:
+            raise
         except Exception as e:
             logger.error(f"❌ Failed to cancel order {order_id}: {e}")
             return False

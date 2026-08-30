@@ -114,7 +114,7 @@ export function LivePnLTable() {
           </Badge>
           <span className="font-semibold">{pos.symbol}</span>
         </div>
-        <div className={`font-mono font-bold ${pos.netPnl >= 0 ? "text-green-500" : "text-red-500"}`}>
+        <div className={`font-mono font-bold ${pos.netPnl >= 0 ? "text-success" : "text-destructive"}`}>
           {formatCurrency(pos.netPnl)}
         </div>
       </div>
@@ -122,7 +122,7 @@ export function LivePnLTable() {
         <div>Entry: <span className="font-mono text-foreground">${pos.entryPrice.toFixed(2)}</span></div>
         <div>Now: <span className="font-mono text-foreground">${pos.currentPrice.toFixed(2)}</span></div>
         <div>Qty: <span className="font-mono text-foreground">{pos.quantity.toFixed(4)}</span></div>
-        <div>Fees: <span className="font-mono text-orange-400">-${pos.totalCosts.toFixed(2)}</span></div>
+        <div>Fees: <span className="font-mono text-warning">-${pos.totalCosts.toFixed(2)}</span></div>
       </div>
       <div className="mt-1 text-muted-foreground flex items-center gap-1">
         <Clock className="h-3 w-3" /> {pos.holdingDurationFormatted}
@@ -143,7 +143,7 @@ export function LivePnLTable() {
           <span className="font-semibold capitalize">{exchange}</span>
           <Badge variant="outline" className="text-xs">{sum.count}</Badge>
         </div>
-        <span className={`text-sm font-mono ${sum.netPnl >= 0 ? "text-green-500" : "text-red-500"}`}>
+        <span className={`text-sm font-mono ${sum.netPnl >= 0 ? "text-success" : "text-destructive"}`}>
           {formatCurrency(sum.netPnl)}
         </span>
       </div>
@@ -161,17 +161,17 @@ export function LivePnLTable() {
       <div className="mt-2 grid grid-cols-3 gap-2 text-xs">
         <div>
           <div className="text-muted-foreground">Gross</div>
-          <div className={`font-mono ${sum.totalPnl >= 0 ? "text-green-500" : "text-red-500"}`}>
+          <div className={`font-mono ${sum.totalPnl >= 0 ? "text-success" : "text-destructive"}`}>
             {formatCurrency(sum.totalPnl)}
           </div>
         </div>
         <div>
           <div className="text-muted-foreground">Costs</div>
-          <div className="font-mono text-orange-400">-${sum.totalCosts.toFixed(2)}</div>
+          <div className="font-mono text-warning">-${sum.totalCosts.toFixed(2)}</div>
         </div>
         <div>
           <div className="text-muted-foreground">Net</div>
-          <div className={`font-mono font-semibold ${sum.netPnl >= 0 ? "text-green-500" : "text-red-500"}`}>
+          <div className={`font-mono font-semibold ${sum.netPnl >= 0 ? "text-success" : "text-destructive"}`}>
             {formatCurrency(sum.netPnl)}
           </div>
         </div>

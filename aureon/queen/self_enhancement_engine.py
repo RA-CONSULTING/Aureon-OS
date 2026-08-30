@@ -59,6 +59,14 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from aureon.ollama_config import (
+    ensure_ollama_runtime_config,
+    is_ollama_cloud_url,
+    ollama_authorization_headers,
+    resolve_ollama_native_base_url,
+    resolve_ollama_reasoning_effort,
+)
+
 logger = logging.getLogger("aureon.queen.self_enhancement_engine")
 
 
@@ -478,9 +486,31 @@ class _LLMCodeCaller:
          _compose_prompt_lines override (fallback).
     """
 
-    OLLAMA_URL = os.environ.get("OLLAMA_BASE_URL", "http://127.0.0.1:11434")
-    DEFAULT_MODEL = os.environ.get("AUREON_CODE_MODEL", "llama3.2:1b")
     TIMEOUT_S = 90.0
+
+    def __init__(self) -> None:
+        explicit_url = os.environ.get("OLLAMA_BASE_URL") or None
+        ensure_ollama_runtime_config(explicit_config=explicit_url is not None)
+        self.OLLAMA_URL = resolve_ollama_native_base_url(explicit_url)
+        configured_code_model = (
+            os.environ.get("AUREON_CODE_MODEL")
+            or os.environ.get("AUREON_OLLAMA_CODING_MODEL")
+        )
+        routed_code_model = ""
+        if not configured_code_model:
+            try:
+                from aureon.integrations.ollama.model_switchboard import OllamaModelSwitchboard
+
+                routed_code_model = OllamaModelSwitchboard().select("coding").model
+            except Exception:
+                routed_code_model = ""
+        self.DEFAULT_MODEL = (
+            configured_code_model
+            or routed_code_model
+            or os.environ.get("AUREON_OLLAMA_MODEL")
+            or os.environ.get("AUREON_LLM_MODEL")
+            or "llama3.2:1b"
+        )
 
     def call(self, prompt: str) -> str:
         # Path 1: direct Ollama (retry once — model may need warm-up time).
@@ -503,9 +533,13 @@ class _LLMCodeCaller:
                 "stream": False,
                 "options": {"temperature": 0.2, "num_predict": 512},
             }
+            if is_ollama_cloud_url(self.OLLAMA_URL):
+                effort = resolve_ollama_reasoning_effort()
+                payload["think"] = False if effort == "none" else effort
             r = _req.post(
                 f"{self.OLLAMA_URL}/api/generate",
                 json=payload,
+                headers=ollama_authorization_headers(self.OLLAMA_URL),
                 timeout=self.TIMEOUT_S,
             )
             r.raise_for_status()

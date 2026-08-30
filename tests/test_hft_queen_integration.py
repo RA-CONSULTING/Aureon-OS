@@ -6,29 +6,10 @@ Tests the newly integrated HFT capabilities in the Queen Hive Mind.
 Demonstrates HFT activation, status monitoring, and emergency controls.
 """
 
-from aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
-import sys
-import os
-import time
-import asyncio
-from typing import Dict, Any
+from typing import Any, Dict
 
-# Windows UTF-8 fix
-if sys.platform == 'win32':
-    os.environ['PYTHONIOENCODING'] = 'utf-8'
-    try:
-        import io
-        def _is_utf8_wrapper(stream):
-            return (isinstance(stream, io.TextIOWrapper) and
-                    hasattr(stream, 'encoding') and stream.encoding and
-                    stream.encoding.lower().replace('-', '') == 'utf8')
-        if hasattr(sys.stdout, 'buffer') and not _is_utf8_wrapper(sys.stdout):
-            sys.stdout = sys.stdout if 'pytest' in sys.modules else io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace', line_buffering=True)
-        # Skip stderr wrapping (causes Windows exit errors)
-    except Exception:
-        pass
+from aureon.utils.aureon_queen_hive_mind import QueenHiveMind, QueenState
 
-from aureon_queen_hive_mind import QueenHiveMind
 
 def print_separator(title: str):
     """Print a formatted separator"""
@@ -46,14 +27,32 @@ def print_status(status: Dict[str, Any]):
     if 'warning' in status:
         print(f"⚠️ Warning: {status['warning']}")
 
-async def test_hft_integration():
+def test_hft_integration():
     """Test HFT integration with Queen Hive Mind"""
     print("🦈🔪 HFT HARMONIC MYCELIUM TEST")
     print("Testing Queen HFT Control Integration")
 
     # Initialize Queen
     print("\n👑 Initializing Queen Hive Mind...")
-    queen = QueenHiveMind()
+    class FakeHFTEngine:
+        def __init__(self):
+            self.start_calls = 0
+
+        def start_hft(self):
+            self.start_calls += 1
+            return True
+
+        @staticmethod
+        def get_status():
+            return {"mode": "SCANNING", "tick_count": 0}
+
+    # Exercise only the Queen control surface. The full constructor wires
+    # provider clients and is intentionally excluded from this offline test.
+    engine = FakeHFTEngine()
+    queen = QueenHiveMind.__new__(QueenHiveMind)
+    queen.state = QueenState.AWARE
+    queen.hft_engine = engine
+    queen.order_router = None
 
     # Test 1: Check initial HFT status
     print_separator("TEST 1: Initial HFT Status")
@@ -116,9 +115,14 @@ async def test_hft_integration():
     )
     print_status(risk_result)
 
+    assert start_result["status"] == "success"
+    assert risk_result["status"] == "success"
+    assert queen.state is QueenState.HFT_SCANNING
+    assert engine.start_calls == 1
+
     print_separator("TEST COMPLETE")
     print("✅ HFT integration test completed successfully!")
     print("🦈 Queen now has full HFT control capabilities")
 
 if __name__ == "__main__":
-    asyncio.run(test_hft_integration())
+    test_hft_integration()

@@ -74,7 +74,6 @@ def test_queen_harmonic_voice():
         print(f"   ⚠️ Poem request failed: {e}")
     
     print("\n👑🎵 TEST 1: PASSED ✓\n")
-    return True
 
 
 def test_queen_hive_mind_integration():
@@ -88,10 +87,15 @@ def test_queen_hive_mind_integration():
     # Create queen with initial capital
     queen = create_queen_hive_mind(initial_capital=100.0)
     
-    # 1. Take full control
+    # 1. Take full control. Under AUREON_AUDIT_MODE the queen deliberately answers
+    # AUDIT_SAFE (trading disabled, side-effectful takeovers skipped) — that is the
+    # production contract for audit runs, not a failure.
+    import os
+    audit = os.getenv('AUREON_AUDIT_MODE', '').strip().lower() in {'1', 'true', 'yes', 'on'}
+    expected_level = 'AUDIT_SAFE' if audit else 'FULL'
     result = queen.take_full_control()
     assert result['success'], "Should take full control"
-    assert result['control_level'] == 'FULL', "Control level should be FULL"
+    assert result['control_level'] == expected_level, f"Control level should be {expected_level}"
     print(f"   ✅ Queen took full control of {len(result['systems_controlled'])} systems")
     
     # 2. Check harmonic systems are in controlled systems
@@ -151,7 +155,6 @@ def test_queen_hive_mind_integration():
                 print("   ⚠️ Queen.speak_in_frequencies() returned empty")
     
     print("\n👑🔗 TEST 2: PASSED ✓\n")
-    return True
 
 
 def test_harmonic_signal_chain():
@@ -196,7 +199,6 @@ def test_harmonic_signal_chain():
     print(f"   ✅ Chain status retrieved for {len(status)} nodes")
     
     print("\n🎵⛓️ TEST 3: PASSED ✓\n")
-    return True
 
 
 def test_harmonic_alphabet():
@@ -237,7 +239,6 @@ def test_harmonic_alphabet():
     print(f"   ✅ Numbers '12345': {freqs_num}")
     
     print("\n🔤🎵 TEST 4: PASSED ✓\n")
-    return True
 
 
 def test_enigma_integration():
@@ -265,18 +266,15 @@ def test_enigma_integration():
             
             # 3. Test decoding if available
             decoded = enigma.decode_harmonic_transmission(harmonics)
-            if decoded:
-                print(f"   ✅ Decoded: '{decoded}'")
+            assert decoded == "SECRET", f"Harmonic round-trip failed: {decoded!r}"
+            print(f"   ✅ Decoded: '{decoded}'")
         else:
             print(f"   ⚠️ Enigma missing harmonic methods (encode: {has_encode}, decode: {has_decode})")
         
         print("\n🔮🎵 TEST 5: PASSED ✓\n")
-        return True
         
     except Exception as e:
-        print(f"   ⚠️ Enigma test skipped: {e}")
-        print("\n🔮🎵 TEST 5: SKIPPED\n")
-        return True
+        raise AssertionError(f"Enigma integration failed: {e}") from e
 
 
 def test_full_autonomous_control():
@@ -314,7 +312,6 @@ def test_full_autonomous_control():
     print("   ✅ Resume operations works")
     
     print("\n🤖👑 TEST 6: PASSED ✓\n")
-    return True
 
 
 def main():
@@ -339,8 +336,8 @@ def main():
     
     for name, test_fn in tests:
         try:
-            passed = test_fn()
-            results.append((name, passed))
+            test_fn()
+            results.append((name, True))
         except Exception as e:
             print(f"\n❌ {name} FAILED: {e}\n")
             import traceback

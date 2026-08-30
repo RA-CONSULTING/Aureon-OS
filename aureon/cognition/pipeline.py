@@ -148,12 +148,34 @@ class CognitionPipeline:
     # ------------------------------------------------------------------
 
     def _complexity_gate(self, env: GoalEnvelope) -> GoalEnvelope:
+        # P5: the Λ components stop being literal 0.0 stubs. token_depth is
+        # measured from the prompt itself; lambda_psi is the REAL canonical
+        # field's ψ when the field is live (0.0 with a named dark-field note
+        # otherwise — never a substituted value); llm_self_rate stays 0.0
+        # honestly until the M-series lands a real LLM self-rating.
+        import math as _math
+
+        tokens = (env.prompt or "").strip().split()
+        token_depth = _math.tanh(len(tokens) / 64.0)
+        lambda_psi = 0.0
+        field_state = "dark"
+        try:
+            from aureon.core.hnc_field import read_canonical_field
+            _cf = read_canonical_field()
+            if getattr(_cf, "available", False) and _cf.consciousness_psi is not None:
+                lambda_psi = max(0.0, min(1.0, float(_cf.consciousness_psi)))
+                field_state = "live"
+        except Exception:
+            pass
         env.complexity = ComplexityReading(
             n_branches=1,
-            score=0.0,
-            components={"token_depth": 0.0, "llm_self_rate": 0.0, "lambda_psi": 0.0},
+            score=round((token_depth + lambda_psi) / 2.0, 6),
+            components={"token_depth": token_depth, "llm_self_rate": 0.0,
+                        "lambda_psi": lambda_psi},
         )
-        self._publish(env, "complexity_gate", env.complexity.to_dict())
+        payload = env.complexity.to_dict()
+        payload["field_state"] = field_state
+        self._publish(env, "complexity_gate", payload)
         return env
 
     # ------------------------------------------------------------------
@@ -162,6 +184,16 @@ class CognitionPipeline:
 
     def _multiverse(self, env: GoalEnvelope) -> GoalEnvelope:
         candidate_text = env.prompt
+        # P5: the branch carries the REAL canonical Λ(t) at spawn time when
+        # the field is live — 0.0 only when the field is honestly dark.
+        lambda_snapshot = 0.0
+        try:
+            from aureon.core.hnc_field import read_canonical_field
+            _cf = read_canonical_field()
+            if getattr(_cf, "available", False) and _cf.lambda_t is not None:
+                lambda_snapshot = float(_cf.lambda_t)
+        except Exception:
+            pass
         branch = Branch(
             branch_id=uuid.uuid4().hex[:8],
             persona="default",
@@ -169,7 +201,7 @@ class CognitionPipeline:
             seed=0,
             candidate_text=candidate_text,
             candidate_intent=env.intent,
-            lambda_snapshot=0.0,
+            lambda_snapshot=lambda_snapshot,
             latency_ms=0.0,
         )
         env.branches = [branch]
@@ -190,13 +222,29 @@ class CognitionPipeline:
                 text=winner.candidate_text,
                 intent=winner.candidate_intent,
                 lambda_at_collapse=winner.lambda_snapshot,
-                conscience_verdict="APPROVED",
+                conscience_verdict=self._conscience_verdict(env),
                 synthesized=False,
                 runner_up_ids=[],
             )
         env.dispatch = DispatchResult(peer_name="stubbed", status="stubbed", payload={})
         self._publish(env, "coherence_collapse", env.collapsed.to_dict())
         return env
+
+    def _conscience_verdict(self, env: GoalEnvelope) -> str:
+        """P5: the verdict stops being a hardcoded APPROVED. The REAL Queen
+        conscience (the 4th-pass veto) reviews the collapse against the live
+        canonical field; when the conscience cannot be consulted the honest
+        answer is UNREVIEWED — an unexamined output is not an approved one."""
+        try:
+            from aureon.queen.queen_conscience import QueenConscience
+
+            verdict = _get_conscience(QueenConscience).ask_why(
+                f"Emit cognition output for goal: {(env.prompt or '')[:120]}",
+                {"trace_id": env.trace_id, "risk": 0.0},
+            ).verdict
+            return getattr(verdict, "name", str(verdict))
+        except Exception:
+            return "UNREVIEWED"
 
     # ------------------------------------------------------------------
     # Transport
@@ -237,6 +285,17 @@ class CognitionPipeline:
             if tid:
                 return tid
         return None
+
+
+_conscience_singleton: Any = None
+
+
+def _get_conscience(cls: Any) -> Any:
+    """Lazy module-level conscience — constructed once, reused per collapse."""
+    global _conscience_singleton
+    if _conscience_singleton is None:
+        _conscience_singleton = cls()
+    return _conscience_singleton
 
 
 def run_goal(

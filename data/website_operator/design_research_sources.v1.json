@@ -1,0 +1,88 @@
+{
+  "schema": "aureon.design-research-sources.v1",
+  "declaration_id": "public-design-research-sources-20260730",
+  "issued_at": "2026-07-29T23:30:07Z",
+  "refresh_due_within_days": 14,
+  "authority": {
+    "scope": "local redacted research and design source freshness review only",
+    "declaration_mutation": "never by this validator",
+    "canonical_website_mutation": "never",
+    "claim_register_mutation": "never",
+    "release_eligible": false,
+    "package_authority": "none",
+    "deployment_authority": "none",
+    "credential_access": "none",
+    "network_access": "none",
+    "connector_access": "none",
+    "research_refresh_authority": "human review of local public-source evidence only"
+  },
+  "sources": [
+    {
+      "id": "orcid-public-research-index",
+      "kind": "public-research-record",
+      "public_reference": {
+        "kind": "record-id",
+        "value": "orcid:0009-0004-2792-4649"
+      },
+      "observed_at": "2026-07-29T23:30:07Z",
+      "expires_at": "2026-08-29T23:30:07Z",
+      "snapshot": {
+        "path": "docs/research/AUREON_ORCID_PUBLIC_RECORD_RECONCILIATION_20260730.md",
+        "sha256": "F77DB16C68B690AF5C6AF34A55075888BDB8CEE251FD793BBFA490CB1D8C5B6C"
+      },
+      "claim_ids": [
+        "orcid-research-identity",
+        "cross-sector-research-orientation"
+      ],
+      "purpose": "Binds the public research identity and curated research orientation to a dated local reconciliation record.",
+      "boundary": "The record supports attribution and source availability only; it does not establish review, validation, readiness, adoption, funding, partnership or endorsement."
+    },
+    {
+      "id": "research-catalogue-public-data",
+      "kind": "public-website-data",
+      "public_reference": {
+        "kind": "https-url",
+        "value": "https://aureonzorzatechnologies.pl/research/"
+      },
+      "observed_at": "2026-07-28T19:00:00Z",
+      "expires_at": "2026-08-26T19:00:00Z",
+      "snapshot": {
+        "path": "website/data/research-catalogue.json",
+        "sha256": "DFDBEEAF1D82B01788C0EFC590593B7E0F3B7D95ED97BDB83F4B273A19ED3456"
+      },
+      "claim_ids": [
+        "orcid-research-identity",
+        "cross-sector-research-orientation"
+      ],
+      "purpose": "Binds the curated public research catalogue to the research routes without expanding it into an unbounded marketing inventory.",
+      "boundary": "Public catalogue data and linked records establish a source trail only; they do not establish scientific validation, product readiness, customer use or commercial outcomes."
+    },
+    {
+      "id": "peer-design-pattern-review",
+      "kind": "public-design-pattern",
+      "public_reference": {
+        "kind": "https-url",
+        "value": "https://www.palantir.com/platforms/ontology/"
+      },
+      "observed_at": "2026-07-29T23:30:07Z",
+      "expires_at": "2026-08-20T23:30:07Z",
+      "snapshot": {
+        "path": "docs/research/AUREON_INVESTOR_WEBSITE_PEER_BENCHMARK_20260730.md",
+        "sha256": "EE519F0A5BCB46DF4404E06FB76DF32F1CE43AEFABABB3ECACDB48656A5D31C5"
+      },
+      "claim_ids": [],
+      "purpose": "Retains a redacted design-pattern reference for original research-to-system-to-use-case information architecture.",
+      "boundary": "This is an abstract design-pattern input only and must not be treated as copied content, code, imagery, CSS, trade dress, comparative parity or an endorsement."
+    }
+  ],
+  "artwork_policy": {
+    "state": "not-cleared",
+    "confirmed_local_provenance": false,
+    "source_artwork_included": false,
+    "boundary": "No external editorial artwork is included or cleared. It must not be used until a separate governed local provenance and rights review records an explicit decision.",
+    "evidence_snapshot": {
+      "path": "docs/research/AUREON_INVESTOR_NARRATIVE_ALIGNMENT_20260728.md",
+      "sha256": "65A83F951E465ACC0920ADBA5554D9A2542617AA0D4699BE368005B3563D8B6E"
+    }
+  }
+}

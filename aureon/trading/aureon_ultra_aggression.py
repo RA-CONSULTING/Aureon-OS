@@ -1,11 +1,8 @@
 """
 🔥💎 AUREON ULTRA AGGRESSION MODE 💎🔥
 
-🟡 STANDALONE SIMULATOR — MogollonWarrior._get_price() returns synthetic
-   prices (hardcoded base + random.uniform noise) and the class trades
-   against an in-memory account. Not imported by production code; only the
-   __main__ block calls main(). _get_price is gated behind
-   AUREON_ALLOW_SIM_FALLBACK so calling this in production raises.
+Provider-backed observer/execution shell. Missing exchange ticks remain
+no_data and are never replaced by hard-coded or generated prices.
 
 "WE DON'T NEED MILLIONS. WE NEED MOVEMENT.
  WE DON'T NEED PERMISSION. WE NEED ACTION.
@@ -39,7 +36,7 @@ try:
     EXCHANGES_AVAILABLE = True
 except ImportError:
     EXCHANGES_AVAILABLE = False
-    print("⚠️ Exchange clients not available - using simulation mode")
+    print("⚠️ Exchange clients not available - live market data unavailable")
 
 
 logging.basicConfig(
@@ -149,7 +146,7 @@ class MogollonWarrior:
         logger.info("🌐 Connecting to ALL exchanges...")
         
         if not EXCHANGES_AVAILABLE:
-            logger.warning("⚠️ Running in SIMULATION mode - no real trades")
+            logger.warning("no_data: exchange clients are unavailable")
             return
         
         try:
@@ -261,32 +258,27 @@ class MogollonWarrior:
             return None
     
     async def _get_price(self, exchange: str, symbol: str) -> Optional[float]:
-        """Get current price for symbol (DEV-ONLY synthetic stub)"""
-        from aureon.observer.live_data_policy import (
-            simulation_fallback_allowed, log_blocked_fallback,
-        )
-        if not simulation_fallback_allowed():
-            log_blocked_fallback("aureon_ultra_aggression._get_price",
-                                 "synthetic_simulator")
-            raise RuntimeError(
-                "MogollonWarrior._get_price() returns synthetic prices, not "
-                "real exchange ticks. Set AUREON_ALLOW_SIM_FALLBACK=1 to "
-                "allow in dev, or wire a real exchange feed."
-            )
-        # DEV-ONLY synthetic price (replace with real API call)
-        import random
-        base_prices = {
-            'BTCUSDT': 88000, 'ETHUSDT': 3000, 'SOLUSDT': 125,
-            'ADAUSDT': 0.35, 'XRPUSDT': 1.85, 'DOTUSDT': 7.5,
-            'XBTUSD': 88000, 'ETHUSD': 3000, 'SOLUSD': 125,
-        }
-        
-        # Get base price
-        base = base_prices.get(symbol, 100)
-        
-        # Add random movement
-        noise = random.uniform(-0.02, 0.02)  # ±2% noise
-        return base * (1 + noise)
+        """Read a current provider ticker; return None on no-data."""
+        multi = self.exchanges.get('multi')
+        if multi is None:
+            logger.warning("no_data: no exchange client for %s:%s", exchange, symbol)
+            return None
+        try:
+            ticker = await asyncio.to_thread(multi.get_ticker, exchange, symbol)
+        except Exception as exc:
+            logger.warning("no_data: ticker read failed for %s:%s: %s", exchange, symbol, exc)
+            return None
+        if not isinstance(ticker, dict):
+            return None
+        for key in ('price', 'lastPrice', 'last', 'close'):
+            try:
+                price = float(ticker.get(key))
+            except (TypeError, ValueError):
+                continue
+            if price > 0:
+                return price
+        logger.warning("no_data: provider ticker has no positive price for %s:%s", exchange, symbol)
+        return None
     
     async def scan_all_markets(self) -> List[dict]:
         """Scan ALL markets across ALL exchanges"""

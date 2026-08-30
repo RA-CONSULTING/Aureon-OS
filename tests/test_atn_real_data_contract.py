@@ -44,3 +44,32 @@ def test_atn_state_serializes_truth_status(monkeypatch):
     assert payload["streams"]["fire"]["truth_status"] == "no_data"
     assert payload["streams"]["fire"]["source_id"] == "nasa_firms"
     assert payload["streams"]["fire"]["blocker"] == "missing_env:FIRMS_MAP_KEY"
+
+
+def test_atn_aggregation_blocks_missing_error_and_no_data_streams(monkeypatch):
+    good = atn.StreamResult(
+        name="quake", score=1.0, veto=False, alerts=[], raw={"max_mag": 0.0}, timestamp=100.0
+    )
+    errored = atn.StreamResult(
+        name="volcano", score=0.9, veto=False, alerts=[], raw={}, error="provider_timeout", timestamp=101.0
+    )
+    no_data = atn._no_data_stream(
+        "fire", source_id="nasa_firms", source_name="NASA FIRMS",
+        source_url="https://firms.modaps.eosdis.nasa.gov/api/area/csv",
+        blocker="missing_env:FIRMS_MAP_KEY",
+    )
+    monkeypatch.setattr(atn, "_FETCHERS", {
+        "quake": lambda: good,
+        "volcano": lambda: errored,
+        "fire": lambda: no_data,
+    })
+
+    payload = atn.ATNMonitor().get_trading_impact()
+
+    assert payload["veto"] is True
+    assert payload["actionable"] is False
+    assert payload["risk_factor"] is None
+    assert payload["provenance"]["truth_status"] == "no_data"
+    assert payload["provenance"]["non_actionable_streams"] == ["fire", "volcano"]
+    assert payload["streams"]["volcano"]["received_at"] == 101.0
+    assert payload["streams"]["volcano"]["source_timestamp"] is None

@@ -15,6 +15,8 @@ Environment=PATH=/opt/aureon/.venv/bin:/usr/local/bin:/usr/bin:/bin
 Environment=AUREON_OPERATOR_PORT=8790
 Environment=AUREON_OPERATOR_HOST=0.0.0.0
 EnvironmentFile=-/opt/aureon/.env
+Environment=AUREON_OPERATOR_HTTP_PROCESSES=1
+Environment=AUREON_OPERATOR_REPLICAS=1
 ExecStart=/opt/aureon/.venv/bin/python -u -m aureon.operator.operator_server
 Restart=always
 RestartSec=5

@@ -150,6 +150,7 @@ MANUAL_BOUNDARIES = [
 
 
 HttpProbe = Callable[[str], Dict[str, Any]]
+PortProbe = Callable[[str, int], bool]
 
 
 def _default_root() -> Path:
@@ -240,9 +241,16 @@ def _default_http_probe(url: str) -> Dict[str, Any]:
         return {"url": url, "ok": False, "status_code": 0, "error": str(exc)}
 
 
-def _service_rows(root: Path, *, probe_services: bool, http_probe: Optional[HttpProbe]) -> List[Dict[str, Any]]:
+def _service_rows(
+    root: Path,
+    *,
+    probe_services: bool,
+    http_probe: Optional[HttpProbe],
+    port_probe: Optional[PortProbe],
+) -> List[Dict[str, Any]]:
     rows: List[Dict[str, Any]] = []
     probe = http_probe or _default_http_probe
+    probe_port = port_probe or _port_open
     for target in SERVICE_TARGETS:
         service_root = _rooted(root, target["path"])
         missing = [name for name in target["required_files"] if not (service_root / name).exists()]
@@ -250,7 +258,7 @@ def _service_rows(root: Path, *, probe_services: bool, http_probe: Optional[Http
         health_rows: List[Dict[str, Any]] = []
         if probe_services:
             health_rows = [probe(url) for url in target.get("health_urls", [])]
-        port_open = _port_open("127.0.0.1", port) if probe_services and port else False
+        port_open = probe_port("127.0.0.1", port) if probe_services and port else False
         health_ok = bool(health_rows) and all(row.get("ok") for row in health_rows)
         rows.append(
             {
@@ -567,11 +575,17 @@ def build_runtime_activation_stress_audit(
     env: Optional[Dict[str, str]] = None,
     probe_services: bool = True,
     http_probe: Optional[HttpProbe] = None,
+    port_probe: Optional[PortProbe] = None,
 ) -> Dict[str, Any]:
     root_path = Path(root or _default_root()).resolve()
     env_map = dict(os.environ if env is None else env)
     unity_bridge = build_unity_bridge()
-    service_rows = _service_rows(root_path, probe_services=probe_services, http_probe=http_probe)
+    service_rows = _service_rows(
+        root_path,
+        probe_services=probe_services,
+        http_probe=http_probe,
+        port_probe=port_probe,
+    )
     gate_rows = _gate_rows(env_map)
     package_rows = _package_rows(root_path)
     dependency_rows = _dependency_rows(root_path)

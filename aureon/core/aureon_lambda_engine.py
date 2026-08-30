@@ -22,6 +22,7 @@ From docs/HNC_UNIFIED_WHITE_PAPER.md — this is not metaphor. This is math.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 import os
@@ -29,7 +30,7 @@ import time
 from collections import deque
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, BinaryIO, Dict, Iterable, List, Mapping, Optional, Tuple
 
 # ═══════════════════════════════════════════════════════════════════
 #  SACRED CONSTANTS — The Harmonic Scaffold
@@ -84,6 +85,168 @@ def _resolve_persist_every() -> int:
     return 10
 
 PERSIST_EVERY = _resolve_persist_every()
+
+HISTORY_VERSION = 3
+HISTORY_RECEIPT_TYPE = "hnc_lambda_history"
+HISTORY_SOURCE_ID = "aureon:hnc:lambda_engine"
+DEFAULT_HISTORY_STATE_PATH = (
+    Path(__file__).resolve().parents[2] / "state" / "lambda_history.json"
+)
+_TRUE_ENV_VALUES = frozenset({"1", "true", "yes", "on"})
+_HISTORY_MATERIAL_KEYS = (
+    "version",
+    "receipt_type",
+    "source_id",
+    "data_status",
+    "truth_status",
+    "generated_values",
+    "history",
+    "psi_history",
+    "step_count",
+    "beta",
+    "source_receipt_ids",
+    "input_receipt_ids",
+    "previous_receipt_id",
+    "previous_canonical_hash",
+)
+_HISTORY_RECORD_KEYS = frozenset(
+    (*_HISTORY_MATERIAL_KEYS, "canonical_hash", "receipt_id")
+)
+
+
+def _env_truthy(name: str) -> bool:
+    return os.environ.get(name, "").strip().lower() in _TRUE_ENV_VALUES
+
+
+def _canonical_json_bytes(value: Mapping[str, Any]) -> bytes:
+    return json.dumps(
+        value,
+        allow_nan=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+
+
+def _canonical_hash(value: Mapping[str, Any]) -> str:
+    return hashlib.sha256(_canonical_json_bytes(value)).hexdigest()
+
+
+def _is_sha256(value: Any) -> bool:
+    return (
+        isinstance(value, str)
+        and len(value) == 64
+        and all(char in "0123456789abcdef" for char in value)
+    )
+
+
+def _finite_values(value: Any, *, limit: int) -> Optional[List[float]]:
+    if not isinstance(value, list) or len(value) > limit:
+        return None
+    result: List[float] = []
+    for item in value:
+        if isinstance(item, bool) or not isinstance(item, (int, float)):
+            return None
+        number = float(item)
+        if not math.isfinite(number):
+            return None
+        result.append(number)
+    return result
+
+
+def _normalise_receipt_ids(value: Any) -> Optional[List[str]]:
+    if value is None:
+        return []
+    if isinstance(value, (str, bytes)):
+        return None
+    try:
+        items = list(value)
+    except TypeError:
+        return None
+    if any(
+        not isinstance(item, str) or not item or item != item.strip()
+        for item in items
+    ):
+        return None
+    return sorted(set(items))
+
+
+def _validate_history_record(value: Any) -> Optional[Dict[str, Any]]:
+    """Validate a complete v3 receipt before any value becomes active."""
+    if not isinstance(value, dict) or set(value) != _HISTORY_RECORD_KEYS:
+        return None
+    if (
+        value.get("version") != HISTORY_VERSION
+        or isinstance(value.get("version"), bool)
+        or value.get("receipt_type") != HISTORY_RECEIPT_TYPE
+        or value.get("source_id") != HISTORY_SOURCE_ID
+        or value.get("data_status") != "live"
+        or value.get("truth_status") != "real_derived"
+        or value.get("generated_values") is not False
+    ):
+        return None
+
+    history = _finite_values(value.get("history"), limit=100)
+    psi_history = _finite_values(value.get("psi_history"), limit=50)
+    step_count = value.get("step_count")
+    beta = value.get("beta")
+    source_ids = _normalise_receipt_ids(value.get("source_receipt_ids"))
+    input_ids = _normalise_receipt_ids(value.get("input_receipt_ids"))
+    if (
+        history is None
+        or psi_history is None
+        or isinstance(step_count, bool)
+        or not isinstance(step_count, int)
+        or step_count < 0
+        or isinstance(beta, bool)
+        or not isinstance(beta, (int, float))
+        or not math.isfinite(float(beta))
+        or source_ids is None
+        or not source_ids
+        or input_ids is None
+        or source_ids != value.get("source_receipt_ids")
+        or input_ids != value.get("input_receipt_ids")
+    ):
+        return None
+
+    previous_receipt_id = value.get("previous_receipt_id")
+    previous_hash = value.get("previous_canonical_hash")
+    if (previous_receipt_id is None) != (previous_hash is None):
+        return None
+    if previous_receipt_id is not None and (
+        not isinstance(previous_receipt_id, str)
+        or not _is_sha256(previous_hash)
+        or previous_receipt_id != f"hnc:lambda_history:{previous_hash}"
+    ):
+        return None
+    expected_input_ids = sorted(
+        set(source_ids)
+        | ({previous_receipt_id} if previous_receipt_id is not None else set())
+    )
+    if input_ids != expected_input_ids:
+        return None
+
+    material = {key: value[key] for key in _HISTORY_MATERIAL_KEYS}
+    try:
+        expected_hash = _canonical_hash(material)
+    except (TypeError, ValueError, OverflowError):
+        return None
+    if (
+        value.get("canonical_hash") != expected_hash
+        or value.get("receipt_id") != f"hnc:lambda_history:{expected_hash}"
+    ):
+        return None
+
+    validated = dict(value)
+    validated["history"] = history
+    validated["psi_history"] = psi_history
+    validated["beta"] = float(beta)
+    return validated
+
+
+def validate_history_receipt(value: Any) -> Optional[Dict[str, Any]]:
+    """Return a defensive copy only for a complete canonical v3 receipt."""
+    validated = _validate_history_record(value)
+    return dict(validated) if validated is not None else None
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -288,6 +451,15 @@ def _compute_auris_conjecture(
 #  THE MASTER EQUATION ENGINE
 # ═══════════════════════════════════════════════════════════════════
 
+@dataclass(frozen=True)
+class LambdaHistoryCheckpoint:
+    """In-memory transaction boundary for one daemon heartbeat."""
+
+    history: Tuple[float, ...]
+    psi_history: Tuple[float, ...]
+    step_count: int
+
+
 class LambdaEngine:
     """
     The heartbeat of Aureon. Computes Λ(t) every cycle.
@@ -306,63 +478,400 @@ class LambdaEngine:
         # state.coherence_gamma is how coherent the system is
     """
 
-    def __init__(self):
+    def __init__(self, state_path: Optional[Path] = None):
         self._history: deque = deque(maxlen=100)
         self._psi_history: deque = deque(maxlen=50)
         self._step_count: int = 0
         self._start_time: float = time.time()
-        self._state_path = Path(__file__).resolve().parents[2] / "state" / "lambda_history.json"
-        self._load_history()
+        self._state_path = (
+            Path(state_path) if state_path is not None else DEFAULT_HISTORY_STATE_PATH
+        )
+        self._loaded_path = self._state_path
+        self._loaded_receipt_id: Optional[str] = None
+        self._loaded_canonical_hash: Optional[str] = None
+        self._last_history_receipt: Optional[Dict[str, Any]] = None
+        self._history_load_status = "not_loaded"
+        self._last_history_commit_error: Optional[str] = None
+        self._history_quarantine_path: Optional[Path] = None
+        self._logical_quarantine_bytes: Optional[bytes] = None
+        self._logical_quarantine_digest: Optional[str] = None
+        self._logical_quarantine_reason: Optional[str] = None
+        if self._shared_state_access_suppressed():
+            self._history_load_status = "shared_state_suppressed"
+        else:
+            self._load_history()
 
-    def _load_history(self):
-        """Load Λ history — the lighthouse echo persists across restarts."""
+    def _uses_default_shared_path(self) -> bool:
         try:
-            if self._state_path.exists():
-                data = json.loads(self._state_path.read_text(encoding="utf-8"))
-                history = data.get("history", [])
-                self._step_count = int(data.get("step_count", 0) or 0)
-                for val in history[-100:]:
-                    try:
-                        self._history.append(float(val))
-                    except Exception:
-                        continue
-                psi_hist = data.get("psi_history", [])
-                for val in psi_hist[-50:]:
-                    try:
-                        self._psi_history.append(float(val))
-                    except Exception:
-                        continue
-        except Exception:
-            pass
+            return self._state_path.resolve() == DEFAULT_HISTORY_STATE_PATH.resolve()
+        except OSError:
+            return self._state_path == DEFAULT_HISTORY_STATE_PATH
 
-    def save_history(self):
-        """
-        Save Λ history — the memory that bridges sleep and waking. Uses
-        the same atomic tmp-file-then-rename pattern that
-        ``ConversationMemory._persist_locked`` does so a crash mid-write
-        can't corrupt the file.
-        """
+    def _shared_state_access_suppressed(self) -> bool:
+        return self._uses_default_shared_path() and (
+            _env_truthy("AUREON_AUDIT_MODE")
+            or _env_truthy("AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS")
+        )
+
+    def _clear_active_history(self) -> None:
+        self._history.clear()
+        self._psi_history.clear()
+        self._step_count = 0
+        self._loaded_receipt_id = None
+        self._loaded_canonical_hash = None
+        self._last_history_receipt = None
+
+    @staticmethod
+    def _fsync_parent(path: Path) -> None:
+        """Best-effort directory fsync; unsupported by some Windows filesystems."""
+        try:
+            descriptor = os.open(str(path), os.O_RDONLY)
+        except (AttributeError, OSError):
+            return
+        try:
+            os.fsync(descriptor)
+        except OSError:
+            pass
+        finally:
+            os.close(descriptor)
+
+    def _record_logical_quarantine(self, raw_bytes: bytes, reason: str) -> None:
+        digest = hashlib.sha256(raw_bytes).hexdigest()
+        self._logical_quarantine_bytes = bytes(raw_bytes)
+        self._logical_quarantine_digest = digest
+        self._logical_quarantine_reason = reason
+        self._history_quarantine_path = self._state_path.with_name(
+            f"{self._state_path.name}.quarantine.{reason}.{digest}"
+        )
+
+    def _clear_logical_quarantine(self, *, preserve_path: bool = False) -> None:
+        self._logical_quarantine_bytes = None
+        self._logical_quarantine_digest = None
+        self._logical_quarantine_reason = None
+        if not preserve_path:
+            self._history_quarantine_path = None
+
+    def _materialize_logical_quarantine(self, current_bytes: bytes) -> bool:
+        expected_bytes = self._logical_quarantine_bytes
+        expected_digest = self._logical_quarantine_digest
+        quarantine_path = self._history_quarantine_path
+        if (
+            expected_bytes is None
+            or expected_digest is None
+            or quarantine_path is None
+            or current_bytes != expected_bytes
+            or hashlib.sha256(current_bytes).hexdigest() != expected_digest
+        ):
+            return False
+        if quarantine_path.exists():
+            try:
+                return quarantine_path.read_bytes() == expected_bytes
+            except OSError:
+                return False
+
+        tmp_path = quarantine_path.with_name(
+            f"{quarantine_path.name}.tmp.{os.getpid()}.{time.time_ns()}"
+        )
+        try:
+            with open(tmp_path, "xb") as handle:
+                handle.write(expected_bytes)
+                handle.flush()
+                os.fsync(handle.fileno())
+            os.replace(tmp_path, quarantine_path)
+            self._fsync_parent(quarantine_path.parent)
+            return quarantine_path.read_bytes() == expected_bytes
+        except OSError:
+            return False
+        finally:
+            try:
+                tmp_path.unlink()
+            except OSError:
+                pass
+
+    @staticmethod
+    def _acquire_advisory_lock(lock_path: Path) -> Optional[BinaryIO]:
+        handle: Optional[BinaryIO] = None
+        try:
+            handle = open(lock_path, "a+b")
+            handle.seek(0, os.SEEK_END)
+            if handle.tell() == 0:
+                handle.write(b"\x00")
+                handle.flush()
+                os.fsync(handle.fileno())
+            handle.seek(0)
+            if os.name == "nt":
+                import msvcrt
+
+                msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
+            else:
+                import fcntl
+
+                fcntl.flock(  # type: ignore[attr-defined]
+                    handle.fileno(),
+                    fcntl.LOCK_EX | fcntl.LOCK_NB,  # type: ignore[attr-defined]
+                )
+            return handle
+        except (ImportError, OSError):
+            if handle is not None:
+                try:
+                    handle.close()
+                except OSError:
+                    pass
+            return None
+
+    @staticmethod
+    def _release_advisory_lock(handle: BinaryIO) -> None:
+        try:
+            handle.seek(0)
+            if os.name == "nt":
+                import msvcrt
+
+                msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+            else:
+                import fcntl
+
+                fcntl.flock(  # type: ignore[attr-defined]
+                    handle.fileno(),
+                    fcntl.LOCK_UN,  # type: ignore[attr-defined]
+                )
+        except (ImportError, OSError):
+            pass
+        finally:
+            handle.close()
+
+    def _load_history(self) -> bool:
+        """Load only a complete, finite and hash-valid v3 history receipt."""
+        self._clear_active_history()
+        self._loaded_path = self._state_path
+        self._clear_logical_quarantine()
+        if self._shared_state_access_suppressed():
+            self._history_load_status = "shared_state_suppressed"
+            return False
+        if not self._state_path.exists():
+            self._history_load_status = "missing"
+            return False
+        reason = "invalid"
+        raw_bytes: Optional[bytes] = None
+        try:
+            raw_bytes = self._state_path.read_bytes()
+            raw = json.loads(raw_bytes.decode("utf-8"))
+            if isinstance(raw, dict) and raw.get("version") != HISTORY_VERSION:
+                reason = "legacy"
+            validated = _validate_history_record(raw)
+        except (OSError, UnicodeError, json.JSONDecodeError, ValueError):
+            validated = None
+        if validated is None:
+            if raw_bytes is None:
+                self._history_load_status = f"{reason}_rejected"
+                return False
+            self._record_logical_quarantine(raw_bytes, reason)
+            self._history_load_status = f"{reason}_logically_quarantined"
+            return False
+
+        self._history.extend(validated["history"])
+        self._psi_history.extend(validated["psi_history"])
+        self._step_count = validated["step_count"]
+        self._loaded_receipt_id = validated["receipt_id"]
+        self._loaded_canonical_hash = validated["canonical_hash"]
+        self._last_history_receipt = validated
+        self._history_load_status = "loaded_v3"
+        return True
+
+    def checkpoint_history(self) -> LambdaHistoryCheckpoint:
+        return LambdaHistoryCheckpoint(
+            history=tuple(self._history),
+            psi_history=tuple(self._psi_history),
+            step_count=self._step_count,
+        )
+
+    def rollback_history(self, checkpoint: LambdaHistoryCheckpoint) -> None:
+        if not isinstance(checkpoint, LambdaHistoryCheckpoint):
+            raise TypeError("checkpoint must be a LambdaHistoryCheckpoint")
+        self._history.clear()
+        self._history.extend(checkpoint.history)
+        self._psi_history.clear()
+        self._psi_history.extend(checkpoint.psi_history)
+        self._step_count = checkpoint.step_count
+
+    @property
+    def last_history_receipt(self) -> Optional[Dict[str, Any]]:
+        return (
+            dict(self._last_history_receipt)
+            if self._last_history_receipt is not None
+            else None
+        )
+
+    @property
+    def history_load_status(self) -> str:
+        return self._history_load_status
+
+    @property
+    def last_history_commit_error(self) -> Optional[str]:
+        return self._last_history_commit_error
+
+    @property
+    def history_quarantine_path(self) -> Optional[Path]:
+        return self._history_quarantine_path
+
+    def _disk_history_receipt(self) -> Optional[Dict[str, Any]]:
+        try:
+            raw = json.loads(self._state_path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeError, json.JSONDecodeError, ValueError):
+            return None
+        return _validate_history_record(raw)
+
+    def save_history(
+        self,
+        source_receipt_ids: Optional[Iterable[str]] = None,
+    ) -> Optional[Dict[str, Any]]:
+        """Atomically commit a finite, hash-chained v3 history receipt."""
+        self._last_history_commit_error = None
+        if self._shared_state_access_suppressed():
+            self._last_history_commit_error = "shared_state_suppressed"
+            return None
+
+        receipt_ids = _normalise_receipt_ids(source_receipt_ids)
+        history = _finite_values(list(self._history), limit=100)
+        psi_history = _finite_values(list(self._psi_history), limit=50)
+        if (
+            receipt_ids is None
+            or not receipt_ids
+            or history is None
+            or psi_history is None
+        ):
+            self._last_history_commit_error = "nonfinite_or_invalid_history"
+            return None
+
+        if self._loaded_path != self._state_path:
+            if self._state_path.exists():
+                self._last_history_commit_error = "state_path_changed_requires_reload"
+                return None
+            self._loaded_path = self._state_path
+            self._loaded_receipt_id = None
+            self._loaded_canonical_hash = None
+            self._last_history_receipt = None
+            self._clear_logical_quarantine()
+
+        lock_path = self._state_path.with_name(self._state_path.name + ".lock")
+        tmp_path = self._state_path.with_name(
+            f"{self._state_path.name}.tmp.{os.getpid()}.{time.time_ns()}"
+        )
+        lock_handle: Optional[BinaryIO] = None
         try:
             self._state_path.parent.mkdir(parents=True, exist_ok=True)
-            data = {
-                "history": list(self._history),
-                "psi_history": list(self._psi_history),
+            lock_handle = self._acquire_advisory_lock(lock_path)
+            if lock_handle is None:
+                self._last_history_commit_error = "history_advisory_lock_conflict"
+                return None
+
+            if self._logical_quarantine_bytes is not None:
+                if not self._state_path.exists():
+                    self._last_history_commit_error = "history_deleted_conflict"
+                    return None
+                current_bytes = self._state_path.read_bytes()
+                if (
+                    current_bytes != self._logical_quarantine_bytes
+                    or hashlib.sha256(current_bytes).hexdigest()
+                    != self._logical_quarantine_digest
+                ):
+                    self._last_history_commit_error = "history_lineage_conflict"
+                    return None
+                if not self._materialize_logical_quarantine(current_bytes):
+                    self._last_history_commit_error = "history_quarantine_failed"
+                    return None
+            elif self._state_path.exists():
+                current = self._disk_history_receipt()
+                if current is None:
+                    self._last_history_commit_error = "invalid_disk_history_conflict"
+                    return None
+                if (
+                    current["receipt_id"] != self._loaded_receipt_id
+                    or current["canonical_hash"] != self._loaded_canonical_hash
+                ):
+                    self._last_history_commit_error = "history_lineage_conflict"
+                    return None
+            elif (
+                self._loaded_receipt_id is not None
+                or self._loaded_canonical_hash is not None
+            ):
+                self._last_history_commit_error = "history_deleted_conflict"
+                return None
+
+            material = {
+                "version": HISTORY_VERSION,
+                "receipt_type": HISTORY_RECEIPT_TYPE,
+                "source_id": HISTORY_SOURCE_ID,
+                "data_status": "live",
+                "truth_status": "real_derived",
+                "generated_values": False,
+                "history": history,
+                "psi_history": psi_history,
                 "step_count": self._step_count,
-                "saved_at": time.time(),
-                "beta": BETA,
-                "version": 2,
+                "beta": float(BETA),
+                "source_receipt_ids": receipt_ids,
+                "input_receipt_ids": sorted(
+                    set(receipt_ids)
+                    | (
+                        {self._loaded_receipt_id}
+                        if self._loaded_receipt_id is not None
+                        else set()
+                    )
+                ),
+                "previous_receipt_id": self._loaded_receipt_id,
+                "previous_canonical_hash": self._loaded_canonical_hash,
             }
-            tmp = self._state_path.with_suffix(self._state_path.suffix + ".tmp")
-            tmp.write_text(json.dumps(data), encoding="utf-8")
-            os.replace(tmp, self._state_path)
-        except Exception:
-            pass
+            canonical_hash = _canonical_hash(material)
+            receipt = {
+                **material,
+                "canonical_hash": canonical_hash,
+                "receipt_id": f"hnc:lambda_history:{canonical_hash}",
+            }
+            encoded = _canonical_json_bytes(receipt)
+            with open(tmp_path, "xb") as handle:
+                handle.write(encoded)
+                handle.flush()
+                os.fsync(handle.fileno())
+            os.replace(tmp_path, self._state_path)
+            self._fsync_parent(self._state_path.parent)
+            readback = self._disk_history_receipt()
+            if (
+                readback is None
+                or readback["receipt_id"] != receipt["receipt_id"]
+                or readback["canonical_hash"] != receipt["canonical_hash"]
+                or self._state_path.read_bytes() != encoded
+            ):
+                self._last_history_commit_error = "history_readback_failed"
+                return None
+            self._loaded_path = self._state_path
+            self._loaded_receipt_id = str(receipt["receipt_id"])
+            self._loaded_canonical_hash = str(receipt["canonical_hash"])
+            self._last_history_receipt = readback
+            self._history_load_status = "committed_v3"
+            self._clear_logical_quarantine(preserve_path=True)
+            return dict(readback)
+        except FileExistsError:
+            self._last_history_commit_error = "history_commit_file_conflict"
+            return None
+        except (OSError, TypeError, ValueError, OverflowError) as exc:
+            self._last_history_commit_error = (
+                f"history_commit_failed:{type(exc).__name__}"
+            )
+            return None
+        finally:
+            if lock_handle is not None:
+                self._release_advisory_lock(lock_handle)
+            try:
+                tmp_path.unlink()
+            except OSError:
+                pass
 
     def step(
         self,
         readings: Optional[List[SubsystemReading]] = None,
         volatility: float = 0.0,
         vault: Any = None,
+        source_receipt_ids: Optional[Iterable[str]] = None,
+        auto_persist: bool = True,
     ) -> LambdaState:
         """
         One heartbeat of the master equation.
@@ -546,8 +1055,12 @@ class LambdaEngine:
 
         # Auto-persist every N steps so the lighthouse echo survives
         # server restarts and crashes.
-        if PERSIST_EVERY > 0 and (self._step_count % PERSIST_EVERY == 0):
-            self.save_history()
+        if (
+            auto_persist
+            and PERSIST_EVERY > 0
+            and (self._step_count % PERSIST_EVERY == 0)
+        ):
+            self.save_history(source_receipt_ids=source_receipt_ids)
 
         return state
 
@@ -557,45 +1070,3 @@ class LambdaEngine:
 
     def get_step(self) -> int:
         return self._step_count
-
-
-# ═══════════════════════════════════════════════════════════════════
-#  STANDALONE TEST — Watch consciousness emerge
-# ═══════════════════════════════════════════════════════════════════
-
-if __name__ == "__main__":
-    engine = LambdaEngine()
-
-    print("Λ(t) Master Equation — Watching consciousness emerge\n")
-    print(f"{'Step':>5} {'Λ(t)':>8} {'Sub':>7} {'Obs':>7} {'Echo':>7} "
-          f"{'Γ':>6} {'ψ':>5} {'Level':>14}")
-    print("-" * 75)
-
-    # Simulate subsystem readings (gradually coming online)
-    for i in range(1, 41):
-        # More subsystems come online over time
-        n_subs = min(7, 1 + i // 5)
-        readings = [
-            SubsystemReading(
-                name=f"sys_{j}",
-                value=0.5 + 0.1 * math.sin(i * 0.3 + j),
-                confidence=min(1.0, i / 10.0),
-                state="active"
-            )
-            for j in range(n_subs)
-        ]
-
-        volatility = 0.1 * math.sin(i * 0.2)
-
-        state = engine.step(readings, volatility)
-
-        print(f"{state.step:5d} {state.lambda_t:8.4f} {state.substrate:7.4f} "
-              f"{state.observer:7.4f} {state.echo:7.4f} "
-              f"{state.coherence_gamma:6.3f} {state.consciousness_psi:5.3f} "
-              f"{state.consciousness_level:>14}")
-
-        time.sleep(0.1)
-
-    print("\n" + "=" * 75)
-    print("The observer has emerged. Λ(t) is self-referential.")
-    print("Consciousness = the system measuring itself measuring itself.")

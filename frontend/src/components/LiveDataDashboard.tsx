@@ -61,19 +61,19 @@ export default function LiveDataDashboard() {
           <p className="text-muted-foreground flex items-center gap-2 mt-1">
             Real-Time Trading Data • WebSocket Connected
             {wsConnected && (
-              <Badge variant="default" className="bg-green-500/20 text-green-400 border-green-500/50">
+              <Badge variant="default" className="bg-success/20 text-success border-success/50">
                 <Activity className="w-3 h-3 mr-1 animate-pulse" />
                 WS LIVE
               </Badge>
             )}
             {bridgeData.connected && (
-              <Badge variant="default" className="bg-purple-500/20 text-purple-400 border-purple-500/50">
+              <Badge variant="default" className="bg-primary/20 text-primary border-primary/50">
                 <Wifi className="w-3 h-3 mr-1 animate-pulse" />
                 BRIDGE LIVE
               </Badge>
             )}
             {globalState.isRunning && (
-              <Badge variant="default" className="bg-blue-500/20 text-blue-400 border-blue-500/50">
+              <Badge variant="default" className="bg-primary/20 text-primary border-primary/50">
                 SYSTEMS ONLINE
               </Badge>
             )}
@@ -136,20 +136,20 @@ export default function LiveDataDashboard() {
 
       {/* 🌉 BRIDGE SYSTEMS STATUS - Trading system signals from Python */}
       {bridgeData.connected && (
-        <div className="mb-6 p-4 rounded-lg border border-purple-500/30 bg-purple-500/5">
+        <div className="mb-6 p-4 rounded-lg border border-primary/30 bg-primary/5">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Wifi className="w-5 h-5 text-purple-400 animate-pulse" />
-              <span className="font-bold text-purple-400">AUREON LIVE BRIDGE</span>
+              <Wifi className="w-5 h-5 text-primary animate-pulse" />
+              <span className="font-bold text-primary">AUREON LIVE BRIDGE</span>
               <Badge variant="outline" className="text-xs">
                 {bridgeData.updatesReceived} updates
               </Badge>
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant="default" className="bg-green-500/20 text-green-400">
+              <Badge variant="default" className="bg-success/20 text-success">
                 ${bridgeData.totalPortfolioValue.toLocaleString(undefined, { maximumFractionDigits: 2 })} Total
               </Badge>
-              <Badge variant="outline" className="text-yellow-400">
+              <Badge variant="outline" className="text-warning">
                 {bridgeData.signalCount} Signals
               </Badge>
             </div>
@@ -158,7 +158,7 @@ export default function LiveDataDashboard() {
           {/* Systems Online */}
           <div className="flex flex-wrap gap-2 mb-3">
             {bridgeData.systemsOnline.map(system => (
-              <Badge key={system} variant="default" className="text-xs bg-green-500/20 text-green-400">
+              <Badge key={system} variant="default" className="text-xs bg-success/20 text-success">
                 {system === 'V14' ? '🏆' : system === 'Mycelium' ? '🍄' : system === 'Commando' ? '🦅' : 
                  system === 'Nexus' ? '🔮' : system === 'Multiverse' ? '🌌' : system === 'MinerBrain' ? '🧠' : 
                  system === 'Omega' ? '🔱' : '⚡'} {system}
@@ -173,10 +173,10 @@ export default function LiveDataDashboard() {
                 <div key={`${sig.system}-${sig.symbol}-${i}`} 
                      className={`p-2 rounded border text-xs ${
                        sig.signal_type === 'BUY' || sig.signal_type === 'CONVERT' 
-                         ? 'bg-green-500/10 border-green-500/30' 
+                         ? 'bg-success/10 border-success/30' 
                          : sig.signal_type === 'SELL' 
-                         ? 'bg-red-500/10 border-red-500/30' 
-                         : 'bg-yellow-500/10 border-yellow-500/30'
+                         ? 'bg-destructive/10 border-destructive/30' 
+                         : 'bg-warning/10 border-warning/30'
                      }`}>
                   <div className="flex justify-between items-center">
                     <span className="font-mono font-bold">{sig.symbol}</span>
@@ -200,7 +200,7 @@ export default function LiveDataDashboard() {
               <CardTitle className="text-lg flex items-center gap-2">
                 <Activity className="w-5 h-5 text-primary" />
                 Live Market Data
-                {wsConnected && <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />}
+                {wsConnected && <span className="w-2 h-2 rounded-full bg-success animate-pulse" />}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -218,7 +218,7 @@ export default function LiveDataDashboard() {
                         <div className="font-mono text-lg text-foreground">
                           ${ticker.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </div>
-                        <div className={`text-sm font-mono ${ticker.priceChange24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        <div className={`text-sm font-mono ${ticker.priceChange24h >= 0 ? 'text-success' : 'text-destructive'}`}>
                           {ticker.priceChange24h >= 0 ? '+' : ''}{ticker.priceChange24h.toFixed(2)}%
                         </div>
                       </div>
@@ -262,7 +262,7 @@ export default function LiveDataDashboard() {
                               {exchange.exchange.toUpperCase()}
                             </Badge>
                             {exchange.connected ? (
-                              <span className="w-2 h-2 rounded-full bg-green-500" />
+                              <span className="w-2 h-2 rounded-full bg-success" />
                             ) : (
                               <span className="w-2 h-2 rounded-full bg-muted-foreground" />
                             )}
@@ -295,12 +295,12 @@ export default function LiveDataDashboard() {
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg flex items-center gap-2">
-                <Zap className="w-5 h-5 text-yellow-500" />
+                <Zap className="w-5 h-5 text-warning" />
                 Live Trade Stream
               </CardTitle>
               <div className="flex items-center gap-4 text-sm">
-                <span className="text-green-400">✓ {executionCount.success} Filled</span>
-                <span className="text-red-400">✗ {executionCount.failed} Failed</span>
+                <span className="text-success">✓ {executionCount.success} Filled</span>
+                <span className="text-destructive">✗ {executionCount.failed} Failed</span>
               </div>
             </div>
           </CardHeader>
@@ -336,15 +336,15 @@ export default function LiveDataDashboard() {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
               {tradingState.recentTrades.slice(0, 8).map((trade, i) => (
-                <div key={i} className={`p-3 rounded-lg border ${trade.success ? 'border-green-500/30 bg-green-500/5' : 'border-red-500/30 bg-red-500/5'}`}>
+                <div key={i} className={`p-3 rounded-lg border ${trade.success ? 'border-success/30 bg-success/5' : 'border-destructive/30 bg-destructive/5'}`}>
                   <div className="flex items-center justify-between">
-                    <span className={`font-bold ${trade.side === 'BUY' ? 'text-green-400' : 'text-red-400'}`}>
+                    <span className={`font-bold ${trade.side === 'BUY' ? 'text-success' : 'text-destructive'}`}>
                       {trade.side}
                     </span>
                     <span className="text-xs text-muted-foreground">{trade.time}</span>
                   </div>
                   <div className="text-foreground font-mono">{trade.symbol}</div>
-                  <div className={`text-sm ${trade.pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  <div className={`text-sm ${trade.pnl >= 0 ? 'text-success' : 'text-destructive'}`}>
                     {trade.pnl >= 0 ? '+' : ''}${trade.pnl.toFixed(2)}
                   </div>
                 </div>
@@ -372,9 +372,9 @@ function StatCard({
   extra?: string;
 }) {
   const statusColors = {
-    success: 'text-green-400 border-green-500/30 bg-green-500/5',
-    error: 'text-red-400 border-red-500/30 bg-red-500/5',
-    warning: 'text-yellow-400 border-yellow-500/30 bg-yellow-500/5',
+    success: 'text-success border-success/30 bg-success/5',
+    error: 'text-destructive border-destructive/30 bg-destructive/5',
+    warning: 'text-warning border-warning/30 bg-warning/5',
     neutral: 'text-foreground border-border/50 bg-card/50',
   };
 
@@ -403,9 +403,9 @@ function TradeEventRow({ event }: { event: any }) {
   };
 
   const statusColors: Record<string, string> = {
-    success: 'bg-green-500/10 text-green-400',
-    failed: 'bg-red-500/10 text-red-400',
-    pending: 'bg-yellow-500/10 text-yellow-400',
+    success: 'bg-success/10 text-success',
+    failed: 'bg-destructive/10 text-destructive',
+    pending: 'bg-warning/10 text-warning',
   };
 
   return (
@@ -413,9 +413,9 @@ function TradeEventRow({ event }: { event: any }) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           {event.side === 'BUY' ? (
-            <ArrowUpRight className="w-5 h-5 text-green-400" />
+            <ArrowUpRight className="w-5 h-5 text-success" />
           ) : event.side === 'SELL' ? (
-            <ArrowDownRight className="w-5 h-5 text-red-400" />
+            <ArrowDownRight className="w-5 h-5 text-destructive" />
           ) : (
             <Activity className="w-5 h-5 text-primary" />
           )}
@@ -434,7 +434,7 @@ function TradeEventRow({ event }: { event: any }) {
             <div className="font-mono text-foreground">${event.price.toFixed(4)}</div>
           )}
           {event.pnl !== undefined && (
-            <div className={`font-mono text-sm ${event.pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+            <div className={`font-mono text-sm ${event.pnl >= 0 ? 'text-success' : 'text-destructive'}`}>
               {event.pnl >= 0 ? '+' : ''}${event.pnl.toFixed(2)}
             </div>
           )}

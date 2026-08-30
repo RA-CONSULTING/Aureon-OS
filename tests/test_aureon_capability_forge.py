@@ -4,7 +4,12 @@ import json
 from pathlib import Path
 
 from aureon.autonomous.aureon_artifact_quality_gate import build_artifact_quality_report
-from aureon.autonomous.aureon_capability_forge import build_and_write_capability_forge, classify_task_family
+from aureon.autonomous.aureon_capability_forge import (
+    _candidate_qa_control_plane_metadata,
+    _design_capability_registry_preflight,
+    build_and_write_capability_forge,
+    classify_task_family,
+)
 from aureon.core.goal_execution_engine import GoalExecutionEngine
 
 
@@ -19,15 +24,239 @@ def _fake_expression_context(*args, **kwargs):
 
 
 def test_capability_forge_classifies_core_task_families() -> None:
+    website = classify_task_family(
+        "Redesign the public company website with serious motion and investor-ready evidence."
+    )
+    assert website["task_family"] == "website_design"
+    assert website["primary_family"] == "website_design"
     assert classify_task_family("make a 10 second video of a dog")["primary_family"] == "video"
     assert classify_task_family("draw a logo and graphic design")["task_family"] == "image_graphic_design"
     assert classify_task_family("write code for a Python module and run tests")["task_family"] == "coding"
     assert classify_task_family("build a React UI dashboard panel")["primary_family"] == "ui"
     assert classify_task_family("write a PDF document report")["task_family"] == "document"
-    assert classify_task_family("open the browser and run a Playwright smoke test")["primary_family"] == "browser_qa"
+    assert (
+        classify_task_family("open the browser and run a Playwright smoke test")["primary_family"]
+        == "browser_qa"
+    )
 
 
-def test_capability_forge_local_only_reference_patterns_and_no_external_calls(tmp_path: Path, monkeypatch) -> None:
+def test_capability_forge_routes_website_before_generic_visual_generation(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(
+        "aureon.autonomous.aureon_safe_code_control.build_code_expression_context",
+        _fake_expression_context,
+    )
+
+    def fake_website_design(prompt: str, root: Path) -> dict:
+        receipt = root / "artifacts" / "website-operator" / "design-cycle.json"
+        receipt.parent.mkdir(parents=True, exist_ok=True)
+        receipt.write_text("{}\n", encoding="utf-8")
+        quality = {
+            "status": "artifact_quality_passed",
+            "score": 0.96,
+            "minimum_score": 0.85,
+            "handover_ready": True,
+            "checks": [],
+            "snags": [],
+            "regeneration_attempts": [],
+            "artifact_manifest": {
+                "kind": "website_design_cycle",
+                "asset_path": str(receipt),
+                "public_url": "/",
+            },
+        }
+        return {
+            "ok": True,
+            "artifact_manifest": quality["artifact_manifest"],
+            "artifact_quality_report": quality,
+            "design_cycle": {"schema": "aureon-website-design-job-v1"},
+            "output_files": [str(receipt)],
+            "adaptive_skill": {
+                "name": "aureon_harmonic_design_suite",
+                "created_for_prompt": False,
+                "reusable": True,
+            },
+        }
+
+    monkeypatch.setattr(
+        "aureon.autonomous.aureon_capability_forge._website_design_artifact",
+        fake_website_design,
+    )
+    monkeypatch.setattr(
+        "aureon.autonomous.aureon_capability_forge._visual_artifact",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            AssertionError("generic visual route must not run for website design")
+        ),
+    )
+
+    report = build_and_write_capability_forge(
+        "Redesign the public website with high-spec graphics and motion.",
+        root=tmp_path,
+    )
+
+    assert report["task_family"] == "website_design"
+    assert report["summary"]["website_design_cycle_created"] is True
+    assert report["artifact_manifest"]["kind"] == "website_design_cycle"
+    assert report["visual_asset_report"] == {}
+    roles = {item["role"] for item in report["recruited_crew"]}
+    assert {
+        "Website Design Director",
+        "Claims and Evidence Editor",
+        "Motion Designer",
+        "Accessibility and Performance QA",
+        "Design Release QA",
+    }.issubset(roles)
+    tools = {item["name"]: item["mode"] for item in report["local_tools_used"]}
+    assert tools["Motion/performance budget protocol"] == "installed_not_authorised_metadata_only"
+    assert tools["Candidate-test evidence protocol"] == "installed_not_authorised_metadata_only"
+    assert tools["V2 candidate-QA control plane"] == "installed_not_authorised_fixed_order_metadata_only"
+
+
+def test_candidate_qa_control_plane_metadata_never_infers_execution_or_pass() -> None:
+    metadata = _candidate_qa_control_plane_metadata(
+        {
+            "candidate_qa_control_plane_readiness": {
+                "available": True,
+                "state": "installed-not-authorised",
+                "static_qa_available": True,
+                "fixed_test_policy_compiler_available": True,
+                "fixed_motion_policy_compiler_available": True,
+                "handle_bound_immutable_writer_available": True,
+                "candidate_test_evidence_runtime_available": True,
+                "execution_order_enforced": True,
+                "compiler_verification_ingress": {
+                    "discovery_mode": "metadata-only-no-subprocess",
+                    "discovery_subprocess_launched": False,
+                    "imported_api": {
+                        "scope": "drift-check-only",
+                        "motion_read_only_verifier_available": True,
+                        "test_read_only_verifier_available": True,
+                        "pre_import_source_authentication": False,
+                    },
+                    "sealed_direct_file_read_only": {
+                        "protocol_available": True,
+                        "motion_protocol_available": True,
+                        "test_protocol_available": True,
+                        "executed": False,
+                        "python_flags": ["-I", "-S", "-B"],
+                        "motion_verify_flag": "--verify-config",
+                        "test_verify_flag": "--verify-policy",
+                        "source_closure_helper_available": True,
+                    },
+                    "runner_delegation": {
+                        "protocol_available": True,
+                        "required_for_candidate_qa": True,
+                        "bounded_popen_protocol_available": True,
+                        "launcher": "subprocess.Popen",
+                        "shell": False,
+                        "timeout_seconds": 300,
+                        "max_aggregate_output_bytes": 64 * 1024,
+                        "retry_authority": "none",
+                        "invoked": False,
+                    },
+                },
+                "execution_order": [
+                    "compile-fixed-motion-config",
+                    "compile-fixed-test-policy",
+                    "run-motion-budget-first",
+                    "run-complete-trusted-test-policy",
+                    "enter-initial-browser-gate-only-after-qa-verification",
+                ],
+            }
+        }
+    )
+
+    assert metadata["available"] is True
+    assert metadata["state"] == "installed-not-authorised"
+    assert metadata["invoked"] is False
+    assert metadata["discovery_subprocess_launched"] is False
+    assert metadata["imported_compiler_drift_check_apis_available"] is True
+    assert metadata["imported_compiler_pre_import_source_authentication"] is False
+    assert metadata["sealed_direct_file_read_only_protocol_available"] is True
+    assert metadata["sealed_direct_file_read_only_verification_executed"] is False
+    assert metadata["sealed_compiler_python_flags"] == ["-I", "-S", "-B"]
+    assert metadata["source_closure_helper_available"] is True
+    assert metadata["runner_delegation_available"] is True
+    assert metadata["runner_delegation_required_for_candidate_qa"] is True
+    assert metadata["runner_bounded_popen_protocol_available"] is True
+    assert metadata["runner_bounded_popen_shell"] is False
+    assert metadata["runner_bounded_popen_timeout_seconds"] == 300
+    assert metadata["runner_bounded_popen_max_aggregate_output_bytes"] == 64 * 1024
+    assert metadata["runner_bounded_popen_retry_authority"] == "none"
+    assert metadata["runner_delegation_invoked"] is False
+    assert metadata["qa_execution_authorised"] is False
+    assert metadata["qa_executed"] is False
+    assert metadata["motion_audit_executed"] is False
+    assert metadata["test_suite_executed"] is False
+    assert metadata["browser_gate_executed"] is False
+    assert metadata["qa_passed"] is False
+    assert metadata["pass_inferred_from_installation"] is False
+    assert metadata["policy_selection_authority"] == "none"
+    assert metadata["threshold_selection_authority"] == "none"
+    assert metadata["candidate_validation_authority"] == "none"
+    assert metadata["canonical_website_mutation"] == "none"
+    assert metadata["package_authority"] == "none"
+    assert metadata["release_authority"] == "none"
+    assert metadata["release_eligible"] is False
+    assert metadata["deployment_authority"] == "none"
+
+
+def test_candidate_qa_metadata_fails_closed_when_legacy_fields_lack_sealed_ingress() -> None:
+    metadata = _candidate_qa_control_plane_metadata(
+        {
+            "candidate_qa_control_plane_readiness": {
+                "available": True,
+                "state": "installed-not-authorised",
+                "fixed_test_policy_compiler_available": True,
+                "fixed_motion_policy_compiler_available": True,
+                "execution_order_enforced": True,
+            }
+        }
+    )
+
+    assert metadata["available"] is False
+    assert metadata["state"] == "unavailable"
+    assert metadata["imported_compiler_drift_check_apis_available"] is False
+    assert metadata["sealed_direct_file_read_only_protocol_available"] is False
+    assert metadata["runner_delegation_available"] is False
+    assert metadata["qa_executed"] is False
+    assert metadata["qa_passed"] is False
+
+
+def test_capability_forge_registry_preflight_launches_no_compiler_subprocess(monkeypatch) -> None:
+    from aureon.autonomous import aureon_public_website_design_runner as delivery_runner
+
+    def prohibited_subprocess(*_args, **_kwargs):
+        raise AssertionError("capability-forge discovery must not launch a subprocess")
+
+    monkeypatch.setattr(delivery_runner.subprocess, "run", prohibited_subprocess)
+    monkeypatch.setattr(delivery_runner.subprocess, "Popen", prohibited_subprocess)
+
+    preflight = _design_capability_registry_preflight(Path(__file__).resolve().parents[1])
+    metadata = _candidate_qa_control_plane_metadata(preflight)
+
+    assert preflight["verified"] is True
+    assert metadata["available"] is True
+    assert metadata["discovery_subprocess_launched"] is False
+    assert metadata["sealed_direct_file_read_only_verification_executed"] is False
+    assert metadata["runner_delegation_invoked"] is False
+
+
+def test_goal_engine_routes_public_website_design_before_generic_forge() -> None:
+    plan = GoalExecutionEngine()._decompose_goal(
+        "Research competitors and redesign the public website with serious high-spec motion."
+    )
+
+    assert plan.steps[0].intent == "public_website_design_cycle"
+    assert plan.steps[0].params["deployment_authority"] == "none"
+    assert plan.steps[0].params["run_external"] is True
+
+
+def test_capability_forge_local_only_reference_patterns_and_no_external_calls(
+    tmp_path: Path, monkeypatch
+) -> None:
     monkeypatch.setattr(
         "aureon.autonomous.aureon_safe_code_control.build_code_expression_context",
         _fake_expression_context,
@@ -48,7 +277,14 @@ def test_capability_forge_local_only_reference_patterns_and_no_external_calls(tm
     assert (tmp_path / "frontend" / "public" / "aureon_capability_forge.json").exists()
 
 
-def test_capability_forge_video_job_produces_quality_gated_public_artifacts(tmp_path: Path, monkeypatch) -> None:
+def test_capability_forge_video_job_produces_quality_gated_public_artifacts(
+    tmp_path: Path, monkeypatch
+) -> None:
+    # The forge delegates video rendering to the cv2-only visual asset worker;
+    # without cv2 the quality gate honestly refuses handover ("do not hand it
+    # over unless the preview passes"), which is the contract, not a bug.
+    import pytest
+    pytest.importorskip("cv2")
     monkeypatch.setattr(
         "aureon.autonomous.aureon_safe_code_control.build_code_expression_context",
         _fake_expression_context,
@@ -128,8 +364,12 @@ def test_capability_forge_public_json_has_required_report_fields(tmp_path: Path,
         "aureon.autonomous.aureon_safe_code_control.build_code_expression_context",
         _fake_expression_context,
     )
-    report = build_and_write_capability_forge("Build a UI panel and browser smoke proof for the cockpit.", root=tmp_path)
-    public = json.loads((tmp_path / "frontend" / "public" / "aureon_capability_forge.json").read_text(encoding="utf-8"))
+    report = build_and_write_capability_forge(
+        "Build a UI panel and browser smoke proof for the cockpit.", root=tmp_path
+    )
+    public = json.loads(
+        (tmp_path / "frontend" / "public" / "aureon_capability_forge.json").read_text(encoding="utf-8")
+    )
 
     for key in (
         "task_family",
@@ -148,7 +388,9 @@ def test_capability_forge_public_json_has_required_report_fields(tmp_path: Path,
         assert key in report
 
 
-def test_capability_forge_interactive_game_builds_local_playable_artifact(tmp_path: Path, monkeypatch) -> None:
+def test_capability_forge_interactive_game_builds_local_playable_artifact(
+    tmp_path: Path, monkeypatch
+) -> None:
     monkeypatch.setattr(
         "aureon.autonomous.aureon_safe_code_control.build_code_expression_context",
         _fake_expression_context,
@@ -200,7 +442,9 @@ def test_capability_forge_space_shooter_prompt_builds_matching_game(tmp_path: Pa
     assert any(check["id"] == "enemy_shooter_loop_present" and check["ok"] for check in quality["checks"])
 
 
-def test_capability_forge_repeated_game_prompt_creates_unique_project_artifacts(tmp_path: Path, monkeypatch) -> None:
+def test_capability_forge_repeated_game_prompt_creates_unique_project_artifacts(
+    tmp_path: Path, monkeypatch
+) -> None:
     monkeypatch.setattr(
         "aureon.autonomous.aureon_safe_code_control.build_code_expression_context",
         _fake_expression_context,
@@ -231,7 +475,9 @@ def test_capability_forge_repeated_game_prompt_creates_unique_project_artifacts(
         assert Path(manifest["asset_path"]).exists()
 
 
-def test_capability_forge_barcode_tool_request_builds_domain_specific_skill(tmp_path: Path, monkeypatch) -> None:
+def test_capability_forge_barcode_tool_request_builds_domain_specific_skill(
+    tmp_path: Path, monkeypatch
+) -> None:
     monkeypatch.setattr(
         "aureon.autonomous.aureon_safe_code_control.build_code_expression_context",
         _fake_expression_context,
@@ -259,7 +505,9 @@ def test_capability_forge_barcode_tool_request_builds_domain_specific_skill(tmp_
     assert "build_labels" in tool_text
 
 
-def test_capability_forge_full_stack_prompt_builds_backend_frontend_tests(tmp_path: Path, monkeypatch) -> None:
+def test_capability_forge_full_stack_prompt_builds_backend_frontend_tests(
+    tmp_path: Path, monkeypatch
+) -> None:
     monkeypatch.setattr(
         "aureon.autonomous.aureon_safe_code_control.build_code_expression_context",
         _fake_expression_context,
@@ -307,7 +555,9 @@ def test_capability_forge_repeated_tool_prompt_creates_unique_skill_dirs(tmp_pat
         _fake_expression_context,
     )
 
-    prompt = "Build a local barcode label generator tool for the warehouse team, with run instructions and proof."
+    prompt = (
+        "Build a local barcode label generator tool for the warehouse team, with run instructions and proof."
+    )
     first = build_and_write_capability_forge(prompt, root=tmp_path)
     second = build_and_write_capability_forge(prompt, root=tmp_path)
 

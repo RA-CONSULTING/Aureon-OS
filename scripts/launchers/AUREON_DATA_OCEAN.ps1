@@ -13,7 +13,12 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$RepoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+$RepoRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot "..\..")).Path
+foreach ($sentinel in @("pyproject.toml", "aureon")) {
+    if (-not (Test-Path -LiteralPath (Join-Path $RepoRoot $sentinel))) {
+        throw "Resolved launcher repo root is missing $sentinel`: $RepoRoot"
+    }
+}
 Set-Location -LiteralPath $RepoRoot
 
 $Python = Join-Path $RepoRoot ".venv\Scripts\python.exe"

@@ -52,6 +52,10 @@ def _detect_lan_ip() -> str:
 def main() -> None:
     _setup_path()
 
+    from aureon.core.aureon_env import bootstrap_credentials
+
+    bootstrap_credentials()
+
     parser = argparse.ArgumentParser(
         description="Launch the Aureon Vault UI for communicating with the vault",
     )

@@ -105,11 +105,14 @@ class QueenNeuron:
         self.learning_rate = learning_rate
         self.weights_path = weights_path
 
-        # Initialize weights with small random values (Xavier initialization)
-        self.weights_input_hidden = np.random.randn(input_size, hidden_size) * 0.1
+        # Deterministic HNC/Xavier scaffold; verified persisted weights supersede it.
+        phi = (1.0 + np.sqrt(5.0)) / 2.0
+        input_grid = np.arange(1, input_size * hidden_size + 1, dtype=np.float32).reshape(input_size, hidden_size)
+        self.weights_input_hidden = np.sin(input_grid * phi) * np.sqrt(2.0 / (input_size + hidden_size))
         self.bias_hidden = np.zeros((1, hidden_size), dtype=np.float32)
 
-        self.weights_hidden_output = np.random.randn(hidden_size, 1) * 0.1
+        output_grid = np.arange(1, hidden_size + 1, dtype=np.float32).reshape(hidden_size, 1)
+        self.weights_hidden_output = np.sin(output_grid * phi) * np.sqrt(2.0 / (hidden_size + 1))
         self.bias_output = np.zeros((1, 1), dtype=np.float32)
 
         # Cache for backpropagation

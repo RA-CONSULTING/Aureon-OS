@@ -28,8 +28,11 @@ export interface CachedTicker {
   momentum: number;
   spread: number;
   timestamp: number;
-  isValidated: boolean;
   dataSource: 'live' | 'cached' | 'stale' | 'websocket';
+  truthStatus: 'real_derived';
+  sourceId: string;
+  sourceTimestamp: string;
+  generatedValues: false;
 }
 
 export interface TickerCacheStats {
@@ -37,8 +40,8 @@ export interface TickerCacheStats {
   liveTickers: number;
   staleTickers: number;
   websocketTickers: number;
-  lastFullRefresh: number;
-  avgVolatility: number;
+  lastFullRefresh: number | null;
+  avgVolatility: number | null;
   topGainers: string[];
   topLosers: string[];
   highVolume: string[];
@@ -51,7 +54,7 @@ const MIN_VOLUME_USD = 100000; // Filter out low volume pairs
 
 class TickerCacheManager {
   private cache: Map<string, CachedTicker> = new Map();
-  private lastRefresh: number = 0;
+  private lastRefresh: number | null = null;
   private isRefreshing: boolean = false;
   private refreshInterval: ReturnType<typeof setInterval> | null = null;
   private listeners: Array<(tickers: CachedTicker[]) => void> = [];
@@ -123,33 +126,30 @@ class TickerCacheManager {
    */
   public updateFromWebSocket(symbol: string, data: MarketData): void {
     const key = `binance:${symbol}`;
-    const existing = this.cache.get(key);
-    
     const updated: CachedTicker = {
       symbol,
       exchange: 'binance',
       price: data.price,
-      bidPrice: data.price * 0.9999, // Approximate from last trade
-      askPrice: data.price * 1.0001,
-      volume: existing?.volume || 0,
-      volumeUsd: existing?.volumeUsd || 0,
-      high24h: existing?.high24h || data.price,
-      low24h: existing?.low24h || data.price,
-      priceChange24h: existing?.priceChange24h || 0,
+      bidPrice: data.bidPrice,
+      askPrice: data.askPrice,
+      volume: data.volume,
+      volumeUsd: data.volumeUsd,
+      high24h: data.high24h,
+      low24h: data.low24h,
+      priceChange24h: data.priceChange24h,
       volatility: data.volatility,
       momentum: data.momentum,
       spread: data.spread,
       timestamp: data.timestamp,
-      isValidated: true,
       dataSource: 'websocket',
+      truthStatus: data.truthStatus,
+      sourceId: data.sourceId,
+      sourceTimestamp: data.sourceTimestamp,
+      generatedValues: false,
     };
     
     this.cache.set(key, updated);
-    
-    // Log periodically (not every update to avoid spam)
-    if (Math.random() < 0.01) {
-      console.log(`📡 [TickerCache] WS Update: ${symbol} @ $${data.price.toFixed(2)}`);
-    }
+    this.notifyListeners();
   }
 
   /**
@@ -183,23 +183,25 @@ class TickerCacheManager {
       }
 
       if (data?.success && Array.isArray(data.tickers)) {
-        const now = Date.now();
-        
         // Update cache
         for (const ticker of data.tickers) {
+          const sourceTime = Date.parse(String(ticker.sourceTimestamp || ''));
+          if (ticker.truthStatus !== 'real_derived' || ticker.generatedValues !== false ||
+              !ticker.sourceId || !Number.isFinite(sourceTime) || Date.now() - sourceTime > STALE_THRESHOLD_MS) {
+            continue;
+          }
           const key = `${ticker.exchange}:${ticker.symbol}`;
           this.cache.set(key, {
             ...ticker,
             dataSource: 'live',
-            timestamp: now,
           });
         }
 
-        this.lastRefresh = now;
+        this.lastRefresh = Date.now();
 
         // Mark old entries as stale
         for (const [key, ticker] of this.cache.entries()) {
-          if (now - ticker.timestamp > STALE_THRESHOLD_MS) {
+          if (Date.now() - ticker.timestamp > STALE_THRESHOLD_MS) {
             this.cache.set(key, { ...ticker, dataSource: 'stale' });
           }
         }
@@ -214,11 +216,12 @@ class TickerCacheManager {
         this.notifyListeners();
 
         // Heartbeat to Temporal Ladder
-        temporalLadder.heartbeat(SYSTEMS.DATA_INGESTION, 0.95);
+        const acceptedRatio = data.tickers.length > 0 ? this.getAllTickers().filter(t => t.dataSource !== 'stale').length / data.tickers.length : 0;
+        temporalLadder.heartbeat(SYSTEMS.DATA_INGESTION, acceptedRatio);
       }
     } catch (error) {
       console.error('[TickerCache] Refresh error:', error);
-      temporalLadder.heartbeat(SYSTEMS.DATA_INGESTION, 0.1);
+      temporalLadder.unregisterSystem(SYSTEMS.DATA_INGESTION);
     } finally {
       this.isRefreshing = false;
     }
@@ -228,7 +231,10 @@ class TickerCacheManager {
    * Get all tickers from cache
    */
   public getAllTickers(): CachedTicker[] {
-    return Array.from(this.cache.values());
+    const now = Date.now();
+    return Array.from(this.cache.values()).map((ticker) =>
+      now - ticker.timestamp > STALE_THRESHOLD_MS ? { ...ticker, dataSource: 'stale' as const } : ticker,
+    );
   }
 
   /**
@@ -244,7 +250,8 @@ class TickerCacheManager {
    * Get ticker for specific symbol
    */
   public getTicker(symbol: string, exchange: string = 'binance'): CachedTicker | undefined {
-    return this.cache.get(`${exchange}:${symbol}`);
+    const ticker = this.cache.get(`${exchange}:${symbol}`);
+    return ticker && Date.now() - ticker.timestamp <= STALE_THRESHOLD_MS ? ticker : undefined;
   }
 
   /**
@@ -287,9 +294,9 @@ class TickerCacheManager {
     const staleTickers = tickers.filter(t => now - t.timestamp > STALE_THRESHOLD_MS).length;
     const websocketTickers = tickers.filter(t => t.dataSource === 'websocket').length;
     
-    const avgVolatility = tickers.length > 0 
+    const avgVolatility = tickers.length > 0
       ? tickers.reduce((sum, t) => sum + t.volatility, 0) / tickers.length 
-      : 0;
+      : null;
 
     return {
       totalTickers: tickers.length,
@@ -309,7 +316,7 @@ class TickerCacheManager {
    * Check if cache is fresh
    */
   public isFresh(): boolean {
-    return Date.now() - this.lastRefresh < STALE_THRESHOLD_MS;
+    return this.lastRefresh !== null && Date.now() - this.lastRefresh < STALE_THRESHOLD_MS;
   }
 
   /**
@@ -335,13 +342,18 @@ class TickerCacheManager {
 
   private publishToUnifiedBus(): void {
     const stats = this.getStats();
+    const observedTickers = this.getAllTickers();
+    if (stats.totalTickers === 0 || observedTickers.length === 0) return;
+    const sourceTimestamp = observedTickers.map((ticker) => ticker.sourceTimestamp).sort()[0];
+    const sourceId = Array.from(new Set(observedTickers.map((ticker) => ticker.sourceId))).sort().join(',');
+    const dataCompleteness = stats.liveTickers / stats.totalTickers;
     
     unifiedBus.publish({
       systemName: 'TickerCache',
-      timestamp: Date.now(),
-      ready: stats.totalTickers > 0,
-      coherence: stats.liveTickers / Math.max(stats.totalTickers, 1),
-      confidence: this.isFresh() ? 0.95 : 0.5,
+      timestamp: Date.parse(sourceTimestamp),
+      ready: this.isFresh(),
+      coherence: dataCompleteness,
+      confidence: dataCompleteness,
       signal: 'NEUTRAL',
       data: {
         totalTickers: stats.totalTickers,
@@ -352,6 +364,10 @@ class TickerCacheManager {
         topLosers: stats.topLosers,
         highVolume: stats.highVolume,
         lastRefresh: this.lastRefresh,
+        truthStatus: 'real_derived',
+        sourceId,
+        sourceTimestamp,
+        generatedValues: false,
       },
     });
   }

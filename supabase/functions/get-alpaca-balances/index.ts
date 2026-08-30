@@ -27,16 +27,17 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           balances: [], 
-          totalUsd: 0,
+          totalUsd: null,
           connected: false,
+          truthStatus: 'no_data',
+          generatedValues: false,
           message: 'Alpaca credentials not configured'
         }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Alpaca paper trading API (use api.alpaca.markets for live)
-    const baseUrl = 'https://paper-api.alpaca.markets';
+    const baseUrl = 'https://api.alpaca.markets';
     
     // Fetch account info
     console.log('[get-alpaca-balances] Fetching account from Alpaca API...');
@@ -52,11 +53,13 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           balances: [], 
-          totalUsd: 0,
+          totalUsd: null,
           connected: false,
+          truthStatus: 'no_data',
+          generatedValues: false,
           error: 'Failed to fetch Alpaca account'
         }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -70,13 +73,17 @@ serve(async (req) => {
       },
     });
 
-    const positions = positionsResponse.ok ? await positionsResponse.json() : [];
+    if (!positionsResponse.ok) {
+      throw new Error(`Alpaca positions API error: ${positionsResponse.status}`);
+    }
+    const positions = await positionsResponse.json();
 
     const balances: AlpacaBalance[] = [];
     let totalUsd = 0;
 
     // Add cash balance
-    const cashBalance = parseFloat(account.cash || '0');
+    const cashBalance = Number(account.cash);
+    if (!Number.isFinite(cashBalance)) throw new Error('Alpaca cash balance missing');
     if (cashBalance > 0) {
       balances.push({
         asset: 'USD',
@@ -90,8 +97,11 @@ serve(async (req) => {
 
     // Add positions
     for (const position of positions) {
-      const marketValue = parseFloat(position.market_value || '0');
-      const qty = parseFloat(position.qty || '0');
+      const marketValue = Number(position.market_value);
+      const qty = Number(position.qty);
+      if (!Number.isFinite(marketValue) || !Number.isFinite(qty)) {
+        throw new Error(`Alpaca position value missing for ${String(position.symbol)}`);
+      }
       
       balances.push({
         asset: position.symbol,
@@ -113,10 +123,13 @@ serve(async (req) => {
         account: {
           id: account.id,
           status: account.status,
-          buyingPower: parseFloat(account.buying_power || '0'),
-          equity: parseFloat(account.equity || '0'),
-          portfolioValue: parseFloat(account.portfolio_value || '0'),
-        }
+          buyingPower: Number(account.buying_power),
+          equity: Number(account.equity),
+          portfolioValue: Number(account.portfolio_value),
+        },
+        truthStatus: 'live',
+        sourceTimestamp: accountResponse.headers.get('date') || new Date().toISOString(),
+        generatedValues: false,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
@@ -126,8 +139,10 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         balances: [], 
-        totalUsd: 0,
+        totalUsd: null,
         connected: false,
+        truthStatus: 'no_data',
+        generatedValues: false,
         error: 'Internal error fetching Alpaca balances'
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }

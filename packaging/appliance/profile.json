@@ -1,0 +1,58 @@
+{
+  "schema": "aureon.appliance.profile.v1",
+  "image": {
+    "id": "aureon-os",
+    "version": "2.1.0",
+    "distribution": "debian",
+    "release": "bookworm",
+    "architecture": "x86-64",
+    "disk_size": "16G",
+    "seed": "a71e0a5e-6b7d-4a8c-9f20-4d9816584e01"
+  },
+  "build": {
+    "minimum_free_bytes": 42949672960,
+    "minimum_repart_version": 261,
+    "payload_paths": [
+      "LICENSE",
+      "README.md",
+      "aureon",
+      "pyproject.toml"
+    ],
+    "el_torito": true
+  },
+  "runtime": {
+    "enabled_on_image": [
+      "aureon-boot-attestation.service",
+      "aureon-firstboot-console.service"
+    ],
+    "enabled_after_firstboot": [
+      "aureon-appliance.target"
+    ],
+    "safe_environment": {
+      "AUREON_AUDIT_MODE": "1",
+      "AUREON_LIVE_TRADING": "0",
+      "AUREON_DISABLE_REAL_ORDERS": "1",
+      "AUREON_DISABLE_EXCHANGE_MUTATIONS": "1",
+      "AUREON_DRY_RUN": "1",
+      "DRY_RUN": "1",
+      "LIVE": "0",
+      "AUREON_LLM_OFFLINE": "1",
+      "AUREON_DISABLE_LLM_HTTP": "1",
+      "AUREON_LOCAL_ACTIONS_ARMED": "0",
+      "AUREON_SOUL_ACT": "0",
+      "AUREON_AUTONOMY": "0",
+      "AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS": "1",
+      "AUREON_OPERATOR_HOST": "127.0.0.1",
+      "AUREON_OPERATOR_PORT": "8790",
+      "AUREON_OPERATOR_HTTP_PROCESSES": "1",
+      "AUREON_OPERATOR_REPLICAS": "1"
+    }
+  },
+  "hnc_evidence_policy": {
+    "model": "film_reel_engineering_translation_v1",
+    "immutable_frames": true,
+    "receipt_memory": true,
+    "gamma_is_authority": false,
+    "hard_gates_override": true
+  }
+}

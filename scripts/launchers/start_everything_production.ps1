@@ -25,7 +25,12 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$repo = Resolve-Path (Split-Path -Parent $MyInvocation.MyCommand.Definition)
+$repo = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot "..\..")).Path
+if (-not (Test-Path -LiteralPath (Join-Path $repo "pyproject.toml") -PathType Leaf)) {
+    throw "Resolved launcher repo root is invalid: $repo"
+}
+$productionLauncher = Join-Path $PSScriptRoot "AUREON_PRODUCTION_LIVE.cmd"
+$flamebornLauncher = Join-Path $repo "scripts\start_aureon_with_flameborn.ps1"
 
 function Write-Banner {
     param([string]$Text, [string]$Level = "INFO")
@@ -52,7 +57,7 @@ if ($WhatIf) {
     Write-Banner "WhatIf mode -- showing commands without executing." "WARN"
     Write-Banner ""
     Write-Banner "Terminal 1 would run:"
-    Write-Banner "  .\AUREON_PRODUCTION_LIVE.cmd -WaitForRefresh -MarketStatusPort 8791"
+    Write-Banner "  .\scripts\launchers\AUREON_PRODUCTION_LIVE.cmd -WaitForRefresh -MarketStatusPort 8791"
     Write-Banner ""
     Write-Banner "Terminal 2 would run:"
     $fbFlags = @()
@@ -63,7 +68,7 @@ if ($WhatIf) {
 }
 
 # -- Terminal 1: Aureon Organism (Production) --
-$orgCmd = "cd `"$repo`"; .\AUREON_PRODUCTION_LIVE.cmd -WaitForRefresh -MarketStatusPort 8791"
+$orgCmd = "Set-Location -LiteralPath `"$repo`"; & `"$productionLauncher`" -WaitForRefresh -MarketStatusPort 8791"
 Write-Banner "Launching Terminal 1: Aureon Organism (Production) ..."
 Start-Process powershell -ArgumentList "-NoExit","-Command",$orgCmd
 
@@ -75,7 +80,7 @@ Start-Sleep -Seconds 15
 $fbFlags = @("-StartRuntime")
 if (-not $SkipHostTerminal) { $fbFlags += "-EnableHostTerminal" }
 if (-not $SkipSandbox) { $fbFlags += "-EnableSandbox" }
-$fbCmd = "cd `"$repo`"; .\scripts\start_aureon_with_flameborn.ps1 $($fbFlags -join ' ')"
+$fbCmd = "Set-Location -LiteralPath `"$repo`"; & `"$flamebornLauncher`" $($fbFlags -join ' ')"
 Write-Banner "Launching Terminal 2: Flameborn Frontend ..."
 Start-Process powershell -ArgumentList "-NoExit","-Command",$fbCmd
 

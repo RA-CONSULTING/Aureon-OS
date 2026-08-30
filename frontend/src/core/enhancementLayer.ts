@@ -145,8 +145,8 @@ export class EnhancementLayer {
     }
     
     // 4. Gaia Lattice - Carrier wave dynamics
-    const latticeState = gaiaLatticeEngine.update(coherence);
-    modifiers.push(latticeState.riskMod);
+    const latticeState = gaiaLatticeEngine.getState();
+    if (latticeState.riskMod !== null) modifiers.push(latticeState.riskMod);
     
     if (latticeState.phase === 'GAIA_RESONANCE') {
       reasons.push(`🌍 Gaia Resonance: 432Hz healing field active`);
@@ -174,12 +174,9 @@ export class EnhancementLayer {
     const clampedModifier = Math.max(0.5, Math.min(2.0, finalModifier));
     
     // Calculate confidence
-    const confidence = (
-      syncState.overallSync * 0.25 +
-      gridState.overallCoherence * 0.25 +
-      latticeState.fieldPurity * 0.25 +
-      coherence * 0.25
-    );
+    const confidenceInputs = [syncState.overallSync, gridState.overallCoherence, coherence];
+    if (latticeState.fieldPurity !== null) confidenceInputs.push(latticeState.fieldPurity);
+    const confidence = confidenceInputs.reduce((sum, value) => sum + value, 0) / confidenceInputs.length;
     
     this.lastResult = {
       tradingModifier: clampedModifier,

@@ -52,17 +52,17 @@ export function PrimeSealStatusPanel() {
   
   return (
     <Card className={`bg-card/50 backdrop-blur border-2 transition-all duration-500 ${
-      isLocked ? 'border-green-500/50 shadow-[0_0_20px_rgba(34,197,94,0.3)]' : 'border-amber-500/50'
+      isLocked ? 'border-success/50 shadow-[0_0_20px_rgba(34,197,94,0.3)]' : 'border-warning/50'
     }`}>
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Shield className={`w-5 h-5 ${isLocked ? 'text-green-500' : 'text-amber-500'}`} />
+            <Shield className={`w-5 h-5 ${isLocked ? 'text-success' : 'text-warning'}`} />
             10-9-1 Prime Seal
           </CardTitle>
           <Badge 
             variant={isLocked ? "default" : "secondary"}
-            className={isLocked ? "bg-green-500 animate-pulse" : ""}
+            className={isLocked ? "bg-success animate-pulse" : ""}
           >
             {isLocked ? <><Lock className="w-3 h-3 mr-1" /> SEALED</> : <><Unlock className="w-3 h-3 mr-1" /> OPEN</>}
           </Badge>
@@ -72,10 +72,10 @@ export function PrimeSealStatusPanel() {
         {/* Intent Broadcast */}
         <div className="p-3 bg-background/30 rounded-lg text-center">
           <div className="flex items-center justify-center gap-2 mb-1">
-            <Heart className="w-4 h-4 text-pink-500" />
+            <Heart className="w-4 h-4 text-primary" />
             <span className="text-xs text-muted-foreground">Intent</span>
           </div>
-          <div className="text-sm font-medium bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">
+          <div className="text-sm font-medium bg-gradient-to-r from-primary to-primary bg-clip-text text-transparent">
             {packet.intent_text}
           </div>
         </div>
@@ -84,14 +84,14 @@ export function PrimeSealStatusPanel() {
         <div>
           <div className="flex items-center justify-between mb-1">
             <span className="text-xs text-muted-foreground">Prime Coherence</span>
-            <span className={`text-sm font-bold ${packet.prime_coherence >= 0.945 ? 'text-green-400' : 'text-amber-400'}`}>
+            <span className={`text-sm font-bold ${packet.prime_coherence >= 0.945 ? 'text-success' : 'text-warning'}`}>
               {(packet.prime_coherence * 100).toFixed(1)}%
             </span>
           </div>
           <Progress value={packet.prime_coherence * 100} className="h-2" />
           <div className="flex justify-between mt-0.5">
             <span className="text-[10px] text-muted-foreground">0%</span>
-            <span className="text-[10px] text-green-400">Lock: 94.5%</span>
+            <span className="text-[10px] text-success">Lock: 94.5%</span>
             <span className="text-[10px] text-muted-foreground">100%</span>
           </div>
         </div>
@@ -103,15 +103,15 @@ export function PrimeSealStatusPanel() {
             <div className="text-lg font-bold text-primary">{(unityCoherence * 100).toFixed(0)}%</div>
             <Sparkles className="w-3 h-3 mx-auto mt-0.5 text-primary" />
           </div>
-          <div className="p-2 bg-violet-500/10 rounded-lg text-center border border-violet-500/30">
+          <div className="p-2 bg-primary/10 rounded-lg text-center border border-primary/30">
             <div className="text-[10px] text-muted-foreground mb-0.5">Flow (×9)</div>
-            <div className="text-lg font-bold text-violet-400">{(flowCoherence * 100).toFixed(0)}%</div>
-            <Sparkles className="w-3 h-3 mx-auto mt-0.5 text-violet-400" />
+            <div className="text-lg font-bold text-primary">{(flowCoherence * 100).toFixed(0)}%</div>
+            <Sparkles className="w-3 h-3 mx-auto mt-0.5 text-primary" />
           </div>
-          <div className="p-2 bg-amber-500/10 rounded-lg text-center border border-amber-500/30">
+          <div className="p-2 bg-warning/10 rounded-lg text-center border border-warning/30">
             <div className="text-[10px] text-muted-foreground mb-0.5">Anchor (×1)</div>
-            <div className="text-lg font-bold text-amber-400">{(anchorCoherence * 100).toFixed(0)}%</div>
-            <Sparkles className="w-3 h-3 mx-auto mt-0.5 text-amber-400" />
+            <div className="text-lg font-bold text-warning">{(anchorCoherence * 100).toFixed(0)}%</div>
+            <Sparkles className="w-3 h-3 mx-auto mt-0.5 text-warning" />
           </div>
         </div>
         

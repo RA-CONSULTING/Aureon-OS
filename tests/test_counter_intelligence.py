@@ -151,7 +151,10 @@ class TestFirmAttribution(unittest.TestCase):
     def test_attribution_engine_initialized(self):
         """Test that attribution engine loads firm database."""
         self.assertGreater(len(self.engine.firm_db), 0)
-        self.assertIn('citadel', self.engine.firm_db)
+        # The canonical registry (aureon_global_firm_intelligence) keys firms by full id —
+        # 'citadel_securities', matching each entry's firm_id. The old short 'citadel' key
+        # never existed there; this assertion had drifted from the registry it audits.
+        self.assertIn('citadel_securities', self.engine.firm_db)
     
     def test_bot_attribution_hft(self):
         """Test HFT bot attribution to Citadel."""
@@ -168,7 +171,7 @@ class TestFirmAttribution(unittest.TestCase):
         
         # Check if Citadel is in top matches (they're HFT focused)
         firm_ids = [firm_id for firm_id, conf in matches]
-        self.assertIn('citadel', firm_ids)
+        self.assertIn('citadel_securities', firm_ids)
     
     def test_bot_attribution_market_maker(self):
         """Test market maker bot attribution to Jane Street."""
@@ -187,7 +190,7 @@ class TestFirmAttribution(unittest.TestCase):
     
     def test_firm_details_retrieval(self):
         """Test retrieving firm details."""
-        firm = self.engine.get_firm_details('citadel')
+        firm = self.engine.get_firm_details('citadel_securities')
         
         self.assertIsNotNone(firm)
         self.assertEqual(firm.name, 'Citadel Securities')

@@ -24,7 +24,7 @@ DEPLOYMENT_SURFACES = [
     {"id": "frontend_app", "label": "Frontend app", "paths": ["frontend/package.json", "frontend/src/", "frontend/public/"], "mode": "hosted browser surface"},
     {"id": "supabase_backend", "label": "Supabase backend", "paths": ["supabase/config.toml", "supabase/functions/", "supabase/migrations/"], "mode": "hosted auth, functions, and data plane"},
     {"id": "digitalocean_app", "label": "DigitalOcean App Platform", "paths": ["app.yaml", "deploy/"], "mode": "containerized production app spec"},
-    {"id": "local_operator", "label": "Local Windows operator", "paths": ["AUREON_PRODUCTION_LIVE.cmd", "AUREON_WAKE_UP_FULL_AUTONOMOUS.ps1", "RUNNING.md"], "mode": "operator-controlled local runtime"},
+    {"id": "local_operator", "label": "Local Windows operator", "paths": ["scripts/launchers/AUREON_PRODUCTION_LIVE.cmd", "scripts/launchers/AUREON_WAKE_UP_FULL_AUTONOMOUS.ps1", "RUNNING.md"], "mode": "operator-controlled local runtime"},
     {"id": "serverless_routes", "label": "Serverless routes", "paths": ["api/", "functions/", "netlify/"], "mode": "hosted edge/serverless routes"},
     {"id": "node_bridge", "label": "Node/server bridge", "paths": ["server/"], "mode": "optional backend bridge"},
     {"id": "docker_package", "label": "Docker and production package", "paths": ["Dockerfile", "docker-compose.yml", "production/"], "mode": "container/release package"},

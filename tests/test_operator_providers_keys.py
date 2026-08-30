@@ -73,6 +73,47 @@ def test_keystore_apply_and_disable(temp_store, monkeypatch):
     assert "DEEPSEEK_API_KEY" not in os.environ
 
 
+def test_ollama_keystore_applies_official_aliases_and_models(temp_store, monkeypatch):
+    import os
+
+    names = (
+        "OLLAMA_API_KEY",
+        "AUREON_OLLAMA_API_KEY",
+        "AUREON_LLM_API_KEY",
+        "AUREON_LLM_MODEL",
+        "AUREON_OLLAMA_MODEL",
+    )
+    for name in names:
+        monkeypatch.delenv(name, raising=False)
+    keystore.save_provider(
+        "ollama",
+        api_key="cloud-secret",
+        base_url="https://ollama.com/v1",
+        model="cloud-model",
+        enabled=True,
+    )
+
+    keystore.apply_to_env()
+
+    assert os.environ["OLLAMA_API_KEY"] == "cloud-secret"
+    assert os.environ["AUREON_OLLAMA_API_KEY"] == "cloud-secret"
+    assert os.environ["AUREON_LLM_API_KEY"] == "cloud-secret"
+    assert os.environ["AUREON_LLM_MODEL"] == "cloud-model"
+    assert os.environ["AUREON_OLLAMA_MODEL"] == "cloud-model"
+
+    keystore.save_provider("ollama", enabled=False)
+    keystore.apply_to_env()
+    for name in names:
+        assert name not in os.environ
+    assert "AUREON_LLM_BASE_URL" not in os.environ
+
+    keystore.save_provider("ollama", enabled=True)
+    keystore.apply_to_env()
+    keystore.delete_provider("ollama")
+    for name in (*names, "AUREON_LLM_BASE_URL", "AUREON_MODEL_LOCAL"):
+        assert name not in os.environ
+
+
 def test_unknown_provider_rejected(temp_store):
     with pytest.raises(KeyError):
         keystore.save_provider("not-a-provider", api_key="x")

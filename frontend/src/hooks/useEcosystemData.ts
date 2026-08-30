@@ -1,7 +1,8 @@
 /**
  * useEcosystemData Hook
- * Provides real ecosystem data from UnifiedBus and FullEcosystemConnector
- * Replaces Math.random() with actual system states
+ * Reads the in-browser ecosystem model (UnifiedBus + FullEcosystemConnector).
+ * Missing source observations remain null/no_data. The hook never substitutes
+ * demo frequencies, neutral labels, zero measurements, or derived sensor data.
  */
 
 import { useState, useEffect, useCallback } from 'react';
@@ -75,36 +76,36 @@ export interface UseEcosystemDataReturn {
 }
 
 const DEFAULT_METRICS: EcosystemMetrics = {
-  coherence: 0,
-  lambda: 0,
-  frequency: 528,
-  consensusSignal: 'NEUTRAL',
-  consensusConfidence: 0,
+  coherence: null,
+  lambda: null,
+  frequency: null,
+  consensusSignal: null,
+  consensusConfidence: null,
   systemsOnline: 0,
   totalSystems: 0,
-  hiveMindCoherence: 0,
-  waveState: 'FORMING',
-  harmonicLock: false,
-  probabilityFusion: 0.5,
-  prismLevel: 1,
-  prismState: 'FORMING',
-  loveLocked: false,
-  phase: 'NEUTRAL',
-  emotion: 'calm',
-  emotionalFrequency: 528,
-  qgitaSignalType: 'NEUTRAL',
-  qgitaTier: 3,
-  qgitaConfidence: 0,
-  stargateNetworkStrength: 0,
-  activeNodes: 0,
-  evolutionaryLevel: 0,
-  dominantQuadrant: 'UL',
-  integrationScore: 0,
-  harmonicFidelity: 0,
-  rainbowBridgeOpen: false,
-  criticalMassAchieved: false,
-  temporalAnchorStrength: 0,
-  surgeWindowActive: false,
+  hiveMindCoherence: null,
+  waveState: null,
+  harmonicLock: null,
+  probabilityFusion: null,
+  prismLevel: null,
+  prismState: null,
+  loveLocked: null,
+  phase: null,
+  emotion: null,
+  emotionalFrequency: null,
+  qgitaSignalType: null,
+  qgitaTier: null,
+  qgitaConfidence: null,
+  stargateNetworkStrength: null,
+  activeNodes: null,
+  evolutionaryLevel: null,
+  dominantQuadrant: null,
+  integrationScore: null,
+  harmonicFidelity: null,
+  rainbowBridgeOpen: null,
+  criticalMassAchieved: null,
+  temporalAnchorStrength: null,
+  surgeWindowActive: null,
 };
 
 export function useEcosystemData(): UseEcosystemDataReturn {
@@ -131,58 +132,58 @@ export function useEcosystemData(): UseEcosystemDataReturn {
     
     return {
       // Core field
-      coherence: masterEq?.coherence ?? ecosystem?.hiveMindCoherence ?? 0,
-      lambda: masterEq?.data?.lambda ?? 0,
-      frequency: rainbow?.data?.frequency ?? 528,
+      coherence: masterEq?.coherence ?? ecosystem?.hiveMindCoherence ?? null,
+      lambda: masterEq?.data?.lambda ?? null,
+      frequency: rainbow?.data?.frequency ?? null,
       
       // Consensus
-      consensusSignal: bus?.consensusSignal ?? 'NEUTRAL',
-      consensusConfidence: bus?.consensusConfidence ?? 0,
+      consensusSignal: ecosystem?.busConsensus ?? null,
+      consensusConfidence: ecosystem?.busConfidence ?? null,
       
       // System health
       systemsOnline: ecosystem?.systemsOnline ?? bus?.systemsReady ?? 0,
       totalSystems: ecosystem?.totalSystems ?? bus?.totalSystems ?? 0,
-      hiveMindCoherence: ladder?.hiveMindCoherence ?? ecosystem?.hiveMindCoherence ?? 0,
+      hiveMindCoherence: ecosystem?.hiveMindCoherence ?? null,
       
       // 6D Harmonic
-      waveState: sixD?.data?.waveState ?? 'FORMING',
-      harmonicLock: sixD?.data?.harmonicLock ?? false,
-      probabilityFusion: sixD?.data?.fusedProbability ?? 0.5,
+      waveState: sixD?.data?.waveState ?? null,
+      harmonicLock: sixD?.data?.harmonicLock ?? null,
+      probabilityFusion: sixD?.data?.fusedProbability ?? null,
       
       // Prism
-      prismLevel: prism?.data?.level ?? 1,
-      prismState: prism?.data?.state ?? 'FORMING',
-      loveLocked: prism?.data?.loveLocked ?? false,
+      prismLevel: prism?.data?.level ?? null,
+      prismState: prism?.data?.state ?? null,
+      loveLocked: prism?.data?.loveLocked ?? null,
       
       // Rainbow Bridge
-      phase: rainbow?.data?.phase ?? 'NEUTRAL',
-      emotion: rainbow?.data?.dominantEmotion ?? 'calm',
-      emotionalFrequency: rainbow?.data?.frequency ?? 528,
+      phase: rainbow?.data?.phase ?? null,
+      emotion: rainbow?.data?.dominantEmotion ?? null,
+      emotionalFrequency: rainbow?.data?.frequency ?? null,
       
       // QGITA (map HOLD to NEUTRAL for SignalType)
-      qgitaSignalType: ecosystem?.qgitaSignal?.signalType === 'HOLD' 
+      qgitaSignalType: ecosystem?.qgitaSignal?.signalType === 'HOLD'
         ? 'NEUTRAL' 
-        : (ecosystem?.qgitaSignal?.signalType ?? 'NEUTRAL') as SignalType,
-      qgitaTier: ecosystem?.qgitaSignal?.tier ?? 3,
-      qgitaConfidence: ecosystem?.qgitaSignal?.confidence ?? 0,
+        : (ecosystem?.qgitaSignal?.signalType ?? null) as SignalType,
+      qgitaTier: ecosystem?.qgitaSignal?.tier ?? null,
+      qgitaConfidence: ecosystem?.qgitaSignal?.confidence ?? null,
       
       // Stargate
-      stargateNetworkStrength: ecosystem?.stargateNetwork?.networkStrength ?? 0,
-      activeNodes: ecosystem?.stargateNetwork?.activeNodes ?? 0,
+      stargateNetworkStrength: ecosystem?.stargateNetwork?.networkStrength ?? null,
+      activeNodes: ecosystem?.stargateNetwork?.activeNodes ?? null,
       
       // AQAL
-      evolutionaryLevel: ecosystem?.aqalState?.overallEvolutionaryLevel ?? 0,
-      dominantQuadrant: ecosystem?.aqalState?.dominantQuadrant ?? 'UL',
-      integrationScore: ecosystem?.aqalState?.integrationScore ?? 0,
+      evolutionaryLevel: ecosystem?.aqalState?.overallEvolutionaryLevel ?? null,
+      dominantQuadrant: ecosystem?.aqalState?.dominantQuadrant ?? null,
+      integrationScore: ecosystem?.aqalState?.integrationScore ?? null,
       
       // HNC Imperial
-      harmonicFidelity: ecosystem?.hncDetection?.harmonicFidelity ?? 0,
-      rainbowBridgeOpen: ecosystem?.hncDetection?.rainbowBridgeOpen ?? false,
-      criticalMassAchieved: ecosystem?.hncDetection?.criticalMassAchieved ?? false,
+      harmonicFidelity: ecosystem?.hncDetection?.harmonicFidelity ?? null,
+      rainbowBridgeOpen: ecosystem?.hncDetection?.rainbowBridgeOpen ?? null,
+      criticalMassAchieved: ecosystem?.hncDetection?.criticalMassAchieved ?? null,
       
       // Temporal
-      temporalAnchorStrength: ecosystem?.temporalAnchor?.anchorStrength ?? 0,
-      surgeWindowActive: ecosystem?.temporalAnchor?.surgeWindowActive ?? false,
+      temporalAnchorStrength: ecosystem?.temporalAnchor?.anchorStrength ?? null,
+      surgeWindowActive: ecosystem?.temporalAnchor?.surgeWindowActive ?? null,
     };
   }, []);
 
@@ -302,35 +303,37 @@ export function useEarthMetrics() {
     return () => unsubEarth();
   }, []);
   
-  // Use real data from CSV files if available, otherwise derive from ecosystem
-  const schumannFrequency = earthState?.frequency ?? (7.83 + (metrics.coherence - 0.5) * 0.1);
-  const magneticFieldMagnitude = earthState?.magneticField?.magnitude ?? (0.7 + metrics.coherence * 0.25);
-  const phaseLock = earthState?.phaseLock ?? false;
-  const harmonicFidelity = earthState?.harmonicFidelity ?? 0;
+  const schumannFrequency = earthState?.frequency ?? null;
+  const magneticFieldMagnitude = null;
+  const phaseLock = earthState?.phaseLock ?? null;
+  const harmonicFidelity = earthState?.harmonicFidelity ?? null;
   
   return {
     // Real Schumann data
     schumannFrequency,
     magneticField: magneticFieldMagnitude,
-    electricField: earthState?.electricField?.magnitude ?? 0,
+    electricField: null,
     phaseLock,
     harmonicFidelity,
     
     // 5-mode Schumann amplitudes
-    modes: earthState?.modes ?? { mode1: 0, mode2: 0, mode3: 0, mode4: 0, mode5: 0 },
+    modes: earthState?.modes ?? { mode1: null, mode2: null, mode3: null, mode4: null, mode5: null },
     
     // Field vectors
-    magneticVector: earthState?.magneticField ?? { Bx: 0, By: 0, Bz: 0, magnitude: 0 },
-    electricVector: earthState?.electricField ?? { Ex: 0, Ey: 0, magnitude: 0 },
+    magneticVector: null,
+    electricVector: null,
     
     // Validation
     validation: earthState?.validation ?? null,
     
     // Legacy derived values
-    ionosphereActivity: 0.6 + metrics.hiveMindCoherence * 0.3,
-    solarWind: 0.75 + (metrics.coherence - 0.5) * 0.2,
-    geomagneticIndex: metrics.stargateNetworkStrength,
-    coherenceBoost: Math.max(0, (0.15 - Math.abs(schumannFrequency - 7.83)) / 0.15) * 0.12,
+    ionosphereActivity: null,
+    solarWind: null,
+    geomagneticIndex: earthState?.earthDisturbance ?? null,
+    coherenceBoost: earthState?.coherenceBoost ?? null,
+    derivation: earthState?.derivation ?? null,
+    sourceId: earthState?.sourceId ?? null,
+    sourceTimestamp: earthState?.sourceTimestamp ?? null,
     
     // State flags
     isEarthDataLoaded: earthState?.isInitialized ?? false,
@@ -377,13 +380,13 @@ export function useAurisMetrics() {
   
   // Get dominant node from bus snapshot
   const masterEq = busSnapshot?.states?.MasterEquation;
-  const dominantNode = masterEq?.data?.dominantNode || 'Tiger';
+  const dominantNode = masterEq?.data?.dominantNode ?? null;
   
   return {
-    compilationRate: metrics.coherence * 0.9 + 0.1,
-    symbolProcessing: 0.85 + metrics.coherence * 0.1,
-    quantumEntanglement: metrics.hiveMindCoherence,
-    dataIntegrity: 0.95 + metrics.coherence * 0.04,
+    compilationRate: null,
+    symbolProcessing: null,
+    quantumEntanglement: null,
+    dataIntegrity: null,
     dominantNode,
     isInitialized,
   };

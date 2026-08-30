@@ -128,6 +128,16 @@ class AurisMetacognition:
         love = float(getattr(vault, "love_amplitude", 0.0) or 0.0)
         lighthouse = (confidence * love) > LIGHTHOUSE_THRESHOLD
 
+        # P5 Pattern C: the Auris consensus confidence is reconciled with the
+        # canonical HNC field before anyone acts on it — the shared Γ can only
+        # TIGHTEN the vote (b46 min), and with no field flowing the nodes'
+        # own figure passes unchanged.
+        try:
+            from aureon.core.hnc_field import reconcile_gamma
+            confidence = reconcile_gamma(confidence)
+        except Exception:
+            pass
+
         result = AurisVoteResult(
             consensus=consensus,
             confidence=confidence,

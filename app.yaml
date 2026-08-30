@@ -21,14 +21,9 @@ services:
     instance_count: 1
     instance_size_slug: apps-d-8vcpu-32gb
 
-    autoscaling:
-      min_instance_count: 1
-      max_instance_count: 2
-      metrics:
-        cpu:
-          percent: 80
-        memory:
-          percent: 85
+    # Keep the shared-state supervisord stack on one instance. Horizontal
+    # scaling remains blocked until leader election, cross-replica order
+    # idempotency, and shared limiter/cache/state are independently proven.
 
     # Dashboard starts web server first, so health checks can begin earlier.
     health_check:

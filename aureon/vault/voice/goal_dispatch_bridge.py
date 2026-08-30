@@ -173,14 +173,12 @@ class GoalDispatchBridge:
             # continue the dispatch — the TemporalCausalityLaw will still
             # see the downstream state.
 
-        # Actually dispatch. If no engine is wired the operator sees a
-        # broken lighthouse — goal stuck at ACKNOWLEDGED → orphans at
-        # complete_budget_tau. That's the honest signal; nothing runs
-        # where nothing is wired.
+        # A goal.submitted event is an engine acknowledgement. The bridge
+        # must not invent one when no engine is wired, or use local time as
+        # a provider timestamp. The original request stays open so the
+        # lighthouse can orphan it honestly.
         if self.goal_engine is None:
-            self._publish_submitted_synthetic(
-                goal_id, text, has_engine=False,
-            )
+            self._publish_dispatch_unavailable(goal_id, text)
             return
 
         if self._run_in_thread:
@@ -223,25 +221,25 @@ class GoalDispatchBridge:
         }
         self._publish("goal.abandoned", payload)
 
-    def _publish_submitted_synthetic(
-        self,
-        goal_id: str,
-        text: str,
-        *,
-        has_engine: bool,
-    ) -> None:
-        """Emit goal.submitted so the TemporalCausalityLaw sees the
-        intake even though no engine is wired. The line stays open — it
-        will orphan at complete_budget_tau, which is the honest signal
-        that nothing picked it up."""
+    def _publish_dispatch_unavailable(self, goal_id: str, text: str) -> None:
+        """Record the no-engine condition without impersonating an acknowledgement."""
         payload = {
             "goal_id": goal_id,
             "text": text,
             "source": "goal_dispatch_bridge",
-            "has_engine": bool(has_engine),
-            "ts": time.time(),
+            "source_id": "goal_dispatch_bridge",
+            "request_id": goal_id,
+            "receipt_id": None,
+            "has_engine": False,
+            "received_at": time.time(),
+            "source_timestamp": None,
+            "truth_status": "no_data",
+            "generated_values": False,
+            "action_enabled": False,
+            "accounting_enabled": False,
+            "learning_enabled": False,
         }
-        self._publish("goal.submitted", payload)
+        self._publish("goal.dispatch.unavailable", payload)
 
     def _publish(self, topic: str, payload: Dict[str, Any]) -> None:
         if self.thought_bus is None:

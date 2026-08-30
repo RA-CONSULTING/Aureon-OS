@@ -360,14 +360,17 @@ except ImportError as e:
     _safe_print(f"⚠️ Quantum Telescope not available: {e}")
 
 # Logging Setup
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s [%(levelname)s] %(message)s',
-    handlers=[
-        logging.FileHandler('multiverse_live.log', encoding='utf-8'),
-        logging.StreamHandler()
-    ]
-)
+if os.getenv("AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS", "").strip().lower() not in {
+    "1", "true", "yes", "on",
+}:
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s [%(levelname)s] %(message)s',
+        handlers=[
+            logging.FileHandler('multiverse_live.log', encoding='utf-8'),
+            logging.StreamHandler()
+        ]
+    )
 logger = logging.getLogger(__name__)
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -1005,7 +1008,7 @@ class CommandoSignal:
     source: str  # Which system generated this
     reason: str
     profit_path: str  # 'SELL' or 'CONVERT' 
-    expected_profit: float
+    expected_profit: Optional[float]
     commando_type: str  # FALCON, TORTOISE, CHAMELEON, BEE
     
     def to_dict(self) -> Dict:
@@ -1065,9 +1068,35 @@ class CommandoCognition:
         
         Decides: SELL (realize profit now) or CONVERT (compound into better opportunity)
         """
-        # Calculate unrealized PnL
-        if entry_price <= 0:
-            entry_price = current_price
+        # A market observation is never a cost-basis receipt.
+        try:
+            inputs_complete = (
+                all(
+                    math.isfinite(float(value))
+                    for value in (current_value, entry_price, current_price)
+                )
+                and float(current_value) >= 0
+                and float(entry_price) > 0
+                and float(current_price) > 0
+            )
+        except (TypeError, ValueError, OverflowError):
+            inputs_complete = False
+        if not inputs_complete:
+            signal = CommandoSignal(
+                timestamp=time.time(),
+                symbol=asset,
+                exchange=exchange,
+                action="HOLD",
+                strength=0.0,
+                confidence=0.0,
+                source="CommandoCognition",
+                reason="NO_DATA: provider cost basis and fresh price are required",
+                profit_path="NONE",
+                expected_profit=None,
+                commando_type="CHAMELEON",
+            )
+            self.signals.append(signal)
+            return signal
         
         pnl_pct = (current_price - entry_price) / entry_price if entry_price > 0 else 0
         pnl_value = current_value * pnl_pct
@@ -1156,10 +1185,26 @@ class CommandoCognition:
         best_signal = None
         best_score = 0
         
-        for symbol in prices:
-            change = changes.get(symbol, 0)
-            mom = momentum.get(symbol, 0)
-            price = prices[symbol]
+        for symbol, raw_price in prices.items():
+            if (
+                symbol not in changes
+                or symbol not in momentum
+                or symbol not in symbol_source
+            ):
+                continue
+            try:
+                price = float(raw_price)
+                change = float(changes[symbol])
+                mom = float(momentum[symbol])
+            except (TypeError, ValueError, OverflowError):
+                continue
+            exchange = str(symbol_source[symbol]).strip().lower()
+            if (
+                not exchange
+                or not all(math.isfinite(value) for value in (price, change, mom))
+                or price <= 0
+            ):
+                continue
             
             # FALCON Entry: Strong upward momentum
             if mom > 0.02 and change > 0:
@@ -1169,7 +1214,7 @@ class CommandoCognition:
                     best_signal = CommandoSignal(
                         timestamp=time.time(),
                         symbol=symbol,
-                        exchange=symbol_source.get(symbol, "binance"),
+                        exchange=exchange,
                         action="BUY",
                         strength=min(1.0, score),
                         confidence=min(0.9, 0.5 + score * 0.1),
@@ -1188,7 +1233,7 @@ class CommandoCognition:
                     best_signal = CommandoSignal(
                         timestamp=time.time(),
                         symbol=symbol,
-                        exchange=symbol_source.get(symbol, "binance"),
+                        exchange=exchange,
                         action="BUY",
                         strength=min(1.0, score),
                         confidence=min(0.8, 0.4 + score * 0.1),
@@ -1238,7 +1283,7 @@ class MultiverseLiveEngine:
         
         # Initialize Internal Multiverse
         if MULTIVERSE_AVAILABLE:
-            self.multiverse = get_multiverse(initial_equity=100.0)
+            self.multiverse = get_multiverse(initial_equity=0.0)
             logger.info("🌌 Internal Multiverse: ONLINE (10 worlds)")
         else:
             self.multiverse = None
@@ -1280,12 +1325,31 @@ class MultiverseLiveEngine:
             logger.info("📈 Alpaca Client: SIMULATION MODE")
         
         # EARLY INIT: Real cash balances (must be before Mycelium init)
-        self.real_balances = {
-            "binance": {"USD": 0.0, "USDT": 0.0},
-            "kraken": {"USD": 0.0},
-            "alpaca": {"USD": 0.0}
+        self.real_balances: Dict[str, Dict[str, float]] = {
+            "binance": {},
+            "kraken": {},
+            "alpaca": {},
         }
-        self.total_equity = 0.0  # Initialize total equity
+        self.balance_snapshot: Dict[str, Any] = {
+            "status": "not_run",
+            "truth_status": "no_data",
+            "venues": {},
+            "eligible_for_external_action": False,
+            "generated_values": False,
+        }
+        # A complete equity number requires every holding, cost basis and an
+        # explicit same-denomination valuation receipt. Cash rows alone are not
+        # portfolio equity.
+        self.total_equity: Optional[float] = None
+        self.equity_receipt: Dict[str, Any] = {
+            "status": "no_data",
+            "truth_status": "no_data",
+            "value": None,
+            "currency": None,
+            "eligible_for_accounting": False,
+            "generated_values": False,
+            "reason": "complete_portfolio_valuation_receipts_required",
+        }
         # Fetch initial real balances immediately
         self._refresh_real_balances()
         
@@ -1336,9 +1400,24 @@ class MultiverseLiveEngine:
         # Initialize Mycelium Network (distributed intelligence)
         if MYCELIUM_AVAILABLE:
             try:
-                initial_cap = max(self._get_total_cash(), 100.0)
-                self.mycelium = MyceliumNetwork(initial_capital=initial_cap, agents_per_hive=5)
-                logger.info(f"🍄 Mycelium Network: ONLINE (capital=${initial_cap:.2f})")
+                initial_cap = self._get_total_cash()
+                if initial_cap is None:
+                    self.mycelium = None
+                    logger.warning(
+                        "🍄 Mycelium Network: WAITING FOR SINGLE-DENOMINATION "
+                        "CAPITAL EVIDENCE"
+                    )
+                else:
+                    self.mycelium = MyceliumNetwork(
+                        initial_capital=initial_cap,
+                        agents_per_hive=5,
+                    )
+                    currency = self.balance_snapshot.get("aggregate_currency")
+                    logger.info(
+                        "🍄 Mycelium Network: ONLINE (capital=%.2f %s)",
+                        initial_cap,
+                        currency,
+                    )
             except Exception as e:
                 self.mycelium = None
                 logger.warning(f"🍄 Mycelium Network: OFFLINE ({e})")
@@ -1355,6 +1434,15 @@ class MultiverseLiveEngine:
         # Market data cache
         self.market_data: Dict = {}
         self.positions: Dict[str, Dict] = {}
+        self.pending_orders: Dict[str, Dict[str, Any]] = {}
+        self.unreconciled_fills: List[Dict[str, Any]] = []
+        self.unproven_holdings: List[Dict[str, Any]] = []
+        self.harvest_receipt: Dict[str, Any] = {
+            "status": "not_run",
+            "truth_status": "no_data",
+            "eligible_for_external_action": False,
+            "generated_values": False,
+        }
         self.last_scan_time: float = 0
 
         # Mycelium control layer (set each cycle)
@@ -1369,11 +1457,13 @@ class MultiverseLiveEngine:
             "trades_executed": 0,
             "sweeps_performed": 0,
             "conversions_performed": 0,
-            "total_profit": 0.0,
+            "total_profit": None,
+            "total_profit_currency": None,
+            "realized_profit_by_currency": {},
             "win_count": 0,
             "loss_count": 0,
             "sniper_kills": 0,
-            "scout_profits": 0.0
+            "scout_profits": None,
         }
 
         # Initialize Conversion Ladder (A-Z / Z-A Full Spectrum Sweep)
@@ -1427,7 +1517,15 @@ class MultiverseLiveEngine:
         logger.info(f"   Scout Network: {'ONLINE' if self.scout_network else 'OFFLINE'}")
         logger.info(f"   Conversion Ladder: {'ONLINE' if self.ladder else 'OFFLINE'}")
         logger.info(f"   ThoughtBus: {'ONLINE' if self.thought_bus else 'OFFLINE'}")
-        logger.info(f"   Real Cash: ${self._get_total_cash():.2f}")
+        observed_cash = self._get_total_cash()
+        if observed_cash is None:
+            logger.info("   Real Cash: NO_DATA (mixed or incomplete denomination evidence)")
+        else:
+            logger.info(
+                "   Real Cash: %.2f %s",
+                observed_cash,
+                self.balance_snapshot.get("aggregate_currency"),
+            )
         logger.info("=" * 60)
         
         # 🌾 STARTUP HARVEST - Scan existing assets for compounding
@@ -1450,6 +1548,35 @@ class MultiverseLiveEngine:
             else:
                 self._harvest_existing_assets(liquidate=False)
     
+    @staticmethod
+    def _fresh_observed_price(ticker: Any, max_age_seconds: float = 120.0) -> Optional[float]:
+        """Return a provider price only when its own provenance is fresh."""
+        if not isinstance(ticker, dict):
+            return None
+        if ticker.get("truth_status") not in {"real_observed", "real_derived"}:
+            return None
+        if ticker.get("generated_values") is not False:
+            return None
+        if not isinstance(ticker.get("source_id"), str) or not ticker.get("source_id"):
+            return None
+        try:
+            price = float(ticker["price"])
+            source_timestamp = float(ticker["source_timestamp"])
+            if source_timestamp > 10_000_000_000:
+                source_timestamp /= 1000.0
+            age = time.time() - source_timestamp
+            if (
+                not math.isfinite(price)
+                or not math.isfinite(source_timestamp)
+                or price <= 0
+                or age < -30.0
+                or age > max_age_seconds
+            ):
+                return None
+            return price
+        except (KeyError, TypeError, ValueError, OverflowError):
+            return None
+
     def _harvest_existing_assets(self, liquidate: bool = False):
         """
         🌾 STARTUP HARVESTER: Scan all holdings across exchanges.
@@ -1457,6 +1584,8 @@ class MultiverseLiveEngine:
         Otherwise loads existing positions into the sniper for monitoring.
         """
         logger.info(f"🌾 STARTUP HARVESTER: {'LIQUIDATING ALL' if liquidate else 'Scanning'} existing assets...")
+        self.unproven_holdings = []
+        received_at = time.time()
         
         # Determine preferred quote currency for Binance UK accounts
         binance_quote = "USDC" if (self.binance and self.binance.uk_mode) else "USDT"
@@ -1466,12 +1595,16 @@ class MultiverseLiveEngine:
             try:
                 # Use account() to get balances
                 account_info = self.binance.account()
-                balances = account_info.get('balances', [])
+                balances = account_info['balances']
                 
                 for bal in balances:
                     asset = bal['asset']
-                    free = float(bal.get('free', 0))
-                    locked = float(bal.get('locked', 0))
+                    free = float(bal['free'])
+                    locked = float(bal['locked'])
+                    if not math.isfinite(free) or not math.isfinite(locked):
+                        raise ValueError("Binance balance receipt is not finite")
+                    if free < 0 or locked < 0:
+                        raise ValueError("Binance balance receipt is negative")
                     total = free + locked
                     
                     if total < 0.000001:  # Skip dust
@@ -1497,33 +1630,24 @@ class MultiverseLiveEngine:
                                 break
                     
                     if can_trade:
-                        # Get current price
-                        try:
-                            price = float(self.binance.best_price(symbol).get("price", 0) or 0)
-                        except Exception:
-                            price = 0
-                        if price > 0:
-                            value = total * price
-                            
-                            if liquidate and free > 0:
-                                # 🔥 LIQUIDATE: Sell everything to cash
-                                try:
-                                    order = self.binance.place_market_order(symbol, "SELL", quantity=free)
-                                    if order:
-                                        logger.info(f"   💰 LIQUIDATED {symbol}: {free:.6f} @ ${price:.4f} = ${value:.4f}")
-                                except Exception as sell_err:
-                                    logger.warning(f"   ⚠️ Failed to liquidate {symbol}: {sell_err}")
-                            else:
-                                # Load ALL positions, not just >$0.50
-                                self.positions[symbol] = {
-                                    "entry_price": price,  # Assume current as entry
-                                    "quantity": total,
-                                    "entry_time": time.time(),
-                                    "hold_cycles": 0,
-                                    "source": "STARTUP_HARVEST",
-                                    "exchange": "binance"
-                                }
-                                logger.info(f"   🌾 Loaded {symbol} (Binance): {total:.6f} @ ${price:.4f} = ${value:.4f}")
+                        self.unproven_holdings.append({
+                            "symbol": symbol,
+                            "asset": asset,
+                            "free_quantity": free,
+                            "locked_quantity": locked,
+                            "total_quantity": total,
+                            "exchange": "binance",
+                            "cost_basis": None,
+                            "valuation": None,
+                            "source_id": "binance:/api/v3/account",
+                            "source_timestamp": None,
+                            "received_at": received_at,
+                            "truth_status": "real_observed",
+                            "eligible_for_external_action": False,
+                            "eligible_for_accounting": False,
+                            "generated_values": False,
+                            "reason": "cost_basis_and_terminal_fill_receipts_required",
+                        })
             except Exception as e:
                 logger.warning(f"Binance harvest error: {e}")
         
@@ -1534,6 +1658,9 @@ class MultiverseLiveEngine:
                 skip_assets = {'USD', 'ZUSD', 'USDT', 'USDC', 'EUR', 'ZEUR', 'GBP', 'ZGBP'}
                 
                 for asset, amount in balances.items():
+                    amount = float(amount)
+                    if not math.isfinite(amount) or amount < 0:
+                        raise ValueError("Kraken balance receipt is invalid")
                     if amount < 0.000001:  # Skip dust
                         continue
                         
@@ -1541,149 +1668,304 @@ class MultiverseLiveEngine:
                     if asset.upper() in skip_assets:
                         continue
                         
-                    # Map asset to pair (Kraken is tricky, try USD then USDT)
-                    # e.g. ATOM -> ATOMUSD
                     symbol = f"{asset}USD"
-                    ticker = self.kraken.get_ticker(symbol)
-                    price = ticker.get('price', 0)
-                    
-                    if price == 0:
-                        symbol = f"{asset}USDT"
-                        ticker = self.kraken.get_ticker(symbol)
-                        price = ticker.get('price', 0)
-                        
-                    if price > 0:
-                        value = amount * price
-                        
-                        if liquidate and amount > 0:
-                            # 🔥 LIQUIDATE: Sell everything to cash
-                            try:
-                                order = self.kraken.place_market_order(symbol, "sell", quantity=amount)
-                                if order:
-                                    logger.info(f"   💰 LIQUIDATED {symbol}: {amount:.6f} @ ${price:.4f} = ${value:.4f}")
-                            except Exception as sell_err:
-                                logger.warning(f"   ⚠️ Failed to liquidate {symbol}: {sell_err}")
-                        else:
-                            # Load ALL positions, not just >$0.50
-                            self.positions[symbol] = {
-                                "entry_price": price,
-                                "quantity": amount,
-                                "entry_time": time.time(),
-                                "hold_cycles": 0,
-                                "source": "STARTUP_HARVEST",
-                                "exchange": "kraken"
-                            }
-                            logger.info(f"   🌾 Loaded {symbol} (Kraken): {amount:.6f} @ ${price:.4f} = ${value:.4f}")
+                    self.unproven_holdings.append({
+                        "symbol": symbol,
+                        "asset": asset,
+                        "free_quantity": amount,
+                        "locked_quantity": None,
+                        "total_quantity": amount,
+                        "exchange": "kraken",
+                        "cost_basis": None,
+                        "valuation": None,
+                        "source_id": "kraken:/0/private/Balance",
+                        "source_timestamp": None,
+                        "received_at": received_at,
+                        "truth_status": "real_observed",
+                        "eligible_for_external_action": False,
+                        "eligible_for_accounting": False,
+                        "generated_values": False,
+                        "reason": "cost_basis_and_terminal_fill_receipts_required",
+                    })
             except Exception as e:
                 logger.warning(f"Kraken harvest error: {e}")
         
         if liquidate:
-            logger.info(f"💰 HARVESTER: LIQUIDATION COMPLETE - All assets converted to cash")
-            time.sleep(2)  # Wait for orders to settle
-            self._refresh_real_balances()  # Get updated cash balance
+            self.harvest_receipt = {
+                "status": "not_submitted",
+                "truth_status": "no_data",
+                "source_id": "aureon:multiverse_startup_harvest",
+                "source_timestamp": None,
+                "received_at": received_at,
+                "eligible_for_external_action": False,
+                "eligible_for_accounting": False,
+                "generated_values": False,
+                "holding_count": len(self.unproven_holdings),
+                "reason": "durable_terminal_fill_reconciler_required",
+            }
+            logger.warning(
+                "NO_DATA: startup liquidation not submitted; terminal fill "
+                "reconciliation is required"
+            )
         else:
-            logger.info(f"🌾 HARVESTER: Loaded {len(self.positions)} existing positions for sniper monitoring")
+            self.harvest_receipt = {
+                "status": "observed",
+                "truth_status": "real_observed",
+                "source_id": "aureon:multiverse_startup_harvest",
+                "source_timestamp": None,
+                "received_at": received_at,
+                "eligible_for_external_action": False,
+                "eligible_for_accounting": False,
+                "generated_values": False,
+                "holding_count": len(self.unproven_holdings),
+                "reason": "cost_basis_receipts_required_before_position_tracking",
+            }
+            logger.info(
+                "Startup harvest recorded %d risk-only holdings; no cost basis "
+                "or tradable position was inferred",
+                len(self.unproven_holdings),
+            )
+        return self.harvest_receipt
     
-    def _refresh_real_balances(self):
-        """Refresh cash balances from actual exchanges"""
-        total_equity = 0.0
-        
-        # Binance - count both cash and asset values (UK uses USDC, non-UK uses USDT)
+    def _refresh_real_balances(self) -> Dict[str, Any]:
+        """Read exact venue balances without currency parity or equity inference."""
+        received_at = time.time()
+        next_balances: Dict[str, Dict[str, float]] = {
+            "binance": {},
+            "kraken": {},
+            "alpaca": {},
+        }
+        venues: Dict[str, Dict[str, Any]] = {}
+
+        def no_data(venue: str, source_id: str, reason: str) -> None:
+            venues[venue] = {
+                "status": "no_data",
+                "truth_status": "no_data",
+                "source_id": source_id,
+                "source_timestamp": None,
+                "received_at": received_at,
+                "settlement_asset": None,
+                "settlement_amount": None,
+                "eligible_for_external_action": False,
+                "generated_values": False,
+                "reason": reason,
+            }
+
+        def parse_rows(rows: Any, venue: str) -> Dict[str, float]:
+            if not isinstance(rows, list):
+                raise ValueError(f"{venue} balance receipt is not a list")
+            parsed: Dict[str, float] = {}
+            for row in rows:
+                if not isinstance(row, dict):
+                    raise ValueError(f"{venue} balance row is not an object")
+                asset = str(row["asset"]).strip().upper()
+                if not asset:
+                    raise ValueError(f"{venue} balance asset is empty")
+                free = float(row["free"])
+                locked = float(row["locked"])
+                if not all(math.isfinite(value) for value in (free, locked)):
+                    raise ValueError(f"{venue} balance row is not finite")
+                if free < 0 or locked < 0:
+                    raise ValueError(f"{venue} balance row is negative")
+                if asset in parsed:
+                    raise ValueError(f"{venue} balance asset is duplicated: {asset}")
+                parsed[asset] = free
+            return parsed
+
         if self.binance:
             try:
-                acct = self.binance.account()
-                quote_cash = 0.0
-                asset_value = 0.0
-                
-                # UK accounts use USDC, non-UK use USDT
-                is_uk = self.binance.uk_mode
-                primary_quote = "USDC" if is_uk else "USDT"
-                cash_assets = {"USDC", "LDUSDC"} if is_uk else {"USDT"}
-                
-                for bal in acct.get("balances", []):
-                    asset = bal["asset"]
-                    free = float(bal.get("free", 0))
-                    locked = float(bal.get("locked", 0))
-                    total_amount = free + locked
-                    
-                    if total_amount > 0:
-                        if asset in cash_assets:
-                            quote_cash += free  # Only count free as cash
-                        elif asset not in ["BNB", "EUR", "GBP", "USD", "USDT", "USDC"]:
-                            # Get current price for asset valuation - try preferred quote first
-                            for quote in [primary_quote, "USDC", "USDT", "BTC"]:
-                                symbol = f"{asset}{quote}"
-                                try:
-                                    price = float(self.binance.best_price(symbol).get("price", 0) or 0)
-                                    if price > 0:
-                                        # Convert to USD if needed
-                                        if quote == "BTC":
-                                            btc_price = float(self.binance.best_price(f"BTC{primary_quote}").get("price", 0) or 0)
-                                            price = price * btc_price
-                                        asset_value += total_amount * price
-                                        logger.debug(
-                                            f"Binance {asset}: {total_amount:.6f} @ ${price:.4f} = ${total_amount * price:.4f}"
-                                        )
-                                        break
-                                except:
-                                    continue
-                
-                # Store as USDT for compatibility but actually tracking USDC for UK
-                self.real_balances["binance"]["USDT"] = quote_cash
-                total_equity += quote_cash + asset_value
-                logger.debug(f"Binance: Cash ${quote_cash:.2f} ({primary_quote}), Assets ${asset_value:.2f}, Total ${quote_cash + asset_value:.2f}")
-            except Exception as e:
-                logger.debug(f"Binance balance error: {e}")
-        
-        # Kraken - count both cash and asset values
+                account = self.binance.account()
+                if not isinstance(account, dict):
+                    raise ValueError("Binance account receipt is not an object")
+                parsed = parse_rows(account["balances"], "Binance")
+                settlement_asset = "USDC" if bool(self.binance.uk_mode) else "USDT"
+                source_timestamp = account.get("updateTime")
+                if source_timestamp is not None:
+                    source_timestamp = float(source_timestamp)
+                    if source_timestamp > 10_000_000_000:
+                        source_timestamp /= 1000.0
+                    if not math.isfinite(source_timestamp) or source_timestamp <= 0:
+                        source_timestamp = None
+                production_mode = not bool(
+                    getattr(self.binance, "dry_run", False)
+                    or getattr(self.binance, "use_testnet", False)
+                )
+                next_balances["binance"] = parsed
+                venues["binance"] = {
+                    "status": "observed",
+                    "truth_status": "real_observed",
+                    "source_id": "binance:/api/v3/account",
+                    "source_timestamp": source_timestamp,
+                    "received_at": received_at,
+                    "timestamp_policy": (
+                        "provider_account_update_time_and_local_receipt_time"
+                        if source_timestamp is not None
+                        else "provider_endpoint_has_no_snapshot_time; local_receipt_time"
+                    ),
+                    "settlement_asset": settlement_asset,
+                    "settlement_amount": parsed.get(settlement_asset),
+                    "eligible_for_external_action": production_mode,
+                    "generated_values": False,
+                    "reason": None if production_mode else "non_production_client_mode",
+                }
+            except Exception as exc:
+                no_data("binance", "binance:/api/v3/account", str(exc))
+
         if self.kraken:
             try:
-                balances = self.kraken.get_account_balance()
-                usd_cash = 0.0
-                asset_value = 0.0
-                
-                for asset, amount in balances.items():
-                    if amount > 0:
-                        if asset in ["USD", "ZUSD", "USDT"]:
-                            usd_cash += amount
-                        else:
-                            # Get current price for asset valuation
-                            symbol = f"{asset}USD"
-                            try:
-                                ticker = self.kraken.get_ticker(symbol)
-                                price = ticker.get('price', 0)
-                                if price == 0:
-                                    symbol = f"{asset}USDT"
-                                    ticker = self.kraken.get_ticker(symbol)
-                                    price = ticker.get('price', 0)
-                                
-                                if price > 0:
-                                    asset_value += amount * price
-                                    logger.debug(f"Kraken {asset}: {amount:.6f} @ ${price:.4f} = ${amount * price:.4f}")
-                            except:
-                                pass
-                
-                self.real_balances["kraken"]["USD"] = usd_cash
-                total_equity += usd_cash + asset_value
-                logger.debug(f"Kraken: Cash ${usd_cash:.2f}, Assets ${asset_value:.2f}, Total ${usd_cash + asset_value:.2f}")
-            except Exception as e:
-                logger.debug(f"Kraken balance error: {e}")
-        
-        # Alpaca - cash only (stocks)
+                if bool(getattr(self.kraken, "dry_run", False)):
+                    raise ValueError("Kraken dry-run balance receipt is not production data")
+                account = self.kraken.account()
+                if not isinstance(account, dict):
+                    raise ValueError("Kraken account receipt is not an object")
+                parsed = parse_rows(account["balances"], "Kraken")
+                next_balances["kraken"] = parsed
+                venues["kraken"] = {
+                    "status": "observed",
+                    "truth_status": "real_observed",
+                    "source_id": "kraken:/0/private/Balance",
+                    "source_timestamp": None,
+                    "received_at": received_at,
+                    "timestamp_policy": "provider_endpoint_has_no_snapshot_time; local_receipt_time",
+                    "settlement_asset": "USD",
+                    "settlement_amount": parsed.get("USD"),
+                    "eligible_for_external_action": True,
+                    "generated_values": False,
+                    "reason": None,
+                }
+            except Exception as exc:
+                no_data("kraken", "kraken:/0/private/Balance", str(exc))
+
         if self.alpaca:
             try:
                 account = self.alpaca.get_account()
-                usd_cash = float(account.get('cash', 0))
-                # Note: Alpaca positions would need separate valuation
-                self.real_balances["alpaca"]["USD"] = usd_cash
-                total_equity += usd_cash
-                logger.debug(f"Alpaca: Cash ${usd_cash:.2f}")
-            except Exception as e:
-                logger.debug(f"Alpaca balance error: {e}")
-        
-        # Store total equity for revenue board
-        self.total_equity = total_equity
-        logger.info(f"💰 Total Equity: ${total_equity:.2f} (includes all assets + cash)")
+                if not isinstance(account, dict):
+                    raise ValueError("Alpaca account receipt is not an object")
+                currency = str(account["currency"]).strip().upper()
+                cash = float(account["cash"])
+                if not currency or not math.isfinite(cash):
+                    raise ValueError("Alpaca cash receipt is incomplete")
+                production_mode = not bool(getattr(self.alpaca, "use_paper", False))
+                trading_enabled = not any(
+                    account.get(field) is True
+                    for field in (
+                        "account_blocked",
+                        "trading_blocked",
+                        "trade_suspended_by_user",
+                    )
+                )
+                spendable_cash = cash >= 0
+                next_balances["alpaca"] = {currency: cash}
+                venues["alpaca"] = {
+                    "status": "observed",
+                    "truth_status": "real_observed",
+                    "source_id": "alpaca:/v2/account",
+                    "source_timestamp": None,
+                    "received_at": received_at,
+                    "timestamp_policy": "provider_endpoint_has_no_snapshot_time; local_receipt_time",
+                    "settlement_asset": currency,
+                    "settlement_amount": cash,
+                    "eligible_for_external_action": (
+                        production_mode and trading_enabled and spendable_cash
+                    ),
+                    "generated_values": False,
+                    "reason": (
+                        None
+                        if production_mode and trading_enabled and spendable_cash
+                        else (
+                            "negative_cash_not_spendable"
+                            if not spendable_cash
+                            else "non_production_or_trading_blocked_account"
+                        )
+                    ),
+                }
+            except Exception as exc:
+                no_data("alpaca", "alpaca:/v2/account", str(exc))
+
+        configured = [
+            venue
+            for venue, client in (
+                ("binance", self.binance),
+                ("kraken", self.kraken),
+                ("alpaca", self.alpaca),
+            )
+            if client is not None
+        ]
+        complete_settlements = []
+        for venue in configured:
+            receipt = venues.get(venue, {})
+            amount = receipt.get("settlement_amount")
+            if (
+                receipt.get("eligible_for_external_action") is True
+                and isinstance(receipt.get("settlement_asset"), str)
+                and amount is not None
+            ):
+                complete_settlements.append(
+                    (receipt["settlement_asset"], float(amount))
+                )
+
+        aggregate_cash: Optional[float] = None
+        aggregate_currency: Optional[str] = None
+        if configured and len(complete_settlements) == len(configured):
+            currencies = {currency for currency, _ in complete_settlements}
+            if len(currencies) == 1:
+                aggregate_currency = next(iter(currencies))
+                aggregate_cash = sum(amount for _, amount in complete_settlements)
+
+        observed_count = sum(
+            1
+            for receipt in venues.values()
+            if receipt.get("truth_status") == "real_observed"
+        )
+        if not observed_count:
+            snapshot_status = "no_data"
+            snapshot_truth = "no_data"
+        elif observed_count == len(configured):
+            snapshot_status = "observed"
+            snapshot_truth = "real_observed"
+        else:
+            snapshot_status = "partial"
+            snapshot_truth = "real_observed"
+
+        self.real_balances = next_balances
+        self.balance_snapshot = {
+            "status": snapshot_status,
+            "truth_status": snapshot_truth,
+            "source_timestamp": None,
+            "received_at": received_at,
+            "venues": venues,
+            "aggregate_cash": aggregate_cash,
+            "aggregate_currency": aggregate_currency,
+            "aggregate_status": "complete" if aggregate_cash is not None else "no_data",
+            "eligible_for_external_action": aggregate_cash is not None,
+            "generated_values": False,
+            "reason": (
+                None
+                if aggregate_cash is not None
+                else "all_configured_venues_require_complete_same_denomination_cash_receipts"
+            ),
+        }
+        self.total_equity = None
+        self.equity_receipt = {
+            "status": "no_data",
+            "truth_status": "no_data",
+            "value": None,
+            "currency": None,
+            "received_at": received_at,
+            "eligible_for_accounting": False,
+            "generated_values": False,
+            "reason": "complete_portfolio_valuation_receipts_required",
+        }
+        logger.info(
+            "Balance refresh: %d venue receipt(s); aggregate cash=%s",
+            len(venues),
+            (
+                f"{aggregate_cash:.8f} {aggregate_currency}"
+                if aggregate_cash is not None
+                else "NO_DATA"
+            ),
+        )
+        return self.balance_snapshot
 
     def _build_ladder_client(self):
         """Build a multi-exchange client adapter for the ConversionLadder."""
@@ -1693,138 +1975,59 @@ class MultiverseLiveEngine:
             """Adapts MultiverseLiveEngine's exchange clients to the Ladder interface."""
 
             def get_all_balances(self) -> Dict[str, Dict[str, float]]:
-                """Return balances per exchange (with USD value filter)."""
+                """Return exact provider denominations from the last fresh snapshot."""
                 out: Dict[str, Dict[str, float]] = {}
-                if engine.binance:
-                    try:
-                        acct = engine.binance.account()
-                        b: Dict[str, float] = {}
-                        
-                        # UK accounts use USDC, non-UK use USDT
-                        is_uk = engine.binance.uk_mode
-                        primary_quote = "USDC" if is_uk else "USDT"
-                        
-                        for bal in acct.get("balances", []):
-                            free = float(bal.get("free", 0) or 0)
-                            # Only include assets with meaningful balance
-                            if free > 0:
-                                asset = bal["asset"]
-                                # Skip LDUSDC (staked), count as USDC
-                                if asset == "LDUSDC":
-                                    b["USDC"] = b.get("USDC", 0) + free
-                                    continue
-                                    
-                                # Estimate USD value to filter dust
-                                usd_value = free
-                                if asset not in ("USD", "USDT", "USDC", "GBP", "EUR"):
-                                    # Try to get price using preferred quote for UK
-                                    for quote in [primary_quote, "USDC", "USDT", "BTC"]:
-                                        try:
-                                            price_data = engine.binance.best_price(f"{asset}{quote}")
-                                            price = float(price_data.get("price", 0) or 0)
-                                            if price > 0:
-                                                if quote == "BTC":
-                                                    btc_price = float(engine.binance.best_price(f"BTC{primary_quote}").get("price", 0) or 0)
-                                                    price = price * btc_price
-                                                usd_value = free * price
-                                                break
-                                        except Exception:
-                                            continue
-                                    else:
-                                        usd_value = 0
-                                
-                                # Only include if worth at least $1
-                                if usd_value >= 1.0 or asset in ("USD", "USDT", "USDC", "GBP", "EUR"):
-                                    b[asset] = free
-                                    logger.debug(f"🪜 Binance balance: {asset}={free:.4f} (~${usd_value:.2f})")
-                        out["binance"] = b
-                    except Exception as e:
-                        logger.debug(f"🪜 Binance balance error: {e}")
-                        out["binance"] = {}
-                if engine.kraken:
-                    try:
-                        # Use global KRAKEN_BLACKLIST constant
-                        kb = engine.kraken.get_account_balance() or {}
-                        # Normalize Kraken prefixes
-                        normalized: Dict[str, float] = {}
-                        for k, v in kb.items():
-                            asset = k.lstrip("ZX")
-                            if asset == "USD":
-                                asset = "USD"
-                            if asset in KRAKEN_BLACKLIST:
-                                continue  # Skip restricted assets
-                            val = float(v or 0)
-                            if val > 0:
-                                normalized[asset] = val
-                        out["kraken"] = normalized
-                    except Exception:
-                        out["kraken"] = {}
-                if engine.alpaca:
-                    try:
-                        a = engine.alpaca.get_account()
-                        out["alpaca"] = {"USD": float(a.get("cash", 0) or 0)}
-                    except Exception:
-                        out["alpaca"] = {}
+                snapshot = getattr(engine, "balance_snapshot", {})
+                venues = snapshot.get("venues") if isinstance(snapshot, dict) else None
+                if not isinstance(venues, dict):
+                    return out
+                for venue, receipt in venues.items():
+                    if (
+                        not isinstance(receipt, dict)
+                        or receipt.get("eligible_for_external_action") is not True
+                    ):
+                        continue
+                    observed = getattr(engine, "real_balances", {}).get(venue, {})
+                    if not isinstance(observed, dict):
+                        continue
+                    exact: Dict[str, float] = {}
+                    for asset, raw_amount in observed.items():
+                        try:
+                            amount = float(raw_amount)
+                        except (TypeError, ValueError):
+                            continue
+                        if math.isfinite(amount) and amount > 0:
+                            exact[str(asset).upper()] = amount
+                    out[venue] = exact
                 return out
 
             def get_all_convertible_assets(self) -> Dict[str, Dict[str, List[str]]]:
-                """Return convertible paths per exchange (UK-aware)."""
+                """Build route visibility only from fresh provider-observed pairs."""
                 paths: Dict[str, Dict[str, List[str]]] = {}
-                
-                # === BINANCE UK-AWARE CONVERSION PATHS ===
-                if engine.binance:
-                    uk_allowed = set()
-                    if hasattr(engine.binance, "get_allowed_pairs_uk"):
-                        uk_allowed = engine.binance.get_allowed_pairs_uk()
-                    
-                    binance_map: Dict[str, List[str]] = {}
-                    
-                    if uk_allowed:
-                        # Build actual conversion graph from UK-allowed pairs
-                        # Parse symbols to extract base/quote assets
-                        quotes = {"USDT", "USDC", "GBP", "EUR", "BTC", "ETH"}
-                        assets_seen: set = set()
-                        edges: Dict[str, set] = {}  # asset -> set of reachable assets
-                        
-                        for sym in uk_allowed:
-                            # Find quote by checking known quotes
-                            for q in quotes:
-                                if sym.endswith(q):
-                                    base = sym[:-len(q)]
-                                    if base and base != q:
-                                        assets_seen.add(base)
-                                        assets_seen.add(q)
-                                        edges.setdefault(base, set()).add(q)
-                                        edges.setdefault(q, set()).add(base)
-                                    break
-                        
-                        # Build convertible map
-                        for asset in assets_seen:
-                            targets = list(edges.get(asset, set()))
-                            if targets:
-                                binance_map[asset] = targets
-                    else:
-                        # Fallback: assume all major pairs (non-UK)
-                        blues = ["BTC", "ETH", "SOL", "BNB", "XRP", "ADA", "AVAX", "DOT", "LINK", "LTC"]
-                        stables = ["USDT", "USDC", "GBP", "EUR"]
-                        for asset in blues + stables:
-                            targets = [a for a in blues + stables if a != asset]
-                            binance_map[asset] = targets
-                    
-                    paths["binance"] = binance_map
-                
-                # Kraken: simplified USD-based, with restricted asset blacklist
-                if engine.kraken:
-                    # Use global KRAKEN_BLACKLIST constant
-                    blues = ["BTC", "ETH", "SOL", "XRP", "ADA", "AVAX", "DOT", "LINK", "LTC", "ATOM"]
-                    blues = [b for b in blues if b not in KRAKEN_BLACKLIST]
-                    
-                    kraken_map: Dict[str, List[str]] = {}
-                    for asset in blues + ["USD"]:
-                        targets = [a for a in blues + ["USD"] if a != asset]
-                        kraken_map[asset] = targets
-                    paths["kraken"] = kraken_map
-                
+                market_data = getattr(engine, "market_data", {})
+                source_map = market_data.get("source") if isinstance(
+                    market_data, dict
+                ) else None
+                if not isinstance(source_map, dict):
+                    return paths
+                edges: Dict[str, Dict[str, set]] = {}
+                for symbol, venue_value in source_map.items():
+                    venue = str(venue_value).lower()
+                    if engine._actionable_market_price(symbol, venue) is None:
+                        continue
+                    base = engine._base_asset_for_symbol(symbol)
+                    quote = engine._quote_asset_for_symbol(symbol)
+                    if base is None or quote is None or base == quote:
+                        continue
+                    venue_edges = edges.setdefault(venue, {})
+                    venue_edges.setdefault(base, set()).add(quote)
+                    venue_edges.setdefault(quote, set()).add(base)
+                for venue, venue_edges in edges.items():
+                    paths[venue] = {
+                        asset: sorted(targets)
+                        for asset, targets in venue_edges.items()
+                        if targets
+                    }
                 return paths
 
             def find_conversion_path(self, exchange: str, from_asset: str, to_asset: str) -> List[Dict[str, Any]]:
@@ -1836,253 +2039,136 @@ class MultiverseLiveEngine:
                         logger.debug(f"🌀 Labyrinth found path: {from_asset} → {to_asset} ({len(path)} hops)")
                         return path
                 
-                # Fallback: single-hop path
-                return [{"from": from_asset, "to": to_asset, "exchange": exchange}]
+                return []
 
-            def convert_to_quote(self, exchange: str, asset: str, qty: float, quote: str) -> float:
-                """Estimate USD value of asset qty."""
-                if asset in ("USD", "USDT", "USDC"):
-                    return float(qty)
+            def convert_to_quote(self, exchange: str, asset: str, qty: float, quote: str) -> Optional[float]:
+                """Value an asset only from a fresh provider quote."""
+                try:
+                    quantity = float(qty)
+                except (TypeError, ValueError):
+                    return None
+                if not math.isfinite(quantity) or quantity < 0:
+                    return None
+                normalized_asset = str(asset).upper()
+                normalized_quote = str(quote).upper()
+                if normalized_asset == normalized_quote:
+                    return quantity
                 try:
                     if exchange == "binance" and engine.binance:
-                        symbol = f"{asset}{quote}"
-                        price = float(engine.binance.best_price(symbol).get("price", 0) or 0)
-                        return qty * price
+                        symbol = f"{normalized_asset}{normalized_quote}"
+                        ticker = engine.binance.get_24h_ticker(symbol)
+                        candidate = {
+                            "price": ticker["lastPrice"],
+                            "source_id": "binance:/api/v3/ticker/24hr",
+                            "source_timestamp": ticker["closeTime"],
+                            "truth_status": "real_observed",
+                            "generated_values": False,
+                        }
+                        price = engine._fresh_observed_price(candidate)
+                        return None if price is None else quantity * price
                     if exchange == "kraken" and engine.kraken:
-                        symbol = f"{asset}USD"
-                        ticker = engine.kraken.get_ticker(symbol)
-                        price = float(ticker.get("price", 0) or 0)
-                        return qty * price
+                        symbol = f"{normalized_asset}{normalized_quote}"
+                        ticker = engine.kraken.get_24h_ticker(symbol)
+                        price = engine._fresh_observed_price(ticker)
+                        return None if price is None else quantity * price
                 except Exception:
                     pass
-                return 0.0
+                return None
 
             def convert_crypto(self, exchange: str, from_asset: str, to_asset: str, amount: float) -> Dict[str, Any]:
-                """Execute actual conversion via exchange using Labyrinth pathfinding."""
-                
-                # === TRACK INPUT VALUE FOR PROFIT CALCULATION ===
-                input_value_usd = self.convert_to_quote(exchange, from_asset, amount, "USDT")
-                if input_value_usd == 0 and from_asset in ("USD", "USDT", "USDC"):
-                    input_value_usd = amount
-                
-                # === USE LABYRINTH FOR INTELLIGENT PATHFINDING ===
-                if hasattr(engine, 'labyrinth') and engine.labyrinth:
-                    path = engine.labyrinth.find_path(from_asset, to_asset, preferred_exchange=exchange)
-                    if path and len(path) > 0:
-                        logger.info(f"🌀 Labyrinth conversion: {from_asset} → {to_asset} via {len(path)} hops")
-                        
-                        current_amount = amount
-                        all_orders = []
-                        
-                        for step in path:
-                            step_exchange = step.get("exchange", exchange)
-                            step_symbol = step.get("symbol", "")
-                            step_direction = step.get("direction", "SELL")
-                            step_from = step.get("from")
-                            step_to = step.get("to")
-                            
-                            logger.debug(f"🌀 Step: {step_from} → {step_to} via {step_symbol} ({step_direction}) on {step_exchange}")
-                            
-                            try:
-                                if step_exchange == "binance" and engine.binance:
-                                    if step_direction == "SELL":
-                                        order = engine.binance.place_market_order(step_symbol, "SELL", quantity=current_amount)
-                                    else:
-                                        # For BUY, we use quote_qty
-                                        order = engine.binance.place_market_order(step_symbol, "BUY", quote_qty=current_amount)
-                                    
-                                    if order and not order.get("error"):
-                                        all_orders.append(order)
-                                        # Update current amount for next hop
-                                        if step_direction == "SELL":
-                                            current_amount = float(order.get("cummulativeQuoteQty", 0) or 0)
-                                        else:
-                                            current_amount = float(order.get("executedQty", 0) or 0)
-                                    else:
-                                        logger.warning(f"🌀 Step failed: {order}")
-                                        break
-                                
-                                elif step_exchange == "kraken" and engine.kraken:
-                                    side = "sell" if step_direction == "SELL" else "buy"
-                                    order = engine.kraken.place_market_order(step_symbol, side, quantity=current_amount)
-                                    
-                                    if order and not order.get("error"):
-                                        all_orders.append(order)
-                                        # Estimate next amount from price
-                                        ticker = engine.kraken.get_ticker(step_symbol)
-                                        price = float(ticker.get("price", 1) or 1)
-                                        if step_direction == "SELL":
-                                            current_amount = current_amount * price
-                                        else:
-                                            current_amount = current_amount / price if price > 0 else 0
-                                    else:
-                                        logger.warning(f"🌀 Kraken step failed: {order}")
-                                        break
-                            
-                            except Exception as e:
-                                logger.error(f"🌀 Step error: {e}")
-                                break
-                        
-                        # === CALCULATE OUTPUT VALUE AND PROFIT ===
-                        output_amount = current_amount
-                        output_value_usd = self.convert_to_quote(exchange, to_asset, output_amount, "USDT")
-                        if output_value_usd == 0 and to_asset in ("USD", "USDT", "USDC"):
-                            output_value_usd = output_amount
-                        
-                        # Calculate net profit
-                        net_profit = output_value_usd - input_value_usd
-                        
-                        # Record path usage WITH PROFIT to labyrinth
-                        engine.labyrinth.record_path_usage(path, profit=net_profit, success=len(all_orders) > 0)
-                        
-                        # Record to Mycelium if available
-                        if hasattr(engine, 'mycelium') and engine.mycelium and hasattr(engine.mycelium, 'record_conversion_profit'):
-                            try:
-                                engine.mycelium.record_conversion_profit({
-                                    'from_asset': from_asset,
-                                    'to_asset': to_asset,
-                                    'exchange': exchange,
-                                    'path': path,
-                                    'input_amount': amount,
-                                    'output_amount': output_amount,
-                                    'input_value_usd': input_value_usd,
-                                    'output_value_usd': output_value_usd,
-                                    'fees': input_value_usd * 0.001 * len(path),  # Estimated fees
-                                    'net_profit': net_profit,
-                                    'success': len(all_orders) > 0,
-                                    'hops': len(path),
-                                })
-                            except Exception:
-                                pass
-                        
-                        if all_orders:
-                            return {
-                                "orders": all_orders, 
-                                "hops": len(path), 
-                                "converted": True, 
-                                "path": path,
-                                "input_value_usd": input_value_usd,
-                                "output_value_usd": output_value_usd,
-                                "net_profit": net_profit,
-                            }
-                
-                # === FALLBACK: Direct exchange-specific conversion ===
-                if exchange == "binance" and engine.binance:
-                    try:
-                        # === UK ACCOUNT AWARENESS ===
-                        # Get UK-allowed pairs and only convert through permitted paths
-                        uk_allowed = set()
-                        if hasattr(engine.binance, "get_allowed_pairs_uk"):
-                            uk_allowed = engine.binance.get_allowed_pairs_uk()
-                        
-                        logger.debug(f"🪜 Ladder: Converting {from_asset}→{to_asset}, UK pairs: {len(uk_allowed)}")
-                        
-                        # Find best conversion path through UK-allowed pairs
-                        # UK accounts: Try USDC first, then EUR
-                        is_uk = engine.binance.uk_mode
-                        direct_pair = f"{from_asset}{to_asset}"
-                        direct_pair_rev = f"{to_asset}{from_asset}"
-                        
-                        if uk_allowed and direct_pair in uk_allowed:
-                            # Direct conversion: BUY to_asset using from_asset
-                            logger.info(f"🪜 Direct UK path: {direct_pair}")
-                            order = engine.binance.place_market_order(direct_pair, "BUY", quantity=amount)
-                            return {"direct": order, "converted": True, "path": direct_pair}
-                        
-                        if uk_allowed and direct_pair_rev in uk_allowed:
-                            # Reverse pair: SELL from_asset to get to_asset
-                            logger.info(f"🪜 Reverse UK path: {direct_pair_rev}")
-                            order = engine.binance.place_market_order(direct_pair_rev, "SELL", quantity=amount)
-                            return {"direct_rev": order, "converted": True, "path": direct_pair_rev}
-                        
-                        # Find intermediate path (USDC first for UK, then EUR, then others)
-                        if is_uk:
-                            intermediates = ["USDC", "EUR", "BTC", "ETH"]  # UK-allowed intermediates
-                        else:
-                            intermediates = ["USDT", "USDC", "BTC", "ETH"]
-                        for quote in intermediates:
-                            sell_sym = f"{from_asset}{quote}"
-                            buy_sym = f"{to_asset}{quote}"
-                            
-                            # Check both legs are UK-allowed
-                            sell_ok = (not uk_allowed) or (sell_sym in uk_allowed)
-                            buy_ok = (not uk_allowed) or (buy_sym in uk_allowed)
-                            
-                            logger.debug(f"🪜 Checking {quote} path: sell={sell_sym}({sell_ok}) buy={buy_sym}({buy_ok})")
-                            
-                            if sell_ok and buy_ok:
-                                logger.info(f"🪜 UK path via {quote}: {sell_sym} → {buy_sym}")
-                                # Sell from_asset to quote
-                                sell_order = engine.binance.place_market_order(sell_sym, "SELL", quantity=amount)
-                                if not sell_order or sell_order.get("error"):
-                                    logger.warning(f"🪜 Sell failed: {sell_order}")
-                                    continue  # Try next intermediate
-                                
-                                # Buy to_asset with proceeds
-                                proceeds = float(sell_order.get("cummulativeQuoteQty", 0) or 0)
-                                if proceeds <= 0:
-                                    logger.warning(f"🪜 No proceeds from sell")
-                                    continue
-                                
-                                buy_price = float(engine.binance.best_price(buy_sym).get("price", 1) or 1)
-                                buy_qty = proceeds / buy_price if buy_price > 0 else 0
-                                if buy_qty <= 0:
-                                    continue
-                                
-                                buy_order = engine.binance.place_market_order(buy_sym, "BUY", quantity=buy_qty)
-                                return {"sell": sell_order, "buy": buy_order, "via": quote, "converted": True}
-                        
-                        logger.warning(f"🪜 No UK-allowed conversion path from {from_asset} to {to_asset}")
-                        return {"error": f"No UK-allowed conversion path from {from_asset} to {to_asset}"}
-                    except Exception as e:
-                        return {"error": str(e)}
-                if exchange == "kraken" and engine.kraken:
-                    try:
-                        # Kraken uses USD as quote currency, not USDT
-                        # Normalize target asset for Kraken
-                        kraken_to = to_asset
-                        if to_asset in ("USDT", "USDC"):
-                            kraken_to = "USD"  # Kraken uses USD
-                        
-                        # Kraken: sell to USD then buy target (if not already stable)
-                        sell_sym = f"{from_asset}USD"
-                        logger.info(f"🪜 Kraken: Selling {amount:.4f} {from_asset} via {sell_sym}")
-                        sell_order = engine.kraken.place_market_order(sell_sym, "sell", quantity=amount)
-                        if not sell_order or sell_order.get("error"):
-                            return {"error": f"kraken sell failed: {sell_order}"}
-                        
-                        # If target is USD, we're done
-                        if kraken_to == "USD":
-                            return {"sell": sell_order, "converted": True, "to": "USD"}
-                        
-                        # Otherwise buy target with proceeds
-                        ticker = engine.kraken.get_ticker(sell_sym)
-                        proceeds = amount * float(ticker.get("price", 0) or 0)
-                        buy_sym = f"{kraken_to}USD"
-                        buy_ticker = engine.kraken.get_ticker(buy_sym)
-                        buy_price = float(buy_ticker.get("price", 1) or 1)
-                        buy_qty = proceeds / buy_price if buy_price > 0 else 0
-                        if buy_qty <= 0:
-                            return {"error": "buy_qty zero"}
-                        buy_order = engine.kraken.place_market_order(buy_sym, "buy", quantity=buy_qty)
-                        return {"sell": sell_order, "buy": buy_order, "converted": True}
-                    except Exception as e:
-                        return {"error": str(e)}
-                return {"error": f"unsupported exchange: {exchange}"}
+                """Expose a conversion plan without submitting any venue order."""
+                try:
+                    requested_amount = float(amount)
+                except (TypeError, ValueError):
+                    requested_amount = math.nan
+                if not math.isfinite(requested_amount) or requested_amount <= 0:
+                    return {
+                        "status": "no_data",
+                        "truth_status": "no_data",
+                        "eligible_for_external_action": False,
+                        "eligible_for_accounting": False,
+                        "generated_values": False,
+                        "reason": "invalid_conversion_amount",
+                    }
+                # A multi-hop conversion is a durable financial saga. This
+                # adapter has no cross-venue transfer receipt or restart-safe
+                # reconciler, so plan visibility is preserved while submission
+                # remains ineligible. No guessed proceeds may advance a hop.
+                return {
+                    "status": "not_submitted",
+                    "truth_status": "no_data",
+                    "eligible_for_external_action": False,
+                    "eligible_for_accounting": False,
+                    "generated_values": False,
+                    "reason": "durable_fill_and_transfer_reconciler_required",
+                    "exchange": exchange,
+                    "from_asset": from_asset,
+                    "to_asset": to_asset,
+                    "requested_amount": requested_amount,
+                }
 
         return LadderClientAdapter()
     
-    def _get_total_cash(self) -> float:
-        """Get total cash across all exchanges"""
+    def _get_total_cash(self, currency: Optional[str] = None) -> Optional[float]:
+        """Return cash only when every included amount has one exact currency."""
+        snapshot = getattr(self, "balance_snapshot", {})
+        if not isinstance(snapshot, dict):
+            return None
+        if currency is None:
+            if (
+                snapshot.get("aggregate_status") != "complete"
+                or snapshot.get("truth_status") != "real_observed"
+                or snapshot.get("generated_values") is not False
+                or not isinstance(snapshot.get("aggregate_currency"), str)
+                or not snapshot.get("aggregate_currency")
+            ):
+                return None
+            value = snapshot.get("aggregate_cash")
+            try:
+                value = float(value)
+            except (TypeError, ValueError):
+                return None
+            return value if math.isfinite(value) and value >= 0 else None
+
+        normalized = str(currency).strip().upper()
+        if not normalized:
+            return None
         total = 0.0
-        total += self.real_balances["binance"].get("USDT", 0)
-        total += self.real_balances["kraken"].get("USD", 0)
-        total += self.real_balances["alpaca"].get("USD", 0)
-        
-        # Fallback for simulation
-        if total == 0 and self.simulation_mode:
-            return 100.0
-        return total
+        observed = False
+        venues = snapshot.get("venues")
+        if not isinstance(venues, dict) or not venues:
+            return None
+        for venue, receipt in venues.items():
+            if (
+                not isinstance(receipt, dict)
+                or receipt.get("eligible_for_external_action") is not True
+                or receipt.get("truth_status") != "real_observed"
+                or receipt.get("generated_values") is not False
+                or not isinstance(receipt.get("source_id"), str)
+                or not receipt.get("source_id")
+            ):
+                return None
+            try:
+                received_at = float(receipt["received_at"])
+                age = time.time() - received_at
+            except (KeyError, TypeError, ValueError, OverflowError):
+                return None
+            if not math.isfinite(received_at) or age < -30.0 or age > 30.0:
+                return None
+            venue_balances = getattr(self, "real_balances", {}).get(venue, {})
+            if not isinstance(venue_balances, dict):
+                return None
+            if normalized not in venue_balances:
+                continue
+            try:
+                amount = float(venue_balances[normalized])
+            except (TypeError, ValueError):
+                return None
+            if not math.isfinite(amount):
+                return None
+            total += amount
+            observed = True
+        return total if observed else None
     
     def fetch_market_data(self) -> Dict:
         """Fetch fresh market data from ALL exchanges and pairs"""
@@ -2091,33 +2177,59 @@ class MultiverseLiveEngine:
         volumes = {}
         momentum = {}
         source = {}
+        price_only = {}
+        provenance = {}
         
         # BINANCE - Get all allowed pairs (not just USDT)
         if self.binance:
             try:
                 # Get all tickers first
-                all_tickers = self.binance.session.get(
+                response = self.binance.session.get(
                     f'{self.binance.base}/api/v3/ticker/24hr',
                     timeout=5
-                ).json()
+                )
+                response.raise_for_status()
+                all_tickers = response.json()
+                if not isinstance(all_tickers, list):
+                    raise ValueError("Binance ticker receipt is not a list")
                 
                 # Get allowed pairs for UK account
                 allowed_pairs = self.binance.get_allowed_pairs_uk()
                 
                 for t in all_tickers:
-                    symbol = t['symbol']
+                    if not isinstance(t, dict):
+                        continue
+                    symbol = str(t['symbol']).upper()
                     
                     # Only include allowed pairs (respects UK restrictions)
                     if allowed_pairs and symbol not in allowed_pairs:
                         continue
                         
                     try:
-                        prices[symbol] = float(t['lastPrice'])
-                        changes[symbol] = float(t['priceChangePercent'])
-                        volumes[symbol] = float(t['quoteVolume'])
-                        # Calculate momentum from price change
-                        momentum[symbol] = float(t['priceChangePercent']) / 100
+                        source_timestamp = float(t['closeTime'])
+                        if source_timestamp > 10_000_000_000:
+                            source_timestamp /= 1000.0
+                        observed_at = time.time()
+                        age = observed_at - source_timestamp
+                        price = float(t['lastPrice'])
+                        change = float(t['priceChangePercent'])
+                        volume = float(t['quoteVolume'])
+                        if not all(math.isfinite(value) for value in (price, change, volume)):
+                            continue
+                        if price <= 0 or volume < 0 or age < -30.0 or age > 120.0:
+                            continue
+                        prices[symbol] = price
+                        changes[symbol] = change
+                        volumes[symbol] = volume
+                        momentum[symbol] = change / 100
                         source[symbol] = "binance"
+                        provenance[symbol] = {
+                            "source_id": "binance:/api/v3/ticker/24hr",
+                            "source_timestamp": source_timestamp,
+                            "received_at": observed_at,
+                            "truth_status": "real_observed",
+                            "generated_values": False,
+                        }
                     except:
                         continue
                 
@@ -2134,7 +2246,11 @@ class MultiverseLiveEngine:
                 kraken_added = 0
                 
                 for ticker in kraken_tickers:
-                    symbol = ticker.get('symbol', '')
+                    if not isinstance(ticker, dict):
+                        continue
+                    symbol = str(ticker.get('symbol') or '').upper()
+                    if not symbol:
+                        continue
                     if symbol in prices:
                         continue  # Skip if already have from Binance
                     
@@ -2144,16 +2260,43 @@ class MultiverseLiveEngine:
                         continue
                     
                     try:
-                        price = float(ticker.get('lastPrice', 0))
-                        change = float(ticker.get('priceChangePercent', 0))
-                        volume = float(ticker.get('quoteVolume', 0))
-                        
-                        if price > 0:
+                        if any(
+                            ticker.get(field) is None
+                            for field in ('lastPrice', 'priceChangePercent', 'quoteVolume')
+                        ):
+                            continue
+                        price = float(ticker['lastPrice'])
+                        change = float(ticker['priceChangePercent'])
+                        volume = float(ticker['quoteVolume'])
+                        source_timestamp = float(ticker['source_timestamp'])
+                        if source_timestamp > 10_000_000_000:
+                            source_timestamp /= 1000.0
+                        observed_at = time.time()
+                        age = observed_at - source_timestamp
+                        if (
+                            all(math.isfinite(value) for value in (
+                                price, change, volume, source_timestamp
+                            ))
+                            and price > 0
+                            and volume >= 0
+                            and -30.0 <= age <= 120.0
+                            and ticker.get("truth_status") == "real_derived"
+                            and ticker.get("generated_values") is False
+                            and isinstance(ticker.get("source_id"), str)
+                            and bool(ticker.get("source_id"))
+                        ):
                             prices[symbol] = price
                             changes[symbol] = change
                             volumes[symbol] = volume
-                            momentum[symbol] = change / 100 if change != 0 else 0
+                            momentum[symbol] = change / 100
                             source[symbol] = "kraken"
+                            provenance[symbol] = {
+                                "source_id": ticker.get("source_id"),
+                                "source_timestamp": source_timestamp,
+                                "received_at": observed_at,
+                                "truth_status": "real_derived",
+                                "generated_values": False,
+                            }
                             kraken_added += 1
                     except:
                         continue
@@ -2172,15 +2315,46 @@ class MultiverseLiveEngine:
                 for symbol in stock_symbols:
                     try:
                         quote = self.alpaca.get_last_quote(symbol)
-                        if quote:
-                            price = float(quote.get('last', {}).get('price', 0))
-                            if price > 0:
-                                stock_symbol = f"{symbol}/USD"  # Alpaca format
-                                prices[stock_symbol] = price
-                                changes[stock_symbol] = 0  # No change data from quote
-                                volumes[stock_symbol] = 0
-                                momentum[stock_symbol] = 0
-                                source[stock_symbol] = "alpaca"
+                        if not isinstance(quote, dict):
+                            continue
+                        raw = quote.get("raw")
+                        if not isinstance(raw, dict):
+                            continue
+                        provider_quote = raw.get("quote")
+                        if not isinstance(provider_quote, dict):
+                            provider_quote = raw
+                        bid = float(provider_quote["bp"])
+                        ask = float(provider_quote["ap"])
+                        source_value = provider_quote["t"]
+                        if isinstance(source_value, str):
+                            normalized = (
+                                source_value[:-1] + "+00:00"
+                                if source_value.endswith("Z")
+                                else source_value
+                            )
+                            source_timestamp = datetime.fromisoformat(normalized).timestamp()
+                        else:
+                            source_timestamp = float(source_value)
+                            if source_timestamp > 10_000_000_000:
+                                source_timestamp /= 1000.0
+                        observed_at = time.time()
+                        age = observed_at - source_timestamp
+                        if not all(math.isfinite(value) for value in (bid, ask, source_timestamp)):
+                            continue
+                        if bid <= 0 or ask <= 0 or ask < bid or age < -30.0 or age > 120.0:
+                            continue
+                        stock_symbol = f"{symbol}/USD"
+                        price_only[stock_symbol] = {
+                            "price": (bid + ask) / 2,
+                            "bid": bid,
+                            "ask": ask,
+                            "source_id": "alpaca:/v2/stocks/quotes/latest",
+                            "source_timestamp": source_timestamp,
+                            "received_at": observed_at,
+                            "truth_status": "real_derived",
+                            "eligible_for_external_action": False,
+                            "generated_values": False,
+                        }
                     except:
                         continue
                 
@@ -2189,38 +2363,36 @@ class MultiverseLiveEngine:
             except Exception as e:
                 logger.error(f"Alpaca market data error: {e}")
         
-        # If no real data, use simulation data
+        received_at = time.time()
         if not prices:
-            logger.warning("No market data available, using simulation data")
-            # Simulation data - generate realistic opportunities
-            import random
-            symbols = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'ADAUSDT', 'DOGEUSDT', 
-                      'XRPUSDT', 'AVAXUSDT', 'DOTUSDT', 'LINKUSDT', 'MATICUSDT',
-                      'LTCUSDT', 'BCHUSDT', 'ETCUSDT', 'XLMUSDT', 'TRXUSDT',
-                      'VETUSDT', 'ICPUSDT', 'FILUSDT', 'HBARUSDT', 'NEARUSDT']
-            base_prices = {
-                'BTCUSDT': 95000, 'ETHUSDT': 3400, 'SOLUSDT': 200, 'ADAUSDT': 1.1,
-                'DOGEUSDT': 0.32, 'XRPUSDT': 2.3, 'AVAXUSDT': 40, 'DOTUSDT': 7,
-                'LINKUSDT': 22, 'MATICUSDT': 0.5, 'LTCUSDT': 65, 'BCHUSDT': 220,
-                'ETCUSDT': 18, 'XLMUSDT': 0.09, 'TRXUSDT': 0.15, 'VETUSDT': 0.02,
-                'ICPUSDT': 8, 'FILUSDT': 3.5, 'HBARUSDT': 0.05, 'NEARUSDT': 4.2
-            }
-            for symbol in symbols:
-                # Create some momentum opportunities
-                base = base_prices.get(symbol, 100)
-                change = random.uniform(-8, 12)  # Wider range for more signals
-                prices[symbol] = base * (1 + change / 100)
-                changes[symbol] = change
-                volumes[symbol] = random.uniform(100000, 10000000)
-                momentum[symbol] = change / 100
-        
+            logger.warning('NO_DATA: providers returned no complete price/change/volume snapshots')
+
+        has_provider_observation = bool(prices or price_only)
         self.market_data = {
             "prices": prices,
+            "price_only": price_only,
             "changes": changes,
             "volumes": volumes,
             "momentum": momentum,
             "source": source,
-            "timestamp": time.time()
+            "provenance": provenance,
+            "source_timestamps": {
+                symbol: receipt["source_timestamp"]
+                for symbol, receipt in provenance.items()
+            },
+            "timestamp": received_at,
+            "received_at": received_at,
+            "source_timestamp": None,
+            "timestamp_policy": (
+                "per_symbol_provider_timestamp; timestamp_is_receipt_time"
+                if has_provider_observation
+                else None
+            ),
+            "truth_status": "real_observed" if has_provider_observation else "no_data",
+            "decision_status": "ready" if prices else "no_data",
+            "eligible_for_external_action": bool(prices),
+            "generated_values": False,
+            "reason": None if prices else "NO_COMPLETE_MARKET_SNAPSHOTS",
         }
         
         logger.info(f"📊 Market Data: {len(prices)} symbols from all exchanges")
@@ -2229,28 +2401,133 @@ class MultiverseLiveEngine:
         logger.debug(f"Sample momentum: {dict(list(momentum.items())[:5])}")
         return self.market_data
     
-    def get_available_capital(self) -> float:
-        """Get available trading capital from all exchanges (cash + asset values)"""
-        # Use the total equity calculation which includes both cash and asset values
-        if hasattr(self, 'total_equity') and self.total_equity > 0:
-            return self.total_equity
-        
-        # Fallback: calculate manually
-        total = 0.0
-        
-        # Get fresh balance data
-        self._refresh_real_balances()
-        
-        # Add cash balances
-        total += self.real_balances["binance"].get("USDT", 0)
-        total += self.real_balances["kraken"].get("USD", 0)
-        total += self.real_balances["alpaca"].get("USD", 0)
-        
-        # Fallback for simulation
-        if total == 0 and self.simulation_mode:
-            return 100.0
-            
-        return total
+    @staticmethod
+    def _quote_asset_for_symbol(symbol: str) -> Optional[str]:
+        normalized = str(symbol or "").strip().upper()
+        if "/" in normalized:
+            quote = normalized.rsplit("/", 1)[-1]
+            return quote or None
+        for quote in (
+            "FDUSD",
+            "USDT",
+            "USDC",
+            "BUSD",
+            "TUSD",
+            "USD",
+            "EUR",
+            "GBP",
+            "BTC",
+            "ETH",
+            "BNB",
+        ):
+            if normalized.endswith(quote) and len(normalized) > len(quote):
+                return quote
+        return None
+
+    def _actionable_market_price(
+        self,
+        symbol: str,
+        exchange: str,
+        max_age_seconds: float = 120.0,
+    ) -> Optional[float]:
+        """Return a price only with complete, fresh, same-venue provenance."""
+        market_data = getattr(self, "market_data", {})
+        if not isinstance(market_data, dict):
+            return None
+        if market_data.get("eligible_for_external_action") is not True:
+            return None
+        source_map = market_data.get("source")
+        provenance = market_data.get("provenance")
+        prices = market_data.get("prices")
+        if not all(isinstance(item, dict) for item in (source_map, provenance, prices)):
+            return None
+        if str(source_map.get(symbol, "")).lower() != str(exchange).lower():
+            return None
+        receipt = provenance.get(symbol)
+        if not isinstance(receipt, dict):
+            return None
+        if receipt.get("truth_status") not in {"real_observed", "real_derived"}:
+            return None
+        if receipt.get("generated_values") is not False:
+            return None
+        if not isinstance(receipt.get("source_id"), str) or not receipt["source_id"]:
+            return None
+        try:
+            price = float(prices[symbol])
+            source_timestamp = float(receipt["source_timestamp"])
+            if source_timestamp > 10_000_000_000:
+                source_timestamp /= 1000.0
+            age = time.time() - source_timestamp
+        except (KeyError, TypeError, ValueError, OverflowError):
+            return None
+        if (
+            not math.isfinite(price)
+            or not math.isfinite(source_timestamp)
+            or price <= 0
+            or age < -30.0
+            or age > max_age_seconds
+        ):
+            return None
+        return price
+
+    def get_available_capital(
+        self,
+        exchange: Optional[str] = None,
+        quote_asset: Optional[str] = None,
+        refresh: bool = False,
+    ) -> Optional[float]:
+        """Return exact-venue, exact-denomination spendable provider cash."""
+        if refresh:
+            self._refresh_real_balances()
+        if exchange is None or quote_asset is None:
+            return self._get_total_cash()
+
+        venue = str(exchange).strip().lower()
+        currency = str(quote_asset).strip().upper()
+        snapshot = getattr(self, "balance_snapshot", {})
+        venues = snapshot.get("venues") if isinstance(snapshot, dict) else None
+        receipt = venues.get(venue) if isinstance(venues, dict) else None
+        if not isinstance(receipt, dict):
+            return None
+        if (
+            receipt.get("eligible_for_external_action") is not True
+            or receipt.get("truth_status") != "real_observed"
+            or receipt.get("generated_values") is not False
+            or not isinstance(receipt.get("source_id"), str)
+            or not receipt.get("source_id")
+        ):
+            return None
+        try:
+            received_at = float(receipt["received_at"])
+            age = time.time() - received_at
+        except (KeyError, TypeError, ValueError, OverflowError):
+            return None
+        if not math.isfinite(received_at) or age < -30.0 or age > 30.0:
+            return None
+        balances = getattr(self, "real_balances", {}).get(venue, {})
+        if currency not in balances:
+            return None
+        try:
+            amount = float(balances[currency])
+        except (TypeError, ValueError):
+            return None
+        if not math.isfinite(amount) or amount < 0:
+            return None
+        return amount
+
+    def _capital_for_signal(
+        self,
+        signal: CommandoSignal,
+        refresh: bool = False,
+    ) -> Optional[float]:
+        quote_asset = self._quote_asset_for_symbol(signal.symbol)
+        if quote_asset is None:
+            return None
+        return self.get_available_capital(
+            exchange=signal.exchange,
+            quote_asset=quote_asset,
+            refresh=refresh,
+        )
     
     def _validate_symbol_tradeable(self, symbol: str, exchange: str) -> tuple[bool, str]:
         """
@@ -2281,8 +2558,10 @@ class MultiverseLiveEngine:
             # Verify symbol exists with price
             try:
                 price_data = self.binance.best_price(symbol)
-                price = float(price_data.get("price", 0) or 0)
-                if price <= 0:
+                if not isinstance(price_data, dict) or price_data.get("price") is None:
+                    return False, f"No price data for {symbol}"
+                price = float(price_data["price"])
+                if not math.isfinite(price) or price <= 0:
                     return False, f"No price data for {symbol}"
             except Exception as e:
                 return False, f"Price lookup failed: {e}"
@@ -2391,7 +2670,10 @@ class MultiverseLiveEngine:
             "cycle": self.stats["cycles"],
             "timestamp": cycle_start,
             "market_symbols": 0,
-            "real_cash_balance": 0.0,
+            "real_cash_balance": None,
+            "cash_currency": None,
+            "balance_snapshot": None,
+            "decision_status": "no_data",
             "inception_dive": {},
             "sniper_exits": [],
             "scout_intel": [],
@@ -2410,16 +2692,26 @@ class MultiverseLiveEngine:
         if self.mycelium:
             try:
                 changes = list(market_data.get("changes", {}).values())
-                momentum_val = sum(changes) / len(changes) / 100 if changes else 0.0
-                volatility_val = (max(changes) - min(changes)) / 100 if len(changes) >= 2 else 0.1
-                price_val = market_data.get("prices", {}).get("BTCUSDT", next(iter(market_data.get("prices", {}).values()), 95000))
-                myc_market = {
-                    "momentum": momentum_val,
-                    "volatility": volatility_val,
-                    "price": price_val
-                }
-                myc_state = self.mycelium.step(myc_market)
-                result["mycelium_state"] = myc_state
+                prices = list(market_data.get("prices", {}).values())
+                if (
+                    market_data.get("eligible_for_external_action") is True
+                    and len(changes) >= 2
+                    and prices
+                ):
+                    myc_market = {
+                        "momentum": sum(changes) / len(changes) / 100,
+                        "volatility": (max(changes) - min(changes)) / 100,
+                        "price": prices[0],
+                    }
+                    result["mycelium_state"] = self.mycelium.step(myc_market)
+                else:
+                    result["mycelium_state"] = {
+                        "status": "no_data",
+                        "truth_status": "no_data",
+                        "eligible_for_external_action": False,
+                        "generated_values": False,
+                        "reason": "complete_cross_sectional_market_receipts_required",
+                    }
             except Exception as e:
                 result["mycelium_state_error"] = str(e)
 
@@ -2439,25 +2731,33 @@ class MultiverseLiveEngine:
                 labyrinth_stats = self.labyrinth.build_labyrinth()
                 path_stats = self.labyrinth.get_path_stats()
                 result["labyrinth"] = {
-                    "assets": labyrinth_stats.get("nodes", 0),
-                    "paths": labyrinth_stats.get("edges", 0),
-                    "binance_pairs": labyrinth_stats.get("binance_pairs", 0),
-                    "kraken_pairs": labyrinth_stats.get("kraken_pairs", 0),
+                    "assets": labyrinth_stats.get("nodes"),
+                    "paths": labyrinth_stats.get("edges"),
+                    "binance_pairs": labyrinth_stats.get("binance_pairs"),
+                    "kraken_pairs": labyrinth_stats.get("kraken_pairs"),
                     "cached": labyrinth_stats.get("cached", True),
                     # 🔄 PROFIT METRICS
-                    "total_conversions": path_stats.get("total_conversions", 0),
-                    "total_profit": path_stats.get("total_profit", 0),
+                    "total_conversions": path_stats.get("total_conversions"),
+                    "total_profit": path_stats.get("total_profit"),
                     "best_path": path_stats.get("best_path"),
-                    "best_path_profit": path_stats.get("best_path_profit", 0),
+                    "best_path_profit": path_stats.get("best_path_profit"),
                     "top_profitable": path_stats.get("top_profitable", []),
                 }
         
         # 2. REFRESH REAL EXCHANGE BALANCES (every cycle)
-        self._refresh_real_balances()
+        balance_snapshot = self._refresh_real_balances()
+        result["balance_snapshot"] = balance_snapshot
         result["real_cash_balance"] = self._get_total_cash()
+        result["cash_currency"] = balance_snapshot.get("aggregate_currency")
 
         # Governing metrics: Mycelium reads the whole system and governs growth
         self._update_mycelium_governing_metrics()
+        if market_data.get("eligible_for_external_action") is not True:
+            result["decision_status"] = "no_data"
+            result["reason"] = "complete_fresh_market_receipts_required"
+            result["cycle_time_ms"] = (time.time() - cycle_start) * 1000
+            return result
+        result["decision_status"] = "ready"
         
         # 3. INCEPTION DIVE - Russian Doll probability (REALITY → DREAM_1 → DREAM_2 → LIMBO)
         # This is THE LIMITLESS PILL - mathematical guidance before consensus/commando
@@ -2465,27 +2765,41 @@ class MultiverseLiveEngine:
         if INCEPTION_AVAILABLE and _inception_engine:
             inception_result = _inception_engine.dive(market_data)
             result["inception_dive"] = {
-                "dive_number": inception_result.get("dive_number", 0),
-                "dive_time_ms": inception_result.get("dive_time_ms", 0),
-                "wisdom_depth": inception_result.get("wisdom_depth", 0),
+                "dive_number": inception_result.get("dive_number"),
+                "dive_time_ms": inception_result.get("dive_time_ms"),
+                "wisdom_depth": inception_result.get("wisdom_depth"),
                 "execution_plan": inception_result.get("execution_plan", [])
             }
 
             for plan in inception_result.get("execution_plan", []):
                 if plan.get("action") != "BUY":
                     continue
-                confidence = plan.get("confidence", 0)
-                if confidence < 0.4:  # Lowered from 0.65 to 0.4
+                try:
+                    confidence = float(plan["confidence"])
+                except (KeyError, TypeError, ValueError, OverflowError):
+                    continue
+                if not math.isfinite(confidence) or confidence < 0.4:
                     continue
                 symbol = plan.get("symbol")
                 if not symbol:
                     continue
                 source_map = market_data.get("source", {})
-                target_exchange = source_map.get(symbol, "binance")
+                target_exchange = source_map.get(symbol)
+                if (
+                    not isinstance(target_exchange, str)
+                    or not target_exchange
+                    or self._actionable_market_price(symbol, target_exchange) is None
+                ):
+                    continue
                 
                 # GHOST SIGNAL PREVENTION: Validate symbol is tradeable before creating signal
-                validated_symbol, validated_exchange = self._validate_symbol_tradeable(symbol, target_exchange)
-                if not validated_symbol:
+                can_trade, reason = self._validate_symbol_tradeable(
+                    symbol,
+                    target_exchange,
+                )
+                validated_symbol = symbol if can_trade else None
+                validated_exchange = target_exchange if can_trade else None
+                if not can_trade:
                     logger.debug(f"🚫 INCEPTION: Skipping {symbol} - not tradeable on {target_exchange}")
                     continue
                 
@@ -2520,9 +2834,9 @@ class MultiverseLiveEngine:
                 # Observe top movers through the telescope
                 top_movers = sorted(changes.items(), key=lambda x: abs(x[1]), reverse=True)[:10]
                 for symbol, change in top_movers:
-                    price = prices.get(symbol, 0)
-                    volume = volumes.get(symbol, 10000)
-                    if price > 0:
+                    price = prices.get(symbol)
+                    volume = volumes.get(symbol)
+                    if price is not None and volume is not None and price > 0:
                         observation = self.quantum_telescope.observe(
                             symbol=symbol,
                             price=price,
@@ -2541,7 +2855,10 @@ class MultiverseLiveEngine:
                 result["quantum_telescope"] = {
                     "observations": len(quantum_observations),
                     "high_alignment_count": sum(1 for o in quantum_observations.values() if o['geometric_alignment'] > 0.7),
-                    "top_probability": max((o['probability_spectrum'] for o in quantum_observations.values()), default=0)
+                    "top_probability": max(
+                        (o['probability_spectrum'] for o in quantum_observations.values()),
+                        default=None,
+                    )
                 }
             except Exception as e:
                 logger.warning(f"🔭 Quantum Telescope error: {e}")
@@ -2553,18 +2870,40 @@ class MultiverseLiveEngine:
             volumes_list = list(market_data.get("volumes", {}).values())[:50]
             
             for symbol, pos in list(self.positions.items()):
-                current_price = market_data.get("prices", {}).get(symbol, pos.get("entry_price", 0))
-                entry_value = pos.get("quantity", 0) * pos.get("entry_price", current_price)
-                current_value = pos.get("quantity", 0) * current_price
-                pos_exchange = pos.get("exchange", "binance")
+                pos_exchange = str(pos.get("exchange") or "").lower()
+                current_price = self._actionable_market_price(
+                    symbol,
+                    pos_exchange,
+                )
+                try:
+                    quantity = float(pos["quantity"])
+                    entry_price = float(pos["entry_price"])
+                except (KeyError, TypeError, ValueError):
+                    continue
+                if (
+                    current_price is None
+                    or not math.isfinite(quantity)
+                    or not math.isfinite(entry_price)
+                    or quantity <= 0
+                    or entry_price <= 0
+                    or pos.get("truth_status") != "real_observed"
+                    or pos.get("generated_values") is not False
+                ):
+                    continue
+                entry_value = quantity * entry_price
+                current_value = quantity * current_price
                 
                 try:
+                    hold_cycles = pos.get("hold_cycles")
+                    if not isinstance(hold_cycles, int) or hold_cycles < 0:
+                        continue
                     sniper_signal = self.sniper.check_exit(
                         symbol=symbol,
                         entry_value=entry_value,
                         current_value=current_value,
-                        hold_cycles=pos.get("hold_cycles", 0)
+                        hold_cycles=hold_cycles,
                     )
+                    pos["hold_cycles"] = hold_cycles + 1
                     
                     if sniper_signal.action == 'EXIT_WIN':
                         # Sniper confirms penny profit!
@@ -2588,8 +2927,11 @@ class MultiverseLiveEngine:
                             "threshold": sniper_signal.penny_threshold,
                             "confidence": sniper_signal.confidence
                         })
-                        self.stats["sniper_kills"] += 1
-                        logger.info(f"🎯 SNIPER KILL: {symbol} | Gross: ${sniper_signal.current_gross:.4f}")
+                        logger.info(
+                            "🎯 SNIPER EXIT SIGNAL: %s | internal gross estimate: %.4f",
+                            symbol,
+                            sniper_signal.current_gross,
+                        )
                 except Exception as e:
                     logger.debug(f"Sniper check error for {symbol}: {e}")
         
@@ -2600,16 +2942,34 @@ class MultiverseLiveEngine:
                 source_map = market_data.get("source", {})
                 # Use scouts to scan for opportunities
                 for symbol, price in list(market_data.get("prices", {}).items())[:20]:
-                    change = market_data.get("changes", {}).get(symbol, 0)
-                    momentum = market_data.get("momentum", {}).get(symbol, 0)
+                    changes_map = market_data.get("changes", {})
+                    momentum_map = market_data.get("momentum", {})
+                    if symbol not in changes_map or symbol not in momentum_map:
+                        continue
+                    try:
+                        change = float(changes_map[symbol])
+                        momentum = float(momentum_map[symbol])
+                    except (TypeError, ValueError, OverflowError):
+                        continue
+                    target_exchange = source_map.get(symbol)
+                    if (
+                        not all(math.isfinite(value) for value in (change, momentum))
+                        or not isinstance(target_exchange, str)
+                        or not target_exchange
+                        or self._actionable_market_price(symbol, target_exchange) is None
+                    ):
+                        continue
                     
                     # Scout criteria: Strong momentum + not already positioned
                     if symbol not in self.positions and abs(change) > 2.0 and momentum > 0.01:
-                        target_exchange = source_map.get(symbol, "binance")
-                        
                         # GHOST SIGNAL PREVENTION: Validate symbol is tradeable
-                        validated_symbol, validated_exchange = self._validate_symbol_tradeable(symbol, target_exchange)
-                        if not validated_symbol:
+                        can_trade, reason = self._validate_symbol_tradeable(
+                            symbol,
+                            target_exchange,
+                        )
+                        validated_symbol = symbol if can_trade else None
+                        validated_exchange = target_exchange if can_trade else None
+                        if not can_trade:
                             logger.debug(f"🚫 SCOUT: Skipping {symbol} - not tradeable on {target_exchange}")
                             continue
                         
@@ -2623,7 +2983,7 @@ class MultiverseLiveEngine:
                             source="SCOUT_INTEL",
                             reason=f"☘️ Scout Intel: {validated_symbol} momentum {change:+.1f}%",
                             profit_path="MOMENTUM",
-                            expected_profit=0.01,
+                            expected_profit=None,
                             commando_type="FALCON"
                         )
                         scout_signals.append(scout_cmd)
@@ -2649,27 +3009,37 @@ class MultiverseLiveEngine:
             self.stats["signals_generated"] += 1
             exec_result = self.execute_signal(sniper_sig)
             result["executions"].append(exec_result)
+            if (
+                exec_result.get("executed") is True
+                and exec_result.get("eligible_for_accounting") is True
+                and exec_result.get("realized_pnl") is not None
+            ):
+                self.stats["sniper_kills"] += 1
             
-            # Validate penny profit with timestamp
-            if exec_result.get("executed") and sniper_sig.expected_profit > 0:
-                entry = self.penny_ledger.validate_and_record(
-                    symbol=sniper_sig.symbol,
-                    exchange=sniper_sig.exchange,
-                    gross_pnl=sniper_sig.expected_profit / 0.9,  # Reverse the net calculation
-                    fees=sniper_sig.expected_profit * 0.1,
-                    source="SNIPER"
-                )
-                result["penny_profits_validated"].append(entry.to_dict())
-        
         # Check existing positions for commando exit signals
         for symbol, pos in list(self.positions.items()):
-            current_price = market_data.get("prices", {}).get(symbol, pos.get("entry_price", 0))
-            pos_exchange = (pos.get("exchange") or "binance")
+            pos_exchange = str(pos.get("exchange") or "").lower()
+            current_price = self._actionable_market_price(symbol, pos_exchange)
+            try:
+                quantity = float(pos["quantity"])
+                entry_price = float(pos["entry_price"])
+            except (KeyError, TypeError, ValueError):
+                continue
+            if (
+                current_price is None
+                or not math.isfinite(quantity)
+                or not math.isfinite(entry_price)
+                or quantity <= 0
+                or entry_price <= 0
+                or pos.get("truth_status") != "real_observed"
+                or pos.get("generated_values") is not False
+            ):
+                continue
             signal = self.commando.evaluate_profit_path(
                 asset=symbol,
                 exchange=pos_exchange,
-                current_value=pos.get("quantity", 0) * current_price,
-                entry_price=pos.get("entry_price", current_price),
+                current_value=quantity * current_price,
+                entry_price=entry_price,
                 current_price=current_price,
                 market_data=market_data
             )
@@ -2682,17 +3052,6 @@ class MultiverseLiveEngine:
                 if signal.expected_profit >= MIN_PROFIT_TARGET:
                     exec_result = self.execute_signal(signal)
                     result["executions"].append(exec_result)
-                    
-                    # Validate penny profit with timestamp
-                    if exec_result.get("executed") and signal.expected_profit > 0:
-                        entry = self.penny_ledger.validate_and_record(
-                            symbol=symbol,
-                            exchange=signal.exchange,
-                            gross_pnl=signal.expected_profit * 1.1,
-                            fees=signal.expected_profit * 0.1,
-                            source="COMMANDO"
-                        )
-                        result["penny_profits_validated"].append(entry.to_dict())
         
         # 8. Check for new entry opportunities
         available_capital = self.get_available_capital()
@@ -2704,14 +3063,21 @@ class MultiverseLiveEngine:
         for inc_sig in inception_signals:
             if inc_sig.symbol in self.positions:
                 continue
-            if available_capital < 1.0:
-                break
+            signal_capital = self._capital_for_signal(inc_sig)
+            if signal_capital is None or signal_capital < 1.0:
+                continue
             result["commando_signals"].append(inc_sig.to_dict())
             self.stats["signals_generated"] += 1
             mv_consensus = result["multiverse_consensus"].get(inc_sig.symbol, {}) if self.multiverse else {}
+            try:
+                agreement = float(mv_consensus["agreement"])
+                if not math.isfinite(agreement):
+                    agreement = None
+            except (KeyError, TypeError, ValueError, OverflowError):
+                agreement = None
             # Execute if: multiverse agrees OR high confidence OR simulation mode
             should_execute = (
-                mv_consensus.get("agreement", 0) > 0.5 or 
+                (agreement is not None and agreement > 0.5) or
                 inc_sig.confidence > 0.7 or
                 self.simulation_mode
             )
@@ -2720,33 +3086,61 @@ class MultiverseLiveEngine:
                 result["executions"].append(exec_result)
                 if exec_result.get("executed") and inc_sig.action == "BUY":
                     entries_executed += 1
-                if not self.simulation_mode:
-                    available_capital = self.get_available_capital()
 
         # Mycelium queen signal guidance (distributed intelligence)
         queen_signal = None
         if result.get("mycelium_state"):
             queen_signal = result["mycelium_state"].get("queen_signal")
+        try:
+            queen_value = float(queen_signal)
+            if not math.isfinite(queen_value):
+                queen_value = None
+        except (TypeError, ValueError, OverflowError):
+            queen_value = None
         # If queen says BUY (>0.4), take top momentum; if SELL (<-0.4), trim largest position
-        if queen_signal is not None and abs(queen_signal) > 0.4:
+        if queen_value is not None and abs(queen_value) > 0.4:
             changes_map = market_data.get("changes", {})
             source_map = market_data.get("source", {})
             top_symbol = None
-            if queen_signal > 0:
+            if queen_value > 0:
                 # pick strongest positive mover not already held
                 top_symbol = max((s for s in changes_map if s not in self.positions), key=lambda s: changes_map[s], default=None)
             else:
                 # if negative, pick largest position to exit
-                top_symbol = max(self.positions, key=lambda s: self.positions[s].get("quantity", 0), default=None)
+                observed_positions = {}
+                for candidate, candidate_position in self.positions.items():
+                    try:
+                        candidate_quantity = float(candidate_position["quantity"])
+                    except (KeyError, TypeError, ValueError, OverflowError):
+                        continue
+                    if (
+                        math.isfinite(candidate_quantity)
+                        and candidate_quantity > 0
+                        and candidate_position.get("truth_status") == "real_observed"
+                        and candidate_position.get("generated_values") is False
+                    ):
+                        observed_positions[candidate] = candidate_quantity
+                top_symbol = max(
+                    observed_positions,
+                    key=observed_positions.get,
+                    default=None,
+                )
 
-            if top_symbol and available_capital >= 1.0:
-                action = "BUY" if queen_signal > 0 else "SELL"
-                target_exchange = source_map.get(top_symbol, "binance")
+            if top_symbol:
+                action = "BUY" if queen_value > 0 else "SELL"
+                target_exchange = source_map.get(top_symbol)
+                if not target_exchange and action == "SELL":
+                    target_exchange = self.positions.get(top_symbol, {}).get("exchange")
                 
                 # GHOST SIGNAL PREVENTION: Validate symbol is tradeable (for BUY)
                 if action == "BUY":
-                    validated_symbol, validated_exchange = self._validate_symbol_tradeable(top_symbol, target_exchange)
-                    if not validated_symbol:
+                    can_trade, reason = self._validate_symbol_tradeable(
+                        top_symbol,
+                        target_exchange,
+                    )
+                    validated_symbol = top_symbol if can_trade else None
+                    validated_exchange = target_exchange if can_trade else None
+                    if not can_trade:
                         logger.debug(f"🚫 MYCELIUM_QUEEN: Skipping {top_symbol} - not tradeable on {target_exchange}")
                         top_symbol = None  # Skip this signal
                     else:
@@ -2754,7 +3148,7 @@ class MultiverseLiveEngine:
                         target_exchange = validated_exchange
                 
                 if top_symbol:  # Only proceed if we have a valid symbol
-                    strength = min(1.0, abs(queen_signal))
+                    strength = min(1.0, abs(queen_value))
                     qs = CommandoSignal(
                         timestamp=time.time(),
                         symbol=top_symbol,
@@ -2763,31 +3157,40 @@ class MultiverseLiveEngine:
                         strength=strength,
                         confidence=strength,
                         source="MYCELIUM_QUEEN",
-                        reason=f"Mycelium queen signal {queen_signal:+.2f}",
+                        reason=f"Mycelium queen signal {queen_value:+.2f}",
                         profit_path="MOMENTUM" if action == "BUY" else "QUEEN_EXIT",
-                        expected_profit=0.01,
+                        expected_profit=None,
                         commando_type="FALCON" if action == "BUY" else "BEE"
                     )
                     result["commando_signals"].append(qs.to_dict())
                     self.stats["signals_generated"] += 1
-                    exec_result = self.execute_signal(qs)
-                    result["executions"].append(exec_result)
-                    if not self.simulation_mode:
-                        available_capital = self.get_available_capital()
+                    signal_capital = self._capital_for_signal(qs)
+                    if action == "SELL" or (
+                        signal_capital is not None and signal_capital >= 1.0
+                    ):
+                        exec_result = self.execute_signal(qs)
+                        result["executions"].append(exec_result)
         
         # Now process SCOUT signals (Celtic Intelligence)
         for scout_sig in scout_signals[:3]:  # Hard cap; Mycelium may further throttle
             if scout_sig.symbol in self.positions:
                 continue
-            if available_capital < 1.0:
-                break
+            signal_capital = self._capital_for_signal(scout_sig)
+            if signal_capital is None or signal_capital < 1.0:
+                continue
             result["commando_signals"].append(scout_sig.to_dict())
             self.stats["signals_generated"] += 1
             
             # Scouts get multiverse validation
             mv_consensus = result["multiverse_consensus"].get(scout_sig.symbol, {}) if self.multiverse else {}
+            try:
+                agreement = float(mv_consensus["agreement"])
+                if not math.isfinite(agreement):
+                    agreement = None
+            except (KeyError, TypeError, ValueError, OverflowError):
+                agreement = None
             should_execute = (
-                mv_consensus.get("agreement", 0) > 0.4 or
+                (agreement is not None and agreement > 0.4) or
                 scout_sig.confidence > 0.65 or
                 self.simulation_mode
             )
@@ -2796,28 +3199,29 @@ class MultiverseLiveEngine:
                 if self._mycelium_allows_entry(scout_sig, entries_executed=entries_executed):
                     exec_result = self.execute_signal(scout_sig)
                     result["executions"].append(exec_result)
-                    self.stats["scout_profits"] += scout_sig.expected_profit
                     if exec_result.get("executed") and scout_sig.action == "BUY":
                         entries_executed += 1
-                if not self.simulation_mode:
-                    available_capital = self.get_available_capital()
         
         # Finally, commando entry signals
-        logger.debug(f"Checking commando signals: capital=${available_capital:.2f}, positions={len(self.positions)}")
-        if available_capital > 1.0:  # Lowered threshold from 10
+        logger.debug(
+            "Checking commando signals: aggregate capital=%s, positions=%d",
+            (
+                f"{available_capital:.8f} {self.balance_snapshot.get('aggregate_currency')}"
+                if available_capital is not None
+                else "NO_DATA"
+            ),
+            len(self.positions),
+        )
+        if available_capital is not None and available_capital > 1.0:
             entry_signal = self.commando.get_best_entry_signal(market_data, available_capital)
             if entry_signal:
                 # GHOST SIGNAL PREVENTION: Validate symbol is tradeable
-                validated_symbol, validated_exchange = self._validate_symbol_tradeable(
+                can_trade, reason = self._validate_symbol_tradeable(
                     entry_signal.symbol, entry_signal.exchange
                 )
-                if not validated_symbol:
+                if not can_trade:
                     logger.debug(f"🚫 COMMANDO: Skipping {entry_signal.symbol} - not tradeable on {entry_signal.exchange}")
                     entry_signal = None  # Nullify the ghost signal
-                else:
-                    # Update signal with validated symbol/exchange
-                    entry_signal.symbol = validated_symbol
-                    entry_signal.exchange = validated_exchange
                 
             if entry_signal:
                 # 🔭 QUANTUM TELESCOPE CONFIDENCE BOOST
@@ -2825,12 +3229,30 @@ class MultiverseLiveEngine:
                 quantum_boost = 0.0
                 if quantum_observations and entry_signal.symbol in quantum_observations:
                     obs = quantum_observations[entry_signal.symbol]
-                    geo_align = obs.get('geometric_alignment', 0)
-                    prob_spec = obs.get('probability_spectrum', 0.5)
-                    dominant = obs.get('dominant_solid', 'UNKNOWN')
+                    try:
+                        geo_align = float(obs['geometric_alignment'])
+                        prob_spec = float(obs['probability_spectrum'])
+                    except (KeyError, TypeError, ValueError, OverflowError):
+                        geo_align = None
+                        prob_spec = None
+                    if (
+                        geo_align is not None
+                        and prob_spec is not None
+                        and (
+                            not math.isfinite(geo_align)
+                            or not math.isfinite(prob_spec)
+                        )
+                    ):
+                        geo_align = None
+                        prob_spec = None
+                    dominant = obs.get('dominant_solid')
                     
                     # Boost based on geometric alignment and probability
-                    quantum_boost = (geo_align * 0.15) + ((prob_spec - 0.5) * 0.10)
+                    if geo_align is not None and prob_spec is not None:
+                        quantum_boost = (
+                            (geo_align * 0.15)
+                            + ((prob_spec - 0.5) * 0.10)
+                        )
                     entry_signal.confidence = min(1.0, entry_signal.confidence + quantum_boost)
                     
                     if quantum_boost > 0.05:
@@ -2862,47 +3284,23 @@ class MultiverseLiveEngine:
             sweeps = self.multiverse.converter.sweep_all(self.multiverse.worlds, market_data)
             result["sweeps"] = sweeps
             self.stats["sweeps_performed"] += len(sweeps)
-            
-            # Record sweeps to Revenue Board and Penny Ledger
             if sweeps:
-                for sweep in sweeps:
-                    profit = sweep.get("profit", 0)
-                    if self.revenue_board:
-                        self.revenue_board.record_sweep(
-                            from_world=sweep.get("from_world", "unknown"),
-                            amount=profit,
-                            reason=sweep.get("reason", "PROFIT_SWEEP")
-                        )
-                    # Validate sweep profit with timestamp
-                    if profit > 0:
-                        entry = self.penny_ledger.validate_and_record(
-                            symbol=sweep.get("from_world", "SWEEP"),
-                            exchange="MULTIVERSE",
-                            gross_pnl=profit,
-                            fees=0,  # Sweeps are internal
-                            source="SWEEP"
-                        )
-                        result["penny_profits_validated"].append(entry.to_dict())
-                        
-                        # Publish validated profit to ThoughtBus
-                        if self.thought_bus:
-                            try:
-                                self.thought_bus.publish(Thought(
-                                    source="penny_ledger",
-                                    topic="profit.validated",
-                                    payload={
-                                        "symbol": sweep.get("from_world", "SWEEP"),
-                                        "net_profit": entry.net_profit,
-                                        "timestamp": entry.timestamp,
-                                        "source": "SWEEP",
-                                        "validated": entry.validated
-                                    }
-                                ))
-                            except Exception:
-                                pass
+                result["sweep_accounting_status"] = {
+                    "status": "not_recorded",
+                    "truth_status": "no_data",
+                    "eligible_for_accounting": False,
+                    "generated_values": False,
+                    "reason": "provider_cash_movement_receipts_required",
+                }
 
         # 10. CONVERSION LADDER - A-Z / Z-A Full Spectrum Sweep (Capital Rotation)
-        if self.ladder and self.ladder.enabled:
+        accounted_profit = self.stats.get("total_profit")
+        if (
+            self.ladder
+            and self.ladder.enabled
+            and self.total_equity is not None
+            and accounted_profit is not None
+        ):
             try:
                 # Determine scan direction from Mycelium directive
                 directive = self.mycelium_directive or {}
@@ -2920,8 +3318,8 @@ class MultiverseLiveEngine:
                 ladder_decision = self.ladder.step(
                     ticker_cache=market_data.get("prices", {}),
                     scan_direction=scan_dir,
-                    net_profit=float(self.stats.get("total_profit", 0.0) or 0.0),
-                    portfolio_equity=float(self.total_equity or 0.0),
+                    net_profit=float(accounted_profit),
+                    portfolio_equity=float(self.total_equity),
                     preferred_assets=preferred,
                     locked_assets=list(self.positions.keys()),  # Don't rotate open positions
                 )
@@ -2942,10 +3340,19 @@ class MultiverseLiveEngine:
                         "mode": ladder_decision.mode,
                         "result": ladder_decision.result,
                     }
-                    self.stats["conversions_performed"] += 1
+                    conversion_confirmed = bool(
+                        ladder_decision.result
+                        and ladder_decision.result.get("converted") is True
+                        and ladder_decision.result.get("truth_status")
+                        == "real_observed"
+                        and ladder_decision.result.get("eligible_for_accounting")
+                        is True
+                    )
+                    if conversion_confirmed:
+                        self.stats["conversions_performed"] += 1
 
                     # Log the conversion
-                    if ladder_decision.result and ladder_decision.result.get("converted"):
+                    if conversion_confirmed:
                         logger.info(
                             f"🪜 LADDER CONVERTED: {ladder_decision.from_asset} → {ladder_decision.to_asset} "
                             f"({ladder_decision.direction}) on {ladder_decision.exchange}"
@@ -2959,329 +3366,716 @@ class MultiverseLiveEngine:
                         )
             except Exception as e:
                 logger.debug(f"Ladder step error: {e}")
+        elif self.ladder and self.ladder.enabled:
+            result["ladder_status"] = {
+                "status": "no_data",
+                "truth_status": "no_data",
+                "eligible_for_external_action": False,
+                "eligible_for_accounting": False,
+                "generated_values": False,
+                "reason": "complete_equity_and_realized_profit_receipts_required",
+            }
         
-        # 11. LABYRINTH ARBITRAGE - Find profitable conversion paths across exchanges
-        labyrinth_opportunities = []
-        if hasattr(self, 'labyrinth') and self.labyrinth:
+        # 11. LABYRINTH ROUTE PREFLIGHT - evidence only, never a fill claim
+        labyrinth_routes = []
+        if hasattr(self, "labyrinth") and self.labyrinth:
             try:
-                prices = market_data.get("prices", {})
-                
-                # Check for cross-exchange arbitrage opportunities
-                # Look at our positioned assets and find better paths to profit
+                provenance_map = market_data.get("provenance", {})
                 for symbol, pos in list(self.positions.items()):
-                    # Extract base asset from symbol (e.g., BTCUSDT -> BTC)
-                    # MUST use endswith() — .replace() corrupts symbols like ETHFI, BTCB
-                    base_asset = symbol
-                    for _q in ['USDT', 'USDC', 'BUSD', 'USD', 'BTC', 'ETH']:
-                        if symbol.endswith(_q):
-                            base_asset = symbol[:-len(_q)]
-                            break
-                    if not base_asset or len(base_asset) < 2:
-                        continue
-                    
-                    # Find best path to stable coin (USD/USDT/USDC)
-                    for target in ["USDT", "USDC", "USD"]:
-                        best_path = self.labyrinth.get_best_path(base_asset, target)
-                        if best_path and len(best_path) > 0:
-                            # Estimate conversion efficiency
-                            pos_value = pos.get("quantity", 0) * prices.get(symbol, pos.get("entry_price", 0))
-                            cost_est = self.labyrinth.estimate_conversion_cost(best_path, pos_value, prices)
-                            
-                            # If path is efficient (>99% output), record the opportunity
-                            if cost_est.get("efficiency", 0) > 0.99:
-                                labyrinth_opportunities.append({
-                                    "from": base_asset,
-                                    "to": target,
-                                    "hops": cost_est.get("hops", 0),
-                                    "efficiency": cost_est.get("efficiency", 0),
-                                    "estimated_fees": cost_est.get("fees", 0),
-                                    "path": " → ".join([s.get("symbol", "?") for s in best_path]) if best_path else "direct"
-                                })
-                                
-                                # Record this path usage
-                                self.labyrinth.record_path_usage(
-                                    path=best_path,
-                                    slippage=cost_est.get("slippage", 0),
-                                    profit=0  # Will update after actual conversion
-                                )
-                
-                if labyrinth_opportunities:
-                    result["labyrinth_opportunities"] = labyrinth_opportunities
-                    logger.info(f"🌀 LABYRINTH: Found {len(labyrinth_opportunities)} efficient conversion paths")
-                    
-                    # Log the most efficient path
-                    best_opp = max(labyrinth_opportunities, key=lambda x: x["efficiency"])
-                    logger.info(
-                        f"🌀 Best Path: {best_opp['from']} → {best_opp['to']} "
-                        f"({best_opp['hops']} hops, {best_opp['efficiency']:.2%} efficiency)"
+                    position_exchange = str(pos.get("exchange") or "").lower()
+                    position_price = self._actionable_market_price(
+                        symbol,
+                        position_exchange,
                     )
-                    
+                    try:
+                        position_quantity = float(pos["quantity"])
+                    except (KeyError, TypeError, ValueError, OverflowError):
+                        continue
+                    if (
+                        position_price is None
+                        or not math.isfinite(position_quantity)
+                        or position_quantity <= 0
+                        or pos.get("truth_status") != "real_observed"
+                        or pos.get("generated_values") is not False
+                    ):
+                        continue
+                    base_asset = self._base_asset_for_symbol(symbol)
+                    value_currency = self._quote_asset_for_symbol(symbol)
+                    if base_asset is None or value_currency is None:
+                        continue
+                    position_value = position_quantity * position_price
+
+                    for target in ("USDT", "USDC", "USD"):
+                        best_path = self.labyrinth.get_best_path(
+                            base_asset,
+                            target,
+                        )
+                        if not best_path:
+                            continue
+                        path_symbols = []
+                        route_sources = []
+                        route_complete = True
+                        for step in best_path:
+                            if not isinstance(step, dict):
+                                route_complete = False
+                                break
+                            step_symbol = step.get("symbol")
+                            step_exchange = step.get("exchange")
+                            if (
+                                not isinstance(step_symbol, str)
+                                or not step_symbol
+                                or not isinstance(step_exchange, str)
+                                or not step_exchange
+                            ):
+                                route_complete = False
+                                break
+                            step_price = self._actionable_market_price(
+                                step_symbol,
+                                step_exchange,
+                            )
+                            step_receipt = provenance_map.get(step_symbol)
+                            if step_price is None or not isinstance(step_receipt, dict):
+                                route_complete = False
+                                break
+                            path_symbols.append(step_symbol)
+                            route_sources.append({
+                                "symbol": step_symbol,
+                                "exchange": step_exchange,
+                                "price": step_price,
+                                "source_id": step_receipt.get("source_id"),
+                                "source_timestamp": step_receipt.get(
+                                    "source_timestamp"
+                                ),
+                            })
+                        if not route_complete:
+                            continue
+                        labyrinth_routes.append({
+                            "status": "preflight_only",
+                            "truth_status": "real_derived",
+                            "from": base_asset,
+                            "to": target,
+                            "position_value": position_value,
+                            "position_value_currency": value_currency,
+                            "hops": len(best_path),
+                            "path": path_symbols,
+                            "route_sources": route_sources,
+                            "eligible_for_external_action": False,
+                            "eligible_for_accounting": False,
+                            "generated_values": False,
+                            "reason": (
+                                "provider_fee_slippage_and_terminal_fill_"
+                                "receipts_required"
+                            ),
+                        })
+
+                if labyrinth_routes:
+                    result["labyrinth_routes"] = labyrinth_routes
+                    logger.info(
+                        "LABYRINTH: %d evidence-backed route preflight(s); "
+                        "no conversion submitted",
+                        len(labyrinth_routes),
+                    )
             except Exception as e:
                 logger.debug(f"Labyrinth scan error: {e}")
-        
         result["cycle_time_ms"] = (time.time() - cycle_start) * 1000
         return result
     
-    def execute_signal(self, signal: CommandoSignal) -> Dict:
-        """Execute a trading signal"""
-        exec_result = {
-            "signal": signal.to_dict(),
-            "executed": False,
-            "order_id": None,
-            "error": None
+    @staticmethod
+    def _receipt_timestamp(value: Any) -> Optional[float]:
+        if value is None:
+            return None
+        try:
+            if isinstance(value, str) and not value.strip().replace(".", "", 1).isdigit():
+                normalized = value.strip()
+                if normalized.endswith("Z"):
+                    normalized = normalized[:-1] + "+00:00"
+                parsed = datetime.fromisoformat(normalized)
+                if parsed.tzinfo is None:
+                    return None
+                timestamp = parsed.timestamp()
+            else:
+                timestamp = float(value)
+                if timestamp > 10_000_000_000:
+                    timestamp /= 1000.0
+        except (TypeError, ValueError, OverflowError):
+            return None
+        return timestamp if math.isfinite(timestamp) and timestamp > 0 else None
+
+    @classmethod
+    def _base_asset_for_symbol(cls, symbol: str) -> Optional[str]:
+        normalized = str(symbol or "").strip().upper()
+        if "/" in normalized:
+            base = normalized.split("/", 1)[0]
+            return base or None
+        quote = cls._quote_asset_for_symbol(normalized)
+        if quote is None:
+            return None
+        base = normalized[:-len(quote)]
+        return base or None
+
+    @classmethod
+    def _terminal_fill_receipt(
+        cls,
+        order: Any,
+        symbol: str,
+        action: str,
+        exchange: str,
+        quote_asset: str,
+        max_age_seconds: float = 300.0,
+        production_mode_verified: bool = False,
+    ) -> Optional[Dict[str, Any]]:
+        """Normalize only complete, fresh, terminal provider fill evidence."""
+        if production_mode_verified is not True:
+            return None
+        if not isinstance(order, dict):
+            return None
+        if order.get("generated_values") is True:
+            return None
+        if order.get("fill_receipt_complete") is False:
+            return None
+        status = str(order.get("status") or order.get("state") or "").upper()
+        if status not in {"FILLED", "CLOSED"}:
+            return None
+        order_id = order.get("orderId") or order.get("id") or order.get("txid")
+        if isinstance(order_id, list) and len(order_id) == 1:
+            order_id = order_id[0]
+        if order_id is None or not str(order_id).strip():
+            return None
+        normalized_id = str(order_id).strip()
+        provider_symbol = order.get("symbol") or order.get("pair")
+        if provider_symbol is not None:
+            expected_symbol = str(symbol).replace("/", "").upper()
+            observed_symbol = str(provider_symbol).replace("/", "").upper()
+            if expected_symbol != observed_symbol:
+                return None
+        provider_side = order.get("side") or order.get("type")
+        if provider_side is not None and str(provider_side).upper() != str(action).upper():
+            return None
+
+        source_timestamp = None
+        for field in (
+            "source_timestamp",
+            "provider_timestamp",
+            "transactTime",
+            "updateTime",
+            "filled_at",
+            "closedTime",
+        ):
+            source_timestamp = cls._receipt_timestamp(order.get(field))
+            if source_timestamp is not None:
+                break
+        if source_timestamp is None:
+            return None
+        age = time.time() - source_timestamp
+        if age < -30.0 or age > max_age_seconds:
+            return None
+
+        executed_quantity = None
+        for field in ("executedQty", "filled_qty", "filledQty", "vol_exec"):
+            if order.get(field) is None:
+                continue
+            try:
+                candidate = float(order[field])
+            except (TypeError, ValueError):
+                continue
+            if math.isfinite(candidate) and candidate > 0:
+                executed_quantity = candidate
+                break
+        if executed_quantity is None:
+            return None
+
+        quote_amount = None
+        for field in ("cummulativeQuoteQty", "filled_notional", "cost"):
+            if order.get(field) is None:
+                continue
+            try:
+                candidate = float(order[field])
+            except (TypeError, ValueError):
+                continue
+            if math.isfinite(candidate) and candidate > 0:
+                quote_amount = candidate
+                break
+
+        average_price = None
+        for field in ("filled_avg_price", "avgPrice", "average_price"):
+            if order.get(field) is None:
+                continue
+            try:
+                candidate = float(order[field])
+            except (TypeError, ValueError):
+                continue
+            if math.isfinite(candidate) and candidate > 0:
+                average_price = candidate
+                break
+        if quote_amount is None and average_price is not None:
+            quote_amount = average_price * executed_quantity
+        if average_price is None and quote_amount is not None:
+            average_price = quote_amount / executed_quantity
+        if quote_amount is None or average_price is None:
+            return None
+
+        base_asset = cls._base_asset_for_symbol(symbol)
+        normalized_quote = str(quote_asset).upper()
+        fee_quote = 0.0
+        base_fee = 0.0
+        fee_complete = False
+        fills = order.get("fills")
+        if isinstance(fills, list) and fills:
+            fee_complete = True
+            for fill in fills:
+                if not isinstance(fill, dict):
+                    fee_complete = False
+                    break
+                if fill.get("commission") is None or fill.get("commissionAsset") is None:
+                    fee_complete = False
+                    break
+                try:
+                    commission = float(fill["commission"])
+                except (TypeError, ValueError):
+                    fee_complete = False
+                    break
+                fee_asset = str(fill["commissionAsset"]).upper()
+                if not math.isfinite(commission) or commission < 0 or not fee_asset:
+                    fee_complete = False
+                    break
+                if fee_asset == normalized_quote:
+                    fee_quote += commission
+                elif base_asset is not None and fee_asset == base_asset:
+                    try:
+                        fill_price = float(fill["price"])
+                    except (KeyError, TypeError, ValueError):
+                        fee_complete = False
+                        break
+                    if not math.isfinite(fill_price) or fill_price <= 0:
+                        fee_complete = False
+                        break
+                    fee_quote += commission * fill_price
+                    base_fee += commission
+                else:
+                    fee_complete = False
+                    break
+        elif order.get("fee") is not None:
+            try:
+                fee = float(order["fee"])
+            except (TypeError, ValueError):
+                fee = math.nan
+            fee_asset = str(
+                order.get("fee_currency")
+                or order.get("fee_asset")
+                or order.get("commissionAsset")
+                or ""
+            ).upper()
+            if math.isfinite(fee) and fee >= 0 and fee_asset:
+                if fee_asset == normalized_quote:
+                    fee_quote = fee
+                    fee_complete = True
+                elif base_asset is not None and fee_asset == base_asset:
+                    fee_quote = fee * average_price
+                    base_fee = fee
+                    fee_complete = True
+
+        net_quantity = executed_quantity
+        if str(action).upper() == "BUY":
+            net_quantity -= base_fee
+        if not math.isfinite(net_quantity) or net_quantity <= 0:
+            return None
+        eligible_for_accounting = fee_complete
+        if order.get("eligible_for_accounting") is False:
+            eligible_for_accounting = False
+        return {
+            "status": "filled",
+            "truth_status": "real_observed",
+            "source_id": f"{exchange}:terminal_order_fill",
+            "source_timestamp": source_timestamp,
+            "received_at": time.time(),
+            "order_id": normalized_id,
+            "executed_quantity": executed_quantity,
+            "net_quantity": net_quantity,
+            "average_price": average_price,
+            "quote_amount": quote_amount,
+            "quote_asset": normalized_quote,
+            "fee_quote": fee_quote if fee_complete else None,
+            "base_fee": base_fee if fee_complete else None,
+            "eligible_for_external_action": False,
+            "eligible_for_accounting": eligible_for_accounting,
+            "generated_values": False,
         }
 
-        exchange = (signal.exchange or "binance").lower()
-        
-        # FINAL SAFETY GATE: Validate symbol is tradeable before execution (BUY only)
-        if signal.action == "BUY" and not self.simulation_mode:
-            validated_symbol, validated_exchange = self._validate_symbol_tradeable(signal.symbol, exchange)
-            if not validated_symbol:
-                exec_result["error"] = f"GHOST SIGNAL BLOCKED: {signal.symbol} not tradeable on {exchange}"
-                logger.warning(f"🚫 BLOCKED: {signal.symbol} on {exchange} - not tradeable (source: {signal.source})")
-                return exec_result
-            # Update signal with validated values
-            signal.symbol = validated_symbol
-            signal.exchange = validated_exchange
-            exchange = validated_exchange
-
+    def _execute_signal_with_receipts(self, signal: CommandoSignal) -> Dict:
+        """Execute from fresh balances, market provenance and terminal fills."""
+        result: Dict[str, Any] = {
+            "signal": signal.to_dict(),
+            "status": "not_submitted",
+            "truth_status": "no_data",
+            "executed": False,
+            "order_id": None,
+            "fill": None,
+            "realized_pnl": None,
+            "eligible_for_external_action": False,
+            "eligible_for_accounting": False,
+            "accounting_projection": {
+                "status": "not_submitted",
+                "truth_status": "no_data",
+                "eligible_for_accounting": False,
+                "generated_values": False,
+                "reason": "currency_aware_projection_contract_required",
+            },
+            "generated_values": False,
+            "error": None,
+        }
+        action = str(signal.action or "").upper()
+        exchange = str(signal.exchange or "").lower()
+        symbol = str(signal.symbol or "").upper()
+        if action not in {"BUY", "SELL"}:
+            result["error"] = "Signal is not an executable BUY or SELL"
+            return result
         if self.simulation_mode:
-            # Simulation execution - NO PROFIT COUNTING
-            exec_result["executed"] = True
-            exec_result["order_id"] = f"SIM_{int(time.time()*1000)}"
-            self.stats["trades_executed"] += 1
-            
-            if signal.action == "BUY":
-                self.positions[signal.symbol] = {
-                    "entry_price": self.market_data.get("prices", {}).get(signal.symbol, 0),
-                    "quantity": 10.0,  # Simulated
-                    "entry_time": time.time()
-                }
-            elif signal.action == "SELL":
-                if signal.symbol in self.positions:
-                    del self.positions[signal.symbol]
-            
-            logger.info(f"🎯 EXECUTED (SIM): {signal.action} {signal.symbol} | "
-                       f"Expected: ${signal.expected_profit:.4f} | {signal.reason}")
-            
-            # NO PROFIT RECORDING IN SIMULATION MODE
-            # Record to Revenue Board (SIM - NO PnL)
-            if self.revenue_board:
-                price = self.market_data.get("prices", {}).get(signal.symbol, 0)
-                self.revenue_board.record_trade(
-                    symbol=signal.symbol,
-                    exchange="SIMULATION",
-                    side=signal.action,
-                    quantity=10.0,
-                    price=price,
-                    fee=0.0,
-                    pnl=0.0,  # NO SIMULATED PROFIT COUNTING
-                    source="MULTIVERSE_SIM"
+            result.update({
+                "status": "not_submitted",
+                "truth_status": "dry_run",
+                "error": "Simulation mode never submits or mutates provider state",
+            })
+            return result
+
+        if action == "BUY":
+            can_trade, reason = self._validate_symbol_tradeable(symbol, exchange)
+            if not can_trade:
+                result["error"] = (
+                    f"GHOST SIGNAL BLOCKED: {reason}"
+                    if reason
+                    else "GHOST SIGNAL BLOCKED: symbol is not tradeable"
                 )
+                return result
+            if symbol in self.positions:
+                result["error"] = "Position already exists"
+                return result
         else:
-            # LIVE EXECUTION ONLY - REAL PROFITS ONLY
-            quantity = 0  # Initialize for revenue board
-            realized_pnl = 0.0  # Initialize realized profit
-            
-            try:
-                price = self.market_data.get("prices", {}).get(signal.symbol, 0)
+            position = self.positions.get(symbol)
+            if not isinstance(position, dict):
+                result["error"] = "No provider-derived position is available to sell"
+                return result
+            exchange = str(position.get("exchange") or exchange).lower()
 
-                # Route to the correct exchange client
-                client = None
-                cash_available = 0.0
-                fee_rate = 0.001  # default 0.1%
+        pending_key = f"{exchange}:{symbol}:{action}"
+        if not isinstance(getattr(self, "pending_orders", None), dict):
+            self.pending_orders = {}
+        if pending_key in self.pending_orders:
+            pending = self.pending_orders[pending_key]
+            result.update({
+                "status": "pending_reconciliation",
+                "order_id": pending.get("order_id"),
+                "error": "An acknowledged order still requires terminal reconciliation",
+            })
+            return result
 
-                if exchange == "binance":
-                    client = self.binance
-                    # UK accounts use USDC, non-UK use USDT (but stored under USDT key for compatibility)
-                    cash_available = float(self.real_balances.get("binance", {}).get("USDT", 0.0) or 0.0)
-                    fee_rate = 0.001
-                elif exchange == "kraken":
-                    client = self.kraken
-                    cash_available = float(self.real_balances.get("kraken", {}).get("USD", 0.0) or 0.0)
-                    fee_rate = 0.001
-                elif exchange == "alpaca":
-                    client = self.alpaca
-                    cash_available = float(self.real_balances.get("alpaca", {}).get("USD", 0.0) or 0.0)
-                    fee_rate = 0.001
+        client = {
+            "binance": self.binance,
+            "kraken": self.kraken,
+            "alpaca": self.alpaca,
+        }.get(exchange)
+        if client is None:
+            result["error"] = f"Exchange offline or unsupported: {exchange}"
+            return result
+        quote_asset = self._quote_asset_for_symbol(symbol)
+        base_asset = self._base_asset_for_symbol(symbol)
+        if quote_asset is None or base_asset is None:
+            result["error"] = "Symbol denomination could not be proven"
+            return result
 
-                if client is None:
-                    exec_result["error"] = f"Exchange offline or unsupported: {exchange}"
-                    return exec_result
-                
-                if signal.action == "BUY":
-                    # Final safety gate: Mycelium controls all entries (down to execution)
-                    if not self._mycelium_allows_entry(signal, entries_executed=0, allow_throttle_bypass=True):
-                        exec_result["error"] = "Blocked by Mycelium directive"
-                        return exec_result
+        balance_snapshot = self._refresh_real_balances()
+        venues = balance_snapshot.get("venues") if isinstance(
+            balance_snapshot, dict
+        ) else None
+        venue_receipt = venues.get(exchange) if isinstance(venues, dict) else None
+        if (
+            not isinstance(venue_receipt, dict)
+            or venue_receipt.get("eligible_for_external_action") is not True
+            or venue_receipt.get("truth_status") != "real_observed"
+            or venue_receipt.get("generated_values") is not False
+            or not isinstance(venue_receipt.get("source_id"), str)
+            or not venue_receipt.get("source_id")
+        ):
+            result["error"] = "Fresh production balance provenance is unavailable"
+            return result
+        price = self._actionable_market_price(symbol, exchange)
+        if price is None:
+            result["error"] = "Fresh same-venue market provenance is unavailable"
+            return result
 
-                    # Calculate quantity
-                    entry_scale = float(self.mycelium_directive.get("entry_budget_scale", 1.0) or 1.0)
-                    trade_size = cash_available * self.commando.growth_aggression * 0.2 * max(0.0, entry_scale)  # 20% per trade
-                    quantity = trade_size / price if price > 0 else 0
-                    
-                    # Skip if quantity too small
-                    if quantity <= 0:
-                        exec_result["error"] = "Quantity too small"
-                        return exec_result
-                    
-                    side = "buy" if exchange == "alpaca" else "BUY"
-                    order = client.place_market_order(signal.symbol, side, quantity=quantity)
-
-                    # Treat rejects/empty responses as non-executed
-                    if not isinstance(order, dict) or order.get("rejected") or order.get("error"):
-                        exec_result["error"] = f"Order rejected: {order}"
-                        return exec_result
-                    order_id = order.get("orderId") or order.get("id")
-                    if not order_id:
-                        exec_result["error"] = f"Order missing orderId: {order}"
-                        return exec_result
-
-                    exec_result["executed"] = True
-                    exec_result["order_id"] = order_id
-                    
-                    # Store actual executed price and quantity
-                    executed_price = float(order.get("price", price) or price)  # Use executed price if available
-                    if executed_price <= 0:
-                        executed_price = float(price or 0.0)
-                    executed_qty = float(order.get("executedQty", quantity) or quantity)
-                    
-                    self.positions[signal.symbol] = {
-                        "entry_price": executed_price,
-                        "quantity": executed_qty,
-                        "entry_time": time.time(),
-                        "exchange": exchange,
-                    }
-                    
-                elif signal.action == "SELL":
-                    if signal.symbol in self.positions:
-                        pos = self.positions[signal.symbol]
-                        sell_qty = pos["quantity"]
-                        entry_price = pos["entry_price"]
-                        
-                        # If position was entered on a different exchange, sell on that same exchange.
-                        pos_exchange = (pos.get("exchange") or exchange).lower()
-                        if pos_exchange != exchange:
-                            exchange = pos_exchange
-                            if exchange == "binance":
-                                client = self.binance
-                                fee_rate = 0.001
-                            elif exchange == "kraken":
-                                client = self.kraken
-                                fee_rate = 0.001
-                            elif exchange == "alpaca":
-                                client = self.alpaca
-                                fee_rate = 0.001
-
-                        if client is None:
-                            exec_result["error"] = f"Exchange offline for position sell: {exchange}"
-                            return exec_result
-
-                        side = "sell" if exchange == "alpaca" else "SELL"
-                        order = client.place_market_order(signal.symbol, side, quantity=sell_qty)
-
-                        # Treat rejects/empty responses as non-executed
-                        if not isinstance(order, dict) or order.get("rejected") or order.get("error"):
-                            exec_result["error"] = f"Order rejected: {order}"
-                            return exec_result
-                        order_id = order.get("orderId") or order.get("id")
-                        if not order_id:
-                            exec_result["error"] = f"Order missing orderId: {order}"
-                            return exec_result
-
-                        exec_result["executed"] = True
-                        exec_result["order_id"] = order_id
-                        exec_result["quantity"] = sell_qty
-                        
-                        # Calculate ACTUAL REALIZED PROFIT from executed trade
-                        executed_sell_price = float(order.get("price", price) or price)
-                        if executed_sell_price <= 0:
-                            executed_sell_price = float(price or 0.0)
-                        executed_sell_qty = float(order.get("executedQty", sell_qty) or sell_qty)
-                        
-                        # Realized PnL = (sell proceeds) - (entry cost) - fees
-                        sell_proceeds = executed_sell_price * executed_sell_qty
-                        entry_cost = entry_price * executed_sell_qty
-                        fee = sell_proceeds * fee_rate
-                        realized_pnl = sell_proceeds - entry_cost - fee
-                        
-                        # Record REAL profit in stats
-                        self.stats["total_profit"] += realized_pnl
-                        if realized_pnl > 0:
-                            self.stats["win_count"] += 1
-                        else:
-                            self.stats["loss_count"] += 1
-                        
-                        del self.positions[signal.symbol]
-                        
-                        # Feed REAL profit to Mycelium for learning/compounding
-                        if self.mycelium and realized_pnl > 0:
-                            try:
-                                self.mycelium.record_trade_profit(realized_pnl, {
-                                    "symbol": signal.symbol,
-                                    "action": signal.action,
-                                    "exchange": signal.exchange
-                                })
-                            except Exception:
-                                pass
-                
-                if exec_result.get("executed"):
-                    self.stats["trades_executed"] += 1
-                    logger.info(
-                        f"✅ EXECUTED (LIVE): {signal.action} {signal.symbol} | "
-                        f"Order: {exec_result['order_id']} | "
-                        f"Realized PnL: ${realized_pnl:.4f}"
-                    )
-                
-                # Record to Revenue Board (LIVE - REAL PnL)
-                if self.revenue_board and exec_result.get("executed"):
-                    trade_qty = quantity if signal.action == "BUY" else exec_result.get("quantity", 0)
-                    trade_fee = abs(float(price or 0.0) * float(trade_qty or 0.0) * fee_rate)
-                    self.revenue_board.record_trade(
-                        symbol=signal.symbol,
-                        exchange=exchange.upper(),
-                        side=signal.action,
-                        quantity=trade_qty,
-                        price=price,
-                        fee=abs(trade_fee),  # Always positive fee
-                        pnl=realized_pnl if signal.action == "SELL" else 0.0,  # Only record PnL on sells
-                        source="MULTIVERSE_LIVE"
-                    )
-                
-            except Exception as e:
-                exec_result["error"] = str(e)
-                logger.error(f"❌ EXECUTION FAILED: {e}")
-        
-        # Record outcome in multiverse (only for real executed trades)
-        if MULTIVERSE_AVAILABLE and exec_result["executed"] and not self.simulation_mode:
-            multiverse_record_outcome(
-                signal.symbol,
-                realized_pnl > 0 if 'realized_pnl' in locals() else False,
-                realized_pnl if 'realized_pnl' in locals() else 0.0
+        requested_quantity: Optional[float] = None
+        if action == "BUY":
+            if not self._mycelium_allows_entry(
+                signal,
+                entries_executed=0,
+                allow_throttle_bypass=True,
+            ):
+                result["error"] = "Blocked by Mycelium directive"
+                return result
+            cash = self.get_available_capital(
+                exchange=exchange,
+                quote_asset=quote_asset,
             )
-        
-        # Publish to ThoughtBus (UNIFIED COMMUNICATION)
-        if self.thought_bus and exec_result.get("executed"):
+            if cash is None:
+                result["error"] = f"No fresh {exchange} {quote_asset} balance"
+                return result
             try:
-                thought = Thought(
-                    source="multiverse_live",
-                    topic=f"trade.{signal.action.lower()}",
-                    payload={
-                        "symbol": signal.symbol,
-                        "action": signal.action,
-                        "exchange": signal.exchange,
-                        "source": signal.source,
-                        "realized_pnl": realized_pnl if 'realized_pnl' in locals() else 0.0,
-                        "order_id": exec_result.get("order_id"),
-                        "confidence": signal.confidence,
-                        "commando_type": signal.commando_type
-                    }
+                scale = float(getattr(self, "mycelium_directive", {}).get(
+                    "entry_budget_scale", 1.0
+                ))
+                trade_size = (
+                    cash
+                    * float(self.commando.growth_aggression)
+                    * 0.2
+                    * max(0.0, scale)
                 )
-                self.thought_bus.publish(thought)
+                requested_quantity = trade_size / price
+            except (TypeError, ValueError, OverflowError):
+                trade_size = math.nan
+            if (
+                requested_quantity is None
+                or not math.isfinite(requested_quantity)
+                or requested_quantity <= 0
+                or not math.isfinite(trade_size)
+                or trade_size <= 0
+                or trade_size > cash
+            ):
+                result["error"] = "Provider-backed capital cannot fund the order"
+                return result
+        else:
+            position = self.positions[symbol]
+            try:
+                requested_quantity = float(position["quantity"])
+                provider_base = float(self.real_balances[exchange][base_asset])
+            except (KeyError, TypeError, ValueError):
+                result["error"] = f"No fresh {exchange} {base_asset} balance"
+                return result
+            if (
+                not math.isfinite(requested_quantity)
+                or requested_quantity <= 0
+                or not math.isfinite(provider_base)
+                or provider_base < requested_quantity
+            ):
+                result["error"] = "Provider base balance cannot fund the sell"
+                return result
+
+        side = action.lower() if exchange == "alpaca" else action
+        try:
+            order = client.place_market_order(
+                symbol, side, quantity=requested_quantity
+            )
+        except Exception as exc:
+            result["error"] = str(exc)
+            return result
+        if not isinstance(order, dict) or order.get("rejected") or order.get("error"):
+            result.update({"status": "rejected", "error": f"Order rejected: {order}"})
+            return result
+
+        fill = self._terminal_fill_receipt(
+            order,
+            symbol=symbol,
+            action=action,
+            exchange=exchange,
+            quote_asset=quote_asset,
+            production_mode_verified=(
+                venue_receipt.get("truth_status") == "real_observed"
+                and venue_receipt.get("generated_values") is False
+                and venue_receipt.get("eligible_for_external_action") is True
+                and isinstance(venue_receipt.get("source_id"), str)
+                and bool(venue_receipt.get("source_id"))
+            ),
+        )
+        if fill is None:
+            order_id = order.get("orderId") or order.get("id") or order.get("txid")
+            if isinstance(order_id, list) and len(order_id) == 1:
+                order_id = order_id[0]
+            if order_id is None or not str(order_id).strip():
+                result["error"] = "Order has no terminal fill or provider id"
+                return result
+            pending = {
+                "status": "pending_reconciliation",
+                "truth_status": "real_observed",
+                "source_id": f"{exchange}:order_acknowledgement",
+                "source_timestamp": None,
+                "received_at": time.time(),
+                "order_id": str(order_id).strip(),
+                "symbol": symbol,
+                "side": action,
+                "eligible_for_accounting": False,
+                "generated_values": False,
+                "reason": "terminal_provider_fill_receipt_required",
+            }
+            self.pending_orders[pending_key] = pending
+            result.update({
+                "status": "pending_reconciliation",
+                "truth_status": "real_observed",
+                "order_id": pending["order_id"],
+                "error": pending["reason"],
+            })
+            return result
+
+        self.pending_orders.pop(pending_key, None)
+        accounting = bool(fill["eligible_for_accounting"])
+        realized_pnl: Optional[float] = None
+        result.update({
+            "status": "filled",
+            "truth_status": "real_observed",
+            "executed": True,
+            "order_id": fill["order_id"],
+            "fill": fill,
+            "eligible_for_accounting": accounting,
+        })
+        if action == "BUY":
+            self.positions[symbol] = {
+                "entry_price": fill["average_price"],
+                "quantity": fill["net_quantity"],
+                "executed_quantity": fill["executed_quantity"],
+                "entry_quote_amount": fill["quote_amount"],
+                "entry_fee_quote": fill["fee_quote"],
+                "quote_asset": quote_asset,
+                "entry_time": fill["source_timestamp"],
+                "hold_cycles": 0,
+                "exchange": exchange,
+                "provider_order_id": fill["order_id"],
+                "truth_status": "real_observed",
+                "eligible_for_accounting": accounting,
+                "generated_values": False,
+            }
+        else:
+            position = self.positions[symbol]
+            position_quantity = float(position["quantity"])
+            sold_quantity = fill["executed_quantity"]
+            position_reduction = sold_quantity + float(fill.get("base_fee") or 0.0)
+            if position_reduction > position_quantity * (1.0 + 1e-9):
+                if not isinstance(getattr(self, "unreconciled_fills", None), list):
+                    self.unreconciled_fills = []
+                self.unreconciled_fills.append({
+                    "symbol": symbol,
+                    "exchange": exchange,
+                    "order_id": fill["order_id"],
+                    "source_timestamp": fill["source_timestamp"],
+                    "tracked_quantity": position_quantity,
+                    "provider_position_reduction": position_reduction,
+                    "truth_status": "real_observed",
+                    "eligible_for_accounting": False,
+                    "generated_values": False,
+                    "reason": "terminal_fill_exceeds_tracked_position",
+                })
+                del self.positions[symbol]
+                self.stats["trades_executed"] += 1
+                result.update({
+                    "status": "reconciliation_error",
+                    "eligible_for_accounting": False,
+                    "error": "Terminal sell exceeds the tracked position",
+                })
+                return result
+            allocation = min(1.0, sold_quantity / position_quantity)
+            try:
+                entry_quote = float(position["entry_quote_amount"])
+                entry_fee = float(position["entry_fee_quote"])
+                if accounting and position.get("eligible_for_accounting") is True:
+                    realized_pnl = (
+                        fill["quote_amount"]
+                        - float(fill["fee_quote"])
+                        - (entry_quote * allocation)
+                        - (entry_fee * allocation)
+                    )
+                    if not math.isfinite(realized_pnl):
+                        realized_pnl = None
+            except (KeyError, TypeError, ValueError, OverflowError):
+                realized_pnl = None
+            if realized_pnl is None:
+                accounting = False
+            remaining = position_quantity - position_reduction
+            if remaining <= max(1e-12, position_quantity * 1e-9):
+                del self.positions[symbol]
+            else:
+                position["quantity"] = remaining
+                if "entry_quote_amount" in position:
+                    position["entry_quote_amount"] = float(
+                        position["entry_quote_amount"]
+                    ) * (remaining / position_quantity)
+                if position.get("entry_fee_quote") is not None:
+                    position["entry_fee_quote"] = float(
+                        position["entry_fee_quote"]
+                    ) * (remaining / position_quantity)
+            if accounting:
+                profit_book = self.stats.setdefault(
+                    "realized_profit_by_currency",
+                    {},
+                )
+                prior = profit_book.get(quote_asset)
+                profit_book[quote_asset] = (
+                    realized_pnl
+                    if prior is None
+                    else float(prior) + realized_pnl
+                )
+                if len(profit_book) == 1:
+                    self.stats["total_profit"] = profit_book[quote_asset]
+                    self.stats["total_profit_currency"] = quote_asset
+                else:
+                    self.stats["total_profit"] = None
+                    self.stats["total_profit_currency"] = None
+                counter = "win_count" if realized_pnl > 0 else "loss_count"
+                self.stats[counter] += 1
+                if (
+                    self.mycelium
+                    and realized_pnl > 0
+                    and self.stats["total_profit_currency"] == quote_asset
+                    and self.balance_snapshot.get("aggregate_currency") == quote_asset
+                ):
+                    try:
+                        self.mycelium.record_trade_profit(realized_pnl, {
+                            "symbol": symbol,
+                            "action": action,
+                            "exchange": exchange,
+                            "currency": quote_asset,
+                            "source_id": fill["source_id"],
+                            "source_timestamp": fill["source_timestamp"],
+                        })
+                    except Exception:
+                        pass
+
+        result["realized_pnl"] = realized_pnl
+        result["realized_pnl_currency"] = (
+            quote_asset if realized_pnl is not None else None
+        )
+        result["eligible_for_accounting"] = accounting
+        self.stats["trades_executed"] += 1
+        if (
+            MULTIVERSE_AVAILABLE
+            and action == "SELL"
+            and accounting
+            and realized_pnl is not None
+            and self.stats.get("total_profit_currency") == quote_asset
+        ):
+            multiverse_record_outcome(symbol, realized_pnl > 0, realized_pnl)
+        if self.thought_bus:
+            try:
+                self.thought_bus.publish(Thought(
+                    source="multiverse_live",
+                    topic=f"trade.{action.lower()}",
+                    payload={
+                        "symbol": symbol,
+                        "action": action,
+                        "exchange": exchange,
+                        "realized_pnl": realized_pnl,
+                        "realized_pnl_currency": (
+                            quote_asset if realized_pnl is not None else None
+                        ),
+                        "order_id": fill["order_id"],
+                        "source_id": fill["source_id"],
+                        "source_timestamp": fill["source_timestamp"],
+                        "eligible_for_accounting": accounting,
+                        "generated_values": False,
+                    },
+                ))
             except Exception:
-                pass  # Don't fail trade on thought bus error
-        
-        return exec_result
+                pass
+        return result
+
+    def execute_signal(self, signal: CommandoSignal) -> Dict:
+        """Route execution through the provider-receipt evidence boundary."""
+        return self._execute_signal_with_receipts(signal)
 
     def _compute_mycelium_directive(self, mycelium_state: Optional[Dict[str, Any]], market_data: Dict[str, Any]) -> Dict[str, Any]:
         """Translate Mycelium queen signal into an execution directive for all ecosystems."""
@@ -3528,22 +4322,24 @@ class MultiverseLiveEngine:
 
     def _update_mycelium_governing_metrics(self) -> Dict[str, Any]:
         """Push governing metrics into Mycelium so it can govern net-profit growth and portfolio expansion."""
-        total_cash = float(self._get_total_cash() or 0.0)
-        total_equity = float(getattr(self, "total_equity", 0.0) or 0.0)
-        if total_equity <= 0:
-            total_equity = float(self.get_available_capital() or 0.0)
+        total_cash = self._get_total_cash()
+        total_equity = self.total_equity
+        realized_profit = self.stats.get("total_profit")
 
         wins = int(self.stats.get("win_count", 0) or 0)
         losses = int(self.stats.get("loss_count", 0) or 0)
         total_closed = wins + losses
-        win_rate = (wins / total_closed) if total_closed > 0 else 0.0
+        win_rate = (wins / total_closed) if total_closed > 0 else None
 
         # Drawdown relative to observed peak equity
-        peak = float(getattr(self, "_peak_equity_observed", total_equity) or total_equity)
-        if total_equity > peak:
-            peak = total_equity
-        self._peak_equity_observed = peak
-        drawdown_pct = ((peak - total_equity) / peak) * 100 if peak > 0 else 0.0
+        drawdown_pct = None
+        if total_equity is not None:
+            peak = getattr(self, "_peak_equity_observed", None)
+            if peak is None or total_equity > peak:
+                peak = total_equity
+            self._peak_equity_observed = peak
+            if peak > 0:
+                drawdown_pct = ((peak - total_equity) / peak) * 100
 
         metrics: Dict[str, Any] = {
             "timestamp": time.time(),
@@ -3553,13 +4349,33 @@ class MultiverseLiveEngine:
             "signals_generated": int(self.stats.get("signals_generated", 0) or 0),
             "positions_count": int(len(self.positions)),
             "total_cash": total_cash,
+            "cash_currency": self.balance_snapshot.get("aggregate_currency"),
             "total_equity": total_equity,
-            "realized_pnl_total": float(self.stats.get("total_profit", 0.0) or 0.0),
-            "win_rate": float(win_rate),
-            "drawdown_pct": float(drawdown_pct),
+            "equity_currency": self.equity_receipt.get("currency"),
+            "realized_pnl_total": realized_profit,
+            "realized_pnl_currency": self.stats.get("total_profit_currency"),
+            "realized_pnl_by_currency": dict(
+                self.stats.get("realized_profit_by_currency", {})
+            ),
+            "win_rate": win_rate,
+            "drawdown_pct": drawdown_pct,
+            "truth_status": (
+                "real_derived"
+                if all(
+                    value is not None
+                    for value in (total_cash, total_equity, realized_profit)
+                )
+                else "no_data"
+            ),
+            "eligible_for_external_action": False,
+            "generated_values": False,
         }
 
-        if self.mycelium and hasattr(self.mycelium, "update_governing_metrics"):
+        if (
+            self.mycelium
+            and metrics["truth_status"] == "real_derived"
+            and hasattr(self.mycelium, "update_governing_metrics")
+        ):
             try:
                 self.mycelium.update_governing_metrics(metrics)
             except Exception:
@@ -3632,76 +4448,80 @@ class MultiverseLiveEngine:
         return 0 if not any(level == "FAIL" for level, _ in results) else 1
     
     def print_status(self):
-        """Print current status with REAL balances and validated profits"""
+        """Print observed balances and provider-accounted outcomes."""
         runtime = time.time() - self.start_time
-        win_rate = self.stats["win_count"] / max(1, self.stats["win_count"] + self.stats["loss_count"]) * 100
-        
-        # Refresh real balances
+        closed_count = self.stats["win_count"] + self.stats["loss_count"]
+        win_rate = (
+            self.stats["win_count"] / closed_count * 100
+            if closed_count
+            else None
+        )
         self._refresh_real_balances()
         total_cash = self._get_total_cash()
-        
-        print("\n" + "═" * 80)
-        print("⚡🌌 MULTIVERSE LIVE STATUS 🌌⚡")
-        print("═" * 80)
+
+        print("\n" + "=" * 80)
+        print("AUREON MULTIVERSE LIVE STATUS")
+        print("=" * 80)
         print(f"  Runtime: {runtime/60:.1f} min | Cycles: {self.stats['cycles']}")
         print(f"  Mode: {'SIMULATION' if self.simulation_mode else 'LIVE TRADING'}")
         print("-" * 80)
-        
-        # 💵 REAL EXCHANGE BALANCES
-        print("  💵 REAL EXCHANGE BALANCES:")
-        print(f"     Binance USDT:   ${self.real_balances['binance'].get('USDT', 0):.2f}")
-        print(f"     Kraken USD:     ${self.real_balances['kraken'].get('USD', 0):.2f}")
-        print(f"     Alpaca USD:     ${self.real_balances['alpaca'].get('USD', 0):.2f}")
-        print(f"     ─────────────────────────")
-        print(f"     TOTAL CASH:     ${total_cash:.2f}")
+        print("  PROVIDER BALANCE RECEIPTS:")
+        for venue in ("binance", "kraken", "alpaca"):
+            receipt = self.balance_snapshot.get("venues", {}).get(venue, {})
+            asset = receipt.get("settlement_asset")
+            amount = receipt.get("settlement_amount")
+            display = (
+                f"{float(amount):.8f} {asset}"
+                if amount is not None and asset
+                else "NO_DATA"
+            )
+            print(f"     {venue.title():8s}: {display}")
+        total_display = (
+            f"{total_cash:.8f} {self.balance_snapshot.get('aggregate_currency')}"
+            if total_cash is not None
+            else "NO_DATA (mixed or incomplete denomination evidence)"
+        )
+        print(f"     TOTAL CASH: {total_display}")
         print("-" * 80)
-        
-        print(f"  🦅 COMMANDO DOCTRINE:")
-        print(f"     Goal: {self.commando.one_goal}")
-        print(f"     Signals: {self.stats['signals_generated']} | Trades: {self.stats['trades_executed']}")
-        print(f"     Sweeps: {self.stats['sweeps_performed']}")
-        print("-" * 80)
-        
-        print(f"  🎯 SNIPER & ☘️ SCOUT STATUS:")
-        print(f"     Sniper Kills:   {self.stats['sniper_kills']}")
-        print(f"     Scout Profits:  ${self.stats['scout_profits']:.4f}")
-        print(f"     Sniper Brain:   {'ONLINE' if self.sniper else 'OFFLINE'}")
-        print(f"     Scout Network:  {'ONLINE' if self.scout_network else 'OFFLINE'}")
-        print("-" * 80)
-        
-        print(f"  💰 PERFORMANCE:")
-        print(f"     Total Profit:   ${self.stats['total_profit']:.4f}")
-        print(f"     Win Rate:       {win_rate:.1f}% ({self.stats['win_count']}W / {self.stats['loss_count']}L)")
-        print(f"     Open Positions: {len(self.positions)}")
-        print("-" * 80)
-        
-        if self.multiverse:
-            print("  🌌 MULTIVERSE STATUS:")
-            for world in self.multiverse.worlds[:5]:
-                print(f"     {world.emoji} {world.name}: ${world.state.equity:.2f} | "
-                      f"WR: {world.get_win_rate()*100:.0f}%")
-            print(f"     ... and {len(self.multiverse.worlds)-5} more worlds")
-        
-        # Print Revenue Board
+        print(f"  Goal: {self.commando.one_goal}")
+        print(
+            f"  Signals: {self.stats['signals_generated']} | "
+            f"Terminal fills: {self.stats['trades_executed']}"
+        )
+        print(f"  Open provider-derived positions: {len(self.positions)}")
+        print(f"  Pending reconciliation: {len(self.pending_orders)}")
+        total_profit = self.stats["total_profit"]
+        profit_display = (
+            f"{total_profit:.8f} {self.stats.get('total_profit_currency')}"
+            if total_profit is not None
+            else (
+                str(self.stats.get("realized_profit_by_currency"))
+                if self.stats.get("realized_profit_by_currency")
+                else "NO_DATA"
+            )
+        )
+        win_display = f"{win_rate:.1f}%" if win_rate is not None else "NO_DATA"
+        print(f"  Provider-accounted realized profit: {profit_display}")
+        print(
+            f"  Win rate: {win_display} "
+            f"({self.stats['win_count']}W / {self.stats['loss_count']}L)"
+        )
+        print("  Portfolio equity: NO_DATA (complete valuation receipts required)")
         if self.revenue_board:
-            try:
-                snapshot = self.revenue_board.compute_equity()
-                print("-" * 80)
-                print("  💰 REVENUE BOARD (Live Exchange Data):")
-                print(f"     Total Equity:   ${snapshot.total_equity:.2f}")
-                print(f"     Cash Balance:   ${snapshot.cash_balance:.2f}")
-                print(f"     Positions:      ${snapshot.positions_value:.2f}")
-                print(f"     Realized PnL:   ${snapshot.realized_pnl:.4f}")
-                print(f"     Total PnL:      ${snapshot.total_pnl:.4f}")
-            except Exception as e:
-                print(f"  💰 Revenue Board error: {e}")
-        
-        # Print Penny Profit Ledger
+            print(
+                "  Revenue Board: not projected here until it exposes a "
+                "same-denomination provenance receipt"
+            )
+        if self.multiverse:
+            print("  Internal multiverse state (not provider accounting):")
+            for world in self.multiverse.worlds[:5]:
+                print(
+                    f"     {world.name}: state={world.state.equity:.6f} | "
+                    f"WR={world.get_win_rate()*100:.0f}%"
+                )
         if self.penny_ledger:
             self.penny_ledger.print_ledger()
-        
-        print("═" * 80 + "\n")
-    
+        print("=" * 80 + "\n")
     async def run_live(self, interval_seconds: float = 5.0, max_cycles: int = None):
         """Run the live trading loop (optionally in Donkey & Carrot mode)."""
         self.running = True
@@ -3719,13 +4539,6 @@ class MultiverseLiveEngine:
             while self.running:
                 cycle_count += 1
 
-                # Update Revenue Board with fresh exchange data (every 5 cycles)
-                if self.revenue_board and cycle_count % 5 == 0:
-                    try:
-                        self.revenue_board.compute_equity()
-                    except Exception:
-                        pass
-
                 # Run cycle (never let one exception stop the loop)
                 try:
                     result = self.run_cycle()
@@ -3737,9 +4550,20 @@ class MultiverseLiveEngine:
                 # 🥕 CARROT TRACKING (only in donkey mode)
                 if donkey_mode:
                     current_profit = self.stats["total_profit"]
-                    if current_profit > last_profit:
+                    if current_profit is not None and last_profit is None:
+                        last_profit = current_profit
+                        consecutive_no_profit = 0
+                    elif (
+                        current_profit is not None
+                        and last_profit is not None
+                        and current_profit > last_profit
+                    ):
                         profit_made = current_profit - last_profit
-                        logger.info(f"🥕 CARROT! Made ${profit_made:.4f} - Keep chasing!")
+                        logger.info(
+                            "🥕 CARROT! Made %.4f %s - Keep chasing!",
+                            profit_made,
+                            self.stats.get("total_profit_currency"),
+                        )
                         consecutive_no_profit = 0
                         last_profit = current_profit
                     else:
@@ -3763,10 +4587,19 @@ class MultiverseLiveEngine:
                 if cycle_count % 10 == 0:
                     self.print_status()
                     if donkey_mode:
-                        target_profit = self.stats["total_profit"] * 1.1 + 1.0
-                        logger.info(
-                            f"🥕 CARROT AHEAD: ${target_profit:.4f} (current: ${self.stats['total_profit']:.4f})"
-                        )
+                        if self.stats["total_profit"] is not None:
+                            target_profit = self.stats["total_profit"] * 1.1 + 1.0
+                            logger.info(
+                                "🥕 CARROT AHEAD: %.4f %s (current: %.4f %s)",
+                                target_profit,
+                                self.stats.get("total_profit_currency"),
+                                self.stats["total_profit"],
+                                self.stats.get("total_profit_currency"),
+                            )
+                        else:
+                            logger.info(
+                                "🥕 CARROT: NO_DATA (no realized provider PnL)"
+                            )
 
                 # Respect max_cycles only when NOT in donkey mode
                 if (not donkey_mode) and max_cycles and cycle_count >= max_cycles:

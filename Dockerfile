@@ -82,4 +82,4 @@ RUN chmod +x /app/deploy/validate_startup.sh
 # 👑 PARALLEL STARTUP: Use supervisord to run all systems
 # Systems: Command Center + Orca + Autonomous Engine + Queen Power System + Kraken Cache
 # For standalone autonomous mode: docker run -e MODE=autonomous aureon-trading
-ENTRYPOINT ["/bin/bash", "-c", "if [ \"$MODE\" = \"autonomous\" ]; then exec python -u orca_complete_kill_cycle.py --autonomous ${MAX_POSITIONS:-50} ${AMOUNT_PER_POSITION:-10.0} ${TARGET_PCT:-1.0}; else /app/deploy/validate_startup.sh && exec supervisord -n -c /app/deploy/supervisord.conf; fi"]
+ENTRYPOINT ["/bin/bash", "-c", "if [ \"$MODE\" = \"autonomous\" ]; then exec python -u -m aureon.bots.orca_complete_kill_cycle --autonomous ${MAX_POSITIONS:-50} ${AMOUNT_PER_POSITION:-10.0} ${TARGET_PCT:-1.0}; else /app/deploy/validate_startup.sh && exec supervisord -n -c /app/deploy/supervisord.conf; fi"]

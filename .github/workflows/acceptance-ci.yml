@@ -1,0 +1,594 @@
+name: Aureon Acceptance CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: acceptance-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CI: "true"
+  AUREON_AUDIT_MODE: "1"
+  LIVE: "0"
+  DRY_RUN: "1"
+  AUREON_LIVE_TRADING: "0"
+  AUREON_LLM_OFFLINE: "1"
+  AUREON_DISABLE_LLM_HTTP: "1"
+  AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS: "1"
+  BINANCE_DRY_RUN: "true"
+  KRAKEN_DRY_RUN: "true"
+  ALPACA_DRY_RUN: "true"
+  CAPITAL_DEMO: "true"
+
+jobs:
+  workflow-contract:
+    name: workflow contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            pyproject.toml
+            .github/workflows/acceptance-ci.yml
+      - name: Install contract-test dependencies
+        run: python -m pip install --disable-pip-version-check "pytest>=8,<9" "PyYAML>=6,<7"
+      - name: Validate acceptance workflow contract
+        run: |
+          mkdir -p artifacts
+          python -m pytest tests/test_acceptance_ci_workflow_contract.py --junitxml=artifacts/workflow-contract.xml
+      - name: Upload sanitized workflow test report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: acceptance-workflow-contract-${{ github.run_id }}
+          path: artifacts/workflow-contract.xml
+          if-no-files-found: error
+          include-hidden-files: false
+          retention-days: 7
+
+  python-critical:
+    name: Python critical acceptance
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            pyproject.toml
+            .github/workflows/acceptance-ci.yml
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          package-manager-cache: false
+      - name: Install offline acceptance dependencies
+        run: python -m pip install --disable-pip-version-check -e ".[operator,dev]" "PyYAML>=6,<7" "pytest-socket>=0.7,<1"
+      - name: Compile critical Python surfaces
+        run: |
+          python -m compileall -q \
+            aureon/exchanges/binance_client.py \
+            aureon/trading/bounded_binance_roundtrip.py \
+            aureon/exchanges/kraken_client.py \
+            aureon/strategies/s5_live_execution.py \
+            aureon/core/aureon_lambda_engine.py \
+            aureon/core/hnc_live_daemon.py \
+            aureon/core/organism_composition.py \
+            aureon/core/unified_organism_builder.py \
+            aureon/swarm/auris_node_receipts.py \
+            aureon/swarm/druidic_council.py \
+            aureon/governance/cognition_gate.py \
+            aureon/governance/celtic_voice_bank.py \
+            aureon/governance/crown_voice.py \
+            aureon/governance/druid_voice.py \
+            aureon/governance/dual_key.py \
+            aureon/governance/durable_contingency.py \
+            aureon/governance/economic_boundary.py \
+            aureon/governance/legacy_economic_unity.py \
+            aureon/governance/legacy_unity_composition.py \
+            aureon/governance/qgita_kundalini_truth_gate.py \
+            aureon/governance/trusted_truth_evidence.py \
+            aureon/inhouse_ai/agent_runner.py \
+            aureon/inhouse_ai/tool_registry.py \
+            aureon/autonomous/aureon_full_stack_release_gate.py \
+            aureon/autonomous/aureon_ten_nine_one_thought_path.py \
+            aureon/autonomous/aureon_truth_gated_ten_nine_one.py \
+            aureon/autonomous/aureon_cloud_brain_composition.py \
+            aureon/autonomous/aureon_agent_company_brain_fabric.py \
+            aureon/autonomous/aureon_internal_coding_workforce.py \
+            aureon/autonomous/aureon_internal_work_ledger.py \
+            aureon/autonomous/aureon_internal_patch_loop.py \
+            aureon/autonomous/aureon_internal_self_coder.py \
+            aureon/autonomous/aureon_self_run_coding_task.py \
+            aureon/autonomous/aureon_autonomous_self_run_loop.py \
+            aureon/observability/__init__.py \
+            aureon/observability/outbox.py \
+            aureon/observability/runtime.py \
+            aureon/operator/aureon_operator.py \
+            aureon/operator/metrics.py \
+            aureon/operator/operator_server.py \
+            aureon/operator/tools.py \
+            aureon/operator/security.py \
+            aureon/queen/queen_mind.py \
+            aureon/queen/queen_sentient_loop.py \
+            aureon/queen/queen_quantum_cognition.py \
+            aureon/queen/queen_cognitive_action_planner.py \
+            aureon/trading/unified_exchange_composition.py \
+            scripts/validation/plan_legacy_economic_unity.py \
+            scripts/validation/pytest_no_skip_shards.py \
+            scripts/validation/audit_external_llm_fallback.py \
+            scripts/validation/audit_aureon_hnc_ollama_coreviewer.py \
+            aureon/utils/aureon_queen_hive_mind.py
+      - name: Ruff critical Python surfaces
+        run: |
+          ruff check \
+            aureon/exchanges/binance_client.py \
+            aureon/trading/bounded_binance_roundtrip.py \
+            aureon/exchanges/kraken_client.py \
+            aureon/strategies/s5_live_execution.py \
+            aureon/core/aureon_lambda_engine.py \
+            aureon/core/hnc_live_daemon.py \
+            aureon/swarm/auris_node_receipts.py \
+            aureon/swarm/druidic_council.py \
+            aureon/governance/celtic_voice_bank.py \
+            aureon/governance/cognition_gate.py \
+            aureon/governance/crown_voice.py \
+            aureon/governance/druid_voice.py \
+            aureon/governance/dual_key.py \
+            aureon/governance/durable_contingency.py \
+            aureon/governance/economic_boundary.py \
+            aureon/governance/legacy_economic_unity.py \
+            aureon/governance/legacy_unity_composition.py \
+            aureon/governance/qgita_kundalini_truth_gate.py \
+            aureon/governance/trusted_truth_evidence.py \
+            aureon/inhouse_ai/agent_runner.py \
+            aureon/inhouse_ai/tool_registry.py \
+            aureon/autonomous/aureon_full_stack_release_gate.py \
+            aureon/autonomous/aureon_ten_nine_one_thought_path.py \
+            aureon/autonomous/aureon_truth_gated_ten_nine_one.py \
+            aureon/autonomous/aureon_cloud_brain_composition.py \
+            aureon/autonomous/aureon_agent_company_brain_fabric.py \
+            aureon/autonomous/aureon_internal_coding_workforce.py \
+            aureon/autonomous/aureon_internal_work_ledger.py \
+            aureon/autonomous/aureon_internal_patch_loop.py \
+            aureon/autonomous/aureon_internal_self_coder.py \
+            aureon/autonomous/aureon_self_run_coding_task.py \
+            aureon/observability/__init__.py \
+            aureon/observability/outbox.py \
+            aureon/observability/runtime.py \
+            aureon/operator/tools.py \
+            aureon/operator/security.py \
+            aureon/core/organism_composition.py \
+            aureon/core/unified_organism_builder.py \
+            aureon/queen/queen_mind.py \
+            aureon/trading/unified_exchange_composition.py \
+            scripts/validation/plan_legacy_economic_unity.py \
+            scripts/validation/pytest_no_skip_shards.py \
+            scripts/validation/audit_external_llm_fallback.py \
+            scripts/validation/audit_aureon_hnc_ollama_coreviewer.py \
+            tests/test_celtic_voice_bank.py \
+            tests/test_durable_contingency_recovery.py \
+            tests/test_kraken_economic_transport_guard.py \
+            tests/test_observability_outbox_contract.py \
+            tests/test_pytest_no_skip_shards.py \
+            tests/test_observability_runtime_contract.py \
+            tests/aureon_full_stack_fixtures.py \
+            tests/test_aureon_full_stack_release_gate.py \
+            tests/aureon_ten_nine_one_fixtures.py \
+            tests/test_aureon_ten_nine_one_thought_path.py \
+            tests/test_qgita_kundalini_truth_gate.py \
+            tests/test_trusted_truth_evidence.py \
+            tests/test_truth_gated_ten_nine_one.py \
+            tests/test_aureon_cloud_brain_composition.py \
+            tests/test_aureon_agent_company_brain_fabric.py \
+            tests/test_aureon_internal_coding_workforce.py \
+            tests/test_aureon_internal_work_ledger.py \
+            tests/test_aureon_internal_patch_loop.py \
+            tests/test_acceptance_ci_workflow_contract.py
+      - name: Run critical acceptance tests without network sockets
+        run: |
+          mkdir -p artifacts
+          python -m pytest --disable-socket \
+            tests/test_bounded_binance_roundtrip.py \
+            tests/test_binance_client_real_data.py \
+            tests/test_s5_kraken_spot_readiness.py \
+            tests/test_s5_live_execution_receipts.py \
+            tests/test_s5_economic_governance_boundary.py \
+            tests/test_hnc_lambda_history_provenance.py \
+            tests/test_hnc_daemon_sentinel_source.py \
+            tests/test_auris_throne_provenance.py \
+            tests/test_auris_node_receipts.py \
+            tests/test_druidic_council.py \
+            tests/test_celtic_voice_bank.py \
+            tests/test_trusted_druid_voice.py \
+            tests/test_crown_voice.py \
+            tests/test_dual_key_governance.py \
+            tests/test_cognition_governance_gate.py \
+            tests/test_economic_governance_boundary.py \
+            tests/test_legacy_economic_unity.py \
+            tests/test_legacy_unity_composition.py \
+            tests/test_legacy_economic_unity_plan.py \
+            tests/test_unified_exchange_legacy_unity.py \
+            tests/test_unified_exchange_unity_composition.py \
+            tests/test_queen_process_roof.py \
+            tests/test_queen_mind.py \
+            tests/test_canonical_organism_composition.py \
+            tests/test_unified_organism_builder.py \
+            tests/test_queen_layer_canonical_roof.py \
+            tests/test_queen_profit_dashboard_economic_unity.py \
+            tests/test_durable_contingency_recovery.py \
+            tests/test_kraken_economic_transport_guard.py \
+            tests/test_tool_dispatch_governance.py \
+            tests/test_aureon_full_stack_release_gate.py \
+            tests/test_aureon_ten_nine_one_thought_path.py \
+            tests/test_qgita_kundalini_truth_gate.py \
+            tests/test_trusted_truth_evidence.py \
+            tests/test_truth_gated_ten_nine_one.py \
+            tests/test_aureon_cloud_brain_composition.py \
+            tests/test_aureon_agent_company_brain_fabric.py \
+            tests/test_aureon_internal_coding_workforce.py \
+            tests/test_aureon_internal_work_ledger.py \
+            tests/test_aureon_internal_patch_loop.py \
+            tests/test_aureon_internal_self_coder.py \
+            tests/test_aureon_autonomous_self_run_loop.py \
+            tests/test_aureon_self_run_internal_coder_wiring.py \
+            tests/test_operator_cognition.py \
+            tests/test_operator_join_organism_lazy_queen.py \
+            tests/test_observability_outbox_contract.py \
+            tests/test_observability_runtime_contract.py \
+            tests/test_operator_observability_contract.py \
+            tests/test_operator_security_fail_closed.py \
+            tests/test_operator_tenant_security.py \
+            tests/test_container_hosting_packaging_contract.py \
+            tests/test_primary_launcher_paths.py \
+            tests/test_voice_runner_paths.py \
+            tests/test_launcher_navigation_source_truth.py \
+            tests/test_frontend_package_scripts.py \
+            tests/test_public_manifest_contract.py \
+            tests/test_pytest_no_skip_shards.py \
+            tests/test_external_llm_fallback.py \
+            tests/test_aureon_hnc_ollama_coreviewer.py \
+            --junitxml=artifacts/python-critical.xml
+      - name: Validate Celtic two-voice runtime suppliers
+        run: |
+          python -m py_compile aureon/governance/runtime_voice_suppliers.py aureon/governance/workforce_druid_resolver.py
+          ruff check aureon/governance/runtime_voice_suppliers.py aureon/governance/workforce_druid_resolver.py tests/test_runtime_governance_voice_suppliers.py tests/test_workforce_druid_resolver.py
+          python -m pytest --disable-socket tests/test_runtime_governance_voice_suppliers.py tests/test_workforce_druid_resolver.py
+      - name: Upload sanitized Python test report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: acceptance-python-critical-${{ github.run_id }}
+          path: artifacts/python-critical.xml
+          if-no-files-found: error
+          include-hidden-files: false
+          retention-days: 7
+
+  hosting-manifests:
+    name: DigitalOcean and container manifests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            pyproject.toml
+            .github/workflows/acceptance-ci.yml
+      - name: Install static-manifest dependencies
+        run: python -m pip install --disable-pip-version-check "pytest>=8,<9" "PyYAML>=6,<7" "pytest-socket>=0.7,<1"
+      - name: Parse DigitalOcean app specifications and resolve Dockerfiles
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import yaml
+
+          root = Path.cwd().resolve()
+          for relative in (Path(".do/app.yaml"), Path("app.yaml")):
+              payload = yaml.safe_load((root / relative).read_text(encoding="utf-8-sig"))
+              assert isinstance(payload, dict), f"{relative} must contain one YAML mapping"
+              assert isinstance(payload.get("services"), list) and payload["services"], (
+                  f"{relative} must declare at least one service"
+              )
+              for service in payload["services"]:
+                  source_dir = str(service.get("source_dir", ".")).lstrip("/") or "."
+                  dockerfile = root / source_dir / service["dockerfile_path"]
+                  assert dockerfile.resolve().is_relative_to(root), f"{relative} escapes the repository"
+                  assert dockerfile.is_file(), f"{relative} references missing {dockerfile.relative_to(root)}"
+          PY
+      - name: Parse Docker Compose and Supervisor contracts
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import configparser
+          import yaml
+
+          compose_paths = (
+              "docker-compose.yml",
+              "docker-compose.autonomous.yml",
+              "deploy/docker-compose.operator.yml",
+              "deploy/docker-compose.saas.yml",
+              "production/docker-compose.yml",
+          )
+          supervisor_paths = (
+              "supervisord.conf",
+              "deploy/supervisord.conf",
+              "deploy/supervisord.linux.conf",
+              "deploy/supervisord.master_launcher.conf",
+              "production/supervisord.conf",
+          )
+          dockerfiles = ("Dockerfile", "Dockerfile.ephemeris", "production/Dockerfile")
+          for relative in compose_paths:
+              payload = yaml.safe_load(Path(relative).read_text(encoding="utf-8-sig"))
+              assert isinstance(payload, dict) and isinstance(payload.get("services"), dict), relative
+              assert payload["services"], f"{relative} has no services"
+          for relative in supervisor_paths:
+              parser = configparser.ConfigParser(interpolation=None, strict=False)
+              assert parser.read(relative, encoding="utf-8"), f"cannot parse {relative}"
+              assert any(section.startswith("program:") for section in parser.sections()), relative
+          for relative in dockerfiles:
+              assert Path(relative).is_file(), f"missing {relative}"
+          PY
+          python -m pytest --disable-socket \
+            tests/test_container_hosting_packaging_contract.py \
+            tests/test_digitalocean_app_spec_fail_closed.py \
+            tests/test_import_snapshot_quarantine.py \
+            tests/test_single_writer_scaling_contract.py
+
+  economic-mutation-boundary:
+    name: Economic mutation boundary census
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            pyproject.toml
+            .github/workflows/acceptance-ci.yml
+      - name: Install economic census dependencies
+        run: python -m pip install --disable-pip-version-check "pytest>=8,<9" "pytest-socket>=0.7,<1"
+      - name: Validate the frozen economic mutation census offline
+        run: |
+          mkdir -p artifacts
+          python -m pytest --disable-socket \
+            tests/test_economic_mutation_boundary_census.py \
+            tests/test_legacy_economic_unity_plan.py \
+            --junitxml=artifacts/economic-mutation-boundary.xml
+          python -B scripts/validation/plan_legacy_economic_unity.py --summary-only
+      - name: Upload sanitized economic census test report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: acceptance-economic-mutation-boundary-${{ github.run_id }}
+          path: artifacts/economic-mutation-boundary.xml
+          if-no-files-found: error
+          include-hidden-files: false
+          retention-days: 7
+      - name: Enforce the default fail-closed economic mutation boundary
+        run: python -B scripts/validation/audit_economic_mutation_boundaries.py --compact
+
+  cloudflare-static:
+    name: Wrangler and Cloudflare paths
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install parser dependency from the frontend lockfile
+        run: npm ci --prefix frontend --ignore-scripts
+      - name: Build isolated Cloudflare static assets
+        run: |
+          bash flameborn/scripts/build_workers_assets.sh
+          mkdir -p deploy/cloudflare/aureon_murge_worker/dist-workers
+          cp -R flameborn/dist-workers/. deploy/cloudflare/aureon_murge_worker/dist-workers/
+      - name: Run offline Cloudflare Worker security contract
+        run: |
+          node --check flameborn/workers/index.mjs
+          node --check deploy/cloudflare/aureon_murge_worker/index.mjs
+          node --check flameborn/cloudflare-ui/app.js
+          node --check flameborn/script.js
+          node --test tests/cloudflare_worker_security_contract.test.mjs
+          node --test tests/cloudflare_workers_deploy_preflight_contract.test.mjs
+      - name: Validate Cloudflare deployment inputs without network or deployment
+        env:
+          AUREON_WORKER_ACCESS_SECRET: ci-only-not-a-secret-0123456789abcdef
+          AUREON_ALLOWED_ORIGINS: https://acceptance.invalid
+        run: npm --prefix flameborn run cf:preflight
+      - name: Parse Wrangler JSONC and resolve worker and asset paths
+        run: |
+          node <<'JS'
+          const fs = require("node:fs");
+          const path = require("node:path");
+          const ts = require("./frontend/node_modules/typescript");
+
+          const configs = [
+            "deploy/cloudflare/aureon_murge_worker/wrangler.jsonc",
+            "flameborn/wrangler.jsonc",
+          ];
+          const problems = [];
+          for (const relative of configs) {
+            const parsed = ts.parseConfigFileTextToJson(relative, fs.readFileSync(relative, "utf8"));
+            if (parsed.error) {
+              problems.push(`${relative}: ${ts.flattenDiagnosticMessageText(parsed.error.messageText, " ")}`);
+              continue;
+            }
+            const config = parsed.config;
+            const expectedLimiters = new Map([
+              ["API_PREAUTH_RATE_LIMITER", { limit: 20, period: 60 }],
+              ["API_RATE_LIMITER", { limit: 60, period: 60 }],
+            ]);
+            for (const [name, expected] of expectedLimiters) {
+              const limiter = config.ratelimits?.find((item) => item.name === name);
+              if (
+                !limiter
+                || !/^\d+$/.test(String(limiter.namespace_id))
+                || limiter.simple?.limit !== expected.limit
+                || limiter.simple?.period !== expected.period
+              ) {
+                problems.push(`${relative}: invalid ${name} binding`);
+              }
+            }
+            if (JSON.stringify(config.assets?.run_worker_first) !== JSON.stringify(["/api", "/api/*"])) {
+              problems.push(`${relative}: API paths can bypass Worker-first routing`);
+            }
+            for (const [label, configured] of [
+              ["main", config.main],
+              ["assets.directory", config.assets?.directory],
+            ]) {
+              if (typeof configured !== "string") {
+                problems.push(`${relative}: missing ${label}`);
+                continue;
+              }
+              const resolved = path.resolve(path.dirname(relative), configured);
+              if (!fs.existsSync(resolved)) problems.push(`${relative}: ${label} does not resolve: ${configured}`);
+            }
+          }
+          if (problems.length) throw new Error(problems.join("\n"));
+          JS
+
+  supabase-static:
+    name: Supabase functions and RLS policy contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            pyproject.toml
+            .github/workflows/acceptance-ci.yml
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install TypeScript parser from the frontend lockfile
+        run: npm ci --prefix frontend --ignore-scripts
+      - name: Parse every Supabase Edge Function without resolving remote imports
+        run: |
+          node <<'JS'
+          const fs = require("node:fs");
+          const path = require("node:path");
+          const ts = require("./frontend/node_modules/typescript");
+
+          function walk(directory) {
+            return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+              const child = path.join(directory, entry.name);
+              return entry.isDirectory() ? walk(child) : child.endsWith(".ts") ? [child] : [];
+            });
+          }
+          const failures = [];
+          for (const file of walk("supabase/functions")) {
+            const source = ts.createSourceFile(
+              file,
+              fs.readFileSync(file, "utf8"),
+              ts.ScriptTarget.Latest,
+              true,
+              ts.ScriptKind.TS,
+            );
+            for (const diagnostic of source.parseDiagnostics) {
+              failures.push(`${file}: ${ts.flattenDiagnosticMessageText(diagnostic.messageText, " ")}`);
+            }
+          }
+          if (failures.length) throw new Error(failures.join("\n"));
+          JS
+      - name: Validate Supabase auth, quarantine, RLS, and function grants
+        run: |
+          test -f supabase/config.toml
+          test -d supabase/functions
+          test -d supabase/migrations
+          python -B scripts/validation/audit_supabase_edge_auth.py
+          python -m pytest --disable-socket \
+            tests/test_supabase_edge_auth_contract.py \
+            tests/test_supabase_live_only_edge_functions.py \
+            tests/test_supabase_legacy_public_rls_migration.py \
+            tests/test_supabase_privileged_function_hardening.py
+
+  frontend:
+    name: Frontend typecheck, lint, build, and E2E
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install locked frontend dependencies
+        run: npm ci --ignore-scripts
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Build
+        run: npm run build
+      - name: Install Playwright Chromium
+        run: npx --no-install playwright install --with-deps chromium
+      - name: Run all three offline Playwright specifications
+        env:
+          PLAYWRIGHT_JUNIT_OUTPUT_NAME: ../artifacts/frontend-playwright.xml
+        run: |
+          mkdir -p ../artifacts
+          npx --no-install playwright test \
+            tests/shell-smoke.spec.ts \
+            tests/live-data.spec.ts \
+            tests/capability-forge.spec.ts \
+            --project=chromium \
+            --reporter=junit
+      - name: Upload sanitized Playwright test report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: acceptance-frontend-playwright-${{ github.run_id }}
+          path: artifacts/frontend-playwright.xml
+          if-no-files-found: error
+          include-hidden-files: false
+          retention-days: 7
