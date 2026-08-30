@@ -1,0 +1,53 @@
+{
+  "schema_version": "aureon-courseops-21-v1",
+  "benchmark_id": "courseops-21-synthetic-john-brown",
+  "persona": {
+    "id": "john-brown-synthetic-v1",
+    "display_name": "John Brown",
+    "synthetic": true
+  },
+  "local_only": true,
+  "network_policy": "loopback_fixture_only",
+  "contains_real_provider_content": false,
+  "certificate_class": "synthetic_test_only",
+  "completion_marker": "COURSEOPS 21 OF 21 COMPLETE",
+  "course_codes": [
+    "GE-EHS-160",
+    "GE-EHS-180",
+    "GE-EHS-200",
+    "GE-EHS-237",
+    "GE-EHS-262",
+    "GE-EHS-315",
+    "GE-EHS-320",
+    "GE-EHS-CEP-42",
+    "GE-EHS-425",
+    "GE-EHS-470",
+    "GE-EHS-CEP-34",
+    "GE-EHS-530",
+    "GE-EHS-465",
+    "GE-EHS-542",
+    "GE-EHS-545",
+    "GE-EHS-538",
+    "GE-EHS-600",
+    "GE-EHS-640",
+    "GE-EHS-620",
+    "GE-EHS-654",
+    "GE-EHS-670"
+  ],
+  "required_screen_actions": [
+    "move_mouse",
+    "left_click",
+    "scroll"
+  ],
+  "assessment_policy": {
+    "gate": "certification_assessment",
+    "requires_sealed_synthetic_grant": true,
+    "captcha_mfa_identity_authorization_never_overridden": true
+  },
+  "artifact_policy": {
+    "expected_count": 21,
+    "extension": ".pdf",
+    "required_watermark": "SYNTHETIC TEST ONLY",
+    "real_world_validity": false
+  }
+}

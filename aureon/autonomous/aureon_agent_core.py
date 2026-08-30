@@ -104,11 +104,10 @@ except Exception:
     HAS_HISTORY_DB = False
 
 try:
-    from aureon.autonomous.aureon_safe_desktop_control import SafeDesktopControl, DesktopAction
+    from aureon.autonomous.aureon_governed_desktop_gateway import get_governed_desktop_gateway
     HAS_DESKTOP = True
 except Exception:
-    SafeDesktopControl = None  # type: ignore[assignment,misc]
-    DesktopAction = None  # type: ignore[assignment,misc]
+    get_governed_desktop_gateway = None  # type: ignore[assignment,misc]
     HAS_DESKTOP = False
 
 try:
@@ -209,10 +208,12 @@ INTENT_MAP: Dict[str, str] = {
     "type": "type_text",
     "press_key": "press_key",
     "hotkey": "hotkey",
+    "scroll": "scroll",
     "screenshot": "screenshot",
     "desktop_status": "desktop_status",
     "desktop_arm_live": "desktop_arm_live",
     "desktop_arm_dry_run": "desktop_arm_dry_run",
+    "desktop_bind_window": "desktop_bind_window",
     "desktop_disarm": "desktop_disarm",
     "desktop_emergency_stop": "desktop_emergency_stop",
     "desktop_clear_emergency_stop": "desktop_clear_emergency_stop",
@@ -259,12 +260,10 @@ class AureonAgentCore:
         self._laptop: Optional[Any] = None
         self._parser: Optional[Any] = None
 
-        # Wire LaptopControl (full hardware access)
-        try:
-            from aureon.autonomous.aureon_laptop_control import LaptopControl
-            self._laptop = LaptopControl()
-        except Exception:
-            self._laptop = None
+        # The legacy LaptopControl HAL contains ungoverned mutation primitives.
+        # It is intentionally not attached to the master executor.  Screen and
+        # input automation are exposed only through a governed gateway.
+        self._laptop = None
 
         # Wire InstructionParser (natural language understanding)
         try:
@@ -285,20 +284,9 @@ class AureonAgentCore:
 
     def _get_desktop(self):
         if self._desktop is None and HAS_DESKTOP:
-            sovereign = str(os.getenv("AUREON_SOVEREIGN_MODE", "")).strip().lower() in {"1", "true", "yes", "on"}
-            live = str(os.getenv("AUREON_DESKTOP_LIVE", "")).strip().lower() in {"1", "true", "yes", "on"}
-            auto_arm = str(os.getenv("AUREON_DESKTOP_AUTO_ARM", "")).strip().lower() in {"1", "true", "yes", "on"}
-            if sovereign:
-                live = True
-                auto_arm = True
-
-            # Safe defaults: dry-run + disarmed unless explicitly enabled.
-            self._desktop = SafeDesktopControl(dry_run=not live)
-            if auto_arm:
-                if live:
-                    self._desktop.arm_live()
-                else:
-                    self._desktop.arm_dry_run()
+            # No environment flag or persisted state may auto-arm the organism.
+            # Live authority is an explicit, expiring in-memory lease.
+            self._desktop = get_governed_desktop_gateway()
         return self._desktop
 
     def _get_code_architect(self):
@@ -350,11 +338,10 @@ class AureonAgentCore:
     def execute_shell(self, command: str, timeout: int = 30, cwd: str = None,
                       force: bool = False) -> dict:
         """Run a shell command and return stdout / stderr / exit_code."""
-        sovereign = str(os.getenv("AUREON_SOVEREIGN_MODE", "")).strip().lower() in {"1", "true", "yes", "on"}
-
-        # Safety check: conservative denylist (unless force=True or sovereign mode).
+        del force  # legacy argument retained for callers; it no longer bypasses safety
+        # Safety check: conservative denylist with no sovereign override.
         patterns = list(DANGEROUS_SHELL_PATTERNS or [])
-        if not patterns and not sovereign:
+        if not patterns:
             patterns = [
                 r"(?i)\\brm\\s+-rf\\b",
                 r"(?i)\\brm\\s+-fr\\b",
@@ -368,15 +355,14 @@ class AureonAgentCore:
                 r"(?i)\\bvssadmin\\s+delete\\b",
                 r"(?i)\\bcipher\\s+/w\\b",
             ]
-        if not sovereign and not force:
-            for pat in patterns:
-                if re.search(pat, command):
-                    return {
-                        "stdout": "",
-                        "stderr": f"Blocked dangerous command matching /{pat}/. Pass force=True to override.",
-                        "exit_code": -1,
-                        "command": command,
-                    }
+        for pat in patterns:
+            if re.search(pat, command):
+                return {
+                    "stdout": "",
+                    "stderr": f"Blocked dangerous command matching /{pat}/.",
+                    "exit_code": -1,
+                    "command": command,
+                }
         try:
             result = subprocess.run(
                 command, shell=True, capture_output=True, text=True,
@@ -1055,58 +1041,92 @@ class AureonAgentCore:
     def _desktop_exec(self, action: str, params: dict) -> dict:
         dc = self._get_desktop()
         if dc is None:
-            return {"success": False, "error": "SafeDesktopControl not available"}
+            return {"success": False, "error": "GovernedDesktopGateway not available"}
         try:
             p = dict(params or {})
-            confirm_token = str(p.pop("confirm_token", "") or "")
-            source = str(p.pop("source", "agent_core") or "agent_core")
-            req = DesktopAction(
-                action=action,
-                params=p,
-                approved=True,
-                confirm_token=confirm_token,
-                source=source,
+            target_binding_id = str(p.pop("target_binding_id", "") or "") or None
+            mapped = {
+                "move_mouse": "move",
+                "left_click": "click",
+                "right_click": "right_click",
+                "double_click": "double_click",
+                "type_text": "type",
+                "press_key": "press",
+                "hotkey": "hotkey",
+                "scroll": "scroll",
+            }.get(action, action)
+            if target_binding_id is None:
+                return {
+                    "success": False,
+                    "error": "valid_target_window_binding_required",
+                }
+
+            # Bind every mutation to the exact masked pixels from which it was
+            # chosen.  The gateway captures again immediately before dispatch
+            # and rejects the action if the target window has drifted.
+            source = dc.observe(target_binding_id=target_binding_id)
+            if not source.ok or not source.before_sha256:
+                return {
+                    "success": False,
+                    "error": "bound_source_observation_failed",
+                    "source_observation": source.to_dict(),
+                }
+            res = dc.execute(
+                mapped,
+                p,
+                target_binding_id=target_binding_id,
+                expected_before_sha256=source.before_sha256,
             )
-            res = dc.execute(req)
-            return {"success": res.ok, "action": res.action, "reason": res.reason,
-                    "dry_run": res.dry_run}
+            return {
+                "success": res.ok,
+                **res.to_dict(),
+                "source_observation_action_id": source.action_id,
+            }
         except Exception as exc:
             return {"success": False, "error": str(exc)}
 
-    def click(self, x: int | None = None, y: int | None = None) -> dict:
-        p: Dict[str, Any] = {}
-        if x is not None:
-            p["x"] = int(x)
-        if y is not None:
-            p["y"] = int(y)
+    def click(self, x: int, y: int, target_binding_id: str | None = None) -> dict:
+        p: Dict[str, Any] = {"x": int(x), "y": int(y)}
+        if target_binding_id:
+            p["target_binding_id"] = target_binding_id
         return self._desktop_exec("left_click", p)
 
-    def move_mouse(self, x: int, y: int, duration: float = 0.0) -> dict:
-        return self._desktop_exec("move_mouse", {"x": x, "y": y, "duration": duration})
+    def move_mouse(self, x: int, y: int, duration: float = 0.0, target_binding_id: str | None = None) -> dict:
+        p: Dict[str, Any] = {"x": int(x), "y": int(y), "duration": duration}
+        if target_binding_id:
+            p["target_binding_id"] = target_binding_id
+        return self._desktop_exec("move_mouse", p)
 
-    def right_click(self, x: int | None = None, y: int | None = None) -> dict:
-        p: Dict[str, Any] = {}
-        if x is not None:
-            p["x"] = int(x)
-        if y is not None:
-            p["y"] = int(y)
+    def right_click(self, x: int, y: int, target_binding_id: str | None = None) -> dict:
+        p: Dict[str, Any] = {"x": int(x), "y": int(y)}
+        if target_binding_id:
+            p["target_binding_id"] = target_binding_id
         return self._desktop_exec("right_click", p)
 
-    def double_click(self, x: int | None = None, y: int | None = None) -> dict:
-        p: Dict[str, Any] = {}
-        if x is not None:
-            p["x"] = int(x)
-        if y is not None:
-            p["y"] = int(y)
+    def double_click(self, x: int, y: int, target_binding_id: str | None = None) -> dict:
+        p: Dict[str, Any] = {"x": int(x), "y": int(y)}
+        if target_binding_id:
+            p["target_binding_id"] = target_binding_id
         return self._desktop_exec("double_click", p)
 
-    def type_text(self, text: str) -> dict:
-        return self._desktop_exec("type_text", {"text": text})
+    def type_text(self, text: str, interval: float = 0.02, target_binding_id: str | None = None) -> dict:
+        p: Dict[str, Any] = {"text": text, "interval": interval}
+        if target_binding_id:
+            p["target_binding_id"] = target_binding_id
+        return self._desktop_exec("type_text", p)
 
-    def press_key(self, key: str) -> dict:
-        return self._desktop_exec("press_key", {"key": key})
+    def press_key(self, key: str, target_binding_id: str | None = None) -> dict:
+        p: Dict[str, Any] = {"key": key}
+        if target_binding_id:
+            p["target_binding_id"] = target_binding_id
+        return self._desktop_exec("press_key", p)
 
-    def hotkey(self, keys: List[str] | str | None = None, *more_keys: str) -> dict:
+    def hotkey(
+        self,
+        keys: List[str] | str | None = None,
+        *more_keys: str,
+        target_binding_id: str | None = None,
+    ) -> dict:
         # Support both styles:
         # - hotkey(keys=["ctrl", "c"])
         # - hotkey("ctrl", "c")
@@ -1116,34 +1136,40 @@ class AureonAgentCore:
         elif keys:
             all_keys.append(str(keys))
         all_keys.extend([str(k) for k in more_keys if k])
-        return self._desktop_exec("hotkey", {"keys": all_keys})
+        p: Dict[str, Any] = {"keys": all_keys}
+        if target_binding_id:
+            p["target_binding_id"] = target_binding_id
+        return self._desktop_exec("hotkey", p)
+
+    def scroll(self, x: int, y: int, amount: int, target_binding_id: str | None = None) -> dict:
+        p: Dict[str, Any] = {"x": int(x), "y": int(y), "amount": int(amount)}
+        if target_binding_id:
+            p["target_binding_id"] = target_binding_id
+        return self._desktop_exec("scroll", p)
 
     def screenshot(self) -> dict:
-        """Take a screenshot and save to a temp file."""
-        if not HAS_PYAUTOGUI:
-            self._publish_search_capture(
-                "screen_capture_failed",
-                source="pyautogui",
-                status="missing_dependency",
-                error="pyautogui not installed",
-            )
-            return {"success": False, "error": "pyautogui not installed"}
+        """Observe the screen through the same evidence-producing gateway."""
+        dc = self._get_desktop()
+        if dc is None:
+            return {"success": False, "error": "GovernedDesktopGateway not available"}
         try:
-            img = pyautogui.screenshot()
-            tmp = Path(tempfile.gettempdir()) / f"aureon_screenshot_{int(time.time())}.png"
-            img.save(str(tmp))
+            res = dc.observe()
             self._publish_search_capture(
-                "screen_captured",
-                source="pyautogui",
-                status="success",
-                result_count=1,
-                metadata={"path": str(tmp), "data_capture_mode": "local_image_file"},
+                "screen_observed" if res.ok else "screen_capture_failed",
+                source="governed_desktop_gateway",
+                status="success" if res.ok else "error",
+                result_count=1 if res.ok else 0,
+                metadata={
+                    "before_sha256": res.before_sha256,
+                    "action_id": res.action_id,
+                    "data_capture_mode": "in_memory_evidence_hash",
+                },
             )
-            return {"success": True, "path": str(tmp)}
+            return {"success": res.ok, **res.to_dict()}
         except Exception as exc:
             self._publish_search_capture(
                 "screen_capture_failed",
-                source="pyautogui",
+                source="governed_desktop_gateway",
                 status="error",
                 error=str(exc),
             )
@@ -1152,38 +1178,62 @@ class AureonAgentCore:
     def desktop_status(self) -> dict:
         dc = self._get_desktop()
         if dc is None:
-            return {"success": False, "error": "SafeDesktopControl not available"}
+            return {"success": False, "error": "GovernedDesktopGateway not available"}
         try:
             return {"success": True, "result": dc.status()}
         except Exception as exc:
             return {"success": False, "error": str(exc)}
 
-    def desktop_arm_live(self) -> dict:
+    def desktop_arm_live(
+        self,
+        capability_token: str,
+        ttl_seconds: float,
+        subject: str,
+        allowed_actions: List[str] | None = None,
+    ) -> dict:
         dc = self._get_desktop()
         if dc is None:
-            return {"success": False, "error": "SafeDesktopControl not available"}
+            return {"success": False, "error": "GovernedDesktopGateway not available"}
         try:
-            dc.arm_live()
-            return {"success": True, "result": dc.status()}
+            lease = dc.authorize_live(
+                capability_token,
+                ttl_seconds=ttl_seconds,
+                subject=subject,
+                allowed_actions=allowed_actions,
+            )
+            return {"success": True, "result": lease.public_dict(), "status": dc.status()}
         except Exception as exc:
             return {"success": False, "error": str(exc)}
 
     def desktop_arm_dry_run(self) -> dict:
         dc = self._get_desktop()
         if dc is None:
-            return {"success": False, "error": "SafeDesktopControl not available"}
+            return {"success": False, "error": "GovernedDesktopGateway not available"}
         try:
-            dc.arm_dry_run()
+            dc.disarm(reason="agent_core_dry_run")
             return {"success": True, "result": dc.status()}
+        except Exception as exc:
+            return {"success": False, "error": str(exc)}
+
+    def desktop_bind_window(self, expected_title: str, expected_process_id: int | None = None) -> dict:
+        dc = self._get_desktop()
+        if dc is None:
+            return {"success": False, "error": "GovernedDesktopGateway not available"}
+        try:
+            binding = dc.bind_target_window(
+                expected_title,
+                expected_process_id=expected_process_id,
+            )
+            return {"success": True, "result": binding.audit_dict(), "binding_id": binding.binding_id}
         except Exception as exc:
             return {"success": False, "error": str(exc)}
 
     def desktop_disarm(self) -> dict:
         dc = self._get_desktop()
         if dc is None:
-            return {"success": False, "error": "SafeDesktopControl not available"}
+            return {"success": False, "error": "GovernedDesktopGateway not available"}
         try:
-            dc.disarm()
+            dc.disarm(reason="agent_core_disarm")
             return {"success": True, "result": dc.status()}
         except Exception as exc:
             return {"success": False, "error": str(exc)}
@@ -1191,9 +1241,9 @@ class AureonAgentCore:
     def desktop_emergency_stop(self) -> dict:
         dc = self._get_desktop()
         if dc is None:
-            return {"success": False, "error": "SafeDesktopControl not available"}
+            return {"success": False, "error": "GovernedDesktopGateway not available"}
         try:
-            dc.emergency_stop()
+            dc.emergency_stop(reason="agent_core_emergency_stop")
             return {"success": True, "result": dc.status()}
         except Exception as exc:
             return {"success": False, "error": str(exc)}
@@ -1201,9 +1251,9 @@ class AureonAgentCore:
     def desktop_clear_emergency_stop(self) -> dict:
         dc = self._get_desktop()
         if dc is None:
-            return {"success": False, "error": "SafeDesktopControl not available"}
+            return {"success": False, "error": "GovernedDesktopGateway not available"}
         try:
-            dc.clear_emergency_stop()
+            dc.clear_emergency_stop(reason="agent_core_clear_emergency_stop")
             return {"success": True, "result": dc.status()}
         except Exception as exc:
             return {"success": False, "error": str(exc)}
@@ -1586,41 +1636,19 @@ class AureonAgentCore:
         Returns: {"success": bool, "result": any, "tool_used": str, "error": str}
         """
         params = params or {}
-        # Optional HNC grounding of this (otherwise ungated) sovereign path: when
-        # AUREON_GROUND_LOCAL_ACTIONS=1, every intent is first grounded through the
-        # Master-Formula / Auris / conscience gate and a veto refuses the move
-        # before any tool runs. Off by default (behaviour unchanged); fully guarded
-        # so a missing gate never breaks execution.
-        if str(os.environ.get("AUREON_GROUND_LOCAL_ACTIONS", "") or "").strip().lower() in {"1", "true", "yes", "on"}:
-            try:
-                from aureon.operator.grounded_action import get_action_gate
+        # The gate is a mandatory invariant, not an opt-in feature.  A missing or
+        # broken gate fails closed instead of silently restoring sovereign access.
+        try:
+            from aureon.operator.grounded_action import get_action_gate
 
-                _verdict = get_action_gate().ground(intent, params if isinstance(params, dict) else {})
-                if not _verdict.approved:
-                    return {"success": False, "result": None, "tool_used": None,
-                            "error": f"grounded-action gate {_verdict.verdict}: {_verdict.reason}"}
-            except Exception:  # noqa: BLE001 - gate unavailable → unchanged behaviour
-                pass
+            _verdict = get_action_gate().ground(intent, params if isinstance(params, dict) else {})
+            if not _verdict.approved:
+                return {"success": False, "result": None, "tool_used": None,
+                        "error": f"grounded-action gate {_verdict.verdict}: {_verdict.reason}"}
+        except Exception as exc:  # noqa: BLE001
+            return {"success": False, "result": None, "tool_used": None,
+                    "error": f"grounded-action gate unavailable: {exc}"}
         method_name = INTENT_MAP.get(intent)
-
-        # If not in agent's intent map, try LaptopControl direct method call
-        if method_name is None and self._laptop is not None:
-            laptop_method = getattr(self._laptop, intent, None)
-            if laptop_method and callable(laptop_method):
-                self._stats["calls"] += 1
-                t0 = time.time()
-                try:
-                    result = laptop_method(**params)
-                    duration = time.time() - t0
-                    success = result.get("success", True) if isinstance(result, dict) else True
-                    self._stats["success" if success else "failure"] += 1
-                    out = {"success": success, "result": result, "tool_used": f"laptop.{intent}", "error": None}
-                except Exception as exc:
-                    duration = time.time() - t0
-                    self._stats["failure"] += 1
-                    out = {"success": False, "result": None, "tool_used": f"laptop.{intent}", "error": str(exc)}
-                self.log_action(intent, out, duration)
-                return out
 
         if method_name is None:
             return {

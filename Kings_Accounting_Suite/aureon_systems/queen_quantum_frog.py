@@ -3483,7 +3483,16 @@ class OrcaKillCycle:
             _safe_print(f"⚠️ Kraken asset discovery failed: {e}")
             return []
 
-    def __init__(self, client=None, exchange='alpaca', quick_init=False):
+    def __init__(
+        self,
+        client=None,
+        exchange='alpaca',
+        quick_init=False,
+        *,
+        unity_composition=None,
+        unity_plan_supplier=None,
+        trusted_unity_plan_supplier_ids=None,
+    ):
         """
         Initialize OrcaKillCycle.
 
@@ -3531,7 +3540,11 @@ class OrcaKillCycle:
             _safe_print(f"⚠️ Adaptive Profit Gate: {e}")
 
         # Initialize clients for BOTH exchanges (unless specific client provided)
-        if client:
+        if unity_composition is not None:
+            # Canonical composition owns provider construction; never create a
+            # second set of raw mutation-capable clients here.
+            pass
+        elif client:
             self.clients[exchange] = client
             self.client = client  # Backward compatibility
         else:
@@ -3575,6 +3588,22 @@ class OrcaKillCycle:
 
             # Set primary client for backward compatibility
             self.client = self.clients.get(exchange) or list(self.clients.values())[0]
+
+        from aureon.queen.unity_exchange_brain import build_queen_exchange_brains
+
+        self.clients, self._queen_governed_client, self.unity_governance_status = (
+            build_queen_exchange_brains(
+                unity_composition=unity_composition,
+                unity_plan_supplier=unity_plan_supplier,
+                trusted_unity_plan_supplier_ids=frozenset(
+                    trusted_unity_plan_supplier_ids or ()
+                ),
+                fallback_read_clients=(
+                    None if unity_composition is not None else self.clients
+                ),
+            )
+        )
+        self.client = self.clients[exchange]
 
         self.exchange = exchange
         self.fee_rate = self.fee_rates.get(exchange, 0.0025)
@@ -4832,15 +4861,17 @@ class OrcaKillCycle:
 
     def _ensure_capital_client(self):
         """Lazy-load Capital.com client on first use (avoids rate limiting during init)."""
-        if 'capital' in self.clients and self.clients['capital'] is None:
+        brain = self.clients.get('capital')
+        if brain is not None and brain.read_client is None:
             try:
                 _safe_print("🔄 Lazy-loading Capital.com client...")
-                self.clients['capital'] = CapitalClient()
+                brain.bind_read_client(CapitalClient())
                 _safe_print("✅ Capital.com: CONNECTED (lazy load)")
             except Exception as e:
                 _safe_print(f"⚠️ Capital.com lazy load failed: {e}")
-                # Keep as None to retry next time
-        return self.clients.get('capital')
+                # Keep the brain unbound so a later read may retry. Mutation
+                # authority remains HOLD regardless of read availability.
+        return brain
 
     def emit_position_signal(self, symbol: str, exchange: str, qty: float, entry_price: float,
                              current_price: float, unrealized_pnl: float, status: str = "hunting"):

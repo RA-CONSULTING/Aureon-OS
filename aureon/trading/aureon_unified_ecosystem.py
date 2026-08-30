@@ -371,7 +371,11 @@ PSI_FILTER = 0.037          # Top 3.7% opportunities only
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ROOT_DIR)
 try:
-    from aureon.trading.unified_exchange_client import UnifiedExchangeClient, MultiExchangeClient
+    from aureon.trading.unified_exchange_client import (
+        GovernedMultiExchangeClient,
+        MultiExchangeClient,
+        UnifiedExchangeClient,
+    )
 except ImportError as e:
     print(f"⚠️  Unified Exchange Client not available: {e}")
     # Define dummy classes to prevent crash if critical module is missing
@@ -386,6 +390,9 @@ except ImportError as e:
         def get_ticker(self, *args): return {}
         def place_market_order(self, *args, **kwargs): return {}
         def convert_to_quote(self, *args): return 0.0
+    class GovernedMultiExchangeClient(MultiExchangeClient):
+        def __init__(self, *args, **kwargs):
+            raise RuntimeError("canonical_unified_exchange_unity_runtime_required")
 
 # 🇮🇪🎯 IRA SNIPER MODE - Core imports (top-level for reliability)
 from aureon.scanners.ira_sniper_mode import (
@@ -13980,9 +13987,47 @@ class AureonKrakenEcosystem:
     - 51%+ win rate strategy
     """
     
-    def __init__(self, initial_balance: float = 1000.0, dry_run: bool = False, target_equity_gbp: Optional[float] = 100000.0):
-        # Initialize Multi-Exchange Client
-        self.client = MultiExchangeClient()
+    def __init__(
+        self,
+        initial_balance: float = 1000.0,
+        dry_run: bool = False,
+        target_equity_gbp: Optional[float] = 100000.0,
+        *,
+        unity_composition: Any = None,
+        unity_plan_supplier: Any = None,
+        trusted_unity_plan_supplier_ids: Optional[Set[str]] = None,
+    ):
+        # The default client retains read-only analytics and fails every
+        # mutation closed inside UnifiedExchangeClient.  A live organism must
+        # receive the canonical HNC/Auris/Council/Crown composition plus an
+        # independently allowlisted strategy-plan supplier as one pair.
+        trusted_plan_ids = frozenset(trusted_unity_plan_supplier_ids or ())
+        if unity_composition is None:
+            if unity_plan_supplier is not None or trusted_plan_ids:
+                raise ValueError(
+                    "unity_composition_plan_supplier_and_allowlist_required_together"
+                )
+            self.client = MultiExchangeClient()
+            self.unity_governance_status = {
+                "status": "HOLD",
+                "reason": "canonical_unified_exchange_unity_composition_required",
+                "economic_mutation": False,
+            }
+        else:
+            if unity_plan_supplier is None or not trusted_plan_ids:
+                raise ValueError(
+                    "unity_composition_plan_supplier_and_allowlist_required_together"
+                )
+            self.client = GovernedMultiExchangeClient(
+                base_client=getattr(unity_composition, "client", None),
+                plan_supplier=unity_plan_supplier,
+                trusted_plan_supplier_ids=trusted_plan_ids,
+            )
+            self.unity_governance_status = {
+                "status": "READY",
+                "reason": "hnc_auris_council_crown_unity_composed",
+                "economic_mutation": False,
+            }
         self.dry_run = self.client.dry_run
 
         # Positions must exist before any subsystem syncs that may reference it

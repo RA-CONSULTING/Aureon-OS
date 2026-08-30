@@ -41,7 +41,9 @@ for _d in (_SCREENSHOT_DIR, _CAMERA_DIR):
 # ---------------------------------------------------------------------------
 try:
     import pyautogui
-    pyautogui.FAILSAFE = False
+    # Keep the physical corner failsafe enabled even for this legacy HAL.  New
+    # autonomous mutation paths must route through the governed desktop gateway.
+    pyautogui.FAILSAFE = True
     pyautogui.PAUSE = 0.05
     HAS_PYAUTOGUI = True
 except ImportError:

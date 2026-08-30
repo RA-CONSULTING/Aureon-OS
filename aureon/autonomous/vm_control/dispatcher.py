@@ -203,6 +203,7 @@ class VMControlDispatcher:
         params: Optional[Dict[str, Any]] = None,
         session_id: Optional[str] = None,
         source: str = "agent",
+        confirm_token: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Dispatch a VM action.
@@ -222,6 +223,7 @@ class VMControlDispatcher:
             params=params or {},
             session_id=controller.session.session_id,
             source=source,
+            confirm_token=confirm_token,
         )
 
         with self._lock:

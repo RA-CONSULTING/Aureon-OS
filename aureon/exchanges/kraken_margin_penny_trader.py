@@ -3108,7 +3108,15 @@ class KrakenMarginArmyTrader:
     Execution: Kraken API only (open/close)
     """
 
-    def __init__(self, dry_run: bool = False):
+    def __init__(
+        self,
+        dry_run: bool = False,
+        *,
+        unity_composition: Any = None,
+        unity_plan_supplier: Any = None,
+        trusted_unity_plan_supplier_ids: Tuple[str, ...] = (),
+        mycelium_network: Any = None,
+    ):
         if dry_run:
             os.environ["KRAKEN_DRY_RUN"] = "true"
         try:
@@ -3426,6 +3434,13 @@ class KrakenMarginArmyTrader:
                 raise
             self.starting_equity = 0.0
             logger.info("Dry-run account state is no_data; live submission remains disabled")
+        self._install_unity_exchange_brain(
+            raw_client=self.client,
+            unity_composition=unity_composition,
+            unity_plan_supplier=unity_plan_supplier,
+            trusted_unity_plan_supplier_ids=trusted_unity_plan_supplier_ids,
+            mycelium_network=mycelium_network,
+        )
         if os.getenv("AUREON_DISABLE_LOCAL_DASHBOARD", "0") != "1":
             self._start_local_dashboard_server()
 
@@ -3436,6 +3451,54 @@ class KrakenMarginArmyTrader:
                 logger.info("[QUEEN HIVE] Subscribed to queen.command.hunt")
             except Exception:
                 pass
+
+    def _install_unity_exchange_brain(
+        self,
+        *,
+        raw_client: Any,
+        unity_composition: Any,
+        unity_plan_supplier: Any,
+        trusted_unity_plan_supplier_ids: Tuple[str, ...],
+        mycelium_network: Any = None,
+    ) -> None:
+        """Put Kraken mutations behind the Queen while preserving read surfaces."""
+
+        from aureon.core.economic_sensation import OrganismEconomicSensationRouter
+        from aureon.queen.unity_exchange_brain import build_queen_exchange_brains
+
+        if mycelium_network is None:
+            try:
+                from aureon.core.aureon_mycelium import get_mycelium
+
+                mycelium_network = get_mycelium()
+            except Exception:
+                mycelium_network = None
+        self.mycelium_network = mycelium_network
+        self._economic_sensation_router = OrganismEconomicSensationRouter(
+            bus_getter=lambda: getattr(self, "thought_bus", None),
+            hive_getter=lambda: getattr(self, "hive_state", None),
+            mycelium_getter=lambda: getattr(self, "mycelium_network", None),
+        )
+        fallback_read_clients = (
+            None if unity_composition is not None else {"kraken": raw_client}
+        )
+        brains, governed, status = build_queen_exchange_brains(
+            unity_composition=unity_composition,
+            unity_plan_supplier=unity_plan_supplier,
+            trusted_unity_plan_supplier_ids=trusted_unity_plan_supplier_ids,
+            fallback_read_clients=fallback_read_clients,
+            outcome_observer=self._economic_sensation_router.observe,
+        )
+        self._queen_exchange_brains = brains
+        self._queen_governed_exchange_client = governed
+        self._queen_exchange_governance_status = status
+        self.client = brains["kraken"]
+
+    def recent_economic_sensations(self) -> List[Dict[str, Any]]:
+        """Return bounded feedback receipts; never mutation authority."""
+
+        router = getattr(self, "_economic_sensation_router", None)
+        return router.recent() if router is not None else []
 
     # ----------------------------------------------------------
     #  QUEEN HIVE COMMAND: Execute hunts issued by the Queen

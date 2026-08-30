@@ -1,0 +1,208 @@
+{
+  "schema_version": "aureon.state-support-rule-snapshot.v1",
+  "snapshot_id": "NAIC2026-STATE-SUPPORT-RULES-20260821",
+  "checked_at": "2026-08-21T05:00:00+01:00",
+  "challenge_source": {
+    "name": "TechIreland National AI Challenge 2026 - Challenge 22",
+    "url": "https://docs.google.com/document/d/1D2rQhMPmqIFsCMyi_QPxVJCQQQYZ_phuHkdfz69UoX8/edit?usp=sharing",
+    "boundary": "Challenge catalogue supplied through the participant email and read from Google Drive."
+  },
+  "routes": [
+    {
+      "id": "TECHIRELAND-NAIC2026",
+      "name": "TechIreland National AI Challenge 2026",
+      "route_type": "challenge_programme",
+      "opens": null,
+      "deadline": null,
+      "provider_decision_required": false,
+      "source": {
+        "url": "https://app.techireland.org/",
+        "checked_at": "2026-08-21T05:00:00+01:00",
+        "summary": "Live programme page says participants must be based in Northern Ireland or the Republic of Ireland; challenge begins 28 August 2026."
+      },
+      "rules": [
+        {
+          "field": "jurisdiction",
+          "label": "Participant is based in Northern Ireland or the Republic of Ireland",
+          "kind": "eligibility",
+          "operator": "in",
+          "expected": ["Northern Ireland", "Republic of Ireland"],
+          "evidence": "Participant location and programme-profile evidence"
+        }
+      ],
+      "next_actions": [
+        "Verify the participant account and team state in the Challenge App.",
+        "Select Challenge 22 and preserve the provider acknowledgement.",
+        "Run the two-week prototype plan from 28 August to 14 September 2026."
+      ],
+      "alternative_path": "Use the public Challenge catalogue as a benchmark without representing participation."
+    },
+    {
+      "id": "INVESTNI-BIG-2026-09",
+      "name": "Invest NI Business Innovation Grant",
+      "route_type": "grant",
+      "opens": null,
+      "deadline": "2026-09-04T12:00:00+01:00",
+      "provider_decision_required": true,
+      "source": {
+        "url": "https://www.investni.com/support-for-business/innovation-support/business-innovation-grant",
+        "checked_at": "2026-08-21T05:00:00+01:00",
+        "summary": "Official page states Northern Ireland micro and SME applicants, most sectors except primary agriculture, GBP 5,000 to GBP 20,000 grants at 70 percent, closing 4 September 2026 noon."
+      },
+      "rules": [
+        {
+          "field": "jurisdiction",
+          "label": "Business is in Northern Ireland",
+          "kind": "eligibility",
+          "operator": "eq",
+          "expected": "Northern Ireland",
+          "evidence": "Registered and trading address evidence"
+        },
+        {
+          "field": "organisation_size",
+          "label": "Applicant is a micro business or SME",
+          "kind": "eligibility",
+          "operator": "in",
+          "expected": ["micro", "small", "medium"],
+          "evidence": "Current employee, turnover and balance-sheet evidence"
+        },
+        {
+          "field": "sector",
+          "label": "Applicant is not in primary agriculture",
+          "kind": "eligibility",
+          "operator": "not_in",
+          "expected": ["primary agriculture"],
+          "evidence": "Business activity and sector classification"
+        },
+        {
+          "field": "innovative_project",
+          "label": "Project aligns with the published innovation purpose",
+          "kind": "readiness",
+          "operator": "truthy",
+          "expected": true,
+          "evidence": "Claim-bounded innovation and commercialisation case"
+        },
+        {
+          "field": "grant_requested_gbp",
+          "label": "Requested grant is within the published range",
+          "kind": "readiness",
+          "operator": "between",
+          "expected": [5000, 20000],
+          "evidence": "Costed project budget and grant calculation"
+        },
+        {
+          "field": "can_fund_required_share",
+          "label": "Applicant can fund the non-grant project share",
+          "kind": "readiness",
+          "operator": "truthy",
+          "expected": true,
+          "evidence": "Current finance and cash-flow evidence"
+        }
+      ],
+      "next_actions": [
+        "Run the official Innovate NI eligibility process.",
+        "Reconcile quotations, accounts and co-funding before any application.",
+        "Treat Invest NI as the final eligibility and award authority."
+      ],
+      "alternative_path": "Ask Invest NI for the correct client or innovation route if BIG is unavailable."
+    },
+    {
+      "id": "UKRI-EPSRC-FUTURE-COMPUTING-2026",
+      "name": "EPSRC Future Computing Paradigms Network Plus",
+      "route_type": "academic_lead_grant",
+      "opens": "2026-08-03T09:00:00+01:00",
+      "deadline": "2026-10-13T16:00:00+01:00",
+      "provider_decision_required": true,
+      "source": {
+        "url": "https://www.ukri.org/opportunity/future-computing-paradigms-network-plus/",
+        "checked_at": "2026-08-21T05:00:00+01:00",
+        "summary": "UKRI requires an eligible UK research-organisation lead and a mandatory EOI by 11 September 2026 before the full 13 October deadline."
+      },
+      "rules": [
+        {
+          "field": "jurisdiction",
+          "label": "Lead is based in the United Kingdom",
+          "kind": "eligibility",
+          "operator": "in",
+          "expected": ["Northern Ireland", "England", "Scotland", "Wales"],
+          "evidence": "Lead organisation address"
+        },
+        {
+          "field": "organisation_type",
+          "label": "Lead is an EPSRC-eligible research organisation",
+          "kind": "eligibility",
+          "operator": "eq",
+          "expected": "EPSRC-eligible research organisation",
+          "evidence": "UKRI organisation eligibility confirmation"
+        },
+        {
+          "field": "eoi_ready",
+          "label": "Mandatory EOI evidence is ready",
+          "kind": "readiness",
+          "operator": "truthy",
+          "expected": true,
+          "evidence": "EOI owner, scope and submission confirmation"
+        }
+      ],
+      "next_actions": [
+        "Complete the mandatory EOI by 11 September 2026 at 23:59 UK time.",
+        "Keep commercial product development outside the funded scope.",
+        "Record non-academic organisations as project partners where appropriate."
+      ],
+      "alternative_path": "A business that cannot lead may participate through a verified eligible research-organisation lead as a project partner."
+    },
+    {
+      "id": "GO-SUCCEED-ULTIMATE-PITCH-2026",
+      "name": "Go Succeed Ultimate Pitch 2026",
+      "route_type": "business_pitch_competition",
+      "opens": null,
+      "deadline": "2026-08-21T12:00:00+01:00",
+      "provider_decision_required": true,
+      "source": {
+        "url": "https://go-succeed.com/TheUltimatePitch/",
+        "checked_at": "2026-08-21T05:00:00+01:00",
+        "summary": "Official page requires Go Succeed registration, a Northern Ireland council route and a startup or business operating for less than two years; applications close 21 August 2026 noon."
+      },
+      "rules": [
+        {
+          "field": "jurisdiction",
+          "label": "Business is in Northern Ireland",
+          "kind": "eligibility",
+          "operator": "eq",
+          "expected": "Northern Ireland",
+          "evidence": "Council area and operating address"
+        },
+        {
+          "field": "venture_age_months",
+          "label": "Venture has operated for less than 24 months",
+          "kind": "eligibility",
+          "operator": "lt",
+          "expected": 24,
+          "evidence": "Venture commencement-date evidence"
+        },
+        {
+          "field": "go_succeed_registered",
+          "label": "Applicant is registered with Go Succeed",
+          "kind": "readiness",
+          "operator": "truthy",
+          "expected": true,
+          "evidence": "Go Succeed registration confirmation"
+        },
+        {
+          "field": "available_for_heats",
+          "label": "Applicant can attend the required heat and final dates",
+          "kind": "readiness",
+          "operator": "truthy",
+          "expected": true,
+          "evidence": "Director availability confirmation"
+        }
+      ],
+      "next_actions": [
+        "Preserve the provider submission receipt and any correction acknowledgement.",
+        "Do not submit a duplicate entry.",
+        "Prepare the evidence-bounded pitch for the applicable local heat."
+      ],
+      "alternative_path": "Use Go Succeed mentoring and grant-support services if the competition route is closed."
+    }
+  ]
+}

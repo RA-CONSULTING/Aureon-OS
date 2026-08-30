@@ -3862,7 +3862,19 @@ class OrcaKillCycle:
             _safe_print(f"   Kraken asset discovery failed: {e}")
             return []
 
-    def __init__(self, client=None, exchange='alpaca', quick_init=False, symbol_whitelist: Optional[List[str]] = None, initial_capital: float = 1000.0, autonomous_mode: bool = False):
+    def __init__(
+        self,
+        client=None,
+        exchange='alpaca',
+        quick_init=False,
+        symbol_whitelist: Optional[List[str]] = None,
+        initial_capital: float = 1000.0,
+        autonomous_mode: bool = False,
+        *,
+        unity_composition=None,
+        unity_plan_supplier=None,
+        trusted_unity_plan_supplier_ids=(),
+    ):
         """
         Initialize OrcaKillCycle.
         
@@ -5220,7 +5232,59 @@ class OrcaKillCycle:
         self.audit_enabled = True
         self.flight_check_passed = False
         self.last_flight_check = {}
-        
+
+        # One mutation door, one nervous-system feedback path.  Provider
+        # clients remain the read plane; every direct ORCA mutation name is
+        # intercepted by the same HNC -> Auris -> Council/Crown composition.
+        from aureon.core.economic_sensation import (
+            OrganismEconomicSensationRouter,
+        )
+        from aureon.queen.unity_exchange_brain import (
+            build_queen_exchange_brains,
+        )
+
+        self.hive_state_publisher = None
+        if HIVE_STATE_AVAILABLE and get_hive:
+            try:
+                self.hive_state_publisher = get_hive()
+            except Exception:
+                pass
+        self.economic_sensation_router = OrganismEconomicSensationRouter(
+            bus_getter=lambda: self.bus,
+            hive_getter=lambda: self.hive_state_publisher,
+            mycelium_getter=lambda: self.mycelium_network,
+        )
+        read_clients = {
+            name: provider
+            for name, provider in self.clients.items()
+            if provider is not None
+        }
+        brains, self._governed_unity_client, self.unity_status = (
+            build_queen_exchange_brains(
+                unity_composition=unity_composition,
+                unity_plan_supplier=unity_plan_supplier,
+                trusted_unity_plan_supplier_ids=trusted_unity_plan_supplier_ids,
+                fallback_read_clients=(
+                    None if unity_composition is not None else read_clients
+                ),
+                outcome_observer=self.economic_sensation_router.observe,
+            )
+        )
+        if unity_composition is None:
+            brains = {
+                name: brain
+                for name, brain in brains.items()
+                if name in read_clients
+            }
+        self.clients = brains
+        self.client = self.clients.get(exchange) or (
+            next(iter(self.clients.values())) if self.clients else None
+        )
+        self.kraken = self.clients.get('kraken')
+        self.binance = self.clients.get('binance')
+        self.alpaca = self.clients.get('alpaca')
+        self.capital = self.clients.get('capital')
+
         _safe_print("\n  ORCA KILL CYCLE INITIALIZATION COMPLETE")
         
     def audit_event(self, event_type: str, data: dict):
@@ -5282,8 +5346,60 @@ class OrcaKillCycle:
                 pass
     
     
+    def _governed_client_for(self, exchange: str, candidate=None):
+        """Resolve one exchange brain; a caller-supplied raw client is read-only."""
+        from aureon.queen.unity_exchange_brain import (
+            QueenGovernedExchangeBrain,
+        )
+
+        normalized = str(exchange or '').strip().lower()
+        brain = self.clients.get(normalized)
+        if isinstance(brain, QueenGovernedExchangeBrain):
+            return brain
+        if normalized not in {'alpaca', 'binance', 'capital', 'kraken'}:
+            raise ValueError('supported_orca_exchange_required')
+        brain = QueenGovernedExchangeBrain(
+            exchange=normalized,
+            read_client=candidate,
+            governed_client=self._governed_unity_client,
+            outcome_observer=self.economic_sensation_router.observe,
+        )
+        self.clients[normalized] = brain
+        setattr(self, normalized, brain)
+        if getattr(self, 'client', None) is candidate:
+            self.client = brain
+        return brain
+
     def _ensure_capital_client(self):
         """Lazy-load Capital.com client on first use (avoids rate limiting during init)."""
+        if hasattr(self, '_governed_unity_client'):
+            from aureon.queen.unity_exchange_brain import (
+                QueenGovernedExchangeBrain,
+            )
+
+            brain = self.clients.get('capital')
+            if isinstance(brain, QueenGovernedExchangeBrain):
+                if brain.read_client is None:
+                    try:
+                        brain.bind_read_client(CapitalClient())
+                    except Exception as e:
+                        _safe_print(f"   Capital.com lazy load failed: {e}")
+                self.capital = brain
+                return brain
+            try:
+                raw_client = CapitalClient()
+                brain = QueenGovernedExchangeBrain(
+                    exchange='capital',
+                    read_client=raw_client,
+                    governed_client=self._governed_unity_client,
+                    outcome_observer=self.economic_sensation_router.observe,
+                )
+                self.clients['capital'] = brain
+                self.capital = brain
+                return brain
+            except Exception as e:
+                _safe_print(f"   Capital.com lazy load failed: {e}")
+                return None
         if 'capital' in self.clients and self.clients['capital'] is None:
             try:
                 _safe_print("  Lazy-loading Capital.com client...")
@@ -5293,6 +5409,11 @@ class OrcaKillCycle:
                 _safe_print(f"   Capital.com lazy load failed: {e}")
                 # Keep as None to retry next time
         return self.clients.get('capital')
+
+    def recent_economic_sensations(self) -> List[Dict[str, Any]]:
+        """Return bounded feedback receipts already felt by the organism."""
+        router = getattr(self, 'economic_sensation_router', None)
+        return router.recent() if router is not None else []
     
     def emit_position_signal(self, symbol: str, exchange: str, qty: float, entry_price: float,
                              current_price: float, unrealized_pnl: float, status: str = "hunting"):
@@ -9300,7 +9421,11 @@ class OrcaKillCycle:
                                     continue
                                 print(f"     {exchange_name.upper()} {symbol}: +${net_pnl:.4f} profit - HARVESTING!")
                                 try:
-                                    sell_order = client.place_market_order(symbol=symbol, side='sell', quantity=qty)
+                                    sell_order = self._governed_client_for(
+                                        exchange_name, client
+                                    ).place_market_order(
+                                        symbol=symbol, side='sell', quantity=qty
+                                    )
                                     if sell_order:
                                         receipt = self.normalize_order_response(
                                             sell_order, exchange_name
@@ -10674,7 +10799,11 @@ class OrcaKillCycle:
             return result
         else:
             # Fallback to direct execution
-            return client.place_market_order(symbol=symbol, side='buy', quantity=quantity)
+            return self._governed_client_for(
+                exchange, client
+            ).place_market_order(
+                symbol=symbol, side='buy', quantity=quantity
+            )
     
     # ════════════════════════════════════════════════════════════════════════════
     #  👑 QUEEN LEARNING FEEDBACK - FEED EVERY TRADE OUTCOME TO HER NEURAL BRAIN
@@ -10908,7 +11037,11 @@ class OrcaKillCycle:
                 value_usd=value_usd
             )
         else:
-            return client.place_market_order(symbol=symbol, side='sell', quantity=quantity)
+            return self._governed_client_for(
+                exchange, client
+            ).place_market_order(
+                symbol=symbol, side='sell', quantity=quantity
+            )
 
     def _get_sero_advice_sync(
         self,
@@ -11723,7 +11856,9 @@ class OrcaKillCycle:
             if _m_qty > 0:
                 print(f"   MARGIN-FIRST: {_m_side.upper()} {symbol} @ {_m_leverage}x leverage (conviction {margin_conviction:.0%})")
                 try:
-                    result = client.place_margin_order(
+                    result = self._governed_client_for(
+                        exchange, client
+                    ).place_margin_order(
                         symbol=symbol,
                         side=_m_side,
                         quantity=_m_qty,
@@ -11776,7 +11911,11 @@ class OrcaKillCycle:
                     _cap_qty = quantity
                 if _cap_qty > 0:
                     print(f"   CAPITAL CFD: {symbol} size={_cap_qty:.4f} units @ {_cap_price} (quote={quote_qty})")
-                    return client.place_market_order(symbol=symbol, side='buy', quantity=_cap_qty)
+                    return self._governed_client_for(
+                        exchange, client
+                    ).place_market_order(
+                        symbol=symbol, side='buy', quantity=_cap_qty
+                    )
                 else:
                     print(f"  Capital CFD: could not calculate size for {symbol}")
                     return {'status': 'error', 'reason': 'Capital CFD size calculation failed'}
@@ -11785,9 +11924,17 @@ class OrcaKillCycle:
                 return {'status': 'error', 'reason': f'Capital CFD no price for {symbol}'}
 
         if quote_qty and quote_qty > 0:
-            return client.place_market_order(symbol=symbol, side='buy', quote_qty=quote_qty)
+            return self._governed_client_for(
+                exchange, client
+            ).place_market_order(
+                symbol=symbol, side='buy', quote_qty=quote_qty
+            )
         elif quantity and quantity > 0:
-            return client.place_market_order(symbol=symbol, side='buy', quantity=quantity)
+            return self._governed_client_for(
+                exchange, client
+            ).place_market_order(
+                symbol=symbol, side='buy', quantity=quantity
+            )
         else:
             print(f"  No quantity specified for buy: {symbol}")
             return {'status': 'error', 'reason': 'No quantity specified'}
@@ -12052,7 +12199,11 @@ class OrcaKillCycle:
                 }
             print(f"   TRUTH ENGINE APPROVED SELL: {symbol} (Predicted:{truth_signal.predicted_direction})")
         
-        sell_order = client.place_market_order(symbol=symbol, side='sell', quantity=quantity)
+        sell_order = self._governed_client_for(
+            exchange, client
+        ).place_market_order(
+            symbol=symbol, side='sell', quantity=quantity
+        )
         
         if sell_order:
             # Normalize the order response
@@ -13698,13 +13849,17 @@ class OrcaKillCycle:
         try:
             # Use the correct exchange client for the sell order
             if exchange in ['binance', 'kraken']:
-                sell_order = client.place_market_order(
+                sell_order = self._governed_client_for(
+                    exchange, client
+                ).place_market_order(
                     symbol=symbol,
                     side='sell',
                     quantity=buy_qty
                 )
             else:
-                sell_order = client.place_market_order(
+                sell_order = self._governed_client_for(
+                    exchange, client
+                ).place_market_order(
                     symbol=symbol,
                     side='sell',
                     quantity=buy_qty
@@ -14627,14 +14782,18 @@ class OrcaKillCycle:
                                     # Close margin position — side depends on LONG vs SHORT
                                     close_side = 'sell' if pos.margin_side == 'LONG' else 'buy'
                                     print(f"      Closing margin {pos.margin_side} ({pos.leverage}x)")
-                                    sell_order = pos.client.close_margin_position(
+                                    sell_order = self._governed_client_for(
+                                        pos.exchange, pos.client
+                                    ).close_margin_position(
                                         symbol=pos.symbol,
                                         side=close_side,
                                         volume=pos.entry_qty,
                                         leverage=pos.leverage
                                     )
                                 else:
-                                    sell_order = pos.client.place_market_order(
+                                    sell_order = self._governed_client_for(
+                                        pos.exchange, pos.client
+                                    ).place_market_order(
                                         symbol=pos.symbol,
                                         side='sell',
                                         quantity=pos.entry_qty
@@ -15537,7 +15696,9 @@ class OrcaKillCycle:
                                 if can_exit:  # Profit MATHEMATICALLY CERTAIN
                                     print(f"        QUEEN APPROVED! Closing to free cash...")
                                     try:
-                                        sell_order = client.place_market_order(
+                                        sell_order = self._governed_client_for(
+                                            exchange_name, client
+                                        ).place_market_order(
                                             symbol=symbol,
                                             side='sell',
                                             quantity=qty
@@ -15658,7 +15819,11 @@ class OrcaKillCycle:
                                         if can_exit:
                                             print(f"        QUEEN APPROVED (entry: ${exit_info.get('confirmed_entry_price', entry_price):.8f})! Closing...")
                                             try:
-                                                sell_order = client.place_market_order(symbol, 'sell', quantity=qty)
+                                                sell_order = self._governed_client_for(
+                                                    exchange_name, client
+                                                ).place_market_order(
+                                                    symbol, 'sell', quantity=qty
+                                                )
                                                 if sell_order:
                                                     self._record_action_cop(exit_info.get('cop'), 'SELL', exchange_name, symbol)
                                                     net_pnl = exit_info.get('net_pnl', 0)
@@ -15782,7 +15947,9 @@ class OrcaKillCycle:
                                                 if can_exit:  # Profit MATHEMATICALLY CERTAIN!
                                                     print(f"        QUEEN APPROVED (+${exit_info.get('net_pnl', 0):.4f})! Closing to free cash...")
                                                     try:
-                                                        sell_order = client.place_market_order(
+                                                        sell_order = self._governed_client_for(
+                                                            exchange_name, client
+                                                        ).place_market_order(
                                                             symbol=symbol.replace('/', ''),  # Binance wants no slash
                                                             side='sell',
                                                             quantity=qty
@@ -19018,7 +19185,9 @@ class OrcaKillCycle:
                                     # Close LONG = sell, Close SHORT = buy
                                     close_side = 'sell' if pos.margin_side == 'LONG' else 'buy'
                                     print(f"      Closing margin {pos.margin_side} position ({pos.leverage}x leverage)")
-                                    sell_order = pos.client.close_margin_position(
+                                    sell_order = self._governed_client_for(
+                                        pos.exchange, pos.client
+                                    ).close_margin_position(
                                         symbol=pos.symbol,
                                         side=close_side,
                                         volume=pos.entry_qty,
