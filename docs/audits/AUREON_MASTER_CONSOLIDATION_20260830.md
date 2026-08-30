@@ -3,8 +3,8 @@
 ## Status
 
 - Candidate checkout: `C:\Users\user\Aureon-OS-master-system-20260830_231506`
-- Candidate branch: `consolidate/master-system-20260830`
-- Publication state: **PUBLISHED CONSOLIDATION BRANCH — GitHub provider read-back verified**
+- Canonical branch: `main` (audit mirror: `consolidate/master-system-20260830`)
+- Publication state: **GITHUB MAIN AND CONSOLIDATION BRANCH SYNCHRONIZED — provider read-back verified; monolithic suite not green**
 - Runtime mode used for validation: offline, dry-run, audit, and import-side-effect suppression
 
 This receipt records source reconciliation. It does not authorize or claim a live trade,
@@ -174,13 +174,20 @@ self-import was about 104 ms), which points to cumulative suite-collection cost.
 behaved normally: `tests/approval` passed 277/277 in 22.78 seconds; `tests/bio` collected 468 tests
 and showed no failure through the sampled 9% before the bounded triage stop. The appropriate next
 step is deterministic directory/root-file sharding, not an unsubstantiated product-code change.
-Because the broad repository gate is not green, this candidate is eligible only for publication to
-its named consolidation branch; it is not eligible for an automatic merge into GitHub `main`.
+The broad repository gate therefore remains a known risk. The validation record did not justify an
+automatic merge into GitHub `main`; `main` was advanced only after the owner's explicit instruction
+to make it the complete canonical Aureon OS, using a non-force fast-forward with no main-only
+commits or conflict resolution.
 
-GitHub accepted `consolidate/master-system-20260830` and returned the source-bearing tip
+GitHub first accepted `consolidate/master-system-20260830` and returned its source-bearing tip
 `f8499b6317b0f53f5be60a34fc0b6d1b5df76745` through an independent `git ls-remote` read-back.
-At that checkpoint GitHub `main` remained unchanged at
-`f5fb1916c07ac26eb7fc38c34ff2dc9bd029e21d`. This receipt-only update is the sole subsequent
-change; its final provider read-back is reported in the operator handoff because a Git commit
-cannot embed its own SHA. The local push URL was restored to `disabled://owner-approval-required`
-after publication. No merge into `main`, live activation, submission, or deployment occurred.
+The receipt-only publication commit then advanced that branch to
+`56a96ea708791d695f8d9509c790b0a47c077dfa`. Live preflight proved GitHub `main` at
+`f5fb1916c07ac26eb7fc38c34ff2dc9bd029e21d` was the exact merge base, with zero main-only commits
+and 31 consolidation commits. On explicit owner direction, a normal non-force push fast-forwarded
+`main` to `56a96ea708791d695f8d9509c790b0a47c077dfa`; independent provider read-back then showed both
+GitHub refs at that identical SHA. This main-sync receipt update is the sole subsequent change and
+is advanced to both refs together; its final provider SHA is reported in the operator handoff
+because a Git commit cannot embed its own SHA. The local push URL is restored to
+`disabled://owner-approval-required` after publication. No live activation, submission, deployment,
+or history rewrite occurred.
