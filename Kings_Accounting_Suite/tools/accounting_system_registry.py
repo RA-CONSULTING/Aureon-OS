@@ -62,11 +62,14 @@ SAFE_BOUNDARIES = {
     "official_companies_house_filing": "manual_only",
     "official_hmrc_submission": "manual_only",
     "tax_or_penalty_payment": "manual_only",
+    "quickbooks_mutation": "signed_expiring_payload_bound_approval_required",
+    "quickbooks_bank_or_billing_change": "manual_only",
     "exchange_or_trading_mutation": "blocked_from_accounting_registry",
 }
 
 DOMAIN_EXPLANATIONS = {
     "accounting_registry": "Discovery and inventory layer. Finds bank/account data, tools, generated packs, and safe/manual boundaries.",
+    "external_accounting_platform": "Read-first QuickBooks OAuth/API control plane, reconciliation snapshots, audit receipts, and gated bookkeeping mutations.",
     "accounting_status_tools": "Small local display/check scripts for portfolio, live status, firm data, Kraken ledgers, and system flow.",
     "accounting_support": "Supporting intelligence, forecasting, hive, lattice, and unified accounting reasoning modules.",
     "cash_flow": "Money-flow analysis and local checks for how funds move through the business.",
@@ -134,6 +137,10 @@ WORKFLOW_STEPS = (
     (
         "12. Bridge nonstandard and mirrored accounting systems",
         "The registry also inventories misspelled/local data roots, accounting vault notes, Kings_Accounting_Suite/aureon_systems mirrors, aureon.bots King modules, compound projection harnesses, Lighthouse/Deep Money Flow analyzers, and exchange archive coverage as read-only accounting intelligence.",
+    ),
+    (
+        "13. Reconcile the external QuickBooks ledger",
+        "aureon_accounting_control_plane owns the evidence-bound double-entry journal, approval and projection queue; quickbooks_accounting_integration authorizes with OAuth, reads CompanyInfo/ledger/reports, hashes audit receipts, and blocks writes unless an expiring payload-bound approval passes every gate.",
     ),
 )
 
@@ -647,6 +654,10 @@ def classify_domain(rel: Path, text: str) -> str:
         return "accounting_status_tools"
     if name in {"accounting_system_registry.py", "combined_bank_data.py", "company_raw_data_intake.py"}:
         return "accounting_registry"
+    if name == "quickbooks_accounting_integration.py":
+        return "external_accounting_platform"
+    if name == "aureon_accounting_control_plane.py":
+        return "ledger_double_entry"
     if name == "king_accounting.py":
         return "king_accounting"
     if name in {"king_ledger.py", "king_integration.py", "hnc_ledger.py"}:
@@ -681,6 +692,8 @@ def classify_domain(rel: Path, text: str) -> str:
 
 def classify_role(rel: Path, text: str, has_main: bool) -> str:
     blob = f"{rel.as_posix()} {text[:2000]}".lower()
+    if rel.name.lower() == "aureon_accounting_control_plane.py":
+        return "ledger_core"
     if "bridge" in blob:
         return "bridge"
     if "audit" in blob or "inspector" in blob:
@@ -703,6 +716,8 @@ def classify_external_risk(rel: Path, text: str) -> str:
     name = rel.name.lower()
     if name in {"accounting_system_registry.py", "combined_bank_data.py", "company_raw_data_intake.py"}:
         return "none_detected"
+    if name == "quickbooks_accounting_integration.py":
+        return "quickbooks_api_boundary"
     if "hmrc" in blob and any(word in blob for word in ("submit", "oauth", "api", "payment")):
         return "hmrc_submission_or_api_boundary"
     if "companies house" in blob and any(word in blob for word in ("submit", "file", "filing")):

@@ -1544,6 +1544,42 @@ class IntegratedCognitiveSystem:
                     f"{registry.get('module_count', 0)} modules/tools, "
                     f"{registry.get('artifact_count', 0)} artifacts"
                 )
+            accounting_control = st.get("aureon_accounting_control") or {}
+            if accounting_control:
+                journal = accounting_control.get("journal") or {}
+                projection = accounting_control.get("quickbooks_projection") or {}
+                lines.append(
+                    "  Aureon journal: "
+                    f"integrity={journal.get('integrity_verified', False)} "
+                    f"entries={journal.get('entry_count', 0)} "
+                    f"approved={journal.get('approved_entry_count', 0)} "
+                    f"QBO_queued={projection.get('queued_count', 0)} "
+                    f"readback={projection.get('readback_verified_count', 0)}"
+                )
+            reconciliation = st.get("accounting_reconciliation") or {}
+            if reconciliation:
+                reconciliation_summary = reconciliation.get("summary") or {}
+                lines.append(
+                    "  Reconciliation: "
+                    f"workstreams={reconciliation_summary.get('workstream_count', 0)} "
+                    f"critical={reconciliation_summary.get('critical_workstream_count', 0)} "
+                    f"postings_authorised={reconciliation_summary.get('posting_authorised_count', 0)} "
+                    f"external_actions_authorised={reconciliation_summary.get('external_compliance_action_authorised_count', 0)}"
+                )
+            quickbooks = st.get("quickbooks") or {}
+            if quickbooks:
+                qbo_api = quickbooks.get("api") or {}
+                qbo_bank = quickbooks.get("bank_feed") or {}
+                lines.append(
+                    "  QuickBooks: "
+                    "authority=Aureon_OS "
+                    f"{quickbooks.get('connection_state', 'unknown')} "
+                    f"api_readback={qbo_api.get('company_info_readback', 'not_verified')} "
+                    f"bank_feed={qbo_bank.get('connected', False)} "
+                    f"pending={qbo_bank.get('pending_transaction_count', 0)} "
+                    f"ownership={qbo_bank.get('ownership_status', 'unknown')} "
+                    f"aureon_posted={qbo_bank.get('aureon_posted_transaction_count', 0)}"
+                )
             readiness = st.get("accounting_readiness") or {}
             if readiness:
                 lines.append(
@@ -1665,6 +1701,104 @@ class IntegratedCognitiveSystem:
             pack = ((st.get("outputs") or {}).get("accounts_pack_pdf") or {}).get("path")
             if pack:
                 lines.append(f"  Accounts pack: {pack}")
+            return "\n".join(lines)
+
+        if action in {"reconciliation", "workstreams"}:
+            try:
+                st = self.accounting_context.status(force=True)
+            except Exception as exc:
+                return f"Accounting reconciliation status error: {exc}"
+            reconciliation = st.get("accounting_reconciliation") or {}
+            if not reconciliation:
+                return "Aureon accounting reconciliation has no generated status yet."
+            summary = reconciliation.get("summary") or {}
+            lines = ["=== AUREON ACCOUNTING RECONCILIATION ==="]
+            lines.append("  Authority: derived Aureon work queue; not a journal, filing instruction, or approval")
+            lines.append(
+                "  Controls: "
+                f"workstreams={summary.get('workstream_count', 0)} "
+                f"critical={summary.get('critical_workstream_count', 0)} "
+                f"postings_authorised={summary.get('posting_authorised_count', 0)} "
+                f"QBO_projections_authorised={summary.get('quickbooks_projection_authorised_count', 0)} "
+                f"external_actions_authorised={summary.get('external_compliance_action_authorised_count', 0)}"
+            )
+            for item in reconciliation.get("workstreams") or []:
+                if not isinstance(item, dict):
+                    continue
+                lines.append(
+                    f"  [{str(item.get('priority', 'unknown')).upper()}] "
+                    f"{item.get('id', 'unknown')}: {item.get('state', 'unknown')}"
+                )
+                if item.get("next_action"):
+                    lines.append(f"    Next evidence/action: {item['next_action']}")
+            return "\n".join(lines)
+
+        if action in {"quickbooks", "qbo"}:
+            try:
+                st = self.accounting_context.status(force=True)
+            except Exception as exc:
+                return f"QuickBooks control-plane status error: {exc}"
+            quickbooks = st.get("quickbooks") or {}
+            if not quickbooks:
+                return "QuickBooks control plane has no live status receipt yet."
+            api = quickbooks.get("api") or {}
+            bank = quickbooks.get("bank_feed") or {}
+            chart = quickbooks.get("chart_of_accounts") or {}
+            controls = quickbooks.get("controls") or {}
+            reports = quickbooks.get("reports") or {}
+            tax_features = quickbooks.get("tax_features") or {}
+            accounting_control = st.get("aureon_accounting_control") or {}
+            canonical_journal = accounting_control.get("journal") or {}
+            projection_queue = accounting_control.get("quickbooks_projection") or {}
+            lines = ["=== QUICKBOOKS CONTROL PLANE ==="]
+            lines.append("  Authority: Aureon OS is canonical; QuickBooks is projection/read-back only")
+            lines.append(
+                "  Aureon journal: "
+                f"integrity={canonical_journal.get('integrity_verified', False)} "
+                f"entries={canonical_journal.get('entry_count', 0)} "
+                f"approved={canonical_journal.get('approved_entry_count', 0)}"
+            )
+            lines.append(
+                "  Projection queue: "
+                f"queued={projection_queue.get('queued_count', 0)} "
+                f"readback={projection_queue.get('readback_verified_count', 0)} "
+                f"outstanding={projection_queue.get('outstanding_readback_count', 0)} "
+                f"observations={projection_queue.get('observation_task_count', 0)}"
+            )
+            lines.append(f"  State: {quickbooks.get('connection_state', 'unknown')}")
+            lines.append(f"  CompanyInfo API read-back: {api.get('company_info_readback', 'not_verified')}")
+            lines.append(f"  OAuth: {api.get('oauth', 'not_verified')}")
+            lines.append(
+                "  Bank feed: "
+                f"connected={bank.get('connected', False)} "
+                f"provider={bank.get('provider', 'unknown')} "
+                f"pending={bank.get('pending_transaction_count', 0)} "
+                f"ownership={bank.get('ownership_status', 'unknown')}"
+            )
+            lines.append(
+                "  Posting: "
+                f"aureon_posted={bank.get('aureon_posted_transaction_count', 0)} "
+                f"bulk_allowed={bank.get('bulk_posting_allowed', False)}"
+            )
+            lines.append(
+                "  Chart: "
+                f"accounts={chart.get('account_count', 0)} "
+                f"staged_changes_applied={chart.get('staged_changes_applied', False)}"
+            )
+            lines.append(
+                "  Reports: "
+                f"pnl_has_data={reports.get('profit_and_loss_current_period_has_data', False)} "
+                f"balance_sheet_nonzero_accounts={reports.get('balance_sheet_nonzero_account_count', 0)} "
+                f"reconciled_to_aureon={reports.get('reconciled_to_aureon_canonical_ledger', False)}"
+            )
+            lines.append(
+                "  Tax features: "
+                f"CIS={tax_features.get('cis_enabled', False)} "
+                f"VAT={tax_features.get('vat_enabled', False)} "
+                f"payroll={tax_features.get('payroll_enabled', False)}"
+            )
+            lines.append(f"  QuickBooks mutations: {controls.get('quickbooks_mutations', 'disabled')}")
+            lines.append("  Safety: no bulk posting, filing, payment, bank, VAT, PAYE, or CIS mutation is automatic.")
             return "\n".join(lines)
 
         if action in {"tools", "registry"}:
@@ -2071,7 +2205,7 @@ class IntegratedCognitiveSystem:
                         pass
                 return f"Accounting build blocked: {exc}"
 
-        return "Usage: /accounts [status|raw|tools|registry|ingest|readiness|evidence|requirements|filing|statutory build|end-user|autonomous|build]"
+        return "Usage: /accounts [status|reconciliation|quickbooks|raw|tools|registry|ingest|readiness|evidence|requirements|filing|statutory build|end-user|autonomous|build]"
 
     def _cmd_goal_status(self) -> str:
         if self.goal_engine is None:
