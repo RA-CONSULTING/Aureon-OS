@@ -54,7 +54,7 @@ import hashlib
 import json
 import logging
 import re
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Callable, Iterable, Mapping, Sequence
 
@@ -197,22 +197,7 @@ def _all_quoted_after(text: str, label: re.Pattern[str]) -> tuple[str, ...]:
 # is listed — removing "fintech" or "logistics" here would be editing the
 # company's profile from inside the code, which is exactly what this package
 # refuses to do.
-_STOPWORDS = frozenset("""
-about above across after again against also although always among another answer
-anything around because been before being below between both cannot could does
-doing done down during each either else enough even ever every everything from
-further given goes going have having here hers hierarchy however into itself
-just keep kept known last later least less like made make makes many more most
-much must never next none nothing only onto other others ought over own past
-perhaps rather same says seen shall should since some something such take taken
-than that theirs them themselves then there these they thing things this those
-three through thus together toward under until upon used uses using very what
-whatever when where whether which while whole whom whose will with within
-without would your yours
-document documents detail details file files guide issue issues line lines
-overview page pages paragraph paragraphs question questions readme report
-reports row rows section sections source sources table tables text value values
-""".split())
+_STOPWORDS = frozenset(["about", "above", "across", "after", "again", "against", "also", "although", "always", "among", "another", "answer", "anything", "around", "because", "been", "before", "being", "below", "between", "both", "cannot", "could", "does", "doing", "done", "down", "during", "each", "either", "else", "enough", "even", "ever", "every", "everything", "from", "further", "given", "goes", "going", "have", "having", "here", "hers", "hierarchy", "however", "into", "itself", "just", "keep", "kept", "known", "last", "later", "least", "less", "like", "made", "make", "makes", "many", "more", "most", "much", "must", "never", "next", "none", "nothing", "only", "onto", "other", "others", "ought", "over", "own", "past", "perhaps", "rather", "same", "says", "seen", "shall", "should", "since", "some", "something", "such", "take", "taken", "than", "that", "theirs", "them", "themselves", "then", "there", "these", "they", "thing", "things", "this", "those", "three", "through", "thus", "together", "toward", "under", "until", "upon", "used", "uses", "using", "very", "what", "whatever", "when", "where", "whether", "which", "while", "whole", "whom", "whose", "will", "with", "within", "without", "would", "your", "yours", "document", "documents", "detail", "details", "file", "files", "guide", "issue", "issues", "line", "lines", "overview", "page", "pages", "paragraph", "paragraphs", "question", "questions", "readme", "report", "reports", "row", "rows", "section", "sections", "source", "sources", "table", "tables", "text", "value", "values"])
 
 _TOKEN = re.compile(r"[A-Za-z][A-Za-z0-9]{2,}")
 _MIN_TERM_LEN = 4
@@ -501,8 +486,7 @@ def _registry_fetch(url: str) -> Mapping[str, Any]:
 _MONTHS = {
     m: i + 1
     for i, m in enumerate(
-        "january february march april may june july august september october "
-        "november december".split()
+        ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"]
     )
 }
 _MONTHS.update({m[:3]: i for m, i in list(_MONTHS.items())})
@@ -532,7 +516,7 @@ def _parse_date(line: str) -> datetime | None:
     iso = _ISO_DATE.search(line)
     if iso:
         try:
-            return datetime(int(iso.group(1)), int(iso.group(2)), int(iso.group(3)), tzinfo=timezone.utc)
+            return datetime(int(iso.group(1)), int(iso.group(2)), int(iso.group(3)), tzinfo=UTC)
         except ValueError:
             return None
     dmy = _DMY_DATE.search(line)
@@ -540,7 +524,7 @@ def _parse_date(line: str) -> datetime | None:
         month = _MONTHS.get(dmy.group(2).lower().rstrip("."))
         if month:
             try:
-                return datetime(int(dmy.group(3)), month, int(dmy.group(1)), tzinfo=timezone.utc)
+                return datetime(int(dmy.group(3)), month, int(dmy.group(1)), tzinfo=UTC)
             except ValueError:
                 return None
     mdy = _MDY_DATE.search(line)
@@ -548,7 +532,7 @@ def _parse_date(line: str) -> datetime | None:
         month = _MONTHS.get(mdy.group(1).lower().rstrip("."))
         if month:
             try:
-                return datetime(int(mdy.group(3)), month, int(mdy.group(2)), tzinfo=timezone.utc)
+                return datetime(int(mdy.group(3)), month, int(mdy.group(2)), tzinfo=UTC)
             except ValueError:
                 return None
     return None
@@ -684,7 +668,7 @@ def scout(
     real line from a real document rather than a constructed label.
     """
     fetch = fetcher or _registry_fetch
-    discovered_at = now or datetime.now(timezone.utc)
+    discovered_at = now or datetime.now(UTC)
     found: list[Opportunity] = []
 
     for entry in sources:

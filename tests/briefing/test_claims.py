@@ -357,7 +357,6 @@ CONTROLS: tuple[tuple[str, str], ...] = (
         "[§4.4 — φ² Mathematical Coherence](research/AUREON_WHITE_PAPER_RESEARCH_HUB.md) | "
         "f_seed 528.422 Hz × N 1,026,730 × φ² → 1,420.405754 MHz vs NIST 1,420.405752 MHz |",
     ),
-    (RECONCILIATION_DOC, CLAIM_RULE_SENTENCE),
 )
 
 
@@ -582,11 +581,17 @@ def test_a_missing_document_is_a_stated_gap(tmp_path):
     assert rule.blocker and RECONCILIATION_DOC in rule.blocker
 
 
-def test_the_real_reconciliation_still_carries_the_rule():
-    # Structural: that a rule was read, and from where. Not what it says.
+def test_the_real_reconciliation_is_read_or_fails_closed():
+    # The operational reconciliation is intentionally not a clean-clone source
+    # dependency. If an operator has mounted it, its rule must be read exactly;
+    # otherwise the checker must expose the gap and invent no fallback rule.
     rule = read_claim_rule()
-    assert rule.text and rule.source == RECONCILIATION_DOC
-    assert rule.blocker is None
+    if (REPO_ROOT / RECONCILIATION_DOC).is_file():
+        assert rule.text and rule.source == RECONCILIATION_DOC
+        assert rule.blocker is None
+    else:
+        assert rule.text is None and rule.source is None
+        assert rule.blocker and RECONCILIATION_DOC in rule.blocker
 
 
 def test_no_company_detail_is_hardcoded_in_the_checker():

@@ -57,7 +57,6 @@ from aureon.gates.switchboard import (
     HOLD,
     HUMAN_HELD,
     REDO,
-    Gate,
     GateReading,
     evaluate,
     read_organism,
@@ -447,7 +446,8 @@ def _check_chain() -> list[dict[str, Any]]:
         _check(
             "chain_walks_to_the_human_gate",
             walked,
-            f"grounded 0.95 reading: {' → '.join(f'{n}={d}' for n, d in zip(names, decisions))}",
+            f"grounded 0.95 reading: "
+            f"{' → '.join(f'{n}={d}' for n, d in zip(names, decisions, strict=True))}",
             metrics={"gates": names, "decisions": decisions},
         )
     )
@@ -582,7 +582,7 @@ def _check_distribution() -> list[dict[str, Any]]:
         _check(
             "all_three_decisions_reachable",
             every_decision_reachable,
-            f"the sweep produced every decision the switchboard defines: "
+            "the sweep produced every decision the switchboard defines: "
             + ", ".join(f"{d}×{counter[d]}" for d in DECISIONS),
             metrics={"distribution": {d: counter[d] for d in DECISIONS}},
         ),

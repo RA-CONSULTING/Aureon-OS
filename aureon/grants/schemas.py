@@ -9,8 +9,8 @@ real value from the ledger or ``None``; nothing is defaulted into existence.
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from dataclasses import dataclass
+from datetime import UTC, datetime
 from typing import Any
 
 
@@ -31,7 +31,7 @@ def parse_dt(value: Any) -> datetime | None:
         dt = datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
     except ValueError:
         return None
-    return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
+    return dt if dt.tzinfo else dt.replace(tzinfo=UTC)
 
 
 @dataclass
@@ -122,7 +122,7 @@ class Application:
         return (self.deadline - now).total_seconds() / 86400.0
 
     @classmethod
-    def from_ledger(cls, raw: Any) -> "Application | None":
+    def from_ledger(cls, raw: Any) -> Application | None:
         """Build from a ledger entry, tolerating the list's mixed shapes.
 
         ``active_applications`` contains both dicts and bare strings; a string

@@ -34,9 +34,15 @@ from aureon.gates.switchboard import (
 
 
 def _reading(**kw) -> GateReading:
-    base = dict(coherence=0.8, divergence=0.1, life_score=0.7,
-                panel_consensus="RALLY", panel_confidence=0.9,
-                panel_evidence=1.0, lighthouse=True)
+    base = {
+        "coherence": 0.8,
+        "divergence": 0.1,
+        "life_score": 0.7,
+        "panel_consensus": "RALLY",
+        "panel_confidence": 0.9,
+        "panel_evidence": 1.0,
+        "lighthouse": True,
+    }
     base.update(kw)
     return GateReading(**base)
 
@@ -234,7 +240,7 @@ def test_evidence_denominator_is_reachable():
     # total_inputs was 8 while build_vault could ground only 7 slices, so
     # evidence_ratio was capped at 0.875 and every downstream confidence was
     # silently discounted by a constant that looked like evidence.
-    assert PANEL_INPUTS == len(PANEL_SLICES)
+    assert len(PANEL_SLICES) == PANEL_INPUTS
     full = PanelReading(available=True, grounded_inputs=PANEL_INPUTS)
     assert full.evidence_ratio == 1.0
     assert full.total_inputs == PANEL_INPUTS

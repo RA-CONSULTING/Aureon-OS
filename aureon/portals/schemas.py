@@ -22,8 +22,8 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from datetime import datetime, timezone
-from enum import Enum
+from datetime import UTC, datetime
+from enum import StrEnum
 from typing import Any, Mapping
 
 from aureon.grants.schemas import parse_dt
@@ -51,7 +51,7 @@ PORTAL_STATES = frozenset(
 PORTAL_HELD_STATES = frozenset({STATE_SUBMITTED, STATE_INELIGIBLE})
 
 
-class PortalState(str, Enum):
+class PortalState(StrEnum):
     """The same five states as the ``STATE_*`` constants, as a closed type.
 
     Added for readers (:mod:`aureon.portals.ifs`) that would otherwise pass bare
@@ -82,7 +82,7 @@ class PortalState(str, Enum):
         return self.value
 
     @classmethod
-    def of(cls, text: Any) -> "PortalState":
+    def of(cls, text: Any) -> PortalState:
         """Normalise portal prose straight into a member. Never raises."""
         return cls(normalise_state(text))
 
@@ -213,7 +213,7 @@ class PortalApplication:
         return f"{self.number} ({self.title})" if self.title else self.number
 
     @classmethod
-    def from_any(cls, raw: Any) -> "PortalApplication | None":
+    def from_any(cls, raw: Any) -> PortalApplication | None:
         """Build from a mapping or a foreign snapshot's row. None when unusable.
 
         Tolerant on input, strict on output: a row with no recognisable
@@ -234,7 +234,7 @@ class PortalApplication:
         raw_deadline = _first(raw, _DEADLINE_KEYS)
         deadline = raw_deadline if isinstance(raw_deadline, datetime) else parse_dt(raw_deadline)
         if deadline is not None and deadline.tzinfo is None:
-            deadline = deadline.replace(tzinfo=timezone.utc)
+            deadline = deadline.replace(tzinfo=UTC)
         return cls(
             number=number,
             title=_text(_first(raw, _TITLE_KEYS)),
@@ -326,9 +326,9 @@ class PortalSnapshot:
 
     @classmethod
     def blocked(cls, blocker: str, *, read_at: datetime | None = None, source: str = "",
-                funder: str = "") -> "PortalSnapshot":
+                funder: str = "") -> PortalSnapshot:
         """The shape of "nobody was logged in" — a value, never an exception."""
-        return cls(available=False, read_at=read_at or datetime.now(timezone.utc),
+        return cls(available=False, read_at=read_at or datetime.now(UTC),
                    blocker=blocker, source=source, funder=funder)
 
     @property
@@ -365,7 +365,7 @@ class PortalSnapshot:
         in or out of the portal's scope."""
         return bool(self.scope_tokens) or bool(self.number_pattern.strip())
 
-    def compiled_number_pattern(self) -> "re.Pattern[str] | None":
+    def compiled_number_pattern(self) -> re.Pattern[str] | None:
         """The number shape as a compiled regex, or None. Never raises.
 
         A malformed pattern is treated as no pattern rather than as an error,
@@ -381,9 +381,9 @@ class PortalSnapshot:
             return None
 
     @classmethod
-    def from_dict(cls, raw: Mapping[str, Any]) -> "PortalSnapshot":
+    def from_dict(cls, raw: Mapping[str, Any]) -> PortalSnapshot:
         """Rebuild a snapshot from its own ``to_dict`` (or an equivalent)."""
-        read_at = parse_dt(raw.get("read_at")) or datetime.now(timezone.utc)
+        read_at = parse_dt(raw.get("read_at")) or datetime.now(UTC)
         rows = raw.get("applications")
         apps = tuple(
             a for a in (PortalApplication.from_any(r) for r in (rows if isinstance(rows, list) else []))
@@ -454,7 +454,7 @@ def coerce_snapshot(obj: Any) -> PortalSnapshot:
         )
     read_at = getattr(obj, "read_at", None) or getattr(obj, "generated_at", None)
     if not isinstance(read_at, datetime):
-        read_at = datetime.now(timezone.utc)
+        read_at = datetime.now(UTC)
     available = bool(getattr(obj, "available", True))
     blocker = getattr(obj, "blocker", None)
     if not available and not blocker:

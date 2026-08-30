@@ -23,7 +23,7 @@ import logging
 import os
 import signal
 import time
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Any
 
 from aureon.grants.ledger import configured_routes, read_pipeline

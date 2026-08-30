@@ -10,7 +10,8 @@ score, so it cannot rot into a snapshot of the company's positioning.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
+from pathlib import Path
 
 import pytest
 
@@ -26,7 +27,8 @@ from aureon.grants.scout import (
     scout,
 )
 
-NOW = datetime(2026, 7, 31, 12, 0, 0, tzinfo=timezone.utc)
+NOW = datetime(2026, 7, 31, 12, 0, 0, tzinfo=UTC)
+REPO_ROOT = Path(__file__).resolve().parents[2]
 
 # A call text that shares vocabulary with the fixture profile below.
 CALL_TEXT = """AI Evidence Systems Fund
@@ -82,11 +84,18 @@ def _fetcher(text="", *, success=True, error=None, status=200):
 
 
 def _opportunity(**kw):
-    base = dict(
-        id="OPP-TEST", title="t", funder="f", url="https://example.test/call",
-        deadline=None, max_award=None, currency="", source="web_fetch:https://example.test/call",
-        discovered_at=NOW, text=CALL_TEXT,
-    )
+    base = {
+        "id": "OPP-TEST",
+        "title": "t",
+        "funder": "f",
+        "url": "https://example.test/call",
+        "deadline": None,
+        "max_award": None,
+        "currency": "",
+        "source": "web_fetch:https://example.test/call",
+        "discovered_at": NOW,
+        "text": CALL_TEXT,
+    }
     base.update(kw)
     return Opportunity(**base)
 
@@ -283,20 +292,24 @@ def test_uncovered_requirement_sentences_are_quoted_from_the_call(tmp_path):
     assert all(r[len("call text: "):] in " ".join(CALL_TEXT.split()) for r in quoted)
 
 
-def test_the_real_repository_documents_still_parse():
-    # Structural only: no score, no term list, no company string is asserted, so
-    # this cannot become a snapshot of the company's positioning.
+def test_the_real_repository_documents_parse_or_report_the_operational_gap():
+    # Structural only: the tracked identity documents must parse. The operational
+    # reconciliation may be mounted locally, but a clean clone must fail closed
+    # rather than importing ledger evidence merely to make this test green.
     profile = read_capability()
     assert profile.available and profile.terms
-    assert profile.thesis and profile.compliance_blockers
-    # Assert WHICH documents were read, not how many. A bare count broke the
-    # moment the compliance-blocker row started being recorded as a source —
-    # a change that made the profile more honest, not less — and a count gives
-    # no clue which document went missing when it does fail.
     joined = " ".join(profile.sources)
-    for expected in ("COMPANY.md", "THE_SYNTHESIS.md", "grant thesis", "compliance blockers"):
+    for expected in ("COMPANY.md", "THE_SYNTHESIS.md"):
         assert expected in joined, f"{expected} missing from sources: {profile.sources}"
-    assert profile.blocker is None  # a complete profile reports no gap
+
+    if (REPO_ROOT / RECONCILIATION_DOC).is_file():
+        assert profile.thesis and profile.compliance_blockers
+        for expected in ("grant thesis", "compliance blockers"):
+            assert expected in joined, f"{expected} missing from sources: {profile.sources}"
+        assert profile.blocker is None
+    else:
+        assert profile.thesis is None and not profile.compliance_blockers
+        assert profile.blocker and RECONCILIATION_DOC in profile.blocker
 
 
 # ── extraction refuses to guess ──────────────────────────────────────────────
@@ -304,7 +317,7 @@ def test_the_real_repository_documents_still_parse():
 
 def test_deadline_needs_a_deadline_word_and_an_unambiguous_date():
     found = scout(["https://x.test"], fetcher=_fetcher("Deadline: 12 August 2026.\n"), now=NOW)
-    assert found[0].deadline == datetime(2026, 8, 12, tzinfo=timezone.utc)
+    assert found[0].deadline == datetime(2026, 8, 12, tzinfo=UTC)
 
     # A bare date with no deadline word is not a deadline.
     loose = scout(["https://x.test"], fetcher=_fetcher("Published 12 August 2026.\n"), now=NOW)
@@ -336,7 +349,7 @@ def test_a_year_is_never_mistaken_for_an_award():
     text = "Deadline: 12 August 2026. Awards of up to £50k.\n"
     found = scout(["https://x.test"], fetcher=_fetcher(text), now=NOW)
     assert found[0].max_award == 50_000.0
-    assert found[0].deadline == datetime(2026, 8, 12, tzinfo=timezone.utc)
+    assert found[0].deadline == datetime(2026, 8, 12, tzinfo=UTC)
 
 
 def test_ambiguous_dollar_keeps_the_amount_and_refuses_the_currency():

@@ -9,7 +9,7 @@ the read-only contract, and paces its own breath from real deadline pressure.
 from __future__ import annotations
 
 import json
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta, timezone
 
 import pytest
 
@@ -17,7 +17,7 @@ from aureon.grants.daemon import breath_interval, run_once
 from aureon.grants.ledger import read_pipeline
 from aureon.grants.schemas import Application, parse_dt
 
-NOW = datetime(2026, 7, 31, 12, 0, 0, tzinfo=timezone.utc)
+NOW = datetime(2026, 7, 31, 12, 0, 0, tzinfo=UTC)
 
 
 def _ledger(tmp_path, applications):

@@ -37,7 +37,7 @@ heading wording) exist so that first live run has slack to land in.
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
 from pathlib import Path
 
 import pytest
@@ -58,7 +58,7 @@ from aureon.portals.schemas import (
     PortalState,
 )
 
-READ_AT = datetime(2026, 7, 31, 12, 0, 0, tzinfo=timezone.utc)
+READ_AT = datetime(2026, 7, 31, 12, 0, 0, tzinfo=UTC)
 
 
 # ── ground truth, as read from the live dashboard ─────────────────────────────
@@ -215,7 +215,7 @@ def test_in_progress_row_yields_percent_days_and_a_real_deadline(snapshot):
 
     assert row.percent_complete == 93
     assert row.days_left == 33
-    assert row.deadline == datetime(2026, 9, 3, tzinfo=timezone.utc)
+    assert row.deadline == datetime(2026, 9, 3, tzinfo=UTC)
     # The page said a date and no clock time, so the evidence is kept and the
     # midnight component is auditable as a representation rather than a reading.
     assert row.deadline_text == "Deadline 3 Sept 2026"
@@ -230,14 +230,14 @@ def test_govuk_september_abbreviation_parses():
     the only open application's deadline.
     """
     parsed, evidence = parse_date("Deadline 3 Sept 2026")
-    assert parsed == datetime(2026, 9, 3, tzinfo=timezone.utc)
+    assert parsed == datetime(2026, 9, 3, tzinfo=UTC)
     assert evidence == "Deadline 3 Sept 2026"
 
     for text, expected in (
-        ("Deadline 3 September 2026", datetime(2026, 9, 3, tzinfo=timezone.utc)),
-        ("Deadline 1 Sep 2026", datetime(2026, 9, 1, tzinfo=timezone.utc)),
-        ("Closes 12 Aug 2026", datetime(2026, 8, 12, tzinfo=timezone.utc)),
-        ("Deadline 2026-09-03", datetime(2026, 9, 3, tzinfo=timezone.utc)),
+        ("Deadline 3 September 2026", datetime(2026, 9, 3, tzinfo=UTC)),
+        ("Deadline 1 Sep 2026", datetime(2026, 9, 1, tzinfo=UTC)),
+        ("Closes 12 Aug 2026", datetime(2026, 8, 12, tzinfo=UTC)),
+        ("Deadline 2026-09-03", datetime(2026, 9, 3, tzinfo=UTC)),
     ):
         assert parse_date(text)[0] == expected, text
 
@@ -393,7 +393,7 @@ def test_html_dashboard_is_reduced_and_parsed():
     assert row.competition == "An Example Competition Round 3"
     assert row.days_left == 12
     assert row.percent_complete == 50
-    assert row.deadline == datetime(2026, 9, 3, tzinfo=timezone.utc)
+    assert row.deadline == datetime(2026, 9, 3, tzinfo=UTC)
     assert row.state == PortalState.IN_PROGRESS
 
 

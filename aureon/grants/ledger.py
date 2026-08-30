@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import json
 import os
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from aureon.grants.schemas import Application, DeadlineAlert, PipelineState
@@ -64,7 +64,7 @@ def read_pipeline(now: datetime | None = None, *, directory: Path | None = None)
     A missing or malformed ledger yields ``available=False`` with a blocker
     explaining why — never an empty pipeline presented as a healthy one.
     """
-    now = now or datetime.now(timezone.utc)
+    now = now or datetime.now(UTC)
     directory = directory or grants_dir()
     ledger = directory / LEDGER_NAME
 
