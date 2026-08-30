@@ -16,6 +16,7 @@ import hashlib
 import json
 import re
 import subprocess
+import time
 from dataclasses import asdict, dataclass
 from pathlib import Path, PurePosixPath
 from typing import Any, Sequence
@@ -74,6 +75,7 @@ PRE_APPLY_COUNCIL_ROLES = (
     "Evidence Clerk",
     "Archive Librarian",
 )
+PRE_APPLY_COUNCIL_REVIEWER = "aureon:pre_apply_council"
 
 
 class InternalPatchHold(RuntimeError):
@@ -90,6 +92,73 @@ def _canonical_json(payload: Any) -> str:
 
 def _evidence_digest(payload: dict[str, Any]) -> str:
     return _sha256_bytes(_canonical_json(payload).encode("utf-8"))
+
+
+def _exact_pre_apply_council_accepted(council: dict[str, Any]) -> bool:
+    decisions = council.get("decisions")
+    if not isinstance(decisions, list) or len(decisions) != len(PRE_APPLY_COUNCIL_ROLES):
+        return False
+    if tuple(item.get("role") for item in decisions if isinstance(item, dict)) != PRE_APPLY_COUNCIL_ROLES:
+        return False
+    receipt_ids: list[str] = []
+    for item in decisions:
+        if not isinstance(item, dict):
+            return False
+        if item.get("agent_verdict") != "ACCEPT" or item.get("process_verdict") != "ACCEPT":
+            return False
+        if not str(item.get("process_id") or "").strip():
+            return False
+        for key in ("agent_work_receipt_id", "process_work_receipt_id"):
+            receipt_id = str(item.get(key) or "").strip()
+            if not receipt_id:
+                return False
+            receipt_ids.append(receipt_id)
+    return (
+        council.get("schema_version") == "aureon-internal-coding-deliberation-v1"
+        and council.get("status") == "complete"
+        and council.get("scope_locked") is True
+        and council.get("decision_mode") == "accept_hold"
+        and council.get("accepted") is True
+        and council.get("hold_count") == 0
+        and council.get("active_agent_count") == len(PRE_APPLY_COUNCIL_ROLES)
+        and council.get("decision_count") == len(PRE_APPLY_COUNCIL_ROLES) * 2
+        and len(receipt_ids) == len(PRE_APPLY_COUNCIL_ROLES) * 2
+        and len(set(receipt_ids)) == len(receipt_ids)
+    )
+
+
+def _approve_exact_council_proposal(
+    controller: SafeCodeControl,
+    proposal: dict[str, Any],
+) -> dict[str, Any]:
+    pending_matches = [item for item in controller.pending_proposals if item is proposal]
+    if proposal.get("status") != "pending_review" or len(pending_matches) != 1:
+        raise InternalPatchHold("pre_apply_proposal_queue_binding_invalid")
+
+    original_proposal = dict(proposal)
+    original_pending = list(controller.pending_proposals)
+    original_recent = list(controller.recent_reviews)
+    try:
+        controller.pending_proposals = [
+            item for item in controller.pending_proposals if item is not proposal
+        ]
+        proposal["status"] = "approved"
+        proposal["reviewed_at"] = time.time()
+        proposal["reviewer"] = PRE_APPLY_COUNCIL_REVIEWER
+        controller.recent_reviews.append(proposal)
+        controller.recent_reviews = controller.recent_reviews[-controller.max_recent :]
+        controller._persist()
+    except Exception as exc:
+        proposal.clear()
+        proposal.update(original_proposal)
+        controller.pending_proposals = original_pending
+        controller.recent_reviews = original_recent
+        try:
+            controller._persist()
+        except Exception:
+            pass
+        raise InternalPatchHold("pre_apply_proposal_approval_persist_failed") from exc
+    return proposal
 
 
 def _bounded_council_context(
@@ -551,49 +620,50 @@ def run_internal_patch_cycle(
         require_accept=True,
     )
     pre_apply_council_digest = _evidence_digest(pre_apply_council)
-    if (
-        pre_apply_council.get("accepted") is not True
-        or pre_apply_council.get("decision_count") != len(PRE_APPLY_COUNCIL_ROLES) * 2
-        or pre_apply_council.get("hold_count") != 0
-    ):
+    if not _exact_pre_apply_council_accepted(pre_apply_council):
         raise InternalPatchHold("pre_apply_council_held")
 
     proposal_controller = controller or SafeCodeControl(
         state_path=repo_root / "state" / "aureon_internal_patch_proposals.json"
     )
-    proposal = proposal_controller.propose(
-        CodeProposal(
-            kind="aureon_internal_unified_diff",
-            title=request.goal[:120],
-            summary="Aureon's Ollama-backed workforce authored this exact-source-bound unified diff.",
-            target_files=[target],
-            patch_text=patch_text,
-            metadata={
-                "request": request.to_dict(),
-                "deliberation_digest": deliberation_digest,
-                "author_prompt_context": author_prompt_context,
-                "author_work_receipt_id": author_receipts[-1].receipt_id,
-                "author_work_receipt_ids": [receipt.receipt_id for receipt in author_receipts],
-                "authoring_correction_attempted": correction_attempted,
-                "authoring_failure_reason": authoring_failure_reason,
-                "patch_validation": patch_validation,
-                "git_apply_check": git_apply_check,
-                "structural_canonicalization": structural_canonicalization,
-                "pre_apply_council_digest": pre_apply_council_digest,
-                "pre_apply_council_receipt_ids": [
-                    receipt_id
-                    for item in pre_apply_council["decisions"]
-                    for receipt_id in (
-                        item["agent_work_receipt_id"],
-                        item["process_work_receipt_id"],
-                    )
-                ],
-                "brain_fabric_ready": True,
-                "codex_implementation": False,
-            },
-            source="aureon_internal_coding_workforce",
-        )
+    proposal_spec = CodeProposal(
+        kind="aureon_internal_unified_diff",
+        title=request.goal[:120],
+        summary="Aureon's Ollama-backed workforce authored this exact-source-bound unified diff.",
+        target_files=[target],
+        patch_text=patch_text,
+        metadata={
+            "request": request.to_dict(),
+            "deliberation_digest": deliberation_digest,
+            "author_prompt_context": author_prompt_context,
+            "author_work_receipt_id": author_receipts[-1].receipt_id,
+            "author_work_receipt_ids": [receipt.receipt_id for receipt in author_receipts],
+            "authoring_correction_attempted": correction_attempted,
+            "authoring_failure_reason": authoring_failure_reason,
+            "patch_validation": patch_validation,
+            "git_apply_check": git_apply_check,
+            "structural_canonicalization": structural_canonicalization,
+            "pre_apply_council_digest": pre_apply_council_digest,
+            "pre_apply_council_receipt_ids": [
+                receipt_id
+                for item in pre_apply_council["decisions"]
+                for receipt_id in (
+                    item["agent_work_receipt_id"],
+                    item["process_work_receipt_id"],
+                )
+            ],
+            "brain_fabric_ready": True,
+            "codex_implementation": False,
+        },
+        source="aureon_internal_coding_workforce",
     )
+    prior_auto_approve = proposal_controller.auto_approve
+    proposal_controller.auto_approve = False
+    try:
+        proposal = proposal_controller.propose(proposal_spec)
+    finally:
+        proposal_controller.auto_approve = prior_auto_approve
+    proposal = _approve_exact_council_proposal(proposal_controller, proposal)
     applier = GuardedPatchApplier(
         root=repo_root,
         allowlist=[target],

@@ -150,7 +150,7 @@ class AgentRunner:
         tool_results: List[Dict[str, str]] = []
         governed = self.governance_required or bool(
             getattr(self.tools, "governance_required", False)
-        )
+        ) or bool(getattr(self.tools, "hnc_coherence_required", False))
 
         for response_call_index, tc in enumerate(tool_calls):
             # Tool calls arrive in the MODEL's response, not the caller's request, so
@@ -209,10 +209,25 @@ class AgentRunner:
                         "tool": tc.name,
                     })
                 else:
+                    hnc_required = bool(
+                        getattr(self.tools, "hnc_coherence_required", False)
+                    )
+                    hnc_ready = not hnc_required
+                    preauthorize = getattr(
+                        self.tools,
+                        "preauthorize_tool_dispatch",
+                        None,
+                    )
+                    if callable(preauthorize):
+                        try:
+                            hnc_ready = preauthorize(proposal) is True
+                        except Exception as exc:  # noqa: BLE001 - HNC failure holds
+                            logger.warning("HNC pre-authorization failed: %s", exc)
+                            hnc_ready = False
                     # Unknown effects are never sent to an authority supplier. Known
                     # read-only effects take the registry-recorded bypass. Every other
                     # effect gets exactly one supplier call for this frozen proposal.
-                    if proposal.effect not in {
+                    if hnc_ready and proposal.effect not in {
                         ToolEffect.READ_ONLY.value,
                         ToolEffect.UNKNOWN.value,
                     } and self.authorize_tool_dispatch is not None:

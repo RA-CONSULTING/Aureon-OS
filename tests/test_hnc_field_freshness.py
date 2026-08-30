@@ -25,6 +25,7 @@ import time
 
 import pytest
 
+from aureon.core.hnc_field import build_hnc_live_field_receipt_id
 
 _CANONICAL_CONTROL_FIELDS = (
     "operational_eligible",
@@ -43,6 +44,13 @@ _CANONICAL_CONTROL_FIELDS = (
 def _canonical_envelope(now=None, **overrides):
     received_at = time.time() if now is None else now
     source_timestamp = received_at - 1.0
+    memory_hash = "1" * 64
+    memory_receipt_id = f"hnc:lambda_history:{memory_hash}"
+    input_receipt_ids = sorted([
+        memory_receipt_id,
+        "provider:a:1",
+        "provider:b:1",
+    ])
     envelope = {
         "data_status": "live",
         "source": "hnc_live_daemon",
@@ -50,12 +58,14 @@ def _canonical_envelope(now=None, **overrides):
         "source_timestamp": source_timestamp,
         "received_at": received_at,
         "ts": source_timestamp,
-        "receipt_id": "hnc:live_field:test",
         "receipt_type": "hnc_live_field",
         "provider_receipt_type": "hnc_live_field",
         "truth_status": "real_derived",
         "generated_values": False,
-        "input_receipt_ids": ["provider:a:1", "provider:b:1"],
+        "input_receipt_ids": input_receipt_ids,
+        "memory_receipt_id": memory_receipt_id,
+        "memory_canonical_hash": memory_hash,
+        "memory_previous_receipt_id": None,
         "freshness_status": "fresh",
         "operational_eligible": False,
         "provider_eligible": False,
@@ -74,8 +84,19 @@ def _canonical_envelope(now=None, **overrides):
         "consciousness_psi": 0.7,
         "consciousness_level": "CONNECTED",
         "lambda_t": 0.3,
+        "step": 7,
         "source_count": 2,
     }
+    envelope["receipt_id"] = build_hnc_live_field_receipt_id(
+        input_receipt_ids=input_receipt_ids,
+        source_timestamp=envelope["source_timestamp"],
+        received_at=envelope["received_at"],
+        step=envelope["step"],
+        lambda_t=envelope["lambda_t"],
+        coherence_gamma=envelope["coherence_gamma"],
+        consciousness_psi=envelope["consciousness_psi"],
+        symbolic_life_score=envelope["symbolic_life_score"],
+    )
     envelope.update(overrides)
     if "source_timestamp" in overrides and "ts" not in overrides:
         envelope["ts"] = overrides["source_timestamp"]
@@ -233,6 +254,10 @@ def test_complete_canonical_receipt_is_preserved_but_non_actionable(field, trans
         "receipt_type",
         "provider_receipt_type",
         "input_receipt_ids",
+        "memory_receipt_id",
+        "memory_canonical_hash",
+        "memory_previous_receipt_id",
+        "step",
         "data_status",
         "truth_status",
         "generated_values",
@@ -254,6 +279,73 @@ def test_unknown_evidence_transport_is_rejected(field):
     )
     assert got.available is False
     assert got.evidence_transport is None
+
+
+@pytest.mark.parametrize(
+    ("field_name", "value"),
+    (
+        ("coherence_gamma", 0.99),
+        ("step", 8),
+        ("memory_canonical_hash", "f" * 64),
+        ("receipt_id", "hnc:live_field:" + ("0" * 24)),
+    ),
+)
+def test_live_field_receipt_is_bound_to_exact_content_and_history(
+    field,
+    field_name,
+    value,
+):
+    hf, _bt, tmp = field
+    envelope = _canonical_envelope()
+    envelope[field_name] = value
+
+    got = _read_canonical_transport(hf, tmp, "bus", envelope)
+
+    assert got.available is False
+
+
+@pytest.mark.parametrize("transport", ("bus", "trace"))
+def test_stale_live_field_cannot_be_replayed_by_rewriting_timestamps(
+    field,
+    transport,
+):
+    hf, _bt, tmp = field
+    envelope = _canonical_envelope(now=time.time() - 99_999.0)
+    rewritten_at = time.time()
+    envelope.update(
+        source_timestamp=rewritten_at - 1.0,
+        received_at=rewritten_at,
+        ts=rewritten_at - 1.0,
+    )
+
+    got = _read_canonical_transport(hf, tmp, transport, envelope)
+
+    assert got.available is False
+
+
+def test_invalid_bus_pulse_falls_back_to_valid_persisted_trace(field):
+    from aureon.core.aureon_thought_bus import Thought, ThoughtBus
+
+    hf, _bt, tmp = field
+    valid = _canonical_envelope()
+    (tmp / "hnc_live_trace.jsonl").write_text(
+        json.dumps(valid) + "\n",
+        encoding="utf-8",
+    )
+    invalid = dict(valid)
+    invalid["coherence_gamma"] = 0.99
+    bus = ThoughtBus()
+    bus.publish(Thought(
+        source="hnc_live_daemon",
+        topic="symbolic.life.pulse",
+        payload=invalid,
+    ))
+
+    got = hf.read_canonical_field(bus)
+
+    assert got.available is True
+    assert got.evidence_transport == "persisted_trace"
+    assert got.coherence_gamma == pytest.approx(valid["coherence_gamma"])
 
 
 def test_untimestamped_canonical_trace_is_unavailable(field):
@@ -329,16 +421,45 @@ def test_canonical_receipt_timestamps_fail_closed(field, transport, case):
 
 # ── the window itself ───────────────────────────────────────────────────────────
 
-def test_window_is_configurable_and_defaults_sanely(field, monkeypatch):
+def test_window_can_be_tightened_but_never_widened(field, monkeypatch):
     hf, bt, _ = field
     bt.append_trace("symbolic_subfield",
                     {"source": "s", "ts": time.time() - 600, "symbolic_life_score": 0.5})
     assert hf.blend_field().available is False          # 10 min old, default window 5 min
     monkeypatch.setenv("AUREON_HNC_FIELD_MAX_AGE_S", "3600")
-    assert hf.blend_field().available is True           # widened deliberately
-    for bad in ("", "nonsense", "-5", "0"):
+    assert hf._max_age_s() == 300.0
+    assert hf.blend_field().available is False           # environment cannot widen v1
+    monkeypatch.setenv("AUREON_HNC_FIELD_MAX_AGE_S", "60")
+    assert hf._max_age_s() == 60.0                       # tightening remains supported
+    for bad in ("", "nonsense", "-5", "0", "inf", "nan"):
         monkeypatch.setenv("AUREON_HNC_FIELD_MAX_AGE_S", bad)
         assert hf._max_age_s() == 300.0                 # never zero/negative/unparseable
+
+
+def test_canonical_validation_rejects_nonfinite_clock(field):
+    hf, _bt, _tmp = field
+    envelope = {
+        **_canonical_envelope(),
+        "available": True,
+        "evidence_transport": "persisted_trace",
+    }
+
+    with pytest.raises(ValueError, match="complete_fresh_canonical_hnc_field_required"):
+        hf.validate_canonical_field_snapshot(envelope, now=float("nan"))
+
+
+def test_canonical_window_cannot_be_widened_by_environment(field, monkeypatch):
+    hf, _bt, _tmp = field
+    checked_at = time.time()
+    envelope = {
+        **_canonical_envelope(now=checked_at - 301.0),
+        "available": True,
+        "evidence_transport": "persisted_trace",
+    }
+    monkeypatch.setenv("AUREON_HNC_FIELD_MAX_AGE_S", "3600")
+
+    with pytest.raises(ValueError, match="complete_fresh_canonical_hnc_field_required"):
+        hf.validate_canonical_field_snapshot(envelope, now=checked_at)
 
 
 def test_a_clock_skewed_future_row_is_tolerated_not_refused(field):

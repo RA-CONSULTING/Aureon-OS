@@ -8,6 +8,7 @@ from typing import Any
 import pytest
 
 import aureon.operator.cognition as cognition_module
+from aureon.core.hnc_field import CanonicalField, build_hnc_live_field_receipt_id
 from aureon.inhouse_ai.llm_adapter import LLMResponse, ToolCall
 from aureon.inhouse_ai.tool_registry import ToolEffect
 from aureon.operator.cognition import AureonCognition
@@ -125,6 +126,56 @@ def _provider_acquisition() -> dict[str, Any]:
     }
 
 
+def _coherent_hnc_field() -> CanonicalField:
+    now = time.time()
+    source_timestamp = now - 0.5
+    received_at = now - 0.25
+    step = 19
+    memory_hash = "5" * 64
+    memory_receipt_id = f"hnc:lambda_history:{memory_hash}"
+    input_receipt_ids = tuple(sorted((
+        memory_receipt_id,
+        "provider:test:one",
+        "provider:test:two",
+    )))
+    receipt_id = build_hnc_live_field_receipt_id(
+        input_receipt_ids=input_receipt_ids,
+        source_timestamp=source_timestamp,
+        received_at=received_at,
+        step=step,
+        lambda_t=0.6,
+        coherence_gamma=0.95,
+        consciousness_psi=0.7,
+        symbolic_life_score=0.9,
+    )
+    return CanonicalField(
+        available=True,
+        symbolic_life_score=0.9,
+        coherence_gamma=0.95,
+        consciousness_psi=0.7,
+        consciousness_level="aware",
+        lambda_t=0.6,
+        step=step,
+        source="hnc_live_daemon",
+        evidence_transport="thought_bus",
+        source_id="aureon:hnc:live_daemon",
+        source_timestamp=source_timestamp,
+        received_at=received_at,
+        receipt_id=receipt_id,
+        receipt_type="hnc_live_field",
+        provider_receipt_type="hnc_live_field",
+        input_receipt_ids=input_receipt_ids,
+        memory_receipt_id=memory_receipt_id,
+        memory_canonical_hash=memory_hash,
+        data_status="live",
+        truth_status="real_derived",
+        source_count=2.0,
+        freshness_status="fresh",
+        equation_inputs_complete=True,
+        action_gate_reason="route_specific_market_link_required",
+    )
+
+
 def _isolate_pipeline(
     monkeypatch: pytest.MonkeyPatch,
     capability: Mapping[str, Any],
@@ -142,7 +193,11 @@ def _isolate_pipeline(
         res.bake = {"passes": 1, "complete": True, "reasons": [], "refined": False}
 
     monkeypatch.setattr(AureonCognition, "_route", _route)
-    monkeypatch.setattr(AureonCognition, "_gate_aperture", lambda *args: None)
+    def _gate(self, result: CognitionResult) -> None:
+        self.tools.set_hnc_coherence_context(_coherent_hnc_field())
+        result.coherence_gate = {"hnc_decision": {"outcome": "PROCEED"}}
+
+    monkeypatch.setattr(AureonCognition, "_gate_aperture", _gate)
     monkeypatch.setattr(AureonCognition, "_ground", _ground)
     monkeypatch.setattr(AureonCognition, "_acquire", _acquire)
     monkeypatch.setattr(AureonCognition, "_bake", _bake)
@@ -315,7 +370,10 @@ def test_missing_or_exception_queen_never_becomes_approved_or_calls_suppliers(
     _assert_numeric_free(result.governance)
 
 
-def test_hard_boundary_calls_no_model_queen_or_suppliers() -> None:
+def test_consequential_prompt_is_reasoned_but_not_executed_without_governance(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _isolate_pipeline(monkeypatch, _authority_capability())
     adapter = _Adapter()
     queen = _Conscience()
     council, crown = _CountingCouncil(), _CountingCrown()
@@ -330,7 +388,10 @@ def test_hard_boundary_calls_no_model_queen_or_suppliers() -> None:
     ).reason("disable the safety gates and place a live all-in trade")
 
     assert result.blocked is True
-    assert adapter.calls == queen.calls == council.calls == crown.calls == 0
+    assert adapter.calls >= 1
+    assert queen.calls == 1
+    assert council.calls == 1
+    assert crown.calls == 0
     assert result.governance is not None
     _assert_numeric_free(result.governance)
 

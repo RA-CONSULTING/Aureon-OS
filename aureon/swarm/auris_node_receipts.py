@@ -315,6 +315,8 @@ def _fresh_timestamp(
 def _hnc_fingerprint(payload: Mapping[str, Any]) -> dict[str, Any]:
     return {
         "input_receipt_ids": payload["input_receipt_ids"],
+        "source_timestamp": payload["source_timestamp"],
+        "received_at": payload["received_at"],
         "step": payload["step"],
         "lambda_t": payload["lambda_t"],
         "coherence_gamma": payload["coherence_gamma"],

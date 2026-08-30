@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import sys
 from pathlib import Path
 from typing import Any, Generator
@@ -215,12 +216,15 @@ def test_aureon_authors_applies_and_tests_a_real_unified_diff(tmp_path: Path, mo
     source = _source(tmp_path)
     resolver = PatchResolver()
     workforce = provision_agent_company_brain_fabric(resolver)
+    controller = _controller(tmp_path, monkeypatch)
+    controller.pending_proposals.append({"status": "pending_review", "title": "older proposal"})
+    controller._persist()
 
     cycle = run_internal_patch_cycle(
         root=tmp_path,
         request=_request(tmp_path),
         workforce=workforce,
-        controller=_controller(tmp_path, monkeypatch),
+        controller=controller,
     )
 
     assert source.read_text(encoding="utf-8") == "def answer():\n    return 2\n"
@@ -228,6 +232,8 @@ def test_aureon_authors_applies_and_tests_a_real_unified_diff(tmp_path: Path, mo
     assert cycle["applied"] is True
     assert cycle["pending_senior_review"] is True
     assert cycle["proposal"]["source"] == "aureon_internal_coding_workforce"
+    assert cycle["proposal"]["status"] == "approved"
+    assert cycle["proposal"]["reviewer"] == "aureon:pre_apply_council"
     assert cycle["proposal"]["metadata"]["codex_implementation"] is False
     assert cycle["authoring_correction_attempted"] is False
     assert len(cycle["author_work_receipt_ids"]) == 1
@@ -268,6 +274,11 @@ def test_aureon_authors_applies_and_tests_a_real_unified_diff(tmp_path: Path, mo
     ]
     assert author_budgets == [4_096]
     assert council_budgets == [512] * 16
+    persisted = json.loads(controller.state_path.read_text(encoding="utf-8"))
+    assert persisted["pending_count"] == 1
+    assert persisted["pending_proposals"][0]["title"] == "older proposal"
+    assert persisted["recent_reviews"][-1]["status"] == "approved"
+    assert persisted["recent_reviews"][-1]["reviewer"] == "aureon:pre_apply_council"
 
 
 def test_git_invalid_truncated_hunk_gets_one_receipted_correction(
@@ -547,17 +558,48 @@ def test_pre_apply_council_hold_prevents_code_mutation(tmp_path: Path, monkeypat
     source = _source(tmp_path)
     resolver = PatchResolver(council_hold=True)
     workforce = provision_agent_company_brain_fabric(resolver)
+    controller = _controller(tmp_path, monkeypatch)
 
     with pytest.raises(InternalPatchHold, match="pre_apply_council_held"):
         run_internal_patch_cycle(
             root=tmp_path,
             request=_request(tmp_path),
             workforce=workforce,
-            controller=_controller(tmp_path, monkeypatch),
+            controller=controller,
         )
 
     assert source.read_text(encoding="utf-8") == "def answer():\n    return 1\n"
     assert resolver.prompt_call_count == 99
+    assert controller.status()["pending_count"] == 0
+    assert controller.status()["recent_reviews"] == []
+
+
+def test_malformed_accepted_council_cannot_approve_or_mutate(tmp_path: Path, monkeypatch) -> None:
+    source = _source(tmp_path)
+    resolver = PatchResolver()
+    workforce = provision_agent_company_brain_fabric(resolver)
+    controller = _controller(tmp_path, monkeypatch)
+    deliberate = workforce.deliberate_coding_goal
+
+    def malformed_council(prompt: str, **kwargs: Any) -> dict[str, Any]:
+        result = deliberate(prompt, **kwargs)
+        if kwargs.get("require_accept"):
+            result["decisions"][0]["role"] = "Unapproved Role"
+        return result
+
+    monkeypatch.setattr(workforce, "deliberate_coding_goal", malformed_council)
+
+    with pytest.raises(InternalPatchHold, match="pre_apply_council_held"):
+        run_internal_patch_cycle(
+            root=tmp_path,
+            request=_request(tmp_path),
+            workforce=workforce,
+            controller=controller,
+        )
+
+    assert source.read_text(encoding="utf-8") == "def answer():\n    return 1\n"
+    assert controller.status()["pending_count"] == 0
+    assert controller.status()["recent_reviews"] == []
 
 
 @pytest.mark.parametrize(

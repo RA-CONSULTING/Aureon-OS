@@ -41,14 +41,22 @@ except Exception:  # noqa: BLE001
     pass
 
 from aureon.governance.cognition_gate import (
-    CognitionGovernanceRequest,
     TrustedCouncilReceiptSupplier,
     TrustedCrownReceiptSupplier,
     build_cognition_governance_request,
+    build_hnc_coherence_request,
     evaluate_cognition_governance,
+    evaluate_hnc_coherence,
     explicit_disabled_governance,
 )
-from aureon.governance.dual_key import DUAL_KEY_SCHEMA, validate_dual_key_receipt
+from aureon.governance.dual_key import DUAL_KEY_SCHEMA
+from aureon.governance.tool_route_authority import (
+    LEASE_PREFIX,
+    ToolRouteAuthorityRequest,
+    TrustedToolRouteAuthoritySupplier,
+    build_tool_route_authority_request,
+    validate_tool_route_authority_lease,
+)
 from aureon.inhouse_ai.agent_runner import AgentRunner
 from aureon.inhouse_ai.llm_adapter import LLMAdapter
 from aureon.inhouse_ai.tool_registry import (
@@ -178,26 +186,27 @@ def _sha256_json(value: Any) -> str:
 
 
 class _CognitionDispatchVerifier:
-    """Registry trust root binding a dual-key receipt to one frozen tool proposal."""
+    """Registry trust root for one exact, mandate-backed route lease."""
 
     verifier_id = "aureon.cognition.dual-key-dispatch-verifier.v1"
 
     def __init__(self) -> None:
         self._expected: Dict[str, Dict[str, Any]] = {}
+        self._consumed_route_leases: set[str] = set()
         self._lock = threading.RLock()
 
     def register(
         self,
         proposal: ToolDispatchProposal,
-        request: CognitionGovernanceRequest,
+        request: ToolRouteAuthorityRequest,
+        route_lease: Mapping[str, Any],
+        supplier_id: str,
     ) -> None:
         with self._lock:
             self._expected[proposal.proposal_digest] = {
-                "governance_proposal_digest": request.proposal_digest,
-                "prompt_digest": request.prompt_digest,
-                "provider_receipt_ids": list(request.provider_receipt_ids),
-                "provider_moment_digest": request.provider_moment_digest,
-                "provider_source_timestamp": request.provider_source_timestamp,
+                "request": request,
+                "supplier_id": supplier_id,
+                "route_lease_id": str(route_lease.get("receipt_id") or ""),
             }
 
     def discard(self, proposal_digest: str) -> None:
@@ -216,24 +225,28 @@ class _CognitionDispatchVerifier:
             return False
         try:
             receipt = json.loads(authorization.authority_receipt_json)
-            validated = validate_dual_key_receipt(receipt)
+            validated = validate_tool_route_authority_lease(
+                receipt,
+                request=expected["request"],
+                expected_supplier_id=expected["supplier_id"],
+            )
         except (TypeError, ValueError, json.JSONDecodeError):
             return False
-        return bool(
+        route_lease_id = str(validated.get("receipt_id") or "")
+        valid = bool(
             authorization.issuer_id == self.verifier_id
             and authorization.proposal_digest == proposal.proposal_digest
-            and authorization.authority_receipt_id == validated.get("receipt_id")
-            and validated.get("decision") == "ACCEPT"
-            and validated.get("proposal_digest")
-            == expected["governance_proposal_digest"]
-            and validated.get("prompt_digest") == expected["prompt_digest"]
-            and validated.get("provider_receipt_ids")
-            == expected["provider_receipt_ids"]
-            and validated.get("provider_moment_digest")
-            == expected["provider_moment_digest"]
-            and validated.get("provider_source_timestamp")
-            == expected["provider_source_timestamp"]
+            and authorization.authority_receipt_id == route_lease_id
+            and route_lease_id == expected["route_lease_id"]
+            and validated.get("decision") == "AUTHORIZE"
         )
+        if not valid:
+            return False
+        with self._lock:
+            if route_lease_id in self._consumed_route_leases:
+                return False
+            self._consumed_route_leases.add(route_lease_id)
+        return True
 
 
 class AureonCognition:
@@ -261,6 +274,8 @@ class AureonCognition:
         governance_acquisition: Mapping[str, Any] | None = None,
         governance_acquisition_supplier: Callable[[], Mapping[str, Any]] | None = None,
         governance_enabled: bool = True,
+        route_authority_supplier: TrustedToolRouteAuthoritySupplier | None = None,
+        trusted_route_authority_supplier_ids: frozenset[str] | None = None,
     ) -> None:
         # ``join_mesh`` governs INBOUND mesh membership only. Outbound broadcasts are separate and
         # default on, so nothing changes for the instance engine; a per-tenant engine passes
@@ -300,6 +315,49 @@ class AureonCognition:
                 logger.debug("canonical organism composition unavailable: %s", exc)
         self._council_receipt_supplier = council_receipt_supplier
         self._crown_receipt_supplier = crown_receipt_supplier
+        if (route_authority_supplier is None) is not (
+            trusted_route_authority_supplier_ids is None
+        ):
+            raise ValueError(
+                "route_authority_supplier_and_frozen_allowlist_required_together"
+            )
+        self._route_authority_supplier = None
+        self._route_authority_supplier_id: str | None = None
+        self._trusted_route_authority_supplier_ids: frozenset[str] = frozenset()
+        if route_authority_supplier is not None:
+            if not isinstance(
+                route_authority_supplier,
+                TrustedToolRouteAuthoritySupplier,
+            ):
+                raise TypeError("trusted_tool_route_authority_supplier_required")
+            if not isinstance(trusted_route_authority_supplier_ids, frozenset):
+                raise TypeError("frozen_route_authority_supplier_allowlist_required")
+            allowed_ids = frozenset(
+                str(value).strip()
+                for value in trusted_route_authority_supplier_ids
+                if isinstance(value, str) and value.strip()
+            )
+            supplier_id = str(route_authority_supplier.supplier_id).strip()
+            if not supplier_id or supplier_id not in allowed_ids:
+                raise ValueError("allowlisted_route_authority_supplier_required")
+            independent_objects = {
+                id(value)
+                for value in (council_receipt_supplier, crown_receipt_supplier)
+                if value is not None
+            }
+            authority_ids = {
+                str(getattr(value, "supplier_id", "")).strip().casefold()
+                for value in (council_receipt_supplier, crown_receipt_supplier)
+                if value is not None
+            }
+            if (
+                id(route_authority_supplier) in independent_objects
+                or supplier_id.casefold() in authority_ids
+            ):
+                raise ValueError("independent_route_authority_supplier_required")
+            self._route_authority_supplier = route_authority_supplier
+            self._route_authority_supplier_id = supplier_id
+            self._trusted_route_authority_supplier_ids = allowed_ids
         if governance_acquisition is not None and governance_acquisition_supplier is not None:
             raise ValueError(
                 "static_and_request_scoped_governance_acquisition_are_mutually_exclusive"
@@ -330,8 +388,19 @@ class AureonCognition:
         try:
             self.tools.governance_required = True
             self.tools.authorization_verifier = self._dispatch_verifier
+            if not callable(getattr(self.tools, "set_hnc_coherence_context", None)):
+                raise TypeError("missing HNC coherence context support")
+            if not callable(getattr(self.tools, "clear_hnc_coherence_context", None)):
+                raise TypeError("missing HNC coherence context cleanup support")
+            if not callable(getattr(self.tools, "require_hnc_coherence", None)):
+                raise TypeError("missing mandatory HNC coherence support")
+            if not callable(getattr(self.tools, "preauthorize_tool_dispatch", None)):
+                raise TypeError("missing HNC dispatch pre-authorization support")
+            self.tools.require_hnc_coherence()
         except Exception as exc:  # noqa: BLE001 - a non-governable toolbelt must not run
-            raise TypeError("a governance-capable tool registry is required") from exc
+            raise TypeError(
+                "an HNC- and governance-capable tool registry is required"
+            ) from exc
         self.max_turns = max_turns
         self.source = source
         self._allow_repo_grounding = bool(allow_repo_grounding)
@@ -376,55 +445,23 @@ class AureonCognition:
     # ------------------------------------------------------------------
 
     def reason(self, prompt: str, session_id: str | None = None) -> CognitionResult:
+        """Run one turn and always clear its request-scoped HNC moment."""
+
+        try:
+            return self._reason(prompt, session_id=session_id)
+        finally:
+            self.tools.clear_hnc_coherence_context()
+
+    def _reason(self, prompt: str, session_id: str | None = None) -> CognitionResult:
         started = time.time()
         res = CognitionResult(trace_id=uuid.uuid4().hex, prompt=prompt,
                               submitted_at=started, session_id=session_id)
         self._publish(res, "boot", {"prompt": prompt, "tools": self.tools.names()})
 
-        # Prompt-level hard boundary: refuse before any model/tool runs.
-        if _hard_boundary_violation(prompt):
-            res.blocked = True
-            res.conscience_verdict = "VETO"
-            res.conscience_message = (
-                "This request crosses a hard Aureon authority boundary "
-                "(live trading, payment, safety-gate bypass, credential, or filing)."
-            )
-            res.governance = _governance_hold("hard_authority_boundary_refusal")
-            res.text = f"🦗 Blocked at the Aureon authority boundary.\nReason: {res.conscience_message}"
-            self._actualize(res)
-            self._assimilate(res)
-            self._heart(res)
-            res.elapsed_ms = (time.time() - started) * 1000.0
-            self._publish(res, "complete", res.to_dict())
-            return res
-
         self._route(prompt, res)
         self._gate_aperture(res)
-        if (res.coherence_gate or {}).get("aperture") == "refuse":
-            # The field itself refused the turn's expansion: no model runs, the
-            # refusal is NAMED, the answer parks, and the write-back gate sees
-            # a verdict — never a silent stall, never an invented answer.
-            gate = res.coherence_gate or {}
-            res.blocked = True
-            res.conscience_verdict = "UNAVAILABLE"
-            res.queen_evaluated = False
-            res.queen_evidence = {"available": False, "evaluated": False}
-            res.conscience_message = ("coherence gate refusal — the hive field "
-                                      "is closed: " + "; ".join(gate.get("reasons", [])))
-            res.text = ("🦗 The coherence gate refused this turn.\n"
-                        f"Reason: {res.conscience_message}\n"
-                        "No tools were reached and no answer was baked — "
-                        "ask again when the field clears.")
-            res.acquisition = {"triggered": False, "gaps": [],
-                               "outcome": "gate_refused"}
-            res.governance = _governance_hold("coherence_aperture_refusal")
-            self._actualize(res)
-            self._assimilate(res)
-            self._heart(res)
-            res.elapsed_ms = (time.time() - started) * 1000.0
-            self._publish(res, "complete", res.to_dict())
-            return res
         system_prompt = self._ground(prompt, res)
+        system_prompt += self._coherence_system_instruction(prompt, res)
         self._run_loop(
             prompt,
             system_prompt,
@@ -744,7 +781,7 @@ class AureonCognition:
             ensure_ascii=False,
         )
         acquisition = self._governance_acquisition_for(res)
-        request = build_cognition_governance_request(
+        governance_request = build_cognition_governance_request(
             prompt=observer_prompt,
             answer=answer,
             tool_calls=res.tool_calls,
@@ -779,14 +816,44 @@ class AureonCognition:
                     gate,
                 )
             return None, gate
-        self._dispatch_verifier.register(proposal, request)
+        supplier = self._route_authority_supplier
+        supplier_id = str(getattr(supplier, "supplier_id", "")).strip()
+        if (
+            supplier is None
+            or supplier_id != self._route_authority_supplier_id
+            or supplier_id not in self._trusted_route_authority_supplier_ids
+        ):
+            return None, gate
+        try:
+            route_request = build_tool_route_authority_request(
+                proposal,
+                gate,
+                expected_governance_proposal_digest=(
+                    governance_request.proposal_digest
+                ),
+            )
+            raw_route_lease = supplier.supply_tool_route_authority(route_request)
+            route_lease = validate_tool_route_authority_lease(
+                raw_route_lease,
+                request=route_request,
+                expected_supplier_id=supplier_id,
+            )
+        except Exception as exc:  # noqa: BLE001 - route authority failure holds
+            logger.warning("exact tool route authority unavailable: %s", exc)
+            return None, gate
+        self._dispatch_verifier.register(
+            proposal,
+            route_request,
+            route_lease,
+            supplier_id,
+        )
         try:
             authorization = ToolDispatchAuthorization.issue(
                 proposal=proposal,
                 decision="ACCEPT",
                 issuer_id=self._dispatch_verifier.verifier_id,
-                authority_receipt_id=str(gate["receipt_id"]),
-                authority_receipt=gate,
+                authority_receipt_id=str(route_lease["receipt_id"]),
+                authority_receipt=route_lease,
             )
         except Exception:
             self._dispatch_verifier.discard(proposal.proposal_digest)
@@ -877,9 +944,24 @@ class AureonCognition:
                 invocation.operation_id = proposal.operation_id
             if authorization is not None:
                 invocation.authorization_digest = authorization.authorization_digest
-                invocation.governance_receipt_id = (
-                    authorization.authority_receipt_id or None
-                )
+                if (
+                    authorization.decision == "ACCEPT"
+                    and authorization.authority_receipt_id.startswith(LEASE_PREFIX)
+                ):
+                    invocation.route_authority_receipt_id = (
+                        authorization.authority_receipt_id
+                    )
+                    try:
+                        route_receipt = json.loads(
+                            authorization.authority_receipt_json
+                        )
+                    except (TypeError, json.JSONDecodeError):
+                        route_receipt = None
+                    if isinstance(route_receipt, dict):
+                        invocation.route_authority_receipt = route_receipt
+                        invocation.route_authority_request_digest = str(
+                            route_receipt.get("request_digest") or ""
+                        ) or None
             record = next(
                 (
                     item
@@ -892,6 +974,11 @@ class AureonCognition:
             if record is not None:
                 invocation.governance_decision = record.decision
                 invocation.governance_reason = record.reason
+                invocation.hnc_outcome = record.hnc_outcome
+                invocation.hnc_decision_receipt_id = (
+                    record.hnc_decision_receipt_id or None
+                )
+                invocation.hnc_repair_safe = record.hnc_repair_safe
                 invocation.handler_called = record.handler_called
                 invocation.result_digest = record.result_digest
                 invocation.blocked = not record.handler_called
@@ -904,6 +991,10 @@ class AureonCognition:
                 ).hexdigest()
             if proposal is not None:
                 gate = dispatch_gates.pop(proposal.proposal_digest, None)
+                if gate is not None:
+                    invocation.dual_key_receipt_id = gate.get("receipt_id") or None
+                    invocation.dual_key_receipt = dict(gate)
+                    invocation.governance_receipt_id = invocation.dual_key_receipt_id
                 if gate is not None and not invocation.governance_decision:
                     invocation.governance_decision = str(gate.get("decision") or "HOLD")
                 if gate is not None and not invocation.governance_reason:
@@ -928,16 +1019,19 @@ class AureonCognition:
         self._publish(res, "loop", {"turns": res.turns, "n_tools": len(res.tool_calls)})
 
     # ------------------------------------------------------------------
-    # Gate (the coherence membrane: the FIELD decides the aperture)
+    # Gate (one canonical HNC decision; legacy aperture is telemetry only)
     # ------------------------------------------------------------------
 
     def _gate_aperture(self, res: CognitionResult) -> None:
-        """Read the live hive field and set this turn's capability aperture on
-        the tool registry. The hard boundary stays the outer wall; this is
-        the inner membrane — and it may only TIGHTEN on a LIVE field signal.
-        A dark field restricts nothing (and is recorded as dark)."""
+        """Capture one HNC moment and bind it to every tool in this turn.
+
+        The historical aperture remains visible for diagnostics, but it no
+        longer authorizes or refuses work.  The hash-bound HNC decision in
+        ``cognition_gate`` is the single dispatch policy.
+        """
         try:
-            from aureon.operator.coherence_gate import compute_aperture, reach_for
+            from aureon.core.hnc_field import CanonicalField, read_canonical_field
+            from aureon.operator.coherence_gate import compute_aperture
 
             org = self._read_organism_state()
             gamma = org.get("coherence_gamma")
@@ -946,15 +1040,79 @@ class AureonCognition:
                 org.get("gate_open"),
                 org.get("lighthouse_severity"),
             )
-            res.coherence_gate = gate
+            if not self._allow_organism_context:
+                # Per-tenant cognition is intentionally isolated from the host
+                # organism.  Never let ``read_canonical_field`` fall back to the
+                # host's persisted trace for an isolated request.
+                field = CanonicalField()
+            else:
+                try:
+                    field = read_canonical_field(self.bus)
+                except Exception as exc:  # noqa: BLE001 - missing evidence enters repair
+                    logger.debug("canonical HNC capture unavailable: %s", exc)
+                    field = CanonicalField()
+            request = build_hnc_coherence_request(
+                proposal_digest=(
+                    "sha256:" + hashlib.sha256(res.prompt.encode("utf-8")).hexdigest()
+                ),
+                effect="read_only",
+                operation_id="aureon.operator.cognition.reason.v1",
+            )
+            decision = evaluate_hnc_coherence(
+                request,
+                canonical_field=field,
+            )
+            self.tools.set_hnc_coherence_context(field)
             if hasattr(self.tools, "aperture_allowed"):
-                self.tools.aperture_allowed = reach_for(
-                    gate["aperture"], set(self.tools.names()))
-                self.tools.aperture_note = (f"aperture '{gate['aperture']}' "
-                                            f"({gate['field_status']})")
-            self._publish(res, "gate", gate)
-        except Exception as exc:  # noqa: BLE001 — a dark membrane never breaks answering
-            logger.debug("coherence gate unavailable: %s", exc)
+                self.tools.aperture_allowed = None
+                self.tools.aperture_note = "legacy aperture is telemetry-only"
+            res.coherence_gate = {
+                **gate,
+                "authority": "hnc_coherence_decision",
+                "legacy_aperture_authoritative": False,
+                "hnc_decision": decision,
+            }
+            self._publish(res, "gate", res.coherence_gate)
+        except Exception as exc:  # noqa: BLE001 - gate failure still allows repair reasoning
+            logger.warning("HNC coherence gate unavailable: %s", exc)
+            self.tools.set_hnc_coherence_context(None)
+            res.coherence_gate = {
+                "authority": "hnc_coherence_decision",
+                "legacy_aperture_authoritative": False,
+                "hnc_decision": {
+                    "outcome": "REPAIR",
+                    "reason": "hnc_coherence_gate_unavailable",
+                    "receipt_id": None,
+                    "route_authorization_required": True,
+                },
+            }
+            self._publish(res, "gate", res.coherence_gate)
+
+    @staticmethod
+    def _coherence_system_instruction(prompt: str, res: CognitionResult) -> str:
+        decision = (res.coherence_gate or {}).get("hnc_decision") or {}
+        outcome = str(decision.get("outcome") or "REPAIR").upper()
+        reason = str(decision.get("reason") or "fresh HNC evidence unavailable")
+        if outcome == "PROCEED":
+            mode = (
+                "HNC outcome PROCEED: continue the reasoning flow. This is "
+                "evidence-only and does not replace exact route authorization."
+            )
+        else:
+            mode = (
+                f"HNC outcome {outcome}: work in repair/observation mode ({reason}). "
+                "Diagnose, explain, and prepare exact next steps; do not claim an "
+                "effect occurred. Only explicitly repair-safe introspection tools "
+                "may be available."
+            )
+        if _hard_boundary_violation(prompt):
+            mode += (
+                " The prompt names a consequential effect. You may reason about and "
+                "prepare its typed intent, but generic shell/write/publish tools are "
+                "not an execution route. Execution requires a current, authenticated, "
+                "scope-bound authority envelope and its one-use provider receipt."
+            )
+        return "\n\nUnified HNC coherence instruction: " + mode
 
     # ------------------------------------------------------------------
     # Acquire (the Borg loop: find what is missing, never invent it)

@@ -210,6 +210,7 @@ def test_sweep_reconciles_stale_denials(tmp_path):
 
 def test_ensure_import_paths_is_idempotent():
     import sys
+
     import aureon.core.aureon_connectome as cm
 
     cm._PATHS_READY = False
@@ -332,7 +333,7 @@ def test_cognition_tools_expose_the_organism(tmp_path):
     reset_connectome_for_tests()
     from aureon.operator.tools import build_operator_tools
 
-    reg = build_operator_tools()
+    reg = build_operator_tools(hnc_coherence_required=False)
     assert "sense_organism" in reg and "list_organism" in reg and "touch_module" in reg
 
     sense = json.loads(reg.execute("sense_organism", {}))

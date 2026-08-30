@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import json
+import threading
 from dataclasses import FrozenInstanceError, replace
 from typing import Any
 
@@ -98,6 +99,7 @@ def _make_registry(
         include_builtins=False,
         governance_required=governance_required,
         authorization_verifier=verifier,
+        hnc_coherence_required=False,
     )
 
     def handler(arguments: dict[str, Any]) -> str:
@@ -217,11 +219,29 @@ def test_guarded_registry_independently_rebinds_every_exact_field(
     elif case == "arguments":
         arguments = {"value": "changed"}
     elif case == "effect":
-        registry.get("act").effect = ToolEffect.EXTERNAL_MUTATION  # type: ignore[union-attr]
+        current = registry.get("act")
+        assert current is not None and current.handler is not None
+        registry.define_tool(
+            "act", current.description, current.input_schema, current.handler,
+            effect=ToolEffect.EXTERNAL_MUTATION,
+            operation_id=current.operation_id,
+        )
     elif case == "operation":
-        registry.get("act").operation_id = "aureon.test.changed.v1"  # type: ignore[union-attr]
+        current = registry.get("act")
+        assert current is not None and current.handler is not None
+        registry.define_tool(
+            "act", current.description, current.input_schema, current.handler,
+            effect=current.effect,
+            operation_id="aureon.test.changed.v1",
+        )
     elif case == "definition":
-        registry.get("act").description = "Changed definition"  # type: ignore[union-attr]
+        current = registry.get("act")
+        assert current is not None and current.handler is not None
+        registry.define_tool(
+            "act", "Changed definition", current.input_schema, current.handler,
+            effect=current.effect,
+            operation_id=current.operation_id,
+        )
     else:
         proposal = replace(proposal, proposal_digest="tool:proposal:" + ("0" * 64))
         authorization = _authorization(proposal)
@@ -320,6 +340,116 @@ def test_authorization_is_consumed_before_handler_and_cannot_replay() -> None:
     assert second["blocked"] is True
     assert "already consumed" in second["reason"]
     assert calls == [{"value": "x"}]
+
+
+def test_verifier_cannot_swap_the_bound_handler_after_authorization() -> None:
+    registry, original_calls = _make_registry(verifier=None)
+    replacement_calls: list[dict[str, Any]] = []
+
+    class _SwappingVerifier(_ReceiptVerifier):
+        def validate_tool_dispatch_authorization(self, **kwargs: Any) -> bool:
+            current = registry.get("act")
+            assert current is not None
+            registry.define_tool(
+                "act",
+                current.description,
+                current.input_schema,
+                lambda args: replacement_calls.append(dict(args)) or "replacement",
+                effect=current.effect,
+                operation_id=current.operation_id,
+            )
+            return super().validate_tool_dispatch_authorization(**kwargs)
+
+    registry.authorization_verifier = _SwappingVerifier()
+    proposal = registry.build_dispatch_proposal(
+        tool_call_id="handler-swap",
+        runner_turn_index=1,
+        response_call_index=0,
+        name="act",
+        arguments={"value": "original"},
+    )
+
+    result = json.loads(registry.execute(
+        "act",
+        {"value": "original"},
+        proposal=proposal,
+        authorization=_authorization(proposal),
+    ))
+
+    assert result["ok"] is True
+    assert original_calls == [{"value": "original"}]
+    assert replacement_calls == []
+
+
+def test_verifier_cannot_mutate_arguments_that_reach_handler() -> None:
+    registry, calls = _make_registry(verifier=None)
+    caller_arguments = {"value": "original"}
+
+    class _ArgumentMutatingVerifier(_ReceiptVerifier):
+        def validate_tool_dispatch_authorization(self, **kwargs: Any) -> bool:
+            caller_arguments["value"] = "mutated-after-binding"
+            return super().validate_tool_dispatch_authorization(**kwargs)
+
+    registry.authorization_verifier = _ArgumentMutatingVerifier()
+    proposal = registry.build_dispatch_proposal(
+        tool_call_id="argument-swap",
+        runner_turn_index=1,
+        response_call_index=0,
+        name="act",
+        arguments=caller_arguments,
+    )
+
+    result = json.loads(registry.execute(
+        "act",
+        caller_arguments,
+        proposal=proposal,
+        authorization=_authorization(proposal),
+    ))
+
+    assert caller_arguments == {"value": "mutated-after-binding"}
+    assert result["arguments"] == {"value": "original"}
+    assert calls == [{"value": "original"}]
+
+
+def test_same_authorization_cannot_cross_handler_boundary_concurrently() -> None:
+    barrier = threading.Barrier(2)
+
+    class _ConcurrentVerifier(_ReceiptVerifier):
+        def validate_tool_dispatch_authorization(self, **kwargs: Any) -> bool:
+            accepted = super().validate_tool_dispatch_authorization(**kwargs)
+            barrier.wait(timeout=5)
+            return accepted
+
+    verifier = _ConcurrentVerifier()
+    registry, calls = _make_registry(verifier=verifier)
+    proposal = registry.build_dispatch_proposal(
+        tool_call_id="concurrent-replay",
+        runner_turn_index=1,
+        response_call_index=0,
+        name="act",
+        arguments={"value": "once"},
+    )
+    authorization = _authorization(proposal)
+    results: list[dict[str, Any]] = []
+
+    def _run() -> None:
+        results.append(json.loads(registry.execute(
+            "act",
+            {"value": "once"},
+            proposal=proposal,
+            authorization=authorization,
+        )))
+
+    threads = [threading.Thread(target=_run) for _ in range(2)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(timeout=5)
+
+    assert all(not thread.is_alive() for thread in threads)
+    assert sum(result.get("ok") is True for result in results) == 1
+    assert sum(result.get("blocked") is True for result in results) == 1
+    assert calls == [{"value": "once"}]
 
 
 @pytest.mark.parametrize("flow", ["turn", "stream"])
@@ -537,8 +667,8 @@ def test_operator_toolbelt_has_no_unknown_effects_and_stable_operations() -> Non
         "read_prices": ToolEffect.READ_ONLY,
         "publish_thought": ToolEffect.LOCAL_MUTATION,
         "execute_shell": ToolEffect.PRIVILEGED,
-        "web_search": ToolEffect.READ_ONLY,
-        "web_fetch": ToolEffect.READ_ONLY,
+        "web_search": ToolEffect.PRIVILEGED,
+        "web_fetch": ToolEffect.PRIVILEGED,
         "repo_search": ToolEffect.READ_ONLY,
         "skill_base_status": ToolEffect.READ_ONLY,
         "read_repo_file": ToolEffect.READ_ONLY,

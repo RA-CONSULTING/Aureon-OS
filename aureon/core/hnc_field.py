@@ -27,26 +27,32 @@ readers report ``available=False``, which is the honest answer.
 
 from __future__ import annotations
 
+import hashlib
+import json
 import math
 import os
+import re
 import time
+from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
 
-
 #: How old a field row may be and still count as "the current field", in seconds.
-#: Tunable via ``AUREON_HNC_FIELD_MAX_AGE_S``; the default is deliberately short —
-#: the HNC daemon pulses continuously, so anything older than a few minutes means the
-#: producer has stopped and the honest report is "unavailable", not a stale number.
+#: ``AUREON_HNC_FIELD_MAX_AGE_S`` may tighten this ceiling but may never widen it.
+#: The HNC daemon pulses continuously, so anything older than a few minutes means
+#: the producer has stopped and the honest report is "unavailable", not a stale number.
+FIELD_MAX_AGE_S = 300.0
+FIELD_FUTURE_SKEW_S = 5.0
+
+
 def _max_age_s() -> float:
     try:
         v = float(os.environ.get("AUREON_HNC_FIELD_MAX_AGE_S", "") or 300.0)
-        return v if v > 0 else 300.0
+        return min(v, FIELD_MAX_AGE_S) if math.isfinite(v) and v > 0 else FIELD_MAX_AGE_S
     except (TypeError, ValueError):
-        return 300.0
+        return FIELD_MAX_AGE_S
 
-
-FIELD_MAX_AGE_S = 300.0
+_SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 
 _CANONICAL_CONTROL_FIELDS = (
     "operational_eligible",
@@ -79,6 +85,65 @@ def _identifier(value: Any) -> str | None:
     return candidate or None
 
 
+def build_hnc_live_field_receipt_id(
+    *,
+    input_receipt_ids: tuple[str, ...] | list[str],
+    source_timestamp: float,
+    received_at: float,
+    step: int,
+    lambda_t: float,
+    coherence_gamma: float,
+    consciousness_psi: float,
+    symbolic_life_score: float,
+) -> str:
+    """Derive the daemon's content-bound live-field receipt identifier.
+
+    This deliberately mirrors :meth:`HNCLiveDaemon._build_live_envelope`.  The
+    identifier is not a signature, but re-deriving it prevents a bus or trace
+    row from retaining a trusted receipt label after any coherence input or
+    freshness timestamp has been changed.
+    """
+
+    if isinstance(step, bool) or not isinstance(step, int) or step < 0:
+        raise ValueError("non_negative_hnc_step_required")
+    normalized_ids = tuple(str(value).strip() for value in input_receipt_ids)
+    if (
+        not normalized_ids
+        or any(not value for value in normalized_ids)
+        or normalized_ids != tuple(sorted(set(normalized_ids)))
+    ):
+        raise ValueError("sorted_distinct_hnc_input_receipt_ids_required")
+    metrics = {
+        "lambda_t": _finite_number(lambda_t),
+        "coherence_gamma": _finite_number(coherence_gamma),
+        "consciousness_psi": _finite_number(consciousness_psi),
+        "symbolic_life_score": _finite_number(symbolic_life_score),
+    }
+    if any(value is None for value in metrics.values()):
+        raise ValueError("finite_hnc_receipt_metrics_required")
+    timestamps = {
+        "source_timestamp": _finite_number(source_timestamp),
+        "received_at": _finite_number(received_at),
+    }
+    if any(value is None for value in timestamps.values()):
+        raise ValueError("finite_hnc_receipt_timestamps_required")
+    fingerprint = {
+        "input_receipt_ids": list(normalized_ids),
+        **timestamps,
+        "step": step,
+        **metrics,
+    }
+    digest = hashlib.sha256(
+        json.dumps(
+            fingerprint,
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        ).encode("utf-8")
+    ).hexdigest()[:24]
+    return f"hnc:live_field:{digest}"
+
+
 def _validated_canonical_envelope(
     row: Any,
     *,
@@ -87,7 +152,7 @@ def _validated_canonical_envelope(
     """Validate the daemon's complete evidence-only global field envelope."""
     if not isinstance(row, dict):
         return None
-    checked_at = time.time() if now is None else now
+    checked_at = _finite_number(time.time() if now is None else now)
     source_timestamp = _finite_number(row.get("source_timestamp"))
     received_at = _finite_number(row.get("received_at"))
     legacy_timestamp = _finite_number(row.get("ts"))
@@ -107,6 +172,10 @@ def _validated_canonical_envelope(
     provider_receipt_type = _identifier(row.get("provider_receipt_type"))
     source = _identifier(row.get("source"))
     consciousness_level = _identifier(row.get("consciousness_level"))
+    step = row.get("step")
+    memory_receipt_id = _identifier(row.get("memory_receipt_id"))
+    memory_canonical_hash = _identifier(row.get("memory_canonical_hash"))
+    memory_previous_receipt_id = _identifier(row.get("memory_previous_receipt_id"))
     raw_input_ids = row.get("input_receipt_ids")
     input_receipt_ids = (
         [_identifier(value) for value in raw_input_ids]
@@ -115,12 +184,24 @@ def _validated_canonical_envelope(
     )
     if (
         row.get("data_status") != "live"
+        or checked_at is None
         or row.get("truth_status") != "real_derived"
         or row.get("generated_values") is not False
         or source != "hnc_live_daemon"
         or source_id != "aureon:hnc:live_daemon"
         or receipt_id is None
-        or not receipt_id.startswith("hnc:live_field:")
+        or isinstance(step, bool)
+        or not isinstance(step, int)
+        or step < 0
+        or memory_receipt_id is None
+        or memory_canonical_hash is None
+        or _SHA256_RE.fullmatch(memory_canonical_hash) is None
+        or memory_receipt_id != f"hnc:lambda_history:{memory_canonical_hash}"
+        or memory_receipt_id not in input_receipt_ids
+        or (
+            memory_previous_receipt_id is not None
+            and not memory_previous_receipt_id.startswith("hnc:lambda_history:")
+        )
         or (
             receipt_type != "hnc_live_field"
             and provider_receipt_type != "hnc_live_field"
@@ -143,9 +224,9 @@ def _validated_canonical_envelope(
             rel_tol=0.0,
             abs_tol=1e-6,
         )
-        or source_timestamp > received_at + 5.0
-        or source_timestamp > checked_at + 5.0
-        or received_at > checked_at + 5.0
+        or source_timestamp > received_at + FIELD_FUTURE_SKEW_S
+        or source_timestamp > checked_at + FIELD_FUTURE_SKEW_S
+        or received_at > checked_at + FIELD_FUTURE_SKEW_S
         or checked_at - source_timestamp > _max_age_s()
         or checked_at - received_at > _max_age_s()
         or any(value is None for value in metrics.values())
@@ -156,6 +237,21 @@ def _validated_canonical_envelope(
         or row.get("action_gate_reason") != "route_specific_market_link_required"
         or any(row.get(name) is not False for name in _CANONICAL_CONTROL_FIELDS)
     ):
+        return None
+    try:
+        expected_receipt_id = build_hnc_live_field_receipt_id(
+            input_receipt_ids=tuple(str(value) for value in input_receipt_ids),
+            source_timestamp=source_timestamp,
+            received_at=received_at,
+            step=step,
+            lambda_t=metrics["lambda_t"],
+            coherence_gamma=metrics["coherence_gamma"],
+            consciousness_psi=metrics["consciousness_psi"],
+            symbolic_life_score=metrics["symbolic_life_score"],
+        )
+    except (TypeError, ValueError):
+        return None
+    if receipt_id != expected_receipt_id:
         return None
     return {
         **row,
@@ -169,6 +265,10 @@ def _validated_canonical_envelope(
         "provider_receipt_type": provider_receipt_type,
         "input_receipt_ids": tuple(str(value) for value in input_receipt_ids),
         "consciousness_level": consciousness_level,
+        "step": step,
+        "memory_receipt_id": memory_receipt_id,
+        "memory_canonical_hash": memory_canonical_hash,
+        "memory_previous_receipt_id": memory_previous_receipt_id,
     }
 
 
@@ -199,6 +299,7 @@ class CanonicalField:
     consciousness_psi: float | None = None
     consciousness_level: str | None = None
     lambda_t: float | None = None
+    step: int | None = None
     source: str | None = None
     evidence_transport: str | None = None
     source_id: str | None = None
@@ -208,6 +309,9 @@ class CanonicalField:
     receipt_type: str | None = None
     provider_receipt_type: str | None = None
     input_receipt_ids: tuple[str, ...] = ()
+    memory_receipt_id: str | None = None
+    memory_canonical_hash: str | None = None
+    memory_previous_receipt_id: str | None = None
     data_status: str = "no_data"
     truth_status: str | None = None
     generated_values: bool = False
@@ -234,6 +338,7 @@ class CanonicalField:
             "consciousness_psi": self.consciousness_psi,
             "consciousness_level": self.consciousness_level,
             "lambda_t": self.lambda_t,
+            "step": self.step,
             "source": self.source,
             "evidence_transport": self.evidence_transport,
             "source_id": self.source_id,
@@ -243,6 +348,9 @@ class CanonicalField:
             "receipt_type": self.receipt_type,
             "provider_receipt_type": self.provider_receipt_type,
             "input_receipt_ids": list(self.input_receipt_ids),
+            "memory_receipt_id": self.memory_receipt_id,
+            "memory_canonical_hash": self.memory_canonical_hash,
+            "memory_previous_receipt_id": self.memory_previous_receipt_id,
             "data_status": self.data_status,
             "truth_status": self.truth_status,
             "generated_values": self.generated_values,
@@ -268,9 +376,50 @@ def _canonical_field_from_envelope(
     *,
     evidence_transport: str,
 ) -> CanonicalField:
-    envelope = _validated_canonical_envelope(row)
-    if envelope is None or evidence_transport not in {"thought_bus", "persisted_trace"}:
+    try:
+        return validate_canonical_field_snapshot(
+            {
+                **dict(row),
+                "evidence_transport": evidence_transport,
+                "available": True,
+            },
+        )
+    except (TypeError, ValueError):
         return _EMPTY
+
+
+def validate_canonical_field_snapshot(
+    snapshot: CanonicalField | Mapping[str, Any],
+    *,
+    now: float | None = None,
+) -> CanonicalField:
+    """Revalidate one complete canonical HNC snapshot.
+
+    ``read_canonical_field`` is the trusted capture path, but downstream gates
+    must re-check freshness immediately before dispatch.  This public adapter
+    deliberately reuses the daemon-envelope validator instead of teaching each
+    consumer a slightly different definition of "live".  It accepts the
+    immutable :class:`CanonicalField` returned by this module or its serialized
+    mapping and returns a freshly validated immutable value.
+    """
+
+    captured_snapshot = isinstance(snapshot, CanonicalField)
+    if captured_snapshot:
+        raw = snapshot.to_dict()
+    elif isinstance(snapshot, Mapping):
+        raw = dict(snapshot)
+    else:
+        raise TypeError("canonical_field_snapshot_required")
+    evidence_transport = raw.get("evidence_transport")
+    if evidence_transport not in {"thought_bus", "persisted_trace"}:
+        raise ValueError("trusted_canonical_field_transport_required")
+    # ``ts`` is retained in the daemon envelope for legacy readers.  The
+    # immutable snapshot stores the same fact once as ``source_timestamp``.
+    if captured_snapshot:
+        raw["ts"] = raw.get("source_timestamp")
+    envelope = _validated_canonical_envelope(raw, now=now)
+    if envelope is None or raw.get("available") is not True:
+        raise ValueError("complete_fresh_canonical_hnc_field_required")
     return CanonicalField(
         available=True,
         symbolic_life_score=envelope["symbolic_life_score"],
@@ -278,8 +427,9 @@ def _canonical_field_from_envelope(
         consciousness_psi=envelope["consciousness_psi"],
         consciousness_level=envelope["consciousness_level"],
         lambda_t=envelope["lambda_t"],
+        step=envelope["step"],
         source=envelope["source"],
-        evidence_transport=evidence_transport,
+        evidence_transport=str(evidence_transport),
         source_id=envelope["source_id"],
         source_timestamp=envelope["source_timestamp"],
         received_at=envelope["received_at"],
@@ -287,6 +437,9 @@ def _canonical_field_from_envelope(
         receipt_type=envelope["receipt_type"],
         provider_receipt_type=envelope["provider_receipt_type"],
         input_receipt_ids=envelope["input_receipt_ids"],
+        memory_receipt_id=envelope["memory_receipt_id"],
+        memory_canonical_hash=envelope["memory_canonical_hash"],
+        memory_previous_receipt_id=envelope["memory_previous_receipt_id"],
         data_status=envelope["data_status"],
         truth_status=envelope["truth_status"],
         generated_values=envelope["generated_values"],
@@ -305,8 +458,6 @@ def _canonical_field_from_envelope(
         action_gate_passed=envelope["action_gate_passed"],
         action_gate_reason=envelope["action_gate_reason"],
     )
-
-
 _EMPTY = CanonicalField()
 
 
@@ -332,10 +483,12 @@ def read_canonical_field(bus: Any = None) -> CanonicalField:
             pulses = b.recall("symbolic.life.pulse", limit=1) or []
             if pulses:
                 p = payload_of(pulses[-1])
-                return _canonical_field_from_envelope(
+                captured = _canonical_field_from_envelope(
                     p,
                     evidence_transport="thought_bus",
                 )
+                if captured.available:
+                    return captured
     except Exception:  # noqa: BLE001 — a missing field is a value, never a crash
         pass
     # Cross-process fallback: the HNC daemon's persisted trace.
@@ -596,4 +749,5 @@ def reconcile_gamma(local_coherence: float, bus: Any = None) -> float:
 __all__ = [
     "CanonicalField", "read_canonical_field", "publish_subfield",
     "read_subfields", "BlendedField", "blend_field", "reconcile_gamma",
+    "validate_canonical_field_snapshot", "build_hnc_live_field_receipt_id",
 ]

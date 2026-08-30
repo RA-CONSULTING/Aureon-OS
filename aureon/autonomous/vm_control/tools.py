@@ -89,12 +89,15 @@ def _make_action_handler(dispatcher: VMControlDispatcher, action_name: str):
     """Create a handler that dispatches the action with the tool's args."""
 
     def handler(args: Dict[str, Any]) -> str:
-        session_id = args.pop("session_id", None) if isinstance(args, dict) else None
+        args = dict(args) if isinstance(args, dict) else {}
+        session_id = args.pop("session_id", None)
+        confirm_token = args.pop("confirm_token", None)
         result = dispatcher.dispatch(
             action_name=action_name,
-            params=args if isinstance(args, dict) else {},
+            params=args,
             session_id=session_id,
             source="tool",
+            confirm_token=str(confirm_token) if confirm_token is not None else None,
         )
         return json.dumps(result)
 
@@ -155,10 +158,14 @@ def _make_session_handlers(dispatcher: VMControlDispatcher) -> Dict[str, Any]:
     def arm(args: Dict[str, Any]) -> str:
         sid = args.get("session_id")
         dry_run = bool(args.get("dry_run", True))
+        confirmation_token = args.get("confirmation_token")
         controller = dispatcher.get_session(sid)
         if not controller:
             return json.dumps({"ok": False, "error": "no_session"})
-        return json.dumps(controller.arm(dry_run=dry_run))
+        return json.dumps(controller.arm(
+            dry_run=dry_run,
+            confirmation_token=str(confirmation_token) if confirmation_token is not None else None,
+        ))
 
     def disarm(args: Dict[str, Any]) -> str:
         sid = args.get("session_id")
@@ -300,6 +307,10 @@ def register_vm_tools(
             "properties": {
                 "session_id": {"type": "string"},
                 "dry_run": {"type": "boolean", "description": "If true, actions are simulated only"},
+                "confirmation_token": {
+                    "type": "string",
+                    "description": "Ephemeral token required to arm a non-simulated backend live",
+                },
             },
             "required": [],
         },

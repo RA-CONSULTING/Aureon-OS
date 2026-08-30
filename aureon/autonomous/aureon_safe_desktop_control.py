@@ -52,8 +52,10 @@ ALLOWED_ACTIONS = {
     "hotkey",
 }
 
-# Actions that are easy to misuse (typing/hotkeys). These can be gated behind a
-# confirmation token if AUREON_DESKTOP_REQUIRE_CONFIRMATION is enabled.
+# Actions that are easy to misuse (typing/hotkeys).  The legacy controller keeps
+# them behind confirmation by default.  New autonomous paths should use
+# ``AureonGovernedDesktopGateway`` which additionally carries an expiring
+# capability lease and before/after evidence.
 HIGH_RISK_ACTIONS = {
     "type_text",
     "press_key",
@@ -135,9 +137,9 @@ class SafeDesktopControl:
         self.recent_actions: List[Dict[str, Any]] = []
         self.pending_actions: List[Dict[str, Any]] = []
 
-        self.require_confirmation = _env_bool("AUREON_DESKTOP_REQUIRE_CONFIRMATION", False)
-        self.auto_approve_live_voice = _env_bool("AUREON_AUTO_APPROVE_LIVE_VOICE", True)
-        self.confirmation_token = os.getenv("AUREON_DESKTOP_CONFIRM_TOKEN", "I_UNDERSTAND")
+        self.require_confirmation = _env_bool("AUREON_DESKTOP_REQUIRE_CONFIRMATION", True)
+        self.auto_approve_live_voice = _env_bool("AUREON_AUTO_APPROVE_LIVE_VOICE", False)
+        self.confirmation_token = os.getenv("AUREON_DESKTOP_CONFIRM_TOKEN", "")
         self.max_recent_actions = 25
         self.max_pending_actions = 20
 
@@ -191,8 +193,8 @@ class SafeDesktopControl:
             "auto_execute_actions": sorted(AUTO_EXECUTE_ACTIONS),
             "last_error": self.last_error,
             "last_result": dict(self.last_result),
-            "pending_actions": list(self.pending_actions[-10:]),
-            "recent_actions": list(self.recent_actions[-10:]),
+            "pending_actions": [self._redact_action(item) for item in self.pending_actions[-10:]],
+            "recent_actions": [self._redact_action(item) for item in self.recent_actions[-10:]],
         }
 
     def propose(self, req: DesktopAction) -> Dict[str, Any]:
@@ -240,8 +242,10 @@ class SafeDesktopControl:
             return self._reject(req, "emergency_stop_active")
         if not self.armed:
             return self._reject(req, "controller_not_armed")
+        if not self.dry_run and not req.approved:
+            return self._reject(req, "explicit_action_approval_required")
         if self.require_confirmation and req.action in HIGH_RISK_ACTIONS and not self._bypass_confirmation(req):
-            if req.confirm_token != self.confirmation_token:
+            if not self.confirmation_token or req.confirm_token != self.confirmation_token:
                 return self._reject(req, "confirmation_required")
         if not HAS_PYAUTOGUI and not self.dry_run:
             return self._reject(req, "pyautogui_not_available")
@@ -299,20 +303,23 @@ class SafeDesktopControl:
     def _should_auto_execute(self, req: DesktopAction) -> bool:
         if not self.armed:
             return False
-        if req.action in AUTO_EXECUTE_ACTIONS:
+        if req.action in AUTO_EXECUTE_ACTIONS and (self.dry_run or req.approved):
             return True
         if self.auto_approve_live_voice and not self.dry_run and self._is_voice_request(req):
             return req.action in ALLOWED_ACTIONS
         return False
 
     def _bypass_confirmation(self, req: DesktopAction) -> bool:
-        return bool(self.auto_approve_live_voice and not self.dry_run and self._is_voice_request(req))
+        # Voice provenance is not an authorization credential.  Kept as a
+        # method for compatibility, but live confirmation is never bypassed.
+        return False
 
     def _is_voice_request(self, req: DesktopAction) -> bool:
         return str(req.source or "").startswith("voice:")
 
     def _record_result(self, result: DesktopActionResult) -> None:
         data = asdict(result)
+        data["params"] = self._redact_params(data.get("params") or {})
         self.last_result = dict(data)
         self.recent_actions.append(data)
         if len(self.recent_actions) > self.max_recent_actions:
@@ -327,23 +334,27 @@ class SafeDesktopControl:
         except Exception:
             return
 
-        # Persisted runtime state.
-        self.armed = bool(payload.get("armed", self.armed))
-        self.dry_run = bool(payload.get("dry_run", self.dry_run))
+        # Arming and live mode are deliberately process-local.  A restart must
+        # always return to disarmed dry-run even if an older state file says
+        # otherwise.
+        self.armed = False
+        self.dry_run = True
         self.last_error = str(payload.get("last_error") or "")
         self.last_result = dict(payload.get("last_result") or {})
         self.pending_actions = list(payload.get("pending_actions") or [])[-self.max_pending_actions :]
         self.recent_actions = list(payload.get("recent_actions") or [])[-self.max_recent_actions :]
 
         # Persisted configuration (can be overridden via env on next start).
-        self.require_confirmation = bool(payload.get("require_confirmation", self.require_confirmation))
-        self.auto_approve_live_voice = bool(payload.get("auto_approve_live_voice", self.auto_approve_live_voice))
+        # Security configuration comes from this build/environment, never from
+        # a writable runtime state file.
 
     def _persist_state(self) -> None:
         payload = {
             "generated_at": time.time(),
-            "armed": self.armed,
-            "dry_run": self.dry_run,
+            "armed": False,
+            "dry_run": True,
+            "runtime_armed": self.armed,
+            "runtime_dry_run": self.dry_run,
             "pyautogui_available": HAS_PYAUTOGUI,
             "emergency_stopped": self.is_emergency_stopped(),
             "require_confirmation": self.require_confirmation,
@@ -351,14 +362,33 @@ class SafeDesktopControl:
             "allowed_actions": sorted(ALLOWED_ACTIONS),
             "auto_execute_actions": sorted(AUTO_EXECUTE_ACTIONS),
             "last_error": self.last_error,
-            "last_result": self.last_result,
-            "pending_actions": self.pending_actions[-10:],
-            "recent_actions": self.recent_actions[-10:],
+            "last_result": self._redact_action(self.last_result),
+            "pending_actions": [self._redact_action(item) for item in self.pending_actions[-10:]],
+            "recent_actions": [self._redact_action(item) for item in self.recent_actions[-10:]],
         }
         try:
             self.state_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
         except Exception as e:
             logger.debug("Could not persist desktop control state: %s", e)
+
+    @staticmethod
+    def _redact_params(params: Dict[str, Any]) -> Dict[str, Any]:
+        clean = dict(params)
+        if "text" in clean:
+            text = str(clean.pop("text"))
+            clean["text_redacted"] = True
+            clean["text_length"] = len(text)
+        if "confirm_token" in clean:
+            clean["confirm_token"] = "[redacted]"
+        return clean
+
+    @classmethod
+    def _redact_action(cls, item: Dict[str, Any]) -> Dict[str, Any]:
+        clean = dict(item)
+        clean["params"] = cls._redact_params(dict(clean.get("params") or {}))
+        if clean.get("confirm_token"):
+            clean["confirm_token"] = "[redacted]"
+        return clean
 
 
 def build_default_controller(dry_run: bool = True) -> SafeDesktopControl:

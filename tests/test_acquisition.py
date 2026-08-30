@@ -14,6 +14,7 @@ realized + approved + complete + ok, with refusals named.
 from __future__ import annotations
 
 import json
+from types import SimpleNamespace
 
 import pytest
 
@@ -134,8 +135,35 @@ class _Plan:
 def _cog(adapter):
     from aureon.operator.cognition import AureonCognition
 
-    return AureonCognition(adapter=adapter, join_mesh=False, conscience=None,
-                           mesh_broadcast=False, governance_enabled=False)
+    class _ApprovedAcquisitionConscience:
+        def ask_why(self, _action, _context):
+            return SimpleNamespace(
+                verdict=SimpleNamespace(name="APPROVED"),
+                message="approved by bounded acquisition fixture",
+            )
+
+    instance = AureonCognition(
+        adapter=adapter,
+        join_mesh=False,
+        conscience=_ApprovedAcquisitionConscience(),
+        mesh_broadcast=False,
+        governance_enabled=False,
+        allow_repo_grounding=False,
+        allow_organism_context=False,
+    )
+    definition = instance.tools.get("repo_search")
+    assert definition is not None
+    instance.tools.define_tool(
+        definition.name,
+        definition.description,
+        definition.input_schema,
+        lambda _arguments: json.dumps({"results": [{"path": "fixture.md"}]}),
+        effect=definition.effect,
+        operation_id=definition.operation_id,
+        hnc_repair_safe=True,
+    )
+    instance._read_organism_state = lambda: {}  # type: ignore[method-assign]
+    return instance
 
 
 def test_gap_triggers_acquisition_and_outcome_is_measured():
@@ -177,7 +205,11 @@ def test_no_gap_no_churn():
 def test_list_skills_tool_is_read_only():
     from aureon.operator.tools import build_operator_tools
 
-    reg = build_operator_tools(allow_writes=False, allow_shell=False)
+    reg = build_operator_tools(
+        allow_writes=False,
+        allow_shell=False,
+        hnc_coherence_required=False,
+    )
     assert "list_skills" in reg.names()
     out = json.loads(reg.execute("list_skills", {}))
     assert "skills" in out and isinstance(out["skills"], list)

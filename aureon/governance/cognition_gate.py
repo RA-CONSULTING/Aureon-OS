@@ -1,10 +1,10 @@
 """Fail-closed adapter between cognition and two-rune governance receipts.
 
-This module is deliberately inert until a caller supplies two independent,
-trusted receipt producers.  It never reads the ThoughtBus, the advisory prompt
-router, HNC, Auris, or a provider directly, and it grants no route authority.
-Its only jobs are to bind one immutable cognition proposal to exact digests,
-invoke each governance voice once, and validate their dual-key join.
+This module never reads the ThoughtBus, an advisory prompt router, or a provider
+directly, and it grants no route authority.  It exposes two pure joins: a
+proposal-bound HNC coherence decision over a caller-captured canonical field,
+and the independent Council/Crown dual-key join used for authority-bearing
+routes.  Both remain evidence-only.
 """
 
 from __future__ import annotations
@@ -19,6 +19,7 @@ from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
 from typing import Any, Protocol, runtime_checkable
 
+from aureon.core.hnc_field import CanonicalField, validate_canonical_field_snapshot
 from aureon.governance.crown_voice import (
     CROWN_SCHEMA,
     validate_crown_voice_receipt,
@@ -40,7 +41,27 @@ from aureon.swarm.druidic_council import (
 
 PROPOSAL_SCHEMA = "aureon.cognition_governance_proposal.v1"
 DISABLED_SCHEMA = "aureon.cognition_governance_disabled.v1"
+HNC_COHERENCE_REQUEST_SCHEMA = "aureon.hnc_coherence.request.v1"
+HNC_COHERENCE_DECISION_SCHEMA = "aureon.hnc_coherence.decision.v1"
+HNC_COHERENCE_POLICY_VERSION = "aureon.hnc_coherence.policy.v1"
+# These values are part of the v1 receipt contract.  Changing an upstream
+# Council/Auris constant must not silently change the meaning of an existing
+# signed/hash-bound policy label; a semantic change requires policy.v2.
+HNC_POLICY_V1_ACTIVE_THRESHOLD = 0.80
+HNC_POLICY_V1_LIGHTHOUSE_THRESHOLD = 0.945
+HNC_POLICY_V1_MAX_AGE_S = 300.0
+HNC_POLICY_V1_FUTURE_SKEW_S = 5.0
 _DIGEST_RE = re.compile(r"^[0-9a-f]{64}$")
+
+_HNC_EFFECT_THRESHOLDS = {
+    "read_only": HNC_POLICY_V1_ACTIVE_THRESHOLD,
+    "local_mutation": HNC_POLICY_V1_ACTIVE_THRESHOLD,
+    "external_mutation": HNC_POLICY_V1_LIGHTHOUSE_THRESHOLD,
+    "economic_mutation": HNC_POLICY_V1_LIGHTHOUSE_THRESHOLD,
+    "privileged": HNC_POLICY_V1_LIGHTHOUSE_THRESHOLD,
+}
+_HNC_OUTCOMES = frozenset({"PROCEED", "REPAIR", "HOLD", "ABORT"})
+_HNC_FLOWS = frozenset({"EXPAND", "STEADY", "OBSERVE", "REPAIR"})
 
 _QUEEN_DECISION = {
     "APPROVED": "APPROVE",
@@ -93,6 +114,16 @@ class CognitionGovernanceRequest:
 
 
 @dataclass(frozen=True)
+class HNCCoherenceRequest:
+    """Exact, non-authorizing action material presented to the HNC policy."""
+
+    schema: str
+    proposal_digest: str
+    effect: str
+    operation_id: str
+
+
+@dataclass(frozen=True)
 class TrustedCouncilEvidence:
     """Council receipt plus the full validated Auris-node bodies it used."""
 
@@ -132,6 +163,312 @@ class TrustedCrownReceiptSupplier(Protocol):
 
 def _false_flags() -> dict[str, bool]:
     return dict.fromkeys(_FALSE_FLAGS, False)
+
+
+def _canonical_json(payload: Mapping[str, Any]) -> str:
+    return json.dumps(
+        payload,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+        allow_nan=False,
+    )
+
+
+def _hnc_digest(value: str, name: str) -> str:
+    candidate = _nonblank(value, name)
+    digest = candidate.rsplit(":", 1)[-1]
+    if _DIGEST_RE.fullmatch(digest) is None:
+        raise ValueError(f"{name}_must_end_with_sha256")
+    return candidate
+
+
+def build_hnc_coherence_request(
+    *,
+    proposal_digest: str,
+    effect: str,
+    operation_id: str,
+) -> HNCCoherenceRequest:
+    """Freeze trusted action classification and the exact proposal digest."""
+
+    normalized_effect = str(effect or "").strip().lower()
+    if normalized_effect not in {*_HNC_EFFECT_THRESHOLDS, "unknown"}:
+        raise ValueError("recognized_hnc_effect_required")
+    return HNCCoherenceRequest(
+        schema=HNC_COHERENCE_REQUEST_SCHEMA,
+        proposal_digest=_hnc_digest(proposal_digest, "proposal_digest"),
+        effect=normalized_effect,
+        operation_id=_nonblank(operation_id, "operation_id"),
+    )
+
+
+def _hnc_no_data(
+    request: HNCCoherenceRequest,
+    reason: str,
+    *,
+    outcome: str = "REPAIR",
+) -> dict[str, Any]:
+    """Return a numeric-free adaptive decision, never a fabricated receipt."""
+
+    normalized_outcome = outcome if outcome in _HNC_OUTCOMES else "ABORT"
+    return {
+        "schema": HNC_COHERENCE_DECISION_SCHEMA,
+        "receipt_type": "hnc_coherence_decision",
+        "receipt_id": None,
+        "policy_version": HNC_COHERENCE_POLICY_VERSION,
+        "proposal_digest": request.proposal_digest,
+        "effect": request.effect,
+        "operation_id": request.operation_id,
+        "outcome": normalized_outcome,
+        "flow": "REPAIR",
+        "reason": reason,
+        "threshold": None,
+        "coherence_gamma": None,
+        "hnc_receipt_id": None,
+        "hnc_source_timestamp": None,
+        "hnc_received_at": None,
+        "hnc_input_receipt_ids": [],
+        "hnc_field_digest": None,
+        "checked_at": None,
+        "data_status": "no_data",
+        "truth_status": "no_data",
+        "freshness_status": "no_data",
+        "equation_inputs_complete": False,
+        "generated_values": False,
+        "coherence_satisfied": False,
+        "repair_safe_only": normalized_outcome == "REPAIR",
+        "route_authorization_required": True,
+        "execution_invariants_preserved": True,
+        "economic_eligible": False,
+        **_false_flags(),
+    }
+
+
+def _hnc_flow(gamma: float) -> str:
+    if gamma >= HNC_POLICY_V1_LIGHTHOUSE_THRESHOLD:
+        return "EXPAND"
+    if gamma >= HNC_POLICY_V1_ACTIVE_THRESHOLD:
+        return "STEADY"
+    return "REPAIR"
+
+
+def evaluate_hnc_coherence(
+    request: HNCCoherenceRequest,
+    *,
+    canonical_field: CanonicalField | Mapping[str, Any],
+    now: float | None = None,
+) -> dict[str, Any]:
+    """Evaluate one exact proposal against one freshly revalidated HNC moment.
+
+    ``PROCEED`` means only that the proposal is coherent enough to continue to
+    its independent route authorization.  It never authorizes a handler,
+    provider mutation, payment, filing, trade, or privileged machine action.
+    """
+
+    if not isinstance(request, HNCCoherenceRequest):
+        raise TypeError("hnc_coherence_request_required")
+    if request.schema != HNC_COHERENCE_REQUEST_SCHEMA:
+        raise ValueError("unsupported_hnc_coherence_request_schema")
+    if request.effect == "unknown":
+        return _hnc_no_data(request, "known_effect_class_required", outcome="ABORT")
+    current = time.time() if now is None else float(now)
+    if not math.isfinite(current):
+        raise ValueError("finite_hnc_check_time_required")
+    try:
+        field = validate_canonical_field_snapshot(canonical_field, now=current)
+    except (TypeError, ValueError):
+        return _hnc_no_data(request, "complete_fresh_canonical_hnc_field_required")
+    threshold = float(_HNC_EFFECT_THRESHOLDS[request.effect])
+    gamma = float(field.coherence_gamma)  # validated as finite by hnc_field
+    flow = _hnc_flow(gamma)
+    if gamma >= threshold:
+        outcome = "PROCEED"
+        reason = "coherence_threshold_satisfied_route_authorization_still_required"
+    elif gamma < HNC_POLICY_V1_ACTIVE_THRESHOLD:
+        outcome = "REPAIR"
+        reason = "coherence_below_active_threshold_repair_flow"
+    else:
+        outcome = "HOLD"
+        flow = "OBSERVE"
+        reason = "coherence_below_consequential_effect_threshold"
+    field_payload = field.to_dict()
+    field_digest = hashlib.sha256(
+        _canonical_json(field_payload).encode("utf-8")
+    ).hexdigest()
+    payload = {
+        "schema": HNC_COHERENCE_DECISION_SCHEMA,
+        "receipt_type": "hnc_coherence_decision",
+        "receipt_id": "",
+        "policy_version": HNC_COHERENCE_POLICY_VERSION,
+        "proposal_digest": request.proposal_digest,
+        "effect": request.effect,
+        "operation_id": request.operation_id,
+        "outcome": outcome,
+        "flow": flow,
+        "reason": reason,
+        "threshold": threshold,
+        "coherence_gamma": gamma,
+        "hnc_receipt_id": field.receipt_id,
+        "hnc_source_timestamp": field.source_timestamp,
+        "hnc_received_at": field.received_at,
+        "hnc_input_receipt_ids": list(field.input_receipt_ids),
+        "hnc_field_digest": field_digest,
+        "checked_at": current,
+        "data_status": field.data_status,
+        "truth_status": field.truth_status,
+        "freshness_status": field.freshness_status,
+        "equation_inputs_complete": field.equation_inputs_complete,
+        "generated_values": field.generated_values,
+        "coherence_satisfied": outcome == "PROCEED",
+        "repair_safe_only": outcome == "REPAIR",
+        "route_authorization_required": True,
+        "execution_invariants_preserved": True,
+        "economic_eligible": False,
+        **_false_flags(),
+    }
+    causal = dict(payload)
+    causal.pop("receipt_id")
+    payload["receipt_id"] = (
+        "hnc:coherence_decision:"
+        + hashlib.sha256(_canonical_json(causal).encode("utf-8")).hexdigest()
+    )
+    return validate_hnc_coherence_decision(
+        payload,
+        expected_proposal_digest=request.proposal_digest,
+        now=current,
+    )
+
+
+def validate_hnc_coherence_decision(
+    receipt: Mapping[str, Any],
+    *,
+    expected_proposal_digest: str | None = None,
+    now: float | None = None,
+    max_age_s: float = HNC_POLICY_V1_MAX_AGE_S,
+) -> dict[str, Any]:
+    """Strictly validate a hash-bound, evidence-only HNC decision receipt."""
+
+    if not isinstance(receipt, Mapping):
+        raise TypeError("hnc_coherence_decision_receipt_required")
+    payload = dict(receipt)
+    expected_keys = {
+        "schema", "receipt_type", "receipt_id", "policy_version",
+        "proposal_digest", "effect", "operation_id", "outcome", "flow",
+        "reason", "threshold", "coherence_gamma", "hnc_receipt_id",
+        "hnc_source_timestamp", "hnc_received_at", "hnc_input_receipt_ids",
+        "hnc_field_digest", "checked_at", "data_status", "truth_status",
+        "freshness_status", "equation_inputs_complete", "generated_values",
+        "coherence_satisfied", "repair_safe_only",
+        "route_authorization_required", "execution_invariants_preserved",
+        "economic_eligible", *_FALSE_FLAGS,
+    }
+    if set(payload) != expected_keys:
+        raise ValueError("exact_hnc_coherence_decision_schema_required")
+    if (
+        payload["schema"] != HNC_COHERENCE_DECISION_SCHEMA
+        or payload["receipt_type"] != "hnc_coherence_decision"
+        or payload["policy_version"] != HNC_COHERENCE_POLICY_VERSION
+        or payload["effect"] not in _HNC_EFFECT_THRESHOLDS
+        or payload["outcome"] not in _HNC_OUTCOMES
+        or payload["flow"] not in _HNC_FLOWS
+        or payload["data_status"] != "live"
+        or payload["truth_status"] != "real_derived"
+        or payload["freshness_status"] != "fresh"
+        or payload["equation_inputs_complete"] is not True
+        or payload["generated_values"] is not False
+        or payload["route_authorization_required"] is not True
+        or payload["execution_invariants_preserved"] is not True
+        or payload["economic_eligible"] is not False
+        or any(payload[name] is not False for name in _FALSE_FLAGS)
+    ):
+        raise ValueError("valid_evidence_only_hnc_coherence_decision_required")
+    proposal_digest = _hnc_digest(payload["proposal_digest"], "proposal_digest")
+    if expected_proposal_digest is not None and proposal_digest != _hnc_digest(
+        expected_proposal_digest,
+        "expected_proposal_digest",
+    ):
+        raise ValueError("hnc_decision_proposal_mismatch")
+    _nonblank(payload["operation_id"], "operation_id")
+    _nonblank(payload["reason"], "reason")
+    hnc_id = _nonblank(payload["hnc_receipt_id"], "hnc_receipt_id")
+    if not hnc_id.startswith("hnc:live_field:"):
+        raise ValueError("live_hnc_receipt_required")
+    if _DIGEST_RE.fullmatch(_nonblank(payload["hnc_field_digest"], "hnc_field_digest")) is None:
+        raise ValueError("hnc_field_digest_must_be_sha256")
+    raw_ids = payload["hnc_input_receipt_ids"]
+    if (
+        not isinstance(raw_ids, list)
+        or not raw_ids
+        or raw_ids != sorted(set(raw_ids))
+        or any(not isinstance(value, str) or not value.strip() for value in raw_ids)
+    ):
+        raise ValueError("sorted_unique_hnc_input_receipt_ids_required")
+    numeric_names = (
+        "threshold", "coherence_gamma", "hnc_source_timestamp",
+        "hnc_received_at", "checked_at",
+    )
+    numbers: dict[str, float] = {}
+    for name in numeric_names:
+        value = payload[name]
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise ValueError(f"{name}_must_be_finite")
+        number = float(value)
+        if not math.isfinite(number):
+            raise ValueError(f"{name}_must_be_finite")
+        numbers[name] = number
+    if not 0.0 <= numbers["coherence_gamma"] <= 1.0:
+        raise ValueError("coherence_gamma_out_of_range")
+    if numbers["threshold"] != float(_HNC_EFFECT_THRESHOLDS[payload["effect"]]):
+        raise ValueError("effect_threshold_mismatch")
+    current = time.time() if now is None else float(now)
+    age_limit = float(max_age_s)
+    if (
+        not math.isfinite(current)
+        or not math.isfinite(age_limit)
+        or age_limit <= 0.0
+        or age_limit > HNC_POLICY_V1_MAX_AGE_S
+        or numbers["hnc_source_timestamp"] > current + HNC_POLICY_V1_FUTURE_SKEW_S
+        or numbers["hnc_received_at"] > current + HNC_POLICY_V1_FUTURE_SKEW_S
+        or numbers["checked_at"] > current + HNC_POLICY_V1_FUTURE_SKEW_S
+        or current - numbers["hnc_source_timestamp"] > age_limit
+        or current - numbers["hnc_received_at"] > age_limit
+        or current - numbers["checked_at"] > age_limit
+    ):
+        raise ValueError("fresh_hnc_coherence_decision_required")
+    gamma = numbers["coherence_gamma"]
+    expected_proceed = gamma >= numbers["threshold"]
+    if expected_proceed:
+        expected_outcome = "PROCEED"
+        expected_flow = _hnc_flow(gamma)
+        expected_reason = "coherence_threshold_satisfied_route_authorization_still_required"
+    elif gamma < HNC_POLICY_V1_ACTIVE_THRESHOLD:
+        expected_outcome = "REPAIR"
+        expected_flow = "REPAIR"
+        expected_reason = "coherence_below_active_threshold_repair_flow"
+    else:
+        expected_outcome = "HOLD"
+        expected_flow = "OBSERVE"
+        expected_reason = "coherence_below_consequential_effect_threshold"
+    if payload["coherence_satisfied"] is not expected_proceed:
+        raise ValueError("coherence_outcome_mismatch")
+    if (
+        payload["outcome"] != expected_outcome
+        or payload["flow"] != expected_flow
+        or payload["reason"] != expected_reason
+    ):
+        raise ValueError("deterministic_hnc_policy_mismatch")
+    if payload["repair_safe_only"] is not (payload["outcome"] == "REPAIR"):
+        raise ValueError("repair_flow_binding_mismatch")
+    receipt_id = _nonblank(payload["receipt_id"], "receipt_id")
+    causal = dict(payload)
+    causal.pop("receipt_id")
+    expected_id = (
+        "hnc:coherence_decision:"
+        + hashlib.sha256(_canonical_json(causal).encode("utf-8")).hexdigest()
+    )
+    if receipt_id != expected_id:
+        raise ValueError("hnc_coherence_decision_digest_mismatch")
+    return payload
 
 
 def _no_data(reason: str) -> dict[str, Any]:
@@ -528,6 +865,7 @@ def evaluate_cognition_governance(
             not math.isfinite(float(current))
             or not age_limit.is_finite()
             or age_limit <= 0
+            or age_limit > Decimal(str(DEFAULT_MAX_AGE_S))
             or any(
                 source_time > current_decimal + Decimal(str(FUTURE_SKEW_S))
                 or current_decimal - source_time > age_limit
@@ -681,12 +1019,19 @@ def explicit_disabled_governance(
 __all__ = [
     "CognitionGovernanceRequest",
     "DISABLED_SCHEMA",
+    "HNCCoherenceRequest",
+    "HNC_COHERENCE_DECISION_SCHEMA",
+    "HNC_COHERENCE_POLICY_VERSION",
+    "HNC_COHERENCE_REQUEST_SCHEMA",
     "PROPOSAL_SCHEMA",
     "TrustedCouncilEvidence",
     "TrustedCouncilReceiptSupplier",
     "TrustedCrownReceiptSupplier",
     "authority_route_requires_governance",
     "build_cognition_governance_request",
+    "build_hnc_coherence_request",
     "evaluate_cognition_governance",
+    "evaluate_hnc_coherence",
     "explicit_disabled_governance",
+    "validate_hnc_coherence_decision",
 ]

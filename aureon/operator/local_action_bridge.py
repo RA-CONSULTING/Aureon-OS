@@ -30,6 +30,7 @@ Gary Leckey · Aureon Institute
 
 from __future__ import annotations
 
+import json
 import logging
 import os
 from collections import deque
@@ -95,16 +96,58 @@ class LocalActionBridge:
 
                 reg = build_operator_tools(allow_writes=True, allow_shell=True)
                 out = reg.execute(action, params)
+                try:
+                    payload = json.loads(out)
+                except (TypeError, json.JSONDecodeError):
+                    payload = None
+                if isinstance(payload, dict) and payload.get("blocked") is True:
+                    return {
+                        "ok": False,
+                        "result": payload,
+                        "artefacts": [],
+                        "error": str(payload.get("reason") or "HNC-governed dispatch held"),
+                    }
                 return {"ok": True, "result": out, "artefacts": [], "error": None}
             except Exception as exc:  # noqa: BLE001
                 return {"ok": False, "result": None, "artefacts": [], "error": str(exc)}
         if action in _DESKTOP_ACTIONS:
             try:
-                from aureon.autonomous.vm_control.dispatcher import get_vm_dispatcher
+                from aureon.autonomous.aureon_governed_desktop_gateway import (
+                    get_governed_desktop_gateway,
+                )
 
-                disp = get_vm_dispatcher()
-                out = disp.dispatch(action, params)  # simulated backend by default
-                return {"ok": True, "result": out, "artefacts": [], "error": None}
+                gateway = get_governed_desktop_gateway()
+                mapped = {
+                    "screenshot": "observe",
+                    "mouse_move": "move",
+                    "left_click": "click",
+                    "right_click": "right_click",
+                    "double_click": "double_click",
+                    "type_text": "type",
+                    "press_key": "press",
+                    "hotkey": "hotkey",
+                    "scroll": "scroll",
+                }.get(action)
+                if mapped is None:
+                    return {"ok": False, "result": None, "artefacts": [],
+                            "error": f"desktop action {action!r} is not governed"}
+                action_params = dict(params)
+                target_binding_id = str(action_params.pop("target_binding_id", "") or "") or None
+                if mapped == "scroll" and "clicks" in action_params and "amount" not in action_params:
+                    action_params["amount"] = action_params.pop("clicks")
+                out = gateway.execute(
+                    mapped,
+                    action_params,
+                    target_binding_id=target_binding_id,
+                )
+                nested_ok = bool(out.ok)
+                return {
+                    "ok": nested_ok,
+                    "result": out.to_dict(),
+                    "artefacts": [],
+                    "error": None if nested_ok else out.reason,
+                    "dry_run": bool(out.dry_run),
+                }
             except Exception as exc:  # noqa: BLE001
                 return {"ok": False, "result": None, "artefacts": [],
                         "error": f"desktop executor unavailable: {exc}"}
@@ -114,7 +157,11 @@ class LocalActionBridge:
     def _dispatch(self, action: str, params: Dict[str, Any]) -> Dict[str, Any]:
         ex = self._executor or self._default_executor
         try:
-            return ex(action, params)
+            outcome = ex(action, params)
+            if not isinstance(outcome, dict):
+                return {"ok": False, "result": None, "artefacts": [],
+                        "error": "executor returned a non-object result"}
+            return outcome
         except Exception as exc:  # noqa: BLE001
             return {"ok": False, "result": None, "artefacts": [], "error": str(exc)}
 
@@ -154,14 +201,18 @@ class LocalActionBridge:
             self._publish("local.action.abandoned", verdict.trace_id, base)
             return {**base, "ok": False, "blocked": True, "executed": False, "dry_run": False}
 
-        if not self.armed:
+        if not self.armed and action not in _DESKTOP_ACTIONS:
             self._publish("local.action.result", verdict.trace_id, {**base, "dry_run": True})
             return {**base, "ok": True, "blocked": False, "executed": False, "dry_run": True,
                     "note": "approved but disarmed — set AUREON_LOCAL_ACTIONS_ARMED=1 to execute"}
 
         outcome = self._dispatch(action, params)
-        result = {**base, "ok": bool(outcome.get("ok")), "blocked": False,
-                  "executed": True, "dry_run": False,
+        outcome_ok = bool(outcome.get("ok"))
+        outcome_dry_run = bool(outcome.get("dry_run", False))
+        result = {**base, "ok": outcome_ok, "blocked": False,
+                  "execution_attempted": True,
+                  "executed": outcome_ok and not outcome_dry_run,
+                  "dry_run": outcome_dry_run,
                   "result": outcome.get("result"), "error": outcome.get("error")}
         self._publish("local.action.result", verdict.trace_id, result)
         return result

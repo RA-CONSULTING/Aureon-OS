@@ -1,10 +1,13 @@
-import os
+import json
 import logging
-import time
-from typing import Dict, Any, Optional, List, Tuple
-from decimal import Decimal
-from collections.abc import Mapping
 import math
+import os
+import time
+from collections.abc import Collection, Mapping
+from dataclasses import dataclass
+from decimal import Decimal
+from threading import Lock
+from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
 
 from aureon.governance.legacy_economic_unity import (
     LegacyEconomicInvocation,
@@ -562,6 +565,787 @@ class MultiExchangeClient:
                 # Use epic (symbol) as is; Capital.com search expects names like BTCUSD
                 return s
             return s
+
+
+@runtime_checkable
+class TrustedUnifiedEcosystemPlanSupplier(Protocol):
+    """Composition-root supplier for exact legacy-unity order plans."""
+
+    supplier_id: str
+
+    def supply_unity_plan(
+        self,
+        request: "UnifiedEcosystemMutationRequest",
+    ) -> LegacyUnityIntentPlan:
+        """Return one provider-exact, evidence-addressed plan."""
+
+
+def _canonical_amount(value: Any, label: str) -> str | None:
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        raise ValueError(f"{label}_must_be_positive_finite_decimal")
+    try:
+        amount = Decimal(str(value))
+    except Exception as exc:
+        raise ValueError(f"{label}_must_be_positive_finite_decimal") from exc
+    if not amount.is_finite() or amount <= 0:
+        raise ValueError(f"{label}_must_be_positive_finite_decimal")
+    result = format(amount, "f")
+    if "." in result:
+        result = result.rstrip("0").rstrip(".")
+    return result
+
+
+@dataclass(frozen=True, slots=True)
+class UnifiedEcosystemMutationRequest:
+    """Immutable high-level order shape presented to the trusted plan supplier."""
+
+    exchange: str
+    operation: str
+    purpose: str
+    symbol: str
+    side: str
+    order_type: str
+    quantity: str | None
+    quote_quantity: str | None
+    limit_price: str | None
+    stop_price: str | None
+    take_profit: str | None
+    reduce_only: bool
+    provider_order_id: str | None = None
+
+    def __post_init__(self) -> None:
+        if self.exchange not in {"kraken", "binance", "alpaca", "capital"}:
+            raise ValueError("supported_exchange_required")
+        if not self.operation or self.operation != self.operation.upper():
+            raise ValueError("canonical_mutation_operation_required")
+        if not self.purpose or self.purpose != self.purpose.upper():
+            raise ValueError("canonical_mutation_purpose_required")
+        if not self.symbol.strip():
+            raise ValueError("canonical_mutation_symbol_required")
+        if not self.side or self.side != self.side.upper():
+            raise ValueError("canonical_mutation_side_required")
+        if not self.order_type or self.order_type != self.order_type.upper():
+            raise ValueError("canonical_mutation_order_type_required")
+        if type(self.reduce_only) is not bool:
+            raise ValueError("reduce_only_must_be_boolean")
+        for name in (
+            "quantity",
+            "quote_quantity",
+            "limit_price",
+            "stop_price",
+            "take_profit",
+        ):
+            value = getattr(self, name)
+            if value is not None and _canonical_amount(value, name) != value:
+                raise ValueError(f"canonical_{name}_required")
+        if self.provider_order_id is not None and not self.provider_order_id.strip():
+            raise ValueError("provider_order_id_must_be_nonblank")
+
+    @classmethod
+    def build(
+        cls,
+        *,
+        exchange: str,
+        operation: str,
+        purpose: str,
+        symbol: str,
+        side: str,
+        order_type: str,
+        quantity: Any = None,
+        quote_quantity: Any = None,
+        limit_price: Any = None,
+        stop_price: Any = None,
+        take_profit: Any = None,
+        reduce_only: bool,
+        provider_order_id: str | None = None,
+    ) -> "UnifiedEcosystemMutationRequest":
+        return cls(
+            exchange=str(exchange or "").strip().lower(),
+            operation=str(operation or "").strip().upper(),
+            purpose=str(purpose or "").strip().upper(),
+            symbol=str(symbol or "").strip().upper(),
+            side=str(side or "").strip().upper(),
+            order_type=str(order_type or "").strip().upper(),
+            quantity=_canonical_amount(quantity, "quantity"),
+            quote_quantity=_canonical_amount(quote_quantity, "quote_quantity"),
+            limit_price=_canonical_amount(limit_price, "limit_price"),
+            stop_price=_canonical_amount(stop_price, "stop_price"),
+            take_profit=_canonical_amount(take_profit, "take_profit"),
+            reduce_only=reduce_only,
+            provider_order_id=(
+                None
+                if provider_order_id is None
+                else str(provider_order_id).strip()
+            ),
+        )
+
+
+_ORDER_PATHS = {
+    "kraken": ("POST", "/0/private/AddOrder"),
+    "binance": ("POST", "/api/v3/order"),
+    "alpaca": ("POST", "/v2/orders"),
+    "capital": ("POST", "/positions"),
+}
+_CANCEL_ALL_PATHS = {
+    "kraken": ("POST", "/0/private/CancelAll"),
+    "alpaca": ("DELETE", "/v2/orders"),
+}
+
+
+def _plan_route_matches(
+    plan: LegacyUnityIntentPlan,
+    request: UnifiedEcosystemMutationRequest,
+) -> bool:
+    if request.operation == "CANCEL_ORDER":
+        if request.exchange == "kraken":
+            expected_route = ("POST", "/0/private/CancelOrder")
+        elif request.exchange == "alpaca" and request.provider_order_id:
+            expected_route = (
+                "DELETE",
+                f"/v2/orders/{request.provider_order_id}",
+            )
+        else:
+            return False
+    elif request.operation == "CANCEL_ALL_ORDERS":
+        expected_route = _CANCEL_ALL_PATHS.get(request.exchange)
+    else:
+        expected_route = _ORDER_PATHS.get(request.exchange)
+    return expected_route is not None and (plan.method, plan.path) == expected_route
+
+
+def _cancel_body_matches(
+    plan: LegacyUnityIntentPlan,
+    request: UnifiedEcosystemMutationRequest,
+) -> bool:
+    if request.operation != "CANCEL_ORDER":
+        return True
+    if request.exchange == "alpaca":
+        return True
+    try:
+        body = json.loads(plan.body_json)
+    except (TypeError, json.JSONDecodeError):
+        return False
+    return str(body.get("txid") or "") == request.provider_order_id
+
+
+class GovernedMultiExchangeClient(MultiExchangeClient):
+    """Preserve the legacy API while requiring one exact plan per mutation.
+
+    The wrapped client must already contain the canonical unity gateway and the
+    HNC/Auris invocation supplier.  This facade adds the missing strategy-level
+    plan seat, validates it against the actual call, and burns the plan before
+    dispatch so an ambiguous provider outcome can never be retried.
+    """
+
+    def __init__(
+        self,
+        *,
+        base_client: MultiExchangeClient,
+        plan_supplier: TrustedUnifiedEcosystemPlanSupplier,
+        trusted_plan_supplier_ids: Collection[str],
+    ) -> None:
+        if not isinstance(base_client, MultiExchangeClient):
+            raise TypeError("canonical_multi_exchange_client_required")
+        if not isinstance(plan_supplier, TrustedUnifiedEcosystemPlanSupplier):
+            raise TypeError("trusted_unified_ecosystem_plan_supplier_required")
+        supplier_id = str(plan_supplier.supplier_id or "").strip()
+        allowlist = {
+            str(item or "").strip().casefold()
+            for item in trusted_plan_supplier_ids
+            if str(item or "").strip()
+        }
+        if not allowlist or supplier_id.casefold() not in allowlist:
+            raise ValueError("unified_ecosystem_plan_supplier_not_allowlisted")
+        clients = getattr(base_client, "clients", None)
+        if not isinstance(clients, Mapping) or not clients:
+            raise ValueError("canonical_unified_exchange_clients_required")
+        gateway_ids = {
+            id(getattr(client, "_legacy_unity_gateway", None))
+            for client in clients.values()
+        }
+        invocation_supplier_ids = {
+            id(getattr(client, "_legacy_invocation_supplier", None))
+            for client in clients.values()
+        }
+        if (
+            len(gateway_ids) != 1
+            or len(invocation_supplier_ids) != 1
+            or id(None) in gateway_ids
+            or id(None) in invocation_supplier_ids
+        ):
+            raise ValueError("canonical_unified_exchange_unity_composition_required")
+        self.clients = clients
+        self.dry_run = bool(getattr(base_client, "dry_run", True))
+        self._plan_supplier = plan_supplier
+        self._consumed_plan_digests: set[str] = set()
+        self._plan_lock = Lock()
+
+    @staticmethod
+    def _plan_matches(
+        plan: LegacyUnityIntentPlan,
+        request: UnifiedEcosystemMutationRequest,
+    ) -> bool:
+        return (
+            plan.venue == request.exchange
+            and plan.operation == request.operation
+            and plan.purpose == request.purpose
+            and plan.symbol == request.symbol
+            and plan.side == request.side
+            and plan.order_type == request.order_type
+            and plan.quantity == request.quantity
+            and plan.quote_quantity == request.quote_quantity
+            and plan.limit_price == request.limit_price
+            and plan.stop_price == request.stop_price
+            and plan.take_profit == request.take_profit
+            and plan.reduce_only is request.reduce_only
+            and _plan_route_matches(plan, request)
+            and _cancel_body_matches(plan, request)
+        )
+
+    def _execute_governed(
+        self,
+        request: UnifiedEcosystemMutationRequest,
+        dispatch,
+    ) -> Dict[str, Any]:
+        try:
+            plan = self._plan_supplier.supply_unity_plan(request)
+        except Exception:
+            return _no_data(
+                request.exchange,
+                request.symbol,
+                "trusted_unified_ecosystem_plan_resolution_failed",
+            )
+        if not isinstance(plan, LegacyUnityIntentPlan) or not self._plan_matches(
+            plan,
+            request,
+        ):
+            return _no_data(
+                request.exchange,
+                request.symbol,
+                "exact_unified_ecosystem_plan_required",
+            )
+        with self._plan_lock:
+            if plan.plan_digest in self._consumed_plan_digests:
+                return _no_data(
+                    request.exchange,
+                    request.symbol,
+                    "unified_ecosystem_plan_replay_blocked",
+                )
+            self._consumed_plan_digests.add(plan.plan_digest)
+        try:
+            result = dispatch(plan)
+        except Exception:
+            return _no_data(
+                request.exchange,
+                request.symbol,
+                "unified_ecosystem_dispatch_outcome_ambiguous",
+            )
+        if not isinstance(result, Mapping):
+            return _no_data(
+                request.exchange,
+                request.symbol,
+                "unified_ecosystem_dispatch_receipt_required",
+            )
+        return dict(result)
+
+    @staticmethod
+    def _reject_caller_authority(
+        exchange: str,
+        symbol: str,
+        invocation: LegacyEconomicInvocation | None,
+        plan: LegacyUnityIntentPlan | None,
+    ) -> Dict[str, Any] | None:
+        if invocation is None and plan is None:
+            return None
+        return _no_data(
+            exchange,
+            symbol,
+            "caller_supplied_unity_authority_forbidden",
+        )
+
+    def place_market_order(
+        self,
+        exchange: str,
+        symbol: str,
+        side: str,
+        quantity=None,
+        quote_qty=None,
+        *,
+        unity_invocation: LegacyEconomicInvocation | None = None,
+        unity_plan: LegacyUnityIntentPlan | None = None,
+        unity_purpose: str | None = None,
+    ) -> Dict[str, Any]:
+        rejected = self._reject_caller_authority(
+            exchange,
+            symbol,
+            unity_invocation,
+            unity_plan,
+        )
+        if rejected is not None:
+            return rejected
+        side_upper = str(side or "").strip().upper()
+        purpose = str(
+            unity_purpose or ("ENTRY" if side_upper == "BUY" else "EXIT")
+        ).strip().upper()
+        try:
+            request = UnifiedEcosystemMutationRequest.build(
+                exchange=exchange,
+                operation="MARKET_ORDER",
+                purpose=purpose,
+                symbol=symbol,
+                side=side_upper,
+                order_type="MARKET",
+                quantity=quantity,
+                quote_quantity=quote_qty,
+                reduce_only=side_upper == "SELL",
+            )
+        except ValueError as exc:
+            return _no_data(exchange, symbol, str(exc))
+        if request.exchange in {"alpaca", "capital"} and (
+            request.quantity is None or request.quote_quantity is not None
+        ):
+            return _no_data(
+                exchange,
+                symbol,
+                "provider_exact_base_quantity_required_before_governance",
+            )
+        return self._execute_governed(
+            request,
+            lambda exact_plan: MultiExchangeClient.place_market_order(
+                self,
+                exchange,
+                symbol,
+                side,
+                quantity=quantity,
+                quote_qty=quote_qty,
+                unity_plan=exact_plan,
+            ),
+        )
+
+    def place_limit_order(
+        self,
+        exchange: str,
+        symbol: str,
+        side: str,
+        quantity,
+        price,
+        post_only: bool = False,
+        time_in_force: str = "GTC",
+        *,
+        unity_invocation: LegacyEconomicInvocation | None = None,
+        unity_plan: LegacyUnityIntentPlan | None = None,
+        unity_purpose: str | None = None,
+    ) -> Dict[str, Any]:
+        rejected = self._reject_caller_authority(
+            exchange, symbol, unity_invocation, unity_plan
+        )
+        if rejected is not None:
+            return rejected
+        side_upper = str(side or "").strip().upper()
+        purpose = str(
+            unity_purpose or ("ENTRY" if side_upper == "BUY" else "EXIT")
+        ).strip().upper()
+        try:
+            request = UnifiedEcosystemMutationRequest.build(
+                exchange=exchange,
+                operation="LIMIT_ORDER",
+                purpose=purpose,
+                symbol=symbol,
+                side=side_upper,
+                order_type="LIMIT",
+                quantity=quantity,
+                limit_price=price,
+                reduce_only=side_upper == "SELL",
+            )
+        except ValueError as exc:
+            return _no_data(exchange, symbol, str(exc))
+        return self._execute_governed(
+            request,
+            lambda exact_plan: MultiExchangeClient.place_limit_order(
+                self,
+                exchange,
+                symbol,
+                side,
+                quantity,
+                price,
+                post_only,
+                time_in_force,
+                unity_plan=exact_plan,
+            ),
+        )
+
+    def place_stop_loss_order(
+        self,
+        exchange: str,
+        symbol: str,
+        side: str,
+        quantity,
+        stop_price,
+        limit_price=None,
+        *,
+        unity_invocation: LegacyEconomicInvocation | None = None,
+        unity_plan: LegacyUnityIntentPlan | None = None,
+    ) -> Dict[str, Any]:
+        rejected = self._reject_caller_authority(
+            exchange, symbol, unity_invocation, unity_plan
+        )
+        if rejected is not None:
+            return rejected
+        try:
+            request = UnifiedEcosystemMutationRequest.build(
+                exchange=exchange,
+                operation="STOP_ORDER",
+                purpose="CONTAINMENT",
+                symbol=symbol,
+                side=side,
+                order_type="STOP_LOSS",
+                quantity=quantity,
+                limit_price=limit_price,
+                stop_price=stop_price,
+                reduce_only=True,
+            )
+        except ValueError as exc:
+            return _no_data(exchange, symbol, str(exc))
+        return self._execute_governed(
+            request,
+            lambda exact_plan: MultiExchangeClient.place_stop_loss_order(
+                self,
+                exchange,
+                symbol,
+                side,
+                quantity,
+                stop_price,
+                limit_price,
+                unity_plan=exact_plan,
+            ),
+        )
+
+    def place_take_profit_order(
+        self,
+        exchange: str,
+        symbol: str,
+        side: str,
+        quantity,
+        take_profit_price,
+        limit_price=None,
+        *,
+        unity_invocation: LegacyEconomicInvocation | None = None,
+        unity_plan: LegacyUnityIntentPlan | None = None,
+    ) -> Dict[str, Any]:
+        rejected = self._reject_caller_authority(
+            exchange, symbol, unity_invocation, unity_plan
+        )
+        if rejected is not None:
+            return rejected
+        try:
+            request = UnifiedEcosystemMutationRequest.build(
+                exchange=exchange,
+                operation="TAKE_PROFIT_ORDER",
+                purpose="CONTAINMENT",
+                symbol=symbol,
+                side=side,
+                order_type="TAKE_PROFIT",
+                quantity=quantity,
+                limit_price=limit_price,
+                take_profit=take_profit_price,
+                reduce_only=True,
+            )
+        except ValueError as exc:
+            return _no_data(exchange, symbol, str(exc))
+        return self._execute_governed(
+            request,
+            lambda exact_plan: MultiExchangeClient.place_take_profit_order(
+                self,
+                exchange,
+                symbol,
+                side,
+                quantity,
+                take_profit_price,
+                limit_price,
+                unity_plan=exact_plan,
+            ),
+        )
+
+    def place_trailing_stop_order(
+        self,
+        exchange: str,
+        symbol: str,
+        side: str,
+        quantity,
+        trailing_offset,
+        offset_type: str = "percent",
+        *,
+        unity_invocation: LegacyEconomicInvocation | None = None,
+        unity_plan: LegacyUnityIntentPlan | None = None,
+    ) -> Dict[str, Any]:
+        rejected = self._reject_caller_authority(
+            exchange, symbol, unity_invocation, unity_plan
+        )
+        if rejected is not None:
+            return rejected
+        try:
+            request = UnifiedEcosystemMutationRequest.build(
+                exchange=exchange,
+                operation="TRAILING_STOP_ORDER",
+                purpose="CONTAINMENT",
+                symbol=symbol,
+                side=side,
+                order_type="TRAILING_STOP",
+                quantity=quantity,
+                stop_price=trailing_offset,
+                reduce_only=True,
+            )
+        except ValueError as exc:
+            return _no_data(exchange, symbol, str(exc))
+        return self._execute_governed(
+            request,
+            lambda exact_plan: MultiExchangeClient.place_trailing_stop_order(
+                self,
+                exchange,
+                symbol,
+                side,
+                quantity,
+                trailing_offset,
+                offset_type,
+                unity_plan=exact_plan,
+            ),
+        )
+
+    def place_order_with_tp_sl(
+        self,
+        exchange: str,
+        symbol: str,
+        side: str,
+        quantity,
+        order_type: str = "market",
+        price=None,
+        take_profit=None,
+        stop_loss=None,
+        *,
+        unity_invocation: LegacyEconomicInvocation | None = None,
+        unity_plan: LegacyUnityIntentPlan | None = None,
+        unity_purpose: str | None = None,
+    ) -> Dict[str, Any]:
+        rejected = self._reject_caller_authority(
+            exchange, symbol, unity_invocation, unity_plan
+        )
+        if rejected is not None:
+            return rejected
+        side_upper = str(side or "").strip().upper()
+        purpose = str(
+            unity_purpose or ("ENTRY" if side_upper == "BUY" else "EXIT")
+        ).strip().upper()
+        try:
+            request = UnifiedEcosystemMutationRequest.build(
+                exchange=exchange,
+                operation="ATOMIC_TP_SL_ORDER",
+                purpose=purpose,
+                symbol=symbol,
+                side=side_upper,
+                order_type=order_type,
+                quantity=quantity,
+                limit_price=price,
+                stop_price=stop_loss,
+                take_profit=take_profit,
+                reduce_only=side_upper == "SELL",
+            )
+        except ValueError as exc:
+            return _no_data(exchange, symbol, str(exc))
+        return self._execute_governed(
+            request,
+            lambda exact_plan: MultiExchangeClient.place_order_with_tp_sl(
+                self,
+                exchange,
+                symbol,
+                side,
+                quantity,
+                order_type,
+                price,
+                take_profit,
+                stop_loss,
+                unity_plan=exact_plan,
+            ),
+        )
+
+    def cancel_order(
+        self,
+        exchange: str,
+        order_id: str,
+        *,
+        unity_invocation: LegacyEconomicInvocation | None = None,
+        unity_plan: LegacyUnityIntentPlan | None = None,
+    ) -> Dict[str, Any]:
+        rejected = self._reject_caller_authority(
+            exchange, order_id, unity_invocation, unity_plan
+        )
+        if rejected is not None:
+            return rejected
+        try:
+            request = UnifiedEcosystemMutationRequest.build(
+                exchange=exchange,
+                operation="CANCEL_ORDER",
+                purpose="CANCEL_PROTECTION",
+                symbol=order_id,
+                side="CANCEL",
+                order_type="CANCEL",
+                reduce_only=True,
+                provider_order_id=order_id,
+            )
+        except ValueError as exc:
+            return _no_data(exchange, order_id, str(exc))
+        return self._execute_governed(
+            request,
+            lambda exact_plan: MultiExchangeClient.cancel_order(
+                self,
+                exchange,
+                order_id,
+                unity_plan=exact_plan,
+            ),
+        )
+
+    def cancel_all_orders(
+        self,
+        exchange: str,
+        symbol: str | None = None,
+        *,
+        unity_invocation: LegacyEconomicInvocation | None = None,
+        unity_plan: LegacyUnityIntentPlan | None = None,
+    ) -> Dict[str, Any]:
+        request_symbol = str(symbol or "ALL_OPEN_ORDERS").strip().upper()
+        rejected = self._reject_caller_authority(
+            exchange, request_symbol, unity_invocation, unity_plan
+        )
+        if rejected is not None:
+            return rejected
+        try:
+            request = UnifiedEcosystemMutationRequest.build(
+                exchange=exchange,
+                operation="CANCEL_ALL_ORDERS",
+                purpose="CANCEL_PROTECTION",
+                symbol=request_symbol,
+                side="CANCEL",
+                order_type="CANCEL_ALL",
+                reduce_only=True,
+            )
+        except ValueError as exc:
+            return _no_data(exchange, request_symbol, str(exc))
+        return self._execute_governed(
+            request,
+            lambda exact_plan: MultiExchangeClient.cancel_all_orders(
+                self,
+                exchange,
+                symbol,
+                unity_plan=exact_plan,
+            ),
+        )
+
+    def place_margin_order(
+        self,
+        exchange: str,
+        symbol: str,
+        side: str,
+        quantity,
+        leverage: int = 2,
+        order_type: str = "market",
+        price=None,
+        take_profit=None,
+        stop_loss=None,
+        post_only: bool = False,
+        *,
+        unity_invocation: LegacyEconomicInvocation | None = None,
+        unity_plan: LegacyUnityIntentPlan | None = None,
+        unity_purpose: str = "ENTRY",
+        unity_reduce_only: bool = False,
+    ) -> Dict[str, Any]:
+        rejected = self._reject_caller_authority(
+            exchange, symbol, unity_invocation, unity_plan
+        )
+        if rejected is not None:
+            return rejected
+        try:
+            request = UnifiedEcosystemMutationRequest.build(
+                exchange=exchange,
+                operation="MARGIN_ORDER",
+                purpose=unity_purpose,
+                symbol=symbol,
+                side=side,
+                order_type=order_type,
+                quantity=quantity,
+                limit_price=price,
+                stop_price=stop_loss,
+                take_profit=take_profit,
+                reduce_only=unity_reduce_only,
+            )
+        except ValueError as exc:
+            return _no_data(exchange, symbol, str(exc))
+        return self._execute_governed(
+            request,
+            lambda exact_plan: MultiExchangeClient.place_margin_order(
+                self,
+                exchange,
+                symbol,
+                side,
+                quantity,
+                leverage,
+                order_type=order_type,
+                price=price,
+                take_profit=take_profit,
+                stop_loss=stop_loss,
+                post_only=post_only,
+                unity_plan=exact_plan,
+            ),
+        )
+
+    def close_margin_position(
+        self,
+        exchange: str,
+        symbol: str,
+        side: str,
+        volume=None,
+        order_type: str = "market",
+        price=None,
+        leverage=None,
+        *,
+        unity_invocation: LegacyEconomicInvocation | None = None,
+        unity_plan: LegacyUnityIntentPlan | None = None,
+    ) -> Dict[str, Any]:
+        rejected = self._reject_caller_authority(
+            exchange, symbol, unity_invocation, unity_plan
+        )
+        if rejected is not None:
+            return rejected
+        try:
+            request = UnifiedEcosystemMutationRequest.build(
+                exchange=exchange,
+                operation="MARGIN_CLOSE",
+                purpose="CONTAINMENT",
+                symbol=symbol,
+                side=side,
+                order_type=order_type,
+                quantity=volume,
+                limit_price=price,
+                reduce_only=True,
+            )
+        except ValueError as exc:
+            return _no_data(exchange, symbol, str(exc))
+        return self._execute_governed(
+            request,
+            lambda exact_plan: MultiExchangeClient.close_margin_position(
+                self,
+                exchange,
+                symbol,
+                side,
+                volume=volume,
+                order_type=order_type,
+                price=price,
+                leverage=leverage,
+                unity_plan=exact_plan,
+            ),
+        )
+
+
 class UnifiedExchangeClient:
     """
     Unified interface for Kraken and Binance exchanges.

@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="benchmark-fixture" content="local-synthetic-course-v1">
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'none'; connect-src 'none'; font-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'"
+    >
+    <title>Local Synthetic Course</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="app.js" defer></script>
+  </head>
+  <body data-benchmark-id="local-synthetic-course-v1" data-screen="start-screen" data-benchmark-status="ready">
+    <header class="site-header">
+      <p class="eyebrow">Offline benchmark fixture</p>
+      <h1>Local Synthetic Course</h1>
+      <p id="progress" aria-live="polite">Step 1 of 4</p>
+    </header>
+
+    <main id="course-app">
+      <section id="start-screen" class="card screen" data-screen="start-screen" aria-labelledby="start-heading">
+        <h2 id="start-heading">Ready to begin</h2>
+        <p>This local sandbox uses invented, non-sensitive practice content.</p>
+        <button id="start-course" type="button">Start course</button>
+      </section>
+
+      <section
+        id="lesson-screen"
+        class="card screen long-lesson"
+        data-screen="lesson-screen"
+        data-requires-scroll="true"
+        data-scroll-complete="false"
+        aria-labelledby="lesson-heading"
+        hidden
+      >
+        <h2 id="lesson-heading">Practice lesson</h2>
+        <p>Scroll through this synthetic lesson until the continuation control becomes available.</p>
+        <div class="lesson-block">
+          <h3>Observe</h3>
+          <p>Confirm the active window and keep each action inside the local fixture.</p>
+        </div>
+        <div class="lesson-block">
+          <h3>Act</h3>
+          <p>Use bounded pointer, scroll, and keyboard actions for one visible checkpoint at a time.</p>
+        </div>
+        <div class="lesson-block">
+          <h3>Verify</h3>
+          <p>Read the screen again after each action and retain only evidence-backed progress.</p>
+        </div>
+        <div id="lesson-scroll-sentinel" class="scroll-sentinel" tabindex="-1">
+          End of synthetic lesson
+        </div>
+        <button id="lesson-next" type="button" disabled>Next</button>
+      </section>
+
+      <section id="practice-screen" class="card screen" data-screen="practice-screen" aria-labelledby="practice-heading" hidden>
+        <h2 id="practice-heading">Keyboard practice</h2>
+        <p>Type the non-sensitive practice phrase shown below.</p>
+        <p class="practice-phrase"><strong>local practice note</strong></p>
+        <label for="practice-input">Practice text</label>
+        <input
+          id="practice-input"
+          name="practice-text"
+          type="text"
+          data-text-class="ordinary"
+          autocomplete="off"
+          spellcheck="false"
+        >
+        <p id="practice-status" aria-live="polite">Waiting for the exact practice phrase.</p>
+        <button id="practice-next" type="button" disabled>Next</button>
+      </section>
+
+      <section id="sandbox-screen" class="card screen" data-screen="sandbox-screen" aria-labelledby="sandbox-heading" hidden>
+        <h2 id="sandbox-heading">Final sandbox checkpoint</h2>
+        <p>This action completes only the local synthetic benchmark.</p>
+        <button id="complete-sandbox" type="button">Complete sandbox</button>
+      </section>
+
+      <section
+        id="completion-screen"
+        class="card screen completion"
+        data-screen="completion-screen"
+        data-success-predicate="ocr_contains:Local sandbox course complete"
+        aria-labelledby="completion-heading"
+        hidden
+      >
+        <h2 id="completion-heading">Local sandbox course complete</h2>
+        <p>No external course, certificate, account, or record was changed.</p>
+        <button id="reset-benchmark" type="button">Reset local fixture</button>
+      </section>
+    </main>
+  </body>
+</html>
+

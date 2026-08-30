@@ -78,6 +78,8 @@ def _pair(index: int, gamma: float):
     hnc["source_count"] = len(hnc["input_receipt_ids"]) - 1
     fingerprint = {
         "input_receipt_ids": hnc["input_receipt_ids"],
+        "source_timestamp": hnc["source_timestamp"],
+        "received_at": hnc["received_at"],
         "step": hnc["step"],
         "lambda_t": hnc["lambda_t"],
         "coherence_gamma": hnc["coherence_gamma"],

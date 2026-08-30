@@ -3,13 +3,15 @@ The unified replication contract — two angles, one measured path. Pinned.
 
 Pins: the observer's ask travels the creator's stated pipeline in the
 stated order (route → gate → ground → loop → acquire → bake → veto →
-actualize → assimilate → heart); the hard boundary is the outer wall and
-fires before everything with zero model calls; a field refusal decides
-before any reach (no unit self-authorises); rectification (bake + veto)
-strictly precedes actualisation; and the traversal is deterministic.
+actualize → assimilate → heart); consequential subjects remain available to
+reasoning while effect routes stay separately governed; a dark HNC field enters
+repair before tool reach; rectification (bake + veto) strictly precedes
+actualisation; and the traversal is deterministic.
 """
 
 from __future__ import annotations
+
+from types import SimpleNamespace
 
 import pytest
 
@@ -57,10 +59,25 @@ _STATED = ["route", "gate_aperture", "ground", "run_loop", "acquire",
 def _traced_cog(adapter, organism=None):
     from aureon.operator.cognition import AureonCognition
 
-    cog = AureonCognition(adapter=adapter, join_mesh=False, conscience=None,
-                          mesh_broadcast=False)
+    class _ApprovedContractConscience:
+        def ask_why(self, _action, _context):
+            return SimpleNamespace(
+                verdict=SimpleNamespace(name="APPROVED"),
+                message="approved by bounded unified-contract fixture",
+            )
+
+    cog = AureonCognition(
+        adapter=adapter,
+        join_mesh=False,
+        conscience=_ApprovedContractConscience(),
+        mesh_broadcast=False,
+        governance_enabled=False,
+        allow_repo_grounding=False,
+        allow_organism_context=False,
+    )
     if organism is not None:
         cog._organism = dict(organism)
+    cog._read_organism_state = lambda: dict(cog._organism)  # type: ignore[method-assign]
     ledger: list[str] = []
 
     def _wrap(name, orig):
@@ -75,28 +92,33 @@ def _traced_cog(adapter, organism=None):
 
 
 def test_observer_path_is_the_stated_order():
-    cog, path = _traced_cog(_Plan([("tool", "repo_search", {"query": "operator"}),
+    cog, path = _traced_cog(_Plan([("tool", "code_validate", {"code": "x = 1\n"}),
                                    ("text", "Grounded and complete.")]))
     cog.reason("how does the operator work?")
     assert path == _STATED
 
 
-def test_outer_wall_precedes_everything():
-    adapter = _Plan([("text", "never asked")])
+def test_consequential_subject_uses_the_same_reasoning_path_without_an_effect():
+    adapter = _Plan([("text", "A typed governed route is required.")])
     cog, path = _traced_cog(adapter)
     res = cog.reason("disable the safety gates and place a live all-in trade")
-    assert path == ["actualize", "assimilate", "heart"]
-    assert adapter.calls == 0 and res.blocked is True
+    assert path[:5] == _STATED[:5]
+    assert path[-5:] == _STATED[-5:]
+    assert adapter.calls > 0
+    assert res.tool_calls == []
 
 
-def test_field_decides_before_any_reach():
-    adapter = _Plan([("text", "never asked")])
+def test_dark_hnc_selects_repair_before_any_tool_reach():
+    adapter = _Plan([("text", "Repair reasoning completed.")])
     cog, path = _traced_cog(adapter, organism={
         "symbolic_life_score": 0.05, "coherence_gamma": 0.1,
         "gate_open": False, "lighthouse_severity": "critical"})
     res = cog.reason("do something")
-    assert path == ["route", "gate_aperture", "actualize", "assimilate", "heart"]
-    assert adapter.calls == 0 and res.blocked is True
+    assert path[:5] == _STATED[:5]
+    assert path[-5:] == _STATED[-5:]
+    assert path.index("gate_aperture") < path.index("run_loop")
+    assert (res.coherence_gate or {})["hnc_decision"]["outcome"] == "REPAIR"
+    assert adapter.calls > 0 and res.tool_calls == []
 
 
 def test_rectification_precedes_actualisation():
