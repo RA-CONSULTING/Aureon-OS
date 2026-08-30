@@ -1,0 +1,240 @@
+{
+  "blocking_findings": [
+    "treatment directions conflict across legacy comparisons",
+    "most endpoints are quantized whole-battery percentages",
+    "treatment order was not randomized or counterbalanced",
+    "no matched sham arm is recorded",
+    "CPU load, brightness, power mode, temperature, and state-of-charge are not jointly controlled",
+    "the encoded payload label is not a measurement of physical radio cadence or RF power",
+    "multi-device independent replication is absent"
+  ],
+  "causal_claim_allowed": false,
+  "claim_boundary": "The current files contain mixed exploratory observations. They do not establish that BLE reduces battery drain, extracts energy, or produces a zero-point effect.",
+  "current_decision": "inconclusive",
+  "direction_counts": {
+    "increased_drain": 4,
+    "no_effect": 2,
+    "not_interpretable": 10,
+    "reduced_drain": 3
+  },
+  "evidence_grade": "exploratory",
+  "files": [
+    {
+      "bytes": 1866,
+      "file": "zpe_30min_test.json",
+      "sha256": "33f731a369969befc5e1ac6069a15e45aa3eb96b5005601e3219efde3a7a9e63"
+    },
+    {
+      "bytes": 54,
+      "file": "zpe_advanced_test.json",
+      "sha256": "8d7a8d2338b2885a3ccb1d4263a96fd2b847f88204c361cc2a13bf0ece23797c"
+    },
+    {
+      "bytes": 432,
+      "file": "zpe_baseline_telemetry.json",
+      "sha256": "f9dbeff600848035b0821e0d7fb51cf83bda5b5b7e472de0035ce619ec1f4c68"
+    },
+    {
+      "bytes": 234,
+      "file": "zpe_bt_charge_boost.json",
+      "sha256": "03322bb2e68660b43b1225a3e53755495760593193e55a0120eef67ded74b351"
+    },
+    {
+      "bytes": 474,
+      "file": "zpe_bt_only_test.json",
+      "sha256": "3ca839df791bc63f250b61927d4ef3a96c1eece815ec0b8abf733097db3339e1"
+    },
+    {
+      "bytes": 196,
+      "file": "zpe_bt_transmit.json",
+      "sha256": "a3805b135087b0160c1fad07cb9b6324353b7ba157e3cfc232513cbdca81a9ec"
+    },
+    {
+      "bytes": 162,
+      "file": "zpe_bt_v2_test.json",
+      "sha256": "4894ffcdf4d2a6417f33f16bf259062dff9607da5b64784a05b798a70a7a938e"
+    },
+    {
+      "bytes": 353,
+      "file": "zpe_charge_amplified.json",
+      "sha256": "ccbd7c947d17560e22466a30fabe53899a5f5e6f623793ede5e4c719d02561f1"
+    },
+    {
+      "bytes": 190,
+      "file": "zpe_charge_baseline.json",
+      "sha256": "40300539f33280bb60144e11189bc8ae2dcaef94d9171d58af2b50458504dcb4"
+    },
+    {
+      "bytes": 158,
+      "file": "zpe_coupling_test.json",
+      "sha256": "46d117c886b941f71a84d5f8d0318a862f0488a9dae2c2ec57e43bb4f895ac98"
+    },
+    {
+      "bytes": 489,
+      "file": "zpe_epas_vs_baseline.json",
+      "sha256": "dc1b9628ed09d5182c0b01424979895843bc6778938a376ecc80fe239c49230d"
+    },
+    {
+      "bytes": 136,
+      "file": "zpe_extended_test.json",
+      "sha256": "c391e48b4ede35fbd21af66cce08d1f5fa4802afa912a54ab8e75cc33d327ddc"
+    },
+    {
+      "bytes": 1906,
+      "file": "zpe_extraction_log.json",
+      "sha256": "55519d43f0985e315df72ef0b8bd48e82d2d9a27dbc4c01b8eeca19dafbb9c17"
+    },
+    {
+      "bytes": 1422,
+      "file": "zpe_frequency_sweep.json",
+      "sha256": "2be75ae297c92a15fc948e17944935225da6214760856b28bd8849271332293d"
+    },
+    {
+      "bytes": 1913,
+      "file": "zpe_max_power_test.json",
+      "sha256": "c8c9cada084f7dd088c038015a64e97b989a2c10799c2126776932e893b39c53"
+    },
+    {
+      "bytes": 355,
+      "file": "zpe_persistent_bt.json",
+      "sha256": "ace9741cfc35ed8e17a0a2ddf9d5714301e75276941de383303e469ac80b55ae"
+    },
+    {
+      "bytes": 489,
+      "file": "zpe_phi_schumann_test.json",
+      "sha256": "9f78254561857b6bd1c0d85edecda65e41ac92793b6170d59cbd079d75ac6bfa"
+    },
+    {
+      "bytes": 187,
+      "file": "zpe_surround_v2.json",
+      "sha256": "9cbccbffdc35eab236c1feed19809ee1d5fff841993415b7c87f34860464bb03"
+    },
+    {
+      "bytes": 775,
+      "file": "zpe_zero_observer.json",
+      "sha256": "4cc4ca962777206f95387d748190d99fc703bbd5c55744387e63026775b21b57"
+    }
+  ],
+  "legacy_file_count": 19,
+  "observations": [
+    {
+      "apparent_effect_pct": 16.666666666666664,
+      "baseline_rate_pct_per_hour": 24.0,
+      "comparison": "one sequential baseline segment versus one BLE segment",
+      "direction": "reduced_drain",
+      "file": "zpe_zero_observer.json",
+      "limitations": [
+        "one block only",
+        "fixed baseline-then-treatment order",
+        "1 percentage-point battery resolution",
+        "no workload, thermal, or measured advertisement-cadence control"
+      ],
+      "treatment_rate_pct_per_hour": 20.0
+    },
+    {
+      "apparent_effect_pct": -49.99593705727772,
+      "baseline_rate_pct_per_hour": 15.991679982002838,
+      "comparison": "sequential 15-minute baseline and BLE segments",
+      "direction": "increased_drain",
+      "file": "zpe_30min_test.json",
+      "limitations": [
+        "negative transition intervals are present",
+        "fixed order and state-of-charge confounding",
+        "1 percentage-point battery resolution"
+      ],
+      "treatment_rate_pct_per_hour": 23.986870240206258
+    },
+    {
+      "apparent_effect_pct": 14.719661950854817,
+      "baseline_rate_pct_per_hour": 28.13553175232641,
+      "comparison": "three idle transition intervals versus two BLE intervals",
+      "direction": "reduced_drain",
+      "file": "zpe_persistent_bt.json",
+      "limitations": [
+        "n=3 versus n=2",
+        "not randomized",
+        "percent-transition timing only"
+      ],
+      "treatment_rate_pct_per_hour": 23.994076590308545
+    },
+    {
+      "apparent_effect_pct": -12.272250306670918,
+      "comparison": "one idle percent-drop interval versus one BLE interval",
+      "direction": "increased_drain",
+      "file": "zpe_coupling_test.json",
+      "limitations": [
+        "one transition per arm",
+        "not randomized",
+        "no load controls"
+      ]
+    },
+    {
+      "apparent_effect_pct": 39.29005452290586,
+      "comparison": "two baseline intervals versus two selected treatment intervals",
+      "direction": "reduced_drain",
+      "file": "zpe_phi_schumann_test.json",
+      "limitations": [
+        "n=2 per selected arm",
+        "post-hoc best-mode selection",
+        "large within-arm spread",
+        "reported pulse count is zero"
+      ]
+    },
+    {
+      "apparent_effect_pct": null,
+      "baseline_delta_percent": 0.0,
+      "comparison": "single coarse-percent baseline and treatment pair",
+      "direction": "increased_drain",
+      "file": "zpe_bt_only_test.json",
+      "limitations": [
+        "single pair",
+        "coarse percentage endpoint",
+        "not randomized"
+      ],
+      "treatment_delta_percent": -1.0
+    },
+    {
+      "apparent_effect_pct": null,
+      "baseline_delta_percent": 0.0,
+      "comparison": "single coarse-percent baseline and treatment pair",
+      "direction": "no_effect",
+      "file": "zpe_bt_v2_test.json",
+      "limitations": [
+        "single pair",
+        "coarse percentage endpoint",
+        "not randomized"
+      ],
+      "treatment_delta_percent": 0.0
+    },
+    {
+      "apparent_effect_pct": null,
+      "baseline_delta_percent": -1.0,
+      "comparison": "single coarse-percent baseline and treatment pair",
+      "direction": "no_effect",
+      "file": "zpe_bt_transmit.json",
+      "limitations": [
+        "single pair",
+        "coarse percentage endpoint",
+        "not randomized"
+      ],
+      "treatment_delta_percent": -1.0
+    },
+    {
+      "apparent_effect_pct": null,
+      "baseline_delta_percent": 0.0,
+      "comparison": "single coarse-percent baseline and treatment pair",
+      "direction": "increased_drain",
+      "file": "zpe_surround_v2.json",
+      "limitations": [
+        "single pair",
+        "coarse percentage endpoint",
+        "not randomized"
+      ],
+      "treatment_delta_percent": -1.0
+    }
+  ],
+  "parse_errors": [],
+  "required_next_step": "Run the pre-registered randomized baseline/BLE/sham block protocol and analyse only high-resolution mWh telemetry that passes the deterministic quality gates.",
+  "schema_version": "aureon-bluetooth-battery-legacy-audit-v1",
+  "source_directory": "C:\\Users\\user\\Aureon-OS-github-latest-20260719\\data\\experiments\\zpe"
+}

@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aureonzorzatechnologies.pl/schemas/aureon-owner-source-reconciliation-decision-v1.json",
+  "title": "Aureon Owner Source Reconciliation Decision v1",
+  "description": "A time-limited owner decision to retain local canonical website source for a staged candidate after live drift. It is not canonical promotion, release approval, package authority, hosting authority or deployment authority.",
+  "type": "object",
+  "required": [
+    "schema",
+    "decision",
+    "scope",
+    "source_selection",
+    "reconciliation_receipt_sha256",
+    "reconciliation_selected_tree_sha256",
+    "backup_receipt_sha256",
+    "backup_tree_sha256",
+    "approved_at",
+    "expires_at",
+    "approved_by",
+    "note",
+    "authority"
+  ],
+  "properties": {
+    "schema": { "const": "aureon.owner-source-reconciliation-decision.v1" },
+    "decision": { "const": "approved" },
+    "scope": { "const": "successor-staged-design-candidate" },
+    "source_selection": { "const": "retain-local-canonical-source" },
+    "reconciliation_receipt_sha256": { "$ref": "#/$defs/sha256" },
+    "reconciliation_selected_tree_sha256": { "$ref": "#/$defs/sha256" },
+    "backup_receipt_sha256": { "$ref": "#/$defs/sha256" },
+    "backup_tree_sha256": { "$ref": "#/$defs/sha256" },
+    "approved_at": { "type": "string", "format": "date-time" },
+    "expires_at": { "type": "string", "format": "date-time" },
+    "approved_by": { "type": "string", "minLength": 1 },
+    "note": { "type": "string", "minLength": 1 },
+    "authority": {
+      "type": "object",
+      "required": [
+        "scope",
+        "canonical_website_mutation",
+        "release_eligible",
+        "package_authority",
+        "deployment_authority",
+        "credential_access",
+        "release_authority"
+      ],
+      "properties": {
+        "scope": { "const": "owner-controlled local-source selection after observed public website drift" },
+        "canonical_website_mutation": { "const": "none by this decision or a design agent" },
+        "release_eligible": { "const": false },
+        "package_authority": { "const": "none" },
+        "deployment_authority": { "const": "none" },
+        "credential_access": { "const": "none" },
+        "release_authority": { "const": "WebsiteOperator owner gate only" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[A-F0-9]{64}$" }
+  },
+  "additionalProperties": false
+}

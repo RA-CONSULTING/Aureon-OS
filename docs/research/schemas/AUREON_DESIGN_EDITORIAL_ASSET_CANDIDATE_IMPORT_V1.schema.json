@@ -1,0 +1,375 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aureon.local/schemas/aureon-design-editorial-asset-candidate-import-v1.json",
+  "title": "Aureon trusted editorial asset candidate import receipt",
+  "description": "Exact, privacy-redacted receipt for one complete content-addressed WebP import batch into one local staged website candidate. This record grants no canonical website mutation, package, release, credential, network, or deployment authority.",
+  "type": "object",
+  "required": [
+    "schema",
+    "imported_at",
+    "state",
+    "passed",
+    "batch_complete",
+    "receipt_authority",
+    "release_eligible",
+    "package_authority",
+    "deployment_authority",
+    "authority",
+    "work_order",
+    "provenance",
+    "routes",
+    "imports",
+    "summary",
+    "next_gate",
+    "receipt_payload_sha256"
+  ],
+  "properties": {
+    "schema": {
+      "const": "aureon.design-editorial-asset-candidate-import.v1"
+    },
+    "imported_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "state": {
+      "const": "imported-local-candidate"
+    },
+    "passed": {
+      "const": true
+    },
+    "batch_complete": {
+      "const": true
+    },
+    "receipt_authority": {
+      "const": false
+    },
+    "release_eligible": {
+      "const": false
+    },
+    "package_authority": {
+      "const": "none"
+    },
+    "deployment_authority": {
+      "const": "none"
+    },
+    "authority": {
+      "$ref": "#/$defs/authority"
+    },
+    "work_order": {
+      "$ref": "#/$defs/workOrderBinding"
+    },
+    "provenance": {
+      "$ref": "#/$defs/provenanceBinding"
+    },
+    "routes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 12,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^/(?!/)(?!.*(?:^|/)\\.\\.?(?:/|$))[^?#]*$"
+      }
+    },
+    "imports": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 12,
+      "items": {
+        "$ref": "#/$defs/importRecord"
+      }
+    },
+    "summary": {
+      "$ref": "#/$defs/summary"
+    },
+    "next_gate": {
+      "const": "candidate controller revalidates the complete staged diff, editorial import receipt, public claims, visual quality, accessibility and performance before any separate owner-gated release process"
+    },
+    "receipt_payload_sha256": {
+      "$ref": "#/$defs/sha256"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[A-F0-9]{64}$"
+    },
+    "identifier": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{2,127}$"
+    },
+    "safeRelativePath": {
+      "type": "string",
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.?(?:/|$))[^\\\\]+$"
+    },
+    "authority": {
+      "type": "object",
+      "required": [
+        "scope",
+        "canonical_website_mutation",
+        "candidate_write_scope",
+        "binary_read_scope",
+        "transformations",
+        "release_eligible",
+        "package_authority",
+        "deployment_authority",
+        "credential_access",
+        "network_access",
+        "connector_access",
+        "importer_receipt_required"
+      ],
+      "properties": {
+        "scope": {
+          "const": "local trusted editorial binary import into one staged candidate"
+        },
+        "canonical_website_mutation": {
+          "const": "never"
+        },
+        "candidate_write_scope": {
+          "const": "exact work-order-declared image targets only"
+        },
+        "binary_read_scope": {
+          "const": "content-addressed verified editorial intake only"
+        },
+        "transformations": {
+          "const": "none"
+        },
+        "release_eligible": {
+          "const": false
+        },
+        "package_authority": {
+          "const": "none"
+        },
+        "deployment_authority": {
+          "const": "none"
+        },
+        "credential_access": {
+          "const": "none"
+        },
+        "network_access": {
+          "const": "none"
+        },
+        "connector_access": {
+          "const": "none"
+        },
+        "importer_receipt_required": {
+          "const": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "workOrderBinding": {
+      "type": "object",
+      "required": [
+        "run_id",
+        "path",
+        "file_sha256",
+        "json_sha256",
+        "baseline_tree_sha256",
+        "candidate_copy_file_sha256"
+      ],
+      "properties": {
+        "run_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._-]{2,80}$"
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^artifacts/website-candidates/work-orders/(?!.*(?:^|/)\\.\\.?(?:/|$))[^\\\\]+\\.json$"
+        },
+        "file_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "json_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "baseline_tree_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "candidate_copy_file_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      },
+      "additionalProperties": false
+    },
+    "provenanceBinding": {
+      "type": "object",
+      "required": [
+        "manifest_id",
+        "manifest_file_sha256",
+        "asset_capsules_sha256",
+        "selected_asset_capsules_sha256",
+        "global_artwork_policy_state",
+        "global_artwork_cleared_for_use",
+        "candidate_ready_asset_ids"
+      ],
+      "properties": {
+        "manifest_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "manifest_file_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "asset_capsules_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "selected_asset_capsules_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "global_artwork_policy_state": {
+          "const": "not-cleared"
+        },
+        "global_artwork_cleared_for_use": {
+          "const": false
+        },
+        "candidate_ready_asset_ids": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 6,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/identifier"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "importRecord": {
+      "type": "object",
+      "required": [
+        "asset_id",
+        "role",
+        "target",
+        "sha256",
+        "media_type",
+        "bytes",
+        "width",
+        "height",
+        "frame_count",
+        "animation",
+        "metadata_profile",
+        "route_scopes",
+        "destination_paths",
+        "surface_ids",
+        "asset_capsule_sha256",
+        "rights_asset_scope_sha256"
+      ],
+      "properties": {
+        "asset_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "role": {
+          "enum": [
+            "small",
+            "large"
+          ]
+        },
+        "target": {
+          "type": "string",
+          "pattern": "^artifacts/website-candidates/[a-z0-9][a-z0-9._-]{2,80}/website/(?!.*(?:^|/)\\.\\.?(?:/|$))[^\\\\]+\\.webp$"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "media_type": {
+          "const": "image/webp"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10485760
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8192
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8192
+        },
+        "frame_count": {
+          "const": 1
+        },
+        "animation": {
+          "const": "static"
+        },
+        "metadata_profile": {
+          "const": "none"
+        },
+        "route_scopes": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 12,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^/(?!/)(?!.*(?:^|/)\\.\\.?(?:/|$))[^?#]*$"
+          }
+        },
+        "destination_paths": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 12,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/safeRelativePath"
+          }
+        },
+        "surface_ids": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 12,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]{2,95}$"
+          }
+        },
+        "asset_capsule_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "rights_asset_scope_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      },
+      "additionalProperties": false
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "asset_count",
+        "file_count",
+        "total_bytes",
+        "batch_complete",
+        "imports_sha256"
+      ],
+      "properties": {
+        "asset_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 6
+        },
+        "file_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12
+        },
+        "total_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 125829120
+        },
+        "batch_complete": {
+          "const": true
+        },
+        "imports_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

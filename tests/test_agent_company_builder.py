@@ -1,12 +1,14 @@
 from __future__ import annotations
 
-import json
 import base64
 import hashlib
+import json
 import sys
 import types
 import zlib
 from pathlib import Path
+
+from pytest import MonkeyPatch
 
 from aureon.autonomous.aureon_agent_company_builder import (
     SCHEMA_VERSION,
@@ -185,7 +187,50 @@ def test_agent_company_recruits_workers_from_scope_and_internal_search(tmp_path:
     assert report["completion_report"]["did_build_agent_blueprints"] is True
 
 
-def test_agent_company_online_recruitment_search_uses_agent_core_when_requested(tmp_path: Path, monkeypatch) -> None:
+def test_agent_company_has_bounded_public_website_design_studio(tmp_path: Path) -> None:
+    _seed_repo(tmp_path)
+
+    report = build_agent_company_bill_list(
+        root=tmp_path,
+        goal=(
+            "Research competitors and redesign the public website with serious brand, "
+            "graphics, motion, evidence-led writing, accessibility and release QA."
+        ),
+    )
+
+    roles = {role["title"]: role for role in report["roles"]}
+    expected = {
+        "Website Design Director",
+        "Competitor Research Scout",
+        "Brand and Design-System Lead",
+        "Technical Editorial Writer",
+        "Claims and Evidence Editor",
+        "Motion Designer",
+        "Visual Asset Director",
+        "Accessibility and Performance QA",
+        "Design Release QA",
+    }
+    assert expected.issubset(roles)
+    assert all(roles[title]["department"] == "public_design" for title in expected)
+    assert roles["Design Release QA"]["authority_level"] == "no_deploy_owner_gate_required"
+    assert roles["Claims and Evidence Editor"]["authority_level"] == "claims_veto_no_deploy"
+    recruited = {
+        worker["title"]
+        for worker in report["recruitment_engine"]["recruited_workers"]
+    }
+    assert {
+        "Website Design Director",
+        "Claims and Evidence Editor",
+        "Motion Designer",
+        "Accessibility and Performance QA",
+        "Design Release QA",
+    }.issubset(recruited)
+
+
+def test_agent_company_online_recruitment_search_uses_agent_core_when_requested(
+    tmp_path: Path,
+    monkeypatch: MonkeyPatch,
+) -> None:
     _seed_repo(tmp_path)
 
     class FakeAgentCore:
@@ -193,7 +238,7 @@ def test_agent_company_online_recruitment_search_uses_agent_core_when_requested(
             return [{"title": "Official agent docs", "url": "https://example.test/docs", "snippet": query[:60]}]
 
     fake_module = types.ModuleType("aureon.autonomous.aureon_agent_core")
-    fake_module.AureonAgentCore = FakeAgentCore
+    fake_module.__dict__["AureonAgentCore"] = FakeAgentCore
     monkeypatch.setitem(sys.modules, "aureon.autonomous.aureon_agent_core", fake_module)
 
     report = build_agent_company_bill_list(
@@ -292,7 +337,10 @@ def test_agent_company_builder_writes_reports(tmp_path: Path) -> None:
     assert payload["rehydration_contract"]["restore_as"] == "temporary_crew_candidate"
 
 
-def test_goal_engine_routes_agent_company_builder(tmp_path: Path, monkeypatch) -> None:
+def test_goal_engine_routes_agent_company_builder(
+    tmp_path: Path,
+    monkeypatch: MonkeyPatch,
+) -> None:
     _seed_repo(tmp_path)
     monkeypatch.chdir(tmp_path)
 
@@ -309,7 +357,10 @@ def test_goal_engine_routes_agent_company_builder(tmp_path: Path, monkeypatch) -
     assert evidence["completion_report"]["daily_operating_loop_ready"] is True
 
 
-def test_goal_engine_marks_agent_company_online_recruitment_requests(tmp_path: Path, monkeypatch) -> None:
+def test_goal_engine_marks_agent_company_online_recruitment_requests(
+    tmp_path: Path,
+    monkeypatch: MonkeyPatch,
+) -> None:
     _seed_repo(tmp_path)
     monkeypatch.chdir(tmp_path)
 
@@ -323,7 +374,10 @@ def test_goal_engine_marks_agent_company_online_recruitment_requests(tmp_path: P
     assert plan.steps[0].params["online"] is True
 
 
-def test_coding_organism_journal_includes_agent_company_report(tmp_path: Path, monkeypatch) -> None:
+def test_coding_organism_journal_includes_agent_company_report(
+    tmp_path: Path,
+    monkeypatch: MonkeyPatch,
+) -> None:
     _seed_repo(tmp_path)
     monkeypatch.chdir(tmp_path)
 
@@ -343,7 +397,10 @@ def test_coding_organism_journal_includes_agent_company_report(tmp_path: Path, m
     assert "agent_company_bill_list" in stage_ids
 
 
-def test_market_ai_expansion_prompt_routes_to_agent_company_before_work_journal(tmp_path: Path, monkeypatch) -> None:
+def test_market_ai_expansion_prompt_routes_to_agent_company_before_work_journal(
+    tmp_path: Path,
+    monkeypatch: MonkeyPatch,
+) -> None:
     _seed_repo(tmp_path)
     monkeypatch.chdir(tmp_path)
 

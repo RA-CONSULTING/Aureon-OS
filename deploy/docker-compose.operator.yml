@@ -2,21 +2,27 @@
 #   docker compose -f deploy/docker-compose.operator.yml up --build
 #
 # Provide model keys via a .env file or the shell environment; with none set the
-# service runs fully offline on stub/local adapters.
+# service runs fully offline on stub/local adapters. The operator bearer key is
+# required for this deployment compose file, even when the service is loopback-only.
 services:
   aureon-operator:
     build:
       context: ..
       dockerfile: deploy/operator.Dockerfile
     image: aureon-operator:latest
+    # Keep the operator off the public network by default. A production host
+    # must use a separately configured authenticated reverse proxy and firewall;
+    # never route this service through the public marketing website.
     ports:
-      - "8790:8790"
+      - "127.0.0.1:8790:8790"
     environment:
       AUREON_OPERATOR_PORT: "8790"
       AUREON_OPERATOR_THREADS: "8"
-      # Uncomment to require inbound auth / rate-limit:
-      # AUREON_OPERATOR_API_KEY: "change-me"
-      # AUREON_OPERATOR_RATE_RPS: "10"
+      # Fail closed: this compose service must never boot with its /api surface open.
+      # Keep the actual value in the deployment host's secret store or shell environment.
+      AUREON_OPERATOR_API_KEY: "${AUREON_OPERATOR_API_KEY:?Set AUREON_OPERATOR_API_KEY in the deployment environment}"
+      AUREON_OPERATOR_RATE_RPS: "${AUREON_OPERATOR_RATE_RPS:-10}"
+      AUREON_OPERATOR_RATE_BURST: "${AUREON_OPERATOR_RATE_BURST:-20}"
       # Model keys (optional — omit for offline):
       OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
       XAI_API_KEY: "${XAI_API_KEY:-}"

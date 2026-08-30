@@ -1,0 +1,173 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aureonzorzatechnologies.pl/schemas/aureon-live-surface-reconciliation-v1.json",
+  "title": "Aureon Live Surface Reconciliation v1",
+  "description": "Read-only comparison of selected canonical static pages with their public HTTPS presentation. It never approves a candidate, package, backup or deployment.",
+  "type": "object",
+  "required": [
+    "schema",
+    "observed_at",
+    "state",
+    "passed",
+    "release_eligible",
+    "package_authority",
+    "deployment_authority",
+    "authority",
+    "canonical",
+    "public_surface",
+    "routes",
+    "summary",
+    "next_gate"
+  ],
+  "properties": {
+    "schema": { "const": "aureon.live-surface-reconciliation.v1" },
+    "observed_at": { "type": "string", "format": "date-time" },
+    "state": {
+      "enum": [
+        "live-surface-semantically-aligned",
+        "live-drift-detected",
+        "live-observation-incomplete"
+      ]
+    },
+    "passed": { "type": "boolean" },
+    "release_eligible": { "const": false },
+    "package_authority": { "const": "none" },
+    "deployment_authority": { "const": "none" },
+    "authority": {
+      "type": "object",
+      "required": [
+        "scope",
+        "canonical_website_mutation",
+        "credential_access",
+        "backup_authority",
+        "candidate_promotion_authority",
+        "release_eligible",
+        "package_authority",
+        "deployment_authority",
+        "release_authority"
+      ],
+      "properties": {
+        "canonical_website_mutation": { "const": "never by this reconciliation or a design agent" },
+        "credential_access": { "const": "none" },
+        "backup_authority": { "const": "none" },
+        "candidate_promotion_authority": { "const": "none" },
+        "release_eligible": { "const": false },
+        "package_authority": { "const": "none" },
+        "deployment_authority": { "const": "none" }
+      },
+      "additionalProperties": true
+    },
+    "canonical": {
+      "type": "object",
+      "required": ["repository_root", "site_root", "selected_tree_sha256", "route_mapping_algorithm"],
+      "properties": {
+        "repository_root": { "type": "string" },
+        "site_root": { "type": "string" },
+        "selected_tree_sha256": { "type": "string", "pattern": "^[A-F0-9]{64}$" },
+        "route_mapping_algorithm": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "public_surface": {
+      "type": "object",
+      "required": ["base_url", "origin", "timeout_seconds", "max_response_bytes"],
+      "properties": {
+        "base_url": { "type": "string", "format": "uri" },
+        "origin": { "type": "string", "pattern": "^https://" },
+        "timeout_seconds": { "type": "number", "exclusiveMinimum": 0, "maximum": 60 },
+        "max_response_bytes": { "type": "integer", "minimum": 1 }
+      },
+      "additionalProperties": false
+    },
+    "routes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["local_path", "public_url", "alignment", "difference_signals"],
+        "properties": {
+          "local_path": { "type": "string", "pattern": "(^|/)[^/]+\\.html$" },
+          "public_url": { "type": "string", "format": "uri", "pattern": "^https://" },
+          "final_url": { "type": "string", "format": "uri" },
+          "http_status": { "type": "integer", "minimum": 100, "maximum": 599 },
+          "content_type": { "type": "string" },
+          "redirect_chain": {
+            "type": "array",
+            "maxItems": 5,
+            "items": {
+              "type": "object",
+              "required": ["from", "to", "http_status"],
+              "properties": {
+                "from": { "type": "string", "format": "uri", "pattern": "^https://" },
+                "to": { "type": "string", "format": "uri", "pattern": "^https://" },
+                "http_status": { "type": "integer", "minimum": 300, "maximum": 399 }
+              },
+              "additionalProperties": false
+            }
+          },
+          "alignment": { "enum": ["exact-source", "semantic-aligned", "diverged", "unavailable"] },
+          "difference_signals": {
+            "type": "array",
+            "items": { "enum": ["title", "description", "canonical", "presentation_text_sha256", "interaction_surface_sha256"] }
+          },
+          "error": { "type": "string" },
+          "local": { "$ref": "#/$defs/fingerprint" },
+          "live": { "$ref": "#/$defs/fingerprint" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": ["selected_routes", "exact_source", "semantic_aligned", "diverged", "unavailable"],
+      "properties": {
+        "selected_routes": { "type": "integer", "minimum": 1 },
+        "exact_source": { "type": "integer", "minimum": 0 },
+        "semantic_aligned": { "type": "integer", "minimum": 0 },
+        "diverged": { "type": "integer", "minimum": 0 },
+        "unavailable": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "next_gate": { "type": "string", "minLength": 1 }
+  },
+  "$defs": {
+    "fingerprint": {
+      "type": "object",
+      "required": [
+        "bytes",
+        "sha256",
+        "title",
+        "description",
+        "canonical",
+        "presentation_text_sha256",
+        "presentation_text_characters",
+        "interaction_surface_sha256",
+        "interaction_surface_items"
+      ],
+      "properties": {
+        "bytes": { "type": "integer", "minimum": 0 },
+        "sha256": { "type": "string", "pattern": "^[A-F0-9]{64}$" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "canonical": { "type": "string" },
+        "presentation_text_sha256": { "type": "string", "pattern": "^[A-F0-9]{64}$" },
+        "presentation_text_characters": { "type": "integer", "minimum": 0 },
+        "interaction_surface_sha256": { "type": "string", "pattern": "^[A-F0-9]{64}$" },
+        "interaction_surface_items": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "state": { "const": "live-surface-semantically-aligned" } } },
+      "then": { "properties": { "passed": { "const": true } } }
+    },
+    {
+      "if": { "properties": { "state": { "enum": ["live-drift-detected", "live-observation-incomplete"] } } },
+      "then": { "properties": { "passed": { "const": false } } }
+    }
+  ],
+  "additionalProperties": false
+}

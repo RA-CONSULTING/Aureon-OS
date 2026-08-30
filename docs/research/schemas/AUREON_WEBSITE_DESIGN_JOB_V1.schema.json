@@ -1,0 +1,881 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aureonzorzatechnologies.pl/schemas/aureon-website-design-job-v1.json",
+  "title": "Aureon WebsiteOperator design-cycle receipt v1",
+  "description": "Contract for one source-bound local Design Nexus cycle. A true release_eligible value means only that the local cycle may proceed to separate release packaging checks; deployment authority remains none and human visual acceptance remains mandatory.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "run_id",
+    "generated_at",
+    "repo_root",
+    "site_root",
+    "config_sha256",
+    "parent_run_id",
+    "iteration",
+    "state",
+    "goal",
+    "source_tree_sha256",
+    "test_policy_sha256",
+    "routes",
+    "competitor_research",
+    "evidence_controls",
+    "design_nexus",
+    "hard_gates",
+    "hard_gates_pass",
+    "release_eligible",
+    "audit",
+    "external_checks",
+    "inventory",
+    "design_council",
+    "work_orders",
+    "candidate_control",
+    "feedback_loop",
+    "stop_control",
+    "skill_hierarchy",
+    "authority_boundaries",
+    "deployment_state",
+    "summary"
+  ],
+  "properties": {
+    "schema": {
+      "const": "aureon-website-design-job-v1"
+    },
+    "run_id": {
+      "$ref": "#/$defs/runId"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "repo_root": {
+      "type": "string",
+      "minLength": 1
+    },
+    "site_root": {
+      "type": "string",
+      "minLength": 1
+    },
+    "config_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "parent_run_id": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/runId"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "iteration": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "state": {
+      "enum": [
+        "verified-local-human-review-required",
+        "diagnostic-only-external-checks-skipped",
+        "needs-repair",
+        "stopped"
+      ]
+    },
+    "goal": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_tree_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "test_policy_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "routes": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/relativeHtmlPath"
+      }
+    },
+    "competitor_research": {
+      "type": "object"
+    },
+    "evidence_controls": {
+      "$ref": "#/$defs/evidenceControls"
+    },
+    "design_nexus": {
+      "type": "object"
+    },
+    "hard_gates": {
+      "$ref": "#/$defs/hardGates"
+    },
+    "hard_gates_pass": {
+      "type": "boolean"
+    },
+    "release_eligible": {
+      "type": "boolean"
+    },
+    "audit": {
+      "type": "object"
+    },
+    "external_checks": {},
+    "inventory": {
+      "type": "object"
+    },
+    "design_council": {
+      "type": "array"
+    },
+    "work_orders": {
+      "type": "array"
+    },
+    "candidate_control": {
+      "type": "object"
+    },
+    "feedback_loop": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "stop_control": {
+      "type": "object"
+    },
+    "skill_hierarchy": {
+      "type": "object"
+    },
+    "authority_boundaries": {
+      "$ref": "#/$defs/authorityBoundaries"
+    },
+    "deployment_state": {
+      "const": "not-authorised-not-attempted"
+    },
+    "summary": {
+      "$ref": "#/$defs/designSummary"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "required": [
+          "hard_gates_pass"
+        ],
+        "properties": {
+          "hard_gates_pass": {
+            "const": true
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "state": {
+            "const": "verified-local-human-review-required"
+          },
+          "release_eligible": {
+            "const": true
+          },
+          "evidence_controls": {
+            "properties": {
+              "investor_copy": {
+                "properties": {
+                  "passed": {
+                    "const": true
+                  },
+                  "state": {
+                    "const": "pass"
+                  }
+                }
+              }
+            }
+          },
+          "hard_gates": {
+            "items": {
+              "properties": {
+                "passed": {
+                  "const": true
+                }
+              }
+            },
+            "contains": {
+              "required": [
+                "id",
+                "passed",
+                "evidence"
+              ],
+              "properties": {
+                "id": {
+                  "const": "investor_copy_quality_current"
+                },
+                "passed": {
+                  "const": true
+                },
+                "evidence": {
+                  "properties": {
+                    "passed": {
+                      "const": true
+                    }
+                  }
+                }
+              }
+            },
+            "minContains": 1,
+            "maxContains": 1
+          },
+          "summary": {
+            "properties": {
+              "ready_for_human_visual_review": {
+                "const": true
+              },
+              "release_eligible": {
+                "const": true
+              },
+              "ready_for_deployment": {
+                "const": false
+              }
+            }
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "state": {
+            "enum": [
+              "diagnostic-only-external-checks-skipped",
+              "needs-repair",
+              "stopped"
+            ]
+          },
+          "release_eligible": {
+            "const": false
+          },
+          "summary": {
+            "properties": {
+              "ready_for_human_visual_review": {
+                "const": false
+              },
+              "release_eligible": {
+                "const": false
+              },
+              "ready_for_deployment": {
+                "const": false
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[A-F0-9]{64}$"
+    },
+    "runId": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{32}$"
+    },
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?![A-Za-z]:)(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+    },
+    "relativeHtmlPath": {
+      "type": "string",
+      "pattern": "^(?:[a-z0-9._-]+/)*[a-z0-9._-]+\\.html$"
+    },
+    "nonNegativeCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "evidenceControls": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "benchmark",
+        "public_claims",
+        "investor_copy",
+        "research_refresh",
+        "stakeholder_feedback",
+        "editorial_assets",
+        "release_eligible",
+        "deployment_authority"
+      ],
+      "properties": {
+        "benchmark": {
+          "type": "object"
+        },
+        "public_claims": {
+          "type": "object"
+        },
+        "investor_copy": {
+          "$ref": "#/$defs/investorCopyControl"
+        },
+        "research_refresh": {
+          "type": "object"
+        },
+        "stakeholder_feedback": {
+          "type": "object"
+        },
+        "editorial_assets": {
+          "type": "object"
+        },
+        "release_eligible": {
+          "const": false
+        },
+        "deployment_authority": {
+          "const": "none"
+        }
+      }
+    },
+    "investorCopyControl": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "passed",
+        "state",
+        "error",
+        "release_eligible",
+        "deployment_authority"
+      ],
+      "dependentRequired": {
+        "receipt": [
+          "binding"
+        ],
+        "binding": [
+          "receipt"
+        ]
+      },
+      "properties": {
+        "passed": {
+          "type": "boolean"
+        },
+        "state": {
+          "enum": [
+            "pass",
+            "blocked"
+          ]
+        },
+        "error": {
+          "type": "string"
+        },
+        "receipt": {
+          "$ref": "#/$defs/investorCopyReceipt"
+        },
+        "binding": {
+          "$ref": "#/$defs/investorCopyBinding"
+        },
+        "release_eligible": {
+          "const": false
+        },
+        "deployment_authority": {
+          "const": "none"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "passed"
+            ],
+            "properties": {
+              "passed": {
+                "const": true
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "receipt",
+              "binding"
+            ],
+            "properties": {
+              "state": {
+                "const": "pass"
+              },
+              "error": {
+                "const": ""
+              },
+              "receipt": {
+                "properties": {
+                  "state": {
+                    "const": "pass"
+                  },
+                  "passed": {
+                    "const": true
+                  },
+                  "policy": {
+                    "properties": {
+                      "current": {
+                        "const": true
+                      }
+                    }
+                  },
+                  "summary": {
+                    "properties": {
+                      "blocker_count": {
+                        "const": 0
+                      },
+                      "warning_count": {
+                        "const": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "binding": {
+                "properties": {
+                  "state": {
+                    "const": "pass"
+                  },
+                  "policy_current": {
+                    "const": true
+                  },
+                  "blocker_count": {
+                    "const": 0
+                  },
+                  "warning_count": {
+                    "const": 0
+                  }
+                }
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "state": {
+                "const": "blocked"
+              },
+              "receipt": {
+                "properties": {
+                  "state": {
+                    "const": "blocked"
+                  },
+                  "passed": {
+                    "const": false
+                  }
+                }
+              },
+              "binding": {
+                "properties": {
+                  "state": {
+                    "const": "blocked"
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "investorCopyReceipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "state",
+        "passed",
+        "policy",
+        "website_root",
+        "routes",
+        "summary",
+        "findings_sha256"
+      ],
+      "properties": {
+        "schema": {
+          "const": "aureon.investor-copy-quality-audit.v1"
+        },
+        "state": {
+          "enum": [
+            "pass",
+            "blocked"
+          ]
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "policy": {
+          "$ref": "#/$defs/investorCopyPolicyBinding"
+        },
+        "website_root": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "routes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/investorCopyRouteBinding"
+          }
+        },
+        "summary": {
+          "$ref": "#/$defs/investorCopySummary"
+        },
+        "findings_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "investorCopyPolicyBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "policy_id",
+        "path",
+        "sha256",
+        "refresh_by",
+        "current"
+      ],
+      "properties": {
+        "policy_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]{2,127}$"
+        },
+        "path": {
+          "const": "data/website_operator/investor_copy_quality_policy.v1.json"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "refresh_by": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "current": {
+          "type": "boolean"
+        }
+      }
+    },
+    "investorCopyRouteBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "route",
+        "path",
+        "sha256",
+        "finding_count",
+        "blocker_count",
+        "warning_count"
+      ],
+      "properties": {
+        "route": {
+          "type": "string",
+          "pattern": "^/(?:[a-z0-9._-]+/)*$"
+        },
+        "path": {
+          "$ref": "#/$defs/relativeHtmlPath"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "finding_count": {
+          "$ref": "#/$defs/nonNegativeCount"
+        },
+        "blocker_count": {
+          "$ref": "#/$defs/nonNegativeCount"
+        },
+        "warning_count": {
+          "$ref": "#/$defs/nonNegativeCount"
+        }
+      }
+    },
+    "investorCopySummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "route_count",
+        "finding_count",
+        "blocker_count",
+        "warning_count"
+      ],
+      "properties": {
+        "route_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "finding_count": {
+          "$ref": "#/$defs/nonNegativeCount"
+        },
+        "blocker_count": {
+          "$ref": "#/$defs/nonNegativeCount"
+        },
+        "warning_count": {
+          "$ref": "#/$defs/nonNegativeCount"
+        }
+      }
+    },
+    "investorCopyBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state",
+        "policy_path",
+        "policy_sha256",
+        "policy_current",
+        "website_root",
+        "route_count",
+        "route_hashes_sha256",
+        "findings_sha256",
+        "blocker_count",
+        "warning_count",
+        "binding_sha256"
+      ],
+      "properties": {
+        "state": {
+          "enum": [
+            "pass",
+            "blocked"
+          ]
+        },
+        "policy_path": {
+          "const": "data/website_operator/investor_copy_quality_policy.v1.json"
+        },
+        "policy_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "policy_current": {
+          "type": "boolean"
+        },
+        "website_root": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "route_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "route_hashes_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "findings_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "blocker_count": {
+          "$ref": "#/$defs/nonNegativeCount"
+        },
+        "warning_count": {
+          "$ref": "#/$defs/nonNegativeCount"
+        },
+        "binding_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "investorCopyGateEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "passed",
+        "error",
+        "release_eligible",
+        "deployment_authority"
+      ],
+      "dependentRequired": {
+        "summary": [
+          "binding"
+        ],
+        "binding": [
+          "summary"
+        ]
+      },
+      "properties": {
+        "passed": {
+          "type": "boolean"
+        },
+        "error": {
+          "type": "string"
+        },
+        "release_eligible": {
+          "const": false
+        },
+        "deployment_authority": {
+          "const": "none"
+        },
+        "summary": {
+          "$ref": "#/$defs/investorCopySummary"
+        },
+        "binding": {
+          "$ref": "#/$defs/investorCopyBinding"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "passed"
+            ],
+            "properties": {
+              "passed": {
+                "const": true
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "summary",
+              "binding"
+            ]
+          }
+        }
+      ]
+    },
+    "hardGates": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/hardGate"
+      },
+      "contains": {
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "const": "investor_copy_quality_current"
+          }
+        }
+      },
+      "minContains": 1,
+      "maxContains": 1
+    },
+    "hardGate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "passed",
+        "evidence"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9_]{2,127}$"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "evidence": {}
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "id"
+            ],
+            "properties": {
+              "id": {
+                "const": "investor_copy_quality_current"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "evidence": {
+                "$ref": "#/$defs/investorCopyGateEvidence"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "authorityBoundaries": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "local_mutation",
+        "candidate_staging",
+        "credential_access",
+        "deployment",
+        "owner_source_selection",
+        "editorial_rights_decision",
+        "investor_copy_repair",
+        "investor_copy_governance",
+        "production_publication",
+        "human_visual_acceptance_required",
+        "autonomous_threshold_changes"
+      ],
+      "properties": {
+        "local_mutation": {
+          "const": "staged candidate only; canonical website promotion is separately owner-controlled"
+        },
+        "candidate_staging": {
+          "const": "artifacts/website-candidates/<run-id>/website only"
+        },
+        "credential_access": {
+          "const": "none"
+        },
+        "deployment": {
+          "const": "none"
+        },
+        "owner_source_selection": {
+          "const": "validate and bind only an existing explicit owner v1 retained-local or v2 verified-live-backup decision; never choose autonomously"
+        },
+        "editorial_rights_decision": {
+          "const": "prepare evidence only from an exact decision already supplied by the controlled named human; never make or infer the decision"
+        },
+        "investor_copy_repair": {
+          "const": "exact task, selected-source and work-order preflight plus bounded contract replay and candidate re-audit only; no source selection, canonical mutation, package, release or deployment authority"
+        },
+        "investor_copy_governance": {
+          "const": "verification and full shadow simulation are read-only; broad system access is not approval, and exact three-file application remains blocked without a fresh immutable named-owner decision plus explicit apply; no website, policy, candidate, package, release or deployment authority"
+        },
+        "production_publication": {
+          "const": "WebsiteOperator backup plus short-lived package-hash owner gate only"
+        },
+        "human_visual_acceptance_required": {
+          "const": true
+        },
+        "autonomous_threshold_changes": {
+          "const": false
+        }
+      }
+    },
+    "designSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "blocker_count",
+        "warning_count",
+        "work_order_count",
+        "council_veto_count",
+        "hard_gate_count",
+        "hard_gate_pass_count",
+        "ready_for_human_visual_review",
+        "release_eligible",
+        "ready_for_deployment"
+      ],
+      "properties": {
+        "blocker_count": {
+          "$ref": "#/$defs/nonNegativeCount"
+        },
+        "warning_count": {
+          "$ref": "#/$defs/nonNegativeCount"
+        },
+        "work_order_count": {
+          "$ref": "#/$defs/nonNegativeCount"
+        },
+        "council_veto_count": {
+          "$ref": "#/$defs/nonNegativeCount"
+        },
+        "hard_gate_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "hard_gate_pass_count": {
+          "$ref": "#/$defs/nonNegativeCount"
+        },
+        "ready_for_human_visual_review": {
+          "type": "boolean"
+        },
+        "release_eligible": {
+          "type": "boolean"
+        },
+        "ready_for_deployment": {
+          "const": false
+        }
+      }
+    }
+  }
+}

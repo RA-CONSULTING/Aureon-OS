@@ -21,12 +21,9 @@ import subprocess
 import sys
 import time
 from dataclasses import asdict, dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Callable, Optional, Sequence
-
-from aureon.autonomous.aureon_goal_capability_map import build_goal_capability_map
-
+from typing import Any, Callable, Sequence
 
 SCHEMA_VERSION = "aureon-capability-growth-loop-v1"
 DEFAULT_OUTPUT_MD = Path("docs/audits/aureon_capability_growth_loop.md")
@@ -38,6 +35,7 @@ DEFAULT_VAULT_NOTE = Path(".obsidian/Aureon Self Understanding/capability_growth
 
 SAFE_ENV = {
     "AUREON_AUDIT_MODE": "1",
+    "AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS": "1",
     "AUREON_LIVE_TRADING": "0",
     "AUREON_DISABLE_REAL_ORDERS": "1",
     "AUREON_ALLOW_SIM_FALLBACK": "0",
@@ -51,6 +49,7 @@ DOMAIN_ORDER = (
     "goal_contracts",
     "self_questioning_llm_vault",
     "code_architect_skill_authoring",
+    "public_website_design",
     "trading_cognition",
     "accounting_compliance",
     "research_vault",
@@ -173,7 +172,7 @@ class CapabilityGrowthReport:
         }
 
 
-def repo_root_from(start: Optional[Path] = None) -> Path:
+def repo_root_from(start: Path | None = None) -> Path:
     current = (start or Path.cwd()).resolve()
     for candidate in (current, *current.parents):
         if (candidate / "aureon").is_dir() and (candidate / "scripts").is_dir():
@@ -182,7 +181,7 @@ def repo_root_from(start: Optional[Path] = None) -> Path:
 
 
 def utc_now() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 def apply_safe_environment() -> dict[str, str]:
@@ -200,7 +199,13 @@ def load_json(path: Path) -> dict[str, Any]:
     if not path.exists():
         return {}
     try:
-        return json.loads(path.read_text(encoding="utf-8", errors="replace"))
+        parsed = json.loads(path.read_text(encoding="utf-8", errors="replace"))
+        if isinstance(parsed, dict):
+            return parsed
+        return {
+            "error": "JSON root must be an object",
+            "path": str(path),
+        }
     except Exception as exc:
         return {"error": f"{type(exc).__name__}: {exc}", "path": str(path)}
 
@@ -222,7 +227,7 @@ def status_score(status: str) -> float:
 
 def _proof(readiness: dict[str, Any], proof_id: str) -> dict[str, Any]:
     for proof in readiness.get("proofs") or []:
-        if proof.get("id") == proof_id:
+        if isinstance(proof, dict) and proof.get("id") == proof_id:
             return proof
     return {}
 
@@ -233,8 +238,8 @@ def _domain_from_proof(
     *,
     name: str,
     hint: str,
-    systems: Optional[list[str]] = None,
-    domain_id: Optional[str] = None,
+    systems: list[str] | None = None,
+    domain_id: str | None = None,
 ) -> DomainCapability:
     resolved_id = domain_id or proof_id
     proof = _proof(readiness, proof_id)
@@ -319,6 +324,737 @@ def validation_capability(benchmark_checks: Sequence[BenchmarkCheck]) -> DomainC
     )
 
 
+def public_website_design_capability(root: Path) -> DomainCapability:
+    from aureon.autonomous.aureon_coding_agent_skill_base import (
+        website_source_rationalisation_readiness,
+    )
+
+    source_rationalisation = website_source_rationalisation_readiness(root)
+    required = [
+        root / "website",
+        root / "aureon" / "operator" / "website_operator.py",
+        root / "aureon" / "operator" / "live_surface_reconciliation.py",
+        root / "aureon" / "operator" / "owner_source_reconciliation.py",
+        root / "aureon" / "operator" / "website_source_rationalisation.py",
+        root / "tools" / "run-website-source-rationalisation.py",
+        root / "aureon" / "operator" / "website_runtime_optimisation.py",
+        root / "tools" / "run-website-runtime-optimisation.py",
+        root / "aureon" / "operator" / "website_runtime_measurement_provenance.py",
+        root / "tools" / "run-website-runtime-measurement-provenance.py",
+        root / "data" / "website_operator" / "browser_acceptance_contract.v1.json",
+        root / "tools" / "aureon_research_hydration_attribution.js",
+        root / "aureon" / "operator" / "design_capability_registry.py",
+        root / "aureon" / "operator" / "design_research_refresh.py",
+        root / "aureon" / "operator" / "design_evidence_brief.py",
+        root / "aureon" / "operator" / "design_investor_copy_governance.py",
+        root / "aureon" / "autonomous" / "aureon_public_website_design_runner.py",
+        root / "aureon" / "autonomous" / "aureon_staged_design_worker_broker.py",
+        root / "aureon" / "operator" / "design_candidate_control.py",
+        root / "aureon" / "operator" / "design_candidate_initial_gate.py",
+        root / "aureon" / "operator" / "secure_immutable_artifact.py",
+        root / "aureon" / "operator" / "design_candidate_static_qa.py",
+        root / "aureon" / "operator" / "design_candidate_motion_policy_compiler.py",
+        root / "aureon" / "operator" / "design_candidate_test_policy_compiler.py",
+        root / "aureon" / "operator" / "design_candidate_source_closure.py",
+        root / "aureon" / "operator" / "design_motion_performance_budget.py",
+        root / "aureon" / "operator" / "design_candidate_test_evidence.py",
+        root / "aureon" / "operator" / "design_candidate_visual_review.py",
+        root / "aureon" / "operator" / "design_learning_ledger.py",
+        root / "aureon" / "autonomous" / "aureon_capability_forge.py",
+        root / "skills" / "aureon-harmonic-design-suite" / "SKILL.md",
+        root / "data" / "website_operator" / "investor_site_design_brief.v1.json",
+        root / "data" / "website_operator" / "design_research_sources.v1.json",
+        root / "tools" / "aureon_website_visual_qa_v28.js",
+        root / "docs" / "runbooks" / "DESIGN_MOTION_PERFORMANCE_BUDGET.md",
+        root / "docs" / "runbooks" / "DESIGN_CANDIDATE_TEST_EVIDENCE.md",
+        root / "docs" / "runbooks" / "SECURE_IMMUTABLE_ARTIFACT.md",
+        root / "docs" / "runbooks" / "DESIGN_CANDIDATE_STATIC_QA.md",
+        root / "docs" / "runbooks" / "DESIGN_CANDIDATE_MOTION_POLICY_COMPILER.md",
+        root / "docs" / "runbooks" / "DESIGN_CANDIDATE_TEST_POLICY_COMPILER.md",
+        root / "docs" / "runbooks" / "WEBSITE_SOURCE_RATIONALISATION.md",
+        root / "docs" / "runbooks" / "WEBSITE_RUNTIME_OPTIMISATION.md",
+        root / "docs" / "research" / "AUREON_PUBLIC_WEBSITE_DESIGN_DELIVERY_V2_RUNBOOK.md",
+        root
+        / "docs"
+        / "research"
+        / "schemas"
+        / "AUREON_PUBLIC_WEBSITE_DESIGN_DELIVERY_RUNNER_V2.schema.json",
+        root
+        / "docs"
+        / "research"
+        / "schemas"
+        / "AUREON_WEBSITE_RUNTIME_MEASUREMENT_STATIC_INTEGRITY_V1.schema.json",
+        root / "tests" / "test_website_source_rationalisation.py",
+        root / "tests" / "test_website_runtime_optimisation.py",
+        root / "tests" / "test_website_runtime_measurement_provenance.py",
+    ]
+    present = [path.relative_to(root).as_posix() for path in required if path.exists()]
+    missing = [path.relative_to(root).as_posix() for path in required if not path.exists()]
+    receipts = (
+        sorted(
+            (root / "artifacts" / "website-operator").glob("*-design-cycle-*.json"),
+            key=lambda path: path.stat().st_mtime,
+            reverse=True,
+        )
+        if (root / "artifacts" / "website-operator").is_dir()
+        else []
+    )
+    latest = load_json(receipts[0]) if receipts else {}
+    local_gate_pass = bool(latest.get("hard_gates_pass"))
+    nexus_score = float((latest.get("design_nexus") or {}).get("score") or 0.0)
+    registry_evidence: dict[str, Any] = {
+        "available": False,
+        "verified": False,
+        "schema": "",
+        "source_hashes": [],
+        "authority": {},
+        "release_eligible": False,
+        "deployment_authority": "none",
+        "design_research_refresh_readiness": {
+            "available": False,
+            "state": "unavailable",
+            "current": False,
+            "planning_signal_available": False,
+            "candidate_delivery_ready": False,
+            "delivery_authority": "none",
+            "release_eligible": False,
+            "deployment_authority": "none",
+        },
+        "website_runtime_optimisation_readiness": {
+            "available": False,
+            "installed": False,
+            "state": "unavailable",
+            "proposal_compilation_protocol_available": False,
+            "measurement_validation_protocol_available": False,
+            "measurement_validation_scope": "unavailable",
+            "measurement_provenance_verification_available": False,
+            "production_compilation_blocked": True,
+            "production_compilation_blocker": ("blocked-reviewed-measurement-provenance-tool-not-installed"),
+            "browser_acceptance_contract_available": False,
+            "measurement_schema_available": False,
+            "proposal_schema_available": False,
+            "proposal_compilation_executed": False,
+            "measurement_validation_executed": False,
+            "source_selection_required": True,
+            "autonomous_source_selection": False,
+            "measurement_evidence_required": True,
+            "autonomous_measurement_evidence": False,
+            "transformations_executed": False,
+            "release_eligible": False,
+            "deployment_authority": "none",
+        },
+        "website_runtime_measurement_static_integrity_readiness": {
+            "available": False,
+            "installed": False,
+            "state": "unavailable",
+            "capability_scope": "read-validate-only",
+            "static_integrity_validation_available": False,
+            "static_integrity_validation_executed": False,
+            "measurement_provenance_verification_available": False,
+            "production_eligible": False,
+            "eligible_for_proposal_compilation": False,
+            "production_compilation_blocked": True,
+            "worker_available": False,
+            "worker_executed": False,
+            "artifact_emission_available": False,
+            "artifact_emission_executed": False,
+            "trusted_static_integrity_execution_path": "unavailable",
+            "imported_api_authoritative": False,
+            "release_eligible": False,
+            "deployment_authority": "none",
+        },
+        "design_evidence_brief_readiness": {
+            "available": False,
+            "brief_ready": False,
+            "planning_pipeline_available": False,
+            "candidate_delivery_ready": False,
+            "release_eligible": False,
+            "deployment_authority": "none",
+        },
+        "staged_design_worker_broker_readiness": {
+            "available": False,
+            "state": "unavailable",
+            "lease_protocol_available": False,
+            "candidate_delivery_ready": False,
+            "canonical_website_mutation": "never",
+            "release_eligible": False,
+            "package_authority": "none",
+            "deployment_authority": "none",
+            "credential_access": "none",
+        },
+        "investor_copy_governance_readiness": {
+            "available": False,
+            "state": "unavailable",
+            "decision_verification_available": False,
+            "simulation_available": False,
+            "apply_protocol_available": False,
+            "implementation_tooling_verified": False,
+            "exact_owner_decision_required": True,
+            "autonomous_owner_decision": False,
+            "broad_access_approval_valid": False,
+            "current_owner_decision_present": False,
+            "current_apply_authorised": False,
+            "current_apply_ready": False,
+            "website_mutation": "never",
+            "package_authority": "none",
+            "release_eligible": False,
+            "deployment_authority": "none",
+        },
+        "motion_performance_budget_readiness": {
+            "available": False,
+            "installed": False,
+            "state": "unavailable",
+            "audit_protocol_available": False,
+            "receipt_replay_available": False,
+            "audit_executed": False,
+            "decision_status": "not-evaluated",
+            "decision_passed": False,
+            "eligible_for_next_local_gate": False,
+            "pass_inferred_from_installation": False,
+            "candidate_validation_authority": "none",
+            "promotion_authority": "none",
+            "package_authority": "none",
+            "release_eligible": False,
+            "deployment_authority": "none",
+        },
+        "candidate_test_evidence_readiness": {
+            "available": False,
+            "installed": False,
+            "state": "unavailable",
+            "execution_protocol_available": False,
+            "structural_verification_available": False,
+            "reviewed_node_toolchain": {
+                "protocol_available": False,
+                "schema": "aureon.node-toolchain-binding.v1",
+                "locator_authority": "reviewed-source-pinned-absolute-path-no-path-fallback",
+                "absolute_path_size_sha256_bound": False,
+                "ambient_path_fallback_allowed": False,
+                "resolved": False,
+                "executed": False,
+            },
+            "bounded_process": {
+                "protocol_available": False,
+                "launcher": "subprocess.Popen",
+                "shell": False,
+                "max_stream_bytes": 2 * 1024 * 1024,
+                "retry_authority": "none",
+                "executed": False,
+            },
+            "execution_authorised": False,
+            "test_suite_executed": False,
+            "worker_pass_strings_are_evidence": False,
+            "origin_attested": False,
+            "trusted_orchestration_seal_required": True,
+            "evidence_passed": False,
+            "pass_inferred_from_installation": False,
+            "candidate_validation_authority": "none",
+            "promotion_authority": "none",
+            "package_authority": "none",
+            "release_eligible": False,
+            "deployment_authority": "none",
+        },
+        "candidate_qa_control_plane_readiness": {
+            "available": False,
+            "installed": False,
+            "state": "unavailable",
+            "static_qa_available": False,
+            "fixed_test_policy_compiler_available": False,
+            "fixed_motion_policy_compiler_available": False,
+            "handle_bound_immutable_writer_available": False,
+            "v2_runner_available": False,
+            "candidate_test_evidence_runtime_available": False,
+            "compiler_verification_ingress": {
+                "discovery_mode": "metadata-only-no-subprocess",
+                "discovery_subprocess_launched": False,
+                "imported_api": {
+                    "scope": "drift-check-only",
+                    "motion_read_only_verifier_available": False,
+                    "test_read_only_verifier_available": False,
+                    "pre_import_source_authentication": False,
+                },
+                "sealed_direct_file_read_only": {
+                    "protocol_available": False,
+                    "motion_protocol_available": False,
+                    "test_protocol_available": False,
+                    "executed": False,
+                    "python_flags": ["-I", "-S", "-B"],
+                    "motion_verify_flag": "--verify-config",
+                    "test_verify_flag": "--verify-policy",
+                    "source_closure_helper_available": False,
+                },
+                "runner_delegation": {
+                    "protocol_available": False,
+                    "required_for_candidate_qa": True,
+                    "bounded_popen_protocol_available": False,
+                    "launcher": "subprocess.Popen",
+                    "shell": False,
+                    "timeout_seconds": 300,
+                    "max_aggregate_output_bytes": 64 * 1024,
+                    "retry_authority": "none",
+                    "invoked": False,
+                },
+            },
+            "execution_order_enforced": False,
+            "qa_execution_authorised": False,
+            "qa_executed": False,
+            "qa_passed": False,
+            "pass_inferred_from_installation": False,
+            "candidate_creation_authority": "none",
+            "candidate_mutation_authority": "none",
+            "candidate_validation_authority": "none",
+            "canonical_website_mutation": "none",
+            "promotion_authority": "none",
+            "package_authority": "none",
+            "release_authority": "none",
+            "release_eligible": False,
+            "deployment_authority": "none",
+        },
+        "error": "",
+    }
+    try:
+        from aureon.operator.design_capability_registry import discover_design_capability_registry
+
+        registry = discover_design_capability_registry(root)
+        verification = registry.get("verification")
+        authority = registry.get("authority")
+        research_refresh_readiness = registry.get("design_research_refresh_readiness")
+        if not isinstance(research_refresh_readiness, dict):
+            research_refresh_readiness = registry_evidence["design_research_refresh_readiness"]
+        runtime_optimisation_readiness = registry.get("website_runtime_optimisation_readiness")
+        if not isinstance(runtime_optimisation_readiness, dict):
+            runtime_optimisation_readiness = registry_evidence["website_runtime_optimisation_readiness"]
+        runtime_measurement_static_integrity_readiness = registry.get(
+            "website_runtime_measurement_static_integrity_readiness"
+        )
+        if not isinstance(runtime_measurement_static_integrity_readiness, dict):
+            runtime_measurement_static_integrity_readiness = registry_evidence[
+                "website_runtime_measurement_static_integrity_readiness"
+            ]
+        brief_readiness = registry.get("design_evidence_brief_readiness")
+        if not isinstance(brief_readiness, dict):
+            brief_readiness = registry_evidence["design_evidence_brief_readiness"]
+        staged_worker_broker_readiness = registry.get("staged_design_worker_broker_readiness")
+        if not isinstance(staged_worker_broker_readiness, dict):
+            staged_worker_broker_readiness = registry_evidence["staged_design_worker_broker_readiness"]
+        investor_copy_governance_readiness = registry.get("investor_copy_governance_readiness")
+        if not isinstance(investor_copy_governance_readiness, dict):
+            investor_copy_governance_readiness = registry_evidence["investor_copy_governance_readiness"]
+        motion_budget_readiness = registry.get("motion_performance_budget_readiness")
+        if not isinstance(motion_budget_readiness, dict):
+            motion_budget_readiness = registry_evidence["motion_performance_budget_readiness"]
+        candidate_test_readiness = registry.get("candidate_test_evidence_readiness")
+        if not isinstance(candidate_test_readiness, dict):
+            candidate_test_readiness = registry_evidence["candidate_test_evidence_readiness"]
+        candidate_qa_readiness = registry.get("candidate_qa_control_plane_readiness")
+        if not isinstance(candidate_qa_readiness, dict):
+            candidate_qa_readiness = registry_evidence["candidate_qa_control_plane_readiness"]
+        registry_verified = (
+            isinstance(verification, dict)
+            and verification.get("passed") is True
+            and verification.get("release_eligible") is False
+            and verification.get("deployment_authority") == "none"
+            and isinstance(authority, dict)
+            and authority.get("release_eligibility") == "always-false"
+            and authority.get("deployment_authority") == "none"
+            and authority.get("release_authority") == "WebsiteOperator owner gate only"
+        )
+        source_hashes = [
+            {
+                "id": item.get("id"),
+                "path": item.get("path"),
+                "sha256": item.get("sha256"),
+            }
+            for item in registry.get("sources", [])
+            if isinstance(item, dict)
+        ]
+        registry_evidence.update(
+            {
+                "available": True,
+                "verified": registry_verified,
+                "schema": str(registry.get("schema") or ""),
+                "source_hashes": source_hashes,
+                "authority": authority if isinstance(authority, dict) else {},
+                "verification": verification if isinstance(verification, dict) else {},
+                "design_research_refresh_readiness": research_refresh_readiness,
+                "website_runtime_optimisation_readiness": runtime_optimisation_readiness,
+                "website_runtime_measurement_static_integrity_readiness": (
+                    runtime_measurement_static_integrity_readiness
+                ),
+                "design_evidence_brief_readiness": brief_readiness,
+                "staged_design_worker_broker_readiness": staged_worker_broker_readiness,
+                "investor_copy_governance_readiness": investor_copy_governance_readiness,
+                "motion_performance_budget_readiness": motion_budget_readiness,
+                "candidate_test_evidence_readiness": candidate_test_readiness,
+                "candidate_qa_control_plane_readiness": candidate_qa_readiness,
+            }
+        )
+    except Exception as exc:
+        registry_evidence["error"] = f"{type(exc).__name__}: {exc}"
+
+    brief_ready = bool(registry_evidence["design_evidence_brief_readiness"].get("brief_ready"))
+    research_refresh_current = bool(registry_evidence["design_research_refresh_readiness"].get("current"))
+    runtime_optimisation_protocol_available = bool(
+        registry_evidence["website_runtime_optimisation_readiness"].get(
+            "proposal_compilation_protocol_available"
+        )
+        and registry_evidence["website_runtime_optimisation_readiness"].get(
+            "measurement_validation_protocol_available"
+        )
+        and registry_evidence["website_runtime_optimisation_readiness"].get(
+            "browser_acceptance_contract_available"
+        )
+        and registry_evidence["website_runtime_optimisation_readiness"].get("measurement_schema_available")
+        and registry_evidence["website_runtime_optimisation_readiness"].get("proposal_schema_available")
+        and registry_evidence["website_runtime_optimisation_readiness"].get("transformations_executed")
+        is False
+    )
+    runtime_measurement_static_integrity_available = bool(
+        registry_evidence["website_runtime_measurement_static_integrity_readiness"].get(
+            "static_integrity_validation_available"
+        )
+        and registry_evidence["website_runtime_measurement_static_integrity_readiness"].get(
+            "static_integrity_validation_executed"
+        )
+        is False
+        and registry_evidence["website_runtime_measurement_static_integrity_readiness"].get(
+            "measurement_provenance_verification_available"
+        )
+        is False
+        and registry_evidence["website_runtime_measurement_static_integrity_readiness"].get(
+            "production_eligible"
+        )
+        is False
+        and registry_evidence["website_runtime_measurement_static_integrity_readiness"].get(
+            "worker_available"
+        )
+        is False
+        and registry_evidence["website_runtime_measurement_static_integrity_readiness"].get(
+            "trusted_static_integrity_execution_path"
+        )
+        == "fresh-isolated-launcher-only"
+        and registry_evidence["website_runtime_measurement_static_integrity_readiness"].get(
+            "imported_api_authoritative"
+        )
+        is False
+    )
+    staged_worker_broker_protocol_available = bool(
+        registry_evidence["staged_design_worker_broker_readiness"].get("lease_protocol_available")
+    )
+    investor_copy_governance_verification_available = bool(
+        registry_evidence["investor_copy_governance_readiness"].get("decision_verification_available")
+    )
+    motion_budget_protocol_available = bool(
+        registry_evidence["motion_performance_budget_readiness"].get("audit_protocol_available")
+    )
+    candidate_test_node = registry_evidence["candidate_test_evidence_readiness"].get(
+        "reviewed_node_toolchain"
+    )
+    if not isinstance(candidate_test_node, dict):
+        candidate_test_node = {}
+    candidate_test_process = registry_evidence["candidate_test_evidence_readiness"].get("bounded_process")
+    if not isinstance(candidate_test_process, dict):
+        candidate_test_process = {}
+    candidate_test_node_available = bool(
+        candidate_test_node.get("protocol_available") is True
+        and candidate_test_node.get("schema") == "aureon.node-toolchain-binding.v1"
+        and candidate_test_node.get("locator_authority")
+        == "reviewed-source-pinned-absolute-path-no-path-fallback"
+        and candidate_test_node.get("absolute_path_size_sha256_bound") is True
+        and candidate_test_node.get("ambient_path_fallback_allowed") is False
+        and candidate_test_node.get("resolved") is False
+        and candidate_test_node.get("executed") is False
+    )
+    candidate_test_bounded_popen_available = bool(
+        candidate_test_process.get("protocol_available") is True
+        and candidate_test_process.get("launcher") == "subprocess.Popen"
+        and candidate_test_process.get("shell") is False
+        and candidate_test_process.get("max_stream_bytes") == 2 * 1024 * 1024
+        and candidate_test_process.get("retry_authority") == "none"
+        and candidate_test_process.get("executed") is False
+    )
+    candidate_test_protocol_available = bool(
+        registry_evidence["candidate_test_evidence_readiness"].get("execution_protocol_available")
+        and registry_evidence["candidate_test_evidence_readiness"].get("structural_verification_available")
+        and candidate_test_node_available
+        and candidate_test_bounded_popen_available
+    )
+    candidate_qa_ingress = registry_evidence["candidate_qa_control_plane_readiness"].get(
+        "compiler_verification_ingress"
+    )
+    if not isinstance(candidate_qa_ingress, dict):
+        candidate_qa_ingress = {}
+    imported_compiler_api = candidate_qa_ingress.get("imported_api")
+    if not isinstance(imported_compiler_api, dict):
+        imported_compiler_api = {}
+    sealed_compiler_verification = candidate_qa_ingress.get("sealed_direct_file_read_only")
+    if not isinstance(sealed_compiler_verification, dict):
+        sealed_compiler_verification = {}
+    sealed_runner_delegation = candidate_qa_ingress.get("runner_delegation")
+    if not isinstance(sealed_runner_delegation, dict):
+        sealed_runner_delegation = {}
+    imported_compiler_drift_checks_available = bool(
+        imported_compiler_api.get("scope") == "drift-check-only"
+        and imported_compiler_api.get("motion_read_only_verifier_available")
+        and imported_compiler_api.get("test_read_only_verifier_available")
+        and imported_compiler_api.get("pre_import_source_authentication") is False
+    )
+    sealed_compiler_read_only_protocol_available = bool(
+        sealed_compiler_verification.get("protocol_available") is True
+        and sealed_compiler_verification.get("motion_protocol_available") is True
+        and sealed_compiler_verification.get("test_protocol_available") is True
+        and sealed_compiler_verification.get("executed") is False
+        and sealed_compiler_verification.get("python_flags") == ["-I", "-S", "-B"]
+        and sealed_compiler_verification.get("motion_verify_flag") == "--verify-config"
+        and sealed_compiler_verification.get("test_verify_flag") == "--verify-policy"
+        and sealed_compiler_verification.get("source_closure_helper_available") is True
+    )
+    sealed_compiler_runner_delegation_available = bool(
+        sealed_runner_delegation.get("protocol_available") is True
+        and sealed_runner_delegation.get("required_for_candidate_qa") is True
+        and sealed_runner_delegation.get("bounded_popen_protocol_available") is True
+        and sealed_runner_delegation.get("launcher") == "subprocess.Popen"
+        and sealed_runner_delegation.get("shell") is False
+        and sealed_runner_delegation.get("timeout_seconds") == 300
+        and sealed_runner_delegation.get("max_aggregate_output_bytes") == 64 * 1024
+        and sealed_runner_delegation.get("retry_authority") == "none"
+        and sealed_runner_delegation.get("invoked") is False
+    )
+    candidate_qa_control_plane_available = bool(
+        registry_evidence["candidate_qa_control_plane_readiness"].get("available")
+        and registry_evidence["candidate_qa_control_plane_readiness"].get("state")
+        == "installed-not-authorised"
+        and registry_evidence["candidate_qa_control_plane_readiness"].get("execution_order_enforced")
+        and registry_evidence["candidate_qa_control_plane_readiness"].get(
+            "candidate_test_evidence_runtime_available"
+        )
+        and candidate_qa_ingress.get("discovery_mode") == "metadata-only-no-subprocess"
+        and imported_compiler_drift_checks_available
+        and sealed_compiler_read_only_protocol_available
+        and sealed_compiler_runner_delegation_available
+        and candidate_qa_ingress.get("discovery_subprocess_launched") is False
+    )
+    if not registry_evidence["verified"]:
+        score = 0.20
+        status = "blocked_or_missing"
+    elif local_gate_pass and nexus_score > 0 and brief_ready:
+        score = min(1.0, nexus_score / 100.0)
+        status = "working"
+    elif not missing:
+        score = 0.72
+        status = "working_with_attention"
+    else:
+        score = 0.20
+        status = "blocked_or_missing"
+    return DomainCapability(
+        id="public_website_design",
+        name="Public Website Design Nexus",
+        status=status,
+        score=score,
+        systems=[
+            "WebsiteOperator",
+            "LiveSurfaceReconciliation (read-only public HTTPS drift sensing)",
+            "OwnerSourceReconciliation (owner decision plus verified backup for observed live drift)",
+            "WebsiteSourceRationalisation (proposal-only planning and exact owner-decision validation for PublicWebsiteDesignQA; no discovery execution or staging authority)",
+            "WebsiteRuntimeOptimisation (structural declaration validation and test-fixture-only projection arithmetic; production proposal compilation and writing remain blocked)",
+            "WebsiteRuntimeMeasurementStaticIntegrity (QA-only fresh isolated-launcher validation of explicit existing artifacts; imported APIs non-authoritative, provenance unverified, production blocked)",
+            "ResearchRouteLayoutAttribution (single runtime-only temporal diagnostic)",
+            "DesignCapabilityRegistry (read-only)",
+            "DesignResearchRefresh (redacted planning freshness; no delivery or release authority)",
+            "DesignEvidenceBrief (source-bound planning contract; no candidate or release authority)",
+            "PublicWebsiteDesignDeliveryRunner (immutable staged receipts; owner promotion excluded)",
+            "StagedDesignWorkerBroker (explicit short-lived lease and text-only staged manifest; no canonical, credential, package, release, or deployment authority)",
+            "InvestorCopyGovernance (read-only verify/simulate; exact named-owner gated three-file apply; broad access invalid; no website, package, release, or deployment authority)",
+            "AureonCapabilityForge.website_design",
+            "GoalExecutionEngine.public_website_design_cycle",
+            "Aureon Harmonic Design Suite",
+            "DesignCandidateControl (staged V30+ candidates)",
+            "DesignCandidateInitialGate (source-bound performance feedback)",
+            "DesignMotionPerformanceBudget (installed static evidence protocol; pass requires decision.status pass and eligible_for_next_local_gate true)",
+            "DesignCandidateTestEvidence (installed-not-authorised; worker pass strings excluded; trusted orchestration seal plus evidence_passed required)",
+            "CandidateQAControlPlane (metadata-only discovery; imported drift checks separated from runner-delegated sealed direct-file read-only verification; no inferred pass)",
+            "DesignCandidateVisualReview (staged pre-promotion evidence)",
+            "DesignLearningLedger (append-only human-reviewed skill proposal)",
+            "public-site browser and dependency-closure gates",
+        ],
+        evidence={
+            "present_surfaces": present,
+            "missing_surfaces": missing,
+            "latest_design_cycle": str(receipts[0]) if receipts else "",
+            "latest_hard_gates_pass": local_gate_pass,
+            "latest_design_nexus_score": nexus_score,
+            "design_capability_registry": registry_evidence,
+            "website_source_rationalisation_readiness": source_rationalisation,
+            "source_rationalisation_planning_protocol_available": bool(
+                source_rationalisation.get("planning_protocol_available")
+            ),
+            "source_rationalisation_owner_decision_validation_protocol_available": bool(
+                source_rationalisation.get("owner_decision_validation_protocol_available")
+            ),
+            "source_rationalisation_planning_executed_during_discovery": False,
+            "source_rationalisation_validation_executed_during_discovery": False,
+            "source_rationalisation_autonomous_owner_decision": False,
+            "source_rationalisation_text_worker_authority": "none",
+            "source_rationalisation_staging_authority": "none",
+            "source_rationalisation_physical_deletion_authority": "none",
+            "source_rationalisation_candidate_authority": "none",
+            "source_rationalisation_canonical_authority": "none",
+            "source_rationalisation_package_authority": "none",
+            "source_rationalisation_release_eligible": False,
+            "source_rationalisation_deployment_authority": "none",
+            "source_rationalisation_credential_access": "none",
+            "source_rationalisation_network_access": "none",
+            "source_rationalisation_omission_proves_readiness": False,
+            "website_runtime_optimisation_readiness": registry_evidence[
+                "website_runtime_optimisation_readiness"
+            ],
+            "runtime_optimisation_protocol_available": runtime_optimisation_protocol_available,
+            "runtime_optimisation_measurement_schema_available": bool(
+                registry_evidence["website_runtime_optimisation_readiness"].get(
+                    "measurement_schema_available"
+                )
+            ),
+            "runtime_optimisation_proposal_schema_available": bool(
+                registry_evidence["website_runtime_optimisation_readiness"].get("proposal_schema_available")
+            ),
+            "runtime_optimisation_measurement_provenance_verified": bool(
+                registry_evidence["website_runtime_optimisation_readiness"].get(
+                    "measurement_provenance_verification_available"
+                )
+            ),
+            "runtime_optimisation_production_compilation_blocked": bool(
+                registry_evidence["website_runtime_optimisation_readiness"].get(
+                    "production_compilation_blocked", True
+                )
+            ),
+            "runtime_optimisation_discovery_execution": False,
+            "runtime_optimisation_autonomous_source_selection": False,
+            "runtime_optimisation_autonomous_measurement_evidence": False,
+            "runtime_optimisation_transformations_executed": False,
+            "runtime_optimisation_candidate_authority": "none",
+            "runtime_optimisation_package_authority": "none",
+            "runtime_optimisation_release_eligible": False,
+            "runtime_optimisation_deployment_authority": "none",
+            "website_runtime_measurement_static_integrity_readiness": registry_evidence[
+                "website_runtime_measurement_static_integrity_readiness"
+            ],
+            "runtime_measurement_static_integrity_available": (
+                runtime_measurement_static_integrity_available
+            ),
+            "runtime_measurement_static_integrity_executed": bool(
+                registry_evidence["website_runtime_measurement_static_integrity_readiness"].get(
+                    "static_integrity_validation_executed"
+                )
+            ),
+            "runtime_measurement_static_integrity_provenance_verified": bool(
+                registry_evidence["website_runtime_measurement_static_integrity_readiness"].get(
+                    "measurement_provenance_verification_available"
+                )
+            ),
+            "runtime_measurement_static_integrity_production_eligible": bool(
+                registry_evidence["website_runtime_measurement_static_integrity_readiness"].get(
+                    "production_eligible"
+                )
+            ),
+            "runtime_measurement_static_integrity_worker_available": bool(
+                registry_evidence["website_runtime_measurement_static_integrity_readiness"].get(
+                    "worker_available"
+                )
+            ),
+            "runtime_measurement_static_integrity_artifact_emission_available": bool(
+                registry_evidence["website_runtime_measurement_static_integrity_readiness"].get(
+                    "artifact_emission_available"
+                )
+            ),
+            "runtime_measurement_static_integrity_execution_path": (
+                registry_evidence["website_runtime_measurement_static_integrity_readiness"].get(
+                    "trusted_static_integrity_execution_path"
+                )
+                or "unavailable"
+            ),
+            "runtime_measurement_static_integrity_imported_api_authoritative": bool(
+                registry_evidence["website_runtime_measurement_static_integrity_readiness"].get(
+                    "imported_api_authoritative"
+                )
+            ),
+            "runtime_measurement_static_integrity_proves_producer_execution": False,
+            "runtime_measurement_static_integrity_proves_full_decode_or_freshness": False,
+            "runtime_measurement_static_integrity_deployment_authority": (
+                registry_evidence["website_runtime_measurement_static_integrity_readiness"].get(
+                    "deployment_authority"
+                )
+                or "none"
+            ),
+            "research_refresh_current": research_refresh_current,
+            "brief_ready": brief_ready,
+            "planning_pipeline_available": bool(
+                registry_evidence["design_evidence_brief_readiness"].get("planning_pipeline_available")
+            ),
+            "staged_worker_broker_protocol_available": staged_worker_broker_protocol_available,
+            "investor_copy_governance_verification_available": (
+                investor_copy_governance_verification_available
+            ),
+            "motion_performance_budget_protocol_available": motion_budget_protocol_available,
+            "motion_performance_budget_passed": False,
+            "candidate_test_evidence_protocol_available": candidate_test_protocol_available,
+            "candidate_test_reviewed_node_toolchain_available": candidate_test_node_available,
+            "candidate_test_bounded_popen_available": candidate_test_bounded_popen_available,
+            "candidate_test_evidence_origin_attested": False,
+            "candidate_test_evidence_passed": False,
+            "candidate_qa_control_plane_available": candidate_qa_control_plane_available,
+            "imported_compiler_drift_check_apis_available": imported_compiler_drift_checks_available,
+            "sealed_compiler_read_only_protocol_available": (sealed_compiler_read_only_protocol_available),
+            "sealed_compiler_runner_delegation_available": (sealed_compiler_runner_delegation_available),
+            "candidate_qa_discovery_subprocess_launched": bool(
+                candidate_qa_ingress.get("discovery_subprocess_launched")
+            ),
+            "sealed_compiler_read_only_verification_executed": False,
+            "sealed_compiler_runner_delegation_invoked": False,
+            "candidate_qa_executed": False,
+            "candidate_qa_passed": False,
+            "candidate_delivery_ready": False,
+            "release_eligible": False,
+            "deployment_authority": "none",
+        },
+        improvement_hint=(
+            "Restore the source-bound design capability registry and its non-authoritative boundary before "
+            "planning any local design work; a named human visual reviewer and WebsiteOperator owner gate "
+            "remain mandatory."
+            if not registry_evidence["verified"]
+            else "Refresh or repair the redacted design-research source control and source-bound design-evidence brief before deriving any staged candidate scope; a passing brief remains planning-only, and named human visual review plus the WebsiteOperator owner gate remain mandatory."
+            if not brief_ready
+            else "Run the source-bound design cycle, close objective council vetoes, refresh official "
+            "benchmarks, treat imported compiler APIs as drift checks only, delegate sealed direct-file "
+            "read-only replay under python -I -S -B through the V2 runner, and use the one-attempt chain in its enforced "
+            "motion-first then trusted-test then browser order, require exact passing receipts rather "
+            "than worker pass strings, prove dependency closure, "
+            "and keep deployment owner-gated."
+        ),
+    )
+
+
+def audit_goal_capability_snapshot(root: Path) -> dict[str, Any]:
+    """Build the goal map only after activating this loop's audit boundary.
+
+    The map is part of the wider runtime organism and can wire optional
+    observability components at import time.  This loop is explicitly a local,
+    no-side-effect audit surface, so importing it must never start or contact a
+    runtime component.  Delaying the import until after the safe environment is
+    applied preserves the map's normal runtime behaviour while keeping design
+    and capability audits passive.
+    """
+    apply_safe_environment()
+    from aureon.autonomous.aureon_goal_capability_map import build_goal_capability_map
+
+    snapshot: dict[str, Any] = build_goal_capability_map(
+        repo_root=root,
+        current_goal=(
+            "test benchmark audit fix capabilities, write improvements, "
+            "repeat, self catalog, self enhancement, accounting, trading, research, hardened SaaS security"
+        ),
+    ).to_dict()
+    return snapshot
+
+
 def collect_domain_capabilities(
     root: Path,
     benchmark_checks: Sequence[BenchmarkCheck] = (),
@@ -327,13 +1063,7 @@ def collect_domain_capabilities(
     readiness = load_json(audits / "aureon_system_readiness_audit.json")
     self_catalog = load_json(audits / "aureon_repo_self_catalog.json")
     mind = load_json(audits / "mind_wiring_audit.json")
-    goal_map = build_goal_capability_map(
-        repo_root=root,
-        current_goal=(
-            "test benchmark audit fix capabilities, write improvements, "
-            "repeat, self catalog, self enhancement, accounting, trading, research, hardened SaaS security"
-        ),
-    ).to_dict()
+    goal_map = audit_goal_capability_snapshot(root)
 
     catalog_summary = self_catalog.get("summary") or {}
     catalog_files = int(catalog_summary.get("cataloged_file_count") or 0)
@@ -399,6 +1129,7 @@ def collect_domain_capabilities(
             improvement_hint="Keep local LLM/vault available and feed self-catalog/accounting/trading evidence into prompts.",
         ),
         code_architect_capability(root),
+        public_website_design_capability(root),
         _domain_from_proof(
             readiness,
             "trading_brain",
@@ -445,7 +1176,7 @@ def collect_domain_capabilities(
     return sorted(domains, key=lambda item: DOMAIN_ORDER.index(item.id) if item.id in DOMAIN_ORDER else 99)
 
 
-def gap_for_domain(domain: DomainCapability) -> Optional[CapabilityGap]:
+def gap_for_domain(domain: DomainCapability) -> CapabilityGap | None:
     if domain.score >= 0.90 and "attention" not in domain.status.lower():
         return None
     severity = "high" if domain.score < 0.50 else "medium"
@@ -480,7 +1211,7 @@ def detect_capability_gaps(domains: Sequence[DomainCapability]) -> list[Capabili
 def safe_skill_code(gap: CapabilityGap) -> str:
     return (
         f"def {gap.proposed_skill_name}(**kwargs):\n"
-        f"    \"\"\"Plan a safe improvement cycle for {gap.domain}.\"\"\"\n"
+        f'    """Plan a safe improvement cycle for {gap.domain}."""\n'
         "    return {\n"
         f"        'domain': {gap.domain!r},\n"
         f"        'title': {gap.title!r},\n"
@@ -497,10 +1228,19 @@ def safe_skill_code(gap: CapabilityGap) -> str:
     )
 
 
-def author_improvement_skills(root: Path, gaps: Sequence[CapabilityGap], limit: int = 8) -> list[AuthoredImprovement]:
+def author_improvement_skills(
+    root: Path, gaps: Sequence[CapabilityGap], limit: int = 8
+) -> list[AuthoredImprovement]:
     authored: list[AuthoredImprovement] = []
     try:
-        from aureon.code_architect import Skill, SkillLevel, SkillLibrary, SkillProposal, SkillStatus, SkillValidator
+        from aureon.code_architect import (
+            Skill,
+            SkillLevel,
+            SkillLibrary,
+            SkillProposal,
+            SkillStatus,
+            SkillValidator,
+        )
     except Exception as exc:
         return [
             AuthoredImprovement(
@@ -592,7 +1332,13 @@ def queue_growth_contracts(
         workflow = stack.create_goal_workflow(
             "Continuously audit, benchmark, fix, and retest Aureon capabilities across every domain.",
             skills=[item.skill_name for item in authored if item.registered],
-            route_surfaces=["capability_growth", "self_enhancement", "self_catalog", "contracts", "validation"],
+            route_surfaces=[
+                "capability_growth",
+                "self_enhancement",
+                "self_catalog",
+                "contracts",
+                "validation",
+            ],
             source="capability_growth_loop",
         )
         authored_by_domain = {item.domain: item.skill_name for item in authored if item.registered}
@@ -645,6 +1391,60 @@ def default_benchmark_commands(root: Path, python_exe: str) -> list[tuple[str, l
                 "-q",
             ],
         ),
+        (
+            "focused_public_website_design_tests",
+            [
+                python_exe,
+                "-m",
+                "pytest",
+                "tests/test_website_operator.py",
+                "tests/test_aureon_capability_forge.py",
+                "tests/test_coding_agent_skill_base.py",
+                "tests/test_design_capability_registry.py",
+                "tests/test_design_evidence_brief.py",
+                "tests/test_design_agent_capability_integration.py",
+                "tests/test_design_motion_performance_budget.py",
+                "tests/test_design_candidate_test_evidence.py",
+                "tests/test_secure_immutable_artifact.py",
+                "tests/test_design_candidate_static_qa.py",
+                "tests/test_design_candidate_motion_policy_compiler.py",
+                "tests/test_design_candidate_test_policy_compiler.py",
+                "tests/test_design_candidate_source_closure.py",
+                "tests/test_public_website_design_runner.py",
+                "tests/test_website_source_rationalisation.py",
+                "tests/test_website_runtime_optimisation.py",
+                "tests/test_website_runtime_measurement_provenance.py",
+                "-q",
+            ],
+        ),
+        (
+            "compile_public_website_design_qa_capabilities",
+            [
+                python_exe,
+                "-m",
+                "compileall",
+                "aureon/operator/design_motion_performance_budget.py",
+                "aureon/operator/design_candidate_test_evidence.py",
+                "aureon/operator/secure_immutable_artifact.py",
+                "aureon/operator/design_candidate_static_qa.py",
+                "aureon/operator/design_candidate_motion_policy_compiler.py",
+                "aureon/operator/design_candidate_test_policy_compiler.py",
+                "aureon/operator/design_candidate_source_closure.py",
+                "aureon/operator/website_source_rationalisation.py",
+                "tools/run-website-source-rationalisation.py",
+                "aureon/operator/website_runtime_optimisation.py",
+                "tools/run-website-runtime-optimisation.py",
+                "aureon/operator/website_runtime_measurement_provenance.py",
+                "tools/run-website-runtime-measurement-provenance.py",
+                "aureon/autonomous/aureon_public_website_design_runner.py",
+                "aureon/operator/design_capability_registry.py",
+                "aureon/autonomous/aureon_coding_agent_skill_base.py",
+                "aureon/autonomous/aureon_capability_forge.py",
+                "tests/test_website_source_rationalisation.py",
+                "tests/test_website_runtime_optimisation.py",
+                "tests/test_website_runtime_measurement_provenance.py",
+            ],
+        ),
     ]
 
 
@@ -653,7 +1453,7 @@ def run_benchmark_checks(
     commands: Sequence[tuple[str, list[str]]],
     *,
     timeout_s: int = 120,
-    runner: Optional[Callable[..., subprocess.CompletedProcess[str]]] = None,
+    runner: Callable[..., subprocess.CompletedProcess[str]] | None = None,
 ) -> list[BenchmarkCheck]:
     env = os.environ.copy()
     env.update(SAFE_ENV)
@@ -745,14 +1545,14 @@ def build_iteration(
 
 
 def build_capability_growth_loop(
-    repo_root: Optional[Path] = None,
+    repo_root: Path | None = None,
     *,
     iterations: int = 1,
     run_checks: bool = False,
     author_skills: bool = False,
     queue_contracts: bool = False,
     max_gaps: int = 8,
-    python_exe: Optional[str] = None,
+    python_exe: str | None = None,
 ) -> CapabilityGrowthReport:
     root = repo_root_from(repo_root)
     safe = apply_safe_environment()
@@ -833,11 +1633,15 @@ def render_markdown(report: CapabilityGrowthReport) -> str:
     lines.append(f"- Generated: `{report.generated_at}`")
     lines.append(f"- Repo: `{report.repo_root}`")
     lines.append(f"- Status: `{report.status}`")
-    lines.append("- Safety: audit/simulation/local skill authoring only; no live orders, official filing, payments, or secret exposure")
+    lines.append(
+        "- Safety: audit/simulation/local skill authoring only; no live orders, official filing, payments, or secret exposure"
+    )
     lines.append("")
     lines.append("## Loop")
     lines.append("")
-    lines.append("`audit -> benchmark -> score domains -> detect gaps -> author improvements -> queue work -> write memory -> repeat`")
+    lines.append(
+        "`audit -> benchmark -> score domains -> detect gaps -> author improvements -> queue work -> write memory -> repeat`"
+    )
     lines.append("")
     lines.append("## Summary")
     lines.append("")
@@ -850,14 +1654,18 @@ def render_markdown(report: CapabilityGrowthReport) -> str:
     lines.append("| Domain | Status | Score | Improvement hint |")
     lines.append("| --- | --- | ---: | --- |")
     for domain in latest.domains:
-        lines.append(f"| {esc(domain.name)} | `{domain.status}` | {domain.score:.2f} | {esc(domain.improvement_hint)} |")
+        lines.append(
+            f"| {esc(domain.name)} | `{domain.status}` | {domain.score:.2f} | {esc(domain.improvement_hint)} |"
+        )
     lines.append("")
     lines.append("## Improvement Queue")
     lines.append("")
     lines.append("| Priority | Gap | Domain | Proposed skill | Route |")
     lines.append("| ---: | --- | --- | --- | --- |")
     for gap in latest.gaps:
-        lines.append(f"| {gap.priority} | {esc(gap.title)} | `{gap.domain}` | `{gap.proposed_skill_name}` | `{gap.route}` |")
+        lines.append(
+            f"| {gap.priority} | {esc(gap.title)} | `{gap.domain}` | `{gap.proposed_skill_name}` | `{gap.route}` |"
+        )
     lines.append("")
     if latest.authored_improvements:
         lines.append("## Authored Improvements")
@@ -926,12 +1734,12 @@ def write_report(
     state_path: Path = DEFAULT_STATE_PATH,
     *,
     write_vault: bool = True,
-) -> tuple[Path, Path, Path, Optional[Path]]:
+) -> tuple[Path, Path, Path, Path | None]:
     root = Path(report.repo_root)
     md_path = markdown_path if markdown_path.is_absolute() else root / markdown_path
     js_path = json_path if json_path.is_absolute() else root / json_path
     st_path = state_path if state_path.is_absolute() else root / state_path
-    vault_path: Optional[Path] = None
+    vault_path: Path | None = None
     if write_vault:
         vault_path = Path(report.vault_memory["note_path"])
         report.vault_memory["status"] = "written"
@@ -948,12 +1756,18 @@ def write_report(
     return md_path, js_path, st_path, vault_path
 
 
-def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
+def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run Aureon's safe capability growth loop.")
     parser.add_argument("--repo-root", default="", help="Repo root; defaults to current Aureon repo.")
     parser.add_argument("--iterations", type=int, default=1, help="Number of growth iterations.")
-    parser.add_argument("--run-checks", action="store_true", help="Run safe focused benchmark/check commands.")
-    parser.add_argument("--author-skills", action="store_true", help="Generate validated local SkillLibrary improvement skills.")
+    parser.add_argument(
+        "--run-checks", action="store_true", help="Run safe focused benchmark/check commands."
+    )
+    parser.add_argument(
+        "--author-skills",
+        action="store_true",
+        help="Generate validated local SkillLibrary improvement skills.",
+    )
     parser.add_argument("--queue-contracts", action="store_true", help="Persist improvement work orders.")
     parser.add_argument("--max-gaps", type=int, default=8, help="Maximum gaps to turn into improvements.")
     parser.add_argument("--python", default="", help="Python executable for check commands.")
@@ -965,7 +1779,7 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def main(argv: Optional[Sequence[str]] = None) -> int:
+def main(argv: Sequence[str] | None = None) -> int:
     args = parse_args(argv)
     root = Path(args.repo_root).resolve() if args.repo_root else repo_root_from()
     report = build_capability_growth_loop(

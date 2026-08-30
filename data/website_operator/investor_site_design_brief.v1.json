@@ -1,0 +1,264 @@
+{
+  "schema": "aureon.design-evidence-brief.v1",
+  "brief_id": "investor-site-20260730",
+  "issued_at": "2026-07-29T23:30:07Z",
+  "refresh_by": "2026-08-12T23:59:59Z",
+  "objective": "Prepare source-bound, institutional investor-facing staged website candidates that foreground a bounded evidence-control wedge while preserving research and application boundaries.",
+  "authority": {
+    "scope": "local source-bound design direction for staged website candidates only",
+    "canonical_website_mutation": "never by this brief or a design agent",
+    "release_eligible": false,
+    "package_authority": "none",
+    "deployment_authority": "none",
+    "credential_access": "none",
+    "human_visual_acceptance": "required for material brand changes",
+    "release_authority": "WebsiteOperator owner gate only"
+  },
+  "source_document": {
+    "path": "docs/research/AUREON_INVESTOR_SITE_DESIGN_BRIEF_20260728.md",
+    "sha256": "8F33CA49F8714B9ECACF58E3A1B70FC986A043EDE9687237868A1EBDD1E11191"
+  },
+  "research_refresh": {
+    "declaration_path": "data/website_operator/design_research_sources.v1.json",
+    "declaration_sha256": "C03D421BBBA490D4B7AAA8603C4C3849FA2554CD5AAC16B4053334DF5E70D7C7",
+    "required_state": "current",
+    "required_passed": true,
+    "artwork_state": "not-cleared",
+    "artwork_cleared_for_use": false
+  },
+  "feedback_control": {
+    "feedback_path": "data/website_operator/design_stakeholder_feedback.v1.json",
+    "feedback_sha256": "A9DC7F847B926FF7E762A0F01EC58357D084624F05D5529E4A9596A96EF5C4DE",
+    "required_state": "current",
+    "required_passed": true,
+    "signal_ids": [
+      "signal-market-problem-clarity",
+      "signal-product-solution-clarity",
+      "signal-first-buyer-clarity",
+      "signal-business-model-clarity",
+      "signal-differentiation-boundary",
+      "signal-proof-state-clarity",
+      "signal-information-hierarchy"
+    ]
+  },
+  "claim_control": {
+    "register_path": "data/website_operator/public_claim_evidence_register.v1.json",
+    "register_sha256": "78032392BD3ECED2C5C9B294415AD6D2C6380FF903F7E43844C191AFD99C99A7",
+    "claim_ids": [
+      "company-research-led-systems",
+      "hnc-research-framework",
+      "aureon-os-evidence-system",
+      "mission-blades-application-model",
+      "orcid-research-identity",
+      "cross-sector-research-orientation",
+      "shared-core-application-thesis",
+      "aureon-os-inspectable-mechanisms",
+      "academia-research-attention",
+      "github-technical-access",
+      "zenodo-research-access",
+      "strategic-rd-route-themes"
+    ]
+  },
+  "source_inputs": [
+    {
+      "id": "company-platform",
+      "path": "website/data/company-platform.json",
+      "sha256": "53B4296E7FD12A3289D04876D3F1B52DA22D1CDED101133DE91E41A3630D62BC",
+      "role": "Company-authored platform, HNC and application-boundary source."
+    },
+    {
+      "id": "research-catalogue",
+      "path": "website/data/research-catalogue.json",
+      "sha256": "DFDBEEAF1D82B01788C0EFC590593B7E0F3B7D95ED97BDB83F4B273A19ED3456",
+      "role": "Public research identity, catalogue and cross-sector orientation source."
+    },
+    {
+      "id": "innovation-map",
+      "path": "website/data/innovation-map.json",
+      "sha256": "C6DE2DB3388190C3C650FCAC5087F5F5C7BE83D9D26C406B50FCEE90A7EBF121",
+      "role": "Shared-core application thesis and inspectable-system boundary source."
+    },
+    {
+      "id": "public-attention-updates",
+      "path": "website/data/updates.json",
+      "sha256": "794D20BBDCD709E7E3C3111F69721DD4515E84D06563158CB7DF374879A85BCD",
+      "role": "Dated public research-attention signals with explicit non-adoption boundaries."
+    },
+    {
+      "id": "company-positioning",
+      "path": "website/data/blades.json",
+      "sha256": "6FDC9D71BA07CAB611A87CFBC6638B79F45F4AADF73A92CD8B5B9A80CF02E962",
+      "role": "Research-led company positioning and evidence-labelled application source."
+    },
+    {
+      "id": "strategic-route-status",
+      "path": "website/data/funding-status.json",
+      "sha256": "75F2AAAAFEB55160198F198661255E7F62EDCA1049DB25FFC9A9595397FBBBC8",
+      "role": "Public strategic R&D route themes with explicit non-award and non-endorsement boundaries."
+    },
+    {
+      "id": "investor-narrative-alignment",
+      "path": "docs/research/AUREON_INVESTOR_NARRATIVE_ALIGNMENT_20260728.md",
+      "sha256": "65A83F951E465ACC0920ADBA5554D9A2542617AA0D4699BE368005B3563D8B6E",
+      "role": "Claim-bounded investor narrative and public information boundaries."
+    },
+    {
+      "id": "peer-benchmark",
+      "path": "docs/research/AUREON_INVESTOR_WEBSITE_PEER_BENCHMARK_20260730.md",
+      "sha256": "EE519F0A5BCB46DF4404E06FB76DF32F1CE43AEFABABB3ECACDB48656A5D31C5",
+      "role": "No-copy peer-pattern evidence for institutional information hierarchy."
+    }
+  ],
+  "route_plan": [
+    {
+      "id": "home-commercial-wedge",
+      "route": "/",
+      "purpose": "Lead with the evidence-control wedge, then explain the reusable operating model and bounded proof.",
+      "allowed_paths": [
+        "index.html",
+        "styles.css",
+        "script.js"
+      ],
+      "claim_ids": [
+        "company-research-led-systems",
+        "hnc-research-framework",
+        "aureon-os-evidence-system"
+      ],
+      "content_order": [
+        "Decision problem",
+        "Evidence-control operating model",
+        "Bounded proof rail",
+        "Research and application pathways"
+      ]
+    },
+    {
+      "id": "investor-reading-room",
+      "route": "/funding/investor-deck/",
+      "purpose": "Give investor readers a disciplined evidence route without publishing confidential records or funding terms.",
+      "allowed_paths": [
+        "funding/investor-deck/index.html",
+        "styles.css",
+        "script.js"
+      ],
+      "claim_ids": [
+        "academia-research-attention",
+        "github-technical-access",
+        "strategic-rd-route-themes"
+      ],
+      "content_order": [
+        "Investment reading frame",
+        "Commercial wedge",
+        "Source-bound proof signals",
+        "Controlled next step"
+      ]
+    },
+    {
+      "id": "research-proof-rail",
+      "route": "/research/",
+      "purpose": "Show source-linked research identity, method and breadth as evidence rather than an unsupported commercial assertion.",
+      "allowed_paths": [
+        "research/index.html",
+        "data/research-catalogue.json",
+        "styles.css",
+        "script.js"
+      ],
+      "claim_ids": [
+        "hnc-research-framework",
+        "orcid-research-identity",
+        "cross-sector-research-orientation",
+        "zenodo-research-access"
+      ],
+      "content_order": [
+        "Research identity",
+        "Method boundary",
+        "Source-linked work catalogue",
+        "Route to inspectable mechanisms"
+      ]
+    },
+    {
+      "id": "projects-option-value",
+      "route": "/projects/",
+      "purpose": "Frame sector pathways as separately evidenced application options, not as existing deployments or partnerships.",
+      "allowed_paths": [
+        "projects/index.html",
+        "styles.css",
+        "script.js"
+      ],
+      "claim_ids": [
+        "company-research-led-systems",
+        "mission-blades-application-model",
+        "shared-core-application-thesis",
+        "aureon-os-evidence-system",
+        "aureon-os-inspectable-mechanisms"
+      ],
+      "content_order": [
+        "Shared core",
+        "Evidence-labelled application pathways",
+        "Sector-specific validation boundary",
+        "Research-to-implementation route"
+      ]
+    }
+  ],
+  "visual_rules": [
+    {
+      "id": "evidence-control-map",
+      "purpose": "Make the decision-to-evidence control loop legible before decorative motion or abstract technology imagery.",
+      "static_equivalent": "A readable, ordered control-loop diagram remains present with all animation disabled.",
+      "reduced_motion_required": true,
+      "affects_paths": [
+        "index.html",
+        "styles.css",
+        "script.js"
+      ]
+    },
+    {
+      "id": "source-linked-research-rail",
+      "purpose": "Use research metadata and provenance to show depth without treating authored work as independent validation.",
+      "static_equivalent": "A chronological and source-linked research rail remains readable with no scripted transitions.",
+      "reduced_motion_required": true,
+      "affects_paths": [
+        "research/index.html",
+        "data/research-catalogue.json",
+        "styles.css",
+        "script.js"
+      ]
+    },
+    {
+      "id": "bounded-sector-pathways",
+      "purpose": "Differentiate reusable method from sector-specific applications through clear evidence labels and pathways.",
+      "static_equivalent": "A labelled sector pathway matrix remains readable without motion or hover-only information.",
+      "reduced_motion_required": true,
+      "affects_paths": [
+        "projects/index.html",
+        "styles.css",
+        "script.js"
+      ]
+    },
+    {
+      "id": "investor-evidence-hierarchy",
+      "purpose": "Give investors a concise reading order from commercial wedge to source-bound proof and controlled contact.",
+      "static_equivalent": "The investor reading sequence stays fully usable as a static document-style page.",
+      "reduced_motion_required": true,
+      "affects_paths": [
+        "funding/investor-deck/index.html",
+        "styles.css",
+        "script.js"
+      ]
+    }
+  ],
+  "prohibited_public_inferences": [
+    "Do not imply customer adoption, production deployment or commercial outcomes from repository, research or attention signals.",
+    "Do not recast public audience attention as independent scientific validation, investment, partnership or endorsement.",
+    "Do not publish confidential funding figures, internal company records or private investor correspondence.",
+    "Do not describe HNC as an established universal science or an independently validated field.",
+    "Do not copy competitor copy, layouts, trade dress, visual assets or unsupported authority signals."
+  ],
+  "acceptance_criteria": [
+    "Keep the evidence-control wedge understandable before research breadth or sector pathways.",
+    "Preserve every selected claim boundary and link proof signals to their dated source context.",
+    "Provide a complete static and reduced-motion equivalent for every material animated interaction.",
+    "Restrict staged edits to the exact route-plan paths and preserve canonical website files unchanged.",
+    "Retain formal, readable typography, accessible contrast and a clear investor reading order.",
+    "Treat any material brand change as awaiting named human visual acceptance and owner promotion."
+  ]
+}

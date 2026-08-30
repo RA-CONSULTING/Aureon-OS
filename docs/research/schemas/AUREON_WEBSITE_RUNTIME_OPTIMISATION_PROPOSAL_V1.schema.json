@@ -1,0 +1,910 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aureonzorzatechnologies.pl/schemas/aureon-website-runtime-optimisation-proposal-v1.json",
+  "title": "Aureon Website Runtime Optimisation Proposal v1",
+  "description": "An immutable, exact-input-bound runtime footprint projection. Every acceptance requirement remains blocked and not run, every transformation remains unexecuted, and the proposal grants no source-selection, mutation, candidate, staging, package, release, credential, network or deployment authority.",
+  "type": "object",
+  "required": [
+    "schema",
+    "generated_at",
+    "run_id",
+    "state",
+    "source_plan_binding",
+    "measurement_binding",
+    "acceptance_contract_binding",
+    "current_runtime",
+    "projected_runtime",
+    "transformations",
+    "acceptance_requirements",
+    "execution_binding",
+    "eligible_for_next_local_gate",
+    "authority",
+    "payload_sha256"
+  ],
+  "properties": {
+    "schema": {
+      "const": "aureon.website-runtime-optimisation-proposal.v1"
+    },
+    "generated_at": {
+      "$ref": "#/$defs/utcTimestamp"
+    },
+    "run_id": {
+      "$ref": "#/$defs/safeId"
+    },
+    "state": {
+      "const": "proposal-only"
+    },
+    "source_plan_binding": {
+      "$ref": "#/$defs/sourcePlanBinding"
+    },
+    "measurement_binding": {
+      "$ref": "#/$defs/measurementBinding"
+    },
+    "acceptance_contract_binding": {
+      "$ref": "#/$defs/acceptanceContractBinding"
+    },
+    "current_runtime": {
+      "$ref": "#/$defs/currentRuntime"
+    },
+    "projected_runtime": {
+      "$ref": "#/$defs/projectedRuntime"
+    },
+    "transformations": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 5000,
+      "items": {
+        "$ref": "#/$defs/transformation"
+      }
+    },
+    "acceptance_requirements": {
+      "$ref": "#/$defs/acceptanceRequirements"
+    },
+    "execution_binding": {
+      "$ref": "#/$defs/executionBinding"
+    },
+    "eligible_for_next_local_gate": {
+      "const": false
+    },
+    "authority": {
+      "$ref": "#/$defs/noAuthority"
+    },
+    "payload_sha256": {
+      "$ref": "#/$defs/sha256"
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[A-F0-9]{64}$"
+    },
+    "utcTimestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$"
+    },
+    "safeId": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]{2,80}$"
+    },
+    "safeRelativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.?(?:/|$))[^\\\\\\u0000]+$"
+    },
+    "sourcePlanBinding": {
+      "type": "object",
+      "required": [
+        "path",
+        "file_sha256",
+        "payload_sha256",
+        "plan_run_id",
+        "source_tree_sha256",
+        "retained_tree_sha256",
+        "retained_manifest_sha256"
+      ],
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/safeRelativePath"
+        },
+        "file_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "payload_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "plan_run_id": {
+          "$ref": "#/$defs/safeId"
+        },
+        "source_tree_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "retained_tree_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "retained_manifest_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      },
+      "additionalProperties": false
+    },
+    "measurementBinding": {
+      "type": "object",
+      "required": [
+        "path",
+        "file_sha256",
+        "payload_sha256",
+        "measurement_run_id"
+      ],
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/safeRelativePath"
+        },
+        "file_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "payload_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "measurement_run_id": {
+          "$ref": "#/$defs/safeId"
+        }
+      },
+      "additionalProperties": false
+    },
+    "acceptanceContractBinding": {
+      "type": "object",
+      "required": [
+        "path",
+        "file_sha256",
+        "payload_sha256",
+        "contract_id"
+      ],
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/safeRelativePath"
+        },
+        "file_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "payload_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "contract_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "footprintLimits": {
+      "type": "object",
+      "required": [
+        "max_total_bytes",
+        "max_image_bytes",
+        "max_css_bytes",
+        "max_single_asset_bytes"
+      ],
+      "properties": {
+        "max_total_bytes": {
+          "const": 4500000
+        },
+        "max_image_bytes": {
+          "const": 2200000
+        },
+        "max_css_bytes": {
+          "const": 350000
+        },
+        "max_single_asset_bytes": {
+          "const": 500000
+        }
+      },
+      "additionalProperties": false
+    },
+    "violationIds": {
+      "type": "array",
+      "maxItems": 4,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "resource-byte-budget-exceeded:total",
+          "resource-byte-budget-exceeded:image",
+          "resource-byte-budget-exceeded:css",
+          "single-asset-budget-exceeded"
+        ]
+      }
+    },
+    "currentRuntime": {
+      "type": "object",
+      "required": [
+        "tree_sha256",
+        "manifest_sha256",
+        "file_count",
+        "total_bytes",
+        "image_bytes",
+        "css_bytes",
+        "largest_single_asset_path",
+        "largest_single_asset_bytes",
+        "limits",
+        "violation_ids",
+        "within_fixed_footprint_limits"
+      ],
+      "properties": {
+        "tree_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "manifest_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "file_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5000
+        },
+        "total_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 536870912
+        },
+        "image_bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 536870912
+        },
+        "css_bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 536870912
+        },
+        "largest_single_asset_path": {
+          "$ref": "#/$defs/safeRelativePath"
+        },
+        "largest_single_asset_bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 536870912
+        },
+        "limits": {
+          "$ref": "#/$defs/footprintLimits"
+        },
+        "violation_ids": {
+          "$ref": "#/$defs/violationIds"
+        },
+        "within_fixed_footprint_limits": {
+          "type": "boolean"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "violation_ids": {
+                "maxItems": 0
+              }
+            },
+            "required": [
+              "violation_ids"
+            ]
+          },
+          "then": {
+            "properties": {
+              "within_fixed_footprint_limits": {
+                "const": true
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "within_fixed_footprint_limits": {
+                "const": false
+              }
+            }
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "projectedRuntime": {
+      "type": "object",
+      "required": [
+        "tree_sha256",
+        "manifest_sha256",
+        "file_count",
+        "total_bytes",
+        "image_bytes",
+        "css_bytes",
+        "largest_single_asset_path",
+        "largest_single_asset_bytes",
+        "limits",
+        "violation_ids",
+        "within_fixed_footprint_limits",
+        "saving_bytes"
+      ],
+      "properties": {
+        "tree_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "manifest_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "file_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5000
+        },
+        "total_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 536870912
+        },
+        "image_bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 536870912
+        },
+        "css_bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 536870912
+        },
+        "largest_single_asset_path": {
+          "$ref": "#/$defs/safeRelativePath"
+        },
+        "largest_single_asset_bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 536870912
+        },
+        "limits": {
+          "$ref": "#/$defs/footprintLimits"
+        },
+        "violation_ids": {
+          "$ref": "#/$defs/violationIds"
+        },
+        "within_fixed_footprint_limits": {
+          "type": "boolean"
+        },
+        "saving_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 536870912
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "violation_ids": {
+                "maxItems": 0
+              }
+            },
+            "required": [
+              "violation_ids"
+            ]
+          },
+          "then": {
+            "properties": {
+              "within_fixed_footprint_limits": {
+                "const": true
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "within_fixed_footprint_limits": {
+                "const": false
+              }
+            }
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "transformation": {
+      "type": "object",
+      "required": [
+        "id",
+        "action",
+        "source_path",
+        "source_sha256",
+        "source_bytes",
+        "projected_runtime_path",
+        "projected_sha256",
+        "projected_bytes",
+        "expected_saving_bytes",
+        "measurement_basis",
+        "source_master_preserved",
+        "reference_mutation_required",
+        "execution_state"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/safeId"
+        },
+        "action": {
+          "enum": [
+            "replace-runtime-bytes",
+            "omit-from-runtime-closure"
+          ]
+        },
+        "source_path": {
+          "$ref": "#/$defs/safeRelativePath"
+        },
+        "source_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "source_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 536870912
+        },
+        "projected_runtime_path": {
+          "type": "string"
+        },
+        "projected_sha256": {
+          "type": "string"
+        },
+        "projected_bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 536870912
+        },
+        "expected_saving_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 536870912
+        },
+        "measurement_basis": {
+          "enum": [
+            "measured-derivative",
+            "deterministic-minification-measurement",
+            "static-reference-analysis",
+            "browser-computed-style-analysis"
+          ]
+        },
+        "source_master_preserved": {
+          "const": true
+        },
+        "reference_mutation_required": {
+          "type": "boolean"
+        },
+        "execution_state": {
+          "const": "not-executed"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "omit-from-runtime-closure"
+              }
+            },
+            "required": [
+              "action"
+            ]
+          },
+          "then": {
+            "properties": {
+              "projected_runtime_path": {
+                "const": ""
+              },
+              "projected_sha256": {
+                "const": ""
+              },
+              "projected_bytes": {
+                "const": 0
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "projected_runtime_path": {
+                "$ref": "#/$defs/safeRelativePath"
+              },
+              "projected_sha256": {
+                "$ref": "#/$defs/sha256"
+              },
+              "projected_bytes": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 536870912
+              }
+            }
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "acceptanceRequirement": {
+      "type": "object",
+      "required": [
+        "id",
+        "required",
+        "status",
+        "passed"
+      ],
+      "properties": {
+        "id": {
+          "enum": [
+            "owner-source-selection-and-verified-live-backup",
+            "exact-source-and-reference-closure-rebuild",
+            "derivative-byte-and-dimension-integrity",
+            "fixed-runtime-footprint-budget",
+            "twenty-route-three-engine-browser-matrix",
+            "seven-viewport-responsive-and-zoom-matrix",
+            "keyboard-accessibility-and-skip-link-occlusion",
+            "no-javascript-content-and-navigation",
+            "reduced-motion-static-parity",
+            "interactive-data-failure-and-fragment-states",
+            "social-crawler-metadata-and-research-freshness",
+            "approved-source-bound-visual-regression-and-human-review"
+          ]
+        },
+        "required": {
+          "const": true
+        },
+        "status": {
+          "const": "blocked-not-run"
+        },
+        "passed": {
+          "const": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "acceptanceRequirements": {
+      "type": "array",
+      "minItems": 12,
+      "maxItems": 12,
+      "prefixItems": [
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/acceptanceRequirement"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "owner-source-selection-and-verified-live-backup"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/acceptanceRequirement"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "exact-source-and-reference-closure-rebuild"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/acceptanceRequirement"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "derivative-byte-and-dimension-integrity"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/acceptanceRequirement"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "fixed-runtime-footprint-budget"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/acceptanceRequirement"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "twenty-route-three-engine-browser-matrix"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/acceptanceRequirement"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "seven-viewport-responsive-and-zoom-matrix"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/acceptanceRequirement"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "keyboard-accessibility-and-skip-link-occlusion"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/acceptanceRequirement"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "no-javascript-content-and-navigation"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/acceptanceRequirement"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "reduced-motion-static-parity"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/acceptanceRequirement"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "interactive-data-failure-and-fragment-states"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/acceptanceRequirement"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "social-crawler-metadata-and-research-freshness"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/acceptanceRequirement"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "approved-source-bound-visual-regression-and-human-review"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "items": false
+    },
+    "toolBinding": {
+      "type": "object",
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/safeRelativePath"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      },
+      "additionalProperties": false
+    },
+    "executionBinding": {
+      "type": "object",
+      "required": [
+        "mode",
+        "repo_root",
+        "implementation",
+        "trusted_launcher",
+        "source_planner",
+        "source_planner_launcher",
+        "release_builder",
+        "motion_policy",
+        "secure_writer",
+        "measurement_tool",
+        "commands_executed",
+        "transformations_executed",
+        "production_writable"
+      ],
+      "properties": {
+        "mode": {
+          "enum": [
+            "isolated-fixed-production",
+            "test-fixture-no-production-authority"
+          ]
+        },
+        "repo_root": {
+          "type": "string",
+          "minLength": 1
+        },
+        "implementation": {
+          "$ref": "#/$defs/toolBinding"
+        },
+        "trusted_launcher": {
+          "$ref": "#/$defs/toolBinding"
+        },
+        "source_planner": {
+          "$ref": "#/$defs/toolBinding"
+        },
+        "source_planner_launcher": {
+          "$ref": "#/$defs/toolBinding"
+        },
+        "release_builder": {
+          "$ref": "#/$defs/toolBinding"
+        },
+        "motion_policy": {
+          "$ref": "#/$defs/toolBinding"
+        },
+        "secure_writer": {
+          "$ref": "#/$defs/toolBinding"
+        },
+        "measurement_tool": {
+          "$ref": "#/$defs/toolBinding"
+        },
+        "commands_executed": {
+          "const": false
+        },
+        "transformations_executed": {
+          "const": false
+        },
+        "production_writable": {
+          "type": "boolean"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "isolated-fixed-production"
+              }
+            },
+            "required": [
+              "mode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "production_writable": {
+                "const": true
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "production_writable": {
+                "const": false
+              }
+            }
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "noAuthority": {
+      "type": "object",
+      "required": [
+        "scope",
+        "source_selection_authority",
+        "measurement_creation_authority",
+        "canonical_website_mutation",
+        "physical_source_file_removal",
+        "encoding_execution",
+        "css_transformation_execution",
+        "reference_mutation",
+        "candidate_authority",
+        "staging_authority",
+        "package_authority",
+        "release_eligible",
+        "deployment_authority",
+        "credential_access",
+        "network_access"
+      ],
+      "properties": {
+        "scope": {
+          "const": "read-only runtime optimisation proposal compilation"
+        },
+        "source_selection_authority": {
+          "const": "none"
+        },
+        "measurement_creation_authority": {
+          "const": "none"
+        },
+        "canonical_website_mutation": {
+          "const": "none"
+        },
+        "physical_source_file_removal": {
+          "const": "none"
+        },
+        "encoding_execution": {
+          "const": "none"
+        },
+        "css_transformation_execution": {
+          "const": "none"
+        },
+        "reference_mutation": {
+          "const": "none"
+        },
+        "candidate_authority": {
+          "const": "none"
+        },
+        "staging_authority": {
+          "const": "none"
+        },
+        "package_authority": {
+          "const": "none"
+        },
+        "release_eligible": {
+          "const": false
+        },
+        "deployment_authority": {
+          "const": "none"
+        },
+        "credential_access": {
+          "const": "none"
+        },
+        "network_access": {
+          "const": "none"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

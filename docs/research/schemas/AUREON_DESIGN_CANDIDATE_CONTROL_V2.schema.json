@@ -1,0 +1,1620 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aureon.local/schemas/aureon-design-candidate-control-v2.json",
+  "title": "Aureon staged website design candidate control v2",
+  "description": "Schema bundle for a source-bound reconciled v4 work order and the existing v1 staged candidate receipt. The v4 order binds the exact v1 retained-local or v2 verified-live-backup owner-source decision, the trusted WebP importer, fixed receipt replay, and current editorial provenance source. Candidate claim evidence distinguishes material paths already bound by the claim register from unbound material paths without allowing either path to broaden register source or route scope. Neither object grants canonical website mutation, package, release, credential, or deployment authority.",
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[A-F0-9]{64}$"
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scope",
+        "canonical_website_mutation",
+        "release_eligible",
+        "package_authority",
+        "deployment_authority",
+        "credential_access",
+        "human_visual_acceptance",
+        "release_authority"
+      ],
+      "properties": {
+        "scope": {
+          "const": "local staged website-candidate provenance and diff control"
+        },
+        "canonical_website_mutation": {
+          "const": "never by this control or a design agent"
+        },
+        "release_eligible": {
+          "const": false
+        },
+        "package_authority": {
+          "const": "none"
+        },
+        "deployment_authority": {
+          "const": "none"
+        },
+        "credential_access": {
+          "const": "none"
+        },
+        "human_visual_acceptance": {
+          "const": "required for material brand changes"
+        },
+        "release_authority": {
+          "const": "WebsiteOperator owner gate only"
+        }
+      }
+    },
+    "fileManifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tree_sha256",
+        "file_count",
+        "total_bytes",
+        "files"
+      ],
+      "properties": {
+        "tree_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "file_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "total_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path",
+              "sha256",
+              "bytes"
+            ],
+            "properties": {
+              "path": {
+                "$ref": "#/$defs/relativePath"
+              },
+              "sha256": {
+                "$ref": "#/$defs/sha256"
+              },
+              "bytes": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        }
+      }
+    },
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?![A-Za-z]:)(?!/)(?!.*[:\\\\])(?!.*/{2})(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+    },
+    "relativeHtmlPath": {
+      "type": "string",
+      "pattern": "^(?![A-Za-z]:)(?!/)(?!.*[:\\\\])(?!.*/{2})(?!.*(?:^|/)\\.\\.(?:/|$)).+\\.html?$"
+    },
+    "verifiedLiveBackupCandidateSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "root",
+        "manifest_path",
+        "manifest_sha256",
+        "tree_sha256",
+        "baseline_tree_sha256",
+        "file_count",
+        "total_bytes",
+        "remote_root"
+      ],
+      "properties": {
+        "kind": {
+          "const": "verified-live-backup"
+        },
+        "root": {
+          "type": "string",
+          "minLength": 1
+        },
+        "manifest_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "manifest_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "tree_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "baseline_tree_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "file_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "total_bytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "remote_root": {
+          "const": "/"
+        }
+      }
+    },
+    "retainedLocalOwnerSourceReconciliation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "required",
+        "decision_path",
+        "decision_sha256",
+        "backup_receipt_path",
+        "backup_receipt_sha256",
+        "validation_state"
+      ],
+      "properties": {
+        "required": {
+          "type": "boolean"
+        },
+        "decision_path": {
+          "type": "string"
+        },
+        "decision_sha256": {
+          "type": "string",
+          "pattern": "^$|^[A-F0-9]{64}$"
+        },
+        "backup_receipt_path": {
+          "type": "string"
+        },
+        "backup_receipt_sha256": {
+          "type": "string",
+          "pattern": "^$|^[A-F0-9]{64}$"
+        },
+        "validation_state": {
+          "enum": [
+            "not-required-semantic-alignment",
+            "owner-reconciled-for-staged-candidate"
+          ]
+        }
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "required": {
+              "const": false
+            },
+            "decision_path": {
+              "const": ""
+            },
+            "decision_sha256": {
+              "const": ""
+            },
+            "backup_receipt_path": {
+              "const": ""
+            },
+            "backup_receipt_sha256": {
+              "const": ""
+            },
+            "validation_state": {
+              "const": "not-required-semantic-alignment"
+            }
+          }
+        },
+        {
+          "properties": {
+            "required": {
+              "const": true
+            },
+            "decision_path": {
+              "$ref": "#/$defs/relativePath"
+            },
+            "decision_sha256": {
+              "$ref": "#/$defs/sha256"
+            },
+            "backup_receipt_path": {
+              "$ref": "#/$defs/relativePath"
+            },
+            "backup_receipt_sha256": {
+              "$ref": "#/$defs/sha256"
+            },
+            "validation_state": {
+              "const": "owner-reconciled-for-staged-candidate"
+            }
+          }
+        }
+      ]
+    },
+    "verifiedLiveBackupOwnerSourceReconciliation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "required",
+        "decision_path",
+        "decision_sha256",
+        "backup_receipt_path",
+        "backup_receipt_sha256",
+        "validation_state",
+        "decision_schema",
+        "source_selection",
+        "candidate_source"
+      ],
+      "properties": {
+        "required": {
+          "const": true
+        },
+        "decision_path": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "decision_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "backup_receipt_path": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "backup_receipt_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "validation_state": {
+          "const": "owner-reconciled-for-live-backup-staged-candidate"
+        },
+        "decision_schema": {
+          "const": "aureon.owner-source-reconciliation-decision.v2"
+        },
+        "source_selection": {
+          "const": "use-verified-live-backup"
+        },
+        "candidate_source": {
+          "$ref": "#/$defs/verifiedLiveBackupCandidateSource"
+        }
+      }
+    },
+    "ownerSourceReconciliation": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/retainedLocalOwnerSourceReconciliation"
+        },
+        {
+          "$ref": "#/$defs/verifiedLiveBackupOwnerSourceReconciliation"
+        }
+      ]
+    },
+    "liveReconciliation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "receipt_path",
+        "receipt_sha256",
+        "state",
+        "selected_tree_sha256",
+        "covered_local_paths",
+        "current_local_paths",
+        "owner_source_reconciliation"
+      ],
+      "properties": {
+        "receipt_path": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "receipt_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "state": {
+          "enum": [
+            "live-surface-semantically-aligned",
+            "live-drift-detected"
+          ]
+        },
+        "selected_tree_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "covered_local_paths": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/relativeHtmlPath"
+          }
+        },
+        "current_local_paths": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/relativeHtmlPath"
+          }
+        },
+        "owner_source_reconciliation": {
+          "$ref": "#/$defs/ownerSourceReconciliation"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "state"
+            ],
+            "properties": {
+              "state": {
+                "const": "live-surface-semantically-aligned"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "owner_source_reconciliation": {
+                "$ref": "#/$defs/retainedLocalOwnerSourceReconciliation",
+                "properties": {
+                  "required": {
+                    "const": false
+                  }
+                }
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "owner_source_reconciliation": {
+                "properties": {
+                  "required": {
+                    "const": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "claimControl": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "register_path",
+        "register_sha256",
+        "bound_source_paths",
+        "changed_html_or_json_requires_declaration",
+        "bound_source_change_requires_staged_register_refresh"
+      ],
+      "properties": {
+        "register_path": {
+          "const": "data/website_operator/public_claim_evidence_register.v1.json"
+        },
+        "register_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "bound_source_paths": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/relativePath"
+          }
+        },
+        "changed_html_or_json_requires_declaration": {
+          "const": true
+        },
+        "bound_source_change_requires_staged_register_refresh": {
+          "const": true
+        }
+      }
+    },
+    "claimImpactDeclaration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "classification",
+        "rationale"
+      ],
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "classification": {
+          "enum": [
+            "material-claim-change",
+            "no-material-claim-change"
+          ]
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "claimSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "changed_declaration_paths",
+        "bound_source_changes",
+        "material_by_default_paths",
+        "material_claim_paths",
+        "bound_material_claim_paths",
+        "unbound_material_claim_paths",
+        "declarations",
+        "staged_register_sha256",
+        "staged_register_audit"
+      ],
+      "properties": {
+        "changed_declaration_paths": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/relativePath"
+          }
+        },
+        "bound_source_changes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/relativePath"
+          }
+        },
+        "material_by_default_paths": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/relativePath"
+          }
+        },
+        "material_claim_paths": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/relativePath"
+          }
+        },
+        "bound_material_claim_paths": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/relativePath"
+          }
+        },
+        "unbound_material_claim_paths": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/relativePath"
+          }
+        },
+        "declarations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/claimImpactDeclaration"
+          }
+        },
+        "staged_register_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "staged_register_audit": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state",
+            "passed",
+            "summary",
+            "error"
+          ],
+          "properties": {
+            "state": {
+              "type": "string",
+              "minLength": 1
+            },
+            "passed": {
+              "type": "boolean"
+            },
+            "summary": {
+              "$ref": "#/$defs/candidateEvidenceObject"
+            },
+            "error": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "editorialAssetControl": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "policy",
+        "receipt_path",
+        "receipt_schema",
+        "verification_schema",
+        "binary_extensions",
+        "trusted_import_extensions",
+        "unreceipted_binary_diff",
+        "replay_verification_required",
+        "provenance_manifest_path",
+        "provenance_manifest_sha256",
+        "surface_binding_verification_required"
+      ],
+      "properties": {
+        "policy": {
+          "const": "every-binary-diff-requires-trusted-editorial-import-receipt"
+        },
+        "receipt_path": {
+          "type": "string",
+          "pattern": "^artifacts/website-candidates/[a-z0-9][a-z0-9._-]{2,80}/editorial-asset-import-receipt\\.v1\\.json$"
+        },
+        "receipt_schema": {
+          "const": "aureon.design-editorial-asset-candidate-import.v1"
+        },
+        "verification_schema": {
+          "const": "aureon.design-editorial-asset-candidate-import-verification.v1"
+        },
+        "binary_extensions": {
+          "const": [
+            ".gif",
+            ".ico",
+            ".jpeg",
+            ".jpg",
+            ".png",
+            ".webp",
+            ".woff",
+            ".woff2"
+          ]
+        },
+        "trusted_import_extensions": {
+          "const": [
+            ".webp"
+          ]
+        },
+        "unreceipted_binary_diff": {
+          "const": "prohibited"
+        },
+        "replay_verification_required": {
+          "const": true
+        },
+        "provenance_manifest_path": {
+          "enum": [
+            "",
+            "data/website_operator/editorial_asset_provenance.v1.json"
+          ]
+        },
+        "provenance_manifest_sha256": {
+          "type": "string",
+          "pattern": "^$|^[A-F0-9]{64}$"
+        },
+        "surface_binding_verification_required": {
+          "type": "boolean"
+        }
+      }
+    },
+    "testPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "properties": {
+        "path": {
+          "const": "aureon/operator/website_operator.defaults.json"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "candidateLayout": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "root",
+        "website_path",
+        "staged_claim_register_path"
+      ],
+      "properties": {
+        "root": {
+          "type": "string",
+          "pattern": "^artifacts/website-candidates/[a-z0-9][a-z0-9._-]{2,80}$"
+        },
+        "website_path": {
+          "type": "string",
+          "pattern": "^artifacts/website-candidates/[a-z0-9][a-z0-9._-]{2,80}/website$"
+        },
+        "staged_claim_register_path": {
+          "type": "string",
+          "pattern": "^artifacts/website-candidates/[a-z0-9][a-z0-9._-]{2,80}/claim-evidence/public_claim_evidence_register\\.v1\\.json$"
+        }
+      }
+    },
+    "workOrder": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "created_at",
+        "run_id",
+        "goal",
+        "routes",
+        "allowed_paths",
+        "allowed_new_origins",
+        "live_reconciliation",
+        "baseline",
+        "claim_control",
+        "editorial_asset_control",
+        "test_policy",
+        "candidate_layout",
+        "authority"
+      ],
+      "properties": {
+        "schema": {
+          "const": "aureon.design-work-order.v4"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{6})?Z$"
+        },
+        "run_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._-]{2,80}$"
+        },
+        "goal": {
+          "type": "string",
+          "minLength": 1
+        },
+        "routes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^/"
+          }
+        },
+        "allowed_paths": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 12,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/relativePath"
+          }
+        },
+        "allowed_new_origins": {
+          "type": "array",
+          "maxItems": 0,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^https://"
+          }
+        },
+        "live_reconciliation": {
+          "$ref": "#/$defs/liveReconciliation"
+        },
+        "baseline": {
+          "$ref": "#/$defs/fileManifest"
+        },
+        "claim_control": {
+          "$ref": "#/$defs/claimControl"
+        },
+        "editorial_asset_control": {
+          "$ref": "#/$defs/editorialAssetControl"
+        },
+        "test_policy": {
+          "$ref": "#/$defs/testPolicy"
+        },
+        "candidate_layout": {
+          "$ref": "#/$defs/candidateLayout"
+        },
+        "authority": {
+          "$ref": "#/$defs/authority"
+        }
+      }
+    },
+    "candidateEvidenceObject": {
+      "type": "object",
+      "propertyNames": {
+        "not": {
+          "pattern": "(?:authority|release_eligible|deployment_authority|package_authority|credential_access|canonical_website_mutation|human_visual_acceptance)"
+        }
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/candidateEvidenceValue"
+      }
+    },
+    "candidateEvidenceValue": {
+      "oneOf": [
+        {
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/candidateEvidenceValue"
+          }
+        },
+        {
+          "$ref": "#/$defs/candidateEvidenceObject"
+        }
+      ]
+    },
+    "candidateValidationInputAuthority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scope",
+        "release_eligible",
+        "package_authority",
+        "deployment_authority",
+        "credential_access",
+        "wall_clock_attestation",
+        "input_origin_attested"
+      ],
+      "properties": {
+        "scope": {
+          "const": "create-once local input provenance for one staged candidate validation"
+        },
+        "release_eligible": {
+          "const": false
+        },
+        "package_authority": {
+          "const": "none"
+        },
+        "deployment_authority": {
+          "const": "none"
+        },
+        "credential_access": {
+          "const": "none"
+        },
+        "wall_clock_attestation": {
+          "const": "none"
+        },
+        "input_origin_attested": {
+          "const": false
+        }
+      }
+    },
+    "candidateValidationClaimSurface": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "required",
+        "binding",
+        "manifest"
+      ],
+      "properties": {
+        "required": {
+          "type": "boolean"
+        },
+        "binding": {
+          "oneOf": [
+            {
+              "type": "object",
+              "maxProperties": 0
+            },
+            {
+              "$ref": "https://aureon.local/schemas/aureon-design-candidate-claim-surface-v1.json#/$defs/inputContext"
+            }
+          ]
+        },
+        "manifest": {
+          "type": "array",
+          "items": {
+            "$ref": "https://aureon.local/schemas/aureon-design-candidate-claim-surface-v1.json#/$defs/manifestEntry"
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "required": {
+                "const": false
+              }
+            },
+            "required": [
+              "required"
+            ]
+          },
+          "then": {
+            "properties": {
+              "binding": {
+                "type": "object",
+                "maxProperties": 0
+              },
+              "manifest": {
+                "maxItems": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    "executableSourceClosureFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "bytes",
+        "sha256"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.?(/|$))(?!.*[:\\\\]).+\\.py$"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "executableSourceClosureExclusion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "line",
+        "kind",
+        "targets",
+        "reason"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.?(/|$))(?!.*[:\\\\]).+\\.py$"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "kind": {
+          "enum": [
+            "bounded-dormant-lazy-export",
+            "runtime-dead-type-checking-branch"
+          ]
+        },
+        "targets": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "executableSourceClosure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "algorithm",
+        "roots",
+        "files",
+        "exclusions",
+        "manifest_sha256"
+      ],
+      "properties": {
+        "schema": {
+          "const": "aureon.design-candidate-executable-source-closure.v1"
+        },
+        "algorithm": {
+          "const": "python-ast-local-raw-sha256-closure-v2"
+        },
+        "roots": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "prefixItems": [
+            {
+              "const": "aureon/operator/design_candidate_motion_policy_compiler.py"
+            },
+            {
+              "const": "aureon/operator/design_candidate_source_closure.py"
+            },
+            {
+              "const": "aureon/operator/design_candidate_test_policy_compiler.py"
+            }
+          ],
+          "items": false
+        },
+        "files": {
+          "type": "array",
+          "minItems": 3,
+          "items": {
+            "$ref": "#/$defs/executableSourceClosureFile"
+          }
+        },
+        "exclusions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/executableSourceClosureExclusion"
+          }
+        },
+        "manifest_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "candidateValidationInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "issued_at",
+        "work_order",
+        "source_closure",
+        "claim_impacts",
+        "claim_surface",
+        "authority",
+        "payload_sha256"
+      ],
+      "properties": {
+        "schema": {
+          "const": "aureon.design-candidate-validation-input.v1"
+        },
+        "issued_at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{6})?Z$"
+        },
+        "work_order": {
+          "$ref": "#/$defs/candidateWorkOrderBinding"
+        },
+        "source_closure": {
+          "$ref": "#/$defs/executableSourceClosure"
+        },
+        "claim_impacts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/claimImpactDeclaration"
+          }
+        },
+        "claim_surface": {
+          "$ref": "#/$defs/candidateValidationClaimSurface"
+        },
+        "authority": {
+          "$ref": "#/$defs/candidateValidationInputAuthority"
+        },
+        "payload_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "candidateValidationInputBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "file_sha256",
+        "json_sha256",
+        "payload_sha256"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^artifacts/website-candidates/[a-z0-9][a-z0-9._-]{2,80}/candidate-validation-input\\.v1\\.json$"
+        },
+        "file_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "json_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "payload_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "candidateWorkOrderBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "run_id",
+        "path",
+        "file_sha256",
+        "sha256",
+        "baseline_tree_sha256"
+      ],
+      "properties": {
+        "run_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._-]{2,80}$"
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^artifacts/website-candidates/work-orders/[a-z0-9][a-z0-9._-]{2,80}\\.v4\\.json$"
+        },
+        "file_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "baseline_tree_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "candidateBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "root",
+        "website_path",
+        "tree_sha256",
+        "file_count",
+        "total_bytes"
+      ],
+      "properties": {
+        "root": {
+          "type": "string",
+          "pattern": "^artifacts/website-candidates/[a-z0-9][a-z0-9._-]{2,80}$"
+        },
+        "website_path": {
+          "type": "string",
+          "pattern": "^artifacts/website-candidates/[a-z0-9][a-z0-9._-]{2,80}/website$"
+        },
+        "tree_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "file_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "total_bytes": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "candidateChange": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "change",
+        "before_sha256",
+        "after_sha256",
+        "before_bytes",
+        "after_bytes"
+      ],
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "change": {
+          "enum": [
+            "added",
+            "modified",
+            "removed"
+          ]
+        },
+        "before_sha256": {
+          "type": "string",
+          "pattern": "^$|^[A-F0-9]{64}$"
+        },
+        "after_sha256": {
+          "type": "string",
+          "pattern": "^$|^[A-F0-9]{64}$"
+        },
+        "before_bytes": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "after_bytes": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "change": {
+                "const": "added"
+              }
+            },
+            "required": [
+              "change"
+            ]
+          },
+          "then": {
+            "properties": {
+              "before_sha256": {
+                "const": ""
+              },
+              "before_bytes": {
+                "const": null
+              },
+              "after_sha256": {
+                "$ref": "#/$defs/sha256"
+              },
+              "after_bytes": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "change": {
+                "const": "removed"
+              }
+            },
+            "required": [
+              "change"
+            ]
+          },
+          "then": {
+            "properties": {
+              "before_sha256": {
+                "$ref": "#/$defs/sha256"
+              },
+              "before_bytes": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "after_sha256": {
+                "const": ""
+              },
+              "after_bytes": {
+                "const": null
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "change": {
+                "const": "modified"
+              }
+            },
+            "required": [
+              "change"
+            ]
+          },
+          "then": {
+            "properties": {
+              "before_sha256": {
+                "$ref": "#/$defs/sha256"
+              },
+              "before_bytes": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "after_sha256": {
+                "$ref": "#/$defs/sha256"
+              },
+              "after_bytes": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    "candidateClaimSurface": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "required",
+        "state",
+        "binding",
+        "manifest",
+        "result"
+      ],
+      "properties": {
+        "required": {
+          "type": "boolean"
+        },
+        "state": {
+          "enum": [
+            "not-required-non-runner-candidate",
+            "pass",
+            "blocked"
+          ]
+        },
+        "binding": {
+          "oneOf": [
+            {
+              "type": "object",
+              "maxProperties": 0
+            },
+            {
+              "$ref": "https://aureon.local/schemas/aureon-design-candidate-claim-surface-v1.json#/$defs/inputContext"
+            }
+          ]
+        },
+        "manifest": {
+          "type": "array",
+          "items": {
+            "$ref": "https://aureon.local/schemas/aureon-design-candidate-claim-surface-v1.json#/$defs/manifestEntry"
+          }
+        },
+        "result": {
+          "oneOf": [
+            {
+              "type": "object",
+              "maxProperties": 0
+            },
+            {
+              "$ref": "https://aureon.local/schemas/aureon-design-candidate-claim-surface-v1.json"
+            }
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "required": {
+                "const": false
+              }
+            },
+            "required": [
+              "required"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "const": "not-required-non-runner-candidate"
+              },
+              "binding": {
+                "type": "object",
+                "maxProperties": 0
+              },
+              "manifest": {
+                "maxItems": 0
+              },
+              "result": {
+                "type": "object",
+                "maxProperties": 0
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "state": {
+                "enum": [
+                  "pass",
+                  "blocked"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "candidateCheck": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "passed",
+        "message",
+        "evidence"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence": {
+          "$ref": "#/$defs/candidateEvidenceObject"
+        }
+      }
+    },
+    "candidateReceipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "validated_at",
+        "state",
+        "passed",
+        "release_eligible",
+        "deployment_authority",
+        "authority",
+        "validation_input",
+        "source_closure",
+        "work_order",
+        "candidate",
+        "changes",
+        "claims",
+        "claim_surface",
+        "checks",
+        "next_gate"
+      ],
+      "properties": {
+        "schema": {
+          "const": "aureon.design-candidate.v1"
+        },
+        "validated_at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{6})?Z$"
+        },
+        "state": {
+          "enum": [
+            "validated-local",
+            "blocked"
+          ]
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "release_eligible": {
+          "const": false
+        },
+        "deployment_authority": {
+          "const": "none"
+        },
+        "authority": {
+          "$ref": "#/$defs/authority"
+        },
+        "validation_input": {
+          "$ref": "#/$defs/candidateValidationInputBinding"
+        },
+        "source_closure": {
+          "$ref": "#/$defs/executableSourceClosure"
+        },
+        "work_order": {
+          "$ref": "#/$defs/candidateWorkOrderBinding"
+        },
+        "candidate": {
+          "$ref": "#/$defs/candidateBinding"
+        },
+        "changes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/candidateChange"
+          }
+        },
+        "claims": {
+          "$ref": "#/$defs/claimSummary"
+        },
+        "claim_surface": {
+          "$ref": "#/$defs/candidateClaimSurface"
+        },
+        "checks": {
+          "type": "array",
+          "minItems": 17,
+          "maxItems": 17,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/candidateCheck",
+              "properties": {
+                "id": {
+                  "const": "work-order-current"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/candidateCheck",
+              "properties": {
+                "id": {
+                  "const": "candidate-workspace"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/candidateCheck",
+              "properties": {
+                "id": {
+                  "const": "candidate-manifest"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/candidateCheck",
+              "properties": {
+                "id": {
+                  "const": "candidate-diff"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/candidateCheck",
+              "properties": {
+                "id": {
+                  "const": "exact-scope"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/candidateCheck",
+              "properties": {
+                "id": {
+                  "const": "no-public-file-removal"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/candidateCheck",
+              "properties": {
+                "id": {
+                  "const": "blocked-files"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/candidateCheck",
+              "properties": {
+                "id": {
+                  "const": "strict-text-integrity"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/candidateCheck",
+              "properties": {
+                "id": {
+                  "const": "remote-origin-diff"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/candidateCheck",
+              "properties": {
+                "id": {
+                  "const": "secret-scan"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/candidateCheck",
+              "properties": {
+                "id": {
+                  "const": "trusted-binary-import-replay"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/candidateCheck",
+              "properties": {
+                "id": {
+                  "const": "trusted-editorial-surface-replay"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/candidateCheck",
+              "properties": {
+                "id": {
+                  "const": "claim-impact-declarations"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/candidateCheck",
+              "properties": {
+                "id": {
+                  "const": "material-claim-source-classification"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/candidateCheck",
+              "properties": {
+                "id": {
+                  "const": "staged-claim-register"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/candidateCheck",
+              "properties": {
+                "id": {
+                  "const": "claim-surface-capsule"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/candidateCheck",
+              "properties": {
+                "id": {
+                  "const": "candidate-manifest-stable"
+                }
+              }
+            }
+          ],
+          "items": false
+        },
+        "next_gate": {
+          "const": "Capture source-bound staged browser evidence and obtain separate named manual pixel review and human visual acceptance; this staged candidate cannot apply, package, or deploy itself."
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "passed": {
+                "const": true
+              }
+            },
+            "required": [
+              "passed"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "const": "validated-local"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "validated-local"
+              }
+            },
+            "required": [
+              "state"
+            ]
+          },
+          "then": {
+            "properties": {
+              "passed": {
+                "const": true
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "oneOf": [
+    {
+      "$ref": "#/$defs/workOrder"
+    },
+    {
+      "$ref": "#/$defs/candidateReceipt"
+    },
+    {
+      "$ref": "#/$defs/candidateValidationInput"
+    }
+  ]
+}

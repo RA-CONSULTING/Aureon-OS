@@ -1,0 +1,417 @@
+{
+  "schema": "aureon.website-operator.config.v1",
+  "site": {
+    "root": "website",
+    "base_url": "https://aureonzorzatechnologies.pl/",
+    "capacity_receipt": "data/website_operator/homepl-capacity-20260726.json",
+    "canonical_overrides": {
+      "downloads/index.html": "https://aureonzorzatechnologies.pl/publications/"
+    },
+    "critical_routes": [
+      "index.html",
+      "about/index.html",
+      "projects/index.html",
+      "research/index.html",
+      "research/journal/index.html",
+      "diligence/index.html",
+      "funding/index.html",
+      "funding/investor-deck/index.html",
+      "publications/index.html",
+      "community/index.html",
+      "contact/index.html",
+      "live/index.html",
+      "updates/index.html",
+      "vision/index.html"
+    ]
+  },
+  "ethos": {
+    "principles": [
+      "One shared evidence-and-control core may support multiple mission-specific applications.",
+      "Research is a proving ground for evidence discipline, not a shortcut to validation.",
+      "Claim state, source provenance, boundaries, next proof and human authority stay visible.",
+      "Submissions, acknowledgements, discussions, partners, customers, awards and investment are distinct states.",
+      "The public website is read-only and never exposes operator, credential, grant, trading or client controls."
+    ],
+    "required_site_signals": [
+      {
+        "id": "evidence",
+        "pattern": "\\bevidence\\b",
+        "severity": "error",
+        "message": "Critical routes do not collectively establish Aureon's evidence-led operating model."
+      },
+      {
+        "id": "research",
+        "pattern": "\\bresearch\\b",
+        "severity": "error",
+        "message": "Critical routes do not collectively establish the research proving ground."
+      },
+      {
+        "id": "human-authority",
+        "pattern": "\\bhuman (?:authority|review|approval|gate)\\b",
+        "severity": "error",
+        "message": "Critical routes do not make retained human authority visible."
+      },
+      {
+        "id": "boundary",
+        "pattern": "\\b(?:boundary|not an? (?:award|partner|customer|deployment|validation)|outcome pending)\\b",
+        "severity": "error",
+        "message": "Critical routes do not expose evidence or claim boundaries."
+      }
+    ],
+    "prohibited_claim_patterns": [
+      {
+        "id": "guaranteed-outcome",
+        "pattern": "\\bguaranteed (?:result|results|return|returns|outcome|outcomes|success)\\b",
+        "severity": "error",
+        "message": "Guaranteed outcomes require removal; the site must state bounded evidence."
+      },
+      {
+        "id": "proven-traction",
+        "pattern": "\\bproven (?:revenue|market traction|customer traction|commercial traction)\\b",
+        "severity": "error",
+        "message": "Commercial proof may be claimed only from an attributable controlled record."
+      },
+      {
+        "id": "unbounded-autonomy",
+        "pattern": "\\bfully autonomous\\b",
+        "severity": "error",
+        "message": "The public site must not imply unbounded autonomous authority."
+      },
+      {
+        "id": "unsupported-superlative",
+        "pattern": "\\b(?:industry-leading|world-leading|best-in-class)\\b",
+        "severity": "warning",
+        "message": "Marketing superlatives require an attributable comparison or should be replaced."
+      }
+    ],
+    "claim_inputs": [
+      {
+        "path": "website/data/blades.json",
+        "schema": "aureon-sector-blades-v1",
+        "required": true
+      },
+      {
+        "path": "website/data/research-catalogue.json",
+        "required": true
+      },
+      {
+        "path": "website/data/funding-status.json",
+        "required": true
+      },
+      {
+        "path": "website/data/operator-evidence.json",
+        "required": true
+      }
+    ]
+  },
+  "budgets": {
+    "policy": "Performance and media budgets are independent of provider storage capacity.",
+    "site_total_bytes": 52428800,
+    "site_file_count": 2000,
+    "critical_page_direct_bytes": 2621440,
+    "per_file_bytes": {
+      ".html": 262144,
+      ".css": 393216,
+      ".js": 393216,
+      ".json": 524288,
+      ".png": 2621440,
+      ".jpg": 524288,
+      ".jpeg": 524288,
+      ".webp": 524288,
+      ".svg": 262144,
+      ".woff": 131072,
+      ".woff2": 131072,
+      ".xml": 262144
+    }
+  },
+  "checks": {
+    "require_reduced_motion": true,
+    "external": [
+      {
+        "id": "javascript-syntax",
+        "enabled": true,
+        "required": true,
+        "command": [
+          "node",
+          "--check",
+          "{site_root}/script.js"
+        ]
+      },
+      {
+        "id": "v28-design-system",
+        "enabled": true,
+        "required": true,
+        "command": [
+          "node",
+          "{repo_root}/tools/aureon_website_design_audit_v28.js"
+        ]
+      },
+      {
+        "id": "v28-metadata-ethos",
+        "enabled": true,
+        "required": true,
+        "command": [
+          "node",
+          "{repo_root}/tools/aureon_metadata_ethos_audit_v28.js"
+        ]
+      },
+      {
+        "id": "v28-composite-visual-release-gate",
+        "enabled": true,
+        "required": true,
+        "command": [
+          "node",
+          "{repo_root}/tools/aureon_visual_release_gate_v28.js",
+          "--repo-root",
+          "{repo_root}",
+          "--manifest",
+          "{repo_root}/docs/audits/AUREON_VISUAL_RELEASE_GATE_20260726T181742Z_V28.manifest.json"
+        ]
+      }
+    ]
+  },
+  "design": {
+    "policy": "Use Harmonic Nexus only as a bounded evidence-coherence feedback structure. Objective accessibility, performance, browser, claims and release gates retain authority.",
+    "minimum_score": 85,
+    "competitor_source_target": 8,
+    "competitor_max_age_days": 45,
+    "nexus_weights": {
+      "source_strength": 0.3,
+      "coherence": 0.25,
+      "repeatability": 0.2,
+      "feasibility": 0.15,
+      "contradiction_control": 0.1
+    },
+    "viewport_matrix": [
+      "360x800",
+      "390x844",
+      "768x1024",
+      "1280x800",
+      "1440x1000",
+      "1920x1080"
+    ],
+    "competitor_sources": [
+      {
+        "id": "credo-ai-product",
+        "name": "Credo AI",
+        "url": "https://www.credo.ai/product",
+        "checked_at": "2026-07-26T09:00:00Z",
+        "patterns": [
+          "dark institutional stage",
+          "product-as-instrument framing",
+          "demo and metric proof"
+        ]
+      },
+      {
+        "id": "ibm-watsonx-governance",
+        "name": "IBM watsonx.governance",
+        "url": "https://www.ibm.com/products/watsonx-governance/model-governance",
+        "checked_at": "2026-07-26T09:00:00Z",
+        "patterns": [
+          "enterprise restraint",
+          "factsheets and documentation",
+          "clear buyer pathways"
+        ]
+      },
+      {
+        "id": "collibra-ai-governance",
+        "name": "Collibra AI Governance",
+        "url": "https://productresources.collibra.com/docs/collibra/latest/Content/AIGovernance/co_ai-gov-product-pages.htm",
+        "checked_at": "2026-07-26T09:00:00Z",
+        "patterns": [
+          "centred proposition",
+          "product-screen proof",
+          "governance taxonomy"
+        ]
+      },
+      {
+        "id": "databricks-unity-catalog",
+        "name": "Databricks Unity Catalog",
+        "url": "https://docs.databricks.com/aws/en/data-governance/unity-catalog/",
+        "checked_at": "2026-07-26T09:00:00Z",
+        "patterns": [
+          "strong information architecture",
+          "tabs and progressive disclosure",
+          "documentation-led trust"
+        ]
+      },
+      {
+        "id": "monitaur-platform",
+        "name": "Monitaur",
+        "url": "https://www.monitaur.ai/platform",
+        "checked_at": "2026-07-26T09:00:00Z",
+        "patterns": [
+          "define-manage-automate narrative",
+          "clear operating sequence",
+          "buyer-oriented platform framing"
+        ]
+      },
+      {
+        "id": "arize-phoenix",
+        "name": "Arize Phoenix",
+        "url": "https://arize.com/docs/phoenix",
+        "checked_at": "2026-07-26T09:00:00Z",
+        "patterns": [
+          "technical openness",
+          "selectors and metrics",
+          "trust through inspectability"
+        ]
+      },
+      {
+        "id": "researchspace-eln",
+        "name": "ResearchSpace",
+        "url": "https://www.researchspace.com/eln",
+        "checked_at": "2026-07-26T09:00:00Z",
+        "patterns": [
+          "institutional research authority",
+          "workflow clarity",
+          "research evidence framing"
+        ]
+      },
+      {
+        "id": "benchling-platform",
+        "name": "Benchling",
+        "url": "https://www.benchling.com/platform",
+        "checked_at": "2026-07-26T09:00:00Z",
+        "patterns": [
+          "calm scientific authority",
+          "disciplined platform taxonomy",
+          "credible proof and use-case separation"
+        ]
+      }
+    ]
+  },
+  "packaging": {
+    "command": [
+      "powershell",
+      "-NoProfile",
+      "-ExecutionPolicy",
+      "Bypass",
+      "-File",
+      "{repo_root}/tools/build-homepl-v28-narrow-release.ps1",
+      "-WebsiteRoot",
+      "{site_root}",
+      "-OutputDirectory",
+      "{output_directory}",
+      "-Release",
+      "V29"
+    ],
+    "receipt_glob": "aureon-homepl-v29-*-receipt.json",
+    "required_release_paths": [
+      "index.html",
+      "about/index.html",
+      "projects/index.html",
+      "research/index.html",
+      "research/journal/index.html",
+      "diligence/index.html",
+      "funding/index.html",
+      "funding/investor-deck/index.html",
+      "publications/index.html",
+      "community/index.html",
+      "contact/index.html",
+      "live/index.html",
+      "updates/index.html",
+      "vision/index.html",
+      "downloads/index.html",
+      "script.js",
+      "styles.css",
+      "tokens.css",
+      "data/blades.json"
+    ],
+    "blocked_file_names": [
+      ".env",
+      ".env1",
+      "id_rsa",
+      "id_ed25519"
+    ],
+    "blocked_extensions": [
+      ".env",
+      ".key",
+      ".pem",
+      ".pfx",
+      ".p12"
+    ],
+    "allowed_file_names": [
+      ".htaccess"
+    ],
+    "allowed_extensions": [
+      ".css",
+      ".gif",
+      ".html",
+      ".ico",
+      ".jpeg",
+      ".jpg",
+      ".js",
+      ".json",
+      ".png",
+      ".svg",
+      ".txt",
+      ".webmanifest",
+      ".webp",
+      ".woff",
+      ".woff2",
+      ".xml"
+    ],
+    "secret_patterns": [
+      "-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----",
+      "\\bsk-[A-Za-z0-9_-]{20,}\\b",
+      "\\bAIza[0-9A-Za-z_-]{20,}\\b",
+      "\\b(?:password|passwd)\\s*[:=]\\s*[\"'][^\"']{8,}[\"']"
+    ]
+  },
+  "deployment": {
+    "remote_root": "/",
+    "backup_script": "website/backup-homepl-ftps.ps1",
+    "publish_script": "website/publish-homepl-ftps.ps1",
+    "readback_script": "tools/aureon_homepl_manifest_readback.ps1",
+    "publish_command": [
+      "powershell",
+      "-NoProfile",
+      "-ExecutionPolicy",
+      "Bypass",
+      "-File",
+      "{repo_root}/website/publish-homepl-ftps.ps1",
+      "-PackagePath",
+      "{package}",
+      "-ManifestPath",
+      "{manifest}",
+      "-WebsiteRoot",
+      "{site_root}",
+      "-RemoteRoot",
+      "{remote_root}"
+    ],
+    "readback_command": [
+      "powershell",
+      "-NoProfile",
+      "-ExecutionPolicy",
+      "Bypass",
+      "-File",
+      "{repo_root}/tools/aureon_homepl_manifest_readback.ps1",
+      "-ManifestPath",
+      "{manifest}",
+      "-SourceRoot",
+      "{site_root}",
+      "-PackagePath",
+      "{package}",
+      "-OutputPath",
+      "{output}",
+      "-BaseUrl",
+      "{base_url}"
+    ],
+    "credential_env_names": [
+      "HOMEPL_FTPS_HOST",
+      "HOMEPL_FTPS_USER",
+      "HOMEPL_FTPS_PASSWORD"
+    ],
+    "required_backup_paths": [
+      "index.html",
+      "styles.css",
+      "script.js"
+    ],
+    "audit_max_age_hours": 12,
+    "backup_max_age_hours": 24,
+    "approval_max_age_hours": 4,
+    "automatic_rollback": false,
+    "credentials_in_receipts": false
+  }
+}

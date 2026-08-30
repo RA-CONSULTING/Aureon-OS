@@ -1,0 +1,481 @@
+{
+  "schema": "aureon.public-claim-evidence-register.v1",
+  "generated_at": "2026-07-26T00:00:00Z",
+  "scope": "material public website positioning claims",
+  "authority": {
+    "scope": "read-only public-claim evidence control",
+    "release_eligible": false,
+    "deployment_authority": "none",
+    "package_authority": "none",
+    "human_review": "required for material public wording changes"
+  },
+  "claims": [
+    {
+      "id": "company-research-led-systems",
+      "title": "Aureon company positioning",
+      "claim": "Aureon Zorza Technologies is a research-led systems and innovation company.",
+      "state": "company-authored",
+      "boundary": "HNC is Aureon's research and systems-method framework, not a claim of established universal science. Aureon OS is the company-built delivery system, not proof of autonomous production operation. A blade is an evidence-labelled application of the shared method, not a customer deployment, partnership, investment outcome or independent validation.",
+      "permitted_wording": [
+        "Aureon Zorza Technologies is a research-led systems and innovation company.",
+        "Aureon presents itself as a research-led systems and innovation company."
+      ],
+      "prohibited_inferences": [
+        "market leadership",
+        "independent validation",
+        "customer adoption",
+        "funding outcome"
+      ],
+      "expires_on": "2027-07-26",
+      "source": {
+        "path": "website/data/blades.json",
+        "sha256": "6FDC9D71BA07CAB611A87CFBC6638B79F45F4AADF73A92CD8B5B9A80CF02E962",
+        "locator": "$.positioning.company",
+        "evidence_texts": [
+          "Aureon Zorza Technologies is a research-led systems and innovation company."
+        ],
+        "boundary_text": "HNC is Aureon's research and systems-method framework, not a claim of established universal science. Aureon OS is the company-built delivery system, not proof of autonomous production operation. A blade is an evidence-labelled application of the shared method, not a customer deployment, partnership, investment outcome or independent validation."
+      },
+      "public_routes": [
+        "/",
+        "/about/",
+        "/projects/"
+      ]
+    },
+    {
+      "id": "hnc-research-framework",
+      "title": "Harmonic Nexus Core research position",
+      "claim": "Harmonic Nexus Core is Aureon's evolving research and systems-method framework.",
+      "state": "research-proposition",
+      "boundary": "HNC is being developed as a field of inquiry and reusable systems method. Public records establish authorship and availability; they do not establish an accepted scientific field, universal validity or independent validation.",
+      "permitted_wording": [
+        "Harmonic Nexus Core is Aureon's evolving research and systems-method framework.",
+        "Aureon presents HNC as an evolving, source-linked research framework."
+      ],
+      "prohibited_inferences": [
+        "established scientific field",
+        "universal validity",
+        "independent validation",
+        "peer review"
+      ],
+      "expires_on": "2027-07-26",
+      "source": {
+        "path": "website/data/company-platform.json",
+        "sha256": "53B4296E7FD12A3289D04876D3F1B52DA22D1CDED101133DE91E41A3630D62BC",
+        "locator": "$[0].research_framework",
+        "evidence_texts": [
+          "Aureon's evolving research and systems-method framework",
+          "Company-authored and source-linked research proposition"
+        ],
+        "boundary_text": "HNC is being developed as a field of inquiry and reusable systems method. Public records establish authorship and availability; they do not establish an accepted scientific field, universal validity or independent validation."
+      },
+      "public_routes": [
+        "/",
+        "/research/",
+        "/vision/",
+        "/about/"
+      ]
+    },
+    {
+      "id": "aureon-os-evidence-system",
+      "title": "Aureon OS delivery system",
+      "claim": "Aureon OS is a company-built engineering and evidence operating system.",
+      "state": "public-source-available",
+      "boundary": "Inspectable source and local test evidence do not establish production autonomy, customer adoption, operational safety or independently validated outcomes.",
+      "permitted_wording": [
+        "Aureon OS is a company-built engineering and evidence operating system.",
+        "Aureon OS provides an inspectable company-built evidence-system implementation."
+      ],
+      "prohibited_inferences": [
+        "production autonomy",
+        "customer adoption",
+        "operational safety",
+        "independent validation"
+      ],
+      "expires_on": "2027-07-26",
+      "source": {
+        "path": "website/data/company-platform.json",
+        "sha256": "53B4296E7FD12A3289D04876D3F1B52DA22D1CDED101133DE91E41A3630D62BC",
+        "locator": "$[0].delivery_system",
+        "evidence_texts": [
+          "Company-built engineering and evidence operating system",
+          "Public source available"
+        ],
+        "boundary_text": "Inspectable source and local test evidence do not establish production autonomy, customer adoption, operational safety or independently validated outcomes."
+      },
+      "public_routes": [
+        "/",
+        "/projects/",
+        "/diligence/"
+      ]
+    },
+    {
+      "id": "mission-blades-application-model",
+      "title": "Evidence-labelled mission blades",
+      "claim": "Mission blades are evidence-labelled applications of the shared research and control logic.",
+      "state": "prospective-application",
+      "boundary": "Each application must earn its own domain evidence, qualified authority, buyer validation and retained decision record.",
+      "permitted_wording": [
+        "Mission blades are evidence-labelled applications of the shared research and control logic.",
+        "Each mission blade is presented with its own evidence state and next validation gate."
+      ],
+      "prohibited_inferences": [
+        "sector deployment",
+        "buyer validation",
+        "customer outcome",
+        "independent validation"
+      ],
+      "expires_on": "2026-10-26",
+      "source": {
+        "path": "website/data/company-platform.json",
+        "sha256": "53B4296E7FD12A3289D04876D3F1B52DA22D1CDED101133DE91E41A3630D62BC",
+        "locator": "$[0].application_model",
+        "evidence_texts": [
+          "Evidence-labelled applications of the shared research and control logic",
+          "Implemented core",
+          "Tested prototype",
+          "Sector programme",
+          "Open research hypothesis"
+        ],
+        "boundary_text": "Each application must earn its own domain evidence, qualified authority, buyer validation and retained decision record."
+      },
+      "public_routes": [
+        "/projects/",
+        "/vision/",
+        "/funding/"
+      ]
+    },
+    {
+      "id": "orcid-research-identity",
+      "title": "Persistent research identity",
+      "claim": "ORCID provides a persistent researcher identity and public work index.",
+      "state": "public-research-record",
+      "boundary": "A public ORCID, Zenodo or ResearchGate record establishes attribution and source availability only. It does not establish peer review, independent scientific or engineering validation, product readiness, commercial performance, customer adoption, funding or endorsement.",
+      "permitted_wording": [
+        "ORCID provides a persistent researcher identity and public work index.",
+        "Use the linked ORCID record to inspect authorship and public research records."
+      ],
+      "prohibited_inferences": [
+        "peer review",
+        "independent scientific validation",
+        "product readiness",
+        "commercial performance"
+      ],
+      "expires_on": "2027-07-26",
+      "source": {
+        "path": "website/data/research-catalogue.json",
+        "sha256": "DFDBEEAF1D82B01788C0EFC590593B7E0F3B7D95ED97BDB83F4B273A19ED3456",
+        "locator": "$.orcid",
+        "evidence_texts": [
+          "Persistent researcher identity and public work index",
+          "0009-0004-2792-4649"
+        ],
+        "boundary_text": "A public ORCID, Zenodo or ResearchGate record establishes attribution and source availability only. It does not establish peer review, independent scientific or engineering validation, product readiness, commercial performance, customer adoption, funding or endorsement."
+      },
+      "public_routes": [
+        "/research/",
+        "/publications/",
+        "/about/"
+      ]
+    },
+    {
+      "id": "cross-sector-research-orientation",
+      "title": "Cross-sector research orientation",
+      "claim": "Aureon's public research orientation covers trustworthy AI, space systems, photonics, sensing and evidence-led engineering.",
+      "state": "public-research-record",
+      "boundary": "A public ORCID, Zenodo or ResearchGate record establishes attribution and source availability only. It does not establish peer review, independent scientific or engineering validation, product readiness, commercial performance, customer adoption, funding or endorsement.",
+      "permitted_wording": [
+        "Aureon's public research orientation covers trustworthy AI, space systems, photonics, sensing and evidence-led engineering.",
+        "The published research orientation spans several technically demanding domains."
+      ],
+      "prohibited_inferences": [
+        "sector validation",
+        "customer adoption",
+        "commercial performance",
+        "independent engineering validation"
+      ],
+      "expires_on": "2026-10-26",
+      "source": {
+        "path": "website/data/research-catalogue.json",
+        "sha256": "DFDBEEAF1D82B01788C0EFC590593B7E0F3B7D95ED97BDB83F4B273A19ED3456",
+        "locator": "$.research_breadth.themes",
+        "evidence_texts": [
+          "Trustworthy AI and evidence governance",
+          "Space systems and mission assurance",
+          "Photonics, sensing and signal analysis",
+          "Complex systems and coherence modelling",
+          "Evidence-led engineering and falsifiable experimentation"
+        ],
+        "boundary_text": "A public ORCID, Zenodo or ResearchGate record establishes attribution and source availability only. It does not establish peer review, independent scientific or engineering validation, product readiness, commercial performance, customer adoption, funding or endorsement."
+      },
+      "public_routes": [
+        "/research/",
+        "/updates/",
+        "/funding/"
+      ]
+    },
+    {
+      "id": "shared-core-application-thesis",
+      "title": "Research-to-application thesis",
+      "claim": "Mission blades test whether and where Aureon's shared discipline could create value.",
+      "state": "prospective-application",
+      "boundary": "The links below show Aureon's source-backed route from research to implementation. They do not turn authored research, software source, commentary or prototypes into independent validation, customer adoption or commercial outcomes.",
+      "permitted_wording": [
+        "Mission blades test whether and where Aureon's shared discipline could create value.",
+        "Aureon uses mission blades to frame bounded application hypotheses and validation routes."
+      ],
+      "prohibited_inferences": [
+        "commercial outcome",
+        "customer adoption",
+        "independent validation",
+        "completed deployment"
+      ],
+      "expires_on": "2026-10-26",
+      "source": {
+        "path": "website/data/innovation-map.json",
+        "sha256": "C6DE2DB3388190C3C650FCAC5087F5F5C7BE83D9D26C406B50FCEE90A7EBF121",
+        "locator": "$.positioning",
+        "evidence_texts": [
+          "Research generates possibilities. HNC organises the method. Aureon OS operationalises the discipline. Mission blades test whether and where that shared discipline could create value."
+        ],
+        "boundary_text": "The links below show Aureon's source-backed route from research to implementation. They do not turn authored research, software source, commentary or prototypes into independent validation, customer adoption or commercial outcomes."
+      },
+      "public_routes": [
+        "/vision/",
+        "/projects/",
+        "/funding/"
+      ]
+    },
+    {
+      "id": "aureon-os-inspectable-mechanisms",
+      "title": "Inspectable implementation boundary",
+      "claim": "Aureon OS source and tests can be inspected as company-built mechanisms.",
+      "state": "public-source-available",
+      "boundary": "Aureon OS source and tests show company-built mechanisms that can be inspected; they do not establish production readiness.",
+      "permitted_wording": [
+        "Aureon OS source and tests can be inspected as company-built mechanisms.",
+        "Public source and tests provide a technical inspection route for Aureon OS."
+      ],
+      "prohibited_inferences": [
+        "production readiness",
+        "operational safety",
+        "customer use",
+        "independent validation"
+      ],
+      "expires_on": "2026-10-26",
+      "source": {
+        "path": "website/data/innovation-map.json",
+        "sha256": "C6DE2DB3388190C3C650FCAC5087F5F5C7BE83D9D26C406B50FCEE90A7EBF121",
+        "locator": "$.artifact_roles.company_implementation",
+        "evidence_texts": [
+          "Aureon OS source and tests show company-built mechanisms that can be inspected; they do not establish production readiness."
+        ],
+        "boundary_text": "Aureon OS source and tests show company-built mechanisms that can be inspected; they do not establish production readiness."
+      },
+      "public_routes": [
+        "/projects/",
+        "/diligence/",
+        "/publications/"
+      ]
+    },
+    {
+      "id": "academia-research-attention",
+      "title": "Academia.edu research attention",
+      "claim": "The reported Academia.edu analytics are a research-attention signal.",
+      "state": "attention-signal",
+      "boundary": "An audience-attention signal for published research; not customers, production use, scientific validation or independent adoption.",
+      "permitted_wording": [
+        "The reported Academia.edu analytics are a research-attention signal.",
+        "Aureon reports audience attention to published research, with source and date stated."
+      ],
+      "prohibited_inferences": [
+        "customer base",
+        "production use",
+        "scientific validation",
+        "independent adoption"
+      ],
+      "expires_on": "2026-08-09",
+      "source": {
+        "path": "website/data/updates.json",
+        "sha256": "794D20BBDCD709E7E3C3111F69721DD4515E84D06563158CB7DF374879A85BCD",
+        "locator": "$[?(@.id=='academia-research-attention-20260726')]",
+        "evidence_texts": [
+          "Published research has sustained a year of discoverability",
+          "Academia.edu's newly generated all-time export contains 2,226 view rows from 23 Jul 2025–24 Jul 2026. Its current 30-day dashboard reports 115 unique visitors, 131 downloads and 126 views from 15 countries.",
+          "Academia.edu authenticated analytics and full CSV export · checked 26 Jul 2026"
+        ],
+        "boundary_text": "An audience-attention signal for published research; not customers, production use, scientific validation or independent adoption."
+      },
+      "public_routes": [
+        "/updates/",
+        "/funding/investor-deck/"
+      ]
+    },
+    {
+      "id": "github-technical-access",
+      "title": "GitHub technical access",
+      "claim": "Aureon publishes GitHub-reported technical-access signals for the public codebase.",
+      "state": "attention-signal",
+      "boundary": "A platform-reported technical-access signal for the public codebase; clones may include automation or repeat access and are not verified users, customers, production use or independent adoption.",
+      "permitted_wording": [
+        "Aureon publishes GitHub-reported technical-access signals for the public codebase.",
+        "GitHub-reported access is presented as a dated technical-attention signal."
+      ],
+      "prohibited_inferences": [
+        "verified users",
+        "customers",
+        "production use",
+        "independent adoption"
+      ],
+      "expires_on": "2026-08-09",
+      "source": {
+        "path": "website/data/updates.json",
+        "sha256": "794D20BBDCD709E7E3C3111F69721DD4515E84D06563158CB7DF374879A85BCD",
+        "locator": "$[?(@.id=='github-technical-access-20260726')]",
+        "evidence_texts": [
+          "Aureon OS is drawing measurable technical access",
+          "GitHub Insights for the rolling 14 days from 12–25 Jul show 3,745 clones and 947 unique cloners; the public repository shows 31 stars and 9 forks. Independently dated January and March–April snapshots show recurring technical access to the same renamed repository.",
+          "GitHub Insights and public repository · checked 26 Jul 2026"
+        ],
+        "boundary_text": "A platform-reported technical-access signal for the public codebase; clones may include automation or repeat access and are not verified users, customers, production use or independent adoption."
+      },
+      "public_routes": [
+        "/updates/",
+        "/projects/",
+        "/funding/investor-deck/"
+      ]
+    },
+    {
+      "id": "zenodo-research-access",
+      "title": "Zenodo research-record access",
+      "claim": "The public Zenodo catalogue reports formal research-record access.",
+      "state": "attention-signal",
+      "boundary": "A repository-access signal for the formal research corpus; not customers, production use, scientific validation or independent adoption.",
+      "permitted_wording": [
+        "The public Zenodo catalogue reports formal research-record access.",
+        "Zenodo-reported access is presented as a dated research-record signal."
+      ],
+      "prohibited_inferences": [
+        "customers",
+        "production use",
+        "scientific validation",
+        "independent adoption"
+      ],
+      "expires_on": "2026-08-26",
+      "source": {
+        "path": "website/data/updates.json",
+        "sha256": "794D20BBDCD709E7E3C3111F69721DD4515E84D06563158CB7DF374879A85BCD",
+        "locator": "$[?(@.id=='zenodo-research-access-20260726')]",
+        "evidence_texts": [
+          "Formal research records show public repository access",
+          "Zenodo's official API catalogue shows 560 views and 521 downloads across 73 records.",
+          "Zenodo official API · checked 26 Jul 2026"
+        ],
+        "boundary_text": "A repository-access signal for the formal research corpus; not customers, production use, scientific validation or independent adoption."
+      },
+      "public_routes": [
+        "/updates/",
+        "/research/",
+        "/publications/"
+      ]
+    },
+    {
+      "id": "strategic-rd-route-themes",
+      "title": "Strategic R&D routes",
+      "claim": "Aureon presents public-sector and specialist R&D routes as strategic testing themes.",
+      "state": "prospective-application",
+      "boundary": "Strategic relevance is not an award, customer contract, product validation or programme endorsement.",
+      "permitted_wording": [
+        "Aureon presents public-sector and specialist R&D routes as strategic testing themes.",
+        "The public route map describes potential R&D validation pathways for the shared evidence core."
+      ],
+      "prohibited_inferences": [
+        "grant award",
+        "customer contract",
+        "product validation",
+        "programme endorsement"
+      ],
+      "expires_on": "2026-10-26",
+      "source": {
+        "path": "website/data/funding-status.json",
+        "sha256": "75F2AAAAFEB55160198F198661255E7F62EDCA1049DB25FFC9A9595397FBBBC8",
+        "locator": "$.coverage",
+        "evidence_texts": [
+          "Strategic capital and partnership themes for testing whether and where Aureon's shared evidence core could create value.",
+          "Each theme presents strategic relevance, a public evidence basis, the next validation and a concise claim boundary."
+        ],
+        "boundary_text": "Strategic relevance is not an award, customer contract, product validation or programme endorsement."
+      },
+      "public_routes": [
+        "/funding/",
+        "/funding/investor-deck/",
+        "/diligence/"
+      ]
+    },
+    {
+      "id": "space-concept-validation-route",
+      "title": "Space and defence concept route",
+      "claim": "Aureon presents space and defence work as a concept-level route with explicit validation gates.",
+      "state": "prospective-application",
+      "boundary": "Concept-level space and defence research is presented with explicit laboratory, authority and validation gates.",
+      "permitted_wording": [
+        "Aureon presents space and defence work as a concept-level route with explicit validation gates.",
+        "Space and defence concepts remain subject to laboratory, authority and validation gates."
+      ],
+      "prohibited_inferences": [
+        "space-sector partnership",
+        "mission deployment",
+        "qualified authority approval",
+        "validated outcome"
+      ],
+      "expires_on": "2026-10-26",
+      "source": {
+        "path": "website/data/funding-status.json",
+        "sha256": "75F2AAAAFEB55160198F198661255E7F62EDCA1049DB25FFC9A9595397FBBBC8",
+        "locator": "$.routes[?(@.programme=='Specialist space and defence innovation')]",
+        "evidence_texts": [
+          "Specialist space and defence routes with explicit concept and validation boundaries.",
+          "Concept-level space and defence research is presented with explicit laboratory, authority and validation gates."
+        ],
+        "boundary_text": "Concept-level space and defence research is presented with explicit laboratory, authority and validation gates."
+      },
+      "public_routes": [
+        "/funding/",
+        "/projects/",
+        "/research/"
+      ]
+    },
+    {
+      "id": "innovate-ni-silver-recognition",
+      "title": "Innovate NI Silver recognition",
+      "claim": "R&A Consulting and Brokerage received an Innovate NI Silver-level Certificate of Recognition.",
+      "state": "external-recognition",
+      "boundary": "Public records establish source and attribution only; they do not establish independent validation, commercial performance, customer adoption, funding or endorsement.",
+      "permitted_wording": [
+        "R&A Consulting and Brokerage received an Innovate NI Silver-level Certificate of Recognition.",
+        "The company presents its Innovate NI Silver certificate as an attributable recognition record."
+      ],
+      "prohibited_inferences": [
+        "independent technical validation",
+        "commercial performance",
+        "customer adoption",
+        "funding outcome"
+      ],
+      "expires_on": "2027-07-26",
+      "source": {
+        "path": "website/about/index.html",
+        "sha256": "D58684B5B6AACB1D0E9BEBE9DC0660AF3462A085CE0E2E721DA3EF96957080E0",
+        "locator": "#company-recognition",
+        "evidence_texts": [
+          "Recognised at Silver level by Innovate NI.",
+          "R&A Consulting and Brokerage received a Certificate of Recognition for reaching Silver level on the Innovate NI Innovation Framework, issued by the Department for the Economy with Tourism Northern Ireland and Innovation NI."
+        ],
+        "boundary_text": "Public records establish source and attribution only; they do not establish independent validation, commercial performance, customer adoption, funding or endorsement."
+      },
+      "public_routes": [
+        "/about/",
+        "/updates/"
+      ]
+    }
+  ]
+}

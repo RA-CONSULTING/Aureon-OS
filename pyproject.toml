@@ -47,6 +47,7 @@ dev = [
   "mypy>=1.10",
   "black>=24.0",
   "pytest>=8.0",
+  "jsonschema>=4.23,<5",
   "pre-commit>=3.7",
   "types-requests",
 ]
@@ -55,6 +56,7 @@ dev = [
 aureon-operator = "aureon.operator.operator_server:main"
 aureon-organism = "aureon.core.organism_daemon:main"
 aureon-hnc = "aureon.core.hnc_live_daemon:main"
+aureon-website = "aureon.operator.website_operator:main"
 
 # Discover the `aureon` package only. Top-level bare modules stay importable via
 # the existing sys.path shims — packaging is additive, not a rewrite.
@@ -64,7 +66,12 @@ namespaces = false
 
 [tool.setuptools.package-data]
 # Ship the voice-first wearable PWA (served by the operator at /watch).
-"aureon.operator" = ["wearable/*"]
+"aureon.operator" = [
+  "wearable/*",
+  "website_operator.defaults.json",
+  "website_operator.schema.json",
+  "website_operator_receipts.schema.json",
+]
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Ruff — repo-wide config. CI gates ONLY on aureon/operator (strict tier); the

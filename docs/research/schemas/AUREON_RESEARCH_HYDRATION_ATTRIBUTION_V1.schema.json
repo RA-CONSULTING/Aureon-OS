@@ -1,0 +1,279 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aureon.example/schemas/aureon-research-hydration-attribution-v1.json",
+  "title": "Aureon Research Hydration Attribution Receipt v1",
+  "description": "A minimized, single-capture, analysis-only runtime diagnostic. It has no candidate, package, release, deployment, credential, causal-proof, or performance-gate authority.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "observed_at",
+    "state",
+    "analysis_only",
+    "release_eligible",
+    "package_authority",
+    "deployment_authority",
+    "authority",
+    "target",
+    "instrumentation",
+    "observed",
+    "runtime_messages",
+    "coverage",
+    "correlation",
+    "trace",
+    "next_step"
+  ],
+  "properties": {
+    "schema": { "const": "aureon.research-hydration-attribution.v1" },
+    "observed_at": { "type": "string", "format": "date-time" },
+    "state": { "enum": ["complete", "incomplete"] },
+    "analysis_only": { "const": true },
+    "release_eligible": { "const": false },
+    "package_authority": { "const": "none" },
+    "deployment_authority": { "const": "none" },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scope",
+        "canonical_website_mutation",
+        "candidate_creation",
+        "release_eligibility",
+        "package_authority",
+        "deployment_authority",
+        "credential_access"
+      ],
+      "properties": {
+        "scope": { "const": "read-only staged or canonical research-route runtime attribution" },
+        "canonical_website_mutation": { "const": "never" },
+        "candidate_creation": { "const": "none" },
+        "release_eligibility": { "const": false },
+        "package_authority": { "const": "none" },
+        "deployment_authority": { "const": "none" },
+        "credential_access": { "const": "none" }
+      }
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "route",
+        "viewport",
+        "browser",
+        "self_hosted",
+        "response",
+        "source_root",
+        "source_before",
+        "source_after_tree_sha256",
+        "source_stable"
+      ],
+      "properties": {
+        "route": { "const": "/research/" },
+        "viewport": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["width", "height"],
+          "properties": {
+            "width": { "const": 1440 },
+            "height": { "const": 1000 }
+          }
+        },
+        "browser": { "const": "chromium" },
+        "self_hosted": { "const": true },
+        "response": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "same_origin"],
+          "properties": {
+            "status": { "type": "integer", "minimum": 0 },
+            "same_origin": { "type": "boolean" }
+          }
+        },
+        "source_root": { "type": "string", "minLength": 1 },
+        "source_before": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["root", "tree_sha256", "file_count", "total_bytes", "selected_files"],
+          "properties": {
+            "root": { "type": "string", "minLength": 1 },
+            "tree_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+            "file_count": { "type": "integer", "minimum": 1 },
+            "total_bytes": { "type": "integer", "minimum": 1 },
+            "selected_files": {
+              "type": "array",
+              "minItems": 4,
+              "maxItems": 4,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["path", "sha256", "bytes"],
+                "properties": {
+                  "path": { "type": "string", "minLength": 1 },
+                  "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+                  "bytes": { "type": "integer", "minimum": 1 }
+                }
+              }
+            }
+          }
+        },
+        "source_after_tree_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "source_stable": { "type": "boolean" }
+      }
+    },
+    "instrumentation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocol_version",
+        "protocol_sha256",
+        "marker_prefix",
+        "post_load_wait_ms",
+        "playwright_source",
+        "browser_version",
+        "capture_count",
+        "method",
+        "non_gating",
+        "caveat"
+      ],
+      "properties": {
+        "protocol_version": { "const": "aureon.research-hydration-attribution.protocol.v2" },
+        "protocol_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "marker_prefix": { "type": "string", "pattern": "^aureon-attribution:[a-f0-9]{24}:$" },
+        "post_load_wait_ms": { "type": "integer", "minimum": 0, "maximum": 10000 },
+        "playwright_source": { "type": "string", "minLength": 1 },
+        "browser_version": { "type": "string", "minLength": 1 },
+        "capture_count": { "const": 1 },
+        "method": { "type": "string", "minLength": 1 },
+        "non_gating": { "const": true },
+        "caveat": { "type": "string", "minLength": 1 }
+      }
+    },
+    "observed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "events",
+        "events_truncated",
+        "register_rows",
+        "profile_cards",
+        "note_cards",
+        "catalogue_records"
+      ],
+      "properties": {
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "time_ms"],
+            "properties": {
+              "name": { "type": "string", "minLength": 1 },
+              "time_ms": { "type": "number", "minimum": 0 }
+            }
+          }
+        },
+        "events_truncated": { "type": "boolean" },
+        "register_rows": { "type": "integer", "minimum": 0 },
+        "profile_cards": { "type": "integer", "minimum": 0 },
+        "note_cards": { "type": "integer", "minimum": 0 },
+        "catalogue_records": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "runtime_messages": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["console_counts", "page_error_count"],
+      "properties": {
+        "console_counts": {
+          "type": "object",
+          "additionalProperties": { "type": "integer", "minimum": 0 }
+        },
+        "page_error_count": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "route_success",
+        "route_status",
+        "same_origin",
+        "runtime_clean",
+        "expected_resources",
+        "missing_resources",
+        "expected_targets",
+        "missing_targets",
+        "missing_runtime_marks",
+        "missing_observed_counts",
+        "observer_log_complete",
+        "minimized_trace_complete",
+        "document_root_layout_count",
+        "passed"
+      ],
+      "properties": {
+        "route_success": { "type": "boolean" },
+        "route_status": { "type": "integer", "minimum": 0 },
+        "same_origin": { "type": "boolean" },
+        "runtime_clean": { "type": "boolean" },
+        "expected_resources": { "type": "array", "items": { "type": "string" } },
+        "missing_resources": { "type": "array", "items": { "type": "string" } },
+        "expected_targets": { "type": "array", "items": { "type": "string" } },
+        "missing_targets": { "type": "array", "items": { "type": "string" } },
+        "missing_runtime_marks": { "type": "array", "items": { "type": "string" } },
+        "missing_observed_counts": { "type": "array", "items": { "type": "string" } },
+        "observer_log_complete": { "type": "boolean" },
+        "minimized_trace_complete": { "type": "boolean" },
+        "document_root_layout_count": { "type": "integer", "minimum": 0 },
+        "passed": { "type": "boolean" }
+      }
+    },
+    "correlation": {
+      "type": "object",
+      "required": [
+        "marker_count",
+        "markers",
+        "layout_count",
+        "document_root_layout_count",
+        "full_document_layout_count",
+        "longest_layouts",
+        "initial_document_layout_finding",
+        "hypotheses"
+      ],
+      "properties": {
+        "marker_count": { "type": "integer", "minimum": 0 },
+        "markers": { "type": "array" },
+        "layout_count": { "type": "integer", "minimum": 0 },
+        "document_root_layout_count": { "type": "integer", "minimum": 0 },
+        "full_document_layout_count": { "type": "integer", "minimum": 0 },
+        "longest_layouts": { "type": "array" },
+        "initial_document_layout_finding": { "type": "object" },
+        "hypotheses": { "type": "array", "minItems": 4 }
+      }
+    },
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "schema",
+        "sha256",
+        "original_event_count",
+        "relevant_event_count",
+        "retained_event_count",
+        "trace_truncated",
+        "raw_trace_persisted"
+      ],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "schema": { "const": "aureon.research-hydration-minimized-trace.v1" },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "original_event_count": { "type": "integer", "minimum": 0 },
+        "relevant_event_count": { "type": "integer", "minimum": 0 },
+        "retained_event_count": { "type": "integer", "minimum": 0 },
+        "trace_truncated": { "type": "boolean" },
+        "raw_trace_persisted": { "const": false }
+      }
+    },
+    "next_step": { "type": "string", "minLength": 1 }
+  }
+}
