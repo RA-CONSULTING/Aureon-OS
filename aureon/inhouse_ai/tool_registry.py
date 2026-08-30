@@ -21,6 +21,8 @@ import math
 import os
 import re
 import subprocess
+import threading
+from contextvars import ContextVar
 from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Any, Callable, Dict, List, Mapping, Protocol
@@ -283,16 +285,27 @@ class ToolDispatchRecord:
     operation_id: str
     decision: str
     authorization_digest: str
+    hnc_outcome: str
+    hnc_decision_receipt_id: str
+    hnc_repair_safe: bool
     handler_called: bool
     reason: str
     result_digest: str
+
+
+@dataclass
+class _HNCContextLease:
+    """Revocable request context shared by inherited execution contexts."""
+
+    canonical_field: Any
+    active: bool = True
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Tool definition
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-@dataclass
+@dataclass(frozen=True)
 class ToolDefinition:
     """Schema + handler for a single tool."""
 
@@ -304,6 +317,8 @@ class ToolDefinition:
     handler: Callable[..., str] | None = None
     effect: ToolEffect = ToolEffect.UNKNOWN
     operation_id: str = ""
+    hnc_repair_safe: bool = False
+    registration_generation: int = 0
 
     def to_dict(self) -> Dict[str, Any]:
         """Export as the wire format agents expect."""
@@ -321,6 +336,8 @@ class ToolDefinition:
             "input_schema": self.input_schema,
             "effect": self.effect.value,
             "operation_id": self.operation_id,
+            "hnc_repair_safe": self.hnc_repair_safe,
+            "registration_generation": self.registration_generation,
         }
         return _digest("tool:definition", _canonical_json(payload))
 
@@ -346,12 +363,22 @@ class ToolRegistry:
         *,
         governance_required: bool = False,
         authorization_verifier: ToolAuthorizationVerifier | None = None,
+        hnc_coherence_required: bool = True,
     ):
         self._tools: Dict[str, ToolDefinition] = {}
+        self._tool_generations: Dict[str, int] = {}
+        self._definition_lock = threading.Lock()
         self.governance_required = bool(governance_required)
         self.authorization_verifier = authorization_verifier
         self.dispatch_records: List[ToolDispatchRecord] = []
         self._consumed_authorizations: set[str] = set()
+        self._authorization_lock = threading.Lock()
+        self._hnc_context: ContextVar[tuple[_HNCContextLease, ...]] = ContextVar(
+            f"aureon_hnc_dispatch_context_{id(self)}",
+            default=(),
+        )
+        self._hnc_coherence_required = bool(hnc_coherence_required)
+        self.hnc_decisions: List[Dict[str, Any]] = []
         if include_builtins:
             self._register_builtins()
 
@@ -364,6 +391,7 @@ class ToolRegistry:
         *,
         effect: ToolEffect | str = ToolEffect.UNKNOWN,
         operation_id: str | None = None,
+        hnc_repair_safe: bool = False,
     ) -> ToolDefinition:
         """Register a new tool.  Returns the definition."""
         try:
@@ -373,17 +401,144 @@ class ToolRegistry:
         normalized_operation = str(operation_id or f"aureon.tool.{name}.v1").strip()
         if not normalized_operation:
             raise ValueError(f"operation_id is required for tool '{name}'")
-        td = ToolDefinition(
-            name=name,
-            description=description,
-            input_schema=input_schema,
-            handler=handler,
-            effect=normalized_effect,
-            operation_id=normalized_operation,
-        )
-        self._tools[name] = td
+        if not isinstance(hnc_repair_safe, bool):
+            raise TypeError(f"hnc_repair_safe must be bool for tool '{name}'")
+        with self._definition_lock:
+            generation = self._tool_generations.get(name, 0) + 1
+            td = ToolDefinition(
+                name=name,
+                description=description,
+                input_schema=input_schema,
+                handler=handler,
+                effect=normalized_effect,
+                operation_id=normalized_operation,
+                hnc_repair_safe=hnc_repair_safe,
+                registration_generation=generation,
+            )
+            self._tool_generations[name] = generation
+            self._tools[name] = td
         logger.debug("Tool registered: %s", name)
         return td
+
+    def set_hnc_coherence_context(
+        self,
+        canonical_field: Any,
+    ) -> _HNCContextLease:
+        """Install one request-scoped canonical HNC moment for dispatch.
+
+        The context is local to the current execution context, so concurrent
+        cognition turns sharing a registry cannot overwrite one another's HNC
+        moment.  There is intentionally no per-call flag that can downgrade a
+        required context.
+        """
+
+        from aureon.core.hnc_field import CanonicalField
+
+        if canonical_field is None:
+            canonical_field = CanonicalField()
+        if not isinstance(canonical_field, CanonicalField):
+            raise TypeError("captured_canonical_field_required")
+        self.require_hnc_coherence()
+        lease = _HNCContextLease(canonical_field=canonical_field)
+        self._hnc_context.set((*self._hnc_context.get(), lease))
+        return lease
+
+    def require_hnc_coherence(self) -> None:
+        """Permanently enable HNC enforcement for this registry instance."""
+
+        self._hnc_coherence_required = True
+
+    @property
+    def hnc_coherence_required(self) -> bool:
+        return self._hnc_coherence_required
+
+    @property
+    def hnc_context_active(self) -> bool:
+        stack = self._hnc_context.get()
+        return bool(stack and stack[-1].active)
+
+    def clear_hnc_coherence_context(self) -> None:
+        stack = self._hnc_context.get()
+        if not stack:
+            return
+        # Revocation is shared with asyncio tasks that inherited this exact
+        # lease object.  A child cannot continue using a high-HNC snapshot
+        # after the parent request has ended.
+        stack[-1].active = False
+        self._hnc_context.set(stack[:-1])
+
+    def _evaluate_hnc_dispatch(
+        self,
+        proposal: ToolDispatchProposal,
+    ) -> Dict[str, Any] | None:
+        stack = self._hnc_context.get()
+        lease = stack[-1] if stack else None
+        if self._hnc_coherence_required is not True:
+            return None
+        from aureon.core.hnc_field import CanonicalField
+        from aureon.governance.cognition_gate import (
+            build_hnc_coherence_request,
+            evaluate_hnc_coherence,
+        )
+
+        request = build_hnc_coherence_request(
+            proposal_digest=proposal.proposal_digest,
+            effect=proposal.effect,
+            operation_id=proposal.operation_id,
+        )
+        decision = evaluate_hnc_coherence(
+            request,
+            canonical_field=(
+                lease.canonical_field
+                if isinstance(lease, _HNCContextLease) and lease.active is True
+                else CanonicalField()
+            ),
+        )
+        self.hnc_decisions.append(dict(decision))
+        if len(self.hnc_decisions) > 2048:
+            del self.hnc_decisions[:-2048]
+        return decision
+
+    def preauthorize_tool_dispatch(self, proposal: ToolDispatchProposal) -> bool:
+        """Evaluate HNC before any mutation-authority supplier is called.
+
+        This preflight prevents low-coherence proposals from acquiring route
+        authority.  :meth:`execute` deliberately re-evaluates the captured field
+        at the handler boundary so a slow authority supplier cannot launder a
+        stale decision.  A missing/revoked context fails closed.
+        """
+
+        if self._hnc_coherence_required is not True:
+            return True
+        if not isinstance(proposal, ToolDispatchProposal):
+            return False
+        try:
+            arguments = json.loads(proposal.arguments_json)
+        except (TypeError, ValueError, json.JSONDecodeError):
+            return False
+        if not isinstance(arguments, dict):
+            return False
+        definition = self._tools.get(proposal.tool_name)
+        if self._dispatch_binding_error(
+            proposal.tool_name,
+            arguments,
+            proposal,
+            definition=definition,
+        ):
+            return False
+        decision = self._evaluate_hnc_dispatch(proposal)
+        if decision is None:
+            return False
+        outcome = str(decision.get("outcome") or "HOLD").upper()
+        return bool(
+            outcome == "PROCEED"
+            or (
+                outcome == "REPAIR"
+                and definition is not None
+                and definition.effect == ToolEffect.READ_ONLY
+                and definition.hnc_repair_safe is True
+            )
+        )
 
     def get(self, name: str) -> ToolDefinition | None:
         return self._tools.get(name)
@@ -425,6 +580,8 @@ class ToolRegistry:
         name: str,
         arguments: Mapping[str, Any],
         proposal: ToolDispatchProposal | None,
+        *,
+        definition: ToolDefinition | None = None,
     ) -> str | None:
         if not isinstance(proposal, ToolDispatchProposal):
             return "missing or invalid dispatch proposal"
@@ -439,7 +596,7 @@ class ToolRegistry:
             return f"arguments are not canonical JSON: {exc}"
         if arguments_json != proposal.arguments_json:
             return "tool arguments do not match proposal"
-        td = self._tools.get(name)
+        td = definition if definition is not None else self._tools.get(name)
         if td is None:
             return f"unknown tool: {name}"
         if proposal.effect != td.effect.value:
@@ -464,6 +621,8 @@ class ToolRegistry:
         handler_called: bool,
         reason: str,
         result: str,
+        hnc_decision: Mapping[str, Any] | None = None,
+        hnc_repair_safe: bool = False,
     ) -> None:
         self.dispatch_records.append(ToolDispatchRecord(
             proposal_digest=proposal.proposal_digest if proposal else "",
@@ -476,6 +635,11 @@ class ToolRegistry:
                 if isinstance(authorization, ToolDispatchAuthorization)
                 else ""
             ),
+            hnc_outcome=str((hnc_decision or {}).get("outcome") or ""),
+            hnc_decision_receipt_id=str(
+                (hnc_decision or {}).get("receipt_id") or ""
+            ),
+            hnc_repair_safe=hnc_repair_safe is True,
             handler_called=handler_called,
             reason=reason,
             result_digest=_digest("sha256", result),
@@ -489,6 +653,8 @@ class ToolRegistry:
         authorization: ToolDispatchAuthorization | None,
         reason: str,
         decision: str = "HOLD",
+        hnc_decision: Mapping[str, Any] | None = None,
+        hnc_repair_safe: bool = False,
     ) -> str:
         result = json.dumps({
             "blocked": True,
@@ -504,11 +670,19 @@ class ToolRegistry:
             handler_called=False,
             reason=reason,
             result=result,
+            hnc_decision=hnc_decision,
+            hnc_repair_safe=hnc_repair_safe,
         )
         return result
 
-    def _invoke_handler(self, name: str, arguments: Dict[str, Any]) -> str:
-        td = self._tools.get(name)
+    def _invoke_handler(
+        self,
+        name: str,
+        arguments: Dict[str, Any],
+        *,
+        definition: ToolDefinition | None = None,
+    ) -> str:
+        td = definition if definition is not None else self._tools.get(name)
         if not td:
             return json.dumps({"error": f"Unknown tool: {name}"})
         if not td.handler:
@@ -529,11 +703,24 @@ class ToolRegistry:
         governance_required: bool | None = None,
     ) -> str:
         """Execute a tool, failing closed when this call or registry is governed."""
-        governed = self.governance_required or bool(governance_required)
+        governed = (
+            self.governance_required
+            or bool(governance_required)
+            or self._hnc_coherence_required
+        )
         if not governed:
             return self._invoke_handler(name, arguments)
 
-        binding_error = self._dispatch_binding_error(name, arguments, proposal)
+        # Freeze the exact registered handler before any gate or verifier is
+        # called.  A same-name re-registration during authorization cannot swap
+        # the code that will run for this proposal.
+        bound_definition = self._tools.get(name)
+        binding_error = self._dispatch_binding_error(
+            name,
+            arguments,
+            proposal,
+            definition=bound_definition,
+        )
         if binding_error:
             return self._blocked_governed_dispatch(
                 name=name,
@@ -542,6 +729,22 @@ class ToolRegistry:
                 reason=binding_error,
             )
         assert proposal is not None
+        try:
+            bound_arguments = json.loads(proposal.arguments_json)
+        except (TypeError, ValueError, json.JSONDecodeError):
+            return self._blocked_governed_dispatch(
+                name=name,
+                proposal=proposal,
+                authorization=authorization,
+                reason="proposal arguments are not valid canonical JSON",
+            )
+        if not isinstance(bound_arguments, dict):
+            return self._blocked_governed_dispatch(
+                name=name,
+                proposal=proposal,
+                authorization=authorization,
+                reason="proposal arguments must be an object",
+            )
 
         if proposal.effect == ToolEffect.UNKNOWN.value:
             return self._blocked_governed_dispatch(
@@ -550,6 +753,42 @@ class ToolRegistry:
                 authorization=authorization,
                 reason="tool effect metadata is unknown",
             )
+
+        hnc_decision: Dict[str, Any] | None = None
+        repair_safe = False
+        try:
+            hnc_decision = self._evaluate_hnc_dispatch(proposal)
+        except Exception as exc:  # noqa: BLE001 - a gate failure must hold
+            logger.warning("HNC coherence dispatch evaluation failed: %s", exc)
+            return self._blocked_governed_dispatch(
+                name=name,
+                proposal=proposal,
+                authorization=authorization,
+                reason="HNC coherence decision unavailable",
+                decision="HOLD",
+                hnc_decision=hnc_decision,
+            )
+        if hnc_decision is not None:
+            outcome = str(hnc_decision.get("outcome") or "HOLD").upper()
+            definition = bound_definition
+            repair_safe = bool(
+                outcome == "REPAIR"
+                and definition is not None
+                and definition.effect == ToolEffect.READ_ONLY
+                and definition.hnc_repair_safe
+            )
+            if outcome != "PROCEED" and not repair_safe:
+                return self._blocked_governed_dispatch(
+                    name=name,
+                    proposal=proposal,
+                    authorization=authorization,
+                    reason=(
+                        f"HNC coherence {outcome}: "
+                        f"{hnc_decision.get('reason') or 'coherent route required'}"
+                    ),
+                    decision=outcome,
+                    hnc_decision=hnc_decision,
+                )
 
         if proposal.effect == ToolEffect.READ_ONLY.value:
             if authorization is None:
@@ -569,6 +808,8 @@ class ToolRegistry:
                         else None
                     ),
                     reason=auth_error,
+                    hnc_decision=hnc_decision,
+                    hnc_repair_safe=repair_safe,
                 )
             if (
                 authorization.decision != "READ_ONLY_BYPASS"
@@ -582,6 +823,8 @@ class ToolRegistry:
                     proposal=proposal,
                     authorization=authorization,
                     reason="invalid read-only bypass binding",
+                    hnc_decision=hnc_decision,
+                    hnc_repair_safe=repair_safe,
                 )
         else:
             if not isinstance(authorization, ToolDispatchAuthorization):
@@ -590,6 +833,7 @@ class ToolRegistry:
                     proposal=proposal,
                     authorization=None,
                     reason="missing dispatch authorization",
+                    hnc_decision=hnc_decision,
                 )
             auth_error = authorization.integrity_error()
             if auth_error:
@@ -598,6 +842,7 @@ class ToolRegistry:
                     proposal=proposal,
                     authorization=authorization,
                     reason=auth_error,
+                    hnc_decision=hnc_decision,
                 )
             if authorization.proposal_digest != proposal.proposal_digest:
                 return self._blocked_governed_dispatch(
@@ -605,6 +850,7 @@ class ToolRegistry:
                     proposal=proposal,
                     authorization=authorization,
                     reason="authorization does not match proposal",
+                    hnc_decision=hnc_decision,
                 )
             if authorization.decision != "ACCEPT":
                 return self._blocked_governed_dispatch(
@@ -613,6 +859,7 @@ class ToolRegistry:
                     authorization=authorization,
                     reason=f"authorization decision is {authorization.decision or 'missing'}",
                     decision=authorization.decision or "HOLD",
+                    hnc_decision=hnc_decision,
                 )
             verifier = self.authorization_verifier
             if verifier is None:
@@ -621,6 +868,7 @@ class ToolRegistry:
                     proposal=proposal,
                     authorization=authorization,
                     reason="trusted authorization verifier is unavailable",
+                    hnc_decision=hnc_decision,
                 )
             verifier_id = str(getattr(verifier, "verifier_id", "")).strip()
             if not verifier_id or authorization.issuer_id != verifier_id:
@@ -629,6 +877,7 @@ class ToolRegistry:
                     proposal=proposal,
                     authorization=authorization,
                     reason="authorization issuer does not match trusted verifier",
+                    hnc_decision=hnc_decision,
                 )
             try:
                 verified = verifier.validate_tool_dispatch_authorization(
@@ -644,19 +893,28 @@ class ToolRegistry:
                     proposal=proposal,
                     authorization=authorization,
                     reason="trusted authorization verifier rejected receipt",
+                    hnc_decision=hnc_decision,
                 )
-            if authorization.authorization_digest in self._consumed_authorizations:
-                return self._blocked_governed_dispatch(
-                    name=name,
-                    proposal=proposal,
-                    authorization=authorization,
-                    reason="dispatch authorization was already consumed",
-                )
-            # Consume immediately before the handler. A failed handler never makes an
-            # authority-bearing receipt reusable.
-            self._consumed_authorizations.add(authorization.authorization_digest)
+            # Check and burn atomically. Concurrent calls sharing one receipt can
+            # never both cross the handler boundary.
+            with self._authorization_lock:
+                if authorization.authorization_digest in self._consumed_authorizations:
+                    return self._blocked_governed_dispatch(
+                        name=name,
+                        proposal=proposal,
+                        authorization=authorization,
+                        reason="dispatch authorization was already consumed",
+                        hnc_decision=hnc_decision,
+                    )
+                # Consume immediately before the handler. A failed handler never
+                # makes an authority-bearing receipt reusable.
+                self._consumed_authorizations.add(authorization.authorization_digest)
 
-        result = self._invoke_handler(name, arguments)
+        result = self._invoke_handler(
+            name,
+            bound_arguments,
+            definition=bound_definition,
+        )
         self._record_dispatch(
             proposal=proposal,
             name=name,
@@ -665,6 +923,8 @@ class ToolRegistry:
             handler_called=True,
             reason="",
             result=result,
+            hnc_decision=hnc_decision,
+            hnc_repair_safe=repair_safe,
         )
         return result
 
@@ -706,6 +966,7 @@ class ToolRegistry:
             handler=_builtin_read_state,
             effect=ToolEffect.READ_ONLY,
             operation_id="aureon.inhouse.read_state.v1",
+            hnc_repair_safe=True,
         )
 
         # 2. read_positions
@@ -806,7 +1067,7 @@ class ToolRegistry:
 
         self.define_tool(
             name="web_search",
-            description="Search the web through AureonAgentCore and return bounded read-only results for learning.",
+            description="Search the web through AureonAgentCore and return bounded results for learning (privileged outbound network I/O).",
             input_schema={
                 "type": "object",
                 "properties": {
@@ -817,13 +1078,13 @@ class ToolRegistry:
                 "additionalProperties": False,
             },
             handler=_builtin_web_search,
-            effect=ToolEffect.READ_ONLY,
+            effect=ToolEffect.PRIVILEGED,
             operation_id="aureon.inhouse.web_search.v1",
         )
 
         self.define_tool(
             name="web_fetch",
-            description="Fetch a public web page through AureonAgentCore and return bounded text for learning.",
+            description="Fetch a public web page through AureonAgentCore and return bounded text for learning (privileged outbound network I/O).",
             input_schema={
                 "type": "object",
                 "properties": {
@@ -833,7 +1094,7 @@ class ToolRegistry:
                 "additionalProperties": False,
             },
             handler=_builtin_web_fetch,
-            effect=ToolEffect.READ_ONLY,
+            effect=ToolEffect.PRIVILEGED,
             operation_id="aureon.inhouse.web_fetch.v1",
         )
 

@@ -324,7 +324,7 @@ def test_incomplete_world_data_item_remains_no_data() -> None:
     ) is None
 
 
-def test_derived_hnc_receipt_is_deterministic_and_non_actionable(tmp_path) -> None:
+def test_derived_hnc_receipt_binds_timestamps_and_is_non_actionable(tmp_path) -> None:
     daemon = _bare_daemon()
     daemon._sources = {
         "a": _accepted_state("a", source_timestamp=NOW - 4.0),
@@ -353,11 +353,19 @@ def test_derived_hnc_receipt_is_deterministic_and_non_actionable(tmp_path) -> No
     second = daemon._derived_envelope(
         state,
         readings,
+        received_at=NOW,
+        source_receipts=source_receipts,
+        memory_receipt=memory_receipt,
+    )
+    later = daemon._derived_envelope(
+        state,
+        readings,
         received_at=NOW + 1.0,
         source_receipts=source_receipts,
         memory_receipt=memory_receipt,
     )
     assert first["receipt_id"] == second["receipt_id"]
+    assert first["receipt_id"] != later["receipt_id"]
     assert first["source_timestamp"] == NOW - 2.0
     assert first["received_at"] == NOW
     assert first["input_receipt_ids"] == sorted([

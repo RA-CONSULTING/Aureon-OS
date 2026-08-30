@@ -90,6 +90,8 @@ def _hnc() -> dict[str, Any]:
     }
     fingerprint = {
         "input_receipt_ids": links,
+        "source_timestamp": payload["source_timestamp"],
+        "received_at": payload["received_at"],
         "step": payload["step"],
         "lambda_t": payload["lambda_t"],
         "coherence_gamma": payload["coherence_gamma"],

@@ -512,6 +512,7 @@ def test_memory_lineage_survives_bus_and_trace(
         "memory_receipt_id",
         "memory_canonical_hash",
         "memory_previous_receipt_id",
+        "step",
     ):
         assert key in trace
         assert trace[key] == envelope[key]

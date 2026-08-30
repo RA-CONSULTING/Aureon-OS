@@ -88,11 +88,13 @@ class GuardedToolRegistry(ToolRegistry):
         *,
         governance_required: bool = False,
         authorization_verifier: ToolAuthorizationVerifier | None = None,
+        hnc_coherence_required: bool = True,
     ):
         super().__init__(
             include_builtins=include_builtins,
             governance_required=governance_required,
             authorization_verifier=authorization_verifier,
+            hnc_coherence_required=hnc_coherence_required,
         )
         self.blocked_calls: list = []
         # The coherence membrane (set per turn by cognition): ``None`` means
@@ -110,7 +112,11 @@ class GuardedToolRegistry(ToolRegistry):
         authorization: ToolDispatchAuthorization | None = None,
         governance_required: bool | None = None,
     ) -> str:
-        governed = self.governance_required or bool(governance_required)
+        governed = (
+            self.governance_required
+            or bool(governance_required)
+            or self.hnc_coherence_required
+        )
         args = arguments or {}
         # Rebind at this outer dispatch boundary before any handler can run.
         # ToolRegistry repeats this check before consuming the authorization.
@@ -180,8 +186,15 @@ class GuardedToolRegistry(ToolRegistry):
         from aureon.operator.aureon_operator import _hard_boundary_violation
 
         blob = f"{name} {json.dumps(args, default=str)}"
-        if _hard_boundary_violation(blob):
-            return "hard authority boundary (live-trade / payment / bypass / credential / filing)"
+        # Read-only cognition may inspect and discuss consequential domains.
+        # The content boundary applies to generic mutation primitives that
+        # could otherwise become a shell/write/publish bypass. Typed economic
+        # and statutory routes keep their own exact execution boundaries.
+        if name in CONSEQUENTIAL and _hard_boundary_violation(blob):
+            return (
+                "generic mutation bypass boundary "
+                "(live-trade / payment / bypass / credential / filing)"
+            )
 
         if name in ("write_repo_file", "patch_repo_file"):
             path = str(args.get("path", ""))
@@ -416,6 +429,7 @@ def build_operator_tools(
     allowlist: Iterable[str] | None = None,
     governance_required: bool = False,
     authorization_verifier: ToolAuthorizationVerifier | None = None,
+    hnc_coherence_required: bool = True,
 ) -> GuardedToolRegistry:
     """Assemble the cognition's toolbelt. Read tools always on; writes/shell gated.
 
@@ -426,6 +440,7 @@ def build_operator_tools(
         include_builtins=True,
         governance_required=governance_required,
         authorization_verifier=authorization_verifier,
+        hnc_coherence_required=hnc_coherence_required,
     )
 
     # Offline-guard the network tools (built-ins don't check the guard today).
@@ -434,7 +449,8 @@ def build_operator_tools(
         if td and td.handler:
             reg.define_tool(net, td.description + " (offline-guarded)", td.input_schema,
                             _wrap_offline(td.handler, reg, net),
-                            effect=td.effect, operation_id=td.operation_id)
+                            effect=td.effect, operation_id=td.operation_id,
+                            hnc_repair_safe=td.hnc_repair_safe)
 
     # Repo-wide search replaces the built-in docs-only repo_search.
     reg.define_tool(
@@ -522,6 +538,7 @@ def build_operator_tools(
         _h_code_validate,
         effect=ToolEffect.READ_ONLY,
         operation_id="aureon.operator.code_validate.v1",
+        hnc_repair_safe=True,
     )
 
     if allow_writes:

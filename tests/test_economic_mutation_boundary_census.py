@@ -24,25 +24,25 @@ def census() -> dict[str, Any]:
 def test_inventory_is_exact_but_truthfully_not_certified(census: dict[str, Any]) -> None:
     assert census["inventory_aligned"] is True
     assert census["certified_no_bypass"] is False
-    assert census["detected_count"] == 1569
-    assert census["classified_count"] == 1569
-    assert census["blocker_count"] == 1376
+    assert census["detected_count"] == 1617
+    assert census["classified_count"] == 1617
+    assert census["blocker_count"] == 1246
     assert census["parse_errors"] == []
     assert census["unallowlisted"] == []
     assert census["stale_allowlist_entries"] == []
     assert census["counts_by_classification"] == {
-        "dry-run-test-demo-only": 83,
+        "dry-run-test-demo-only": 122,
         "economic-boundary-last-mile": 4,
-        "live-capable-unguarded-blocker": 1376,
-        "provider-client-raw-transport-guard": 106,
+        "live-capable-unguarded-blocker": 1246,
+        "provider-client-raw-transport-guard": 245,
         "unreachable-quarantined-launcher": 0,
     }
     assert census["counts_by_provider"] == {
         "alpaca": 238,
-        "binance": 372,
-        "capital": 222,
-        "kraken": 444,
-        "multi-provider": 287,
+        "binance": 366,
+        "capital": 209,
+        "kraken": 453,
+        "multi-provider": 345,
         "oanda": 6,
     }
 
@@ -54,7 +54,7 @@ def test_every_entry_is_explicitly_owned_and_line_independent(
     assert all(item["rationale"].strip() for item in census["findings"])
     assert all(item["owner"].strip() for item in census["findings"])
     allowlist = AUDITOR.load_allowlist()
-    assert len(allowlist) == 1569
+    assert len(allowlist) == 1617
     assert all("line" not in entry for entry in allowlist.values())
 
 
@@ -93,8 +93,9 @@ def test_guarded_last_mile_and_provider_raw_transport_guards_are_exact(
         for finding in census["findings"]
         if finding["classification"] == "provider-client-raw-transport-guard"
     ]
-    assert len(provider_guards) == 106
+    assert len(provider_guards) == 245
     assert {finding["file"] for finding in provider_guards} == {
+        "Kings_Accounting_Suite/aureon_systems/queen_quantum_frog.py",
         "Kings_Accounting_Suite/core/hnc_hmrc_api.py",
         "Kings_Accounting_Suite/aureon_systems/queen_profit_dashboard.py",
         "aureon/exchanges/alpaca_client.py",
@@ -102,8 +103,16 @@ def test_guarded_last_mile_and_provider_raw_transport_guards_are_exact(
         "aureon/exchanges/binance_client.py",
         "aureon/exchanges/capital_client.py",
         "aureon/exchanges/kraken_client.py",
+        "aureon/exchanges/kraken_margin_penny_trader.py",
+        "aureon/bots/gaia_aggressive_reclaimerfix.py",
+        "aureon/bots/orca_complete_kill_cycle.py",
+        "aureon/queen/queen_quantum_frog.py",
+        "aureon/queen/unity_exchange_brain.py",
         "aureon/trading/bounded_capital_live_trade.py",
+        "aureon/trading/aureon_the_play.py",
+        "aureon/trading/aureon_unified_ecosystem.py",
         "aureon/trading/unified_exchange_client.py",
+        "aureon/exchanges/unified_market_trader.py",
     }
     assert {finding["provider"] for finding in provider_guards} == {
         "alpaca",
@@ -208,7 +217,7 @@ def test_guarded_last_mile_and_provider_raw_transport_guards_are_exact(
         for finding in provider_guards
         if finding["file"] == "aureon/trading/unified_exchange_client.py"
     ]
-    assert len(unified_guards) == 34
+    assert len(unified_guards) == 44
     unified_source = (
         ROOT / "aureon" / "trading" / "unified_exchange_client.py"
     ).read_text(encoding="utf-8")
@@ -236,6 +245,340 @@ def test_guarded_last_mile_and_provider_raw_transport_guards_are_exact(
         assert "unity_plan: LegacyUnityIntentPlan | None" in method_source
         assert "unity_invocation," in method_source
         assert "plan=unity_plan" in method_source
+
+    governed_class = unified_source[
+        unified_source.index("class GovernedMultiExchangeClient("):
+        unified_source.index("class UnifiedExchangeClient:")
+    ]
+    governed_constructor = governed_class[
+        governed_class.index("    def __init__("):
+        governed_class.index("    @staticmethod")
+    ]
+    assert "trusted_unified_ecosystem_plan_supplier_required" in governed_constructor
+    assert "unified_ecosystem_plan_supplier_not_allowlisted" in governed_constructor
+    assert "canonical_unified_exchange_unity_composition_required" in governed_constructor
+    governed_dispatch = governed_class[
+        governed_class.index("    def _execute_governed("):
+        governed_class.index("    @staticmethod", governed_class.index("    def _execute_governed("))
+    ]
+    assert (
+        governed_dispatch.index("supply_unity_plan(request)")
+        < governed_dispatch.index("self._plan_matches(")
+        < governed_dispatch.index("if plan.plan_digest in self._consumed_plan_digests")
+        < governed_dispatch.index("self._consumed_plan_digests.add(plan.plan_digest)")
+        < governed_dispatch.index("result = dispatch(plan)")
+    )
+    assert governed_class.count("return self._execute_governed(") == 10
+    assert governed_class.count("unity_plan=exact_plan") == 10
+
+    ecosystem_guards = [
+        finding
+        for finding in provider_guards
+        if finding["file"] == "aureon/trading/aureon_unified_ecosystem.py"
+    ]
+    assert len(ecosystem_guards) == 24
+    ecosystem_source = (
+        ROOT / "aureon" / "trading" / "aureon_unified_ecosystem.py"
+    ).read_text(encoding="utf-8")
+    ecosystem_constructor = ecosystem_source[
+        ecosystem_source.index("class AureonKrakenEcosystem:"):
+        ecosystem_source.index("        # Positions must exist", ecosystem_source.index("class AureonKrakenEcosystem:"))
+    ]
+    assert "unity_composition_plan_supplier_and_allowlist_required_together" in ecosystem_constructor
+    assert "self.client = GovernedMultiExchangeClient(" in ecosystem_constructor
+    assert '"canonical_unified_exchange_unity_composition_required"' in ecosystem_constructor
+
+    ecosystem_test_findings = [
+        finding
+        for finding in census["findings"]
+        if finding["file"] == "tests/test_unified_ecosystem_governed_client.py"
+    ]
+    assert len(ecosystem_test_findings) == 7
+    assert all(
+        finding["classification"] == "dry-run-test-demo-only"
+        for finding in ecosystem_test_findings
+    )
+
+    queen_guard_counts = {
+        path: len(
+            [
+                finding
+                for finding in provider_guards
+                if finding["file"] == path
+            ]
+        )
+        for path in (
+            "aureon/queen/queen_quantum_frog.py",
+            "Kings_Accounting_Suite/aureon_systems/queen_quantum_frog.py",
+        )
+    }
+    assert queen_guard_counts == {
+        "aureon/queen/queen_quantum_frog.py": 26,
+        "Kings_Accounting_Suite/aureon_systems/queen_quantum_frog.py": 26,
+    }
+    queen_brain_guards = [
+        finding
+        for finding in provider_guards
+        if finding["file"] == "aureon/queen/unity_exchange_brain.py"
+    ]
+    assert len(queen_brain_guards) == 5
+    queen_brain_source = (
+        ROOT / "aureon" / "queen" / "unity_exchange_brain.py"
+    ).read_text(encoding="utf-8")
+    queen_market = queen_brain_source[
+        queen_brain_source.index("    def place_market_order("):
+        queen_brain_source.index("    def _blocked_mutation(")
+    ]
+    assert (
+        queen_market.index("if self._governed_client is None:")
+        < queen_market.index("self._governed_client.place_market_order(")
+    )
+    assert "caller_supplied_unity_authority_forbidden" in queen_market
+    assert "provider_specific_mutation_arguments_require_exact_unity_route" in queen_market
+    assert "self._governed_client.place_margin_order(" in queen_market
+    assert "self._governed_client.close_margin_position(" in queen_market
+    assert "self._governed_client.place_take_profit_order(" in queen_market
+    assert "self._governed_client.place_trailing_stop_order(" in queen_market
+    assert queen_market.count("return self._observe(") >= 8
+    queen_getattr = queen_brain_source[
+        queen_brain_source.index("    def __getattr__("):
+        queen_brain_source.index("\ndef build_queen_exchange_brains(")
+    ]
+    assert "_BLOCKED_MUTATION_NAMES" in queen_getattr
+    assert "_BLOCKED_MUTATION_PREFIXES" in queen_getattr
+
+    for relative in queen_guard_counts:
+        source = (ROOT / relative).read_text(encoding="utf-8")
+        constructor = source[
+            source.index("class OrcaKillCycle:"):
+            source.index("        self.exchange = exchange", source.index("class OrcaKillCycle:"))
+        ]
+        assert "build_queen_exchange_brains" in constructor
+        assert "fallback_read_clients" in constructor
+        assert "self.client = self.clients[exchange]" in constructor
+
+    queen_test_findings = [
+        finding
+        for finding in census["findings"]
+        if finding["file"] == "tests/test_queen_unity_exchange_brain.py"
+    ]
+    assert len(queen_test_findings) == 22
+    assert all(
+        finding["classification"] == "dry-run-test-demo-only"
+        for finding in queen_test_findings
+    )
+
+    orca_guards = [
+        finding
+        for finding in provider_guards
+        if finding["file"] == "aureon/bots/orca_complete_kill_cycle.py"
+    ]
+    assert len(orca_guards) == 16
+    assert all(
+        finding["canonical_call"].startswith("self._governed_client_for(")
+        for finding in orca_guards
+    )
+    orca_source = (
+        ROOT / "aureon" / "bots" / "orca_complete_kill_cycle.py"
+    ).read_text(encoding="utf-8")
+    orca_constructor = orca_source[
+        orca_source.index("class OrcaKillCycle:"):
+        orca_source.index("    def audit_event")
+    ]
+    assert "OrganismEconomicSensationRouter" in orca_constructor
+    assert "outcome_observer=self.economic_sensation_router.observe" in orca_constructor
+    assert "self.clients = brains" in orca_constructor
+    assert orca_source.count("self._governed_client_for(") == 16
+    assert "client.place_market_order" not in orca_source
+    assert "client.place_margin_order" not in orca_source
+    assert "pos.client.close_margin_position" not in orca_source
+    assert "pos.client.place_market_order" not in orca_source
+    orca_test_findings = [
+        finding
+        for finding in census["findings"]
+        if finding["file"] == "tests/test_orca_unity_sensation.py"
+    ]
+    assert len(orca_test_findings) == 2
+    assert all(
+        finding["classification"] == "dry-run-test-demo-only"
+        for finding in orca_test_findings
+    )
+    orca_residual = [
+        finding
+        for finding in census["blockers"]
+        if finding["file"] == "aureon/bots/orca_complete_kill_cycle.py"
+    ]
+    assert len(orca_residual) == 2
+    assert all("urllib.request.Request" in finding["canonical_call"] for finding in orca_residual)
+
+    margin_guards = [
+        finding
+        for finding in provider_guards
+        if finding["file"] == "aureon/exchanges/kraken_margin_penny_trader.py"
+    ]
+    assert len(margin_guards) == 8
+    assert all(
+        "place_margin_order" in finding["canonical_call"]
+        or "close_margin_position" in finding["canonical_call"]
+        or finding["canonical_call"].startswith("self.close_position(")
+        for finding in margin_guards
+    )
+    margin_source = (
+        ROOT / "aureon" / "exchanges" / "kraken_margin_penny_trader.py"
+    ).read_text(encoding="utf-8")
+    margin_constructor = margin_source[
+        margin_source.index("class KrakenMarginArmyTrader:"):
+        margin_source.index("    def _install_unity_exchange_brain")
+    ]
+    margin_installer = margin_source[
+        margin_source.index("    def _install_unity_exchange_brain"):
+        margin_source.index("    def recent_economic_sensations")
+    ]
+    assert margin_constructor.index("self.hive_state =") < margin_constructor.index(
+        "self._install_unity_exchange_brain("
+    )
+    assert "OrganismEconomicSensationRouter" in margin_installer
+    assert "build_queen_exchange_brains" in margin_installer
+    assert "outcome_observer=self._economic_sensation_router.observe" in margin_installer
+    assert 'self.client = brains["kraken"]' in margin_installer
+    margin_test_findings = [
+        finding
+        for finding in census["findings"]
+        if finding["file"] == "tests/test_kraken_margin_unity_sensation.py"
+    ]
+    assert len(margin_test_findings) == 2
+    assert all(
+        finding["classification"] == "dry-run-test-demo-only"
+        for finding in margin_test_findings
+    )
+    margin_residual = [
+        finding
+        for finding in census["blockers"]
+        if finding["file"] == "aureon/exchanges/kraken_margin_penny_trader.py"
+    ]
+    assert len(margin_residual) == 10
+    assert all(
+        "urllib.request.Request" in finding["canonical_call"]
+        for finding in margin_residual
+    )
+
+    gaia_guards = [
+        finding
+        for finding in provider_guards
+        if finding["file"] == "aureon/bots/gaia_aggressive_reclaimerfix.py"
+    ]
+    assert len(gaia_guards) == 11
+    assert all(
+        finding["canonical_call"].startswith("self._governed_client_for(")
+        for finding in gaia_guards
+    )
+    gaia_source = (
+        ROOT / "aureon" / "bots" / "gaia_aggressive_reclaimerfix.py"
+    ).read_text(encoding="utf-8")
+    gaia_constructor = gaia_source[
+        gaia_source.index("class AggressiveReclaimer:"):
+        gaia_source.index("    def log(")
+    ]
+    assert "OrganismEconomicSensationRouter" in gaia_constructor
+    assert "build_queen_exchange_brains" in gaia_constructor
+    assert "outcome_observer=self._economic_sensation_router.observe" in gaia_constructor
+    assert gaia_source.count("self._governed_client_for(") == 11
+    assert "self.alpaca.place_order(" not in gaia_source
+    assert "self.alpaca.place_market_order(" not in gaia_source
+    assert "self.binance.place_market_order(" not in gaia_source
+    assert "self.kraken.place_market_order(" not in gaia_source
+    gaia_test_findings = [
+        finding
+        for finding in census["findings"]
+        if finding["file"] == "tests/test_gaia_reclaimer_unity_sensation.py"
+    ]
+    assert len(gaia_test_findings) == 1
+    assert gaia_test_findings[0]["classification"] == "dry-run-test-demo-only"
+    assert not [
+        finding
+        for finding in census["blockers"]
+        if finding["file"] == "aureon/bots/gaia_aggressive_reclaimerfix.py"
+    ]
+
+    unified_market_guards = [
+        finding
+        for finding in provider_guards
+        if finding["file"] == "aureon/exchanges/unified_market_trader.py"
+    ]
+    assert len(unified_market_guards) == 11
+    assert all(
+        finding["canonical_call"].startswith("self._governed_client_for(")
+        for finding in unified_market_guards
+    )
+    unified_market_source = (
+        ROOT / "aureon" / "exchanges" / "unified_market_trader.py"
+    ).read_text(encoding="utf-8")
+    unified_market_constructor = unified_market_source[
+        unified_market_source.index("class UnifiedMarketTrader:"):
+        unified_market_source.index("    def _governor")
+    ]
+    assert "OrganismEconomicSensationRouter" in unified_market_constructor
+    assert "build_queen_exchange_brains" in unified_market_constructor
+    assert "outcome_observer=self._economic_sensation_router.observe" in unified_market_constructor
+    assert unified_market_source.count("self._governed_client_for(") == 11
+    for raw_mutation in (
+        "client.place_trailing_stop_order(",
+        "client.place_take_profit_order(",
+        "client.place_market_order(",
+        "client.place_margin_order(",
+        "self.alpaca.place_market_order(",
+        "self.binance.place_market_order(",
+        "self.binance.place_margin_order(",
+    ):
+        assert raw_mutation not in unified_market_source
+    unified_market_test_findings = [
+        finding
+        for finding in census["findings"]
+        if finding["file"] == "tests/test_unified_market_trader_unity_sensation.py"
+    ]
+    assert len(unified_market_test_findings) == 5
+    assert all(
+        finding["classification"] == "dry-run-test-demo-only"
+        for finding in unified_market_test_findings
+    )
+    assert not [
+        finding
+        for finding in census["blockers"]
+        if finding["file"] == "aureon/exchanges/unified_market_trader.py"
+    ]
+
+    the_play_guards = [
+        finding
+        for finding in provider_guards
+        if finding["file"] == "aureon/trading/aureon_the_play.py"
+    ]
+    assert len(the_play_guards) == 2
+    assert all(
+        finding["canonical_call"].startswith("self._governed_client_for(")
+        for finding in the_play_guards
+    )
+    the_play_source = (
+        ROOT / "aureon" / "trading" / "aureon_the_play.py"
+    ).read_text(encoding="utf-8")
+    the_play_constructor = the_play_source[
+        the_play_source.index("class AureonThePlayTrader:"):
+        the_play_source.index("    def load_existing_positions(")
+    ]
+    assert "OrganismEconomicSensationRouter" in the_play_constructor
+    assert "build_queen_exchange_brains" in the_play_constructor
+    assert "outcome_observer=self._economic_sensation_router.observe" in the_play_constructor
+    assert 'self.client = brains["binance"]' in the_play_constructor
+    assert the_play_source.count('self._governed_client_for("binance").place_market_order(') == 2
+    assert "self.client.place_market_order(" not in the_play_source
+    assert "self.close_position(" not in the_play_source
+    assert the_play_source.count("self._exit_managed_position(") == 6
+    assert "if not self._governed_execution_confirmed(res):" in the_play_source
+    assert "if not self._governed_execution_confirmed(result):" in the_play_source
+    assert not [
+        finding
+        for finding in census["blockers"]
+        if finding["file"] == "aureon/trading/aureon_the_play.py"
+    ]
 
     capital_guards = [
         finding

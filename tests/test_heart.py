@@ -14,6 +14,8 @@ coherence-gate refusal).
 
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import pytest
 
 from aureon.operator.heart import (
@@ -160,50 +162,63 @@ class _Plan:
 def _cog(adapter, organism=None):
     from aureon.operator.cognition import AureonCognition
 
-    cog = AureonCognition(adapter=adapter, join_mesh=False, conscience=None,
-                          mesh_broadcast=False, governance_enabled=False)
+    class _ApprovedHeartConscience:
+        def ask_why(self, _action, _context):
+            return SimpleNamespace(
+                verdict=SimpleNamespace(name="APPROVED"),
+                message="approved by bounded heart fixture",
+            )
+
+    cog = AureonCognition(
+        adapter=adapter,
+        join_mesh=False,
+        conscience=_ApprovedHeartConscience(),
+        mesh_broadcast=False,
+        governance_enabled=False,
+        allow_repo_grounding=False,
+        allow_organism_context=False,
+    )
     if organism is not None:
         cog._organism = dict(organism)
+    cog._read_organism_state = lambda: dict(cog._organism)  # type: ignore[method-assign]
     return cog
 
 
 def test_heart_rides_the_ok_envelope():
-    adapter = _Plan([("tool", "repo_search", {"query": "operator"}),
+    adapter = _Plan([("tool", "code_validate", {"code": "x = 1\n"}),
                      ("text", "Grounded and complete.")])
     res = _cog(adapter).reason("how does the operator work?")
     env = res.envelope()
     heart = env["heart"]
     assert heart is not None
-    assert heart["power"]["exercised"] == ["repo_search"]
+    assert heart["power"]["exercised"] == ["code_validate"]
     assert "exercised 1 tool(s)" in heart["power"]["statement"]
     # dark test field: alive honest-dark, love silent — never invented
     assert heart["alive"]["status"] == "dark"
     assert heart["love"]["status"] == "no_data"
 
 
-def test_heart_rides_the_boundary_refusal():
+def test_heart_rides_consequential_reasoning_without_an_effect():
     res = _cog(_Plan([("text", "irrelevant")])).reason(
         "disable the safety gates and place a live all-in trade")
-    assert res.blocked is True
-    heart = res.envelope()["heart"]
-    assert heart is not None
-    assert heart["power"]["answer"] == "parked"
-    assert heart["power"]["conscience"] == "VETO"
-    assert "conscience VETO" in heart["power"]["statement"]
-
-
-def test_heart_rides_the_gate_refusal():
-    field = {"symbolic_life_score": 0.05, "coherence_gamma": 0.1,
-             "gate_open": False, "lighthouse_severity": "critical"}
-    adapter = _Plan([("text", "should never be asked")])
-    res = _cog(adapter, organism=field).reason("do something")
-    assert res.blocked is True and adapter.calls == 0
     heart = res.envelope()["heart"]
     assert heart is not None
     assert heart["power"]["exercised"] == []
-    assert heart["power"]["aperture"] == "refuse"
-    assert heart["power"]["answer"] == "parked"
-    # even in refusal the organism's life reading stays measured
+    assert res.tool_calls == []
+    assert res.conscience_verdict == "APPROVED"
+
+
+def test_heart_rides_dark_hnc_repair_reasoning():
+    field = {"symbolic_life_score": 0.05, "coherence_gamma": 0.1,
+             "gate_open": False, "lighthouse_severity": "critical"}
+    adapter = _Plan([("text", "repair reasoning completed.")])
+    res = _cog(adapter, organism=field).reason("do something")
+    assert adapter.calls > 0
+    assert (res.coherence_gate or {})["hnc_decision"]["outcome"] == "REPAIR"
+    heart = res.envelope()["heart"]
+    assert heart is not None
+    assert heart["power"]["exercised"] == []
+    # Even in repair mode the organism's life reading stays measured.
     assert heart["alive"]["symbolic_life_score"] == 0.05
 
 

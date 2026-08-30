@@ -212,7 +212,9 @@ def _load_proposals(root: Path, state_paths: Sequence[Path]) -> List[Dict[str, A
             continue
         for key in ("pending_proposals", "recent_reviews"):
             for item in payload.get(key, []) if isinstance(payload.get(key), list) else []:
-                if isinstance(item, dict):
+                # Only an explicit approval is executable.  Pending and rejected
+                # records remain audit evidence but never become patch candidates.
+                if isinstance(item, dict) and str(item.get("status") or "").casefold() == "approved":
                     proposals.append({**item, "_proposal_state_path": str(path), "_proposal_state_bucket": key})
     return proposals
 
@@ -251,6 +253,17 @@ class GuardedPatchApplier:
 
         def add_check(check_id: str, ok: bool, detail: str) -> None:
             evidence["checks"].append({"id": check_id, "ok": bool(ok), "detail": detail})
+
+        proposal_status = str(proposal.get("status") or "").strip().casefold()
+        explicitly_approved = proposal_status == "approved"
+        add_check(
+            "proposal_explicitly_approved",
+            explicitly_approved,
+            f"status={proposal_status or 'missing'}",
+        )
+        if not explicitly_approved:
+            evidence["blocked_reason"] = "proposal_not_explicitly_approved"
+            return evidence
 
         if not patch_text.strip():
             add_check("patch_text_present", False, "proposal has no unified diff")

@@ -156,6 +156,14 @@ class ToolInvocation:
     proposal_digest: str = ""
     authorization_digest: str = ""
     governance_receipt_id: str | None = None
+    dual_key_receipt_id: str | None = None
+    dual_key_receipt: Dict[str, Any] | None = None
+    route_authority_receipt_id: str | None = None
+    route_authority_request_digest: str | None = None
+    route_authority_receipt: Dict[str, Any] | None = None
+    hnc_outcome: str = ""
+    hnc_decision_receipt_id: str | None = None
+    hnc_repair_safe: bool = False
     governance_decision: str = ""
     governance_reason: str = ""
     handler_called: bool = False
@@ -173,6 +181,14 @@ class ToolInvocation:
             "proposal_digest": self.proposal_digest,
             "authorization_digest": self.authorization_digest,
             "governance_receipt_id": self.governance_receipt_id,
+            "dual_key_receipt_id": self.dual_key_receipt_id,
+            "dual_key_receipt": self.dual_key_receipt,
+            "route_authority_receipt_id": self.route_authority_receipt_id,
+            "route_authority_request_digest": self.route_authority_request_digest,
+            "route_authority_receipt": self.route_authority_receipt,
+            "hnc_outcome": self.hnc_outcome,
+            "hnc_decision_receipt_id": self.hnc_decision_receipt_id,
+            "hnc_repair_safe": self.hnc_repair_safe,
             "governance_decision": self.governance_decision,
             "governance_reason": self.governance_reason,
             "handler_called": self.handler_called,

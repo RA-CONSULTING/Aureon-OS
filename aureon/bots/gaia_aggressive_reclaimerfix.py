@@ -1686,7 +1686,14 @@ class HiveCoordinator:
         with self.lock:
             return self.target_symbol, self.target_momentum, self.target_kind
 class AggressiveReclaimer:
-    def __init__(self):
+    def __init__(
+        self,
+        *,
+        unity_composition: Any = None,
+        unity_plan_supplier: Any = None,
+        trusted_unity_plan_supplier_ids=(),
+        hive_state: Any = None,
+    ):
         print("=" * 40)
         print("   GAIA AGGRESSIVE RECLAIMER - TAKE EVERYTHING")
         print("=" * 40)
@@ -1945,11 +1952,90 @@ class AggressiveReclaimer:
         self._prob_loader = None
         self.log_every = 1
         self.live_log_every = 1
+        self._install_unity_exchange_brains(
+            unity_composition=unity_composition,
+            unity_plan_supplier=unity_plan_supplier,
+            trusted_unity_plan_supplier_ids=trusted_unity_plan_supplier_ids,
+            hive_state=hive_state,
+        )
         self.coordinator.start_services()
         self._init_log()
         
         print("[OK] ALPACA ONLY - WAVE + SSE SCAN (CRYPTO+STOCKS)")
         print()
+
+    def _install_unity_exchange_brains(
+        self,
+        *,
+        unity_composition: Any,
+        unity_plan_supplier: Any,
+        trusted_unity_plan_supplier_ids,
+        hive_state: Any = None,
+    ) -> None:
+        """Bind every GAIA mutation to one Queen/Council authority plane."""
+
+        from aureon.core.economic_sensation import OrganismEconomicSensationRouter
+        from aureon.queen.unity_exchange_brain import build_queen_exchange_brains
+
+        if hive_state is None:
+            try:
+                from aureon.core.aureon_hive_state import get_hive
+
+                hive_state = get_hive()
+            except Exception:
+                hive_state = None
+        self.hive_state = hive_state
+        self._economic_sensation_router = OrganismEconomicSensationRouter(
+            bus_getter=lambda: getattr(self, "thought_bus", None),
+            hive_getter=lambda: getattr(self, "hive_state", None),
+            mycelium_getter=lambda: getattr(self, "mycelium", None),
+        )
+        fallback_read_clients = None
+        if unity_composition is None:
+            fallback_read_clients = {
+                exchange: client
+                for exchange, client in {
+                    "alpaca": getattr(self, "alpaca", None),
+                    "binance": getattr(self, "binance", None),
+                    "kraken": getattr(self, "kraken", None),
+                }.items()
+                if client is not None
+            }
+        brains, governed, status = build_queen_exchange_brains(
+            unity_composition=unity_composition,
+            unity_plan_supplier=unity_plan_supplier,
+            trusted_unity_plan_supplier_ids=trusted_unity_plan_supplier_ids,
+            fallback_read_clients=fallback_read_clients,
+            outcome_observer=self._economic_sensation_router.observe,
+        )
+        self._queen_exchange_brains = brains
+        self._queen_governed_exchange_client = governed
+        self._queen_exchange_governance_status = status
+
+    def _governed_client_for(self, exchange: str):
+        """Return GAIA's canonical mutation brain, never a raw provider client."""
+
+        brain = getattr(self, "_queen_exchange_brains", {}).get(exchange)
+        if brain is None:
+            from aureon.queen.unity_exchange_brain import QueenGovernedExchangeBrain
+
+            brain = QueenGovernedExchangeBrain(
+                exchange=exchange,
+                read_client=getattr(self, exchange, None),
+                governed_client=None,
+                outcome_observer=getattr(
+                    getattr(self, "_economic_sensation_router", None),
+                    "observe",
+                    None,
+                ),
+            )
+        return brain
+
+    def recent_economic_sensations(self):
+        """Return bounded feedback receipts; never mutation authority."""
+
+        router = getattr(self, "_economic_sensation_router", None)
+        return router.recent() if router is not None else []
         
     def log(self, msg):
         ts = datetime.now().strftime("%H:%M:%S")
@@ -4202,7 +4288,9 @@ class AggressiveReclaimer:
                     pnl_pct = new_pnl
                     self.log(f"[SELL] BINANCE SELL {asset}: ${value:.2f} ({pnl_pct:+.2f}%)")
                     
-                    result = self.binance.place_market_order(pair, 'SELL', quantity=bal * 0.999)
+                    result = self._governed_client_for("binance").place_market_order(
+                        pair, 'SELL', quantity=bal * 0.999
+                    )
                     exit_receipt = self._reconcile_final_fill(
                         result, "binance", "USDC"
                     )
@@ -4249,7 +4337,9 @@ class AggressiveReclaimer:
             pair = f"{target_symbol}USDC"
             self.log(f"[BUY] BINANCE BUY {target_symbol}: ${usdc:.2f} ({target_mom:+.1f}%)")
             
-            result = self.binance.place_market_order(pair, 'BUY', quote_qty=usdc * 0.98)
+            result = self._governed_client_for("binance").place_market_order(
+                pair, 'BUY', quote_qty=usdc * 0.98
+            )
             receipt = self._reconcile_final_fill(result, "binance", "USDC")
             self._log_order_result("buy", pair, receipt)
             if self._set_entry(
@@ -4286,7 +4376,9 @@ class AggressiveReclaimer:
             asset = best_pair.replace('USDC', '')
             self.log(f"[BUY] BINANCE BUY {asset}: ${usdc:.2f} ({best_mom:+.1f}%)")
             
-            result = self.binance.place_market_order(best_pair, 'BUY', quote_qty=usdc * 0.98)
+            result = self._governed_client_for("binance").place_market_order(
+                best_pair, 'BUY', quote_qty=usdc * 0.98
+            )
             receipt = self._reconcile_final_fill(result, "binance", "USDC")
             self._log_order_result("buy", best_pair, receipt)
             if self._set_entry(
@@ -4454,7 +4546,9 @@ class AggressiveReclaimer:
                                 continue
                             self.log(f"[SELL] WINDOW EXIT {pos_symbol}: ${value:.2f} ({pnl_pct:+.2f}%)")
                             tif = 'ioc' if self._symbol_kind(sym) == 'crypto' else 'day'
-                            result = self.alpaca.place_order(sym, qty, 'sell', 'market', tif)
+                            result = self._governed_client_for("alpaca").place_market_order(
+                                sym, 'sell', quantity=qty
+                            )
                             accounted, pnl_receipt, exit_receipt = self._account_final_exit(
                                 exchange="alpaca",
                                 symbol=pos_symbol,
@@ -4494,7 +4588,9 @@ class AggressiveReclaimer:
                         continue
                     self.log(f"[FORCE SELL] TARGET HIT {pos_symbol}: ${value:.2f} ({pnl_pct:+.2f}%)")
                     tif = 'ioc' if self._symbol_kind(sym) == 'crypto' else 'day'
-                    result = self.alpaca.place_order(sym, qty, 'sell', 'market', tif)
+                    result = self._governed_client_for("alpaca").place_market_order(
+                        sym, 'sell', quantity=qty
+                    )
                     entry_receipt = (
                         self.last_buy.get(pos_symbol, {}).get("receipt")
                     )
@@ -4571,7 +4667,9 @@ class AggressiveReclaimer:
                     self.log(f"[SELL] ALPACA SELL {pos_symbol}: ${value:.2f} ({pnl_pct:+.2f}%)")
 
                     tif = 'ioc' if self._symbol_kind(sym) == 'crypto' else 'day'
-                    result = self.alpaca.place_order(sym, qty, 'sell', 'market', tif)
+                    result = self._governed_client_for("alpaca").place_market_order(
+                        sym, 'sell', quantity=qty
+                    )
                     entry_receipt = (
                         self.last_buy.get(pos_symbol, {}).get("receipt")
                     )
@@ -4858,12 +4956,12 @@ class AggressiveReclaimer:
                 self.log("[FORCE] Scoreboard winner executing buy without extra gates")
 
             if target_kind == "crypto":
-                result = self.alpaca.place_market_order(
+                result = self._governed_client_for("alpaca").place_market_order(
                     alpaca_sym, "buy", quote_qty=trade_budget
                 )
             else:
-                result = self.alpaca.place_order(
-                    alpaca_sym, qty, 'buy', 'market', tif
+                result = self._governed_client_for("alpaca").place_market_order(
+                    alpaca_sym, 'buy', quantity=qty
                 )
             receipt = self._reconcile_final_fill(result, "alpaca", "USD")
             self._log_order_result("buy", alpaca_sym, receipt)
@@ -4978,7 +5076,9 @@ class AggressiveReclaimer:
                 if should_sell:
                     self.log(f"[SELL] KRAKEN SELL {asset}: ${value:.2f} ({pnl_pct:+.2f}%)")
                     
-                    result = self.kraken.place_market_order(pair, 'sell', quantity=free * 0.999)
+                    result = self._governed_client_for("kraken").place_market_order(
+                        pair, 'sell', quantity=free * 0.999
+                    )
                     exit_receipt = self._reconcile_final_fill(
                         result, "kraken", "USD"
                     )
@@ -5024,7 +5124,9 @@ class AggressiveReclaimer:
                 kraken_pair = f'{target_symbol}USD'
                 self.log(f"[BUY] KRAKEN BUY {target_symbol}: ${usd:.2f} ({target_mom:+.1f}%)")
                 
-                result = self.kraken.place_market_order(kraken_pair, 'buy', quote_qty=usd * 0.95)
+                result = self._governed_client_for("kraken").place_market_order(
+                    kraken_pair, 'buy', quote_qty=usd * 0.95
+                )
                 receipt = self._reconcile_final_fill(result, "kraken", "USD")
                 self._log_order_result("buy", kraken_pair, receipt)
                 if self._set_entry(
@@ -5066,7 +5168,9 @@ class AggressiveReclaimer:
                 kraken_pair = f'{best_asset}USD'
                 self.log(f"[BUY] KRAKEN BUY {best_asset}: ${usd:.2f} ({best_mom:+.1f}%)")
                 
-                result = self.kraken.place_market_order(kraken_pair, 'buy', quote_qty=usd * 0.95)
+                result = self._governed_client_for("kraken").place_market_order(
+                    kraken_pair, 'buy', quote_qty=usd * 0.95
+                )
                 receipt = self._reconcile_final_fill(result, "kraken", "USD")
                 self._log_order_result("buy", kraken_pair, receipt)
                 if self._set_entry(

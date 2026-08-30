@@ -10,8 +10,10 @@ import pytest
 import aureon.governance.cognition_gate as cognition_gate_module
 import aureon.governance.crown_voice as crown_module
 import aureon.governance.dual_key as dual_key_module
+import aureon.governance.tool_route_authority as route_authority_module
 import aureon.operator.cognition as cognition_module
 import aureon.swarm.auris_node_receipts as node_module
+from aureon.core.hnc_field import CanonicalField, build_hnc_live_field_receipt_id
 from aureon.governance.cognition_gate import (
     CognitionGovernanceRequest,
     TrustedCouncilEvidence,
@@ -25,6 +27,7 @@ from aureon.governance.crown_voice import (
     issue_crown_voice_receipt,
 )
 from aureon.governance.dual_key import build_queen_receipt
+from aureon.governance.tool_route_authority import issue_tool_route_authority_lease
 from aureon.inhouse_ai.llm_adapter import LLMResponse, ToolCall
 from aureon.inhouse_ai.tool_registry import ToolEffect
 from aureon.operator.cognition import AureonCognition
@@ -44,7 +47,6 @@ from aureon.swarm.druidic_council import (
 
 NOW = 1_786_473_600.0
 SOURCE_TIME = NOW - 2.0
-HNC = "hnc:live_field:cognition-gate-hnc"
 AURIS = "auris:cosmic_state:cognition-gate-auris"
 PROVIDERS = (
     "provider:noaa:cognition-gate",
@@ -53,6 +55,19 @@ PROVIDERS = (
 PROVIDER_DIGEST = "9" * 64
 COUNCIL_SUPPLIER_ID = "resolver:trusted-council-runtime:v1"
 CROWN_SUPPLIER_ID = "resolver:trusted-crown-runtime:v1"
+HNC_MEMORY_HASH = "4" * 64
+HNC_MEMORY_RECEIPT_ID = f"hnc:lambda_history:{HNC_MEMORY_HASH}"
+HNC_INPUTS = tuple(sorted((*PROVIDERS, HNC_MEMORY_RECEIPT_ID)))
+HNC = build_hnc_live_field_receipt_id(
+    input_receipt_ids=HNC_INPUTS,
+    source_timestamp=SOURCE_TIME,
+    received_at=SOURCE_TIME + 0.1,
+    step=17,
+    lambda_t=0.6,
+    coherence_gamma=0.95,
+    consciousness_psi=0.7,
+    symbolic_life_score=0.9,
+)
 
 
 def _provider_acquisition() -> dict[str, Any]:
@@ -63,6 +78,35 @@ def _provider_acquisition() -> dict[str, Any]:
         "provider_moment_digest": PROVIDER_DIGEST,
         "source_timestamp": SOURCE_TIME,
     }
+
+
+def _coherent_hnc_field() -> CanonicalField:
+    return CanonicalField(
+        available=True,
+        symbolic_life_score=0.9,
+        coherence_gamma=0.95,
+        consciousness_psi=0.7,
+        consciousness_level="aware",
+        lambda_t=0.6,
+        step=17,
+        source="hnc_live_daemon",
+        evidence_transport="thought_bus",
+        source_id="aureon:hnc:live_daemon",
+        source_timestamp=SOURCE_TIME,
+        received_at=SOURCE_TIME + 0.1,
+        receipt_id=HNC,
+        receipt_type="hnc_live_field",
+        provider_receipt_type="hnc_live_field",
+        input_receipt_ids=HNC_INPUTS,
+        memory_receipt_id=HNC_MEMORY_RECEIPT_ID,
+        memory_canonical_hash=HNC_MEMORY_HASH,
+        data_status="live",
+        truth_status="real_derived",
+        source_count=2.0,
+        freshness_status="fresh",
+        equation_inputs_complete=True,
+        action_gate_reason="route_specific_market_link_required",
+    )
 
 
 def _assert_numeric_free(value: Any) -> None:
@@ -263,6 +307,26 @@ class _CrownSupplier:
         return receipt
 
 
+class _RouteSupplier:
+    supplier_id = "resolver:trusted-tool-route-authority:v1"
+
+    def __init__(self) -> None:
+        self.calls = 0
+
+    def supply_tool_route_authority(self, request):
+        self.calls += 1
+        return issue_tool_route_authority_lease(
+            request,
+            supplier_id=self.supplier_id,
+            mandate_receipt_id="mandate:director:bounded-test-fixture",
+            mandate_receipt_digest="6" * 64,
+            nonce=f"route-nonce-{self.calls:016d}",
+            issued_at=NOW,
+            not_before=NOW,
+            expires_at=NOW + 1.0,
+        )
+
+
 class _LegacyCrownSupplier:
     supplier_id = CROWN_SUPPLIER_ID
 
@@ -294,6 +358,7 @@ def _evaluate(
     queen_evaluated: bool = True,
     answer: str = "A complete answer.",
     tool_calls: Sequence[Any] = (),
+    max_age_s: float = 300.0,
 ) -> dict[str, Any]:
     return evaluate_cognition_governance(
         prompt="Explain the bounded system.",
@@ -307,6 +372,7 @@ def _evaluate(
         council_receipt_supplier=council,
         crown_receipt_supplier=crown,
         now=NOW,
+        max_age_s=max_age_s,
     )
 
 
@@ -355,6 +421,18 @@ def test_exact_full_node_council_and_strict_crown_accept_once() -> None:
     assert receipt["provider_source_timestamp"] == str(int(SOURCE_TIME))
     assert receipt["source_timestamp"] == SOURCE_TIME
     assert council.calls == crown.calls == 1
+
+
+def test_dual_key_freshness_window_cannot_be_widened_by_caller() -> None:
+    council = _CouncilSupplier()
+    crown = _CrownSupplier()
+
+    receipt = _evaluate(council, crown, max_age_s=3600.0)
+
+    assert receipt["decision"] == "HOLD"
+    assert receipt["data_status"] == "no_data"
+    assert council.calls == crown.calls == 0
+    _assert_numeric_free(receipt)
 
 
 def test_council_and_crown_agreeing_on_wrong_request_provider_moment_hold(
@@ -538,8 +616,18 @@ def test_explicit_compatibility_mode_never_bypasses_authority_routes() -> None:
     _assert_numeric_free(blocked)
 
 
-def test_cognition_mutation_and_final_answer_each_receive_exact_dual_key(
+@pytest.mark.parametrize(
+    "effect",
+    (
+        ToolEffect.LOCAL_MUTATION,
+        ToolEffect.EXTERNAL_MUTATION,
+        ToolEffect.ECONOMIC_MUTATION,
+        ToolEffect.PRIVILEGED,
+    ),
+)
+def test_dual_key_accept_without_exact_route_authority_never_calls_handler(
     monkeypatch,
+    effect: ToolEffect,
 ) -> None:
     monkeypatch.setattr(cognition_gate_module.time, "time", lambda: NOW)
     monkeypatch.setattr(dual_key_module.time, "time", lambda: NOW)
@@ -551,7 +639,7 @@ def test_cognition_mutation_and_final_answer_each_receive_exact_dual_key(
         "mutate the isolated fixture",
         {"type": "object", "properties": {}},
         lambda arguments: calls.append("handler") or '{"ok":true}',
-        effect=ToolEffect.LOCAL_MUTATION,
+        effect=effect,
         operation_id="aureon.test.mutate-fixture.v1",
     )
 
@@ -604,7 +692,11 @@ def test_cognition_mutation_and_final_answer_each_receive_exact_dual_key(
         result.bake = {"complete": True, "passes": 1, "reasons": []}
 
     monkeypatch.setattr(AureonCognition, "_route", _route)
-    monkeypatch.setattr(AureonCognition, "_gate_aperture", lambda *args: None)
+    def _gate(self, result: CognitionResult) -> None:
+        self.tools.set_hnc_coherence_context(_coherent_hnc_field())
+        result.coherence_gate = {"hnc_decision": {"outcome": "PROCEED"}}
+
+    monkeypatch.setattr(AureonCognition, "_gate_aperture", _gate)
     monkeypatch.setattr(AureonCognition, "_ground", _ground)
     monkeypatch.setattr(AureonCognition, "_acquire", _acquire)
     monkeypatch.setattr(AureonCognition, "_bake", _bake)
@@ -626,14 +718,113 @@ def test_cognition_mutation_and_final_answer_each_receive_exact_dual_key(
         mesh_broadcast=False,
     ).reason("govern the isolated fixture")
 
-    assert calls == ["handler"]
+    assert calls == []
     assert result.blocked is False
     assert result.governance is not None
     assert result.governance["decision"] == "ACCEPT"
-    assert result.tool_calls[0].handler_called is True
-    assert result.tool_calls[0].governance_decision == "ACCEPT"
+    assert result.tool_calls[0].handler_called is False
+    assert result.tool_calls[0].blocked is True
+    assert result.tool_calls[0].governance_decision == "HOLD"
     assert result.tool_calls[0].governance_receipt_id is not None
+    assert result.tool_calls[0].dual_key_receipt_id is not None
+    assert result.tool_calls[0].route_authority_receipt_id is None
+    assert result.tool_calls[0].hnc_outcome == "PROCEED"
+    assert result.tool_calls[0].hnc_decision_receipt_id is not None
     assert council.calls == crown.calls == 2
     assert conscience.calls == 2
     assert result.assimilation is not None
     assert result.assimilation["assimilated"] is False
+
+
+def test_exact_allowlisted_route_lease_admits_one_local_handler(
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(cognition_gate_module.time, "time", lambda: NOW)
+    monkeypatch.setattr(dual_key_module.time, "time", lambda: NOW)
+    monkeypatch.setattr(route_authority_module.time, "time", lambda: NOW)
+    calls: list[str] = []
+    registry = GuardedToolRegistry(include_builtins=False)
+    registry.define_tool(
+        "mutate_fixture",
+        "mutate the isolated fixture",
+        {"type": "object", "properties": {}},
+        lambda arguments: calls.append("handler") or '{"ok":true}',
+        effect=ToolEffect.LOCAL_MUTATION,
+        operation_id="aureon.test.mutate-fixture.v1",
+    )
+
+    class _Conscience:
+        def ask_why(self, action, context):
+            return type(
+                "Whisper",
+                (),
+                {
+                    "verdict": type("Verdict", (), {"name": "APPROVED"})(),
+                    "message": "approved exact proposal",
+                },
+            )()
+
+    route = _RouteSupplier()
+    engine = AureonCognition(
+        adapter=object(),
+        tools=registry,
+        conscience=_Conscience(),
+        council_receipt_supplier=_CouncilSupplier(),
+        crown_receipt_supplier=_CrownSupplier(),
+        governance_acquisition={
+            "provider_receipt_ids": list(PROVIDERS),
+            "provider_moment_digest": PROVIDER_DIGEST,
+            "provider_source_timestamp": str(int(SOURCE_TIME)),
+        },
+        route_authority_supplier=route,
+        trusted_route_authority_supplier_ids=frozenset({route.supplier_id}),
+        join_mesh=False,
+        mesh_broadcast=False,
+    )
+    proposal = registry.build_dispatch_proposal(
+        tool_call_id="route-call-1",
+        runner_turn_index=0,
+        response_call_index=0,
+        name="mutate_fixture",
+        arguments={},
+        context={"trace_id": "route-trace-1", "phase": "draft"},
+    )
+    registry.set_hnc_coherence_context(_coherent_hnc_field())
+    assert registry.preauthorize_tool_dispatch(proposal) is True
+    result_context = CognitionResult(
+        prompt="govern the isolated fixture",
+        capability={"status": "ok", "families": [], "routes": []},
+    )
+
+    authorization, gate = engine._authorize_tool_dispatch(
+        proposal,
+        observer_prompt=result_context.prompt,
+        phase="draft",
+        res=result_context,
+    )
+    result = json.loads(
+        registry.execute(
+            "mutate_fixture",
+            {},
+            proposal=proposal,
+            authorization=authorization,
+        )
+    )
+
+    assert gate["decision"] == "ACCEPT"
+    assert authorization is not None
+    assert authorization.authority_receipt_id.startswith("tool:route-authority:")
+    assert result == {"ok": True}
+    assert calls == ["handler"]
+    assert route.calls == 1
+    assert registry.dispatch_records[-1].hnc_outcome == "PROCEED"
+    replay = json.loads(
+        registry.execute(
+            "mutate_fixture",
+            {},
+            proposal=proposal,
+            authorization=authorization,
+        )
+    )
+    assert replay["blocked"] is True
+    assert calls == ["handler"]

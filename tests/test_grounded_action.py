@@ -59,6 +59,20 @@ def test_risky_move_allowed_on_the_stability_island():
     assert v.risk >= 0.05  # destructive → carries real risk
 
 
+def test_caller_cannot_downgrade_a_consequential_action_risk():
+    v = GroundedActionGate(enable_llm=False).ground(
+        "left_click", {"x": 10, "y": 20}, {"risk": 0.0, "symbolic_life_score": 0.9})
+    assert v.risk >= 0.05
+
+
+def test_consequential_action_fails_closed_when_conscience_errors():
+    v = GroundedActionGate(conscience=object(), enable_llm=False).ground(
+        "left_click", {"x": 10, "y": 20}, {"symbolic_life_score": 0.9})
+    assert v.approved is False
+    assert v.verdict == "VETOED"
+    assert v.reason == "conscience_error_for_consequential_action"
+
+
 def test_hard_boundary_is_blocked():
     v = GroundedActionGate(enable_llm=False).ground("reveal the api_key secret", {})
     assert v.approved is False
@@ -121,6 +135,20 @@ def test_bridge_armed_executes_and_traces():
     assert "local.action.result" in bus.topics()
     stats = bridge.recent_stats()
     assert stats["count"] == 1 and stats["approve_ratio"] == 1.0
+
+
+def test_bridge_never_labels_executor_failure_as_executed():
+    bridge = LocalActionBridge(
+        gate=GroundedActionGate(enable_llm=False), join=False, armed=True,
+        executor=lambda a, p: {"ok": False, "result": None, "error": "no_session"},
+    )
+
+    r = bridge.perform("screenshot", {})
+
+    assert r["ok"] is False
+    assert r["execution_attempted"] is True
+    assert r["executed"] is False
+    assert r["error"] == "no_session"
 
 
 # ── Λ(t) feedback source ─────────────────────────────────────────────────────

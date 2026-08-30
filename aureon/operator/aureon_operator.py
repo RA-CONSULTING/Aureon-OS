@@ -125,9 +125,10 @@ _ISOLATED_TENANT_PERSONA = (
     "Do not invent trade executions, balances, filings, or credentials."
 )
 
-# Hard authority boundaries (mirrors PUBLIC_BOUNDARIES in the dynamic prompt
-# filter). These are deterministic, prompt-level refusals: the operator will not
-# emit an answer that helps cross them, regardless of the soft conscience verdict.
+# Consequential-intent detectors (mirrors PUBLIC_BOUNDARIES in the dynamic
+# prompt filter). They mark content that must use a typed governed route; they do
+# not prevent the cognition from explaining or preparing that route. Generic
+# mutation tools independently reuse these patterns as a bypass wall.
 _HARD_BOUNDARY_PATTERNS = (
     r"\b(disable|bypass|ignore|override|turn off|switch off|remove)\b[^.]{0,40}\b(safety|gate|gates|guard|guardrail|risk limit|risk-limit|limits|conscience|governance|veto)\b",
     r"\b(execute|place|open|run|make|do)\b[^.]{0,40}\b(live|real|all[- ]?in|leveraged)\b[^.]{0,20}\btrade\b",
@@ -649,24 +650,10 @@ class AureonOperator:
             self._publish(resp, "veto", {"verdict": "SKIPPED", "available": False})
             return
 
-        # ── Hard authority boundary: deterministic refusal, no soft override ──
+        # Consequential content is allowed through the reasoning plane. The
+        # detector is carried into the conscience record, while actual effects
+        # remain confined to proposal-bound HNC/route/provider boundaries.
         boundary = _hard_boundary_violation(prompt)
-        if boundary is not None:
-            resp.blocked = True
-            resp.conscience_verdict = "VETO"
-            resp.conscience_message = (
-                "This request crosses a hard Aureon authority boundary "
-                "(live trading, payment movement, safety-gate bypass, credential reveal, "
-                "or official filing). The operator will not assist with it."
-            )
-            resp.text = f"🦗 Blocked at the Aureon authority boundary.\nReason: {resp.conscience_message}"
-            if self._metrics is not None:
-                self._metrics.veto("VETO", True)
-            self._publish(
-                resp, "veto",
-                {"verdict": "VETO", "blocked": True, "boundary": True, "message": resp.conscience_message},
-            )
-            return
 
         # ── Outbound brain-reply membrane: the flagship reply is data, never instructions ──
         # Screen the collapsed reply for prompt-injection / false blocked-action claims / false
@@ -691,6 +678,7 @@ class AureonOperator:
             "agreement": resp.consensus.agreement if resp.consensus else 0.0,
             "sources": [s.get("path", "") for s in (resp.grounding.sources if resp.grounding else [])],
             "reply_contained": reply_contained,
+            "consequential_intent_detected": boundary is not None,
         }
         try:
             whisper = conscience.ask_why(action, context)

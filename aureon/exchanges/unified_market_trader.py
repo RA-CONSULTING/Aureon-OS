@@ -888,7 +888,16 @@ class _UnifiedDashboardHandler(BaseHTTPRequestHandler):
 
 
 class UnifiedMarketTrader:
-    def __init__(self, dry_run: bool = False, setup_kraken_cli: bool = False):
+    def __init__(
+        self,
+        dry_run: bool = False,
+        setup_kraken_cli: bool = False,
+        *,
+        unity_composition: Any = None,
+        unity_plan_supplier: Any = None,
+        trusted_unity_plan_supplier_ids=(),
+        hive_state: Any = None,
+    ):
         os.environ.setdefault("AUREON_DISABLE_LOCAL_DASHBOARD", "1")
         self.dry_run = dry_run
         self.setup_kraken_cli = setup_kraken_cli
@@ -1012,6 +1021,13 @@ class UnifiedMarketTrader:
             self._thought_bus = None
             self._mycelium = None
 
+        self._install_unity_exchange_brains(
+            unity_composition=unity_composition,
+            unity_plan_supplier=unity_plan_supplier,
+            trusted_unity_plan_supplier_ids=trusted_unity_plan_supplier_ids,
+            hive_state=hive_state,
+        )
+
         if self.setup_kraken_cli:
             self._ensure_kraken_cli()
         if EXCHANGE_BOOT_ASYNC_ENABLED:
@@ -1020,6 +1036,80 @@ class UnifiedMarketTrader:
             self._init_exchanges()
         self._latest_dashboard_payload = self._build_bootstrap_dashboard_payload()
         self._write_runtime_status_file()
+
+    def _install_unity_exchange_brains(
+        self,
+        *,
+        unity_composition: Any,
+        unity_plan_supplier: Any,
+        trusted_unity_plan_supplier_ids,
+        hive_state: Any = None,
+    ) -> None:
+        """Bind every market mutation to one Queen/Council authority plane."""
+
+        from aureon.core.economic_sensation import OrganismEconomicSensationRouter
+        from aureon.queen.unity_exchange_brain import build_queen_exchange_brains
+
+        if hive_state is None:
+            try:
+                from aureon.core.aureon_hive_state import get_hive
+
+                hive_state = get_hive()
+            except Exception:
+                hive_state = None
+        self._hive_state = hive_state
+        self._economic_sensation_router = OrganismEconomicSensationRouter(
+            bus_getter=lambda: getattr(self, "_thought_bus", None),
+            hive_getter=lambda: getattr(self, "_hive_state", None),
+            mycelium_getter=lambda: getattr(self, "_mycelium", None),
+        )
+        fallback_read_clients = None
+        if unity_composition is None:
+            fallback_read_clients = {
+                exchange: client
+                for exchange, client in {
+                    "alpaca": getattr(self, "alpaca", None),
+                    "binance": getattr(self, "binance", None),
+                    "capital": getattr(self, "capital", None),
+                    "kraken": getattr(self, "kraken", None),
+                }.items()
+                if client is not None
+            }
+        brains, governed, status = build_queen_exchange_brains(
+            unity_composition=unity_composition,
+            unity_plan_supplier=unity_plan_supplier,
+            trusted_unity_plan_supplier_ids=trusted_unity_plan_supplier_ids,
+            fallback_read_clients=fallback_read_clients,
+            outcome_observer=self._economic_sensation_router.observe,
+        )
+        self._queen_exchange_brains = brains
+        self._queen_governed_exchange_client = governed
+        self._queen_exchange_governance_status = status
+
+    def _governed_client_for(self, exchange: str):
+        """Return the canonical mutation brain, never a raw provider client."""
+
+        brain = getattr(self, "_queen_exchange_brains", {}).get(exchange)
+        if brain is None:
+            from aureon.queen.unity_exchange_brain import QueenGovernedExchangeBrain
+
+            brain = QueenGovernedExchangeBrain(
+                exchange=exchange,
+                read_client=getattr(self, exchange, None),
+                governed_client=None,
+                outcome_observer=getattr(
+                    getattr(self, "_economic_sensation_router", None),
+                    "observe",
+                    None,
+                ),
+            )
+        return brain
+
+    def recent_economic_sensations(self) -> List[Dict[str, Any]]:
+        """Return bounded feedback receipts; never mutation authority."""
+
+        router = getattr(self, "_economic_sensation_router", None)
+        return router.recent() if router is not None else []
 
     def _governor(self) -> ExchangeCallGovernor:
         governor = getattr(self, "_api_governor", None)
@@ -6268,7 +6358,7 @@ class UnifiedMarketTrader:
             return {"ok": False, "reason": "deadman_symbol_or_quantity_unavailable"}
         try:
             if hasattr(client, "place_trailing_stop_order"):
-                result = client.place_trailing_stop_order(
+                result = self._governed_client_for("kraken").place_trailing_stop_order(
                     symbol,
                     "sell",
                     quantity=quantity,
@@ -6280,7 +6370,9 @@ class UnifiedMarketTrader:
                 price = float(decision.get("current_price", 0.0) or 0.0)
                 if price <= 0:
                     return {"ok": False, "reason": "deadman_price_unavailable"}
-                result = client.place_take_profit_order(symbol, "sell", quantity=quantity, take_profit_price=price)
+                result = self._governed_client_for("kraken").place_take_profit_order(
+                    symbol, "sell", quantity=quantity, take_profit_price=price
+                )
                 order_type = "take_profit"
             else:
                 return {"ok": False, "reason": "kraken_deadman_order_api_missing"}
@@ -6357,7 +6449,9 @@ class UnifiedMarketTrader:
                 remaining.append(position)
                 continue
             try:
-                result = client.place_market_order(symbol, "sell", quantity=quantity)
+                result = self._governed_client_for("kraken").place_market_order(
+                    symbol, "sell", quantity=quantity
+                )
             except Exception as e:
                 result = {"error": str(e)}
             receipt_state = self._submission_receipt_state(result)
@@ -6603,7 +6697,9 @@ class UnifiedMarketTrader:
             execution_symbol = self._kraken_spot_symbol_for_quote(symbol, quote_asset)
             quote_qty = spot_quote_usd / usd_per_quote
             try:
-                result = client.place_market_order(execution_symbol, side_norm, quote_qty=quote_qty)
+                result = self._governed_client_for("kraken").place_market_order(
+                    execution_symbol, side_norm, quote_qty=quote_qty
+                )
             except Exception as error:
                 return self._provider_submission_exception(
                     venue="kraken", market_type="spot", symbol=execution_symbol, side=side_norm, error=error
@@ -6625,7 +6721,9 @@ class UnifiedMarketTrader:
             if quantity <= 0:
                 return {"ok": False, "submitted": False, "status": "no_data", "venue": "kraken", "market_type": "spot", "symbol": symbol, "side": side_norm, "reason": "no_verified_spot_balance_to_sell"}
             try:
-                result = client.place_market_order(symbol, side_norm, quantity=quantity)
+                result = self._governed_client_for("kraken").place_market_order(
+                    symbol, side_norm, quantity=quantity
+                )
             except Exception as error:
                 return self._provider_submission_exception(
                     venue="kraken", market_type="spot", symbol=symbol, side=side_norm, error=error
@@ -6670,7 +6768,9 @@ class UnifiedMarketTrader:
             return {"ok": False, "submitted": False, "status": "no_data", "venue": "alpaca", "market_type": "spot", "symbol": symbol, "side": side_norm, "reason": str(price_receipt.get("reason") or "fresh_price_receipt_required"), "price_evidence": price_receipt}
         if side_norm == "buy":
             try:
-                result = self.alpaca.place_market_order(symbol, side_norm, quote_qty=quote_usd)
+                result = self._governed_client_for("alpaca").place_market_order(
+                    symbol, side_norm, quote_qty=quote_usd
+                )
             except Exception as error:
                 return self._provider_submission_exception(
                     venue="alpaca", market_type="spot", symbol=symbol, side=side_norm, error=error
@@ -6680,7 +6780,9 @@ class UnifiedMarketTrader:
             if quantity <= 0:
                 return {"ok": False, "submitted": False, "status": "no_data", "venue": "alpaca", "symbol": symbol, "side": side_norm, "reason": "no_verified_spot_balance_to_sell"}
             try:
-                result = self.alpaca.place_market_order(symbol, side_norm, quantity=quantity)
+                result = self._governed_client_for("alpaca").place_market_order(
+                    symbol, side_norm, quantity=quantity
+                )
             except Exception as error:
                 return self._provider_submission_exception(
                     venue="alpaca", market_type="spot", symbol=symbol, side=side_norm, error=error
@@ -6718,7 +6820,9 @@ class UnifiedMarketTrader:
             return {"ok": False, "submitted": False, "status": "no_data", "venue": "binance", "market_type": "spot", "symbol": symbol, "side": side_norm, "reason": str(price_receipt.get("reason") or "fresh_price_receipt_required"), "price_evidence": price_receipt}
         if side_norm == "BUY":
             try:
-                result = self.binance.place_market_order(symbol, side_norm, quote_qty=quote_usd)
+                result = self._governed_client_for("binance").place_market_order(
+                    symbol, side_norm, quote_qty=quote_usd
+                )
             except Exception as error:
                 return self._provider_submission_exception(
                     venue="binance", market_type="spot", symbol=symbol, side=side_norm, error=error
@@ -6728,7 +6832,9 @@ class UnifiedMarketTrader:
             if quantity <= 0:
                 return {"ok": False, "submitted": False, "status": "no_data", "venue": "binance", "symbol": symbol, "side": side_norm, "reason": "no_verified_spot_balance_to_sell"}
             try:
-                result = self.binance.place_market_order(symbol, side_norm, quantity=quantity)
+                result = self._governed_client_for("binance").place_market_order(
+                    symbol, side_norm, quantity=quantity
+                )
             except Exception as error:
                 return self._provider_submission_exception(
                     venue="binance", market_type="spot", symbol=symbol, side=side_norm, error=error
@@ -6796,7 +6902,7 @@ class UnifiedMarketTrader:
         if quantity <= 0:
             return {"ok": False, "submitted": False, "status": "no_data", "venue": "kraken", "market_type": "margin", "symbol": symbol, "side": side_norm, "reason": "quantity_unavailable"}
         try:
-            result = client.place_margin_order(
+            result = self._governed_client_for("kraken").place_margin_order(
                 symbol=symbol,
                 side=side_norm,
                 quantity=quantity,
@@ -6847,7 +6953,7 @@ class UnifiedMarketTrader:
             return {"ok": False, "submitted": False, "status": "no_data", "venue": "binance", "market_type": "margin", "symbol": symbol, "reason": "quantity_unavailable"}
         side_norm = str(request["side"])
         try:
-            result = self.binance.place_margin_order(
+            result = self._governed_client_for("binance").place_margin_order(
                 symbol=symbol,
                 side=side_norm,
                 quantity=quantity,

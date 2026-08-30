@@ -1420,6 +1420,8 @@ class HNCLiveDaemon:
         )
         fingerprint = {
             "input_receipt_ids": input_receipt_ids,
+            "source_timestamp": source_timestamp,
+            "received_at": received_at,
             "step": state_dict.get("step"),
             "lambda_t": state_dict.get("lambda_t"),
             "coherence_gamma": state_dict.get("coherence_gamma"),
@@ -1484,7 +1486,7 @@ class HNCLiveDaemon:
                 "equation_inputs_complete", "action_gate_passed",
                 "action_gate_reason", "symbolic_life_score",
                 "coherence_gamma", "consciousness_psi",
-                "consciousness_level", "lambda_t", "source_count",
+                "consciousness_level", "lambda_t", "step", "source_count",
             }
             payload = {
                 key: value for key, value in envelope.items() if key in keys

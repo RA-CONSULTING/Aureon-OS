@@ -159,6 +159,44 @@ class SkillExecutor:
             else:
                 self._compiled_cache.pop(skill_name, None)
 
+    def _execution_is_simulated(self, params: Optional[Dict[str, Any]]) -> bool:
+        """Return True only when the selected dispatcher session is in-memory."""
+        if self.dispatcher is None:
+            return False
+        try:
+            session_id = (params or {}).get("session_id")
+            controller = self.dispatcher.get_session(session_id)
+            session = getattr(controller, "session", None)
+            return str(getattr(session, "backend", "")).casefold() == "simulated"
+        except Exception:
+            return False
+
+    def _blocked_execution(
+        self,
+        skill: Skill,
+        *,
+        error: str,
+        depth: int,
+        started_at: float,
+    ) -> SkillExecutionResult:
+        self.invalidate_cache(skill.name)
+        result = SkillExecutionResult(
+            skill_name=skill.name,
+            ok=False,
+            error=error,
+            depth=depth,
+            duration_s=time.time() - started_at,
+        )
+        self._failures += 1
+        if self.library:
+            self.library.record_execution(
+                skill.name,
+                success=False,
+                duration_s=result.duration_s,
+                error=result.error,
+            )
+        return result
+
     # ─────────────────────────────────────────────────────────────────────
     # Execution
     # ─────────────────────────────────────────────────────────────────────
@@ -182,19 +220,41 @@ class SkillExecutor:
         start = time.time()
         result = SkillExecutionResult(skill_name=skill.name, depth=_depth)
 
-        if skill.status == SkillStatus.BLOCKED:
-            # S20: A skill can flip to BLOCKED after being compiled+cached.
-            # Drop the stale cache so a future un-block rebuilds it fresh.
-            self.invalidate_cache(skill.name)
-            result.ok = False
-            result.error = "skill_blocked"
-            result.duration_s = time.time() - start
-            self._failures += 1
-            if self.library:
-                self.library.record_execution(skill.name, success=False,
-                                              duration_s=result.duration_s,
-                                              error=result.error)
-            return result
+        status_value = str(getattr(skill.status, "value", skill.status) or "").casefold()
+        non_executable_statuses = {
+            "proposed",
+            "pending",
+            "pending_review",
+            "rejected",
+            "blocked",
+            "deprecated",
+        }
+        if status_value in non_executable_statuses:
+            return self._blocked_execution(
+                skill,
+                error=f"skill_status_not_executable:{status_value or 'unknown'}",
+                depth=_depth,
+                started_at=start,
+            )
+
+        tags = set(skill.tags or [])
+        if (
+            "requires_explicit_approval" in tags
+            and status_value not in {SkillStatus.APPROVED.value, SkillStatus.ACTIVE.value}
+        ):
+            return self._blocked_execution(
+                skill,
+                error="skill_approval_required",
+                depth=_depth,
+                started_at=start,
+            )
+        if "live_execution_disabled" in tags and not self._execution_is_simulated(params):
+            return self._blocked_execution(
+                skill,
+                error="skill_live_execution_disabled",
+                depth=_depth,
+                started_at=start,
+            )
 
         # Compile (uses cache)
         try:

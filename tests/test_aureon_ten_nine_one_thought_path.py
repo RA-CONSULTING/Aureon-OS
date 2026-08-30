@@ -145,6 +145,8 @@ def test_hnc_auris_lineage_drift_after_inference_holds() -> None:
     other_hnc["step"] += 1
     fingerprint = {
         "input_receipt_ids": other_hnc["input_receipt_ids"],
+        "source_timestamp": other_hnc["source_timestamp"],
+        "received_at": other_hnc["received_at"],
         "step": other_hnc["step"],
         "lambda_t": other_hnc["lambda_t"],
         "coherence_gamma": other_hnc["coherence_gamma"],
@@ -236,6 +238,8 @@ def test_local_resolver_retains_newest_exact_hnc_auris_pair_during_refresh(
     newer_unpaired_hnc["step"] += 1
     newer_fingerprint = {
         "input_receipt_ids": newer_unpaired_hnc["input_receipt_ids"],
+        "source_timestamp": newer_unpaired_hnc["source_timestamp"],
+        "received_at": newer_unpaired_hnc["received_at"],
         "step": newer_unpaired_hnc["step"],
         "lambda_t": newer_unpaired_hnc["lambda_t"],
         "coherence_gamma": newer_unpaired_hnc["coherence_gamma"],
@@ -285,6 +289,8 @@ def test_local_resolver_waits_for_next_newest_active_pair_without_reusing_old_hi
     high_hnc["step"] += 1
     high_fingerprint = {
         "input_receipt_ids": high_hnc["input_receipt_ids"],
+        "source_timestamp": high_hnc["source_timestamp"],
+        "received_at": high_hnc["received_at"],
         "step": high_hnc["step"],
         "lambda_t": high_hnc["lambda_t"],
         "coherence_gamma": high_hnc["coherence_gamma"],

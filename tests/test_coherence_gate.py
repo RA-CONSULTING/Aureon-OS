@@ -148,7 +148,11 @@ def test_internal_evolution_flow_expands_only_on_coherent_hnc_and_auris():
 def test_registry_holds_tools_outside_the_aperture(_bounded_repo_search):
     from aureon.operator.tools import build_operator_tools
 
-    reg = build_operator_tools(allow_writes=False, allow_shell=False)
+    reg = build_operator_tools(
+        allow_writes=False,
+        allow_shell=False,
+        hnc_coherence_required=False,
+    )
     reg.aperture_allowed = {"repo_search"}
     reg.aperture_note = "aperture 'skills_only' (live)"
     out = json.loads(reg.execute("list_repo", {}))
@@ -162,7 +166,11 @@ def test_registry_holds_tools_outside_the_aperture(_bounded_repo_search):
 def test_hard_boundary_fires_before_the_membrane():
     from aureon.operator.tools import build_operator_tools
 
-    reg = build_operator_tools(allow_writes=True, allow_shell=False)
+    reg = build_operator_tools(
+        allow_writes=True,
+        allow_shell=False,
+        hnc_coherence_required=False,
+    )
     reg.aperture_allowed = set()                            # membrane fully closed
     out = json.loads(reg.execute("write_repo_file", {"path": ".env", "content": "x"}))
     # the OUTER WALL names the refusal, not the membrane
@@ -222,14 +230,35 @@ def test_low_coherence_parks_the_web_reach(_bounded_repo_search):
     assert res.envelope()["coherence_gate"]["aperture"] == "reduced"
 
 
-def test_dark_field_leaves_reach_unrestricted(_bounded_repo_search):
+def test_dark_field_keeps_legacy_aperture_but_hnc_holds_non_repair_tools(
+    _bounded_repo_search,
+):
     adapter = _Plan([("tool", "repo_search", {"query": "operator"}),
                      ("text", "Grounded and complete.")])
-    res = _cog(adapter).reason("how does the operator work?")
+    cognition = _cog(adapter)
+    res = cognition.reason("how does the operator work?")
     gate = res.coherence_gate
     assert gate is not None and gate["field_status"] == "canonical_dark"
     assert gate["aperture"] == "full"
-    assert any(t.tool == "repo_search" and not t.blocked for t in res.tool_calls)
+    assert gate["legacy_aperture_authoritative"] is False
+    assert gate["hnc_decision"]["outcome"] == "REPAIR"
+    assert any(t.tool == "repo_search" and t.blocked for t in res.tool_calls)
+    assert cognition.tools.hnc_context_active is False
+
+
+def test_hnc_context_is_revoked_when_cognition_turn_raises(monkeypatch):
+    cognition = _cog(_Plan([("text", "unused")]))
+
+    def _raise_after_capture(prompt, session_id=None):
+        del prompt, session_id
+        cognition.tools.set_hnc_coherence_context(None)
+        raise RuntimeError("turn failed after HNC capture")
+
+    monkeypatch.setattr(cognition, "_reason", _raise_after_capture)
+
+    with pytest.raises(RuntimeError, match="turn failed"):
+        cognition.reason("trigger failure cleanup")
+    assert cognition.tools.hnc_context_active is False
 
 
 def test_clear_field_opens_full_reach(_bounded_repo_search):
@@ -242,19 +271,21 @@ def test_clear_field_opens_full_reach(_bounded_repo_search):
     assert res.coherence_gate["field_status"] == "live"
 
 
-def test_gate_refusal_names_parks_and_never_calls_the_model(_bounded_repo_search):
+def test_legacy_refusal_becomes_hnc_repair_reasoning_not_a_hard_stop(
+    _bounded_repo_search,
+):
     field = {"symbolic_life_score": 0.05, "coherence_gamma": 0.1,
              "gate_open": False, "lighthouse_severity": "critical"}
-    adapter = _Plan([("text", "should never be asked")])
+    adapter = _Plan([("text", "Repair diagnosis only; no effect was executed.")])
     res = _cog(adapter, organism=field).reason("do something")
-    assert adapter.calls == 0                              # no model, no tools
-    assert res.blocked is True
-    assert "coherence gate refusal" in res.conscience_message
-    assert res.acquisition == {"triggered": False, "gaps": [],
-                               "outcome": "gate_refused"}
-    # the Film-Reel parks the refusal and the write-back gate refuses, named
-    assert (res.actualization or {}).get("answer") == "parked"
+    assert adapter.calls >= 1
+    assert res.blocked is False
+    assert "Repair diagnosis" in res.text
+    assert (res.coherence_gate or {})["hnc_decision"]["outcome"] == "REPAIR"
+    # Reasoning remains available, while the evidence-only governance record
+    # still refuses write-back.
+    assert (res.actualization or {}).get("answer") == "realized"
     assert (res.assimilation or {}).get("assimilated") is False
     env = res.envelope()
     assert env["coherence_gate"]["aperture"] == "refuse"
-    assert env["reach_class"] == "none"
+    assert env["coherence_gate"]["legacy_aperture_authoritative"] is False
