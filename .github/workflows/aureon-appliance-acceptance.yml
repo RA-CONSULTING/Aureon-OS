@@ -1,0 +1,75 @@
+name: Aureon Appliance Static Acceptance
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "aureon/appliance/**"
+      - "packaging/appliance/**"
+      - "tests/test_appliance_packaging_contract.py"
+      - "tests/test_appliance_workflow_contract.py"
+      - ".github/workflows/aureon-appliance-acceptance.yml"
+  pull_request:
+    paths:
+      - "aureon/appliance/**"
+      - "packaging/appliance/**"
+      - "tests/test_appliance_packaging_contract.py"
+      - "tests/test_appliance_workflow_contract.py"
+      - ".github/workflows/aureon-appliance-acceptance.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: appliance-static-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# External-bootstrap validation only. This workflow deliberately does not
+# download a base OS, build an image, invoke Hyper-V, or claim boot evidence.
+jobs:
+  static-acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Install contract-test tools
+        run: python -m pip install --disable-pip-version-check "pytest>=8,<9" "ruff>=0.12,<1"
+      - name: Validate Python contracts
+        run: |
+          python -m ruff check \
+            aureon/appliance \
+            tests/test_appliance_packaging_contract.py \
+            tests/test_appliance_workflow_contract.py
+          python -m pytest -p no:cacheprovider -q \
+            tests/test_appliance_packaging_contract.py \
+            tests/test_appliance_workflow_contract.py
+      - name: Validate POSIX shell syntax
+        run: |
+          for script in \
+            packaging/appliance/mkosi.postinst.chroot \
+            packaging/appliance/mkosi.finalize.chroot \
+            packaging/appliance/rootfs/usr/sbin/aureon-firstboot \
+            packaging/appliance/rootfs/usr/lib/aureon/aureon-boot-attest; do
+            bash -n "$script"
+          done
+      - name: Validate PowerShell handoff syntax
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path 'packaging/appliance/hyperv/Register-AureonAppliance.ps1'),
+            [ref] $tokens,
+            [ref] $errors
+          ) | Out-Null
+          if ($errors.Count -ne 0) {
+            $errors | ForEach-Object { Write-Error $_.Message }
+            exit 1
+          }

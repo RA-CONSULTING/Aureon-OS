@@ -1,0 +1,16 @@
+[Unit]
+Description=Report Aureon appliance boot and provisioning boundary
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/lib/aureon/aureon-boot-attest
+StandardOutput=journal+console
+StandardError=journal+console
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+
+[Install]
+WantedBy=multi-user.target

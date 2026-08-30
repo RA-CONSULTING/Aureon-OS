@@ -1,0 +1,86 @@
+#!/bin/sh
+set -eu
+
+if [ "${WITH_NETWORK:-1}" != "0" ]; then
+    echo "Aureon appliance installation requires WITH_NETWORK=0" >&2
+    exit 70
+fi
+
+export PIP_NO_INDEX=1
+export PIP_DISABLE_PIP_VERSION_CHECK=1
+export PIP_NO_INPUT=1
+export PIP_CONFIG_FILE=/dev/null
+export PYTHONDONTWRITEBYTECODE=1
+export SOURCE_DATE_EPOCH="${SOURCE_DATE_EPOCH:?SOURCE_DATE_EPOCH is required}"
+
+set -a
+. /usr/lib/aureon/aureon-safe.env
+set +a
+
+test -x /usr/bin/python3
+test -f /opt/aureon/build-inputs/requirements.lock
+test -d /opt/aureon/build-inputs/wheelhouse
+test -f /opt/aureon/source/pyproject.toml
+
+if find /opt/aureon/source -type f \( -name '.env' -o -name '.env.*' -o -name '*.pem' -o -name '*.key' \) -print -quit | grep -q .; then
+    echo "secret-like source file entered the appliance payload" >&2
+    exit 71
+fi
+
+if ! getent group aureon >/dev/null 2>&1; then
+    groupadd --system aureon
+fi
+if ! getent passwd aureon >/dev/null 2>&1; then
+    useradd --system --gid aureon --home-dir /var/lib/aureon --shell /usr/sbin/nologin aureon
+fi
+
+/usr/bin/python3 -m venv /opt/aureon/.venv
+/opt/aureon/.venv/bin/python -m pip install \
+    --no-index \
+    --find-links /opt/aureon/build-inputs/wheelhouse \
+    --require-hashes \
+    --only-binary=:all: \
+    --requirement /opt/aureon/build-inputs/requirements.lock
+/opt/aureon/.venv/bin/python -m pip install \
+    --no-index \
+    --no-deps \
+    --no-build-isolation \
+    --editable /opt/aureon/source
+
+install -d -m 0750 -o aureon -g aureon /var/lib/aureon /var/log/aureon
+install -d -m 0700 -o root -g root /var/lib/aureon-attestation
+install -d -m 0755 /run/aureon /opt/aureon/source
+test ! -e /opt/aureon/source/state
+test ! -e /opt/aureon/source/logs
+ln -s /var/lib/aureon /opt/aureon/source/state
+ln -s /var/log/aureon /opt/aureon/source/logs
+
+/opt/aureon/.venv/bin/python -c 'import aureon; import aureon.operator.operator_server; import aureon.core.organism_daemon; import aureon.core.hnc_live_daemon'
+
+rm -f /etc/ssh/ssh_host_* /var/lib/systemd/random-seed
+rm -f /etc/machine-id
+install -m 0444 /dev/null /etc/machine-id
+
+chmod 0755 /usr/lib/aureon/aureon-boot-attest /usr/sbin/aureon-firstboot
+chown -R root:root /usr/lib/aureon
+chown root:root /usr/sbin/aureon-firstboot /usr/lib/systemd/system/aureon-*.service /usr/lib/systemd/system/aureon-appliance.target
+
+# The locked base is still an external input. Remove every base-supplied Aureon
+# override, drop-in, enablement symlink, and stale provisioning marker before
+# registering only the units shipped in this payload.
+find /etc/systemd/system -depth -name 'aureon-*' -exec rm -rf -- '{}' +
+rm -f -- /etc/aureon/firstboot.complete
+systemctl disable aureon-appliance.target aureon-operator.service \
+    aureon-organism.service aureon-hnc.service
+systemctl mask getty@tty1.service
+systemctl enable aureon-boot-attestation.service aureon-firstboot-console.service
+test "$(systemctl is-enabled aureon-boot-attestation.service)" = enabled
+test "$(systemctl is-enabled aureon-firstboot-console.service)" = enabled
+test "$(systemctl is-enabled aureon-appliance.target 2>/dev/null || true)" = disabled
+test "$(systemctl is-enabled aureon-operator.service 2>/dev/null || true)" = disabled
+test "$(systemctl is-enabled aureon-organism.service 2>/dev/null || true)" = disabled
+test "$(systemctl is-enabled aureon-hnc.service 2>/dev/null || true)" = disabled
+
+find /opt/aureon/source -type d -exec chmod 0755 '{}' +
+find /opt/aureon/source -type f -exec chmod go-w '{}' +
+chown -R root:root /opt/aureon/source /opt/aureon/build-inputs /opt/aureon/.venv

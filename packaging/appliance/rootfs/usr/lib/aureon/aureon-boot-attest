@@ -1,0 +1,48 @@
+#!/bin/sh
+set -eu
+
+policy_hold() {
+    printf '%s\n' "AUREON_APPLIANCE_POLICY_HOLD $1"
+    exit 78
+}
+
+require_enablement() {
+    unit=$1
+    expected=$2
+    actual=$(systemctl is-enabled "$unit" 2>/dev/null || true)
+    if [ "$actual" != "$expected" ]; then
+        policy_hold "unexpected_enablement unit=$unit expected=$expected actual=${actual:-unknown}"
+    fi
+}
+
+for unit in aureon-appliance.target aureon-operator.service aureon-organism.service \
+    aureon-hnc.service aureon-boot-attestation.service aureon-firstboot-console.service; do
+    fragment=$(systemctl show --property=FragmentPath --value "$unit" 2>/dev/null || true)
+    if [ "$fragment" != "/usr/lib/systemd/system/$unit" ]; then
+        policy_hold "fragment_mismatch unit=$unit"
+    fi
+    drop_ins=$(systemctl show --property=DropInPaths --value "$unit" 2>/dev/null || true)
+    if [ -n "$drop_ins" ]; then
+        policy_hold "drop_in_present unit=$unit"
+    fi
+done
+
+require_enablement aureon-boot-attestation.service enabled
+require_enablement aureon-firstboot-console.service enabled
+require_enablement getty@tty1.service masked
+
+if [ ! -e /etc/aureon/firstboot.complete ]; then
+    for unit in aureon-appliance.target aureon-operator.service aureon-organism.service aureon-hnc.service; do
+        require_enablement "$unit" disabled
+        if systemctl is-active --quiet "$unit"; then
+            policy_hold "unexpected_active_unit=$unit"
+        fi
+    done
+    printf '%s\n' 'AUREON_APPLIANCE_BOOTABLE_FIRSTBOOT_REQUIRED'
+    printf '%s\n' '{"schema":"aureon.appliance.boot.v1","status":"hold","reason":"local_console_firstboot_required","core_started":false}'
+    exit 0
+fi
+
+require_enablement aureon-appliance.target enabled
+printf '%s\n' 'AUREON_APPLIANCE_BOOTABLE_PROVISIONED'
+printf '%s\n' '{"schema":"aureon.appliance.boot.v1","status":"pass","reason":"local_console_firstboot_complete","core_start_requested":true}'
