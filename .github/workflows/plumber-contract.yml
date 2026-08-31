@@ -1,0 +1,166 @@
+name: Plumber Security Contract
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "aureon/plumber/**"
+      - "tests/plumber/**"
+      - "tests/test_plumber_ci_workflow_contract.py"
+      - "aureon/harmonic/hnc_quantum_packet_crypto.py"
+      - "aureon/harmonic/hnc_symbolic_route_seal.py"
+      - "aureon/harmonic/rainbow_reference.py"
+      - "aureon/core/hnc_field.py"
+      - "aureon/observer/harmonic_observer.py"
+      - "aureon/operator/coherence_gate.py"
+      - "aureon/operator/heart.py"
+      - "aureon/operator/assimilation.py"
+      - "aureon/queen/queen_conscience.py"
+      - "aureon/governance/tool_route_authority.py"
+      - "aureon/saas/domains.py"
+      - "tests/test_hnc_quantum_packet_crypto.py"
+      - "tests/test_hnc_symbolic_route_seal.py"
+      - "tests/test_hnc_field_freshness.py"
+      - "tests/test_coherence_gate.py"
+      - "tests/test_heart.py"
+      - "tests/test_unified_contract.py"
+      - "tests/test_saas_catalog.py"
+      - "tests/test_saas_coverage.py"
+      - "docs/security/PLUMBER_*.md"
+      - "docs/security/PLUMBER_BASELINE_MANIFEST_*.json"
+      - "docs/runbooks/PLUMBER_*.md"
+      - "pyproject.toml"
+      - ".github/workflows/plumber-contract.yml"
+  pull_request:
+    paths:
+      - "aureon/plumber/**"
+      - "tests/plumber/**"
+      - "tests/test_plumber_ci_workflow_contract.py"
+      - "aureon/harmonic/hnc_quantum_packet_crypto.py"
+      - "aureon/harmonic/hnc_symbolic_route_seal.py"
+      - "aureon/harmonic/rainbow_reference.py"
+      - "aureon/core/hnc_field.py"
+      - "aureon/observer/harmonic_observer.py"
+      - "aureon/operator/coherence_gate.py"
+      - "aureon/operator/heart.py"
+      - "aureon/operator/assimilation.py"
+      - "aureon/queen/queen_conscience.py"
+      - "aureon/governance/tool_route_authority.py"
+      - "aureon/saas/domains.py"
+      - "tests/test_hnc_quantum_packet_crypto.py"
+      - "tests/test_hnc_symbolic_route_seal.py"
+      - "tests/test_hnc_field_freshness.py"
+      - "tests/test_coherence_gate.py"
+      - "tests/test_heart.py"
+      - "tests/test_unified_contract.py"
+      - "tests/test_saas_catalog.py"
+      - "tests/test_saas_coverage.py"
+      - "docs/security/PLUMBER_*.md"
+      - "docs/security/PLUMBER_BASELINE_MANIFEST_*.json"
+      - "docs/runbooks/PLUMBER_*.md"
+      - "pyproject.toml"
+      - ".github/workflows/plumber-contract.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: plumber-contract-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CI: "true"
+  AUREON_AUDIT_MODE: "1"
+  AUREON_LIVE: "0"
+  LIVE: "0"
+  AUREON_DRY_RUN: "1"
+  DRY_RUN: "1"
+  AUREON_OFFLINE: "1"
+  AUREON_LIVE_TRADING: "0"
+  AUREON_DISABLE_REAL_ORDERS: "1"
+  AUREON_DISABLE_EXCHANGE_MUTATIONS: "1"
+  AUREON_LLM_OFFLINE: "1"
+  AUREON_DISABLE_LLM_HTTP: "1"
+  AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS: "1"
+  AUREON_LOCAL_ACTIONS_ARMED: "0"
+  AUREON_SOUL_ACT: "0"
+  AUREON_AUTONOMY: "0"
+  AUREON_CODE_AUTO_APPROVE: "0"
+  AUREON_ALLOW_PAID_PROVIDERS: "false"
+  AUREON_PROVIDER_MODE: "offline"
+  BINANCE_DRY_RUN: "true"
+  KRAKEN_DRY_RUN: "true"
+  ALPACA_DRY_RUN: "true"
+  CAPITAL_DEMO: "true"
+  PYTHONDONTWRITEBYTECODE: "1"
+  PYTHONHASHSEED: "0"
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+  PIP_NO_INPUT: "1"
+
+jobs:
+  plumber-contract:
+    name: offline Plumber security contract
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+      - name: Install reviewed laboratory dependencies
+        run: >-
+          python -m pip install --only-binary=:all:
+          cryptography==46.0.3
+          pytest==9.0.2
+          pytest-socket==0.8.0
+          ruff==0.15.21
+          mypy==2.3.0
+          PyYAML==6.0.3
+      - name: Compile Plumber surface
+        run: python -m compileall -q aureon/plumber aureon/saas/domains.py tests/plumber
+      - name: Ruff Plumber surface
+        run: ruff check aureon/plumber aureon/saas/domains.py tests/plumber tests/test_plumber_ci_workflow_contract.py
+      - name: Mypy strict Plumber surface
+        run: mypy --strict aureon/plumber
+      - name: Validate workflow and focused Plumber contracts offline
+        run: >-
+          python -m pytest
+          -o addopts=''
+          -o filterwarnings=error
+          --disable-socket
+          -p no:cacheprovider
+          -q
+          tests/test_plumber_ci_workflow_contract.py
+          tests/plumber
+      - name: Preserve retained 113-test HNC baseline
+        run: >-
+          python -m pytest
+          -o addopts=''
+          -o filterwarnings=error
+          --disable-socket
+          -p no:cacheprovider
+          -q
+          tests/test_hnc_quantum_packet_crypto.py
+          tests/test_hnc_symbolic_route_seal.py
+          tests/test_hnc_field_freshness.py
+          tests/test_coherence_gate.py
+          tests/test_heart.py
+          tests/test_unified_contract.py
+      - name: Preserve SaaS package taxonomy integration
+        run: >-
+          python -m pytest
+          -o addopts=''
+          -o filterwarnings=error
+          --disable-socket
+          -p no:cacheprovider
+          -q
+          tests/test_saas_catalog.py
+          tests/test_saas_coverage.py

@@ -261,6 +261,9 @@ learning_archive_*.json
 aureon/bots_intelligence/orca_state.json
 sniper_million_model.json
 
+# Local rendered source-document review artifacts
+/tmp/pdfs/
+
 # Stray env dump — removed from tracking (contained live keys; rotate them)
 .env1.txt
 .env*.txt

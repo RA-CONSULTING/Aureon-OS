@@ -1,0 +1,120 @@
+{
+  "schema": "aureon.plumber-baseline-manifest.v1",
+  "generated_at": "2026-08-30T23:48:29.267Z",
+  "repository": {
+    "url": "https://github.com/RA-CONSULTING/Aureon-OS.git",
+    "branch_parent": "2359e25460d5eaf0864d39fea7912c7b96e7b921",
+    "github_main_readback": "2359e25460d5eaf0864d39fea7912c7b96e7b921",
+    "implementation_branch": "feature/plumber-magic-star-v02-20260831"
+  },
+  "source_records": [
+    {
+      "resource_id_sha256": "6d84a1e200a05f777d7a482f8ffafe0f52e7f576c9425cc9d2106e1971b4aa99",
+      "name": "Aureon_Plumber_Full_Working_Order.pdf",
+      "size_bytes": 902056,
+      "sha256": "3d69c14c171dc32e4fdd7019d5bf2d00c1a8d1d6a2b6abea3c594908240bdb45"
+    },
+    {
+      "resource_id_sha256": "17bd795bf33fbf8d685a016cfd5dd876e2d25f86e66ee2efabfedc68fb7dae4e",
+      "name": "AUREON_PLUMBER_MAGIC_STAR_V0_2_ATTACK_REPORT.md",
+      "size_bytes": 6881,
+      "sha256": "1eebd86c767adaa7f3be96677219179e5704b1473cec176249e3425ce62960ca"
+    },
+    {
+      "resource_id_sha256": "86ebad644a95fcf2fa1c9fedc698acffe0536f8284a4db2d6592a55d6b780ceb",
+      "name": "AUREON_PLUMBER_MAGIC_STAR_V0_2_ATTACK_REPORT-1.md",
+      "size_bytes": 6881,
+      "sha256": "1eebd86c767adaa7f3be96677219179e5704b1473cec176249e3425ce62960ca",
+      "duplicate_of_resource_id_sha256": "17bd795bf33fbf8d685a016cfd5dd876e2d25f86e66ee2efabfedc68fb7dae4e"
+    },
+    {
+      "resource_id_sha256": "76310aebf1b3c35b7e4074d7ed569d51c8a6f3d6eb40737306d917835129abce",
+      "name": "AUREON_PLUMBER_MAGIC_STAR_V0_2_PROFILE.md",
+      "size_bytes": 11124,
+      "sha256": "bc1c7f96a2c68f92985b1b4daa2025f9581095403d104f9d6e9151236461b204"
+    },
+    {
+      "resource_id_sha256": "504c945a90555fecac252b16ac13c5ed233d58b020a6d5edd7bf36e69cd97b6a",
+      "name": "AUREON_PLUMBER_MAGIC_STAR_V0_2_PROFILE-1.md",
+      "size_bytes": 11124,
+      "sha256": "bc1c7f96a2c68f92985b1b4daa2025f9581095403d104f9d6e9151236461b204",
+      "duplicate_of_resource_id_sha256": "76310aebf1b3c35b7e4074d7ed569d51c8a6f3d6eb40737306d917835129abce"
+    }
+  ],
+  "baseline_modules": [
+    {
+      "path": "aureon/harmonic/hnc_quantum_packet_crypto.py",
+      "size_bytes": 39179,
+      "sha256": "3c86e84a70789e84431e3ee003e6a35a376d13c9f4a13f71181e492fdfadab3b"
+    },
+    {
+      "path": "aureon/harmonic/hnc_symbolic_route_seal.py",
+      "size_bytes": 13060,
+      "sha256": "3939758235b945bb157f24b85f0640e7a481128727c716d22f41a77e575845a8"
+    },
+    {
+      "path": "aureon/core/hnc_field.py",
+      "size_bytes": 32128,
+      "sha256": "d05d7b81b8b4e8cc088cd5e792d2846434338dd35a7fa1d2c4f1e47b09b94108"
+    },
+    {
+      "path": "aureon/observer/harmonic_observer.py",
+      "size_bytes": 27611,
+      "sha256": "de8f015097a2d682a835be2f2eba400eeae1f3977457fe5f77053a68dedfe838"
+    },
+    {
+      "path": "aureon/operator/coherence_gate.py",
+      "size_bytes": 11192,
+      "sha256": "9bda7369911a0f7d6661fbb51feeefa5ca8b451dfb19a4f446522a620677cb98"
+    },
+    {
+      "path": "aureon/queen/queen_conscience.py",
+      "size_bytes": 46012,
+      "sha256": "31a7d91e62999370ebeb683801d0e97efd499cda471b76ce14fe02634c39ece2"
+    },
+    {
+      "path": "aureon/operator/heart.py",
+      "size_bytes": 7278,
+      "sha256": "b3c85266d439f1c4379c41431cfa59a866d2d9ed96599ae7bfe15b2df75f246a"
+    },
+    {
+      "path": "aureon/operator/assimilation.py",
+      "size_bytes": 3938,
+      "sha256": "b3fb5d19834b9245cbb99fe9bc91ae372bfc9f4c5c700c6b220003486b618af9"
+    }
+  ],
+  "runtime": {
+    "python": "3.12.0",
+    "cryptography": "46.0.3",
+    "pytest": "9.0.2"
+  },
+  "baseline_verification": {
+    "environment": {
+      "AUREON_AUDIT_MODE": "1",
+      "AUREON_LIVE": "0",
+      "AUREON_LIVE_TRADING": "0",
+      "AUREON_DRY_RUN": "1",
+      "AUREON_LLM_OFFLINE": "1",
+      "AUREON_DISABLE_LLM_HTTP": "1",
+      "AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS": "1",
+      "AUREON_LOCAL_ACTIONS_ARMED": "0",
+      "AUREON_ALLOW_PAID_PROVIDERS": "false",
+      "AUREON_PROVIDER_MODE": "offline",
+      "PYTHONDONTWRITEBYTECODE": "1"
+    },
+    "commands": [
+      {
+        "command": "python -m pytest -o addopts='' --disable-socket -p no:cacheprovider -q tests/test_hnc_quantum_packet_crypto.py tests/test_hnc_symbolic_route_seal.py tests/test_hnc_field_freshness.py tests/test_coherence_gate.py tests/test_heart.py",
+        "result": "108 passed",
+        "duration_seconds": 15.14
+      },
+      {
+        "command": "python -m pytest -o addopts='' --disable-socket -p no:cacheprovider -q tests/test_unified_contract.py",
+        "result": "5 passed",
+        "duration_seconds": 3.94
+      }
+    ],
+    "total": "113 passed"
+  },
+  "claim_boundary": "This manifest freezes the pre-Plumber laboratory baseline. It is not a production security certification."
+}

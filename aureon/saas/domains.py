@@ -27,7 +27,7 @@ PRODUCT_DOMAINS: List[str] = [
     "trading", "accounting", "research", "cognition", "security", "self-improvement",
 ]
 
-# 24 filesystem domains → product domain. Unmapped → "self-improvement".
+# Filesystem domains → product domain. Unmapped → "self-improvement".
 _FS_TO_PRODUCT: Dict[str, str] = {
     "trading": "trading", "exchanges": "trading", "strategies": "trading",
     "scanners": "trading", "s51": "trading", "bots": "trading",
@@ -60,6 +60,7 @@ _FS_TO_PRODUCT: Dict[str, str] = {
     "gates": "security",
     "grants": "research",
     "identity": "security",
+    "plumber": "security",
     "portals": "security",
 }
 

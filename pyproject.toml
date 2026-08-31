@@ -33,6 +33,12 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# Plumber protocol primitives.  The >=46 floor is the reviewed API baseline
+# for the Ed25519 and AEAD/HKDF surfaces used by the Plumber and retained HNC
+# packet implementation; key custody and hardware attestation remain external.
+plumber = [
+  "cryptography>=46",
+]
 # The operator / cognition front-door service.
 operator = [
   "flask>=3.0",
