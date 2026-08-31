@@ -92,6 +92,20 @@ strict-offline/live-state expectation mismatches. This snapshot is preserved
 as compatibility evidence; it is not represented as a green repository-wide
 test result.
 
+## GitHub synchronization read-back
+
+The reviewed implementation commit
+`5b207dde3d2461b9c82212c25b33ef0842921c0c` was fast-forwarded to GitHub
+`main` from parent `2359e25460d5eaf0864d39fea7912c7b96e7b921` without force.
+The remote annotated tag `plumber-baseline-hncqp-v1` has tag-object commitment
+`5e0c8fce778ce76a73598813444a6b7d28f44c6d` and peels to that exact parent.
+
+GitHub created [Plumber Security Contract run 33350608176](https://github.com/RA-CONSULTING/Aureon-OS/actions/runs/33350608176)
+for the implementation commit, but both matrix jobs failed before a runner or
+any workflow step started. GitHub's check annotation attributes this to an
+account billing lock. This is a provider-level execution blocker, not a hosted
+test result; the record therefore does not claim that GitHub CI passed.
+
 The final focused gate covers the following v0 foundation attacks and joins:
 
 - only an engine-issued gate bound to one exact inspection and its exact
