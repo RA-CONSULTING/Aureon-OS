@@ -11,21 +11,20 @@ from __future__ import annotations
 import argparse
 import json
 import os
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 from aureon.harmonic.hnc_quantum_packet_crypto import (
     MASTER_KEY_ENV,
-    build_hnc_swarm_packet,
     build_hnc_quantum_packet,
+    build_hnc_swarm_packet,
     packet_public_summary,
     run_hnc_packet_breaker_checks,
     run_hnc_swarm_breaker_checks,
     stream_hnc_probability_fragments,
 )
 from aureon.harmonic.hnc_symbolic_route_seal import load_symbolic_catalog_manifest
-
 
 SCHEMA_VERSION = "aureon-hnc-packet-security-comparison-v1"
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -182,7 +181,7 @@ def _read_json(path: Path) -> Any:
 
 def build_hnc_packet_security_comparison(repo_root: Path | None = None) -> dict[str, Any]:
     root = repo_root or REPO_ROOT
-    sample_key = "aureon-security-comparison-sample-key-32-bytes"
+    sample_key = b"H" * 32
     sample_packet = build_hnc_quantum_packet(
         "comparison-sample-secret",
         sample_key,
@@ -194,9 +193,9 @@ def build_hnc_packet_security_comparison(repo_root: Path | None = None) -> dict[
     sample_summary = packet_public_summary(sample_packet)
     breaker = run_hnc_packet_breaker_checks(sample_packet, sample_key)
     swarm_agents = {
-        "seer": "seer-security-comparison-agent-key-32-bytes",
-        "lyra": "lyra-security-comparison-agent-key-32-bytes",
-        "king": "king-security-comparison-agent-key-32-bytes",
+        "seer": b"S" * 32,
+        "lyra": b"L" * 32,
+        "king": b"K" * 32,
     }
     swarm_packet = build_hnc_swarm_packet(
         "comparison-swarm-secret",
@@ -257,7 +256,7 @@ def build_hnc_packet_security_comparison(repo_root: Path | None = None) -> dict[
     }
     return {
         "schema_version": SCHEMA_VERSION,
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
         "status": "comparison_ready",
         "summary": summary,
         "rows": sorted(rows, key=lambda row: row["score"]),

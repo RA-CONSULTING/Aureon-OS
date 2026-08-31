@@ -9,16 +9,20 @@ so the packet can be break-tested without putting credentials at risk.
 from __future__ import annotations
 
 import base64
+import binascii
 import copy
 import hashlib
 import json
+import math
 import os
+import re
 import time
-from dataclasses import asdict, dataclass
-from datetime import datetime, timezone
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
+from datetime import UTC, datetime
 from itertools import combinations
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 from cryptography.exceptions import InvalidTag
 from cryptography.hazmat.primitives import hashes
@@ -32,13 +36,146 @@ from aureon.harmonic.hnc_symbolic_route_seal import (
     validate_symbolic_route_seal,
 )
 
-
 PACKET_MAGIC = "AUREON-HNC-QP"
 PACKET_SCHEMA_VERSION = 1
 ENV_PACKET_PREFIX = "hncqp1:"
 MASTER_KEY_ENV = "AUREON_HNC_PACKET_MASTER_KEY"
 LEGACY_MASTER_KEY_ENV = "HNC_PACKET_MASTER_KEY"
-MIN_MASTER_KEY_BYTES = 16
+MIN_MASTER_KEY_BYTES = 32
+LEGACY_MIN_MASTER_KEY_BYTES = 16
+AES_GCM_NONCE_BYTES = 12
+AES_GCM_TAG_BYTES = 16
+PACKET_KDF_SALT_BYTES = 32
+SWARM_DATA_KEY_BYTES = 32
+SWARM_SHARE_BYTES = 32
+
+# These are protocol safety limits, not allocation targets.  The repository
+# singularity-vault profile can legitimately carry archives near 100 MiB, so
+# the general packet ceiling remains above that profile while still rejecting
+# attacker-controlled unbounded inputs before hashing or decoding them.
+MAX_PLAINTEXT_BYTES = 128 * 1024 * 1024
+MAX_CIPHERTEXT_BYTES = MAX_PLAINTEXT_BYTES + AES_GCM_TAG_BYTES
+MAX_PACKET_JSON_BYTES = 192 * 1024 * 1024
+MAX_ENV_PACKET_JSON_BYTES = 2 * 1024 * 1024
+MAX_JSON_DEPTH = 32
+MAX_JSON_NODES = 300_000
+MAX_JSON_STRING_BYTES = MAX_PACKET_JSON_BYTES
+MAX_FRAGMENT_COUNT = 262_144
+MAX_FRAGMENT_BYTES = 4 * 1024 * 1024
+MAX_SLIT_NAMES = 64
+MAX_SLIT_NAME_BYTES = 128
+MAX_SWARM_AGENTS = 32
+MAX_SWARM_LOCKNOTES = MAX_SWARM_AGENTS * (MAX_SWARM_AGENTS - 1)
+MAX_KEY_BYTES = 4096
+MAX_PURPOSE_BYTES = 1024
+MAX_AGENT_ID_BYTES = 128
+
+_B64URL_RE = re.compile(r"^[A-Za-z0-9_-]+$")
+_SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+
+_PACKET_FIELDS = frozenset(
+    {
+        "magic",
+        "schema_version",
+        "metadata",
+        "operator_aad",
+        "nonce_b64",
+        "ciphertext_b64",
+        "packet_sha256",
+    }
+)
+_SWARM_PACKET_FIELDS = _PACKET_FIELDS | {"swarm_locknotes"}
+_COMMON_METADATA_FIELDS = frozenset(
+    {
+        "schema_version",
+        "algorithm",
+        "kdf",
+        "digest",
+        "operator_packet_name",
+        "purpose",
+        "created_at",
+        "plaintext_size_bytes",
+        "hnc_alignment",
+        "hnc_alignment_sha256",
+    }
+)
+_SINGLE_METADATA_FIELDS = _COMMON_METADATA_FIELDS | {"key_derivation_salt_b64"}
+_LEGACY_SINGLE_METADATA_FIELDS = _COMMON_METADATA_FIELDS
+_SWARM_METADATA_FIELDS = _COMMON_METADATA_FIELDS | {"swarm_security"}
+_ALIGNMENT_FIELDS = frozenset(
+    {
+        "purpose",
+        "geometry",
+        "symbolic_route_seal",
+        "hnc_params",
+        "packet_contract",
+        "hnc_alignment_sha256",
+    }
+)
+_ALIGNMENT_FIELDS_WITH_EXTRA = _ALIGNMENT_FIELDS | {"extra"}
+_HNC_PARAM_FIELDS = frozenset(
+    {"alpha", "g", "beta", "tau", "delta_t", "fitted_at", "fitted_from", "r_squared"}
+)
+_PACKET_CONTRACT_FIELDS = frozenset(
+    {
+        "decode_requires_hnc_alignment",
+        "decode_requires_authentic_geometry",
+        "decode_requires_packet_integrity",
+        "plaintext_never_returned_in_status",
+    }
+)
+_SWARM_SECURITY_FIELDS = frozenset(
+    {
+        "mode",
+        "threshold_agents",
+        "agent_count",
+        "pair_count",
+        "single_agent_can_decode",
+        "locknote_policy",
+    }
+)
+_SWARM_LOCKNOTE_FIELDS = frozenset(
+    {
+        "pair_id",
+        "agent_id",
+        "agent_slot_sha256",
+        "nonce_b64",
+        "encrypted_share_b64",
+        "share_size_bytes",
+        "threshold_role",
+        "locknote_sha256",
+    }
+)
+_STREAM_MANIFEST_FIELDS = frozenset(
+    {
+        "schema_version",
+        "stream_type",
+        "stream_id",
+        "packet_sha256",
+        "fragment_count",
+        "packet_bytes_sha256",
+        "slit_names",
+        "reassembly_rule",
+        "plaintext_visible_before_reassembly",
+    }
+)
+_STREAM_FRAGMENT_FIELDS = frozenset(
+    {
+        "schema_version",
+        "stream_type",
+        "stream_id",
+        "manifest_sha256",
+        "manifest",
+        "fragment_index",
+        "fragment_count",
+        "slit_name",
+        "probability_weight",
+        "phase_hint",
+        "chunk_b64",
+        "chunk_sha256",
+        "secret_policy",
+    }
+)
 
 DEFAULT_AURIS_NODES = (
     {"name": "tiger", "frequency_hz": 186.0, "texture": "volatility"},
@@ -89,29 +226,174 @@ class HNCDecodedPacket:
 
 
 def _b64url_encode(data: bytes) -> str:
+    if not isinstance(data, bytes) or not data:
+        raise HNCPacketError("base64url_input_must_be_nonempty_bytes")
     return base64.urlsafe_b64encode(data).decode("ascii").rstrip("=")
 
 
-def _b64url_decode(data: str) -> bytes:
-    padding = "=" * (-len(data) % 4)
-    return base64.urlsafe_b64decode((data + padding).encode("ascii"))
+def _b64url_decode(
+    data: str,
+    *,
+    expected_bytes: int | None = None,
+    max_bytes: int | None = None,
+) -> bytes:
+    """Decode one canonical, unpadded base64url value with explicit bounds."""
+
+    if not isinstance(data, str) or not data or "=" in data or _B64URL_RE.fullmatch(data) is None:
+        raise HNCPacketError("base64url_encoding_invalid")
+    if expected_bytes is not None and (type(expected_bytes) is not int or expected_bytes < 1):
+        raise HNCPacketError("base64url_expected_length_invalid")
+    if max_bytes is not None:
+        if type(max_bytes) is not int or max_bytes < 1:
+            raise HNCPacketError("base64url_maximum_length_invalid")
+        max_encoded_chars = ((max_bytes + 2) // 3) * 4
+        if len(data) > max_encoded_chars:
+            raise HNCPacketError("base64url_decoded_value_too_large")
+    try:
+        decoded = base64.b64decode(
+            data + "=" * (-len(data) % 4),
+            altchars=b"-_",
+            validate=True,
+        )
+    except (binascii.Error, ValueError) as exc:
+        raise HNCPacketError("base64url_encoding_invalid") from exc
+    if not decoded or _b64url_encode(decoded) != data:
+        raise HNCPacketError("base64url_encoding_not_canonical")
+    if expected_bytes is not None and len(decoded) != expected_bytes:
+        raise HNCPacketError("base64url_decoded_length_invalid")
+    if max_bytes is not None and len(decoded) > max_bytes:
+        raise HNCPacketError("base64url_decoded_value_too_large")
+    return decoded
 
 
-def canonical_json_bytes(value: Any) -> bytes:
-    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
+def _normalise_json_value(
+    value: Any,
+    *,
+    depth: int = 0,
+    budget: list[int] | None = None,
+) -> Any:
+    """Return a JSON-safe value while rejecting ambiguous or unbounded input."""
+
+    if depth > MAX_JSON_DEPTH:
+        raise HNCPacketError("json_maximum_depth_exceeded")
+    counter = [0] if budget is None else budget
+    counter[0] += 1
+    if counter[0] > MAX_JSON_NODES:
+        raise HNCPacketError("json_node_limit_exceeded")
+    if value is None or isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        try:
+            encoded_size = len(value.encode("utf-8", errors="strict"))
+        except UnicodeEncodeError as exc:
+            raise HNCPacketError("json_string_not_valid_utf8") from exc
+        if encoded_size > MAX_JSON_STRING_BYTES:
+            raise HNCPacketError("json_string_too_large")
+        return value
+    if type(value) is int:
+        if abs(value) > (1 << 63) - 1:
+            raise HNCPacketError("json_integer_out_of_range")
+        return value
+    if isinstance(value, float):
+        if not math.isfinite(value):
+            raise HNCPacketError("json_non_finite_number")
+        # Collapse negative zero so there is one protocol representation.
+        return 0.0 if value == 0.0 else value
+    if isinstance(value, Mapping):
+        normalized: dict[str, Any] = {}
+        for key, item in value.items():
+            if not isinstance(key, str):
+                raise HNCPacketError("json_object_key_must_be_string")
+            if key in normalized:
+                raise HNCPacketError("json_duplicate_object_key")
+            normalized[key] = _normalise_json_value(item, depth=depth + 1, budget=counter)
+        return normalized
+    if isinstance(value, Sequence) and not isinstance(value, (bytes, bytearray, memoryview, str)):
+        return [
+            _normalise_json_value(item, depth=depth + 1, budget=counter)
+            for item in value
+        ]
+    raise HNCPacketError("json_unsupported_type")
+
+
+def canonical_json_bytes(value: Any, *, max_bytes: int | None = None) -> bytes:
+    if max_bytes is None:
+        max_bytes = MAX_PACKET_JSON_BYTES
+    if type(max_bytes) is not int or max_bytes < 1 or max_bytes > MAX_PACKET_JSON_BYTES:
+        raise HNCPacketError("json_maximum_size_invalid")
+    normalized = _normalise_json_value(value)
+    try:
+        encoded = json.dumps(
+            normalized,
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=True,
+            allow_nan=False,
+        ).encode("utf-8")
+    except (TypeError, ValueError, OverflowError, RecursionError) as exc:
+        raise HNCPacketError("json_encoding_failed") from exc
+    if not encoded or len(encoded) > max_bytes:
+        raise HNCPacketError("json_encoded_value_too_large")
+    return encoded
+
+
+def _decode_canonical_json(
+    data: bytes,
+    *,
+    max_bytes: int,
+    require_mapping: bool = False,
+) -> Any:
+    """Decode exact canonical JSON, rejecting duplicate keys and extensions."""
+
+    if not isinstance(data, bytes) or not data or len(data) > max_bytes:
+        raise HNCPacketError("json_input_size_invalid")
+
+    def reject_duplicate_keys(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+        result: dict[str, Any] = {}
+        for key, item in pairs:
+            if key in result:
+                raise HNCPacketError("json_duplicate_object_key")
+            result[key] = item
+        return result
+
+    def reject_constant(_value: str) -> Any:
+        raise HNCPacketError("json_non_finite_number")
+
+    try:
+        text = data.decode("utf-8", errors="strict")
+        value = json.loads(
+            text,
+            object_pairs_hook=reject_duplicate_keys,
+            parse_constant=reject_constant,
+        )
+    except HNCPacketError:
+        raise
+    except (UnicodeDecodeError, json.JSONDecodeError, ValueError, RecursionError) as exc:
+        raise HNCPacketError("json_decoding_failed") from exc
+    canonical = canonical_json_bytes(value, max_bytes=max_bytes)
+    if canonical != data:
+        raise HNCPacketError("json_encoding_not_canonical")
+    if require_mapping and not isinstance(value, dict):
+        raise HNCPacketError("json_root_must_be_object")
+    return value
 
 
 def sha256_hex(value: bytes | str | Mapping[str, Any]) -> str:
     if isinstance(value, bytes):
         data = value
     elif isinstance(value, str):
-        data = value.encode("utf-8")
+        try:
+            data = value.encode("utf-8", errors="strict")
+        except UnicodeEncodeError as exc:
+            raise HNCPacketError("sha256_string_not_valid_utf8") from exc
     else:
         data = canonical_json_bytes(value)
     return hashlib.sha256(data).hexdigest()
 
 
-def _normalise_master_key(master_key: bytes | str) -> bytes:
+def _normalise_legacy_master_key(master_key: bytes | str) -> bytes:
+    """Reproduce the pre-hardening v1 effective-key interpretation exactly."""
+
     if isinstance(master_key, bytes):
         key_bytes = master_key
     else:
@@ -119,19 +401,197 @@ def _normalise_master_key(master_key: bytes | str) -> bytes:
         if raw.startswith(ENV_PACKET_PREFIX):
             raise HNCPacketError("master_key_must_not_be_an_hnc_packet")
         try:
-            key_bytes = _b64url_decode(raw)
-            if len(key_bytes) < MIN_MASTER_KEY_BYTES:
-                key_bytes = raw.encode("utf-8")
-        except Exception:
-            key_bytes = raw.encode("utf-8")
-    if len(key_bytes) < MIN_MASTER_KEY_BYTES:
+            raw_bytes = raw.encode("utf-8", errors="strict")
+        except UnicodeEncodeError as exc:
+            raise HNCPacketError("master_key_string_not_valid_utf8") from exc
+        try:
+            padding = "=" * (-len(raw) % 4)
+            key_bytes = base64.urlsafe_b64decode((raw + padding).encode("ascii"))
+            if len(key_bytes) < LEGACY_MIN_MASTER_KEY_BYTES:
+                key_bytes = raw_bytes
+        except (binascii.Error, UnicodeEncodeError, ValueError):
+            key_bytes = raw_bytes
+    if len(key_bytes) < LEGACY_MIN_MASTER_KEY_BYTES:
         raise HNCPacketError("master_key_too_short_minimum_16_bytes")
     return key_bytes
 
 
+def normalize_hnc_key_material(
+    master_key: bytes | str,
+    *,
+    packet: Mapping[str, Any] | None = None,
+) -> bytes:
+    """Normalize caller-supplied key material without claiming to measure entropy.
+
+    New callers must supply at least 32 bytes of randomly generated secret
+    material. Strings are *only* canonical unpadded base64url key material.
+    Callers that hold raw key material must pass ``bytes``.
+
+    Passing ``packet`` enables the old 16-byte/permissive-string interpretation
+    only when that complete packet validates as the exact salt-less single-v1
+    profile. This narrow compatibility path exists solely to decrypt or migrate
+    packets persisted before the hardened key contract; builders never use it.
+    """
+
+    if packet is not None:
+        validation = validate_hnc_packet_contract(packet)
+        return _normalize_hnc_key_material_for_validated_contract(
+            master_key,
+            validation,
+        )
+
+    if isinstance(master_key, bytes):
+        key_bytes = master_key
+    elif isinstance(master_key, str):
+        raw = master_key
+        if raw.startswith(ENV_PACKET_PREFIX):
+            raise HNCPacketError("master_key_must_not_be_an_hnc_packet")
+        try:
+            key_bytes = _b64url_decode(raw, max_bytes=MAX_KEY_BYTES)
+        except HNCPacketError as exc:
+            raise HNCPacketError(
+                "master_key_string_must_be_canonical_unpadded_base64url"
+            ) from exc
+    else:
+        raise HNCPacketError("master_key_must_be_bytes_or_string")
+    if len(key_bytes) < MIN_MASTER_KEY_BYTES:
+        raise HNCPacketError("master_key_too_short_minimum_32_bytes")
+    if len(key_bytes) > MAX_KEY_BYTES:
+        raise HNCPacketError("master_key_too_large_maximum_4096_bytes")
+    return key_bytes
+
+
+def _normalize_hnc_key_material_for_validated_contract(
+    master_key: bytes | str,
+    validation: Mapping[str, Any],
+) -> bytes:
+    """Select decode key semantics from one already-validated contract."""
+
+    if validation.get("valid") is not True:
+        raise HNCPacketError("legacy_key_packet_contract_invalid")
+    if validation.get("legacy_key_derivation_profile") is True:
+        return _normalise_legacy_master_key(master_key)
+    return normalize_hnc_key_material(master_key)
+
+
+# Backward-compatible private spelling for internal/existing imports.  New
+# integrations should import ``normalize_hnc_key_material`` from this module.
+_normalise_master_key = normalize_hnc_key_material
+
+
+def _normalise_agent_secrets(
+    agent_secrets: Mapping[str, bytes | str],
+    *,
+    require_two: bool,
+    legacy_decode: bool = False,
+) -> dict[str, bytes]:
+    if not isinstance(agent_secrets, Mapping):
+        raise HNCPacketError("agent_secrets_must_be_a_mapping")
+    normalized: dict[str, bytes] = {}
+    for raw_agent_id, secret in agent_secrets.items():
+        if not isinstance(raw_agent_id, str):
+            raise HNCPacketError("agent_id_must_be_a_string")
+        agent_id = raw_agent_id.strip()
+        agent_id = _bounded_nonblank(
+            agent_id,
+            code="agent_id_invalid",
+            max_bytes=MAX_AGENT_ID_BYTES,
+        )
+        if agent_id in normalized:
+            raise HNCPacketError("duplicate_normalized_agent_id")
+        try:
+            normalized[agent_id] = (
+                _normalise_legacy_master_key(secret)
+                if legacy_decode
+                else _normalise_master_key(secret)
+            )
+        except HNCPacketError as exc:
+            raise HNCPacketError(f"agent_secret_invalid:{agent_id}:{exc}") from exc
+    if require_two and len(normalized) < 2:
+        raise HNCPacketError("swarm_requires_at_least_two_agents")
+    if len(normalized) > MAX_SWARM_AGENTS:
+        raise HNCPacketError("swarm_agent_limit_exceeded")
+    if len(set(normalized.values())) != len(normalized):
+        raise HNCPacketError("swarm_agent_secrets_must_be_distinct")
+    return normalized
+
+
+def _bounded_nonblank(value: Any, *, code: str, max_bytes: int) -> str:
+    if not isinstance(value, str) or not value or "\x00" in value:
+        raise HNCPacketError(code)
+    try:
+        encoded_size = len(value.encode("utf-8", errors="strict"))
+    except UnicodeEncodeError as exc:
+        raise HNCPacketError(code) from exc
+    if encoded_size > max_bytes:
+        raise HNCPacketError(code)
+    return value
+
+
+def _has_exact_keys(value: Any, expected: frozenset[str]) -> bool:
+    return isinstance(value, Mapping) and set(value) == expected
+
+
+def _require_expected_aad_match(
+    actual: Mapping[str, Any],
+    expected: Mapping[str, Any] | None,
+) -> None:
+    if expected is None:
+        return
+    if not isinstance(expected, Mapping):
+        raise HNCPacketError("expected_operator_aad_must_be_a_mapping")
+    if canonical_json_bytes(actual) != canonical_json_bytes(expected):
+        raise HNCPacketError("operator_aad_mismatch")
+
+
+def _finite_protocol_number(value: Any) -> bool:
+    if type(value) not in (int, float):
+        return False
+    try:
+        return math.isfinite(value)
+    except (OverflowError, TypeError, ValueError):
+        return False
+
+
+def _hnc_param_value_reasons(params: Any) -> list[str]:
+    if not isinstance(params, Mapping):
+        return ["hnc_params_schema_mismatch"]
+    reasons: list[str] = []
+    for field in ("alpha", "g", "beta"):
+        if not _finite_protocol_number(params.get(field)):
+            reasons.append(f"hnc_params_{field}_invalid")
+    for field in ("tau", "delta_t"):
+        value = params.get(field)
+        if type(value) is not int or value <= 0:
+            reasons.append(f"hnc_params_{field}_invalid")
+    fitted_at = params.get("fitted_at")
+    if fitted_at is not None and (
+        not _finite_protocol_number(fitted_at) or fitted_at < 0
+    ):
+        reasons.append("hnc_params_fitted_at_invalid")
+    fitted_from = params.get("fitted_from")
+    if fitted_from is not None:
+        if not isinstance(fitted_from, str) or "\x00" in fitted_from:
+            reasons.append("hnc_params_fitted_from_invalid")
+        else:
+            try:
+                fitted_from_size = len(fitted_from.encode("utf-8", errors="strict"))
+            except UnicodeEncodeError:
+                fitted_from_size = MAX_PURPOSE_BYTES + 1
+            if fitted_from_size > MAX_PURPOSE_BYTES:
+                reasons.append("hnc_params_fitted_from_invalid")
+    r_squared = params.get("r_squared")
+    if r_squared is not None and (
+        not _finite_protocol_number(r_squared) or not 0 <= r_squared <= 1
+    ):
+        reasons.append("hnc_params_r_squared_invalid")
+    return reasons
+
+
 def packet_master_key_from_env(environ: Mapping[str, str] | None = None) -> str:
     env = os.environ if environ is None else environ
-    return str(env.get(MASTER_KEY_ENV) or env.get(LEGACY_MASTER_KEY_ENV) or "").strip()
+    value = env.get(MASTER_KEY_ENV) or env.get(LEGACY_MASTER_KEY_ENV) or ""
+    return value if isinstance(value, str) else str(value)
 
 
 def build_hnc_alignment_context(
@@ -142,6 +602,13 @@ def build_hnc_alignment_context(
     operator_aad: Mapping[str, Any] | None = None,
     extra: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
+    purpose = _bounded_nonblank(purpose, code="purpose_invalid", max_bytes=MAX_PURPOSE_BYTES)
+    if geometry is not None and not isinstance(geometry, Mapping):
+        raise HNCPacketError("geometry_must_be_a_mapping")
+    if operator_aad is not None and not isinstance(operator_aad, Mapping):
+        raise HNCPacketError("operator_aad_must_be_a_mapping")
+    if extra is not None and not isinstance(extra, Mapping):
+        raise HNCPacketError("alignment_extra_must_be_a_mapping")
     params = hnc_params or load_params()
     route_seal = build_symbolic_route_seal(
         purpose=purpose,
@@ -150,7 +617,7 @@ def build_hnc_alignment_context(
     )
     context = {
         "purpose": purpose,
-        "geometry": dict(geometry or DEFAULT_GEOMETRY),
+        "geometry": dict(DEFAULT_GEOMETRY if geometry is None else geometry),
         "symbolic_route_seal": route_seal,
         "hnc_params": {
             "alpha": params.alpha,
@@ -169,8 +636,14 @@ def build_hnc_alignment_context(
             "plaintext_never_returned_in_status": True,
         },
     }
+    param_reasons = _hnc_param_value_reasons(context["hnc_params"])
+    if param_reasons:
+        raise HNCPacketError("hnc_params_invalid:" + ",".join(param_reasons))
     if extra:
         context["extra"] = dict(extra)
+    # Fail before encryption if fitted parameters, context, or geometry contain
+    # non-finite, over-deep, or otherwise non-canonical JSON values.
+    canonical_json_bytes(context)
     context["hnc_alignment_sha256"] = sha256_hex(
         {
             "purpose": context["purpose"],
@@ -184,19 +657,26 @@ def build_hnc_alignment_context(
     return context
 
 
-def _derive_packet_key(master_key: bytes | str, metadata: Mapping[str, Any]) -> bytes:
-    key_material = _normalise_master_key(master_key)
-    salt = hashlib.sha256(
-        canonical_json_bytes(
-            {
-                "magic": PACKET_MAGIC,
-                "schema_version": PACKET_SCHEMA_VERSION,
-                "purpose": metadata.get("purpose"),
-                "hnc_alignment_sha256": metadata.get("hnc_alignment_sha256"),
-                "geometry_name": (metadata.get("hnc_alignment") or {}).get("geometry", {}).get("name"),
-            }
-        )
-    ).digest()
+def _derive_packet_key_from_material(
+    key_material: bytes,
+    metadata: Mapping[str, Any],
+) -> bytes:
+    encoded_salt = metadata.get("key_derivation_salt_b64")
+    if encoded_salt is not None:
+        salt = _b64url_decode(str(encoded_salt), expected_bytes=PACKET_KDF_SALT_BYTES)
+    else:
+        # Exact legacy-v1 compatibility for already persisted hncqp1 tokens.
+        salt = hashlib.sha256(
+            canonical_json_bytes(
+                {
+                    "magic": PACKET_MAGIC,
+                    "schema_version": PACKET_SCHEMA_VERSION,
+                    "purpose": metadata.get("purpose"),
+                    "hnc_alignment_sha256": metadata.get("hnc_alignment_sha256"),
+                    "geometry_name": (metadata.get("hnc_alignment") or {}).get("geometry", {}).get("name"),
+                }
+            )
+        ).digest()
     return HKDF(
         algorithm=hashes.SHA256(),
         length=32,
@@ -205,8 +685,22 @@ def _derive_packet_key(master_key: bytes | str, metadata: Mapping[str, Any]) -> 
     ).derive(key_material)
 
 
-def _derive_agent_wrap_key(agent_secret: bytes | str, metadata: Mapping[str, Any], *, agent_id: str, pair_id: str) -> bytes:
-    key_material = _normalise_master_key(agent_secret)
+def _derive_packet_key(master_key: bytes | str, metadata: Mapping[str, Any]) -> bytes:
+    """Derive keys for new builders under the hardened key policy only."""
+
+    return _derive_packet_key_from_material(
+        _normalise_master_key(master_key),
+        metadata,
+    )
+
+
+def _derive_agent_wrap_key_from_material(
+    key_material: bytes,
+    metadata: Mapping[str, Any],
+    *,
+    agent_id: str,
+    pair_id: str,
+) -> bytes:
     salt = hashlib.sha256(
         canonical_json_bytes(
             {
@@ -228,10 +722,27 @@ def _derive_agent_wrap_key(agent_secret: bytes | str, metadata: Mapping[str, Any
     ).derive(key_material)
 
 
+def _derive_agent_wrap_key(
+    agent_secret: bytes | str,
+    metadata: Mapping[str, Any],
+    *,
+    agent_id: str,
+    pair_id: str,
+) -> bytes:
+    """Derive wrap keys for new builders under the hardened key policy."""
+
+    return _derive_agent_wrap_key_from_material(
+        _normalise_master_key(agent_secret),
+        metadata,
+        agent_id=agent_id,
+        pair_id=pair_id,
+    )
+
+
 def _xor_bytes(left: bytes, right: bytes) -> bytes:
     if len(left) != len(right):
         raise HNCPacketError("xor_share_length_mismatch")
-    return bytes(a ^ b for a, b in zip(left, right))
+    return bytes(a ^ b for a, b in zip(left, right, strict=True))
 
 
 def _swarm_locknote_aad(metadata: Mapping[str, Any], *, agent_id: str, pair_id: str) -> bytes:
@@ -265,6 +776,129 @@ def _without_packet_hash(packet: Mapping[str, Any]) -> dict[str, Any]:
     return clean
 
 
+def _append_reason(reasons: list[str], reason: str) -> None:
+    if reason not in reasons:
+        reasons.append(reason)
+
+
+def _alignment_hash_payload(alignment: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "purpose": alignment.get("purpose"),
+        "geometry": alignment.get("geometry"),
+        "symbolic_route_seal": alignment.get("symbolic_route_seal"),
+        "hnc_params": alignment.get("hnc_params"),
+        "packet_contract": alignment.get("packet_contract"),
+        "extra": alignment.get("extra", {}),
+    }
+
+
+def _validate_swarm_locknotes(
+    notes: Any,
+    metadata: Mapping[str, Any],
+    reasons: list[str],
+) -> None:
+    if not isinstance(notes, list) or not notes or len(notes) > MAX_SWARM_LOCKNOTES:
+        _append_reason(reasons, "swarm_locknote_count_invalid")
+        return
+
+    notes_by_pair: dict[str, list[tuple[str, Mapping[str, Any]]]] = {}
+    agent_ids: set[str] = set()
+    for note in notes:
+        if not _has_exact_keys(note, _SWARM_LOCKNOTE_FIELDS):
+            _append_reason(reasons, "swarm_locknote_schema_mismatch")
+            continue
+        assert isinstance(note, Mapping)
+        agent_id = note.get("agent_id")
+        pair_id = note.get("pair_id")
+        try:
+            agent_id = _bounded_nonblank(
+                agent_id,
+                code="swarm_locknote_agent_id_invalid",
+                max_bytes=MAX_AGENT_ID_BYTES,
+            )
+        except HNCPacketError:
+            _append_reason(reasons, "swarm_locknote_agent_id_invalid")
+            continue
+        if not isinstance(pair_id, str) or re.fullmatch(r"[0-9a-f]{24}", pair_id) is None:
+            _append_reason(reasons, "swarm_locknote_pair_id_invalid")
+            continue
+        if note.get("agent_slot_sha256") != sha256_hex(agent_id):
+            _append_reason(reasons, "swarm_locknote_agent_binding_mismatch")
+        if note.get("share_size_bytes") != SWARM_SHARE_BYTES:
+            _append_reason(reasons, "swarm_locknote_share_size_invalid")
+        if note.get("threshold_role") != "two_way_locknote_half":
+            _append_reason(reasons, "swarm_locknote_role_invalid")
+        try:
+            _b64url_decode(
+                note.get("nonce_b64"),
+                expected_bytes=AES_GCM_NONCE_BYTES,
+            )
+            _b64url_decode(
+                note.get("encrypted_share_b64"),
+                expected_bytes=SWARM_SHARE_BYTES + AES_GCM_TAG_BYTES,
+            )
+        except HNCPacketError:
+            _append_reason(reasons, "swarm_locknote_cipher_encoding_invalid")
+        clean_note = dict(note)
+        expected_note_hash = clean_note.pop("locknote_sha256", None)
+        if not isinstance(expected_note_hash, str) or _SHA256_RE.fullmatch(expected_note_hash) is None:
+            _append_reason(reasons, "swarm_locknote_hash_invalid")
+        else:
+            try:
+                computed_note_hash = sha256_hex(clean_note)
+            except HNCPacketError:
+                _append_reason(reasons, "swarm_locknote_hash_input_invalid")
+            else:
+                if expected_note_hash != computed_note_hash:
+                    _append_reason(reasons, "swarm_locknote_hash_mismatch")
+        notes_by_pair.setdefault(pair_id, []).append((agent_id, note))
+        agent_ids.add(agent_id)
+
+    purpose = metadata.get("purpose")
+    if len(agent_ids) > MAX_SWARM_AGENTS:
+        _append_reason(reasons, "swarm_agent_limit_exceeded")
+        return
+    actual_pairs: set[tuple[str, str]] = set()
+    for pair_id, pair_notes in notes_by_pair.items():
+        ids = sorted({agent_id for agent_id, _note in pair_notes})
+        if len(pair_notes) != 2 or len(ids) != 2:
+            _append_reason(reasons, "swarm_locknote_pair_shape_invalid")
+            continue
+        try:
+            expected_pair_id = sha256_hex({"agents": ids, "purpose": purpose})[:24]
+        except HNCPacketError:
+            _append_reason(reasons, "swarm_locknote_pair_binding_input_invalid")
+        else:
+            if pair_id != expected_pair_id:
+                _append_reason(reasons, "swarm_locknote_pair_binding_mismatch")
+        actual_pairs.add((ids[0], ids[1]))
+
+    expected_pairs = set(combinations(sorted(agent_ids), 2))
+    if actual_pairs != expected_pairs:
+        _append_reason(reasons, "swarm_locknote_pair_set_incomplete")
+
+    swarm = metadata.get("swarm_security")
+    if not _has_exact_keys(swarm, _SWARM_SECURITY_FIELDS):
+        _append_reason(reasons, "swarm_security_schema_mismatch")
+        return
+    assert isinstance(swarm, Mapping)
+    expected_pair_count = len(expected_pairs)
+    if (
+        swarm.get("mode") != SWARM_MODE_TWO_WAY
+        or type(swarm.get("threshold_agents")) is not int
+        or swarm.get("threshold_agents") != 2
+        or type(swarm.get("agent_count")) is not int
+        or swarm.get("agent_count") != len(agent_ids)
+        or type(swarm.get("pair_count")) is not int
+        or swarm.get("pair_count") != expected_pair_count
+        or swarm.get("single_agent_can_decode") is not False
+        or swarm.get("locknote_policy")
+        != "any_valid_two_agent_pair_can_reconstruct_the_payload_key"
+        or len(notes) != expected_pair_count * 2
+    ):
+        _append_reason(reasons, "swarm_security_contract_mismatch")
+
+
 def build_hnc_quantum_packet(
     plaintext: bytes | str,
     master_key: bytes | str,
@@ -275,7 +909,32 @@ def build_hnc_quantum_packet(
     geometry: Mapping[str, Any] | None = None,
     nonce: bytes | None = None,
 ) -> dict[str, Any]:
-    payload = plaintext.encode("utf-8") if isinstance(plaintext, str) else bytes(plaintext)
+    """Encrypt one packet using a fresh per-packet HKDF salt.
+
+    ``nonce`` exists only for deterministic protocol tests.  Reusing an
+    explicitly supplied nonce remains safe for packets built here because each
+    packet gets a fresh random 32-byte HKDF salt and therefore a distinct AES
+    key.  Production callers should omit it and use the random 96-bit default.
+    """
+
+    if isinstance(plaintext, str):
+        try:
+            payload = plaintext.encode("utf-8", errors="strict")
+        except UnicodeEncodeError as exc:
+            raise HNCPacketError("plaintext_not_valid_utf8") from exc
+    elif isinstance(plaintext, (bytes, bytearray, memoryview)):
+        payload = bytes(plaintext)
+    else:
+        raise HNCPacketError("plaintext_must_be_bytes_or_string")
+    if len(payload) > MAX_PLAINTEXT_BYTES:
+        raise HNCPacketError("plaintext_too_large")
+    purpose = _bounded_nonblank(purpose, code="purpose_invalid", max_bytes=MAX_PURPOSE_BYTES)
+    if operator_aad is not None and not isinstance(operator_aad, Mapping):
+        raise HNCPacketError("operator_aad_must_be_a_mapping")
+    if hnc_context is not None and not isinstance(hnc_context, Mapping):
+        raise HNCPacketError("hnc_context_must_be_a_mapping")
+    if geometry is not None and not isinstance(geometry, Mapping):
+        raise HNCPacketError("geometry_must_be_a_mapping")
     alignment = build_hnc_alignment_context(
         purpose=purpose,
         geometry=geometry,
@@ -289,13 +948,19 @@ def build_hnc_quantum_packet(
         "digest": "SHA-256",
         "operator_packet_name": "HNC quantum harmonic packet",
         "purpose": purpose,
-        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_at": datetime.now(UTC).isoformat(),
         "plaintext_size_bytes": len(payload),
         "hnc_alignment": alignment,
         "hnc_alignment_sha256": alignment["hnc_alignment_sha256"],
+        "key_derivation_salt_b64": _b64url_encode(os.urandom(PACKET_KDF_SALT_BYTES)),
     }
-    packet_nonce = nonce or os.urandom(12)
-    if len(packet_nonce) != 12:
+    if nonce is None:
+        packet_nonce = os.urandom(AES_GCM_NONCE_BYTES)
+    elif isinstance(nonce, (bytes, bytearray, memoryview)):
+        packet_nonce = bytes(nonce)
+    else:
+        raise HNCPacketError("aes_gcm_nonce_must_be_bytes")
+    if len(packet_nonce) != AES_GCM_NONCE_BYTES:
         raise HNCPacketError("aes_gcm_nonce_must_be_12_bytes")
     packet_key = _derive_packet_key(master_key, metadata)
     aad = _packet_aad(metadata, operator_aad)
@@ -309,52 +974,175 @@ def build_hnc_quantum_packet(
         "ciphertext_b64": _b64url_encode(ciphertext),
     }
     packet["packet_sha256"] = sha256_hex(_without_packet_hash(packet))
+    validation = validate_hnc_packet_contract(packet)
+    if not validation["valid"]:
+        raise HNCPacketError("packet_contract_failed:" + ",".join(validation["reasons"]))
     return packet
 
 
 def validate_hnc_packet_contract(packet: Mapping[str, Any]) -> dict[str, Any]:
     reasons: list[str] = []
-    metadata = packet.get("metadata") if isinstance(packet.get("metadata"), dict) else {}
-    alignment = metadata.get("hnc_alignment") if isinstance(metadata.get("hnc_alignment"), dict) else {}
-    geometry = alignment.get("geometry") if isinstance(alignment.get("geometry"), dict) else {}
+    computed_packet_hash: str | None = None
+    computed_alignment_hash: str | None = None
+    symbolic_route_validation: dict[str, Any] | None = None
+    ciphertext: bytes | None = None
+
+    if not isinstance(packet, Mapping):
+        return {
+            "valid": False,
+            "reasons": ["packet_must_be_a_mapping"],
+            "packet_sha256": None,
+            "computed_packet_sha256": None,
+            "hnc_alignment_sha256": None,
+            "computed_hnc_alignment_sha256": None,
+            "auris_node_count": 0,
+            "symbolic_route": None,
+            "purpose": None,
+        }
+    try:
+        canonical_json_bytes(packet)
+    except HNCPacketError as exc:
+        _append_reason(reasons, f"packet_json_invalid:{exc}")
+
+    metadata = packet.get("metadata") if isinstance(packet.get("metadata"), Mapping) else {}
+    is_swarm = "swarm_locknotes" in packet or "swarm_security" in metadata
+    expected_packet_fields = _SWARM_PACKET_FIELDS if is_swarm else _PACKET_FIELDS
+    if set(packet) != expected_packet_fields:
+        _append_reason(reasons, "packet_schema_mismatch")
+
+    expected_metadata_fields = _SWARM_METADATA_FIELDS if is_swarm else _SINGLE_METADATA_FIELDS
+    legacy_single = not is_swarm and set(metadata) == _LEGACY_SINGLE_METADATA_FIELDS
+    if set(metadata) != expected_metadata_fields and not legacy_single:
+        _append_reason(reasons, "metadata_schema_mismatch")
+
+    alignment = metadata.get("hnc_alignment") if isinstance(metadata.get("hnc_alignment"), Mapping) else {}
+    expected_alignment_fields = (
+        _ALIGNMENT_FIELDS_WITH_EXTRA if "extra" in alignment else _ALIGNMENT_FIELDS
+    )
+    if set(alignment) != expected_alignment_fields:
+        _append_reason(reasons, "hnc_alignment_schema_mismatch")
+    if "extra" in alignment and not isinstance(alignment.get("extra"), Mapping):
+        _append_reason(reasons, "hnc_alignment_extra_schema_mismatch")
+    if is_swarm and (
+        not isinstance(alignment.get("extra"), Mapping)
+        or alignment["extra"].get("swarm_mode") != SWARM_MODE_TWO_WAY
+    ):
+        _append_reason(reasons, "swarm_alignment_mode_mismatch")
+    geometry = alignment.get("geometry") if isinstance(alignment.get("geometry"), Mapping) else {}
     symbolic_route_seal = alignment.get("symbolic_route_seal")
     nodes = geometry.get("auris_nodes") if isinstance(geometry.get("auris_nodes"), list) else []
     expected_hash = metadata.get("hnc_alignment_sha256")
-    computed_alignment_hash = sha256_hex(
-        {
-            "purpose": alignment.get("purpose"),
-            "geometry": geometry,
-            "symbolic_route_seal": symbolic_route_seal,
-            "hnc_params": alignment.get("hnc_params"),
-            "packet_contract": alignment.get("packet_contract"),
-            "extra": alignment.get("extra", {}),
-        }
-    )
-    computed_packet_hash = sha256_hex(_without_packet_hash(packet))
+    try:
+        computed_alignment_hash = sha256_hex(_alignment_hash_payload(alignment))
+        computed_packet_hash = sha256_hex(_without_packet_hash(packet))
+    except HNCPacketError:
+        _append_reason(reasons, "packet_hash_input_invalid")
 
     if packet.get("magic") != PACKET_MAGIC:
-        reasons.append("bad_magic")
-    if packet.get("schema_version") != PACKET_SCHEMA_VERSION:
-        reasons.append("unsupported_schema_version")
+        _append_reason(reasons, "bad_magic")
+    if type(packet.get("schema_version")) is not int or packet.get("schema_version") != PACKET_SCHEMA_VERSION:
+        _append_reason(reasons, "unsupported_schema_version")
+    if type(metadata.get("schema_version")) is not int or metadata.get("schema_version") != PACKET_SCHEMA_VERSION:
+        _append_reason(reasons, "metadata_schema_version_mismatch")
     if metadata.get("algorithm") != "AES-256-GCM":
-        reasons.append("unsupported_algorithm")
+        _append_reason(reasons, "unsupported_algorithm")
     if metadata.get("kdf") != "HKDF-SHA256":
-        reasons.append("unsupported_kdf")
+        _append_reason(reasons, "unsupported_kdf")
     if metadata.get("digest") != "SHA-256":
-        reasons.append("unsupported_digest")
-    if expected_hash != computed_alignment_hash:
-        reasons.append("hnc_alignment_hash_mismatch")
-    if packet.get("packet_sha256") != computed_packet_hash:
-        reasons.append("packet_hash_mismatch")
+        _append_reason(reasons, "unsupported_digest")
+    expected_name = (
+        "HNC swarm two-way harmonic locknote packet"
+        if is_swarm
+        else "HNC quantum harmonic packet"
+    )
+    if metadata.get("operator_packet_name") != expected_name:
+        _append_reason(reasons, "operator_packet_name_mismatch")
+    try:
+        purpose = _bounded_nonblank(
+            metadata.get("purpose"),
+            code="purpose_invalid",
+            max_bytes=MAX_PURPOSE_BYTES,
+        )
+    except HNCPacketError:
+        purpose = None
+        _append_reason(reasons, "purpose_invalid")
+    if purpose is not None and alignment.get("purpose") != purpose:
+        _append_reason(reasons, "hnc_alignment_purpose_mismatch")
+    created_at = metadata.get("created_at")
+    try:
+        created = datetime.fromisoformat(created_at) if isinstance(created_at, str) else None
+        if created is None or created.tzinfo is None or created.utcoffset() != UTC.utcoffset(created):
+            raise ValueError
+    except (TypeError, ValueError):
+        _append_reason(reasons, "created_at_invalid")
+    plaintext_size = metadata.get("plaintext_size_bytes")
+    if type(plaintext_size) is not int or not 0 <= plaintext_size <= MAX_PLAINTEXT_BYTES:
+        _append_reason(reasons, "plaintext_size_invalid")
+    params = alignment.get("hnc_params")
+    if not _has_exact_keys(params, _HNC_PARAM_FIELDS):
+        _append_reason(reasons, "hnc_params_schema_mismatch")
+    for param_reason in _hnc_param_value_reasons(params):
+        _append_reason(reasons, param_reason)
+    contract = alignment.get("packet_contract")
+    if not _has_exact_keys(contract, _PACKET_CONTRACT_FIELDS) or any(
+        contract.get(field) is not True for field in _PACKET_CONTRACT_FIELDS
+    ):
+        _append_reason(reasons, "packet_contract_schema_mismatch")
+    if (
+        not isinstance(expected_hash, str)
+        or _SHA256_RE.fullmatch(expected_hash) is None
+        or expected_hash != computed_alignment_hash
+        or alignment.get("hnc_alignment_sha256") != expected_hash
+    ):
+        _append_reason(reasons, "hnc_alignment_hash_mismatch")
+    supplied_packet_hash = packet.get("packet_sha256")
+    if (
+        not isinstance(supplied_packet_hash, str)
+        or _SHA256_RE.fullmatch(supplied_packet_hash) is None
+        or supplied_packet_hash != computed_packet_hash
+    ):
+        _append_reason(reasons, "packet_hash_mismatch")
     if len(nodes) != 9:
-        reasons.append("auris_9_node_lattice_missing")
-    symbolic_route_validation = None
-    if symbolic_route_seal is not None:
-        symbolic_route_validation = validate_symbolic_route_seal(symbolic_route_seal)
-        if not symbolic_route_validation["valid"]:
-            reasons.append("symbolic_route_seal_mismatch")
-    if not packet.get("nonce_b64") or not packet.get("ciphertext_b64"):
-        reasons.append("missing_cipher_material")
+        _append_reason(reasons, "auris_9_node_lattice_missing")
+    if not isinstance(symbolic_route_seal, Mapping):
+        _append_reason(reasons, "symbolic_route_seal_required")
+    else:
+        try:
+            symbolic_route_validation = validate_symbolic_route_seal(symbolic_route_seal)
+        except Exception:
+            symbolic_route_validation = {"valid": False, "reasons": ["symbolic_route_validation_failed"]}
+        if not symbolic_route_validation.get("valid"):
+            _append_reason(reasons, "symbolic_route_seal_mismatch")
+        if purpose is not None and symbolic_route_seal.get("purpose") != purpose:
+            _append_reason(reasons, "symbolic_route_purpose_mismatch")
+    if not isinstance(packet.get("operator_aad"), Mapping):
+        _append_reason(reasons, "operator_aad_schema_mismatch")
+    try:
+        _b64url_decode(packet.get("nonce_b64"), expected_bytes=AES_GCM_NONCE_BYTES)
+        ciphertext = _b64url_decode(
+            packet.get("ciphertext_b64"),
+            max_bytes=MAX_CIPHERTEXT_BYTES,
+        )
+        if len(ciphertext) < AES_GCM_TAG_BYTES:
+            raise HNCPacketError("ciphertext_too_short")
+    except HNCPacketError:
+        _append_reason(reasons, "cipher_material_invalid")
+    if (
+        ciphertext is not None
+        and type(plaintext_size) is int
+        and len(ciphertext) != plaintext_size + AES_GCM_TAG_BYTES
+    ):
+        _append_reason(reasons, "ciphertext_plaintext_size_mismatch")
+    if not is_swarm and not legacy_single:
+        try:
+            _b64url_decode(
+                metadata.get("key_derivation_salt_b64"),
+                expected_bytes=PACKET_KDF_SALT_BYTES,
+            )
+        except HNCPacketError:
+            _append_reason(reasons, "key_derivation_salt_invalid")
+    if is_swarm:
+        _validate_swarm_locknotes(packet.get("swarm_locknotes"), metadata, reasons)
 
     return {
         "valid": not reasons,
@@ -365,7 +1153,8 @@ def validate_hnc_packet_contract(packet: Mapping[str, Any]) -> dict[str, Any]:
         "computed_hnc_alignment_sha256": computed_alignment_hash,
         "auris_node_count": len(nodes),
         "symbolic_route": symbolic_route_validation,
-        "purpose": metadata.get("purpose"),
+        "purpose": purpose,
+        "legacy_key_derivation_profile": legacy_single,
     }
 
 
@@ -380,27 +1169,33 @@ def decode_hnc_quantum_packet(
     if not validation["valid"]:
         raise HNCPacketError("packet_contract_failed:" + ",".join(validation["reasons"]))
     metadata = packet["metadata"]
-    if expected_purpose and metadata.get("purpose") != expected_purpose:
+    if expected_purpose is not None and metadata.get("purpose") != expected_purpose:
         raise HNCPacketError("unexpected_packet_purpose")
     operator_aad = dict(packet.get("operator_aad") or {})
-    if expected_operator_aad is not None and operator_aad != dict(expected_operator_aad):
-        raise HNCPacketError("operator_aad_mismatch")
+    _require_expected_aad_match(operator_aad, expected_operator_aad)
     try:
-        nonce = _b64url_decode(str(packet["nonce_b64"]))
-        ciphertext = _b64url_decode(str(packet["ciphertext_b64"]))
-        packet_key = _derive_packet_key(master_key, metadata)
+        nonce = _b64url_decode(packet["nonce_b64"], expected_bytes=AES_GCM_NONCE_BYTES)
+        ciphertext = _b64url_decode(packet["ciphertext_b64"], max_bytes=MAX_CIPHERTEXT_BYTES)
+        key_material = _normalize_hnc_key_material_for_validated_contract(
+            master_key,
+            validation,
+        )
+        packet_key = _derive_packet_key_from_material(key_material, metadata)
         plaintext = AESGCM(packet_key).decrypt(nonce, ciphertext, _packet_aad(metadata, operator_aad))
     except InvalidTag as exc:
         raise HNCPacketError("packet_authentication_failed") from exc
+    except HNCPacketError:
+        raise
     except Exception as exc:
-        raise HNCPacketError(f"packet_decode_failed:{type(exc).__name__}") from exc
+        raise HNCPacketError("packet_decode_failed") from exc
+    if len(plaintext) != metadata.get("plaintext_size_bytes"):
+        raise HNCPacketError("plaintext_size_mismatch")
 
     decode_report = {
         "decoded": True,
-        "decoded_at": datetime.now(timezone.utc).isoformat(),
+        "decoded_at": datetime.now(UTC).isoformat(),
         "purpose": metadata.get("purpose"),
         "plaintext_size_bytes": len(plaintext),
-        "plaintext_sha256_runtime_only": sha256_hex(plaintext),
         "packet_contract": validation,
         "secret_policy": "plaintext_returned_to_caller_only_not_status",
     }
@@ -421,18 +1216,38 @@ def build_hnc_swarm_packet(
 
     Each agent receives only an encrypted half-share. The payload key is rebuilt
     from a pair of shares, so a single agent secret cannot decrypt the packet.
-    For a small swarm this creates every valid two-agent pair.
+    For a small swarm this creates every valid two-agent pair. ``nonce`` is a
+    deterministic-test hook only; every call uses a fresh random data key, so
+    repeating an injected nonce across calls does not repeat the AES-GCM key.
+    Production callers should omit it.
     """
 
-    agents = {str(agent_id).strip(): secret for agent_id, secret in agent_secrets.items() if str(agent_id).strip()}
-    if len(agents) < 2:
-        raise HNCPacketError("swarm_requires_at_least_two_agents")
-    payload = plaintext.encode("utf-8") if isinstance(plaintext, str) else bytes(plaintext)
+    agents = _normalise_agent_secrets(agent_secrets, require_two=True)
+    if isinstance(plaintext, str):
+        try:
+            payload = plaintext.encode("utf-8", errors="strict")
+        except UnicodeEncodeError as exc:
+            raise HNCPacketError("plaintext_not_valid_utf8") from exc
+    elif isinstance(plaintext, (bytes, bytearray, memoryview)):
+        payload = bytes(plaintext)
+    else:
+        raise HNCPacketError("plaintext_must_be_bytes_or_string")
+    if len(payload) > MAX_PLAINTEXT_BYTES:
+        raise HNCPacketError("plaintext_too_large")
+    purpose = _bounded_nonblank(purpose, code="purpose_invalid", max_bytes=MAX_PURPOSE_BYTES)
+    if operator_aad is not None and not isinstance(operator_aad, Mapping):
+        raise HNCPacketError("operator_aad_must_be_a_mapping")
+    if hnc_context is not None and not isinstance(hnc_context, Mapping):
+        raise HNCPacketError("hnc_context_must_be_a_mapping")
+    if hnc_context is not None and "swarm_mode" in hnc_context:
+        raise HNCPacketError("hnc_context_reserved_key:swarm_mode")
+    if geometry is not None and not isinstance(geometry, Mapping):
+        raise HNCPacketError("geometry_must_be_a_mapping")
     alignment = build_hnc_alignment_context(
         purpose=purpose,
         geometry=geometry,
         operator_aad=operator_aad,
-        extra={"swarm_mode": SWARM_MODE_TWO_WAY, **dict(hnc_context or {})},
+        extra={**dict(hnc_context or {}), "swarm_mode": SWARM_MODE_TWO_WAY},
     )
     metadata = {
         "schema_version": PACKET_SCHEMA_VERSION,
@@ -441,7 +1256,7 @@ def build_hnc_swarm_packet(
         "digest": "SHA-256",
         "operator_packet_name": "HNC swarm two-way harmonic locknote packet",
         "purpose": purpose,
-        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_at": datetime.now(UTC).isoformat(),
         "plaintext_size_bytes": len(payload),
         "hnc_alignment": alignment,
         "hnc_alignment_sha256": alignment["hnc_alignment_sha256"],
@@ -449,23 +1264,28 @@ def build_hnc_swarm_packet(
             "mode": SWARM_MODE_TWO_WAY,
             "threshold_agents": 2,
             "agent_count": len(agents),
-            "pair_count": len(list(combinations(sorted(agents), 2))),
+            "pair_count": len(agents) * (len(agents) - 1) // 2,
             "single_agent_can_decode": False,
             "locknote_policy": "any_valid_two_agent_pair_can_reconstruct_the_payload_key",
         },
     }
-    data_key = os.urandom(32)
-    packet_nonce = nonce or os.urandom(12)
-    if len(packet_nonce) != 12:
+    data_key = os.urandom(SWARM_DATA_KEY_BYTES)
+    if nonce is None:
+        packet_nonce = os.urandom(AES_GCM_NONCE_BYTES)
+    elif isinstance(nonce, (bytes, bytearray, memoryview)):
+        packet_nonce = bytes(nonce)
+    else:
+        raise HNCPacketError("aes_gcm_nonce_must_be_bytes")
+    if len(packet_nonce) != AES_GCM_NONCE_BYTES:
         raise HNCPacketError("aes_gcm_nonce_must_be_12_bytes")
     ciphertext = AESGCM(data_key).encrypt(packet_nonce, payload, _packet_aad(metadata, operator_aad))
     locknotes: list[dict[str, Any]] = []
     for agent_a, agent_b in combinations(sorted(agents), 2):
         pair_id = sha256_hex({"agents": [agent_a, agent_b], "purpose": purpose})[:24]
-        share_a = os.urandom(32)
+        share_a = os.urandom(SWARM_SHARE_BYTES)
         share_b = _xor_bytes(data_key, share_a)
         for agent_id, share in ((agent_a, share_a), (agent_b, share_b)):
-            note_nonce = os.urandom(12)
+            note_nonce = os.urandom(AES_GCM_NONCE_BYTES)
             wrap_key = _derive_agent_wrap_key(agents[agent_id], metadata, agent_id=agent_id, pair_id=pair_id)
             encrypted_share = AESGCM(wrap_key).encrypt(
                 note_nonce,
@@ -493,30 +1313,46 @@ def build_hnc_swarm_packet(
         "swarm_locknotes": locknotes,
     }
     packet["packet_sha256"] = sha256_hex(_without_packet_hash(packet))
+    # Exercise the complete protocol schema before returning a locally-built
+    # packet, rather than deferring structural errors to a later decoder.
+    validation = validate_hnc_packet_contract(packet)
+    if not validation["valid"]:
+        raise HNCPacketError("packet_contract_failed:" + ",".join(validation["reasons"]))
     return packet
 
 
 def _decrypt_swarm_share(
     note: Mapping[str, Any],
     metadata: Mapping[str, Any],
-    agent_secret: bytes | str,
+    agent_secret: bytes,
 ) -> bytes:
-    agent_id = str(note.get("agent_id") or "")
-    pair_id = str(note.get("pair_id") or "")
+    agent_id = note["agent_id"]
+    pair_id = note["pair_id"]
     expected_note_hash = note.get("locknote_sha256")
     clean_note = dict(note)
     clean_note.pop("locknote_sha256", None)
     if expected_note_hash != sha256_hex(clean_note):
         raise HNCPacketError("swarm_locknote_hash_mismatch")
-    wrap_key = _derive_agent_wrap_key(agent_secret, metadata, agent_id=agent_id, pair_id=pair_id)
+    wrap_key = _derive_agent_wrap_key_from_material(
+        agent_secret,
+        metadata,
+        agent_id=agent_id,
+        pair_id=pair_id,
+    )
     try:
-        return AESGCM(wrap_key).decrypt(
-            _b64url_decode(str(note.get("nonce_b64") or "")),
-            _b64url_decode(str(note.get("encrypted_share_b64") or "")),
+        share = AESGCM(wrap_key).decrypt(
+            _b64url_decode(note["nonce_b64"], expected_bytes=AES_GCM_NONCE_BYTES),
+            _b64url_decode(
+                note["encrypted_share_b64"],
+                expected_bytes=SWARM_SHARE_BYTES + AES_GCM_TAG_BYTES,
+            ),
             _swarm_locknote_aad(metadata, agent_id=agent_id, pair_id=pair_id),
         )
     except InvalidTag as exc:
         raise HNCPacketError("swarm_locknote_authentication_failed") from exc
+    if len(share) != SWARM_SHARE_BYTES:
+        raise HNCPacketError("swarm_share_length_invalid")
+    return share
 
 
 def decode_hnc_swarm_packet(
@@ -533,60 +1369,58 @@ def decode_hnc_swarm_packet(
     swarm = metadata.get("swarm_security") if isinstance(metadata.get("swarm_security"), dict) else {}
     if swarm.get("mode") != SWARM_MODE_TWO_WAY:
         raise HNCPacketError("not_a_swarm_two_way_packet")
-    if expected_purpose and metadata.get("purpose") != expected_purpose:
+    if expected_purpose is not None and metadata.get("purpose") != expected_purpose:
         raise HNCPacketError("unexpected_packet_purpose")
     operator_aad = dict(packet.get("operator_aad") or {})
-    if expected_operator_aad is not None and operator_aad != dict(expected_operator_aad):
-        raise HNCPacketError("operator_aad_mismatch")
-    notes = packet.get("swarm_locknotes")
-    if not isinstance(notes, list):
-        raise HNCPacketError("swarm_locknotes_missing")
-    available = {str(agent_id): secret for agent_id, secret in agent_secrets.items()}
-    if len(available) < 2:
-        raise HNCPacketError("two_agent_locknotes_required")
+    _require_expected_aad_match(operator_aad, expected_operator_aad)
+    notes = packet["swarm_locknotes"]
+    # Schema-v1 swarm metadata has no hardened-key discriminator.  Preserve the
+    # original effective agent-key interpretation for reads; builders still
+    # call the strict default branch above and require 32-byte key material.
+    available = _normalise_agent_secrets(
+        agent_secrets,
+        require_two=True,
+        legacy_decode=True,
+    )
     notes_by_pair: dict[str, list[Mapping[str, Any]]] = {}
     for note in notes:
-        if isinstance(note, dict):
-            notes_by_pair.setdefault(str(note.get("pair_id") or ""), []).append(note)
+        notes_by_pair.setdefault(note["pair_id"], []).append(note)
 
     failures: list[str] = []
     for pair_id, pair_notes in notes_by_pair.items():
-        usable_notes = [note for note in pair_notes if str(note.get("agent_id") or "") in available]
-        if len(usable_notes) < 2:
+        usable_notes = [note for note in pair_notes if note["agent_id"] in available]
+        if len(usable_notes) != 2 or usable_notes[0]["agent_id"] == usable_notes[1]["agent_id"]:
             continue
-        for first_index in range(len(usable_notes)):
-            for second_index in range(first_index + 1, len(usable_notes)):
-                left = usable_notes[first_index]
-                right = usable_notes[second_index]
-                if left.get("agent_id") == right.get("agent_id"):
-                    continue
-                try:
-                    left_share = _decrypt_swarm_share(left, metadata, available[str(left["agent_id"])])
-                    right_share = _decrypt_swarm_share(right, metadata, available[str(right["agent_id"])])
-                    data_key = _xor_bytes(left_share, right_share)
-                    plaintext = AESGCM(data_key).decrypt(
-                        _b64url_decode(str(packet["nonce_b64"])),
-                        _b64url_decode(str(packet["ciphertext_b64"])),
-                        _packet_aad(metadata, operator_aad),
-                    )
-                    return HNCDecodedPacket(
-                        plaintext=plaintext,
-                        packet=dict(packet),
-                        decode_report={
-                            "decoded": True,
-                            "decoded_at": datetime.now(timezone.utc).isoformat(),
-                            "purpose": metadata.get("purpose"),
-                            "swarm_mode": SWARM_MODE_TWO_WAY,
-                            "pair_id": pair_id,
-                            "agents_used": sorted([str(left["agent_id"]), str(right["agent_id"])]),
-                            "single_agent_can_decode": False,
-                            "packet_contract": validation,
-                            "secret_policy": "plaintext_returned_to_caller_only_not_status",
-                        },
-                    )
-                except (HNCPacketError, InvalidTag) as exc:
-                    failures.append(str(exc))
-                    continue
+        left, right = usable_notes
+        try:
+            left_share = _decrypt_swarm_share(left, metadata, available[left["agent_id"]])
+            right_share = _decrypt_swarm_share(right, metadata, available[right["agent_id"]])
+            data_key = _xor_bytes(left_share, right_share)
+            plaintext = AESGCM(data_key).decrypt(
+                _b64url_decode(packet["nonce_b64"], expected_bytes=AES_GCM_NONCE_BYTES),
+                _b64url_decode(packet["ciphertext_b64"], max_bytes=MAX_CIPHERTEXT_BYTES),
+                _packet_aad(metadata, operator_aad),
+            )
+            if len(plaintext) != metadata.get("plaintext_size_bytes"):
+                raise HNCPacketError("plaintext_size_mismatch")
+            return HNCDecodedPacket(
+                plaintext=plaintext,
+                packet=dict(packet),
+                decode_report={
+                    "decoded": True,
+                    "decoded_at": datetime.now(UTC).isoformat(),
+                    "purpose": metadata.get("purpose"),
+                    "swarm_mode": SWARM_MODE_TWO_WAY,
+                    "pair_id": pair_id,
+                    "agents_used": sorted([left["agent_id"], right["agent_id"]]),
+                    "single_agent_can_decode": False,
+                    "packet_contract": validation,
+                    "secret_policy": "plaintext_returned_to_caller_only_not_status",
+                },
+            )
+        except (HNCPacketError, InvalidTag) as exc:
+            failures.append(str(exc))
+            continue
     raise HNCPacketError("no_valid_two_agent_locknote_pair:" + ",".join(failures[:3]))
 
 
@@ -606,7 +1440,19 @@ def run_hnc_swarm_breaker_checks(packet: Mapping[str, Any], agent_secrets: Mappi
     except HNCPacketError as exc:
         checks.append({"name": "single_agent_decode_blocked", "passed": True, "result": str(exc)})
 
-    wrong = {agent: "wrong-agent-secret-for-breaker" for agent in agent_secrets}
+    wrong: dict[str, bytes] = {}
+    wrong_values: set[bytes] = set()
+    for index, (agent, supplied_secret) in enumerate(agent_secrets.items()):
+        supplied_bytes = normalize_hnc_key_material(supplied_secret)
+        counter = 0
+        candidate = hashlib.sha256(f"hnc-breaker-wrong-key:{index}:{counter}".encode("ascii")).digest()
+        while candidate == supplied_bytes or candidate in wrong_values:
+            counter += 1
+            candidate = hashlib.sha256(
+                f"hnc-breaker-wrong-key:{index}:{counter}".encode("ascii")
+            ).digest()
+        wrong[str(agent)] = candidate
+        wrong_values.add(candidate)
     try:
         decode_hnc_swarm_packet(packet, wrong)
         checks.append({"name": "wrong_agent_secret_blocked", "passed": False, "result": "wrong_secret_accepted"})
@@ -635,7 +1481,7 @@ def run_hnc_swarm_breaker_checks(packet: Mapping[str, Any], agent_secrets: Mappi
 
     return {
         "schema_version": PACKET_SCHEMA_VERSION,
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
         "swarm_mode": SWARM_MODE_TWO_WAY,
         "packet_sha256": packet.get("packet_sha256"),
         "checks": checks,
@@ -645,6 +1491,9 @@ def run_hnc_swarm_breaker_checks(packet: Mapping[str, Any], agent_secrets: Mappi
 
 
 def encode_env_packet(value: str, master_key: bytes | str, *, env_key: str) -> str:
+    env_key = _bounded_nonblank(env_key, code="env_key_invalid", max_bytes=MAX_PURPOSE_BYTES - 4)
+    if not isinstance(value, str):
+        raise HNCPacketError("env_value_must_be_a_string")
     packet = build_hnc_quantum_packet(
         value,
         master_key,
@@ -652,18 +1501,42 @@ def encode_env_packet(value: str, master_key: bytes | str, *, env_key: str) -> s
         operator_aad={"env_key": env_key},
         hnc_context={"domain": "local_env_credentials", "env_key": env_key},
     )
-    return ENV_PACKET_PREFIX + _b64url_encode(canonical_json_bytes(packet))
+    return ENV_PACKET_PREFIX + _b64url_encode(
+        canonical_json_bytes(packet, max_bytes=MAX_ENV_PACKET_JSON_BYTES)
+    )
 
 
 def is_env_packet(value: Any) -> bool:
-    return str(value or "").strip().startswith(ENV_PACKET_PREFIX)
+    return isinstance(value, str) and value.startswith(ENV_PACKET_PREFIX)
+
+
+def _decode_env_packet_object(token: str) -> dict[str, Any]:
+    if not isinstance(token, str):
+        raise HNCPacketError("env_packet_must_be_a_string")
+    raw = token.strip()
+    if raw != token:
+        raise HNCPacketError("env_packet_encoding_not_canonical")
+    if not raw.startswith(ENV_PACKET_PREFIX):
+        raise HNCPacketError("not_an_env_packet")
+    encoded = raw[len(ENV_PACKET_PREFIX) :]
+    packet_bytes = _b64url_decode(encoded, max_bytes=MAX_ENV_PACKET_JSON_BYTES)
+    packet = _decode_canonical_json(
+        packet_bytes,
+        max_bytes=MAX_ENV_PACKET_JSON_BYTES,
+        require_mapping=True,
+    )
+    assert isinstance(packet, dict)
+    return packet
 
 
 def decode_env_packet(token: str, master_key: bytes | str, *, env_key: str) -> str:
-    raw = str(token or "").strip()
+    if not isinstance(token, str):
+        raise HNCPacketError("env_packet_must_be_a_string")
+    raw = token.strip()
     if not raw.startswith(ENV_PACKET_PREFIX):
         return raw
-    packet = json.loads(_b64url_decode(raw[len(ENV_PACKET_PREFIX) :]).decode("utf-8"))
+    packet = _decode_env_packet_object(token)
+    env_key = _bounded_nonblank(env_key, code="env_key_invalid", max_bytes=MAX_PURPOSE_BYTES - 4)
     decoded = decode_hnc_quantum_packet(
         packet,
         master_key,
@@ -674,11 +1547,13 @@ def decode_env_packet(token: str, master_key: bytes | str, *, env_key: str) -> s
 
 
 def env_packet_summary(token: str) -> dict[str, Any]:
-    raw = str(token or "").strip()
+    if not isinstance(token, str):
+        return {"encoded": False}
+    raw = token.strip()
     if not raw.startswith(ENV_PACKET_PREFIX):
         return {"encoded": False}
     try:
-        packet = json.loads(_b64url_decode(raw[len(ENV_PACKET_PREFIX) :]).decode("utf-8"))
+        packet = _decode_env_packet_object(token)
         validation = validate_hnc_packet_contract(packet)
         return {
             "encoded": True,
@@ -687,31 +1562,46 @@ def env_packet_summary(token: str) -> dict[str, Any]:
             "purpose": validation["purpose"],
             "packet_sha256": validation["packet_sha256"],
             "hnc_alignment_sha256": validation["hnc_alignment_sha256"],
+            "legacy_key_derivation_profile": validation.get(
+                "legacy_key_derivation_profile",
+                False,
+            ),
             "blockers": validation["reasons"],
         }
-    except Exception as exc:
-        return {"encoded": True, "valid_contract": False, "error": type(exc).__name__}
+    except HNCPacketError as exc:
+        return {"encoded": True, "valid_contract": False, "error": str(exc).split(":", 1)[0]}
 
 
 def packet_public_summary(packet: Mapping[str, Any]) -> dict[str, Any]:
     validation = validate_hnc_packet_contract(packet)
-    metadata = packet.get("metadata") if isinstance(packet.get("metadata"), dict) else {}
-    alignment = metadata.get("hnc_alignment") if isinstance(metadata.get("hnc_alignment"), dict) else {}
+    packet_mapping = packet if isinstance(packet, Mapping) else {}
+    metadata = packet_mapping.get("metadata") if isinstance(packet_mapping.get("metadata"), Mapping) else {}
+    alignment = metadata.get("hnc_alignment") if isinstance(metadata.get("hnc_alignment"), Mapping) else {}
+    geometry = alignment.get("geometry") if isinstance(alignment.get("geometry"), Mapping) else {}
+    symbolic_route = (
+        alignment.get("symbolic_route_seal")
+        if isinstance(alignment.get("symbolic_route_seal"), Mapping)
+        else None
+    )
     return {
-        "magic": packet.get("magic"),
-        "schema_version": packet.get("schema_version"),
+        "magic": packet_mapping.get("magic"),
+        "schema_version": packet_mapping.get("schema_version"),
         "purpose": metadata.get("purpose"),
         "algorithm": metadata.get("algorithm"),
         "kdf": metadata.get("kdf"),
         "digest": metadata.get("digest"),
         "plaintext_size_bytes": metadata.get("plaintext_size_bytes"),
         "hnc_alignment_sha256": metadata.get("hnc_alignment_sha256"),
-        "packet_sha256": packet.get("packet_sha256"),
+        "packet_sha256": packet_mapping.get("packet_sha256"),
         "auris_node_count": validation.get("auris_node_count"),
         "valid_contract": validation["valid"],
+        "legacy_key_derivation_profile": validation.get(
+            "legacy_key_derivation_profile",
+            False,
+        ),
         "blockers": validation["reasons"],
-        "geometry_name": (alignment.get("geometry") or {}).get("name"),
-        "symbolic_route": symbolic_route_public_summary(alignment.get("symbolic_route_seal")),
+        "geometry_name": geometry.get("name"),
+        "symbolic_route": symbolic_route_public_summary(symbolic_route),
         "secret_policy": "no_plaintext_no_key_material",
     }
 
@@ -719,10 +1609,10 @@ def packet_public_summary(packet: Mapping[str, Any]) -> dict[str, Any]:
 def _probability_weights(seed: str, count: int) -> list[float]:
     raw: list[int] = []
     for index in range(count):
-        digest = hashlib.sha256(f"{seed}:{index}".encode("utf-8")).digest()
+        digest = hashlib.sha256(f"{seed}:{index}".encode()).digest()
         raw.append(max(1, int.from_bytes(digest[:4], "big")))
     total = float(sum(raw)) or 1.0
-    return [round(value / total, 8) for value in raw]
+    return [value / total for value in raw]
 
 
 def stream_hnc_probability_fragments(
@@ -741,15 +1631,40 @@ def stream_hnc_probability_fragments(
     validation = validate_hnc_packet_contract(packet)
     if not validation["valid"]:
         raise HNCPacketError("packet_contract_failed:" + ",".join(validation["reasons"]))
-    if fragment_size < 128:
+    if type(fragment_size) is not int or fragment_size < 128:
         raise HNCPacketError("fragment_size_too_small_minimum_128")
-    packet_bytes = canonical_json_bytes(packet)
-    chunks = [packet_bytes[index : index + fragment_size] for index in range(0, len(packet_bytes), fragment_size)]
+    if fragment_size > MAX_FRAGMENT_BYTES:
+        raise HNCPacketError("fragment_size_too_large")
+    if (
+        not isinstance(slit_names, (tuple, list))
+        or not slit_names
+        or len(slit_names) > MAX_SLIT_NAMES
+    ):
+        raise HNCPacketError("slit_names_invalid")
+    normalized_slits: list[str] = []
+    for slit_name in slit_names:
+        normalized_slits.append(
+            _bounded_nonblank(
+                slit_name,
+                code="slit_name_invalid",
+                max_bytes=MAX_SLIT_NAME_BYTES,
+            )
+        )
+    if len(set(normalized_slits)) != len(normalized_slits):
+        raise HNCPacketError("slit_names_must_be_distinct")
+    packet_bytes = canonical_json_bytes(packet, max_bytes=MAX_PACKET_JSON_BYTES)
+    chunk_count = (len(packet_bytes) + fragment_size - 1) // fragment_size
+    if not 1 <= chunk_count <= MAX_FRAGMENT_COUNT:
+        raise HNCPacketError("fragment_count_limit_exceeded")
+    chunks = [
+        packet_bytes[index : index + fragment_size]
+        for index in range(0, len(packet_bytes), fragment_size)
+    ]
     stream_id = sha256_hex(
         {
             "packet_sha256": packet.get("packet_sha256"),
             "chunk_count": len(chunks),
-            "slit_names": list(slit_names),
+            "slit_names": normalized_slits,
         }
     )
     weights = _probability_weights(stream_id, len(chunks))
@@ -760,14 +1675,14 @@ def stream_hnc_probability_fragments(
         "packet_sha256": packet.get("packet_sha256"),
         "fragment_count": len(chunks),
         "packet_bytes_sha256": sha256_hex(packet_bytes),
-        "slit_names": list(slit_names),
+        "slit_names": normalized_slits,
         "reassembly_rule": "all_fragments_required_then_hnc_contract_decode",
         "plaintext_visible_before_reassembly": False,
     }
     manifest_sha256 = sha256_hex(manifest)
     fragments: list[dict[str, Any]] = []
     for index, chunk in enumerate(chunks):
-        slit_name = slit_names[index % len(slit_names)]
+        slit_name = normalized_slits[index % len(normalized_slits)]
         fragments.append(
             {
                 "schema_version": PACKET_SCHEMA_VERSION,
@@ -789,42 +1704,145 @@ def stream_hnc_probability_fragments(
 
 
 def reassemble_hnc_probability_fragments(fragments: list[Mapping[str, Any]]) -> dict[str, Any]:
-    if not fragments:
+    if not isinstance(fragments, list) or not fragments:
         raise HNCPacketError("no_fragments")
-    stream_ids = {str(fragment.get("stream_id")) for fragment in fragments}
-    if len(stream_ids) != 1:
-        raise HNCPacketError("mixed_stream_fragments")
+    if len(fragments) > MAX_FRAGMENT_COUNT:
+        raise HNCPacketError("fragment_count_limit_exceeded")
+    for fragment in fragments:
+        if not _has_exact_keys(fragment, _STREAM_FRAGMENT_FIELDS):
+            raise HNCPacketError("fragment_schema_mismatch")
     first = fragments[0]
-    manifest = first.get("manifest") if isinstance(first.get("manifest"), dict) else {}
+    manifest = first["manifest"]
+    if not _has_exact_keys(manifest, _STREAM_MANIFEST_FIELDS):
+        raise HNCPacketError("manifest_schema_mismatch")
+    assert isinstance(manifest, Mapping)
+    try:
+        canonical_json_bytes(manifest, max_bytes=MAX_ENV_PACKET_JSON_BYTES)
+    except HNCPacketError as exc:
+        raise HNCPacketError("manifest_json_invalid") from exc
     manifest_hash = sha256_hex(manifest)
-    expected_manifest_hash = first.get("manifest_sha256")
-    if manifest_hash != expected_manifest_hash:
+    expected_manifest_hash = first["manifest_sha256"]
+    if (
+        not isinstance(expected_manifest_hash, str)
+        or _SHA256_RE.fullmatch(expected_manifest_hash) is None
+        or manifest_hash != expected_manifest_hash
+    ):
         raise HNCPacketError("manifest_hash_mismatch")
-    expected_count = int(manifest.get("fragment_count") or first.get("fragment_count") or 0)
-    if expected_count <= 0:
+    if (
+        manifest.get("schema_version") != PACKET_SCHEMA_VERSION
+        or manifest.get("stream_type") != "hnc_temporal_probability_stream"
+        or manifest.get("reassembly_rule") != "all_fragments_required_then_hnc_contract_decode"
+        or manifest.get("plaintext_visible_before_reassembly") is not False
+    ):
+        raise HNCPacketError("manifest_contract_mismatch")
+    stream_id = manifest.get("stream_id")
+    if not isinstance(stream_id, str) or _SHA256_RE.fullmatch(stream_id) is None:
+        raise HNCPacketError("stream_id_invalid")
+    if not isinstance(manifest.get("packet_sha256"), str) or _SHA256_RE.fullmatch(manifest["packet_sha256"]) is None:
+        raise HNCPacketError("manifest_packet_hash_invalid")
+    if not isinstance(manifest.get("packet_bytes_sha256"), str) or _SHA256_RE.fullmatch(manifest["packet_bytes_sha256"]) is None:
+        raise HNCPacketError("manifest_bytes_hash_invalid")
+    expected_count = manifest.get("fragment_count")
+    if type(expected_count) is not int or not 1 <= expected_count <= MAX_FRAGMENT_COUNT:
         raise HNCPacketError("invalid_fragment_count")
+    if len(fragments) != expected_count:
+        raise HNCPacketError("missing_fragments")
+    slit_names = manifest.get("slit_names")
+    if (
+        not isinstance(slit_names, list)
+        or not slit_names
+        or len(slit_names) > MAX_SLIT_NAMES
+    ):
+        raise HNCPacketError("manifest_slit_names_invalid")
+    try:
+        normalized_manifest_slits: list[str] = []
+        for slit_name in slit_names:
+            normalized_manifest_slits.append(
+                _bounded_nonblank(
+                    slit_name,
+                    code="manifest_slit_name_invalid",
+                    max_bytes=MAX_SLIT_NAME_BYTES,
+                )
+            )
+    except HNCPacketError as exc:
+        raise HNCPacketError("manifest_slit_names_invalid") from exc
+    if len(set(normalized_manifest_slits)) != len(normalized_manifest_slits):
+        raise HNCPacketError("manifest_slit_names_invalid")
+    computed_stream_id = sha256_hex(
+        {
+            "packet_sha256": manifest["packet_sha256"],
+            "chunk_count": expected_count,
+            "slit_names": normalized_manifest_slits,
+        }
+    )
+    if stream_id != computed_stream_id:
+        raise HNCPacketError("stream_id_binding_mismatch")
+    expected_weights = _probability_weights(stream_id, expected_count)
+
     by_index: dict[int, Mapping[str, Any]] = {}
     for fragment in fragments:
-        if fragment.get("manifest_sha256") != expected_manifest_hash:
+        if fragment["manifest"] != manifest or fragment["manifest_sha256"] != expected_manifest_hash:
             raise HNCPacketError("fragment_manifest_mismatch")
-        index = int(fragment.get("fragment_index"))
+        if (
+            fragment.get("schema_version") != PACKET_SCHEMA_VERSION
+            or fragment.get("stream_type") != "hnc_temporal_probability_fragment"
+            or fragment.get("stream_id") != stream_id
+            or fragment.get("fragment_count") != expected_count
+            or fragment.get("secret_policy") != "ciphertext_fragment_only_no_plaintext"
+        ):
+            raise HNCPacketError("fragment_contract_mismatch")
+        index = fragment.get("fragment_index")
+        if type(index) is not int or not 0 <= index < expected_count:
+            raise HNCPacketError("fragment_index_invalid")
         if index in by_index:
             raise HNCPacketError("duplicate_fragment_index")
+        if fragment.get("slit_name") != slit_names[index % len(slit_names)]:
+            raise HNCPacketError("fragment_slit_mismatch")
+        probability = fragment.get("probability_weight")
+        phase = fragment.get("phase_hint")
+        if (
+            not isinstance(probability, (int, float))
+            or isinstance(probability, bool)
+            or not math.isfinite(float(probability))
+            or not 0.0 < float(probability) <= 1.0
+            or not isinstance(phase, (int, float))
+            or isinstance(phase, bool)
+            or not math.isfinite(float(phase))
+            or not 0.0 < float(phase) <= 1.0
+        ):
+            raise HNCPacketError("fragment_probability_invalid")
+        if (
+            probability != expected_weights[index]
+            or phase != round((index + 1) / expected_count, 8)
+        ):
+            raise HNCPacketError("fragment_probability_binding_mismatch")
         by_index[index] = fragment
-    if sorted(by_index) != list(range(expected_count)):
+    if len(by_index) != expected_count or min(by_index) != 0 or max(by_index) != expected_count - 1:
         raise HNCPacketError("missing_fragments")
 
     chunks: list[bytes] = []
+    total_bytes = 0
     for index in range(expected_count):
         fragment = by_index[index]
-        chunk = _b64url_decode(str(fragment.get("chunk_b64") or ""))
-        if sha256_hex(chunk) != fragment.get("chunk_sha256"):
+        chunk_hash = fragment.get("chunk_sha256")
+        if not isinstance(chunk_hash, str) or _SHA256_RE.fullmatch(chunk_hash) is None:
+            raise HNCPacketError("fragment_chunk_hash_invalid")
+        chunk = _b64url_decode(fragment.get("chunk_b64"), max_bytes=MAX_FRAGMENT_BYTES)
+        if sha256_hex(chunk) != chunk_hash:
             raise HNCPacketError("fragment_chunk_hash_mismatch")
+        total_bytes += len(chunk)
+        if total_bytes > MAX_PACKET_JSON_BYTES:
+            raise HNCPacketError("reassembled_packet_too_large")
         chunks.append(chunk)
     packet_bytes = b"".join(chunks)
     if sha256_hex(packet_bytes) != manifest.get("packet_bytes_sha256"):
         raise HNCPacketError("packet_bytes_hash_mismatch")
-    packet = json.loads(packet_bytes.decode("utf-8"))
+    packet = _decode_canonical_json(
+        packet_bytes,
+        max_bytes=MAX_PACKET_JSON_BYTES,
+        require_mapping=True,
+    )
+    assert isinstance(packet, dict)
     validation = validate_hnc_packet_contract(packet)
     if not validation["valid"]:
         raise HNCPacketError("packet_contract_failed:" + ",".join(validation["reasons"]))
@@ -871,7 +1889,7 @@ def run_hnc_packet_breaker_checks(packet: Mapping[str, Any], master_key: bytes |
 
     return {
         "schema_version": PACKET_SCHEMA_VERSION,
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
         "packet_sha256": packet.get("packet_sha256"),
         "checks": checks,
         "passed": all(check["passed"] for check in checks),
@@ -883,7 +1901,7 @@ def write_hnc_packet_evidence(summary: Mapping[str, Any], path: Path) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     payload = {
         "schema_version": PACKET_SCHEMA_VERSION,
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
         "evidence": dict(summary),
         "secret_policy": "metadata_only_no_values_returned",
     }
@@ -910,6 +1928,7 @@ __all__ = [
     "encode_env_packet",
     "env_packet_summary",
     "is_env_packet",
+    "normalize_hnc_key_material",
     "packet_master_key_from_env",
     "packet_public_summary",
     "reassemble_hnc_probability_fragments",

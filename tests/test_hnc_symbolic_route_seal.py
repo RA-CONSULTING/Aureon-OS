@@ -18,8 +18,7 @@ from aureon.harmonic.hnc_symbolic_route_seal import (
     validate_symbolic_route_seal,
 )
 
-
-MASTER_KEY = "test-master-key-for-symbolic-route-32-bytes"
+MASTER_KEY = b"Q" * 32
 
 
 def test_symbolic_route_seal_loads_rune_star_and_research_catalogs():
@@ -74,9 +73,9 @@ def test_hnc_packet_binds_symbolic_route_to_authenticated_context():
 
 def test_hnc_swarm_packet_carries_symbolic_route_seal():
     agents = {
-        "seer": "seer-master-key-32-bytes-for-test",
-        "lyra": "lyra-master-key-32-bytes-for-test",
-        "king": "king-master-key-32-bytes-for-test",
+        "seer": b"S" * 32,
+        "lyra": b"L" * 32,
+        "king": b"R" * 32,
     }
     packet = build_hnc_swarm_packet(
         "swarm-threshold-secret",

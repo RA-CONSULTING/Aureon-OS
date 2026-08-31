@@ -23,6 +23,7 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 from aureon.harmonic.hnc_quantum_packet_crypto import (
     HNCPacketError,
+    _normalize_hnc_key_material_for_validated_contract,
     decode_hnc_quantum_packet,
     validate_hnc_packet_contract,
 )
@@ -255,6 +256,7 @@ class ProtectedMagicStarPacketV02:
 class _CustodyRecord:
     shares: tuple[bytearray, ...]
     packet_commitment: str
+    claimed: bool = False
 
 
 def _outer_aad_fields(
@@ -448,12 +450,14 @@ class LocalDevelopmentStarCustodyV02:
         )
         if metadata.get("purpose") != bounded_purpose:
             raise StarCustodyError("legacy_carrier_purpose_mismatch")
-        key_bytes = (
-            legacy_master_key
-            if isinstance(legacy_master_key, bytes)
-            else str(legacy_master_key).encode("utf-8", errors="strict")
-        )
-        if len(key_bytes) < 16 or len(key_bytes) > 4096:
+        try:
+            key_bytes = _normalize_hnc_key_material_for_validated_contract(
+                legacy_master_key,
+                contract,
+            )
+        except HNCPacketError as exc:
+            raise StarCustodyError("legacy_master_key_invalid") from exc
+        if len(key_bytes) > 4096:
             raise StarCustodyError("legacy_master_key_size_invalid")
         carrier_bytes = legacy_canonical_json_bytes(carrier)
         carrier_commitment = sha256_hex(carrier_bytes)
@@ -600,11 +604,15 @@ class LocalDevelopmentStarCustodyV02:
         ):
             raise StarCustodyError("custody_authorization_runtime_join_mismatch")
         with self._lock:
-            record = self._records.pop(packet.packet_id, None)
-        if record is None or record.packet_commitment != packet.packet_commitment:
-            raise StarCustodyError("custody_material_unavailable_or_reused")
+            record = self._records.get(packet.packet_id)
+            if record is None or record.packet_commitment != packet.packet_commitment:
+                raise StarCustodyError("custody_material_unavailable_or_reused")
+            if record.claimed:
+                raise StarCustodyError("custody_material_already_claimed")
+            record.claimed = True
 
         share_bytes = tuple(bytes(share) for share in record.shares)
+        material_consumed = False
         try:
             if len(share_bytes) != len(POINT_ROLES):
                 raise StarCustodyError("all_five_custody_shares_required")
@@ -678,6 +686,11 @@ class LocalDevelopmentStarCustodyV02:
                 )
             except HNCPacketError as exc:
                 raise StarCustodyError("legacy_carrier_aead_release_failed") from exc
+            # Once authenticated plaintext reaches a capability, the handler may
+            # have produced effects even if it later raises or returns an invalid
+            # result.  Commit one-use custody before dispatch; only failures above
+            # this boundary are safe to retry.
+            material_consumed = True
             public_result, capability_error = _invoke_capability_safely(
                 registered_capability,
                 decoded.plaintext,
@@ -706,8 +719,16 @@ class LocalDevelopmentStarCustodyV02:
             }
             return public_result, metadata
         finally:
-            for share in record.shares:
-                share[:] = bytes(len(share))
+            with self._lock:
+                current = self._records.get(packet.packet_id)
+                if current is record:
+                    if material_consumed:
+                        self._records.pop(packet.packet_id, None)
+                    else:
+                        record.claimed = False
+            if material_consumed:
+                for share in record.shares:
+                    share[:] = bytes(len(share))
             if "kek" in locals():
                 wipe = bytearray(kek)
                 wipe[:] = bytes(len(wipe))

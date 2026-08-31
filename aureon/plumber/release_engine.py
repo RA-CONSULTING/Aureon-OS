@@ -487,6 +487,8 @@ class LocalReleaseEngine:
         now: datetime,
     ) -> tuple[ReleaseExecutionReceipt, LocalEnclaveExecutionReceipt | None]:
         current = require_aware_datetime(now, field="now")
+        if not callable(processor):
+            raise SchemaError(DenialCode.INVALID_TYPE, field="processor")
         decision = self.evaluate(packet, gate)
         no_receipt = domain_hash(
             "aureon.plumber.no-enclave-receipt.v0",
@@ -551,16 +553,38 @@ class LocalReleaseEngine:
             return self._blocked_execution(
                 decision, no_receipt, ReleaseCode.ENCLAVE_RECEIPT_MISMATCH
             )
-        if not self._replay_guard.consume(packet.replay_token):
+        if not self._replay_guard.claim_for_execution(packet.replay_token):
             return self._blocked_execution(decision, no_receipt, ReleaseCode.REPLAY_DETECTED)
-        enclave_receipt = self._enclave.execute_hnc_packet(
-            hnc_packet,
-            master_key=master_key,
-            expected_purpose=expected_purpose,
-            processor_id=processor_id,
-            processor=processor,
-            now=current,
-        )
+        try:
+            def one_shot_processor(view: memoryview) -> LocalComputationResult:
+                # Authentication and structural checks have completed when the
+                # enclave invokes this wrapper.  Commit replay state before the
+                # caller's processor can produce effects, including effects that
+                # precede an exception or invalid result.
+                if not self._replay_guard.commit_execution_claim(packet.replay_token):
+                    raise RuntimeError("replay_execution_claim_unavailable")
+                return processor(view)
+
+            enclave_receipt = self._enclave.execute_hnc_packet(
+                hnc_packet,
+                master_key=master_key,
+                expected_purpose=expected_purpose,
+                processor_id=processor_id,
+                processor=one_shot_processor,
+                now=current,
+            )
+        finally:
+            # If the processor wrapper was never reached, the claim still exists
+            # and is safe to roll back.  A committed claim cannot be rolled back.
+            if self._replay_guard.rollback_execution_claim(packet.replay_token):
+                with self._lock:
+                    if gate.decision_commitment not in self._issued_gates:
+                        self._issued_inspections.add(
+                            decision.packet_inspection_commitment
+                        )
+                        self._issued_gates[gate.decision_commitment] = (
+                            decision.packet_inspection_commitment
+                        )
         mismatched = (
             enclave_receipt.packet_commitment != packet.hnc_packet_commitment
             or enclave_receipt.purpose_commitment != packet.purpose_commitment

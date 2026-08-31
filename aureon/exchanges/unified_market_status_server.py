@@ -23,13 +23,14 @@ from aureon.core.aureon_env import apply_env_aliases, env_presence
 from aureon.harmonic.hnc_quantum_packet_crypto import (
     LEGACY_MASTER_KEY_ENV,
     MASTER_KEY_ENV,
+    HNCPacketError,
     encode_env_packet,
     env_packet_summary,
     is_env_packet,
+    normalize_hnc_key_material,
     packet_master_key_from_env,
     write_hnc_packet_evidence,
 )
-
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 STATE_ROOT = REPO_ROOT / "state"
@@ -81,10 +82,7 @@ def _parse_iso_timestamp(value: Any) -> float:
 
 def _runtime_watchdog(payload: dict[str, Any], status_file_age_sec: float | None = None) -> dict[str, Any]:
     existing = payload.get("runtime_watchdog")
-    if isinstance(existing, dict):
-        watchdog = dict(existing)
-    else:
-        watchdog = {}
+    watchdog = dict(existing) if isinstance(existing, dict) else {}
 
     now = time.time()
     last_completed_ts = _parse_iso_timestamp(payload.get("last_tick_completed_at"))
@@ -349,7 +347,30 @@ def _quote_env_value(value: str) -> str:
 
 def _env_packet_master_key(env_values: dict[str, str] | None = None) -> str:
     values = env_values or _parse_env_values()
-    return packet_master_key_from_env(os.environ) or str(values.get(MASTER_KEY_ENV) or values.get(LEGACY_MASTER_KEY_ENV) or "").strip()
+    return packet_master_key_from_env(os.environ) or str(
+        values.get(MASTER_KEY_ENV) or values.get(LEGACY_MASTER_KEY_ENV) or ""
+    )
+
+
+def _env_packet_master_key_status(master_key: str) -> dict[str, Any]:
+    """Report whether configured key material meets the active write policy.
+
+    The public status deliberately contains no key value, fingerprint, or
+    length. A malformed key is configured but cannot truthfully be reported as
+    enabling packet encryption.
+    """
+
+    if not master_key:
+        return {"configured": False, "valid": False, "error_code": None}
+    try:
+        normalize_hnc_key_material(master_key)
+    except HNCPacketError:
+        return {
+            "configured": True,
+            "valid": False,
+            "error_code": "hnc_master_key_invalid",
+        }
+    return {"configured": True, "valid": True, "error_code": None}
 
 
 def _packetize_env_updates(updates: dict[str, str]) -> tuple[dict[str, str], list[str], dict[str, Any] | None]:
@@ -427,6 +448,7 @@ def _env_credentials_status() -> dict[str, Any]:
     env_values = _parse_env_values()
     apply_env_aliases(env_values, override=False)
     master_key = _env_packet_master_key(env_values)
+    master_key_status = _env_packet_master_key_status(master_key)
     packet_encoded_keys = sorted(key for key, value in env_values.items() if is_env_packet(value))
     exchanges: dict[str, Any] = {}
     for exchange, keys in EXCHANGE_ENV_FIELDS.items():
@@ -450,13 +472,15 @@ def _env_credentials_status() -> dict[str, Any]:
         "restart_required": pending_restart,
         "restart_intent": intent,
         "hnc_packet_encryption": {
-            "enabled": bool(master_key),
+            "enabled": master_key_status["valid"],
             "format": "hncqp1",
             "encoded_key_count": len(packet_encoded_keys),
             "encoded_keys": packet_encoded_keys,
-            "master_key_present": bool(master_key),
+            "master_key_present": master_key_status["configured"],
+            "master_key_valid": master_key_status["valid"],
+            "configuration_error": master_key_status["error_code"],
             "evidence_file": str(HNC_PACKET_EVIDENCE_PATH),
-            "policy": "new local credential writes are packet-encrypted at rest when AUREON_HNC_PACKET_MASTER_KEY is present",
+            "policy": "new local credential writes are packet-encrypted at rest only when AUREON_HNC_PACKET_MASTER_KEY is present and valid",
             "secret_policy": "metadata_only_no_values_returned",
         },
         "secret_policy": "metadata_only_no_values_returned",

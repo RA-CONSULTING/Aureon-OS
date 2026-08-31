@@ -15,11 +15,10 @@ import json
 import os
 import tarfile
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 
-from aureon.obsidian_paths import resolve_obsidian_note_path
 from aureon.harmonic.hnc_quantum_packet_crypto import (
     HNCPacketError,
     build_hnc_swarm_packet,
@@ -28,7 +27,7 @@ from aureon.harmonic.hnc_quantum_packet_crypto import (
     run_hnc_swarm_breaker_checks,
     stream_hnc_probability_fragments,
 )
-
+from aureon.obsidian_paths import resolve_obsidian_note_path
 
 SCHEMA_VERSION = "aureon-repo-singularity-vault-v1"
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -94,7 +93,7 @@ class RepoFileRecord:
 
 
 def utc_now() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 def _matches_any(path: str, patterns: Iterable[str]) -> bool:
@@ -180,7 +179,7 @@ def discover_repo_files(
                         path=rel,
                         size_bytes=stat.st_size,
                         sha256=_sha256_file(path),
-                        modified_at=datetime.fromtimestamp(stat.st_mtime, timezone.utc).isoformat(),
+                        modified_at=datetime.fromtimestamp(stat.st_mtime, UTC).isoformat(),
                     )
                 )
             except OSError as exc:
@@ -253,7 +252,7 @@ def _build_tar_gz_bytes(repo_root: Path, records: list[RepoFileRecord]) -> bytes
 
 def seal_repo_singularity_packet(
     manifest: Mapping[str, Any],
-    agent_secrets: Mapping[str, str],
+    agent_secrets: Mapping[str, bytes | str],
     *,
     max_archive_mb: float = 100.0,
 ) -> dict[str, Any]:
@@ -308,8 +307,34 @@ def externalize_sealed_packet_blob(report: dict[str, Any], blob_path: Path = DEF
     return report
 
 
-def decode_repo_singularity_archive(packet: Mapping[str, Any], agent_secrets: Mapping[str, str]) -> bytes:
-    decoded = decode_hnc_swarm_packet(packet, agent_secrets, expected_purpose="repo:singularity_vault")
+def decode_repo_singularity_archive(
+    packet: Mapping[str, Any],
+    agent_secrets: Mapping[str, bytes | str],
+    *,
+    expected_root_sha256: str,
+    expected_file_count: int,
+) -> bytes:
+    """Decode only the exact externally pinned repository snapshot.
+
+    The root and file count must come from the trusted manifest/report selected
+    by the caller. Reading them back from the packet would allow substitution of
+    another otherwise-valid singularity packet with the same purpose.
+    """
+
+    root_sha256 = str(expected_root_sha256 or "").lower()
+    if len(root_sha256) != 64 or any(character not in "0123456789abcdef" for character in root_sha256):
+        raise HNCPacketError("invalid_expected_repo_root_sha256")
+    if type(expected_file_count) is not int or expected_file_count < 0:
+        raise HNCPacketError("invalid_expected_repo_file_count")
+    decoded = decode_hnc_swarm_packet(
+        packet,
+        agent_secrets,
+        expected_purpose="repo:singularity_vault",
+        expected_operator_aad={
+            "root_sha256": root_sha256,
+            "file_count": expected_file_count,
+        },
+    )
     return decoded.plaintext
 
 
@@ -435,7 +460,7 @@ def build_repo_singularity_vault(
     repo_root: Path = REPO_ROOT,
     *,
     seal: bool = False,
-    agent_secrets: Mapping[str, str] | None = None,
+    agent_secrets: Mapping[str, bytes | str] | None = None,
     max_file_size_mb: float = 25.0,
     max_archive_mb: float = 100.0,
     include_large: bool = False,

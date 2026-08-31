@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime, timedelta
 
 import pytest
@@ -94,6 +95,35 @@ def test_replay_guard_requires_one_time_anchor_and_advances_temporal_head() -> N
     summary = guard.public_summary()
     assert identity.previous_state_commitment not in repr(summary)
     assert identity.runtime_measurement_commitment not in repr(summary)
+
+
+def test_replay_guard_execution_claim_is_atomic_and_rollbackable() -> None:
+    identity = _temporal()
+    guard = PacketReplayGuard()
+    assert guard.register_temporal_anchor(
+        identity.session_identity,
+        expected_previous_state_commitment=identity.previous_state_commitment,
+        minimum_counter=identity.counter - 1,
+        expected_field_receipt_commitment=identity.field_receipt_commitment,
+        expected_runtime_measurement_commitment=identity.runtime_measurement_commitment,
+    )
+    replay_token = DIGESTS[10]
+    assert guard.reserve_temporal(identity, replay_token, now=NOW + timedelta(seconds=1))
+
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        claims = tuple(pool.map(guard.claim_for_execution, (replay_token,) * 32))
+    assert sum(claims) == 1
+    assert guard.public_summary()["execution_claim_count"] == 1
+    assert guard.rollback_execution_claim(replay_token)
+    assert guard.public_summary()["reservation_count"] == 1
+
+    assert guard.claim_for_execution(replay_token)
+    assert guard.commit_execution_claim(replay_token)
+    assert not guard.rollback_execution_claim(replay_token)
+    summary = guard.public_summary()
+    assert summary["execution_claim_count"] == 0
+    assert summary["reservation_count"] == 0
+    assert summary["consumed_count"] == 1
 
 
 @pytest.mark.parametrize(

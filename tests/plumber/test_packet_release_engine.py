@@ -755,6 +755,118 @@ def test_release_engine_is_one_shot_and_replay_is_denied() -> None:
     assert PacketCode.REPLAY_DETECTED in replay.denial_codes
 
 
+def test_release_engine_rolls_back_replay_claim_after_hnc_auth_failure() -> None:
+    fixture = _fixture()
+    inspection = fixture.engine.inspect_packet(
+        fixture.packet,
+        fixture.hnc_packet,
+        observer_transcript=fixture.observer,
+        sympathetic_identity=fixture.sympathetic,
+        quorum_permits=fixture.permits,
+        now=NOW + timedelta(seconds=1),
+    )
+    gate = _approved_gate(fixture, inspection)
+    calls = 0
+
+    def processor(view: memoryview) -> LocalComputationResult:
+        nonlocal calls
+        calls += 1
+        return LocalComputationResult(
+            outcome_code="synthetic_ok",
+            result_commitment=domain_hash("test.local-result", {"size": len(view)}),
+            evidence_commitments={},
+        )
+
+    denied, denied_enclave = fixture.engine.execute(
+        inspection,
+        gate,
+        fixture.hnc_packet,
+        master_key=b"wrong-key" * 4,
+        expected_purpose=PURPOSE,
+        processor_id="synthetic_processor",
+        processor=processor,
+        now=NOW + timedelta(seconds=2),
+    )
+    assert denied.disposition is ReleaseDisposition.DENY
+    assert denied_enclave is not None
+    assert denied_enclave.disposition is EnclaveDisposition.DENY
+    assert calls == 0
+    assert fixture.replay_guard.public_summary() == {
+        "scope": "in_memory_local_development_only",
+        "anchor_count": 1,
+        "reservation_count": 1,
+        "execution_claim_count": 0,
+        "consumed_count": 0,
+        "seen_temporal_count": 0,
+        "seen_nonce_count": 0,
+        "persistent": False,
+    }
+
+    completed, completed_enclave = fixture.engine.execute(
+        inspection,
+        gate,
+        fixture.hnc_packet,
+        master_key=MASTER_KEY,
+        expected_purpose=PURPOSE,
+        processor_id="synthetic_processor",
+        processor=processor,
+        now=NOW + timedelta(seconds=3),
+    )
+    assert completed.disposition is ReleaseDisposition.COMPLETED_LOCAL
+    assert completed_enclave is not None
+    assert calls == 1
+    assert fixture.replay_guard.public_summary()["consumed_count"] == 1
+
+
+def test_release_engine_commits_replay_before_processor_side_effects() -> None:
+    fixture = _fixture()
+    inspection = fixture.engine.inspect_packet(
+        fixture.packet,
+        fixture.hnc_packet,
+        observer_transcript=fixture.observer,
+        sympathetic_identity=fixture.sympathetic,
+        quorum_permits=fixture.permits,
+        now=NOW + timedelta(seconds=1),
+    )
+    gate = _approved_gate(fixture, inspection)
+    calls = 0
+
+    def processor(_view: memoryview) -> LocalComputationResult:
+        nonlocal calls
+        calls += 1
+        raise RuntimeError("synthetic post-effect failure")
+
+    held, enclave_receipt = fixture.engine.execute(
+        inspection,
+        gate,
+        fixture.hnc_packet,
+        master_key=MASTER_KEY,
+        expected_purpose=PURPOSE,
+        processor_id="synthetic_processor",
+        processor=processor,
+        now=NOW + timedelta(seconds=2),
+    )
+    assert held.disposition is ReleaseDisposition.HOLD
+    assert enclave_receipt is not None
+    assert calls == 1
+    assert fixture.replay_guard.public_summary()["consumed_count"] == 1
+
+    repeated, repeated_enclave = fixture.engine.execute(
+        inspection,
+        gate,
+        fixture.hnc_packet,
+        master_key=MASTER_KEY,
+        expected_purpose=PURPOSE,
+        processor_id="synthetic_processor",
+        processor=processor,
+        now=NOW + timedelta(seconds=3),
+    )
+    assert repeated.disposition is ReleaseDisposition.DENY
+    assert ReleaseCode.INSPECTION_NOT_ISSUED in repeated.denial_codes
+    assert repeated_enclave is None
+    assert calls == 1
+
+
 def test_release_engine_denies_gate_not_bound_to_inspection_evidence() -> None:
     fixture = _fixture()
     inspection = fixture.engine.inspect_packet(

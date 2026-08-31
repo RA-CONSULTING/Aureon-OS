@@ -57,8 +57,8 @@ def _normalize_json_value(value: Any, *, path: str = "$") -> Any:
 def canonical_json_bytes(value: Any) -> bytes:
     """Encode one JSON value deterministically, rejecting unsafe extensions."""
 
-    normalized = _normalize_json_value(value)
     try:
+        normalized = _normalize_json_value(value)
         rendered = json.dumps(
             normalized,
             sort_keys=True,
@@ -66,6 +66,10 @@ def canonical_json_bytes(value: Any) -> bytes:
             ensure_ascii=True,
             allow_nan=False,
         )
+    except CryptoContractError:
+        raise
+    except RecursionError as exc:
+        raise CryptoContractError("json_nesting_too_deep") from exc
     except (TypeError, ValueError) as exc:
         raise CryptoContractError("json_encoding_failed") from exc
     return rendered.encode("utf-8")
@@ -86,7 +90,10 @@ def decode_canonical_json(
     if type(max_bytes) is not int or max_bytes < 1:
         raise CryptoContractError("json_input_size_invalid")
     if isinstance(data, str):
-        raw = data.encode("utf-8", errors="strict")
+        try:
+            raw = data.encode("utf-8", errors="strict")
+        except UnicodeEncodeError as exc:
+            raise CryptoContractError("json_decoding_failed") from exc
     elif isinstance(data, bytes):
         raw = data
     else:
@@ -111,9 +118,16 @@ def decode_canonical_json(
             object_pairs_hook=reject_duplicate_keys,
             parse_constant=reject_constant,
         )
-    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+    except CryptoContractError:
+        raise
+    except RecursionError as exc:
+        raise CryptoContractError("json_nesting_too_deep") from exc
+    except (UnicodeDecodeError, json.JSONDecodeError, ValueError) as exc:
         raise CryptoContractError("json_decoding_failed") from exc
-    _normalize_json_value(value)
+    try:
+        _normalize_json_value(value)
+    except RecursionError as exc:
+        raise CryptoContractError("json_nesting_too_deep") from exc
     if canonical_json_bytes(value) != raw:
         raise CryptoContractError("json_encoding_not_canonical")
     if require_mapping and not isinstance(value, dict):

@@ -11,12 +11,11 @@ import json
 import os
 import shutil
 import subprocess
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Iterable
 
 from aureon.harmonic.hnc_quantum_packet_crypto import sha256_hex
-
 
 SCHEMA_VERSION = "aureon-hnc-swarm-key-store-v1"
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -25,7 +24,7 @@ DEFAULT_AGENT_NAMES = ("seer", "lyra", "king")
 
 
 def utc_now() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 def generate_agent_key() -> str:
@@ -45,6 +44,15 @@ def _run_powershell(script: str, *, stdin: str | None = None, env: dict[str, str
     merged_env = os.environ.copy()
     if env:
         merged_env.update(env)
+    # A process started by PowerShell 7 inherits its PSModulePath.  Passing that
+    # path to Windows PowerShell 5.1 can make it discover the PowerShell 7 copy
+    # of Microsoft.PowerShell.Security first, which cannot be loaded by 5.1.
+    # Leave the variable absent in the child so powershell.exe reconstructs its
+    # native user, machine, and inbox module paths.  Remove every case variant
+    # because Windows environment-variable names are case-insensitive.
+    for name in tuple(merged_env):
+        if name.casefold() == "psmodulepath":
+            del merged_env[name]
     result = subprocess.run(
         [_powershell(), "-NoProfile", "-NonInteractive", "-Command", script],
         input=stdin,
@@ -54,7 +62,10 @@ def _run_powershell(script: str, *, stdin: str | None = None, env: dict[str, str
         check=False,
     )
     if result.returncode != 0:
-        raise RuntimeError((result.stderr or result.stdout or "powershell_failed").strip())
+        # Successful DPAPI unprotect operations intentionally return the secret
+        # on stdout, while PowerShell diagnostics can contain command input or
+        # environment values.  Keep the public failure stable and non-secret.
+        raise RuntimeError("powershell_failed")
     return result.stdout
 
 

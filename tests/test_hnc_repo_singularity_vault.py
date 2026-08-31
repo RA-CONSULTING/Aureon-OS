@@ -1,19 +1,21 @@
+import hashlib
 import io
 import json
 import tarfile
 
-from aureon.harmonic.hnc_quantum_packet_crypto import decode_hnc_swarm_packet
+import pytest
+
+from aureon.harmonic.hnc_quantum_packet_crypto import HNCPacketError, decode_hnc_swarm_packet
 from aureon.vault.hnc_repo_singularity_vault import (
     build_repo_singularity_vault,
     decode_repo_singularity_archive,
     write_repo_singularity_vault,
 )
 
-
 AGENTS = {
-    "seer": "seer-singularity-key-32-bytes-test",
-    "lyra": "lyra-singularity-key-32-bytes-test",
-    "king": "king-singularity-key-32-bytes-test",
+    "seer": hashlib.sha256(b"seer-singularity-test-key").digest(),
+    "lyra": hashlib.sha256(b"lyra-singularity-test-key").digest(),
+    "king": hashlib.sha256(b"king-singularity-test-key").digest(),
 }
 
 
@@ -50,7 +52,12 @@ def test_repo_singularity_seals_and_decodes_small_repo(tmp_path):
 
     report = build_repo_singularity_vault(tmp_path, seal=True, agent_secrets=AGENTS)
     packet = report["seal"]["packet"]
-    archive_bytes = decode_repo_singularity_archive(packet, {"seer": AGENTS["seer"], "lyra": AGENTS["lyra"]})
+    archive_bytes = decode_repo_singularity_archive(
+        packet,
+        {"seer": AGENTS["seer"], "lyra": AGENTS["lyra"]},
+        expected_root_sha256=report["summary"]["root_sha256"],
+        expected_file_count=report["summary"]["file_count"],
+    )
 
     assert report["status"] == "sealed_singularity_ready"
     assert report["seal"]["swarm_breaker"]["passed"] is True
@@ -61,6 +68,29 @@ def test_repo_singularity_seals_and_decodes_small_repo(tmp_path):
     assert "aureon/core.py" in names
     assert "README.md" in names
     assert "print('alive')" not in json.dumps(report["seal"]["packet"])
+
+
+def test_repo_singularity_decode_requires_externally_pinned_snapshot_identity(tmp_path):
+    (tmp_path / "aureon").mkdir()
+    (tmp_path / "aureon" / "core.py").write_text("print('alive')\n", encoding="utf-8")
+    report = build_repo_singularity_vault(tmp_path, seal=True, agent_secrets=AGENTS)
+    packet = report["seal"]["packet"]
+    available_agents = {"seer": AGENTS["seer"], "lyra": AGENTS["lyra"]}
+
+    with pytest.raises(HNCPacketError, match="operator_aad_mismatch"):
+        decode_repo_singularity_archive(
+            packet,
+            available_agents,
+            expected_root_sha256="0" * 64,
+            expected_file_count=report["summary"]["file_count"],
+        )
+    with pytest.raises(HNCPacketError, match="operator_aad_mismatch"):
+        decode_repo_singularity_archive(
+            packet,
+            available_agents,
+            expected_root_sha256=report["summary"]["root_sha256"],
+            expected_file_count=report["summary"]["file_count"] + 1,
+        )
 
 
 def test_repo_singularity_writes_reports_and_obsidian_note(tmp_path):

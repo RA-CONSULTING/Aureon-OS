@@ -66,6 +66,25 @@ def test_canonical_json_rejects_ambiguous_numbers_and_duplicates() -> None:
             decode_canonical_json(raw)
 
 
+def test_canonical_json_reports_deep_nesting_as_stable_contract_error() -> None:
+    nested: object = 0
+    for _ in range(1_200):
+        nested = [nested]
+
+    with pytest.raises(CryptoContractError, match="json_nesting_too_deep"):
+        canonical_json_bytes(nested)
+    with pytest.raises(CryptoContractError, match="json_nesting_too_deep"):
+        decode_canonical_json("[" * 1_200 + "0" + "]" * 1_200)
+
+
+def test_canonical_json_reports_invalid_unicode_and_large_integer_stably() -> None:
+    with pytest.raises(CryptoContractError, match="json_decoding_failed"):
+        decode_canonical_json('"\ud800"')
+
+    with pytest.raises(CryptoContractError, match="json_decoding_failed"):
+        decode_canonical_json("9" * 5_000)
+
+
 def test_strict_base64_and_ed25519_round_trip() -> None:
     encoded = b64url_encode(b"opaque-cipher-bytes")
     assert b64url_decode(encoded) == b"opaque-cipher-bytes"

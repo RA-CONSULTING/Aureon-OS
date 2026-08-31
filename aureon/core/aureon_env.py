@@ -9,17 +9,16 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterable, MutableMapping, Optional
+from typing import Iterable, MutableMapping
 
 from aureon.harmonic.hnc_quantum_packet_crypto import (
     ENV_PACKET_PREFIX,
-    HNCPacketError,
     LEGACY_MASTER_KEY_ENV,
     MASTER_KEY_ENV,
+    HNCPacketError,
     decode_env_packet,
     is_env_packet,
 )
-
 
 SECRET_KEYS = {
     "KRAKEN_API_KEY",
@@ -120,7 +119,7 @@ class EnvLoadReport:
         }
 
 
-def resolve_repo_root(start: Optional[Path] = None) -> Path:
+def resolve_repo_root(start: Path | None = None) -> Path:
     current = Path(start or Path.cwd()).resolve()
     if current.is_file():
         current = current.parent
@@ -130,7 +129,7 @@ def resolve_repo_root(start: Optional[Path] = None) -> Path:
     return Path(__file__).resolve().parents[2]
 
 
-def candidate_env_paths(repo_root: Optional[Path] = None) -> list[Path]:
+def candidate_env_paths(repo_root: Path | None = None) -> list[Path]:
     root = resolve_repo_root(repo_root)
     candidates: list[Path] = []
     for env_name in ("AUREON_ENV_FILE", "DOTENV_PATH"):
@@ -159,7 +158,7 @@ def candidate_env_paths(repo_root: Optional[Path] = None) -> list[Path]:
     return unique
 
 
-def _parse_env_line(line: str) -> Optional[tuple[str, str]]:
+def _parse_env_line(line: str) -> tuple[str, str] | None:
     raw = line.strip()
     if not raw or raw.startswith("#"):
         return None
@@ -196,7 +195,7 @@ def _fallback_load_env_file(
 
 
 def apply_env_aliases(
-    environ: Optional[MutableMapping[str, str]] = None,
+    environ: MutableMapping[str, str] | None = None,
     *,
     override: bool = False,
 ) -> list[dict[str, str]]:
@@ -215,10 +214,10 @@ def apply_env_aliases(
 
 
 def decode_hnc_env_packets(
-    environ: Optional[MutableMapping[str, str]] = None,
+    environ: MutableMapping[str, str] | None = None,
 ) -> tuple[list[dict[str, str]], list[dict[str, str]]]:
     env = os.environ if environ is None else environ
-    master_key = str(env.get(MASTER_KEY_ENV) or env.get(LEGACY_MASTER_KEY_ENV) or "").strip()
+    master_key = str(env.get(MASTER_KEY_ENV) or env.get(LEGACY_MASTER_KEY_ENV) or "")
     decoded: list[dict[str, str]] = []
     errors: list[dict[str, str]] = []
     if not master_key:
@@ -239,10 +238,10 @@ def decode_hnc_env_packets(
 
 
 def load_aureon_environment(
-    repo_root: Optional[Path] = None,
+    repo_root: Path | None = None,
     *,
     override: bool = False,
-    environ: Optional[MutableMapping[str, str]] = None,
+    environ: MutableMapping[str, str] | None = None,
 ) -> EnvLoadReport:
     env = os.environ if environ is None else environ
     candidates = candidate_env_paths(repo_root)
@@ -308,7 +307,7 @@ HNC_RUNTIME_KEYS: tuple[str, ...] = (
 
 
 def bootstrap_credentials(
-    repo_root: Optional[Path] = None,
+    repo_root: Path | None = None,
     *,
     override: bool = False,
 ) -> dict:
@@ -357,7 +356,7 @@ def bootstrap_credentials(
 
 def env_truthy(
     name: str,
-    environ: Optional[MutableMapping[str, str]] = None,
+    environ: MutableMapping[str, str] | None = None,
     default: bool = False,
 ) -> bool:
     env = os.environ if environ is None else environ
@@ -368,7 +367,7 @@ def env_truthy(
 
 
 def enabled_credential_groups(
-    environ: Optional[MutableMapping[str, str]] = None,
+    environ: MutableMapping[str, str] | None = None,
 ) -> dict[str, tuple[str, ...]]:
     env = os.environ if environ is None else environ
     groups: dict[str, tuple[str, ...]] = {}
@@ -380,7 +379,7 @@ def enabled_credential_groups(
 
 def env_presence(
     keys: Iterable[str],
-    environ: Optional[MutableMapping[str, str]] = None,
+    environ: MutableMapping[str, str] | None = None,
 ) -> dict[str, dict[str, object]]:
     env = os.environ if environ is None else environ
     status: dict[str, dict[str, object]] = {}
@@ -397,7 +396,7 @@ def env_presence(
 
 def missing_env(
     keys: Iterable[str],
-    environ: Optional[MutableMapping[str, str]] = None,
+    environ: MutableMapping[str, str] | None = None,
 ) -> list[str]:
     env = os.environ if environ is None else environ
     return [key for key in keys if not str(env.get(key, "") or "").strip()]

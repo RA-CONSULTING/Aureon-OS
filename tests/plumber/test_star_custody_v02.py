@@ -1,14 +1,19 @@
 from __future__ import annotations
 
+import base64
 import hashlib
 import json
 import traceback
+import zlib
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, replace
+from pathlib import Path
 from typing import Any
 
 import pytest
+from cryptography.exceptions import InvalidTag
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 from aureon.harmonic.hnc_quantum_packet_crypto import (
     build_hnc_quantum_packet,
@@ -48,6 +53,13 @@ SESSION_ID = "session-v02"
 CAPABILITY_ID = "verify-signature"
 PLAINTEXT = b"protected-plaintext-canary"
 MASTER_KEY = b"local-lab-master-key-material-32-bytes"
+LEGACY_V1_FIXTURES = json.loads(
+    (
+        Path(__file__).parents[1]
+        / "fixtures"
+        / "hnc_legacy_v1_known_answers.json"
+    ).read_text(encoding="utf-8")
+)
 
 
 def _digest(label: str) -> str:
@@ -73,6 +85,30 @@ def _binding(role: str, private_key: Ed25519PrivateKey) -> AuthorityBindingV02:
 
 def _safe_capability(plaintext: bytes) -> Mapping[str, Any]:
     return {"signature_valid": plaintext == PLAINTEXT}
+
+
+def _legacy_single_carrier(vector: Mapping[str, str]) -> tuple[dict[str, Any], bytes | str]:
+    fixture = LEGACY_V1_FIXTURES["single"]
+    metadata = json.loads(
+        zlib.decompress(base64.b64decode(fixture["metadata_zlib_b64"])).decode("utf-8")
+    )
+    key = (
+        base64.b64decode(vector["key_value"])
+        if vector["key_kind"] == "bytes_b64"
+        else vector["key_value"]
+    )
+    return (
+        {
+            "magic": "AUREON-HNC-QP",
+            "schema_version": 1,
+            "metadata": metadata,
+            "operator_aad": fixture["operator_aad"],
+            "nonce_b64": fixture["nonce_b64"],
+            "ciphertext_b64": vector["ciphertext_b64"],
+            "packet_sha256": vector["packet_sha256"],
+        },
+        key,
+    )
 
 
 def _plaintext_leaking_capability(plaintext: bytes) -> Mapping[str, Any]:
@@ -199,6 +235,8 @@ def _build_custody(
     *,
     handler: Callable[[bytes], Mapping[str, Any]] = _safe_capability,
     additional_capabilities: Mapping[str, RegisteredCapabilityV02] | None = None,
+    master_key: bytes | str = MASTER_KEY,
+    carrier: Mapping[str, Any] | None = None,
 ) -> _CustodyFixture:
     config = _configuration(handler=handler)
     capabilities = {
@@ -214,18 +252,20 @@ def _build_custody(
         capabilities=capabilities,
         trusted_now_ms=lambda: NOW_MS,
     )
-    carrier = build_hnc_quantum_packet(
-        PLAINTEXT,
-        MASTER_KEY,
-        purpose=PURPOSE,
-        operator_aad={"laboratory": True},
-    )
+    if carrier is None:
+        carrier = build_hnc_quantum_packet(
+            PLAINTEXT,
+            master_key,
+            purpose=PURPOSE,
+            operator_aad={"laboratory": True},
+        )
+    carrier_purpose = carrier["metadata"]["purpose"]
     packet = custody.protect_carrier(
         packet_id="packet-v02",
-        purpose=PURPOSE,
+        purpose=carrier_purpose,
         release_context_sha256=_digest("release-context"),
         legacy_carrier=carrier,
-        legacy_master_key=MASTER_KEY,
+        legacy_master_key=master_key,
     )
     config.state_store.create(
         session_id=SESSION_ID,
@@ -347,6 +387,46 @@ def test_star_custody_happy_path_returns_only_registered_capability_result() -> 
     assert metadata["production_ready"] is False
     assert fixture.custody.production_ready is False
     assert PLAINTEXT.decode() not in json.dumps([result, metadata], sort_keys=True)
+
+
+def test_star_custody_normalizes_base64url_looking_string_master_key() -> None:
+    normalized_key = hashlib.sha256(b"base64url-looking-master-key").digest()
+    encoded_key = base64.urlsafe_b64encode(normalized_key).decode("ascii").rstrip("=")
+    fixture = _build_custody(master_key=encoded_key)
+
+    result, metadata = fixture.custody.release_to_capability(
+        fixture.packet,
+        lease=fixture.lease,
+        authorization_chain=fixture.authorization_chain,
+        capability_id=CAPABILITY_ID,
+    )
+
+    assert result == {"signature_valid": True}
+    assert metadata["keys_returned"] is False
+
+
+@pytest.mark.parametrize(
+    "vector",
+    LEGACY_V1_FIXTURES["single"]["vectors"],
+    ids=lambda vector: vector["key_kind"],
+)
+def test_star_custody_releases_prechange_v1_key_profiles(vector) -> None:
+    carrier, master_key = _legacy_single_carrier(vector)
+    fixture = _build_custody(
+        handler=lambda plaintext: {"legacy_profile_valid": plaintext == b"legacy-profile"},
+        master_key=master_key,
+        carrier=carrier,
+    )
+
+    result, metadata = fixture.custody.release_to_capability(
+        fixture.packet,
+        lease=fixture.lease,
+        authorization_chain=fixture.authorization_chain,
+        capability_id=CAPABILITY_ID,
+    )
+
+    assert result == {"legacy_profile_valid": True}
+    assert metadata["keys_returned"] is False
 
 
 def test_star_custody_public_packet_and_registration_have_no_secret_material() -> None:
@@ -552,6 +632,94 @@ def test_star_custody_packet_material_is_one_use() -> None:
             authorization_chain=fixture.authorization_chain,
             capability_id=CAPABILITY_ID,
         )
+
+
+def test_star_custody_aead_failure_does_not_consume_retryable_material(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fixture = _build_custody()
+    record = fixture.custody._records[fixture.packet.packet_id]
+    original_decrypt = AESGCM.decrypt
+    attempts = 0
+
+    def fail_once(
+        cipher: AESGCM,
+        nonce: bytes,
+        data: bytes,
+        associated_data: bytes | None,
+    ) -> bytes:
+        nonlocal attempts
+        attempts += 1
+        if attempts == 1:
+            raise InvalidTag
+        return original_decrypt(cipher, nonce, data, associated_data)
+
+    monkeypatch.setattr(AESGCM, "decrypt", fail_once)
+
+    with pytest.raises(
+        StarCustodyError,
+        match="protected_packet_authentication_failed",
+    ):
+        fixture.custody.release_to_capability(
+            fixture.packet,
+            lease=fixture.lease,
+            authorization_chain=fixture.authorization_chain,
+            capability_id=CAPABILITY_ID,
+        )
+
+    assert fixture.custody._records[fixture.packet.packet_id] is record
+    assert record.claimed is False
+
+    result, _metadata = fixture.custody.release_to_capability(
+        fixture.packet,
+        lease=fixture.lease,
+        authorization_chain=fixture.authorization_chain,
+        capability_id=CAPABILITY_ID,
+    )
+    assert attempts >= 2
+    assert result == {"signature_valid": True}
+
+    with pytest.raises(StarCustodyError, match="custody_material_unavailable_or_reused"):
+        fixture.custody.release_to_capability(
+            fixture.packet,
+            lease=fixture.lease,
+            authorization_chain=fixture.authorization_chain,
+            capability_id=CAPABILITY_ID,
+        )
+
+
+def test_star_custody_capability_failure_still_consumes_one_use_material() -> None:
+    attempts = 0
+
+    def fail_once(plaintext: bytes) -> Mapping[str, Any]:
+        nonlocal attempts
+        attempts += 1
+        if attempts == 1:
+            raise RuntimeError("synthetic capability failure")
+        return _safe_capability(plaintext)
+
+    fixture = _build_custody(handler=fail_once)
+    record = fixture.custody._records[fixture.packet.packet_id]
+
+    with pytest.raises(StarCustodyError, match="capability_execution_failed"):
+        fixture.custody.release_to_capability(
+            fixture.packet,
+            lease=fixture.lease,
+            authorization_chain=fixture.authorization_chain,
+            capability_id=CAPABILITY_ID,
+        )
+
+    assert attempts == 1
+    assert fixture.packet.packet_id not in fixture.custody._records
+    assert all(not any(share) for share in record.shares)
+    with pytest.raises(StarCustodyError, match="custody_material_unavailable_or_reused"):
+        fixture.custody.release_to_capability(
+            fixture.packet,
+            lease=fixture.lease,
+            authorization_chain=fixture.authorization_chain,
+            capability_id=CAPABILITY_ID,
+        )
+    assert attempts == 1
 
 
 def test_star_custody_rejects_unregistered_per_call_capability_selection() -> None:

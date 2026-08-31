@@ -1,3 +1,4 @@
+import base64
 import os
 
 import pytest
@@ -94,7 +95,7 @@ def test_missing_env_reports_names_without_values(monkeypatch):
 
 def test_load_aureon_environment_decodes_hnc_env_packets(tmp_path, monkeypatch):
     monkeypatch.delenv("PYTHON_DOTENV_DISABLED", raising=False)
-    master_key = "local-hnc-master-key-for-tests-32-bytes"
+    master_key = base64.urlsafe_b64encode(b"K" * 32).decode("ascii").rstrip("=")
     token = encode_env_packet("packet-secret-from-file", master_key, env_key="KRAKEN_API_SECRET")
     env_path = tmp_path / ".env"
     env_path.write_text(
@@ -119,6 +120,27 @@ def test_load_aureon_environment_decodes_hnc_env_packets(tmp_path, monkeypatch):
     assert report.packet_errors == []
     assert missing_env(KRAKEN_REQUIRED_ENV) == []
     assert env_presence(KRAKEN_REQUIRED_ENV)["KRAKEN_API_SECRET"]["hnc_packet"] is False
+
+
+def test_decode_hnc_env_packets_rejects_whitespace_modified_master_key():
+    master_key = base64.urlsafe_b64encode(b"K" * 32).decode("ascii").rstrip("=")
+    token = encode_env_packet(
+        "packet-secret",
+        master_key,
+        env_key="KRAKEN_API_SECRET",
+    )
+    env = {
+        MASTER_KEY_ENV: f" {master_key}",
+        "KRAKEN_API_SECRET": token,
+    }
+
+    decoded, errors = decode_hnc_env_packets(env)
+
+    assert decoded == []
+    assert len(errors) == 1
+    assert errors[0]["key"] == "KRAKEN_API_SECRET"
+    assert "master_key_string_must_be_canonical_unpadded_base64url" in errors[0]["error"]
+    assert env["KRAKEN_API_SECRET"] == token
 
 
 def test_decode_hnc_env_packets_leaves_packet_when_master_key_missing():

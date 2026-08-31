@@ -380,6 +380,7 @@ class PacketReplayGuard:
         self._consumed: set[str] = set()
         self._anchors: dict[str, _TemporalAnchor] = {}
         self._reservations: dict[str, _TemporalReservation] = {}
+        self._execution_claims: dict[str, _TemporalReservation] = {}
         self._reserved_sessions: set[str] = set()
         self._seen_temporal_commitments: set[str] = set()
         self._seen_nonce_commitments: set[str] = set()
@@ -429,7 +430,11 @@ class PacketReplayGuard:
     def has_seen(self, replay_token: str) -> bool:
         require_sha256(replay_token, field="replay_token")
         with self._lock:
-            return replay_token in self._consumed or replay_token in self._reservations
+            return (
+                replay_token in self._consumed
+                or replay_token in self._reservations
+                or replay_token in self._execution_claims
+            )
 
     def reserve_temporal(
         self,
@@ -450,16 +455,23 @@ class PacketReplayGuard:
                 anchor is None
                 or replay_token in self._consumed
                 or replay_token in self._reservations
+                or replay_token in self._execution_claims
                 or temporal.session_identity in self._reserved_sessions
             ):
                 return False
             reserved_temporal = {
                 reservation.temporal_commitment
-                for reservation in self._reservations.values()
+                for reservation in (
+                    *self._reservations.values(),
+                    *self._execution_claims.values(),
+                )
             }
             reserved_nonces = {
                 reservation.nonce_commitment
-                for reservation in self._reservations.values()
+                for reservation in (
+                    *self._reservations.values(),
+                    *self._execution_claims.values(),
+                )
             }
             validation = temporal.validate(
                 now=current,
@@ -485,29 +497,74 @@ class PacketReplayGuard:
             self._reserved_sessions.add(temporal.session_identity)
             return True
 
+    def claim_for_execution(self, replay_token: str) -> bool:
+        """Atomically claim a reservation while pre-capability work runs."""
+
+        require_sha256(replay_token, field="replay_token")
+        with self._lock:
+            if replay_token in self._consumed or replay_token in self._execution_claims:
+                return False
+            reservation = self._reservations.pop(replay_token, None)
+            if reservation is None:
+                return False
+            self._execution_claims[replay_token] = reservation
+            return True
+
+    def rollback_execution_claim(self, replay_token: str) -> bool:
+        """Return an uncommitted claim to its original reservation."""
+
+        require_sha256(replay_token, field="replay_token")
+        with self._lock:
+            if replay_token in self._consumed or replay_token in self._reservations:
+                return False
+            reservation = self._execution_claims.pop(replay_token, None)
+            if reservation is None:
+                return False
+            self._reservations[replay_token] = reservation
+            return True
+
+    def commit_execution_claim(self, replay_token: str) -> bool:
+        """Irreversibly consume a claim immediately before capability dispatch."""
+
+        require_sha256(replay_token, field="replay_token")
+        with self._lock:
+            reservation = self._execution_claims.pop(replay_token, None)
+            if reservation is None:
+                return False
+            return self._commit_reservation(replay_token, reservation)
+
     def consume(self, replay_token: str) -> bool:
         require_sha256(replay_token, field="replay_token")
         with self._lock:
-            reservation = self._reservations.get(replay_token)
+            reservation = self._reservations.pop(replay_token, None)
             if reservation is None:
                 return False
-            anchor = self._anchors.get(reservation.session_identity)
-            if anchor is None:  # pragma: no cover - anchors are never removed
-                return False
-            del self._reservations[replay_token]
-            self._reserved_sessions.remove(reservation.session_identity)
-            self._consumed.add(replay_token)
-            self._seen_temporal_commitments.add(reservation.temporal_commitment)
-            self._seen_nonce_commitments.add(reservation.nonce_commitment)
-            anchor.expected_previous_state_commitment = reservation.temporal_commitment
-            anchor.minimum_counter = reservation.counter
-            return True
+            return self._commit_reservation(replay_token, reservation)
+
+    def _commit_reservation(
+        self,
+        replay_token: str,
+        reservation: _TemporalReservation,
+    ) -> bool:
+        """Commit one reservation while ``self._lock`` is held."""
+
+        anchor = self._anchors.get(reservation.session_identity)
+        if anchor is None:  # pragma: no cover - anchors are never removed
+            return False
+        self._reserved_sessions.remove(reservation.session_identity)
+        self._consumed.add(replay_token)
+        self._seen_temporal_commitments.add(reservation.temporal_commitment)
+        self._seen_nonce_commitments.add(reservation.nonce_commitment)
+        anchor.expected_previous_state_commitment = reservation.temporal_commitment
+        anchor.minimum_counter = reservation.counter
+        return True
 
     def public_summary(self) -> dict[str, Any]:
         with self._lock:
             summary = {
                 "anchor_count": len(self._anchors),
                 "reservation_count": len(self._reservations),
+                "execution_claim_count": len(self._execution_claims),
                 "consumed_count": len(self._consumed),
                 "seen_temporal_count": len(self._seen_temporal_commitments),
                 "seen_nonce_count": len(self._seen_nonce_commitments),

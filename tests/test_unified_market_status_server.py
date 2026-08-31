@@ -1,10 +1,10 @@
+import base64
 import json
 import os
 import sys
 import tempfile
 import unittest
 from pathlib import Path
-
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 EXCHANGES_DIR = REPO_ROOT / "aureon" / "exchanges"
@@ -22,10 +22,12 @@ class UnifiedMarketStatusServerFlightTestTests(unittest.TestCase):
         self.old_intent_path = status_server.MARKET_INTENT_PATH
         self.old_env_path = status_server.ENV_PATH
         self.old_env_update_intent_path = status_server.ENV_UPDATE_INTENT_PATH
+        self.old_hnc_packet_evidence_path = status_server.HNC_PACKET_EVIDENCE_PATH
         status_server.STATUS_PATH = self.state_root / "unified_runtime_status.json"
         status_server.MARKET_INTENT_PATH = self.state_root / "aureon_market_reboot_intent.json"
         status_server.ENV_PATH = self.state_root / ".env"
         status_server.ENV_UPDATE_INTENT_PATH = self.state_root / "aureon_env_update_intent.json"
+        status_server.HNC_PACKET_EVIDENCE_PATH = self.state_root / "aureon_hnc_quantum_packet_last_run.json"
         self.old_secret_env = {
             key: os.environ.get(key)
             for key in (
@@ -59,6 +61,7 @@ class UnifiedMarketStatusServerFlightTestTests(unittest.TestCase):
         status_server.MARKET_INTENT_PATH = self.old_intent_path
         status_server.ENV_PATH = self.old_env_path
         status_server.ENV_UPDATE_INTENT_PATH = self.old_env_update_intent_path
+        status_server.HNC_PACKET_EVIDENCE_PATH = self.old_hnc_packet_evidence_path
         for key, value in self.old_env.items():
             if value is None:
                 os.environ.pop(key, None)
@@ -156,7 +159,9 @@ class UnifiedMarketStatusServerFlightTestTests(unittest.TestCase):
         self.assertNotIn("new-kraken-secret", json.dumps(status))
 
     def test_env_credential_update_packet_encrypts_when_hnc_master_key_present(self):
-        os.environ["AUREON_HNC_PACKET_MASTER_KEY"] = "test-hnc-master-key-for-env-packets-32-bytes"
+        os.environ["AUREON_HNC_PACKET_MASTER_KEY"] = (
+            base64.urlsafe_b64encode(b"U" * 32).decode("ascii").rstrip("=")
+        )
         updates = status_server._extract_env_updates(
             "kraken",
             {"krakenApiKey": "packet-kraken-key", "krakenApiSecret": "packet-kraken-secret"},
@@ -171,8 +176,21 @@ class UnifiedMarketStatusServerFlightTestTests(unittest.TestCase):
         self.assertNotIn("packet-kraken-secret", env_text)
         self.assertEqual(result["hnc_packet_encrypted_keys"], ["KRAKEN_API_KEY", "KRAKEN_API_SECRET"])
         self.assertTrue(status["hnc_packet_encryption"]["enabled"])
+        self.assertTrue(status["hnc_packet_encryption"]["master_key_valid"])
         self.assertEqual(status["hnc_packet_encryption"]["encoded_key_count"], 2)
         self.assertTrue(status_server.HNC_PACKET_EVIDENCE_PATH.exists())
+
+    def test_env_status_does_not_report_malformed_hnc_key_as_enabled(self):
+        os.environ["AUREON_HNC_PACKET_MASTER_KEY"] = "not a canonical base64url key"
+
+        status = status_server._env_credentials_status()
+        encryption = status["hnc_packet_encryption"]
+
+        self.assertTrue(encryption["master_key_present"])
+        self.assertFalse(encryption["master_key_valid"])
+        self.assertFalse(encryption["enabled"])
+        self.assertEqual(encryption["configuration_error"], "hnc_master_key_invalid")
+        self.assertNotIn(os.environ["AUREON_HNC_PACKET_MASTER_KEY"], json.dumps(status))
 
     def test_flight_test_treats_env_update_as_pending_restart(self):
         self._write_status(open_positions=0)
