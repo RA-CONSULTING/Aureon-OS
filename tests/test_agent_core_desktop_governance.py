@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import hashlib
 import io
 
 from PIL import Image
@@ -90,7 +89,7 @@ def test_agent_core_has_no_raw_laptop_fallback() -> None:
     assert "Unknown intent" in result["error"]
 
 
-def test_agent_core_routes_click_through_dry_run_gateway(tmp_path) -> None:
+def test_agent_core_holds_desktop_input_even_with_injected_gateway(tmp_path) -> None:
     backend = _Backend()
     gateway = GovernedDesktopGateway(
         backend=backend,
@@ -99,20 +98,16 @@ def test_agent_core_routes_click_through_dry_run_gateway(tmp_path) -> None:
     )
     core = AureonAgentCore()
     core._desktop = gateway
-    binding = gateway.bind_target_window("Fixture Browser")
+    result = core.click(10, 20, target_binding_id="attacker-supplied-binding")
 
-    result = core.click(10, 20, target_binding_id=binding.binding_id)
-
-    assert result["success"] is True
-    assert result["dry_run"] is True
-    assert result["expected_before_sha256"] == result["before_sha256"]
-    assert len(result["expected_before_sha256"]) == 64
-    assert result["expected_before_sha256"] != hashlib.sha256(backend.image_bytes).hexdigest()
-    assert result["source_observation_action_id"]
+    assert result["success"] is False
+    assert result["status"] == "hold"
+    assert result["magic_star_required"] is True
+    assert result["error"] == "production_magic_star_desktop_release_unavailable"
     assert backend.actions == []
 
 
-def test_agent_core_live_click_requires_lease_and_exact_window_binding(tmp_path) -> None:
+def test_agent_core_cannot_mint_live_desktop_lease(tmp_path) -> None:
     backend = _Backend()
     gateway = GovernedDesktopGateway(
         backend=backend,
@@ -127,20 +122,16 @@ def test_agent_core_live_click_requires_lease_and_exact_window_binding(tmp_path)
         subject="synthetic-course-benchmark",
         allowed_actions=["click"],
     )
-    binding = core.desktop_bind_window("Fixture Browser")
+    result = core.click(10, 20, target_binding_id="attacker-supplied-binding")
 
-    result = core.click(10, 20, target_binding_id=binding["binding_id"])
-
-    assert arm["success"] is True
-    assert result["success"] is True
-    assert result["dry_run"] is False
-    assert result["expected_before_sha256"] == result["before_sha256"]
-    assert len(result["expected_before_sha256"]) == 64
-    assert result["source_observation_action_id"]
-    assert backend.actions == [("click", 10, 20, "left", 1)]
+    assert arm["success"] is False
+    assert arm["status"] == "hold"
+    assert arm["error"] == "production_magic_star_desktop_release_unavailable"
+    assert result["status"] == "hold"
+    assert backend.actions == []
 
 
-def test_agent_core_rejects_live_click_when_bound_source_frame_drifts(tmp_path) -> None:
+def test_agent_core_never_observes_or_dispatches_a_drifting_desktop_candidate(tmp_path) -> None:
     backend = _DriftingBackend()
     gateway = GovernedDesktopGateway(
         backend=backend,
@@ -155,14 +146,11 @@ def test_agent_core_rejects_live_click_when_bound_source_frame_drifts(tmp_path) 
         subject="synthetic-course-benchmark",
         allowed_actions=["click"],
     )
-    binding = core.desktop_bind_window("Fixture Browser")
+    result = core.click(10, 20, target_binding_id="attacker-supplied-binding")
 
-    result = core.click(10, 20, target_binding_id=binding["binding_id"])
-
-    assert arm["success"] is True
-    assert result["success"] is False
-    assert result["reason"] == "stale_source_frame"
-    assert result["expected_before_sha256"] != result["before_sha256"]
+    assert arm["status"] == "hold"
+    assert result["status"] == "hold"
+    assert backend.capture_count == 0
     assert backend.actions == []
 
 

@@ -200,7 +200,11 @@ def test_action_endpoint_and_bearer_gate(monkeypatch):
     import aureon.operator.operator_server as srv
 
     importlib.reload(srv)
-    c = srv.create_app().test_client()
+    c = srv.create_app(
+        test_ingress_release=srv.TestOnlyOperatorIngressRelease(
+            master_key=b"grounded-action-http-route-test-key",
+        )
+    ).test_client()
 
     r = c.post("/api/action", json={"action": "list_repo", "params": {"path": "."}})
     assert r.status_code == 200
@@ -213,7 +217,11 @@ def test_action_endpoint_and_bearer_gate(monkeypatch):
     # bearer gate honoured when a key is set
     monkeypatch.setenv("AUREON_OPERATOR_API_KEY", "sesame")
     importlib.reload(srv)
-    c2 = srv.create_app().test_client()
+    c2 = srv.create_app(
+        test_ingress_release=srv.TestOnlyOperatorIngressRelease(
+            master_key=b"grounded-action-bearer-route-test-key",
+        )
+    ).test_client()
     assert c2.post("/api/action", json={"action": "list_repo"}).status_code == 401
     ok = c2.post("/api/action", json={"action": "list_repo"},
                  headers={"Authorization": "Bearer sesame"})

@@ -24,25 +24,25 @@ def census() -> dict[str, Any]:
 def test_inventory_is_exact_but_truthfully_not_certified(census: dict[str, Any]) -> None:
     assert census["inventory_aligned"] is True
     assert census["certified_no_bypass"] is False
-    assert census["detected_count"] == 1617
-    assert census["classified_count"] == 1617
-    assert census["blocker_count"] == 1246
+    assert census["detected_count"] == 1618
+    assert census["classified_count"] == 1618
+    assert census["blocker_count"] == 1247
     assert census["parse_errors"] == []
     assert census["unallowlisted"] == []
     assert census["stale_allowlist_entries"] == []
     assert census["counts_by_classification"] == {
         "dry-run-test-demo-only": 122,
         "economic-boundary-last-mile": 4,
-        "live-capable-unguarded-blocker": 1246,
+        "live-capable-unguarded-blocker": 1247,
         "provider-client-raw-transport-guard": 245,
         "unreachable-quarantined-launcher": 0,
     }
     assert census["counts_by_provider"] == {
-        "alpaca": 238,
-        "binance": 366,
-        "capital": 209,
-        "kraken": 453,
-        "multi-provider": 345,
+        "alpaca": 235,
+        "binance": 371,
+        "capital": 207,
+        "kraken": 452,
+        "multi-provider": 347,
         "oanda": 6,
     }
 
@@ -54,7 +54,7 @@ def test_every_entry_is_explicitly_owned_and_line_independent(
     assert all(item["rationale"].strip() for item in census["findings"])
     assert all(item["owner"].strip() for item in census["findings"])
     allowlist = AUDITOR.load_allowlist()
-    assert len(allowlist) == 1617
+    assert len(allowlist) == 1618
     assert all("line" not in entry for entry in allowlist.values())
 
 
@@ -950,6 +950,71 @@ def bypass(client):
         "raw-http",
         "raw-http-dynamic",
     }
+
+
+def test_python_proves_injected_fetch_uses_read_only_registry_default(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    read_only = _python_fixture_findings(
+        tmp_path,
+        monkeypatch,
+        """
+from typing import Callable
+
+BINANCE_REFERENCE = "https://api.binance.com/api/v3/ticker/price"
+Fetcher = Callable[[str], dict]
+
+def _registry_fetch(url: str):
+    return ToolRegistry().execute("web_fetch", {"url": url})
+
+def scout(url: str, fetcher: Fetcher | None = None):
+    fetch = fetcher or _registry_fetch
+    return fetch(url)
+""",
+        name="aureon/grants/scout.py",
+    )
+    assert read_only == []
+
+    unknown_default = _python_fixture_findings(
+        tmp_path,
+        monkeypatch,
+        """
+from typing import Callable
+
+BINANCE_REFERENCE = "https://api.binance.com/api/v3/ticker/price"
+Fetcher = Callable[[str], dict]
+
+def scout(url: str, fetcher: Fetcher | None = None):
+    fetch = fetcher or unknown_fetch
+    return fetch(url)
+""",
+        name="aureon/grants/unknown_scout.py",
+    )
+    assert [(item.operation, item.transport) for item in unknown_default] == [
+        ("dynamic-provider-mutation", "raw-http-dynamic")
+    ]
+
+
+def test_python_fetch_with_explicit_or_dynamic_method_remains_a_blocker(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    findings = _python_fixture_findings(
+        tmp_path,
+        monkeypatch,
+        """
+BINANCE_REFERENCE = "https://api.binance.com/api/v3/order"
+
+def mutate(fetch, url, method):
+    fetch(url, method=method)
+    return fetch(url, method="POST")
+""",
+        name="aureon/exchanges/binance_dynamic_fetch.py",
+    )
+    assert len(findings) == 2
+    assert all(item.operation == "dynamic-provider-mutation" for item in findings)
+    assert all(item.transport == "raw-http-dynamic" for item in findings)
 
 
 def test_typescript_detects_url_constructor_method_variable_and_camel_sdk(

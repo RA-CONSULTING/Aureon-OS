@@ -28,7 +28,14 @@ def _client(monkeypatch=None, *, operator=None, cognition=None, **env):
         import aureon.operator.operator_server as srv
 
         importlib.reload(srv)
-        return srv.create_app(operator=operator, cognition=cognition).test_client()
+        seam = srv.TestOnlyOperatorIngressRelease(
+            master_key=b"operator-server-route-test-key-material",
+        )
+        return srv.create_app(
+            operator=operator,
+            cognition=cognition,
+            test_ingress_release=seam,
+        ).test_client()
     finally:
         for k in env:
             os.environ.pop(k, None)
@@ -203,7 +210,14 @@ def test_api_open_when_no_key(tmp_path, monkeypatch):
         stream_events=blocked_provider("operator.stream_events"),
     )
     cognition = SimpleNamespace(bus=bus, reason=reason)
-    c = srv.create_app(operator=operator, cognition=cognition).test_client()
+    seam = srv.TestOnlyOperatorIngressRelease(
+        master_key=b"operator-server-open-route-test-key-material",
+    )
+    c = srv.create_app(
+        operator=operator,
+        cognition=cognition,
+        test_ingress_release=seam,
+    ).test_client()
     response = c.post("/api/cognition/reason", json={"prompt": "hi"})
     journal_after = fingerprint(root_journal)
 

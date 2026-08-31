@@ -14,10 +14,15 @@ pytest.importorskip("flask", reason="operator HTTP surface requires the `.[opera
 
 def _client(monkeypatch=None):
     import importlib
+
     import aureon.operator.operator_server as srv
 
     importlib.reload(srv)
-    return srv.create_app().test_client()
+    return srv.create_app(
+        test_ingress_release=srv.TestOnlyOperatorIngressRelease(
+            master_key=b"legacy-runtime-http-route-test-key-material",
+        )
+    ).test_client()
 
 
 def test_terminal_state_resolves_with_ok_flag():

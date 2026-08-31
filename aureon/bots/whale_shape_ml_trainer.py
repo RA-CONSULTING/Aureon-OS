@@ -38,13 +38,10 @@ if sys.platform == 'win32':
         pass
 
 import logging
-import json
-import pickle
 import numpy as np
 from pathlib import Path
-from dataclasses import dataclass, asdict
-from typing import List, Dict, Any, Optional, Tuple
-from collections import defaultdict
+from dataclasses import dataclass
+from typing import List, Dict, Any, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +57,7 @@ except ImportError:
 
 # Try to import elephant memory
 try:
-    from aureon.intelligence.aureon_elephant_learning import ElephantMemory, LearnedPattern
+    from aureon.intelligence.aureon_elephant_learning import ElephantMemory
     ELEPHANT_AVAILABLE = True
 except ImportError:
     ELEPHANT_AVAILABLE = False
@@ -145,54 +142,27 @@ class ShapeOutcomeTrainer:
         self._load_models()
     
     def _load_models(self):
-        """Load pre-trained models from disk"""
-        if not SKLEARN_AVAILABLE:
-            return
-        
-        try:
-            subtype_path = self.model_dir / "subtype_classifier.pkl"
-            if subtype_path.exists():
-                with open(subtype_path, 'rb') as f:
-                    self.subtype_classifier = pickle.load(f)
-                logger.info(f"✅ Loaded subtype classifier from {subtype_path}")
-            
-            profit_path = self.model_dir / "profit_regressor.pkl"
-            if profit_path.exists():
-                with open(profit_path, 'rb') as f:
-                    self.profit_regressor = pickle.load(f)
-                logger.info(f"✅ Loaded profit regressor from {profit_path}")
-            
-            win_path = self.model_dir / "win_classifier.pkl"
-            if win_path.exists():
-                with open(win_path, 'rb') as f:
-                    self.win_classifier = pickle.load(f)
-                logger.info(f"✅ Loaded win classifier from {win_path}")
-        
-        except Exception as e:
-            logger.warning(f"Failed to load models: {e}")
+        """Refuse executable pickle model artifacts.
+
+        Scikit-learn pickle/joblib files can execute attacker-controlled code
+        during deserialization. Models therefore remain in memory until a
+        schema-bound non-executable format (for example, a reviewed ONNX or
+        skops contract) is implemented.
+        """
+
+        legacy = tuple(self.model_dir.glob("*.pkl"))
+        if legacy:
+            logger.warning(
+                "Model persistence HOLD: %d legacy pickle artifact(s) ignored",
+                len(legacy),
+            )
     
     def _save_models(self):
-        """Save trained models to disk"""
-        if not SKLEARN_AVAILABLE:
-            return
-        
-        try:
-            if self.subtype_classifier:
-                with open(self.model_dir / "subtype_classifier.pkl", 'wb') as f:
-                    pickle.dump(self.subtype_classifier, f)
-            
-            if self.profit_regressor:
-                with open(self.model_dir / "profit_regressor.pkl", 'wb') as f:
-                    pickle.dump(self.profit_regressor, f)
-            
-            if self.win_classifier:
-                with open(self.model_dir / "win_classifier.pkl", 'wb') as f:
-                    pickle.dump(self.win_classifier, f)
-            
-            logger.info(f"💾 Saved models to {self.model_dir}")
-        
-        except Exception as e:
-            logger.error(f"Failed to save models: {e}")
+        """Keep trained models in memory; never emit executable pickle data."""
+
+        logger.warning(
+            "Model persistence HOLD: executable pickle/joblib output is disabled"
+        )
     
     def collect_training_data_from_elephant(self, min_samples: int = 50) -> int:
         """

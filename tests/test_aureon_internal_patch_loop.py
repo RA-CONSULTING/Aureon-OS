@@ -212,7 +212,7 @@ def _request(root: Path, assertion: str = "assert answer() == 2"):
     )
 
 
-def test_aureon_authors_applies_and_tests_a_real_unified_diff(tmp_path: Path, monkeypatch) -> None:
+def test_aureon_authors_but_never_applies_a_real_unified_diff(tmp_path: Path, monkeypatch) -> None:
     source = _source(tmp_path)
     resolver = PatchResolver()
     workforce = provision_agent_company_brain_fabric(resolver)
@@ -227,20 +227,42 @@ def test_aureon_authors_applies_and_tests_a_real_unified_diff(tmp_path: Path, mo
         controller=controller,
     )
 
-    assert source.read_text(encoding="utf-8") == "def answer():\n    return 2\n"
-    assert cycle["status"] == "internal_patch_applied_pending_senior_review"
-    assert cycle["applied"] is True
+    assert source.read_text(encoding="utf-8") == "def answer():\n    return 1\n"
+    assert cycle["status"] == "internal_patch_proposal_held_for_senior_review"
+    assert cycle["applied"] is False
     assert cycle["pending_senior_review"] is True
     assert cycle["proposal"]["source"] == "aureon_internal_coding_workforce"
-    assert cycle["proposal"]["status"] == "approved"
+    assert cycle["proposal"]["status"] == "proposal_reviewed_hold"
     assert cycle["proposal"]["reviewer"] == "aureon:pre_apply_council"
+    assert cycle["proposal"]["approval_scope"] == "proposal_review_only"
+    assert cycle["proposal"]["execution_authorized"] is False
+    assert cycle["proposal"]["release_authorized"] is False
     assert cycle["proposal"]["metadata"]["codex_implementation"] is False
     assert cycle["authoring_correction_attempted"] is False
     assert len(cycle["author_work_receipt_ids"]) == 1
     assert cycle["patch_validation"]["target_paths"] == ["sample.py"]
-    assert cycle["apply_evidence"]["status"] == "applied"
-    assert cycle["apply_evidence"]["test_results"][0]["ok"] is True
+    assert cycle["apply_evidence"] == {
+        "status": "held_proposal_only",
+        "applied": False,
+        "effect_attempted": False,
+        "blocked_reason": "production_magic_star_release_unavailable",
+        "test_commands_executed": False,
+        "repository_mutation_authorized": False,
+        "generated_code_execution_authorized": False,
+        "repository_mutation_implemented": False,
+        "generated_code_execution_implemented": False,
+        "subprocess_test_execution_implemented": False,
+        "release_authorized": False,
+        "proposal_only": True,
+        "local_development_only": True,
+        "production_ready": False,
+    }
+    assert cycle["repository_mutation_authorized"] is False
+    assert cycle["generated_code_execution_authorized"] is False
+    assert cycle["production_magic_star_release_available"] is False
     assert cycle["pre_apply_council"]["accepted"] is True
+    assert cycle["pre_apply_council"]["acceptance_scope"] == "proposal_review_only"
+    assert cycle["pre_apply_council"]["release_authorized"] is False
     assert cycle["pre_apply_council"]["decision_count"] == 16
     assert cycle["pre_apply_council"]["hold_count"] == 0
     assert cycle["workforce_report"]["internal_work_units"] == 99
@@ -277,7 +299,7 @@ def test_aureon_authors_applies_and_tests_a_real_unified_diff(tmp_path: Path, mo
     persisted = json.loads(controller.state_path.read_text(encoding="utf-8"))
     assert persisted["pending_count"] == 1
     assert persisted["pending_proposals"][0]["title"] == "older proposal"
-    assert persisted["recent_reviews"][-1]["status"] == "approved"
+    assert persisted["recent_reviews"][-1]["status"] == "proposal_reviewed_hold"
     assert persisted["recent_reviews"][-1]["reviewer"] == "aureon:pre_apply_council"
 
 
@@ -295,7 +317,7 @@ def test_git_invalid_truncated_hunk_gets_one_receipted_correction(
         controller=_controller(tmp_path, monkeypatch),
     )
 
-    assert source.read_text(encoding="utf-8") == "def answer():\n    return 2\n"
+    assert source.read_text(encoding="utf-8") == "def answer():\n    return 1\n"
     assert cycle["authoring_correction_attempted"] is True
     assert cycle["authoring_failure_reason"] == "authored_diff_git_apply_check_failed"
     assert cycle["git_apply_check"]["ok"] is True
@@ -326,9 +348,9 @@ def test_wrong_full_replacement_counts_are_canonicalized_after_one_correction(
     )
 
     receipt = cycle["structural_canonicalization"]
-    expected = chr(10).join(("def answer():", "    return 2", ""))
+    expected = chr(10).join(("def answer():", "    return 1", ""))
     assert source.read_text(encoding="utf-8") == expected
-    assert cycle["applied"] is True
+    assert cycle["applied"] is False
     assert cycle["authoring_correction_attempted"] is True
     assert receipt["used"] is True
     assert receipt["removed_line_count"] == 2
@@ -515,7 +537,7 @@ def test_full_source_and_minimum_council_context_fail_closed_when_prompt_cannot_
     assert sum(adapter.author_calls for adapter in resolver.adapters.values()) == 0
 
 
-def test_format_failure_gets_one_receipted_correction_then_applies(tmp_path: Path, monkeypatch) -> None:
+def test_format_failure_gets_one_receipted_correction_then_holds(tmp_path: Path, monkeypatch) -> None:
     source = _source(tmp_path)
     resolver = PatchResolver(invalid_once=True)
     workforce = provision_agent_company_brain_fabric(resolver)
@@ -527,8 +549,8 @@ def test_format_failure_gets_one_receipted_correction_then_applies(tmp_path: Pat
         controller=_controller(tmp_path, monkeypatch),
     )
 
-    assert source.read_text(encoding="utf-8") == "def answer():\n    return 2\n"
-    assert cycle["applied"] is True
+    assert source.read_text(encoding="utf-8") == "def answer():\n    return 1\n"
+    assert cycle["applied"] is False
     assert cycle["authoring_correction_attempted"] is True
     assert len(cycle["author_work_receipt_ids"]) == 2
     assert cycle["proposal"]["metadata"]["authoring_correction_attempted"] is True
@@ -536,7 +558,7 @@ def test_format_failure_gets_one_receipted_correction_then_applies(tmp_path: Pat
     assert resolver.prompt_call_count == 100
 
 
-def test_failed_tests_roll_back_the_aureon_authored_patch(tmp_path: Path, monkeypatch) -> None:
+def test_test_commands_are_never_executed_by_proposal_only_cycle(tmp_path: Path, monkeypatch) -> None:
     source = _source(tmp_path)
     workforce = provision_agent_company_brain_fabric(PatchResolver())
 
@@ -549,9 +571,10 @@ def test_failed_tests_roll_back_the_aureon_authored_patch(tmp_path: Path, monkey
 
     assert source.read_text(encoding="utf-8") == "def answer():\n    return 1\n"
     assert cycle["applied"] is False
-    assert cycle["status"] == "internal_patch_held_or_rolled_back"
-    assert cycle["apply_evidence"]["status"] == "rolled_back_tests_failed"
-    assert cycle["apply_evidence"]["rollback"]["ok"] is True
+    assert cycle["status"] == "internal_patch_proposal_held_for_senior_review"
+    assert cycle["apply_evidence"]["status"] == "held_proposal_only"
+    assert cycle["apply_evidence"]["effect_attempted"] is False
+    assert cycle["apply_evidence"]["test_commands_executed"] is False
 
 
 def test_pre_apply_council_hold_prevents_code_mutation(tmp_path: Path, monkeypatch) -> None:
@@ -649,6 +672,27 @@ def test_source_hash_drift_holds_before_any_model_call(tmp_path: Path, monkeypat
 
     assert resolver.prompt_call_count == 0
     assert source.read_text(encoding="utf-8") == "def answer():\n    return 9\n"
+
+
+def test_proposal_state_path_outside_repo_state_holds_before_model_call(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    _source(tmp_path)
+    resolver = PatchResolver()
+    workforce = provision_agent_company_brain_fabric(resolver)
+    monkeypatch.setattr(SafeCodeControl, "_attach_expression_context", lambda self, proposal: None)
+    controller = SafeCodeControl(state_path=tmp_path / "outside" / "proposals.json")
+
+    with pytest.raises(InternalPatchHold, match="must_remain_under_repo_state"):
+        run_internal_patch_cycle(
+            root=tmp_path,
+            request=_request(tmp_path),
+            workforce=workforce,
+            controller=controller,
+        )
+
+    assert resolver.prompt_call_count == 0
 
 
 def test_secret_bearing_source_is_never_sent_to_model(tmp_path: Path, monkeypatch) -> None:

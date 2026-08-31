@@ -1,18 +1,23 @@
+"""Proposal-only self-fix planning and containment evidence.
+
+This module may inspect and publish patch proposals, but it never applies a
+patch, executes generated code, or runs proposal-supplied validation commands.
+The production Magic Star release boundary is not implemented in this
+checkout, so every proposal remains on release HOLD.
+"""
+
 from __future__ import annotations
 
 import argparse
 import json
 import re
-import subprocess
-import sys
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Sequence, Tuple
 
 from aureon.autonomous.aureon_capability_forge import REPO_ROOT
 from aureon.operator.coherence_gate import compute_evolution_flow
-
 
 DEFAULT_STATE_PATH = Path("state/aureon_autonomous_self_fix_director_last_run.json")
 DEFAULT_AUDIT_JSON = Path("docs/audits/aureon_autonomous_self_fix_director.json")
@@ -100,8 +105,22 @@ def _rooted(root: Path, rel_path: Path) -> Path:
     return rel_path if rel_path.is_absolute() else root / rel_path
 
 
+def _bounded_output_path(root: Path, rel_path: Path) -> Path:
+    """Resolve a fixed report path without following storage outside the repo."""
+
+    if rel_path.is_absolute():
+        raise ValueError("self_fix_output_path_must_be_repo_relative")
+    repo_root = root.resolve()
+    candidate = repo_root / rel_path
+    try:
+        candidate.resolve().relative_to(repo_root)
+    except ValueError as exc:
+        raise ValueError("self_fix_output_path_escaped_repository") from exc
+    return candidate
+
+
 def _utc_now() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 def _read_json(path: Path) -> Dict[str, Any]:
@@ -166,7 +185,7 @@ def _scan_patch_for_secrets(patch_text: str) -> List[str]:
 
 
 def _resolve_evolution_flow(
-    coherence_inputs: Optional[Dict[str, Any]] = None,
+    coherence_inputs: Dict[str, Any] | None = None,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """Read the fresh shared field and derive a non-closing repair rhythm."""
     inputs = dict(coherence_inputs or {})
@@ -196,6 +215,21 @@ def _resolve_evolution_flow(
         auris_confidence=inputs.get("auris_confidence"),
         beta=inputs.get("beta"),
     )
+    capabilities = dict(flow.get("capabilities") or {})
+    capabilities.update(
+        {
+            "apply_patch": False,
+            "execute_generated_code": False,
+            "execute_test_commands": False,
+            "rollback": False,
+        }
+    )
+    flow = {
+        **flow,
+        "capabilities": capabilities,
+        "proposal_only": True,
+        "production_magic_star_release_available": False,
+    }
     return inputs, flow
 
 
@@ -212,15 +246,17 @@ def _load_proposals(root: Path, state_paths: Sequence[Path]) -> List[Dict[str, A
             continue
         for key in ("pending_proposals", "recent_reviews"):
             for item in payload.get(key, []) if isinstance(payload.get(key), list) else []:
-                # Only an explicit approval is executable.  Pending and rejected
-                # records remain audit evidence but never become patch candidates.
+                # An explicit review approval makes a record eligible for
+                # proposal preflight only.  It never grants execution authority.
                 if isinstance(item, dict) and str(item.get("status") or "").casefold() == "approved":
                     proposals.append({**item, "_proposal_state_path": str(path), "_proposal_state_bucket": key})
     return proposals
 
 
 @dataclass
-class GuardedPatchApplier:
+class ProposalPreflight:
+    """Validate proposal metadata without attempting any repository effect."""
+
     root: Path
     allowlist: Sequence[str] = field(default_factory=lambda: list(DEFAULT_PATCH_ALLOWLIST))
     test_commands: Sequence[Sequence[str]] = field(default_factory=list)
@@ -228,7 +264,7 @@ class GuardedPatchApplier:
     required_test_layers: Sequence[str] = field(default_factory=lambda: ["focused", "integration", "regression"])
     review_cycles: int = 1
 
-    def apply_proposal(self, proposal: Dict[str, Any], *, index: int = 0) -> Dict[str, Any]:
+    def inspect_proposal(self, proposal: Dict[str, Any], *, index: int = 0) -> Dict[str, Any]:
         patch_text = str(proposal.get("patch_text") or "")
         target_files = [
             _normalize_rel_path(item)
@@ -239,8 +275,20 @@ class GuardedPatchApplier:
         evidence: Dict[str, Any] = {
             "proposal_id": _proposal_id(proposal, index),
             "source": proposal.get("source", "SafeCodeControl"),
-            "status": "blocked",
+            "status": "blocked_proposal",
             "applied": False,
+            "ever_applied": False,
+            "effect_attempted": False,
+            "test_commands_executed": False,
+            "repository_mutation_authorized": False,
+            "generated_code_execution_authorized": False,
+            "repository_mutation_implemented": False,
+            "generated_code_execution_implemented": False,
+            "subprocess_test_execution_implemented": False,
+            "release_authorized": False,
+            "proposal_only": True,
+            "local_development_only": True,
+            "production_ready": False,
             "target_files": target_files,
             "allowlist": list(self.allowlist),
             "coherence_proof": {
@@ -299,9 +347,9 @@ class GuardedPatchApplier:
 
         validation_ready = bool(self.test_commands)
         add_check(
-            "validation_commands_present",
+            "suggested_validation_commands_present",
             validation_ready,
-            f"{len(self.test_commands)} validation command(s)",
+            f"{len(self.test_commands)} suggested validation command(s); none executed",
         )
         if not validation_ready:
             evidence["blocked_reason"] = "validation_commands_missing"
@@ -320,112 +368,38 @@ class GuardedPatchApplier:
             evidence["blocked_reason"] = "coherence_proof_depth_invalid"
             return evidence
 
-        check = self._run_git_apply(patch_text, check_only=True)
-        evidence["git_apply_check"] = check
-        add_check("git_apply_check", bool(check.get("ok")), check.get("stderr") or check.get("stdout") or "git apply --check passed")
-        if not check.get("ok"):
-            evidence["blocked_reason"] = "git_apply_check_failed"
-            return evidence
-
-        apply = self._run_git_apply(patch_text, check_only=False)
-        evidence["git_apply"] = apply
-        add_check("git_apply", bool(apply.get("ok")), apply.get("stderr") or apply.get("stdout") or "patch applied")
-        if not apply.get("ok"):
-            evidence["blocked_reason"] = "git_apply_failed"
-            return evidence
-        evidence["ever_applied"] = True
-
-        tests = self._run_tests()
-        evidence["test_results"] = tests
-        tests_ok = bool(tests) and all(item.get("ok") for item in tests)
-        add_check("tests_ran_and_passed", tests_ok, f"{len(tests)} command(s)")
-        if not tests_ok:
-            rollback = self._run_git_apply(patch_text, check_only=False, reverse=True)
-            evidence["rollback"] = rollback
-            rollback_ok = bool(rollback.get("ok"))
-            add_check(
-                "rollback_after_failed_tests",
-                rollback_ok,
-                rollback.get("stderr") or rollback.get("stdout") or "failed patch rolled back",
-            )
-            evidence["status"] = "rolled_back_tests_failed" if rollback_ok else "rollback_failed"
-            evidence["applied"] = not rollback_ok
-            evidence["blocked_reason"] = (
-                "tests_failed_patch_rolled_back" if rollback_ok else "tests_failed_and_rollback_failed"
-            )
-            return evidence
-
-        evidence["status"] = "applied"
-        evidence["applied"] = True
-        evidence["blocked_reason"] = ""
+        add_check(
+            "production_magic_star_release_available",
+            False,
+            "checked-in Plumber and Magic Star are local-development controls",
+        )
+        evidence.update(
+            {
+                "status": "held_proposal_only",
+                "applied": False,
+                "ever_applied": False,
+                "effect_attempted": False,
+                "test_commands_executed": False,
+                "blocked_reason": "production_magic_star_release_unavailable",
+                "repository_mutation_authorized": False,
+                "generated_code_execution_authorized": False,
+                "release_authorized": False,
+                "proposal_only": True,
+                "local_development_only": True,
+                "production_ready": False,
+            }
+        )
         return evidence
 
-    def _run_git_apply(
-        self,
-        patch_text: str,
-        *,
-        check_only: bool,
-        reverse: bool = False,
-    ) -> Dict[str, Any]:
-        command = ["git", "apply", "--whitespace=nowarn"]
-        if check_only:
-            command.append("--check")
-        if reverse:
-            command.append("--reverse")
-        try:
-            proc = subprocess.run(
-                command,
-                cwd=self.root,
-                input=patch_text,
-                text=True,
-                capture_output=True,
-                timeout=self.timeout_sec,
-            )
-            return {
-                "ok": proc.returncode == 0,
-                "command": " ".join(command),
-                "returncode": proc.returncode,
-                "stdout": proc.stdout[-2000:],
-                "stderr": proc.stderr[-2000:],
-            }
-        except Exception as exc:
-            return {"ok": False, "command": " ".join(command), "error": f"{type(exc).__name__}: {exc}"}
+    def apply_proposal(self, proposal: Dict[str, Any], *, index: int = 0) -> Dict[str, Any]:
+        """Compatibility shim: perform proposal preflight, never patch application."""
 
-    def _run_tests(self) -> List[Dict[str, Any]]:
-        results: List[Dict[str, Any]] = []
-        cycles = max(1, int(self.review_cycles))
-        for cycle in range(1, cycles + 1):
-            for command in self.test_commands:
-                try:
-                    proc = subprocess.run(
-                        list(command),
-                        cwd=self.root,
-                        text=True,
-                        capture_output=True,
-                        timeout=self.timeout_sec,
-                    )
-                    results.append(
-                        {
-                            "ok": proc.returncode == 0,
-                            "review_cycle": cycle,
-                            "required_test_layers": list(self.required_test_layers),
-                            "command": list(command),
-                            "returncode": proc.returncode,
-                            "stdout": proc.stdout[-2000:],
-                            "stderr": proc.stderr[-2000:],
-                        }
-                    )
-                except Exception as exc:
-                    results.append(
-                        {
-                            "ok": False,
-                            "review_cycle": cycle,
-                            "required_test_layers": list(self.required_test_layers),
-                            "command": list(command),
-                            "error": f"{type(exc).__name__}: {exc}",
-                        }
-                    )
-        return results
+        return self.inspect_proposal(proposal, index=index)
+
+
+# Compatibility for callers that imported the historical name.  The alias has
+# proposal-preflight semantics only; no apply implementation exists here.
+GuardedPatchApplier = ProposalPreflight
 
 
 def _load_evidence(root: Path, paths: Sequence[Path] = DEFAULT_EVIDENCE_PATHS) -> Dict[str, Dict[str, Any]]:
@@ -459,12 +433,12 @@ def build_swot(evidence: Dict[str, Dict[str, Any]]) -> Dict[str, List[Dict[str, 
             {"id": "unique_artifacts", "text": "Generated build IDs prevent stale artifact reuse.", "present": has_unique},
         ],
         "weaknesses": [
-            {"id": "proposal_only_apply", "text": "SafeCodeControl records proposals but needs a guarded patch applier.", "present": True},
-            {"id": "stress_repair_depth", "text": "Stress repairs must create work orders and apply safe fixes, not only rerun proof.", "present": has_repairs},
+            {"id": "proposal_only_apply", "text": "SafeCodeControl records proposals, but no production Magic Star release service exists.", "present": True},
+            {"id": "stress_repair_depth", "text": "Stress repairs must create proposal work orders without self-authorizing effects.", "present": has_repairs},
             {"id": "repo_integration_depth", "text": "Generated artifacts can pass while live repo integration remains shallow.", "present": True},
         ],
         "opportunities": [
-            {"id": "guarded_patch_apply", "text": "Use allowlisted diffs with git apply checks and tests.", "present": True},
+            {"id": "guarded_patch_apply", "text": "Build an independently reviewed production release service outside the self-coder trust boundary.", "present": True},
             {"id": "self_fix_backlog", "text": "Convert failed stress cases into repair jobs Aureon owns.", "present": True},
             {"id": "source_packets", "text": "Use local/GitHub/docs research as source packets before coding.", "present": has_unblocker},
         ],
@@ -489,11 +463,11 @@ def _repair_backlog_from_swot(swot: Dict[str, List[Dict[str, Any]]], evidence: D
     ]
     backlog = [
         {
-            "id": "guarded_patch_applier",
+            "id": "production_magic_star_release_service",
             "priority": "P0",
-            "title": "Add guarded repo patch applier",
+            "title": "Design the production Magic Star proposal release service",
             "source": "SWOT weakness proposal_only_apply",
-            "acceptance": "Allowlisted unified diffs pass git apply --check, secret scan, apply, and tests before handover.",
+            "acceptance": "Independent custody, review, sandbox, transaction, rollback, and durable receipts are externally verified before any mutation.",
         },
         {
             "id": "stress_repair_work_orders",
@@ -517,7 +491,7 @@ def _repair_backlog_from_swot(swot: Dict[str, List[Dict[str, Any]]], evidence: D
                 "priority": "P0",
                 "title": f"Repair failed stress case: {case.get('id', 'unknown')}",
                 "source": "complex_build_stress_audit",
-                "acceptance": "Aureon applies a safe local fix or publishes the exact blocker.",
+                "acceptance": "Aureon emits a bounded proposal or publishes the exact blocker without mutation.",
                 "failure_reason": case.get("failure_reason", ""),
             }
         )
@@ -553,7 +527,8 @@ def _make_markdown(report: Dict[str, Any]) -> str:
         "# Aureon Autonomous Self-Fix Director",
         "",
         f"- status: {report.get('status')}",
-        f"- handover_ready: {report.get('handover_ready')}",
+        f"- production_handover_ready: {report.get('handover_ready')}",
+        f"- release_hold: {report.get('release_hold')}",
         f"- codex_audit_state: {(report.get('codex_audit_state') or {}).get('state')}",
         f"- coherence_flow: {(report.get('coherence_flow') or {}).get('flow')}",
         f"- coherence_field_status: {(report.get('coherence_flow') or {}).get('field_status')}",
@@ -561,7 +536,7 @@ def _make_markdown(report: Dict[str, Any]) -> str:
         f"- required_test_layers: {', '.join((report.get('coherence_flow') or {}).get('required_test_layers') or [])}",
         f"- minimum_review_cycles: {(report.get('coherence_flow') or {}).get('minimum_review_cycles')}",
         f"- repairs selected: {len(report.get('selected_repairs') or [])}",
-        f"- patches applied: {sum(1 for item in report.get('patch_apply_evidence', []) if item.get('applied'))}",
+        "- patches applied: 0 (proposal-only boundary)",
         f"- snags: {len(report.get('snags') or [])}",
         "",
         "## SWOT",
@@ -579,15 +554,15 @@ def _make_markdown(report: Dict[str, Any]) -> str:
 
 def build_and_write_autonomous_self_fix_director(
     *,
-    root: Optional[Path] = None,
+    root: Path | None = None,
     operator_prompt: str = "",
-    apply_safe_fixes: bool = True,
-    test_commands: Optional[Sequence[Sequence[str]]] = None,
-    codex_audit_state: str = "autonomous_safe",
+    apply_safe_fixes: bool = False,
+    test_commands: Sequence[Sequence[str]] | None = None,
+    codex_audit_state: str = "pending",
     proposal_state_paths: Sequence[Path] = DEFAULT_PROPOSAL_STATE_PATHS,
     patch_allowlist: Sequence[str] = DEFAULT_PATCH_ALLOWLIST,
-    max_patch_proposals: Optional[int] = None,
-    coherence_inputs: Optional[Dict[str, Any]] = None,
+    max_patch_proposals: int | None = None,
+    coherence_inputs: Dict[str, Any] | None = None,
 ) -> Dict[str, Any]:
     root = Path(root or _default_root()).resolve()
     field_inputs, coherence_flow = _resolve_evolution_flow(coherence_inputs)
@@ -607,9 +582,9 @@ def build_and_write_autonomous_self_fix_director(
         for item in proposals
         if str(item.get("patch_text") or "").strip()
     ][:patch_batch_limit]
-    patch_apply_evidence: List[Dict[str, Any]] = []
+    proposal_preflight_evidence: List[Dict[str, Any]] = []
     if apply_safe_fixes and patch_candidates:
-        applier = GuardedPatchApplier(
+        preflight = ProposalPreflight(
             root=root,
             allowlist=patch_allowlist,
             test_commands=list(test_commands or []),
@@ -617,57 +592,76 @@ def build_and_write_autonomous_self_fix_director(
             review_cycles=max(1, int(coherence_flow.get("minimum_review_cycles") or 1)),
         )
         for index, proposal in enumerate(patch_candidates, start=1):
-            patch_apply_evidence.append(applier.apply_proposal(proposal, index=index))
+            proposal_preflight_evidence.append(preflight.inspect_proposal(proposal, index=index))
     elif patch_candidates:
-        patch_apply_evidence = [
+        proposal_preflight_evidence = [
             {
                 "proposal_id": _proposal_id(item, index),
-                "status": "skipped",
+                "status": "held_proposal_only",
                 "applied": False,
-                "blocked_reason": "apply_safe_fixes_disabled",
+                "ever_applied": False,
+                "effect_attempted": False,
+                "test_commands_executed": False,
+                "repository_mutation_authorized": False,
+                "generated_code_execution_authorized": False,
+                "release_authorized": False,
+                "proposal_only": True,
+                "local_development_only": True,
+                "production_ready": False,
+                "blocked_reason": "proposal_preflight_disabled",
                 "target_files": item.get("target_files", []),
             }
             for index, item in enumerate(patch_candidates, start=1)
         ]
 
-    test_evidence = _test_summary(patch_apply_evidence)
+    test_evidence = _test_summary(proposal_preflight_evidence)
     snags = _manual_authority_snags(operator_prompt)
     snags.extend(
         {
             "id": f"patch_{item.get('proposal_id')}_blocked",
-            "title": f"Patch proposal {item.get('proposal_id')} did not safely apply",
+            "title": f"Patch proposal {item.get('proposal_id')} remains on release HOLD",
             "blocking": True,
-            "source": "guarded_patch_applier",
+            "source": "proposal_only_release_boundary",
             "next_action": item.get("blocked_reason", "inspect patch evidence"),
         }
-        for item in patch_apply_evidence
-        if item.get("status") != "applied"
+        for item in proposal_preflight_evidence
+    )
+    snags.append(
+        {
+            "id": "production_magic_star_release_unavailable",
+            "title": "Production Magic Star release remains unavailable",
+            "blocking": True,
+            "source": "proposal_only_release_boundary",
+            "next_action": "Keep every proposal on HOLD pending an independently reviewed production release service.",
+        }
     )
     codex_audit = {
         "state": codex_audit_state,
         "allowed_states": ["autonomous_safe", "pending", "passed", "failed"],
         "reviewer": "Codex/user",
-        "policy": "Safe local fixes run autonomously; Codex/user audit is recorded after the fact and only a failed audit blocks handover.",
-        "autonomous_safe_local": True,
+        "policy": "Codex/user audit is advisory and cannot authorize repository mutation or generated-code execution.",
+        "autonomous_safe_local": False,
         "blocking_states": ["failed"],
     }
-    no_blocking_snags = not any(item.get("blocking") for item in snags)
-    patch_requirement_ok = not patch_candidates or any(item.get("applied") and item.get("status") == "applied" for item in patch_apply_evidence)
     audit_gate_ok = codex_audit_state != "failed"
-    handover_ready = no_blocking_snags and patch_requirement_ok and audit_gate_ok
-    status = (
-        "self_fix_autonomous_safe_ready"
-        if handover_ready
-        else "self_fix_failed_audit"
-        if not audit_gate_ok
-        else "self_fix_ready_for_repair"
-        if no_blocking_snags and patch_requirement_ok
-        else "self_fix_blocked"
-    )
+    handover_ready = False
+    status = "self_fix_failed_audit" if not audit_gate_ok else "self_fix_proposal_only_release_hold"
     report: Dict[str, Any] = {
         "schema_version": "aureon-autonomous-self-fix-director-v1",
         "status": status,
-        "ok": handover_ready,
+        "ok": False,
+        "proposal_cycle_completed": True,
+        "proposal_only": True,
+        "release_hold": True,
+        "release_authorized": False,
+        "repository_mutation_authorized": False,
+        "generated_code_execution_authorized": False,
+        "repository_mutation_implemented": False,
+        "generated_code_execution_implemented": False,
+        "subprocess_test_execution_implemented": False,
+        "effect_attempted": False,
+        "test_commands_executed": False,
+        "production_ready": False,
         "generated_at": _utc_now(),
         "operator_prompt": operator_prompt,
         "coherence_inputs": field_inputs,
@@ -675,10 +669,10 @@ def build_and_write_autonomous_self_fix_director(
         "swot": swot,
         "repair_backlog": repair_backlog,
         "selected_repairs": selected_repairs,
-        "safe_apply_policy": {
-            "repair_authority": "auto_apply_safe_local_fixes",
-            "repair_rhythm": "HNC/Auris coherence changes batch size and proof depth without closing internal repair",
-            "audit_policy": "codex_user_audit_is_post_hoc_for_safe_local_repairs",
+        "proposal_policy": {
+            "repair_authority": "proposal_only_no_repository_mutation",
+            "repair_rhythm": "HNC/Auris coherence changes proposal batch size and review depth without granting release authority",
+            "audit_policy": "codex_user_audit_is_advisory_and_cannot_release_code",
             "diff_source": "SafeCodeControl/QueenCodeBridge unified diffs only",
             "allowlist": list(patch_allowlist),
             "blocked_authority": ["live_trading", "payments", "filings", "credential_reveal", "destructive_os_actions"],
@@ -689,13 +683,20 @@ def build_and_write_autonomous_self_fix_director(
                 "validation_commands",
                 "coherence_required_test_layers",
                 "coherence_review_cycles",
-                "git_apply_check",
-                "git_apply",
-                "tests",
-                "automatic_rollback_on_failure",
+                "independent_production_magic_star_release",
+                "sandboxed_validation",
+                "transactional_apply_and_rollback",
+                "durable_provider_readback",
             ],
+            "production_magic_star_release_available": False,
+            "repository_mutation_implemented": False,
+            "generated_code_execution_implemented": False,
+            "subprocess_test_execution_implemented": False,
         },
-        "patch_apply_evidence": patch_apply_evidence,
+        "proposal_preflight_evidence": proposal_preflight_evidence,
+        # Read-only compatibility field for the existing cockpit.  Every item
+        # is explicitly non-applied and release-held.
+        "patch_apply_evidence": proposal_preflight_evidence,
         "test_evidence": test_evidence,
         "snags": snags,
         "codex_audit_state": codex_audit,
@@ -710,7 +711,7 @@ def build_and_write_autonomous_self_fix_director(
             "required_test_layers": list(coherence_flow.get("required_test_layers") or []),
             "minimum_review_cycles": coherence_flow.get("minimum_review_cycles"),
             "patch_candidate_count": len(patch_candidates),
-            "patch_applied_count": sum(1 for item in patch_apply_evidence if item.get("applied") and item.get("status") == "applied"),
+            "patch_applied_count": 0,
             "blocking_snag_count": sum(1 for item in snags if item.get("blocking")),
             "codex_audit_state": codex_audit_state,
             "audit_gate_ok": audit_gate_ok,
@@ -723,35 +724,35 @@ def build_and_write_autonomous_self_fix_director(
         ],
     }
     writes = [
-        _write_json(_rooted(root, DEFAULT_STATE_PATH), report),
-        _write_json(_rooted(root, DEFAULT_AUDIT_JSON), report),
-        _write_text(_rooted(root, DEFAULT_AUDIT_MD), _make_markdown(report)),
-        _write_json(_rooted(root, DEFAULT_PUBLIC_JSON), report),
+        _write_json(_bounded_output_path(root, DEFAULT_STATE_PATH), report),
+        _write_json(_bounded_output_path(root, DEFAULT_AUDIT_JSON), report),
+        _write_text(_bounded_output_path(root, DEFAULT_AUDIT_MD), _make_markdown(report)),
+        _write_json(_bounded_output_path(root, DEFAULT_PUBLIC_JSON), report),
     ]
     report["write_info"] = {"evidence_writes": writes}
     for rel_path in (DEFAULT_STATE_PATH, DEFAULT_AUDIT_JSON, DEFAULT_PUBLIC_JSON):
-        _write_json(_rooted(root, rel_path), report)
-    _write_text(_rooted(root, DEFAULT_AUDIT_MD), _make_markdown(report))
+        _write_json(_bounded_output_path(root, rel_path), report)
+    _write_text(_bounded_output_path(root, DEFAULT_AUDIT_MD), _make_markdown(report))
     return report
 
 
-def main(argv: Optional[Sequence[str]] = None) -> int:
+def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Run Aureon's autonomous self-fix SWOT and audit director.")
     parser.add_argument("--root", default="", help="Repository root. Defaults to current Aureon repo.")
     parser.add_argument("--prompt", default="", help="Optional operator prompt to check for authority holds.")
     parser.add_argument("--json", action="store_true", help="Print full JSON report.")
-    parser.add_argument("--no-apply", action="store_true", help="Do not apply safe patch proposals.")
+    parser.add_argument("--no-apply", action="store_true", help="Skip legacy proposal preflight; mutation is always disabled.")
     parser.add_argument(
         "--codex-audit-state",
-        default="autonomous_safe",
+        default="pending",
         choices=["autonomous_safe", "pending", "passed", "failed"],
-        help="Audit verdict to record. Safe local mode runs without waiting for Codex unless failed is supplied.",
+        help="Advisory audit state; it never authorizes code mutation.",
     )
     parser.add_argument(
         "--test-command",
         action="append",
         default=[],
-        help="Test command to run after a patch. Repeatable. Defaults to no patch handover tests.",
+        help="Suggested validation command to record for a future release service; never executed here.",
     )
     args = parser.parse_args(argv)
     root = Path(args.root).resolve() if args.root else None

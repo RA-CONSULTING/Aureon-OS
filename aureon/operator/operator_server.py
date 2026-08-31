@@ -16,7 +16,7 @@ Routes:
   GET  /healthz                liveness + active provider line-up
 
 Run:
-  python -m aureon.operator.operator_server          # binds 0.0.0.0:8080
+  python -m aureon.operator.operator_server          # binds 127.0.0.1:8080
   AUREON_OPERATOR_PORT=8899 python -m aureon.operator.operator_server
 
 Reaching it from a phone: this repo usually runs in a remote container, so open
@@ -27,14 +27,27 @@ docs/architecture/AUREON_OPERATOR_SWITCHBOARD.md), not localhost.
 from __future__ import annotations
 
 import contextlib
+import hashlib
+import ipaddress
 import json
 import logging
 import os
+import struct
 import threading
 from types import SimpleNamespace
-from typing import Any, Dict
+from typing import Any, Dict, Final
 
 logger = logging.getLogger("aureon.operator.server")
+
+
+def _is_loopback_host(value: str | None) -> bool:
+    host = str(value or "").strip().strip("[]").casefold()
+    if host == "localhost":
+        return True
+    try:
+        return ipaddress.ip_address(host).is_loopback
+    except ValueError:
+        return False
 
 
 def _load_env_file() -> None:
@@ -65,6 +78,9 @@ except Exception as exc:  # noqa: BLE001
         f"{exc}"
     ) from exc
 
+from aureon.harmonic.hnc_quantum_packet_crypto import (  # noqa: E402
+    packet_master_key_from_env,
+)
 from aureon.observability import (  # noqa: E402
     current_correlation_id,
     emit_local_event,
@@ -72,6 +88,13 @@ from aureon.observability import (  # noqa: E402
 )
 from aureon.operator.aureon_operator import AureonOperator  # noqa: E402  (after guarded flask import)
 from aureon.operator.providers import build_provider_set, describe_provider_set  # noqa: E402
+from aureon.plumber.os_protection import (  # noqa: E402
+    DEFAULT_MAX_INGRESS_BYTES,
+    AdmittedHNC,
+    IngressDisposition,
+    LocalOSProtectionBoundary,
+    QuarantinedHNC,
+)
 
 # The voice-first wearable (Pixel Watch / Ray-Ban) app — self-contained static PWA.
 WEARABLE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "wearable")
@@ -311,7 +334,123 @@ _TENANT_SHOWCASE = {
 _TENANT_ALLOWED = _TENANT_OWN_PLANE | _TENANT_SHOWCASE
 
 
-def create_app(operator: AureonOperator | None = None, cognition: Any = None) -> Flask:
+OPERATOR_CONTROL_PLANE_PURPOSE: Final = "aureon.operator.control-plane.http-ingress.v0"
+MAX_OPERATOR_AUTHORIZATION_BYTES: Final = 8 * 1024
+MAX_OPERATOR_FORWARDED_FOR_BYTES: Final = 4 * 1024
+MAX_OPERATOR_CONTENT_TYPE_BYTES: Final = 512
+MAX_OPERATOR_PATH_BYTES: Final = 4 * 1024
+MAX_OPERATOR_QUERY_BYTES: Final = 16 * 1024
+MAX_OPERATOR_BODY_BYTES: Final = (
+    DEFAULT_MAX_INGRESS_BYTES - MAX_OPERATOR_QUERY_BYTES - MAX_OPERATOR_PATH_BYTES - 4096
+)
+_MUTATING_METHODS: Final = frozenset({"POST", "PUT", "PATCH", "DELETE"})
+_QUERY_DRIVEN_EFFECT_RULES: Final = frozenset(
+    {"/api/cognition/stream", "/api/operator/stream"}
+)
+
+
+class TestOnlyOperatorIngressRelease:
+    """Explicit non-production seam for HTTP route unit tests.
+
+    This seam never decrypts an HNC carrier and never claims a Magic Star
+    release.  It only permits a Flask view to run *after* the local admission's
+    opaque handle has been atomically burned.  ``create_app`` refuses this type
+    in production, and the serving entrypoints never construct it.
+    """
+
+    test_only = True
+    production_ready = False
+    magic_star_release = False
+
+    def __init__(self, *, master_key: bytes | str) -> None:
+        key_snapshot = bytes(master_key) if isinstance(master_key, bytes) else str(master_key)
+        self._boundary = LocalOSProtectionBoundary(
+            boundary_id="operator-control-plane-test-only",
+            master_key_provider=lambda: key_snapshot,
+            max_ingress_bytes=DEFAULT_MAX_INGRESS_BYTES,
+        )
+
+    def _authorize_after_discard(
+        self,
+        *,
+        admission_summary: dict[str, Any],
+        discard_summary: dict[str, Any],
+    ) -> bool:
+        """Validate the test receipt without accepting caller-defined callbacks."""
+
+        return bool(
+            admission_summary.get("disposition") == str(IngressDisposition.ADMITTED_HNC)
+            and discard_summary.get("disposition") == "DISCARDED_HNC"
+            and admission_summary.get("admission_id") == discard_summary.get("admission_id")
+            and discard_summary.get("carrier_released") is False
+            and discard_summary.get("plaintext_decoded") is False
+            and admission_summary.get("production_ready") is False
+            and discard_summary.get("production_ready") is False
+        )
+
+    def boundary_public_summary(self) -> dict[str, Any]:
+        """Commitment-only boundary state for tests; no key or carrier is exposed."""
+
+        return self._boundary.public_summary()
+
+
+def _strict_json_object(raw: bytes) -> bool:
+    """Accept one duplicate-free finite JSON object, without retaining a parse."""
+
+    if not raw:
+        return True
+
+    def _object_pairs(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+        result: dict[str, Any] = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError("duplicate_json_key")
+            result[key] = value
+        return result
+
+    def _reject_constant(_value: str) -> Any:
+        raise ValueError("non_finite_json_number")
+
+    try:
+        decoded = json.loads(
+            raw.decode("utf-8", errors="strict"),
+            object_pairs_hook=_object_pairs,
+            parse_constant=_reject_constant,
+        )
+    except (UnicodeDecodeError, ValueError, TypeError, RecursionError):
+        return False
+    return isinstance(decoded, dict)
+
+
+def _frame_operator_ingress(
+    *,
+    method: bytes,
+    path: bytes,
+    route_rule: bytes,
+    query: bytes,
+    body: bytes,
+) -> bytes:
+    """Length-frame exact HTTP material before local HNC admission."""
+
+    fields = (method, path, route_rule, query, body)
+    return b"aureon.operator.http-ingress.v0\x00" + b"".join(
+        struct.pack(">Q", len(field)) + field for field in fields
+    )
+
+
+def _operator_hnc_master_key() -> str | None:
+    """Return configured packet key material, preserving missing vs invalid."""
+
+    value = packet_master_key_from_env()
+    return value or None
+
+
+def create_app(
+    operator: AureonOperator | None = None,
+    cognition: Any = None,
+    *,
+    test_ingress_release: TestOnlyOperatorIngressRelease | None = None,
+) -> Flask:
     app = Flask("aureon-operator")
     install_flask_request_correlation(app, logger=logger)
     _operator = operator or AureonOperator()
@@ -321,17 +460,162 @@ def create_app(operator: AureonOperator | None = None, cognition: Any = None) ->
     from aureon.operator.security import SecurityConfig, TokenBucket
 
     _sec = SecurityConfig.from_env()
+    if test_ingress_release is not None:
+        if type(test_ingress_release) is not TestOnlyOperatorIngressRelease:
+            raise TypeError("test_ingress_release_must_be_exact_test_only_seam")
+        if _sec.production:
+            raise ValueError("test_ingress_release_forbidden_in_production")
     # End-user tenancy (optional): a Supabase HS256 JWT identifies the caller as a tenant, so their
     # provider/connection keys are namespaced to them. Off by default (secret unset) ⇒ the gate is
     # identical to the single static-key path — see aureon.operator.identity.resolve_identity.
     _jwt_secret = str(os.environ.get("AUREON_SUPABASE_JWT_SECRET", "") or "")
     _bucket = TokenBucket(_sec.rate_rps, _sec.burst)
-    app.config["MAX_CONTENT_LENGTH"] = _sec.max_body_bytes
+    _effective_body_limit = min(_sec.max_body_bytes, MAX_OPERATOR_BODY_BYTES)
+    app.config["MAX_CONTENT_LENGTH"] = _effective_body_limit
+    _ingress_boundary = (
+        test_ingress_release._boundary
+        if test_ingress_release is not None
+        else LocalOSProtectionBoundary(
+            boundary_id="operator-control-plane-local-hnc",
+            master_key_provider=_operator_hnc_master_key,
+            max_ingress_bytes=DEFAULT_MAX_INGRESS_BYTES,
+        )
+    )
+    # Expose only a commitment-only status callable for hostile/runtime tests.
+    # The boundary object, carriers, handles, and key provider remain private.
+    app.extensions["aureon_operator_ingress_status"] = _ingress_boundary.public_summary
     _OPEN_PATHS = ("/", "/healthz", "/readyz", "/metrics", "/favicon.ico")
     def _err(code: int, message: str, **extra):
         response = jsonify({"error": {"code": code, "message": message, **extra}})
         response.headers["Cache-Control"] = "no-store"
         return response, code
+
+    def _bounded_header(name: str, maximum_bytes: int) -> bool:
+        value = request.headers.get(name, "")
+        try:
+            return len(value.encode("utf-8", errors="strict")) <= maximum_bytes
+        except UnicodeEncodeError:
+            return False
+
+    def _requires_hnc_protection() -> bool:
+        if request.method in _MUTATING_METHODS:
+            return True
+        rule = getattr(request.url_rule, "rule", None)
+        return request.method == "GET" and rule in _QUERY_DRIVEN_EFFECT_RULES
+
+    def _held_response(outcome: AdmittedHNC | QuarantinedHNC):
+        summary = outcome.public_summary()
+        if isinstance(outcome, AdmittedHNC):
+            discard = _ingress_boundary.discard_admitted(
+                outcome.handle,
+                reason_code="production_magic_star_release_unavailable",
+            )
+            if test_ingress_release is not None and test_ingress_release._authorize_after_discard(
+                admission_summary=summary,
+                discard_summary=discard,
+            ):
+                # Explicit route-test seam only.  This is not a Magic Star
+                # release and is unreachable from the default/serving apps.
+                g.operator_ingress_test_only = True
+                g.operator_ingress_admission_commitment = summary["admission_commitment"]
+                return None
+            return _err(
+                503,
+                "operator control-plane ingress held",
+                disposition=summary["disposition"],
+                reason_code="production_magic_star_release_unavailable",
+                admission_commitment=summary["admission_commitment"],
+                handle_commitment=summary["handle"]["handle_commitment"],
+                carrier_released=False,
+                plaintext_decoded=False,
+                handler_invoked=False,
+                local_development_only=True,
+                production_ready=False,
+            )
+        return _err(
+            503,
+            "operator control-plane ingress quarantined",
+            disposition=summary["disposition"],
+            reason_code="hnc_ingress_quarantined",
+            quarantine_commitment=summary["quarantine_commitment"],
+            denial_codes=summary["denial_codes"],
+            raw_material_retained=False,
+            handler_invoked=False,
+            local_development_only=True,
+            production_ready=False,
+        )
+
+    def _protect_control_plane_ingress(client: str):
+        try:
+            client_bytes = client.encode("utf-8", errors="strict")
+        except UnicodeEncodeError:
+            return _err(400, "client address is not valid UTF-8")
+        source_commitment = hashlib.sha256(client_bytes).hexdigest()
+        try:
+            path_bytes = request.path.encode("utf-8", errors="strict")
+        except UnicodeEncodeError:
+            return _err(400, "request path is not valid UTF-8")
+        if len(path_bytes) > MAX_OPERATOR_PATH_BYTES:
+            return _err(414, "request path exceeds operator boundary")
+        query_bytes = bytes(request.query_string)
+        if len(query_bytes) > MAX_OPERATOR_QUERY_BYTES:
+            return _err(414, "request query exceeds operator boundary")
+        content_length = request.content_length
+        if content_length is not None and (
+            content_length < 0 or content_length > _effective_body_limit
+        ):
+            return _err(413, f"request body exceeds {_effective_body_limit} bytes")
+        # Werkzeug/Flask enforces MAX_CONTENT_LENGTH here even when a peer omits
+        # Content-Length. Cache preserves the same exact bytes for a test-only
+        # route handler without a second socket read.
+        body_bytes = bytes(request.get_data(cache=True, as_text=False))
+        if len(body_bytes) > _effective_body_limit:
+            return _err(413, f"request body exceeds {_effective_body_limit} bytes")
+        if body_bytes and (
+            request.mimetype != "application/json" or not _strict_json_object(body_bytes)
+        ):
+            body_contract_valid = False
+        else:
+            body_contract_valid = True
+        rule = str(getattr(request.url_rule, "rule", None) or "<unmatched>")
+        method_bytes = request.method.encode("ascii", errors="strict")
+        rule_bytes = rule.encode("utf-8", errors="strict")
+        framed = _frame_operator_ingress(
+            method=method_bytes,
+            path=path_bytes,
+            route_rule=rule_bytes,
+            query=query_bytes,
+            body=body_bytes,
+        )
+        operator_aad = {
+            "schema": "aureon.operator.http-ingress-aad.v0",
+            "method": request.method,
+            "path_sha256": hashlib.sha256(path_bytes).hexdigest(),
+            "path_size_bytes": len(path_bytes),
+            "route_rule_sha256": hashlib.sha256(rule_bytes).hexdigest(),
+            "query_sha256": hashlib.sha256(query_bytes).hexdigest(),
+            "query_size_bytes": len(query_bytes),
+            "body_sha256": hashlib.sha256(body_bytes).hexdigest(),
+            "body_size_bytes": len(body_bytes),
+            "content_type_sha256": hashlib.sha256(
+                str(request.content_type or "").encode("utf-8", errors="strict")
+            ).hexdigest(),
+            "identity_kind": str(getattr(g, "identity_kind", "unknown")),
+            "tenant_commitment": hashlib.sha256(
+                str(getattr(g, "tenant", "") or "").encode("utf-8", errors="strict")
+            ).hexdigest(),
+            "source_truth_established_by_local_wrapping": False,
+            "production_magic_star_release_available": False,
+        }
+        outcome = _ingress_boundary.admit_external(
+            framed,
+            source_id=f"operator-http-peer-sha256:{source_commitment}",
+            ingress_kind=f"http:{request.method}:{rule}",
+            purpose=OPERATOR_CONTROL_PLANE_PURPOSE,
+            operator_aad=operator_aad,
+            content_validator=lambda _view: body_contract_valid,
+        )
+        return _held_response(outcome)
 
     def _record_runtime_exception(
         event: str,
@@ -354,6 +638,22 @@ def create_app(operator: AureonOperator | None = None, cognition: Any = None) ->
         path = request.path
         if path in _OPEN_PATHS or not (path.startswith("/api/") or path.startswith("/mcp/")):
             return None
+        # Bound attacker-controlled address/auth headers before parsing or HNC
+        # work.  In particular, never feed an unbounded trusted-proxy chain to
+        # the rate limiter or an unbounded bearer to the identity verifier.
+        if not _bounded_header("Authorization", MAX_OPERATOR_AUTHORIZATION_BYTES):
+            return _err(431, "authorization header exceeds operator boundary")
+        if not _bounded_header("X-Forwarded-For", MAX_OPERATOR_FORWARDED_FOR_BYTES):
+            return _err(431, "forwarded address header exceeds operator boundary")
+        if not _bounded_header("Content-Type", MAX_OPERATOR_CONTENT_TYPE_BYTES):
+            return _err(431, "content type header exceeds operator boundary")
+        direct_client = str(request.remote_addr or "")
+        try:
+            direct_client_size = len(direct_client.encode("utf-8", errors="strict"))
+        except UnicodeEncodeError:
+            direct_client_size = MAX_OPERATOR_FORWARDED_FOR_BYTES + 1
+        if direct_client_size > 128:
+            return _err(400, "client address exceeds operator boundary")
         # Rate-limit before authentication so invalid bearer attempts cannot
         # bypass the limiter. Forwarded addresses are resolved only through
         # explicitly configured trusted proxy networks.
@@ -367,6 +667,12 @@ def create_app(operator: AureonOperator | None = None, cognition: Any = None) ->
                 resp = _err(429, "rate limit exceeded", retry_after=retry)
                 resp[0].headers["Retry-After"] = str(int(retry) + 1)
                 return resp
+        if (
+            not _sec.auth_enabled
+            and not _jwt_secret
+            and not _is_loopback_host(direct_client)
+        ):
+            return _err(401, "authenticated loopback operator required")
         # Resolve identity once. In explicit development/test mode, an empty static key and JWT
         # secret retain the local kind="open" behavior; production validation refuses that state.
         ident = resolve_identity(
@@ -386,6 +692,12 @@ def create_app(operator: AureonOperator | None = None, cognition: Any = None) ->
             rule = getattr(request.url_rule, "rule", None)
             if rule is not None and (request.method, rule) not in _TENANT_ALLOWED:
                 return _err(403, "this route is operator-only", plane="admin")
+        if _requires_hnc_protection():
+            client = _sec.client_ip(
+                request.remote_addr,
+                request.headers.get("X-Forwarded-For"),
+            )
+            return _protect_control_plane_ingress(client)
         return None
 
     def _admin_denied():
@@ -412,7 +724,7 @@ def create_app(operator: AureonOperator | None = None, cognition: Any = None) ->
 
     @app.errorhandler(413)
     def _413(e):
-        return _err(413, f"request body exceeds {_sec.max_body_bytes} bytes")
+        return _err(413, f"request body exceeds {_effective_body_limit} bytes")
 
     @app.errorhandler(500)
     def _500(e):
@@ -1238,7 +1550,12 @@ def main() -> None:
     logging.basicConfig(level=logging.INFO)
     _load_env_file()  # deploy-time .env (Ollama base URL / model / key, etc.)
     port = int(os.environ.get("AUREON_OPERATOR_PORT", "8080"))
-    host = os.environ.get("AUREON_OPERATOR_HOST", "0.0.0.0")
+    host = os.environ.get("AUREON_OPERATOR_HOST", "127.0.0.1")
+    from aureon.operator.security import SecurityConfig
+
+    security = SecurityConfig.from_env()
+    if not _is_loopback_host(host) and not security.auth_enabled:
+        raise RuntimeError("non_loopback_operator_requires_AUREON_OPERATOR_API_KEY")
     logger.info("Aureon Operator server on %s:%s — lines: %s", host, port,
                 describe_provider_set(build_provider_set()))
     app = build_boot_app()

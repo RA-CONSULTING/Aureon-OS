@@ -239,7 +239,12 @@ def _app(**env):
         import aureon.operator.operator_server as srv
 
         importlib.reload(srv)
-        return srv.create_app(operator=_StubOperator()).test_client()
+        return srv.create_app(
+            operator=_StubOperator(),
+            test_ingress_release=srv.TestOnlyOperatorIngressRelease(
+                master_key=b"saas-billing-http-route-test-key-material",
+            ),
+        ).test_client()
     finally:
         for k, v in previous.items():
             if v is None:

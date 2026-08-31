@@ -62,6 +62,9 @@ def app_env(tmp_path, monkeypatch):
     monkeypatch.setenv("AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS", "1")
     monkeypatch.setenv("AUREON_SUPABASE_JWT_SECRET", SECRET)
     monkeypatch.setenv("AUREON_OPERATOR_API_KEY", ADMIN_KEY)
+    # This suite asserts a tenant cannot arm the instance. Never inherit a
+    # process-level value restored by an earlier switchboard test.
+    monkeypatch.delenv("AUREON_LIVE_TRADING", raising=False)
 
     import aureon.operator.keystore as ks
 
@@ -75,7 +78,11 @@ def app_env(tmp_path, monkeypatch):
     import aureon.operator.operator_server as srv
 
     importlib.reload(srv)
-    app = srv.create_app()
+    app = srv.create_app(
+        test_ingress_release=srv.TestOnlyOperatorIngressRelease(
+            master_key=b"operator-tenant-security-route-test-material",
+        )
+    )
     return app.test_client(), srv, ks
 
 
@@ -117,8 +124,8 @@ def test_tenant_models_never_receive_instance_repo_grounding(app_env, monkeypatc
     client, _srv, _ks = app_env
     calls: list[str] = []
 
-    import aureon.operator.cognition as cognition_module
     import aureon.autonomous.aureon_dynamic_prompt_filter as prompt_filter_module
+    import aureon.operator.cognition as cognition_module
 
     def forbidden_grounding(*_args, **_kwargs):
         calls.append("instance_repo_grounding")
@@ -232,7 +239,13 @@ def test_revoking_a_tenant_key_invalidates_the_cached_engine(app_env):
     r1 = client.post("/api/cognition/reason", json={"prompt": "hi"}, headers=_tenant("aaa"))
     assert not r1.get_json().get("tenant_no_key")          # engine built and cached
     client.delete("/api/providers/ollama", headers=_tenant("aaa"))
-    r2 = client.post("/api/cognition/reason", json={"prompt": "hi"}, headers=_tenant("aaa"))
+    # A byte-identical second request is correctly rejected by the HNC replay
+    # ledger. Vary the prompt so this test isolates cached-engine revocation.
+    r2 = client.post(
+        "/api/cognition/reason",
+        json={"prompt": "hi-after-revoke"},
+        headers=_tenant("aaa"),
+    )
     assert r2.get_json().get("tenant_no_key") is True      # stale engine must not answer
     assert srv is not None
 
@@ -558,7 +571,11 @@ def test_every_route_is_classified(app_env):
     the tenant branch being reordered, short-circuited, or dropped.)
     """
     client, srv, _ks = app_env
-    app = srv.create_app()
+    app = srv.create_app(
+        test_ingress_release=srv.TestOnlyOperatorIngressRelease(
+            master_key=b"operator-tenant-classification-test-material",
+        )
+    )
     unclassified = []
     for rule in app.url_map.iter_rules():
         if not (rule.rule.startswith("/api/") or rule.rule.startswith("/mcp/")):
@@ -629,6 +646,9 @@ def test_tenant_conscience_failure_is_isolated_and_denied_no_data(app_env, monke
     """A private-conscience construction failure must neither borrow the shared object nor
     become downstream APPROVED. The isolated unavailable sentinel emits an explicit no_data VETO.
     """
+    from types import SimpleNamespace
+
+    import aureon.operator.cognition as cognition_mod
     import aureon.queen.queen_conscience as qc
 
     def _boom(*a, **k):
@@ -639,9 +659,6 @@ def test_tenant_conscience_failure_is_isolated_and_denied_no_data(app_env, monke
     # Capture the conscience passed by operator_server without contacting the
     # tenant's configured model endpoint. The real Cognition VETO behavior is
     # covered separately; this regression owns the construction-failure seam.
-    from types import SimpleNamespace
-    import aureon.operator.cognition as cognition_mod
-
     captured = {}
 
     class _NoNetworkCognition:
@@ -662,7 +679,11 @@ def test_tenant_conscience_failure_is_isolated_and_denied_no_data(app_env, monke
     monkeypatch.setattr(cognition_mod, "AureonCognition", _NoNetworkCognition)
 
     client, srv, _ks = app_env
-    app = srv.create_app()          # fresh app so the tenant-conscience cache is built under _boom
+    app = srv.create_app(          # fresh app so the tenant-conscience cache is built under _boom
+        test_ingress_release=srv.TestOnlyOperatorIngressRelease(
+            master_key=b"operator-tenant-conscience-route-test-key",
+        )
+    )
     c2 = app.test_client()
     _connect_model(c2, _tenant("aaa"))
     marker = "tenant-private-marker-conscience-fallback-4417"
@@ -730,7 +751,11 @@ def test_no_route_escapes_the_gate_prefixes(app_env):
     reason, having confirmed it is safe to serve to anonymous callers.
     """
     _client, srv, _ks = app_env
-    app = srv.create_app()
+    app = srv.create_app(
+        test_ingress_release=srv.TestOnlyOperatorIngressRelease(
+            master_key=b"operator-tenant-route-census-test-material",
+        )
+    )
     outside = {r.rule for r in app.url_map.iter_rules()
                if not (r.rule.startswith("/api/") or r.rule.startswith("/mcp/"))}
     unexpected = outside - _ROUTES_OUTSIDE_THE_GATE

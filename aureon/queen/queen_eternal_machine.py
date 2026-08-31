@@ -27,107 +27,139 @@
 
 from __future__ import annotations
 
-import sys
 import os
 import math
 import json
 import asyncio
 import logging
 import time
-import concurrent.futures
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Any, Callable, Dict, List, Mapping, Optional, Tuple
 from datetime import datetime
 from pathlib import Path
 from enum import Enum, auto
 
-# UTF-8 Windows fix
-if sys.platform == 'win32' and sys.stdout is sys.__stdout__ and sys.stdout.isatty():
-    os.environ['PYTHONIOENCODING'] = 'utf-8'
+from aureon.queen.queen_force_trade_governance import (
+    ForceTradePlan,
+    OpaqueForceTradeAuthorization,
+    claim_queen_force_trade_authority,
+)
+
+
+# Optional organs are deliberately lazy. Importing Queen Eternal must not boot
+# scanners, cognition, buses, network clients, or autonomous control.
+OCEAN_SCANNER_AVAILABLE = False
+QUEEN_HIVE_AVAILABLE = False
+QUANTUM_COGNITION_AVAILABLE = False
+MYCELIUM_AVAILABLE = False
+AUTONOMOUS_CONTROL_AVAILABLE = False
+BOT_INTELLIGENCE_AVAILABLE = False
+LIVE_TV_AVAILABLE = False
+MOUNTAIN_CLIMBER_AVAILABLE = False
+OceanWaveScanner = None
+QueenHiveMind = None
+get_queen = None
+QueenQuantumCognition = None
+get_quantum_cognition = None
+QuantumCognitionState = None
+MyceliumNetwork = None
+QueenAutonomousControl = None
+create_queen_autonomous_control = None
+BotIntelligenceProfiler = None
+TruthPredictionEngine = None
+MarketSnapshot = None
+MountainClimber = None
+
+
+def _load_optional_queen_components() -> None:
+    """Load optional analytical organs only after explicit constructor opt-in."""
+
+    global OCEAN_SCANNER_AVAILABLE, OceanWaveScanner
+    global QUEEN_HIVE_AVAILABLE, QueenHiveMind, get_queen
+    global QUANTUM_COGNITION_AVAILABLE, QueenQuantumCognition
+    global get_quantum_cognition, QuantumCognitionState
+    global MYCELIUM_AVAILABLE, MyceliumNetwork
+    global AUTONOMOUS_CONTROL_AVAILABLE, QueenAutonomousControl
+    global create_queen_autonomous_control
+    global BOT_INTELLIGENCE_AVAILABLE, BotIntelligenceProfiler
+    global LIVE_TV_AVAILABLE, TruthPredictionEngine, MarketSnapshot
+    global MOUNTAIN_CLIMBER_AVAILABLE, MountainClimber
+
     try:
-        import io
-        if hasattr(sys.stdout, 'reconfigure'):
-            sys.stdout.reconfigure(encoding='utf-8', errors='replace')
-        elif hasattr(sys.stdout, 'buffer'):
-            sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
-    except Exception:
+        from aureon.scanners.aureon_ocean_wave_scanner import OceanWaveScanner as scanner
+
+        OceanWaveScanner = scanner
+        OCEAN_SCANNER_AVAILABLE = True
+    except ImportError:
         pass
+    try:
+        from aureon.utils.aureon_queen_hive_mind import QueenHiveMind as hive, get_queen as queen
 
-# Optional: Ocean Wave Scanner for whale detection
-try:
-    from aureon.scanners.aureon_ocean_wave_scanner import OceanWaveScanner
-    OCEAN_SCANNER_AVAILABLE = True
-except ImportError:
-    OCEAN_SCANNER_AVAILABLE = False
-    OceanWaveScanner = None
+        QueenHiveMind = hive
+        get_queen = queen
+        QUEEN_HIVE_AVAILABLE = True
+    except ImportError:
+        pass
+    try:
+        from aureon.queen.queen_quantum_cognition import (
+            QuantumCognitionState as state,
+            QueenQuantumCognition as cognition,
+            get_quantum_cognition as get_cognition,
+        )
 
-# 👑🧠 QUEEN HIVE MIND - Full Autonomous Consciousness
-try:
-    from aureon.utils.aureon_queen_hive_mind import QueenHiveMind, get_queen
-    QUEEN_HIVE_AVAILABLE = True
-except ImportError:
-    QUEEN_HIVE_AVAILABLE = False
-    QueenHiveMind = None
-    get_queen = None
+        QueenQuantumCognition = cognition
+        get_quantum_cognition = get_cognition
+        QuantumCognitionState = state
+        QUANTUM_COGNITION_AVAILABLE = True
+    except ImportError:
+        pass
+    try:
+        from aureon.core.aureon_mycelium import MyceliumNetwork as mycelium
 
-# ⚛️🧠 QUANTUM COGNITION - Amplified Consciousness & Autonomous Control
-try:
-    from aureon.queen.queen_quantum_cognition import (
-        QueenQuantumCognition, 
-        get_quantum_cognition,
-        QuantumCognitionState
-    )
-    QUANTUM_COGNITION_AVAILABLE = True
-except ImportError:
-    QUANTUM_COGNITION_AVAILABLE = False
-    QueenQuantumCognition = None
-    get_quantum_cognition = None
-    QuantumCognitionState = None
+        MyceliumNetwork = mycelium
+        MYCELIUM_AVAILABLE = True
+    except ImportError:
+        pass
+    try:
+        from aureon.autonomous.aureon_queen_autonomous_control import (
+            QueenAutonomousControl as control,
+            create_queen_autonomous_control as create_control,
+        )
 
-# 🍄 MYCELIUM NETWORK - Underground Signal Network
-try:
-    from aureon.core.aureon_mycelium import MyceliumNetwork
-    MYCELIUM_AVAILABLE = True
-except ImportError:
-    MYCELIUM_AVAILABLE = False
-    MyceliumNetwork = None
+        QueenAutonomousControl = control
+        create_queen_autonomous_control = create_control
+        AUTONOMOUS_CONTROL_AVAILABLE = (
+            os.getenv("AUREON_ENABLE_AUTONOMOUS_CONTROL", "0") == "1"
+        )
+    except ImportError:
+        pass
+    try:
+        from aureon.bots_intelligence.aureon_bot_intelligence_profiler import (
+            BotIntelligenceProfiler as profiler,
+        )
 
-# 👑🎮 QUEEN AUTONOMOUS CONTROL - Sovereign Authority
-try:
-    from aureon.autonomous.aureon_queen_autonomous_control import (
-        QueenAutonomousControl,
-        create_queen_autonomous_control
-    )
-    AUTONOMOUS_CONTROL_AVAILABLE = os.getenv("AUREON_ENABLE_AUTONOMOUS_CONTROL", "0") == "1"
-except ImportError:
-    AUTONOMOUS_CONTROL_AVAILABLE = False
-    QueenAutonomousControl = None
-    create_queen_autonomous_control = None
+        BotIntelligenceProfiler = profiler
+        BOT_INTELLIGENCE_AVAILABLE = True
+    except ImportError:
+        pass
+    try:
+        from aureon.intelligence.aureon_truth_prediction_engine import (
+            MarketSnapshot as snapshot,
+            TruthPredictionEngine as prediction,
+        )
 
-# 🤖 BOT INTELLIGENCE PROFILER - Market Structure & Competition Analysis
-try:
-    from aureon.bots_intelligence.aureon_bot_intelligence_profiler import BotIntelligenceProfiler
-    BOT_INTELLIGENCE_AVAILABLE = True
-except ImportError:
-    BOT_INTELLIGENCE_AVAILABLE = False
-    BotIntelligenceProfiler = None
+        TruthPredictionEngine = prediction
+        MarketSnapshot = snapshot
+        LIVE_TV_AVAILABLE = True
+    except ImportError:
+        pass
+    try:
+        from aureon.conversion.aureon_mountain_climber import MountainClimber as climber
 
-# 📺 LIVE TV STATION - Truth Prediction Engine with Real Data Streaming
-try:
-    from aureon.intelligence.aureon_truth_prediction_engine import TruthPredictionEngine, MarketSnapshot
-    LIVE_TV_AVAILABLE = True
-except ImportError:
-    LIVE_TV_AVAILABLE = False
-    TruthPredictionEngine = None
-
-# ⛰️ MOUNTAIN CLIMBER - Learn Optimal Climbing & Profit-Taking Strategies
-try:
-    from aureon.conversion.aureon_mountain_climber import MountainClimber
-    MOUNTAIN_CLIMBER_AVAILABLE = True
-except ImportError:
-    MOUNTAIN_CLIMBER_AVAILABLE = False
-    MountainClimber = None
-    MarketSnapshot = None
+        MountainClimber = climber
+        MOUNTAIN_CLIMBER_AVAILABLE = True
+    except ImportError:
+        pass
 
 logger = logging.getLogger(__name__)
 
@@ -909,14 +941,26 @@ class QueenEternalMachine:
     
     def __init__(
         self,
-        initial_vault: Optional[float] = None,  # If None, load from real positions!
+        initial_vault: Optional[float] = None,
         breadcrumb_percent: float = BREADCRUMB_PERCENT,
         min_dip_advantage: float = MIN_DIP_ADVANTAGE,
-        dry_run: bool = False,
+        dry_run: bool = True,
         state_file: str = "queen_eternal_state.json",
         exchange: str = "binance",
         fee_structure: Optional[FeeStructure] = None,
-        cost_basis_file: str = "cost_basis_history.json"
+        cost_basis_file: str = "cost_basis_history.json",
+        *,
+        enable_optional_components: bool = False,
+        load_state: bool = True,
+        balance_reader: Optional[Callable[[str], Any]] = None,
+        market_data_reader: Optional[Callable[[str, Optional[str]], Any]] = None,
+        order_status_reader: Optional[Callable[[str, str], Mapping[str, Any]]] = None,
+        authorization_provider: Optional[
+            Callable[[ForceTradePlan], Optional[OpaqueForceTradeAuthorization]]
+        ] = None,
+        final_order_dispatcher: Optional[
+            Callable[[ForceTradePlan], Mapping[str, Any]]
+        ] = None,
     ):
         self.breadcrumb_percent = breadcrumb_percent
         self.min_dip_advantage = min_dip_advantage
@@ -924,13 +968,27 @@ class QueenEternalMachine:
         self.state_file = Path(state_file)
         self.exchange = exchange
         self.cost_basis_file = Path(cost_basis_file)
-        self._exchange_clients: Dict[str, Any] = {}
         self._pending_orders: Dict[str, Dict[str, Any]] = {}
         self.last_execution_receipt: Optional[Dict[str, Any]] = None
-        # LIVE env defaults "1" — Stage AD sweep: production trading
-        # is the default. Operator who wants a paper / dry posture sets
-        # LIVE=0 explicitly in the deployment env.
-        self.live_trading = (not self.dry_run) and (os.getenv("LIVE", "1").lower() in ("1", "true", "yes"))
+        self._balance_reader = balance_reader
+        self._market_data_reader = market_data_reader
+        self._order_status_reader = order_status_reader
+        self._authorization_provider = authorization_provider
+        self._final_order_dispatcher = final_order_dispatcher
+        # LIVE is an arming input, never authority.  Defaults are dry/offline,
+        # and a machine cannot even arm without both injected boundary seams.
+        live_requested = os.getenv("LIVE", "0").strip().lower() in {
+            "1",
+            "true",
+            "yes",
+            "on",
+        }
+        self.live_trading = (
+            not self.dry_run
+            and live_requested
+            and callable(self._authorization_provider)
+            and callable(self._final_order_dispatcher)
+        )
         
         # Fee structure - THE QUEEN KNOWS HER COSTS!
         self.fee_structure = fee_structure or EXCHANGE_FEES.get(exchange, EXCHANGE_FEES['default'])
@@ -941,7 +999,7 @@ class QueenEternalMachine:
         self.observed_fees_by_asset: Dict[str, float] = {}
 
         if self.live_trading:
-            logger.info("Eternal Machine live trading: ENABLED")
+            logger.info("Eternal Machine economic boundary: ARMED (authorization still required per order)")
         else:
             logger.warning(
                 "Eternal Machine live trading: DISABLED "
@@ -960,6 +1018,9 @@ class QueenEternalMachine:
         # Market data cache
         self.market_data: Dict[str, MarketCoin] = {}
         self.last_scan_time: Optional[datetime] = None
+
+        if enable_optional_components:
+            _load_optional_queen_components()
         
         # 🌊 OCEAN WAVE SCANNER - Whale/shark detection
         self.ocean_scanner: Optional[OceanWaveScanner] = None
@@ -989,7 +1050,7 @@ class QueenEternalMachine:
                     # Take full autonomous control
                     result = self.quantum_cognition.take_full_autonomous_control()
                     if result.get('success'):
-                        logger.info(f"   🔱 FULL AUTONOMOUS CONTROL ACTIVE")
+                        logger.info("   🔱 FULL AUTONOMOUS CONTROL ACTIVE")
                         logger.info(f"   🧠 Sovereignty Level: {result.get('sovereignty_level')}")
             except Exception as e:
                 logger.warning(f"⚠️ Quantum Cognition unavailable: {e}")
@@ -1042,21 +1103,13 @@ class QueenEternalMachine:
         self.is_running: bool = False
         self.start_time: Optional[datetime] = None
         
-        # ALWAYS load REAL positions from LIVE exchange APIs!
-        # The frog must know what it ACTUALLY holds - no phantom positions!
-        self._load_friends_from_real_positions()
-        
-        if initial_vault is None:
-            self.initial_vault = self.total_portfolio_value
-        else:
-            self.initial_vault = initial_vault
-        
-        # Load existing state (statistics only - main_position synced from real data below)
-        self._load_state()
-        
-        # CRITICAL: Override stale main_position from state file with REAL holdings!
-        # The Frog must leap from positions we ACTUALLY hold, not phantom data.
-        self._sync_main_position_to_real_holdings()
+        # Construction never reaches an account/provider. Observation refresh is
+        # an explicit later action through the injected read-only balance reader.
+        self.initial_vault = float(initial_vault or 0.0)
+        self.cash_balance = self.initial_vault
+        self.available_cash = self.initial_vault
+        if load_state:
+            self._load_state()
         
         logger.info("👑 Queen Eternal Machine initialized")
         logger.info(f"   💰 Total vault: ${self.total_portfolio_value:.2f}")
@@ -1065,6 +1118,27 @@ class QueenEternalMachine:
         logger.info(f"   🍞 Breadcrumb %: {breadcrumb_percent*100:.1f}%")
         logger.info(f"   📉 Min dip advantage: {min_dip_advantage*100:.1f}%")
         logger.info(f"   🧪 Dry run: {dry_run}")
+
+    def economic_boundary_status(self) -> Dict[str, Any]:
+        """Return a non-mutating summary of the economic-effect boundary."""
+
+        return {
+            "mode": "armed" if self.live_trading else "hold",
+            "dry_run": self.dry_run,
+            "live_requested": os.getenv("LIVE", "0").strip().lower()
+            in {"1", "true", "yes", "on"},
+            "authorization_provider_injected": callable(
+                self._authorization_provider
+            ),
+            "final_order_dispatcher_injected": callable(
+                self._final_order_dispatcher
+            ),
+            "reason": (
+                "per_order_exact_plan_authorization_required"
+                if self.live_trading
+                else "economic_effects_disabled"
+            ),
+        }
     
     def _sync_main_position_to_real_holdings(self) -> None:
         """
@@ -1088,7 +1162,7 @@ class QueenEternalMachine:
             if mp_symbol not in self.friends:
                 logger.warning(f"🐸 PHANTOM MAIN POSITION DETECTED: {mp_symbol} is NOT in real holdings!")
                 logger.warning(f"   State file had {mp_symbol} but we don't hold it on any exchange")
-                logger.warning(f"   Clearing phantom and selecting largest REAL holding...")
+                logger.warning("   Clearing phantom and selecting largest REAL holding...")
                 self.main_position = None
         
         # If no main_position (cleared or never set), pick largest real holding
@@ -1105,7 +1179,7 @@ class QueenEternalMachine:
                 )
                 logger.info(f"🐸 REAL MAIN POSITION SET: {best_friend.symbol} (qty={best_friend.quantity:.4f}, exchange={best_friend.exchange})")
             else:
-                logger.info(f"🐸 No valuable positions to set as main_position (all friends have $0 value)")
+                logger.info("🐸 No valuable positions to set as main_position (all friends have $0 value)")
 
     def _load_friends_from_real_positions(self) -> None:
         """
@@ -1124,8 +1198,10 @@ class QueenEternalMachine:
         live_balances = self._fetch_live_balances()
         
         if not live_balances:
-            logger.warning("⚠️ No live balances available - falling back to cost basis fallback")
-            self._load_friends_from_cost_basis_fallback()
+            logger.info(
+                "No balance observations returned; cached/local portfolio state "
+                "was not replaced with an unauthenticated fallback"
+            )
             return
         
         # Initialize cost basis tracker for accurate cost basis calculation
@@ -1235,119 +1311,58 @@ class QueenEternalMachine:
             logger.info(f"   📍 {ex}: {count} positions")
     
     def _fetch_live_balances(self) -> Dict[str, Tuple[float, str]]:
-        """
-        Fetch LIVE balances from all exchange APIs.
-        
-        Returns: {asset: (quantity, exchange)}
-        """
+        """Read balances only through the explicitly injected read-only seam."""
+
         balances: Dict[str, Tuple[float, str]] = {}
-        
-        # 1. BINANCE
-        try:
-            try:
-                from aureon.core.api_gateway import gw
-                binance_bals = gw.get_balance("binance")
-            except Exception:
-                from aureon.exchanges.binance_client import get_binance_client
-                binance_bals = get_binance_client().get_balance()
-            for asset, qty in binance_bals.items():
-                if qty > 0:
-                    balances[asset] = (qty, 'binance')
-            logger.info(f"   📍 Binance: {len([q for q in binance_bals.values() if q > 0])} assets")
-        except Exception as e:
-            logger.warning(f"   ⚠️ Binance unavailable: {e}")
+        reader = getattr(self, "_balance_reader", None)
+        if not callable(reader):
+            logger.info("Balance observation unavailable: no injected reader")
+            return balances
 
-        # 2. ALPACA
-        try:
+        for exchange in ("binance", "alpaca", "kraken"):
             try:
-                from aureon.core.api_gateway import gw
-                positions = gw.get_positions("alpaca")
-            except Exception:
-                from aureon.exchanges.alpaca_client import AlpacaClient
-                positions = AlpacaClient().get_positions()
-            for pos in positions:
-                symbol = pos.get('symbol', '')
-                qty = float(pos.get('qty', 0))
-                if qty > 0 and symbol:
-                    # Alpaca uses different symbol format
-                    asset = symbol.replace('/USD', '').replace('USD', '')
-                    if asset in balances:
-                        # Merge with existing
-                        old_qty, _ = balances[asset]
-                        balances[asset] = (old_qty + qty, 'multi')
-                    else:
-                        balances[asset] = (qty, 'alpaca')
-            logger.info(f"   📍 Alpaca: {len(positions)} positions")
-        except Exception as e:
-            logger.warning(f"   ⚠️ Alpaca unavailable: {e}")
-
-        # 3. KRAKEN - Try live API first, cached snapshot ONLY as emergency fallback
-        _kraken_success = False
-        try:
-            try:
-                from aureon.core.api_gateway import gw
-                kraken_bals = gw.get_balance("kraken")
-            except Exception:
-                from aureon.exchanges.kraken_client import get_kraken_client
-                kraken_bals = get_kraken_client().get_balance()
-            for asset, qty in kraken_bals.items():
-                qty = float(qty)
-                if qty > 0:
-                    # Clean Kraken asset names (remove X/Z prefixes)
-                    clean_asset = asset.replace('.B', '').replace('X', '').replace('Z', '')
-                    if len(clean_asset) > 1:
-                        if clean_asset in balances:
-                            old_qty, _ = balances[clean_asset]
-                            balances[clean_asset] = (old_qty + qty, 'multi')
-                        else:
-                            balances[clean_asset] = (qty, 'kraken')
-            logger.info(f"   📍 Kraken: {len([q for q in kraken_bals.values() if float(q) > 0])} assets (LIVE API)")
-            _kraken_success = True
-        except Exception as e:
-            logger.warning(f"   ⚠️ Kraken LIVE API failed: {e}")
-            # ONLY use cached snapshot as emergency fallback
-            try:
-                kraken_file = Path("kraken_balance_snapshot_2026-02-03.json")
-                if kraken_file.exists():
-                    with open(kraken_file, 'r') as f:
-                        kraken_data = json.load(f)
-                    for asset, qty in kraken_data.get('balances', {}).items():
-                        qty = float(qty)
-                        if qty > 0:
-                            # Clean Kraken asset names (remove X/Z prefixes)
-                            clean_asset = asset.replace('.B', '').replace('X', '').replace('Z', '')
-                            if len(clean_asset) > 1:
-                                if clean_asset in balances:
-                                    old_qty, _ = balances[clean_asset]
-                                    balances[clean_asset] = (old_qty + qty, 'multi')
-                                else:
-                                    balances[clean_asset] = (qty, 'kraken-cached')
-                    logger.info(f"   📍 Kraken: {len(kraken_data.get('balances', {}))} assets (CACHED FALLBACK - OLD DATA)")
+                observed = reader(exchange)
+            except Exception as exc:
+                logger.warning(f"Balance reader failed for {exchange}: {type(exc).__name__}")
+                continue
+            if isinstance(observed, Mapping):
+                entries = observed.items()
+            elif isinstance(observed, (list, tuple)):
+                entries = (
+                    (item.get("symbol", ""), item.get("qty", 0))
+                    for item in observed
+                    if isinstance(item, Mapping)
+                )
+            else:
+                continue
+            for raw_asset, raw_qty in entries:
+                try:
+                    quantity = float(raw_qty)
+                except (TypeError, ValueError, OverflowError):
+                    continue
+                if not math.isfinite(quantity) or quantity <= 0:
+                    continue
+                asset = str(raw_asset or "").upper().replace("/USD", "")
+                if exchange == "kraken":
+                    asset = asset.removesuffix(".B")
+                    if asset == "XXBT":
+                        asset = "BTC"
+                    elif asset.startswith(("X", "Z")) and len(asset) > 3:
+                        asset = asset[1:]
+                if not asset:
+                    continue
+                if asset in balances:
+                    prior, _prior_exchange = balances[asset]
+                    balances[asset] = (prior + quantity, "multi")
                 else:
-                    logger.warning("   ⚠️ No Kraken cached snapshot available")
-            except Exception as cache_e:
-                logger.warning(f"   ⚠️ Kraken cached fallback also failed: {cache_e}")
-        
+                    balances[asset] = (quantity, exchange)
         return balances
 
     def _get_exchange_client(self, exchange: str):
-        if exchange in self._exchange_clients:
-            return self._exchange_clients[exchange]
-        client = None
-        try:
-            if exchange == 'binance':
-                from aureon.exchanges.binance_client import get_binance_client
-                client = get_binance_client()
-            elif exchange == 'kraken':
-                from aureon.exchanges.kraken_client import get_kraken_client
-                client = get_kraken_client()
-            elif exchange == 'alpaca':
-                from aureon.exchanges.alpaca_client import AlpacaClient
-                client = AlpacaClient()
-        except Exception as e:
-            logger.warning(f"⚠️ Could not init {exchange} client: {e}")
-        self._exchange_clients[exchange] = client
-        return client
+        """Compatibility shim: raw exchange clients are no longer reachable."""
+
+        del exchange
+        return None
 
     def _pair_candidates(self, base_symbol: str, exchange: str) -> List[str]:
         base = (base_symbol or "").upper()
@@ -1664,13 +1679,11 @@ class QueenEternalMachine:
             classified.get("status") == "pending_reconciliation"
             and order_id
         ):
-            client = self._get_exchange_client(exchange)
             query = None
+            status_reader = getattr(self, "_order_status_reader", None)
             try:
-                if client and hasattr(client, "get_order_status"):
-                    query = client.get_order_status(order_id)
-                elif client and hasattr(client, "get_order"):
-                    query = client.get_order(order_id)
+                if callable(status_reader):
+                    query = status_reader(exchange, str(order_id))
             except Exception as exc:
                 classified["reason"] = (
                     f"terminal_provider_readback_failed:{type(exc).__name__}"
@@ -1759,19 +1772,27 @@ class QueenEternalMachine:
         return {c for c in candidates if c}
 
     def _get_available_base_quantity(self, exchange: str, base_symbol: str) -> float:
-        client = self._get_exchange_client(exchange)
-        if not client or not hasattr(client, "get_balance"):
+        reader = getattr(self, "_balance_reader", None)
+        if not callable(reader):
             return 0.0
         try:
-            balances = client.get_balance() or {}
+            observed = reader(exchange)
         except Exception:
             return 0.0
-        if not isinstance(balances, dict):
+        if isinstance(observed, Mapping):
+            entries = observed.items()
+        elif isinstance(observed, (list, tuple)):
+            entries = (
+                (item.get("symbol", ""), item.get("qty", 0))
+                for item in observed
+                if isinstance(item, Mapping)
+            )
+        else:
             return 0.0
 
         variants = self._base_symbol_variants(base_symbol)
         available = 0.0
-        for asset, qty in balances.items():
+        for asset, qty in entries:
             try:
                 qty_f = float(qty or 0)
             except Exception:
@@ -1821,95 +1842,135 @@ class QueenEternalMachine:
             self.last_execution_receipt = blocked
             return blocked
 
-        client = self._get_exchange_client(exchange)
-        if not client:
+        if not getattr(self, "live_trading", False):
             return self._not_submitted_receipt(
                 exchange,
                 base_symbol,
                 side,
-                reason="exchange_client_unavailable",
+                reason=(
+                    "queen_dry_run"
+                    if getattr(self, "dry_run", True)
+                    else "live_trading_disabled"
+                ),
             )
-        if getattr(client, "dry_run", False):
+        parsed_quantity = _finite_receipt_number(quantity, positive=True)
+        parsed_quote_qty = _finite_receipt_number(quote_qty, positive=True)
+        if (parsed_quantity is None) == (parsed_quote_qty is None):
             return self._not_submitted_receipt(
                 exchange,
                 base_symbol,
                 side,
-                reason="exchange_client_dry_run",
+                reason="exactly_one_order_quantity_required",
             )
-        last_rejection: Optional[Dict[str, Any]] = None
-        for pair in self._pair_candidates(base_symbol, exchange):
-            try:
-                res = client.place_market_order(pair, side, quantity=quantity, quote_qty=quote_qty)
-                classified = _classify_terminal_order_receipt(
-                    res,
-                    exchange,
-                    expected_side=side,
-                    expected_symbol=base_symbol,
-                )
-                if classified["success"]:
-                    return res
-                if isinstance(res, dict) and str(res.get("error", "")).lower() == "volume_minimum":
-                    return {
-                        "error": "volume_minimum",
-                        "exchange": exchange,
-                        "symbol": base_symbol,
-                        "side": side,
-                        "details": res,
-                    }
-                if (
-                    classified.get("status") == "rejected"
-                    and (
-                        res.get("rejected") is True
-                        or res.get("submitted") is False
-                    )
-                    and not classified.get("submitted")
-                ):
-                    last_rejection = res
-                    continue
-                if classified.get("status") == "rejected":
-                    return self._remember_pending_order(
-                        exchange,
-                        base_symbol,
-                        side,
-                        {
-                            "truth_status": classified.get("truth_status"),
-                            "submitted": None,
-                            "reason": "ambiguous_provider_error_response",
-                        },
-                        quantity=quantity,
-                        quote_qty=quote_qty,
-                    )
-                return self._remember_pending_order(
-                    exchange,
-                    base_symbol,
-                    side,
-                    classified,
-                    quantity=quantity,
-                    quote_qty=quote_qty,
-                )
-            except Exception as exc:
-                return self._remember_pending_order(
-                    exchange,
-                    base_symbol,
-                    side,
-                    {
-                        "truth_status": "no_data",
-                        "submitted": None,
-                        "reason": (
-                            "ambiguous_order_submission:"
-                            f"{type(exc).__name__}"
-                        ),
-                    },
-                    quantity=quantity,
-                    quote_qty=quote_qty,
-                )
-        if last_rejection is not None:
-            return last_rejection
-        return self._not_submitted_receipt(
+        pairs = self._pair_candidates(base_symbol, exchange)
+        if not pairs:
+            return self._not_submitted_receipt(
+                exchange, base_symbol, side, reason="exact_provider_pair_unavailable"
+            )
+        pair = pairs[0]
+        plan = ForceTradePlan(
+            provider=exchange,
+            symbol=pair,
+            side=side,
+            quantity=str(parsed_quantity if parsed_quantity is not None else parsed_quote_qty),
+            quantity_kind=(
+                "base_units" if parsed_quantity is not None else "quote_units"
+            ),
+        )
+        authorization_provider = getattr(self, "_authorization_provider", None)
+        dispatcher = getattr(self, "_final_order_dispatcher", None)
+        if not callable(authorization_provider) or not callable(dispatcher):
+            return self._not_submitted_receipt(
+                exchange,
+                base_symbol,
+                side,
+                reason="governed_order_boundary_unavailable",
+            )
+        try:
+            authorization = authorization_provider(plan)
+        except Exception:
+            authorization = None
+        decision = claim_queen_force_trade_authority(
+            plan=plan,
+            authorization=authorization,
+        )
+        if not decision.allowed:
+            reason = (
+                decision.missing_requirements[0]
+                if decision.missing_requirements
+                else "governed_order_authorization_denied"
+            )
+            return self._not_submitted_receipt(
+                exchange, base_symbol, side, reason=reason
+            )
+
+        try:
+            response = dispatcher(plan)
+        except Exception as exc:
+            return self._remember_pending_order(
+                exchange,
+                base_symbol,
+                side,
+                {
+                    "truth_status": "no_data",
+                    "submitted": None,
+                    "reason": (
+                        "ambiguous_authorized_order_submission:"
+                        f"{type(exc).__name__}"
+                    ),
+                },
+                quantity=quantity,
+                quote_qty=quote_qty,
+            )
+        if not isinstance(response, Mapping):
+            return self._remember_pending_order(
+                exchange,
+                base_symbol,
+                side,
+                {
+                    "truth_status": "no_data",
+                    "submitted": None,
+                    "reason": "ambiguous_authorized_order_receipt",
+                },
+                quantity=quantity,
+                quote_qty=quote_qty,
+            )
+        res = dict(response)
+        classified = _classify_terminal_order_receipt(
+            res,
+            exchange,
+            expected_side=side,
+            expected_symbol=base_symbol,
+        )
+        if classified["success"]:
+            return res
+        if str(res.get("error", "")).lower() == "volume_minimum":
+            return {
+                "error": "volume_minimum",
+                "exchange": exchange,
+                "symbol": base_symbol,
+                "side": side,
+                "details": res,
+            }
+        if (
+            classified.get("status") == "rejected"
+            and (res.get("rejected") is True or res.get("submitted") is False)
+            and not classified.get("submitted")
+        ):
+            return res
+        if classified.get("status") == "rejected":
+            classified = {
+                "truth_status": classified.get("truth_status"),
+                "submitted": None,
+                "reason": "ambiguous_provider_error_response",
+            }
+        return self._remember_pending_order(
             exchange,
             base_symbol,
             side,
-            reason="no_provider_pair_accepted",
+            classified,
+            quantity=quantity,
+            quote_qty=quote_qty,
         )
     
     def _load_friends_from_cost_basis_fallback(self) -> None:
@@ -2032,7 +2093,7 @@ class QueenEternalMachine:
         lines.append(f"\n💵 CASH (Cleanest Friend): ${self.cash_balance:.2f}")
         
         # Portfolio totals
-        lines.append(f"\n📊 PORTFOLIO SUMMARY:")
+        lines.append("\n📊 PORTFOLIO SUMMARY:")
         lines.append(f"   💰 Total Value: ${self.total_portfolio_value:.2f}")
         lines.append(f"   ⚠️ Total Baggage: ${self.total_baggage:.2f}")
         lines.append(f"   👥 Total Friends: {len(self.friends)}")
@@ -2061,8 +2122,21 @@ class QueenEternalMachine:
     # ═══════════════════════════════════════════════════════════════════════════
     
     def fetch_market_data(self) -> Dict[str, MarketCoin]:
-        """Fetch live market data directly from exchange APIs (Binance/Alpaca/Kraken)."""
+        """Read market observations only through the injected read-only boundary.
+
+        The default machine has no market-data reader and therefore performs no
+        network work.  Integrations may inject a reader accepting
+        ``(provider, symbol_or_none)``; passing ``None`` requests that
+        provider's broad ticker list.  This module never constructs or falls
+        back to a provider client.
+        """
         self.market_data.clear()
+        self.last_scan_time = None
+
+        reader = getattr(self, "_market_data_reader", None)
+        if not callable(reader):
+            logger.info("Market observation skipped: no injected read-only reader")
+            return self.market_data
 
         def _to_float(value: Any, default: float = 0.0) -> float:
             try:
@@ -2107,92 +2181,46 @@ class QueenEternalMachine:
 
         held_symbols = {_base_symbol(s) for s in self.friends.keys() if s and s != "CASH"}
         exchange_fetches: List[str] = []
-        _FETCH_TIMEOUT = 20  # seconds per exchange - prevents hang
 
-        def _fetch_binance_tickers():
+        def _broad_tickers(provider: str) -> List[Mapping[str, Any]]:
+            observed = reader(provider, None)
+            if isinstance(observed, Mapping):
+                nested = observed.get("tickers")
+                if isinstance(nested, list):
+                    observed = nested
+                else:
+                    observed = [observed]
+            if not isinstance(observed, (list, tuple)):
+                return []
+            return [item for item in observed if isinstance(item, Mapping)]
+
+        # Broad observations remain best-effort and read-only.  A broken
+        # integration does not trigger a second, less-governed transport path.
+        for provider, quote_suffix in (
+            ("binance", "USDC"),
+            ("alpaca", "USD"),
+            ("kraken", "USD"),
+        ):
             try:
-                from aureon.core.api_gateway import gw
-                return gw.get_24h_tickers("binance") or []
-            except Exception:
-                from aureon.exchanges.binance_client import get_binance_client
-                return get_binance_client().get_24h_tickers() or []
+                tickers = _broad_tickers(provider)
+                for ticker in tickers:
+                    symbol = str(ticker.get("symbol", ""))
+                    if provider == "kraken" and symbol.endswith("USDC"):
+                        _add_ticker(dict(ticker), quote_suffix="USDC")
+                    else:
+                        _add_ticker(dict(ticker), quote_suffix=quote_suffix)
+                if tickers:
+                    exchange_fetches.append(provider)
+            except Exception as exc:
+                logger.debug("%s market observation unavailable: %s", provider, exc)
 
-        def _fetch_alpaca_tickers():
-            try:
-                from aureon.core.api_gateway import gw
-                return gw.get_24h_tickers("alpaca") or []
-            except Exception:
-                from aureon.exchanges.alpaca_client import AlpacaClient
-                return AlpacaClient().get_24h_tickers() or []
-
-        def _fetch_kraken_tickers():
-            try:
-                from aureon.core.api_gateway import gw
-                return gw.get_24h_tickers("kraken") or []
-            except Exception:
-                from aureon.exchanges.kraken_client import get_kraken_client
-                return get_kraken_client().get_24h_tickers() or []
-
-        # 1) Binance broad market scan (with timeout to prevent hang)
-        try:
-            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as _ex:
-                _fut = _ex.submit(_fetch_binance_tickers)
-                try:
-                    for ticker in _fut.result(timeout=_FETCH_TIMEOUT):
-                        _add_ticker(ticker, quote_suffix="USDC")
-                    exchange_fetches.append("binance")
-                except concurrent.futures.TimeoutError:
-                    logger.warning(f"⚠️ Binance market data TIMED OUT after {_FETCH_TIMEOUT}s — skipping")
-                    _fut.cancel()
-        except Exception as e:
-            logger.warning(f"⚠️ Binance market data unavailable: {e}")
-
-        # 2) Alpaca crypto scan (with timeout)
-        try:
-            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as _ex:
-                _fut = _ex.submit(_fetch_alpaca_tickers)
-                try:
-                    for ticker in _fut.result(timeout=_FETCH_TIMEOUT):
-                        _add_ticker(ticker, quote_suffix="USD")
-                    exchange_fetches.append("alpaca")
-                except concurrent.futures.TimeoutError:
-                    logger.debug(f"⚠️ Alpaca market data TIMED OUT after {_FETCH_TIMEOUT}s — skipping")
-                    _fut.cancel()
-        except Exception as e:
-            logger.debug(f"⚠️ Alpaca market data unavailable: {e}")
-
-        # 3) Kraken scan (with timeout)
-        try:
-            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as _ex:
-                _fut = _ex.submit(_fetch_kraken_tickers)
-                try:
-                    for ticker in _fut.result(timeout=_FETCH_TIMEOUT):
-                        symbol = str(ticker.get('symbol', ''))
-                        if symbol.endswith("USD"):
-                            _add_ticker(ticker, quote_suffix="USD")
-                        elif symbol.endswith("USDC"):
-                            _add_ticker(ticker, quote_suffix="USDC")
-                    exchange_fetches.append("kraken")
-                except concurrent.futures.TimeoutError:
-                    logger.debug(f"⚠️ Kraken market data TIMED OUT after {_FETCH_TIMEOUT}s — skipping")
-                    _fut.cancel()
-        except Exception as e:
-            logger.debug(f"⚠️ Kraken market data unavailable: {e}")
-
-        # 4) Hard guarantee: every held symbol gets a live exchange quote
-        # so leap logic always uses real exchange data for our actual portfolio.
-        # Only run individual lookups for friends missed by the broad scans —
-        # cap per-call at 8s to prevent hanging on obscure/delisted pairs.
-        _PER_SYMBOL_TIMEOUT = 8
+        # Give held assets an explicit read-only observation attempt if a broad
+        # list did not include them.  This still uses the same injected reader.
         for friend in self.friends.values():
             friend_symbol = _base_symbol(friend.symbol)
             if friend_symbol in self.market_data:
                 # Keep alias key so update_friends_prices can resolve raw symbols too
                 self.market_data.setdefault(friend.symbol, self.market_data[friend_symbol])
-                continue
-
-            # Skip if no broad data was fetched at all (all exchanges timed out)
-            if not exchange_fetches:
                 continue
 
             primary_exchange = str(friend.exchange or self.exchange or "binance").lower().split(":")[-1]
@@ -2201,61 +2229,38 @@ class QueenEternalMachine:
             candidate_exchanges = [ex for ex in candidate_exchanges if not (ex in seen or seen.add(ex))]
 
             for ex in candidate_exchanges:
-                def _fetch_single(ex=ex, friend_symbol=friend_symbol):
-                    pair = f"{friend_symbol}USDC"
-                    if ex == 'kraken':
-                        pair = f"{friend_symbol}USD"
-                    elif ex == 'alpaca':
-                        pair = f"{friend_symbol}/USD"
-                    if ex == 'binance':
-                        try:
-                            from aureon.core.api_gateway import gw
-                            return ('USDC', gw.get_24h_ticker("binance", pair))
-                        except Exception:
-                            from aureon.exchanges.binance_client import get_binance_client
-                            return ('USDC', get_binance_client().get_24h_ticker(pair))
-                    elif ex == 'kraken':
-                        try:
-                            from aureon.core.api_gateway import gw
-                            return ('USD', gw.get_24h_ticker("kraken", pair))
-                        except Exception:
-                            from aureon.exchanges.kraken_client import get_kraken_client
-                            return ('USD', get_kraken_client().get_24h_ticker(pair))
-                    elif ex == 'alpaca':
-                        try:
-                            from aureon.core.api_gateway import gw
-                            t = gw.get_ticker("alpaca", pair)
-                        except Exception:
-                            from aureon.exchanges.alpaca_client import AlpacaClient
-                            t = AlpacaClient().get_ticker(pair)
-                        if t and 'price' in t:
-                            t = {
-                                'symbol': f"{friend_symbol}USD",
-                                'lastPrice': t.get('price', 0),
-                                'priceChangePercent': t.get('change_24h', 0),
-                                'quoteVolume': t.get('volume_24h', 0),
-                                'highPrice': t.get('high_24h', t.get('price', 0)),
-                                'lowPrice': t.get('low_24h', t.get('price', 0)),
-                            }
-                        return ('USD', t)
-                    return (None, None)
                 try:
-                    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as _ex2:
-                        _sfut = _ex2.submit(_fetch_single)
-                        try:
-                            quote_sfx, t = _sfut.result(timeout=_PER_SYMBOL_TIMEOUT)
-                            if t and _to_float(t.get('lastPrice')) > 0:
-                                _add_ticker(t, quote_suffix=quote_sfx or "USDC")
-                                if friend_symbol in self.market_data:
-                                    self.market_data.setdefault(friend.symbol, self.market_data[friend_symbol])
-                                break
-                        except concurrent.futures.TimeoutError:
-                            logger.debug(f"⚠️ {ex} ticker fetch timed out for {friend_symbol} — skipping")
+                    quote_sfx = "USDC"
+                    pair = f"{friend_symbol}USDC"
+                    if ex == "kraken":
+                        quote_sfx = "USD"
+                        pair = f"{friend_symbol}USD"
+                    elif ex == "alpaca":
+                        quote_sfx = "USD"
+                        pair = f"{friend_symbol}/USD"
+                    observed = reader(ex, pair)
+                    if not isinstance(observed, Mapping):
+                        continue
+                    ticker = dict(observed)
+                    if ex == "alpaca" and "price" in ticker:
+                        ticker = {
+                            "symbol": f"{friend_symbol}USD",
+                            "lastPrice": ticker.get("price"),
+                            "priceChangePercent": ticker.get("change_24h", 0),
+                            "quoteVolume": ticker.get("volume_24h", 0),
+                            "highPrice": ticker.get("high_24h", ticker.get("price")),
+                            "lowPrice": ticker.get("low_24h", ticker.get("price")),
+                        }
+                    if _to_float(ticker.get("lastPrice")) > 0:
+                        _add_ticker(ticker, quote_suffix=quote_sfx)
+                        if friend_symbol in self.market_data:
+                            self.market_data.setdefault(friend.symbol, self.market_data[friend_symbol])
+                        break
                 except Exception:
                     continue
 
         if not self.market_data:
-            logger.error("❌ Failed to fetch market data from all exchanges")
+            logger.info("No market observations returned by injected reader")
             return self.market_data
 
         self.last_scan_time = datetime.now()
@@ -2424,7 +2429,7 @@ class QueenEternalMachine:
         
         total_volume = sum(d['total_volume_usd'] for d in ocean.values())
         
-        summary += f"\n📊 OCEAN STATISTICS:\n"
+        summary += "\n📊 OCEAN STATISTICS:\n"
         summary += f"   Total coins scanned: {total_coins}\n"
         summary += f"   🐋 Whale territory: {whale_coins} coins\n"
         summary += f"   🦈 Shark waters: {shark_coins} coins\n"
@@ -2574,17 +2579,17 @@ class QueenEternalMachine:
             if "CRITICAL" in danger['danger_level']:
                 action = "CRITICAL_HOLD_STRONG"
                 logger.warning(f"🛡️ CRITICAL WHALE ATTACK on {symbol}!")
-                logger.warning(f"   🚫 NO STOP LOSS - HOLDING STRONG!")
+                logger.warning("   🚫 NO STOP LOSS - HOLDING STRONG!")
                 logger.warning(f"   📍 Current Price: ${danger['current_price']:.8f}")
                 logger.warning(f"   💰 Cost Basis: ${danger.get('cost_basis_price', 0):.2f}")
                 logger.warning(f"   🧳 Baggage: {danger.get('current_loss', 0):.2f}%")
-                logger.warning(f"   💪 Action: HOLD FOR RECOVERY")
+                logger.warning("   💪 Action: HOLD FOR RECOVERY")
             elif "HIGH ALERT" in danger['danger_level']:
                 action = "HIGH_ALERT_HOLD"
                 logger.warning(f"🛡️ HIGH ALERT whale activity on {symbol}!")
-                logger.warning(f"   🚫 NO STOP LOSS - HOLDING!")
+                logger.warning("   🚫 NO STOP LOSS - HOLDING!")
                 logger.warning(f"   📍 Current Price: ${danger['current_price']:.8f}")
-                logger.warning(f"   💪 Action: PREPARE TO ACCUMULATE ON DIP")
+                logger.warning("   💪 Action: PREPARE TO ACCUMULATE ON DIP")
             else:  # WARNING
                 action = "WARNING_MONITOR"
                 logger.info(f"🛡️ WARNING: Whale activity on {symbol}. Monitoring for recovery.")
@@ -2920,7 +2925,7 @@ class QueenEternalMachine:
         
         # Verify the leap is still profitable after fees
         if not opportunity.is_profitable_after_fees:
-            logger.warning(f"⚠️ Leap rejected - not profitable after fees!")
+            logger.warning("⚠️ Leap rejected - not profitable after fees!")
             logger.warning(f"   Fee-adjusted multiplier: {opportunity.fee_adjusted_multiplier:.4f}x (needs > 1.0)")
             return False
 
@@ -3090,7 +3095,7 @@ class QueenEternalMachine:
         
         # Verify the leap is still profitable
         if not opportunity.is_profitable_after_fees:
-            logger.warning(f"⚠️ Friend leap rejected - not profitable after fees!")
+            logger.warning("⚠️ Friend leap rejected - not profitable after fees!")
             return False
 
         exchange = friend.exchange
@@ -3397,7 +3402,7 @@ class QueenEternalMachine:
         )
         self._record_observed_fees(buy_fill)
         
-        logger.info(f"🟡 YELLOW BRICK ROAD JOURNEY STARTED!")
+        logger.info("🟡 YELLOW BRICK ROAD JOURNEY STARTED!")
         logger.info(f"   Starting coin: {start_symbol}")
         logger.info(f"   Provider fill price: {buy_fill['filled_price']:.4f}")
         logger.info(f"   Quantity: {quantity:.6f} {start_symbol}")
@@ -3639,15 +3644,21 @@ class QueenEternalMachine:
         logger.info(f"🔄 CYCLE #{self.total_cycles} - {datetime.now().strftime('%H:%M:%S')}")
         logger.info(f"{'='*60}")
         
-        # 🐸 SYNC: Refresh friends from REAL exchange positions every cycle
-        # This prevents phantom positions from accumulating over time
-        try:
-            self._load_friends_from_real_positions()
-            self._sync_main_position_to_real_holdings()
-            logger.info(f"   🐸 [SYNC] Friends: {len(self.friends)} | Main: {self.main_position.symbol if self.main_position else 'NONE'}")
-        except Exception as e:
-            logger.warning(f"⚠️ Real position sync failed (using cached): {e}")
-            logger.warning(f"   🐸 [SYNC] FAILED: {e}")
+        # Portfolio observation is explicit.  A default/dry machine never
+        # discovers or constructs a provider client as part of a cycle.
+        if callable(getattr(self, "_balance_reader", None)):
+            try:
+                self._load_friends_from_real_positions()
+                self._sync_main_position_to_real_holdings()
+                logger.info(
+                    "   [SYNC] Friends: %s | Main: %s",
+                    len(self.friends),
+                    self.main_position.symbol if self.main_position else "NONE",
+                )
+            except Exception as exc:
+                logger.warning("Position observation failed; using cached state: %s", exc)
+        else:
+            logger.info("   [SYNC] skipped: no injected balance reader")
         
         # 👑⚛️ QUEEN'S AUTONOMOUS DECISION - Full cognitive control
         queen_decision = None
@@ -3671,7 +3682,7 @@ class QueenEternalMachine:
                     'has_control': True
                 }
                 
-                logger.info(f"👑🧠 QUEEN'S AUTONOMOUS DECISION")
+                logger.info("👑🧠 QUEEN'S AUTONOMOUS DECISION")
                 logger.info(f"   Confidence: {queen_confidence:.2%}")
                 logger.info(f"   Reasoning: {reasoning}")
             except Exception as e:
@@ -3695,7 +3706,7 @@ class QueenEternalMachine:
                 # Profile bots currently active in the market
                 bot_intelligence = self.bot_profiler.profile_market_structure()
                 if bot_intelligence:
-                    logger.info(f"🤖 BOT INTELLIGENCE ANALYSIS")
+                    logger.info("🤖 BOT INTELLIGENCE ANALYSIS")
                     logger.info(f"   Active Bots: {bot_intelligence.get('active_bot_count', 0)}")
                     logger.info(f"   Dominant Strategy: {bot_intelligence.get('dominant_strategy', 'unknown')}")
                     logger.info(f"   Market Structure: {bot_intelligence.get('market_structure', 'unknown')}")
@@ -3764,7 +3775,7 @@ class QueenEternalMachine:
                 if self.execute_quantum_leap(best):
                     stats.leaps_made += 1
                     stats.breadcrumbs_planted += 1
-                    logger.info(f"👑 LEAP APPROVED by Queen's autonomous control")
+                    logger.info("👑 LEAP APPROVED by Queen's autonomous control")
         elif opportunities and queen_decision and queen_decision['has_control']:
             logger.info(f"👑 Leap opportunity exists but Queen's confidence ({queen_decision['confidence']:.2%}) below threshold")
         elif opportunities:
@@ -3776,7 +3787,7 @@ class QueenEternalMachine:
         else:
             # No opportunities found - why not?
             if self.main_position:
-                logger.info(f"⏸️  No leap opportunities (position holds recovery advantage)")
+                logger.info("⏸️  No leap opportunities (position holds recovery advantage)")
             stats.breadcrumbs_planted += 0
         
         # 6. SCALP (+ MOUNTAIN CLIMBING LEARNING)
@@ -4080,81 +4091,108 @@ def print_banner():
     """)
 
 
-async def run_demo():
-    """Run a demonstration of the Queen's machine."""
+async def run_demo() -> Dict[str, Any]:
+    """Print an offline, mutation-free status demonstration."""
     print_banner()
-    
+
     machine = QueenEternalMachine(
         initial_vault=100.0,
         breadcrumb_percent=0.10,
         min_dip_advantage=0.02,
-        dry_run=False
+        dry_run=True,
+        load_state=False,
     )
-    
-    # Start the journey
-    print("\n🟡 Starting Yellow Brick Road journey...")
-    machine.start_journey("ETH")
-    
-    # Run a few cycles
-    print("\n🔄 Running 3 demonstration cycles...")
-    for _ in range(3):
-        await machine.run_cycle()
-        await asyncio.sleep(2)
-    
-    # Print final report
-    print("\n" + "="*60)
-    print("📊 FINAL REPORT")
-    print("="*60)
-    
+
+    print("\nOffline dry-run status (no providers, orders, or account reads):")
     report = machine.get_full_report()
+    report["economic_boundary"] = machine.economic_boundary_status()
+    print("\n" + "="*60)
+    print("STATUS REPORT")
+    print("="*60)
     print(json.dumps(report, indent=2, default=str))
+    return report
 
 
-async def run_live(vault: float = 100.0, interval: int = 60, start_symbol: str = "ETH"):
-    """Run the machine in live mode."""
+async def run_live(
+    vault: float = 100.0,
+    interval: int = 60,
+    start_symbol: str = "ETH",
+    *,
+    balance_reader: Optional[Callable[[str], Any]] = None,
+    market_data_reader: Optional[Callable[[str, Optional[str]], Any]] = None,
+    order_status_reader: Optional[Callable[[str, str], Mapping[str, Any]]] = None,
+    authorization_provider: Optional[
+        Callable[[ForceTradePlan], Optional[OpaqueForceTradeAuthorization]]
+    ] = None,
+    final_order_dispatcher: Optional[
+        Callable[[ForceTradePlan], Mapping[str, Any]]
+    ] = None,
+) -> bool:
+    """Run only when every observation/economic boundary is explicitly injected."""
     print_banner()
-    
+
     machine = QueenEternalMachine(
         initial_vault=vault,
         breadcrumb_percent=0.10,
         min_dip_advantage=0.02,
-        dry_run=False  # LIVE MODE
+        dry_run=False,
+        balance_reader=balance_reader,
+        market_data_reader=market_data_reader,
+        order_status_reader=order_status_reader,
+        authorization_provider=authorization_provider,
+        final_order_dispatcher=final_order_dispatcher,
     )
-    
+
+    if not machine.live_trading:
+        print(
+            "\nHOLD: live execution requires LIVE=1 plus an injected "
+            "Magic-Star authorization provider and final order dispatcher."
+        )
+        return False
+
     # Start journey if not already started
     if not machine.main_position:
         print(f"\n🟡 Starting Yellow Brick Road journey with {start_symbol}...")
         machine.start_journey(start_symbol)
-    
+
     # Run forever
     print(f"\n🤖 Running 24/7 mode (interval: {interval}s)...")
     print("   Press Ctrl+C to stop\n")
-    
+
     await machine.run_forever(interval_seconds=interval)
+    return True
 
 
-if __name__ == "__main__":
+def main(argv: Optional[List[str]] = None) -> int:
+    """Run the safe CLI; no arguments means an offline status report."""
+
     import argparse
-    
+
     parser = argparse.ArgumentParser(description="The Queen's Eternal Machine")
-    parser.add_argument("--demo", action="store_true", help="Run demo mode")
-    parser.add_argument("--live", action="store_true", help="Run live 24/7 mode")
+    parser.add_argument("--demo", action="store_true", help="Show offline dry-run status")
+    parser.add_argument(
+        "--live",
+        action="store_true",
+        help="Request live mode (CLI remains HOLD without injected authority)",
+    )
     parser.add_argument("--vault", type=float, default=100.0, help="Initial vault amount")
     parser.add_argument("--interval", type=int, default=60, help="Scan interval in seconds")
     parser.add_argument("--symbol", type=str, default="ETH", help="Starting symbol for the journey")
-    
-    args = parser.parse_args()
-    
+
+    args = parser.parse_args(argv)
+
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s | %(levelname)s | %(message)s',
         datefmt='%H:%M:%S'
     )
-    
-    if args.demo:
-        asyncio.run(run_demo())
-    elif args.live:
-        asyncio.run(run_live(args.vault, args.interval, args.symbol))
-    else:
-        # Default: run demo
-        asyncio.run(run_demo())
+
+    if args.live:
+        started = asyncio.run(run_live(args.vault, args.interval, args.symbol))
+        return 0 if started else 2
+    asyncio.run(run_demo())
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

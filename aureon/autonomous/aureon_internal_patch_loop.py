@@ -1,13 +1,15 @@
-"""Aureon-authored patch loop built on the existing guarded self-fix path.
+"""Aureon-authored, proposal-only internal patch loop.
 
 The internal coding workforce observes a bounded source file, deliberates,
-authors one unified diff, submits it to SafeCodeControl, and delegates the
-actual mutation to GuardedPatchApplier.  The applier remains responsible for
-allowlisting, secret scanning, ``git apply --check``, tests, and rollback.
+authors one unified diff, validates its exact shape, and submits it to
+SafeCodeControl for review.  This module deliberately has no repository
+mutation path: the checked-in Plumber and Magic Star components are
+local-development controls and cannot grant production release authority.
 
-No Codex implementation receipt is created here.  A successful patch remains
-``pending_senior_review`` until a separate release review consumes the exact
-evidence digest.
+No Codex implementation receipt is created here.  A valid proposal remains
+``pending_senior_review`` and HOLD.  A future release service must consume the
+exact evidence digest through an independently reviewed production boundary;
+that service is not implemented by this module.
 """
 
 from __future__ import annotations
@@ -24,7 +26,6 @@ from typing import Any, Sequence
 from aureon.autonomous.aureon_agent_company_brain_fabric import (
     CANONICAL_AGENT_COMPANY_ROLE_COUNT,
 )
-from aureon.autonomous.aureon_autonomous_self_fix_director import GuardedPatchApplier
 from aureon.autonomous.aureon_internal_coding_workforce import (
     INTERNAL_AUTHOR_MAX_TOKENS,
     InternalCodingWorkforce,
@@ -79,7 +80,7 @@ PRE_APPLY_COUNCIL_REVIEWER = "aureon:pre_apply_council"
 
 
 class InternalPatchHold(RuntimeError):
-    """Raised when an internally authored patch cannot safely proceed."""
+    """Raised when an internally authored proposal cannot safely proceed."""
 
 
 def _sha256_bytes(value: bytes) -> str:
@@ -127,7 +128,7 @@ def _exact_pre_apply_council_accepted(council: dict[str, Any]) -> bool:
     )
 
 
-def _approve_exact_council_proposal(
+def _record_exact_council_proposal_hold(
     controller: SafeCodeControl,
     proposal: dict[str, Any],
 ) -> dict[str, Any]:
@@ -142,9 +143,14 @@ def _approve_exact_council_proposal(
         controller.pending_proposals = [
             item for item in controller.pending_proposals if item is not proposal
         ]
-        proposal["status"] = "approved"
+        proposal["status"] = "proposal_reviewed_hold"
         proposal["reviewed_at"] = time.time()
         proposal["reviewer"] = PRE_APPLY_COUNCIL_REVIEWER
+        proposal["approval_scope"] = "proposal_review_only"
+        proposal["proposal_only"] = True
+        proposal["execution_authorized"] = False
+        proposal["release_authorized"] = False
+        proposal["production_ready"] = False
         controller.recent_reviews.append(proposal)
         controller.recent_reviews = controller.recent_reviews[-controller.max_recent :]
         controller._persist()
@@ -295,11 +301,15 @@ def _git_apply_check(root: Path, patch_text: str) -> dict[str, Any]:
         return {
             "ok": False,
             "command": command,
+            "check_only": True,
+            "filesystem_mutation_attempted": False,
             "error_type": type(exc).__name__,
         }
     return {
         "ok": proc.returncode == 0,
         "command": command,
+        "check_only": True,
+        "filesystem_mutation_attempted": False,
         "returncode": proc.returncode,
         "stdout": proc.stdout[-2_000:],
         "stderr": proc.stderr[-2_000:],
@@ -471,6 +481,27 @@ def _source_for_authoring(root: Path, request: InternalPatchRequest) -> str:
     return text
 
 
+def _trusted_proposal_controller(
+    repo_root: Path,
+    controller: SafeCodeControl | None,
+) -> SafeCodeControl:
+    proposal_controller = controller or SafeCodeControl(
+        state_path=repo_root / "state" / "aureon_internal_patch_proposals.json"
+    )
+    if type(proposal_controller) is not SafeCodeControl:
+        raise InternalPatchHold("trusted_safe_code_controller_required")
+    proposal_state_path = proposal_controller.state_path.resolve()
+    proposal_state_root = (repo_root / "state").resolve()
+    try:
+        proposal_state_root.relative_to(repo_root)
+        proposal_state_path.relative_to(proposal_state_root)
+    except ValueError as exc:
+        raise InternalPatchHold("proposal_state_path_must_remain_under_repo_state") from exc
+    if proposal_state_path.suffix.casefold() != ".json":
+        raise InternalPatchHold("proposal_state_path_must_be_json")
+    return proposal_controller
+
+
 def run_internal_patch_cycle(
     *,
     root: Path,
@@ -478,9 +509,10 @@ def run_internal_patch_cycle(
     workforce: InternalCodingWorkforce,
     controller: SafeCodeControl | None = None,
 ) -> dict[str, Any]:
-    """Run one Aureon-authored, guarded, rollback-capable patch cycle."""
+    """Run one Aureon-authored proposal cycle without mutating the repository."""
 
     repo_root = Path(root).resolve()
+    proposal_controller = _trusted_proposal_controller(repo_root, controller)
     target = _normalize_target(request.target_path)
     if target != request.target_path:
         raise InternalPatchHold("request_target_not_canonical")
@@ -619,13 +651,17 @@ def run_internal_patch_cycle(
         selected_roles=PRE_APPLY_COUNCIL_ROLES,
         require_accept=True,
     )
+    pre_apply_council = {
+        **pre_apply_council,
+        "acceptance_scope": "proposal_review_only",
+        "execution_authorized": False,
+        "release_authorized": False,
+        "production_ready": False,
+    }
     pre_apply_council_digest = _evidence_digest(pre_apply_council)
     if not _exact_pre_apply_council_accepted(pre_apply_council):
         raise InternalPatchHold("pre_apply_council_held")
 
-    proposal_controller = controller or SafeCodeControl(
-        state_path=repo_root / "state" / "aureon_internal_patch_proposals.json"
-    )
     proposal_spec = CodeProposal(
         kind="aureon_internal_unified_diff",
         title=request.goal[:120],
@@ -663,24 +699,29 @@ def run_internal_patch_cycle(
         proposal = proposal_controller.propose(proposal_spec)
     finally:
         proposal_controller.auto_approve = prior_auto_approve
-    proposal = _approve_exact_council_proposal(proposal_controller, proposal)
-    applier = GuardedPatchApplier(
-        root=repo_root,
-        allowlist=[target],
-        test_commands=[list(command) for command in request.test_commands],
-        required_test_layers=["focused"],
-        review_cycles=1,
-    )
-    apply_evidence = applier.apply_proposal(proposal)
+    proposal = _record_exact_council_proposal_hold(proposal_controller, proposal)
+    apply_evidence = {
+        "status": "held_proposal_only",
+        "applied": False,
+        "effect_attempted": False,
+        "blocked_reason": "production_magic_star_release_unavailable",
+        "test_commands_executed": False,
+        "repository_mutation_authorized": False,
+        "generated_code_execution_authorized": False,
+        "repository_mutation_implemented": False,
+        "generated_code_execution_implemented": False,
+        "subprocess_test_execution_implemented": False,
+        "release_authorized": False,
+        "proposal_only": True,
+        "local_development_only": True,
+        "production_ready": False,
+    }
     workforce_report = workforce.report()
-    applied = bool(apply_evidence.get("applied")) and apply_evidence.get("status") == "applied"
     cycle = {
         "schema_version": SCHEMA_VERSION,
-        "status": "internal_patch_applied_pending_senior_review"
-        if applied
-        else "internal_patch_held_or_rolled_back",
-        "applied": applied,
-        "pending_senior_review": applied,
+        "status": "internal_patch_proposal_held_for_senior_review",
+        "applied": False,
+        "pending_senior_review": True,
         "request": request.to_dict(),
         "source_sha256": request.expected_source_sha256,
         "deliberation": deliberation,
@@ -699,6 +740,17 @@ def run_internal_patch_cycle(
         "workforce_report": workforce_report,
         "codex_role": "senior_review_and_veto_only",
         "codex_implementation": False,
+        "repository_mutation_authorized": False,
+        "generated_code_execution_authorized": False,
+        "repository_mutation_implemented": False,
+        "generated_code_execution_implemented": False,
+        "subprocess_test_execution_implemented": False,
+        "release_authorized": False,
+        "proposal_only": True,
+        "effect_attempted": False,
+        "test_commands_executed": False,
+        "production_magic_star_release_available": False,
+        "production_ready": False,
         "action_eligible": False,
         "economic_eligible": False,
     }

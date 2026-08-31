@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+import ast
 import json
 import subprocess
 import sys
 from pathlib import Path
 
 from aureon.autonomous.aureon_autonomous_self_fix_director import (
-    GuardedPatchApplier,
+    ProposalPreflight,
     build_and_write_autonomous_self_fix_director,
     build_swot,
 )
@@ -47,7 +48,7 @@ def test_self_fix_swot_classifies_existing_aureon_evidence() -> None:
 
 def test_guarded_patch_applier_blocks_empty_and_unsafe_patches(tmp_path: Path) -> None:
     _init_git(tmp_path)
-    applier = GuardedPatchApplier(root=tmp_path, allowlist=["allowed.txt"], test_commands=[[sys.executable, "-c", "print('ok')"]])
+    applier = ProposalPreflight(root=tmp_path, allowlist=["allowed.txt"], test_commands=[[sys.executable, "-c", "print('ok')"]])
 
     empty = applier.apply_proposal(
         {"title": "empty", "status": "approved", "patch_text": "", "target_files": ["allowed.txt"]}
@@ -72,7 +73,7 @@ def test_guarded_patch_applier_requires_explicit_approved_status(tmp_path: Path)
     target = tmp_path / "allowed.txt"
     target.write_text("old\n", encoding="utf-8")
     patch = "diff --git a/allowed.txt b/allowed.txt\n--- a/allowed.txt\n+++ b/allowed.txt\n@@ -1 +1 @@\n-old\n+new\n"
-    applier = GuardedPatchApplier(
+    applier = ProposalPreflight(
         root=tmp_path,
         allowlist=["allowed.txt"],
         test_commands=[[sys.executable, "-c", "print('ok')"]],
@@ -87,21 +88,30 @@ def test_guarded_patch_applier_requires_explicit_approved_status(tmp_path: Path)
         assert target.read_text(encoding="utf-8") == "old\n"
 
 
-def test_guarded_patch_applier_applies_allowlisted_patch_after_checks_and_tests(tmp_path: Path) -> None:
+def test_proposal_preflight_never_applies_or_executes_suggested_tests(tmp_path: Path) -> None:
     _init_git(tmp_path)
     target = tmp_path / "allowed.txt"
     target.write_text("old\n", encoding="utf-8")
     patch = "diff --git a/allowed.txt b/allowed.txt\n--- a/allowed.txt\n+++ b/allowed.txt\n@@ -1 +1 @@\n-old\n+new\n"
-    applier = GuardedPatchApplier(root=tmp_path, allowlist=["allowed.txt"], test_commands=[[sys.executable, "-c", "print('ok')"]])
+    marker = tmp_path / "suggested-test-executed"
+    applier = ProposalPreflight(
+        root=tmp_path,
+        allowlist=["allowed.txt"],
+        test_commands=[[sys.executable, "-c", f"from pathlib import Path; Path({str(marker)!r}).touch()"]],
+    )
 
     result = applier.apply_proposal(
         {"title": "safe", "status": "approved", "patch_text": patch, "target_files": ["allowed.txt"]}
     )
 
-    assert result["status"] == "applied"
-    assert result["applied"] is True
-    assert target.read_text(encoding="utf-8") == "new\n"
-    assert result["test_results"][0]["ok"] is True
+    assert result["status"] == "held_proposal_only"
+    assert result["applied"] is False
+    assert result["ever_applied"] is False
+    assert result["effect_attempted"] is False
+    assert result["test_commands_executed"] is False
+    assert result["release_authorized"] is False
+    assert target.read_text(encoding="utf-8") == "old\n"
+    assert not marker.exists()
 
 
 def test_guarded_patch_applier_requires_tests_before_mutating(tmp_path: Path) -> None:
@@ -109,7 +119,7 @@ def test_guarded_patch_applier_requires_tests_before_mutating(tmp_path: Path) ->
     target = tmp_path / "allowed.txt"
     target.write_text("old\n", encoding="utf-8")
     patch = "diff --git a/allowed.txt b/allowed.txt\n--- a/allowed.txt\n+++ b/allowed.txt\n@@ -1 +1 @@\n-old\n+new\n"
-    applier = GuardedPatchApplier(root=tmp_path, allowlist=["allowed.txt"], test_commands=[])
+    applier = ProposalPreflight(root=tmp_path, allowlist=["allowed.txt"], test_commands=[])
 
     result = applier.apply_proposal(
         {"title": "untested", "status": "approved", "patch_text": patch, "target_files": ["allowed.txt"]}
@@ -120,34 +130,43 @@ def test_guarded_patch_applier_requires_tests_before_mutating(tmp_path: Path) ->
     assert target.read_text(encoding="utf-8") == "old\n"
 
 
-def test_guarded_patch_applier_rolls_back_when_tests_fail(tmp_path: Path) -> None:
+def test_proposal_preflight_never_needs_rollback_because_tests_do_not_run(tmp_path: Path) -> None:
     _init_git(tmp_path)
     target = tmp_path / "allowed.txt"
     target.write_text("old\n", encoding="utf-8")
     patch = "diff --git a/allowed.txt b/allowed.txt\n--- a/allowed.txt\n+++ b/allowed.txt\n@@ -1 +1 @@\n-old\n+new\n"
-    applier = GuardedPatchApplier(
+    marker = tmp_path / "failing-test-executed"
+    applier = ProposalPreflight(
         root=tmp_path,
         allowlist=["allowed.txt"],
-        test_commands=[[sys.executable, "-c", "raise SystemExit(1)"]],
+        test_commands=[
+            [
+                sys.executable,
+                "-c",
+                f"from pathlib import Path; Path({str(marker)!r}).touch(); raise SystemExit(1)",
+            ]
+        ],
     )
 
     result = applier.apply_proposal(
         {"title": "regression", "status": "approved", "patch_text": patch, "target_files": ["allowed.txt"]}
     )
 
-    assert result["status"] == "rolled_back_tests_failed"
-    assert result["ever_applied"] is True
+    assert result["status"] == "held_proposal_only"
+    assert result["ever_applied"] is False
     assert result["applied"] is False
-    assert result["rollback"]["ok"] is True
+    assert result["effect_attempted"] is False
+    assert result["test_commands_executed"] is False
     assert target.read_text(encoding="utf-8") == "old\n"
+    assert not marker.exists()
 
 
-def test_guarded_patch_applier_repeats_validation_for_coherence_review_cycles(tmp_path: Path) -> None:
+def test_proposal_preflight_records_review_depth_without_running_cycles(tmp_path: Path) -> None:
     _init_git(tmp_path)
     target = tmp_path / "allowed.txt"
     target.write_text("old\n", encoding="utf-8")
     patch = "diff --git a/allowed.txt b/allowed.txt\n--- a/allowed.txt\n+++ b/allowed.txt\n@@ -1 +1 @@\n-old\n+new\n"
-    applier = GuardedPatchApplier(
+    applier = ProposalPreflight(
         root=tmp_path,
         allowlist=["allowed.txt"],
         test_commands=[[sys.executable, "-c", "print('ok')"]],
@@ -164,8 +183,9 @@ def test_guarded_patch_applier_repeats_validation_for_coherence_review_cycles(tm
         }
     )
 
-    assert result["status"] == "applied"
-    assert [item["review_cycle"] for item in result["test_results"]] == [1, 2]
+    assert result["status"] == "held_proposal_only"
+    assert result["test_results"] == []
+    assert result["test_commands_executed"] is False
     assert result["coherence_proof"]["required_test_layers"][-1] == "rollback"
     assert result["coherence_proof"]["review_cycles"] == 2
 
@@ -182,7 +202,7 @@ def test_self_fix_director_publishes_artifacts_and_holds_manual_authority(tmp_pa
         apply_safe_fixes=False,
     )
 
-    assert report["status"] == "self_fix_blocked"
+    assert report["status"] == "self_fix_proposal_only_release_hold"
     assert report["handover_ready"] is False
     assert any(snag["id"] == "manual_authority_request_held" for snag in report["snags"])
     assert (tmp_path / "state" / "aureon_autonomous_self_fix_director_last_run.json").exists()
@@ -190,7 +210,7 @@ def test_self_fix_director_publishes_artifacts_and_holds_manual_authority(tmp_pa
     assert (tmp_path / "frontend" / "public" / "aureon_autonomous_self_fix_director.json").exists()
 
 
-def test_self_fix_director_applies_only_explicitly_approved_proposal(tmp_path: Path) -> None:
+def test_self_fix_director_holds_explicitly_reviewed_proposal_without_effect(tmp_path: Path) -> None:
     _init_git(tmp_path)
     (tmp_path / "tests").mkdir()
     target = tmp_path / "tests" / "test_aureon_autonomous_self_fix_director.py"
@@ -220,17 +240,24 @@ def test_self_fix_director_applies_only_explicitly_approved_proposal(tmp_path: P
         },
     )
 
+    marker = tmp_path / "director-test-command-executed"
     report = build_and_write_autonomous_self_fix_director(
         root=tmp_path,
-        test_commands=[[sys.executable, "-c", "print('ok')"]],
+        test_commands=[[sys.executable, "-c", f"from pathlib import Path; Path({str(marker)!r}).touch()"]],
     )
 
-    assert report["summary"]["patch_applied_count"] == 1
-    assert report["patch_apply_evidence"][0]["status"] == "applied"
-    assert report["test_evidence"]["ok"] is True
-    assert report["handover_ready"] is True
-    assert report["codex_audit_state"]["state"] == "autonomous_safe"
-    assert target.read_text(encoding="utf-8") == "new\n"
+    assert report["status"] == "self_fix_proposal_only_release_hold"
+    assert report["summary"]["patch_applied_count"] == 0
+    assert report["proposal_preflight_evidence"][0]["status"] == "held_proposal_only"
+    assert report["proposal_preflight_evidence"][0]["effect_attempted"] is False
+    assert report["test_evidence"]["ok"] is False
+    assert report["test_commands_executed"] is False
+    assert report["handover_ready"] is False
+    assert report["release_hold"] is True
+    assert report["release_authorized"] is False
+    assert report["codex_audit_state"]["state"] == "pending"
+    assert target.read_text(encoding="utf-8") == "old\n"
+    assert not marker.exists()
 
 
 def test_self_fix_director_never_loads_pending_or_rejected_proposals(tmp_path: Path) -> None:
@@ -261,6 +288,9 @@ def test_self_fix_director_never_loads_pending_or_rejected_proposals(tmp_path: P
 
     assert report["summary"]["patch_candidate_count"] == 0
     assert report["summary"]["patch_applied_count"] == 0
+    assert report["status"] == "self_fix_proposal_only_release_hold"
+    assert report["handover_ready"] is False
+    assert any(snag["id"] == "production_magic_star_release_unavailable" for snag in report["snags"])
     assert target.read_text(encoding="utf-8") == "old\n"
 
 
@@ -319,7 +349,10 @@ def test_hnc_auris_flow_sets_patch_batch_without_closing_internal_repair(tmp_pat
     assert repair["summary"]["patch_batch_limit"] == 1
     assert repair["summary"]["patch_candidate_count"] == 1
     assert repair["coherence_flow"]["capabilities"]["propose_patch"] is True
-    assert repair["coherence_flow"]["capabilities"]["rollback"] is True
+    assert repair["coherence_flow"]["capabilities"]["rollback"] is False
+    assert repair["coherence_flow"]["capabilities"]["apply_patch"] is False
+    assert repair["coherence_flow"]["capabilities"]["execute_generated_code"] is False
+    assert repair["coherence_flow"]["capabilities"]["execute_test_commands"] is False
 
     expand = build_and_write_autonomous_self_fix_director(
         root=tmp_path,
@@ -335,3 +368,49 @@ def test_hnc_auris_flow_sets_patch_batch_without_closing_internal_repair(tmp_pat
     assert expand["coherence_flow"]["flow"] == "expand"
     assert expand["summary"]["patch_batch_limit"] == 3
     assert expand["summary"]["patch_candidate_count"] == 3
+
+
+def test_self_coding_modules_have_no_execution_or_environment_bypass_calls() -> None:
+    root = Path(__file__).resolve().parents[1]
+    expected_subprocess_functions = {
+        "aureon_autonomous_self_fix_director.py": set(),
+        "aureon_internal_patch_loop.py": {"_git_apply_check"},
+        "aureon_internal_self_coder.py": {"_git"},
+    }
+    for name, expected in expected_subprocess_functions.items():
+        path = root / "aureon" / "autonomous" / name
+        source = path.read_text(encoding="utf-8")
+        tree = ast.parse(source)
+        called_builtins = {
+            node.func.id
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+        }
+        assert called_builtins.isdisjoint({"eval", "exec", "compile", "__import__"})
+        assert not any(
+            isinstance(node, ast.Attribute)
+            and isinstance(node.value, ast.Name)
+            and node.value.id == "os"
+            and node.attr in {"environ", "getenv", "putenv"}
+            for node in ast.walk(tree)
+        )
+        subprocess_functions = {
+            node.name
+            for node in ast.walk(tree)
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+            and any(
+                isinstance(call, ast.Call)
+                and isinstance(call.func, ast.Attribute)
+                and isinstance(call.func.value, ast.Name)
+                and call.func.value.id == "subprocess"
+                and call.func.attr == "run"
+                for call in ast.walk(node)
+            )
+        }
+        assert subprocess_functions == expected
+
+    patch_loop_source = (
+        root / "aureon" / "autonomous" / "aureon_internal_patch_loop.py"
+    ).read_text(encoding="utf-8")
+    assert 'command = ["git", "apply", "--whitespace=nowarn", "--check"]' in patch_loop_source
+    assert '"--reverse"' not in patch_loop_source

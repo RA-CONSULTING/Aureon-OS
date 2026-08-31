@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import ast
 import copy
+import itertools
 import logging
 import math
 import time
@@ -9,15 +10,54 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from types import SimpleNamespace
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Mapping, Optional, Tuple
 
 import pytest
 
+from aureon.queen import queen_force_trade_governance as force_governance
 from scripts.validation.validate_real_data_contract import scan_text_file
 
 
 ROOT = Path(__file__).resolve().parents[1]
 TARGET = ROOT / "aureon" / "queen" / "queen_eternal_machine.py"
+_AUTH_SEQUENCE = itertools.count(1)
+
+
+def _mint_offline_authorization(plan):
+    """Mint only inside this offline fixture using a deterministic fake verifier."""
+
+    original = force_governance.validate_magic_star_v02
+    sequence = next(_AUTH_SEQUENCE)
+
+    def verified(*_args, **_kwargs):
+        return {
+            "valid": True,
+            "production_ready": True,
+            "star_commitment": f"{sequence:064x}",
+            "expires_at_ms": 9_999_999_999_999,
+        }
+
+    force_governance.validate_magic_star_v02 = verified
+    try:
+        return force_governance._mint_magic_star_authorization(
+            star=object(),
+            trust={},
+            plan=plan,
+            trusted_now_ms=lambda: 1,
+        )
+    finally:
+        force_governance.validate_magic_star_v02 = original
+
+
+def _claim_offline_authorization(**kwargs):
+    """Test-only receipt-lifecycle seam; never used by the runtime module."""
+
+    plan = kwargs["plan"]
+    return force_governance.QueenForceTradeDecision(
+        allowed=True,
+        reason="offline_receipt_lifecycle_fixture_only",
+        plan_sha256=plan.commitment,
+    )
 
 
 def _load_receipt_scope():
@@ -85,8 +125,11 @@ def _load_receipt_scope():
         "Any": Any,
         "Dict": Dict,
         "List": List,
+        "Mapping": Mapping,
         "Optional": Optional,
         "Tuple": Tuple,
+        "ForceTradePlan": force_governance.ForceTradePlan,
+        "claim_queen_force_trade_authority": _claim_offline_authorization,
         "dataclass": dataclass,
         "datetime": datetime,
         "logging": logging,
@@ -230,7 +273,6 @@ def _machine(module, client: OfflineClient, *, live: bool = True):
     machine.dry_run = not live
     machine.exchange = "binance"
     machine.breadcrumb_percent = 0.05
-    machine._exchange_clients = {"binance": client, "kraken": client}
     machine._pending_orders = {}
     machine.last_execution_receipt = None
     machine.observed_fees_by_asset = {}
@@ -246,12 +288,32 @@ def _machine(module, client: OfflineClient, *, live: bool = True):
     machine.market_data = {}
     machine.main_position = None
     machine.start_time = None
-    machine._get_exchange_client = lambda exchange: client
+    machine._order_status_reader = (
+        lambda _exchange, order_id: client.get_order_status(order_id)
+    )
+    machine._balance_reader = lambda _exchange: {}
     machine._pair_candidates = (
         lambda symbol, exchange: [f"{symbol.upper()}USDT"]
         if exchange == "binance"
         else [f"{symbol.upper()}USD"]
     )
+    machine._authorization_provider = _mint_offline_authorization
+
+    def dispatch(plan):
+        quantity = (
+            float(plan.quantity) if plan.quantity_kind == "base_units" else None
+        )
+        quote_qty = (
+            float(plan.quantity) if plan.quantity_kind == "quote_units" else None
+        )
+        return client.place_market_order(
+            plan.symbol,
+            plan.side,
+            quantity=quantity,
+            quote_qty=quote_qty,
+        )
+
+    machine._final_order_dispatcher = dispatch
     machine._save_calls = 0
 
     def save_state():

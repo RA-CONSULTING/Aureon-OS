@@ -3,10 +3,12 @@
 The operator supplies a goal. Aureon's Architecture brain selects one clean,
 tracked Python target from a deterministic repository shortlist, every coding
 seat and process deliberates, and the Implementation Worker authors the diff.
-The existing guarded patch applier performs the mutation, tests, and rollback.
+The candidate is validated and retained as a proposal; this module never
+mutates the repository or executes generated code.
 
-Codex is deliberately absent from target selection, authoring, and execution.
-A successful cycle remains pending an exact senior release review.
+Codex is deliberately absent from target selection and authoring.  A successful
+proposal remains pending an exact senior review and a production Plumber/Magic
+Star release implementation, which is not available in this checkout.
 """
 
 from __future__ import annotations
@@ -20,20 +22,12 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path, PurePosixPath
-from typing import Any, Mapping, Sequence
+from typing import Any, Sequence
 
 from aureon.autonomous.aureon_agent_company_brain_fabric import (
     CANONICAL_AGENT_COMPANY_ROLE_COUNT,
     canonical_agent_company_brain_topology,
     company_brain_fabric_report,
-)
-from aureon.autonomous.aureon_full_stack_release_gate import (
-    LOCAL_ACCEPTANCE,
-    FullStackHold,
-    FullStackReleaseGate,
-    FullStackReleaseRequest,
-    build_local_full_stack_release_gate,
-    validate_full_stack_release_receipt,
 )
 from aureon.autonomous.aureon_internal_coding_workforce import (
     OllamaSwitchboardBrainResolver,
@@ -99,7 +93,7 @@ STOP_WORDS = {
 
 
 class InternalSelfCoderHold(RuntimeError):
-    """Aureon could not safely form or execute a bounded self-coding cycle."""
+    """Aureon could not safely form or record a bounded coding proposal."""
 
 
 def _canonical_json(value: Any, *, newline: bool = False) -> bytes:
@@ -125,7 +119,26 @@ def _repo_relative(value: str) -> str:
     return path.as_posix()
 
 
+def _bounded_state_path(root: Path, value: Path) -> Path:
+    """Resolve a JSON evidence path strictly beneath the repository state dir."""
+
+    repo_root = Path(root).resolve()
+    state_root = (repo_root / "state").resolve()
+    candidate = value if value.is_absolute() else repo_root / value
+    resolved = candidate.resolve()
+    try:
+        state_root.relative_to(repo_root)
+        resolved.relative_to(state_root)
+    except ValueError as exc:
+        raise InternalSelfCoderHold("self_coder_state_path_must_remain_under_repo_state") from exc
+    if resolved.suffix.casefold() != ".json":
+        raise InternalSelfCoderHold("self_coder_state_path_must_be_json")
+    return resolved
+
+
 def _git(root: Path, *args: str) -> subprocess.CompletedProcess[str]:
+    if not args or args[0] not in {"ls-files", "status"}:
+        raise InternalSelfCoderHold("git_command_outside_read_only_inventory")
     try:
         return subprocess.run(
             ["git", "-c", "core.quotepath=false", *args],
@@ -294,7 +307,7 @@ def select_target(*, root: Path, goal: str, workforce: Any) -> dict[str, Any]:
 
 
 def derive_test_commands(root: Path, target_path: str) -> tuple[tuple[str, ...], ...]:
-    """Derive offline checks from the exact selected Python target."""
+    """Derive suggested offline checks; this module never executes them."""
 
     target = _repo_relative(target_path)
     source = _clean_tracked_target(Path(root).resolve(), target)
@@ -366,7 +379,8 @@ def read_self_coding_evidence(
 ) -> dict[str, Any]:
     """Read and validate the canonical receipt from the latest coding cycle."""
 
-    return _read_evidence(Path(root).resolve() / evidence_path)
+    repo_root = Path(root).resolve()
+    return _read_evidence(_bounded_state_path(repo_root, evidence_path))
 
 
 def run_autonomous_self_coding(
@@ -402,15 +416,22 @@ def run_autonomous_self_coding(
             "economic_eligible": False,
         }
     brain_resolver = resolver or OllamaSwitchboardBrainResolver()
-    ledger = DurableInternalWorkLedger(repo_root / ledger_path)
+    ledger_file = _bounded_state_path(repo_root, ledger_path)
+    proposal_file = _bounded_state_path(repo_root, proposal_path)
+    evidence_file = _bounded_state_path(repo_root, evidence_path)
+    ledger = DurableInternalWorkLedger(ledger_file)
     workforce = ledger.bind_agent_company_workforce(
         brain_resolver,
         thought_path=thought_path,
     )
     company_brain_fabric = company_brain_fabric_report(workforce)
-    if not company_brain_fabric.get("ready"):
+    if (
+        not company_brain_fabric.get("ready")
+        or company_brain_fabric.get("tools_enabled") is not False
+    ):
         raise InternalSelfCoderHold("agent_company_brain_fabric_not_ready")
-    if not workforce.report().get("brain_fabric_ready"):
+    initial_workforce_report = workforce.report()
+    if not initial_workforce_report.get("brain_fabric_ready"):
         raise InternalSelfCoderHold("coding_workforce_brain_fabric_not_ready")
     if not target_path:
         selection = select_target(root=repo_root, goal=goal_text, workforce=workforce)
@@ -424,7 +445,7 @@ def run_autonomous_self_coding(
         target_path=target,
         test_commands=commands,
     )
-    controller = SafeCodeControl(state_path=repo_root / proposal_path)
+    controller = SafeCodeControl(state_path=proposal_file)
     cycle = run_internal_patch_cycle(
         root=repo_root,
         request=request,
@@ -436,9 +457,21 @@ def run_autonomous_self_coding(
         "status": cycle["status"],
         "applied": cycle["applied"],
         "pending_senior_review": cycle["pending_senior_review"],
+        "proposal_only": True,
+        "release_hold": True,
+        "release_authorized": False,
+        "repository_mutation_authorized": False,
+        "generated_code_execution_authorized": False,
+        "repository_mutation_implemented": False,
+        "generated_code_execution_implemented": False,
+        "subprocess_test_execution_implemented": False,
+        "effect_attempted": False,
+        "test_commands_executed": False,
+        "production_magic_star_release_available": False,
+        "production_ready": False,
         "goal": goal_text,
         "target_selection": selection,
-        "test_commands": [list(command) for command in commands],
+        "suggested_test_commands": [list(command) for command in commands],
         "patch_cycle": cycle,
         "agent_company_brain_fabric": company_brain_fabric,
         "work_ledger": ledger.status(),
@@ -448,39 +481,40 @@ def run_autonomous_self_coding(
         "economic_eligible": False,
     }
     evidence = {**core, "evidence_digest": _digest(core)}
-    _write_evidence(repo_root / evidence_path, evidence)
+    _write_evidence(evidence_file, evidence)
     return evidence
 
 
-def record_senior_release_review(
+def record_senior_proposal_review(
     *,
     root: Path,
     review_output_digest: str,
     ledger_path: Path = DEFAULT_LEDGER_PATH,
     evidence_path: Path = DEFAULT_EVIDENCE_PATH,
     resolver: Any = None,
-    full_stack_gate: Any = None,
     thought_path: Any = None,
 ) -> dict[str, Any]:
-    """Append one final senior review bound to the exact last cycle evidence.
+    """Record advisory senior review while preserving the production HOLD.
 
     This function does not review or implement code. The caller must supply the
     SHA-256 digest of its independently produced senior review. The ledger only
     accepts the receipt when the resulting lifetime share remains at least 99%
-    Aureon-internal work and every brain passport is still valid.
+    Aureon-internal work and every brain passport is still valid. It does not
+    invoke a release gate, authorize mutation, or execute any suggested tests.
     """
 
     if not re.fullmatch(r"[0-9a-f]{64}", str(review_output_digest or "")):
         raise InternalSelfCoderHold("senior_review_output_digest_invalid")
     repo_root = Path(root).resolve()
-    evidence_file = repo_root / evidence_path
+    evidence_file = _bounded_state_path(repo_root, evidence_path)
     evidence = _read_evidence(evidence_file)
     if evidence.get("schema_version") != SCHEMA_VERSION or not evidence.get("pending_senior_review"):
         raise InternalSelfCoderHold("pending_self_coder_evidence_required")
     reviewed_evidence_digest = str(evidence["evidence_digest"])
-    ledger = DurableInternalWorkLedger(repo_root / ledger_path)
+    ledger = DurableInternalWorkLedger(_bounded_state_path(repo_root, ledger_path))
     patch_cycle = evidence.get("patch_cycle")
     council = patch_cycle.get("pre_apply_council") if isinstance(patch_cycle, dict) else None
+    apply_evidence = patch_cycle.get("apply_evidence") if isinstance(patch_cycle, dict) else None
     fabric = evidence.get("agent_company_brain_fabric")
     evidence_ledger = evidence.get("work_ledger")
     council_decisions = council.get("decisions") if isinstance(council, dict) else None
@@ -499,8 +533,38 @@ def record_senior_release_review(
     )
     expected = CANONICAL_AGENT_COMPANY_ROLE_COUNT
     if (
-        not isinstance(council, dict)
+        evidence.get("applied") is not False
+        or evidence.get("proposal_only") is not True
+        or evidence.get("release_hold") is not True
+        or evidence.get("release_authorized") is not False
+        or evidence.get("repository_mutation_authorized") is not False
+        or evidence.get("generated_code_execution_authorized") is not False
+        or evidence.get("repository_mutation_implemented") is not False
+        or evidence.get("generated_code_execution_implemented") is not False
+        or evidence.get("subprocess_test_execution_implemented") is not False
+        or evidence.get("effect_attempted") is not False
+        or evidence.get("test_commands_executed") is not False
+        or not isinstance(patch_cycle, dict)
+        or patch_cycle.get("applied") is not False
+        or patch_cycle.get("release_authorized") is not False
+        or patch_cycle.get("effect_attempted") is not False
+        or patch_cycle.get("test_commands_executed") is not False
+        or patch_cycle.get("repository_mutation_implemented") is not False
+        or patch_cycle.get("generated_code_execution_implemented") is not False
+        or patch_cycle.get("subprocess_test_execution_implemented") is not False
+        or not isinstance(apply_evidence, dict)
+        or apply_evidence.get("applied") is not False
+        or apply_evidence.get("effect_attempted") is not False
+        or apply_evidence.get("test_commands_executed") is not False
+        or apply_evidence.get("release_authorized") is not False
+        or apply_evidence.get("repository_mutation_implemented") is not False
+        or apply_evidence.get("generated_code_execution_implemented") is not False
+        or apply_evidence.get("subprocess_test_execution_implemented") is not False
+        or not isinstance(council, dict)
         or council.get("accepted") is not True
+        or council.get("acceptance_scope") != "proposal_review_only"
+        or council.get("execution_authorized") is not False
+        or council.get("release_authorized") is not False
         or council.get("decision_count") != len(PRE_APPLY_COUNCIL_ROLES) * 2
         or council.get("hold_count") != 0
         or not isinstance(council_decisions, list)
@@ -527,7 +591,7 @@ def record_senior_release_review(
         or not isinstance(evidence_ledger, dict)
         or evidence_ledger.get("ten_nine_one_complete") is not True
     ):
-        raise InternalSelfCoderHold("self_coder_release_evidence_invalid")
+        raise InternalSelfCoderHold("self_coder_proposal_review_evidence_invalid")
     ledger_before = ledger.status()
     ledger_receipts = {receipt.receipt_id: receipt for receipt in ledger.receipts()}
     _role_lanes, process_bindings = canonical_agent_company_brain_topology()
@@ -552,66 +616,75 @@ def record_senior_release_review(
         )
         or not council_actor_binding_valid
     ):
-        raise InternalSelfCoderHold("self_coder_release_ledger_mismatch")
+        raise InternalSelfCoderHold("self_coder_proposal_review_ledger_mismatch")
     workforce = ledger.bind_agent_company_workforce(resolver, thought_path=thought_path)
     before = workforce.report()
     internal_units = before.get("internal_work_units")
     total_units = before.get("total_work_units")
     if not before.get("brain_fabric_ready"):
-        raise InternalSelfCoderHold("brain_fabric_not_ready_for_release_review")
+        raise InternalSelfCoderHold("brain_fabric_not_ready_for_proposal_review")
     if before.get("ten_nine_one_complete") is not True:
         raise InternalSelfCoderHold("ten_nine_one_work_evidence_incomplete")
     if type(internal_units) is not int or type(total_units) is not int:
         raise InternalSelfCoderHold("workforce_ratio_evidence_invalid")
     if internal_units * 100 < (total_units + 1) * 99:
         raise InternalSelfCoderHold("senior_review_would_violate_99_percent_contract")
-    stack_gate = full_stack_gate or build_local_full_stack_release_gate(root=repo_root)
-    if type(stack_gate) is not FullStackReleaseGate:
-        raise InternalSelfCoderHold("trusted_full_stack_release_gate_required")
-    stack_request = FullStackReleaseRequest(
-        release_id=f"self-code:{reviewed_evidence_digest}",
-        environment="local",
-        assurance_level=LOCAL_ACCEPTANCE,
-        scope_digest=reviewed_evidence_digest,
-    )
-    try:
-        full_stack_receipt = stack_gate.require_accept(stack_request)
-        full_stack_receipt = validate_full_stack_release_receipt(
-            full_stack_receipt,
-            request=stack_request,
-        )
-    except (FullStackHold, TypeError, ValueError) as exc:
-        raise InternalSelfCoderHold("full_stack_release_gate_hold") from exc
-    if (
-        not isinstance(full_stack_receipt, Mapping)
-        or full_stack_receipt.get("decision") != "ACCEPT"
-        or full_stack_receipt.get("scope_digest") != reviewed_evidence_digest
-        or full_stack_receipt.get("assurance_level") != LOCAL_ACCEPTANCE
-    ):
-        raise InternalSelfCoderHold("full_stack_release_receipt_invalid")
     receipt = workforce.record_senior_oversight(
-        process_id="client_handover",
-        stage="release_acceptance",
+        process_id="internal_review",
+        stage="contract_review",
         reviewed_input_digest=reviewed_evidence_digest,
         review_output_digest=review_output_digest,
     )
     report = workforce.report()
     if not report.get("ready"):
-        raise InternalSelfCoderHold("senior_release_review_did_not_close_contract")
+        raise InternalSelfCoderHold("senior_proposal_review_did_not_close_workforce_contract")
     updated_core = {
         **{key: value for key, value in evidence.items() if key != "evidence_digest"},
-        "status": "internal_patch_senior_review_accepted",
+        "status": "internal_patch_senior_proposal_review_recorded_release_hold",
         "pending_senior_review": False,
+        "applied": False,
+        "proposal_only": True,
+        "release_hold": True,
+        "release_authorized": False,
+        "repository_mutation_authorized": False,
+        "generated_code_execution_authorized": False,
+        "repository_mutation_implemented": False,
+        "generated_code_execution_implemented": False,
+        "subprocess_test_execution_implemented": False,
+        "effect_attempted": False,
+        "test_commands_executed": False,
+        "production_magic_star_release_available": False,
+        "production_ready": False,
+        "proposal_review_recorded": True,
         "reviewed_evidence_digest": reviewed_evidence_digest,
         "senior_review_output_digest": review_output_digest,
-        "senior_review_receipt_id": receipt.receipt_id,
-        "full_stack_release_receipt": dict(full_stack_receipt),
+        "senior_proposal_review_receipt_id": receipt.receipt_id,
         "work_ledger": ledger.status(),
-        "workforce_release_report": report,
+        "workforce_proposal_review_report": {
+            **report,
+            "report_scope": "workforce_review_evidence_only",
+            "production_release_authorized": False,
+        },
     }
     updated = {**updated_core, "evidence_digest": _digest(updated_core)}
     _write_evidence(evidence_file, updated)
     return updated
+
+
+def record_senior_release_review(
+    *,
+    root: Path,
+    review_output_digest: str,
+    ledger_path: Path = DEFAULT_LEDGER_PATH,
+    evidence_path: Path = DEFAULT_EVIDENCE_PATH,
+    resolver: Any = None,
+    full_stack_gate: Any = None,
+    thought_path: Any = None,
+) -> dict[str, Any]:
+    """Disabled compatibility entrypoint; this checkout cannot release code."""
+
+    del root, review_output_digest, ledger_path, evidence_path, resolver, full_stack_gate, thought_path
+    raise InternalSelfCoderHold("release_review_entrypoint_disabled_proposal_only")
 
 
 def _parse_test_command(value: str) -> tuple[str, ...]:
@@ -629,7 +702,7 @@ def _parse_test_command(value: str) -> tuple[str, ...]:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Run Aureon's internal self-coding loop.")
+    parser = argparse.ArgumentParser(description="Create one held Aureon internal coding proposal.")
     parser.add_argument("--goal", required=True)
     parser.add_argument("--target", default="", help="Optional clean tracked Python target constraint.")
     parser.add_argument(
@@ -637,7 +710,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         action="append",
         default=[],
         type=_parse_test_command,
-        help="Optional repeatable JSON argv array. Aureon derives offline checks when omitted.",
+        help="Suggested checks to record only; this module never executes them.",
     )
     parser.add_argument("--root", type=Path, default=Path.cwd())
     args = parser.parse_args(argv)
@@ -652,7 +725,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(json.dumps({"ok": False, "status": "hold", "reason": str(exc)}, sort_keys=True))
         return 2
     print(json.dumps(result, indent=2, sort_keys=True))
-    return 0 if result.get("applied") else 1
+    return 0 if result.get("status") == "internal_patch_proposal_held_for_senior_review" else 1
 
 
 if __name__ == "__main__":
@@ -669,6 +742,7 @@ __all__ = [
     "discover_clean_python_candidates",
     "read_self_coding_evidence",
     "run_autonomous_self_coding",
+    "record_senior_proposal_review",
     "record_senior_release_review",
     "select_target",
 ]

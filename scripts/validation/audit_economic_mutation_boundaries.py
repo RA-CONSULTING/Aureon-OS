@@ -584,6 +584,8 @@ class PythonCallVisitor(ast.NodeVisitor):
         self.constants: dict[str, Any] = {}
         self.receiver_providers: dict[str, str] = {}
         self.function_defs: dict[str, ast.FunctionDef | ast.AsyncFunctionDef] = {}
+        self.read_only_retrieval_functions: set[str] = set()
+        self.read_only_transport_bindings: set[tuple[str, str]] = set()
         self.consume_operations: dict[int, DetectedOperation] = {}
         self.guarded_transport_call_ids: set[int] = set()
         self.scope: list[str] = []
@@ -740,6 +742,90 @@ class PythonCallVisitor(ast.NodeVisitor):
             if provider:
                 self.receiver_providers[target_name.casefold()] = provider
 
+    def _is_read_only_retrieval_function(
+        self,
+        function: ast.FunctionDef | ast.AsyncFunctionDef,
+    ) -> bool:
+        """Prove a local callback delegates only to the registry's web retrieval tool.
+
+        This is deliberately structural rather than a name/path allowlist.  The
+        economic census treats ``web_fetch`` as retrieval, but does not extend
+        that exception to arbitrary ``fetch`` callables or to any call carrying
+        an explicit/dynamic HTTP method.
+        """
+
+        registry_fetch = False
+        for call in (node for node in ast.walk(function) if isinstance(node, ast.Call)):
+            callee = self._callee(call.func)
+            tail = callee.rsplit(".", 1)[-1].casefold()
+            canonical = ast.unparse(call)
+            resolved = self._resolved_strings(call)
+            method = _method_hint(callee, " ".join((canonical, *resolved)))
+            normalized_tail = tail.replace("_", "")
+            if tail in {"post", "put", "patch", "delete"}:
+                return False
+            if method in {"POST", "PUT", "PATCH", "DELETE"}:
+                return False
+            if normalized_tail in SDK_OPERATION_BY_NORMALIZED_TAIL:
+                return False
+            if _classify_endpoint(
+                callee=callee,
+                source=canonical,
+                resolved_strings=resolved,
+            ) is not None:
+                return False
+            if tail != "execute" or not call.args:
+                continue
+            tool_name = self._static_value(call.args[0])
+            if tool_name != "web_fetch":
+                continue
+            if len(call.args) != 2 or call.keywords:
+                return False
+            arguments = call.args[1]
+            if not isinstance(arguments, ast.Dict):
+                return False
+            keys = [self._static_value(key) for key in arguments.keys if key is not None]
+            if keys != ["url"]:
+                return False
+            registry_fetch = True
+        return registry_fetch
+
+    def _remember_read_only_transport_binding(
+        self,
+        target: ast.AST,
+        value_node: ast.AST,
+    ) -> None:
+        """Record ``local = injected_callback or proven_read_only_default`` bindings."""
+
+        target_name = self._callee(target)
+        if not target_name or "." in target_name or not self.scope:
+            return
+        if not isinstance(value_node, ast.BoolOp) or not isinstance(value_node.op, ast.Or):
+            return
+        if len(value_node.values) != 2:
+            return
+        injected, fallback = value_node.values
+        if not isinstance(injected, ast.Name) or not isinstance(fallback, ast.Name):
+            return
+        if fallback.id not in self.read_only_retrieval_functions:
+            return
+        function = self.function_defs.get(self.scope[-1])
+        if function is None:
+            return
+        parameters = (*function.args.posonlyargs, *function.args.args, *function.args.kwonlyargs)
+        parameter = next((item for item in parameters if item.arg == injected.id), None)
+        if parameter is None or parameter.annotation is None:
+            return
+        annotation = ast.unparse(parameter.annotation).casefold()
+        if "fetch" not in annotation and "callable" not in annotation:
+            return
+        self.read_only_transport_bindings.add((".".join(self.scope), target_name))
+
+    def _is_bound_read_only_retrieval_call(self, call: ast.Call, callee: str) -> bool:
+        if "." in callee or len(call.args) != 1 or call.keywords:
+            return False
+        return (".".join(self.scope), callee) in self.read_only_transport_bindings
+
     def prepare(self, tree: ast.AST) -> None:
         for node in ast.walk(tree):
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
@@ -754,6 +840,11 @@ class PythonCallVisitor(ast.NodeVisitor):
                 if provider:
                     for alias in node.names:
                         self.receiver_providers[(alias.asname or alias.name).casefold()] = provider
+        self.read_only_retrieval_functions = {
+            name
+            for name, function in self.function_defs.items()
+            if self._is_read_only_retrieval_function(function)
+        }
         for _ in range(3):
             for node in ast.walk(tree):
                 if isinstance(node, ast.Assign):
@@ -850,11 +941,13 @@ class PythonCallVisitor(ast.NodeVisitor):
     def visit_Assign(self, node: ast.Assign) -> Any:
         for target in node.targets:
             self._remember_target(target, node.value)
+            self._remember_read_only_transport_binding(target, node.value)
         self.generic_visit(node)
 
     def visit_AnnAssign(self, node: ast.AnnAssign) -> Any:
         if node.value is not None:
             self._remember_target(node.target, node.value)
+            self._remember_read_only_transport_binding(node.target, node.value)
         self.generic_visit(node)
 
     def visit_ClassDef(self, node: ast.ClassDef) -> Any:
@@ -888,6 +981,8 @@ class PythonCallVisitor(ast.NodeVisitor):
             scope=".".join(self.scope),
         )
         if not provider:
+            return None
+        if tail == "fetch" and self._is_bound_read_only_retrieval_call(call, callee):
             return None
         canonical = ast.unparse(call)
         resolved = self._resolved_strings(call)

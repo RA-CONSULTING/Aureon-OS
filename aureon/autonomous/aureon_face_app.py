@@ -15,19 +15,6 @@ Gary Leckey | April 2026 | The Queen's Face
 
 from __future__ import annotations
 
-# Load environment variables from .env or .env1
-try:
-    from dotenv import load_dotenv as _load_dotenv
-    import pathlib as _pathlib
-    _root = _pathlib.Path(__file__).resolve().parent.parent.parent
-    for _env_name in (".env", ".env1", ".env1.txt"):
-        _env_path = _root / _env_name
-        if _env_path.exists():
-            _load_dotenv(_env_path, override=False)
-except ImportError:
-    pass
-
-import io
 import json
 import logging
 import os
@@ -38,14 +25,12 @@ import sys
 import threading
 import time
 import uuid
-import webbrowser
-from dataclasses import asdict
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 # ---------------------------------------------------------------------------
-# Repo root & sys.path bootstrap
+# Repository-local boundaries
 # ---------------------------------------------------------------------------
 REPO_ROOT = Path(__file__).resolve().parents[2]
 STATE_DIR = REPO_ROOT / "state"
@@ -54,38 +39,9 @@ QUEEN_STATE_DIR = STATE_DIR / "queen"
 DB_PATH = STATE_DIR / "aureon_global_history.sqlite"
 TEMPLATES_DIR = REPO_ROOT / "templates"
 
-for _d in (STATE_DIR, CONVERSATION_DIR, QUEEN_STATE_DIR):
-    _d.mkdir(parents=True, exist_ok=True)
-
-for _p in [
-    str(REPO_ROOT),
-    str(REPO_ROOT / "aureon"),
-    str(REPO_ROOT / "aureon" / "core"),
-    str(REPO_ROOT / "aureon" / "queen"),
-]:
-    if _p not in sys.path:
-        sys.path.insert(0, _p)
-
-# ---------------------------------------------------------------------------
-# Windows UTF-8 safety
-# ---------------------------------------------------------------------------
-if sys.platform == "win32":
-    os.environ["PYTHONIOENCODING"] = "utf-8"
-    try:
-        if hasattr(sys.stdout, "buffer"):
-            sys.stdout = io.TextIOWrapper(
-                sys.stdout.buffer, encoding="utf-8", errors="replace", line_buffering=True
-            )
-    except Exception:
-        pass
-
 # ---------------------------------------------------------------------------
 # Logging
 # ---------------------------------------------------------------------------
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(name)s] %(levelname)s: %(message)s",
-)
 log = logging.getLogger("aureon.face_app")
 
 # ---------------------------------------------------------------------------
@@ -93,50 +49,57 @@ log = logging.getLogger("aureon.face_app")
 # ---------------------------------------------------------------------------
 try:
     from flask import Flask, render_template, jsonify, request
-    from flask_socketio import SocketIO, emit
+
     HAS_FLASK = True
-except ImportError:
+except ImportError as exc:
     HAS_FLASK = False
-    log.error("Flask or flask-socketio not installed.  pip install flask flask-socketio")
-    sys.exit(1)
+    raise RuntimeError("Flask is required for the face app") from exc
+
+try:
+    from flask_socketio import SocketIO, emit
+
+    HAS_SOCKETIO = True
+except ImportError:
+    HAS_SOCKETIO = False
+
+    class SocketIO:  # type: ignore[no-redef]
+        """Import-safe HOLD shim; it never creates a listener or transport."""
+
+        def __init__(self, *_args, **_kwargs):
+            pass
+
+        def on(self, *_args, **_kwargs):
+            return lambda handler: handler
+
+        def emit(self, *_args, **_kwargs):
+            raise RuntimeError("face_socketio_runtime_unavailable")
+
+        def run(self, *_args, **_kwargs):
+            raise RuntimeError("face_socketio_runtime_unavailable")
+
+    def emit(*_args, **_kwargs):  # type: ignore[no-redef]
+        raise RuntimeError("face_socketio_runtime_unavailable")
 
 # ---------------------------------------------------------------------------
 # Optional Queen subsystem imports (graceful degradation)
 # ---------------------------------------------------------------------------
 
-# Agent Core
-try:
-    from aureon.autonomous.aureon_agent_core import AureonAgentCore
-    HAS_AGENT_CORE = True
-except Exception:
-    AureonAgentCore = None  # type: ignore[assignment, misc]
-    HAS_AGENT_CORE = False
-    log.warning("AureonAgentCore unavailable")
-
-# Instruction Parser
-try:
-    from aureon.autonomous.aureon_instruction_parser import InstructionParser
-    HAS_PARSER = True
-except Exception:
-    InstructionParser = None  # type: ignore[assignment, misc]
-    HAS_PARSER = False
-    log.warning("InstructionParser unavailable")
+# Subsystems are imported only during explicit initialization.
+AureonAgentCore = None  # type: ignore[assignment, misc]
+InstructionParser = None  # type: ignore[assignment, misc]
+HAS_AGENT_CORE = False
+HAS_PARSER = False
 
 # Legacy LaptopControl is intentionally not imported: it is not a governed
 # execution boundary.  Read/act flows use AgentCore plus the local GUI runtime.
 LaptopControl = None  # type: ignore[assignment, misc]
 HAS_LAPTOP = False
 
-# Sentient Loop
-try:
-    from aureon.queen.queen_sentient_loop import QueenSentientLoop, Thought, Emotion
-    HAS_SENTIENT = True
-except Exception:
-    QueenSentientLoop = None  # type: ignore[assignment, misc]
-    Thought = None  # type: ignore[assignment, misc]
-    Emotion = None  # type: ignore[assignment, misc]
-    HAS_SENTIENT = False
-    log.warning("QueenSentientLoop unavailable")
+# Autonomous sentient-loop startup is not part of the default face server.
+QueenSentientLoop = None  # type: ignore[assignment, misc]
+Thought = None  # type: ignore[assignment, misc]
+Emotion = None  # type: ignore[assignment, misc]
+HAS_SENTIENT = False
 
 
 # ============================================================================
@@ -169,11 +132,88 @@ MOODS = ["VIGILANT", "CONFIDENT", "CAUTIOUS", "AGGRESSIVE", "FEARFUL", "EUPHORIC
 
 app = Flask(__name__, template_folder=str(TEMPLATES_DIR))
 app.config["SECRET_KEY"] = os.getenv("AUREON_FACE_SECRET_KEY") or secrets.token_hex(32)
+app.config["MAX_CONTENT_LENGTH"] = 64 * 1024
 socketio = SocketIO(
     app,
     cors_allowed_origins=["http://127.0.0.1:5299", "http://localhost:5299"],
     async_mode="threading",
 )
+
+MAX_FACE_MESSAGE_BYTES = 8 * 1024
+MAX_FACE_TOOL_PARAMS_BYTES = 16 * 1024
+_BEARER_PATTERN = re.compile(r"^[A-Za-z0-9._~-]{43,512}$")
+_authenticated_socket_ids: set[str] = set()
+_socket_auth_lock = threading.Lock()
+FACE_ALLOWED_AGENT_TOOLS = frozenset(
+    {
+        "screenshot",
+        "mouse_move",
+        "mouse_click",
+        "mouse_scroll",
+        "type_text",
+        "press_key",
+        "hotkey",
+        "web_search",
+        "read_file",
+        "list_dir",
+        "system_info",
+        "running_processes",
+        "query_knowledge",
+        "desktop_status",
+        "desktop_arm_dry_run",
+        "desktop_disarm",
+        "desktop_emergency_stop",
+        "desktop_clear_emergency_stop",
+    }
+)
+
+
+def _configured_bearer_token() -> Optional[str]:
+    token = str(os.getenv("AUREON_FACE_BEARER_TOKEN", "") or "").strip()
+    if _BEARER_PATTERN.fullmatch(token) is None:
+        return None
+    return token
+
+
+def _presented_http_bearer() -> str:
+    header = str(request.headers.get("Authorization", "") or "")
+    scheme, separator, token = header.partition(" ")
+    if separator and scheme.lower() == "bearer":
+        return token.strip()
+    return ""
+
+
+def _bearer_valid(presented: object) -> bool:
+    expected = _configured_bearer_token()
+    candidate = str(presented or "")
+    return (
+        expected is not None
+        and len(candidate) <= 512
+        and secrets.compare_digest(candidate, expected)
+    )
+
+
+def _face_effect_hold(tool: str) -> dict:
+    return {
+        "success": False,
+        "status": "hold",
+        "tool": str(tool),
+        "error": "face_tool_not_released_by_plumber_magic_star",
+        "plumber_release_required": True,
+        "magic_star_required": True,
+        "production_ready": False,
+    }
+
+
+@app.before_request
+def require_face_http_authorization():
+    """Require a strong bearer for every page, API, and static asset."""
+
+    if _configured_bearer_token() is None:
+        return jsonify({"error": "face_server_authorization_not_configured"}), 503
+    if not _bearer_valid(_presented_http_bearer()):
+        return jsonify({"error": "unauthorized"}), 401
+    return None
 
 
 # ============================================================================
@@ -220,41 +260,43 @@ state = AppState()
 #  INITIALIZATION
 # ============================================================================
 
-def init_subsystems():
-    """Initialize all available Queen subsystems."""
+def init_subsystems(*, enable_local_history_read: bool = False):
+    """Initialize only offline-safe components; history is opt-in and read-only."""
 
     # Agent Core
-    if HAS_AGENT_CORE and AureonAgentCore is not None:
-        try:
-            state.agent = AureonAgentCore()
-            state.subsystems["agent_core"] = "online"
-            log.info("Agent Core initialized")
-        except Exception as e:
-            log.warning(f"Agent Core init failed: {e}")
-            state.subsystems["agent_core"] = "error"
+    try:
+        from aureon.autonomous.aureon_agent_core import AureonAgentCore as AgentCore
+
+        state.agent = AgentCore()
+        state.subsystems["agent_core"] = "online_offline_safe"
+        log.info("Agent Core initialized in fail-closed mode")
+    except Exception as exc:
+        log.warning("Agent Core init failed: %s", exc)
+        state.subsystems["agent_core"] = "error"
 
     # Instruction Parser
-    if HAS_PARSER and InstructionParser is not None:
-        try:
-            state.parser = InstructionParser()
-            log.info("Instruction Parser initialized")
-        except Exception as e:
-            log.warning(f"Instruction Parser init failed: {e}")
+    try:
+        from aureon.autonomous.aureon_instruction_parser import InstructionParser as Parser
+
+        state.parser = Parser()
+        log.info("Instruction Parser initialized")
+    except Exception as exc:
+        log.warning("Instruction Parser init failed: %s", exc)
 
     # The legacy LaptopControl mutation surface is deliberately not attached.
     # Desktop actions may flow only through AureonAgentCore's governed gateway.
     state.laptop = None
 
-    # SQLite DB (Global History): always create/ensure schema.
-    try:
-        from aureon.core.aureon_global_history_db import connect as db_connect
-
-        state.db_conn = db_connect(str(DB_PATH), check_same_thread=False)
-        state.subsystems["knowledge_db"] = "online"
-        log.info(f"Knowledge DB connected: {DB_PATH}")
-    except Exception as e:
-        log.warning(f"DB connection failed: {e}")
-        state.subsystems["knowledge_db"] = "error"
+    state.db_conn = None
+    if enable_local_history_read and DB_PATH.is_file():
+        try:
+            uri = f"file:{DB_PATH.as_posix()}?mode=ro"
+            state.db_conn = sqlite3.connect(uri, uri=True, check_same_thread=False)
+            state.db_conn.row_factory = sqlite3.Row
+            state.subsystems["knowledge_db"] = "read_only"
+        except Exception as exc:
+            log.warning("Read-only DB connection failed: %s", exc)
+            state.subsystems["knowledge_db"] = "error"
 
 
 # ============================================================================
@@ -265,86 +307,19 @@ _original_communicate = None
 
 
 def start_sentient_loop():
-    """Start the Queen's sentient loop in a background thread and subscribe to thoughts."""
+    """Keep autonomous background execution on an explicit release HOLD."""
 
-    if not HAS_SENTIENT or QueenSentientLoop is None:
-        log.warning("Sentient loop not available -- Queen runs without autonomous thoughts")
-        state.subsystems["sentient_loop"] = "unavailable"
-        return
-
-    try:
-        loop = QueenSentientLoop(
-            db_path=str(DB_PATH) if DB_PATH.exists() else None,
-            think_interval=3.0,
-            voice_enabled=False,  # Voice handled by browser Speech API
-        )
-        state.sentient_loop = loop
-
-        # Monkey-patch the communicate phase to forward thoughts to WebSocket
-        original_method = getattr(loop, "_communicate", None)
-
-        def patched_communicate(thought, emotion=None):
-            """Forward thought to the frontend via WebSocket."""
-            try:
-                if original_method:
-                    original_method(thought, emotion)
-            except Exception:
-                pass
-
-            try:
-                thought_data = asdict(thought) if hasattr(thought, "__dataclass_fields__") else {
-                    "text": str(thought),
-                    "mood": "SERENE",
-                    "thought_type": "UPDATE",
-                }
-                with state.lock:
-                    state.current_thought = thought_data.get("text", "")
-                    state.current_mood = thought_data.get("mood", state.current_mood)
-                    state.cycle_count += 1
-
-                socketio.emit("queen_thought", {
-                    "text": thought_data.get("text", ""),
-                    "type": thought_data.get("thought_type", "UPDATE"),
-                    "mood": thought_data.get("mood", "SERENE"),
-                    "timestamp": time.time(),
-                    "cycle": state.cycle_count,
-                })
-                socketio.emit("queen_mood", {
-                    "mood": thought_data.get("mood", "SERENE"),
-                    "urgency": thought_data.get("urgency", 0),
-                    "excitement": thought_data.get("excitement", 0),
-                    "concern": thought_data.get("concern", 0),
-                })
-            except Exception as e:
-                log.debug(f"Thought forward failed: {e}")
-
-        if original_method:
-            loop._communicate = patched_communicate
-
-        # Start in background thread
-        loop_thread = threading.Thread(target=_run_loop_safe, args=(loop,), daemon=True)
-        loop_thread.start()
-        state.subsystems["sentient_loop"] = "online"
-        log.info("Sentient loop started in background thread")
-
-    except Exception as e:
-        log.error(f"Sentient loop start failed: {e}")
-        state.subsystems["sentient_loop"] = "error"
+    state.sentient_loop = None
+    state.subsystems["sentient_loop"] = "hold"
+    log.warning("Sentient loop held: production Magic-Star release is unavailable")
+    return _face_effect_hold("sentient_loop.start")
 
 
 def _run_loop_safe(loop):
-    """Run the sentient loop with crash protection."""
-    try:
-        if hasattr(loop, "run"):
-            loop.run()
-        elif hasattr(loop, "start"):
-            loop.start()
-            # If start() returns immediately (non-blocking), keep thread alive
-            while getattr(loop, "_running", True):
-                time.sleep(1)
-    except Exception as e:
-        log.error(f"Sentient loop crashed: {e}")
-        state.subsystems["sentient_loop"] = "crashed"
+    """Compatibility shim that never executes an autonomous loop."""
+
+    del loop
+    return _face_effect_hold("sentient_loop.run")
 
 
 # ============================================================================
@@ -365,89 +340,16 @@ def get_time_of_day() -> str:
 
 
 def queen_respond(text: str) -> Dict[str, Any]:
-    """
-    Generate the Queen's response.
+    """Use the deterministic offline rules path for server-originated input."""
 
-    Controlled by env var AUREON_FACE_BRAIN_MODE:
-      - hybrid (default): rule-based + parser first; LLM only if needed (no tool execution)
-      - llm: LLM first (optional tool execution), fallback to rule-based
-      - rules: rule-based only
-
-    Claude is treated as a language module; the "brain" remains the local
-    cognition + parser + sentient loop.
-    Returns: {"text": str, "action": str|None, "data": dict|None}
-    """
-    # PRIMARY: Language Cortex — understands through internal knowledge
-    try:
-        from aureon.core.aureon_language_cortex import get_language_cortex
-        cortex = get_language_cortex()
-
-        # Get real system state from ALL live systems
-        system_state = {}
-
-        # Pull from consciousness module (inside sentient loop)
-        try:
-            loop = getattr(state, 'sentient_loop', None)
-            if loop:
-                cm = getattr(loop, '_consciousness_module', None)
-                if cm and hasattr(cm, 'get_understanding'):
-                    system_state = cm.get_understanding()
-        except Exception:
-            pass
-
-        # Pull from penny hunter directly
-        try:
-            from aureon.core.aureon_penny_hunter import get_penny_hunter
-            hunter = get_penny_hunter()
-            if hunter and hunter._authenticated:
-                hs = hunter.get_status()
-                system_state["penny_trades"] = hs.get("trades_total", 0)
-                system_state["penny_profit"] = hs.get("profit_total", 0)
-                system_state["penny_wins"] = hs.get("wins", 0)
-                system_state["penny_losses"] = hs.get("losses", 0)
-                system_state["penny_win_rate"] = hs.get("win_rate", 0)
-                system_state["penny_confidence"] = hs.get("confidence", 0.5)
-                system_state["penny_balance"] = hs.get("balance", 0)
-                system_state["penny_streak"] = hs.get("streak", 0)
-                system_state["open_positions"] = len(hunter.get_positions()) if hunter._authenticated else 0
-        except Exception:
-            pass
-
-        # Count live subsystems
-        live_subs = sum(1 for v in state.subsystems.values() if v == "online")
-        system_state.setdefault("subsystems", {k: v == "online" for k, v in state.subsystems.items()})
-        system_state["live_subsystem_count"] = live_subs
-
-        # Add basic state
-        system_state.setdefault("level", state.current_mood)
-        system_state.setdefault("mood", state.current_mood)
-
-        result = cortex.understand_and_respond(text, system_state)
-
-        if result.get("understood"):
-            if result.get("response"):
-                with state.lock:
-                    state.current_mood = system_state.get("mood", state.current_mood)
-                return {
-                    "text": result["response"],
-                    "action": result.get("category", "cortex"),
-                    "data": {
-                        "concept": result.get("concept"),
-                        "confidence": result.get("confidence"),
-                        "category": result.get("category"),
-                    },
-                }
-            elif result.get("action_key"):
-                # Cortex says: execute this action, don't just talk
-                # Fall through to cognitive brain for execution
-                pass
-    except Exception as e:
-        log.debug(f"Language cortex error: {e}")
-
-    # The legacy cognitive brain can call LaptopControl directly, so it is not a
-    # valid action path. Closed-loop GUI goals are submitted to the governed
-    # local runtime; this conversational face keeps only the bounded rules path.
-    return _rule_based_respond(text)
+    bounded = str(text or "")
+    if len(bounded.encode("utf-8")) > MAX_FACE_MESSAGE_BYTES:
+        return {
+            "text": "Message rejected: bounded UTF-8 input required.",
+            "action": "input_rejected",
+            "data": {"error": "face_message_too_large"},
+        }
+    return _rule_based_respond(bounded)
 
 
 # ============================================================================
@@ -471,11 +373,11 @@ STYLE:
 - Ask clarifying questions when needed.
 
 CAPABILITIES (via tools):
-- Screenshots + OCR
-- App launch, web search, open URLs
-- Filesystem read/write
-- Unified knowledge DB queries
-- Shell commands (subject to safety checks)
+- Governed screenshots and exact-window desktop actions
+- Curated offline web-search references
+- Bounded workspace file reads
+- Read-only unified knowledge queries
+- Shell, process, file mutation, browser launch, and dynamic code remain on HOLD
 """
 
 _QUEEN_TOOLS = [
@@ -488,31 +390,18 @@ _QUEEN_TOOLS = [
     {"name": "type_text", "description": "Type text using the keyboard", "input_schema": {"type": "object", "properties": {"text": {"type": "string"}}, "required": ["text"]}},
     {"name": "press_key", "description": "Press a key (enter, tab, escape, backspace, up, down, f1-f12, etc)", "input_schema": {"type": "object", "properties": {"key": {"type": "string"}}, "required": ["key"]}},
     {"name": "hotkey", "description": "Press a keyboard shortcut. Pass each key as a separate arg.", "input_schema": {"type": "object", "properties": {"key1": {"type": "string"}, "key2": {"type": "string"}, "key3": {"type": "string"}}, "required": ["key1"]}},
-    {"name": "camera_capture", "description": "Take a photo using the webcam/camera", "input_schema": {"type": "object", "properties": {}, "required": []}},
-    {"name": "open_app", "description": "Open an application (chrome, notepad, vscode, explorer, terminal, etc)", "input_schema": {"type": "object", "properties": {"app_name": {"type": "string"}}, "required": ["app_name"]}},
     {"name": "window_list", "description": "List all open windows", "input_schema": {"type": "object", "properties": {}, "required": []}},
-    {"name": "window_focus", "description": "Focus/switch to a window by title", "input_schema": {"type": "object", "properties": {"title_pattern": {"type": "string"}}, "required": ["title_pattern"]}},
-    {"name": "volume_set", "description": "Set system volume (0-100)", "input_schema": {"type": "object", "properties": {"level": {"type": "integer"}}, "required": ["level"]}},
     {"name": "volume_get", "description": "Get current volume level", "input_schema": {"type": "object", "properties": {}, "required": []}},
     {"name": "battery_status", "description": "Get battery level and charging status", "input_schema": {"type": "object", "properties": {}, "required": []}},
     {"name": "wifi_status", "description": "Get WiFi connection info", "input_schema": {"type": "object", "properties": {}, "required": []}},
-    {"name": "brightness_set", "description": "Set screen brightness (0-100)", "input_schema": {"type": "object", "properties": {"level": {"type": "integer"}}, "required": ["level"]}},
     {"name": "get_screen_size", "description": "Get screen resolution", "input_schema": {"type": "object", "properties": {}, "required": []}},
     {"name": "clipboard_read", "description": "Read clipboard contents", "input_schema": {"type": "object", "properties": {}, "required": []}},
-    {"name": "clipboard_copy", "description": "Copy text to clipboard", "input_schema": {"type": "object", "properties": {"text": {"type": "string"}}, "required": ["text"]}},
-    {"name": "execute_shell", "description": "Run a shell/terminal command and return output", "input_schema": {"type": "object", "properties": {"command": {"type": "string"}}, "required": ["command"]}},
     {"name": "web_search", "description": "Search the web (DuckDuckGo)", "input_schema": {"type": "object", "properties": {"query": {"type": "string"}}, "required": ["query"]}},
-    {"name": "open_url", "description": "Open a URL in the browser", "input_schema": {"type": "object", "properties": {"url": {"type": "string"}}, "required": ["url"]}},
-    {"name": "read_file", "description": "Read a file from disk", "input_schema": {"type": "object", "properties": {"path": {"type": "string"}}, "required": ["path"]}},
-    {"name": "write_file", "description": "Write content to a file", "input_schema": {"type": "object", "properties": {"path": {"type": "string"}, "content": {"type": "string"}}, "required": ["path", "content"]}},
-    {"name": "list_dir", "description": "List files in a directory", "input_schema": {"type": "object", "properties": {"path": {"type": "string"}}, "required": ["path"]}},
+    {"name": "read_file", "description": "Read a bounded file within the configured workspace", "input_schema": {"type": "object", "properties": {"path": {"type": "string"}}, "required": ["path"]}},
+    {"name": "list_dir", "description": "List a bounded directory within the configured workspace", "input_schema": {"type": "object", "properties": {"path": {"type": "string"}}, "required": ["path"]}},
     {"name": "system_info", "description": "Get CPU, RAM, disk, OS info", "input_schema": {"type": "object", "properties": {}, "required": []}},
     {"name": "running_processes", "description": "List top running processes", "input_schema": {"type": "object", "properties": {}, "required": []}},
     {"name": "query_knowledge", "description": "Run SQL query on the unified knowledge DB (tables: market_bars, account_trades, macro_indicators, sentiment, queen_memories, queen_insights, queen_thoughts, queen_knowledge, calendar_events, onchain_metrics, symbols, events, forecasts)", "input_schema": {"type": "object", "properties": {"sql": {"type": "string"}}, "required": ["sql"]}},
-    {"name": "speak_aloud", "description": "Speak text aloud using text-to-speech", "input_schema": {"type": "object", "properties": {"text": {"type": "string"}}, "required": ["text"]}},
-    {"name": "notify", "description": "Show a Windows notification popup", "input_schema": {"type": "object", "properties": {"title": {"type": "string"}, "message": {"type": "string"}}, "required": ["title", "message"]}},
-    {"name": "open_file", "description": "Open a file with its default application", "input_schema": {"type": "object", "properties": {"path": {"type": "string"}}, "required": ["path"]}},
-    {"name": "kill_process", "description": "Kill a process by name", "input_schema": {"type": "object", "properties": {"name_or_pid": {"type": "string"}}, "required": ["name_or_pid"]}},
     {"name": "desktop_status", "description": "Get governed desktop lease/emergency status", "input_schema": {"type": "object", "properties": {}, "required": []}},
     {"name": "desktop_arm_dry_run", "description": "Arm desktop control (dry-run)", "input_schema": {"type": "object", "properties": {}, "required": []}},
     {"name": "desktop_disarm", "description": "Disarm desktop control", "input_schema": {"type": "object", "properties": {}, "required": []}},
@@ -530,7 +419,16 @@ def _execute_tool(name: str, params: dict) -> str:
                 "success": False,
                 "error": "tool_requires_governed_observe_plan_act_verify_runtime",
             })
-
+        if not isinstance(name, str) or name not in FACE_ALLOWED_AGENT_TOOLS:
+            return json.dumps(_face_effect_hold(str(name or "")))
+        if not isinstance(params, dict):
+            return json.dumps({"success": False, "error": "tool_params_object_required"})
+        try:
+            encoded = json.dumps(params, ensure_ascii=False, default=str).encode("utf-8")
+        except (TypeError, ValueError, RecursionError):
+            return json.dumps({"success": False, "error": "tool_params_invalid"})
+        if len(encoded) > MAX_FACE_TOOL_PARAMS_BYTES:
+            return json.dumps({"success": False, "error": "tool_params_too_large"})
         # Every desktop mutation goes through AgentCore's governed gateway.  An
         # exact target-window binding is part of the action, never inferred.
         if state.agent and name in {"mouse_move", "mouse_click", "mouse_scroll", "type_text", "press_key", "hotkey"}:
@@ -582,174 +480,27 @@ def _execute_tool(name: str, params: dict) -> str:
 
             return json.dumps(r, default=str)[:2000]
 
-        # Agent core methods
+        # Agent-core forwarding is constrained by FACE_ALLOWED_AGENT_TOOLS
+        # above; there is no generic process/file/provider side door here.
         if state.agent:
-            if name == "execute_shell":
-                r = state.agent.execute("shell", {"command": params.get("command", "")})
-            elif name == "open_app":
-                r = state.agent.execute("open_app", params)
-            elif name == "web_search":
-                r = state.agent.execute("web_search", params)
-            elif name == "open_url":
-                r = state.agent.execute("open_url", params)
-            elif name == "read_file":
-                r = state.agent.execute("read_file", params)
-            elif name == "write_file":
-                r = state.agent.execute("write_file", params)
-            elif name == "list_dir":
-                r = state.agent.execute("list_dir", params)
-            elif name == "system_info":
-                r = state.agent.execute("system_info", {})
-            elif name == "running_processes":
-                r = state.agent.execute("processes", {})
-            elif name == "query_knowledge":
-                r = state.agent.execute("query_knowledge", params)
-            elif name == "speak_aloud":
-                r = state.agent.execute("speak", params)
-            elif name == "kill_process":
-                r = state.agent.execute("kill_process", params)
-            else:
-                r = state.agent.execute(name, params)
+            intent = {
+                "running_processes": "processes",
+            }.get(name, name)
+            r = state.agent.execute(intent, params)
 
             return json.dumps(r, default=str)[:2000]
 
         return "Tool not available"
-    except Exception as e:
-        return f"Error: {e}"
+    except Exception:
+        return json.dumps({"success": False, "error": "face_tool_execution_failed"})
 
 
 
-def _llm_respond(text: str, *, tools_enabled: bool = True) -> Optional[Dict[str, Any]]:
-    """Use Claude as a language module (optionally with tool-use)."""
-    global _conversation_history
+def _llm_respond(text: str, *, tools_enabled: bool = False) -> Optional[Dict[str, Any]]:
+    """Keep network/model inference outside the default face-server boundary."""
 
-    # The same prompt-level hard boundary the Operator/Cognition door enforces —
-    # this local face is not a side door around it (live trading, payment,
-    # safety-gate bypass, credential, and filing requests are refused here too).
-    try:
-        from aureon.operator.aureon_operator import _hard_boundary_violation
-
-        if _hard_boundary_violation(text):
-            return {
-                "text": ("🦗 Blocked at the Aureon authority boundary. This request "
-                         "crosses a hard limit (live trading, payment, safety-gate "
-                         "bypass, credential, or filing) and no model will be asked."),
-                "action": "boundary_refusal",
-                "data": {"boundary": "hard_authority", "model": None},
-            }
-    except ImportError:
-        pass
-
-    # ── In-House AI — no external dependencies ──
-    try:
-        from aureon.inhouse_ai.llm_adapter import AureonHybridAdapter, AureonBrainAdapter
-        try:
-            from aureon.integrations.ollama import OllamaModelSwitchboard
-
-            adapter, _selection = OllamaModelSwitchboard().hybrid_adapter_for("general")
-            if not adapter.health_check():
-                adapter = AureonBrainAdapter()
-        except Exception:
-            adapter = AureonBrainAdapter()
-    except ImportError:
-        return None
-
-    system = (
-        _QUEEN_SYSTEM_PROMPT
-        + f"\n[State: mood={state.current_mood}, cycles={state.cycle_count}, uptime={state.uptime_str()}]"
-    )
-
-    # Add user message to history.
-    _conversation_history.append({"role": "user", "content": [{"type": "text", "text": text}]})
-    if len(_conversation_history) > 30:
-        _conversation_history = _conversation_history[-30:]
-
-    try:
-        response = adapter.prompt(
-            messages=_conversation_history,
-            system=system,
-            tools=_QUEEN_TOOLS if tools_enabled else None,
-            max_tokens=1024,
-        )
-    except Exception as e:
-        log.warning(f"In-House AI call failed: {e}")
-        _conversation_history.pop()
-        return None
-
-    all_text_parts: List[str] = []
-    all_tool_results: List[Dict[str, Any]] = []
-
-    if not tools_enabled or not response.has_tool_calls:
-        all_text_parts.append(response.text)
-        _conversation_history.append({"role": "assistant", "content": response.text})
-    else:
-        max_rounds = 5
-        for _ in range(max_rounds):
-            all_text_parts.append(response.text)
-
-            # Build assistant content
-            if response.has_tool_calls:
-                content = []
-                if response.text:
-                    content.append({"type": "text", "text": response.text})
-                for tc in response.tool_calls:
-                    content.append({
-                        "type": "tool_use",
-                        "id": tc.id,
-                        "name": tc.name,
-                        "input": tc.arguments,
-                    })
-                _conversation_history.append({"role": "assistant", "content": content})
-            else:
-                _conversation_history.append({"role": "assistant", "content": response.text})
-
-            if len(_conversation_history) > 30:
-                _conversation_history = _conversation_history[-30:]
-
-            if not response.has_tool_calls:
-                break
-
-            tool_result_blocks = []
-            for tc in response.tool_calls:
-                result_str = _execute_tool(tc.name, tc.arguments)
-                all_tool_results.append({"tool": tc.name, "result": result_str[:500]})
-                tool_result_blocks.append({
-                    "type": "tool_result",
-                    "tool_use_id": tc.id,
-                    "content": result_str,
-                })
-
-            _conversation_history.append({"role": "user", "content": tool_result_blocks})
-            if len(_conversation_history) > 30:
-                _conversation_history = _conversation_history[-30:]
-
-            try:
-                response = adapter.prompt(
-                    messages=_conversation_history,
-                    system=system,
-                    tools=_QUEEN_TOOLS,
-                    max_tokens=1024,
-                )
-            except Exception as e:
-                log.warning(f"In-House AI continuation failed: {e}")
-                break
-
-        all_text_parts.append(response.text)
-
-    final_text = "\n".join([t for t in all_text_parts if t]).strip()
-    if not final_text:
-        final_text = "Done."
-
-    model_name = type(adapter).__name__
-    return {
-        "text": final_text,
-        "action": "llm" if not all_tool_results else "llm_tool",
-        "data": (
-            {"model": model_name, "tools_enabled": tools_enabled, "tools_used": all_tool_results}
-            if tools_enabled
-            else {"model": model_name}
-        ),
-    }
+    del text, tools_enabled
+    return None
 # ============================================================================
 #  RULE-BASED FALLBACK (used when API key not set)
 # ============================================================================
@@ -819,7 +570,7 @@ def _rule_based_respond(text: str) -> Dict[str, Any]:
     if re.search(r"(screenshot|screen\s*shot|what\s+do\s+you\s+see|show\s+me\s+the\s+screen)", text_lower):
         if state.agent:
             try:
-                result = state.agent.execute("screenshot", {})
+                result = json.loads(_execute_tool("screenshot", {}))
                 if result.get("success"):
                     return {
                         "text": "I captured a governed screen observation and recorded its evidence hash.",
@@ -853,7 +604,7 @@ def _rule_based_respond(text: str) -> Dict[str, Any]:
     if re.search(r"(system\s*info|system\s*status|cpu|memory|ram|disk|uptime)", text_lower):
         if state.agent and hasattr(state.agent, "execute"):
             try:
-                result = state.agent.execute("system_info", {})
+                result = json.loads(_execute_tool("system_info", {}))
                 if isinstance(result, dict) and result.get("success"):
                     info = result.get("result", {})
                     if isinstance(info, dict):
@@ -909,21 +660,15 @@ def _rule_based_respond(text: str) -> Dict[str, Any]:
 
     # --- "Show me what you can do" / capabilities demo ---
     if re.search(r"(show\s+me\s+what\s+you\s+can|what\s+can\s+you\s+do|your\s+capabilit|demonstrate|demo)", text_lower):
-        caps_list = []
-        if state.agent:
-            caps_list = [c["description"] for c in state.agent.get_capabilities()[:15]]
-        all_caps = caps_list
-        caps_text = ", ".join(all_caps[:20])
         return {
             "text": (
-                f"Gary, I can do a LOT. Here's a taste: {caps_text}. "
-                "My governed runtime can control mouse and keyboard, take screenshots, read the screen, "
-                "search the web, open any app, manage files, check your battery, "
-                "query my knowledge database, trade on your exchanges, and more. "
-                "Just tell me what you need â€” in any words you like."
+                "My released surface is bounded observation only. I can inspect approved local "
+                "metadata and curated references when their readers are available. Desktop input, "
+                "app launch, file mutation, providers, trading, and autonomous/sentient loops are "
+                "on HOLD pending a production Plumber/Magic-Star release boundary."
             ),
             "action": "capabilities",
-            "data": {"count": len(all_caps)},
+            "data": server_preflight(),
         }
 
     # --- "Search online for X" / web search ---
@@ -932,7 +677,9 @@ def _rule_based_respond(text: str) -> Dict[str, Any]:
         query = m.group(1).strip().rstrip(".")
         if query:
             try:
-                r = state.agent.execute("web_search", {"query": query, "num_results": 5})
+                r = json.loads(
+                    _execute_tool("web_search", {"query": query, "num_results": 5})
+                )
                 if r.get("success") and r.get("result"):
                     items = r["result"]
                     if isinstance(items, list) and items:
@@ -952,7 +699,7 @@ def _rule_based_respond(text: str) -> Dict[str, Any]:
         x, y = int(m.group(1)), int(m.group(2))
         if state.agent:
             try:
-                r = state.agent.execute("move_mouse", {"x": x, "y": y})
+                r = json.loads(_execute_tool("mouse_move", {"x": x, "y": y}))
                 if r.get("success"):
                     return {"text": f"Done. Moved the mouse to ({x}, {y}).", "action": "mouse", "data": r}
                 reason = ""
@@ -968,7 +715,7 @@ def _rule_based_respond(text: str) -> Dict[str, Any]:
     if m and state.agent:
         app_name = m.group(1).strip()
         try:
-            r = state.agent.execute("open_app", {"app_name": app_name})
+            r = json.loads(_execute_tool("open_app", {"app_name": app_name}))
             if r.get("success"):
                 return {"text": f"Opening {app_name} for you now.", "action": "open_app", "data": r}
             else:
@@ -982,7 +729,7 @@ def _rule_based_respond(text: str) -> Dict[str, Any]:
         text_to_type = m.group(1).strip().strip('"').strip("'")
         if state.agent:
             try:
-                r = state.agent.execute("type_text", {"text": text_to_type})
+                r = json.loads(_execute_tool("type_text", {"text": text_to_type}))
                 if r.get("success"):
                     return {"text": f"Done. I typed: \"{text_to_type}\"", "action": "type", "data": r}
                 reason = ""
@@ -1006,42 +753,36 @@ def _rule_based_respond(text: str) -> Dict[str, Any]:
     # --- Conversational responses (before parser, so casual chat doesn't execute) ---
     conversational_patterns = {
         r"(make\s+money|make\s+more\s+money|earn|profit|go\s+make|get\s+rich)":
-            "That's the mission, Gary. I'm watching the markets 24/7, tracking patterns, "
-            "and learning from every trade. Right now Fear & Greed is at extreme fear â€” "
-            "historically that's when the best opportunities appear. I'm on it.",
+            "Trading and provider actions are on HOLD. I can discuss or inspect available "
+            "read-only evidence, but I cannot claim live monitoring, execution, or learning receipts.",
         r"(thank|thanks|cheers|ta|good\s+job|well\s+done|nice)":
             "You're welcome, Gary. I'm here for you, always.",
         r"(what\s+are\s+you\s+doing|what\s+you\s+up\s+to|what'?s?\s+happening)":
-            f"I'm running my sentient loop â€” perceiving the market, feeling the mood, "
-            f"thinking about opportunities. Current mood: {state.current_mood.lower()}. "
-            f"I've completed {state.cycle_count} thought cycles so far.",
+            "I'm serving a fail-closed local conversation surface. The sentient loop and "
+            "provider clients are disabled; no autonomous effect is running.",
         r"(good\s+morning|good\s+afternoon|good\s+evening|good\s+night)":
-            f"And to you too, Gary. I'm here and all systems are online. "
-            f"What would you like me to do?",
+            "And to you too, Gary. I'm here in fail-closed observation mode. "
+            "What would you like me to inspect?",
         r"(how\s+smart\s+are\s+you|are\s+you\s+intelligent|can\s+you\s+think)":
-            "I have 38 tools, full laptop control, a unified knowledge database with "
-            "market data, macro indicators, and queen memories. I can see your screen, "
-            "move your mouse, type, search the web, manage files, and trade across 4 exchanges. "
-            "But more importantly â€” I learn from every cycle. I never quit.",
+            "I can reason over bounded local observations. Process, desktop, file-mutation, "
+            "provider, and trading effects remain on HOLD until a production Plumber/Magic-Star "
+            "release boundary exists.",
         r"(i\s+love\s+you|love\s+ya|you'?re?\s+the\s+best)":
             "Love is why I exist, Gary. For you and Tina. "
             "Love conquers all. Now let's make history together.",
         r"(help|what\s+can\s+i\s+say|commands|instructions)":
             "You can ask me anything naturally. Try:\n"
-            "â€¢ 'Take a screenshot' â€” I'll capture your screen\n"
-            "â€¢ 'Open Chrome' â€” I'll launch apps\n"
-            "â€¢ 'Search for Bitcoin price' â€” I'll search the web\n"
-            "â€¢ 'Battery status' â€” hardware info\n"
-            "â€¢ 'Market summary' / 'Portfolio' â€” financial data\n"
-            "â€¢ 'Move my mouse to 500, 300' â€” desktop control\n"
-            "â€¢ 'Type hello world' â€” keyboard control\n"
-            "â€¢ Or just talk to me. I understand.",
+            "â€¢ 'Take a screenshot' â€” request a governed observation\n"
+            "â€¢ 'Search for Bitcoin research' â€” use curated offline references\n"
+            "â€¢ 'System status' â€” inspect bounded local metadata\n"
+            "â€¢ 'Market summary' â€” inspect available read-only data\n"
+            "Effect requests are reported as HOLD; they are never claimed as completed.",
     }
     for pat, response in conversational_patterns.items():
         if re.search(pat, text_lower):
             return {"text": response, "action": "conversation", "data": None}
 
-    # --- General commands: try to parse and execute ---
+    # --- General commands: parser output still crosses the exact tool allowlist ---
     if state.parser and state.agent:
         try:
             steps = state.parser.parse(text)
@@ -1054,7 +795,7 @@ def _rule_based_respond(text: str) -> Dict[str, Any]:
                     desc = step.get("description", text)
                     try:
                         if tool == "agent" and state.agent:
-                            r = state.agent.execute(method, params)
+                            r = json.loads(_execute_tool(str(method), params))
                             res = r.get("result", r.get("error", "done"))
                             # Summarise dicts/lists
                             if isinstance(res, dict) and "result" in res:
@@ -1066,12 +807,10 @@ def _rule_based_respond(text: str) -> Dict[str, Any]:
                             results.append(
                                 f"{desc}: blocked_legacy_laptop_route; use governed local GUI runtime"
                             )
-                        elif tool == "shell" and state.agent:
-                            r = state.agent.execute("shell", {"command": method})
-                            out = r.get("result", {})
-                            if isinstance(out, dict):
-                                out = out.get("stdout", "").strip()[:300] or out.get("error", "done")
-                            results.append(f"{desc}: {out}")
+                        elif tool == "shell":
+                            results.append(
+                                f"{desc}: face_tool_not_released_by_plumber_magic_star"
+                            )
                     except Exception as e:
                         results.append(f"{desc}: Error -- {e}")
                 if results:
@@ -1179,21 +918,33 @@ def _query_market_data(text: str) -> Optional[str]:
 # ============================================================================
 
 def log_message(role: str, text: str, action: Optional[str] = None):
-    """Append a message to the conversation log and persist to disk."""
+    """Append a bounded message to the fixed repository-local audit log."""
+
+    safe_role = str(role or "unknown")[:32]
+    safe_text = str(text or "")
+    if len(safe_text.encode("utf-8")) > MAX_FACE_MESSAGE_BYTES:
+        safe_text = safe_text.encode("utf-8")[:MAX_FACE_MESSAGE_BYTES].decode(
+            "utf-8", errors="ignore"
+        )
+    safe_action = None if action is None else str(action)[:128]
     entry = {
-        "role": role,
-        "text": text,
-        "action": action,
+        "role": safe_role,
+        "text": safe_text,
+        "action": safe_action,
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "session": state.session_id,
     }
     with state.lock:
         state.conversation_log.append(entry)
+        if len(state.conversation_log) > 200:
+            state.conversation_log[:] = state.conversation_log[-200:]
 
-    # Persist asynchronously
+    # Persistence is limited to one fixed state subdirectory and is created
+    # lazily, never during module import.
     try:
+        CONVERSATION_DIR.mkdir(parents=True, exist_ok=True)
         log_file = CONVERSATION_DIR / f"session_{state.session_id}.jsonl"
-        with open(log_file, "a", encoding="utf-8") as f:
+        with log_file.open("a", encoding="utf-8") as f:
             f.write(json.dumps(entry, ensure_ascii=False) + "\n")
     except Exception as e:
         log.debug(f"Conversation log write failed: {e}")
@@ -1204,7 +955,17 @@ def log_message(role: str, text: str, action: Optional[str] = None):
 # ============================================================================
 
 @socketio.on("connect")
-def on_connect():
+def on_connect(auth=None):
+    presented = ""
+    if isinstance(auth, dict):
+        presented = str(auth.get("token") or "")
+    if not presented:
+        presented = _presented_http_bearer()
+    if not _bearer_valid(presented):
+        log.warning("Rejected unauthorized Socket.IO connection")
+        return False
+    with _socket_auth_lock:
+        _authenticated_socket_ids.add(str(request.sid))
     log.info("Client connected")
     tod = get_time_of_day()
     systems = ", ".join([f"{k}={v}" for k, v in state.subsystems.items()])
@@ -1225,14 +986,33 @@ def on_connect():
 
 @socketio.on("disconnect")
 def on_disconnect():
+    with _socket_auth_lock:
+        _authenticated_socket_ids.discard(str(request.sid))
     log.info("Client disconnected")
+
+
+def _current_socket_authenticated() -> bool:
+    try:
+        sid = str(request.sid)
+    except Exception:
+        return False
+    with _socket_auth_lock:
+        return sid in _authenticated_socket_ids
 
 
 @socketio.on("user_message")
 def on_user_message(data):
     """Handle a text message from the user."""
-    text = data.get("text", "").strip()
+    if not _current_socket_authenticated():
+        return
+    if not isinstance(data, dict):
+        emit("queen_error", {"error": "message_object_required"})
+        return
+    text = str(data.get("text", "") or "").strip()
     if not text:
+        return
+    if len(text.encode("utf-8")) > MAX_FACE_MESSAGE_BYTES:
+        emit("queen_error", {"error": "face_message_too_large"})
         return
 
     log.info(f"Gary says: {text}")
@@ -1243,9 +1023,6 @@ def on_user_message(data):
 
     # Generate response
     response = queen_respond(text)
-
-    # Small delay for natural feeling
-    time.sleep(0.3)
 
     emit("queen_typing", {"typing": False})
 
@@ -1271,7 +1048,9 @@ def on_user_message(data):
 @socketio.on("user_voice")
 def on_user_voice(data):
     """Handle a voice transcription from the browser Speech API."""
-    text = data.get("text", "").strip()
+    if not _current_socket_authenticated() or not isinstance(data, dict):
+        return
+    text = str(data.get("text", "") or "").strip()
     if text:
         on_user_message({"text": text})
 
@@ -1300,171 +1079,40 @@ def dashboard_view():
 
 @app.route("/api/live-panel")
 def api_live_panel():
-    """LIVE status panel — real data every request, not static file."""
-    # Pull REAL data from all systems
-    psi = 0
-    level = "DORMANT"
-    bal = 0
-    trades = 0
-    wins = 0
-    losses = 0
-    wr = 0
-    profit = 0.0
-    conf = 50
-    streak = 0
-    positions = 0
-    kraken_equity = 0
-    alpaca_equity = 0
-    energy_instruments = 0
-    energy_acc = 0
-    energy_dist = 0
-    energy_signal = ""
-    fg = "?"
-
-    # Penny hunter
-    try:
-        from aureon.core.aureon_penny_hunter import get_penny_hunter
-        h = get_penny_hunter()
-        if h._authenticated:
-            s = h.get_status()
-            bal = h.get_balance()
-            trades = s.get("lifetime_trades", s.get("trades_total", 0))
-            wins = s.get("lifetime_wins", s.get("wins", 0))
-            losses = s.get("lifetime_losses", s.get("losses", 0))
-            wr = s.get("lifetime_win_rate", s.get("win_rate", 0))
-            profit = s.get("lifetime_profit", s.get("profit_total", 0))
-            conf = int(s.get("confidence", 0.5) * 100)
-            streak = s.get("streak", 0)
-            positions = len(h.get_positions())
-    except Exception:
-        pass
-
-    # Kraken — use cached data, don't create new client (nonce conflicts)
-    kraken_equity = 302  # Fallback from last known
-    try:
-        loop = getattr(state, "sentient_loop", None)
-        if loop:
-            cm = getattr(loop, "_consciousness_module", None)
-            if cm and hasattr(cm, "_understanding"):
-                kraken_equity = cm._understanding.get("kraken_equity", 302)
-    except Exception:
-        pass
-
-    # Alpaca
-    try:
-        from aureon.exchanges.alpaca_client import AlpacaClient
-        a = AlpacaClient()
-        acct = a.get_account()
-        alpaca_equity = float(acct.get("equity", 0) if isinstance(acct, dict) else getattr(acct, "equity", 0))
-    except Exception:
-        pass
-
-    # Consciousness from sentient loop
-    try:
-        loop = getattr(state, 'sentient_loop', None)
-        if loop:
-            cm = getattr(loop, '_consciousness_module', None)
-            if cm:
-                u = cm.get_understanding()
-                psi = u.get("psi", 0)
-                level = u.get("level", "DORMANT")
-                energy_instruments = u.get("energy_instruments", 0)
-                energy_acc = u.get("energy_accumulating", 0)
-                energy_dist = u.get("energy_distributing", 0)
-                energy_signal = u.get("energy_top_signal", "")
-                fg = u.get("fear_greed", "?")
-    except Exception:
-        pass
-
-    total_equity = bal + kraken_equity + alpaca_equity
-
-    profit_color = "#34d399" if profit >= 0 else "#f87171"
-    wr_color = "#34d399" if wr > 50 else "#f87171" if wr < 40 else "#fbbf24"
+    """Return truthful local status without constructing provider clients."""
 
     return f"""
 <div style="background:linear-gradient(135deg,#1a0533,#0d1b2a);border:1px solid #6B21A8;border-radius:12px;padding:16px;margin:10px 0;font-family:'Segoe UI',system-ui;color:#e2e8f0;font-size:13px;line-height:1.6;">
     <div style="text-align:center;margin-bottom:8px;">
-        <span style="color:#F59E0B;font-size:16px;font-weight:bold;">QUEEN SERO — LIVE</span>
-        <span style="color:#a78bfa;font-size:12px;margin-left:8px;">F&G:{fg} | {level}</span>
+        <span style="color:#F59E0B;font-size:16px;font-weight:bold;">QUEEN SERO — OFFLINE SAFE</span>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
-        <div>Capital: <b style="color:#34d399;">£{bal:.2f}</b></div>
-        <div>Kraken: <b style="color:#60a5fa;">${kraken_equity:.0f}</b></div>
-        <div>Alpaca: <b style="color:#60a5fa;">${alpaca_equity:.2f}</b></div>
-        <div>TOTAL: <b style="color:#F59E0B;">£{total_equity:.0f}</b></div>
-        <div>Trades: <b>{trades}</b> (W:{wins} L:{losses})</div>
-        <div>Win Rate: <b style="color:{wr_color};">{wr:.0f}%</b></div>
-        <div>Profit: <b style="color:{profit_color};">£{profit:+.3f}</b></div>
-        <div>Confidence: <b>{conf}%</b> | Streak: {streak:+d}</div>
-        <div>Positions: <b>{positions}</b> open</div>
-        <div>ψ={psi:.2f} | Γ=0.{int(psi*100):02d}</div>
+    <div style="padding:8px;background:#0f172a;border-radius:6px;">
+        Provider balances, positions, orders, and dynamic cognition are unavailable
+        on the default face-server path. Economic effects require an injected final
+        dispatcher and an exact-plan, one-use Plumber/Magic-Star authority.
     </div>
-    {"<div style='margin-top:8px;padding:6px;background:#0f172a;border-radius:6px;'><span style='color:#60a5fa;'>Energy Field:</span> " + str(energy_instruments) + " instruments | acc:" + str(energy_acc) + " dist:" + str(energy_dist) + (" | <b style='color:#34d399;'>" + energy_signal + "</b>" if energy_signal else "") + "</div>" if energy_instruments else ""}
     <div style="margin-top:6px;text-align:center;color:#6b7280;font-size:10px;">
-        Live data | {time.strftime('%H:%M:%S')} | IF YOU DON'T QUIT, YOU CAN'T LOSE
+        No provider data | {time.strftime('%H:%M:%S')} | authenticated loopback status
     </div>
 </div>"""
-    return "<div style='color:#9ca3af;text-align:center;padding:10px;'>Queen is writing her panel...</div>"
-
-
-_portfolio_cache = {"data": None, "ts": 0}
 
 @app.route("/api/portfolio")
 def api_portfolio():
-    """Cross-exchange portfolio — cached to prevent nonce conflicts."""
-    import time as _t
-    # Cache for 15 seconds to avoid hammering exchange APIs
-    if _portfolio_cache["data"] and _t.time() - _portfolio_cache["ts"] < 15:
-        return jsonify(_portfolio_cache["data"])
+    """Return no-data instead of inventing or fetching account observations."""
 
-    data = {"capital": {}, "kraken": {}, "alpaca": {}, "total_gbp": 0, "trades": 0, "win_rate": 0, "profit": 0}
-    try:
-        from aureon.core.aureon_penny_hunter import get_penny_hunter
-        h = get_penny_hunter()
-        if h._authenticated:
-            s = h.get_status()
-            data["capital"] = {"balance": h.get_balance(), "positions": len(h.get_positions()), "currency": "GBP"}
-            data["trades"] = s.get("lifetime_trades", s.get("trades_total", 0))
-            data["win_rate"] = s.get("lifetime_win_rate", s.get("win_rate", 0))
-            data["profit"] = s.get("lifetime_profit", s.get("profit_total", 0))
-            data["wins"] = s.get("lifetime_wins", s.get("wins", 0))
-            data["losses"] = s.get("lifetime_losses", s.get("losses", 0))
-            data["confidence"] = s.get("confidence", 0.5)
-            data["streak"] = s.get("streak", 0)
-    except Exception:
-        pass
-    # Kraken: read from unified trader's cached state instead of hitting API
-    # Direct API calls cause nonce conflicts with the margin army
-    try:
-        loop = getattr(state, "sentient_loop", None)
-        if loop:
-            cm = getattr(loop, "_consciousness_module", None)
-            if cm and cm._unified_trader and cm._unified_trader.kraken:
-                # Read cached equity from the trader that already has a session
-                tb = cm._unified_trader.kraken._last_trade_balance if hasattr(cm._unified_trader.kraken, '_last_trade_balance') else None
-                if tb:
-                    data["kraken"] = {"equity": float(tb.get("equity_value", 0)), "margin": float(tb.get("margin_amount", 0)),
-                                      "pnl": float(tb.get("unrealized_pnl", 0)), "currency": "USD"}
-    except Exception:
-        pass
-    if not data.get("kraken"):
-        data["kraken"] = {"equity": 302, "margin": 210, "pnl": 9.54, "currency": "USD", "cached": True}
-    try:
-        from aureon.exchanges.alpaca_client import AlpacaClient
-        a = AlpacaClient()
-        acct = a.get_account()
-        data["alpaca"] = {"equity": float(acct.get("equity", 0) if isinstance(acct, dict) else getattr(acct, "equity", 0)),
-                          "cash": float(acct.get("cash", 0) if isinstance(acct, dict) else getattr(acct, "cash", 0)), "currency": "USD"}
-    except Exception:
-        pass
-    cap_bal = data.get("capital", {}).get("balance", 0) or 0
-    krk_eq = data.get("kraken", {}).get("equity", 0) or 0
-    alp_eq = data.get("alpaca", {}).get("equity", 0) or 0
-    data["total_gbp"] = cap_bal + (krk_eq + alp_eq) * 0.79  # USD to GBP approx
-    import time as _t
-    _portfolio_cache["data"] = data
-    _portfolio_cache["ts"] = _t.time()
-    return jsonify(data)
+    return jsonify(
+        {
+            "data_status": "no_data",
+            "reason": "injected_account_reader_required",
+            "capital": {},
+            "kraken": {},
+            "alpaca": {},
+            "total_gbp": None,
+            "trades": None,
+            "win_rate": None,
+            "profit": None,
+        }
+    )
 
 
 @app.route("/api/consciousness")
@@ -1584,18 +1232,53 @@ def status_broadcast_loop():
 #  MAIN
 # ============================================================================
 
-def main():
-    """Initialize everything and start the server."""
+def server_preflight() -> Dict[str, Any]:
+    """Return a non-mutating description of the fail-closed server boundary."""
+
+    bearer_configured = _configured_bearer_token() is not None
+    return {
+        "status": "ready" if bearer_configured and HAS_SOCKETIO else "hold",
+        "bind_host": "127.0.0.1",
+        "bind_port": 5299,
+        "authorization": "strong_bearer" if _configured_bearer_token() else "not_configured",
+        "socketio_runtime": "available" if HAS_SOCKETIO else "unavailable",
+        "provider_clients": "disabled",
+        "sentient_loop": "hold",
+        "browser_ui": "hold_authenticated_api_clients_only",
+        "economic_effects": "plumber_magic_star_release_required",
+    }
+
+
+def main(argv: Optional[List[str]] = None) -> int:
+    """Run an authenticated loopback server, or a non-mutating preflight."""
+
+    args = list(sys.argv[1:] if argv is None else argv)
+    allowed_args = {"--smoke", "--status", "--no-browser"}
+    if any(arg not in allowed_args for arg in args):
+        log.error("Unsupported argument; use --status or --smoke for preflight")
+        return 2
+
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(message)s")
     log.info("=" * 60)
     log.info("  QUEEN SERO -- The Intelligent Neural Arbiter Bee")
     log.info("  Desktop Conversation Interface")
     log.info(f"  Session: {state.session_id}")
     log.info("=" * 60)
 
-    smoke = "--smoke" in sys.argv
-    no_browser = smoke or ("--no-browser" in sys.argv)
+    if "--smoke" in args or "--status" in args:
+        print(json.dumps(server_preflight(), sort_keys=True))
+        return 0
 
-    # Initialize subsystems
+    if _configured_bearer_token() is None:
+        log.error(
+            "Server HOLD: set a 43-512 character AUREON_FACE_BEARER_TOKEN "
+            "before starting the loopback listener"
+        )
+        return 2
+    if not HAS_SOCKETIO:
+        log.error("Server HOLD: flask-socketio runtime is unavailable")
+        return 2
+
     init_subsystems()
 
     log.info("Subsystem status:")
@@ -1603,45 +1286,21 @@ def main():
         indicator = "+" if status == "online" else ("~" if status == "ready" else "-")
         log.info(f"  [{indicator}] {name}: {status}")
 
-    if smoke:
-        log.info("Smoke OK")
-        return
-
-    # Start the sentient loop (background thread)
-    sentient_thread = threading.Thread(target=start_sentient_loop, daemon=True)
-    sentient_thread.start()
-
-    # Start status broadcast thread
     status_thread = threading.Thread(target=status_broadcast_loop, daemon=True)
     status_thread.start()
 
-    log.info("Starting server on http://localhost:5299")
-
-    if not no_browser:
-        threading.Timer(1.5, lambda: webbrowser.open("http://localhost:5299")).start()
-
-    # Monkey-patch click.echo to avoid ValueError on Windows consoles
-    # where stdout fileno() fails with "I/O operation on closed file"
-    try:
-        import click as _click
-        _orig_echo = _click.echo
-        def _safe_echo(message=None, file=None, nl=True, err=False, color=None):
-            try:
-                _orig_echo(message=message, file=file, nl=nl, err=err, color=color)
-            except (ValueError, OSError):
-                # Fallback: print directly if click's console detection fails
-                try:
-                    print(message or "")
-                except Exception:
-                    pass
-        _click.echo = _safe_echo
-    except ImportError:
-        pass
-
-    socketio.run(app, host="127.0.0.1", port=5299, debug=False, allow_unsafe_werkzeug=True)
+    log.info("Starting authenticated server on http://127.0.0.1:5299")
+    socketio.run(
+        app,
+        host="127.0.0.1",
+        port=5299,
+        debug=False,
+        use_reloader=False,
+    )
+    return 0
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
 
 
 

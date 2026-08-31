@@ -18,7 +18,13 @@ def _app(monkeypatch, tmp_path, *, operator_key: str):
     importlib.reload(server_module)
     operator = SimpleNamespace(providers={}, bus=None)
     cognition = SimpleNamespace()
-    app = server_module.create_app(operator=operator, cognition=cognition)
+    app = server_module.create_app(
+        operator=operator,
+        cognition=cognition,
+        test_ingress_release=server_module.TestOnlyOperatorIngressRelease(
+            master_key=b"approval-authorship-route-test-key-material",
+        ),
+    )
     return app.test_client(), approval_module.get_approval_queue()
 
 

@@ -99,6 +99,39 @@ def test_token_bucket_isolated_clients_exhaust_and_refill() -> None:
     assert bucket.check("client-a") == (True, 0.0)
 
 
+def test_open_operator_plane_is_restricted_to_loopback(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _clear_security_env(monkeypatch)
+    monkeypatch.setenv("AUREON_OPERATOR_ENV", "development")
+    monkeypatch.delenv("AUREON_SUPABASE_JWT_SECRET", raising=False)
+
+    from aureon.operator.operator_server import _is_loopback_host, create_app
+
+    assert _is_loopback_host("127.0.0.1") is True
+    assert _is_loopback_host("::1") is True
+    assert _is_loopback_host("0.0.0.0") is False
+    assert _is_loopback_host("203.0.113.9") is False
+
+    app = create_app(operator=object())
+    app.testing = True
+    client = app.test_client()
+    remote = client.get("/api/not-a-real-route", environ_base={"REMOTE_ADDR": "203.0.113.9"})
+    local = client.get("/api/not-a-real-route", environ_base={"REMOTE_ADDR": "127.0.0.1"})
+    assert remote.status_code == 401
+    assert remote.get_json() == {
+        "error": {"code": 401, "message": "authenticated loopback operator required"}
+    }
+    assert local.status_code == 404
+
+
+def test_operator_main_defaults_to_loopback() -> None:
+    source = (ROOT / "aureon" / "operator" / "operator_server.py").read_text(encoding="utf-8")
+    main_source = source[source.index("def main() -> None:") :]
+    assert 'AUREON_OPERATOR_HOST", "127.0.0.1"' in main_source
+    assert "non_loopback_operator_requires_AUREON_OPERATOR_API_KEY" in main_source
+
+
 def test_compose_and_docs_use_the_exact_operator_environment_contract() -> None:
     compose_paths = (
         ROOT / "deploy" / "docker-compose.operator.yml",

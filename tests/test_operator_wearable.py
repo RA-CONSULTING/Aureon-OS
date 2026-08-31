@@ -13,12 +13,17 @@ import pytest
 
 pytest.importorskip("flask", reason="operator HTTP surface requires the `.[operator]` extra")
 
-from aureon.operator.operator_server import create_app  # noqa: E402
-
-
 @pytest.fixture()
 def client():
-    return create_app().test_client()
+    # Resolve both the factory and its exact typed seam from the currently
+    # loaded module. Other operator suites deliberately reload that module.
+    import aureon.operator.operator_server as srv
+
+    return srv.create_app(
+        test_ingress_release=srv.TestOnlyOperatorIngressRelease(
+            master_key=b"operator-wearable-route-test-key-material",
+        )
+    ).test_client()
 
 
 def test_watch_index_served(client):

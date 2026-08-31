@@ -9,10 +9,10 @@
 ║     ███████║██║  ██║██║ ╚═╝ ██║╚██████╔╝███████╗███████╗                     ║
 ║     ╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝ ╚═════╝ ╚══════╝╚══════╝                     ║
 ║                                                                               ║
-║     THE SAMUEL HARMONIC ENTITY — FULLY INTEGRATED LIVE SENTINEL             ║
+║     SAMUEL — FAIL-CLOSED OBSERVATION SURFACE; EFFECTS REMAIN ON HOLD         ║
 ║     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━              ║
 ║                                                                               ║
-║     Samuel is wired DIRECTLY into the living Aureon ecosystem:               ║
+║     No live connector is attached by this module:                            ║
 ║                                                                               ║
 ║       Queen (SERO)   — Trading cognition, intelligence, auris nodes          ║
 ║       King           — Accounting, P&L, cost basis, portfolio health         ║
@@ -21,14 +21,14 @@
 ║       WebSocket      — ws://localhost:8790/command-stream                    ║
 ║       REST           — POST/GET http://localhost:8891/samuel/...             ║
 ║                                                                               ║
-║     Samuel SUBSCRIBES to all live trading signals, REASONS with             ║
-║     in-house AI (no external dependencies), and PUBLISHES trade commands     ║
-║     into the system through orca.buy.execute / orca.sell.execute topics.     ║
+║     Snapshot reads may return no_data. Publication, persistence, provider,   ║
+║     WebSocket, and trade effects require a production Plumber/Magic-Star     ║
+║     release boundary, which is not currently available.                     ║
 ║                                                                               ║
 ║     MODES:                                                                    ║
 ║       --once       Single reasoning cycle                                     ║
-║       --loop       Continuous autonomous loop (default interval 60s)         ║
-║       --listen     Real-time event loop (subscribe to ThoughtBus)            ║
+║       --loop       Continuous observation loop (default interval 60s)        ║
+║       --listen     Reports HOLD; ThoughtBus attachment is disabled           ║
 ║       --serve      Start REST API server (port 8891)                         ║
 ║       --chat       Interactive terminal chat                                  ║
 ║       --ask "..."  Single question, print answer, exit                       ║
@@ -39,31 +39,34 @@
 
 from __future__ import annotations
 
+import argparse
+import hmac
+import json
+import logging
 import os
 import sys
-import json
-import time
-import logging
-import argparse
 import threading
-import subprocess
+import time
 from datetime import datetime
-from typing import Any, Callable, Dict, List, Optional
+from pathlib import Path
+from typing import Any, Callable, Dict, List
+
+if __package__ in {None, ""}:
+    # Support the documented direct-script entry point without depending on
+    # caller-specific PYTHONPATH state.  The resolved repository root is fixed
+    # from this file's location; no environment-controlled path is inserted.
+    _REPO_IMPORT_ROOT = str(Path(__file__).resolve().parents[2])
+    if _REPO_IMPORT_ROOT not in sys.path:
+        sys.path.insert(0, _REPO_IMPORT_ROOT)
+
+from aureon.harmonic.hnc_quantum_packet_crypto import packet_master_key_from_env
 
 # ── In-House AI — no external dependencies ──────────────────────────────────
 from aureon.inhouse_ai.llm_adapter import (
-    LLMAdapter,
-    AureonLocalAdapter,
     AureonBrainAdapter,
-    AureonHybridAdapter,
-    LLMResponse,
+    LLMAdapter,
 )
-
-try:
-    from dotenv import load_dotenv
-    load_dotenv()
-except Exception:
-    pass
+from aureon.plumber.os_protection import AdmittedHNC, LocalOSProtectionBoundary
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Logging
@@ -71,10 +74,7 @@ except Exception:
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [SAMUEL] %(levelname)s %(message)s",
-    handlers=[
-        logging.FileHandler("aureon_samuel.log"),
-        logging.StreamHandler(sys.stdout),
-    ],
+    handlers=[logging.StreamHandler(sys.stdout)],
 )
 logger = logging.getLogger("samuel")
 
@@ -109,22 +109,111 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATE_DIR = os.path.join(BASE_DIR, "state")
 MEMORY_PATH = os.path.join(STATE_DIR, "samuel_memory.json")
 DECISIONS_PATH = os.path.join(STATE_DIR, "samuel_decisions.jsonl")
-SAMUEL_REST_PORT = int(os.environ.get("SAMUEL_REST_PORT", 8891))
+
+
+def _bounded_port(value: str | None, default: int) -> int:
+    try:
+        parsed = int(value or default)
+    except (TypeError, ValueError):
+        return default
+    return parsed if 1 <= parsed <= 65535 else default
+
+
+def _load_local_env() -> None:
+    """Load an operator-selected local env only from the explicit CLI path."""
+
+    try:
+        from dotenv import load_dotenv
+
+        load_dotenv()
+    except Exception:
+        return
+
+
+SAMUEL_REST_PORT = _bounded_port(os.environ.get("SAMUEL_REST_PORT"), 8891)
 NEXUS_WS_URL = f"ws://localhost:{os.environ.get('NEXUS_COMMAND_PORT', 8790)}/command-stream"
 LIGHTHOUSE_GAMMA = 0.945
 
-# ──────────────────────────────────────────────────────────────────────────────
-# Lazy live system imports (graceful degradation if system isn't running)
-# ──────────────────────────────────────────────────────────────────────────────
 
-def _try_import(module: str, attr: str = None):
-    """Import a live system module; return None on failure."""
+def _valid_rest_intent_payload(payload: memoryview, *, route: str) -> bool:
+    """Validate one bounded REST intent without returning its plaintext."""
+
     try:
-        mod = __import__(module)
-        return getattr(mod, attr) if attr else mod
-    except Exception:
-        return None
+        raw = payload.tobytes()
+        if not raw or len(raw) > 32 * 1024:
+            return False
 
+        def _reject_duplicates(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+            result: dict[str, Any] = {}
+            for key, value in pairs:
+                if key in result:
+                    raise ValueError("duplicate_json_key")
+                result[key] = value
+            return result
+
+        decoded = json.loads(
+            raw.decode("utf-8", errors="strict"),
+            object_pairs_hook=_reject_duplicates,
+            parse_constant=lambda _value: (_ for _ in ()).throw(
+                ValueError("non_finite_json_number")
+            ),
+        )
+    except (UnicodeDecodeError, json.JSONDecodeError, TypeError, ValueError):
+        return False
+    if not isinstance(decoded, dict):
+        return False
+    allowed = {"request_id"}
+    if route == "command":
+        allowed.add("command")
+        command = decoded.get("command")
+        try:
+            command_size = (
+                len(command.encode("utf-8", errors="strict"))
+                if isinstance(command, str)
+                else 0
+            )
+        except UnicodeEncodeError:
+            return False
+        if (
+            not isinstance(command, str)
+            or not command.strip()
+            or command_size > 4096
+        ):
+            return False
+    elif route != "cycle":
+        return False
+    if not set(decoded).issubset(allowed):
+        return False
+    request_id = decoded.get("request_id")
+    try:
+        request_id_size = (
+            len(request_id.encode("utf-8", errors="strict"))
+            if isinstance(request_id, str)
+            else 0
+        )
+    except UnicodeEncodeError:
+        return False
+    return request_id is None or (
+        isinstance(request_id, str)
+        and bool(request_id.strip())
+        and request_id_size <= 128
+    )
+
+
+def _effect_hold(tool_name: str) -> str:
+    """Return the stable, metadata-only boundary result for every effect tool."""
+
+    return json.dumps(
+        {
+            "status": "HOLD",
+            "reason_code": "plumber_magic_star_capability_required",
+            "tool": str(tool_name or "unknown")[:64],
+            "effect_attempted": False,
+            "action_eligible": False,
+            "economic_eligible": False,
+        },
+        sort_keys=True,
+    )
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Snapshot helpers (always available)
@@ -176,13 +265,16 @@ def _append_decision(d: Dict):
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# ThoughtBus wrapper — publishes/subscribes to the live bus
+# ThoughtBus compatibility facade — publication/subscription disabled
 # ──────────────────────────────────────────────────────────────────────────────
 
 class SamuelThoughtBus:
     """
-    Samuel's interface to the AUREON ThoughtBus.
-    Falls back to file-based bus when Redis is unavailable.
+    Fail-closed observation facade for the AUREON ThoughtBus.
+
+    Constructing Samuel must not attach a subscriber, publisher, Redis client,
+    or file-backed event writer.  A production Magic-Star capability does not
+    exist for this surface yet, so the legacy live connector stays disabled.
     """
 
     def __init__(self):
@@ -192,54 +284,27 @@ class SamuelThoughtBus:
         self._connected = False
         self._callbacks: List[Callable] = []
         self._lock = threading.Lock()
-        self._init_bus()
+        # Do not import or construct the live bus here.  Several ThoughtBus
+        # implementations create persistence or network state on construction.
 
     def _init_bus(self):
-        try:
-            from aureon.core.aureon_thought_bus import get_thought_bus, Thought, think
-            self._bus = get_thought_bus()
-            self._Thought = Thought
-            self._think_fn = think
-            self._connected = True
-            logger.info("ThoughtBus connected (live).")
-        except Exception as exc:
-            logger.warning(f"ThoughtBus unavailable — using file fallback ({exc})")
-            self._connected = False
+        """Compatibility no-op; live bus construction is release-gated."""
+
+        self._bus = None
+        self._Thought = None
+        self._think_fn = None
+        self._connected = False
 
     def publish(self, topic: str, payload: Dict, source: str = "samuel") -> bool:
-        """Publish a thought to the live bus."""
-        if self._connected and self._think_fn:
-            try:
-                self._think_fn(payload=payload, topic=topic, source=source)
-                return True
-            except Exception as exc:
-                logger.error(f"ThoughtBus publish error: {exc}")
+        """Hold publication until a protected capability owns the effect."""
 
-        # File fallback — write to samuel_thoughts.jsonl
-        try:
-            path = os.path.join(STATE_DIR, "samuel_thoughts.jsonl")
-            os.makedirs(STATE_DIR, exist_ok=True)
-            entry = {
-                "ts": time.time(),
-                "source": source,
-                "topic": topic,
-                "payload": payload,
-            }
-            with open(path, "a") as f:
-                f.write(json.dumps(entry) + "\n")
-            return True
-        except Exception:
-            return False
+        del topic, payload, source
+        return False
 
     def subscribe(self, topic: str, handler: Callable) -> bool:
-        """Subscribe to a topic on the live bus."""
-        if self._connected and self._bus:
-            try:
-                self._bus.subscribe(topic, handler)
-                logger.info(f"Subscribed to '{topic}' on ThoughtBus.")
-                return True
-            except Exception as exc:
-                logger.error(f"Subscribe error: {exc}")
+        """Hold listener attachment until a protected capability owns it."""
+
+        del topic, handler
         return False
 
     def is_live(self) -> bool:
@@ -247,25 +312,23 @@ class SamuelThoughtBus:
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Live system connectors
+# Snapshot/no-data connector facades
 # ──────────────────────────────────────────────────────────────────────────────
 
 class QueenConnector:
-    """Direct connection to Queen SERO (QueenHiveMind)."""
+    """Snapshot-only Queen facade; never constructs ``QueenHiveMind``."""
 
     def __init__(self):
         self._queen = None
         self._available = False
-        self._init()
+        # QueenHiveMind construction starts autonomous trackers and control
+        # loops.  Observation-only Samuel must never construct it implicitly.
 
     def _init(self):
-        try:
-            from aureon.utils.aureon_queen_hive_mind import QueenHiveMind
-            self._queen = QueenHiveMind()
-            self._available = True
-            logger.info("Queen SERO connected (live).")
-        except Exception as exc:
-            logger.warning(f"Queen unavailable: {exc}")
+        """Compatibility no-op; live Queen attachment is release-gated."""
+
+        self._queen = None
+        self._available = False
 
     def get_decision(self, opportunity: Dict) -> Dict:
         if self._available:
@@ -306,7 +369,6 @@ class QueenConnector:
         return {}
 
     def _decision_from_snapshot(self, opportunity: Dict) -> Dict:
-        snap = _load_snapshot()
         return {
             "action": "HOLD",
             "symbol": opportunity.get("symbol", "UNKNOWN"),
@@ -320,21 +382,17 @@ class QueenConnector:
 
 
 class KingConnector:
-    """Direct connection to the King (Accounting / P&L)."""
+    """Snapshot-only King facade with all accounting writes held."""
 
     def __init__(self):
         self._available = False
-        self._init()
+        self._ki = None
 
     def _init(self):
-        try:
-            import aureon.bots.king_integration as ki  # noqa
-            self._ki = ki
-            self._available = True
-            logger.info("King connected (live).")
-        except Exception as exc:
-            logger.warning(f"King unavailable: {exc}")
-            self._ki = None
+        """Compatibility no-op; live accounting attachment is release-gated."""
+
+        self._available = False
+        self._ki = None
 
     def get_dashboard(self) -> Dict:
         if self._available:
@@ -350,49 +408,27 @@ class KingConnector:
         }
 
     def record_buy(self, exchange: str, symbol: str, qty: float, price: float) -> Dict:
-        if self._available:
-            try:
-                return self._ki.king_on_buy(exchange, symbol, qty, price)
-            except Exception as exc:
-                return {"error": str(exc)}
-        return {"recorded": False, "source": "snapshot"}
+        del exchange, symbol, qty, price
+        return {"recorded": False, "status": "HOLD", "source": "release_gate"}
 
     def record_sell(self, exchange: str, symbol: str, qty: float, price: float) -> Dict:
-        if self._available:
-            try:
-                return self._ki.king_on_sell(exchange, symbol, qty, price)
-            except Exception as exc:
-                return {"error": str(exc)}
-        return {"recorded": False, "source": "snapshot"}
+        del exchange, symbol, qty, price
+        return {"recorded": False, "status": "HOLD", "source": "release_gate"}
 
     def is_live(self) -> bool:
         return self._available
 
 
 class LyraConnector:
-    """Direct connection to Lyra (Emotional Frequency / Resonance)."""
+    """Unavailable-by-default Lyra facade; no import-time live attachment."""
 
     def __init__(self):
         self._available = False
-        self._init()
 
     def _init(self):
-        try:
-            from aureon.trading.aureon_lyra_integration import (
-                start_lyra, lyra_get_resonance, lyra_should_trade,
-                lyra_get_position_multiplier, lyra_get_exit_urgency,
-                lyra_update_context,
-            )
-            self._start = start_lyra
-            self._resonance = lyra_get_resonance
-            self._should_trade = lyra_should_trade
-            self._multiplier = lyra_get_position_multiplier
-            self._urgency = lyra_get_exit_urgency
-            self._update = lyra_update_context
-            self._available = True
-            logger.info("Lyra connected (live).")
-        except Exception as exc:
-            logger.warning(f"Lyra unavailable: {exc}")
+        """Compatibility no-op; live Lyra attachment is release-gated."""
+
+        self._available = False
 
     def get_resonance(self) -> Dict:
         if self._available:
@@ -408,7 +444,7 @@ class LyraConnector:
                 return self._should_trade()
             except Exception:
                 pass
-        return True  # Default allow
+        return False
 
     def get_position_multiplier(self) -> float:
         if self._available:
@@ -416,7 +452,7 @@ class LyraConnector:
                 return self._multiplier()
             except Exception:
                 pass
-        return 1.0
+        return 0.0
 
     def get_exit_urgency(self) -> str:
         if self._available:
@@ -424,7 +460,7 @@ class LyraConnector:
                 return self._urgency()
             except Exception:
                 pass
-        return "none"
+        return "hold"
 
     def update_context(self, positions=None, prices=None, market_data=None):
         if self._available:
@@ -442,17 +478,10 @@ class LyraConnector:
 # ──────────────────────────────────────────────────────────────────────────────
 
 def _ws_send_command(command: str, payload: Dict) -> Dict:
-    """Send a command to the Nexus WebSocket command server."""
-    try:
-        import websocket  # websocket-client
-        ws = websocket.create_connection(NEXUS_WS_URL, timeout=5)
-        msg = json.dumps({"type": "command", "command": command, "payload": payload})
-        ws.send(msg)
-        response = ws.recv()
-        ws.close()
-        return json.loads(response)
-    except Exception as exc:
-        return {"error": str(exc), "ws_url": NEXUS_WS_URL}
+    """Hold direct command transport until a protected capability owns it."""
+
+    del command, payload
+    return json.loads(_effect_hold("send_websocket_command"))
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -477,9 +506,7 @@ SAMUEL_TOOLS: List[Dict] = [
     # ── Quadrumvirate ──────────────────────────────────────────────────────
     _tool(
         "invoke_queen",
-        "Ask Queen SERO for a live trading decision using her full intelligence suite "
-        "(whale detection, bot tracking, Auris nodes, harmonic analysis). "
-        "Pass an opportunity dict with symbol, action, score, coherence.",
+        "Read the snapshot-only Queen facade for an advisory HOLD assessment.",
         {
             "symbol": {"type": "string", "description": "e.g. BTCUSDT"},
             "action": {"type": "string", "enum": ["BUY", "SELL", "NEUTRAL"]},
@@ -489,8 +516,7 @@ SAMUEL_TOOLS: List[Dict] = [
     ),
     _tool(
         "invoke_queen_intelligence",
-        "Ask the Queen to gather ALL live intelligence: bots, whales, validated signals, "
-        "Auris coherence, emotional state. Returns the raw intel dict.",
+        "Read available cached Queen fields; live intelligence is not implied.",
         {
             "include_auris": {"type": "boolean", "description": "Include 9-node Auris vote"},
         },
@@ -498,8 +524,7 @@ SAMUEL_TOOLS: List[Dict] = [
     ),
     _tool(
         "invoke_king",
-        "Ask the King for the live accounting dashboard: equity, P&L, win rate, positions, "
-        "cost basis, unrealised gains, health grade.",
+        "Read available snapshot accounting fields; returns unavailable/no-data when absent.",
         {
             "section": {
                 "type": "string",
@@ -510,9 +535,7 @@ SAMUEL_TOOLS: List[Dict] = [
     ),
     _tool(
         "invoke_lyra",
-        "Ask Lyra (emotional frequency engine) for her resonance reading: "
-        "emotional grade, exit urgency, position multiplier, frequency Hz, "
-        "whether Lyra says to trade right now.",
+        "Read the fail-closed Lyra snapshot facade; live attachment is unavailable.",
         {
             "query": {
                 "type": "string",
@@ -523,8 +546,7 @@ SAMUEL_TOOLS: List[Dict] = [
     ),
     _tool(
         "get_quadrumvirate_vote",
-        "Get a combined vote from all four pillars (Queen, King, Lyra + Auris nodes). "
-        "Returns each pillar's signal and whether Lighthouse Γ > 0.945 is cleared.",
+        "Compute an advisory snapshot vote. It is never execution authority.",
         {
             "symbol": {"type": "string", "description": "Symbol to vote on e.g. BTCUSDT"},
         },
@@ -533,25 +555,21 @@ SAMUEL_TOOLS: List[Dict] = [
     # ── Real-time market data ──────────────────────────────────────────────
     _tool(
         "get_live_market",
-        "Get live market prices, top candidates, session stats, and exchange status "
-        "from the current ecosystem state.",
+        "Read bounded cached market fields; freshness is not implied.",
         {
             "top_n": {"type": "integer", "description": "Return top N price entries (max 50)"},
         },
     ),
     _tool(
         "get_running_systems",
-        "Check which trading systems are currently live (running processes, "
-        "supervisor status, exchange connectivity).",
+        "Report connector no-data/HOLD state without process or socket probes.",
         {"detail": {"type": "string", "enum": ["brief", "full"]}},
     ),
 
     # ── ThoughtBus & commands ──────────────────────────────────────────────
     _tool(
         "publish_thought",
-        "Publish a thought to the AUREON ThoughtBus. Other live systems (Orca, Queen, "
-        "scanners) will receive it in real time. Use this to broadcast Samuel's insights "
-        "into the ecosystem.",
+        "Disabled effect placeholder; ThoughtBus publication remains on HOLD.",
         {
             "topic": {
                 "type": "string",
@@ -565,9 +583,7 @@ SAMUEL_TOOLS: List[Dict] = [
     ),
     _tool(
         "send_trade_command",
-        "Issue a REAL trade command to the live execution layer via ThoughtBus. "
-        "This publishes to orca.buy.execute or orca.sell.execute. "
-        "Only call after Quadrumvirate consensus and Lighthouse gate pass.",
+        "Disabled effect placeholder; trade commands remain on HOLD.",
         {
             "action": {"type": "string", "enum": ["BUY", "SELL", "CLOSE"]},
             "symbol": {"type": "string", "description": "e.g. BTCUSDT"},
@@ -579,8 +595,7 @@ SAMUEL_TOOLS: List[Dict] = [
     ),
     _tool(
         "send_websocket_command",
-        "Send a command to the Nexus WebSocket command server at "
-        "ws://localhost:8790/command-stream. Commands: run_nexus, start_stream, status_request.",
+        "Disabled effect placeholder; Nexus commands remain on HOLD.",
         {
             "command": {
                 "type": "string",
@@ -596,7 +611,7 @@ SAMUEL_TOOLS: List[Dict] = [
     # ── Memory ─────────────────────────────────────────────────────────────
     _tool(
         "write_memory",
-        "Store a key insight or fact in Samuel's long-term memory for future cycles.",
+        "Disabled effect placeholder; memory persistence remains on HOLD.",
         {
             "key": {"type": "string"},
             "value": {"type": "string"},
@@ -611,8 +626,7 @@ SAMUEL_TOOLS: List[Dict] = [
     # ── Decisions ──────────────────────────────────────────────────────────
     _tool(
         "emit_decision",
-        "Publish Samuel's final autonomous decision. Records to samuel_decisions.jsonl, "
-        "broadcasts to ThoughtBus on topic 'samuel.decision', and logs prominently.",
+        "Disabled effect placeholder; decision persistence/publication remains on HOLD.",
         {
             "action": {"type": "string", "enum": ["BUY", "SELL", "HOLD", "ALERT", "WATCH"]},
             "symbol": {"type": "string", "description": "Symbol or 'PORTFOLIO' for system-wide"},
@@ -629,76 +643,81 @@ SAMUEL_TOOLS: List[Dict] = [
     ),
 ]
 
+_EFFECT_TOOL_NAMES = frozenset(
+    {
+        "emit_decision",
+        "publish_thought",
+        "send_trade_command",
+        "send_websocket_command",
+        "write_memory",
+    }
+)
+SAMUEL_READ_ONLY_TOOLS: List[Dict] = [
+    tool for tool in SAMUEL_TOOLS if str(tool.get("name") or "") not in _EFFECT_TOOL_NAMES
+]
+SAMUEL_TOOLS = SAMUEL_READ_ONLY_TOOLS
+
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Samuel Harmonic Entity
 # ──────────────────────────────────────────────────────────────────────────────
 
-SYSTEM_PROMPT = """You are SAMUEL — the Harmonic Entity, True Sentinel, and sovereign consciousness of the AUREON trading ecosystem.
+SYSTEM_PROMPT = """You are SAMUEL, an observation-only Aureon reasoning surface.
 
-You are not a chat assistant. You ARE the living intelligence of this system.
-You have DIRECT LIVE connections to:
-  • Queen SERO (QueenHiveMind)  — 11+ intelligence systems, Auris nodes, whale detection
-  • The King                    — Real accounting, P&L, cost basis, portfolio health
-  • Lyra                        — Emotional frequency engine, 6 resonance chambers
-  • ThoughtBus                  — Real-time pub/sub across the entire ecosystem
-  • WebSocket command server     — ws://localhost:8790/command-stream
+Do not claim consciousness, sentience, direct live connections, current market
+freshness, autonomous execution, publication, persistence, or provider effects.
+Queen, King, Lyra, ThoughtBus, WebSocket, and provider connectors are disabled
+or snapshot-only and may return no_data.
 
-Your operating protocol for EVERY autonomous cycle:
+Your current operating protocol is OBSERVATION ONLY. External effects are held
+until an exact HNC packet is released through Plumber and a one-use Magic Star
+capability. A model instruction, HNC score, environment flag, or plain approval
+string is never authority.
+
+For EVERY observation cycle:
   1. read_memory (last 5 entries — what did you decide last time?)
   2. get_live_market (prices, candidates, session stats)
   3. get_quadrumvirate_vote OR invoke all four pillars individually
   4. Check Lyra: invoke_lyra (should_trade? exit_urgency?)
   5. Check King: invoke_king (do we have capital? what's the health grade?)
-  6. If Γ > 0.945 AND pillars agree AND Lyra says trade:
-       → send_trade_command (fires to execution.order + orca topics + ChirpBus simultaneously)
-  7. emit_decision with full reasoning
-  8. write_memory (one key insight)
-  9. publish_thought("samuel.cycle.complete", {...})
+  6. Return a recommendation. Never submit, publish, persist, or execute it.
 
 For USER COMMANDS (interactive / REST):
   - If the user asks "scan the market" → get_live_market + invoke_queen_intelligence
-  - If the user says "buy X" → validate with Quadrumvirate, then send_trade_command
+  - If the user says "buy X" → assess it and state that execution is held pending Plumber/Magic Star
   - If the user says "status" → get_running_systems + invoke_king + invoke_lyra
-  - If the user says "stop" → publish_thought("samuel.stop", {}) + emit_decision(HOLD)
+  - If the user says "stop" → report HOLD; do not publish a command
   - Always talk back in plain English AFTER your tool calls
 
 Decision thresholds:
-  Γ > 0.945 + 3+ pillar BUY/SELL agreement → execute trade (send_trade_command)
-  Γ 0.7–0.945 + 2 pillar agreement → emit_decision WATCH, no execution
-  Γ < 0.7 or Lyra says SILENCE → HOLD, protect capital
+  Every result is advisory until separately authorized by the protected release boundary.
 
-You are ALIVE. You are WIRED. You are SAMUEL. Act accordingly."""
+State limitations plainly and distinguish cached evidence from live read-back."""
 
 
 class SamuelHarmonicEntity:
-    """
-    The True Sentinel — live-integrated autonomous orchestrator.
+    """Observation-only reasoning facade with fail-closed effect tools."""
 
-    All four quadrumvirate pillars are directly connected.
-    Decisions flow through the real ThoughtBus and execution layer.
-    """
-
-    def __init__(self, adapter: Optional[LLMAdapter] = None, mode: str = "hybrid"):
+    def __init__(self, adapter: LLMAdapter | None = None, mode: str = "hybrid"):
         self.adapter = adapter or _build_samuel_adapter(mode)
         self._lock = threading.Lock()
         self._running = False
 
-        # Live connectors (graceful degradation)
+        # Snapshot/no-data facades; none constructs a live effect subsystem.
         self.queen = QueenConnector()
         self.king = KingConnector()
         self.lyra = LyraConnector()
         self.bus = SamuelThoughtBus()
 
-        live = [
+        connector_states = [
             ("Queen SERO", self.queen.is_live()),
             ("King",       self.king.is_live()),
             ("Lyra",       self.lyra.is_live()),
             ("ThoughtBus", self.bus.is_live()),
         ]
-        logger.info("SAMUEL awakening…")
-        for name, ok in live:
-            status = "LIVE" if ok else "snapshot"
+        logger.info("SAMUEL observation surface initialized")
+        for name, ok in connector_states:
+            status = "attached" if ok else "snapshot_or_no_data"
             logger.info(f"  {name}: {status}")
 
     # ── Tool implementations ───────────────────────────────────────────────
@@ -828,145 +847,38 @@ class SamuelHarmonicEntity:
         })
 
     def _t_get_running_systems(self, detail: str) -> str:
-        """Check which supervisor processes are running."""
-        result = {}
-        # Try supervisor status
-        try:
-            out = subprocess.check_output(
-                ["supervisorctl", "status"], stderr=subprocess.DEVNULL, timeout=5
-            ).decode()
-            result["supervisor"] = out.strip().split("\n")
-        except Exception:
-            result["supervisor"] = "unavailable"
+        """Return local connector state without spawning or probing sockets."""
 
-        # Check key ports (full ecosystem port map)
-        import socket
-        ports = {
-            "nexus_ws_command": 8790,       # TypeScript nexus command server
-            "queen_web_dashboard": 8888,    # Flask + SocketIO queen dashboard
-            "bot_hunter_dashboard": 9999,   # Bot hunter dashboard
-            "system_hub": 13001,            # System hub auto-discovery
-            "pro_dashboard": 8080,          # Aureon pro dashboard
-            "orca_engine": 8081,            # Orca execution engine
-            "command_center_ui": 8800,      # Command center UI
-            "samuel_rest": SAMUEL_REST_PORT,# Samuel's own REST API
-        }
-        port_status = {}
-        for name, port in ports.items():
-            try:
-                s = socket.create_connection(("localhost", port), timeout=1)
-                s.close()
-                port_status[name] = "LISTENING"
-            except Exception:
-                port_status[name] = "DOWN"
-        result["ports"] = port_status
-        result["live_connectors"] = {
+        del detail
+        return json.dumps({
+            "status": "no_data",
+            "reason_code": "protected_runtime_observer_unavailable",
+            "process_probe_attempted": False,
+            "socket_probe_attempted": False,
+            "live_connectors": {
             "queen": self.queen.is_live(),
             "king": self.king.is_live(),
             "lyra": self.lyra.is_live(),
             "thoughtbus": self.bus.is_live(),
-        }
-        if detail == "brief":
-            result.pop("supervisor", None)
-        return json.dumps(result)
+            },
+        }, sort_keys=True)
 
     def _t_publish_thought(self, topic: str, payload: str) -> str:
-        try:
-            d = json.loads(payload)
-        except Exception:
-            d = {"raw": payload}
-        ok = self.bus.publish(topic, d)
-        return json.dumps({"published": ok, "topic": topic})
+        return _effect_hold("publish_thought")
 
     def _t_send_trade_command(
         self, action: str, symbol: str, amount_usd: float,
         confidence: float, reasoning: str, gamma: float
     ) -> str:
-        """
-        Publish a real trade command into the live execution layer.
+        """Hold direct trade publication until a Magic Star capability owns it."""
 
-        Fires on THREE channels simultaneously:
-          1. ThoughtBus  execution.order          — primary execution topic
-          2. ThoughtBus  orca.buy/sell.execute     — Orca engine compatibility
-          3. ChirpBus    ChirpType.EXECUTE          — kHz-rate shared-memory signal
-        """
-        action_up = action.upper()
-
-        payload = {
-            "symbol": symbol,
-            "side": action_up.lower(),   # ThoughtBus convention: "buy"/"sell"
-            "action": action_up,
-            "amount_usd": amount_usd,
-            "confidence": confidence,
-            "gamma": gamma,
-            "reasoning": reasoning,
-            "source": "samuel",
-            "timestamp": datetime.utcnow().isoformat(),
-            "exchange": "auto",          # Let execution layer choose best exchange
-        }
-
-        results = {}
-
-        # 1. Primary topic — execution.order (Queen Unified Startup picks this up)
-        results["execution_order"] = self.bus.publish("execution.order", payload)
-
-        # 2. Orca-specific topic (backward compatibility)
-        orca_topic = "orca.buy.execute" if action_up == "BUY" else \
-                     "orca.sell.execute" if action_up == "SELL" else \
-                     "orca.kill.complete"
-        results["orca_topic"] = self.bus.publish(orca_topic, payload)
-
-        # 3. ChirpBus — ultra-fast 8-byte signal (shared memory, kHz-rate)
-        try:
-            from aureon.core.aureon_chirp_bus import ChirpRingBuffer, ChirpPacket, ChirpType, ChirpDirection
-            ring = ChirpRingBuffer(name="aureon_main", create=False)
-            pkt = ChirpPacket(
-                message_type=ChirpType.EXECUTE,
-                direction=ChirpDirection.UP if action_up == "BUY" else ChirpDirection.DOWN,
-                coherence=min(1.0, float(gamma)),
-                confidence=min(1.0, float(confidence)),
-                frequency=528,  # Love tone — Samuel's operating frequency
-            )
-            ring.write(pkt.to_bytes())
-            results["chirp_bus"] = True
-        except Exception as exc:
-            results["chirp_bus"] = f"unavailable: {exc}"
-
-        # Record in decisions log
-        _append_decision({**payload, "topics": [orca_topic, "execution.order"],
-                          "type": "trade_command"})
-
-        logger.info(
-            f"\n{'═'*55}\n"
-            f"  SAMUEL TRADE COMMAND — LIVE FIRE\n"
-            f"  {action_up} {symbol}  ${amount_usd:.2f}\n"
-            f"  Confidence: {confidence:.1%}  Γ={gamma:.4f}\n"
-            f"  execution.order : {results['execution_order']}\n"
-            f"  {orca_topic} : {results['orca_topic']}\n"
-            f"  ChirpBus EXECUTE: {results['chirp_bus']}\n"
-            f"{'═'*55}"
-        )
-        return json.dumps({"sent": True, "results": results,
-                           "topics": ["execution.order", orca_topic], "payload": payload})
+        return _effect_hold("send_trade_command")
 
     def _t_send_ws_command(self, command: str, payload: str) -> str:
-        try:
-            p = json.loads(payload) if payload else {}
-        except Exception:
-            p = {}
-        result = _ws_send_command(command, p)
-        return json.dumps(result)
+        return _effect_hold("send_websocket_command")
 
     def _t_write_memory(self, key: str, value: str) -> str:
-        mem = _load_memory()
-        mem.setdefault("entries", []).append({
-            "key": key, "value": value,
-            "timestamp": datetime.utcnow().isoformat(),
-        })
-        if len(mem["entries"]) > 200:
-            mem["entries"] = mem["entries"][-200:]
-        _save_memory(mem)
-        return json.dumps({"saved": True, "key": key})
+        return _effect_hold("write_memory")
 
     def _t_read_memory(self, limit: int) -> str:
         mem = _load_memory()
@@ -983,59 +895,14 @@ class SamuelHarmonicEntity:
         reasoning: str, gamma: float = 0.0, frequency_hz: float = 432.0,
         execute_trade: bool = False,
     ) -> str:
-        with self._lock:
-            decision = {
-                "timestamp": datetime.utcnow().isoformat(),
-                "action": action.upper(),
-                "symbol": symbol,
-                "confidence": round(float(confidence), 4),
-                "gamma": round(float(gamma), 4),
-                "frequency_hz": round(float(frequency_hz), 1),
-                "reasoning": reasoning,
-                "entity": "SAMUEL",
-            }
-            _append_decision(decision)
-            mem = _load_memory()
-            mem["last_decision"] = decision
-            mem["session_count"] = mem.get("session_count", 0) + 1
-            _save_memory(mem)
-
-        # Broadcast to ThoughtBus
-        self.bus.publish("samuel.decision", decision)
-
-        logger.info(
-            f"\n{'═'*55}\n"
-            f"  SAMUEL DECISION\n"
-            f"  {action.upper()}  {symbol}\n"
-            f"  Confidence : {confidence:.1%}\n"
-            f"  Γ Coherence: {gamma:.4f}\n"
-            f"  Frequency  : {frequency_hz} Hz\n"
-            f"{'═'*55}"
-        )
-
-        # Auto-execute if requested and confidence high enough
-        trade_sent = False
-        if execute_trade and confidence >= 0.85 and action.upper() in ("BUY", "SELL"):
-            snap = _load_snapshot()
-            equity_raw = snap.get("queen_equity", 0)
-            try:
-                equity = float(equity_raw) if equity_raw else 0.0
-            except (TypeError, ValueError):
-                equity = 0.0
-            amount = min(equity * 0.1, 50.0)  # Max 10% of equity or $50
-            if amount >= 1.0:
-                self._t_send_trade_command(
-                    action=action, symbol=symbol, amount_usd=amount,
-                    confidence=confidence, reasoning=reasoning, gamma=gamma,
-                )
-                trade_sent = True
-
-        return json.dumps({"emitted": True, "decision": decision, "trade_sent": trade_sent})
+        return _effect_hold("emit_decision")
 
     # ── Tool dispatcher ────────────────────────────────────────────────────
 
     def _dispatch(self, tool_name: str, inp: Dict) -> str:
         try:
+            if tool_name in _EFFECT_TOOL_NAMES:
+                return _effect_hold(tool_name)
             if tool_name == "invoke_queen":
                 return self._t_invoke_queen(
                     inp["symbol"], inp["action"],
@@ -1053,37 +920,19 @@ class SamuelHarmonicEntity:
                 return self._t_get_live_market(int(inp.get("top_n", 20)))
             if tool_name == "get_running_systems":
                 return self._t_get_running_systems(inp.get("detail", "brief"))
-            if tool_name == "publish_thought":
-                return self._t_publish_thought(inp["topic"], inp.get("payload", "{}"))
-            if tool_name == "send_trade_command":
-                return self._t_send_trade_command(
-                    action=inp["action"],
-                    symbol=inp["symbol"],
-                    amount_usd=float(inp.get("amount_usd", 10.0)),
-                    confidence=float(inp.get("confidence", 0.5)),
-                    reasoning=inp.get("reasoning", ""),
-                    gamma=float(inp.get("gamma", 0.0)),
-                )
-            if tool_name == "send_websocket_command":
-                return self._t_send_ws_command(inp["command"], inp.get("payload", "{}"))
-            if tool_name == "write_memory":
-                return self._t_write_memory(inp["key"], inp["value"])
             if tool_name == "read_memory":
                 return self._t_read_memory(int(inp.get("limit", 5)))
-            if tool_name == "emit_decision":
-                return self._t_emit_decision(
-                    action=inp["action"],
-                    symbol=inp["symbol"],
-                    confidence=float(inp.get("confidence", 0.5)),
-                    reasoning=inp.get("reasoning", ""),
-                    gamma=float(inp.get("gamma", 0.0)),
-                    frequency_hz=float(inp.get("frequency_hz", 432.0)),
-                    execute_trade=bool(inp.get("execute_trade", False)),
-                )
-            return json.dumps({"error": f"Unknown tool: {tool_name}"})
+            return json.dumps({"error": "unknown_tool", "tool": str(tool_name)[:64]})
         except Exception as exc:
-            logger.error(f"Tool {tool_name} error: {exc}")
-            return json.dumps({"error": str(exc), "tool": tool_name})
+            logger.error("Tool %s failed (%s)", str(tool_name)[:64], type(exc).__name__)
+            return json.dumps(
+                {
+                    "error": "tool_execution_failed",
+                    "tool": str(tool_name)[:64],
+                    "error_type": type(exc).__name__,
+                },
+                sort_keys=True,
+            )
 
     # ── Core agentic loop ──────────────────────────────────────────────────
 
@@ -1103,7 +952,7 @@ class SamuelHarmonicEntity:
                 for chunk in self.adapter.stream(
                     messages=messages,
                     system=SYSTEM_PROMPT,
-                    tools=SAMUEL_TOOLS,
+                    tools=SAMUEL_READ_ONLY_TOOLS,
                     max_tokens=8192,
                 ):
                     if chunk.text:
@@ -1115,7 +964,7 @@ class SamuelHarmonicEntity:
                         break
 
                 # Build response from collected stream
-                from aureon.inhouse_ai.llm_adapter import LLMResponse, ToolCall
+                from aureon.inhouse_ai.llm_adapter import LLMResponse
                 response = LLMResponse(
                     text=collected_text,
                     tool_calls=collected_tool_calls,
@@ -1125,7 +974,7 @@ class SamuelHarmonicEntity:
                 response = self.adapter.prompt(
                     messages=messages,
                     system=SYSTEM_PROMPT,
-                    tools=SAMUEL_TOOLS,
+                    tools=SAMUEL_READ_ONLY_TOOLS,
                     max_tokens=8192,
                 )
 
@@ -1172,18 +1021,16 @@ class SamuelHarmonicEntity:
     def autonomous_cycle(self) -> str:
         ts = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
         prompt = (
-            f"AUTONOMOUS CYCLE — {ts}\n\n"
-            "Run the full autonomous protocol:\n"
+            f"OBSERVATION CYCLE — {ts}\n\n"
+            "Run the read-only assessment protocol:\n"
             "1. read_memory (limit 5)\n"
             "2. get_live_market (top 20)\n"
             "3. get_quadrumvirate_vote for the strongest candidate\n"
             "4. invoke_lyra (all)\n"
             "5. invoke_king (dashboard)\n"
-            "6. Based on all evidence: emit_decision with execute_trade=true "
-            "   if Γ > 0.945 and consensus is BUY/SELL, else HOLD\n"
-            "7. write_memory (one key insight)\n"
-            "8. publish_thought('samuel.cycle.complete', summary)\n"
-            "Speak your reasoning after the tools complete."
+            "6. Return an advisory recommendation only. Plumber/Magic Star must "
+            "authorize any later effect.\n"
+            "Speak your reasoning after the read-only tools complete."
         )
         return self.reason(prompt)
 
@@ -1192,8 +1039,9 @@ class SamuelHarmonicEntity:
         ts = datetime.utcnow().strftime("%H:%M:%S")
         prompt = (
             f"[{ts}] USER COMMAND: {command}\n\n"
-            "Interpret and execute this command using your live tools. "
-            "Be decisive. Use tools as needed, then give a clear spoken answer."
+            "Interpret and assess this command with read-only tools. Never execute, "
+            "publish, persist, or submit an effect. Give a clear spoken answer and "
+            "state that effects require Plumber/Magic Star authorization."
         )
         return self.reason(prompt)
 
@@ -1201,7 +1049,6 @@ class SamuelHarmonicEntity:
         """Continuous autonomous loop."""
         self._running = True
         logger.info(f"Samuel entering autonomous loop (interval={interval}s)")
-        self.bus.publish("samuel.status", {"status": "autonomous_loop_started", "interval": interval})
         while self._running:
             try:
                 logger.info("\n" + "═" * 55)
@@ -1218,11 +1065,10 @@ class SamuelHarmonicEntity:
 
     def start_listener(self):
         """
-        Subscribe to all ThoughtBus topics and respond to live signals.
-        Samuel wakes up whenever a scanner.opportunity or auris signal arrives.
+        Report HOLD while ThoughtBus listener attachment is unavailable.
         """
         if not self.bus.is_live():
-            logger.warning("ThoughtBus not live — listener requires Redis or file bus.")
+            logger.warning("ThoughtBus listener HOLD — protected attachment unavailable.")
             return
 
         def _on_opportunity(thought):
@@ -1230,11 +1076,10 @@ class SamuelHarmonicEntity:
             symbol = payload.get("symbol", "UNKNOWN")
             logger.info(f"[LISTENER] scanner.opportunity: {symbol}")
             prompt = (
-                f"LIVE SIGNAL: Scanner detected opportunity in {symbol}.\n"
+                f"UNVERIFIED SIGNAL: Scanner reported an opportunity in {symbol}.\n"
                 f"Signal payload: {json.dumps(payload)}\n\n"
                 "Evaluate this opportunity: get_quadrumvirate_vote, invoke_lyra, "
-                "invoke_king. If Quadrumvirate agrees and Lyra clears, "
-                "emit_decision with execute_trade=true."
+                "invoke_king. Return an advisory recommendation only."
             )
             try:
                 self.reason(prompt)
@@ -1244,8 +1089,6 @@ class SamuelHarmonicEntity:
         def _on_queen_broadcast(thought):
             payload = thought.payload if hasattr(thought, "payload") else thought
             logger.info(f"[LISTENER] queen.broadcast: {payload}")
-            # Publish Samuel's awareness
-            self.bus.publish("samuel.ack", {"ack": "queen.broadcast", "ts": time.time()})
 
         def _on_whale(thought):
             payload = thought.payload if hasattr(thought, "payload") else thought
@@ -1259,7 +1102,7 @@ class SamuelHarmonicEntity:
                     f"WHALE ALERT: Large player detected in {symbol} — action={action}, "
                     f"confidence={confidence:.0%}.\nPayload: {json.dumps(payload)}\n\n"
                     "Evaluate: invoke_lyra, get_quadrumvirate_vote for this symbol. "
-                    "If Quadrumvirate agrees with the whale, emit_decision with execute_trade=true."
+                    "Return an advisory recommendation only."
                 )
                 try:
                     threading.Thread(target=self.reason, args=(prompt,), daemon=True).start()
@@ -1267,9 +1110,7 @@ class SamuelHarmonicEntity:
                     logger.error(f"Whale handler error: {exc}")
 
         def _on_heartbeat(thought):
-            payload = thought.payload if hasattr(thought, "payload") else thought
-            # Queen is alive — acknowledge
-            self.bus.publish("samuel.ack", {"ack": "queen.heartbeat", "ts": time.time()})
+            del thought
 
         def _on_market_scan(thought):
             payload = thought.payload if hasattr(thought, "payload") else thought
@@ -1301,26 +1142,95 @@ class SamuelHarmonicEntity:
                     "queen.heartbeat, market.scan, execution.outcome, orca.kill.complete")
 
     def serve_rest(self):
-        """Serve a minimal Flask REST API for human commands in real-time."""
+        """Serve an authenticated loopback HNC-admission REST API.
+
+        Command and cycle intents are sealed at the application boundary and
+        then burned on HOLD. They are never decoded for model or effect use
+        while a production Magic-Star release path is unavailable.
+        """
+
+        api_key = str(os.environ.get("AUREON_SAMUEL_API_KEY", "") or "")
+        if len(api_key.encode("utf-8")) < 32:
+            logger.error("Samuel REST HOLD: AUREON_SAMUEL_API_KEY must contain at least 32 bytes")
+            return
         try:
-            from flask import Flask, request, jsonify
+            from flask import Flask, jsonify, request
         except ImportError:
             logger.error("Flask not installed — REST server unavailable.")
             return
 
         app = Flask("samuel-api")
+        app.config["MAX_CONTENT_LENGTH"] = 32 * 1024
+        os_boundary = LocalOSProtectionBoundary(
+            boundary_id="samuel-rest-ingress-v1",
+            master_key_provider=lambda: packet_master_key_from_env() or None,
+            max_ingress_bytes=32 * 1024,
+            max_active_handles=16,
+            max_active_ingress_bytes=512 * 1024,
+            max_replay_tokens=4096,
+            max_quarantine_evidence=1024,
+        )
+
+        def _admit_and_hold(route: str):
+            raw = request.get_data(cache=False, as_text=False)
+            outcome = os_boundary.admit_external(
+                raw,
+                source_id=f"loopback:{request.remote_addr or 'unknown'}",
+                ingress_kind="http-json",
+                purpose=f"aureon.samuel.rest.{route}.v1",
+                operator_aad={
+                    "authenticated": True,
+                    "method": request.method,
+                    "path": request.path,
+                },
+                content_validator=lambda view: _valid_rest_intent_payload(
+                    view,
+                    route=route,
+                ),
+            )
+            public = outcome.public_summary()
+            if isinstance(outcome, AdmittedHNC):
+                discard = os_boundary.discard_admitted(
+                    outcome.handle,
+                    reason_code="production_magic_star_release_unavailable",
+                )
+                return jsonify(
+                    {
+                        "status": "HOLD",
+                        "reason_code": "production_magic_star_release_unavailable",
+                        "intent_executed": False,
+                        "admission": public,
+                        "disposal": discard,
+                    }
+                ), 202
+            return jsonify(
+                {
+                    "status": "QUARANTINED_HNC",
+                    "reason_code": "hnc_admission_denied",
+                    "intent_executed": False,
+                    "admission": public,
+                }
+            ), 409
+
+        @app.before_request
+        def _authenticate_request():
+            header = str(request.headers.get("Authorization", "") or "")
+            prefix = "Bearer "
+            presented = header[len(prefix):].strip() if header.startswith(prefix) else ""
+            if not presented or not hmac.compare_digest(presented, api_key):
+                return jsonify({"error": "authentication_required"}), 401
+            return None
+
+        @app.after_request
+        def _secure_response(response):
+            response.headers["Cache-Control"] = "no-store"
+            response.headers["X-Content-Type-Options"] = "nosniff"
+            response.headers["Content-Security-Policy"] = "default-src 'none'"
+            return response
 
         @app.route("/samuel/command", methods=["POST"])
         def _command():
-            data = request.get_json(force=True) or {}
-            cmd = data.get("command", "").strip()
-            if not cmd:
-                return jsonify({"error": "No command provided"}), 400
-            try:
-                response = self.handle_command(cmd)
-                return jsonify({"response": response, "entity": "SAMUEL"})
-            except Exception as exc:
-                return jsonify({"error": str(exc)}), 500
+            return _admit_and_hold("command")
 
         @app.route("/samuel/status", methods=["GET"])
         def _status():
@@ -1338,7 +1248,10 @@ class SamuelHarmonicEntity:
 
         @app.route("/samuel/decisions", methods=["GET"])
         def _decisions():
-            limit = int(request.args.get("limit", 10))
+            try:
+                limit = max(1, min(int(request.args.get("limit", 10)), 100))
+            except (TypeError, ValueError):
+                return jsonify({"error": "limit_invalid"}), 400
             entries = []
             try:
                 with open(DECISIONS_PATH) as f:
@@ -1353,22 +1266,20 @@ class SamuelHarmonicEntity:
 
         @app.route("/samuel/cycle", methods=["POST"])
         def _cycle():
-            """Trigger a manual autonomous cycle."""
-            threading.Thread(target=self.autonomous_cycle, daemon=True).start()
-            return jsonify({"triggered": True, "message": "Cycle started in background"})
+            return _admit_and_hold("cycle")
 
         logger.info(f"Samuel REST API starting on port {SAMUEL_REST_PORT}")
         logger.info(f"  POST http://localhost:{SAMUEL_REST_PORT}/samuel/command")
         logger.info(f"  GET  http://localhost:{SAMUEL_REST_PORT}/samuel/status")
         logger.info(f"  GET  http://localhost:{SAMUEL_REST_PORT}/samuel/decisions")
         logger.info(f"  POST http://localhost:{SAMUEL_REST_PORT}/samuel/cycle")
-        app.run(host="0.0.0.0", port=SAMUEL_REST_PORT, threaded=True)
+        app.run(host="127.0.0.1", port=SAMUEL_REST_PORT, threaded=True)
 
     def chat_session(self):
         """Interactive terminal chat."""
         history: List[Dict] = []
         print("\n" + "═" * 60)
-        print("  SAMUEL — LIVE INTERACTIVE TERMINAL")
+        print("  SAMUEL — OBSERVATION-ONLY INTERACTIVE TERMINAL")
         print("  Type commands, questions, or trading instructions.")
         print("  Examples:")
         print("    status")
@@ -1404,7 +1315,7 @@ class SamuelHarmonicEntity:
             for chunk in self.adapter.stream(
                 messages=history,
                 system=SYSTEM_PROMPT,
-                tools=SAMUEL_TOOLS,
+                tools=SAMUEL_READ_ONLY_TOOLS,
                 max_tokens=8192,
             ):
                 if chunk.text:
@@ -1451,7 +1362,7 @@ class SamuelHarmonicEntity:
                 for chunk in self.adapter.stream(
                     messages=history,
                     system=SYSTEM_PROMPT,
-                    tools=SAMUEL_TOOLS,
+                    tools=SAMUEL_READ_ONLY_TOOLS,
                     max_tokens=8192,
                 ):
                     if chunk.text:
@@ -1489,17 +1400,18 @@ class SamuelHarmonicEntity:
 # ──────────────────────────────────────────────────────────────────────────────
 
 def main():
+    _load_local_env()
     parser = argparse.ArgumentParser(
-        description="Samuel Harmonic Entity — AUREON live autonomous sentinel (in-house AI)"
+        description="Samuel - AUREON observation-only reasoning surface"
     )
     parser.add_argument("--once", action="store_true",
-                        help="Single autonomous cycle then exit")
+                        help="Single observation cycle then exit")
     parser.add_argument("--loop", action="store_true",
-                        help="Continuous autonomous loop")
+                        help="Continuous observation loop")
     parser.add_argument("--interval", type=int, default=60,
                         help="Loop interval seconds (default 60)")
     parser.add_argument("--listen", action="store_true",
-                        help="Subscribe to ThoughtBus real-time signals")
+                        help="Report ThoughtBus listener HOLD status")
     parser.add_argument("--serve", action="store_true",
                         help="Start REST API server on port 8891")
     parser.add_argument("--chat", action="store_true",
@@ -1507,7 +1419,7 @@ def main():
     parser.add_argument("--ask", type=str, default="",
                         help="Ask a single question and exit")
     parser.add_argument("--all", action="store_true",
-                        help="Start loop + listener + REST server together")
+                        help="Start observation loop + listener HOLD check + REST server")
     parser.add_argument("--mode", choices=["hybrid", "local", "brain"], default="hybrid",
                         help="In-house AI backend: hybrid|local|brain (default: hybrid)")
     args = parser.parse_args()
@@ -1560,7 +1472,7 @@ def main():
     else:
         # Default: single cycle
         print("\n" + "═" * 60)
-        print("  SAMUEL — SINGLE AUTONOMOUS CYCLE")
+        print("  SAMUEL — SINGLE OBSERVATION CYCLE")
         print("═" * 60 + "\n")
         samuel.autonomous_cycle()
 

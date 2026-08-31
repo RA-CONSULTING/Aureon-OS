@@ -10,6 +10,7 @@ from typing import Any, Generator
 
 import pytest
 
+from aureon.autonomous import aureon_internal_self_coder as self_coder_module
 from aureon.autonomous.aureon_agent_company_brain_fabric import (
     canonical_agent_company_brain_topology,
 )
@@ -23,6 +24,7 @@ from aureon.autonomous.aureon_internal_self_coder import (
     _parse_selection,
     _write_evidence,
     discover_clean_python_candidates,
+    record_senior_proposal_review,
     record_senior_release_review,
 )
 from aureon.autonomous.aureon_internal_self_coder import (
@@ -31,7 +33,6 @@ from aureon.autonomous.aureon_internal_self_coder import (
 from aureon.autonomous.aureon_internal_work_ledger import DurableInternalWorkLedger
 from aureon.autonomous.aureon_safe_code_control import SafeCodeControl
 from aureon.inhouse_ai.llm_adapter import LLMAdapter, LLMResponse, StreamChunk
-from tests.aureon_full_stack_fixtures import build_test_full_stack_gate
 from tests.aureon_ten_nine_one_fixtures import build_test_thought_path
 
 
@@ -182,7 +183,7 @@ def _repo(root: Path) -> None:
     _git(root, "commit", "-qm", "fixture")
 
 
-def test_aureon_selects_authors_applies_tests_and_persists_receipts(tmp_path: Path, monkeypatch) -> None:
+def test_aureon_selects_authors_holds_and_persists_receipts(tmp_path: Path, monkeypatch) -> None:
     _repo(tmp_path)
     monkeypatch.setattr(SafeCodeControl, "_attach_expression_context", lambda self, proposal: None)
 
@@ -192,8 +193,19 @@ def test_aureon_selects_authors_applies_tests_and_persists_receipts(tmp_path: Pa
         resolver=SelfCoderResolver(),
     )
 
-    assert result["applied"] is True
+    assert result["applied"] is False
     assert result["pending_senior_review"] is True
+    assert result["proposal_only"] is True
+    assert result["release_hold"] is True
+    assert result["release_authorized"] is False
+    assert result["repository_mutation_authorized"] is False
+    assert result["generated_code_execution_authorized"] is False
+    assert result["repository_mutation_implemented"] is False
+    assert result["generated_code_execution_implemented"] is False
+    assert result["subprocess_test_execution_implemented"] is False
+    assert result["effect_attempted"] is False
+    assert result["test_commands_executed"] is False
+    assert result["production_ready"] is False
     assert result["target_selection"]["target_path"] == "aureon/scheduler.py"
     assert result["target_selection"]["selection_work_receipt_id"].startswith("work:")
     assert result["work_ledger"]["receipt_count"] == 100
@@ -212,8 +224,11 @@ def test_aureon_selects_authors_applies_tests_and_persists_receipts(tmp_path: Pa
     assert result["agent_company_brain_fabric"]["tools_enabled"] is False
     assert result["codex_implementation"] is False
     assert (tmp_path / "aureon" / "scheduler.py").read_text(encoding="utf-8") == (
-        "def interval():\n    return 2\n"
+        "def interval():\n    return 1\n"
     )
+    assert result["patch_cycle"]["apply_evidence"]["effect_attempted"] is False
+    assert result["patch_cycle"]["production_magic_star_release_available"] is False
+    assert result["patch_cycle"]["proposal"]["status"] == "proposal_reviewed_hold"
     assert (tmp_path / "state" / "aureon_internal_coding_work_ledger.json").is_file()
     assert (tmp_path / "state" / "aureon_internal_self_coder_last_run.json").is_file()
 
@@ -224,6 +239,13 @@ def test_candidate_discovery_excludes_dirty_and_test_targets(tmp_path: Path) -> 
 
     with pytest.raises(InternalSelfCoderHold, match="no_clean"):
         discover_clean_python_candidates(tmp_path, "scheduler interval")
+
+
+def test_self_coder_rejects_mutating_git_and_out_of_state_evidence_paths(tmp_path: Path) -> None:
+    with pytest.raises(InternalSelfCoderHold, match="read_only_inventory"):
+        self_coder_module._git(tmp_path, "apply", "candidate.patch")
+    with pytest.raises(InternalSelfCoderHold, match="must_remain_under_repo_state"):
+        self_coder_module._bounded_state_path(tmp_path, Path("aureon/scheduler.py"))
 
 
 def test_explicit_dirty_target_holds_before_any_model_call(tmp_path: Path, monkeypatch) -> None:
@@ -258,20 +280,27 @@ def test_architect_cannot_select_unoffered_target(tmp_path: Path, monkeypatch) -
 def test_explicit_target_uses_no_architecture_selection_receipt(tmp_path: Path, monkeypatch) -> None:
     _repo(tmp_path)
     monkeypatch.setattr(SafeCodeControl, "_attach_expression_context", lambda self, proposal: None)
+    marker = tmp_path / "suggested-self-coder-test-executed"
     result = run_autonomous_self_coding(
         root=tmp_path,
         goal="Improve scheduler interval",
         target_path="aureon/scheduler.py",
         test_commands=[
-            [sys.executable, "-c", "from aureon.scheduler import interval; assert interval() == 2"]
+            [
+                sys.executable,
+                "-c",
+                f"from pathlib import Path; Path({str(marker)!r}).touch(); raise SystemExit(9)",
+            ]
         ],
         resolver=SelfCoderResolver(),
     )
 
-    assert result["applied"] is True
+    assert result["applied"] is False
     assert result["target_selection"]["selection_work_receipt_id"] == ""
     assert result["work_ledger"]["receipt_count"] == 99
     assert result["patch_cycle"]["workforce_report"]["internal_work_units"] == 99
+    assert result["test_commands_executed"] is False
+    assert not marker.exists()
 
 
 def _seed_full_fabric_internal_work(
@@ -330,6 +359,10 @@ def _seed_full_fabric_internal_work(
         "decision_count": len(decisions) * 2,
         "accepted": True,
         "hold_count": 0,
+        "acceptance_scope": "proposal_review_only",
+        "execution_authorized": False,
+        "release_authorized": False,
+        "production_ready": False,
         "decisions": decisions,
     }
 
@@ -338,10 +371,39 @@ def _pending_evidence(root: Path, council: dict[str, Any]) -> dict[str, Any]:
     ledger_status = DurableInternalWorkLedger(root / DEFAULT_LEDGER_PATH).status()
     core = {
         "schema_version": "aureon-internal-self-coder-v1",
-        "status": "internal_patch_applied_pending_senior_review",
-        "applied": True,
+        "status": "internal_patch_proposal_held_for_senior_review",
+        "applied": False,
         "pending_senior_review": True,
-        "patch_cycle": {"pre_apply_council": council},
+        "proposal_only": True,
+        "release_hold": True,
+        "release_authorized": False,
+        "repository_mutation_authorized": False,
+        "generated_code_execution_authorized": False,
+        "repository_mutation_implemented": False,
+        "generated_code_execution_implemented": False,
+        "subprocess_test_execution_implemented": False,
+        "effect_attempted": False,
+        "test_commands_executed": False,
+        "production_ready": False,
+        "patch_cycle": {
+            "applied": False,
+            "release_authorized": False,
+            "effect_attempted": False,
+            "test_commands_executed": False,
+            "repository_mutation_implemented": False,
+            "generated_code_execution_implemented": False,
+            "subprocess_test_execution_implemented": False,
+            "pre_apply_council": council,
+            "apply_evidence": {
+                "applied": False,
+                "effect_attempted": False,
+                "test_commands_executed": False,
+                "release_authorized": False,
+                "repository_mutation_implemented": False,
+                "generated_code_execution_implemented": False,
+                "subprocess_test_execution_implemented": False,
+            },
+        },
         "agent_company_brain_fabric": {
             "ready": True,
             "agent_brain_count": 41,
@@ -359,7 +421,9 @@ def _pending_evidence(root: Path, council: dict[str, Any]) -> dict[str, Any]:
     return evidence
 
 
-def test_exact_final_senior_review_closes_99_to_1_contract(tmp_path: Path) -> None:
+def test_exact_senior_proposal_review_records_99_to_1_contract_and_keeps_hold(
+    tmp_path: Path,
+) -> None:
     resolver = SelfCoderResolver()
     council = _seed_full_fabric_internal_work(
         tmp_path,
@@ -367,31 +431,32 @@ def test_exact_final_senior_review_closes_99_to_1_contract(tmp_path: Path) -> No
         total_internal=99,
     )
     pending = _pending_evidence(tmp_path, council)
-    full_stack_gate, _stack_request, stack_resolver = build_test_full_stack_gate(
-        scope_digest=pending["evidence_digest"],
-        release_id=f"self-code:{pending['evidence_digest']}",
-    )
 
-    reviewed = record_senior_release_review(
+    reviewed = record_senior_proposal_review(
         root=tmp_path,
         review_output_digest="d" * 64,
         resolver=resolver,
-        full_stack_gate=full_stack_gate,
         thought_path=build_test_thought_path(),
     )
 
     assert reviewed["pending_senior_review"] is False
+    assert reviewed["status"] == "internal_patch_senior_proposal_review_recorded_release_hold"
+    assert reviewed["applied"] is False
+    assert reviewed["proposal_only"] is True
+    assert reviewed["release_hold"] is True
+    assert reviewed["release_authorized"] is False
+    assert reviewed["repository_mutation_authorized"] is False
+    assert reviewed["production_magic_star_release_available"] is False
     assert reviewed["reviewed_evidence_digest"] == pending["evidence_digest"]
-    assert reviewed["workforce_release_report"]["ready"] is True
-    assert reviewed["workforce_release_report"]["internal_work_units"] == 99
-    assert reviewed["workforce_release_report"]["senior_oversight_units"] == 1
-    assert reviewed["workforce_release_report"]["internal_share_ppm"] == 990_000
-    assert reviewed["full_stack_release_receipt"]["decision"] == "ACCEPT"
-    assert len(reviewed["full_stack_release_receipt"]["layer_receipt_ids"]) == 12
-    assert stack_resolver.calls == 1
+    assert reviewed["workforce_proposal_review_report"]["ready"] is True
+    assert reviewed["workforce_proposal_review_report"]["internal_work_units"] == 99
+    assert reviewed["workforce_proposal_review_report"]["senior_oversight_units"] == 1
+    assert reviewed["workforce_proposal_review_report"]["internal_share_ppm"] == 990_000
+    assert reviewed["workforce_proposal_review_report"]["production_release_authorized"] is False
+    assert "full_stack_release_receipt" not in reviewed
 
 
-def test_senior_review_holds_before_mutation_without_full_stack_receipt(tmp_path: Path) -> None:
+def test_legacy_release_review_entrypoint_is_disabled_without_calling_gate(tmp_path: Path) -> None:
     resolver = SelfCoderResolver()
     council = _seed_full_fabric_internal_work(
         tmp_path,
@@ -402,14 +467,25 @@ def test_senior_review_holds_before_mutation_without_full_stack_receipt(tmp_path
     ledger = DurableInternalWorkLedger(tmp_path / DEFAULT_LEDGER_PATH)
     before = ledger.status()
 
-    with pytest.raises(InternalSelfCoderHold, match="full_stack_release_gate_hold"):
+    class TripwireGate:
+        calls = 0
+
+        def require_accept(self, _request):
+            self.calls += 1
+            raise AssertionError("release gate must not be called")
+
+    gate = TripwireGate()
+
+    with pytest.raises(InternalSelfCoderHold, match="release_review_entrypoint_disabled"):
         record_senior_release_review(
             root=tmp_path,
             review_output_digest="f" * 64,
             resolver=resolver,
+            full_stack_gate=gate,
             thought_path=build_test_thought_path(),
         )
 
+    assert gate.calls == 0
     assert ledger.status() == before
 
 
@@ -424,7 +500,7 @@ def test_senior_review_is_held_before_lifetime_ratio_is_available(tmp_path: Path
     _pending_evidence(tmp_path, council)
 
     with pytest.raises(InternalSelfCoderHold, match="99_percent"):
-        record_senior_release_review(
+        record_senior_proposal_review(
             root=tmp_path,
             review_output_digest="e" * 64,
             resolver=resolver,
@@ -456,6 +532,6 @@ def test_architecture_gets_one_bounded_json_repair_attempt(tmp_path: Path, monke
         resolver=SelfCoderResolver(invalid_selection_once=True),
     )
 
-    assert result["applied"] is True
+    assert result["applied"] is False
     assert len(result["target_selection"]["selection_work_receipt_ids"]) == 2
     assert result["work_ledger"]["receipt_count"] == 101

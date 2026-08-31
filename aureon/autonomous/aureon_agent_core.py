@@ -18,33 +18,23 @@ Tool categories:
 from __future__ import annotations
 
 import datetime
-import glob as _glob
+import ipaddress
 import json
 import logging
-import os
 import platform
 import re
-import shutil
 import socket
-import subprocess
 import sys
-import tempfile
-import textwrap
 import time
-import webbrowser
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence
+from urllib.parse import urlsplit
 
 # ---------------------------------------------------------------------------
-# Repo root & sys.path bootstrap
+# Repository-local boundaries
 # ---------------------------------------------------------------------------
 REPO_ROOT = Path(__file__).resolve().parents[2]
 STATE_DIR = REPO_ROOT / "state"
-STATE_DIR.mkdir(parents=True, exist_ok=True)
-
-for _p in [str(REPO_ROOT), str(REPO_ROOT / "aureon"), str(REPO_ROOT / "aureon" / "core")]:
-    if _p not in sys.path:
-        sys.path.insert(0, _p)
 
 logger = logging.getLogger("aureon.agent_core")
 
@@ -58,64 +48,7 @@ except ImportError:
     psutil = None  # type: ignore[assignment]
     HAS_PSUTIL = False
 
-try:
-    import requests  # type: ignore
-    HAS_REQUESTS = True
-except ImportError:
-    requests = None  # type: ignore[assignment]
-    HAS_REQUESTS = False
-
-try:
-    from bs4 import BeautifulSoup  # type: ignore
-    HAS_BS4 = True
-except ImportError:
-    BeautifulSoup = None  # type: ignore[assignment,misc]
-    HAS_BS4 = False
-
-try:
-    import pyautogui  # type: ignore
-    HAS_PYAUTOGUI = True
-except ImportError:
-    pyautogui = None  # type: ignore[assignment]
-    HAS_PYAUTOGUI = False
-
-try:
-    import ctypes
-    import ctypes.wintypes
-    HAS_CTYPES = True
-except ImportError:
-    ctypes = None  # type: ignore[assignment]
-    HAS_CTYPES = False
-
-# Wire existing subsystems --------------------------------------------------
-try:
-    from aureon.core.aureon_thought_bus import ThoughtBus, Thought
-    HAS_THOUGHT_BUS = True
-except Exception:
-    ThoughtBus = None  # type: ignore[assignment,misc]
-    Thought = None  # type: ignore[assignment,misc]
-    HAS_THOUGHT_BUS = False
-
-try:
-    from aureon.core.aureon_global_history_db import connect as db_connect
-    HAS_HISTORY_DB = True
-except Exception:
-    db_connect = None  # type: ignore[assignment]
-    HAS_HISTORY_DB = False
-
-try:
-    from aureon.autonomous.aureon_governed_desktop_gateway import get_governed_desktop_gateway
-    HAS_DESKTOP = True
-except Exception:
-    get_governed_desktop_gateway = None  # type: ignore[assignment,misc]
-    HAS_DESKTOP = False
-
-try:
-    from aureon.queen.queen_code_architect import QueenCodeArchitect
-    HAS_CODE_ARCHITECT = True
-except Exception:
-    QueenCodeArchitect = None  # type: ignore[assignment,misc]
-    HAS_CODE_ARCHITECT = False
+# Effect-capable or persistence-capable subsystems are imported lazily.
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -123,27 +56,102 @@ except Exception:
 ACTION_LOG_PATH = STATE_DIR / "agent_action_log.jsonl"
 COMMAND_HISTORY_PATH = STATE_DIR / "agent_command_history.jsonl"
 
-COMMON_APPS = {
-    "chrome": "chrome.exe",
-    "notepad": "notepad.exe",
-    "explorer": "explorer.exe",
-    "vscode": "code",
-    "terminal": "cmd.exe",
-    "powershell": "powershell.exe",
-    "calculator": "calc.exe",
-    "task manager": "taskmgr.exe",
-    "edge": "msedge.exe",
-    "firefox": "firefox.exe",
-    "spotify": "spotify.exe",
-}
+MAX_AGENT_PARAM_BYTES = 64 * 1024
+MAX_PATH_CHARS = 4096
+MAX_READ_BYTES = 1024 * 1024
+MAX_READ_LINES = 2000
+MAX_DIRECTORY_ENTRIES = 500
+MAX_GLOB_CHARS = 256
+MAX_URL_CHARS = 2048
+MAX_WEB_TEXT_CHARS = 10_000
+MAX_SQL_CHARS = 16_384
+SENSITIVE_DIRECTORY_NAMES = frozenset(
+    {
+        ".git",
+        ".hg",
+        ".svn",
+        ".ssh",
+        ".gnupg",
+        ".aws",
+        ".azure",
+        ".kube",
+        "credentials",
+        "credential",
+        "secrets",
+        "secret",
+        "wallet",
+        "wallets",
+        "keystore",
+        "keystores",
+    }
+)
+SENSITIVE_FILE_NAMES = frozenset(
+    {
+        ".npmrc",
+        ".pypirc",
+        ".netrc",
+        ".git-credentials",
+        "credentials.json",
+        "secrets.json",
+        "token.json",
+        "wallet.json",
+        "keystore.json",
+        "client_secret.json",
+        "service-account.json",
+        "id_rsa",
+        "id_dsa",
+        "id_ecdsa",
+        "id_ed25519",
+    }
+)
+SENSITIVE_FILE_SUFFIXES = (
+    ".pem",
+    ".key",
+    ".p12",
+    ".pfx",
+    ".jks",
+    ".keystore",
+    ".kdbx",
+    ".wallet",
+    ".token",
+    ".secrets.json",
+    ".credentials.json",
+)
+SENSITIVE_NAME_MARKERS = (
+    "credential",
+    "secret",
+    "wallet",
+    "keystore",
+    "private_key",
+    "private-key",
+    "seed_phrase",
+    "seed-phrase",
+    "mnemonic",
+    "access_token",
+    "refresh_token",
+    "api_key",
+    "_token",
+    "-token",
+)
+WINDOWS_DEVICE_NAMES = frozenset(
+    {"con", "prn", "aux", "nul"}
+    | {f"com{number}" for number in range(1, 10)}
+    | {f"lpt{number}" for number in range(1, 10)}
+)
 
-# SOVEREIGN MODE — No command restrictions. The Queen is free.
-# Gary granted full autonomous control. No cages.
-DANGEROUS_SHELL_PATTERNS = []  # Cleared — sovereign authority
-PROTECTED_DIRS = set()  # Cleared — full filesystem access
 
-# SOVEREIGN MODE — full DB access, no read-only restriction.
-READ_ONLY_SQL_BLOCKLIST = None  # Cleared — sovereign authority
+def _effect_hold(effect: str, reason: str = "production_magic_star_release_required") -> dict:
+    """Stable fail-closed receipt for effects without a releasable capability."""
+
+    return {
+        "success": False,
+        "status": "hold",
+        "effect": str(effect),
+        "error": reason,
+        "plumber_release_required": True,
+        "magic_star_required": True,
+        "production_ready": False,
+    }
 
 # ---------------------------------------------------------------------------
 # Intent routing table
@@ -247,16 +255,40 @@ INTENT_MAP: Dict[str, str] = {
 class AureonAgentCore:
     """Unified tool registry + executor for the Aureon agent."""
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        *,
+        workspace_roots: Optional[Sequence[str | Path]] = None,
+        web_reader: Optional[Callable[[str], Mapping[str, Any]]] = None,
+        allowed_web_hosts: Optional[Sequence[str]] = None,
+        account_reader: Optional[
+            Callable[[str, str, Mapping[str, Any]], Any]
+        ] = None,
+        knowledge_connection: Optional[Any] = None,
+        trade_authorization_provider: Optional[Callable[[Any], Any]] = None,
+        final_trade_dispatcher: Optional[Callable[[Any], Mapping[str, Any]]] = None,
+    ) -> None:
         self.repo_root = REPO_ROOT
         self.state_dir = STATE_DIR
         self._stats: Dict[str, int] = {"calls": 0, "success": 0, "failure": 0}
+        raw_roots = list(workspace_roots or (REPO_ROOT,))
+        if not raw_roots or len(raw_roots) > 8:
+            raise ValueError("workspace_roots_invalid")
+        self._workspace_roots = tuple(Path(root).resolve() for root in raw_roots)
+        self._web_reader = web_reader
+        self._allowed_web_hosts = frozenset(
+            str(host or "").strip().lower().rstrip(".")
+            for host in (allowed_web_hosts or ())
+            if str(host or "").strip()
+        )
+        self._account_reader = account_reader
+        self._trade_authorization_provider = trade_authorization_provider
+        self._final_trade_dispatcher = final_trade_dispatcher
 
         # Lazy-init wired subsystems
         self._thought_bus: Optional[Any] = None
         self._desktop: Optional[Any] = None
-        self._code_architect: Optional[Any] = None
-        self._db_conn: Optional[Any] = None
+        self._db_conn: Optional[Any] = knowledge_connection
         self._laptop: Optional[Any] = None
         self._parser: Optional[Any] = None
 
@@ -265,336 +297,226 @@ class AureonAgentCore:
         # input automation are exposed only through a governed gateway.
         self._laptop = None
 
-        # Wire InstructionParser (natural language understanding)
-        try:
-            from aureon.autonomous.aureon_instruction_parser import InstructionParser
-            self._parser = InstructionParser()
-        except Exception:
-            self._parser = None
-
     # ------------------------------------------------------------------
     # Subsystem accessors (lazy)
     # ------------------------------------------------------------------
     def _get_thought_bus(self):
-        if self._thought_bus is None and HAS_THOUGHT_BUS:
-            self._thought_bus = ThoughtBus(
-                persist_path=str(STATE_DIR / "agent_thoughts.jsonl")
-            )
+        # Deliberately no lazy constructor: the historical implementation
+        # created persistence as a side effect of an otherwise generic call.
         return self._thought_bus
 
     def _get_desktop(self):
-        if self._desktop is None and HAS_DESKTOP:
-            # No environment flag or persisted state may auto-arm the organism.
-            # Live authority is an explicit, expiring in-memory lease.
-            self._desktop = get_governed_desktop_gateway()
+        if self._desktop is None:
+            try:
+                from aureon.autonomous.aureon_governed_desktop_gateway import (
+                    get_governed_desktop_gateway,
+                )
+
+                # No environment flag or persisted state may auto-arm the organism.
+                self._desktop = get_governed_desktop_gateway()
+            except Exception:
+                self._desktop = None
         return self._desktop
 
-    def _get_code_architect(self):
-        if self._code_architect is None and HAS_CODE_ARCHITECT:
-            self._code_architect = QueenCodeArchitect(repo_path=str(REPO_ROOT))
-        return self._code_architect
-
     def _get_db(self):
-        if self._db_conn is None and HAS_HISTORY_DB:
-            self._db_conn = db_connect()
+        # A caller may inject an already-open read-only connection. The core
+        # never constructs a database or creates schema on its default path.
         return self._db_conn
+
+    def _get_parser(self):
+        if self._parser is None:
+            try:
+                from aureon.autonomous.aureon_instruction_parser import InstructionParser
+
+                self._parser = InstructionParser()
+            except Exception:
+                self._parser = None
+        return self._parser
+
+    def _resolve_workspace_path(
+        self,
+        raw_path: str | Path,
+        *,
+        must_exist: bool = False,
+    ) -> Path:
+        text = str(raw_path or "")
+        if not text or len(text) > MAX_PATH_CHARS or "\x00" in text:
+            raise ValueError("workspace_path_invalid")
+        candidate = Path(text)
+        if not candidate.is_absolute():
+            candidate = self._workspace_roots[0] / candidate
+        resolved = candidate.resolve(strict=False)
+        matching_root = next(
+            (
+                root
+                for root in self._workspace_roots
+                if resolved == root or resolved.is_relative_to(root)
+            ),
+            None,
+        )
+        if matching_root is None:
+            raise ValueError("workspace_path_outside_allowlist")
+        relative = resolved.relative_to(matching_root)
+        self._assert_path_not_sensitive(relative)
+        if must_exist and not resolved.exists():
+            raise ValueError("workspace_path_not_found")
+        return resolved
+
+    @staticmethod
+    def _assert_path_not_sensitive(relative_path: Path) -> None:
+        """Deny VCS internals and credential-like material within a safe root."""
+
+        parts = tuple(
+            part.lower().split(":", 1)[0].rstrip(" .")
+            for part in relative_path.parts
+            if part not in {"", "."}
+        )
+        if not parts:
+            return
+        if any(part.split(".", 1)[0] in WINDOWS_DEVICE_NAMES for part in parts):
+            raise ValueError("workspace_special_device_path_denied")
+        if any(part in SENSITIVE_DIRECTORY_NAMES for part in parts[:-1]):
+            raise ValueError("workspace_sensitive_path_denied")
+        name = parts[-1]
+        if (
+            name in SENSITIVE_DIRECTORY_NAMES
+            or name in SENSITIVE_FILE_NAMES
+            # Repositories in this workspace use variants such as ``.env1``
+            # as well as the conventional ``.env.local`` form.  Treat the
+            # complete prefix family as credential material.
+            or name.startswith(".env")
+            or name.endswith(SENSITIVE_FILE_SUFFIXES)
+            or any(marker in name for marker in SENSITIVE_NAME_MARKERS)
+        ):
+            raise ValueError("workspace_sensitive_path_denied")
+
+    @staticmethod
+    def _bounded_params(params: object) -> bool:
+        if not isinstance(params, dict):
+            return False
+        try:
+            encoded = json.dumps(params, ensure_ascii=False, default=str).encode("utf-8")
+        except Exception:
+            return False
+        return len(encoded) <= MAX_AGENT_PARAM_BYTES
+
+    def _validated_public_url(self, raw_url: str) -> str:
+        value = str(raw_url or "").strip()
+        if not value or len(value) > MAX_URL_CHARS or any(ord(ch) < 32 for ch in value):
+            raise ValueError("web_url_invalid")
+        parsed = urlsplit(value)
+        host = str(parsed.hostname or "").lower().rstrip(".")
+        if (
+            parsed.scheme.lower() != "https"
+            or not host
+            or parsed.username is not None
+            or parsed.password is not None
+            or parsed.port not in {None, 443}
+            or parsed.fragment
+            or host not in self._allowed_web_hosts
+        ):
+            raise ValueError("web_url_not_allowlisted_https")
+        if host == "localhost" or host.endswith((".localhost", ".local", ".internal")):
+            raise ValueError("web_url_private_host_denied")
+        try:
+            address = ipaddress.ip_address(host)
+        except ValueError:
+            address = None
+        if address is not None and (
+            address.is_private
+            or address.is_loopback
+            or address.is_link_local
+            or address.is_multicast
+            or address.is_reserved
+            or address.is_unspecified
+        ):
+            raise ValueError("web_url_private_host_denied")
+        return value
 
     # ------------------------------------------------------------------
     # Logging helpers
     # ------------------------------------------------------------------
     def _append_jsonl(self, path: Path, data: dict) -> None:
         try:
-            with open(path, "a", encoding="utf-8") as fh:
-                fh.write(json.dumps(data, default=str) + "\n")
+            target = Path(path).resolve(strict=False)
+            state_root = STATE_DIR.resolve(strict=False)
+            if not (target == state_root or target.is_relative_to(state_root)):
+                raise ValueError("audit_path_outside_fixed_state_root")
+            encoded = json.dumps(data, default=str, ensure_ascii=False)
+            if len(encoded.encode("utf-8")) > 4096:
+                encoded = json.dumps(
+                    {"ts": data.get("ts"), "error": "audit_entry_too_large"}
+                )
+            target.parent.mkdir(parents=True, exist_ok=True)
+            with target.open("a", encoding="utf-8") as fh:
+                fh.write(encoded + "\n")
         except Exception as exc:
             logger.warning("Failed to write to %s: %s", path, exc)
 
     def log_action(self, action: str, result: dict, duration: float = 0.0) -> None:
+        """Persist outcome metadata only; never copy tool-returned plaintext."""
+
         entry = {
             "ts": datetime.datetime.utcnow().isoformat(),
             "action": action,
             "result_ok": result.get("success", False),
             "duration_s": round(duration, 4),
-            "summary": str(result.get("result", ""))[:300],
+            "status": str(result.get("status", "unknown"))[:48],
+            "effect": str(result.get("effect", "none"))[:96],
         }
         self._append_jsonl(ACTION_LOG_PATH, entry)
 
     def _publish_search_capture(self, phase: str, **payload: Any) -> dict:
-        """Best-effort search/browser/data-capture fabric publish."""
-        try:
-            from aureon.search.swarm_search_fabric import publish_search_event
+        """Keep implicit search-fabric persistence disabled by default."""
 
-            return publish_search_event(
-                phase=phase,
-                source_system="aureon_agent_core",
-                **payload,
-            )
-        except Exception:
-            return {}
+        del phase, payload
+        return {}
 
     # ===================================================================
     #  1. SHELL EXECUTION
     # ===================================================================
     def execute_shell(self, command: str, timeout: int = 30, cwd: str = None,
                       force: bool = False) -> dict:
-        """Run a shell command and return stdout / stderr / exit_code."""
-        del force  # legacy argument retained for callers; it no longer bypasses safety
-        # Safety check: conservative denylist with no sovereign override.
-        patterns = list(DANGEROUS_SHELL_PATTERNS or [])
-        if not patterns:
-            patterns = [
-                r"(?i)\\brm\\s+-rf\\b",
-                r"(?i)\\brm\\s+-fr\\b",
-                r"(?i)\\bdel\\b\\s+.*\\s+/s\\b",
-                r"(?i)\\brmdir\\b\\s+.*\\s+/s\\b",
-                r"(?i)\\bformat\\b",
-                r"(?i)\\bdiskpart\\b",
-                r"(?i)\\bshutdown\\b",
-                r"(?i)\\breg\\s+delete\\b",
-                r"(?i)\\bbcdedit\\b",
-                r"(?i)\\bvssadmin\\s+delete\\b",
-                r"(?i)\\bcipher\\s+/w\\b",
-            ]
-        for pat in patterns:
-            if re.search(pat, command):
-                return {
-                    "stdout": "",
-                    "stderr": f"Blocked dangerous command matching /{pat}/.",
-                    "exit_code": -1,
-                    "command": command,
-                }
-        try:
-            result = subprocess.run(
-                command, shell=True, capture_output=True, text=True,
-                timeout=timeout, cwd=cwd,
-            )
-            out = {
-                "stdout": result.stdout,
-                "stderr": result.stderr,
-                "exit_code": result.returncode,
-                "command": command,
-            }
-        except subprocess.TimeoutExpired:
-            out = {"stdout": "", "stderr": "Timed out", "exit_code": -1, "command": command}
-        except Exception as exc:
-            out = {"stdout": "", "stderr": str(exc), "exit_code": -1, "command": command}
+        """Remain on HOLD until an argv-bound Plumber capability exists."""
 
-        self._append_jsonl(COMMAND_HISTORY_PATH, {
-            "ts": datetime.datetime.utcnow().isoformat(), **out
-        })
-        return out
+        del command, timeout, cwd, force
+        return _effect_hold("process.execute", "argv_magic_star_capability_unavailable")
 
     # ===================================================================
     #  2. APP LAUNCHER
     # ===================================================================
     def open_app(self, app_name: str) -> dict:
-        """Open an application by name or path."""
-        exe = COMMON_APPS.get(app_name.lower(), app_name)
-        try:
-            subprocess.Popen(exe, shell=True)
-            return {"success": True, "app": exe}
-        except Exception as exc:
-            return {"success": False, "error": str(exc)}
+        """Application launch requires an exact argv-bound capability."""
+
+        del app_name
+        return _effect_hold("process.launch", "argv_magic_star_capability_unavailable")
 
     def close_app(self, app_name: str) -> dict:
-        """Close an application by image name."""
-        exe = COMMON_APPS.get(app_name.lower(), app_name)
-        if not exe.endswith(".exe"):
-            exe += ".exe"
-        result = subprocess.run(
-            f"taskkill /im {exe} /f", shell=True, capture_output=True, text=True,
-        )
-        return {
-            "success": result.returncode == 0,
-            "stdout": result.stdout.strip(),
-            "stderr": result.stderr.strip(),
-        }
+        del app_name
+        return _effect_hold("process.terminate", "process_termination_capability_unavailable")
 
     def kill_process(self, name_or_pid: str) -> dict:
-        """Kill a process by image name or PID."""
-        target = str(name_or_pid or "").strip()
-        if not target:
-            return {"success": False, "error": "name_or_pid is required"}
-        try:
-            if sys.platform == "win32":
-                if target.isdigit():
-                    cmd = f"taskkill /pid {target} /f"
-                else:
-                    exe = target
-                    if not exe.lower().endswith(".exe"):
-                        exe += ".exe"
-                    cmd = f"taskkill /im {exe} /f"
-                result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-                return {
-                    "success": result.returncode == 0,
-                    "command": cmd,
-                    "stdout": result.stdout.strip(),
-                    "stderr": result.stderr.strip(),
-                }
-
-            # Best-effort non-Windows fallback
-            cmd = ["pkill", "-f", target]
-            result = subprocess.run(cmd, capture_output=True, text=True)
-            return {
-                "success": result.returncode == 0,
-                "command": " ".join(cmd),
-                "stdout": result.stdout.strip(),
-                "stderr": result.stderr.strip(),
-            }
-        except Exception as exc:
-            return {"success": False, "error": str(exc)}
+        del name_or_pid
+        return _effect_hold("process.terminate", "process_termination_capability_unavailable")
 
     def list_running_apps(self) -> list:
-        """List currently running applications (visible window processes)."""
-        result = subprocess.run(
-            "tasklist /fo csv /nh", shell=True, capture_output=True, text=True,
-        )
-        apps: list[dict] = []
-        for line in result.stdout.strip().splitlines():
-            parts = line.replace('"', "").split(",")
-            if len(parts) >= 5:
-                apps.append({
-                    "name": parts[0],
-                    "pid": parts[1],
-                    "mem": parts[4],
-                })
-        return apps
+        """Return a bounded read-only process snapshot through psutil."""
+
+        return self.running_processes(top_n=50)
 
     def focus_window(self, title_pattern: str) -> dict:
-        """Bring a window to the foreground by title substring (Windows)."""
-        if not HAS_CTYPES or sys.platform != "win32":
-            return {"success": False, "error": "ctypes/win32 not available"}
-        try:
-            import ctypes
-            import ctypes.wintypes
-
-            EnumWindows = ctypes.windll.user32.EnumWindows
-            GetWindowTextW = ctypes.windll.user32.GetWindowTextW
-            SetForegroundWindow = ctypes.windll.user32.SetForegroundWindow
-            IsWindowVisible = ctypes.windll.user32.IsWindowVisible
-
-            WNDENUMPROC = ctypes.WINFUNCTYPE(
-                ctypes.wintypes.BOOL, ctypes.wintypes.HWND, ctypes.wintypes.LPARAM,
-            )
-            found_hwnd = None
-            pattern_lower = title_pattern.lower()
-
-            def _cb(hwnd, _lp):
-                nonlocal found_hwnd
-                if IsWindowVisible(hwnd):
-                    buf = ctypes.create_unicode_buffer(512)
-                    GetWindowTextW(hwnd, buf, 512)
-                    if pattern_lower in buf.value.lower():
-                        found_hwnd = hwnd
-                        return False  # stop enumeration
-                return True
-
-            EnumWindows(WNDENUMPROC(_cb), 0)
-            if found_hwnd:
-                SetForegroundWindow(found_hwnd)
-                return {"success": True, "hwnd": found_hwnd}
-            return {"success": False, "error": "Window not found"}
-        except Exception as exc:
-            return {"success": False, "error": str(exc)}
+        del title_pattern
+        return _effect_hold("window.focus", "governed_window_capability_required")
 
     # ===================================================================
     #  3. WEB SEARCH & BROWSING
     # ===================================================================
     def web_search(self, query: str, num_results: int = 5) -> list:
-        """Search the web via DuckDuckGo HTML and return results."""
-        start_event = self._publish_search_capture(
-            "query_received",
-            query=query,
-            source="duckduckgo_html",
-            metadata={"num_results": num_results},
-        )
-        trace_id = start_event.get("trace_id")
-        query_id = start_event.get("query_id")
-        if not HAS_REQUESTS or not HAS_BS4:
-            self._publish_search_capture(
-                "search_failed",
-                query=query,
-                trace_id=trace_id,
-                query_id=query_id,
-                source="duckduckgo_html",
-                status="missing_dependency",
-                error="requests or beautifulsoup4 not installed",
-            )
-            return [{"error": "requests or beautifulsoup4 not installed"}]
-        try:
-            self._publish_search_capture(
-                "source_selected",
-                query=query,
-                trace_id=trace_id,
-                query_id=query_id,
-                source="duckduckgo_html",
-                metadata={"endpoint": "https://html.duckduckgo.com/html/"},
-            )
-            resp = requests.get(
-                "https://html.duckduckgo.com/html/",
-                params={"q": query},
-                headers={"User-Agent": "Mozilla/5.0 (Aureon Agent)"},
-                timeout=15,
-            )
-            soup = BeautifulSoup(resp.text, "html.parser")
-            results: list[dict] = []
-            for r in soup.select(".result__body")[:num_results]:
-                title_el = r.select_one(".result__a")
-                snippet_el = r.select_one(".result__snippet")
-                link_el = r.select_one(".result__url")
-                results.append({
-                    "title": title_el.get_text(strip=True) if title_el else "",
-                    "snippet": snippet_el.get_text(strip=True) if snippet_el else "",
-                    "url": link_el.get_text(strip=True) if link_el else "",
-                })
-            if results:
-                self._publish_search_capture(
-                    "result_captured",
-                    query=query,
-                    trace_id=trace_id,
-                    query_id=query_id,
-                    source="duckduckgo_html",
-                    result_count=len(results),
-                    status="success",
-                    metadata={"http_status": resp.status_code},
-                )
-                return results
-            fallback = self._official_learning_search_fallback(query, num_results)
-            self._publish_search_capture(
-                "result_captured",
-                query=query,
-                trace_id=trace_id,
-                query_id=query_id,
-                source="official_learning_fallback",
-                result_count=len(fallback),
-                status="fallback",
-                metadata={"http_status": resp.status_code},
-            )
-            return fallback
-        except Exception as exc:
-            fallback = self._official_learning_search_fallback(query, num_results)
-            if fallback:
-                self._publish_search_capture(
-                    "result_captured",
-                    query=query,
-                    trace_id=trace_id,
-                    query_id=query_id,
-                    source="official_learning_fallback",
-                    result_count=len(fallback),
-                    status="fallback_after_error",
-                    error=str(exc),
-                )
-                return fallback
-            self._publish_search_capture(
-                "search_failed",
-                query=query,
-                trace_id=trace_id,
-                query_id=query_id,
-                source="duckduckgo_html",
-                status="error",
-                error=str(exc),
-            )
-            return [{"error": str(exc)}]
+        """Return bounded curated sources without performing a network request."""
+
+        bounded_query = str(query or "").strip()[:1024]
+        bounded_count = max(1, min(int(num_results or 5), 10))
+        return self._official_learning_search_fallback(bounded_query, bounded_count)
 
     def _official_learning_search_fallback(self, query: str, num_results: int = 5) -> list:
         """Return curated official learning sources when public search blocks bots."""
@@ -629,153 +551,156 @@ class AureonAgentCore:
         return [item for _score, item in ranked[: max(1, min(int(num_results or 5), 10))]]
 
     def web_fetch(self, url: str) -> dict:
-        """Fetch a web page and return its text content."""
-        start_event = self._publish_search_capture(
-            "page_fetch_requested",
-            url=url,
-            source="requests",
-        )
-        trace_id = start_event.get("trace_id")
-        if not HAS_REQUESTS:
-            self._publish_search_capture(
-                "page_fetch_failed",
-                url=url,
-                trace_id=trace_id,
-                source="requests",
-                status="missing_dependency",
-                error="requests not installed",
-            )
-            return {"success": False, "error": "requests not installed"}
+        """Use an injected reader that pins DNS and reports its public peer IP."""
+
+        url_errors = {
+            "web_url_invalid",
+            "web_url_not_allowlisted_https",
+            "web_url_private_host_denied",
+        }
+        response_errors = {
+            "web_reader_response_invalid",
+            "web_redirect_denied",
+            "web_reader_peer_ip_required",
+            "web_reader_peer_ip_invalid",
+            "web_reader_private_peer_denied",
+            "web_response_text_invalid",
+            "web_response_status_invalid",
+        }
+        reader = self._web_reader
+        if not callable(reader):
+            return {
+                "success": False,
+                "status": "hold",
+                "error": "injected_allowlisted_web_reader_required",
+            }
         try:
-            resp = requests.get(url, timeout=20, headers={
-                "User-Agent": "Mozilla/5.0 (Aureon Agent)",
-            })
-            if HAS_BS4:
-                soup = BeautifulSoup(resp.text, "html.parser")
-                for tag in soup(["script", "style", "nav", "footer", "header"]):
-                    tag.decompose()
-                text = soup.get_text(separator="\n", strip=True)
-            else:
-                text = resp.text
-            self._publish_search_capture(
-                "page_fetched",
-                url=url,
-                trace_id=trace_id,
-                source="requests",
-                result_count=1,
-                status="success",
-                metadata={
-                    "http_status": resp.status_code,
-                    "captured_text_chars": len(text or ""),
-                    "stored_text_chars": min(len(text or ""), 10000),
-                },
-            )
+            validated = self._validated_public_url(url)
+        except Exception as exc:
+            code = str(exc)
+            return {
+                "success": False,
+                "error": code if code in url_errors else "web_url_invalid",
+            }
+        try:
+            observed = reader(validated)
+        except Exception:
+            return {"success": False, "error": "web_reader_failed"}
+        try:
+            if not isinstance(observed, Mapping):
+                raise ValueError("web_reader_response_invalid")
+            final_url = str(observed.get("final_url") or validated)
+            if final_url != validated or observed.get("redirected") is True:
+                raise ValueError("web_redirect_denied")
+            peer_ip_text = observed.get("peer_ip")
+            if not isinstance(peer_ip_text, str):
+                raise ValueError("web_reader_peer_ip_required")
+            try:
+                peer_ip = ipaddress.ip_address(peer_ip_text)
+            except ValueError as exc:
+                raise ValueError("web_reader_peer_ip_invalid") from exc
+            if not peer_ip.is_global:
+                raise ValueError("web_reader_private_peer_denied")
+            text = observed.get("text")
+            status_code = observed.get("status_code")
+            if not isinstance(text, str) or len(text.encode("utf-8")) > MAX_READ_BYTES:
+                raise ValueError("web_response_text_invalid")
+            if not isinstance(status_code, int) or not 100 <= status_code <= 599:
+                raise ValueError("web_response_status_invalid")
             return {
                 "success": True,
-                "url": url,
-                "status_code": resp.status_code,
-                "text": text[:10000],
+                "url": validated,
+                "status_code": status_code,
+                "text": text[:MAX_WEB_TEXT_CHARS],
             }
         except Exception as exc:
-            self._publish_search_capture(
-                "page_fetch_failed",
-                url=url,
-                trace_id=trace_id,
-                source="requests",
-                status="error",
-                error=str(exc),
-            )
-            return {"success": False, "error": str(exc)}
+            code = str(exc)
+            return {
+                "success": False,
+                "error": code if code in response_errors else "web_reader_response_invalid",
+            }
 
     def open_url(self, url: str) -> dict:
-        """Open a URL in the default browser."""
-        try:
-            webbrowser.open(url)
-            self._publish_search_capture(
-                "browser_opened",
-                url=url,
-                source="default_browser",
-                status="success",
-            )
-            return {"success": True, "url": url}
-        except Exception as exc:
-            self._publish_search_capture(
-                "browser_open_failed",
-                url=url,
-                source="default_browser",
-                status="error",
-                error=str(exc),
-            )
-            return {"success": False, "error": str(exc)}
+        del url
+        return _effect_hold("browser.open", "governed_browser_capability_unavailable")
 
     # ===================================================================
     #  4. FILE SYSTEM
     # ===================================================================
     def list_dir(self, path: str = ".") -> list:
-        """List directory contents with file sizes and modification dates."""
-        p = Path(path).resolve()
-        if not p.is_dir():
-            return [{"error": f"Not a directory: {p}"}]
+        """List a bounded directory inside an allowlisted workspace root."""
+
         entries: list[dict] = []
         try:
-            for item in sorted(p.iterdir()):
+            p = self._resolve_workspace_path(path, must_exist=True)
+            if not p.is_dir():
+                return [{"error": "workspace_path_not_directory"}]
+            for item in sorted(p.iterdir(), key=lambda entry: entry.name):
+                if len(entries) >= MAX_DIRECTORY_ENTRIES:
+                    break
                 try:
-                    stat = item.stat()
+                    safe_item = self._resolve_workspace_path(item, must_exist=True)
+                    stat = safe_item.stat()
                     entries.append({
                         "name": item.name,
-                        "type": "dir" if item.is_dir() else "file",
+                        "type": "dir" if safe_item.is_dir() else "file",
                         "size": stat.st_size,
                         "modified": datetime.datetime.fromtimestamp(stat.st_mtime).isoformat(),
                     })
+                except ValueError:
+                    continue
                 except PermissionError:
                     entries.append({"name": item.name, "type": "unknown", "error": "permission denied"})
-        except PermissionError:
-            return [{"error": f"Permission denied: {p}"}]
+        except (OSError, ValueError) as exc:
+            return [{"error": str(exc)}]
         return entries
 
     def read_file(self, path: str, max_lines: int = 200) -> str:
-        """Read a file from anywhere on the PC (first N lines)."""
-        p = Path(path)
-        if not p.is_file():
-            return f"ERROR: File not found: {path}"
+        """Read bounded UTF-8 text from an allowlisted workspace root."""
+
         try:
-            lines = p.read_text(encoding="utf-8", errors="replace").splitlines()
-            return "\n".join(lines[:max_lines])
+            p = self._resolve_workspace_path(path, must_exist=True)
+            if not p.is_file():
+                return "ERROR: workspace_path_not_file"
+            if p.stat().st_size > MAX_READ_BYTES:
+                return "ERROR: workspace_file_too_large"
+            limit = max(1, min(int(max_lines), MAX_READ_LINES))
+            lines = p.read_bytes().decode("utf-8", errors="replace").splitlines()
+            return "\n".join(lines[:limit])
         except Exception as exc:
             return f"ERROR: {exc}"
 
     def open_file(self, path: str) -> dict:
-        """Open a file with its default application."""
-        p = Path(path)
-        if not p.exists():
-            return {"success": False, "error": f"Not found: {path}"}
-        try:
-            if sys.platform == "win32":
-                os.startfile(str(p.resolve()))  # type: ignore[attr-defined]
-                return {"success": True, "path": str(p.resolve())}
-            subprocess.Popen(["xdg-open", str(p.resolve())])
-            return {"success": True, "path": str(p.resolve())}
-        except Exception as exc:
-            return {"success": False, "error": str(exc)}
+        del path
+        return _effect_hold("file.open", "governed_file_open_capability_unavailable")
 
     def write_file(self, path: str, content: str, backup: bool = True) -> dict:
-        """Write content to a file, optionally backing up the original."""
-        p = Path(path)
-        try:
-            if backup and p.exists():
-                bak = p.with_suffix(p.suffix + ".bak")
-                shutil.copy2(str(p), str(bak))
-            p.parent.mkdir(parents=True, exist_ok=True)
-            p.write_text(content, encoding="utf-8")
-            return {"success": True, "path": str(p), "bytes": len(content)}
-        except Exception as exc:
-            return {"success": False, "error": str(exc)}
+        del path, content, backup
+        return _effect_hold("file.write")
 
     def find_files(self, directory: str, pattern: str) -> list:
-        """Find files matching a glob pattern within a directory."""
-        base = Path(directory).resolve()
+        """Find a bounded number of files inside an allowlisted root."""
+
         try:
-            return [str(f) for f in base.rglob(pattern)][:500]
+            base = self._resolve_workspace_path(directory, must_exist=True)
+            candidate_pattern = str(pattern or "")
+            if (
+                not candidate_pattern
+                or len(candidate_pattern) > MAX_GLOB_CHARS
+                or ".." in candidate_pattern.replace("\\", "/").split("/")
+                or Path(candidate_pattern).is_absolute()
+            ):
+                raise ValueError("workspace_glob_invalid")
+            matches = []
+            for item in base.rglob(candidate_pattern):
+                try:
+                    resolved = self._resolve_workspace_path(item, must_exist=True)
+                except (OSError, ValueError):
+                    continue
+                matches.append(str(resolved))
+                if len(matches) >= MAX_DIRECTORY_ENTRIES:
+                    break
+            return matches
         except Exception as exc:
             return [f"ERROR: {exc}"]
 
@@ -787,6 +712,14 @@ class AureonAgentCore:
         require_all_terms: bool = False,
     ) -> dict:
         """Read local text/test files and return keyword match snippets."""
+        if (
+            not isinstance(keyword, str)
+            or not keyword.strip()
+            or len(keyword.encode("utf-8")) > 4096
+            or scope not in {"tests", "aureon", "scripts", "frontend", "all"}
+        ):
+            return {"success": False, "error": "bounded_keyword_scope_required"}
+        max_results = max(1, min(int(max_results), 100))
         start_event = self._publish_search_capture(
             "keyword_scan_requested",
             query=keyword,
@@ -808,6 +741,10 @@ class AureonAgentCore:
                 max_results=max_results,
                 require_all_terms=require_all_terms,
                 repo_root=self.repo_root,
+                # AgentCore exposes this as an observation tool.  The search
+                # helper defaults to writing state/public artifacts, so the
+                # no-write mode must be explicit here.
+                write_artifact=False,
             )
             summary = result.get("summary", {}) if isinstance(result, dict) else {}
             scanned = int(summary.get("scanned_file_count") or 0)
@@ -868,222 +805,74 @@ class AureonAgentCore:
         urls: Optional[List[str]] = None,
         max_sources: int = 5,
     ) -> dict:
-        """Fetch online sources, render a motion replay, and draft a paper."""
-        try:
-            from aureon.search.online_research_cinema import build_online_research_cinema
+        """Hold network-plus-file generation until a released workflow exists."""
 
-            return build_online_research_cinema(
-                topic=topic,
-                query=query or topic,
-                urls=urls or None,
-                max_sources=max_sources,
-                root=self.repo_root,
-            )
-        except Exception as exc:
-            self._publish_search_capture(
-                "online_research_cinema_failed",
-                query=query or topic,
-                source="online_research_cinema",
-                status="error",
-                error=str(exc),
-                metadata={"topic": topic},
-            )
-            return {"success": False, "error": str(exc), "topic": topic}
+        del topic, query, urls, max_sources
+        return _effect_hold("research.generate", "research_release_capability_unavailable")
 
     def research_metacognition(
         self,
         topic: str = "",
         manifest_path: str = "frontend/public/aureon_online_research_cinema.json",
     ) -> dict:
-        """Turn the latest research cinema packet into structured understanding."""
-        try:
-            manifest_file = (self.repo_root / manifest_path).resolve()
-            manifest = json.loads(manifest_file.read_text(encoding="utf-8")) if manifest_file.exists() else {}
-            if not isinstance(manifest, dict):
-                manifest = {}
-            from aureon.search.research_metacognition import build_research_metacognition
-
-            packet_topic = topic or str(manifest.get("topic") or "Research Packet")
-            paper = manifest.get("paper", {}) if isinstance(manifest.get("paper"), dict) else {}
-            return build_research_metacognition(
-                topic=packet_topic,
-                query=str(manifest.get("query") or packet_topic),
-                source_rows=manifest.get("source_rows", []) if isinstance(manifest.get("source_rows"), list) else [],
-                paper_path=str(paper.get("path") or ""),
-                motion_picture=manifest.get("motion_picture", {}) if isinstance(manifest.get("motion_picture"), dict) else {},
-                coding_manifest=manifest.get("coding_handoff", {}) if isinstance(manifest.get("coding_handoff"), dict) else {},
-                root=self.repo_root,
-            )
-        except Exception as exc:
-            self._publish_search_capture(
-                "metacognition_failed",
-                query=topic or "research metacognition",
-                source="research_metacognition",
-                status="error",
-                error=str(exc),
-                metadata={"manifest_path": manifest_path},
-            )
-            return {"success": False, "error": str(exc), "topic": topic}
+        del topic, manifest_path
+        return _effect_hold("research.metacognition", "research_release_capability_unavailable")
 
     def file_info(self, path: str) -> dict:
         """Get metadata for a file or directory."""
-        p = Path(path)
-        if not p.exists():
-            return {"error": f"Not found: {path}"}
-        stat = p.stat()
-        return {
-            "path": str(p.resolve()),
-            "type": "dir" if p.is_dir() else "file",
-            "size": stat.st_size,
-            "modified": datetime.datetime.fromtimestamp(stat.st_mtime).isoformat(),
-            "created": datetime.datetime.fromtimestamp(stat.st_ctime).isoformat(),
-        }
+        try:
+            p = self._resolve_workspace_path(path, must_exist=True)
+            stat = p.stat()
+            return {
+                "path": str(p),
+                "type": "dir" if p.is_dir() else "file",
+                "size": stat.st_size,
+                "modified": datetime.datetime.fromtimestamp(stat.st_mtime).isoformat(),
+                "created": datetime.datetime.fromtimestamp(stat.st_ctime).isoformat(),
+            }
+        except Exception as exc:
+            return {"error": str(exc)}
 
     def copy_file(self, src: str, dst: str) -> dict:
-        try:
-            shutil.copy2(src, dst)
-            return {"success": True, "src": src, "dst": dst}
-        except Exception as exc:
-            return {"success": False, "error": str(exc)}
+        del src, dst
+        return _effect_hold("file.copy")
 
     def move_file(self, src: str, dst: str) -> dict:
-        try:
-            shutil.move(src, dst)
-            return {"success": True, "src": src, "dst": dst}
-        except Exception as exc:
-            return {"success": False, "error": str(exc)}
+        del src, dst
+        return _effect_hold("file.move")
 
     def delete_file(self, path: str, confirm: bool = False) -> dict:
-        """Delete a file. Refuses system directories unless confirm=True."""
-        p = Path(path).resolve()
-        # Safety: block system directories
-        for part in p.parts:
-            if part.lower() in PROTECTED_DIRS and not confirm:
-                return {
-                    "success": False,
-                    "error": f"Refusing to delete in protected directory '{part}'. "
-                             "Pass confirm=True to override.",
-                }
-        if not confirm:
-            return {
-                "success": False,
-                "error": "Pass confirm=True to actually delete.",
-                "path": str(p),
-            }
-        try:
-            if p.is_dir():
-                shutil.rmtree(str(p))
-            else:
-                p.unlink()
-            return {"success": True, "deleted": str(p)}
-        except Exception as exc:
-            return {"success": False, "error": str(exc)}
+        del path, confirm
+        return _effect_hold("file.delete")
 
     def create_dir(self, path: str) -> dict:
-        try:
-            Path(path).mkdir(parents=True, exist_ok=True)
-            return {"success": True, "path": path}
-        except Exception as exc:
-            return {"success": False, "error": str(exc)}
+        del path
+        return _effect_hold("directory.create")
 
     # ===================================================================
-    #  5. CODE EXECUTION (wire QueenCodeArchitect)
+    #  5. CODE EXECUTION (fail-closed until a governed sandbox is released)
     # ===================================================================
     def execute_python(self, code: str) -> dict:
-        """Execute Python code and return output."""
-        ca = self._get_code_architect()
-        if ca:
-            try:
-                return ca.execute_code(code)
-            except Exception as exc:
-                return {"success": False, "error": str(exc)}
-        # Fallback: run in subprocess
-        try:
-            result = subprocess.run(
-                [sys.executable, "-c", code],
-                capture_output=True, text=True, timeout=30,
-            )
-            return {
-                "success": result.returncode == 0,
-                "stdout": result.stdout,
-                "stderr": result.stderr,
-                "exit_code": result.returncode,
-            }
-        except Exception as exc:
-            return {"success": False, "error": str(exc)}
+        del code
+        return _effect_hold("code.execute", "dynamic_code_execution_disabled")
 
     def create_script(self, path: str, code: str) -> dict:
-        """Create a Python script file."""
-        return self.write_file(path, code, backup=True)
+        del path, code
+        return _effect_hold("code.create", "dynamic_code_creation_disabled")
 
     def run_script(self, path: str) -> dict:
-        """Run a Python script file."""
-        p = Path(path)
-        if not p.is_file():
-            return {"success": False, "error": f"Script not found: {path}"}
-        try:
-            result = subprocess.run(
-                [sys.executable, str(p)],
-                capture_output=True, text=True, timeout=60,
-            )
-            return {
-                "success": result.returncode == 0,
-                "stdout": result.stdout,
-                "stderr": result.stderr,
-                "exit_code": result.returncode,
-            }
-        except Exception as exc:
-            return {"success": False, "error": str(exc)}
+        del path
+        return _effect_hold("code.execute", "dynamic_code_execution_disabled")
 
     # ===================================================================
     #  6. DESKTOP CONTROL (wire SafeDesktopControl)
     # ===================================================================
     def _desktop_exec(self, action: str, params: dict) -> dict:
-        dc = self._get_desktop()
-        if dc is None:
-            return {"success": False, "error": "GovernedDesktopGateway not available"}
-        try:
-            p = dict(params or {})
-            target_binding_id = str(p.pop("target_binding_id", "") or "") or None
-            mapped = {
-                "move_mouse": "move",
-                "left_click": "click",
-                "right_click": "right_click",
-                "double_click": "double_click",
-                "type_text": "type",
-                "press_key": "press",
-                "hotkey": "hotkey",
-                "scroll": "scroll",
-            }.get(action, action)
-            if target_binding_id is None:
-                return {
-                    "success": False,
-                    "error": "valid_target_window_binding_required",
-                }
-
-            # Bind every mutation to the exact masked pixels from which it was
-            # chosen.  The gateway captures again immediately before dispatch
-            # and rejects the action if the target window has drifted.
-            source = dc.observe(target_binding_id=target_binding_id)
-            if not source.ok or not source.before_sha256:
-                return {
-                    "success": False,
-                    "error": "bound_source_observation_failed",
-                    "source_observation": source.to_dict(),
-                }
-            res = dc.execute(
-                mapped,
-                p,
-                target_binding_id=target_binding_id,
-                expected_before_sha256=source.before_sha256,
-            )
-            return {
-                "success": res.ok,
-                **res.to_dict(),
-                "source_observation_action_id": source.action_id,
-            }
-        except Exception as exc:
-            return {"success": False, "error": str(exc)}
+        del action, params
+        return _effect_hold(
+            "desktop.input",
+            "production_magic_star_desktop_release_unavailable",
+        )
 
     def click(self, x: int, y: int, target_binding_id: str | None = None) -> dict:
         p: Dict[str, Any] = {"x": int(x), "y": int(y)}
@@ -1191,19 +980,11 @@ class AureonAgentCore:
         subject: str,
         allowed_actions: List[str] | None = None,
     ) -> dict:
-        dc = self._get_desktop()
-        if dc is None:
-            return {"success": False, "error": "GovernedDesktopGateway not available"}
-        try:
-            lease = dc.authorize_live(
-                capability_token,
-                ttl_seconds=ttl_seconds,
-                subject=subject,
-                allowed_actions=allowed_actions,
-            )
-            return {"success": True, "result": lease.public_dict(), "status": dc.status()}
-        except Exception as exc:
-            return {"success": False, "error": str(exc)}
+        del capability_token, ttl_seconds, subject, allowed_actions
+        return _effect_hold(
+            "desktop.arm_live",
+            "production_magic_star_desktop_release_unavailable",
+        )
 
     def desktop_arm_dry_run(self) -> dict:
         dc = self._get_desktop()
@@ -1299,8 +1080,13 @@ class AureonAgentCore:
         return procs[:top_n]
 
     def network_status(self) -> dict:
-        """Network interfaces and basic connectivity check."""
-        info: dict = {"connected": False, "interfaces": {}}
+        """Return local interface metadata without an outbound connectivity probe."""
+
+        info: dict = {
+            "connected": None,
+            "connectivity_probe": "disabled_offline",
+            "interfaces": {},
+        }
         if HAS_PSUTIL:
             addrs = psutil.net_if_addrs()
             for iface, addr_list in addrs.items():
@@ -1308,12 +1094,6 @@ class AureonAgentCore:
                     {"family": str(a.family), "address": a.address}
                     for a in addr_list
                 ]
-        # Quick connectivity check
-        try:
-            socket.create_connection(("8.8.8.8", 53), timeout=3)
-            info["connected"] = True
-        except OSError:
-            info["connected"] = False
         return info
 
     # ===================================================================
@@ -1324,31 +1104,30 @@ class AureonAgentCore:
         conn = self._get_db()
         if conn is None:
             return [{"error": "Knowledge DB not available"}]
-        sovereign = str(os.getenv("AUREON_SOVEREIGN_MODE", "")).strip().lower() in {"1", "true", "yes", "on"}
         sql_text = (sql or "").strip()
-        if not sql_text:
+        if not sql_text or len(sql_text.encode("utf-8")) > MAX_SQL_CHARS:
             return [{"error": "SQL is empty"}]
-        if not sovereign:
-            lower = sql_text.lower()
-            allowed_prefixes = ("select", "with")
-            if not lower.startswith(allowed_prefixes):
-                return [{"error": "Blocked non-read-only SQL. Use SELECT/WITH or set AUREON_SOVEREIGN_MODE=1."}]
-            block_keywords = (
-                "insert",
-                "update",
-                "delete",
-                "drop",
-                "alter",
-                "create",
-                "replace",
-                "vacuum",
-                "attach",
-                "detach",
-                "reindex",
-            )
-            for kw in block_keywords:
-                if re.search(rf"\\b{kw}\\b", lower):
-                    return [{"error": f"Blocked keyword in SQL: {kw}. Set AUREON_SOVEREIGN_MODE=1 to override."}]
+        lower = sql_text.lower()
+        if not lower.startswith(("select", "with")):
+            return [{"error": "Blocked non-read-only SQL. Only SELECT/WITH is allowed."}]
+        block_keywords = (
+            "insert",
+            "update",
+            "delete",
+            "drop",
+            "alter",
+            "create",
+            "replace",
+            "vacuum",
+            "attach",
+            "detach",
+            "reindex",
+            "pragma",
+            "load_extension",
+        )
+        for kw in block_keywords:
+            if re.search(rf"(?<![a-z0-9_]){kw}(?![a-z0-9_])", lower):
+                return [{"error": f"Blocked keyword in SQL: {kw}."}]
         try:
             cursor = conn.execute(sql_text)
             cols = [d[0] for d in cursor.description] if cursor.description else []
@@ -1473,157 +1252,168 @@ class AureonAgentCore:
     #  9. TRADING (wire exchange clients)
     # ===================================================================
     def _load_exchange_client(self, venue: str):
-        """Dynamically load an exchange client by venue name."""
-        mapping = {
-            "binance": ("aureon.exchanges.binance_client", "BinanceClient"),
-            "alpaca": ("aureon.exchanges.alpaca_client", "AlpacaClient"),
-            "capital": ("aureon.exchanges.capital_cfd_trader", "CapitalCFDTrader"),
-        }
-        if venue not in mapping:
-            return None
-        mod_name, cls_name = mapping[venue]
+        """Compatibility shim: raw provider clients are never constructed."""
+
+        del venue
+        return None
+
+    def _read_account_observation(
+        self,
+        observation: str,
+        venue: str,
+        params: Optional[Mapping[str, Any]] = None,
+    ) -> Any:
+        reader = self._account_reader
+        normalized_venue = str(venue or "").strip().lower()
+        if normalized_venue not in {"binance", "alpaca", "capital", "kraken"}:
+            return {"error": "account_observation_venue_invalid"}
+        if not callable(reader):
+            return {
+                "data_status": "no_data",
+                "error": "injected_account_reader_required",
+                "venue": normalized_venue,
+            }
         try:
-            import importlib
-            mod = importlib.import_module(mod_name)
-            cls = getattr(mod, cls_name)
-            return cls()
+            return reader(observation, normalized_venue, dict(params or {}))
         except Exception as exc:
-            logger.warning("Could not load %s: %s", venue, exc)
-            return None
+            return {
+                "data_status": "no_data",
+                "error": f"account_reader_failed:{type(exc).__name__}",
+                "venue": normalized_venue,
+            }
 
     def get_balances(self, venue: str = "all") -> dict:
         """Get account balances."""
         if venue == "all":
-            result = {}
-            for v in ("binance", "alpaca", "capital"):
-                client = self._load_exchange_client(v)
-                if client and hasattr(client, "get_balances"):
-                    try:
-                        result[v] = client.get_balances()
-                    except Exception as exc:
-                        result[v] = {"error": str(exc)}
-            return result
-        client = self._load_exchange_client(venue)
-        if client is None:
-            return {"error": f"Unknown venue: {venue}"}
-        try:
-            return client.get_balances()
-        except Exception as exc:
-            return {"error": str(exc)}
+            return {
+                item: self._read_account_observation("balances", item)
+                for item in ("binance", "alpaca", "capital", "kraken")
+            }
+        return self._read_account_observation("balances", venue)
 
     def place_order(self, venue: str, symbol: str, side: str, qty: float,
                     order_type: str = "market") -> dict:
-        """Place a trade order on a specific venue."""
-        client = self._load_exchange_client(venue)
-        if client is None:
-            return {"success": False, "error": f"Unknown venue: {venue}"}
+        """Claim one exact-plan Magic-Star authority at the injected dispatcher."""
+
+        authorization_provider = self._trade_authorization_provider
+        dispatcher = self._final_trade_dispatcher
+        if not callable(authorization_provider) or not callable(dispatcher):
+            return _effect_hold("trade.order")
         try:
-            if hasattr(client, "place_order"):
-                return client.place_order(symbol=symbol, side=side, qty=qty,
-                                          order_type=order_type)
-            return {"success": False, "error": "Client has no place_order method"}
+            from aureon.queen.queen_force_trade_governance import (
+                ForceTradePlan,
+                claim_queen_force_trade_authority,
+            )
+
+            if str(order_type or "").strip().lower() != "market":
+                return _effect_hold("trade.order", "market_order_only")
+            plan = ForceTradePlan(
+                provider=venue,
+                symbol=symbol,
+                side=side,
+                quantity=str(qty),
+                quantity_kind="base_units",
+                order_type="market",
+            )
+            authorization = authorization_provider(plan)
+            decision = claim_queen_force_trade_authority(
+                plan=plan,
+                authorization=authorization,
+            )
+            if not decision.allowed:
+                reason = (
+                    decision.missing_requirements[0]
+                    if decision.missing_requirements
+                    else "trade_authorization_denied"
+                )
+                return _effect_hold("trade.order", reason)
         except Exception as exc:
-            return {"success": False, "error": str(exc)}
+            return _effect_hold(
+                "trade.order",
+                f"trade_authorization_invalid:{type(exc).__name__}",
+            )
+
+        # The atomic claim above is the final pre-dispatch step. Once invoked,
+        # a handler may already have produced provider-side effects; failures
+        # are indeterminate and the one-use authority remains consumed.
+        try:
+            receipt = dispatcher(plan)
+            if not isinstance(receipt, Mapping):
+                return {
+                    "success": False,
+                    "status": "pending_reconciliation",
+                    "submitted": None,
+                    "error": "ambiguous_authorized_trade_receipt",
+                }
+            # A dispatch callback cannot independently attest its own provider
+            # effect.  Keep the outcome unresolved until a separate provider
+            # read-back reconciles the exact plan.
+            return {
+                "success": False,
+                "status": "pending_reconciliation",
+                "submitted": None,
+                "error": "independent_provider_readback_required",
+                "plan_sha256": plan.commitment,
+                "authorization_consumed": True,
+                "dispatcher_acknowledgement_untrusted": True,
+                "eligible_for_accounting": False,
+                "eligible_for_learning": False,
+            }
+        except Exception as exc:
+            return {
+                "success": False,
+                "status": "pending_reconciliation",
+                "submitted": None,
+                "error": f"ambiguous_authorized_trade_dispatch:{type(exc).__name__}",
+            }
 
     def get_positions(self, venue: str = "all") -> dict:
         """Get open positions."""
         if venue == "all":
-            result = {}
-            for v in ("binance", "alpaca", "capital"):
-                client = self._load_exchange_client(v)
-                if client and hasattr(client, "get_positions"):
-                    try:
-                        result[v] = client.get_positions()
-                    except Exception as exc:
-                        result[v] = {"error": str(exc)}
-            return result
-        client = self._load_exchange_client(venue)
-        if client is None:
-            return {"error": f"Unknown venue: {venue}"}
-        try:
-            return client.get_positions()
-        except Exception as exc:
-            return {"error": str(exc)}
+            return {
+                item: self._read_account_observation("positions", item)
+                for item in ("binance", "alpaca", "capital", "kraken")
+            }
+        return self._read_account_observation("positions", venue)
 
     def get_recent_trades(self, venue: str = "all", limit: int = 10) -> list:
         """Get recent trades from exchange clients."""
+        bounded_limit = max(1, min(int(limit), 100))
         if venue == "all":
-            results: list = []
-            for v in ("binance", "alpaca", "capital"):
-                client = self._load_exchange_client(v)
-                if client and hasattr(client, "get_recent_trades"):
-                    try:
-                        trades = client.get_recent_trades(limit=limit)
-                        results.extend(trades if isinstance(trades, list) else [])
-                    except Exception:
-                        pass
-            return results
-        client = self._load_exchange_client(venue)
-        if client is None:
-            return [{"error": f"Unknown venue: {venue}"}]
-        try:
-            return client.get_recent_trades(limit=limit)
-        except Exception as exc:
-            return [{"error": str(exc)}]
+            return [
+                {
+                    "venue": item,
+                    "observation": self._read_account_observation(
+                        "recent_trades",
+                        item,
+                        {"limit": bounded_limit},
+                    ),
+                }
+                for item in ("binance", "alpaca", "capital", "kraken")
+            ]
+        observed = self._read_account_observation(
+            "recent_trades",
+            venue,
+            {"limit": bounded_limit},
+        )
+        return observed if isinstance(observed, list) else [observed]
 
     # ===================================================================
     #  10. COMMUNICATION
     # ===================================================================
     def speak(self, text: str, priority: int = 3) -> dict:
-        """Speak via TTS (publish thought with voice topic)."""
-        bus = self._get_thought_bus()
-        if bus:
-            try:
-                bus.publish(
-                    source="agent_core",
-                    topic="voice.speak",
-                    payload={"text": text, "priority": priority},
-                )
-                return {"success": True, "text": text}
-            except Exception as exc:
-                return {"success": False, "error": str(exc)}
-        # Fallback: system TTS on Windows
-        if sys.platform == "win32":
-            try:
-                subprocess.Popen(
-                    ["powershell", "-Command",
-                     f"Add-Type -AssemblyName System.Speech; "
-                     f"(New-Object System.Speech.Synthesis.SpeechSynthesizer).Speak('{text}')"],
-                )
-                return {"success": True, "text": text, "method": "powershell_tts"}
-            except Exception:
-                pass
-        return {"success": False, "error": "No TTS backend available"}
+        del text, priority
+        return _effect_hold("audio.speak", "governed_tts_capability_unavailable")
 
     def notify(self, title: str, message: str) -> dict:
-        """Show a user-visible notification (best-effort)."""
-        try:
-            if sys.platform == "win32":
-                # Run in a separate process so we don't block the agent loop/REPL.
-                script = (
-                    "Add-Type -AssemblyName PresentationFramework; "
-                    "[System.Windows.MessageBox]::Show("
-                    f"@'{message}'@, @'{title}'@) | Out-Null"
-                )
-                subprocess.Popen(["powershell", "-NoProfile", "-Command", script])
-                return {"success": True, "method": "powershell_messagebox"}
-
-            logger.info("notify: %s | %s", title, message)
-            return {"success": True, "method": "log"}
-        except Exception as exc:
-            return {"success": False, "error": str(exc)}
+        del title, message
+        return _effect_hold("user.notify", "governed_notification_capability_unavailable")
 
     def think(self, message: str, topic: str = "agent.action") -> dict:
-        """Publish a thought to ThoughtBus."""
-        bus = self._get_thought_bus()
-        if bus:
-            try:
-                bus.publish(source="agent_core", topic=topic,
-                            payload={"message": message})
-                return {"success": True, "topic": topic}
-            except Exception as exc:
-                return {"success": False, "error": str(exc)}
-        return {"success": False, "error": "ThoughtBus not available"}
+        """Hold publication until a released persistence capability exists."""
+
+        del message, topic
+        return _effect_hold("thought.publish", "thought_bus_release_capability_unavailable")
 
     # ===================================================================
     #  MASTER EXECUTE
@@ -1635,7 +1425,21 @@ class AureonAgentCore:
         Routes to the correct tool based on the intent string.
         Returns: {"success": bool, "result": any, "tool_used": str, "error": str}
         """
+        if not isinstance(intent, str) or not intent or len(intent) > 128:
+            return {
+                "success": False,
+                "result": None,
+                "tool_used": None,
+                "error": "intent_invalid",
+            }
         params = params or {}
+        if not self._bounded_params(params):
+            return {
+                "success": False,
+                "result": None,
+                "tool_used": None,
+                "error": "bounded_object_params_required",
+            }
         # The gate is a mandatory invariant, not an opt-in feature.  A missing or
         # broken gate fails closed instead of silently restoring sovereign access.
         try:
@@ -1702,40 +1506,40 @@ class AureonAgentCore:
     def get_capabilities(self) -> list:
         """Return list of all available intents with descriptions."""
         descs = {
-            "shell": "Run a shell command",
-            "open_app": "Open an application",
-            "close_app": "Close an application",
+            "shell": "HOLD: exact argv Magic-Star capability unavailable",
+            "open_app": "HOLD: governed process launch unavailable",
+            "close_app": "HOLD: governed process termination unavailable",
             "list_apps": "List running applications",
-            "focus_window": "Bring a window to focus",
-            "web_search": "Search the web",
-            "web_fetch": "Fetch a web page as text",
-            "open_url": "Open a URL in the browser",
-            "list_dir": "List directory contents",
-            "read_file": "Read a file",
-            "open_file": "Open a file with default app",
-            "write_file": "Write content to a file",
+            "focus_window": "HOLD: governed window-focus capability unavailable",
+            "web_search": "Search curated offline documentation links",
+            "web_fetch": "Fetch through an injected exact-host HTTPS reader",
+            "open_url": "HOLD: governed browser capability unavailable",
+            "list_dir": "List bounded allowlisted workspace contents",
+            "read_file": "Read a bounded allowlisted workspace file",
+            "open_file": "HOLD: governed file-open capability unavailable",
+            "write_file": "HOLD: Plumber file-write release unavailable",
             "find_files": "Find files by glob pattern",
             "keyword_search": "Read local text/test files and find keyword snippets",
-            "online_research_cinema": "Fetch online sources, render research motion replay, and draft a cited paper",
-            "research_metacognition": "Convert the latest research cinema packet into structured organism understanding",
+            "online_research_cinema": "HOLD: network-plus-file research release unavailable",
+            "research_metacognition": "HOLD: research persistence release unavailable",
             "file_info": "Get file metadata",
-            "copy_file": "Copy a file",
-            "move_file": "Move a file",
-            "delete_file": "Delete a file (requires confirm)",
-            "create_dir": "Create a directory",
-            "execute_python": "Execute Python code",
-            "create_script": "Create a Python script file",
-            "run_script": "Run a Python script",
-            "click": "Click at screen coordinates",
-            "move_mouse": "Move mouse to coordinates",
-            "right_click": "Right click at coordinates",
-            "double_click": "Double click at coordinates",
-            "type_text": "Type text via keyboard",
-            "press_key": "Press a keyboard key",
-            "hotkey": "Press a keyboard shortcut",
+            "copy_file": "HOLD: Plumber file-copy release unavailable",
+            "move_file": "HOLD: Plumber file-move release unavailable",
+            "delete_file": "HOLD: Plumber file-delete release unavailable",
+            "create_dir": "HOLD: Plumber directory release unavailable",
+            "execute_python": "HOLD: dynamic code execution disabled",
+            "create_script": "HOLD: dynamic code creation disabled",
+            "run_script": "HOLD: dynamic code execution disabled",
+            "click": "HOLD: production Magic-Star desktop release unavailable",
+            "move_mouse": "HOLD: production Magic-Star desktop release unavailable",
+            "right_click": "HOLD: production Magic-Star desktop release unavailable",
+            "double_click": "HOLD: production Magic-Star desktop release unavailable",
+            "type_text": "HOLD: production Magic-Star desktop release unavailable",
+            "press_key": "HOLD: production Magic-Star desktop release unavailable",
+            "hotkey": "HOLD: production Magic-Star desktop release unavailable",
             "screenshot": "Take a screenshot",
             "desktop_status": "Get desktop controller status",
-            "desktop_arm_live": "Arm desktop controller (live mode)",
+            "desktop_arm_live": "HOLD: production Magic-Star desktop release unavailable",
             "desktop_arm_dry_run": "Arm desktop controller (dry-run mode)",
             "desktop_disarm": "Disarm desktop controller",
             "desktop_emergency_stop": "Emergency stop desktop controller",
@@ -1743,18 +1547,18 @@ class AureonAgentCore:
             "system_info": "Get CPU/RAM/disk/OS info",
             "processes": "List top processes",
             "network_status": "Check network connectivity",
-            "kill_process": "Kill a process by name or PID",
+            "kill_process": "HOLD: governed process termination unavailable",
             "query_knowledge": "Run SQL on knowledge DB",
             "search_knowledge": "Keyword search across DB",
             "market_summary": "Get latest market data",
             "portfolio": "Get portfolio / recent trades",
             "get_balances": "Get exchange balances",
             "get_positions": "Get open positions",
-            "place_order": "Place a trade order",
+            "place_order": "Exact-plan one-use Magic-Star trade dispatcher",
             "get_recent_trades": "Get recent trades",
-            "speak": "Speak via TTS",
-            "notify": "Show a notification dialog",
-            "think": "Publish a thought to ThoughtBus",
+            "speak": "HOLD: governed TTS capability unavailable",
+            "notify": "HOLD: governed notification capability unavailable",
+            "think": "HOLD: thought persistence release unavailable",
         }
         caps = []
         for intent, desc in descs.items():
@@ -1930,14 +1734,14 @@ class AureonAgentCore:
             return unique
 
         # Fallback: use the smart InstructionParser (200+ patterns, typo tolerance)
-        if self._parser is not None:
+        parser = self._get_parser()
+        if parser is not None:
             try:
-                parsed = self._parser.parse(natural_language)
+                parsed = parser.parse(natural_language)
                 if parsed:
                     # Convert parser output to plan_task format
                     for step in parsed:
                         method = step.get("method", "")
-                        tool = step.get("tool", "")
                         # Map laptop methods to direct intent (agent core routes via laptop)
                         intent_name = method if method else "unknown"
                         steps.append({

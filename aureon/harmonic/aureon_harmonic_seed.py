@@ -20,18 +20,14 @@
 """
 
 from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
-import os
 import json
 import math
 import time
 import logging
-import pickle
-import hashlib
 from pathlib import Path
 from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Tuple, Optional, Any
 from dataclasses import dataclass, field, asdict
-from collections import deque
 import numpy as np
 
 logger = logging.getLogger(__name__)
@@ -61,6 +57,66 @@ SEED_DAYS = 7
 CANDLE_INTERVAL_HOURS = 1  # 1-hour candles
 CANDLES_PER_DAY = 24
 SEED_CANDLE_COUNT = SEED_DAYS * CANDLES_PER_DAY  # 168 candles
+MAX_HARMONIC_CACHE_BYTES = 32 * 1024 * 1024
+MAX_HARMONIC_SYMBOLS = 10_000
+MAX_HARMONIC_HISTORY_VALUES = 2_048
+MAX_COHERENCE_VALUES = 1_000_000
+
+
+def _finite_number(value: Any, *, field_name: str) -> float:
+    if isinstance(value, bool) or type(value) not in {int, float}:
+        raise ValueError(f"{field_name}_must_be_finite_number")
+    result = float(value)
+    if not math.isfinite(result):
+        raise ValueError(f"{field_name}_must_be_finite_number")
+    return result
+
+
+def _bounded_number_list(value: Any, *, field_name: str) -> List[float]:
+    if not isinstance(value, list) or len(value) > MAX_HARMONIC_HISTORY_VALUES:
+        raise ValueError(f"{field_name}_invalid")
+    return [
+        _finite_number(item, field_name=field_name)
+        for item in value
+    ]
+
+
+def _decode_harmonic_cache(raw: bytes) -> Dict[str, Any]:
+    """Decode exact canonical JSON while rejecting duplicates and NaN values."""
+
+    if not isinstance(raw, bytes) or not raw or len(raw) > MAX_HARMONIC_CACHE_BYTES:
+        raise ValueError("harmonic_seed_cache_size_invalid")
+
+    def reject_duplicates(pairs: List[Tuple[str, Any]]) -> Dict[str, Any]:
+        result: Dict[str, Any] = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError("harmonic_seed_cache_duplicate_key")
+            result[key] = value
+        return result
+
+    def reject_constant(_value: str) -> Any:
+        raise ValueError("harmonic_seed_cache_non_finite_number")
+
+    try:
+        text = raw.decode("utf-8", errors="strict")
+        decoded = json.loads(
+            text,
+            object_pairs_hook=reject_duplicates,
+            parse_constant=reject_constant,
+        )
+        canonical = json.dumps(
+            decoded,
+            ensure_ascii=True,
+            allow_nan=False,
+            separators=(",", ":"),
+            sort_keys=True,
+        ).encode("utf-8")
+    except (UnicodeDecodeError, ValueError, TypeError, OverflowError, RecursionError) as exc:
+        raise ValueError("harmonic_seed_cache_json_invalid") from exc
+    if canonical != raw or not isinstance(decoded, dict):
+        raise ValueError("harmonic_seed_cache_not_canonical")
+    return decoded
 
 
 @dataclass
@@ -109,18 +165,126 @@ class GlobalHarmonicState:
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "GlobalHarmonicState":
-        """Reconstruct from dict"""
+        """Reconstruct one exact, bounded, non-executable cache schema."""
+
+        expected_state_fields = {
+            "symbols",
+            "coherence_matrix",
+            "global_phase",
+            "global_coherence",
+            "dominant_frequency",
+            "schumann_alignment",
+            "market_regime",
+            "last_update",
+            "candle_count",
+        }
+        symbol_fields = {
+            "symbol",
+            "phase",
+            "amplitude",
+            "frequency",
+            "velocity",
+            "coherence",
+            "last_price",
+            "last_volume",
+            "last_update",
+            "price_history",
+            "volume_history",
+            "phase_history",
+        }
+        if not isinstance(data, dict) or set(data) != expected_state_fields:
+            raise ValueError("harmonic_seed_cache_schema_invalid")
+        raw_symbols = data["symbols"]
+        if not isinstance(raw_symbols, dict) or len(raw_symbols) > MAX_HARMONIC_SYMBOLS:
+            raise ValueError("harmonic_seed_symbols_invalid")
         state = cls()
-        for k, v in data.get("symbols", {}).items():
-            state.symbols[k] = SymbolWaveState(**v)
-        state.coherence_matrix = data.get("coherence_matrix", {})
-        state.global_phase = data.get("global_phase", 0.0)
-        state.global_coherence = data.get("global_coherence", 0.0)
-        state.dominant_frequency = data.get("dominant_frequency", SCHUMANN_BASE)
-        state.schumann_alignment = data.get("schumann_alignment", 0.0)
-        state.market_regime = data.get("market_regime", "neutral")
-        state.last_update = data.get("last_update", 0.0)
-        state.candle_count = data.get("candle_count", 0)
+        for key, raw_state in raw_symbols.items():
+            if (
+                not isinstance(key, str)
+                or not key
+                or len(key.encode("utf-8")) > 128
+                or not isinstance(raw_state, dict)
+                or set(raw_state) != symbol_fields
+                or raw_state.get("symbol") != key
+            ):
+                raise ValueError("harmonic_seed_symbol_schema_invalid")
+            normalized = {
+                "symbol": key,
+                **{
+                    field_name: _finite_number(raw_state[field_name], field_name=field_name)
+                    for field_name in (
+                        "phase",
+                        "amplitude",
+                        "frequency",
+                        "velocity",
+                        "coherence",
+                        "last_price",
+                        "last_volume",
+                        "last_update",
+                    )
+                },
+                **{
+                    field_name: _bounded_number_list(
+                        raw_state[field_name],
+                        field_name=field_name,
+                    )
+                    for field_name in (
+                        "price_history",
+                        "volume_history",
+                        "phase_history",
+                    )
+                },
+            }
+            state.symbols[key] = SymbolWaveState(**normalized)
+
+        raw_matrix = data["coherence_matrix"]
+        if not isinstance(raw_matrix, dict) or len(raw_matrix) > MAX_HARMONIC_SYMBOLS:
+            raise ValueError("harmonic_seed_coherence_matrix_invalid")
+        coherence_matrix: Dict[str, Dict[str, float]] = {}
+        coherence_values = 0
+        for row_name, raw_row in raw_matrix.items():
+            if (
+                not isinstance(row_name, str)
+                or row_name not in state.symbols
+                or not isinstance(raw_row, dict)
+                or len(raw_row) > MAX_HARMONIC_SYMBOLS
+            ):
+                raise ValueError("harmonic_seed_coherence_row_invalid")
+            coherence_values += len(raw_row)
+            if coherence_values > MAX_COHERENCE_VALUES:
+                raise ValueError("harmonic_seed_coherence_limit_exceeded")
+            row: Dict[str, float] = {}
+            for column_name, raw_value in raw_row.items():
+                if not isinstance(column_name, str) or column_name not in state.symbols:
+                    raise ValueError("harmonic_seed_coherence_column_invalid")
+                row[column_name] = _finite_number(
+                    raw_value,
+                    field_name="coherence_matrix_value",
+                )
+            coherence_matrix[row_name] = row
+        state.coherence_matrix = coherence_matrix
+        state.global_phase = _finite_number(data["global_phase"], field_name="global_phase")
+        state.global_coherence = _finite_number(
+            data["global_coherence"],
+            field_name="global_coherence",
+        )
+        state.dominant_frequency = _finite_number(
+            data["dominant_frequency"],
+            field_name="dominant_frequency",
+        )
+        state.schumann_alignment = _finite_number(
+            data["schumann_alignment"],
+            field_name="schumann_alignment",
+        )
+        regime = data["market_regime"]
+        if not isinstance(regime, str) or not regime or len(regime.encode("utf-8")) > 128:
+            raise ValueError("harmonic_seed_market_regime_invalid")
+        state.market_regime = regime
+        state.last_update = _finite_number(data["last_update"], field_name="last_update")
+        candle_count = data["candle_count"]
+        if type(candle_count) is not int or not 0 <= candle_count <= 1_000_000_000:
+            raise ValueError("harmonic_seed_candle_count_invalid")
+        state.candle_count = candle_count
         return state
 
 
@@ -140,14 +304,14 @@ class HarmonicSeedLoader:
         """Lazy-load exchange clients"""
         if not self._exchange_clients:
             try:
-                from aureon.exchanges.kraken_client import KrakenClient, get_kraken_client
+                from aureon.exchanges.kraken_client import get_kraken_client
                 self._exchange_clients['kraken'] = get_kraken_client()
                 logger.info("✅ Kraken client initialized")
             except Exception as e:
                 logger.warning(f"Could not init Kraken: {e}")
             
             try:
-                from aureon.exchanges.binance_client import BinanceClient, get_binance_client
+                from aureon.exchanges.binance_client import BinanceClient
                 self._exchange_clients['binance'] = BinanceClient()
                 logger.info("✅ Binance client initialized")
             except Exception as e:
@@ -500,8 +664,14 @@ class HarmonicSeedLoader:
         Returns:
             GlobalHarmonicState ready for live growth
         """
-        cache_file = self.cache_dir / "harmonic_seed.pkl"
+        cache_file = self.cache_dir / "harmonic_seed.json"
+        legacy_pickle = self.cache_dir / "harmonic_seed.pkl"
         cache_meta = self.cache_dir / "harmonic_seed_meta.json"
+
+        if legacy_pickle.exists():
+            logger.warning(
+                "Legacy harmonic_seed.pkl ignored: pickle deserialization is disabled"
+            )
         
         # Check cache
         if not force_refresh and cache_file.exists() and cache_meta.exists():
@@ -513,8 +683,10 @@ class HarmonicSeedLoader:
                 cache_age = time.time() - meta.get('timestamp', 0)
                 if cache_age < 6 * 3600:
                     logger.info(f"📦 Loading cached harmonic seed (age: {cache_age/3600:.1f}h)")
-                    with open(cache_file, 'rb') as f:
-                        self.state = pickle.load(f)
+                    if cache_file.stat().st_size > MAX_HARMONIC_CACHE_BYTES:
+                        raise ValueError("harmonic_seed_cache_too_large")
+                    decoded = _decode_harmonic_cache(cache_file.read_bytes())
+                    self.state = GlobalHarmonicState.from_dict(decoded)
                     return self.state
             except Exception as e:
                 logger.warning(f"Cache load failed: {e}")
@@ -566,7 +738,7 @@ class HarmonicSeedLoader:
         
         # 5. Build coherence matrix
         self.state.coherence_matrix = self.build_coherence_matrix(self.state.symbols)
-        logger.info(f"🔗 Built coherence matrix")
+        logger.info("🔗 Built coherence matrix")
         
         # 6. Calculate global metrics
         (self.state.global_phase,
@@ -587,15 +759,22 @@ class HarmonicSeedLoader:
         
         # 7. Cache the result
         try:
-            with open(cache_file, 'wb') as f:
-                pickle.dump(self.state, f)
-            with open(cache_meta, 'w') as f:
+            with open(cache_file, 'w', encoding='utf-8') as f:
+                json.dump(
+                    self.state.to_dict(),
+                    f,
+                    ensure_ascii=True,
+                    allow_nan=False,
+                    separators=(',', ':'),
+                    sort_keys=True,
+                )
+            with open(cache_meta, 'w', encoding='utf-8') as f:
                 json.dump({
                     'timestamp': time.time(),
                     'symbols': len(self.state.symbols),
                     'candles': SEED_CANDLE_COUNT
                 }, f)
-            logger.info(f"💾 Cached harmonic seed")
+            logger.info("💾 Cached harmonic seed")
         except Exception as e:
             logger.warning(f"Failed to cache seed: {e}")
         

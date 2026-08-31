@@ -242,7 +242,11 @@ def _client():
     import aureon.operator.operator_server as srv
 
     importlib.reload(srv)
-    return srv.create_app().test_client()
+    return srv.create_app(
+        test_ingress_release=srv.TestOnlyOperatorIngressRelease(
+            master_key=b"feature-switchboard-http-route-test-key",
+        )
+    ).test_client()
 
 
 def test_route_list_grouped(temp_store):

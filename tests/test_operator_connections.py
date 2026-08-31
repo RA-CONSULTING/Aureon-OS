@@ -44,7 +44,11 @@ def _client():
     import aureon.operator.operator_server as srv
 
     importlib.reload(srv)
-    return srv.create_app().test_client()
+    return srv.create_app(
+        test_ingress_release=srv.TestOnlyOperatorIngressRelease(
+            master_key=b"operator-connections-route-test-key-material",
+        )
+    ).test_client()
 
 
 # ── catalog ─────────────────────────────────────────────────────────────────

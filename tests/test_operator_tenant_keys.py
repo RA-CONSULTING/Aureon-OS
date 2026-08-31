@@ -69,7 +69,12 @@ def env(tmp_path, monkeypatch):
     import aureon.operator.operator_server as srv
 
     importlib.reload(srv)
-    return srv.create_app().test_client(), ks, cfg
+    app = srv.create_app(
+        test_ingress_release=srv.TestOnlyOperatorIngressRelease(
+            master_key=b"operator-tenant-keys-route-test-material",
+        )
+    )
+    return app.test_client(), ks, cfg
 
 
 def _openai_view(payload: dict) -> dict:
@@ -260,7 +265,11 @@ def test_open_mode_unchanged(tmp_path, monkeypatch):
     import aureon.operator.operator_server as srv
 
     importlib.reload(srv)
-    c = srv.create_app().test_client()
+    c = srv.create_app(
+        test_ingress_release=srv.TestOnlyOperatorIngressRelease(
+            master_key=b"operator-open-mode-route-test-key-material",
+        )
+    ).test_client()
     # open: no auth needed, and a stray JWT header is simply ignored (no tenant scoping)
     assert c.get("/api/providers").status_code == 200
     assert c.get("/api/providers", headers=_tenant("aaa")).status_code == 200
