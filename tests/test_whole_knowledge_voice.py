@@ -1,49 +1,25 @@
+"""Pure translation tests and fail-closed whole-knowledge execution tests."""
+
 from __future__ import annotations
 
+import inspect
 import json
 from pathlib import Path
 
+import pytest
+
 from aureon.vault.voice.whole_knowledge_voice import (
+    WHOLE_KNOWLEDGE_VOICE_RELEASE_HOLD,
     build_expression_profile,
     compose_voice_artifact,
+    _default_source_paths,
+    _extract_docx_paragraphs,
+    _read_source_text,
     translate_runtime_state,
 )
 
 
-def test_expression_profile_classifies_repo_facets(tmp_path: Path):
-    human = tmp_path / "bhoy_voice.md"
-    human.write_text(
-        "A Bhoy voice speaks of family, street rain, tea, courage, and ordinary human care.",
-        encoding="utf-8",
-    )
-    harmonic = tmp_path / "hnc_math.py"
-    harmonic.write_text(
-        "def signal():\n"
-        "    return 'HNC harmonic resonance with phi ratio, gamma coherence, frequency Hz, and Auris nodes'\n",
-        encoding="utf-8",
-    )
-    trading = tmp_path / "trader.md"
-    trading.write_text(
-        "Kraken Binance Alpaca Capital trade orders, positions, market action, HMRC tax filing.",
-        encoding="utf-8",
-    )
-
-    profile = build_expression_profile(
-        root=tmp_path,
-        source_paths=[human, harmonic, trading],
-        evidence_dir=tmp_path,
-    )
-
-    assert profile.source_count == 3
-    assert profile.facet_counts["human_voice"] >= 1
-    assert profile.facet_counts["hnc_harmonic"] >= 1
-    assert profile.facet_counts["math_equation"] >= 1
-    assert profile.facet_counts["trading_action"] >= 1
-    assert profile.facet_counts["accounting_legal"] >= 1
-    assert (tmp_path / "aureon_expression_profile.json").exists()
-
-
-def test_runtime_state_translation_uses_senses_and_redacts():
+def test_runtime_state_translation_uses_senses_and_redacts() -> None:
     translated = translate_runtime_state(
         {
             "runtime_state": {
@@ -57,7 +33,6 @@ def test_runtime_state_translation_uses_senses_and_redacts():
             "API_SECRET": "do-not-emit",
         }
     )
-
     assert "market pulse" in translated.senses["see"]
     assert "528.00 Hz" in translated.senses["hear"]
     assert "runtime_stale" in translated.blockers
@@ -65,39 +40,96 @@ def test_runtime_state_translation_uses_senses_and_redacts():
     assert "do-not-emit" not in json.dumps(translated.to_dict())
 
 
-def test_compose_voice_artifact_writes_evidence_without_raw_telemetry(tmp_path: Path):
-    source = tmp_path / "knowledge.md"
-    source.write_text(
-        "Human voice, HNC harmonic resonance, sensory affect, touch, smell, trading action, code tooling.",
-        encoding="utf-8",
-    )
-    profile = build_expression_profile(
-        root=tmp_path,
-        source_paths=[source],
-        evidence_dir=tmp_path,
-        publish=False,
-    )
-
-    artifact = compose_voice_artifact(
-        "explain what Aureon senses before it speaks",
-        mode="conversation",
-        evidence={
+def test_runtime_translation_redacts_nested_credential_values_recursively() -> None:
+    secrets = [
+        "sk-proj-FAKESECRET000000000000",
+        "ghp_FAKESECRET000000000000",
+        "AKIAFAKESECRET0000",
+        "FAKESECRETXYZ",
+        "BearerSuffixFAKE000",
+    ]
+    translated = translate_runtime_state(
+        {
             "runtime_state": {
-                "coherence_gamma": 0.912345,
-                "dominant_band": "theta",
-                "hot_topic": "voice core",
-                "action": "ANSWER",
-            }
-        },
-        profile=profile,
-        root=tmp_path,
-        evidence_dir=tmp_path,
+                "mood": secrets[0],
+                "action": f"Bearer {secrets[4]}",
+                "hot_topic": secrets[1],
+                "blockers": [
+                    f"password={secrets[3]}",
+                    secrets[2],
+                    {"token": "nested-FAKESECRET"},
+                ],
+            },
+            "API_SECRET": "top-level-FAKESECRET",
+        }
     )
+    dumped = json.dumps(translated.to_dict(), sort_keys=True)
+    for secret in secrets:
+        assert secret not in dumped
+    assert "nested-FAKESECRET" not in dumped
+    assert "top-level-FAKESECRET" not in dumped
+    assert translated.redaction_applied is True
+    assert translated.blockers
 
-    assert artifact.ok
-    assert artifact.word_count > 40
-    assert "voice core" in artifact.text
-    assert "coherence_gamma" not in artifact.text
-    assert "dominant_band" not in artifact.text
-    assert artifact.novelty_checks["paragraphs_out"] >= 3
-    assert Path(artifact.evidence_path).exists()
+
+def test_public_execution_defaults_are_non_publishing() -> None:
+    assert inspect.signature(build_expression_profile).parameters["publish"].default is False
+    assert inspect.signature(compose_voice_artifact).parameters["publish"].default is False
+    assert WHOLE_KNOWLEDGE_VOICE_RELEASE_HOLD.startswith("whole_knowledge_voice_hold:")
+
+
+@pytest.mark.parametrize("entrypoint", ["profile", "artifact"])
+def test_profile_and_artifact_hold_before_read_or_write(
+    entrypoint: str,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.setattr(
+        Path,
+        "exists",
+        lambda *_args, **_kwargs: pytest.fail("held voice path must not probe sources"),
+    )
+    monkeypatch.setattr(
+        Path,
+        "mkdir",
+        lambda *_args, **_kwargs: pytest.fail("held voice path must not create directories"),
+    )
+    calls = {
+        "profile": lambda: build_expression_profile(
+            root=tmp_path,
+            source_paths=[tmp_path / "secret.md"],
+            evidence_dir=tmp_path,
+            publish=True,
+        ),
+        "artifact": lambda: compose_voice_artifact(
+            "speak", root=tmp_path, evidence_dir=tmp_path, publish=True,
+        ),
+    }
+    with pytest.raises(RuntimeError, match="whole_knowledge_voice_hold"):
+        calls[entrypoint]()
+    assert list(tmp_path.iterdir()) == []
+
+
+@pytest.mark.parametrize("entrypoint", ["discover", "text", "docx"])
+def test_direct_source_readers_hold_before_filesystem_or_zip_access(
+    entrypoint: str,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    def _fail(*_args, **_kwargs):
+        pytest.fail("held source reader touched the filesystem")
+
+    for name in ("exists", "resolve", "glob", "read_text"):
+        monkeypatch.setattr(Path, name, _fail)
+    monkeypatch.setattr(
+        "aureon.vault.voice.whole_knowledge_voice.ZipFile",
+        _fail,
+    )
+    path = tmp_path / "private.docx"
+    calls = {
+        "discover": lambda: _default_source_paths(tmp_path, max_sources=10),
+        "text": lambda: _read_source_text(path, max_chars=100),
+        "docx": lambda: _extract_docx_paragraphs(path, max_paragraphs=10),
+    }
+    with pytest.raises(RuntimeError, match="whole_knowledge_voice_hold"):
+        calls[entrypoint]()

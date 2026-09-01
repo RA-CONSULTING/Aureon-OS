@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import time
 from pathlib import Path
 from typing import Any, Dict, List
@@ -25,7 +26,9 @@ from aureon.saas.domains import PRODUCT_DOMAINS, fs_domain_from_path, product_do
 
 logger = logging.getLogger("aureon.saas.catalog")
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = Path(
+    os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
+)
 _CATALOG_CACHE = REPO_ROOT / "state" / "aureon_saas_catalog.json"
 _FRONTEND_PUBLIC = REPO_ROOT / "frontend" / "public"
 

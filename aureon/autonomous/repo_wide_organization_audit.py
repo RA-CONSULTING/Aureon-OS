@@ -615,7 +615,7 @@ def render_markdown(report: RepoWideOrganizationAudit) -> str:
     lines.append("## Staging Checklist")
     lines.append("")
     checklist = [
-        "Keep `scripts/aureon_ignition.py` as the single live boot entrypoint and keep audit-only checks separate.",
+        "Keep ignition behind `scripts/bootstrap/protected_bootstrap_v05.py --target-id ignition`; it remains HOLD.",
         "Keep core contracts, ThoughtBus, runtime safety, and organism spine in `aureon/core`.",
         "Keep accounting/code-generated compliance packs under `Kings_Accounting_Suite` and business evidence under explicit raw-data roots.",
         "Keep runtime state, generated logs, and giant memory files in controlled state/output locations.",

@@ -38,6 +38,10 @@ from aureon.harmonic.phi_bridge import DEFAULT_BASE_INTERVAL_S, MIN_INTERVAL_S, 
 
 logger = logging.getLogger("aureon.harmonic.phi_bridge_mesh")
 
+PHI_MESH_RELEASE_HOLD = (
+    "phi_bridge_mesh_hold:production_magic_star_release_unavailable"
+)
+
 
 BATCH_LIMIT: int = 64
 HTTP_TIMEOUT_S: float = 2.0
@@ -56,6 +60,7 @@ class HTTPPeerClient:
         self.timeout = float(timeout)
 
     def post_json(self, url: str, body: Dict[str, Any]) -> Dict[str, Any]:
+        raise RuntimeError(PHI_MESH_RELEASE_HOLD)
         data = json.dumps(body, default=str).encode("utf-8")
         req = Request(
             url,
@@ -140,6 +145,7 @@ class PhiBridgeMesh:
     # ─────────────────────────────────────────────────────────────────────
 
     def start(self) -> None:
+        raise RuntimeError(PHI_MESH_RELEASE_HOLD)
         if self._running:
             return
         self._running = True
@@ -161,13 +167,9 @@ class PhiBridgeMesh:
     def _current_interval(self) -> float:
         if self.interval_s is not None:
             return max(MIN_INTERVAL_S, self.interval_s)
-        # Scale with discovered peer count, matching PhiBridge.cadence
-        try:
-            n = max(1, len(self.discovery.known_peers()))
-        except Exception:
-            n = 1
-        interval = DEFAULT_BASE_INTERVAL_S / (PHI ** (n - 1))
-        return max(MIN_INTERVAL_S, interval)
+        # Discovery enumeration can prune/mutate state in legacy providers.
+        # The unreleased snapshot therefore reports the fixed base cadence.
+        return max(MIN_INTERVAL_S, DEFAULT_BASE_INTERVAL_S)
 
     # ─────────────────────────────────────────────────────────────────────
     # Vault helpers
@@ -264,6 +266,7 @@ class PhiBridgeMesh:
 
     def build_payload_for(self, peer_id: str) -> Dict[str, Any]:
         """Build the outbound gossip payload for a given peer."""
+        raise RuntimeError(PHI_MESH_RELEASE_HOLD)
         with self._lock:
             state = self._peer_sync.setdefault(peer_id, _PeerSync())
             known_by_peer = set(state.known_hashes)
@@ -287,6 +290,7 @@ class PhiBridgeMesh:
 
     def apply_response(self, peer_id: str, response: Dict[str, Any]) -> Dict[str, int]:
         """Ingest cards returned by a peer; update per-peer sync state."""
+        raise RuntimeError(PHI_MESH_RELEASE_HOLD)
         cards = response.get("cards") or []
         peer_hashes = response.get("our_hashes") or []
         merged = 0
@@ -310,6 +314,7 @@ class PhiBridgeMesh:
         This is the server-side of the exchange — a node running an HTTP
         endpoint calls this and returns its output as JSON.
         """
+        raise RuntimeError(PHI_MESH_RELEASE_HOLD)
         sender = str(payload.get("from_peer_id") or "")
         peer_hashes = payload.get("our_hashes") or []
         cards = payload.get("cards") or []
@@ -343,6 +348,7 @@ class PhiBridgeMesh:
 
     def gossip_to(self, peer: Any) -> Dict[str, Any]:
         """Exchange with one remote peer."""
+        raise RuntimeError(PHI_MESH_RELEASE_HOLD)
         if isinstance(peer, dict):
             peer_id = str(peer.get("peer_id", ""))
             url_base = str(peer.get("url_base", ""))
@@ -370,6 +376,7 @@ class PhiBridgeMesh:
 
     def gossip_once(self) -> Dict[str, Any]:
         """One pass over all discovered peers."""
+        raise RuntimeError(PHI_MESH_RELEASE_HOLD)
         try:
             peers = self.discovery.known_peers()
         except Exception as e:

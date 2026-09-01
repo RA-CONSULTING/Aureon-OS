@@ -1,269 +1,38 @@
 #!/usr/bin/env python3
-"""
-🎮👑 AUREON DESKTOP APP BUILDER 👑🎮
-=====================================
-Builds standalone executable for Windows/macOS/Linux
-No Docker required - single .exe/.app file
-"""
+"""Desktop-build compatibility entrypoint routed to terminal release HOLD."""
 
-from aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
-import sys
+from __future__ import annotations
+
 import os
-import subprocess
-import shutil
+import sys
 from pathlib import Path
 
-# Banner
-BANNER = """
-    ╔═══════════════════════════════════════════════════════════════════════════╗
-    ║                                                                           ║
-    ║     █████╗ ██╗   ██╗██████╗ ███████╗ ██████╗ ███╗   ██╗                   ║
-    ║    ██╔══██╗██║   ██║██╔══██╗██╔════╝██╔═══██╗████╗  ██║                   ║
-    ║    ███████║██║   ██║██████╔╝█████╗  ██║   ██║██╔██╗ ██║                   ║
-    ║    ██╔══██║██║   ██║██╔══██╗██╔══╝  ██║   ██║██║╚██╗██║                   ║
-    ║    ██║  ██║╚██████╔╝██║  ██║███████╗╚██████╔╝██║ ╚████║                   ║
-    ║    ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚═╝  ╚═══╝                   ║
-    ║                                                                           ║
-    ║                    🔨 DESKTOP APP BUILDER 🔨                              ║
-    ║                                                                           ║
-    ╚═══════════════════════════════════════════════════════════════════════════╝
-"""
 
-# Core modules to include in the build
-CORE_MODULES = [
-    # Entry points
-    'aureon_game_launcher.py',
-    'micro_profit_labyrinth.py',
-    
-    # Core systems
-    'aureon_unified_ecosystem.py',
-    'aureon_queen_hive_mind.py',
-    'aureon_thought_bus.py',
-    'aureon_probability_nexus.py',
-    'adaptive_prime_profit_gate.py',
-    
-    # Queen systems
-    'queen_harmonic_voice.py',
-    'queen_neural_brain.py',
-    'queen_orca_bridge.py',
-    'queen_volume_hunter.py',
-    
-    # Orca systems
-    'orca_complete_kill_cycle.py',
-    'orca_command_center.py',
-    
-    # Exchange clients
-    'kraken_client.py',
-    'binance_client.py',
-    'alpaca_client.py',
-    'capital_client.py',
-    
-    # Web dashboards
-    'aureon_command_center.py',
-    'queen_unified_dashboard.py',
-]
-
-# Hidden imports for PyInstaller
-HIDDEN_IMPORTS = [
-    'flask',
-    'flask_cors',
-    'flask_socketio',
-    'websocket',
-    'keyring',
-    'keyring.backends.Windows',
-    'keyring.backends.macOS',
-    'keyring.backends.SecretService',
-    'cryptography',
-    'numpy',
-    'pandas',
-    'requests',
-    'aiohttp',
-    'asyncio',
-]
+def main() -> int:
+    root = Path(__file__).resolve().parents[1]
+    bootstrap = root / "scripts" / "bootstrap" / "protected_bootstrap_v05.py"
+    python = (
+        root / ".venv" / "Scripts" / "python.exe"
+        if os.name == "nt"
+        else root / ".venv" / "bin" / "python"
+    )
+    if not python.is_file() or not bootstrap.is_file():
+        print("Desktop release boundary unavailable; refusing build.", file=sys.stderr)
+        return 1
+    os.execv(
+        str(python),
+        (
+            str(python),
+            "-I",
+            "-S",
+            "-B",
+            str(bootstrap),
+            "--target-id",
+            "local-gui",
+        ),
+    )
+    return 1
 
 
-def check_pyinstaller():
-    """Ensure PyInstaller is installed"""
-    try:
-        import PyInstaller
-        print(f"✅ PyInstaller {PyInstaller.__version__} found")
-        return True
-    except ImportError:
-        print("❌ PyInstaller not found. Installing...")
-        subprocess.run([sys.executable, '-m', 'pip', 'install', 'pyinstaller'], check=True)
-        return True
-
-
-def create_spec_file(project_dir: Path, output_dir: Path):
-    """Create PyInstaller spec file"""
-    spec_content = f'''# -*- mode: python ; coding: utf-8 -*-
-# AUREON Trading System - PyInstaller Spec
-
-import sys
-import os
-
-block_cipher = None
-
-# Data files to include
-datas = [
-    # Config templates
-    ('production/first_run_setup.py', 'production'),
-    
-    # Static assets (if any)
-    # ('static/*', 'static'),
-    # ('templates/*', 'templates'),
-]
-
-# Collect all Python files
-a = Analysis(
-    ['aureon_game_launcher.py'],
-    pathex=['{project_dir}'],
-    binaries=[],
-    datas=datas,
-    hiddenimports={HIDDEN_IMPORTS},
-    hookspath=[],
-    hooksconfig={{}},
-    runtime_hooks=[],
-    excludes=['tkinter', 'matplotlib', 'scipy'],
-    win_no_prefer_redirects=False,
-    win_private_assemblies=False,
-    cipher=block_cipher,
-    noarchive=False,
-)
-
-pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
-
-exe = EXE(
-    pyz,
-    a.scripts,
-    a.binaries,
-    a.zipfiles,
-    a.datas,
-    [],
-    name='AUREON',
-    debug=False,
-    bootloader_ignore_signals=False,
-    strip=False,
-    upx=True,
-    upx_exclude=[],
-    runtime_tmpdir=None,
-    console=False,  # Windowed app
-    disable_windowed_traceback=False,
-    argv_emulation=False,
-    target_arch=None,
-    codesign_identity=None,
-    entitlements_file=None,
-    icon='production/aureon.ico' if os.path.exists('production/aureon.ico') else None,
-)
-
-# macOS app bundle
-app = BUNDLE(
-    exe,
-    name='AUREON.app',
-    icon='production/aureon.icns' if os.path.exists('production/aureon.icns') else None,
-    bundle_identifier='com.aureon.trading',
-    info_plist={{
-        'CFBundleName': 'AUREON',
-        'CFBundleDisplayName': 'AUREON Trading System',
-        'CFBundleVersion': '1.0.0',
-        'CFBundleShortVersionString': '1.0.0',
-        'NSHighResolutionCapable': True,
-    }},
-)
-'''
-    
-    spec_file = output_dir / 'aureon.spec'
-    spec_file.write_text(spec_content)
-    print(f"✅ Spec file created: {spec_file}")
-    return spec_file
-
-
-def build_executable(project_dir: Path, output_dir: Path):
-    """Build the executable"""
-    print("\n🔨 Building executable...")
-    
-    # Create spec file
-    spec_file = create_spec_file(project_dir, output_dir)
-    
-    # Run PyInstaller
-    cmd = [
-        sys.executable, '-m', 'PyInstaller',
-        '--clean',
-        '--noconfirm',
-        '--distpath', str(output_dir / 'dist'),
-        '--workpath', str(output_dir / 'build'),
-        str(spec_file)
-    ]
-    
-    print(f"Running: {' '.join(cmd)}")
-    result = subprocess.run(cmd, cwd=project_dir)
-    
-    if result.returncode == 0:
-        print("\n✅ Build successful!")
-        
-        # Show output location
-        if sys.platform == 'win32':
-            exe_path = output_dir / 'dist' / 'AUREON.exe'
-        elif sys.platform == 'darwin':
-            exe_path = output_dir / 'dist' / 'AUREON.app'
-        else:
-            exe_path = output_dir / 'dist' / 'AUREON'
-        
-        print(f"\n📦 Output: {exe_path}")
-        return exe_path
-    else:
-        print("\n❌ Build failed!")
-        return None
-
-
-def main():
-    print(BANNER)
-    
-    # Paths
-    script_dir = Path(__file__).parent
-    project_dir = script_dir.parent
-    output_dir = script_dir / 'desktop_build'
-    
-    print(f"Project: {project_dir}")
-    print(f"Output:  {output_dir}")
-    print()
-    
-    # Create output directory
-    output_dir.mkdir(exist_ok=True)
-    
-    # Check prerequisites
-    print("═" * 75)
-    print("  Checking Prerequisites")
-    print("═" * 75)
-    check_pyinstaller()
-    
-    # Build
-    print("\n" + "═" * 75)
-    print("  Building AUREON Desktop App")
-    print("═" * 75)
-    
-    exe_path = build_executable(project_dir, output_dir)
-    
-    if exe_path and exe_path.exists():
-        print("\n" + "═" * 75)
-        print("  ✅ BUILD COMPLETE!")
-        print("═" * 75)
-        print(f"""
-  The AUREON desktop app has been built!
-
-  Output: {exe_path}
-
-  To distribute:
-  1. Copy the executable to the target machine
-  2. Run it - first-run setup wizard will appear
-  3. Enter API keys and start trading!
-
-  Note: The app is self-contained and sandboxed.
-        """)
-    else:
-        print("\n❌ Build failed. Check errors above.")
-        sys.exit(1)
-
-
-if __name__ == '__main__':
-    main()
+if __name__ == "__main__":
+    raise SystemExit(main())

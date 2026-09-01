@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import threading
 
+import pytest
+
 from aureon.core import aureon_baton_link as baton
 from aureon.core.aureon_thought_bus import ThoughtBus
 
@@ -30,25 +32,38 @@ def test_real_data_policy_does_not_enable_live_orders(monkeypatch):
     assert baton.os.environ['STATUS_MOCK'] == 'false'
 
 
-def test_link_system_does_not_start_sonar(monkeypatch):
-    class Bus:
-        def publish(self, thought):
-            return thought
+def test_link_system_is_unconditional_no_effect_hold(monkeypatch):
+    def fail(reason):
+        return lambda *_args, **_kwargs: pytest.fail(reason)
 
-    monkeypatch.setattr(baton, '_ensure_stdio', lambda: None)
-    monkeypatch.setattr(baton, '_enforce_real_data_only', lambda: None)
-    monkeypatch.setattr(baton, '_audit_mode_enabled', lambda: False)
-    monkeypatch.setattr(baton, '_import_side_effects_suppressed', lambda: False)
-    monkeypatch.setattr(baton, 'THOUGHT_BUS_AVAILABLE', True)
-    monkeypatch.setattr(baton, 'get_thought_bus', lambda **_kwargs: Bus())
-    monkeypatch.setattr(
-        baton,
-        '_load_sonar',
-        lambda: (_ for _ in ()).throw(AssertionError('sonar started during import link')),
-    )
+    monkeypatch.setenv('AUREON_ACTIVATE_ON_IMPORT', '1')
+    monkeypatch.setattr(baton, '_ensure_stdio', fail('stdio mutated during import link'))
+    monkeypatch.setattr(baton, '_enforce_real_data_only', fail('environment mutated'))
+    monkeypatch.setattr(baton, 'get_thought_bus', fail('ThoughtBus constructed'))
+    monkeypatch.setattr(baton, '_load_sonar', fail('sonar started during import link'))
     baton._LINKED.discard('tests.import_safety')
 
     baton.link_system('tests.import_safety')
+
+    assert 'tests.import_safety' not in baton._LINKED
+
+
+def test_autonomous_control_and_stage_emission_are_held_before_effects(monkeypatch):
+    monkeypatch.setattr(
+        baton,
+        '_log_baton_event',
+        lambda *_args, **_kwargs: pytest.fail('baton HOLD must not write logs'),
+    )
+    monkeypatch.setattr(
+        baton,
+        'get_thought_bus',
+        lambda *_args, **_kwargs: pytest.fail('baton HOLD must not construct bus'),
+    )
+
+    with pytest.raises(RuntimeError, match='autonomous_control_hold'):
+        baton.activate_autonomous_control()
+    with pytest.raises(RuntimeError, match='baton_stage_hold'):
+        baton.emit_stage('execute', 'tests')
 
 
 def test_thought_bus_construction_starts_no_background_thread(tmp_path):

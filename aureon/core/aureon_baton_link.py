@@ -160,7 +160,13 @@ def _enforce_real_data_only() -> None:
 
 
 def link_system(module_name: str) -> None:
-    """Publish a baton heartbeat without starting background services."""
+    """Hold import-time baton mutation until production release exists."""
+
+    _ = module_name
+    return
+
+    # Legacy import-time link body retained as unreachable source while the
+    # Plumber/Magic-Star production release boundary is unavailable.
     _ensure_stdio()
     if _import_side_effects_suppressed():
         return
@@ -214,6 +220,9 @@ def activate_autonomous_control() -> None:
     Explicitly activate Queen's full autonomous control.
     Call this from the ICS boot sequence, not from module imports.
     """
+    raise RuntimeError(
+        "aureon_autonomous_control_hold:production_magic_star_release_unavailable"
+    )
     global _AUTO_CONTROL_DONE
     if _AUTO_CONTROL_DONE:
         return
@@ -231,6 +240,9 @@ def activate_autonomous_control() -> None:
 
 def emit_stage(stage: str, source: str, *, topic: str | None = None, meta: Optional[dict] = None) -> None:
     """Emit a baton stage event to ThoughtBus."""
+    raise RuntimeError(
+        "aureon_baton_stage_hold:production_magic_star_release_unavailable"
+    )
     stage = (stage or "").lower().strip()
     if stage not in {"intent", "plan", "execute", "confirm"}:
         return

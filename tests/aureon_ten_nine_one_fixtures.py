@@ -8,14 +8,29 @@ import json
 from collections.abc import Mapping
 from typing import Any
 
+from aureon.autonomous.aureon_cloud_brain_composition import (
+    TruthAuthorityBundle,
+)
 from aureon.autonomous.aureon_ten_nine_one_thought_path import (
+    CommitmentOnlyHiveMyceliaPropagator,
+    LocalHncAurisEvidenceResolver,
     ThoughtPathRequest,
     build_delivery_ack,
 )
 from aureon.autonomous.aureon_truth_gated_ten_nine_one import (
+    ReceiptBackedTenNineOneTruthGate,
     TruthGatedTenNineOneThoughtPath,
 )
+from aureon.core.aureon_thought_bus import Thought, ThoughtBus
 from aureon.governance.qgita_kundalini_truth_gate import TruthGateRequest, _result
+from aureon.governance.trusted_truth_evidence import (
+    CLAIM_SET_PREFIX,
+    CLAIM_SET_SCHEMA,
+    DIAGNOSTIC_SIGNAL_PREFIX,
+    DIAGNOSTIC_SIGNAL_SCHEMA,
+    EVIDENCE_ITEM_PREFIX,
+    EVIDENCE_ITEM_SCHEMA,
+)
 
 NOW = 1_786_480_000.0
 
@@ -31,6 +46,13 @@ INPUT_FALSE_FLAGS = (
     "eligible_for_accounting",
     "eligible_for_learning",
 )
+TRUTH_FALSE_FLAGS = {
+    **dict.fromkeys(INPUT_FALSE_FLAGS, False),
+    "economic_mutation": False,
+}
+TEST_CLAIM_AUTHORITY_ID = "aureon:test:self-coder-claim-authority"
+TEST_EVIDENCE_ISSUER_ID = "aureon:test:self-coder-evidence-issuer"
+TEST_DIAGNOSTIC_AUTHORITY_ID = "aureon:test:self-coder-diagnostic-authority"
 
 
 def _sha(value: Any) -> str:
@@ -46,6 +68,87 @@ def _sha(value: Any) -> str:
 
 def _false_flags() -> dict[str, bool]:
     return dict.fromkeys(INPUT_FALSE_FLAGS, False)
+
+
+def _truth_receipt(causal: Mapping[str, Any], prefix: str) -> dict[str, Any]:
+    return {**causal, "receipt_id": f"{prefix}{_sha(causal)}"}
+
+
+class _SelfCoderClaimAuthority:
+    authority_id = TEST_CLAIM_AUTHORITY_ID
+
+    def resolve_claim_evidence(self, request: TruthGateRequest) -> Mapping[str, Any]:
+        evidence = _truth_receipt(
+            {
+                "schema_version": EVIDENCE_ITEM_SCHEMA,
+                "issuer_id": TEST_EVIDENCE_ISSUER_ID,
+                "source_kind": "repository_file",
+                "source_uri": "repo://tests/confidential-self-coder-fixture",
+                "source_locator": "synthetic-focused-test-receipt",
+                "content_digest": _sha("focused test source"),
+                "source_timestamp": NOW - 2.0,
+                "received_at": NOW - 1.0,
+                "truth_status": "real_observed",
+                "generated_values": False,
+                **TRUTH_FALSE_FLAGS,
+            },
+            EVIDENCE_ITEM_PREFIX,
+        )
+        return _truth_receipt(
+            {
+                "schema_version": CLAIM_SET_SCHEMA,
+                "authority_id": self.authority_id,
+                "prompt_digest": request.prompt_digest,
+                "answer_digest": request.answer_digest,
+                "hnc_receipt_id": request.hnc_receipt_id,
+                "source_timestamp": NOW - 2.0,
+                "received_at": NOW - 1.0,
+                "truth_status": "real_derived",
+                "generated_values": False,
+                "evidence_receipts": [evidence],
+                "claim_findings": [
+                    {
+                        "claim_id": _sha(request.answer_digest),
+                        "failure_kind": "SUPPORTED",
+                        "evidence_receipt_ids": [evidence["receipt_id"]],
+                    }
+                ],
+                **TRUTH_FALSE_FLAGS,
+            },
+            CLAIM_SET_PREFIX,
+        )
+
+
+class _SelfCoderDiagnosticAuthority:
+    authority_id = TEST_DIAGNOSTIC_AUTHORITY_ID
+
+    def resolve_diagnostic_signals(
+        self,
+        request: TruthGateRequest,
+        grounding: Mapping[str, Any],
+    ) -> Mapping[str, Any]:
+        return _truth_receipt(
+            {
+                "schema_version": DIAGNOSTIC_SIGNAL_SCHEMA,
+                "authority_id": self.authority_id,
+                "grounding_receipt_id": grounding["receipt_id"],
+                "prompt_digest": request.prompt_digest,
+                "answer_digest": request.answer_digest,
+                "hnc_receipt_id": request.hnc_receipt_id,
+                "source_timestamp": NOW - 2.0,
+                "received_at": NOW - 1.0,
+                "truth_status": "real_derived",
+                "generated_values": False,
+                "evidence_receipt_ids": list(grounding["evidence_receipt_ids"]),
+                "qgita_diagnostics": {"ftcp_count": 0, "state": "stable"},
+                "math_angle_diagnostics": {
+                    "phase_offset": 0.0,
+                    "relation": "aligned",
+                },
+                **TRUTH_FALSE_FLAGS,
+            },
+            DIAGNOSTIC_SIGNAL_PREFIX,
+        )
 
 
 def valid_hnc() -> dict[str, Any]:
@@ -304,7 +407,24 @@ def build_test_thought_path(
     gate_open: bool = True,
     hnc: Mapping[str, Any] | None = None,
     auris: Mapping[str, Any] | None = None,
+    commitment_only: bool = False,
 ) -> TruthGatedTenNineOneThoughtPath:
+    propagator: Any = TestPropagator()
+    if commitment_only:
+        traces: dict[str, dict[str, Any]] = {}
+
+        def append_trace(name: str, payload: dict[str, Any]) -> None:
+            traces[name] = dict(payload)
+
+        def read_trace(name: str) -> Mapping[str, Any] | None:
+            payload = traces.get(name)
+            return None if payload is None else dict(payload)
+
+        propagator = CommitmentOnlyHiveMyceliaPropagator(
+            bus=ThoughtBus(persist_path=None),
+            append_trace_fn=append_trace,
+            read_trace_latest_fn=read_trace,
+        )
     return TruthGatedTenNineOneThoughtPath(
         resolver=TestEvidenceResolver(
             hnc=hnc,
@@ -312,8 +432,72 @@ def build_test_thought_path(
             gamma=gamma,
             gate_open=gate_open,
         ),
-        propagator=TestPropagator(),
+        propagator=propagator,
         truth_gate=TestTruthGate(),
+        now=lambda: NOW,
+    )
+
+
+def build_confidential_self_coder_test_thought_path() -> TruthGatedTenNineOneThoughtPath:
+    """Build the exact production component types with synthetic local receipts."""
+
+    hnc = valid_hnc()
+    auris = valid_auris(hnc)
+    bus = ThoughtBus(persist_path=None)
+    bus.publish(
+        Thought(
+            source="test:hnc-producer",
+            topic="symbolic.life.pulse",
+            payload=copy.deepcopy(hnc),
+        )
+    )
+    bus.publish(
+        Thought(
+            source="test:auris-producer",
+            topic="auris.throne.cosmic_state",
+            payload=copy.deepcopy(auris),
+        )
+    )
+    authorities = TruthAuthorityBundle(
+        claim_authority=_SelfCoderClaimAuthority(),
+        diagnostic_authority=_SelfCoderDiagnosticAuthority(),
+        allowed_claim_authority_ids=frozenset({TEST_CLAIM_AUTHORITY_ID}),
+        allowed_evidence_issuer_ids=frozenset({TEST_EVIDENCE_ISSUER_ID}),
+        allowed_diagnostic_authority_ids=frozenset(
+            {TEST_DIAGNOSTIC_AUTHORITY_ID}
+        ),
+    )
+    traces: dict[str, dict[str, Any]] = {}
+
+    def append_trace(name: str, payload: dict[str, Any]) -> None:
+        traces[name] = dict(payload)
+
+    def read_trace(name: str) -> Mapping[str, Any] | None:
+        payload = traces.get(name)
+        return None if payload is None else dict(payload)
+
+    return TruthGatedTenNineOneThoughtPath(
+        resolver=LocalHncAurisEvidenceResolver(
+            bus=bus,
+            require_active_pair=True,
+            pair_max_age_s=30.0,
+            clock=lambda: NOW,
+        ),
+        propagator=CommitmentOnlyHiveMyceliaPropagator(
+            bus=bus,
+            append_trace_fn=append_trace,
+            read_trace_latest_fn=read_trace,
+        ),
+        truth_gate=ReceiptBackedTenNineOneTruthGate(
+            claim_authority=authorities.claim_authority,
+            diagnostic_authority=authorities.diagnostic_authority,
+            allowed_claim_authority_ids=authorities.allowed_claim_authority_ids,
+            allowed_evidence_issuer_ids=authorities.allowed_evidence_issuer_ids,
+            allowed_diagnostic_authority_ids=authorities.allowed_diagnostic_authority_ids,
+            max_age_s=30.0,
+            now=lambda: NOW,
+        ),
+        max_age_s=30.0,
         now=lambda: NOW,
     )
 
@@ -323,6 +507,7 @@ __all__ = [
     "TestEvidenceResolver",
     "TestPropagator",
     "TestTruthGate",
+    "build_confidential_self_coder_test_thought_path",
     "build_test_thought_path",
     "valid_auris",
     "valid_hnc",

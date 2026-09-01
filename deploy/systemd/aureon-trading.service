@@ -1,58 +1,21 @@
-# 🦈 Aureon Trading System - Systemd Service
-# Auto-starts on boot, auto-restarts on crashes
-#
-# Installation:
-#   sudo cp deploy/systemd/aureon-trading.service /etc/systemd/system/
-#   sudo systemctl daemon-reload
-#   sudo systemctl enable aureon-trading
-#   sudo systemctl start aureon-trading
-#
-# Management:
-#   sudo systemctl status aureon-trading
-#   sudo systemctl restart aureon-trading
-#   sudo journalctl -u aureon-trading -f
-
 [Unit]
-Description=Aureon Trading System - Autonomous Algorithmic Trading
-Documentation=https://github.com/RA-CONSULTING/aureon-trading
-After=network-online.target
-Wants=network-online.target
+Description=Aureon trading protection preflight (terminal HOLD)
 
 [Service]
-Type=simple
+Type=oneshot
 User=root
 WorkingDirectory=/root/aureon-trading
-
-# Python virtual environment
-Environment="PATH=/root/aureon-trading/venv/bin:/usr/local/bin:/usr/bin:/bin"
-
-# Load environment variables from .env file
-EnvironmentFile=/root/aureon-trading/.env
-
-# Run command
-ExecStart=/root/aureon-trading/venv/bin/python orca_complete_kill_cycle.py --autonomous
-
-# Restart configuration
-Restart=always
-RestartSec=10
-StartLimitInterval=200
-StartLimitBurst=5
-
-# Process limits
-LimitNOFILE=65536
-Nice=-5
-
-# Logging
-StandardOutput=append:/var/log/aureon-trading.log
-StandardError=append:/var/log/aureon-trading-error.log
-SyslogIdentifier=aureon-trading
-
-# Security hardening (optional - may need adjustment)
-# NoNewPrivileges=true
-# PrivateTmp=true
-# ProtectSystem=strict
-# ProtectHome=true
-# ReadWritePaths=/root/aureon-trading
+ExecStart=/root/aureon-trading/venv/bin/python -I -S -B /root/aureon-trading/scripts/bootstrap/protected_bootstrap_v05.py --target-id unified-market-trader
+Restart=no
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+RestrictAddressFamilies=AF_UNIX
+IPAddressDeny=any
+LockPersonality=true
+MemoryDenyWriteExecute=true
+RestrictSUIDSGID=true
 
 [Install]
 WantedBy=multi-user.target

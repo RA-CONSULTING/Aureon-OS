@@ -43,6 +43,10 @@ from aureon.harmonic.phi_bridge import DEFAULT_BASE_INTERVAL_S, MIN_INTERVAL_S, 
 
 logger = logging.getLogger("aureon.harmonic.phi_bridge_discovery")
 
+PHI_RELEASE_HOLD = (
+    "phi_bridge_discovery_hold:production_magic_star_release_unavailable"
+)
+
 DEFAULT_PORT: int = 26181
 MAX_PACKET_BYTES: int = 1024
 ANNOUNCE_MAGIC: str = "phi_bridge_announce"
@@ -103,6 +107,7 @@ class UDPBroadcastTransport:
         self._recv_sock: Optional[socket.socket] = None
 
     def open(self) -> None:
+        raise RuntimeError(PHI_RELEASE_HOLD)
         if self._send_sock is None:
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
@@ -119,12 +124,14 @@ class UDPBroadcastTransport:
             self._recv_sock = r
 
     def send(self, data: bytes) -> None:
+        raise RuntimeError(PHI_RELEASE_HOLD)
         if self._send_sock is None:
             self.open()
         assert self._send_sock is not None
         self._send_sock.sendto(data, (self.broadcast_addr, self.port))
 
     def recv(self) -> Optional[Tuple[bytes, Tuple[str, int]]]:
+        raise RuntimeError(PHI_RELEASE_HOLD)
         if self._recv_sock is None:
             self.open()
         assert self._recv_sock is not None
@@ -170,7 +177,7 @@ class PhiBridgeDiscovery:
         on_peer_seen: Optional[Callable[[RemotePeer], None]] = None,
     ):
         self.peer_id = peer_id or uuid.uuid4().hex[:12]
-        self.host = host or _detect_host()
+        self.host = str(host or "").strip() or "127.0.0.1"
         self.port = int(port)
         self.label = str(label)
         self.kind = str(kind)
@@ -193,6 +200,7 @@ class PhiBridgeDiscovery:
     # ─────────────────────────────────────────────────────────────────────
 
     def start(self) -> None:
+        raise RuntimeError(PHI_RELEASE_HOLD)
         if self._running:
             return
         self._running = True
@@ -232,6 +240,7 @@ class PhiBridgeDiscovery:
     # ─────────────────────────────────────────────────────────────────────
 
     def build_announcement(self) -> Dict[str, Any]:
+        raise RuntimeError(PHI_RELEASE_HOLD)
         try:
             fp = str(self._fingerprint_fn() or "")
         except Exception:
@@ -249,6 +258,7 @@ class PhiBridgeDiscovery:
         }
 
     def announce_once(self) -> bool:
+        raise RuntimeError(PHI_RELEASE_HOLD)
         data = json.dumps(self.build_announcement(), separators=(",", ":")).encode("utf-8")
         if len(data) > MAX_PACKET_BYTES:
             logger.warning("PhiBridgeDiscovery: announcement truncated (%d bytes)", len(data))
@@ -269,6 +279,7 @@ class PhiBridgeDiscovery:
         Public so tests and higher layers can drive the state machine
         directly without a real socket.
         """
+        raise RuntimeError(PHI_RELEASE_HOLD)
         if not isinstance(packet, dict):
             return None
         if packet.get("aureon") != ANNOUNCE_MAGIC:
@@ -388,17 +399,9 @@ class PhiBridgeDiscovery:
 
 
 def _detect_host() -> str:
-    """Best-effort local IP detection — falls back to 127.0.0.1 when offline."""
-    try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        try:
-            s.connect(("8.8.8.8", 80))
-            host = s.getsockname()[0]
-        finally:
-            s.close()
-        return host
-    except Exception:
-        return "127.0.0.1"
+    """Network-inert compatibility helper."""
+
+    return "127.0.0.1"
 
 
 __all__ = [

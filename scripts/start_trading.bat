@@ -1,16 +1,18 @@
 @echo off
-echo ════════════════════════════════════════════════════════════
-echo 🐙 AUREON TRADING - 8/8 SYSTEMS ACTIVE 🐙
-echo ════════════════════════════════════════════════════════════
-echo.
+setlocal
+for %%I in ("%~dp0..") do set "REPO_ROOT=%%~fI"
+set "PYTHON_EXE=%REPO_ROOT%\.venv\Scripts\python.exe"
+set "BOOTSTRAP=%REPO_ROOT%\scripts\bootstrap\protected_bootstrap_v05.py"
 
-cd /d "%~dp0"
-set LIVE=1
+if not exist "%PYTHON_EXE%" (
+  echo Fixed repository Python executable is unavailable; refusing operation. 1>&2
+  endlocal & exit /b 1
+)
+if not exist "%BOOTSTRAP%" (
+  echo Fixed protected bootstrap is unavailable; refusing operation. 1>&2
+  endlocal & exit /b 1
+)
 
-:loop
-echo Starting trading at %date% %time%...
-python aureon_unified_ecosystem.py
-echo.
-echo Trading stopped. Restarting in 10 seconds...
-timeout /t 10
-goto loop
+"%PYTHON_EXE%" -I -S -B "%BOOTSTRAP%" --target-id unified-market-trader
+set "EXIT_CODE=%ERRORLEVEL%"
+endlocal & exit /b %EXIT_CODE%

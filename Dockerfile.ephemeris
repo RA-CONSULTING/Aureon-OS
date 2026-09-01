@@ -1,20 +1,11 @@
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
-RUN apt-get update -y && apt-get install -y --no-install-recommends \
-    build-essential \
-    curl \
-    ca-certificates \
- && rm -rf /var/lib/apt/lists/*
+WORKDIR /opt/aureon
+COPY scripts/bootstrap/protected_bootstrap_v05.py /opt/aureon/scripts/bootstrap/protected_bootstrap_v05.py
 
-WORKDIR /app
-
-# Install runtime deps up-front (reduces repeat downloads)
-RUN pip install --no-cache-dir numpy pandas skyfield astroquery astropy scipy requests
-
-COPY run_pipeline.sh /app/run_pipeline.sh
-
-# Kp file should be volume-mounted; fail-fast if missing
-CMD ["bash","-lc","test -f Kp_ap_Ap_SN_F107_since_1932.txt && chmod +x ./run_pipeline.sh && ./run_pipeline.sh"]
+USER 65532:65532
+ENTRYPOINT ["/usr/local/bin/python", "-I", "-S", "-B", "/opt/aureon/scripts/bootstrap/protected_bootstrap_v05.py", "--target-id", "ephemeris-pipeline"]
+CMD []

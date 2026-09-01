@@ -1,86 +1,18 @@
-# 🦈 Aureon Trading - DigitalOcean Autonomous Mode
-# Simplified docker-compose for pure volatility/momentum trading
-# Usage: docker-compose -f docker-compose.autonomous.yml up -d
-
+# Aureon autonomous-image protection preflight.
+# It intentionally returns HOLD and starts no trader, listener, or health probe.
 services:
-  # Autonomous volatility trader (no UI, pure trading)
-  aureon-autonomous:
-    build: .
-    container_name: aureon-autonomous-trader
-    restart: unless-stopped
-    env_file: .env
-    environment:
-      # Core settings
-      - PYTHONIOENCODING=utf-8
-      - PYTHONUNBUFFERED=1
-      - AUREON_STATE_DIR=/app/state
-      - KRAKEN_NONCE_PATH=/app/state/kraken_nonce.json
-      - KRAKEN_PRIVATE_LOCK_PATH=/app/state/kraken_private.lock
-      - AUREON_ENABLE_AUTONOMOUS_CONTROL=1
-      
-      # ⚡ 99.99% EFFICIENCY TUNING
-      - PYTHONMALLOC=malloc
-      - PYTHONHASHSEED=0
-      - PYTHONGCFLAGS=700,5,5         # Aggressive GC: gen0=700, gen1=5, gen2=5
-      - PYTHONBUFFERED=65536          # 64KB I/O buffer
-      - PYTHONDONTWRITEBYTECODE=1     # Skip .pyc files
-      
-      # Autonomous mode config
-      - MODE=autonomous
-      - MAX_POSITIONS=3              # Max concurrent positions
-      - AMOUNT_PER_POSITION=5.0      # Dollar amount per trade
-      - TARGET_PCT=1.0               # Profit target %
-      - MIN_CHANGE_PCT=0.25          # Min volatility to detect (0.25% = catches more)
-      
-      # Exchange API keys (from .env file)
-      # KRAKEN_API_KEY=...
-      # KRAKEN_API_SECRET=...
-      # BINANCE_API_KEY=...
-      # BINANCE_API_SECRET=...
-      # ALPACA_API_KEY=...
-      # ALPACA_API_SECRET=...
-      
-    volumes:
-      # Persist state and trade history
-      - ./state:/app/state
-      - ./logs:/app/logs
-      - ./*.json:/app/*.json
-    
-    networks:
-      - aureon-net
-    
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "5"
-    
-    deploy:
-      replicas: 1
-      resources:
-        limits:
-          cpus: '2.0'            # Hard limit prevents CPU starvation
-          memory: 4G              # Hard limit prevents OOM, enables predictable GC
-        reservations:
-          cpus: '0.5'
-          memory: 512M            # Minimum guaranteed resources
-      restart_policy:
-        condition: on-failure
-        delay: 10s
-        max_attempts: 5
-        window: 120s
-    
-    healthcheck:
-      test: ["CMD", "python", "-c", "import os,glob; hs=os.path.isdir('/app/state'); wr=os.access('/app/state', os.W_OK) if hs else False; rt=any(('python' in (open(f,'rb').read().decode('utf-8','ignore')) and any(k in (open(f,'rb').read().decode('utf-8','ignore')) for k in ('orca','aureon','queen'))) for f in glob.glob('/proc/[0-9]*/cmdline')); exit(0 if (hs and wr and rt) else 1)"]
-      interval: 60s
-      timeout: 10s
-      retries: 3
-      start_period: 120s
-
-networks:
-  aureon-net:
-    driver: bridge
-
-volumes:
-  state:
-  logs:
+  autonomous-protection-preflight:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: aureon-autonomous-protection-preflight:local
+    restart: "no"
+    command: []
+    network_mode: "none"
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=16m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true

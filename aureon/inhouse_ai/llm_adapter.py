@@ -13,6 +13,7 @@ All adapters implement the same LLMAdapter interface so agents are backend-agnos
 
 from __future__ import annotations
 
+import ipaddress
 import json
 import logging
 import os
@@ -23,6 +24,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, Generator, List, Optional
+from urllib.parse import urlsplit
 
 from aureon.ollama_config import (
     ensure_ollama_runtime_config,
@@ -72,10 +74,20 @@ def _aureon_cognitive_context_summary() -> str:
     cognitive = _read_small_json(root / "frontend/public/aureon_cognitive_trade_evidence.json")
     harmonic = _read_small_json(root / "frontend/public/aureon_harmonic_affect_state.json")
 
-    bridge_summary = bridge.get("summary") if isinstance(bridge.get("summary"), dict) else {}
-    guardian_summary = guardian.get("summary") if isinstance(guardian.get("summary"), dict) else {}
-    cognitive_summary = cognitive.get("summary") if isinstance(cognitive.get("summary"), dict) else {}
-    harmonic_summary = harmonic.get("summary") if isinstance(harmonic.get("summary"), dict) else {}
+    bridge_value = bridge.get("summary")
+    guardian_value = guardian.get("summary")
+    cognitive_value = cognitive.get("summary")
+    harmonic_value = harmonic.get("summary")
+    bridge_summary: Dict[str, Any] = bridge_value if isinstance(bridge_value, dict) else {}
+    guardian_summary: Dict[str, Any] = (
+        guardian_value if isinstance(guardian_value, dict) else {}
+    )
+    cognitive_summary: Dict[str, Any] = (
+        cognitive_value if isinstance(cognitive_value, dict) else {}
+    )
+    harmonic_summary: Dict[str, Any] = (
+        harmonic_value if isinstance(harmonic_value, dict) else {}
+    )
     if not any((bridge_summary, guardian_summary, cognitive_summary, harmonic_summary)):
         return ""
 
@@ -200,6 +212,8 @@ class AureonLocalAdapter(LLMAdapter):
         base_url: Optional[str] = None,
         model: Optional[str] = None,
         api_key: Optional[str] = None,
+        *,
+        strict_loopback_no_redirects: bool = False,
     ):
         if base_url is None and not str(
             os.environ.get("AUREON_LLM_BASE_URL", "") or ""
@@ -228,6 +242,7 @@ class AureonLocalAdapter(LLMAdapter):
             else (api_key or os.environ.get("AUREON_LLM_API_KEY", ""))
         )
         self._model_verified: bool = False
+        self.strict_loopback_no_redirects = False
 
         # Ollama detection. The OpenAI /v1 shim Ollama ships with silently
         # drops the ``keep_alive`` payload field, so the model unloads every
@@ -248,13 +263,107 @@ class AureonLocalAdapter(LLMAdapter):
 
         self._keep_alive = os.environ.get("AUREON_LLM_KEEP_ALIVE", "30m") or None
 
+        self._session: Any = None
         try:
             import requests
 
             self._session = requests.Session()
+            if strict_loopback_no_redirects:
+                self.enable_strict_loopback_transport()
         except ImportError:
             self._session = None
             logger.warning("requests not installed — HTTP adapter degraded")
+
+    @staticmethod
+    def _literal_loopback_origin(url: str) -> tuple[str, str, int]:
+        """Return one literal HTTP loopback origin or fail closed.
+
+        Hostnames are deliberately excluded. Even ``localhost`` can be
+        influenced by name-resolution configuration, whereas a literal
+        loopback address cannot route off host.
+        """
+
+        try:
+            parsed = urlsplit(str(url or "").strip())
+            host = str(parsed.hostname or "")
+            address = ipaddress.ip_address(host)
+            port = parsed.port
+        except (TypeError, ValueError) as exc:
+            raise ValueError("strict_loopback_url_invalid") from exc
+        if (
+            parsed.scheme != "http"
+            or not address.is_loopback
+            or port is None
+            or parsed.username is not None
+            or parsed.password is not None
+            or parsed.fragment
+        ):
+            raise ValueError("strict_loopback_url_invalid")
+        return parsed.scheme, address.compressed, port
+
+    def enable_strict_loopback_transport(self) -> None:
+        """Disable redirects and ambient proxies for sensitive local prompts."""
+
+        self._literal_loopback_origin(self.base_url)
+        if self._session is None:
+            raise RuntimeError("strict_loopback_requests_session_unavailable")
+        self._session.trust_env = False
+        self._session.proxies.clear()
+        self.strict_loopback_no_redirects = True
+
+    def _validate_strict_request_url(self, url: str) -> None:
+        if not self.strict_loopback_no_redirects:
+            return
+        if self._literal_loopback_origin(url) != self._literal_loopback_origin(
+            self.base_url
+        ):
+            raise RuntimeError("strict_loopback_origin_mismatch")
+        if self._session is None:
+            raise RuntimeError("strict_loopback_requests_session_unavailable")
+        if self._session.trust_env is not False or self._session.proxies:
+            raise RuntimeError("strict_loopback_proxy_state_invalid")
+
+    def _validate_strict_response(self, response: Any) -> None:
+        if not self.strict_loopback_no_redirects:
+            return
+        response_url = str(getattr(response, "url", "") or "")
+        if not response_url:
+            raise RuntimeError("strict_loopback_response_url_missing")
+        self._validate_strict_request_url(response_url)
+        status_code = int(getattr(response, "status_code", 0) or 0)
+        if (
+            300 <= status_code < 400
+            or bool(getattr(response, "is_redirect", False))
+            or bool(getattr(response, "is_permanent_redirect", False))
+            or bool(getattr(response, "history", ()))
+        ):
+            raise RuntimeError("strict_loopback_redirect_rejected")
+
+    def _http_post(self, url: str, **kwargs: Any) -> Any:
+        if self._session is None:
+            raise RuntimeError("requests_session_unavailable")
+        self._validate_strict_request_url(url)
+        if self.strict_loopback_no_redirects:
+            if kwargs.get("proxies"):
+                raise RuntimeError("strict_loopback_request_proxy_forbidden")
+            kwargs["allow_redirects"] = False
+            kwargs["proxies"] = {}
+        response = self._session.post(url, **kwargs)
+        self._validate_strict_response(response)
+        return response
+
+    def _http_get(self, url: str, **kwargs: Any) -> Any:
+        if self._session is None:
+            raise RuntimeError("requests_session_unavailable")
+        self._validate_strict_request_url(url)
+        if self.strict_loopback_no_redirects:
+            if kwargs.get("proxies"):
+                raise RuntimeError("strict_loopback_request_proxy_forbidden")
+            kwargs["allow_redirects"] = False
+            kwargs["proxies"] = {}
+        response = self._session.get(url, **kwargs)
+        self._validate_strict_response(response)
+        return response
 
     def _headers(self) -> Dict[str, str]:
         h = {"Content-Type": "application/json"}
@@ -440,7 +549,7 @@ class AureonLocalAdapter(LLMAdapter):
                 os.environ.get("AUREON_LLM_REQUEST_TIMEOUT_S", str(_llm_timeout(60.0, 2.0)))
                 or _llm_timeout(60.0, 2.0)
             )
-            resp = self._session.post(
+            resp = self._http_post(
                 url, json=payload, headers=self._headers(), timeout=max(1.0, req_timeout)
             )
             resp.raise_for_status()
@@ -516,7 +625,7 @@ class AureonLocalAdapter(LLMAdapter):
                 os.environ.get("AUREON_LLM_REQUEST_TIMEOUT_S", str(_llm_timeout(20.0, 2.0)))
                 or _llm_timeout(20.0, 2.0)
             )
-            resp = self._session.post(
+            resp = self._http_post(
                 url, json=payload, headers=self._headers(), timeout=max(1.0, req_timeout)
             )
             resp.raise_for_status()
@@ -580,7 +689,7 @@ class AureonLocalAdapter(LLMAdapter):
         url = f"{self.base_url}/chat/completions"
 
         try:
-            resp = self._session.post(
+            resp = self._http_post(
                 url,
                 json=payload,
                 headers=self._headers(),
@@ -708,7 +817,7 @@ class AureonLocalAdapter(LLMAdapter):
                 os.environ.get("AUREON_LLM_HEALTH_TIMEOUT_S", str(_llm_timeout(2.0, 0.5)))
                 or _llm_timeout(2.0, 0.5)
             )
-            resp = self._session.get(
+            resp = self._http_get(
                 f"{self.base_url}/models",
                 headers=self._headers(),
                 timeout=max(0.1, timeout_s),
@@ -789,7 +898,7 @@ class AureonLocalAdapter(LLMAdapter):
                 os.environ.get("AUREON_LLM_PROBE_TIMEOUT_S", str(_llm_timeout(30.0, 1.0)))
                 or _llm_timeout(30.0, 1.0)
             )
-            resp = self._session.post(
+            resp = self._http_post(
                 f"{self.base_url}/chat/completions",
                 json={
                     "model": model_id,

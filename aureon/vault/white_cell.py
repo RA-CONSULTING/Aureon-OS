@@ -80,8 +80,12 @@ class WhiteCellAgent:
         self,
         architect: Any = None,
         thought_bus: Any = None,
-        auto_wire: bool = True,
+        auto_wire: bool = False,
     ):
+        if auto_wire:
+            raise RuntimeError(
+                "white_cell_agent_hold:production_magic_star_release_unavailable"
+            )
         self.cell_id = uuid.uuid4().hex[:8]
         self.architect = architect
         self.thought_bus = thought_bus
@@ -89,6 +93,9 @@ class WhiteCellAgent:
             self._auto_wire()
 
     def _auto_wire(self) -> None:
+        raise RuntimeError(
+            "white_cell_agent_hold:production_magic_star_release_unavailable"
+        )
         if self.architect is None:
             try:
                 from aureon.code_architect import get_code_architect
@@ -113,6 +120,9 @@ class WhiteCellAgent:
           - execute it
           - publish the outcome
         """
+        raise RuntimeError(
+            "white_cell_agent_hold:production_magic_star_release_unavailable"
+        )
         start = time.time()
         outcome = WhiteCellOutcome(
             cell_id=self.cell_id,
@@ -189,6 +199,9 @@ class WhiteCellAgent:
         return ["screenshot"]
 
     def _publish(self, outcome: WhiteCellOutcome, threat: ThreatReport) -> None:
+        raise RuntimeError(
+            "white_cell_agent_hold:production_magic_star_release_unavailable"
+        )
         if not self.thought_bus:
             return
         try:

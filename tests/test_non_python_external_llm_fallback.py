@@ -4,6 +4,11 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+SERVER_HOLD = """#!/usr/bin/env node
+
+// Terminal HOLD: operational route is unavailable.
+process.exit(2);
+"""
 
 
 def _read(relative: str) -> str:
@@ -18,12 +23,10 @@ def test_browser_bundle_contains_no_direct_provider_secret_route():
     assert "supabase.functions.invoke('auris-classify'" in utils
 
 
-def test_node_and_worker_surfaces_have_ollama_fallback():
+def test_active_worker_surfaces_have_ollama_fallback():
     surfaces = (
         "deploy/cloudflare/aureon_murge_worker/index.mjs",
-        "flameborn/server.mjs",
         "flameborn/workers/index.mjs",
-        "integrations/aureon_murge/web_app/server.mjs",
     )
     for relative in surfaces:
         source = _read(relative)
@@ -31,6 +34,27 @@ def test_node_and_worker_surfaces_have_ollama_fallback():
         assert "AUREON_EXTERNAL_LLM_FALLBACK" in source
         assert "OLLAMA_API_KEY" in source
         assert "reasoning_effort" in source
+
+
+def test_node_servers_are_held_and_archives_retain_fallback_source():
+    surfaces = (
+        (
+            "flameborn/server.mjs",
+            "docs/archive/flameborn_operational_sources/flameborn_server.mjs.txt",
+        ),
+        (
+            "integrations/aureon_murge/web_app/server.mjs",
+            "docs/archive/flameborn_operational_sources/aureon_murge_web_server.mjs.txt",
+        ),
+    )
+    for active_relative, archive_relative in surfaces:
+        assert _read(active_relative).replace("\r\n", "\n") == SERVER_HOLD
+        archived = _read(archive_relative)
+        assert archive_relative.endswith(".mjs.txt")
+        assert "callOllamaCloud" in archived
+        assert "AUREON_EXTERNAL_LLM_FALLBACK" in archived
+        assert "OLLAMA_API_KEY" in archived
+        assert "reasoning_effort" in archived
 
 
 def test_supabase_llm_functions_use_shared_server_side_fallback():

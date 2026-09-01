@@ -24,16 +24,16 @@ def census() -> dict[str, Any]:
 def test_inventory_is_exact_but_truthfully_not_certified(census: dict[str, Any]) -> None:
     assert census["inventory_aligned"] is True
     assert census["certified_no_bypass"] is False
-    assert census["detected_count"] == 1618
-    assert census["classified_count"] == 1618
-    assert census["blocker_count"] == 1247
+    assert census["detected_count"] == 1607
+    assert census["classified_count"] == 1607
+    assert census["blocker_count"] == 1236
     assert census["parse_errors"] == []
     assert census["unallowlisted"] == []
     assert census["stale_allowlist_entries"] == []
     assert census["counts_by_classification"] == {
         "dry-run-test-demo-only": 122,
         "economic-boundary-last-mile": 4,
-        "live-capable-unguarded-blocker": 1247,
+        "live-capable-unguarded-blocker": 1236,
         "provider-client-raw-transport-guard": 245,
         "unreachable-quarantined-launcher": 0,
     }
@@ -41,8 +41,8 @@ def test_inventory_is_exact_but_truthfully_not_certified(census: dict[str, Any])
         "alpaca": 235,
         "binance": 371,
         "capital": 207,
-        "kraken": 452,
-        "multi-provider": 347,
+        "kraken": 445,
+        "multi-provider": 343,
         "oanda": 6,
     }
 
@@ -54,7 +54,7 @@ def test_every_entry_is_explicitly_owned_and_line_independent(
     assert all(item["rationale"].strip() for item in census["findings"])
     assert all(item["owner"].strip() for item in census["findings"])
     allowlist = AUDITOR.load_allowlist()
-    assert len(allowlist) == 1618
+    assert len(allowlist) == 1607
     assert all("line" not in entry for entry in allowlist.values())
 
 

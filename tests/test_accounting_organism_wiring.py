@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 from aureon.core.aureon_organism_spine import build_organism_manifest
 from aureon.core.integrated_cognitive_system import IntegratedCognitiveSystem
 from aureon.queen.accounting_context_bridge import AccountingContextBridge
@@ -438,75 +440,14 @@ def test_integrated_cognitive_system_accounts_commands_use_safe_bridge():
     ics.vault = FakeVault()
     ics.thought_bus = FakeBus()
 
-    status = ics.process_user_input("/accounts status")
-    assert "ACCOUNTING STATUS" in status
-    assert "Manual filing required: True" in status
-    assert "Accounting tools: 32 modules/tools" in status
-    assert "Human filing handoff:" in status
-    assert "Evidence authoring:" in status
-    assert "UK accounting requirements brain:" in status
-    assert "Accounting mind:" in status
-    assert "QuickBooks:" in status
-    assert "Aureon journal:" in status
-    assert "Reconciliation:" in status
-
-    reconciliation = ics.process_user_input("/accounts reconciliation")
-    assert "AUREON ACCOUNTING RECONCILIATION" in reconciliation
-    assert "corporation_tax: urgent_resolution_required" in reconciliation
-    assert "postings_authorised=0" in reconciliation
-
-    quickbooks = ics.process_user_input("/accounts quickbooks")
-    assert "QUICKBOOKS CONTROL PLANE" in quickbooks
-    assert "pending=911" in quickbooks
-    assert "bulk_allowed=False" in quickbooks
-    assert "Aureon journal: integrity=True entries=4 approved=3" in quickbooks
-    assert "Projection queue: queued=2 readback=1 outstanding=1 observations=911" in quickbooks
-
-    tools = ics.process_user_input("/accounts tools")
-    assert "ACCOUNTING TOOL REGISTRY" in tools
-    assert "ledger_double_entry" in tools
-
-    ingest = ics.process_user_input("/accounts ingest")
-    assert "ingested into vault" in ingest
-    assert ics.accounting_context.ingests >= 1
-
-    raw = ics.process_user_input("/accounts raw")
-    assert "ACCOUNTING RAW DATA INTAKE" in raw
-    assert "Files:   9" in raw
-
-    readiness = ics.process_user_input("/accounts readiness")
-    assert "ACCOUNTING READINESS" in readiness
-    assert "Ready: True" in readiness
-    assert any(event["topic"] == "accounting.readiness" for event in ics.thought_bus.events)
-
-    requirements = ics.process_user_input("/accounts requirements")
-    assert "UK ACCOUNTING REQUIREMENTS BRAIN" in requirements
-    assert "Accountant self-questions: 8" in requirements
-
-    evidence = ics.process_user_input("/accounts evidence")
-    assert "ACCOUNTING EVIDENCE AUTHORING" in evidence
-    assert "Evidence requests: 4" in evidence
-
-    filing = ics.process_user_input("/accounts filing")
-    assert "ACCOUNTING STATUTORY/HMRC PACK" in filing
-    assert "ct600.json" in filing
-
-    statutory_build = ics.process_user_input("/accounts statutory build")
-    assert "statutory filing-support build completed" in statutory_build
-    assert ics.accounting_context.statutory_builds == 1
-    assert any(event["topic"] == "accounting.statutory.generated" for event in ics.thought_bus.events)
-
-    autonomous = ics.process_user_input("/accounts autonomous")
-    assert "autonomous full-accounts workflow completed" in autonomous
-    assert "handoff_ready=True" in autonomous
-    assert "self_questioning=completed" in autonomous
-    assert ics.accounting_context.autonomous_builds == 1
-    assert any(event["topic"] == "accounting.autonomous.accounts.completed" for event in ics.thought_bus.events)
-
-    build = ics.process_user_input("/accounts build")
-    assert "Accounting build completed" in build
-    assert ics.accounting_context.builds == 1
-    assert any(event["topic"] == "accounting.accounts.generated" for event in ics.thought_bus.events)
+    with pytest.raises(RuntimeError, match="integrated_cognitive_input_hold"):
+        ics.process_user_input("/accounts status")
+    assert ics.accounting_context.ingests == 0
+    assert ics.accounting_context.builds == 0
+    assert ics.accounting_context.statutory_builds == 0
+    assert ics.accounting_context.autonomous_builds == 0
+    assert ics.vault.cards == []
+    assert ics.thought_bus.events == []
 
 
 def test_organism_spine_registers_accounting_suite_modules():

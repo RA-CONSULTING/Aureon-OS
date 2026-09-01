@@ -46,25 +46,19 @@ from aureon.vault.white_cell import (
 from aureon.vault.harmonic_pinger import HarmonicPinger
 from aureon.vault.rally_coordinator import RallyCoordinator
 
-# Voice layer (optional — loop runs fine without it)
-try:
-    from aureon.vault.voice.self_dialogue import SelfDialogueEngine
-    from aureon.vault.voice.utterance import Utterance
-    _VOICE_AVAILABLE = True
-except Exception:  # pragma: no cover
-    SelfDialogueEngine = None  # type: ignore[assignment,misc]
-    Utterance = None  # type: ignore[assignment,misc]
-    _VOICE_AVAILABLE = False
-
-# Self-enhancement (optional — loop runs fine without it)
-try:
-    from aureon.queen.self_enhancement_engine import get_self_enhancement_engine
-    _ENHANCE_AVAILABLE = True
-except Exception:  # pragma: no cover
-    get_self_enhancement_engine = None  # type: ignore[assignment]
-    _ENHANCE_AVAILABLE = False
+# Provider and self-coder imports are deliberately absent while release is
+# unavailable. Merely importing this module must remain inert.
+SelfDialogueEngine = None
+Utterance = None
+_VOICE_AVAILABLE = False
+get_self_enhancement_engine = None
+_ENHANCE_AVAILABLE = False
 
 logger = logging.getLogger("aureon.vault.loop")
+
+SELF_FEEDBACK_RELEASE_HOLD = (
+    "aureon_self_feedback_loop_hold:production_magic_star_release_unavailable"
+)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -148,11 +142,21 @@ class AureonSelfFeedbackLoop:
         max_cells_per_tick: int = 8,
         rally_burst_ticks: int = 20,
         rally_casimir_threshold: float = 5.0,
-        auto_wire_bus: bool = True,
-        enable_voice: bool = True,
-        enable_self_enhancement: bool = True,
+        auto_wire_bus: bool = False,
+        enable_voice: bool = False,
+        enable_self_enhancement: bool = False,
+        enable_native_casimir: bool = False,
+        enable_harmonic_buses: bool = False,
         enhance_every_n_ticks: int = 30,
     ):
+        if any((
+            auto_wire_bus,
+            enable_voice,
+            enable_self_enhancement,
+            enable_native_casimir,
+            enable_harmonic_buses,
+        )):
+            raise RuntimeError(SELF_FEEDBACK_RELEASE_HOLD)
         self.loop_id = uuid.uuid4().hex[:8]
         self.vault = vault or AureonVault()
         if auto_wire_bus:
@@ -160,10 +164,16 @@ class AureonSelfFeedbackLoop:
 
         self.shuffler = FibonacciCardShuffler(love_bias=1.0)
         self.clock = LoveGratitudeClock(base_interval_s=base_interval_s)
-        self.casimir = CasimirQuantifier(tau_s=tau_s)
+        self.casimir = CasimirQuantifier(
+            tau_s=tau_s,
+            use_native_engine=enable_native_casimir,
+        )
         self.auris = AurisMetacognition()
         self.deployer = HNCDeployer(max_cells_per_tick=max_cells_per_tick)
-        self.pinger = HarmonicPinger()
+        self.pinger = HarmonicPinger(
+            enable_chirp_bus=enable_harmonic_buses,
+            enable_thought_bus=enable_harmonic_buses,
+        )
         self.rally = RallyCoordinator(
             burst_ticks=rally_burst_ticks,
             casimir_threshold=rally_casimir_threshold,
@@ -209,6 +219,7 @@ class AureonSelfFeedbackLoop:
 
     def tick(self) -> TickResult:
         """Run one full cycle of the self-feedback loop."""
+        raise RuntimeError(SELF_FEEDBACK_RELEASE_HOLD)
         start = time.time()
         self._cycle += 1
 
@@ -313,7 +324,6 @@ class AureonSelfFeedbackLoop:
         # 10. ENHANCE — every N ticks, Queen writes code to enhance herself.
         # Runs in the same thread but is gated by the cycle counter so it
         # doesn't slow every tick; heavy LLM work is bounded by the engine.
-        enhancement_registered = False
         if (
             self._enhance_enabled
             and self._enhancer is not None
@@ -323,7 +333,6 @@ class AureonSelfFeedbackLoop:
                 rec = self._enhancer.enhance_once()
                 if rec.registered:
                     self._total_enhancements += 1
-                    enhancement_registered = True
                     logger.info(
                         "[loop] self-enhancement: new skill '%s' registered "
                         "(cycle=%d)",
@@ -375,6 +384,7 @@ class AureonSelfFeedbackLoop:
             sleep_between: whether to honor the LoveGratitudeClock cadence
                            (False runs tight for tests; True uses real timing)
         """
+        raise RuntimeError(SELF_FEEDBACK_RELEASE_HOLD)
         results: List[TickResult] = []
         i = 0
         self._running = True
@@ -393,6 +403,7 @@ class AureonSelfFeedbackLoop:
 
     def start(self) -> None:
         """Start the loop in a background daemon thread using the real clock."""
+        raise RuntimeError(SELF_FEEDBACK_RELEASE_HOLD)
         if self._running:
             return
         self._running = True

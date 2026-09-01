@@ -300,24 +300,25 @@ jobs:
             .github/workflows/acceptance-ci.yml
       - name: Install static-manifest dependencies
         run: python -m pip install --disable-pip-version-check "pytest>=8,<9" "PyYAML>=6,<7" "pytest-socket>=0.7,<1"
-      - name: Parse DigitalOcean app specifications and resolve Dockerfiles
+      - name: Verify DigitalOcean specifications are empty terminal holds
         run: |
           python - <<'PY'
           from pathlib import Path
           import yaml
 
           root = Path.cwd().resolve()
+          component_keys = (
+              "services", "workers", "jobs", "static_sites", "functions", "databases"
+          )
           for relative in (Path(".do/app.yaml"), Path("app.yaml")):
               payload = yaml.safe_load((root / relative).read_text(encoding="utf-8-sig"))
               assert isinstance(payload, dict), f"{relative} must contain one YAML mapping"
-              assert isinstance(payload.get("services"), list) and payload["services"], (
-                  f"{relative} must declare at least one service"
-              )
-              for service in payload["services"]:
-                  source_dir = str(service.get("source_dir", ".")).lstrip("/") or "."
-                  dockerfile = root / source_dir / service["dockerfile_path"]
-                  assert dockerfile.resolve().is_relative_to(root), f"{relative} escapes the repository"
-                  assert dockerfile.is_file(), f"{relative} references missing {dockerfile.relative_to(root)}"
+              assert payload.get("name") == "aureon-protection-hold", relative
+              for key in component_keys:
+                  assert payload.get(key) == [], f"{relative}: {key} must remain empty"
+              source = (root / relative).read_text(encoding="utf-8-sig")
+              for forbidden in ("deploy_on_push", "type: SECRET", "REDIS_URL"):
+                  assert forbidden not in source, f"{relative}: forbidden {forbidden}"
           PY
       - name: Parse Docker Compose and Supervisor contracts
         run: |
@@ -340,7 +341,13 @@ jobs:
               "deploy/supervisord.master_launcher.conf",
               "production/supervisord.conf",
           )
-          dockerfiles = ("Dockerfile", "Dockerfile.ephemeris", "production/Dockerfile")
+          dockerfiles = (
+              "Dockerfile",
+              "Dockerfile.ephemeris",
+              "deploy/frontend.Dockerfile",
+              "deploy/operator.Dockerfile",
+              "production/Dockerfile",
+          )
           for relative in compose_paths:
               payload = yaml.safe_load(Path(relative).read_text(encoding="utf-8-sig"))
               assert isinstance(payload, dict) and isinstance(payload.get("services"), dict), relative
@@ -355,7 +362,9 @@ jobs:
           python -m pytest --disable-socket \
             tests/test_container_hosting_packaging_contract.py \
             tests/test_digitalocean_app_spec_fail_closed.py \
+            tests/test_ignition_live_profile.py \
             tests/test_import_snapshot_quarantine.py \
+            tests/test_legacy_deployment_surfaces_hold.py \
             tests/test_single_writer_scaling_contract.py
 
   economic-mutation-boundary:

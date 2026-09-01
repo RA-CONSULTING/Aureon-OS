@@ -55,6 +55,9 @@ from typing import Any, Callable, Dict, List, Optional
 logger = logging.getLogger("aureon.vault.voice.meta_cognition_observer")
 
 PHI: float = (1.0 + math.sqrt(5.0)) / 2.0
+META_COGNITION_RELEASE_HOLD = (
+    "meta_cognition_observer_hold:production_magic_star_release_unavailable"
+)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -175,6 +178,7 @@ class MetaCognitionObserver:
     # ─── lifecycle ───────────────────────────────────────────────────────
 
     def start(self) -> None:
+        raise RuntimeError(META_COGNITION_RELEASE_HOLD)
         if self._subscribed or self.thought_bus is None:
             return
         try:
@@ -198,6 +202,7 @@ class MetaCognitionObserver:
     # ─── dispatch ────────────────────────────────────────────────────────
 
     def _on_thought(self, thought: Any) -> None:
+        raise RuntimeError(META_COGNITION_RELEASE_HOLD)
         topic = getattr(thought, "topic", "") or ""
         payload = getattr(thought, "payload", {}) or {}
         if not isinstance(payload, dict):
@@ -225,6 +230,7 @@ class MetaCognitionObserver:
                                  "ts": time.time()})
 
     def _open_window(self, collapse_payload: Dict[str, Any]) -> None:
+        raise RuntimeError(META_COGNITION_RELEASE_HOLD)
         persona = str(collapse_payload.get("winner") or "")
         card = ReflectionCard(
             collapse_ts=time.time(),
@@ -260,6 +266,7 @@ class MetaCognitionObserver:
     # ─── close ───────────────────────────────────────────────────────────
 
     def _closer_loop(self) -> None:
+        raise RuntimeError(META_COGNITION_RELEASE_HOLD)
         while self._running:
             try:
                 self._sweep_closed()
@@ -270,6 +277,7 @@ class MetaCognitionObserver:
             time.sleep(max(0.05, self.window_s / 4.0))
 
     def _sweep_closed(self) -> None:
+        raise RuntimeError(META_COGNITION_RELEASE_HOLD)
         now = time.time()
         closed_now: List[_OpenWindow] = []
         with self._lock:
@@ -286,6 +294,7 @@ class MetaCognitionObserver:
     def close_expired(self, now: Optional[float] = None) -> int:
         """Synchronous close for tests. Returns the number of windows
         closed this call."""
+        raise RuntimeError(META_COGNITION_RELEASE_HOLD)
         real_now = now if now is not None else time.time()
         closed: List[_OpenWindow] = []
         with self._lock:
@@ -301,6 +310,7 @@ class MetaCognitionObserver:
         return len(closed)
 
     def _finalise(self, w: _OpenWindow) -> None:
+        raise RuntimeError(META_COGNITION_RELEASE_HOLD)
         card = w.card
         card.closed_ts = time.time()
 
@@ -390,6 +400,7 @@ class MetaCognitionObserver:
         """Look at the latest goal.submit.request content_id we can see
         in the window + the HashResonanceIndex, and report the bond
         count + strength for that bonded timeline."""
+        raise RuntimeError(META_COGNITION_RELEASE_HOLD)
         for ev in reversed(w.events):
             if ev["topic"] == "goal.submit.request":
                 goal_id = str(ev["payload"].get("goal_id") or "")
@@ -439,6 +450,7 @@ class MetaCognitionObserver:
     # ─── publish ─────────────────────────────────────────────────────────
 
     def _publish_card(self, card: ReflectionCard) -> None:
+        raise RuntimeError(META_COGNITION_RELEASE_HOLD)
         if self.thought_bus is None:
             return
         try:
@@ -460,6 +472,7 @@ class MetaCognitionObserver:
             logger.debug("MetaCognitionObserver: publish failed: %s", e)
 
     def _feed_vault(self, card: ReflectionCard) -> None:
+        raise RuntimeError(META_COGNITION_RELEASE_HOLD)
         if self.vault is None or not hasattr(self.vault, "ingest"):
             return
         try:
@@ -468,6 +481,7 @@ class MetaCognitionObserver:
             logger.debug("MetaCognitionObserver: vault ingest failed: %s", e)
 
     def _feed_queen_metacognition(self, card: ReflectionCard) -> None:
+        raise RuntimeError(META_COGNITION_RELEASE_HOLD)
         if self.qmc is None:
             return
         fn = getattr(self.qmc, "ingest_external_reflection", None)
@@ -507,6 +521,7 @@ def get_meta_cognition_observer(
     hash_resonance_index: Any = None,
     queen_metacognition: Any = None,
 ) -> MetaCognitionObserver:
+    raise RuntimeError(META_COGNITION_RELEASE_HOLD)
     global _singleton
     with _singleton_lock:
         if _singleton is None:
@@ -526,6 +541,7 @@ def reset_meta_cognition_observer() -> None:
 
 
 __all__ = [
+    "META_COGNITION_RELEASE_HOLD",
     "MetaCognitionObserver",
     "ReflectionCard",
     "get_meta_cognition_observer",

@@ -36,7 +36,13 @@ class CryptoContractError(ValueError):
 
 
 def _normalize_json_value(value: Any, *, path: str = "$") -> Any:
-    if value is None or isinstance(value, (str, bool, int)):
+    if value is None or isinstance(value, (bool, int)):
+        return value
+    if isinstance(value, str):
+        try:
+            value.encode("utf-8", errors="strict")
+        except UnicodeEncodeError as exc:
+            raise CryptoContractError("json_string_not_valid_utf8") from exc
         return value
     if isinstance(value, float):
         # JSON leaves number canonicalization underspecified across runtimes.
@@ -47,6 +53,8 @@ def _normalize_json_value(value: Any, *, path: str = "$") -> Any:
         for key, item in value.items():
             if not isinstance(key, str):
                 raise CryptoContractError("json_object_key_must_be_string")
+            if key in normalized:
+                raise CryptoContractError("json_duplicate_object_key")
             normalized[key] = _normalize_json_value(item, path=f"{path}.{key}")
         return normalized
     if isinstance(value, Sequence) and not isinstance(value, (bytes, bytearray, memoryview)):
@@ -160,12 +168,25 @@ def b64url_encode(data: bytes) -> str:
     return base64.urlsafe_b64encode(data).decode("ascii").rstrip("=")
 
 
-def b64url_decode(value: str, *, expected_bytes: int | None = None) -> bytes:
+def b64url_decode(
+    value: str,
+    *,
+    expected_bytes: int | None = None,
+    max_bytes: int | None = None,
+) -> bytes:
     if not isinstance(value, str):
         raise CryptoContractError("base64url_encoding_invalid")
     text = value
     if expected_bytes is not None and (type(expected_bytes) is not int or expected_bytes < 1):
         raise CryptoContractError("base64url_length_invalid")
+    if max_bytes is not None:
+        if type(max_bytes) is not int or max_bytes < 1:
+            raise CryptoContractError("base64url_maximum_length_invalid")
+        if expected_bytes is not None and expected_bytes > max_bytes:
+            raise CryptoContractError("base64url_length_invalid")
+        max_encoded_chars = (4 * max_bytes + 2) // 3
+        if len(text) > max_encoded_chars:
+            raise CryptoContractError("base64url_decoded_value_too_large")
     if not text or "=" in text or _B64URL_RE.fullmatch(text) is None:
         raise CryptoContractError("base64url_encoding_invalid")
     try:
@@ -180,6 +201,8 @@ def b64url_decode(value: str, *, expected_bytes: int | None = None) -> bytes:
         raise CryptoContractError("base64url_encoding_not_canonical")
     if expected_bytes is not None and len(decoded) != expected_bytes:
         raise CryptoContractError("base64url_length_invalid")
+    if max_bytes is not None and len(decoded) > max_bytes:
+        raise CryptoContractError("base64url_decoded_value_too_large")
     return decoded
 
 

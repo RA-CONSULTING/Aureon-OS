@@ -116,15 +116,17 @@ def test_audit_environment_blocks_live_order_paths(monkeypatch):
         raise AssertionError("blocked_order must fail closed")
 
 
-def test_runtime_safety_requires_explicit_live_gate(monkeypatch):
+def test_runtime_safety_enforces_terminal_release_hold(monkeypatch):
     for key in ("AUREON_AUDIT_MODE", "AUREON_LIVE_TRADING", "AUREON_DISABLE_REAL_ORDERS"):
         monkeypatch.delenv(key, raising=False)
 
     assert real_orders_allowed() is False
-    assert live_block_reason("test") == "test: AUREON_LIVE_TRADING is not explicitly enabled"
+    assert live_block_reason("test") == (
+        "test: terminal production release HOLD blocks exchange mutations"
+    )
 
     monkeypatch.setenv("AUREON_LIVE_TRADING", "1")
-    assert real_orders_allowed() is True
+    assert real_orders_allowed() is False
 
     monkeypatch.setenv("AUREON_DISABLE_REAL_ORDERS", "1")
     assert real_orders_allowed() is False
@@ -150,7 +152,7 @@ def test_queen_autonomy_stays_simulated_in_audit_mode(monkeypatch):
     assert os.environ["AUREON_DISABLE_REAL_ORDERS"] == "1"
 
 
-def test_queen_autonomy_live_profile_keeps_runtime_order_gates(monkeypatch):
+def test_queen_autonomy_live_request_is_forced_to_audit_hold(monkeypatch):
     for key in (
         "AUREON_AUDIT_MODE",
         "AUREON_LIVE_TRADING",
@@ -175,13 +177,12 @@ def test_queen_autonomy_live_profile_keeps_runtime_order_gates(monkeypatch):
 
     result = autonomy_module.initialize_queen_autonomy()
 
-    assert result.get("safe_mode") is not True
-    assert result["sovereignty_level"] == "RUNTIME_GATED"
-    assert result["trading_mode"] == "INTENT_ONLY_RUNTIME_GATED_LIVE"
-    assert os.environ["AUREON_TRADE_GATING"] == "RUNTIME_GATED"
-    assert os.environ["AUREON_APPROVAL_REQUIRED"] == "1"
-    assert os.environ["AUREON_QUEEN_VETO"] == "ENABLED"
-    assert os.environ["AUREON_SAFETY_CHECKS"] == "ENFORCED"
+    assert result["safe_mode"] is True
+    assert result["trading_mode"] == "AUDIT_DRY_RUN"
+    assert os.environ["AUREON_AUDIT_MODE"] == "1"
+    assert os.environ["AUREON_LIVE_TRADING"] == "0"
+    assert os.environ["AUREON_DISABLE_REAL_ORDERS"] == "1"
+    assert os.environ["AUREON_DISABLE_EXCHANGE_MUTATIONS"] == "1"
 
 
 def test_baton_link_preserves_audit_dry_run_flags(monkeypatch):

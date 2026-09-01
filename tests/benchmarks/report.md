@@ -1,5 +1,11 @@
 # Aureon capability benchmark — report
 
+> **STALE / SUPERSEDED RELEASE EVIDENCE**
+>
+> Report status: `STALE_SUPERSEDED`. `production_ready=false`; `current_effect_claim=false`.
+> Historical entries **b1, b2, b3, b4, b6, and b8** below are superseded by release-containment
+> benchmarks and are not evidence of current execution, effects, or production availability.
+
 *generated: 2026-08-08T20:18:29Z*
 
 Two tiers. **Tier A** asserts architectural invariants only Aureon has — pass/fail, falsifiable. **Tier B** runs LLM-shape prompts side-by-side across local Aureon adapters; it never fails the run, it shows what each adapter sounds like.

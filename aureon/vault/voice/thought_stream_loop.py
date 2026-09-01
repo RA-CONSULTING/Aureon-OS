@@ -29,6 +29,11 @@ from aureon.vault.voice.utterance import Utterance
 logger = logging.getLogger("aureon.vault.thought_stream")
 
 
+THOUGHT_STREAM_RELEASE_HOLD = (
+    "thought_stream_hold:production_magic_star_release_unavailable"
+)
+
+
 @dataclass
 class ThoughtStreamStatus:
     running: bool
@@ -61,18 +66,14 @@ class ThoughtStreamLoop:
         clock: Any = None,
         on_utterance: Optional[Callable[[Utterance], None]] = None,
         base_interval_s: float = 1.0,
-        auto_wire: bool = True,
+        auto_wire: bool = False,
     ):
         self.vault = vault
-        self.engine = engine or SelfDialogueEngine(vault=vault)
+        self.engine = engine
         self.on_utterance = on_utterance
 
-        if clock is None and auto_wire:
-            try:
-                from aureon.vault.love_gratitude_clock import LoveGratitudeClock
-                clock = LoveGratitudeClock(base_interval_s=base_interval_s)
-            except Exception:
-                clock = None
+        if auto_wire:
+            raise RuntimeError(THOUGHT_STREAM_RELEASE_HOLD)
         self.clock = clock
         self.base_interval_s = float(base_interval_s)
 
@@ -88,6 +89,7 @@ class ThoughtStreamLoop:
     # ─────────────────────────────────────────────────────────────────────
 
     def start(self) -> None:
+        raise RuntimeError(THOUGHT_STREAM_RELEASE_HOLD)
         if self._running:
             return
         self._running = True
@@ -102,6 +104,7 @@ class ThoughtStreamLoop:
             self._thread.join(timeout=5.0)
 
     def _loop(self) -> None:
+        raise RuntimeError(THOUGHT_STREAM_RELEASE_HOLD)
         while self._running:
             try:
                 self._tick_once()
@@ -117,6 +120,7 @@ class ThoughtStreamLoop:
                 time.sleep(self.base_interval_s)
 
     def _tick_once(self) -> Optional[Utterance]:
+        raise RuntimeError(THOUGHT_STREAM_RELEASE_HOLD)
         self._cycles += 1
         utterance = self.engine.converse()
         if utterance is None:
@@ -137,6 +141,7 @@ class ThoughtStreamLoop:
 
     def run_n_cycles(self, n: int, sleep_between: bool = False) -> List[Utterance]:
         """Run `n` cycles synchronously and return all utterances produced."""
+        raise RuntimeError(THOUGHT_STREAM_RELEASE_HOLD)
         out: List[Utterance] = []
         self._running = True
         try:

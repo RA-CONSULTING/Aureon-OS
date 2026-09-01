@@ -5,6 +5,18 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 WEB_ROOT = REPO_ROOT / "integrations" / "aureon_murge" / "web_app"
+ARCHIVED_WEB_SERVER = (
+    REPO_ROOT
+    / "docs"
+    / "archive"
+    / "flameborn_operational_sources"
+    / "aureon_murge_web_server.mjs.txt"
+)
+SERVER_HOLD = """#!/usr/bin/env node
+
+// Terminal HOLD: operational route is unavailable.
+process.exit(2);
+"""
 
 
 def test_flameborn_referenced_assets_exist() -> None:
@@ -17,16 +29,19 @@ def test_flameborn_referenced_assets_exist() -> None:
     assert (WEB_ROOT / "scripts" / "aureon_cli.mjs").is_file()
 
 
-def test_flameborn_server_exposes_supervisor_bridge() -> None:
+def test_flameborn_server_is_held_and_archive_retains_supervisor_source() -> None:
     server = (WEB_ROOT / "server.mjs").read_text(encoding="utf-8")
+    archived = ARCHIVED_WEB_SERVER.read_text(encoding="utf-8")
 
-    assert "DEFAULT_AUREON_TERMINAL_STATE_URL" in server
-    assert "DEFAULT_AUREON_PHI_BASE_URL" in server
-    assert "buildSupervisorSnapshot" in server
-    assert 'req.url === "/api/aureon/supervisor"' in server
-    assert 'req.url === "/api/aureon/full-capability-stress"' in server
-    assert 'req.url === "/api/aureon/chat"' in server
-    assert "noTradingGateBypass" in server
+    assert server.replace("\r\n", "\n") == SERVER_HOLD
+    assert ARCHIVED_WEB_SERVER.name.endswith(".mjs.txt")
+    assert "DEFAULT_AUREON_TERMINAL_STATE_URL" in archived
+    assert "DEFAULT_AUREON_PHI_BASE_URL" in archived
+    assert "buildSupervisorSnapshot" in archived
+    assert 'req.url === "/api/aureon/supervisor"' in archived
+    assert 'req.url === "/api/aureon/full-capability-stress"' in archived
+    assert 'req.url === "/api/aureon/chat"' in archived
+    assert "noTradingGateBypass" in archived
 
 
 def test_flameborn_ui_renders_full_launch_proof_panel() -> None:

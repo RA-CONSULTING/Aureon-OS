@@ -231,12 +231,14 @@ def _build_fixture(
         capability_id=CAPABILITY_ID,
         capability_measurement_sha256=capability_measurement,
         allowed_output_keys=("signature_valid",),
+        output_types_by_key={"signature_valid": "bool"},
         required_output_keys=("signature_valid",),
     )
     registered = RegisteredCapabilityV02(
         capability_id=CAPABILITY_ID,
         measurement_sha256=capability_measurement,
         policy_measurement_sha256=capability_policy.commitment,
+        result_schema={"signature_valid": "bool"},
         handler=registered_handler,
     )
     state_store = InMemoryReleaseStateStoreV02(trusted_now_ms=clock)
@@ -853,7 +855,19 @@ def test_release_boundary_rejects_recursive_forbidden_capability_output() -> Non
 
     fixture = _build_fixture(handler=nested_secret_output)
 
-    with pytest.raises(ReleaseBoundaryError, match="capability_result_forbidden_field"):
+    with pytest.raises(ReleaseBoundaryError, match="capability_result_schema_denied"):
+        fixture.release()
+
+    assert fixture.invocations == [PLAINTEXT]
+    _assert_denied_with_epas_transition(fixture)
+
+
+def test_release_boundary_never_signs_plaintext_encoded_as_integer_vector() -> None:
+    fixture = _build_fixture(
+        handler=lambda plaintext: {"signature_valid": list(plaintext)}
+    )
+
+    with pytest.raises(ReleaseBoundaryError, match="capability_result_schema_denied"):
         fixture.release()
 
     assert fixture.invocations == [PLAINTEXT]

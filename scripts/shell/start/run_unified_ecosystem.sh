@@ -1,15 +1,15 @@
-#!/bin/bash
-# 🌌 AUREON UNIFIED ECOSYSTEM RUNNER 🌌
+#!/usr/bin/env bash
+# Legacy start route: fixed isolated protection HOLD only.
+set -euo pipefail
 
-# Default to both if not set
-export EXCHANGE=${EXCHANGE:-both}
-export LIVE=${LIVE:-1}
-export FRESH_START=${FRESH_START:-0}
+SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+REPO_ROOT="$(CDPATH= cd -- "$SCRIPT_DIR/../../.." && pwd -P)"
+PYTHON_EXE="$REPO_ROOT/.venv/bin/python"
+BOOTSTRAP="$REPO_ROOT/scripts/bootstrap/protected_bootstrap_v05.py"
 
-echo "🚀 Launching Aureon Unified Ecosystem on $EXCHANGE..."
+if [[ ! -x "$PYTHON_EXE" || ! -r "$BOOTSTRAP" ]]; then
+  echo "Fixed protected runtime bootstrap unavailable; refusing launch." >&2
+  exit 1
+fi
 
-# Activate virtual environment
-source .venv/bin/activate
-
-# Run the unified ecosystem
-python aureon_unified_ecosystem.py
+exec "$PYTHON_EXE" -I -S -B "$BOOTSTRAP" --target-id unified-market-trader

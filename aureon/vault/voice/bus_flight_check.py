@@ -44,6 +44,9 @@ logger = logging.getLogger("aureon.vault.voice.bus_flight_check")
 
 PHI: float = (1.0 + math.sqrt(5.0)) / 2.0
 PHI_SQUARED: float = PHI * PHI
+BUS_FLIGHT_CHECK_RELEASE_HOLD = (
+    "bus_flight_check_hold:production_magic_star_release_unavailable"
+)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -113,6 +116,7 @@ class BusFlightCheck:
 
     def start(self) -> None:
         """Subscribe to the wildcard so we see every publication."""
+        raise RuntimeError(BUS_FLIGHT_CHECK_RELEASE_HOLD)
         if self._subscribed or self.thought_bus is None:
             return
         try:
@@ -123,6 +127,7 @@ class BusFlightCheck:
 
     def start_watching(self) -> None:
         """Start the background daemon that publishes flight.check.pulse."""
+        raise RuntimeError(BUS_FLIGHT_CHECK_RELEASE_HOLD)
         if self._running:
             return
         self._running = True
@@ -139,6 +144,7 @@ class BusFlightCheck:
     # ─── observer ────────────────────────────────────────────────────────
 
     def _on_any_thought(self, thought: Any) -> None:
+        raise RuntimeError(BUS_FLIGHT_CHECK_RELEASE_HOLD)
         topic = getattr(thought, "topic", "") or ""
         source = getattr(thought, "source", "") or ""
         if not topic:
@@ -267,6 +273,7 @@ class BusFlightCheck:
     # ─── watch loop ──────────────────────────────────────────────────────
 
     def _watch_loop(self) -> None:
+        raise RuntimeError(BUS_FLIGHT_CHECK_RELEASE_HOLD)
         while self._running:
             try:
                 report = self.standing_wave_report()
@@ -276,6 +283,7 @@ class BusFlightCheck:
             time.sleep(self.watch_interval_s)
 
     def _publish_pulse(self, report: Dict[str, Any]) -> None:
+        raise RuntimeError(BUS_FLIGHT_CHECK_RELEASE_HOLD)
         if self.thought_bus is None:
             return
         # Compact payload for the bus — trim per-topic arrays so we don't
@@ -367,6 +375,7 @@ _singleton_lock = threading.Lock()
 
 
 def get_bus_flight_check(thought_bus: Any = None) -> BusFlightCheck:
+    raise RuntimeError(BUS_FLIGHT_CHECK_RELEASE_HOLD)
     global _singleton
     with _singleton_lock:
         if _singleton is None and thought_bus is not None:
@@ -382,6 +391,7 @@ def reset_bus_flight_check() -> None:
 
 
 __all__ = [
+    "BUS_FLIGHT_CHECK_RELEASE_HOLD",
     "BusFlightCheck",
     "get_bus_flight_check",
     "reset_bus_flight_check",

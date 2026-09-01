@@ -33,7 +33,7 @@ def test_profile_is_fail_closed_and_hnc_is_not_authority() -> None:
         "aureon-boot-attestation.service",
         "aureon-firstboot-console.service",
     ]
-    assert runtime["enabled_after_firstboot"] == ["aureon-appliance.target"]
+    assert runtime["enabled_after_firstboot"] == []
     assert safe["AUREON_AUDIT_MODE"] == "1"
     assert safe["AUREON_LIVE_TRADING"] == "0"
     assert safe["AUREON_DISABLE_REAL_ORDERS"] == "1"
@@ -65,7 +65,13 @@ def test_profile_rejects_hnc_policy_drift(tmp_path: Path) -> None:
 
 def test_payload_is_a_small_tracked_allowlist_without_sensitive_paths() -> None:
     paths = _profile()["build"]["payload_paths"]
-    assert paths == ["LICENSE", "README.md", "aureon", "pyproject.toml"]
+    assert paths == [
+        "LICENSE",
+        "README.md",
+        "aureon",
+        "pyproject.toml",
+        "scripts/bootstrap/protected_bootstrap_v05.py",
+    ]
     tracked = set(
         subprocess.run(
             ["git", "ls-tree", "-r", "--name-only", "HEAD"],
@@ -79,6 +85,7 @@ def test_payload_is_a_small_tracked_allowlist_without_sensitive_paths() -> None:
     assert "README.md" in tracked
     assert "pyproject.toml" in tracked
     assert any(item.startswith("aureon/") for item in tracked)
+    assert (ROOT / "scripts" / "bootstrap" / "protected_bootstrap_v05.py").is_file()
     lowered = "\n".join(paths).lower()
     for denied in (".env", "state", "logs", "imports", "archive", "uploads", "data"):
         assert denied not in lowered
@@ -427,8 +434,10 @@ def test_appliance_units_are_firstboot_gated_and_do_not_start_trading() -> None:
     assert "trading" not in target.lower()
 
     operator = (unit_root / "aureon-operator.service").read_text(encoding="utf-8")
-    assert "EnvironmentFile=/usr/lib/aureon/aureon-safe.env" in operator
-    assert "IPAddressAllow=localhost" in operator
+    assert "EnvironmentFile=" not in operator
+    assert "protected_bootstrap_v05.py --target-id operator" in operator
+    assert "Restart=no" in operator
+    assert "IPAddressAllow=" not in operator
     assert "IPAddressDeny=any" in operator
     assert "0.0.0.0" not in operator
 
@@ -445,18 +454,14 @@ def test_appliance_units_are_firstboot_gated_and_do_not_start_trading() -> None:
     firstboot = (APPLIANCE / "rootfs" / "usr" / "sbin" / "aureon-firstboot").read_text(
         encoding="utf-8"
     )
-    assert "ENABLE AUREON OFFLINE CORE" in firstboot
-    assert "/var/lib/aureon-attestation/firstboot-receipt.json" in firstboot
-    assert 'rm -f "$marker" "$receipt_tmp" "$receipt" "$receipt.sha256"' in firstboot
-    assert 'systemctl is-active --quiet "$unit"' in firstboot
-    assert "verify_effective_units" in firstboot
-    assert "verify_preapproval_enablement" in firstboot
-    assert 'systemctl is-enabled "$unit"' in firstboot
-    assert "aureon-firstboot-console.service 2>/dev/null || true)\" = enabled" in firstboot
-    assert "getty@tty1.service 2>/dev/null || true)\" = masked" in firstboot
-    assert "FragmentPath" in firstboot
-    assert "DropInPaths" in firstboot
-    assert "install -m 0400 -o root -g root" in firstboot
+    assert '"decision":"HOLD"' in firstboot
+    assert '"process_start_authorized":false' in firstboot
+    assert '"target_enabled":false' in firstboot
+    assert '"file_written":false' in firstboot
+    assert '"network_accessed":false' in firstboot
+    assert "systemctl" not in firstboot
+    assert "install " not in firstboot
+    assert "ENABLE AUREON" not in firstboot
 
 
 def test_postinstall_is_offline_and_omits_identity_material() -> None:
@@ -499,7 +504,9 @@ def test_postinstall_is_offline_and_omits_identity_material() -> None:
     assert "aureon-firstboot-console.service enabled" in attest
     assert "getty@tty1.service masked" in attest
     assert 'require_enablement "$unit" disabled' in attest
-    assert "aureon-appliance.target enabled" in attest
+    assert "unexpected_firstboot_marker" in attest
+    assert '"status":"pass"' not in attest
+    assert "AUREON_APPLIANCE_BOOTABLE_PROVISIONED" not in attest
 
 
 def test_boot_verifier_is_networkless_snapshot_only() -> None:
@@ -508,7 +515,7 @@ def test_boot_verifier_is_networkless_snapshot_only() -> None:
     assert '"-snapshot"' in source
     assert '"order=d"' in source
     assert "media=cdrom,readonly=on,format=raw" in source
-    assert "AUREON_APPLIANCE_BOOTABLE_FIRSTBOOT_REQUIRED" in source
+    assert "AUREON_APPLIANCE_BOOTABLE_PROTECTION_HOLD" in source
     assert "shell=False" in source
 
 
@@ -531,35 +538,26 @@ def test_qemu_keyval_paths_reject_comma_option_injection(tmp_path: Path) -> None
         pipeline._qemu_keyval_path(unsafe, label="test disk")
 
 
-def test_hyperv_handoff_is_admin_gated_and_does_not_start_by_default() -> None:
+def test_hyperv_handoff_is_a_terminal_no_mutation_hold() -> None:
     source = (APPLIANCE / "hyperv" / "Register-AureonAppliance.ps1").read_text(encoding="utf-8")
-    assert "#Requires -RunAsAdministrator" in source
-    assert "Test-VHD" in source
-    assert "Generation = 2" in source
-    assert "MicrosoftUEFICertificateAuthority" in source
-    assert "CheckpointType Disabled" in source
-    assert "VmStoragePath" in source
-    assert "Assert-LocalNoReparsePath" in source
-    assert "may not use a UNC path" in source
-    assert "may not use a mapped network drive" in source
-    assert "may not use an NTFS alternate data stream" in source
-    assert "contains a trailing dot or space" in source
-    assert "contains a reserved Windows device name" in source
-    assert "FileMode]::CreateNew" in source
-    assert "$sourceStream.CopyTo($destinationStream)" in source
-    assert source.index("[IO.FileMode]::CreateNew") < source.index("$copyCreated = $true")
-    assert "if ($vmCreated)" in source
-    assert "Remove-VM -VM $createdVm -Force" in source
-    assert "Remove-Item -LiteralPath $vmVhdxPath -Force" in source
-    assert "$receiptCreated = $false" in source
-    assert source.index("Move-Item -LiteralPath $receiptTemporary") < source.index(
-        "$receiptCreated = $true"
-    )
-    assert "if ($receiptCreated -and (Test-Path -LiteralPath $receiptPath))" in source
-    assert "Remove-Item -LiteralPath $receiptPath -Force" in source
-    assert "if ($Start)" in source
-    assert "Start-VM -VM $vm" in source
-    assert "Set-VMFirmware -VM $vm -EnableSecureBoot Off" in source
+    assert "#Requires -RunAsAdministrator" not in source
+    assert "'HOLD'" in source
+    assert "vm_created = $false" in source
+    assert "vhdx_copied = $false" in source
+    assert "vm_started = $false" in source
+    assert "receipt_written = $false" in source
+    assert "native_appliance_release_boundary_required" in source
+    for forbidden in (
+        "Import-Module Hyper-V",
+        "New-VM",
+        "Start-VM",
+        "CopyTo(",
+        "Move-Item",
+        "Remove-Item",
+        "Set-VMFirmware",
+        "Test-VHD",
+    ):
+        assert forbidden not in source
 
 
 def test_appliance_services_do_not_collide_with_deploy_inventory() -> None:

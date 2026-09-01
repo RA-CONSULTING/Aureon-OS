@@ -1,35 +1,18 @@
 @echo off
 setlocal
-
-set "REPO_ROOT=%~dp0..\.."
-if "%REPO_ROOT:~-1%"=="\" set "REPO_ROOT=%REPO_ROOT:~0,-1%"
+for %%I in ("%~dp0..\..") do set "REPO_ROOT=%%~fI"
 set "PYTHON_EXE=%REPO_ROOT%\.venv\Scripts\python.exe"
-set "SCRIPT_PATH=%REPO_ROOT%\scripts\python\ingest_global_memory.py"
+set "BOOTSTRAP=%REPO_ROOT%\scripts\bootstrap\protected_bootstrap_v05.py"
 
 if not exist "%PYTHON_EXE%" (
-  echo Python venv not found: "%PYTHON_EXE%"
-  exit /b 1
+  echo Fixed repository Python executable is unavailable; refusing operation. 1>&2
+  endlocal & exit /b 1
+)
+if not exist "%BOOTSTRAP%" (
+  echo Fixed protected bootstrap is unavailable; refusing operation. 1>&2
+  endlocal & exit /b 1
 )
 
-if not exist "%SCRIPT_PATH%" (
-  echo Ingest script not found: "%SCRIPT_PATH%"
-  exit /b 1
-)
-
-set "PYTHONUNBUFFERED=1"
-set "PYTHONUTF8=1"
-set "PYTHONIOENCODING=utf-8"
-set "PYTHONPATH=%REPO_ROOT%;%REPO_ROOT%\aureon\core;%REPO_ROOT%\aureon\exchanges;%REPO_ROOT%\aureon\data_feeds;%REPO_ROOT%\aureon\monitors;%REPO_ROOT%\aureon\intelligence;%REPO_ROOT%\aureon\queen;%PYTHONPATH%"
-
-echo Repo root: "%REPO_ROOT%"
-echo Python: "%PYTHON_EXE%"
-echo Script: "%SCRIPT_PATH%"
-
-REM Examples:
-REM   scripts\runners\ingest_global_memory.cmd --profile standard
-REM   scripts\runners\ingest_global_memory.cmd --profile max
-REM   scripts\runners\ingest_global_memory.cmd --profile max --include-trades
-REM   scripts\runners\ingest_global_memory.cmd --profile max --dry-run
-
-"%PYTHON_EXE%" "%SCRIPT_PATH%" %*
-
+"%PYTHON_EXE%" -I -S -B "%BOOTSTRAP%" --target-id data-ocean
+set "EXIT_CODE=%ERRORLEVEL%"
+endlocal & exit /b %EXIT_CODE%

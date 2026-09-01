@@ -1,30 +1,17 @@
+# Fixed isolated protection boundary; this route cannot start its legacy target.
 $ErrorActionPreference = "Stop"
+$repoRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot "..\.."))
+$pythonExe = Join-Path $repoRoot ".venv\Scripts\python.exe"
+$bootstrap = Join-Path $repoRoot "scripts\bootstrap\protected_bootstrap_v05.py"
 
-$RepoRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path))
-$PythonExe = Join-Path $RepoRoot ".venv\Scripts\python.exe"
-
-if (-not (Test-Path $PythonExe)) {
-    throw "Python venv not found at $PythonExe"
+if (-not (Test-Path -LiteralPath $pythonExe -PathType Leaf)) {
+    [Console]::Error.WriteLine("Fixed repository Python executable is unavailable; refusing operation.")
+    exit 1
+}
+if (-not (Test-Path -LiteralPath $bootstrap -PathType Leaf)) {
+    [Console]::Error.WriteLine("Fixed protected bootstrap is unavailable; refusing operation.")
+    exit 1
 }
 
-$pythonPathEntries = @(
-    $RepoRoot,
-    (Join-Path $RepoRoot "aureon\core"),
-    (Join-Path $RepoRoot "aureon\exchanges"),
-    (Join-Path $RepoRoot "aureon\monitors"),
-    (Join-Path $RepoRoot "aureon\data_feeds")
-)
-
-$existingPythonPath = $env:PYTHONPATH
-if ($existingPythonPath) {
-    $pythonPathEntries += $existingPythonPath
-}
-$env:PYTHONPATH = ($pythonPathEntries -join ";")
-
-$scriptPath = Join-Path $RepoRoot "aureon\exchanges\unified_market_trader.py"
-
-Write-Host "Repo root: $RepoRoot"
-Write-Host "Python: $PythonExe"
-Write-Host "Running Capital swarm via unified market trader..."
-
-& $PythonExe $scriptPath @args
+& $pythonExe -I -S -B $bootstrap --target-id unified-market-trader
+exit $LASTEXITCODE

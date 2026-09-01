@@ -14,7 +14,10 @@ from aureon.autonomous import aureon_internal_self_coder as self_coder_module
 from aureon.autonomous.aureon_agent_company_brain_fabric import (
     canonical_agent_company_brain_topology,
 )
-from aureon.autonomous.aureon_internal_coding_workforce import ResolvedBrain
+from aureon.autonomous.aureon_internal_coding_workforce import (
+    LOCAL_SELF_CODER_PROVIDER_MODE,
+    ResolvedBrain,
+)
 from aureon.autonomous.aureon_internal_patch_loop import PRE_APPLY_COUNCIL_ROLES
 from aureon.autonomous.aureon_internal_self_coder import (
     DEFAULT_EVIDENCE_PATH,
@@ -32,12 +35,42 @@ from aureon.autonomous.aureon_internal_self_coder import (
 )
 from aureon.autonomous.aureon_internal_work_ledger import DurableInternalWorkLedger
 from aureon.autonomous.aureon_safe_code_control import SafeCodeControl
+from aureon.autonomous.aureon_self_run_coding_task import run_self_coding_task
 from aureon.inhouse_ai.llm_adapter import LLMAdapter, LLMResponse, StreamChunk
-from tests.aureon_ten_nine_one_fixtures import build_test_thought_path
+from aureon.plumber.os_protection import LocalOSProtectionBoundary
+from aureon.plumber.proposal_forge import LocalProposalForge
+from tests.aureon_ten_nine_one_fixtures import (
+    TestEvidenceResolver,
+    TestTruthGate,
+    build_confidential_self_coder_test_thought_path,
+)
+from tests.aureon_ten_nine_one_fixtures import (
+    build_test_thought_path as _build_test_thought_path,
+)
+
+PROPOSAL_TEST_KEY = b"aureon-self-coder-proposal-test-key-material"
+TEST_LOCAL_URL = "http://127.0.0.1:11434/v1"
+TEST_LOCAL_DIGEST = hashlib.sha256(TEST_LOCAL_URL.encode()).hexdigest()
+
+
+def build_test_thought_path():
+    return build_confidential_self_coder_test_thought_path()
+
+
+def _proposal_forge() -> LocalProposalForge:
+    return LocalProposalForge(
+        forge_id="self-coder-test-proposal-forge",
+        os_boundary=LocalOSProtectionBoundary(
+            boundary_id="self-coder-test-os-boundary",
+            master_key_provider=lambda: PROPOSAL_TEST_KEY,
+            max_ingress_bytes=1024 * 1024,
+        ),
+    )
 
 
 def run_autonomous_self_coding(*args, **kwargs):
     kwargs.setdefault("thought_path", build_test_thought_path())
+    kwargs.setdefault("proposal_forge", _proposal_forge())
     return _run_autonomous_self_coding(*args, **kwargs)
 
 
@@ -49,6 +82,8 @@ class SelfCoderAdapter(LLMAdapter):
         selected: str = "aureon/scheduler.py",
         invalid_selection_once: bool = False,
     ) -> None:
+        self.base_url = TEST_LOCAL_URL
+        self.strict_loopback_no_redirects = True
         self.lane = lane
         self.selected = selected
         self.invalid_selection_once = invalid_selection_once
@@ -115,6 +150,18 @@ class SelfCoderResolver:
     def resolve(self, lane: str) -> ResolvedBrain:
         return self.resolve_for(lane, nerve_id=f"lane:{lane}")
 
+    def self_coder_transport_preflight(self) -> dict[str, Any]:
+        return {
+            "schema_version": "aureon-self-coder-transport-preflight-v1",
+            "ready": True,
+            "provider_mode": LOCAL_SELF_CODER_PROVIDER_MODE,
+            "endpoint_authority_digest": TEST_LOCAL_DIGEST,
+            "endpoint_loopback": True,
+            "external_source_egress_authorized": False,
+            "action_eligible": False,
+            "economic_eligible": False,
+        }
+
     def resolve_for(self, lane: str, *, nerve_id: str) -> ResolvedBrain:
         adapter = self.adapters.setdefault(
             lane,
@@ -133,12 +180,12 @@ class SelfCoderResolver:
             working=True,
             catalog_size=5,
             catalog_refreshed_at=1_787_000_000.0,
-            endpoint_authority_digest="c" * 64,
+            endpoint_authority_digest=TEST_LOCAL_DIGEST,
             routing_receipt_id="ollama:hnc-route:" + hashlib.sha256(nerve_id.encode()).hexdigest(),
             hnc_receipt_id="hnc:live_field:test",
             hnc_gamma=0.9,
             hnc_coherence_band="active",
-            provider_mode="ollama_cloud_primary",
+            provider_mode=LOCAL_SELF_CODER_PROVIDER_MODE,
         )
 
 
@@ -186,15 +233,23 @@ def _repo(root: Path) -> None:
 def test_aureon_selects_authors_holds_and_persists_receipts(tmp_path: Path, monkeypatch) -> None:
     _repo(tmp_path)
     monkeypatch.setattr(SafeCodeControl, "_attach_expression_context", lambda self, proposal: None)
+    forge = _proposal_forge()
 
     result = run_autonomous_self_coding(
         root=tmp_path,
         goal="Improve the scheduler interval behavior and prove it.",
         resolver=SelfCoderResolver(),
+        proposal_forge=forge,
     )
 
     assert result["applied"] is False
-    assert result["pending_senior_review"] is True
+    assert result["pending_senior_review"] is False
+    assert result["proposal_created"] is False
+    assert result["proposal_recoverable"] is False
+    assert result["proposal_reviewable"] is False
+    assert result["transient_hnc_seal_verified"] is True
+    assert result["durable_proposal_vault_available"] is False
+    assert result["proposal_quarantined"] is False
     assert result["proposal_only"] is True
     assert result["release_hold"] is True
     assert result["release_authorized"] is False
@@ -229,8 +284,258 @@ def test_aureon_selects_authors_holds_and_persists_receipts(tmp_path: Path, monk
     assert result["patch_cycle"]["apply_evidence"]["effect_attempted"] is False
     assert result["patch_cycle"]["production_magic_star_release_available"] is False
     assert result["patch_cycle"]["proposal"]["status"] == "proposal_reviewed_hold"
+    assert result["patch_cycle"]["proposal"]["patch_text"] == ""
+    assert result["patch_cycle"]["proposal_protection"]["admitted_hnc"] is True
+    assert result["patch_cycle"]["proposal_protection"]["aureon_receipt_stores_raw_goal"] is False
+    assert result["patch_cycle"]["proposal_protection"]["aureon_receipt_stores_raw_diff"] is False
+    assert result["patch_cycle"]["proposal_protection"]["proposal_recoverable"] is False
+    assert result["patch_cycle"]["proposal_protection"]["transient_hnc_handle_burned"] is True
+    assert forge.public_summary()["active_opaque_proposal_count"] == 0
+    assert forge.public_summary()["consumed_opaque_proposal_count"] == 1
     assert (tmp_path / "state" / "aureon_internal_coding_work_ledger.json").is_file()
     assert (tmp_path / "state" / "aureon_internal_self_coder_last_run.json").is_file()
+    persisted_proposals = (tmp_path / "state" / "aureon_internal_patch_proposals.json").read_text(
+        encoding="utf-8"
+    )
+    persisted_evidence = (tmp_path / "state" / "aureon_internal_self_coder_last_run.json").read_text(
+        encoding="utf-8"
+    )
+    assert "Improve the scheduler interval behavior and prove it." not in persisted_proposals
+    assert "Improve the scheduler interval behavior and prove it." not in persisted_evidence
+    assert "+    return 2" not in persisted_proposals
+    assert "+    return 2" not in persisted_evidence
+    persisted_state = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in sorted((tmp_path / "state").rglob("*"))
+        if path.is_file() and path.suffix in {".json", ".jsonl", ".md"}
+    )
+    assert "Improve the scheduler interval behavior and prove it." not in persisted_state
+    assert "+    return 2" not in persisted_state
+    compact = run_self_coding_task(
+        tmp_path,
+        "This text must not start a second cycle.",
+        enabled=True,
+    )
+    assert compact["status"] == "internal_self_coder_existing_evidence_hold"
+    assert compact["ok"] is False
+    assert compact["summary"]["reason_code"] == "internal_self_coder_receipt_unattested"
+    assert set(compact["summary"]) == {
+        "reason_code",
+        "applied",
+        "pending_senior_review",
+        "release_ready",
+        "codex_implementation",
+        "action_eligible",
+        "economic_eligible",
+    }
+    second_resolver = SelfCoderResolver()
+    with pytest.raises(InternalSelfCoderHold, match="existing_self_coder_evidence"):
+        run_autonomous_self_coding(
+            root=tmp_path,
+            goal="Attempt a second cycle before review.",
+            resolver=second_resolver,
+        )
+    assert second_resolver.adapters == {}
+
+
+def test_missing_hnc_key_quarantines_without_plaintext_fallback(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    _repo(tmp_path)
+    monkeypatch.delenv("AUREON_HNC_PACKET_MASTER_KEY", raising=False)
+    monkeypatch.delenv("HNC_PACKET_MASTER_KEY", raising=False)
+    monkeypatch.setattr(SafeCodeControl, "_attach_expression_context", lambda self, proposal: None)
+    goal = "Improve the scheduler while keeping this quarantine marker private."
+
+    resolver = SelfCoderResolver()
+    with pytest.raises(InternalSelfCoderHold, match="hnc_proposal_master_key_unavailable"):
+        _run_autonomous_self_coding(
+            root=tmp_path,
+            goal=goal,
+            resolver=resolver,
+            thought_path=build_test_thought_path(),
+        )
+    assert resolver.adapters == {}
+    assert not (tmp_path / "state" / "aureon_internal_coding_work_ledger.json").exists()
+
+
+def test_cloud_transport_holds_before_any_brain_resolution(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    _repo(tmp_path)
+    monkeypatch.setattr(SafeCodeControl, "_attach_expression_context", lambda self, proposal: None)
+
+    class CloudSpyResolver:
+        resolve_calls = 0
+
+        def self_coder_transport_preflight(self) -> dict[str, Any]:
+            return {
+                "schema_version": "aureon-self-coder-transport-preflight-v1",
+                "ready": False,
+                "provider_mode": "hold",
+                "endpoint_authority_digest": hashlib.sha256(
+                    b"https://ollama.com/v1"
+                ).hexdigest(),
+                "endpoint_loopback": False,
+                "external_source_egress_authorized": False,
+                "action_eligible": False,
+                "economic_eligible": False,
+            }
+
+        def resolve(self, _lane: str) -> ResolvedBrain:
+            self.resolve_calls += 1
+            raise AssertionError("cloud resolver must not be called")
+
+    resolver = CloudSpyResolver()
+    with pytest.raises(InternalSelfCoderHold, match="external_model_egress_forbidden"):
+        _run_autonomous_self_coding(
+            root=tmp_path,
+            goal="Do not send this goal to a hosted model.",
+            target_path="aureon/scheduler.py",
+            resolver=resolver,
+            thought_path=build_test_thought_path(),
+            proposal_forge=_proposal_forge(),
+        )
+    assert resolver.resolve_calls == 0
+
+
+def test_plaintext_thought_path_holds_before_any_brain_resolution(
+    tmp_path: Path,
+) -> None:
+    _repo(tmp_path)
+    resolver = SelfCoderResolver()
+
+    with pytest.raises(InternalSelfCoderHold, match="commitment_only_thought_path_required"):
+        _run_autonomous_self_coding(
+            root=tmp_path,
+            goal="Keep this target-selection goal out of plaintext traces.",
+            target_path="aureon/scheduler.py",
+            resolver=resolver,
+            thought_path=_build_test_thought_path(commitment_only=False),
+            proposal_forge=_proposal_forge(),
+        )
+    assert resolver.adapters == {}
+
+
+def test_default_confidential_path_requires_explicit_truth_authorities(
+    tmp_path: Path,
+) -> None:
+    _repo(tmp_path)
+    resolver = SelfCoderResolver()
+
+    with pytest.raises(
+        InternalSelfCoderHold,
+        match="authenticated_self_coder_truth_authority_bundle_required",
+    ):
+        _run_autonomous_self_coding(
+            root=tmp_path,
+            goal="Keep this self-coder goal private and grounded.",
+            target_path="aureon/scheduler.py",
+            resolver=resolver,
+            proposal_forge=_proposal_forge(),
+        )
+    assert resolver.adapters == {}
+
+
+def test_malicious_confidential_path_lookalike_is_rejected_without_callbacks(
+    tmp_path: Path,
+) -> None:
+    _repo(tmp_path)
+    resolver = SelfCoderResolver()
+
+    class MaliciousLookalike:
+        def __init__(self) -> None:
+            self.preflight_calls = 0
+            self.execute_calls = 0
+
+        def self_coder_confidential_preflight(self) -> dict[str, Any]:
+            self.preflight_calls += 1
+            return {
+                "schema_version": "aureon-self-coder-thought-path-preflight-v2",
+                "ready": True,
+                "truth_gate_enforced": True,
+                "trusted_local_evidence_resolver": True,
+                "trusted_receipt_backed_truth_gate": True,
+                "commitment_only_propagation": True,
+                "raw_answer_bus_persistence_authorized": False,
+                "raw_answer_trace_persistence_authorized": False,
+                "action_eligible": False,
+                "economic_eligible": False,
+            }
+
+        def execute(self, **_kwargs: Any) -> None:
+            self.execute_calls += 1
+            raise AssertionError("lookalike must never receive the coding prompt")
+
+    path = MaliciousLookalike()
+    with pytest.raises(
+        InternalSelfCoderHold,
+        match="self_coder_commitment_only_thought_path_required",
+    ):
+        _run_autonomous_self_coding(
+            root=tmp_path,
+            goal="Never disclose this goal to a lookalike path.",
+            target_path="aureon/scheduler.py",
+            resolver=resolver,
+            thought_path=path,
+            proposal_forge=_proposal_forge(),
+        )
+    assert path.preflight_calls == 0
+    assert path.execute_calls == 0
+    assert resolver.adapters == {}
+
+
+def test_confidential_path_rejects_nonlocal_inner_resolver_before_brains(
+    tmp_path: Path,
+) -> None:
+    _repo(tmp_path)
+    resolver = SelfCoderResolver()
+    path = build_test_thought_path()
+    untrusted_resolver = TestEvidenceResolver()
+    vars(path)["_resolver"] = untrusted_resolver
+
+    with pytest.raises(
+        InternalSelfCoderHold,
+        match="self_coder_commitment_only_thought_path_required",
+    ):
+        _run_autonomous_self_coding(
+            root=tmp_path,
+            goal="Do not expose this goal to an injected evidence resolver.",
+            target_path="aureon/scheduler.py",
+            resolver=resolver,
+            thought_path=path,
+            proposal_forge=_proposal_forge(),
+        )
+    assert untrusted_resolver.hnc_calls == 0
+    assert untrusted_resolver.auris_calls == 0
+    assert resolver.adapters == {}
+
+
+def test_confidential_path_rejects_untrusted_inner_truth_gate_before_brains(
+    tmp_path: Path,
+) -> None:
+    _repo(tmp_path)
+    resolver = SelfCoderResolver()
+    path = build_test_thought_path()
+    untrusted_gate = TestTruthGate()
+    vars(path)["_truth_gate"] = untrusted_gate
+
+    with pytest.raises(
+        InternalSelfCoderHold,
+        match="self_coder_commitment_only_thought_path_required",
+    ):
+        _run_autonomous_self_coding(
+            root=tmp_path,
+            goal="Do not expose this goal to an injected truth gate.",
+            target_path="aureon/scheduler.py",
+            resolver=resolver,
+            thought_path=path,
+            proposal_forge=_proposal_forge(),
+        )
+    assert untrusted_gate.calls == 0
+    assert resolver.adapters == {}
 
 
 def test_candidate_discovery_excludes_dirty_and_test_targets(tmp_path: Path) -> None:
@@ -239,6 +544,28 @@ def test_candidate_discovery_excludes_dirty_and_test_targets(tmp_path: Path) -> 
 
     with pytest.raises(InternalSelfCoderHold, match="no_clean"):
         discover_clean_python_candidates(tmp_path, "scheduler interval")
+
+
+def test_corrupt_proposal_state_holds_before_resolver_or_model(
+    tmp_path: Path,
+) -> None:
+    _repo(tmp_path)
+    state_dir = tmp_path / "state"
+    state_dir.mkdir()
+    (state_dir / "aureon_internal_patch_proposals.json").write_text(
+        "{not-json",
+        encoding="utf-8",
+    )
+    resolver = SelfCoderResolver()
+
+    with pytest.raises(InternalSelfCoderHold, match="proposal_state_unreadable"):
+        run_autonomous_self_coding(
+            root=tmp_path,
+            goal="Improve scheduler interval",
+            resolver=resolver,
+        )
+
+    assert resolver.adapters == {}
 
 
 def test_self_coder_rejects_mutating_git_and_out_of_state_evidence_paths(tmp_path: Path) -> None:
@@ -369,11 +696,22 @@ def _seed_full_fabric_internal_work(
 
 def _pending_evidence(root: Path, council: dict[str, Any]) -> dict[str, Any]:
     ledger_status = DurableInternalWorkLedger(root / DEFAULT_LEDGER_PATH).status()
+    base_commit = "b" * 40
+    patch_sha256 = "a" * 64
+    metadata_council = {
+        **council,
+        "raw_decisions_retained": False,
+        "decisions": [
+            {**item, "raw_decisions_retained": False}
+            for item in council["decisions"]
+        ],
+    }
     core = {
         "schema_version": "aureon-internal-self-coder-v1",
         "status": "internal_patch_proposal_held_for_senior_review",
         "applied": False,
         "pending_senior_review": True,
+        "proposal_created": True,
         "proposal_only": True,
         "release_hold": True,
         "release_authorized": False,
@@ -385,15 +723,53 @@ def _pending_evidence(root: Path, council: dict[str, Any]) -> dict[str, Any]:
         "effect_attempted": False,
         "test_commands_executed": False,
         "production_ready": False,
+        "base_commit": base_commit,
+        "raw_goal_retained": False,
+        "raw_suggested_test_commands_retained": False,
+        "target_selection": {"raw_reason_retained": False},
         "patch_cycle": {
+            "status": "internal_patch_proposal_held_for_senior_review",
             "applied": False,
+            "pending_senior_review": True,
+            "proposal_only": True,
             "release_authorized": False,
             "effect_attempted": False,
             "test_commands_executed": False,
             "repository_mutation_implemented": False,
             "generated_code_execution_implemented": False,
             "subprocess_test_execution_implemented": False,
-            "pre_apply_council": council,
+            "request": {
+                "raw_goal_retained": False,
+                "raw_test_commands_retained": False,
+            },
+            "deliberation": {
+                "raw_decisions_retained": False,
+                "decisions": [],
+            },
+            "proposal_protection": {
+                "admitted_hnc": True,
+                "quarantined_hnc": False,
+                "raw_goal_persisted": False,
+                "raw_diff_persisted": False,
+            },
+            "patch_validation": {"patch_sha256": patch_sha256},
+            "proposal": {
+                "status": "proposal_reviewed_hold",
+                "patch_text": "",
+                "metadata": {
+                    "raw_goal_retained": False,
+                    "raw_diff_retained": False,
+                    "hnc_proposal": {
+                        "raw_request_returned": False,
+                        "raw_diff_returned": False,
+                        "descriptor": {
+                            "base_commit": base_commit,
+                            "diff_sha256": patch_sha256,
+                        },
+                    },
+                },
+            },
+            "pre_apply_council": metadata_council,
             "apply_evidence": {
                 "applied": False,
                 "effect_attempted": False,
@@ -421,7 +797,7 @@ def _pending_evidence(root: Path, council: dict[str, Any]) -> dict[str, Any]:
     return evidence
 
 
-def test_exact_senior_proposal_review_records_99_to_1_contract_and_keeps_hold(
+def test_senior_review_entrypoint_holds_before_unavailable_durable_vault(
     tmp_path: Path,
 ) -> None:
     resolver = SelfCoderResolver()
@@ -432,28 +808,14 @@ def test_exact_senior_proposal_review_records_99_to_1_contract_and_keeps_hold(
     )
     pending = _pending_evidence(tmp_path, council)
 
-    reviewed = record_senior_proposal_review(
-        root=tmp_path,
-        review_output_digest="d" * 64,
-        resolver=resolver,
-        thought_path=build_test_thought_path(),
-    )
-
-    assert reviewed["pending_senior_review"] is False
-    assert reviewed["status"] == "internal_patch_senior_proposal_review_recorded_release_hold"
-    assert reviewed["applied"] is False
-    assert reviewed["proposal_only"] is True
-    assert reviewed["release_hold"] is True
-    assert reviewed["release_authorized"] is False
-    assert reviewed["repository_mutation_authorized"] is False
-    assert reviewed["production_magic_star_release_available"] is False
-    assert reviewed["reviewed_evidence_digest"] == pending["evidence_digest"]
-    assert reviewed["workforce_proposal_review_report"]["ready"] is True
-    assert reviewed["workforce_proposal_review_report"]["internal_work_units"] == 99
-    assert reviewed["workforce_proposal_review_report"]["senior_oversight_units"] == 1
-    assert reviewed["workforce_proposal_review_report"]["internal_share_ppm"] == 990_000
-    assert reviewed["workforce_proposal_review_report"]["production_release_authorized"] is False
-    assert "full_stack_release_receipt" not in reviewed
+    with pytest.raises(InternalSelfCoderHold, match="durable_proposal_vault_unavailable"):
+        record_senior_proposal_review(
+            root=tmp_path,
+            review_output_digest="d" * 64,
+            resolver=resolver,
+            thought_path=build_test_thought_path(),
+        )
+    assert pending["pending_senior_review"] is True
 
 
 def test_legacy_release_review_entrypoint_is_disabled_without_calling_gate(tmp_path: Path) -> None:
@@ -489,7 +851,7 @@ def test_legacy_release_review_entrypoint_is_disabled_without_calling_gate(tmp_p
     assert ledger.status() == before
 
 
-def test_senior_review_is_held_before_lifetime_ratio_is_available(tmp_path: Path) -> None:
+def test_durable_vault_hold_precedes_lifetime_ratio_evaluation(tmp_path: Path) -> None:
     resolver = SelfCoderResolver()
     ledger = DurableInternalWorkLedger(tmp_path / DEFAULT_LEDGER_PATH)
     council = _seed_full_fabric_internal_work(
@@ -499,7 +861,7 @@ def test_senior_review_is_held_before_lifetime_ratio_is_available(tmp_path: Path
     )
     _pending_evidence(tmp_path, council)
 
-    with pytest.raises(InternalSelfCoderHold, match="99_percent"):
+    with pytest.raises(InternalSelfCoderHold, match="durable_proposal_vault_unavailable"):
         record_senior_proposal_review(
             root=tmp_path,
             review_output_digest="e" * 64,
@@ -508,6 +870,70 @@ def test_senior_review_is_held_before_lifetime_ratio_is_available(tmp_path: Path
         )
 
     assert ledger.status()["receipt_count"] == 20
+
+
+def test_cli_exit_zero_requires_current_burned_transient_hold(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    result = {
+        "status": "internal_patch_transient_hnc_seal_held",
+        "applied": False,
+        "pending_senior_review": False,
+        "proposal_created": False,
+        "proposal_recoverable": False,
+        "proposal_reviewable": False,
+        "transient_hnc_seal_verified": True,
+        "durable_proposal_vault_available": False,
+        "proposal_quarantined": False,
+        "proposal_only": True,
+        "release_hold": True,
+        "release_authorized": False,
+        "repository_mutation_authorized": False,
+        "generated_code_execution_authorized": False,
+        "repository_mutation_implemented": False,
+        "generated_code_execution_implemented": False,
+        "subprocess_test_execution_implemented": False,
+        "effect_attempted": False,
+        "test_commands_executed": False,
+        "production_magic_star_release_available": False,
+        "production_ready": False,
+        "aureon_evidence_raw_goal_retained": False,
+        "aureon_evidence_raw_suggested_test_commands_retained": False,
+        "local_model_nonretention_verified": False,
+        "client_external_model_egress_attempted": False,
+        "local_model_server_downstream_egress_verified": False,
+        "codex_implementation": False,
+        "action_eligible": False,
+        "economic_eligible": False,
+        "patch_cycle": {
+            "proposal_protection": {"transient_hnc_handle_burned": True},
+        },
+    }
+
+    def run(**kwargs: Any) -> dict[str, Any]:
+        assert kwargs["root"] == tmp_path
+        return result
+
+    monkeypatch.setattr(self_coder_module, "run_autonomous_self_coding", run)
+    argv = ["--root", str(tmp_path), "--goal", "bounded seal test"]
+
+    assert self_coder_module.main(argv) == 0
+    protection = result["patch_cycle"]["proposal_protection"]
+    protection["transient_hnc_handle_burned"] = False
+    assert self_coder_module.main(argv) == 1
+    protection["transient_hnc_handle_burned"] = True
+    for field in (
+        "release_authorized",
+        "repository_mutation_authorized",
+        "production_ready",
+        "action_eligible",
+    ):
+        result[field] = True
+        assert self_coder_module.main(argv) == 1
+        result[field] = False
+    protection["execution_authorized"] = True
+    assert self_coder_module.main(argv) == 1
 
 
 def test_architecture_selection_accepts_one_wrapped_object_but_not_two() -> None:

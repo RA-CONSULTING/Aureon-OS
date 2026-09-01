@@ -55,6 +55,10 @@ from typing import Any, Callable, Dict, Iterable, List, Optional, Set
 
 logger = logging.getLogger("aureon.vault.voice.hash_resonance_index")
 
+HASH_RESONANCE_RELEASE_HOLD = (
+    "hash_resonance_index_hold:production_magic_star_release_unavailable"
+)
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Normalisation — payload → stable semantic fingerprint
@@ -221,6 +225,7 @@ class HashResonanceIndex:
     # ─── wiring ──────────────────────────────────────────────────────────
 
     def start(self) -> None:
+        raise RuntimeError(HASH_RESONANCE_RELEASE_HOLD)
         if self._subscribed or self.thought_bus is None:
             return
         try:
@@ -232,6 +237,7 @@ class HashResonanceIndex:
     def rebuild_from_vault(self) -> int:
         """Rebuild the index from scratch by scanning the vault's current
         contents. Returns the number of cards indexed."""
+        raise RuntimeError(HASH_RESONANCE_RELEASE_HOLD)
         contents = getattr(self.vault, "_contents", None)
         if not contents:
             return 0
@@ -247,6 +253,7 @@ class HashResonanceIndex:
     # ─── observer ────────────────────────────────────────────────────────
 
     def _on_vault_card_added(self, thought: Any) -> None:
+        raise RuntimeError(HASH_RESONANCE_RELEASE_HOLD)
         payload = getattr(thought, "payload", {}) or {}
         content_id = str(payload.get("content_id") or "")
         if not content_id:
@@ -265,6 +272,7 @@ class HashResonanceIndex:
     # ─── indexing ────────────────────────────────────────────────────────
 
     def _index_card(self, card: Any, *, _publish: bool) -> Optional[str]:
+        raise RuntimeError(HASH_RESONANCE_RELEASE_HOLD)
         try:
             content_id = str(getattr(card, "content_id", "") or "")
             if not content_id:
@@ -308,6 +316,7 @@ class HashResonanceIndex:
         return fp
 
     def _publish_bond(self, bond: BondRecord, threshold_crossed: int) -> None:
+        raise RuntimeError(HASH_RESONANCE_RELEASE_HOLD)
         if self.thought_bus is None:
             return
         try:
@@ -423,6 +432,7 @@ class HashResonanceIndex:
 
 
 __all__ = [
+    "HASH_RESONANCE_RELEASE_HOLD",
     "HashResonanceIndex",
     "BondRecord",
     "bond_strength",

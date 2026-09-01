@@ -34,7 +34,11 @@ VACUUM_SCHEMA = "aureon.10-9-1.vacuum.v1"
 HNC_SCHEMA = "aureon.10-9-1.hnc-organization.v1"
 AURIS_SCHEMA = "aureon.10-9-1.auris-answer.v1"
 PROPAGATION_SCHEMA = "aureon.10-9-1.propagation.v1"
+COMMITMENT_PROPAGATION_SCHEMA = "aureon.10-9-1.propagation-commitment.v1"
 ACK_SCHEMA = "aureon.10-9-1.delivery-ack.v1"
+SELF_CODER_CONFIDENTIAL_PREFLIGHT_SCHEMA = (
+    "aureon-self-coder-thought-path-preflight-v2"
+)
 
 PHI = (1.0 + math.sqrt(5.0)) / 2.0
 PHI_INVERSE = 1.0 / PHI
@@ -443,6 +447,95 @@ class ThoughtBusHiveMyceliaPropagator:
         return acknowledgements
 
 
+class CommitmentOnlyHiveMyceliaPropagator:
+    """Propagate only an answer commitment for confidential coding material.
+
+    The raw answer is accepted only long enough to calculate its SHA-256
+    commitment.  Neither the ThoughtBus payload nor either durable trace row
+    contains the answer.  Dedicated topics prevent consumers of the historical
+    plaintext channel from mistaking a commitment for disclosed content.
+    """
+
+    propagator_id = "aureon:thought-bus-hive-mycelia-commitment-only"
+    confidential_output_propagation = True
+    _CHANNELS = {
+        "hive": (
+            "hive.10_9_1.coherent_answer_commitment",
+            "braincell_10_9_1_hive_commitment",
+        ),
+        "mycelia": (
+            "mycelia.10_9_1.coherent_answer_commitment",
+            "braincell_10_9_1_mycelia_commitment",
+        ),
+    }
+
+    def __init__(
+        self,
+        *,
+        bus: Any = None,
+        append_trace_fn: Callable[[str, dict[str, Any]], None] | None = None,
+        read_trace_latest_fn: Callable[[str], Mapping[str, Any] | None] | None = None,
+    ) -> None:
+        self._bus = bus
+        self._append_trace = append_trace_fn
+        self._read_trace_latest = read_trace_latest_fn
+
+    def propagate(
+        self,
+        *,
+        answer: str,
+        answer_receipt: Mapping[str, Any],
+    ) -> Mapping[str, Mapping[str, Any]]:
+        from aureon.core.aureon_thought_bus import Thought, get_thought_bus, payload_of
+        from aureon.core.bus_trace import append_trace, read_trace_latest
+
+        bus = self._bus if self._bus is not None else get_thought_bus()
+        if bus is None or not hasattr(bus, "publish") or not hasattr(bus, "recall"):
+            raise TenNineOneHold("hive_mycelia_bus_unavailable")
+        answer_text = _nonblank(answer, "answer")
+        answer_id = _nonblank(answer_receipt.get("receipt_id"), "answer_receipt_id")
+        answer_digest = _sha256(answer_text)
+        if answer_receipt.get("answer_digest") != answer_digest:
+            raise TenNineOneHold("answer_commitment_receipt_mismatch")
+        payload = {
+            "schema_version": COMMITMENT_PROPAGATION_SCHEMA,
+            "answer_digest": answer_digest,
+            "answer_receipt_id": answer_id,
+            "content_disclosure": "commitment_only",
+            "raw_answer_retained": False,
+            **_FALSE_FLAGS,
+        }
+        acknowledgements: dict[str, Mapping[str, Any]] = {}
+        trace_append = self._append_trace or append_trace
+        trace_read_latest = self._read_trace_latest or read_trace_latest
+        for channel, (topic, trace_name) in self._CHANNELS.items():
+            bus.publish(
+                Thought(
+                    source="aureon_10_9_1_confidential",
+                    topic=topic,
+                    payload=dict(payload),
+                )
+            )
+            rows = bus.recall(topic, limit=1) or []
+            recalled = payload_of(rows[-1]) if rows else None
+            if not isinstance(recalled, Mapping) or dict(recalled) != payload:
+                raise TenNineOneHold(f"{channel}_commitment_delivery_readback_failed")
+            trace_append(trace_name, dict(payload))
+            traced = trace_read_latest(trace_name)
+            if not isinstance(traced, Mapping):
+                raise TenNineOneHold(f"{channel}_commitment_trace_readback_failed")
+            traced_payload = {key: traced.get(key) for key in payload}
+            if traced_payload != payload:
+                raise TenNineOneHold(f"{channel}_commitment_trace_binding_mismatch")
+            acknowledgements[channel] = build_delivery_ack(
+                channel=channel,
+                destination_id=f"aureon:{channel}:commitment-bus-and-trace",
+                answer_receipt_id=answer_id,
+                delivery_digest=_sha256(payload),
+            )
+        return acknowledgements
+
+
 class TenNineOneThoughtPath:
     """Run one inference through vacuum, HNC, Auris, Hive, and Mycelia."""
 
@@ -476,7 +569,10 @@ class TenNineOneThoughtPath:
         request: ThoughtPathRequest,
         prompt: str,
         infer: Callable[[str], str],
+        correction_attempt: int = 0,
     ) -> ThoughtPathResult:
+        if correction_attempt != 0:
+            raise TenNineOneHold("correction_attempt_requires_truth_gated_path")
         if not isinstance(request, ThoughtPathRequest):
             raise TenNineOneHold("10_9_1_request_required")
         prompt_text = _nonblank(prompt, "prompt")
@@ -681,7 +777,12 @@ def validate_ten_nine_one_receipt(receipt: Mapping[str, Any]) -> dict[str, Any]:
     hnc = receipt.get("hnc_receipt")
     answer = receipt.get("answer_receipt")
     propagation = receipt.get("propagation_receipt")
-    if not all(isinstance(item, Mapping) for item in (vacuum, hnc, answer, propagation)):
+    if (
+        not isinstance(vacuum, Mapping)
+        or not isinstance(hnc, Mapping)
+        or not isinstance(answer, Mapping)
+        or not isinstance(propagation, Mapping)
+    ):
         raise ValueError("complete_10_9_1_stage_receipts_required")
     expected_stage_keys = {
         VACUUM_SCHEMA: {
@@ -743,7 +844,11 @@ def validate_ten_nine_one_receipt(receipt: Mapping[str, Any]) -> dict[str, Any]:
     }
     for item in (vacuum, hnc, answer, propagation):
         _require_false_flags(item)
-        if set(item) != expected_stage_keys.get(item.get("schema_version"), set()):
+        stage_schema = item.get("schema_version")
+        if not isinstance(stage_schema, str) or set(item) != expected_stage_keys.get(
+            stage_schema,
+            set(),
+        ):
             raise ValueError("exact_10_9_1_stage_receipt_schema_required")
         causal = {key: item[key] for key in item if key != "receipt_id"}
         expected_prefix = {
@@ -751,7 +856,7 @@ def validate_ten_nine_one_receipt(receipt: Mapping[str, Any]) -> dict[str, Any]:
             HNC_SCHEMA: "thought:10-9-1:hnc:",
             AURIS_SCHEMA: "thought:10-9-1:answer:",
             PROPAGATION_SCHEMA: "thought:10-9-1:propagation:",
-        }.get(item.get("schema_version"))
+        }.get(stage_schema)
         if not expected_prefix or item.get("receipt_id") != f"{expected_prefix}{_sha256(causal)}":
             raise ValueError("10_9_1_stage_receipt_hash_mismatch")
     if vacuum.get("stage") != 10 or vacuum.get("prompt_digest") != prompt_digest:
@@ -838,6 +943,8 @@ def build_local_ten_nine_one_thought_path(
 __all__ = [
     "ACTIVE_COHERENCE_THRESHOLD",
     "AURIS_SCHEMA",
+    "COMMITMENT_PROPAGATION_SCHEMA",
+    "CommitmentOnlyHiveMyceliaPropagator",
     "HNC_SCHEMA",
     "LIGHTHOUSE_COHERENCE_THRESHOLD",
     "LocalHncAurisEvidenceResolver",
@@ -845,6 +952,7 @@ __all__ = [
     "PHI_INVERSE",
     "PHI_SQUARED",
     "SCHEMA_VERSION",
+    "SELF_CODER_CONFIDENTIAL_PREFLIGHT_SCHEMA",
     "TenNineOneEvidenceResolver",
     "TenNineOneHold",
     "TenNineOnePropagator",

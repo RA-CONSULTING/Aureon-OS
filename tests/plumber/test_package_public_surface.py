@@ -69,6 +69,9 @@ def test_clean_subprocess_import_has_no_external_or_mutating_actions() -> None:
             "os.unsetenv",
             "os.utime",
             "subprocess.Popen",
+            "sys.addaudithook",
+            "sys.setprofile",
+            "sys.settrace",
         }
         write_flags = (
             os.O_WRONLY
@@ -118,4 +121,4 @@ def test_clean_subprocess_import_has_no_external_or_mutating_actions() -> None:
 
     assert completed.returncode == 0, completed.stderr
     report = json.loads(completed.stdout)
-    assert report == {"events": [], "exports": 227}
+    assert report == {"events": [], "exports": 307}

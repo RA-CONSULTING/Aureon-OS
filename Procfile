@@ -1,1 +1,1 @@
-web: cd /workspace && pip install -r requirements.txt && supervisord -n -c deploy/supervisord.conf
+release: /usr/local/bin/python -I -S -B scripts/bootstrap/protected_bootstrap_v05.py --target-id cloud-supervisor

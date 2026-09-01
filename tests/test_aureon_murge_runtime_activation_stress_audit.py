@@ -8,7 +8,7 @@ from aureon.autonomous.aureon_murge_runtime_activation_stress_audit import (
 )
 
 
-def test_murge_runtime_activation_audit_reports_guards_and_launcher() -> None:
+def test_murge_runtime_activation_audit_reports_terminal_hold_and_launcher() -> None:
     report = build_runtime_activation_stress_audit(probe_services=False, env={})
 
     assert report["schema_version"] == "aureon-murge-runtime-activation-stress-v1"
@@ -20,7 +20,11 @@ def test_murge_runtime_activation_audit_reports_guards_and_launcher() -> None:
     assert report["dependency_readiness_rows"]
     assert all("install_command" in row for row in report["dependency_readiness_rows"])
     assert len(report["npm_audit_rows"]) == 3
-    assert report["summary"]["terminal_guard_passing_count"] == report["summary"]["terminal_guard_count"]
+    assert report["summary"]["terminal_guard_count"] == 3
+    assert report["summary"]["terminal_guard_passing_count"] == 0
+    assert report["summary"]["local_launch_ready"] is False
+    assert report["status"] == "murge_runtime_activation_attention"
+    assert "terminal_or_sandbox_code_guard_missing" in report["blockers"]
     assert report["summary"]["no_trading_gate_bypass"] is True
     assert "collision_review_required" in report["blockers"]
 

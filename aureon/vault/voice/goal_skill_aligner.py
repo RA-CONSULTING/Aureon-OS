@@ -38,6 +38,10 @@ from typing import Any, Callable, Dict, List, Optional
 
 logger = logging.getLogger("aureon.vault.voice.goal_skill_aligner")
 
+GOAL_SKILL_ALIGNER_RELEASE_HOLD = (
+    "goal_skill_aligner_hold:production_magic_star_release_unavailable"
+)
+
 
 class GoalSkillAligner:
     """Subscribes to goal.submit.request → consults PersonaMinerBridge →
@@ -64,6 +68,7 @@ class GoalSkillAligner:
     # ─── lifecycle ───────────────────────────────────────────────────────
 
     def start(self) -> None:
+        raise RuntimeError(GOAL_SKILL_ALIGNER_RELEASE_HOLD)
         if self._subscribed or self.thought_bus is None:
             return
         try:
@@ -77,6 +82,7 @@ class GoalSkillAligner:
     # ─── handler ─────────────────────────────────────────────────────────
 
     def _on_request(self, thought: Any) -> None:
+        raise RuntimeError(GOAL_SKILL_ALIGNER_RELEASE_HOLD)
         payload = getattr(thought, "payload", {}) or {}
         if not isinstance(payload, dict):
             return
@@ -96,6 +102,7 @@ class GoalSkillAligner:
             self._publish_aligned_request(payload, suggestion)
 
     def _lookup(self, payload: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        raise RuntimeError(GOAL_SKILL_ALIGNER_RELEASE_HOLD)
         if self.miner_bridge is None:
             return None
         persona = str(payload.get("proposed_by_persona") or "")
@@ -118,6 +125,7 @@ class GoalSkillAligner:
         payload: Dict[str, Any],
         suggestion: Dict[str, Any],
     ) -> None:
+        raise RuntimeError(GOAL_SKILL_ALIGNER_RELEASE_HOLD)
         if self.thought_bus is None:
             return
         out = {
@@ -148,6 +156,7 @@ class GoalSkillAligner:
         """Republish the request with the recommended_skills attached so
         downstream consumers can prefer the aligned version. The
         ``aligned: True`` flag stops infinite recursion."""
+        raise RuntimeError(GOAL_SKILL_ALIGNER_RELEASE_HOLD)
         if self.thought_bus is None:
             return
         aligned = dict(payload)
@@ -191,6 +200,7 @@ def get_goal_skill_aligner(
     thought_bus: Any = None,
     miner_bridge: Any = None,
 ) -> GoalSkillAligner:
+    raise RuntimeError(GOAL_SKILL_ALIGNER_RELEASE_HOLD)
     global _singleton
     with _singleton_lock:
         if _singleton is None:
@@ -214,6 +224,7 @@ def reset_goal_skill_aligner() -> None:
 
 
 __all__ = [
+    "GOAL_SKILL_ALIGNER_RELEASE_HOLD",
     "GoalSkillAligner",
     "get_goal_skill_aligner",
     "reset_goal_skill_aligner",

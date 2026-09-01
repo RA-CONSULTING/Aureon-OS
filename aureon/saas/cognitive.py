@@ -41,7 +41,9 @@ from typing import Any, Callable, Dict, List
 
 logger = logging.getLogger("aureon.saas.cognitive")
 
-_REPO_ROOT = Path(__file__).resolve().parents[2]
+_REPO_ROOT = Path(
+    os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
+)
 
 # Key topic families that carry the organism's cognition — surfaced by the bus
 # view so a consumer sees the living links, not just an anonymous topic count.

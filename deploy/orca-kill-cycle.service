@@ -1,19 +1,21 @@
 [Unit]
-Description=Aureon Orca Kill Cycle - Autonomous Trading
-After=network.target
+Description=Aureon Orca protection preflight (terminal HOLD)
 
 [Service]
-Type=simple
+Type=oneshot
 User=root
 WorkingDirectory=/root/aureon-trading
-Environment=PYTHONUNBUFFERED=1
-Environment=AUREON_ENV=production
-# Point to the VirtualEnv Python to satisfy numpy/pandas deps
-ExecStart=/root/aureon-trading/venv/bin/python orca_complete_kill_cycle.py --autonomous 50 10.0 1.0
-Restart=always
-RestartSec=10
-StartLimitBurst=5
-StartLimitIntervalSec=60
+ExecStart=/root/aureon-trading/venv/bin/python -I -S -B /root/aureon-trading/scripts/bootstrap/protected_bootstrap_v05.py --target-id cloud-orca
+Restart=no
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+RestrictAddressFamilies=AF_UNIX
+IPAddressDeny=any
+LockPersonality=true
+MemoryDenyWriteExecute=true
+RestrictSUIDSGID=true
 
 [Install]
 WantedBy=multi-user.target

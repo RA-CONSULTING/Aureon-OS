@@ -26,6 +26,10 @@ from typing import Any, Dict, Optional
 
 logger = logging.getLogger("aureon.vault.casimir")
 
+CASIMIR_RELEASE_HOLD = (
+    "casimir_quantifier_hold:production_magic_star_release_unavailable"
+)
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Reading dataclass
@@ -64,14 +68,18 @@ class CasimirQuantifier:
     to modulate rally mode, Auris voting, etc.
     """
 
-    def __init__(self, tau_s: float = 30.0):
+    def __init__(self, tau_s: float = 30.0, *, use_native_engine: bool = False):
+        if use_native_engine:
+            raise RuntimeError(CASIMIR_RELEASE_HOLD)
         self.tau_s = float(tau_s)
         self._engine: Any = None
         self._engine_kind: str = "stub"
         self._last_reading: Optional[CasimirReading] = None
-        self._load_engine()
+        if use_native_engine:
+            self._load_engine()
 
     def _load_engine(self) -> None:
+        raise RuntimeError(CASIMIR_RELEASE_HOLD)
         try:
             from aureon.utils.aureon_miner import CasimirEffectEngine
             self._engine = CasimirEffectEngine()
@@ -99,6 +107,7 @@ class CasimirQuantifier:
         """
         Compute the Casimir force between the vault's present and past.
         """
+        raise RuntimeError(CASIMIR_RELEASE_HOLD)
         present_fp = self._vault_fingerprint(vault)
         past_fp = self._vault_fingerprint_at_tau(vault, self.tau_s)
 
@@ -129,6 +138,7 @@ class CasimirQuantifier:
         past_fp: str,
         drift_bits: int,
     ) -> CasimirReading:
+        raise RuntimeError(CASIMIR_RELEASE_HOLD)
         # Emit a photon from each plate whose energy tracks the drift
         energy = float(max(1.0, min(255.0, drift_bits * 4.0)))
         nonce_present = int(present_fp[:8], 16)

@@ -1,16 +1,34 @@
 #!/usr/bin/env python3
-"""Quick runner to test backtest with cached data and fixed imports"""
-from aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
-import subprocess
-import sys
+"""Legacy runner replaced by a terminal protected-runtime HOLD receipt."""
 
-print("🚀 Running Aureon Historical Backtest with CACHED DATA...")
-print("=" * 60)
+from __future__ import annotations
 
-result = subprocess.run(
-    [sys.executable, "aureon_historical_backtest.py"],
-    cwd="/workspaces/aureon-trading",
-    capture_output=False
-)
+import json
 
-sys.exit(result.returncode)
+
+def main() -> int:
+    print(
+        json.dumps(
+            {
+                "schema": "aureon.run-backtest-cached-hold.v1",
+                "decision": "HOLD",
+                "reason": "protected_runtime_not_attested",
+                "production_ready": False,
+                "aureon_imported": False,
+                "credentials_inspected": False,
+                "child_process_started": False,
+                "listener_started": False,
+                "provider_called": False,
+                "order_submitted": False,
+                "network_accessed": False,
+                "file_written": False,
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+    )
+    return 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

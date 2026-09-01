@@ -1,24 +1,23 @@
 """Compact, fail-closed adapter from the self-run loop to Aureon's self-coder.
 
-The adapter does not author code and does not grant release authority.  It
-invokes exactly one already-guarded internal coding cycle, or returns the
-existing pending-review receipt without invoking any brain again.
+The adapter does not author code and does not grant review or release authority.
+It invokes at most one already-guarded internal coding experiment.  Current
+transient-seal evidence always returns HOLD, and any existing evidence blocks a
+second brain cycle until it is manually archived.
 """
 
 from __future__ import annotations
 
+import hashlib
+import json
 import re
 from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
 
-from aureon.autonomous.aureon_agent_company_brain_fabric import (
-    CANONICAL_AGENT_COMPANY_ROLE_COUNT,
-)
 from aureon.autonomous.aureon_internal_coding_workforce import WorkforceHold
 from aureon.autonomous.aureon_internal_patch_loop import InternalPatchHold
 from aureon.autonomous.aureon_internal_self_coder import (
     DEFAULT_EVIDENCE_PATH,
-    DEFAULT_LEDGER_PATH,
     InternalSelfCoderHold,
     read_self_coding_evidence,
     run_autonomous_self_coding,
@@ -26,105 +25,110 @@ from aureon.autonomous.aureon_internal_self_coder import (
 from aureon.autonomous.aureon_internal_work_ledger import WorkLedgerError
 
 SelfCoder = Callable[..., Mapping[str, Any]]
-_SAFE_STATUS = re.compile(r"[a-z0-9_]{1,128}")
 _HEX_64 = re.compile(r"[0-9a-f]{64}")
 COMPACT_SELF_CODER_SUMMARY_FIELDS = frozenset(
     {
+        "reason_code",
         "applied",
         "pending_senior_review",
         "release_ready",
-        "evidence_digest",
-        "agent_company_brain_fabric_ready",
-        "agent_brain_count",
-        "process_brain_count",
-        "brain_passport_count",
-        "work_receipt_count",
         "codex_implementation",
         "action_eligible",
         "economic_eligible",
     }
 )
+_FALSE_EFFECT_FIELDS = frozenset(
+    {
+        "action_eligible",
+        "applied",
+        "codex_implementation",
+        "economic_eligible",
+        "effect_attempted",
+        "execution_authorized",
+        "filesystem_mutation_attempted",
+        "final_applier_invoked",
+        "generated_code_execution_authorized",
+        "generated_code_execution_implemented",
+        "production_magic_star_release_available",
+        "production_ready",
+        "release_authorized",
+        "repository_mutation_authorized",
+        "repository_mutation_implemented",
+        "subprocess_test_execution_implemented",
+        "test_commands_executed",
+    }
+)
+
+
+def _evidence_digest(value: Mapping[str, Any]) -> str:
+    try:
+        encoded = json.dumps(
+            dict(value),
+            allow_nan=False,
+            ensure_ascii=True,
+            separators=(",", ":"),
+            sort_keys=True,
+        ).encode("utf-8")
+    except (TypeError, ValueError):
+        return ""
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _effect_flags_are_false(value: Any) -> bool:
+    if isinstance(value, Mapping):
+        for key, item in value.items():
+            if key in _FALSE_EFFECT_FIELDS and item is not False:
+                return False
+            if not _effect_flags_are_false(item):
+                return False
+        return True
+    if isinstance(value, (list, tuple)):
+        return all(_effect_flags_are_false(item) for item in value)
+    return True
 
 
 def _held_result(reason_code: str, *, status: str = "internal_self_coder_held") -> dict[str, Any]:
+    summary: dict[str, Any] = {
+        "reason_code": reason_code,
+        "applied": False,
+        "pending_senior_review": False,
+        "release_ready": False,
+        "codex_implementation": False,
+        "action_eligible": False,
+        "economic_eligible": False,
+    }
+    assert set(summary) == COMPACT_SELF_CODER_SUMMARY_FIELDS
     return {
         "status": status,
         "ok": False,
-        "summary": {
-            "reason_code": reason_code,
-            "applied": False,
-            "pending_senior_review": False,
-            "release_ready": False,
-            "codex_implementation": False,
-            "action_eligible": False,
-            "economic_eligible": False,
-        },
+        "summary": summary,
         "output_files": [],
     }
 
 
 def _compact_result(result: Mapping[str, Any]) -> dict[str, Any]:
-    status = result.get("status")
-    applied = result.get("applied")
-    pending = result.get("pending_senior_review")
+    """Return a generic HOLD for self-consistent but unattested local JSON.
+
+    No caller-supplied or locally recomputed JSON receipt can create review
+    authority or prove that a transient HNC seal existed. It never returns
+    ``ok=True`` or infers a proposal-specific denial reason from the receipt.
+    """
+
+    if not isinstance(result, Mapping):
+        return _held_result("internal_self_coder_receipt_invalid")
     digest = result.get("evidence_digest")
-    fabric = result.get("agent_company_brain_fabric")
-    ledger = result.get("work_ledger")
+    digest_core = {key: value for key, value in result.items() if key != "evidence_digest"}
     if (
-        not isinstance(status, str)
-        or _SAFE_STATUS.fullmatch(status) is None
-        or type(applied) is not bool
-        or type(pending) is not bool
-        or (applied and not pending)
-        or not isinstance(digest, str)
+        not isinstance(digest, str)
         or _HEX_64.fullmatch(digest) is None
-        or not isinstance(fabric, Mapping)
-        or not isinstance(ledger, Mapping)
-        or result.get("codex_implementation") is not False
-        or result.get("action_eligible") is not False
-        or result.get("economic_eligible") is not False
+        or digest != _evidence_digest(digest_core)
+        or not _effect_flags_are_false(result)
     ):
         return _held_result("internal_self_coder_receipt_invalid")
-
-    agent_count = fabric.get("agent_brain_count")
-    process_count = fabric.get("process_brain_count")
-    passport_count = fabric.get("brain_passport_count")
-    work_receipt_count = ledger.get("receipt_count")
-    if (
-        fabric.get("ready") is not True
-        or type(agent_count) is not int
-        or type(process_count) is not int
-        or type(passport_count) is not int
-        or type(work_receipt_count) is not int
-        or agent_count != CANONICAL_AGENT_COMPANY_ROLE_COUNT
-        or process_count != CANONICAL_AGENT_COMPANY_ROLE_COUNT
-        or passport_count != CANONICAL_AGENT_COMPANY_ROLE_COUNT * 2
-        or work_receipt_count < 1
-    ):
-        return _held_result("internal_self_coder_brain_receipt_invalid")
-
-    return {
-        "status": status,
-        "ok": bool(applied and pending),
-        "summary": {
-            "applied": applied,
-            "pending_senior_review": pending,
-            "release_ready": False,
-            "evidence_digest": digest,
-            "agent_company_brain_fabric_ready": True,
-            "agent_brain_count": agent_count,
-            "process_brain_count": process_count,
-            "brain_passport_count": passport_count,
-            "work_receipt_count": work_receipt_count,
-            "codex_implementation": False,
-            "action_eligible": False,
-            "economic_eligible": False,
-        },
-        "output_files": [
-            DEFAULT_EVIDENCE_PATH.as_posix(),
-            DEFAULT_LEDGER_PATH.as_posix(),
-        ],
-    }
+    return _held_result(
+        "internal_self_coder_receipt_unattested",
+        status="internal_self_coder_evidence_hold",
+    )
 
 
 def run_self_coding_task(
@@ -137,7 +141,7 @@ def run_self_coding_task(
     resolver: Any = None,
     coder: SelfCoder = run_autonomous_self_coding,
 ) -> dict[str, Any]:
-    """Run one Aureon-owned patch cycle, never a second cycle awaiting review."""
+    """Run one Aureon-owned seal experiment; evidence blocks another cycle."""
 
     if enabled is not True:
         return _held_result(
@@ -151,11 +155,10 @@ def run_self_coding_task(
             prior = read_self_coding_evidence(root=repo_root)
         except InternalSelfCoderHold:
             return _held_result("existing_self_coder_evidence_invalid")
-        if prior.get("pending_senior_review") is True:
-            compact = _compact_result(prior)
-            if compact["ok"]:
-                compact["status"] = "internal_self_coder_pending_senior_review"
-            return compact
+        compact = _compact_result(prior)
+        if compact["status"] == "internal_self_coder_evidence_hold":
+            compact["status"] = "internal_self_coder_existing_evidence_hold"
+        return compact
 
     try:
         result = coder(
@@ -190,10 +193,10 @@ def self_coding_patch_lane_blocked(root: Path) -> bool:
     if not (repo_root / DEFAULT_EVIDENCE_PATH).exists():
         return False
     try:
-        evidence = read_self_coding_evidence(root=repo_root)
+        read_self_coding_evidence(root=repo_root)
     except InternalSelfCoderHold:
         return True
-    return evidence.get("pending_senior_review") is True
+    return True
 
 
 __all__ = [

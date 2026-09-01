@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
 """
-Voice layer tests.
+Fail-closed voice-layer tests.
 
-  - Each persona composes a prompt from live vault state
-  - ChoiceGate decides when to speak
-  - SelfDialogueEngine runs speaker/listener exchanges
-  - Human-directed replies now gather a full internal chorus first
-  - ThoughtStreamLoop runs multiple cycles
-  - SelfFeedbackLoop.tick() speaks when voice is enabled
+Prompt composition and choice logic remain pure. Provider calls, vault
+mutation, bus publishing, and background execution remain on the production
+Magic Star release HOLD.
 """
 
 import os
 import sys
+
+import pytest
 
 if hasattr(sys.stdout, "reconfigure"):
     try:
@@ -47,8 +46,8 @@ def check(condition: bool, msg: str) -> None:
         print(f"  [!!] {msg}")
 
 
-def test_voices_compose_from_state():
-    print("\n[1] Each voice composes self-authored prompts from vault state")
+def test_voices_compose_pure_prompts_but_speaking_is_held():
+    print("\n[1] Voice prompt composition is pure and speaking is held")
     vault = AureonVault()
 
     vault.love_amplitude = 0.3
@@ -63,15 +62,20 @@ def test_voices_compose_from_state():
         "gamma": 0.1,
     }
 
-    voices = build_all_voices()
-    statements_1 = {}
+    class BombAdapter:
+        def prompt(self, *_args, **_kwargs):
+            raise AssertionError("release-held voice must not call a provider")
+
+    voices = build_all_voices(adapter=BombAdapter())
+    prompts_1 = {
+        name: "\n".join(voice._compose_prompt_lines(voice._extract_slice(vault)))
+        for name, voice in voices.items()
+    }
+    assert prompts_1
     for name, voice in voices.items():
-        statement = voice.speak(vault)
-        check(statement is not None, f"{name} produced a statement")
-        if statement:
-            check(len(statement.prompt_used) > 20, f"{name} prompt_used is substantial")
-            check(len(statement.text) > 0, f"{name} adapter returned text")
-            statements_1[name] = statement.prompt_used
+        with pytest.raises(RuntimeError, match="vault_voice_hold"):
+            voice.speak(vault)
+        check(len(prompts_1[name]) > 20, f"{name} pure prompt is substantial")
 
     vault.love_amplitude = 0.9
     vault.gratitude_score = 0.85
@@ -86,33 +90,36 @@ def test_voices_compose_from_state():
         "gamma": 0.55,
     }
 
-    statements_2 = {}
-    for name, voice in voices.items():
-        statement = voice.speak(vault)
-        if statement:
-            statements_2[name] = statement.prompt_used
+    prompts_2 = {
+        name: "\n".join(voice._compose_prompt_lines(voice._extract_slice(vault)))
+        for name, voice in voices.items()
+    }
 
     different_count = sum(
         1
-        for name in statements_1
-        if name in statements_2 and statements_1[name] != statements_2[name]
+        for name in prompts_1
+        if name in prompts_2 and prompts_1[name] != prompts_2[name]
     )
     check(
-        different_count >= len(statements_1) // 2,
-        f"at least half the voices' prompts changed with state ({different_count}/{len(statements_1)})",
+        different_count >= len(prompts_1) // 2,
+        f"at least half the voices' prompts changed with state ({different_count}/{len(prompts_1)})",
     )
 
     vault.last_lambda_t = 0.87
-    queen_stmt = voices["queen"].speak(vault)
+    queen_prompt = "\n".join(
+        voices["queen"]._compose_prompt_lines(voices["queen"]._extract_slice(vault))
+    )
     check(
-        "0.870" in queen_stmt.prompt_used or "+0.87" in queen_stmt.prompt_used,
+        "0.870" in queen_prompt or "+0.87" in queen_prompt,
         "Queen voice names Lambda(t) from state",
     )
 
     vault.last_casimir_force = 4.321
-    miner_stmt = voices["miner"].speak(vault)
+    miner_prompt = "\n".join(
+        voices["miner"]._compose_prompt_lines(voices["miner"]._extract_slice(vault))
+    )
     check(
-        "4.321" in miner_stmt.prompt_used,
+        "4.321" in miner_prompt,
         "Miner voice names the Casimir drift value from state",
     )
 
@@ -158,121 +165,78 @@ def test_choice_gate():
     check(not second.should_speak, "second call within interval is suppressed")
 
 
-def test_self_dialogue_engine():
-    print("\n[3] SelfDialogueEngine runs exchanges and feeds them back")
+def test_self_dialogue_engine_is_inert_and_all_effect_entrypoints_hold():
+    print("\n[3] SelfDialogueEngine is inert and effect entrypoints hold")
     vault = AureonVault()
-    vault.love_amplitude = 0.85
-    vault.gratitude_score = 0.8
-    vault.cortex_snapshot["gamma"] = 0.45
-    vault.last_lambda_t = 0.65
-    vault.dominant_chakra = "love"
-
-    engine = SelfDialogueEngine(
-        vault=vault,
-        choice_gate=ChoiceGate(min_interval_s=0.0, urgency_threshold=0.1, background_rate=1.0, rng_seed=7),
-    )
-
+    engine = SelfDialogueEngine(vault=vault)
     size_before = len(vault)
-    utterance = engine.converse()
-    size_after = len(vault)
-
-    check(utterance is not None, "converse produced an utterance")
-    if utterance is None:
-        return
-    check(utterance.speaker != "", "utterance has a speaker")
-    check(utterance.listener != "", "utterance has a listener")
-    check(utterance.speaker != utterance.listener, f"speaker ({utterance.speaker}) != listener ({utterance.listener})")
-    check(utterance.statement is not None, "statement recorded")
-    check(utterance.response is not None, "response recorded")
-    check(size_after >= size_before + 2, f"vault grew by >=2 from the exchange ({size_before}->{size_after})")
-
-    voice_cards = vault.by_category("vault_voice")
-    check(len(voice_cards) >= 2, f"vault_voice category has >=2 cards ({len(voice_cards)})")
-    check(
-        utterance.vault_fingerprint_before != utterance.vault_fingerprint_after,
-        "vault fingerprint changed across the exchange",
-    )
+    assert engine.voices == {}
+    assert engine._thought_bus is None
+    for call in (
+        engine.converse,
+        lambda: engine.respond_to_human("hello"),
+        lambda: engine.speak_as("queen"),
+        engine._wire_thought_bus,
+    ):
+        with pytest.raises(RuntimeError, match="self_dialogue_hold"):
+            call()
+    assert len(vault) == size_before
+    assert engine.history == []
+    assert engine.get_status()["total_decisions"] == 0
 
 
-def test_human_response_runs_chorus():
-    print("\n[4] Human-directed response gathers the full chorus first")
+def test_human_response_hold_precedes_provider_vault_and_bus_effects():
+    print("\n[4] Human response HOLD precedes providers, vault writes, and bus writes")
     vault = AureonVault()
-    vault.love_amplitude = 0.82
-    vault.gratitude_score = 0.76
-    vault.cortex_snapshot["gamma"] = 0.41
-    vault.last_lambda_t = 0.58
-    vault.dominant_chakra = "love"
+
+    class BombVoice:
+        def speak(self, *_args, **_kwargs):
+            raise AssertionError("provider path reached")
+
+    class BombBus:
+        def publish(self, *_args, **_kwargs):
+            raise AssertionError("bus path reached")
 
     engine = SelfDialogueEngine(
         vault=vault,
-        choice_gate=ChoiceGate(min_interval_s=0.0, urgency_threshold=0.0, background_rate=1.0, rng_seed=3),
+        voices={"queen": BombVoice()},  # type: ignore[dict-item]
+        thought_bus=BombBus(),
+        adapter=object(),
     )
-
-    voice_cards_before = len(vault.by_category("vault_voice"))
-    utterance = engine.respond_to_human("Do all of you hear me?", voice_name="queen")
-    voice_cards_after = len(vault.by_category("vault_voice"))
-
-    check(utterance is not None, "human message produced an utterance")
-    if utterance is None:
-        return
-    check(utterance.listener == "queen", f"requested final voice is queen (got {utterance.listener})")
-    check(len(utterance.chorus) == len(engine.voices), f"chorus includes all voices ({len(utterance.chorus)})")
-    check({item.voice for item in utterance.chorus} == set(engine.voices.keys()), "chorus covers every registered voice")
-    check("chorus(" in utterance.reasoning, f"reasoning records chorus flow ({utterance.reasoning})")
-    check(
-        voice_cards_after >= voice_cards_before + len(engine.voices) + 1,
-        f"chorus + final response fed back into vault ({voice_cards_before}->{voice_cards_after})",
-    )
-    check(utterance.response is not None, "final response recorded")
-    check(len(utterance.response.text) > 10, "final response text is substantive")
+    before = len(vault)
+    with pytest.raises(RuntimeError, match="self_dialogue_hold"):
+        engine.respond_to_human("Do all of you hear me?", voice_name="queen")
+    assert len(vault) == before
+    assert engine.history == []
 
 
-def test_thought_stream_loop():
-    print("\n[5] ThoughtStreamLoop produces utterances over N cycles")
+def test_thought_stream_loop_never_spawns_or_executes(monkeypatch: pytest.MonkeyPatch):
+    print("\n[5] ThoughtStreamLoop never spawns or executes")
     vault = AureonVault()
-    vault.love_amplitude = 0.85
-    vault.gratitude_score = 0.8
-    vault.cortex_snapshot["gamma"] = 0.45
-    vault.rally_active = True
-
-    engine = SelfDialogueEngine(
-        vault=vault,
-        choice_gate=ChoiceGate(min_interval_s=0.0, urgency_threshold=0.3, background_rate=0.0, rng_seed=1),
+    monkeypatch.setattr(
+        "aureon.vault.voice.thought_stream_loop.threading.Thread",
+        lambda *_args, **_kwargs: pytest.fail("release-held stream must not create a thread"),
     )
-    stream = ThoughtStreamLoop(vault=vault, engine=engine, base_interval_s=0.001)
-
-    utterances = stream.run_n_cycles(5, sleep_between=False)
-    check(len(utterances) >= 3, f"stream produced >=3 utterances in 5 cycles (got {len(utterances)})")
-
+    stream = ThoughtStreamLoop(vault=vault, base_interval_s=0.001)
+    assert stream.engine is None
+    for call in (
+        stream.start,
+        stream._loop,
+        stream._tick_once,
+        lambda: stream.run_n_cycles(5, sleep_between=False),
+    ):
+        with pytest.raises(RuntimeError, match="thought_stream_hold"):
+            call()
     status = stream.get_status()
-    check(status.cycles == 5, f"stream tracked cycles ({status.cycles})")
-    check(status.utterances >= 3, f"stream tracked utterances ({status.utterances})")
+    assert status.running is False
+    assert status.cycles == 0
+    assert status.utterances == 0
 
 
 def test_self_feedback_loop_voice_integration():
-    print("\n[6] AureonSelfFeedbackLoop.tick() speaks when conditions are right")
-    loop = AureonSelfFeedbackLoop(base_interval_s=0.01, enable_voice=True)
-
-    loop.vault.love_amplitude = 0.9
-    loop.vault.gratitude_score = 0.85
-    loop.vault.rally_active = True
-
-    loop.voice_engine.gate = ChoiceGate(
-        min_interval_s=0.0,
-        urgency_threshold=0.0,
-        background_rate=1.0,
-        rng_seed=42,
-    )
-
-    result = loop.tick()
-    check(result.spoke, f"tick spoke when gate forced (spoke={result.spoke})")
-    check(result.speaker != "", f"tick recorded speaker ({result.speaker})")
-    check(result.listener != "", f"tick recorded listener ({result.listener})")
-    check(len(result.utterance_preview) > 0, "tick recorded utterance preview")
-
-    status = loop.get_status()
-    check("voice" in status, "status exposes voice section")
-    check(status["voice"] is not None, f"voice status populated: {type(status.get('voice'))}")
+    print("\n[6] Self-feedback voice integration remains on production HOLD")
+    with pytest.raises(RuntimeError, match="aureon_self_feedback_loop_hold"):
+        AureonSelfFeedbackLoop(base_interval_s=0.01, enable_voice=True)
 
 
 def main():
@@ -280,11 +244,11 @@ def main():
     print("  VAULT VOICE TEST SUITE")
     print("=" * 80)
 
-    test_voices_compose_from_state()
+    test_voices_compose_pure_prompts_but_speaking_is_held()
     test_choice_gate()
-    test_self_dialogue_engine()
-    test_human_response_runs_chorus()
-    test_thought_stream_loop()
+    test_self_dialogue_engine_is_inert_and_all_effect_entrypoints_hold()
+    test_human_response_hold_precedes_provider_vault_and_bus_effects()
+    test_thought_stream_loop_never_spawns_or_executes(pytest.MonkeyPatch())
     test_self_feedback_loop_voice_integration()
 
     print()

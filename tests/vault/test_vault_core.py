@@ -17,11 +17,14 @@ Tests the core vault components in isolation:
 import os
 import sys
 
+import pytest
+
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
 
 from aureon.vault import (
+    AUREON_VAULT_RELEASE_HOLD,
     AureonVault,
     VaultContent,
     FibonacciCardShuffler,
@@ -82,6 +85,42 @@ def test_vault_ingest_and_eviction():
 
     fp = vault.fingerprint()
     check(isinstance(fp, str) and len(fp) == 16, f"fingerprint is 16 hex chars ({fp})")
+
+
+def test_vault_thought_bus_wiring_holds_before_lookup_or_mutation(monkeypatch):
+    from aureon.core import aureon_thought_bus as thought_bus_module
+
+    class _BusProbe:
+        def __init__(self):
+            self.subscriptions = []
+            self.publications = []
+
+        def subscribe(self, topic, handler):
+            self.subscriptions.append((topic, handler))
+
+        def publish(self, thought):
+            self.publications.append(thought)
+
+    bus = _BusProbe()
+    lookups = []
+
+    def _get_bus():
+        lookups.append(True)
+        return bus
+
+    monkeypatch.setattr(thought_bus_module, "get_thought_bus", _get_bus)
+    vault = AureonVault()
+
+    with pytest.raises(RuntimeError, match=AUREON_VAULT_RELEASE_HOLD):
+        vault.wire_thought_bus()
+
+    assert lookups == []
+    assert bus.subscriptions == []
+    assert vault._thought_bus is None
+    assert vault._subscribed is False
+
+    vault.ingest(topic="persona.collapse", payload={"winner": "engineer"})
+    assert bus.publications == []
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -154,21 +193,20 @@ def test_love_gratitude_clock():
 
 
 def test_casimir_quantifier():
-    print("\n[4] CasimirQuantifier")
+    print("\n[4] CasimirQuantifier remains on production HOLD")
     vault = AureonVault()
     # Seed the vault with some cards so we have a history
     for i in range(10):
         vault.ingest(topic=f"seed.{i}", payload={"i": i})
 
     quantifier = CasimirQuantifier(tau_s=30.0)
-    reading = quantifier.measure(vault)
-
-    check(reading is not None, "reading returned")
-    check(0 <= reading.force <= 10, f"force bounded [0,10] (got {reading.force:.3f})")
-    check(len(reading.present_fingerprint) == 16, "present fingerprint is 16 chars")
-    check(len(reading.past_fingerprint) == 16, "past fingerprint is 16 chars")
-    check(reading.drift_bits >= 0, "drift_bits is non-negative")
-    check(vault.last_casimir_force == reading.force, "vault.last_casimir_force updated")
+    before = vault.last_casimir_force
+    with pytest.raises(RuntimeError, match="casimir_quantifier_hold"):
+        quantifier.measure(vault)
+    with pytest.raises(RuntimeError, match="casimir_quantifier_hold"):
+        quantifier._load_engine()
+    assert vault.last_casimir_force == before
+    assert quantifier.last_reading is None
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -276,17 +314,15 @@ def test_rally_coordinator():
 
 
 def test_harmonic_pinger():
-    print("\n[8] HarmonicPinger")
+    print("\n[8] HarmonicPinger remains on production HOLD")
     pinger = HarmonicPinger()
-    result = pinger.ping(frequency_hz=528, coherence=0.85, payload={"cycle": 1})
-
-    check(result.frequency_hz == 528, "ping carries the frequency")
-    check(0 <= result.coherence <= 1, "coherence bounded")
-    # Either chirp or thought must succeed (both ideally, at least one in tests)
-    check(result.sent_thought or result.sent_chirp, "at least one channel delivered")
-
-    status = pinger.get_status()
-    check(status["total_pings"] >= 1, "pinger counts total pings")
+    with pytest.raises(RuntimeError, match="harmonic_pinger_hold"):
+        pinger.ping(frequency_hz=528, coherence=0.85, payload={"cycle": 1})
+    with pytest.raises(RuntimeError, match="harmonic_pinger_hold"):
+        pinger._load_chirp_bus()
+    with pytest.raises(RuntimeError, match="harmonic_pinger_hold"):
+        pinger._load_thought_bus()
+    assert pinger.get_status()["total_pings"] == 0
 
 
 # ─────────────────────────────────────────────────────────────────────────────

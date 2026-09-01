@@ -2,9 +2,13 @@
 PersonaAction & PersonaActuator — turn persona collapses into real actions
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Speaking is not enough. When the PersonaVacuum collapses to a winner, the
-winner may also carry an *intention* — a structured PersonaAction that the
-Actuator executes. Four built-in action kinds are wired by default:
+CURRENT RELEASE: the design below is unreleased. Every dispatch and built-in
+handler hard-HOLDs before bus, vault, filesystem, goal, or skill effects until
+the production Magic Star release and receipt-backed governance exist.
+
+The compatibility types and handler registry remain available for callers,
+but this release does not execute persona intentions. Five historical action
+kinds remain registered only so API inspection is stable:
 
     bus.publish    — emit a Thought on the ThoughtBus, with a chosen topic
                      and payload, so every subsystem that subscribes can
@@ -17,13 +21,8 @@ Actuator executes. Four built-in action kinds are wired by default:
     skill.request  — emit ``skill.author.request`` for the Code Architect
                      to pick up, carrying a short natural-language brief.
 
-Every handler respects ``dry_run``: when enabled the Actuator records the
-action it would have taken without calling the real side-effecting path,
-which is how tests verify wiring without touching the bus / vault / disk.
-
-Safety: these are all in-process or bus-internal. No exchange calls, no
-trade execution, no network I/O. Exchange-side governance lives in the
-Queen's 4th-pass veto path and stays untouched.
+``dispatch`` and every direct built-in handler raise the same release HOLD
+before invoking callbacks, publishing, writing, or mutating downstream state.
 
 Gary Leckey · Aureon Institute — April 2026
 """
@@ -101,6 +100,11 @@ class ActionExecution:
 HandlerFn = Callable[[PersonaAction, Dict[str, Any]], Any]
 
 
+PERSONA_ACTION_RELEASE_HOLD = (
+    "persona_action_hold:production_magic_star_release_unavailable"
+)
+
+
 class PersonaActuator:
     """Registry of action handlers. Dispatches PersonaActions from the vacuum."""
 
@@ -154,6 +158,7 @@ class PersonaActuator:
         state: Optional[Dict[str, Any]] = None,
     ) -> Optional[ActionExecution]:
         """Execute an action. Records the outcome in history regardless of success."""
+        raise RuntimeError(PERSONA_ACTION_RELEASE_HOLD)
         if action is None:
             return None
         state_dict = dict(state or {})
@@ -188,6 +193,7 @@ class PersonaActuator:
     # ─────────────────────────────────────────────────────────────────────
 
     def _handle_bus_publish(self, action: PersonaAction, state: Dict[str, Any]) -> Dict[str, Any]:
+        raise RuntimeError(PERSONA_ACTION_RELEASE_HOLD)
         if self.thought_bus is None:
             return {"ok": False, "reason": "no thought_bus"}
         if not action.topic:
@@ -211,6 +217,7 @@ class PersonaActuator:
         return {"ok": True, "topic": action.topic}
 
     def _handle_vault_ingest(self, action: PersonaAction, state: Dict[str, Any]) -> Dict[str, Any]:
+        raise RuntimeError(PERSONA_ACTION_RELEASE_HOLD)
         if self.vault is None or not hasattr(self.vault, "ingest"):
             return {"ok": False, "reason": "vault has no ingest"}
         topic = action.topic or "persona.action.vault"
@@ -218,6 +225,7 @@ class PersonaActuator:
         return {"ok": True, "topic": topic}
 
     def _handle_file_append(self, action: PersonaAction, state: Dict[str, Any]) -> Dict[str, Any]:
+        raise RuntimeError(PERSONA_ACTION_RELEASE_HOLD)
         raw_path = action.target or action.topic
         if not raw_path:
             return {"ok": False, "reason": "action.target/topic missing"}
@@ -248,6 +256,7 @@ class PersonaActuator:
           - stage 4.3 can insert a human-approval gate between this
             publication and the engine's intake
         """
+        raise RuntimeError(PERSONA_ACTION_RELEASE_HOLD)
         if self.thought_bus is None:
             return {"ok": False, "reason": "no thought_bus"}
         goal_text = action.topic or action.reason
@@ -276,6 +285,7 @@ class PersonaActuator:
         return {"ok": True, "topic": topic, "goal_text": goal_text}
 
     def _handle_skill_request(self, action: PersonaAction, state: Dict[str, Any]) -> Dict[str, Any]:
+        raise RuntimeError(PERSONA_ACTION_RELEASE_HOLD)
         if self.thought_bus is None:
             return {"ok": False, "reason": "no thought_bus"}
         try:
@@ -314,8 +324,22 @@ class PersonaActuator:
                 return None
             return self._history[-1].to_dict()
 
+    def status(self) -> Dict[str, Any]:
+        with self._lock:
+            history_size = len(self._history)
+            handler_count = len(self._handlers)
+        return {
+            "status": "HOLD",
+            "reason_code": "production_magic_star_release_unavailable",
+            "production_ready": False,
+            "effect_enabled": False,
+            "history_size": history_size,
+            "registered_handler_count": handler_count,
+        }
+
 
 __all__ = [
+    "PERSONA_ACTION_RELEASE_HOLD",
     "PersonaAction",
     "ActionExecution",
     "PersonaActuator",

@@ -16,6 +16,8 @@ import os
 import re
 import sys
 
+import pytest
+
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
@@ -251,7 +253,7 @@ def test_prompt_only_uses_numbers_present_in_state():
             )
 
 
-def test_speak_returns_voice_statement_with_adapter():
+def test_speak_is_held_before_adapter_call():
     state = _base_state()
 
     class _Vault:
@@ -269,12 +271,9 @@ def test_speak_returns_voice_statement_with_adapter():
 
     adapter = _StubAdapter()
     persona = MysticVoice(adapter=adapter)
-    statement = persona.speak(vault)
-    assert statement is not None
-    assert statement.voice == "mystic"
-    assert statement.text == "stub response"
-    assert len(statement.prompt_used) > 20
-    assert adapter.calls, "adapter.prompt was not invoked"
+    with pytest.raises(RuntimeError, match="vault_voice_hold"):
+        persona.speak(vault)
+    assert adapter.calls == []
 
 
 if __name__ == "__main__":

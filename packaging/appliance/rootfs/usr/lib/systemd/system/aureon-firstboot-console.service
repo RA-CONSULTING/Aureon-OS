@@ -14,8 +14,7 @@ StandardError=tty
 TTYPath=/dev/tty1
 TTYReset=yes
 TTYVHangup=yes
-Restart=on-failure
-RestartSec=5
+Restart=no
 
 [Install]
 WantedBy=multi-user.target

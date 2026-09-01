@@ -1,27 +1,33 @@
 #!/usr/bin/env python3
-"""
-Quick wrapper to load .env manually and run unified ecosystem
-"""
-from aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
-import os
-import sys
-from pathlib import Path
+"""Legacy runner replaced by a terminal protected-runtime HOLD receipt."""
 
-# Load .env file manually (no dotenv needed)
-env_file = Path(__file__).parent / '.env'
-if env_file.exists():
-    with open(env_file, 'r') as f:
-        for line in f:
-            line = line.strip()
-            if line and not line.startswith('#'):
-                key, _, value = line.partition('=')
-                value = value.strip('"').strip("'")
-                os.environ[key] = value
-    print(f"✅ Loaded {env_file}")
+from __future__ import annotations
 
-# Now import and run main()
-from aureon_unified_ecosystem import main
-main()
+import json
 
-# Now import and run
-import aureon_unified_ecosystem
+
+def main() -> int:
+    print(
+        json.dumps(
+            {
+                "schema": "aureon.run-unified-hold.v1",
+                "decision": "HOLD",
+                "reason": "protected_runtime_not_attested",
+                "production_ready": False,
+                "aureon_imported": False,
+                "credentials_inspected": False,
+                "child_process_started": False,
+                "listener_started": False,
+                "order_submitted": False,
+                "network_accessed": False,
+                "file_written": False,
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+    )
+    return 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

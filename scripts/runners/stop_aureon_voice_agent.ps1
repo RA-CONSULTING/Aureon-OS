@@ -1,25 +1,17 @@
-param(
-    [string]$RepoRoot = ""
-)
+# Fixed isolated protection boundary; this route cannot start its legacy target.
+$ErrorActionPreference = "Stop"
+$repoRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot "..\.."))
+$pythonExe = Join-Path $repoRoot ".venv\Scripts\python.exe"
+$bootstrap = Join-Path $repoRoot "scripts\bootstrap\protected_bootstrap_v05.py"
 
-if ([string]::IsNullOrWhiteSpace($RepoRoot)) {
-    $RepoRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot "..\..") -ErrorAction Stop).Path
-} else {
-    $RepoRoot = (Resolve-Path -LiteralPath $RepoRoot -ErrorAction Stop).Path
+if (-not (Test-Path -LiteralPath $pythonExe -PathType Leaf)) {
+    [Console]::Error.WriteLine("Fixed repository Python executable is unavailable; refusing operation.")
+    exit 1
 }
-if (-not (Test-Path -LiteralPath (Join-Path $RepoRoot "pyproject.toml") -PathType Leaf)) {
-    throw "Resolved voice runner repo root is invalid: $RepoRoot"
+if (-not (Test-Path -LiteralPath $bootstrap -PathType Leaf)) {
+    [Console]::Error.WriteLine("Fixed protected bootstrap is unavailable; refusing operation.")
+    exit 1
 }
 
-$stateDir = Join-Path $RepoRoot "state"
-$stopFile = Join-Path $stateDir "aureon_voice_agent.stop"
-$lockFile = Join-Path $stateDir "aureon_voice_agent_supervisor.lock"
-
-$null = New-Item -ItemType Directory -Force -Path $stateDir
-Set-Content -Path $stopFile -Value "STOP" -Encoding ascii
-
-if (Test-Path $lockFile) {
-    Write-Output "Stop requested. Supervisor will exit."
-} else {
-    Write-Output "Stop file written. No active supervisor lock found."
-}
+& $pythonExe -I -S -B $bootstrap --target-id local-gui
+exit $LASTEXITCODE

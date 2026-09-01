@@ -35,6 +35,10 @@ from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger("aureon.harmonic.phi_bridge")
 
+PHI_BRIDGE_RELEASE_HOLD = (
+    "phi_bridge_hold:production_magic_star_release_unavailable"
+)
+
 
 # φ and φ² — the same constants the rest of the harmonic stack uses.
 PHI: float = (1.0 + math.sqrt(5.0)) / 2.0
@@ -154,6 +158,7 @@ class PhiBridge:
         Create or refresh a peer. If ``peer_id`` is given and already known,
         the existing peer is returned with ``last_seen`` bumped.
         """
+        raise RuntimeError(PHI_BRIDGE_RELEASE_HOLD)
         with self._lock:
             self._sweep_locked()
             if peer_id and peer_id in self._peers:
@@ -193,6 +198,7 @@ class PhiBridge:
             return peer
 
     def drop_peer(self, peer_id: str) -> bool:
+        raise RuntimeError(PHI_BRIDGE_RELEASE_HOLD)
         with self._lock:
             peer = self._peers.pop(peer_id, None)
             if peer is None:
@@ -206,12 +212,10 @@ class PhiBridge:
 
     def peers(self) -> List[Dict[str, Any]]:
         with self._lock:
-            self._sweep_locked()
             return [p.to_dict() for p in self._peers.values()]
 
     def peer_count(self) -> int:
         with self._lock:
-            self._sweep_locked()
             return len(self._peers)
 
     # ─────────────────────────────────────────────────────────────────
@@ -253,6 +257,7 @@ class PhiBridge:
         One round-trip sync. Records the inbound peer state, returns the
         current desktop view + cadence so the peer knows when to call back.
         """
+        raise RuntimeError(PHI_BRIDGE_RELEASE_HOLD)
         peer_state = dict(peer_state or {})
         with self._lock:
             self._sweep_locked()
@@ -320,7 +325,6 @@ class PhiBridge:
 
     def info(self) -> Dict[str, Any]:
         with self._lock:
-            self._sweep_locked()
             return {
                 "ok": True,
                 "service": "phi_bridge",
@@ -353,6 +357,7 @@ class PhiBridge:
 
     def push_state(self, state: Dict[str, Any]) -> None:
         """ICS calls this every ~5s to keep the bridge view current with live Queen state."""
+        raise RuntimeError(PHI_BRIDGE_RELEASE_HOLD)
         with self._lock:
             self._live_state.update(state)
 

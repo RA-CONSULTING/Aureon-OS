@@ -1,4 +1,18 @@
 {
+  "schema": "aureon.benchmark-report.stale-superseded.v1",
+  "report_status": "STALE_SUPERSEDED",
+  "production_ready": false,
+  "current_effect_claim": false,
+  "superseded_entries": [
+    "b1",
+    "b2",
+    "b3",
+    "b4",
+    "b6",
+    "b8"
+  ],
+  "superseded_reason": "production_magic_star_release_unavailable",
+  "warning": "Historical results below are not current execution, effect, or production-release evidence.",
   "ts": "2026-08-08T20:18:29Z",
   "tier_a": [
     {

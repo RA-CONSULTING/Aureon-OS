@@ -1,28 +1,10 @@
-FROM ubuntu:24.04
+FROM gcc:14-bookworm AS hold-builder
 
-ENV DEBIAN_FRONTEND=noninteractive
+RUN printf '%s\n' 'int main(void) { return 2; }' > /tmp/terminal_hold.c \
+    && cc -Os -static -s -o /terminal-hold /tmp/terminal_hold.c
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        bash \
-        build-essential \
-        ca-certificates \
-        curl \
-        git \
-        nano \
-        nodejs \
-        npm \
-        python3 \
-        python3-pip \
-        sudo \
-        vim \
-    && useradd -m -s /bin/bash coder \
-    && echo "coder ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/coder \
-    && chmod 0440 /etc/sudoers.d/coder \
-    && mkdir -p /workspace \
-    && chown coder:coder /workspace \
-    && rm -rf /var/lib/apt/lists/*
+FROM scratch
 
-USER coder
-WORKDIR /workspace
-CMD ["bash", "-l"]
+COPY --from=hold-builder --chown=65532:65532 /terminal-hold /terminal-hold
+USER 65532:65532
+ENTRYPOINT ["/terminal-hold"]

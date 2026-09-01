@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import math
+from collections.abc import Iterator, Mapping
 
 import pytest
 
+import aureon.plumber.crypto as plumber_crypto
 from aureon.plumber.crypto import (
     CryptoContractError,
     b64url_decode,
@@ -84,6 +86,24 @@ def test_canonical_json_reports_invalid_unicode_and_large_integer_stably() -> No
     with pytest.raises(CryptoContractError, match="json_decoding_failed"):
         decode_canonical_json("9" * 5_000)
 
+    with pytest.raises(CryptoContractError, match="json_string_not_valid_utf8"):
+        decode_canonical_json(b'{"value":"\\ud800"}')
+
+
+def test_canonical_json_rejects_duplicate_yielding_custom_mapping() -> None:
+    class DuplicateMapping(Mapping[str, object]):
+        def __getitem__(self, _key: str) -> object:
+            return 1
+
+        def __iter__(self) -> Iterator[str]:
+            return iter(("duplicate", "duplicate"))
+
+        def __len__(self) -> int:
+            return 2
+
+    with pytest.raises(CryptoContractError, match="json_duplicate_object_key"):
+        canonical_json_bytes(DuplicateMapping())
+
 
 def test_strict_base64_and_ed25519_round_trip() -> None:
     encoded = b64url_encode(b"opaque-cipher-bytes")
@@ -97,6 +117,17 @@ def test_strict_base64_and_ed25519_round_trip() -> None:
     signature = sign_ed25519(key, signed, domain="test.plumber")
     assert verify_ed25519(key.public_key(), signed, signature, domain="test.plumber")
     assert not verify_ed25519(key.public_key(), {"counter": 2}, signature, domain="test.plumber")
+
+
+def test_base64_maximum_is_checked_before_decoder_allocation(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def unexpected_decode(*_args, **_kwargs):
+        raise AssertionError("oversized input must be rejected before base64 decode")
+
+    monkeypatch.setattr(plumber_crypto.base64, "b64decode", unexpected_decode)
+    with pytest.raises(CryptoContractError, match="base64url_decoded_value_too_large"):
+        b64url_decode("A" * 15, max_bytes=8)
 
 
 def test_packet_schema_is_exact_and_summary_omits_sensitive_fields() -> None:

@@ -59,14 +59,17 @@ dev = [
 ]
 
 [project.scripts]
-aureon-operator = "aureon.operator.operator_server:main"
-aureon-organism = "aureon.core.organism_daemon:main"
-aureon-hnc = "aureon.core.hnc_live_daemon:main"
-aureon-local-gui = "aureon.operator.local_gui_organism:main"
-aureon-website = "aureon.operator.website_operator:main"
+aureon-operator = "protected_console_bootstrap_v05:operator_main"
+aureon-organism = "protected_console_bootstrap_v05:organism_main"
+aureon-hnc = "protected_console_bootstrap_v05:hnc_main"
+aureon-local-gui = "protected_console_bootstrap_v05:local_gui_main"
+aureon-website = "protected_console_bootstrap_v05:website_main"
 
-# Discover the `aureon` package only. Top-level bare modules stay importable via
-# the existing sys.path shims — packaging is additive, not a rewrite.
+[tool.setuptools]
+py-modules = ["protected_console_bootstrap_v05"]
+
+# Discover the `aureon` package plus the explicitly listed inert console module.
+# Other top-level bare modules stay run-in-place via the existing sys.path shims.
 [tool.setuptools.packages.find]
 include = ["aureon*"]
 namespaces = false

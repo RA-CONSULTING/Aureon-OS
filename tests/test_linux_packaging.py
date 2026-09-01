@@ -1,18 +1,8 @@
-"""
-The full Linux version — install + launcher + systemd, verified honest.
-
-Offline, no processes started. The load-bearing check is that every ``python -m
-aureon.*`` in the Linux supervisord config resolves to a real module (the exact
-bug that rotted the old configs after the repo reorg), plus: the deps set is
-Linux-safe (no Windows-only packages), the console entry points import + are
-callable, the launcher/install scripts are executable + parse, and the systemd
-units are well-formed and safe-by-default.
-"""
+"""Offline contracts for the fail-closed Linux packaging surfaces."""
 
 from __future__ import annotations
 
 import configparser
-import importlib.util as _u
 import os
 import re
 import subprocess
@@ -45,50 +35,40 @@ def _programs():
 def test_supervisord_linux_config_parses():
     cp, progs = _programs()
     assert cp.has_section("supervisord")
-    assert len(progs) >= 14        # the full stack
+    assert len(progs) >= 14
 
 
-def test_every_module_path_resolves():
-    """No stale paths: every `-m aureon.<mod>` in the config is importable."""
+def test_every_supervised_route_is_the_terminal_isolated_hold():
     cp, progs = _programs()
-    mods = []
-    for s in progs:
-        m = re.search(r"-m (aureon\.[\w.]+)", cp[s].get("command", ""))
-        if m:
-            mods.append(m.group(1))
-    assert len(mods) >= 14
-    missing = [m for m in mods if _u.find_spec(m) is None]
-    assert missing == [], f"stale process paths in supervisord.linux.conf: {missing}"
-
-
-def test_every_process_module_is_runnable():
-    """Stronger than import: `python -m <mod>` only *starts a process* if the module
-    has a `__main__` guard. A module that resolves but lacks one would import-and-exit,
-    flapping under supervisord's autorestart. Assert every `-m` target is runnable."""
-    cp, progs = _programs()
-    not_runnable = []
-    for s in progs:
-        m = re.search(r"-m (aureon\.[\w.]+)", cp[s].get("command", ""))
-        if not m:
-            continue
-        spec = _u.find_spec(m.group(1))
-        src = open(spec.origin, encoding="utf-8").read() if spec and spec.origin else ""
-        if 'if __name__ == "__main__"' not in src and "if __name__ == '__main__'" not in src:
-            not_runnable.append(m.group(1))
-    assert not_runnable == [], f"process modules with no __main__ guard (would flap): {not_runnable}"
+    target_ids: set[str] = set()
+    for section in progs:
+        command = cp[section].get("command", "")
+        assert "%(ENV_AUREON_PYTHON)s -I -S -B" in command
+        assert "scripts/bootstrap/protected_bootstrap_v05.py" in command
+        assert " -m aureon." not in command
+        match = re.search(r"--target-id ([a-z0-9-]+)$", command)
+        assert match is not None, f"missing fixed target id in {section}"
+        target_ids.add(match.group(1))
+        assert cp[section].get("autorestart") == "false"
+        assert cp[section].get("startretries") == "0"
+    assert len(target_ids) == len(progs)
 
 
 def test_config_is_dry_paper_by_default():
     """The config never arms live trading or local actions itself (comments aside)."""
-    active = "\n".join(ln for ln in open(_CONF, encoding="utf-8").read().splitlines()
-                       if not ln.lstrip().startswith(";"))
+    with open(_CONF, encoding="utf-8") as handle:
+        active = "\n".join(
+            line for line in handle.read().splitlines()
+            if not line.lstrip().startswith(";")
+        )
     assert "AUREON_LIVE_TRADING=1" not in active        # live is never hard-armed in-config
     assert "AUREON_LOCAL_ACTIONS_ARMED" not in active   # never arms irreversible local actions
     assert "AUREON_SOUL_ACT" not in active
 
 
 def test_requirements_linux_is_linux_safe():
-    reqs = open(os.path.join(_ROOT, "requirements-linux.txt"), encoding="utf-8").read().lower()
+    with open(os.path.join(_ROOT, "requirements-linux.txt"), encoding="utf-8") as handle:
+        reqs = handle.read().lower()
     pkgs = [ln.strip() for ln in reqs.splitlines()
             if ln.strip() and not ln.strip().startswith("#")]
     joined = "\n".join(pkgs)
@@ -126,6 +106,20 @@ def test_systemd_units_present_and_safe():
     for unit in ("aureon.service", "aureon-operator.service", "aureon-organism.service",
                  "aureon-hnc.service", "aureon.target"):
         assert os.path.exists(os.path.join(d, unit)), f"missing {unit}"
-    whole = open(os.path.join(d, "aureon.service"), encoding="utf-8").read()
-    assert "ExecStart=" in whole and "supervisord" in whole
-    assert "AUREON_LIVE_TRADING=0" in whole            # dry/paper by default
+    with open(os.path.join(d, "aureon.service"), encoding="utf-8") as handle:
+        whole = handle.read()
+    assert "ExecStart=/opt/aureon/.venv/bin/python -I -S -B" in whole
+    assert "scripts/bootstrap/protected_bootstrap_v05.py --target-id linux-supervisor" in whole
+    assert "supervisord" not in whole
+    assert "Restart=no" in whole
+    assert "IPAddressDeny=any" in whole
+    assert "AUREON_LIVE_TRADING" not in whole
+
+
+def test_down_script_never_signals_an_unverified_pid_file():
+    with open(
+        os.path.join(_ROOT, "scripts", "linux", "aureon-down.sh"), encoding="utf-8"
+    ) as handle:
+        source = handle.read()
+    assert re.search(r"(?:^|\s)kill\s", source, re.MULTILINE) is None
+    assert "refusing to signal a potentially recycled PID" in source

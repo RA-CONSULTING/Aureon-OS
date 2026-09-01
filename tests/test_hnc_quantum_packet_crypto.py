@@ -9,9 +9,12 @@ import pytest
 import aureon.harmonic.hnc_quantum_packet_crypto as hnc_crypto
 from aureon.core.hnc_params import HNCParams
 from aureon.harmonic.hnc_quantum_packet_crypto import (
+    DEFAULT_GEOMETRY,
     ENV_PACKET_PREFIX,
+    HNC_PACKET_EVIDENCE_WRITE_HOLD,
     HNCPacketError,
     build_hnc_alignment_context,
+    build_hnc_packet_evidence,
     build_hnc_quantum_packet,
     build_hnc_swarm_packet,
     canonical_json_bytes,
@@ -30,6 +33,7 @@ from aureon.harmonic.hnc_quantum_packet_crypto import (
     sha256_hex,
     stream_hnc_probability_fragments,
     validate_hnc_packet_contract,
+    write_hnc_packet_evidence,
 )
 
 MASTER_KEY = b"K" * 32
@@ -136,6 +140,46 @@ def test_env_packet_round_trip_and_summary():
     assert summary["valid_contract"] is True
     assert decode_env_packet(token, MASTER_KEY, env_key="BINANCE_API_SECRET") == "binance-secret"
     assert "binance-secret" not in token
+
+
+def test_evidence_builder_derives_fixed_metadata_without_tokens_or_plaintext():
+    plaintext = "credential-value-must-not-escape"
+    token = encode_env_packet(plaintext, MASTER_KEY, env_key="BINANCE_API_SECRET")
+
+    evidence = build_hnc_packet_evidence({"BINANCE_API_SECRET": token})
+    rendered = json.dumps(evidence, sort_keys=True)
+
+    assert set(evidence) == {"schema_version", "generated_at", "evidence", "secret_policy"}
+    assert plaintext not in rendered
+    assert token not in rendered
+    assert evidence["evidence"]["updated_keys"] == ["BINANCE_API_SECRET"]
+    assert evidence["evidence"]["encrypted_keys"] == ["BINANCE_API_SECRET"]
+    assert set(evidence["evidence"]["packet_summaries"]["BINANCE_API_SECRET"]) == {
+        "encoded",
+        "format",
+        "valid_contract",
+        "purpose",
+        "packet_sha256",
+        "hnc_alignment_sha256",
+        "legacy_key_derivation_profile",
+        "blockers",
+    }
+
+
+def test_evidence_writer_holds_before_any_path_creation(tmp_path: Path):
+    destination = tmp_path / "must-not-exist" / "evidence.json"
+
+    with pytest.raises(HNCPacketError, match=HNC_PACKET_EVIDENCE_WRITE_HOLD):
+        write_hnc_packet_evidence({"arbitrary": "credential-value"}, destination)
+
+    assert not destination.parent.exists()
+
+
+def test_evidence_builder_rejects_token_relabeling_across_env_keys():
+    token = encode_env_packet("secret", MASTER_KEY, env_key="KRAKEN_API_SECRET")
+
+    with pytest.raises(HNCPacketError, match="evidence_env_packet_binding_invalid"):
+        build_hnc_packet_evidence({"BINANCE_API_SECRET": token})
 
 
 def test_breaker_checks_reject_all_tamper_attempts():
@@ -384,6 +428,54 @@ def test_single_packet_builder_self_validates_custom_geometry():
             MASTER_KEY,
             geometry={},
         )
+
+
+@pytest.mark.parametrize(
+    "geometry",
+    [
+        {**DEFAULT_GEOMETRY, "auris_nodes": [None] * 9},
+        {**DEFAULT_GEOMETRY, "auris_nodes": ["node"] * 9},
+        {
+            **DEFAULT_GEOMETRY,
+            "auris_nodes": [
+                {"name": f"node-{index}", "frequency_hz": "not-a-frequency", "texture": "test"}
+                for index in range(9)
+            ],
+        },
+        {**DEFAULT_GEOMETRY, "name": "   "},
+    ],
+    ids=["null_nodes", "string_nodes", "non_numeric_frequencies", "blank_name"],
+)
+def test_geometry_contract_rejects_fake_nine_entry_auris_lattices(geometry):
+    with pytest.raises(HNCPacketError, match="geometry_invalid"):
+        build_hnc_quantum_packet("secret", MASTER_KEY, geometry=geometry)
+
+
+def test_validator_rejects_fake_geometry_after_public_hashes_are_recomputed():
+    packet = build_hnc_quantum_packet("secret", MASTER_KEY)
+    alignment = packet["metadata"]["hnc_alignment"]
+    alignment["geometry"]["auris_nodes"][0]["frequency_hz"] = "not-a-frequency"
+    assert DEFAULT_GEOMETRY["auris_nodes"][0]["frequency_hz"] == 186.0
+    alignment_hash = sha256_hex(
+        {
+            "purpose": alignment["purpose"],
+            "geometry": alignment["geometry"],
+            "symbolic_route_seal": alignment["symbolic_route_seal"],
+            "hnc_params": alignment["hnc_params"],
+            "packet_contract": alignment["packet_contract"],
+            "extra": alignment.get("extra", {}),
+        }
+    )
+    alignment["hnc_alignment_sha256"] = alignment_hash
+    packet["metadata"]["hnc_alignment_sha256"] = alignment_hash
+    packet["packet_sha256"] = sha256_hex(
+        {key: value for key, value in packet.items() if key != "packet_sha256"}
+    )
+
+    validation = validate_hnc_packet_contract(packet)
+
+    assert validation["valid"] is False
+    assert "geometry_auris_node_0_frequency_invalid" in validation["reasons"]
 
 
 def test_explicit_nonce_is_test_only_and_fresh_salt_prevents_key_nonce_reuse():

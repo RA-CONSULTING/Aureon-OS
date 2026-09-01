@@ -309,6 +309,7 @@ class CapabilityPolicyV02:
     capability_id: str
     capability_measurement_sha256: str
     allowed_output_keys: tuple[str, ...]
+    output_types_by_key: Mapping[str, str]
     required_output_keys: tuple[str, ...] = ()
     max_result_bytes: int = 16 * 1024
 
@@ -317,8 +318,16 @@ class CapabilityPolicyV02:
             raise ReleaseBoundaryError("capability_allowed_output_invalid")
         if not isinstance(self.required_output_keys, list | tuple):
             raise ReleaseBoundaryError("capability_required_output_invalid")
+        if not isinstance(self.output_types_by_key, Mapping):
+            raise ReleaseBoundaryError("capability_output_types_invalid")
         object.__setattr__(self, "allowed_output_keys", tuple(self.allowed_output_keys))
         object.__setattr__(self, "required_output_keys", tuple(self.required_output_keys))
+        normalized_types = dict(self.output_types_by_key)
+        object.__setattr__(
+            self,
+            "output_types_by_key",
+            freeze_mapping(normalized_types, field="capability_output_types"),
+        )
         _identifier(self.capability_id, code="capability_id_invalid")
         _sha256(
             self.capability_measurement_sha256,
@@ -332,6 +341,10 @@ class CapabilityPolicyV02:
             self.required_output_keys
         ) or not set(self.required_output_keys).issubset(self.allowed_output_keys):
             raise ReleaseBoundaryError("capability_required_output_invalid")
+        if set(normalized_types) != set(self.allowed_output_keys) or any(
+            value_type != "bool" for value_type in normalized_types.values()
+        ):
+            raise ReleaseBoundaryError("capability_output_types_invalid")
         for key in (*self.allowed_output_keys, *self.required_output_keys):
             _identifier(key, code="capability_output_key_invalid")
             if _FORBIDDEN_RESULT_KEY.search(key):
@@ -349,6 +362,7 @@ class CapabilityPolicyV02:
                 "capability_id": self.capability_id,
                 "capability_measurement_sha256": self.capability_measurement_sha256,
                 "allowed_output_keys": list(self.allowed_output_keys),
+                "output_types_by_key": dict(self.output_types_by_key),
                 "required_output_keys": list(self.required_output_keys),
                 "max_result_bytes": self.max_result_bytes,
             },
@@ -364,6 +378,11 @@ class CapabilityPolicyV02:
         ).issubset(keys):
             raise ReleaseBoundaryError("capability_result_schema_denied")
         _walk_result_keys(public_result)
+        if any(
+            self.output_types_by_key.get(key) != "bool" or type(value) is not bool
+            for key, value in public_result.items()
+        ):
+            raise ReleaseBoundaryError("capability_result_type_denied")
         try:
             encoded = canonical_json_bytes(public_result)
         except (TypeError, ValueError) as exc:
@@ -656,6 +675,8 @@ class LocalDevelopmentReleaseBoundaryV02:
                 != policy.capability_measurement_sha256
                 or custody.capability_policy_measurement(capability_id)
                 != policy.commitment
+                or custody.capability_result_schema(capability_id)
+                != dict(policy.output_types_by_key)
             ):
                 raise ReleaseBoundaryError("capability_policy_registry_invalid")
             policies[capability_id] = policy

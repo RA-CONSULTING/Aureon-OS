@@ -16,13 +16,12 @@ import json
 import math
 import os
 import re
-import time
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from itertools import combinations
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from cryptography.exceptions import InvalidTag
 from cryptography.hazmat.primitives import hashes
@@ -72,6 +71,8 @@ MAX_AGENT_ID_BYTES = 128
 
 _B64URL_RE = re.compile(r"^[A-Za-z0-9_-]+$")
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+_ENV_KEY_RE = re.compile(r"^[A-Z][A-Z0-9_]{0,127}$")
+HNC_PACKET_EVIDENCE_WRITE_HOLD = "hnc_packet_evidence_filesystem_release_hold"
 
 _PACKET_FIELDS = frozenset(
     {
@@ -124,6 +125,19 @@ _PACKET_CONTRACT_FIELDS = frozenset(
         "plaintext_never_returned_in_status",
     }
 )
+_GEOMETRY_FIELDS = frozenset(
+    {
+        "name",
+        "sha_alias",
+        "phi",
+        "schumann_anchor_hz",
+        "profit_anchor_hz",
+        "coherence_anchor_hz",
+        "unity_anchor_hz",
+        "auris_nodes",
+    }
+)
+_AURIS_NODE_FIELDS = frozenset({"name", "frequency_hz", "texture"})
 _SWARM_SECURITY_FIELDS = frozenset(
     {
         "mode",
@@ -588,6 +602,100 @@ def _hnc_param_value_reasons(params: Any) -> list[str]:
     return reasons
 
 
+def _geometry_value_reasons(geometry: Any) -> list[str]:
+    """Validate the semantic shape authenticated as HNC geometry.
+
+    Merely counting nine list entries is not enough: values such as nine
+    ``None`` objects previously passed the packet contract and were reported as
+    an Auris lattice.  Custom geometries remain supported, but they must use the
+    complete bounded v1 shape and meaningful finite values.
+    """
+
+    reasons: list[str] = []
+    if not _has_exact_keys(geometry, _GEOMETRY_FIELDS):
+        reasons.append("geometry_schema_mismatch")
+        nodes = geometry.get("auris_nodes") if isinstance(geometry, Mapping) else None
+        if not isinstance(nodes, list) or len(nodes) != len(DEFAULT_AURIS_NODES):
+            reasons.append("auris_9_node_lattice_missing")
+        return reasons
+    assert isinstance(geometry, Mapping)
+    for field in ("name", "sha_alias"):
+        try:
+            geometry_text = _bounded_nonblank(
+                geometry.get(field),
+                code=f"geometry_{field}_invalid",
+                max_bytes=MAX_SLIT_NAME_BYTES,
+            )
+        except HNCPacketError:
+            _append_reason(reasons, f"geometry_{field}_invalid")
+        else:
+            if geometry_text != geometry_text.strip() or any(
+                ord(character) < 32 or ord(character) == 127
+                for character in geometry_text
+            ):
+                _append_reason(reasons, f"geometry_{field}_invalid")
+    if geometry.get("sha_alias") != DEFAULT_GEOMETRY["sha_alias"]:
+        _append_reason(reasons, "geometry_sha_alias_mismatch")
+    phi = geometry.get("phi")
+    if not _finite_protocol_number(phi) or not 1.0 < float(
+        cast(int | float, phi)
+    ) < 2.0:
+        _append_reason(reasons, "geometry_phi_invalid")
+    for field in (
+        "schumann_anchor_hz",
+        "profit_anchor_hz",
+        "coherence_anchor_hz",
+        "unity_anchor_hz",
+    ):
+        anchor_value = geometry.get(field)
+        if (
+            not _finite_protocol_number(anchor_value)
+            or float(cast(int | float, anchor_value)) <= 0.0
+            or float(cast(int | float, anchor_value)) > 1_000_000_000.0
+        ):
+            _append_reason(reasons, f"geometry_{field}_invalid")
+    nodes = geometry.get("auris_nodes")
+    if not isinstance(nodes, list) or len(nodes) != len(DEFAULT_AURIS_NODES):
+        _append_reason(reasons, "auris_9_node_lattice_missing")
+        return reasons
+    names: set[str] = set()
+    for index, node in enumerate(nodes):
+        if not _has_exact_keys(node, _AURIS_NODE_FIELDS):
+            _append_reason(reasons, f"geometry_auris_node_{index}_schema_mismatch")
+            continue
+        assert isinstance(node, Mapping)
+        for field in ("name", "texture"):
+            try:
+                node_text = _bounded_nonblank(
+                    node.get(field),
+                    code=f"geometry_auris_node_{index}_{field}_invalid",
+                    max_bytes=MAX_SLIT_NAME_BYTES,
+                )
+            except HNCPacketError:
+                _append_reason(reasons, f"geometry_auris_node_{index}_{field}_invalid")
+            else:
+                if node_text != node_text.strip() or any(
+                    ord(character) < 32 or ord(character) == 127
+                    for character in node_text
+                ):
+                    _append_reason(
+                        reasons,
+                        f"geometry_auris_node_{index}_{field}_invalid",
+                    )
+                if field == "name":
+                    if node_text in names:
+                        _append_reason(reasons, "geometry_auris_node_names_not_distinct")
+                    names.add(node_text)
+        frequency = node.get("frequency_hz")
+        if (
+            not _finite_protocol_number(frequency)
+            or float(cast(int | float, frequency)) <= 0.0
+            or float(cast(int | float, frequency)) > 1_000_000_000.0
+        ):
+            _append_reason(reasons, f"geometry_auris_node_{index}_frequency_invalid")
+    return reasons
+
+
 def packet_master_key_from_env(environ: Mapping[str, str] | None = None) -> str:
     env = os.environ if environ is None else environ
     value = env.get(MASTER_KEY_ENV) or env.get(LEGACY_MASTER_KEY_ENV) or ""
@@ -617,7 +725,11 @@ def build_hnc_alignment_context(
     )
     context = {
         "purpose": purpose,
-        "geometry": dict(DEFAULT_GEOMETRY if geometry is None else geometry),
+        # Snapshot nested geometry so a returned packet cannot mutate the
+        # process-wide defaults or the caller's source mapping by alias.
+        "geometry": copy.deepcopy(
+            dict(DEFAULT_GEOMETRY if geometry is None else geometry)
+        ),
         "symbolic_route_seal": route_seal,
         "hnc_params": {
             "alpha": params.alpha,
@@ -636,6 +748,9 @@ def build_hnc_alignment_context(
             "plaintext_never_returned_in_status": True,
         },
     }
+    geometry_reasons = _geometry_value_reasons(context["geometry"])
+    if geometry_reasons:
+        raise HNCPacketError("geometry_invalid:" + ",".join(geometry_reasons))
     param_reasons = _hnc_param_value_reasons(context["hnc_params"])
     if param_reasons:
         raise HNCPacketError("hnc_params_invalid:" + ",".join(param_reasons))
@@ -1102,8 +1217,8 @@ def validate_hnc_packet_contract(packet: Mapping[str, Any]) -> dict[str, Any]:
         or supplied_packet_hash != computed_packet_hash
     ):
         _append_reason(reasons, "packet_hash_mismatch")
-    if len(nodes) != 9:
-        _append_reason(reasons, "auris_9_node_lattice_missing")
+    for geometry_reason in _geometry_value_reasons(geometry):
+        _append_reason(reasons, geometry_reason)
     if not isinstance(symbolic_route_seal, Mapping):
         _append_reason(reasons, "symbolic_route_seal_required")
     else:
@@ -1897,18 +2012,72 @@ def run_hnc_packet_breaker_checks(packet: Mapping[str, Any], master_key: bytes |
     }
 
 
-def write_hnc_packet_evidence(summary: Mapping[str, Any], path: Path) -> Path:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    payload = {
+def build_hnc_packet_evidence(packet_tokens: Mapping[str, str]) -> dict[str, Any]:
+    """Build fixed-shape metadata from contract-valid env packet tokens.
+
+    The caller cannot inject arbitrary evidence values: every public summary is
+    re-derived from a validated packet token and the encrypted values themselves
+    are omitted.  This builder does not possess a decryption key and therefore
+    makes no claim that AEAD authentication or plaintext recovery was verified.
+    """
+
+    if not isinstance(packet_tokens, Mapping) or not packet_tokens:
+        raise HNCPacketError("evidence_packet_tokens_invalid")
+    if len(packet_tokens) > 64:
+        raise HNCPacketError("evidence_packet_token_limit_exceeded")
+    summaries: dict[str, dict[str, Any]] = {}
+    for key, token in packet_tokens.items():
+        if not isinstance(key, str) or _ENV_KEY_RE.fullmatch(key) is None:
+            raise HNCPacketError("evidence_env_key_invalid")
+        if key in summaries:
+            raise HNCPacketError("evidence_env_key_duplicate")
+        if not isinstance(token, str) or not is_env_packet(token):
+            raise HNCPacketError("evidence_env_packet_invalid")
+        try:
+            packet = _decode_env_packet_object(token)
+        except HNCPacketError as exc:
+            raise HNCPacketError("evidence_env_packet_invalid") from exc
+        validation = validate_hnc_packet_contract(packet)
+        if validation.get("valid") is not True:
+            raise HNCPacketError("evidence_env_packet_contract_invalid")
+        if (
+            validation.get("purpose") != f"env:{key}"
+            or packet.get("operator_aad") != {"env_key": key}
+        ):
+            raise HNCPacketError("evidence_env_packet_binding_invalid")
+        summaries[key] = {
+            "encoded": True,
+            "format": ENV_PACKET_PREFIX.rstrip(":"),
+            "valid_contract": True,
+            "purpose": validation.get("purpose"),
+            "packet_sha256": validation.get("packet_sha256"),
+            "hnc_alignment_sha256": validation.get("hnc_alignment_sha256"),
+            "legacy_key_derivation_profile": bool(
+                validation.get("legacy_key_derivation_profile", False)
+            ),
+            "blockers": list(validation.get("reasons") or ()),
+        }
+    keys = sorted(summaries)
+    payload: dict[str, Any] = {
         "schema_version": PACKET_SCHEMA_VERSION,
         "generated_at": datetime.now(UTC).isoformat(),
-        "evidence": dict(summary),
+        "evidence": {
+            "event": "env_credentials_packetized",
+            "updated_keys": keys,
+            "encrypted_keys": keys,
+            "packet_format": ENV_PACKET_PREFIX.rstrip(":"),
+            "packet_summaries": {key: summaries[key] for key in keys},
+        },
         "secret_policy": "metadata_only_no_values_returned",
     }
-    tmp = path.with_suffix(path.suffix + f".tmp-{int(time.time() * 1000)}")
-    tmp.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
-    os.replace(tmp, path)
-    return path
+    canonical_json_bytes(payload, max_bytes=MAX_ENV_PACKET_JSON_BYTES)
+    return payload
+
+
+def write_hnc_packet_evidence(_summary: Mapping[str, Any], _path: Path) -> Path:
+    """Hold the unreleased public filesystem writer before path inspection."""
+
+    raise HNCPacketError(HNC_PACKET_EVIDENCE_WRITE_HOLD)
 
 
 __all__ = [
@@ -1919,6 +2088,7 @@ __all__ = [
     "MASTER_KEY_ENV",
     "PACKET_MAGIC",
     "build_hnc_alignment_context",
+    "build_hnc_packet_evidence",
     "build_hnc_quantum_packet",
     "canonical_json_bytes",
     "build_hnc_swarm_packet",
@@ -1937,6 +2107,7 @@ __all__ = [
     "sha256_hex",
     "stream_hnc_probability_fragments",
     "SWARM_MODE_TWO_WAY",
+    "HNC_PACKET_EVIDENCE_WRITE_HOLD",
     "validate_hnc_packet_contract",
     "write_hnc_packet_evidence",
 ]

@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import subprocess
 import tomllib
 from pathlib import Path
 
@@ -158,13 +159,19 @@ def test_plumber_extra_is_reviewed_and_adds_no_cli() -> None:
 def test_retained_baseline_manifest_matches_normalized_source_bytes() -> None:
     manifest = json.loads(BASELINE_MANIFEST.read_text(encoding="utf-8"))
 
-    assert manifest["repository"]["branch_parent"] == (
+    branch_parent = manifest["repository"]["branch_parent"]
+    assert branch_parent == (
         "2359e25460d5eaf0864d39fea7912c7b96e7b921"
     )
     assert len(manifest["baseline_modules"]) == 8
     for record in manifest["baseline_modules"]:
-        path = ROOT / record["path"]
-        normalized_crlf = path.read_bytes().replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+        blob = subprocess.run(
+            ["git", "show", f"{branch_parent}:{record['path']}"],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+        ).stdout
+        normalized_crlf = blob.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
         normalized_crlf = normalized_crlf.replace(b"\n", b"\r\n")
         assert len(normalized_crlf) == record["size_bytes"]
         assert hashlib.sha256(normalized_crlf).hexdigest() == record["sha256"]

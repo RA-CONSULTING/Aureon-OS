@@ -21,11 +21,10 @@ import datetime as _dt
 import importlib
 import json
 import logging
-import os
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List
 
 logger = logging.getLogger("aureon.integrations.audit")
 
@@ -58,8 +57,10 @@ class CheckResult:
             "detail": self.detail,
             "duration_ms": round(self.duration_ms, 3),
             "timestamp": self.timestamp,
-            "iso_time": _dt.datetime.utcfromtimestamp(self.timestamp).isoformat()
-            + "Z",
+            "iso_time": _dt.datetime.fromtimestamp(
+                self.timestamp,
+                _dt.UTC,
+            ).isoformat().replace("+00:00", "Z"),
         }
 
 
@@ -91,7 +92,10 @@ class IntegrationStatus:
         return {
             "audit_id": self.audit_id,
             "when": self.when,
-            "iso_time": _dt.datetime.utcfromtimestamp(self.when).isoformat() + "Z",
+            "iso_time": _dt.datetime.fromtimestamp(
+                self.when,
+                _dt.UTC,
+            ).isoformat().replace("+00:00", "Z"),
             "total": self.total,
             "passed": self.passed,
             "failed": self.failed,
@@ -163,8 +167,8 @@ def _check_ollama_bridge() -> Any:
 
 def _check_ollama_adapter_interface() -> Any:
     """Probe: OllamaLLMAdapter implements the LLMAdapter protocol."""
-    from aureon.integrations.ollama import OllamaModelSwitchboard
     from aureon.inhouse_ai.llm_adapter import LLMAdapter
+    from aureon.integrations.ollama import OllamaModelSwitchboard
     adapter, selection = OllamaModelSwitchboard().adapter_for("general")
     if not isinstance(adapter, LLMAdapter):
         raise TypeError("OllamaLLMAdapter is not an LLMAdapter")
@@ -201,8 +205,8 @@ def _check_obsidian_sink() -> Any:
 def _check_vault_voice_loop() -> Any:
     """Probe: vault + voice layer imports and the cognitive loop exists."""
     from aureon.vault import (
-        AureonVault,
         AureonSelfFeedbackLoop,
+        AureonVault,
         SelfDialogueEngine,
         ThoughtStreamLoop,
     )
@@ -331,17 +335,19 @@ class IntegrationAuditTrail:
         print("\n".join(status.summary_lines()))
     """
 
-    def __init__(self, log_path: Optional[Path] = None):
+    def __init__(self, log_path: Path | None = None):
         self.log_path = Path(log_path or AUDIT_LOG_PATH)
-        self._last_status: Optional[IntegrationStatus] = None
+        self._last_status: IntegrationStatus | None = None
 
     def run(
         self,
-        include: Optional[List[str]] = None,
-        emit_to_sink: Optional[Callable[[Dict[str, Any]], None]] = None,
+        include: List[str] | None = None,
+        emit_to_sink: Callable[[Dict[str, Any]], None] | None = None,
     ) -> IntegrationStatus:
         """Run every check (or just those whose name/category is in `include`)."""
-        audit_id = _dt.datetime.utcnow().strftime("audit_%Y%m%dT%H%M%S")
+        audit_id = _dt.datetime.now(_dt.UTC).strftime(
+            "audit_%Y%m%dT%H%M%S"
+        )
         when = time.time()
         results: List[CheckResult] = []
         for spec in INTEGRATION_CHECKLIST:
@@ -392,7 +398,7 @@ class IntegrationAuditTrail:
             logger.debug("audit persist failed: %s", e)
 
     @property
-    def last_status(self) -> Optional[IntegrationStatus]:
+    def last_status(self) -> IntegrationStatus | None:
         return self._last_status
 
 
@@ -402,8 +408,8 @@ class IntegrationAuditTrail:
 
 
 def run_full_audit(
-    log_path: Optional[Path] = None,
-    emit_to_sink: Optional[Callable[[Dict[str, Any]], None]] = None,
+    log_path: Path | None = None,
+    emit_to_sink: Callable[[Dict[str, Any]], None] | None = None,
 ) -> IntegrationStatus:
     """Run the full checklist once and return the resulting status."""
     trail = IntegrationAuditTrail(log_path=log_path)

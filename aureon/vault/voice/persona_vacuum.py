@@ -2,6 +2,10 @@
 PersonaVacuum — Ten Voices in Superposition, Collapsed on Observation
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+CURRENT RELEASE: collapse, speaking, bus wiring, chorus publication, vault
+feedback, action dispatch, and goal dispatch are hard-HOLD. The algorithms
+remain inspectable, but no effect runs without a production Magic Star release.
+
 The PersonaVacuum mirrors the 10-9-1 Source Law pattern at the persona layer:
 
     superposition  : ten ResonantPersona instances, none speaking
@@ -43,6 +47,11 @@ from aureon.vault.voice.persona_action import (
 from aureon.vault.voice.utterance import VoiceStatement
 
 logger = logging.getLogger("aureon.vault.voice.persona_vacuum")
+
+
+PERSONA_VACUUM_RELEASE_HOLD = (
+    "persona_vacuum_hold:production_magic_star_release_unavailable"
+)
 
 _DEFAULT_TEMPERATURE = 1.0
 
@@ -91,9 +100,7 @@ class PersonaVacuum:
         peer_id: Optional[str] = None,
         seed_fn: Optional[Callable[[], int]] = None,
     ):
-        self._personas: Dict[str, ResonantPersona] = (
-            personas if personas is not None else build_aureon_personas(adapter=adapter)
-        )
+        self._personas: Dict[str, ResonantPersona] = dict(personas or {})
         self._rng = rng or random.Random()
         self._temperature = self._resolve_temperature(temperature)
         self._lock = threading.Lock()
@@ -107,8 +114,6 @@ class PersonaVacuum:
         self._last_probabilities: Dict[str, float] = {}
         self._collapse_count = 0
         self._thought_bus = thought_bus
-        if self._thought_bus is None:
-            self._thought_bus = self._load_thought_bus()
         self._subscribed = False
         self._vault_ref = vault
         self._actuator: PersonaActuator = actuator if actuator is not None else PersonaActuator(
@@ -126,11 +131,6 @@ class PersonaVacuum:
         self._chorus: Optional[AffinityChorus] = chorus
         self._seed_fn: Optional[Callable[[], int]] = seed_fn
         self._peer_id: str = str(peer_id) if peer_id else f"vacuum-{uuid.uuid4().hex[:8]}"
-        if self._chorus is not None:
-            # Ensure the chorus is listening on whichever bus we're using.
-            if self._chorus.thought_bus is None and self._thought_bus is not None:
-                self._chorus.thought_bus = self._thought_bus
-            self._chorus.start()
 
     @staticmethod
     def _resolve_temperature(explicit: Optional[float]) -> float:
@@ -143,6 +143,7 @@ class PersonaVacuum:
 
     @staticmethod
     def _load_thought_bus() -> Any:
+        raise RuntimeError(PERSONA_VACUUM_RELEASE_HOLD)
         try:
             from aureon.core.aureon_thought_bus import get_thought_bus
             return get_thought_bus()
@@ -156,6 +157,7 @@ class PersonaVacuum:
 
     def start(self) -> None:
         """Subscribe to the three trigger topics. Safe to call twice."""
+        raise RuntimeError(PERSONA_VACUUM_RELEASE_HOLD)
         if self._subscribed or self._thought_bus is None:
             return
         try:
@@ -207,6 +209,7 @@ class PersonaVacuum:
                 self._latest_cognition = dict(payload)
 
     def _on_observe_trigger(self, thought: Any) -> None:
+        raise RuntimeError(PERSONA_VACUUM_RELEASE_HOLD)
         payload = getattr(thought, "payload", {}) or {}
         vault = payload.get("vault") if isinstance(payload, dict) else None
         self.observe(vault)
@@ -217,6 +220,7 @@ class PersonaVacuum:
 
     def observe(self, vault: Any = None) -> Optional[VoiceStatement]:
         """Open the box. Sample one persona. Have it speak. Publish. Feed back."""
+        raise RuntimeError(PERSONA_VACUUM_RELEASE_HOLD)
         state = self._build_state(vault)
         winner_name, probs, scores = self._sample(state)
         if winner_name is None:
@@ -314,6 +318,8 @@ class PersonaVacuum:
 
         Returns the local score vector for inspection.
         """
+        if self._chorus is not None:
+            raise RuntimeError(PERSONA_VACUUM_RELEASE_HOLD)
         state = self._build_state(vault)
         scores: Dict[str, float] = {}
         for name, persona in self._personas.items():
@@ -332,6 +338,8 @@ class PersonaVacuum:
     def _sample(
         self, state: Dict[str, Any]
     ) -> Tuple[Optional[str], Dict[str, float], Dict[str, float]]:
+        if self._chorus is not None:
+            raise RuntimeError(PERSONA_VACUUM_RELEASE_HOLD)
         names: List[str] = list(self._personas.keys())
         if not names:
             return None, {}, {}
@@ -429,6 +437,7 @@ class PersonaVacuum:
         Falls back to `persona.speak(vault)` if no state was supplied — this
         preserves the original behaviour for callers that don't build state.
         """
+        raise RuntimeError(PERSONA_VACUUM_RELEASE_HOLD)
         if state is None:
             try:
                 return persona.speak(vault)
@@ -493,6 +502,7 @@ class PersonaVacuum:
         scores: Dict[str, float],
         state: Dict[str, Any],
     ) -> None:
+        raise RuntimeError(PERSONA_VACUUM_RELEASE_HOLD)
         if self._thought_bus is None:
             return
         try:
@@ -517,6 +527,7 @@ class PersonaVacuum:
             logger.debug("PersonaVacuum: collapse publish failed: %s", e)
 
     def _publish_thought(self, statement: VoiceStatement) -> None:
+        raise RuntimeError(PERSONA_VACUUM_RELEASE_HOLD)
         if self._thought_bus is None:
             return
         try:
@@ -530,6 +541,7 @@ class PersonaVacuum:
             logger.debug("PersonaVacuum: thought publish failed: %s", e)
 
     def _feed_vault(self, vault: Any, statement: VoiceStatement) -> None:
+        raise RuntimeError(PERSONA_VACUUM_RELEASE_HOLD)
         if vault is None:
             return
         ingest: Optional[Callable] = getattr(vault, "ingest", None)
@@ -585,6 +597,17 @@ class PersonaVacuum:
     def persona_names(self) -> List[str]:
         return list(self._personas.keys())
 
+    def status(self) -> Dict[str, Any]:
+        return {
+            "status": "HOLD",
+            "reason_code": "production_magic_star_release_unavailable",
+            "production_ready": False,
+            "effect_enabled": False,
+            "subscribed": False,
+            "persona_count": len(self._personas),
+            "collapse_count": self._collapse_count,
+        }
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Singleton accessor
@@ -597,6 +620,7 @@ _SINGLETON_LOCK = threading.Lock()
 
 def get_persona_vacuum() -> PersonaVacuum:
     """Return the process-wide PersonaVacuum, creating and wiring it on first use."""
+    raise RuntimeError(PERSONA_VACUUM_RELEASE_HOLD)
     global _PERSONA_VACUUM
     with _SINGLETON_LOCK:
         if _PERSONA_VACUUM is None:
@@ -606,6 +630,7 @@ def get_persona_vacuum() -> PersonaVacuum:
 
 
 __all__ = [
+    "PERSONA_VACUUM_RELEASE_HOLD",
     "PersonaVacuum",
     "get_persona_vacuum",
 ]

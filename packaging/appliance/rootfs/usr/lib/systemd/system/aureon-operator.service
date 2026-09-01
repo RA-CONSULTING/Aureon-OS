@@ -1,21 +1,16 @@
 [Unit]
-Description=Aureon loopback-only operator
+Description=Aureon appliance operator protection preflight (terminal HOLD)
 PartOf=aureon-appliance.target
 ConditionPathExists=/etc/aureon/firstboot.complete
 After=local-fs.target
 
 [Service]
-Type=simple
+Type=oneshot
 User=aureon
 Group=aureon
 WorkingDirectory=/opt/aureon/source
-EnvironmentFile=/usr/lib/aureon/aureon-safe.env
-ExecStart=/opt/aureon/.venv/bin/python -u -m aureon.operator.operator_server
-Restart=on-failure
-RestartSec=5
-StateDirectory=aureon
-LogsDirectory=aureon
-RuntimeDirectory=aureon
+ExecStart=/opt/aureon/.venv/bin/python -I -S -B /opt/aureon/source/scripts/bootstrap/protected_bootstrap_v05.py --target-id operator
+Restart=no
 UMask=0077
 NoNewPrivileges=yes
 PrivateTmp=yes
@@ -26,10 +21,10 @@ ProtectKernelModules=yes
 ProtectControlGroups=yes
 RestrictSUIDSGID=yes
 LockPersonality=yes
+MemoryDenyWriteExecute=yes
 CapabilityBoundingSet=
-IPAddressAllow=localhost
+RestrictAddressFamilies=AF_UNIX
 IPAddressDeny=any
-ReadWritePaths=/var/lib/aureon /var/log/aureon /run/aureon
 
 [Install]
 WantedBy=aureon-appliance.target

@@ -1,21 +1,20 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    One-command full Aureon + Flameborn production launch.
+    Held validation wrapper for the Aureon + Flameborn production launch plan.
 .DESCRIPTION
-    Starts the entire Aureon organism in production mode AND the Flameborn
-    frontend with runtime, host terminal, and sandbox enabled.
-
-    WARNING: This opens live trading gates. Only run when you intend to
-    trade with real money on configured exchanges.
+    This wrapper does not arm live trading or start Aureon, Flameborn, runtime,
+    host-terminal, or sandbox processes. -WhatIf prints the held launch plan.
+    Every non-WhatIf invocation fails closed before any Start-Process call until
+    an independently reviewed production-supervisor authority type exists.
 
     Safety blocks that REMAIN active (not overridden):
     - External attack capabilities: BLOCKED
     - Companies House / HMRC automatic filing: BLOCKED
     - Tax / penalty automatic payments: BLOCKED
 
-    These blocks protect you from legal/financial autopilot errors.
-    They are hardcoded organism safety limits, not runtime bugs.
+    These organism safety blocks are not process-start authority and remain
+    relevant if a future reviewed authority path replaces the current HOLD.
 #>
 param(
     [switch]$SkipFlameborn,
@@ -45,11 +44,11 @@ function Write-Banner {
 }
 
 Write-Banner "===============================================================" "ALIVE"
-Write-Banner "  AUREON FULL PRODUCTION LAUNCHER" "ALIVE"
-Write-Banner "  Organism + Flameborn + Runtime + Sandbox" "ALIVE"
+Write-Banner "  AUREON PRODUCTION VALIDATION WRAPPER - HOLD" "WARN"
+Write-Banner "  No runtime process or live trading is armed" "WARN"
 Write-Banner "===============================================================" "ALIVE"
 Write-Banner ""
-Write-Banner "MODE: PRODUCTION (live trading armed)" "WARN"
+Write-Banner "MODE: VALIDATION / PROCESS-START AUTHORITY HOLD" "WARN"
 Write-Banner "SAFETY: External attacks / auto-filing / auto-payments = BLOCKED" "WARN"
 Write-Banner ""
 
@@ -67,34 +66,8 @@ if ($WhatIf) {
     exit 0
 }
 
-# -- Terminal 1: Aureon Organism (Production) --
-$orgCmd = "Set-Location -LiteralPath `"$repo`"; & `"$productionLauncher`" -WaitForRefresh -MarketStatusPort 8791"
-Write-Banner "Launching Terminal 1: Aureon Organism (Production) ..."
-Start-Process powershell -ArgumentList "-NoExit","-Command",$orgCmd
-
-# -- Wait for organism core to bind --
-Write-Banner "Waiting 15s for organism ignition ..."
-Start-Sleep -Seconds 15
-
-# -- Terminal 2: Flameborn Frontend --
-$fbFlags = @("-StartRuntime")
-if (-not $SkipHostTerminal) { $fbFlags += "-EnableHostTerminal" }
-if (-not $SkipSandbox) { $fbFlags += "-EnableSandbox" }
-$fbCmd = "Set-Location -LiteralPath `"$repo`"; & `"$flamebornLauncher`" $($fbFlags -join ' ')"
-Write-Banner "Launching Terminal 2: Flameborn Frontend ..."
-Start-Process powershell -ArgumentList "-NoExit","-Command",$fbCmd
-
-Write-Banner ""
-Write-Banner "===============================================================" "ALIVE"
-Write-Banner "  BOTH TERMINALS LAUNCHED" "ALIVE"
-Write-Banner "===============================================================" "ALIVE"
-Write-Banner ""
-Write-Banner "Unified console:     http://127.0.0.1:8081/"
-Write-Banner "Flameborn chat:      http://127.0.0.1:4173/"
-Write-Banner "Market feed:         http://127.0.0.1:8791/api/terminal-state"
-Write-Banner "Market flight-test:  http://127.0.0.1:8791/api/flight-test"
-Write-Banner "Mind hub:            http://127.0.0.1:13002/"
-Write-Banner "Vault UI:            http://127.0.0.1:5566/"
-Write-Banner ""
-Write-Banner "Close each terminal window to stop that surface." "WARN"
-Write-Banner ""
+# This validation wrapper retains the proposed launch plan below for inspection,
+# but it is unreachable while the unconditional authority HOLD remains here.
+# The child production launcher enforces the same boundary; an evidence-only
+# full-live ACCEPT cannot indirectly authorize either Start-Process call.
+throw "Production wrapper process-start authority HOLD: no independent production supervisor authority type is available. WhatIf remains available without starting processes."

@@ -40,6 +40,10 @@ from typing import Any, Callable, Deque, Dict, List, Optional
 
 logger = logging.getLogger("aureon.vault.voice.symbolic_life_bridge")
 
+SYMBOLIC_LIFE_RELEASE_HOLD = (
+    "symbolic_life_bridge_hold:production_magic_star_release_unavailable"
+)
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Rolling observation buffer
@@ -131,8 +135,10 @@ class SymbolicLifeBridge:
         self.volatility = float(volatility)
         self.horizon = int(horizon)
 
-        self._lambda_engine = lambda_engine or self._build_lambda_engine()
-        self._SubsystemReading = self._import_reading_cls()
+        # Keep construction inert. The historical default engine/import path
+        # remains below the release HOLD for compatibility inspection only.
+        self._lambda_engine = lambda_engine
+        self._SubsystemReading = None
 
         self._lock = threading.RLock()
         self._rolling: Dict[str, _Rolling] = {
@@ -156,6 +162,7 @@ class SymbolicLifeBridge:
 
     def start(self) -> None:
         """Subscribe to bus topics. Optionally start the background pulse thread."""
+        raise RuntimeError(SYMBOLIC_LIFE_RELEASE_HOLD)
         if self._subscribed:
             return
         if self.thought_bus is None:
@@ -191,6 +198,7 @@ class SymbolicLifeBridge:
     # ─── subscribers ─────────────────────────────────────────────────────
 
     def _on_persona_collapse(self, thought: Any) -> None:
+        raise RuntimeError(SYMBOLIC_LIFE_RELEASE_HOLD)
         payload = getattr(thought, "payload", {}) or {}
         winner = str(payload.get("winner") or "")
         probs = payload.get("probabilities") or {}
@@ -202,6 +210,7 @@ class SymbolicLifeBridge:
             self._winner_buffer.append(winner)
 
     def _on_persona_thought(self, thought: Any) -> None:
+        raise RuntimeError(SYMBOLIC_LIFE_RELEASE_HOLD)
         payload = getattr(thought, "payload", {}) or {}
         with self._lock:
             self._rolling["actuator_pulse"].bump(0.5)
@@ -212,6 +221,7 @@ class SymbolicLifeBridge:
                 self._hash_buffer.append(fp)
 
     def _on_goal_request(self, thought: Any) -> None:
+        raise RuntimeError(SYMBOLIC_LIFE_RELEASE_HOLD)
         payload = getattr(thought, "payload", {}) or {}
         urgency = float(payload.get("urgency") or 0.5)
         with self._lock:
@@ -220,6 +230,7 @@ class SymbolicLifeBridge:
             self._rolling["actuator_pulse"].bump(1.0)
 
     def _on_life_event(self, thought: Any) -> None:
+        raise RuntimeError(SYMBOLIC_LIFE_RELEASE_HOLD)
         payload = getattr(thought, "payload", {}) or {}
         status = str(payload.get("status") or "active")
         # Only active events radiate intent worth propagating.
@@ -228,11 +239,13 @@ class SymbolicLifeBridge:
             self._rolling["life_resonance"].bump(weight)
 
     def _on_peer_state(self, thought: Any) -> None:
+        raise RuntimeError(SYMBOLIC_LIFE_RELEASE_HOLD)
         # Mesh heartbeat — every exchange with a peer is a lattice link.
         with self._lock:
             self._rolling["mesh_unity"].bump(0.8)
 
     def _on_conversation_turn(self, thought: Any) -> None:
+        raise RuntimeError(SYMBOLIC_LIFE_RELEASE_HOLD)
         payload = getattr(thought, "payload", {}) or {}
         with self._lock:
             self._rolling["vault_memory"].bump(1.0)
@@ -246,6 +259,7 @@ class SymbolicLifeBridge:
         a lighthouse-health signal in [0, 1]: completion_rate minus
         orphan_rate, clamped. A closed causal line lifts it; a broken
         lighthouse pulls it toward zero."""
+        raise RuntimeError(SYMBOLIC_LIFE_RELEASE_HOLD)
         payload = getattr(thought, "payload", {}) or {}
         if not isinstance(payload, dict):
             return
@@ -262,6 +276,7 @@ class SymbolicLifeBridge:
     def _on_goal_echo_orphaned(self, thought: Any) -> None:
         """An orphaned goal is a broken lighthouse — register it as a
         zero contribution to goal_lighthouse so the rolling mean drops."""
+        raise RuntimeError(SYMBOLIC_LIFE_RELEASE_HOLD)
         with self._lock:
             self._rolling["goal_lighthouse"].bump(0.0)
 
@@ -269,6 +284,7 @@ class SymbolicLifeBridge:
 
     def _build_readings(self) -> List[Any]:
         """Translate rolling counters into SubsystemReading objects."""
+        raise RuntimeError(SYMBOLIC_LIFE_RELEASE_HOLD)
         horizon = float(self.horizon)
         with self._lock:
             readings = []
@@ -308,6 +324,7 @@ class SymbolicLifeBridge:
         """One Λ heartbeat — translate the rolling state into readings,
         step the Λ engine, publish the resulting pillars, return the state.
         """
+        raise RuntimeError(SYMBOLIC_LIFE_RELEASE_HOLD)
         if self._lambda_engine is None:
             return None
         readings = self._build_readings()
@@ -327,6 +344,7 @@ class SymbolicLifeBridge:
         return state
 
     def _publish_pulse(self, state: Any, readings: List[Any]) -> None:
+        raise RuntimeError(SYMBOLIC_LIFE_RELEASE_HOLD)
         if self.thought_bus is None:
             return
         try:
@@ -377,6 +395,7 @@ class SymbolicLifeBridge:
     # ─── loop ────────────────────────────────────────────────────────────
 
     def _loop(self) -> None:
+        raise RuntimeError(SYMBOLIC_LIFE_RELEASE_HOLD)
         while self._running:
             try:
                 self.pulse()
@@ -409,6 +428,7 @@ class SymbolicLifeBridge:
 
     @staticmethod
     def _build_lambda_engine() -> Any:
+        raise RuntimeError(SYMBOLIC_LIFE_RELEASE_HOLD)
         try:
             from aureon.core.aureon_lambda_engine import LambdaEngine
             return LambdaEngine()
@@ -418,6 +438,7 @@ class SymbolicLifeBridge:
 
     @staticmethod
     def _import_reading_cls() -> Any:
+        raise RuntimeError(SYMBOLIC_LIFE_RELEASE_HOLD)
         try:
             from aureon.core.aureon_lambda_engine import SubsystemReading
             return SubsystemReading
@@ -434,4 +455,4 @@ class SymbolicLifeBridge:
             return _Reading
 
 
-__all__ = ["SymbolicLifeBridge"]
+__all__ = ["SYMBOLIC_LIFE_RELEASE_HOLD", "SymbolicLifeBridge"]

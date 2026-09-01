@@ -1,65 +1,33 @@
 #!/usr/bin/env python3
-"""
-🪟💰 AUREON WINDOWS LAUNCHER 💰🪟
-==================================
+"""Legacy runner replaced by a terminal protected-runtime HOLD receipt."""
 
-Safe launcher for Aureon Trading System on Windows 10/11.
-Handles UTF-8 stream wrapping, asyncio event loop, and stderr closure issues.
+from __future__ import annotations
 
-Usage:
-    python run_aureon_windows.py [arguments passed to micro_profit_labyrinth.py]
+import json
 
-Examples:
-    python run_aureon_windows.py --dry-run
-    python run_aureon_windows.py --snowball
-    python run_aureon_windows.py --multi-exchange
-"""
 
-from aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
-import os
-import sys
-import subprocess
-import platform
+def main() -> int:
+    print(
+        json.dumps(
+            {
+                "schema": "aureon.run-aureon-windows-hold.v1",
+                "decision": "HOLD",
+                "reason": "protected_runtime_not_attested",
+                "production_ready": False,
+                "aureon_imported": False,
+                "credentials_inspected": False,
+                "child_process_started": False,
+                "listener_started": False,
+                "order_submitted": False,
+                "network_accessed": False,
+                "file_written": False,
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+    )
+    return 2
 
-def main():
-    """Launch Aureon Trading System with Windows-safe configuration."""
-    
-    # Verify Windows
-    if sys.platform != 'win32':
-        print("⚠️  This launcher is optimized for Windows. You may still use:")
-        print("   python micro_profit_labyrinth.py [args]")
-        print()
-    
-    # Set Windows-specific environment variables
-    os.environ['PYTHONIOENCODING'] = 'utf-8'
-    os.environ['PYTHONUNBUFFERED'] = '1'  # Unbuffered output
-    
-    # Build command
-    cmd = [sys.executable, '-u', 'micro_profit_labyrinth.py'] + sys.argv[1:]
-    
-    print("🪟 AUREON WINDOWS LAUNCHER")
-    print("=" * 60)
-    print(f"Platform: {platform.system()} {platform.release()}")
-    print(f"Python: {sys.version.split()[0]}")
-    print(f"Encoding: {sys.stdout.encoding}")
-    print("=" * 60)
-    print()
-    
-    try:
-        # Run with proper error handling
-        # Windows: Use CREATE_NEW_PROCESS_GROUP to isolate streams
-        kwargs = {}
-        if sys.platform == 'win32':
-            kwargs['creationflags'] = subprocess.CREATE_NEW_PROCESS_GROUP if hasattr(subprocess, 'CREATE_NEW_PROCESS_GROUP') else 0x00000200
-        
-        result = subprocess.run(cmd, capture_output=False, **kwargs)
-        sys.exit(result.returncode)
-    except KeyboardInterrupt:
-        print("\n\n⏹️  Stopped by user (Ctrl+C)")
-        sys.exit(130)
-    except Exception as e:
-        print(f"\n❌ Error launching Aureon: {e}")
-        sys.exit(1)
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

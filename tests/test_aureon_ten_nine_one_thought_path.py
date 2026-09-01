@@ -9,6 +9,7 @@ import pytest
 
 from aureon.autonomous.aureon_ten_nine_one_thought_path import (
     ACTIVE_COHERENCE_THRESHOLD,
+    CommitmentOnlyHiveMyceliaPropagator,
     PHI,
     PHI_INVERSE,
     PHI_SQUARED,
@@ -18,6 +19,7 @@ from aureon.autonomous.aureon_ten_nine_one_thought_path import (
     ThoughtPathRequest,
     validate_ten_nine_one_receipt,
 )
+from aureon.core.aureon_thought_bus import ThoughtBus
 from tests.aureon_ten_nine_one_fixtures import (
     NOW,
     TestEvidenceResolver,
@@ -364,3 +366,33 @@ def test_thought_path_recaptures_clock_after_resolver_freshness_pacing() -> None
     )
 
     assert result.receipt["status"] == "coherent_and_propagated"
+
+
+def test_commitment_only_propagator_never_persists_raw_answer(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    sentinel = "TOP_SECRET_SELF_CODER_DIFF_SENTINEL_7f26"
+    digest = _sha(sentinel)
+    trace_dir = tmp_path / "traces"
+    monkeypatch.setenv("AUREON_BUS_TRACE_DIR", str(trace_dir))
+    bus = ThoughtBus(persist_path=str(tmp_path / "thoughts.jsonl"))
+    propagator = CommitmentOnlyHiveMyceliaPropagator(bus=bus)
+
+    acknowledgements = propagator.propagate(
+        answer=sentinel,
+        answer_receipt={
+            "receipt_id": "thought:10-9-1:answer:" + "a" * 64,
+            "answer_digest": digest,
+        },
+    )
+
+    assert set(acknowledgements) == {"hive", "mycelia"}
+    persisted = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in tmp_path.rglob("*")
+        if path.is_file()
+    )
+    assert sentinel not in persisted
+    assert digest in persisted
+    assert '"content_disclosure": "commitment_only"' in persisted

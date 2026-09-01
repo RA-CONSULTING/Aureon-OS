@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List
@@ -35,7 +36,9 @@ from aureon.saas.domains import _ADAPTERS, known_fs_domains, product_domain_for
 
 logger = logging.getLogger("aureon.saas.coverage")
 
-_REPO_ROOT = Path(__file__).resolve().parents[2]
+_REPO_ROOT = Path(
+    os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
+)
 _AUREON = _REPO_ROOT / "aureon"
 # Package dirs that are not product "domains" for coverage purposes.
 _SKIP = {"__pycache__"}

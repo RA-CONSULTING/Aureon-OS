@@ -142,7 +142,9 @@ def test_acceptance_ci_workflow_is_offline_fail_closed_and_complete() -> None:
         "test_public_manifest_contract.py",
         "test_pytest_no_skip_shards.py",
         "test_digitalocean_app_spec_fail_closed.py",
+        "test_ignition_live_profile.py",
         "test_import_snapshot_quarantine.py",
+        "test_legacy_deployment_surfaces_hold.py",
         "test_single_writer_scaling_contract.py",
         "test_economic_mutation_boundary_census.py",
     )

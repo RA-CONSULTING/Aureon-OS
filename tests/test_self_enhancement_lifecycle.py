@@ -94,7 +94,9 @@ def test_build_self_enhancement_lifecycle_and_write_report(tmp_path):
     assert report.summary["stage_count"] >= 5
     assert report.summary["enhancement_intent_count"] >= 2
     assert any(stage.id == "restart_apply" for stage in report.stages)
-    assert report.restart_handoff.preflight_command.startswith("python scripts/aureon_ignition.py")
+    assert report.restart_handoff.preflight_command.startswith(".venv/bin/python -I -S -B")
+    assert "--target-id ignition" in report.restart_handoff.preflight_command
+    assert report.restart_handoff.apply_command.startswith("HOLD:")
 
     markdown = render_markdown(report)
     assert "Aureon Self-Enhancement Lifecycle" in markdown

@@ -4,20 +4,21 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "node server.mjs",
-    "runtime:start": "node ../runtime/server.mjs",
-    "desktop:install": "npm --prefix desktop install",
-    "desktop:start": "npm --prefix desktop start",
-    "desktop:smoke": "npm --prefix desktop run smoke",
-    "aureon:cli": "node scripts/aureon_cli.mjs",
-    "sandbox:build": "bash ../../scripts/aureon_murge/setup_sandbox_runtime.sh",
+    "unavailable": "node -e process.exitCode=2",
+    "start": "npm run unavailable -- start",
+    "runtime:start": "npm run unavailable -- runtime:start",
+    "desktop:install": "npm run unavailable -- desktop:install",
+    "desktop:start": "npm run unavailable -- desktop:start",
+    "desktop:smoke": "npm run unavailable -- desktop:smoke",
+    "aureon:cli": "npm run unavailable -- aureon:cli",
+    "sandbox:build": "npm run unavailable -- sandbox:build",
     "check": "npm run check:node",
     "check:node": "node --check server.mjs && node --check ../runtime/server.mjs && node --check ../desktop/main.cjs && node --check ../desktop/preload.cjs && node --check ../desktop/runtime-manager.cjs",
-    "check:scripts:linux": "bash -n ../../scripts/aureon_murge/setup_sandbox_runtime.sh && bash -n ../../scripts/aureon_murge/fix_docker_sandbox_access.sh && bash -n ../../scripts/aureon_murge/start_aureon_brain_local.sh && bash -n ../../scripts/aureon_murge/start_flameborn_runtime.sh",
-    "cf:build": "bash scripts/build_workers_assets.sh",
-    "cf:dev": "npm run cf:build && wrangler dev",
-    "cf:deploy": "npm run cf:build && wrangler deploy",
-    "cf:check": "wrangler whoami"
+    "check:scripts:linux": "bash -n ../../../scripts/aureon_murge/setup_sandbox_runtime.sh && bash -n ../../../scripts/aureon_murge/fix_docker_sandbox_access.sh && bash -n ../../../scripts/aureon_murge/start_aureon_brain_local.sh && bash -n ../../../scripts/aureon_murge/start_flameborn_runtime.sh",
+    "cf:build": "npm run unavailable -- cf:build",
+    "cf:dev": "npm run unavailable -- cf:dev",
+    "cf:deploy": "npm run unavailable -- cf:deploy",
+    "cf:check": "npm run unavailable -- cf:check"
   },
   "devDependencies": {
     "wrangler": "^4.68.0"

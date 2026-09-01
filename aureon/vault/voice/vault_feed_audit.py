@@ -42,6 +42,10 @@ from typing import Any, Dict, List, Optional, Set
 
 logger = logging.getLogger("aureon.vault.voice.vault_feed_audit")
 
+VAULT_FEED_AUDIT_RELEASE_HOLD = (
+    "vault_feed_audit_hold:production_magic_star_release_unavailable"
+)
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Audit
@@ -214,6 +218,7 @@ class VaultFeedAudit:
         topics. If ``rewire=True`` and the vault has a thought bus
         attached, also subscribe the vault's handler to the new topics
         live."""
+        raise RuntimeError(VAULT_FEED_AUDIT_RELEASE_HOLD)
         patch = self.subscription_patch()
         new_topics = patch.get("missing_topics", [])
         if not new_topics:
@@ -251,4 +256,4 @@ class VaultFeedAudit:
             return dict(self._last_report)
 
 
-__all__ = ["VaultFeedAudit"]
+__all__ = ["VAULT_FEED_AUDIT_RELEASE_HOLD", "VaultFeedAudit"]

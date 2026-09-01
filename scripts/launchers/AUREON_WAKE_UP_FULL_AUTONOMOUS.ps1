@@ -839,6 +839,22 @@ if ($Production) {
 }
 
 $Python = Get-PythonPath -RepoRoot $RepoRoot
+
+# No official runtime, validation target, package manager, or child process may
+# start before the fixed-target Plumber bootstrap proves full OS protection.
+# The phase-one script runs in an isolated interpreter and imports only the
+# standard library, so no Aureon package can execute before this HOLD boundary.
+Write-Aureon "Running fixed-target Plumber protected bootstrap" "CHECK"
+$ProtectedBootstrap = Join-Path $RepoRoot "scripts\bootstrap\protected_bootstrap_v05.py"
+if (-not (Test-Path -LiteralPath $ProtectedBootstrap -PathType Leaf)) {
+    throw "Protected bootstrap missing: $ProtectedBootstrap"
+}
+& $Python -I -S -B $ProtectedBootstrap --target-id windows-wake
+$protectedBootstrapExit = $LASTEXITCODE
+if ($protectedBootstrapExit -ne 0) {
+    throw "Protected bootstrap returned HOLD (exit=$protectedBootstrapExit). No Aureon runtime, validation target, package manager, or child process was started."
+}
+
 $Npm = Get-NpmPath
 $FrontendRoot = Join-Path $RepoRoot "frontend"
 $LogRoot = Join-Path $RepoRoot "logs\wake_up"
@@ -878,6 +894,17 @@ function Write-SupervisorLock {
     } catch {
         Write-Aureon "Supervisor lock update failed: $($_.Exception.Message)" "WARN"
     }
+}
+
+function Assert-ProductionSupervisorStartAuthority {
+    # The full-live release result is evidence-only: all action, provider,
+    # operational, and economic eligibility flags remain false.  A successful
+    # validation exit therefore cannot be converted into Start-Process authority.
+    # Keep live/production launch fail-closed until an independently reviewed
+    # production-supervisor authority type exists.
+    if (-not ($LiveTrading -or $ProductionMode)) { return }
+
+    throw "Production/live process-start authority HOLD: full-live release ACCEPT is evidence-only and cannot authorize Start-Process. An independent production supervisor authority type is required."
 }
 
 function Assert-SingleProductionSupervisor {
@@ -1250,10 +1277,11 @@ Write-Aureon "Frontend: http://127.0.0.1:$FrontendPort/"
 Write-Aureon "Logs: $LogRoot"
 
 if ($ValidateOnly) {
-    Write-Aureon "Validation only complete. No processes started." "OK"
+    Write-Aureon "Validation only complete. No supervised/runtime processes started." "OK"
     exit 0
 }
 
+Assert-ProductionSupervisorStartAuthority
 Assert-SingleProductionSupervisor
 
 if (-not $SkipFrontend -and -not $SkipNpmInstall) {

@@ -34,6 +34,7 @@ from .os_protection import (
     AdmittedHNC,
     LocalOSProtectionBoundary,
     OpaqueHNCHandle,
+    OSProtectionError,
     QuarantinedHNC,
 )
 from .schema import (
@@ -52,6 +53,7 @@ from .star_custody_v02 import (
 )
 
 PROPOSAL_FORGE_SCHEMA: Final = "aureon.plumber.proposal-forge.v0"
+PROPOSAL_FORGE_PREFLIGHT_SCHEMA: Final = "aureon.plumber.proposal-forge-preflight.v0"
 PROPOSAL_PURPOSE: Final = "aureon.plumber.self-coder.proposal.v0"
 AUTHORSHIP_STATEMENT: Final = (
     "Aureon proposal generation with OpenAI adviser/reviewer assistance; "
@@ -605,6 +607,27 @@ class LocalProposalForge:
         self._consumed_handle_commitments: set[str] = set()
         self._lock = threading.RLock()
 
+    def preflight(self) -> dict[str, Any]:
+        """Return a metadata-only readiness check before sensitive authoring."""
+
+        key = self._os_boundary.key_preflight()
+        ready = key.get("ready") is True
+        summary = {
+            "schema": PROPOSAL_FORGE_PREFLIGHT_SCHEMA,
+            "forge_id": self._forge_id,
+            "ready": ready,
+            "reason_code": "ready" if ready else str(key.get("reason_code") or "hold"),
+            "os_key_preflight_schema": str(key.get("schema") or ""),
+            "key_material_returned": False,
+            "proposal_admission_authorized": False,
+            "action_eligible": False,
+            "economic_eligible": False,
+            "local_development_only": True,
+            "production_ready": False,
+        }
+        assert_public_summary_safe(summary)
+        return summary
+
     def forge_proposal(
         self,
         *,
@@ -776,6 +799,73 @@ class LocalProposalForge:
             ),
         )
 
+    def discard_proposal(
+        self,
+        handle: OpaqueProposalHandle,
+        *,
+        reason_code: str,
+    ) -> dict[str, Any]:
+        """Atomically burn one transient proposal and its OS admission.
+
+        This is the terminal path for a proposal that cannot enter a durable,
+        authenticated review vault.  It never decodes or releases the carrier.
+        """
+
+        if not isinstance(handle, OpaqueProposalHandle):
+            raise ProposalForgeError("opaque_proposal_handle_required")
+        reason = _bounded_text(
+            reason_code,
+            field_name="discard_reason_code",
+            maximum_bytes=128,
+        )
+        with self._lock:
+            record = self._records.get(handle.proposal_id)
+            available = (
+                record is not None
+                and handle.forge_id == self._forge_id
+                and record.proposal_handle_commitment == handle.handle_commitment
+                and handle.handle_commitment not in self._consumed_handle_commitments
+                and secrets.compare_digest(
+                    handle.handle_commitment,
+                    _proposal_handle_commitment(
+                        forge_id=handle.forge_id,
+                        proposal_id=handle.proposal_id,
+                        proposal_commitment=handle.proposal_commitment,
+                        os_handle_commitment=handle.os_handle_commitment,
+                        token=handle.token,
+                    ),
+                )
+            )
+            if not available or record is None:
+                raise ProposalForgeError("proposal_handle_unavailable_or_replayed")
+            try:
+                os_discard = self._os_boundary.discard_admitted(
+                    record.os_handle,
+                    reason_code=reason,
+                )
+            except OSProtectionError as exc:
+                raise ProposalForgeError("proposal_os_discard_failed") from exc
+            self._records.pop(handle.proposal_id, None)
+            self._consumed_handle_commitments.add(handle.handle_commitment)
+
+        summary = {
+            "schema": PROPOSAL_FORGE_SCHEMA,
+            "proposal_id": handle.proposal_id,
+            "proposal_commitment": handle.proposal_commitment,
+            "disposition": "DISCARDED_HNC",
+            "reason_code": reason,
+            "proposal_handle_consumed": True,
+            "carrier_released": False,
+            "plaintext_decoded": False,
+            "os_discard_handle_commitment": str(
+                os_discard.get("handle_commitment") or ""
+            ),
+            "local_development_only": True,
+            "production_ready": False,
+        }
+        assert_public_summary_safe(summary)
+        return summary
+
     def promote_reviewed(
         self,
         handle: OpaqueProposalHandle,
@@ -869,6 +959,7 @@ class LocalProposalForge:
 __all__ = [
     "AUTHORSHIP_STATEMENT",
     "PROPOSAL_FORGE_SCHEMA",
+    "PROPOSAL_FORGE_PREFLIGHT_SCHEMA",
     "PROPOSAL_PURPOSE",
     "LocalProposalForge",
     "OpaqueProposalHandle",

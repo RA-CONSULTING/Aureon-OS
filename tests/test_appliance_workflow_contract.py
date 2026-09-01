@@ -9,7 +9,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 ATTEST = ROOT / "packaging" / "appliance" / "rootfs" / "usr" / "lib" / "aureon" / "aureon-boot-attest"
-BOOT_MARKER = "AUREON_APPLIANCE_BOOTABLE_FIRSTBOOT_REQUIRED"
+BOOT_MARKER = "AUREON_APPLIANCE_BOOTABLE_PROTECTION_HOLD"
 WORKFLOW = ROOT / ".github" / "workflows" / "aureon-appliance-acceptance.yml"
 
 
@@ -103,7 +103,7 @@ def test_unprovisioned_attestor_emits_exact_adjacent_boot_evidence(tmp_path: Pat
     assert completed.stdout.splitlines() == [
         BOOT_MARKER,
         '{"schema":"aureon.appliance.boot.v1","status":"hold",'
-        '"reason":"local_console_firstboot_required","core_started":false}',
+        '"reason":"native_appliance_release_boundary_required","core_started":false}',
     ]
 
 

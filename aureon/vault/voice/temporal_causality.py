@@ -69,6 +69,10 @@ from typing import Any, Callable, Dict, List, Optional
 
 logger = logging.getLogger("aureon.vault.voice.temporal_causality")
 
+TEMPORAL_CAUSALITY_RELEASE_HOLD = (
+    "temporal_causality_hold:production_magic_star_release_unavailable"
+)
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Lifecycle + data
@@ -186,6 +190,7 @@ class TemporalCausalityLaw:
 
     def start(self) -> None:
         """Subscribe to bus topics. Safe to call twice."""
+        raise RuntimeError(TEMPORAL_CAUSALITY_RELEASE_HOLD)
         if self._subscribed or self.thought_bus is None:
             return
         try:
@@ -201,6 +206,7 @@ class TemporalCausalityLaw:
     # ─── inbound subscribers ─────────────────────────────────────────────
 
     def _on_submit_request(self, thought: Any) -> None:
+        raise RuntimeError(TEMPORAL_CAUSALITY_RELEASE_HOLD)
         payload = getattr(thought, "payload", {}) or {}
         if not isinstance(payload, dict):
             return
@@ -209,6 +215,7 @@ class TemporalCausalityLaw:
     def _on_submitted(self, thought: Any) -> None:
         """The existing GoalExecutionEngine publishes goal.submitted when
         it accepts a goal via submit_goal(). Use it to auto-acknowledge."""
+        raise RuntimeError(TEMPORAL_CAUSALITY_RELEASE_HOLD)
         payload = getattr(thought, "payload", {}) or {}
         text = str(payload.get("text") or "")
         goal_id = str(payload.get("goal_id") or "")
@@ -222,6 +229,7 @@ class TemporalCausalityLaw:
                 self.acknowledge(match.goal_id, engine_id)
 
     def _on_progress(self, thought: Any) -> None:
+        raise RuntimeError(TEMPORAL_CAUSALITY_RELEASE_HOLD)
         payload = getattr(thought, "payload", {}) or {}
         goal_id = str(payload.get("goal_id") or "")
         pct = payload.get("progress_pct")
@@ -235,6 +243,7 @@ class TemporalCausalityLaw:
         self.update_progress(goal_id, pct_f, note)
 
     def _on_completed(self, thought: Any) -> None:
+        raise RuntimeError(TEMPORAL_CAUSALITY_RELEASE_HOLD)
         payload = getattr(thought, "payload", {}) or {}
         goal_id = str(payload.get("goal_id") or "")
         summary = str(payload.get("result_summary") or payload.get("summary") or "")
@@ -247,6 +256,7 @@ class TemporalCausalityLaw:
             self.complete(goal_id, summary)
 
     def _on_abandoned(self, thought: Any) -> None:
+        raise RuntimeError(TEMPORAL_CAUSALITY_RELEASE_HOLD)
         payload = getattr(thought, "payload", {}) or {}
         goal_id = str(payload.get("goal_id") or "")
         reason = str(payload.get("reason") or payload.get("why") or "unspecified")
@@ -257,6 +267,7 @@ class TemporalCausalityLaw:
 
     def track(self, payload: Dict[str, Any]) -> GoalEcho:
         """Register a new goal from a goal.submit.request payload."""
+        raise RuntimeError(TEMPORAL_CAUSALITY_RELEASE_HOLD)
         with self._lock:
             goal_id = str(payload.get("goal_id") or "") or uuid.uuid4().hex[:10]
             if goal_id in self._goals:
@@ -276,6 +287,7 @@ class TemporalCausalityLaw:
         return echo
 
     def acknowledge(self, goal_id: str, engine_id: str = "") -> Optional[GoalEcho]:
+        raise RuntimeError(TEMPORAL_CAUSALITY_RELEASE_HOLD)
         with self._lock:
             echo = self._goals.get(goal_id)
             if echo is None or echo.is_terminal():
@@ -295,6 +307,7 @@ class TemporalCausalityLaw:
         progress_pct: Optional[float] = None,
         note: str = "",
     ) -> Optional[GoalEcho]:
+        raise RuntimeError(TEMPORAL_CAUSALITY_RELEASE_HOLD)
         with self._lock:
             echo = self._goals.get(goal_id)
             if echo is None or echo.is_terminal():
@@ -321,6 +334,7 @@ class TemporalCausalityLaw:
         return echo
 
     def complete(self, goal_id: str, result_summary: str = "") -> Optional[GoalEcho]:
+        raise RuntimeError(TEMPORAL_CAUSALITY_RELEASE_HOLD)
         with self._lock:
             echo = self._goals.get(goal_id)
             if echo is None or echo.is_terminal():
@@ -334,6 +348,7 @@ class TemporalCausalityLaw:
         return echo
 
     def abandon(self, goal_id: str, reason: str = "unspecified") -> Optional[GoalEcho]:
+        raise RuntimeError(TEMPORAL_CAUSALITY_RELEASE_HOLD)
         with self._lock:
             echo = self._goals.get(goal_id)
             if echo is None or echo.is_terminal():
@@ -354,6 +369,7 @@ class TemporalCausalityLaw:
 
         Returns the summary dict for callers that want to inspect it
         synchronously (tests, dashboards)."""
+        raise RuntimeError(TEMPORAL_CAUSALITY_RELEASE_HOLD)
         self._pulse_count += 1
         orphaned: List[GoalEcho] = []
         with self._lock:
@@ -449,6 +465,7 @@ class TemporalCausalityLaw:
         note: str,
     ) -> None:
         """Must be called under self._lock."""
+        raise RuntimeError(TEMPORAL_CAUSALITY_RELEASE_HOLD)
         ts = time.time()
         echo.state = new_state
         echo.ts_last_update = ts
@@ -463,6 +480,7 @@ class TemporalCausalityLaw:
     # ─── bus publish ─────────────────────────────────────────────────────
 
     def _publish_echo(self, echo: GoalEcho, topic: str) -> None:
+        raise RuntimeError(TEMPORAL_CAUSALITY_RELEASE_HOLD)
         if self.thought_bus is None:
             return
         try:
@@ -484,6 +502,7 @@ class TemporalCausalityLaw:
             logger.debug("TemporalCausalityLaw: publish %s failed: %s", topic, e)
 
     def _publish_summary(self, summary: Dict[str, Any]) -> None:
+        raise RuntimeError(TEMPORAL_CAUSALITY_RELEASE_HOLD)
         if self.thought_bus is None:
             return
         try:
@@ -505,6 +524,7 @@ class TemporalCausalityLaw:
             logger.debug("TemporalCausalityLaw: summary publish failed: %s", e)
 
     def _feed_vault(self, echo: GoalEcho) -> None:
+        raise RuntimeError(TEMPORAL_CAUSALITY_RELEASE_HOLD)
         if self.vault is None or not hasattr(self.vault, "ingest"):
             return
         try:
@@ -526,6 +546,7 @@ def get_temporal_causality_law(
     thought_bus: Any = None,
     vault: Any = None,
 ) -> TemporalCausalityLaw:
+    raise RuntimeError(TEMPORAL_CAUSALITY_RELEASE_HOLD)
     global _singleton
     with _singleton_lock:
         if _singleton is None:
@@ -547,6 +568,7 @@ def reset_temporal_causality_law() -> None:
 
 
 __all__ = [
+    "TEMPORAL_CAUSALITY_RELEASE_HOLD",
     "GoalState",
     "GoalEcho",
     "TemporalCausalityLaw",

@@ -2,6 +2,10 @@
 SkillExecutorBridge — the system actually builds things
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+CURRENT RELEASE: the execution design below is unreleased. Subscription,
+conscience calls, threads, executors, CodeArchitect calls, bus publication,
+vault ingest, and the fallback file writer all hard-HOLD before any effect.
+
 Operator directive: *"we need to ensure that it's building things and
 not just talking."*
 
@@ -60,6 +64,11 @@ from aureon.vault.voice._goal_claims import GoalClaims
 logger = logging.getLogger("aureon.vault.voice.skill_executor_bridge")
 
 
+SKILL_EXECUTOR_RELEASE_HOLD = (
+    "skill_executor_bridge_hold:production_magic_star_release_unavailable"
+)
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Default file-writing executor — the minimum proof of "building things"
 # ─────────────────────────────────────────────────────────────────────────────
@@ -79,6 +88,7 @@ def _default_file_executor(
     supplied in params) an ``intent_text`` and ``persona``. A real
     CodeArchitect adapter can replace this with actual code/image/pdf
     output — the contract stays {ok, artefacts, result, error}."""
+    raise RuntimeError(SKILL_EXECUTOR_RELEASE_HOLD)
     try:
         output_root.mkdir(parents=True, exist_ok=True)
         safe = "".join(c if c.isalnum() or c in "-_." else "_" for c in skill_name)
@@ -115,6 +125,7 @@ def code_architect_adapter(code_architect: Any) -> Callable:
     """Wrap an existing CodeArchitect instance to conform to the
     executor contract the bridge expects."""
     def _exec(skill_name: str, params: Dict[str, Any]) -> Dict[str, Any]:
+        raise RuntimeError(SKILL_EXECUTOR_RELEASE_HOLD)
         try:
             result = code_architect.execute_skill(skill_name, params=params)
             # SkillExecutionResult has (ok, artefacts, error) conceptually
@@ -164,13 +175,11 @@ class SkillExecutorBridge:
         self.thought_bus = thought_bus
         self.vault = vault
         self.conscience = conscience
-        self.output_root = Path(output_root or "data/skill_outputs").resolve()
+        self.output_root = Path(output_root or "data/skill_outputs")
         self._run_in_thread = bool(run_in_thread)
 
         # Default executor wraps the output_root so it writes to the
         # bridge's configured directory.
-        if executor is None:
-            executor = self._build_default_executor()
         self._executor = executor
 
         self._lock = threading.RLock()
@@ -182,14 +191,14 @@ class SkillExecutorBridge:
         }
 
     def _build_default_executor(self) -> Callable:
-        output_root = self.output_root
         def _exec(skill_name: str, params: Dict[str, Any]) -> Dict[str, Any]:
-            return _default_file_executor(skill_name, params, output_root=output_root)
+            raise RuntimeError(SKILL_EXECUTOR_RELEASE_HOLD)
         return _exec
 
     # ─── lifecycle ───────────────────────────────────────────────────────
 
     def start(self) -> None:
+        raise RuntimeError(SKILL_EXECUTOR_RELEASE_HOLD)
         if self._subscribed or self.thought_bus is None:
             return
         try:
@@ -203,6 +212,7 @@ class SkillExecutorBridge:
     # ─── handler ─────────────────────────────────────────────────────────
 
     def _on_aligned_request(self, thought: Any) -> None:
+        raise RuntimeError(SKILL_EXECUTOR_RELEASE_HOLD)
         payload = getattr(thought, "payload", {}) or {}
         if not isinstance(payload, dict):
             return
@@ -245,6 +255,7 @@ class SkillExecutorBridge:
         persona: str,
         payload: Dict[str, Any],
     ) -> bool:
+        raise RuntimeError(SKILL_EXECUTOR_RELEASE_HOLD)
         if self.conscience is None or not hasattr(self.conscience, "ask_why"):
             return False
         try:
@@ -279,6 +290,7 @@ class SkillExecutorBridge:
         """Run each skill in the chain in order. Any failure aborts the
         chain and closes the goal with goal.abandoned. All success →
         goal.completed with a result_summary listing every artefact."""
+        raise RuntimeError(SKILL_EXECUTOR_RELEASE_HOLD)
         all_artefacts: List[str] = []
         for skill_name in skills:
             started_payload = {
@@ -365,6 +377,7 @@ class SkillExecutorBridge:
         text: str = "",
         persona: str = "",
     ) -> None:
+        raise RuntimeError(SKILL_EXECUTOR_RELEASE_HOLD)
         with self._lock:
             self._stats["abandoned"] += 1
         self._publish("goal.abandoned", {
@@ -374,6 +387,7 @@ class SkillExecutorBridge:
         })
 
     def _publish(self, topic: str, payload: Dict[str, Any]) -> None:
+        raise RuntimeError(SKILL_EXECUTOR_RELEASE_HOLD)
         if self.thought_bus is None:
             return
         try:
@@ -392,6 +406,7 @@ class SkillExecutorBridge:
         skill_name: str,
         artefacts: List[str],
     ) -> None:
+        raise RuntimeError(SKILL_EXECUTOR_RELEASE_HOLD)
         if self.vault is None or not hasattr(self.vault, "ingest"):
             return
         for path in artefacts:
@@ -413,8 +428,15 @@ class SkillExecutorBridge:
 
     def stats(self) -> Dict[str, Any]:
         with self._lock:
-            return dict(self._stats, subscribed=self._subscribed,
-                        output_root=str(self.output_root))
+            return dict(
+                self._stats,
+                status="HOLD",
+                reason_code="production_magic_star_release_unavailable",
+                production_ready=False,
+                effect_enabled=False,
+                subscribed=self._subscribed,
+                output_root=str(self.output_root),
+            )
 
     def history(self, n: int = 32) -> List[Dict[str, Any]]:
         with self._lock:
@@ -444,6 +466,7 @@ def get_skill_executor_bridge(
     executor: Optional[Callable] = None,
     conscience: Any = None,
 ) -> SkillExecutorBridge:
+    raise RuntimeError(SKILL_EXECUTOR_RELEASE_HOLD)
     global _singleton
     with _singleton_lock:
         if _singleton is None:
@@ -468,6 +491,7 @@ def reset_skill_executor_bridge() -> None:
 
 
 __all__ = [
+    "SKILL_EXECUTOR_RELEASE_HOLD",
     "SkillExecutorBridge",
     "code_architect_adapter",
     "get_skill_executor_bridge",

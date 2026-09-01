@@ -21,11 +21,8 @@ _REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-try:
-    from dotenv import load_dotenv
-    load_dotenv(_REPO_ROOT / ".env")
-except Exception:
-    pass
+# Import-time credential loading is forbidden. Explicitly released callers
+# must inject only the exact provider credentials they need.
 
 REFRESH_INTERVAL_S = 7200  # 2 hours
 

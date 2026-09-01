@@ -463,8 +463,11 @@ def restart_handoff_for(intents: Sequence[EnhancementIntent]) -> RestartHandoff:
     return RestartHandoff(
         required=requires_restart,
         reason=reason,
-        preflight_command="python scripts/aureon_ignition.py --audit-only --accounts-status",
-        apply_command="python scripts/aureon_ignition.py --live",
+        preflight_command=(
+            ".venv/bin/python -I -S -B scripts/bootstrap/protected_bootstrap_v05.py "
+            "--target-id ignition"
+        ),
+        apply_command="HOLD: protected bootstrap does not execute the ignition target",
         rollback_guidance=(
             "Keep the previous integrated folder as fallback; do not delete state, secrets, "
             "portfolio data, accounting evidence, or exchange logs during restart."

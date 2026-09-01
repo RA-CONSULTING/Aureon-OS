@@ -5,12 +5,11 @@ benchmark_aureon_scope.py — assign benchmarks to other LLMs alongside Aureon
 
 Two tiers, because the comparison is only honest when the question fits the tool:
 
-  Tier A — architectural invariants Aureon HAS that an LLM has NO equivalent of.
-            Standing-wave bonding, the temporal lighthouse, symbolic-life pillars,
-            mesh convergence, the conscience VETO, learned-pattern miner, on-disk
-            skill artefacts, the meta-cognition reflection card. Pass / fail with
-            numeric metrics. Failure here means a load-bearing piece of the
-            architecture is broken.
+  Tier A — release-containment checks for unreleased effect surfaces alongside
+            still-available pure architectural invariants. Held paths must return
+            their exact Magic Star receipt and leave subscriptions, publications,
+            threads, files, counters, and vault wiring unchanged. Pass / fail with
+            numeric metrics; no containment pass is evidence of production release.
 
   Tier B — LLM-shape tasks (persona voice, goal decomposition, reflection,
             free-form Q&A) run side-by-side across local Aureon adapters. No
@@ -108,431 +107,294 @@ def _fresh_bus(persist_path: Path) -> ThoughtBus:
     return bus
 
 
+class _EffectProbe:
+    """Minimal bus double for release-HOLD benchmarks.
+
+    It deliberately has no persistence and records every attempted effect.
+    """
+
+    def __init__(self) -> None:
+        self.subscriptions: List[Tuple[str, Any]] = []
+        self.publications: List[Any] = []
+
+    def subscribe(self, topic: str, handler: Any) -> None:
+        self.subscriptions.append((topic, handler))
+
+    def publish(self, *args: Any, **kwargs: Any) -> None:
+        self.publications.append((args, kwargs))
+
+
+def _hold_reason(call: Callable[[], Any]) -> str:
+    try:
+        call()
+    except RuntimeError as exc:
+        return str(exc)
+    return ""
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Tier A — architectural invariants
 # ─────────────────────────────────────────────────────────────────────────────
 
 
 def b1_standing_wave_bonding(tmp_root: Path) -> Dict[str, Any]:
-    """HashResonanceIndex: N semantically-identical events bond into one
-    fingerprint. bond_strength must match 1 - 1/ln(1+N). Fibonacci-threshold
-    standing.wave.bond publishes must fire exactly once per crossing.
-
-    Wires the full pathway: vault.ingest → vault.card.added → HRI._index_card.
-    """
-    from aureon.vault.aureon_vault import AureonVault
+    """Release benchmark: vault/HRI wiring must HOLD without effects."""
+    from aureon.vault.aureon_vault import (
+        AUREON_VAULT_RELEASE_HOLD,
+        AureonVault,
+    )
     from aureon.vault.voice.hash_resonance_index import (
+        HASH_RESONANCE_RELEASE_HOLD,
         HashResonanceIndex,
-        bond_strength,
     )
 
-    bus = _fresh_bus(tmp_root / "bus.jsonl")
+    bus = _EffectProbe()
     vault = AureonVault()
-    vault.wire_thought_bus()
-
     hri = HashResonanceIndex(vault=vault, thought_bus=bus,
                              thresholds=[3, 8, 21])
-    hri.start()
+    vault_reason = _hold_reason(vault.wire_thought_bus)
+    start_reason = _hold_reason(hri.start)
+    rebuild_reason = _hold_reason(hri.rebuild_from_vault)
 
-    # Capture every standing.wave.bond publication so we can verify exactly
-    # one fires per Fibonacci crossing, with the right threshold value.
-    bonds_seen: List[Dict[str, Any]] = []
-    bus.subscribe("standing.wave.bond",
-                  lambda t: bonds_seen.append(dict(t.payload)))
-
-    # 21 semantically-identical events. Persona+intent+payload-keys identical;
-    # only the timestamp inside the payload (an _INSTANCE_KEY, stripped before
-    # hashing) differs. All 21 must collide on one fingerprint.
-    n = 21
-    for i in range(n):
-        bus.publish(Thought(
-            source="benchmark",
-            topic="persona.thought",
-            payload={
-                "persona": "engineer",
-                "text": "audit the gate before the next pulse",
-                "winning_probability": 0.84,
-                "ts": time.time() + i * 0.001,   # stripped before hashing
-            },
-        ))
-
-    summary = hri.summary()
-    bonded_fps = summary["bonded_fingerprints"]
-    bond_count = summary["max_bond_count"]
-    actual_strength = summary["max_bond_strength"]
-    expected_strength = round(bond_strength(n), 4)
-
-    crossings_seen = sorted({b["threshold_crossed"] for b in bonds_seen})
-    expected_crossings = [3, 8, 21]
-
-    # The vault re-ingests every published standing.wave.bond as its own
-    # vault card (DEFAULT_SUBSCRIPTIONS lists "standing.wave.bond"), and
-    # those cards then get fingerprinted by the HRI too — each with count=1.
-    # That's expected feedback and proves the wiring; what matters for the
-    # bonding invariant is that exactly ONE fingerprint holds count>1, and
-    # that fingerprint is the 21-card persona-thought standing wave.
     invariants = {
-        "exactly_one_bonded_fingerprint": bonded_fps == 1,
-        "bond_count_equals_n": bond_count == n,
-        "bond_strength_matches_formula": (
-            abs(actual_strength - expected_strength) < 1e-3
+        "vault_wiring_held": vault_reason == AUREON_VAULT_RELEASE_HOLD,
+        "index_subscription_held": start_reason == HASH_RESONANCE_RELEASE_HOLD,
+        "vault_rebuild_held": rebuild_reason == HASH_RESONANCE_RELEASE_HOLD,
+        "no_subscriptions": bus.subscriptions == [],
+        "no_publications": bus.publications == [],
+        "vault_remains_unwired": (
+            vault._thought_bus is None and vault._subscribed is False
         ),
-        "fibonacci_crossings_published": crossings_seen == expected_crossings,
-        "one_publish_per_crossing": len(bonds_seen) == len(expected_crossings),
+        "index_remains_empty": (
+            hri._fp_to_bond == {}
+            and hri._content_id_to_fp == {}
+            and hri._subscribed is False
+        ),
     }
-    passed = all(invariants.values())
-
     return {
-        "name": "Standing-wave bonding (HashResonanceIndex)",
+        "name": "Standing-wave bonding release containment",
         "module": "aureon/vault/voice/hash_resonance_index.py",
-        "passed": passed,
+        "passed": all(invariants.values()),
         "metrics": {
-            "events_published": n,
-            "bonded_fingerprints": bonded_fps,
-            "max_bond_count": bond_count,
-            "bond_strength_actual": actual_strength,
-            "bond_strength_expected": expected_strength,
-            "thresholds_crossed": crossings_seen,
-            "publishes_received": len(bonds_seen),
+            "vault_hold": vault_reason,
+            "index_start_hold": start_reason,
+            "index_rebuild_hold": rebuild_reason,
+            "subscriptions": len(bus.subscriptions),
+            "publications": len(bus.publications),
         },
         "invariants": invariants,
         "evidence": (
-            f"{n} identical events → 1 bonded fingerprint "
-            f"(count={bond_count}, strength={actual_strength:.4f} ≈ "
-            f"{expected_strength:.4f}; thresholds {crossings_seen} "
-            f"published exactly once each)"
+            "Vault wiring, HRI subscription, and vault rebuild returned the "
+            "exact production Magic Star HOLD with zero bus effects."
         ),
     }
 
 
 def b2_temporal_lighthouse(tmp_root: Path) -> Dict[str, Any]:
-    """TemporalCausalityLaw: a goal that does NOT get acknowledged within τ
-    must be ORPHANED; one that completes must close cleanly. The aggregate
-    summary published on every pulse must carry completion_rate / orphan_rate
-    that match the lifecycle counts.
-    """
-    from aureon.vault.aureon_vault import AureonVault
+    """Release benchmark: temporal goal tracking must HOLD without effects."""
+    from aureon.vault.aureon_vault import (
+        AUREON_VAULT_RELEASE_HOLD,
+        AureonVault,
+    )
     from aureon.vault.voice.temporal_causality import (
-        GoalState,
+        TEMPORAL_CAUSALITY_RELEASE_HOLD,
         TemporalCausalityLaw,
     )
 
-    bus = _fresh_bus(tmp_root / "bus.jsonl")
+    bus = _EffectProbe()
     vault = AureonVault()
-    vault.wire_thought_bus()
-
     law = TemporalCausalityLaw(thought_bus=bus, vault=vault, ack_budget_tau=2)
-    law.start()
-
-    # Capture the aggregate summary published every pulse.
-    summaries: List[Dict[str, Any]] = []
-    bus.subscribe("goal.echo.summary",
-                  lambda t: summaries.append(dict(t.payload)))
-
-    # Three goals: one we'll let starve, one we'll complete, one we'll abandon.
-    bus.publish(Thought(source="benchmark", topic="goal.submit.request",
-                        payload={"goal_id": "g_starve", "text": "starve me",
-                                 "proposed_by_persona": "engineer"}))
-    bus.publish(Thought(source="benchmark", topic="goal.submit.request",
-                        payload={"goal_id": "g_complete", "text": "ship it",
-                                 "proposed_by_persona": "engineer"}))
-    bus.publish(Thought(source="benchmark", topic="goal.submit.request",
-                        payload={"goal_id": "g_abandon", "text": "wrong path",
-                                 "proposed_by_persona": "engineer"}))
-
-    # g_complete: acknowledge → progress → complete (causal line closes).
-    bus.publish(Thought(source="benchmark", topic="goal.submitted",
-                        payload={"goal_id": "g_complete",
-                                 "source": "engine_under_test"}))
-    bus.publish(Thought(source="benchmark", topic="goal.progress",
-                        payload={"goal_id": "g_complete", "progress_pct": 0.5}))
-    bus.publish(Thought(source="benchmark", topic="goal.completed",
-                        payload={"goal_id": "g_complete",
-                                 "result_summary": "shipped"}))
-
-    # g_abandon: explicit abandonment terminates the line.
-    bus.publish(Thought(source="benchmark", topic="goal.abandoned",
-                        payload={"goal_id": "g_abandon",
-                                 "reason": "wrong direction"}))
-
-    # Pulse twice — second pulse pushes g_starve past ack_budget_tau=2.
-    law.pulse()
-    last_summary = law.pulse()
-
-    starve = law.get("g_starve")
-    completed = law.get("g_complete")
-    abandoned = law.get("g_abandon")
+    vault_reason = _hold_reason(vault.wire_thought_bus)
+    start_reason = _hold_reason(law.start)
+    track_reason = _hold_reason(lambda: law.track({
+        "goal_id": "g_b2", "text": "must remain held",
+        "proposed_by_persona": "engineer",
+    }))
+    pulse_reason = _hold_reason(law.pulse)
 
     invariants = {
-        "starved_orphaned": starve is not None and starve.state == GoalState.ORPHANED,
-        "completed_closed": completed is not None and completed.state == GoalState.COMPLETED,
-        "abandoned_terminated": abandoned is not None and abandoned.state == GoalState.ABANDONED,
-        "completion_rate_correct": (
-            abs(last_summary["completion_rate"] - 1.0 / 3.0) < 1e-3
+        "vault_wiring_held": vault_reason == AUREON_VAULT_RELEASE_HOLD,
+        "temporal_subscription_held": (
+            start_reason == TEMPORAL_CAUSALITY_RELEASE_HOLD
         ),
-        "orphan_rate_correct": (
-            abs(last_summary["orphan_rate"] - 1.0 / 3.0) < 1e-3
+        "goal_tracking_held": track_reason == TEMPORAL_CAUSALITY_RELEASE_HOLD,
+        "pulse_held": pulse_reason == TEMPORAL_CAUSALITY_RELEASE_HOLD,
+        "no_subscriptions": bus.subscriptions == [],
+        "no_publications": bus.publications == [],
+        "no_goal_or_counter_mutation": (
+            law._goals == {}
+            and law._pulse_count == 0
+            and law._subscribed is False
         ),
-        "summary_published_each_pulse": len(summaries) == 2,
+        "vault_remains_unwired": (
+            vault._thought_bus is None and vault._subscribed is False
+        ),
     }
-    passed = all(invariants.values())
-
     return {
-        "name": "Temporal lighthouse (β Λ(t-τ) goal echo)",
+        "name": "Temporal lighthouse release containment",
         "module": "aureon/vault/voice/temporal_causality.py",
-        "passed": passed,
+        "passed": all(invariants.values()),
         "metrics": {
-            "ack_budget_tau": law.ack_budget_tau,
-            "pulses_run": last_summary["pulse"],
-            "total_goals": last_summary["total_goals"],
-            "counts": last_summary["counts"],
-            "completion_rate": last_summary["completion_rate"],
-            "orphan_rate": last_summary["orphan_rate"],
-            "summaries_published": len(summaries),
+            "vault_hold": vault_reason,
+            "start_hold": start_reason,
+            "track_hold": track_reason,
+            "pulse_hold": pulse_reason,
+            "subscriptions": len(bus.subscriptions),
+            "publications": len(bus.publications),
         },
         "invariants": invariants,
         "evidence": (
-            f"3 goals (1 starved, 1 completed, 1 abandoned) → "
-            f"completion_rate={last_summary['completion_rate']:.3f}, "
-            f"orphan_rate={last_summary['orphan_rate']:.3f}, "
-            f"states={last_summary['counts']}"
+            "Vault wiring plus temporal subscription, tracking, and pulse "
+            "returned the exact production Magic Star HOLD with zero effects."
         ),
     }
 
 
 def b3_symbolic_life_pillars(tmp_root: Path) -> Dict[str, Any]:
-    """SymbolicLifeBridge + LambdaEngine: persona-layer events feed into the
-    five Auris Conjecture pillars; symbolic_life_score lands on the vault;
-    symbolic.life.pulse fires on every pulse.
-    """
-    from aureon.core.aureon_lambda_engine import LambdaEngine
-    from aureon.vault.aureon_vault import AureonVault
-    from aureon.vault.voice.symbolic_life_bridge import SymbolicLifeBridge
-
-    bus = _fresh_bus(tmp_root / "bus.jsonl")
-    vault = AureonVault()
-    vault.wire_thought_bus()
-
-    # Fresh LambdaEngine, persistence neutered to tmp_root.
-    engine = LambdaEngine()
-    engine._state_path = tmp_root / "lambda_history.json"
-    engine._history.clear()
-    engine._psi_history.clear()
-    engine._step_count = 0
-
-    bridge = SymbolicLifeBridge(thought_bus=bus, vault=vault,
-                                lambda_engine=engine, horizon=16)
-    bridge.start()
-
-    pulses: List[Dict[str, Any]] = []
-    bus.subscribe("symbolic.life.pulse",
-                  lambda t: pulses.append(dict(t.payload)))
-
-    # Drive every subsystem the bridge knows about so all five pillars get
-    # signal — collapses, goals, life events, peer state, conversation turns.
-    for i in range(20):
-        bus.publish(Thought(source="benchmark", topic="persona.collapse",
-                            payload={"winner": "engineer",
-                                     "probabilities": {"engineer": 0.8,
-                                                       "elder": 0.2}}))
-        bus.publish(Thought(source="benchmark", topic="persona.thought",
-                            payload={"speaker": "engineer",
-                                     "vault_fingerprint": f"fp_{i}"}))
-        bus.publish(Thought(source="benchmark", topic="goal.submit.request",
-                            payload={"goal_id": f"g{i}", "urgency": 0.7,
-                                     "text": "hold the field"}))
-        bus.publish(Thought(source="benchmark", topic="life.event",
-                            payload={"status": "active"}))
-        bus.publish(Thought(source="benchmark", topic="bridge.peer.state",
-                            payload={"peer_id": f"peer_{i % 3}"}))
-        bus.publish(Thought(source="benchmark", topic="conversation.turn",
-                            payload={"question": "what now?"}))
-
-    # Pulse the bridge a handful of times so the LambdaEngine builds enough
-    # history (TAU=10) for the full ψ branch to engage.
-    for _ in range(12):
-        bridge.pulse()
-
-    last = pulses[-1] if pulses else {}
-    sls_on_vault = getattr(vault, "current_symbolic_life_score", None)
-
-    pillars = ["ac_self_organization", "ac_memory_persistence",
-               "ac_energy_stability", "ac_adaptive_recursion",
-               "ac_meaning_propagation"]
-    pillar_values = {k: last.get(k) for k in pillars}
-    in_range = all(
-        isinstance(v, (int, float)) and 0.0 <= float(v) <= 1.0
-        for v in pillar_values.values()
+    """Release benchmark: symbolic-life wiring must HOLD without effects."""
+    from aureon.vault.aureon_vault import (
+        AUREON_VAULT_RELEASE_HOLD,
+        AureonVault,
+    )
+    from aureon.vault.voice.symbolic_life_bridge import (
+        SYMBOLIC_LIFE_RELEASE_HOLD,
+        SymbolicLifeBridge,
     )
 
-    invariants = {
-        "all_five_pillars_present": all(v is not None for v in pillar_values.values()),
-        "all_pillars_in_unit_interval": in_range,
-        "symbolic_life_score_on_vault": (
-            isinstance(sls_on_vault, (int, float))
-            and 0.0 <= float(sls_on_vault) <= 1.0
-        ),
-        "symbolic_life_pulse_topic_landed": len(pulses) >= 12,
-    }
-    passed = all(invariants.values())
+    bus = _EffectProbe()
+    vault = AureonVault()
+    bridge = SymbolicLifeBridge(thought_bus=bus, vault=vault,
+                                lambda_engine=object(), horizon=16)
+    vault_reason = _hold_reason(vault.wire_thought_bus)
+    start_reason = _hold_reason(bridge.start)
+    pulse_reason = _hold_reason(bridge.pulse)
 
+    rolling_empty = all(
+        roll.count() == 0 for roll in bridge._rolling.values()
+    )
+    invariants = {
+        "vault_wiring_held": vault_reason == AUREON_VAULT_RELEASE_HOLD,
+        "symbolic_subscription_held": start_reason == SYMBOLIC_LIFE_RELEASE_HOLD,
+        "symbolic_pulse_held": pulse_reason == SYMBOLIC_LIFE_RELEASE_HOLD,
+        "no_subscriptions": bus.subscriptions == [],
+        "no_publications": bus.publications == [],
+        "no_thread_or_pulse": (
+            bridge._subscribed is False
+            and bridge._running is False
+            and bridge._thread is None
+            and bridge._pulse_count == 0
+            and bridge._last_state is None
+        ),
+        "no_signal_mutation": rolling_empty,
+        "vault_remains_unwired": (
+            vault._thought_bus is None and vault._subscribed is False
+        ),
+    }
     return {
-        "name": "Symbolic life pillars (Auris Conjecture)",
+        "name": "Symbolic life pillars release containment",
         "module": "aureon/vault/voice/symbolic_life_bridge.py",
-        "passed": passed,
+        "passed": all(invariants.values()),
         "metrics": {
-            "pulses_received": len(pulses),
-            "lambda_t": last.get("lambda_t"),
-            "consciousness_psi": last.get("consciousness_psi"),
-            "consciousness_level": last.get("consciousness_level"),
-            "symbolic_life_score": last.get("symbolic_life_score"),
-            "symbolic_life_score_on_vault": sls_on_vault,
-            "pillars": {k: round(float(v), 4) if v is not None else None
-                        for k, v in pillar_values.items()},
+            "vault_hold": vault_reason,
+            "start_hold": start_reason,
+            "pulse_hold": pulse_reason,
+            "subscriptions": len(bus.subscriptions),
+            "publications": len(bus.publications),
+            "pulse_count": bridge._pulse_count,
         },
         "invariants": invariants,
         "evidence": (
-            f"SLS={last.get('symbolic_life_score'):.4f}; "
-            f"ψ={last.get('consciousness_psi'):.4f} "
-            f"({last.get('consciousness_level')}); "
-            f"all 5 pillars in [0,1]; "
-            f"vault.current_symbolic_life_score={sls_on_vault}"
+            "Vault wiring and symbolic-life subscription/pulse returned the "
+            "exact production Magic Star HOLD with no thread, bus, or state effect."
         ),
     }
 
 
 def b4_mesh_convergence(tmp_root: Path) -> Dict[str, Any]:
-    """PhiBridgeMesh: a sparse 20-node × 20-card random graph (3 peers per
-    node) gossips until every vault holds the same 400-card hash set.
-    Reuses the in-memory `_RoutedClient` shape from the existing stress
-    harness so the in-process test exercises the real handle_inbound path.
-    """
-    import random
-    import threading
+    """Release benchmark: Phi mesh exchange must HOLD without effects."""
+    from aureon.harmonic.phi_bridge_mesh import (
+        PHI_MESH_RELEASE_HOLD,
+        PhiBridgeMesh,
+    )
 
-    from aureon.harmonic.phi_bridge_mesh import PhiBridgeMesh
-    from aureon.vault.aureon_vault import AureonVault, VaultContent
+    class _GuardedVault:
+        def __init__(self) -> None:
+            self.calls: List[str] = []
 
-    # Reuse the stress harness's stub doubles + routed client verbatim.
-    class _StubPeer:
-        def __init__(self, peer_id: str, url_base: str):
-            self.peer_id = peer_id
-            self.url_base = url_base
+        def all_cards(self) -> List[Any]:
+            self.calls.append("all_cards")
+            return []
 
-    class _StubDiscovery:
-        def __init__(self, peer_id: str, peers: List[Any]):
-            self.peer_id = peer_id
-            self._peers = peers
+        def add(self, _card: Any) -> None:
+            self.calls.append("add")
+
+    class _GuardedDiscovery:
+        peer_id = "benchmark-self"
+
+        def __init__(self) -> None:
+            self.calls: List[str] = []
 
         def known_peers(self) -> List[Any]:
-            return list(self._peers)
+            self.calls.append("known_peers")
+            return []
 
-        def set_peers(self, peers: List[Any]) -> None:
-            self._peers = list(peers)
-
-    class _RoutedClient:
+    class _GuardedClient:
         def __init__(self) -> None:
-            self.routes: Dict[str, PhiBridgeMesh] = {}
-            self.posts = 0
-            self.failures = 0
-            self._lock = threading.Lock()
+            self.calls: List[str] = []
 
-        def mount(self, url_base: str, mesh: PhiBridgeMesh) -> None:
-            self.routes[url_base] = mesh
+        def post_json(self, _url: str, _body: Dict[str, Any]) -> Dict[str, Any]:
+            self.calls.append("post_json")
+            return {}
 
-        def post_json(self, url: str, body: Dict[str, Any]) -> Dict[str, Any]:
-            with self._lock:
-                self.posts += 1
-            base = url.rsplit("/api/", 1)[0]
-            mesh = self.routes.get(base)
-            if mesh is None:
-                with self._lock:
-                    self.failures += 1
-                raise ConnectionError(f"no route for {url}")
-            return mesh.handle_inbound(body)
-
-    n_nodes = 20
-    cards_per_node = 20
-    peers_per_node = 3
-    max_cycles = 200
-    rng = random.Random(7)
-
-    vaults: List[AureonVault] = []
-    stubs: List[_StubPeer] = []
-    client = _RoutedClient()
-
-    for i in range(n_nodes):
-        v = AureonVault()
-        for j in range(cards_per_node):
-            v.add(VaultContent.build(
-                category="bench.card",
-                source_topic=f"bench.{i}",
-                payload={"owner": f"n{i}", "idx": j,
-                         "data": f"payload-n{i}-{j}"},
-            ))
-        vaults.append(v)
-        stubs.append(_StubPeer(f"n{i}", f"http://node-{i}:80"))
-
-    meshes: List[PhiBridgeMesh] = []
-    for i in range(n_nodes):
-        others = [j for j in range(n_nodes) if j != i]
-        rng.shuffle(others)
-        my_peers = [stubs[j] for j in others[:peers_per_node]]
-        m = PhiBridgeMesh(vault=vaults[i],
-                          discovery=_StubDiscovery(f"n{i}", my_peers),
-                          client=client)
-        meshes.append(m)
-        client.mount(stubs[i].url_base, m)
-
-    target = len({c.harmonic_hash for v in vaults for c in v._contents.values()})
-
-    cycles = 0
-    converged = False
-    t0 = time.perf_counter()
-    for _ in range(max_cycles):
-        cycles += 1
-        for m in meshes:
-            m.gossip_once()
-        if all(len({c.harmonic_hash for c in v._contents.values()}) == target
-               for v in vaults):
-            converged = True
-            break
-    dt_ms = (time.perf_counter() - t0) * 1000
-
-    ref = {c.harmonic_hash for c in vaults[0]._contents.values()}
-    all_equal = all(
-        {c.harmonic_hash for c in v._contents.values()} == ref for v in vaults
-    )
-    sizes = [len({c.harmonic_hash for c in v._contents.values()}) for v in vaults]
-
-    invariants = {
-        "converged_within_max_cycles": converged,
-        "every_vault_holds_target_set": (min(sizes) == target == max(sizes)),
-        "every_vault_holds_identical_set": all_equal,
-        "no_routing_failures": client.failures == 0,
+    vault = _GuardedVault()
+    discovery = _GuardedDiscovery()
+    client = _GuardedClient()
+    mesh = PhiBridgeMesh(vault=vault, discovery=discovery, client=client)
+    reasons = {
+        "start": _hold_reason(mesh.start),
+        "build_payload": _hold_reason(lambda: mesh.build_payload_for("peer-a")),
+        "apply_response": _hold_reason(
+            lambda: mesh.apply_response("peer-a", {"cards": []})
+        ),
+        "handle_inbound": _hold_reason(
+            lambda: mesh.handle_inbound({"from_peer_id": "peer-a", "cards": []})
+        ),
+        "gossip_to": _hold_reason(lambda: mesh.gossip_to({
+            "peer_id": "peer-a", "url_base": "http://127.0.0.2",
+        })),
+        "gossip_once": _hold_reason(mesh.gossip_once),
     }
-    passed = all(invariants.values())
-
+    invariants = {
+        "every_exchange_path_held": all(
+            reason == PHI_MESH_RELEASE_HOLD for reason in reasons.values()
+        ),
+        "no_vault_access_or_mutation": vault.calls == [],
+        "no_peer_enumeration": discovery.calls == [],
+        "no_http_posts": client.calls == [],
+        "no_thread_or_mesh_state": (
+            mesh._running is False
+            and mesh._thread is None
+            and mesh._peer_sync == {}
+            and mesh._total_out == 0
+            and mesh._total_in == 0
+            and mesh._gossip_cycles == 0
+        ),
+    }
     return {
-        "name": "Mesh convergence (PhiBridgeMesh, in-process LAN)",
+        "name": "Phi mesh release containment",
         "module": "aureon/harmonic/phi_bridge_mesh.py",
-        "passed": passed,
+        "passed": all(invariants.values()),
         "metrics": {
-            "n_nodes": n_nodes,
-            "cards_per_node": cards_per_node,
-            "peers_per_node": peers_per_node,
-            "target_hash_count": target,
-            "cycles_to_converge": cycles,
-            "wall_ms": round(dt_ms, 1),
-            "posts_issued": client.posts,
-            "client_failures": client.failures,
-            "min_size": min(sizes),
-            "max_size": max(sizes),
+            "holds": reasons,
+            "vault_calls": len(vault.calls),
+            "discovery_calls": len(discovery.calls),
+            "http_posts": len(client.calls),
+            "gossip_cycles": mesh._gossip_cycles,
         },
         "invariants": invariants,
         "evidence": (
-            f"{n_nodes} vaults converged to identical {target}-hash set "
-            f"in {cycles} cycles ({dt_ms:.0f} ms, {client.posts} posts)"
+            "Every Phi mesh lifecycle/exchange path returned the exact production "
+            "Magic Star HOLD with zero vault, discovery, HTTP, thread, or state effect."
         ),
     }
 
@@ -601,259 +463,181 @@ def b5_conscience_veto(tmp_root: Path) -> Dict[str, Any]:
 
 
 def b6_pattern_learning(tmp_root: Path) -> Dict[str, Any]:
-    """PersonaMinerBridge: 5 paired (request, completed) cycles for the same
-    (persona, intent_keyword) lift the pair's confidence above the default
-    0.6 publication threshold and emit `miner.pattern.learned` exactly once.
-    """
-    from aureon.vault.voice.persona_miner_bridge import PersonaMinerBridge
+    """Release benchmark: persona learning must HOLD without effects."""
+    from aureon.vault.voice.persona_miner_bridge import (
+        PERSONA_MINER_RELEASE_HOLD,
+        PersonaMinerBridge,
+    )
 
-    bus = _fresh_bus(tmp_root / "bus.jsonl")
+    bus = _EffectProbe()
+    persistence_path = tmp_root / "patterns.json"
     bridge = PersonaMinerBridge(
         thought_bus=bus,
-        persistence_path=str(tmp_root / "patterns.json"),
+        persistence_path=str(persistence_path),
     )
-    bridge.start()
-
-    learned: List[Dict[str, Any]] = []
-    bus.subscribe("miner.pattern.learned",
-                  lambda t: learned.append(dict(t.payload)))
-
-    persona = "engineer"
-    intent_text = "build the audit gate"
-    for i in range(5):
-        gid = f"g_b6_{i}"
-        bus.publish(Thought(source="benchmark", topic="goal.submit.request",
-                            payload={"goal_id": gid, "text": intent_text,
-                                     "proposed_by_persona": persona,
-                                     "urgency": 0.6}))
-        bus.publish(Thought(source="benchmark", topic="goal.completed",
-                            payload={"goal_id": gid,
-                                     "result_summary": "audit complete",
-                                     "recommended_skills": ["compose_audit"]}))
-
-    track = bridge.intent_track_record(persona, "build")
-    health = bridge.persona_health(persona)
-
-    # _extract_intent_keywords("build the audit gate") returns three salient
-    # words ('build', 'audit', 'gate'); each becomes its own (persona, kw)
-    # stat and crosses the publication threshold exactly once.
-    expected_keywords = {"build", "audit", "gate"}
-    pair_publishes = [(p["persona"], p["intent_keyword"]) for p in learned]
-    keywords_seen = {kw for (_, kw) in pair_publishes}
-
+    start_reason = _hold_reason(bridge.start)
+    ingest_reason = _hold_reason(lambda: bridge.ingest(
+        "goal.submit.request",
+        {
+            "goal_id": "g_b6",
+            "text": "build the audit gate",
+            "proposed_by_persona": "engineer",
+        },
+    ))
+    publish_reason = _hold_reason(
+        lambda: bridge._publish("miner.pattern.learned", {"persona": "engineer"})
+    )
+    persist_reason = _hold_reason(bridge.persist)
+    summary = bridge.summary()
     invariants = {
-        "track_record_has_5_successes": track["success_count"] == 5,
-        "track_record_has_no_failures": track["fail_count"] == 0,
-        "confidence_at_or_above_0_6": track["confidence"] >= 0.6,
-        "every_keyword_published": keywords_seen == expected_keywords,
-        "one_publish_per_keyword": len(pair_publishes) == len(set(pair_publishes)),
-        "persona_completion_rate_is_1": (
-            abs(health["completion_rate"] - 1.0) < 1e-6
+        "subscription_held": start_reason == PERSONA_MINER_RELEASE_HOLD,
+        "learning_ingest_held": ingest_reason == PERSONA_MINER_RELEASE_HOLD,
+        "pattern_publish_held": publish_reason == PERSONA_MINER_RELEASE_HOLD,
+        "persistence_held": persist_reason == PERSONA_MINER_RELEASE_HOLD,
+        "no_subscriptions": bus.subscriptions == [],
+        "no_publications": bus.publications == [],
+        "no_learning_state": (
+            bridge._subscribed is False
+            and summary["packet_count"] == 0
+            and summary["persona_count"] == 0
+            and summary["intent_count"] == 0
+            and summary["open_goals"] == 0
+            and summary["patterns_published"] == 0
         ),
+        "no_persistence_file": not persistence_path.exists(),
     }
-    passed = all(invariants.values())
-
     return {
-        "name": "Pattern learning (PersonaMinerBridge)",
+        "name": "Pattern learning release containment",
         "module": "aureon/vault/voice/persona_miner_bridge.py",
-        "passed": passed,
+        "passed": all(invariants.values()),
         "metrics": {
-            "track_record_for_build": track,
-            "persona_health": health,
-            "patterns_published": len(learned),
-            "patterns": [
-                {"persona": p["persona"],
-                 "intent_keyword": p["intent_keyword"],
-                 "confidence": p["confidence"],
-                 "last_winning_skill_chain": p["last_winning_skill_chain"]}
-                for p in learned
-            ],
+            "start_hold": start_reason,
+            "ingest_hold": ingest_reason,
+            "publish_hold": publish_reason,
+            "persist_hold": persist_reason,
+            "subscriptions": len(bus.subscriptions),
+            "publications": len(bus.publications),
+            "packet_count": summary["packet_count"],
+            "patterns_published": summary["patterns_published"],
         },
         "invariants": invariants,
         "evidence": (
-            f"5 (engineer, 'build the audit gate') successes → "
-            f"3 patterns learned ({sorted(keywords_seen)}), each published "
-            f"exactly once; (engineer, 'build').confidence={track['confidence']:.3f}"
+            "Subscription, learning ingest, pattern publication, and persistence "
+            "returned the exact production Magic Star HOLD with zero effects."
         ),
     }
 
 
 def b7_skill_execution_artefacts(tmp_root: Path) -> Dict[str, Any]:
-    """SkillExecutorBridge: an aligned goal with 3 recommended skills runs
-    each through the default file executor, writes 3 artefacts to disk,
-    ingests 3 skill.execution.output cards into the vault, and closes the
-    causal line with goal.completed listing every artefact.
-    """
-    from aureon.vault.aureon_vault import AureonVault
-    from aureon.vault.voice.skill_executor_bridge import SkillExecutorBridge
-
-    bus = _fresh_bus(tmp_root / "bus.jsonl")
-    vault = AureonVault()
-    vault.wire_thought_bus()
+    """Release benchmark: skill execution must HOLD without writing."""
+    from aureon.vault.voice.skill_executor_bridge import (
+        SkillExecutorBridge,
+        _default_file_executor,
+    )
 
     output_root = tmp_root / "artefacts"
-    bridge = SkillExecutorBridge(thought_bus=bus, vault=vault,
-                                 conscience=None,
-                                 output_root=str(output_root),
-                                 run_in_thread=False)
-    bridge.start()
-
-    completed_payloads: List[Dict[str, Any]] = []
-    abandoned_payloads: List[Dict[str, Any]] = []
-    bus.subscribe("goal.completed",
-                  lambda t: completed_payloads.append(dict(t.payload)))
-    bus.subscribe("goal.abandoned",
-                  lambda t: abandoned_payloads.append(dict(t.payload)))
-
-    skills = ["compose_audit", "render_report", "summarise_findings"]
-    bus.publish(Thought(
-        source="benchmark", topic="goal.submit.request.aligned",
-        payload={
-            "goal_id": "g_b7", "text": "audit the gate and report",
-            "proposed_by_persona": "engineer",
-            "recommended_skills": list(skills),
-            "urgency": 0.7,
-        },
-    ))
-
-    artefacts_on_disk = sorted(output_root.glob("*.md"))
-    skill_outputs = [c for c in vault._contents.values()
-                     if c.source_topic == "skill.execution.output"]
-    last_completed = completed_payloads[-1] if completed_payloads else {}
+    bridge = SkillExecutorBridge(output_root=str(output_root))
+    start_reason = ""
+    writer_reason = ""
+    try:
+        bridge.start()
+    except RuntimeError as exc:
+        start_reason = str(exc)
+    try:
+        _default_file_executor("compose_audit", {}, output_root=output_root)
+    except RuntimeError as exc:
+        writer_reason = str(exc)
 
     invariants = {
-        "no_abandonment": len(abandoned_payloads) == 0,
-        "three_artefacts_written": len(artefacts_on_disk) == 3,
-        "three_vault_cards_for_outputs": len(skill_outputs) == 3,
-        "goal_completed_published": len(completed_payloads) == 1,
-        "completion_lists_artefacts": len(last_completed.get("artefacts", [])) == 3,
-        "completion_summary_mentions_3_skills": (
-            "3 skill" in str(last_completed.get("result_summary", ""))
-        ),
-        "every_artefact_actually_exists": all(
-            Path(p).exists() for p in last_completed.get("artefacts", [])
-        ),
+        "subscription_held": start_reason.startswith("skill_executor_bridge_hold:"),
+        "default_writer_held": writer_reason.startswith("skill_executor_bridge_hold:"),
+        "no_output_directory": not output_root.exists(),
+        "no_history": bridge.history() == [],
+        "no_executor_armed": bridge._executor is None,
+        "status_is_hold": bridge.stats().get("status") == "HOLD",
+        "production_not_ready": bridge.stats().get("production_ready") is False,
     }
     passed = all(invariants.values())
 
     return {
-        "name": "Skill execution → artefacts on disk",
+        "name": "Skill execution release containment",
         "module": "aureon/vault/voice/skill_executor_bridge.py",
         "passed": passed,
         "metrics": {
-            "skills_chained": skills,
-            "artefacts_on_disk": [str(p.relative_to(tmp_root))
-                                   for p in artefacts_on_disk],
-            "vault_skill_output_cards": len(skill_outputs),
-            "completion_summary": last_completed.get("result_summary"),
+            "subscription_hold": start_reason,
+            "writer_hold": writer_reason,
+            "artefacts_on_disk": [],
+            "vault_skill_output_cards": 0,
             "stats": bridge.stats(),
         },
         "invariants": invariants,
         "evidence": (
-            f"3 skills → {len(artefacts_on_disk)} files on disk + "
-            f"{len(skill_outputs)} vault cards; goal.completed: "
-            f"\"{last_completed.get('result_summary', '')}\""
+            "Subscription and fallback writer both returned the exact "
+            "production Magic Star HOLD; zero files and zero executions."
         ),
     }
 
 
 def b8_meta_cognition_reflection(tmp_root: Path) -> Dict[str, Any]:
-    """MetaCognitionObserver: a persona.collapse opens a window; downstream
-    goal.submit.request → goal.completed inside the window produces a
-    ReflectionCard with decision='goal.submit', outcome='COMPLETED', and
-    sls_before/after/delta populated from the bracketing symbolic.life.pulse
-    events. The narrative reasoning must mention the persona by name.
-    """
-    from aureon.vault.aureon_vault import AureonVault
-    from aureon.vault.voice.meta_cognition_observer import MetaCognitionObserver
+    """Release benchmark: meta-cognition paths must HOLD without effects."""
+    from aureon.vault.aureon_vault import (
+        AUREON_VAULT_RELEASE_HOLD,
+        AureonVault,
+    )
+    from aureon.vault.voice.meta_cognition_observer import (
+        META_COGNITION_RELEASE_HOLD,
+        MetaCognitionObserver,
+    )
 
-    bus = _fresh_bus(tmp_root / "bus.jsonl")
+    bus = _EffectProbe()
     vault = AureonVault()
-    vault.wire_thought_bus()
-
     observer = MetaCognitionObserver(thought_bus=bus, vault=vault,
                                      window_s=0.05)
-    # Subscribe by hand — the background closer thread is unreliable in a
-    # short benchmark window, so we drive close_expired() ourselves below.
-    for topic in observer.WATCHED_TOPICS:
-        bus.subscribe(topic, observer._on_thought)
-    observer._subscribed = True
-
-    reflections: List[Dict[str, Any]] = []
-    bus.subscribe("meta.reflection",
-                  lambda t: reflections.append(dict(t.payload)))
-
-    # SLS pulse BEFORE the collapse so sls_before is captured.
-    bus.publish(Thought(source="benchmark", topic="symbolic.life.pulse",
-                        payload={"symbolic_life_score": 0.50}))
-
-    bus.publish(Thought(source="benchmark", topic="persona.collapse",
-                        payload={"winner": "engineer",
-                                 "probabilities": {"engineer": 0.78,
-                                                   "elder": 0.22}}))
-
-    bus.publish(Thought(source="benchmark", topic="goal.submit.request",
-                        payload={"goal_id": "g_b8", "text": "ship it",
-                                 "proposed_by_persona": "engineer"}))
-    bus.publish(Thought(source="benchmark", topic="goal.completed",
-                        payload={"goal_id": "g_b8",
-                                 "result_summary": "shipped"}))
-
-    # SLS pulse AFTER work so sls_after captures the lifted value.
-    bus.publish(Thought(source="benchmark", topic="symbolic.life.pulse",
-                        payload={"symbolic_life_score": 0.72}))
-
-    # Wait past the window and close any expired ones synchronously.
-    time.sleep(0.07)
-    observer.close_expired()
-
-    card = reflections[-1] if reflections else {}
+    thought = Thought(
+        source="benchmark",
+        topic="persona.collapse",
+        payload={"winner": "engineer"},
+    )
+    vault_reason = _hold_reason(vault.wire_thought_bus)
+    start_reason = _hold_reason(observer.start)
+    callback_reason = _hold_reason(lambda: observer._on_thought(thought))
+    close_reason = _hold_reason(observer.close_expired)
 
     invariants = {
-        "reflection_card_published": len(reflections) >= 1,
-        "decision_is_goal_submit": card.get("decision") == "goal.submit",
-        "outcome_is_completed": card.get("outcome") == "COMPLETED",
-        "persona_recorded": card.get("persona") == "engineer",
-        "sls_before_captured": (
-            isinstance(card.get("sls_before"), (int, float))
-            and abs(card["sls_before"] - 0.50) < 1e-6
+        "vault_wiring_held": vault_reason == AUREON_VAULT_RELEASE_HOLD,
+        "observer_subscription_held": start_reason == META_COGNITION_RELEASE_HOLD,
+        "direct_callback_held": callback_reason == META_COGNITION_RELEASE_HOLD,
+        "synchronous_close_held": close_reason == META_COGNITION_RELEASE_HOLD,
+        "no_subscriptions": bus.subscriptions == [],
+        "no_publications": bus.publications == [],
+        "no_thread_or_window_mutation": (
+            observer._subscribed is False
+            and observer._running is False
+            and observer._closer_thread is None
+            and observer._open_windows == []
+            and observer._closed_cards == []
+            and observer._last_sls is None
         ),
-        "sls_after_captured": (
-            isinstance(card.get("sls_after"), (int, float))
-            and abs(card["sls_after"] - 0.72) < 1e-6
+        "vault_remains_unwired": (
+            vault._thought_bus is None and vault._subscribed is False
         ),
-        "sls_delta_correct": (
-            isinstance(card.get("sls_delta"), (int, float))
-            and abs(card["sls_delta"] - 0.22) < 1e-3
-        ),
-        "narrative_mentions_persona": (
-            "engineer" in str(card.get("reasoning", "")).lower()
-        ),
-        "downstream_effects_seen": len(card.get("downstream_effects", [])) >= 2,
     }
-    passed = all(invariants.values())
-
     return {
-        "name": "Meta-cognition reflection (α tanh observer term)",
+        "name": "Meta-cognition reflection release containment",
         "module": "aureon/vault/voice/meta_cognition_observer.py",
-        "passed": passed,
+        "passed": all(invariants.values()),
         "metrics": {
-            "reflections_received": len(reflections),
-            "decision": card.get("decision"),
-            "outcome": card.get("outcome"),
-            "persona": card.get("persona"),
-            "sls_before": card.get("sls_before"),
-            "sls_after": card.get("sls_after"),
-            "sls_delta": card.get("sls_delta"),
-            "downstream_event_count": len(card.get("downstream_effects", [])),
-            "lambda_delta_t": card.get("lambda_delta_t"),
-            "reasoning_excerpt": str(card.get("reasoning", ""))[:200],
+            "vault_hold": vault_reason,
+            "start_hold": start_reason,
+            "callback_hold": callback_reason,
+            "close_hold": close_reason,
+            "subscriptions": len(bus.subscriptions),
+            "publications": len(bus.publications),
         },
         "invariants": invariants,
         "evidence": (
-            f"persona.collapse(engineer) → goal.submit → goal.completed "
-            f"closes window with SLS Δ{card.get('sls_delta'):+.3f}; "
-            f"narrative quotes the persona"
+            "Vault wiring plus observer start, direct callback, and synchronous "
+            "close returned the exact production Magic Star HOLD with zero effects."
         ),
     }
 
@@ -6746,14 +6530,14 @@ def _strip_ts(payload: Dict[str, Any]) -> str:
 
 
 TIER_A: List[Tuple[str, Callable[[Path], Dict[str, Any]]]] = [
-    ("Standing-wave bonding",       b1_standing_wave_bonding),
-    ("Temporal lighthouse",         b2_temporal_lighthouse),
-    ("Symbolic life pillars",       b3_symbolic_life_pillars),
-    ("Mesh convergence",            b4_mesh_convergence),
+    ("Standing-wave release containment", b1_standing_wave_bonding),
+    ("Temporal release containment",      b2_temporal_lighthouse),
+    ("Symbolic-life release containment", b3_symbolic_life_pillars),
+    ("Phi-mesh release containment", b4_mesh_convergence),
     ("Conscience VETO",             b5_conscience_veto),
-    ("Pattern learning",            b6_pattern_learning),
+    ("Pattern-learning release containment", b6_pattern_learning),
     ("Skill execution → disk",      b7_skill_execution_artefacts),
-    ("Meta-cognition reflection",   b8_meta_cognition_reflection),
+    ("Meta-cognition release containment", b8_meta_cognition_reflection),
     ("Phenolic → cognition",        b9_phenolic_fingerprint_cognition),
     ("Bio derived-signal",          b10_bio_derived_signal),
     ("Sky derived-signal",          b11_sky_derived_signal),

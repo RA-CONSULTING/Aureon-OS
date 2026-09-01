@@ -3,12 +3,14 @@
 The operator supplies a goal. Aureon's Architecture brain selects one clean,
 tracked Python target from a deterministic repository shortlist, every coding
 seat and process deliberates, and the Implementation Worker authors the diff.
-The candidate is validated and retained as a proposal; this module never
-mutates the repository or executes generated code.
+The candidate is validated, transiently HNC-sealed, and then burned; only
+metadata and commitments are retained. This module never mutates the repository
+or executes generated code.
 
 Codex is deliberately absent from target selection and authoring.  A successful
-proposal remains pending an exact senior review and a production Plumber/Magic
-Star release implementation, which is not available in this checkout.
+local authoring experiment can prove only a transient HNC seal.  It is not a
+recoverable proposal and cannot enter senior review until a durable authenticated
+proposal vault and production Plumber/Magic Star boundary exist.
 """
 
 from __future__ import annotations
@@ -21,20 +23,24 @@ import re
 import subprocess
 import sys
 import tempfile
+from collections.abc import Mapping
 from pathlib import Path, PurePosixPath
 from typing import Any, Sequence
 
 from aureon.autonomous.aureon_agent_company_brain_fabric import (
-    CANONICAL_AGENT_COMPANY_ROLE_COUNT,
-    canonical_agent_company_brain_topology,
     company_brain_fabric_report,
 )
+from aureon.autonomous.aureon_cloud_brain_composition import (
+    TruthAuthorityBundle,
+    build_local_confidential_self_coder_thought_path,
+)
 from aureon.autonomous.aureon_internal_coding_workforce import (
+    LOCAL_SELF_CODER_PROVIDER_MODE,
+    SELF_CODER_TRANSPORT_PREFLIGHT_SCHEMA,
     OllamaSwitchboardBrainResolver,
     WorkforceHold,
 )
 from aureon.autonomous.aureon_internal_patch_loop import (
-    PRE_APPLY_COUNCIL_ROLES,
     InternalPatchHold,
     build_patch_request,
     run_internal_patch_cycle,
@@ -44,13 +50,64 @@ from aureon.autonomous.aureon_internal_work_ledger import (
     WorkLedgerError,
 )
 from aureon.autonomous.aureon_safe_code_control import SafeCodeControl
+from aureon.autonomous.aureon_ten_nine_one_thought_path import (
+    SELF_CODER_CONFIDENTIAL_PREFLIGHT_SCHEMA,
+)
+from aureon.autonomous.aureon_truth_gated_ten_nine_one import (
+    TruthGatedTenNineOneThoughtPath,
+)
+from aureon.harmonic.hnc_quantum_packet_crypto import packet_master_key_from_env
+from aureon.plumber.os_protection import LocalOSProtectionBoundary
+from aureon.plumber.proposal_forge import LocalProposalForge
 
-SCHEMA_VERSION = "aureon-internal-self-coder-v1"
+SCHEMA_VERSION = "aureon-internal-self-coder-v2"
 DEFAULT_LEDGER_PATH = Path("state/aureon_internal_coding_work_ledger.json")
 DEFAULT_PROPOSAL_PATH = Path("state/aureon_internal_patch_proposals.json")
 DEFAULT_EVIDENCE_PATH = Path("state/aureon_internal_self_coder_last_run.json")
 MAX_CANDIDATES = 12
 MAX_CANDIDATE_BYTES = 256 * 1024
+MAX_PROPOSAL_STATE_BYTES = 2 * 1024 * 1024
+SELF_CODER_FORGE_ID = "aureon-internal-self-coder-proposal-forge-v1"
+SELF_CODER_BOUNDARY_ID = "aureon-internal-self-coder-os-boundary-v1"
+_CLI_REQUIRED_FALSE_FIELDS = frozenset(
+    {
+        "action_eligible",
+        "applied",
+        "aureon_evidence_raw_goal_retained",
+        "aureon_evidence_raw_suggested_test_commands_retained",
+        "client_external_model_egress_attempted",
+        "codex_implementation",
+        "durable_proposal_vault_available",
+        "economic_eligible",
+        "effect_attempted",
+        "generated_code_execution_authorized",
+        "generated_code_execution_implemented",
+        "local_model_nonretention_verified",
+        "local_model_server_downstream_egress_verified",
+        "pending_senior_review",
+        "production_magic_star_release_available",
+        "production_ready",
+        "proposal_created",
+        "proposal_quarantined",
+        "proposal_recoverable",
+        "proposal_reviewable",
+        "release_authorized",
+        "repository_mutation_authorized",
+        "repository_mutation_implemented",
+        "subprocess_test_execution_implemented",
+        "test_commands_executed",
+    }
+)
+_CLI_RECURSIVE_FALSE_FIELDS = _CLI_REQUIRED_FALSE_FIELDS | {
+    "execution_authorized",
+    "filesystem_mutation_attempted",
+    "final_applier_invoked",
+}
+OPENAI_ADVISER_ID = "openai:codex-senior-adviser-not-independently-attested"
+OPENAI_REVIEWER_ID = "openai:codex-senior-reviewer-not-independently-attested"
+OPENAI_ADVISER_EVIDENCE_SHA256 = hashlib.sha256(
+    b"openai-adviser-evidence-not-independently-attested"
+).hexdigest()
 EXCLUDED_PARTS = {
     ".git",
     ".venv",
@@ -111,6 +168,25 @@ def _digest(value: Any) -> str:
     return hashlib.sha256(_canonical_json(value)).hexdigest()
 
 
+def _all_cli_authority_and_effect_flags_false(value: Any) -> bool:
+    if isinstance(value, Mapping):
+        for key, item in value.items():
+            must_be_false = (
+                key in _CLI_RECURSIVE_FALSE_FIELDS
+                or key.endswith("_authorized")
+                or key.endswith("_implemented")
+                or key.endswith("_eligible")
+            )
+            if must_be_false and item is not False:
+                return False
+            if not _all_cli_authority_and_effect_flags_false(item):
+                return False
+        return True
+    if isinstance(value, (list, tuple)):
+        return all(_all_cli_authority_and_effect_flags_false(item) for item in value)
+    return True
+
+
 def _repo_relative(value: str) -> str:
     raw = str(value or "").strip().replace("\\", "/")
     path = PurePosixPath(raw)
@@ -137,7 +213,14 @@ def _bounded_state_path(root: Path, value: Path) -> Path:
 
 
 def _git(root: Path, *args: str) -> subprocess.CompletedProcess[str]:
-    if not args or args[0] not in {"ls-files", "status"}:
+    allowed = bool(
+        args
+        and (
+            args[0] in {"ls-files", "status"}
+            or args == ("rev-parse", "HEAD")
+        )
+    )
+    if not allowed:
         raise InternalSelfCoderHold("git_command_outside_read_only_inventory")
     try:
         return subprocess.run(
@@ -150,6 +233,179 @@ def _git(root: Path, *args: str) -> subprocess.CompletedProcess[str]:
         )
     except (OSError, subprocess.SubprocessError) as exc:
         raise InternalSelfCoderHold("git_repository_evidence_unavailable") from exc
+
+
+def _head_commit(root: Path) -> str:
+    result = _git(root, "rev-parse", "HEAD")
+    value = result.stdout.strip().lower()
+    if result.returncode != 0 or re.fullmatch(r"[0-9a-f]{40}", value) is None:
+        raise InternalSelfCoderHold("git_head_commit_unavailable")
+    return value
+
+
+def _default_proposal_forge() -> LocalProposalForge:
+    boundary = LocalOSProtectionBoundary(
+        boundary_id=SELF_CODER_BOUNDARY_ID,
+        master_key_provider=lambda: packet_master_key_from_env() or None,
+        max_ingress_bytes=1024 * 1024,
+        max_active_handles=4,
+        max_active_ingress_bytes=4 * 1024 * 1024,
+        max_replay_tokens=256,
+        max_quarantine_evidence=64,
+    )
+    return LocalProposalForge(
+        forge_id=SELF_CODER_FORGE_ID,
+        os_boundary=boundary,
+    )
+
+
+def _require_forge_preflight(forge: LocalProposalForge) -> dict[str, Any]:
+    if type(forge) is not LocalProposalForge:
+        raise InternalSelfCoderHold("trusted_local_proposal_forge_required")
+    preflight = forge.preflight()
+    expected = {
+        "schema",
+        "forge_id",
+        "ready",
+        "reason_code",
+        "os_key_preflight_schema",
+        "key_material_returned",
+        "proposal_admission_authorized",
+        "action_eligible",
+        "economic_eligible",
+        "local_development_only",
+        "production_ready",
+    }
+    if (
+        not isinstance(preflight, dict)
+        or set(preflight) != expected
+        or preflight.get("schema")
+        != "aureon.plumber.proposal-forge-preflight.v0"
+        or preflight.get("ready") is not True
+        or preflight.get("reason_code") != "ready"
+        or preflight.get("os_key_preflight_schema")
+        != "aureon.plumber.os-key-preflight.v0"
+        or preflight.get("key_material_returned") is not False
+        or preflight.get("proposal_admission_authorized") is not False
+        or preflight.get("action_eligible") is not False
+        or preflight.get("economic_eligible") is not False
+        or preflight.get("local_development_only") is not True
+        or preflight.get("production_ready") is not False
+    ):
+        raise InternalSelfCoderHold("hnc_proposal_master_key_unavailable")
+    return preflight
+
+
+def _require_confidential_thought_path(thought_path: Any) -> dict[str, Any]:
+    if type(thought_path) is not TruthGatedTenNineOneThoughtPath:
+        raise InternalSelfCoderHold("self_coder_commitment_only_thought_path_required")
+    preflight = thought_path.self_coder_confidential_preflight()
+    expected = {
+        "schema_version",
+        "ready",
+        "truth_gate_enforced",
+        "trusted_local_evidence_resolver",
+        "trusted_receipt_backed_truth_gate",
+        "commitment_only_propagation",
+        "raw_answer_bus_persistence_authorized",
+        "raw_answer_trace_persistence_authorized",
+        "action_eligible",
+        "economic_eligible",
+    }
+    if (
+        not isinstance(preflight, dict)
+        or set(preflight) != expected
+        or preflight.get("schema_version")
+        != SELF_CODER_CONFIDENTIAL_PREFLIGHT_SCHEMA
+        or preflight.get("ready") is not True
+        or preflight.get("truth_gate_enforced") is not True
+        or preflight.get("trusted_local_evidence_resolver") is not True
+        or preflight.get("trusted_receipt_backed_truth_gate") is not True
+        or preflight.get("commitment_only_propagation") is not True
+        or preflight.get("raw_answer_bus_persistence_authorized") is not False
+        or preflight.get("raw_answer_trace_persistence_authorized") is not False
+        or preflight.get("action_eligible") is not False
+        or preflight.get("economic_eligible") is not False
+    ):
+        raise InternalSelfCoderHold("self_coder_commitment_only_thought_path_required")
+    return preflight
+
+
+def _require_local_transport(resolver: Any) -> dict[str, Any]:
+    preflight_method = getattr(resolver, "self_coder_transport_preflight", None)
+    preflight = preflight_method() if callable(preflight_method) else None
+    expected = {
+        "schema_version",
+        "ready",
+        "provider_mode",
+        "endpoint_authority_digest",
+        "endpoint_loopback",
+        "external_source_egress_authorized",
+        "action_eligible",
+        "economic_eligible",
+    }
+    if (
+        not isinstance(preflight, dict)
+        or set(preflight) != expected
+        or preflight.get("schema_version") != SELF_CODER_TRANSPORT_PREFLIGHT_SCHEMA
+        or preflight.get("ready") is not True
+        or preflight.get("provider_mode") != LOCAL_SELF_CODER_PROVIDER_MODE
+        or re.fullmatch(r"[0-9a-f]{64}", str(preflight.get("endpoint_authority_digest") or ""))
+        is None
+        or preflight.get("endpoint_loopback") is not True
+        or preflight.get("external_source_egress_authorized") is not False
+        or preflight.get("action_eligible") is not False
+        or preflight.get("economic_eligible") is not False
+    ):
+        raise InternalSelfCoderHold("self_coder_external_model_egress_forbidden")
+    return preflight
+
+
+def _metadata_only_target_selection(selection: dict[str, Any]) -> dict[str, Any]:
+    public = {key: value for key, value in selection.items() if key != "reason"}
+    reason = str(selection.get("reason") or "")
+    public.update(
+        {
+            "reason_sha256": hashlib.sha256(reason.encode("utf-8")).hexdigest(),
+            "raw_reason_included": False,
+        }
+    )
+    return public
+
+
+def _require_empty_proposal_state(path: Path) -> None:
+    """Reject corrupt, unknown, or previously populated proposal state."""
+
+    if not path.exists():
+        return
+    try:
+        raw = path.read_bytes()
+        if not raw or len(raw) > MAX_PROPOSAL_STATE_BYTES:
+            raise ValueError("proposal state size invalid")
+        payload = json.loads(raw.decode("utf-8", "strict"))
+    except (OSError, UnicodeDecodeError, ValueError) as exc:
+        raise InternalSelfCoderHold("existing_proposal_state_unreadable") from exc
+    expected_fields = {
+        "enabled",
+        "auto_approve",
+        "last_error",
+        "pending_count",
+        "pending_proposals",
+        "recent_reviews",
+    }
+    if (
+        not isinstance(payload, dict)
+        or set(payload) != expected_fields
+        or payload.get("enabled") is not True
+        or type(payload.get("auto_approve")) is not bool
+        or payload.get("last_error") != ""
+        or payload.get("pending_count") != 0
+        or payload.get("pending_proposals") != []
+        or payload.get("recent_reviews") != []
+    ):
+        raise InternalSelfCoderHold(
+            "existing_proposal_state_requires_manual_protected_archive"
+        )
 
 
 def _clean_tracked_target(root: Path, target_path: str) -> Path:
@@ -394,6 +650,8 @@ def run_autonomous_self_coding(
     evidence_path: Path = DEFAULT_EVIDENCE_PATH,
     resolver: Any = None,
     thought_path: Any = None,
+    truth_authorities: TruthAuthorityBundle | None = None,
+    proposal_forge: LocalProposalForge | None = None,
 ) -> dict[str, Any]:
     """Run one bounded Aureon-selected and Aureon-authored coding cycle."""
 
@@ -415,14 +673,36 @@ def run_autonomous_self_coding(
             "action_eligible": False,
             "economic_eligible": False,
         }
-    brain_resolver = resolver or OllamaSwitchboardBrainResolver()
     ledger_file = _bounded_state_path(repo_root, ledger_path)
     proposal_file = _bounded_state_path(repo_root, proposal_path)
     evidence_file = _bounded_state_path(repo_root, evidence_path)
+    if evidence_file.exists():
+        _read_evidence(evidence_file)
+        raise InternalSelfCoderHold("existing_self_coder_evidence_requires_manual_archive")
+    _require_empty_proposal_state(proposal_file)
+    selected_forge = proposal_forge if proposal_forge is not None else _default_proposal_forge()
+    _require_forge_preflight(selected_forge)
+    selected_thought_path = thought_path
+    if selected_thought_path is None:
+        try:
+            selected_thought_path = build_local_confidential_self_coder_thought_path(
+                truth_authorities,
+                root=repo_root,
+            )
+        except ValueError as exc:
+            reason = str(exc)
+            if reason == "authenticated_self_coder_truth_authority_bundle_required":
+                raise InternalSelfCoderHold(reason) from exc
+            raise InternalSelfCoderHold(
+                "confidential_self_coder_thought_path_unavailable"
+            ) from exc
+    _require_confidential_thought_path(selected_thought_path)
+    brain_resolver = resolver or OllamaSwitchboardBrainResolver()
+    transport_preflight = _require_local_transport(brain_resolver)
     ledger = DurableInternalWorkLedger(ledger_file)
     workforce = ledger.bind_agent_company_workforce(
         brain_resolver,
-        thought_path=thought_path,
+        thought_path=selected_thought_path,
     )
     company_brain_fabric = company_brain_fabric_report(workforce)
     if (
@@ -433,9 +713,12 @@ def run_autonomous_self_coding(
     initial_workforce_report = workforce.report()
     if not initial_workforce_report.get("brain_fabric_ready"):
         raise InternalSelfCoderHold("coding_workforce_brain_fabric_not_ready")
+    workforce.assert_sensitive_local_only(
+        endpoint_authority_digest=str(transport_preflight["endpoint_authority_digest"])
+    )
     if not target_path:
         selection = select_target(root=repo_root, goal=goal_text, workforce=workforce)
-        target = selection["target_path"]
+        target = str(selection["target_path"])
     commands = tuple(tuple(str(part) for part in command) for command in test_commands)
     if not commands:
         commands = derive_test_commands(repo_root, target)
@@ -445,18 +728,40 @@ def run_autonomous_self_coding(
         target_path=target,
         test_commands=commands,
     )
+    base_commit = _head_commit(repo_root)
     controller = SafeCodeControl(state_path=proposal_file)
     cycle = run_internal_patch_cycle(
         root=repo_root,
         request=request,
         workforce=workforce,
         controller=controller,
+        proposal_forge=selected_forge,
+        base_commit=base_commit,
+        adviser_id=OPENAI_ADVISER_ID,
+        reviewer_id=OPENAI_REVIEWER_ID,
+        adviser_evidence_sha256=OPENAI_ADVISER_EVIDENCE_SHA256,
+    )
+    proposal_protection = cycle.get("proposal_protection")
+    transient_hnc_seal_verified = bool(
+        isinstance(proposal_protection, dict)
+        and proposal_protection.get("admitted_hnc") is True
+        and proposal_protection.get("transient_hnc_seal_verified") is True
+        and proposal_protection.get("proposal_recoverable") is False
     )
     core = {
         "schema_version": SCHEMA_VERSION,
         "status": cycle["status"],
         "applied": cycle["applied"],
         "pending_senior_review": cycle["pending_senior_review"],
+        "proposal_created": False,
+        "proposal_recoverable": False,
+        "proposal_reviewable": False,
+        "transient_hnc_seal_verified": transient_hnc_seal_verified,
+        "durable_proposal_vault_available": False,
+        "proposal_quarantined": bool(
+            isinstance(proposal_protection, dict)
+            and proposal_protection.get("quarantined_hnc") is True
+        ),
         "proposal_only": True,
         "release_hold": True,
         "release_authorized": False,
@@ -469,9 +774,18 @@ def run_autonomous_self_coding(
         "test_commands_executed": False,
         "production_magic_star_release_available": False,
         "production_ready": False,
-        "goal": goal_text,
-        "target_selection": selection,
-        "suggested_test_commands": [list(command) for command in commands],
+        "base_commit": base_commit,
+        "goal_sha256": hashlib.sha256(goal_text.encode("utf-8")).hexdigest(),
+        "aureon_evidence_raw_goal_retained": False,
+        "local_model_nonretention_verified": False,
+        "client_external_model_egress_attempted": False,
+        "local_model_server_downstream_egress_verified": False,
+        "target_selection": _metadata_only_target_selection(selection),
+        "suggested_test_commands_sha256": _digest(
+            {"test_commands": [list(command) for command in commands]}
+        ),
+        "suggested_test_command_count": len(commands),
+        "aureon_evidence_raw_suggested_test_commands_retained": False,
         "patch_cycle": cycle,
         "agent_company_brain_fabric": company_brain_fabric,
         "work_ledger": ledger.status(),
@@ -494,182 +808,17 @@ def record_senior_proposal_review(
     resolver: Any = None,
     thought_path: Any = None,
 ) -> dict[str, Any]:
-    """Record advisory senior review while preserving the production HOLD.
+    """Hold review until a durable authenticated proposal vault exists.
 
-    This function does not review or implement code. The caller must supply the
-    SHA-256 digest of its independently produced senior review. The ledger only
-    accepts the receipt when the resulting lifetime share remains at least 99%
-    Aureon-internal work and every brain passport is still valid. It does not
-    invoke a release gate, authorize mutation, or execute any suggested tests.
+    The current self-coder persists only commitment metadata.  A process-epoch
+    opaque handle is not a reviewable proposal, so caller-supplied JSON or a
+    review digest can never open this route.
     """
 
+    del root, ledger_path, evidence_path, resolver, thought_path
     if not re.fullmatch(r"[0-9a-f]{64}", str(review_output_digest or "")):
         raise InternalSelfCoderHold("senior_review_output_digest_invalid")
-    repo_root = Path(root).resolve()
-    evidence_file = _bounded_state_path(repo_root, evidence_path)
-    evidence = _read_evidence(evidence_file)
-    if evidence.get("schema_version") != SCHEMA_VERSION or not evidence.get("pending_senior_review"):
-        raise InternalSelfCoderHold("pending_self_coder_evidence_required")
-    reviewed_evidence_digest = str(evidence["evidence_digest"])
-    ledger = DurableInternalWorkLedger(_bounded_state_path(repo_root, ledger_path))
-    patch_cycle = evidence.get("patch_cycle")
-    council = patch_cycle.get("pre_apply_council") if isinstance(patch_cycle, dict) else None
-    apply_evidence = patch_cycle.get("apply_evidence") if isinstance(patch_cycle, dict) else None
-    fabric = evidence.get("agent_company_brain_fabric")
-    evidence_ledger = evidence.get("work_ledger")
-    council_decisions = council.get("decisions") if isinstance(council, dict) else None
-    council_receipt_ids = (
-        [
-            receipt_id
-            for item in council_decisions
-            if isinstance(item, dict)
-            for receipt_id in (
-                item.get("agent_work_receipt_id"),
-                item.get("process_work_receipt_id"),
-            )
-        ]
-        if isinstance(council_decisions, list)
-        else []
-    )
-    expected = CANONICAL_AGENT_COMPANY_ROLE_COUNT
-    if (
-        evidence.get("applied") is not False
-        or evidence.get("proposal_only") is not True
-        or evidence.get("release_hold") is not True
-        or evidence.get("release_authorized") is not False
-        or evidence.get("repository_mutation_authorized") is not False
-        or evidence.get("generated_code_execution_authorized") is not False
-        or evidence.get("repository_mutation_implemented") is not False
-        or evidence.get("generated_code_execution_implemented") is not False
-        or evidence.get("subprocess_test_execution_implemented") is not False
-        or evidence.get("effect_attempted") is not False
-        or evidence.get("test_commands_executed") is not False
-        or not isinstance(patch_cycle, dict)
-        or patch_cycle.get("applied") is not False
-        or patch_cycle.get("release_authorized") is not False
-        or patch_cycle.get("effect_attempted") is not False
-        or patch_cycle.get("test_commands_executed") is not False
-        or patch_cycle.get("repository_mutation_implemented") is not False
-        or patch_cycle.get("generated_code_execution_implemented") is not False
-        or patch_cycle.get("subprocess_test_execution_implemented") is not False
-        or not isinstance(apply_evidence, dict)
-        or apply_evidence.get("applied") is not False
-        or apply_evidence.get("effect_attempted") is not False
-        or apply_evidence.get("test_commands_executed") is not False
-        or apply_evidence.get("release_authorized") is not False
-        or apply_evidence.get("repository_mutation_implemented") is not False
-        or apply_evidence.get("generated_code_execution_implemented") is not False
-        or apply_evidence.get("subprocess_test_execution_implemented") is not False
-        or not isinstance(council, dict)
-        or council.get("accepted") is not True
-        or council.get("acceptance_scope") != "proposal_review_only"
-        or council.get("execution_authorized") is not False
-        or council.get("release_authorized") is not False
-        or council.get("decision_count") != len(PRE_APPLY_COUNCIL_ROLES) * 2
-        or council.get("hold_count") != 0
-        or not isinstance(council_decisions, list)
-        or len(council_decisions) != len(PRE_APPLY_COUNCIL_ROLES)
-        or {item.get("role") for item in council_decisions if isinstance(item, dict)}
-        != set(PRE_APPLY_COUNCIL_ROLES)
-        or any(
-            not isinstance(item, dict)
-            or item.get("agent_verdict") != "ACCEPT"
-            or item.get("process_verdict") != "ACCEPT"
-            for item in council_decisions
-        )
-        or len(council_receipt_ids) != len(PRE_APPLY_COUNCIL_ROLES) * 2
-        or len(set(council_receipt_ids)) != len(council_receipt_ids)
-        or any(
-            not isinstance(receipt_id, str) or not receipt_id.startswith("work:")
-            for receipt_id in council_receipt_ids
-        )
-        or not isinstance(fabric, dict)
-        or fabric.get("ready") is not True
-        or fabric.get("agent_brain_count") != expected
-        or fabric.get("process_brain_count") != expected
-        or fabric.get("brain_passport_count") != expected * 2
-        or not isinstance(evidence_ledger, dict)
-        or evidence_ledger.get("ten_nine_one_complete") is not True
-    ):
-        raise InternalSelfCoderHold("self_coder_proposal_review_evidence_invalid")
-    ledger_before = ledger.status()
-    ledger_receipts = {receipt.receipt_id: receipt for receipt in ledger.receipts()}
-    _role_lanes, process_bindings = canonical_agent_company_brain_topology()
-    expected_process_by_role = {owner: process_id for process_id, (_lane, owner) in process_bindings.items()}
-    council_actor_binding_valid = (
-        all(
-            ledger_receipts[item["agent_work_receipt_id"]].actor_id == f"aureon:agent:{item['role']}"
-            and ledger_receipts[item["process_work_receipt_id"]].actor_id
-            == f"aureon:process:{item['process_id']}"
-            and item["process_id"] == expected_process_by_role.get(item["role"])
-            and ledger_receipts[item["agent_work_receipt_id"]].stage == "pre_apply_council"
-            and ledger_receipts[item["process_work_receipt_id"]].stage == "pre_apply_council"
-            for item in council_decisions
-        )
-        if set(council_receipt_ids).issubset(ledger_receipts)
-        else False
-    )
-    if (
-        any(
-            evidence_ledger.get(key) != ledger_before.get(key)
-            for key in ("receipt_count", "last_receipt_id", "state_hash")
-        )
-        or not council_actor_binding_valid
-    ):
-        raise InternalSelfCoderHold("self_coder_proposal_review_ledger_mismatch")
-    workforce = ledger.bind_agent_company_workforce(resolver, thought_path=thought_path)
-    before = workforce.report()
-    internal_units = before.get("internal_work_units")
-    total_units = before.get("total_work_units")
-    if not before.get("brain_fabric_ready"):
-        raise InternalSelfCoderHold("brain_fabric_not_ready_for_proposal_review")
-    if before.get("ten_nine_one_complete") is not True:
-        raise InternalSelfCoderHold("ten_nine_one_work_evidence_incomplete")
-    if type(internal_units) is not int or type(total_units) is not int:
-        raise InternalSelfCoderHold("workforce_ratio_evidence_invalid")
-    if internal_units * 100 < (total_units + 1) * 99:
-        raise InternalSelfCoderHold("senior_review_would_violate_99_percent_contract")
-    receipt = workforce.record_senior_oversight(
-        process_id="internal_review",
-        stage="contract_review",
-        reviewed_input_digest=reviewed_evidence_digest,
-        review_output_digest=review_output_digest,
-    )
-    report = workforce.report()
-    if not report.get("ready"):
-        raise InternalSelfCoderHold("senior_proposal_review_did_not_close_workforce_contract")
-    updated_core = {
-        **{key: value for key, value in evidence.items() if key != "evidence_digest"},
-        "status": "internal_patch_senior_proposal_review_recorded_release_hold",
-        "pending_senior_review": False,
-        "applied": False,
-        "proposal_only": True,
-        "release_hold": True,
-        "release_authorized": False,
-        "repository_mutation_authorized": False,
-        "generated_code_execution_authorized": False,
-        "repository_mutation_implemented": False,
-        "generated_code_execution_implemented": False,
-        "subprocess_test_execution_implemented": False,
-        "effect_attempted": False,
-        "test_commands_executed": False,
-        "production_magic_star_release_available": False,
-        "production_ready": False,
-        "proposal_review_recorded": True,
-        "reviewed_evidence_digest": reviewed_evidence_digest,
-        "senior_review_output_digest": review_output_digest,
-        "senior_proposal_review_receipt_id": receipt.receipt_id,
-        "work_ledger": ledger.status(),
-        "workforce_proposal_review_report": {
-            **report,
-            "report_scope": "workforce_review_evidence_only",
-            "production_release_authorized": False,
-        },
-    }
-    updated = {**updated_core, "evidence_digest": _digest(updated_core)}
-    _write_evidence(evidence_file, updated)
-    return updated
-
+    raise InternalSelfCoderHold("durable_proposal_vault_unavailable")
 
 def record_senior_release_review(
     *,
@@ -702,7 +851,9 @@ def _parse_test_command(value: str) -> tuple[str, ...]:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Create one held Aureon internal coding proposal.")
+    parser = argparse.ArgumentParser(
+        description="Run one held Aureon transient HNC seal-and-burn experiment."
+    )
     parser.add_argument("--goal", required=True)
     parser.add_argument("--target", default="", help="Optional clean tracked Python target constraint.")
     parser.add_argument(
@@ -725,7 +876,23 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(json.dumps({"ok": False, "status": "hold", "reason": str(exc)}, sort_keys=True))
         return 2
     print(json.dumps(result, indent=2, sort_keys=True))
-    return 0 if result.get("status") == "internal_patch_proposal_held_for_senior_review" else 1
+    patch_cycle = result.get("patch_cycle")
+    proposal_protection = (
+        patch_cycle.get("proposal_protection")
+        if isinstance(patch_cycle, dict)
+        else {}
+    )
+    successful_transient_hold = (
+        result.get("status") == "internal_patch_transient_hnc_seal_held"
+        and all(result.get(field) is False for field in _CLI_REQUIRED_FALSE_FIELDS)
+        and _all_cli_authority_and_effect_flags_false(result)
+        and result.get("transient_hnc_seal_verified") is True
+        and result.get("proposal_only") is True
+        and result.get("release_hold") is True
+        and isinstance(proposal_protection, dict)
+        and proposal_protection.get("transient_hnc_handle_burned") is True
+    )
+    return 0 if successful_transient_hold else 1
 
 
 if __name__ == "__main__":

@@ -1,7 +1,15 @@
-#!/bin/bash
-while true; do
-    echo "Generating probability batch..."
-    python3 generate_live_probability_batch.py
-    echo "Sleeping for 60 seconds..."
-    sleep 60
-done
+#!/usr/bin/env bash
+# Legacy start route: fixed isolated protection HOLD only.
+set -euo pipefail
+
+SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+REPO_ROOT="$(CDPATH= cd -- "$SCRIPT_DIR/../../.." && pwd -P)"
+PYTHON_EXE="$REPO_ROOT/.venv/bin/python"
+BOOTSTRAP="$REPO_ROOT/scripts/bootstrap/protected_bootstrap_v05.py"
+
+if [[ ! -x "$PYTHON_EXE" || ! -r "$BOOTSTRAP" ]]; then
+  echo "Fixed protected runtime bootstrap unavailable; refusing launch." >&2
+  exit 1
+fi
+
+exec "$PYTHON_EXE" -I -S -B "$BOOTSTRAP" --target-id self-questioning

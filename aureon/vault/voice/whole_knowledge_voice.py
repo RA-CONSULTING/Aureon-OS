@@ -39,6 +39,32 @@ RAW_TELEMETRY_RE = re.compile(
     r"(coherence_gamma|dominant_band|phase_angle|auris nodes|out of\s+9 agree|\{[^{}]{20,}\}|\b\d+\.\d{3,}\b)",
     re.I,
 )
+SENSITIVE_KEY_RE = re.compile(
+    r"(?:api[_-]?(?:secret|key)|secret(?:[_-]?key)?|private[_-]?key|"
+    r"password|passwd|pwd|auth(?:orization)?|bearer|access[_-]?key|"
+    r"client[_-]?secret|credential|token)",
+    re.I,
+)
+SENSITIVE_ASSIGNMENT_RE = re.compile(
+    r"\b(?:password|passwd|pwd|api[_-]?(?:secret|key)|secret(?:[_-]?key)?|"
+    r"private[_-]?key|auth(?:orization)?|access[_-]?key|client[_-]?secret|"
+    r"credential|token)\s*[:=]\s*[^\s,;]+",
+    re.I,
+)
+BEARER_VALUE_RE = re.compile(r"\bbearer\s+[A-Za-z0-9._~+/=-]{8,}", re.I)
+TOKEN_VALUE_RE = re.compile(
+    r"(?:\bsk-(?:proj-)?[A-Za-z0-9_-]{8,}\b|"
+    r"\bgh[pousr]_[A-Za-z0-9]{8,}\b|"
+    r"\bAKIA[0-9A-Z]{12,}\b)",
+)
+PRIVATE_KEY_VALUE_RE = re.compile(
+    r"-----BEGIN [^-\r\n]*PRIVATE KEY-----.*?-----END [^-\r\n]*PRIVATE KEY-----",
+    re.I | re.S,
+)
+
+WHOLE_KNOWLEDGE_VOICE_RELEASE_HOLD = (
+    "whole_knowledge_voice_hold:production_magic_star_release_unavailable"
+)
 
 
 class GeneratedControlContent:
@@ -173,9 +199,10 @@ def build_expression_profile(
     evidence_dir: Optional[str | Path] = None,
     max_sources: int = 120,
     max_chars_per_source: int = 24000,
-    publish: bool = True,
+    publish: bool = False,
 ) -> ExpressionProfile:
     """Build a typed profile from repo/vault knowledge sources."""
+    raise RuntimeError(WHOLE_KNOWLEDGE_VOICE_RELEASE_HOLD)
 
     root_path = Path(root) if root else repo_root()
     evidence_path = Path(evidence_dir) if evidence_dir else root_path / "state"
@@ -235,10 +262,11 @@ def build_expression_profile(
 def translate_runtime_state(snapshot: Optional[Dict[str, Any]] = None, style: str = "plain") -> RuntimeTranslation:
     """Translate raw runtime/cognitive/HNC state into human-facing language."""
 
-    raw = dict(snapshot or {})
+    raw, redaction_applied = _redact_sensitive_value(dict(snapshot or {}))
     state = _extract_runtime_state(raw)
-    evidence_keys = sorted(str(k) for k in state.keys())
-    redaction_applied = _contains_sensitive(raw)
+    evidence_keys = sorted({
+        _clean_public_text(str(key)) for key in state.keys()
+    })
 
     mood = _first_value(state, "mood", "affect_phase", "level", "consciousness_level") or "steady"
     action = _first_value(state, "action", "mode", "strategy") or "observe and respond"
@@ -279,7 +307,7 @@ def translate_runtime_state(snapshot: Optional[Dict[str, Any]] = None, style: st
         summary=_clean_public_text(summary),
         senses={k: _clean_public_text(v) for k, v in senses.items()},
         evidence_keys=evidence_keys,
-        blockers=blockers,
+        blockers=[_clean_public_text(item) for item in blockers],
         redaction_applied=redaction_applied,
     )
 
@@ -293,9 +321,10 @@ def compose_voice_artifact(
     profile: Optional[ExpressionProfile] = None,
     root: Optional[str | Path] = None,
     evidence_dir: Optional[str | Path] = None,
-    publish: bool = True,
+    publish: bool = False,
 ) -> VoiceArtifact:
     """Compose a voice artifact using the shared expression profile."""
+    raise RuntimeError(WHOLE_KNOWLEDGE_VOICE_RELEASE_HOLD)
 
     root_path = Path(root) if root else repo_root()
     evidence_path = Path(evidence_dir) if evidence_dir else root_path / "state"
@@ -349,6 +378,7 @@ def compose_voice_artifact(
 
 
 def _default_source_paths(root: Path, *, max_sources: int) -> List[Path]:
+    raise RuntimeError(WHOLE_KNOWLEDGE_VOICE_RELEASE_HOLD)
     explicit = [
         root / "state" / "knowledge_dataset.json",
         root / "aureon" / "wisdom" / "bhoys_wisdom.py",
@@ -390,6 +420,7 @@ def _default_source_paths(root: Path, *, max_sources: int) -> List[Path]:
 
 
 def _read_source_text(path: Path, *, max_chars: int) -> str:
+    raise RuntimeError(WHOLE_KNOWLEDGE_VOICE_RELEASE_HOLD)
     if path.suffix.lower() == ".docx":
         return "\n".join(_extract_docx_paragraphs(path, max_paragraphs=260))[:max_chars]
     text = path.read_text(encoding="utf-8", errors="ignore")
@@ -397,6 +428,7 @@ def _read_source_text(path: Path, *, max_chars: int) -> str:
 
 
 def _extract_docx_paragraphs(path: Path, *, max_paragraphs: int) -> List[str]:
+    raise RuntimeError(WHOLE_KNOWLEDGE_VOICE_RELEASE_HOLD)
     paragraphs: List[str] = []
     with ZipFile(path) as zf:
         xml = zf.read("word/document.xml")
@@ -620,10 +652,59 @@ def _safe_sample(text: str) -> str:
 
 
 def _clean_public_text(text: str) -> str:
-    clean = _fix_text_encoding(str(text or ""))
+    clean, _ = _redact_sensitive_value(_fix_text_encoding(str(text or "")))
     clean = SENSITIVE_RE.sub("[redacted-sensitive-field]", clean)
     clean = re.sub(r"\s+", " ", clean).strip()
     return clean
+
+
+def _redact_sensitive_value(value: Any, *, key_hint: str = "") -> tuple[Any, bool]:
+    """Recursively remove credential-bearing values before voice interpolation.
+
+    Sensitive mapping keys keep their structural position but never their
+    value. Assignment/bearer strings are redacted in full; common standalone
+    provider-token shapes are replaced wherever they appear.
+    """
+    if key_hint and SENSITIVE_KEY_RE.search(str(key_hint)):
+        return "[redacted-sensitive-field]", True
+    if isinstance(value, dict):
+        out: Dict[Any, Any] = {}
+        changed = False
+        for key, item in value.items():
+            redacted, item_changed = _redact_sensitive_value(
+                item, key_hint=str(key),
+            )
+            out[key] = redacted
+            changed = changed or item_changed
+        return out, changed
+    if isinstance(value, list):
+        out_list: List[Any] = []
+        changed = False
+        for item in value:
+            redacted, item_changed = _redact_sensitive_value(item)
+            out_list.append(redacted)
+            changed = changed or item_changed
+        return out_list, changed
+    if isinstance(value, tuple):
+        out_tuple: List[Any] = []
+        changed = False
+        for item in value:
+            redacted, item_changed = _redact_sensitive_value(item)
+            out_tuple.append(redacted)
+            changed = changed or item_changed
+        return tuple(out_tuple), changed
+    if not isinstance(value, str):
+        return value, False
+
+    text = value
+    if (
+        SENSITIVE_ASSIGNMENT_RE.search(text)
+        or BEARER_VALUE_RE.search(text)
+        or PRIVATE_KEY_VALUE_RE.search(text)
+    ):
+        return "[redacted-sensitive-value]", True
+    redacted = TOKEN_VALUE_RE.sub("[redacted-sensitive-value]", text)
+    return redacted, redacted != text
 
 
 def _fix_text_encoding(text: str) -> str:
@@ -648,6 +729,9 @@ def _paragraph_signature(text: str) -> str:
 
 
 def _contains_sensitive(value: Any) -> bool:
+    _, changed = _redact_sensitive_value(value)
+    if changed:
+        return True
     try:
         return bool(SENSITIVE_RE.search(json.dumps(value, default=str)))
     except Exception:

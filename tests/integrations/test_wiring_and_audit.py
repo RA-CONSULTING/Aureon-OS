@@ -20,6 +20,8 @@ import tempfile
 import time
 from pathlib import Path
 
+import pytest
+
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
@@ -35,7 +37,6 @@ from aureon.integrations import (
 )
 from aureon.integrations.audit_trail import INTEGRATION_CHECKLIST
 from aureon.vault import AureonSelfFeedbackLoop, AureonVault
-
 
 PASS = 0
 FAIL = 0
@@ -145,69 +146,9 @@ def test_integration_audit_trail():
 
 
 def test_wire_integrations_end_to_end():
-    print("\n[3] wire_integrations() end-to-end")
-    with tempfile.TemporaryDirectory() as tmp:
-        obs_vault = Path(tmp) / "obs_vault"
-        obs_vault.mkdir()
-
-        os.environ["AUREON_OBSIDIAN_VAULT_PATH"] = str(obs_vault)
-        # Force filesystem mode — no API key → no REST probe
-        os.environ.pop("AUREON_OBSIDIAN_API_KEY", None)
-
-        vault = AureonVault()
-        loop = AureonSelfFeedbackLoop(vault=vault, enable_voice=True)
-
-        config = ObsidianSinkConfig()
-        result = wire_integrations(
-            vault=vault,
-            loop=loop,
-            enable_ollama=False,  # skip Ollama swap — no fake bridge in this env
-            enable_obsidian=True,
-            enable_pathway_mapping=True,
-            run_audit=True,
-            obsidian_config=config,
-        )
-
-        check(result.obsidian_bridge is not None, "obsidian bridge built")
-        check(result.obsidian_sink is not None, "obsidian sink built")
-        check(result.pathway_stats.get("node_count", 0) > 0, "pathway graph populated")
-        check(result.audit is not None, "audit status produced")
-        # Sink got called at least for the audit
-        audit_md = obs_vault / "integrations" / "audit_trail.md"
-        check(audit_md.exists(), "integrations/audit_trail.md created by wire")
-
-        # Run a tick — the loop.tick wrapper should fire the sink
-        tick = loop.tick()
-        check(tick is not None, "tick ran")
-        loop_log = obs_vault / "loops" / "self_feedback_loop.md"
-        check(loop_log.exists(), "loop log created by tick wiring")
-        check(
-            f"cycle={tick.cycle}" in loop_log.read_text(),
-            "tick line appended to loop log",
-        )
-
-        # vault.pathway_graph populated
-        check(
-            isinstance(vault.pathway_graph, dict) and len(vault.pathway_graph) > 0,
-            "vault.pathway_graph populated",
-        )
-
-        # Second wire_integrations call → idempotent (no duplicate wrapping)
-        result2 = wire_integrations(
-            vault=vault,
-            loop=loop,
-            enable_ollama=False,
-            enable_obsidian=True,
-            enable_pathway_mapping=False,
-            run_audit=False,
-            obsidian_config=config,
-        )
-        check(result2.obsidian_sink is not None, "second wire call still healthy")
-        # Second wire re-wraps voice_engine.converse but guards it
-        tick2 = loop.tick()
-        check(tick2.cycle == tick.cycle + 1, "tick counter advanced after rewire")
-
-        os.environ.pop("AUREON_OBSIDIAN_VAULT_PATH", None)
+    print("\n[3] effectful feedback-loop integration remains on production HOLD")
+    with pytest.raises(RuntimeError, match="aureon_self_feedback_loop_hold"):
+        AureonSelfFeedbackLoop(vault=AureonVault(), enable_voice=True)
 
 
 # ─────────────────────────────────────────────────────────────────────────────

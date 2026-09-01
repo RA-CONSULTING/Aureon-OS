@@ -1,41 +1,15 @@
-#!/bin/bash
-# ═══════════════════════════════════════════════════════════════════════════
-# 🧠💭⚡ AUREON MIND → THOUGHT → ACTION HUB LAUNCHER
-# ═══════════════════════════════════════════════════════════════════════════
+#!/usr/bin/env bash
+# Legacy start route: fixed isolated protection HOLD only.
+set -euo pipefail
 
-cd "$(dirname "$0")"
+SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+REPO_ROOT="$(CDPATH= cd -- "$SCRIPT_DIR/../../.." && pwd -P)"
+PYTHON_EXE="$REPO_ROOT/.venv/bin/python"
+BOOTSTRAP="$REPO_ROOT/scripts/bootstrap/protected_bootstrap_v05.py"
 
-echo "═══════════════════════════════════════════════════════════════════════════"
-echo "🧠💭⚡ AUREON MIND → THOUGHT → ACTION HUB"
-echo "═══════════════════════════════════════════════════════════════════════════"
-echo ""
-echo "COGNITIVE ARCHITECTURE:"
-echo "  🧠 MIND:    Queen Hive + Intelligence Systems"
-echo "  💭 THOUGHT: ThoughtBus Real-Time Streaming"
-echo "  ⚡ ACTION:  Execution & Trading Monitoring"
-echo ""
-
-# Parse arguments
-BACKGROUND=false
-
-for arg in "$@"; do
-    case $arg in
-        --bg|--background)
-            BACKGROUND=true
-            ;;
-    esac
-done
-
-if [ "$BACKGROUND" = true ]; then
-    nohup python aureon_mind_thought_action_hub.py > /tmp/mind_thought_action.log 2>&1 &
-    PID=$!
-    echo "✅ Mind → Thought → Action Hub started (PID: $PID)"
-    echo "📄 Log: /tmp/mind_thought_action.log"
-    echo ""
-    echo "🌐 Dashboard: http://localhost:13002"
-    echo "📡 WebSocket: ws://localhost:13002/ws"
-    echo ""
-    echo "To stop: kill $PID"
-else
-    python aureon_mind_thought_action_hub.py
+if [[ ! -x "$PYTHON_EXE" || ! -r "$BOOTSTRAP" ]]; then
+  echo "Fixed protected runtime bootstrap unavailable; refusing launch." >&2
+  exit 1
 fi
+
+exec "$PYTHON_EXE" -I -S -B "$BOOTSTRAP" --target-id mind-hub

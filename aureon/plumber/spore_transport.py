@@ -6,6 +6,7 @@ handles encryption keys, shares, reconstruction, or release authorization.
 
 from __future__ import annotations
 
+import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime
@@ -26,6 +27,14 @@ from .schema import (
 
 SPORE_MANIFEST_SCHEMA = "aureon.plumber.spore-manifest.v0"
 SPORE_FRAGMENT_SCHEMA = "aureon.plumber.spore-fragment.v0"
+
+# Transport remains a bounded local-laboratory format.  The total ceiling
+# accommodates a maximum-sized protected payload plus an AEAD tag without
+# permitting a manifest to request unbounded fragment allocation.
+MAX_SPORE_CIPHERTEXT_BYTES = 16 * 1024 * 1024 + 16
+MAX_SPORE_FRAGMENT_BYTES = 1024 * 1024
+MAX_SPORE_FRAGMENT_COUNT = 4096
+_B64URL_RE = re.compile(r"^[A-Za-z0-9_-]+$")
 
 _FRAGMENT_FIELDS = (
     "schema",
@@ -70,6 +79,22 @@ def _manifest_payload(values: Mapping[str, Any]) -> dict[str, Any]:
     return {field: values[field] for field in _MANIFEST_FIELDS if field != "manifest_commitment"}
 
 
+def _preflight_fragment_decoded_size(value: Any) -> int:
+    """Return canonical base64url's predicted size without decoding bytes."""
+
+    if not isinstance(value, str) or not value or "=" in value:
+        raise SchemaError(DenialCode.FRAGMENT_INVALID, field="ciphertext_fragment")
+    maximum_encoded_chars = (4 * MAX_SPORE_FRAGMENT_BYTES + 2) // 3
+    if len(value) > maximum_encoded_chars:
+        raise SchemaError(DenialCode.FRAGMENT_INVALID, field="ciphertext_fragment")
+    if len(value) % 4 == 1 or _B64URL_RE.fullmatch(value) is None:
+        raise SchemaError(DenialCode.FRAGMENT_INVALID, field="ciphertext_fragment")
+    decoded_size = (len(value) * 3) // 4
+    if decoded_size < 1 or decoded_size > MAX_SPORE_FRAGMENT_BYTES:
+        raise SchemaError(DenialCode.FRAGMENT_INVALID, field="ciphertext_fragment")
+    return decoded_size
+
+
 @dataclass(frozen=True, slots=True)
 class SporeFragment:
     schema: str
@@ -92,6 +117,8 @@ class SporeFragment:
             require_nonblank(getattr(self, field), field=field)
         require_int(self.temporal_epoch, field="temporal_epoch", minimum=1)
         require_int(self.fragment_count, field="fragment_count", minimum=1)
+        if self.fragment_count > MAX_SPORE_FRAGMENT_COUNT:
+            raise SchemaError(DenialCode.FRAGMENT_INVALID, field="fragment_count")
         require_int(self.fragment_index, field="fragment_index", minimum=0)
         if self.fragment_index >= self.fragment_count:
             raise SchemaError(DenialCode.FRAGMENT_INVALID, field="fragment_index")
@@ -104,7 +131,10 @@ class SporeFragment:
             require_sha256(getattr(self, field), field=field)
         parse_timestamp(self.expires_at, field="expires_at")
         try:
-            chunk = b64url_decode(self.ciphertext_fragment)
+            chunk = b64url_decode(
+                self.ciphertext_fragment,
+                max_bytes=MAX_SPORE_FRAGMENT_BYTES,
+            )
         except ValueError as exc:
             raise SchemaError(DenialCode.FRAGMENT_INVALID, field="ciphertext_fragment") from exc
         if sha256_hex(chunk) != self.ciphertext_fragment_commitment:
@@ -150,6 +180,16 @@ class SporeManifest:
         require_int(self.temporal_epoch, field="temporal_epoch", minimum=1)
         require_int(self.fragment_count, field="fragment_count", minimum=1)
         require_int(self.ciphertext_size, field="ciphertext_size", minimum=1)
+        if self.fragment_count > MAX_SPORE_FRAGMENT_COUNT:
+            raise SchemaError(DenialCode.FRAGMENT_INVALID, field="fragment_count")
+        if self.ciphertext_size > MAX_SPORE_CIPHERTEXT_BYTES:
+            raise SchemaError(DenialCode.FRAGMENT_INVALID, field="ciphertext_size")
+        if (
+            self.fragment_count > self.ciphertext_size
+            or self.ciphertext_size
+            > self.fragment_count * MAX_SPORE_FRAGMENT_BYTES
+        ):
+            raise SchemaError(DenialCode.FRAGMENT_INVALID, field="fragment_capacity")
         for field in (
             "route_commitment",
             "challenge_commitment",
@@ -170,6 +210,8 @@ class SporeManifest:
         parsed = require_exact_keys(value, _MANIFEST_FIELDS, field="spore_manifest")
         if not isinstance(parsed["fragment_commitments"], list):
             raise SchemaError(DenialCode.INVALID_TYPE, field="fragment_commitments")
+        if len(parsed["fragment_commitments"]) > MAX_SPORE_FRAGMENT_COUNT:
+            raise SchemaError(DenialCode.FRAGMENT_INVALID, field="fragment_commitments")
         parsed["fragment_commitments"] = tuple(parsed["fragment_commitments"])
         return cls(**parsed)
 
@@ -201,19 +243,26 @@ def fragment_ciphertext(
     require_nonblank(route_id, field="route_id")
     require_int(temporal_epoch, field="temporal_epoch", minimum=1)
     require_int(fragment_size, field="fragment_size", minimum=16)
+    if len(ciphertext) > MAX_SPORE_CIPHERTEXT_BYTES:
+        raise SchemaError(DenialCode.FRAGMENT_INVALID, field="ciphertext")
+    if fragment_size > MAX_SPORE_FRAGMENT_BYTES:
+        raise SchemaError(DenialCode.FRAGMENT_INVALID, field="fragment_size")
+    fragment_count = (len(ciphertext) + fragment_size - 1) // fragment_size
+    if fragment_count > MAX_SPORE_FRAGMENT_COUNT:
+        raise SchemaError(DenialCode.FRAGMENT_INVALID, field="fragment_count")
     require_sha256(challenge_commitment, field="challenge_commitment")
     expiry = format_timestamp(expires_at)
     route_commitment = domain_hash("aureon.plumber.spore-route.v0", route_id)
-    chunks = tuple(ciphertext[index : index + fragment_size] for index in range(0, len(ciphertext), fragment_size))
     fragments: list[SporeFragment] = []
-    for index, chunk in enumerate(chunks):
+    for index, offset in enumerate(range(0, len(ciphertext), fragment_size)):
+        chunk = ciphertext[offset : offset + fragment_size]
         values: dict[str, Any] = {
             "schema": SPORE_FRAGMENT_SCHEMA,
             "packet_identity": packet_identity,
             "stream_identity": stream_identity,
             "temporal_epoch": temporal_epoch,
             "fragment_index": index,
-            "fragment_count": len(chunks),
+            "fragment_count": fragment_count,
             "route_commitment": route_commitment,
             "challenge_commitment": challenge_commitment,
             "expires_at": expiry,
@@ -262,6 +311,10 @@ def reassemble_ciphertext(
         raise SchemaError(DenialCode.INVALID_TYPE, field="manifest")
     if isinstance(fragments, (str, bytes, bytearray)) or not isinstance(fragments, Sequence):
         raise SchemaError(DenialCode.INVALID_TYPE, field="fragments")
+    if manifest.fragment_count > MAX_SPORE_FRAGMENT_COUNT:
+        raise SchemaError(DenialCode.FRAGMENT_INVALID, field="fragment_count")
+    if manifest.ciphertext_size > MAX_SPORE_CIPHERTEXT_BYTES:
+        raise SchemaError(DenialCode.FRAGMENT_INVALID, field="ciphertext_size")
     expiry = parse_timestamp(manifest.expires_at, field="expires_at")
     if require_aware_datetime(now, field="now") >= expiry:
         raise SchemaError(DenialCode.FRAGMENT_EXPIRED)
@@ -288,13 +341,53 @@ def reassemble_ciphertext(
         by_index[fragment.fragment_index] = fragment
     if set(by_index) != set(range(manifest.fragment_count)):
         raise SchemaError(DenialCode.FRAGMENT_SET_INCOMPLETE)
-    ciphertext = b"".join(b64url_decode(by_index[index].ciphertext_fragment) for index in range(manifest.fragment_count))
+    predicted_size = 0
+    encoded_size = 0
+    for index in range(manifest.fragment_count):
+        encoded_fragment = by_index[index].ciphertext_fragment
+        predicted_size += _preflight_fragment_decoded_size(encoded_fragment)
+        encoded_size += len(encoded_fragment)
+        if predicted_size > manifest.ciphertext_size:
+            raise SchemaError(DenialCode.FRAGMENT_INVALID, field="ciphertext_size")
+    maximum_encoded_size = (
+        (4 * manifest.ciphertext_size + 2) // 3
+        + 2 * manifest.fragment_count
+    )
+    if predicted_size != manifest.ciphertext_size or encoded_size > maximum_encoded_size:
+        raise SchemaError(DenialCode.FRAGMENT_INVALID, field="ciphertext_size")
+    assembled = bytearray()
+    for index in range(manifest.fragment_count):
+        try:
+            chunk = b64url_decode(
+                by_index[index].ciphertext_fragment,
+                max_bytes=MAX_SPORE_FRAGMENT_BYTES,
+            )
+        except ValueError as exc:
+            raise SchemaError(
+                DenialCode.FRAGMENT_INVALID,
+                field="ciphertext_fragment",
+            ) from exc
+        if sha256_hex(chunk) != by_index[index].ciphertext_fragment_commitment:
+            raise SchemaError(
+                DenialCode.FRAGMENT_INVALID,
+                field="ciphertext_fragment_commitment",
+            )
+        if (
+            len(assembled) + len(chunk) > manifest.ciphertext_size
+            or len(assembled) + len(chunk) > MAX_SPORE_CIPHERTEXT_BYTES
+        ):
+            raise SchemaError(DenialCode.FRAGMENT_INVALID, field="ciphertext_size")
+        assembled.extend(chunk)
+    ciphertext = bytes(assembled)
     if len(ciphertext) != manifest.ciphertext_size or sha256_hex(ciphertext) != manifest.ciphertext_commitment:
         raise SchemaError(DenialCode.FRAGMENT_INVALID, field="ciphertext_commitment")
     return ciphertext
 
 
 __all__ = [
+    "MAX_SPORE_CIPHERTEXT_BYTES",
+    "MAX_SPORE_FRAGMENT_BYTES",
+    "MAX_SPORE_FRAGMENT_COUNT",
     "SPORE_FRAGMENT_SCHEMA",
     "SPORE_MANIFEST_SCHEMA",
     "SporeFragment",

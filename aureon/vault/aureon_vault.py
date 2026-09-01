@@ -34,6 +34,11 @@ from typing import Any, Deque, Dict, List, Optional
 logger = logging.getLogger("aureon.vault")
 
 
+AUREON_VAULT_RELEASE_HOLD = (
+    "aureon_vault_thought_bus_hold:production_magic_star_release_unavailable"
+)
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # VaultContent — atomic card
 # ─────────────────────────────────────────────────────────────────────────────
@@ -183,9 +188,13 @@ class AureonVault:
 
     def wire_thought_bus(self) -> bool:
         """
-        Subscribe to the ThoughtBus. Returns True on success, False if the
-        bus is unavailable (the vault still works in manual-ingest mode).
+        Hold shared-bus wiring until the production Magic Star release exists.
+
+        Manual, in-memory ingest remains available.  The release gate is the
+        first operation so a denied call cannot look up the process singleton,
+        subscribe handlers, or make later ingest publish ``vault.card.added``.
         """
+        raise RuntimeError(AUREON_VAULT_RELEASE_HOLD)
         if self._subscribed:
             return True
         try:

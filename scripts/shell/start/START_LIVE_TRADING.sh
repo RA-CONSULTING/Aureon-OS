@@ -1,24 +1,15 @@
-#!/bin/bash
-cd /workspaces/aureon-trading
+#!/usr/bin/env bash
+# Legacy start route: fixed isolated protection HOLD only.
+set -euo pipefail
 
-echo "╔════════════════════════════════════════════════════════════════════════════════╗"
-echo "║                                                                                ║"
-echo "║                  🔥 STARTING LIVE TRADING MODE 🔥                              ║"
-echo "║                     Your £50 GBP will START TRADING                            ║"
-echo "║                                                                                ║"
-echo "╚════════════════════════════════════════════════════════════════════════════════╝"
-echo ""
-echo "✅ Environment Setup:"
-echo "   • LIVE MODE: YES"
-echo "   • Kraken GBP Capital: £50.0058"
-echo "   • DRY RUN: OFF (REAL TRADES)"
-echo "   • Status: READY TO FIRE 🔥"
-echo ""
+SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+REPO_ROOT="$(CDPATH= cd -- "$SCRIPT_DIR/../../.." && pwd -P)"
+PYTHON_EXE="$REPO_ROOT/.venv/bin/python"
+BOOTSTRAP="$REPO_ROOT/scripts/bootstrap/protected_bootstrap_v05.py"
 
-export LIVE=1
-export ALPACA_DRY_RUN=false
-export KRAKEN_DRY_RUN=false
-export BINANCE_DRY_RUN=false
-export ALPACA_ONLY=false
+if [[ ! -x "$PYTHON_EXE" || ! -r "$BOOTSTRAP" ]]; then
+  echo "Fixed protected runtime bootstrap unavailable; refusing launch." >&2
+  exit 1
+fi
 
-/bin/python3 micro_profit_labyrinth.py --live --yes --multi-exchange
+exec "$PYTHON_EXE" -I -S -B "$BOOTSTRAP" --target-id unified-market-trader

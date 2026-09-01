@@ -32,6 +32,11 @@ from aureon.vault.voice.utterance import VoiceStatement
 logger = logging.getLogger("aureon.vault.voice")
 
 
+VAULT_VOICE_RELEASE_HOLD = (
+    "vault_voice_hold:production_magic_star_release_unavailable"
+)
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Base VaultVoice
 # ─────────────────────────────────────────────────────────────────────────────
@@ -55,10 +60,9 @@ class VaultVoice:
     def __init__(self, adapter: Any = None, max_tokens: int = 240):
         self.adapter = adapter
         self.max_tokens = int(max_tokens)
-        if self.adapter is None:
-            self._load_adapter()
 
     def _load_adapter(self) -> None:
+        raise RuntimeError(VAULT_VOICE_RELEASE_HOLD)
         try:
             # Use the voice-safe adapter selector: prefers local LLM (Ollama / OpenAI-compatible),
             # falls back to Anthropic if configured, otherwise returns a fast stub with instructions.
@@ -74,6 +78,7 @@ class VaultVoice:
 
     def speak(self, vault: Any) -> Optional[VoiceStatement]:
         """Compose a self-authored prompt from vault state and utter it."""
+        raise RuntimeError(VAULT_VOICE_RELEASE_HOLD)
         slice_state = self._extract_slice(vault)
         prompt_lines = self._compose_prompt_lines(slice_state)
         if not prompt_lines:
@@ -385,11 +390,5 @@ except Exception:
 
 
 def build_all_voices(adapter: Any = None) -> Dict[str, VaultVoice]:
-    """Instantiate every voice with the given (or default) adapter."""
-    if adapter is None:
-        try:
-            from aureon.inhouse_ai.llm_adapter import build_voice_adapter
-            adapter = build_voice_adapter(lane="general")
-        except Exception:
-            adapter = None
+    """Build inert persona objects; speaking remains on the release HOLD."""
     return {name: cls(adapter=adapter) for name, cls in VOICE_REGISTRY.items()}

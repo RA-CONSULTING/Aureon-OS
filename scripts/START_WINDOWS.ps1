@@ -1,22 +1,17 @@
-Set-StrictMode -Version Latest
+# Fixed isolated protection boundary; this route cannot start its legacy target.
 $ErrorActionPreference = "Stop"
+$repoRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot ".."))
+$pythonExe = Join-Path $repoRoot ".venv\Scripts\python.exe"
+$bootstrap = Join-Path $repoRoot "scripts\bootstrap\protected_bootstrap_v05.py"
 
-Write-Host "`n🐙 AUREON UNIFIED ECOSYSTEM (Windows)" -ForegroundColor Cyan
-Write-Host "This bootstraps deps + runs LIVE_NOW.py (Mycelium/Unified Ecosystem).`n" -ForegroundColor Cyan
-
-if (-not (Test-Path -Path ".venv")) {
-  Write-Host "Creating venv..." -ForegroundColor Yellow
-  py -3 -m venv .venv
+if (-not (Test-Path -LiteralPath $pythonExe -PathType Leaf)) {
+    [Console]::Error.WriteLine("Fixed repository Python executable is unavailable; refusing operation.")
+    exit 1
+}
+if (-not (Test-Path -LiteralPath $bootstrap -PathType Leaf)) {
+    [Console]::Error.WriteLine("Fixed protected bootstrap is unavailable; refusing operation.")
+    exit 1
 }
 
-Write-Host "Activating venv..." -ForegroundColor Yellow
-. .\.venv\Scripts\Activate.ps1
-
-Write-Host "Upgrading pip..." -ForegroundColor Yellow
-python -m pip install --upgrade pip
-
-Write-Host "Installing requirements..." -ForegroundColor Yellow
-python -m pip install -r requirements.txt
-
-Write-Host "Running LIVE_NOW.py..." -ForegroundColor Green
-python LIVE_NOW.py
+& $pythonExe -I -S -B $bootstrap --target-id organism
+exit $LASTEXITCODE

@@ -1,22 +1,15 @@
-#!/usr/bin/env python3
-"""Run Aureon Trading Ecosystem with LIVE trading"""
+#!/usr/bin/env bash
+# Legacy start route: fixed isolated protection HOLD only.
+set -euo pipefail
 
-import subprocess
-import sys
-import os
+SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+REPO_ROOT="$(CDPATH= cd -- "$SCRIPT_DIR/../../.." && pwd -P)"
+PYTHON_EXE="$REPO_ROOT/.venv/bin/python"
+BOOTSTRAP="$REPO_ROOT/scripts/bootstrap/protected_bootstrap_v05.py"
 
-os.chdir('/workspaces/aureon-trading')
+if [[ ! -x "$PYTHON_EXE" || ! -r "$BOOTSTRAP" ]]; then
+  echo "Fixed protected runtime bootstrap unavailable; refusing launch." >&2
+  exit 1
+fi
 
-# Set environment
-os.environ['LIVE'] = '1'
-os.environ['DEPLOY_SCOUTS_IMMEDIATELY'] = 'True'
-
-print("Starting Aureon Unified Ecosystem with LIVE=1...")
-print("="*70)
-print()
-
-# Run with Python
-result = subprocess.run([sys.executable, 'aureon_unified_ecosystem.py'], 
-                       env=os.environ.copy())
-
-sys.exit(result.returncode)
+exec "$PYTHON_EXE" -I -S -B "$BOOTSTRAP" --target-id unified-market-trader

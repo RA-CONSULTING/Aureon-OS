@@ -2,6 +2,10 @@
 GoalDispatchBridge — goal.submit.request → Queen's conscience → engine
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+CURRENT RELEASE: the dispatch design below is unreleased. Subscription,
+conscience evaluation, goal-engine submission, threads, and publications all
+hard-HOLD before effects; a missing or failing conscience never fails open.
+
 The persona layer publishes ``goal.submit.request`` whenever a facet
 proposes a goal. The TemporalCausalityLaw already enforces the
 β Λ(t-τ) invariant over those goals, but until now nothing was picking
@@ -39,6 +43,11 @@ from typing import Any, Callable, Dict, List, Optional, Set
 logger = logging.getLogger("aureon.vault.voice.goal_dispatch_bridge")
 
 
+GOAL_DISPATCH_RELEASE_HOLD = (
+    "goal_dispatch_bridge_hold:production_magic_star_release_unavailable"
+)
+
+
 class GoalDispatchBridge:
     """Subscribes to goal.submit.request and dispatches each one through
     the conscience and into the GoalExecutionEngine."""
@@ -65,6 +74,7 @@ class GoalDispatchBridge:
         self._run_in_thread = True  # toggle off for deterministic tests
 
     def start(self) -> None:
+        raise RuntimeError(GOAL_DISPATCH_RELEASE_HOLD)
         if self._subscribed or self.thought_bus is None:
             return
         try:
@@ -76,6 +86,7 @@ class GoalDispatchBridge:
     # ─── intake ──────────────────────────────────────────────────────────
 
     def _on_submit_request(self, thought: Any) -> None:
+        raise RuntimeError(GOAL_DISPATCH_RELEASE_HOLD)
         payload = getattr(thought, "payload", {}) or {}
         if not isinstance(payload, dict):
             return
@@ -151,6 +162,7 @@ class GoalDispatchBridge:
         Always non-blocking — the engine call runs on a daemon thread so
         the bus handler returns immediately.
         """
+        raise RuntimeError(GOAL_DISPATCH_RELEASE_HOLD)
         # Conscience gate (synchronous; it's in-memory).
         verdict_label = ""
         try:
@@ -195,6 +207,7 @@ class GoalDispatchBridge:
     def _run_engine_submit(self, goal_id: str, text: str) -> None:
         """Thread target. Calls the blocking engine and converts any
         exception into a goal.abandoned event so the lighthouse closes."""
+        raise RuntimeError(GOAL_DISPATCH_RELEASE_HOLD)
         try:
             self.goal_engine.submit_goal(text)
             self._dispatch_count += 1
@@ -211,6 +224,7 @@ class GoalDispatchBridge:
         text: str = "",
         persona: str = "",
     ) -> None:
+        raise RuntimeError(GOAL_DISPATCH_RELEASE_HOLD)
         self._abandon_count += 1
         payload = {
             "goal_id": goal_id,
@@ -223,6 +237,7 @@ class GoalDispatchBridge:
 
     def _publish_dispatch_unavailable(self, goal_id: str, text: str) -> None:
         """Record the no-engine condition without impersonating an acknowledgement."""
+        raise RuntimeError(GOAL_DISPATCH_RELEASE_HOLD)
         payload = {
             "goal_id": goal_id,
             "text": text,
@@ -242,6 +257,7 @@ class GoalDispatchBridge:
         self._publish("goal.dispatch.unavailable", payload)
 
     def _publish(self, topic: str, payload: Dict[str, Any]) -> None:
+        raise RuntimeError(GOAL_DISPATCH_RELEASE_HOLD)
         if self.thought_bus is None:
             return
         try:
@@ -291,6 +307,10 @@ class GoalDispatchBridge:
 
     def stats(self) -> Dict[str, Any]:
         return {
+            "status": "HOLD",
+            "reason_code": "production_magic_star_release_unavailable",
+            "production_ready": False,
+            "effect_enabled": False,
             "dispatched": self._dispatch_count,
             "vetoed": self._veto_count,
             "abandoned": self._abandon_count,
@@ -315,6 +335,7 @@ def get_goal_dispatch_bridge(
     goal_engine: Any = None,
     vault: Any = None,
 ) -> GoalDispatchBridge:
+    raise RuntimeError(GOAL_DISPATCH_RELEASE_HOLD)
     global _singleton
     with _singleton_lock:
         if _singleton is None:
@@ -345,6 +366,7 @@ def reset_goal_dispatch_bridge() -> None:
 
 
 __all__ = [
+    "GOAL_DISPATCH_RELEASE_HOLD",
     "GoalDispatchBridge",
     "get_goal_dispatch_bridge",
     "reset_goal_dispatch_bridge",

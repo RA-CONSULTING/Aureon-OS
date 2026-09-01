@@ -8,6 +8,7 @@ import pytest
 
 from aureon.autonomous.aureon_internal_coding_workforce import (
     INTERNAL_BRAIN_MAX_TOKENS,
+    LOCAL_SELF_CODER_PROVIDER_MODE,
     PROCESS_BRAIN_BINDINGS,
     ROLE_BRAIN_LANES,
     SENIOR_OVERSIGHT_ID,
@@ -35,6 +36,7 @@ from tests.aureon_ten_nine_one_fixtures import (
     TestEvidenceResolver,
     TestPropagator,
     TestTruthGate,
+    build_confidential_self_coder_test_thought_path,
     build_test_thought_path,
 )
 
@@ -570,3 +572,81 @@ def test_switchboard_requires_a_successful_live_probe_not_a_named_fallback() -> 
     report = provision_internal_coding_workforce(Resolver()).report()
     assert report["brain_fabric_ready"] is False
     assert report["cloud_fallback_used"] is False
+
+
+def test_sensitive_workforce_detects_one_late_non_strict_adapter() -> None:
+    endpoint = "http://127.0.0.1:11434/v1"
+    endpoint_digest = hashlib.sha256(endpoint.encode()).hexdigest()
+
+    class LocalResolver(FakeResolver):
+        def resolve_for(self, lane: str, *, nerve_id: str) -> ResolvedBrain:
+            resolved = super().resolve_for(lane, nerve_id=nerve_id)
+            adapter = resolved.adapter
+            assert adapter is not None
+            adapter.base_url = endpoint
+            adapter.strict_loopback_no_redirects = True
+            return replace(
+                resolved,
+                adapter=adapter,
+                endpoint_authority_digest=endpoint_digest,
+                provider_mode=LOCAL_SELF_CODER_PROVIDER_MODE,
+            )
+
+    resolver = LocalResolver()
+    workforce = _provision_internal_coding_workforce(
+        resolver,
+        thought_path=build_confidential_self_coder_test_thought_path(),
+    )
+    runtime_adapters = [
+        *[runtime.adapter for runtime in workforce.agents.values()],
+        *[runtime.adapter for runtime in workforce.process_brains.values()],
+    ]
+    assert len(runtime_adapters) == 18
+    assert all(
+        adapter.strict_loopback_no_redirects is True
+        for adapter in runtime_adapters[:-1]
+    )
+    runtime_adapters[-1].strict_loopback_no_redirects = False
+
+    with pytest.raises(
+        WorkforceHold,
+        match="self_coder_strict_loopback_adapter_required",
+    ):
+        workforce.assert_sensitive_local_only(
+            endpoint_authority_digest=endpoint_digest,
+        )
+
+    assert all(adapter.calls == 0 for adapter in resolver.adapters.values())
+
+
+@pytest.mark.parametrize(
+    ("base_url", "canonical_url"),
+    [
+        ("http://127.0.0.1:11434", "http://127.0.0.1:11434/v1"),
+        ("http://[::1]:11434/", "http://[::1]:11434/v1"),
+    ],
+)
+def test_self_coder_preflight_canonicalizes_loopback_root_to_v1_digest(
+    base_url: str,
+    canonical_url: str,
+) -> None:
+    class Switchboard:
+        bridge = type("Bridge", (), {"base_url": base_url})()
+
+    preflight = OllamaSwitchboardBrainResolver(Switchboard()).self_coder_transport_preflight()
+
+    assert preflight["ready"] is True
+    assert preflight["endpoint_loopback"] is True
+    assert preflight["endpoint_authority_digest"] == hashlib.sha256(
+        canonical_url.encode()
+    ).hexdigest()
+
+
+def test_self_coder_preflight_rejects_hostname_loopback_alias() -> None:
+    class Switchboard:
+        bridge = type("Bridge", (), {"base_url": "http://localhost:11434/v1"})()
+
+    preflight = OllamaSwitchboardBrainResolver(Switchboard()).self_coder_transport_preflight()
+
+    assert preflight["ready"] is False
+    assert preflight["endpoint_loopback"] is False

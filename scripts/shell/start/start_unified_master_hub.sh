@@ -1,15 +1,15 @@
-#!/bin/bash
-# 🌌👑💭⚡ START AUREON UNIFIED MASTER HUB
-# ALL SYSTEMS IN ONE PLACE
+#!/usr/bin/env bash
+# Legacy start route: fixed isolated protection HOLD only.
+set -euo pipefail
 
-echo "🌌 Starting AUREON UNIFIED MASTER HUB..."
-echo "═══════════════════════════════════════════════════════════════════════════"
+SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+REPO_ROOT="$(CDPATH= cd -- "$SCRIPT_DIR/../../.." && pwd -P)"
+PYTHON_EXE="$REPO_ROOT/.venv/bin/python"
+BOOTSTRAP="$REPO_ROOT/scripts/bootstrap/protected_bootstrap_v05.py"
 
-if [ "$1" == "--bg" ]; then
-    echo "📡 Starting in background mode..."
-    nohup python aureon_unified_master_hub.py > unified_master_hub.log 2>&1 &
-    echo "✅ Started! Log: unified_master_hub.log"
-    echo "🌐 Dashboard: http://localhost:13333"
-else
-    python aureon_unified_master_hub.py
+if [[ ! -x "$PYTHON_EXE" || ! -r "$BOOTSTRAP" ]]; then
+  echo "Fixed protected runtime bootstrap unavailable; refusing launch." >&2
+  exit 1
 fi
+
+exec "$PYTHON_EXE" -I -S -B "$BOOTSTRAP" --target-id master-launcher

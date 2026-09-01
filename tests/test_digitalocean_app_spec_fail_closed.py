@@ -1,80 +1,69 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-APP_SPEC = REPO_ROOT / ".do" / "app.yaml"
+APP_SPECS = (REPO_ROOT / "app.yaml", REPO_ROOT / ".do" / "app.yaml")
+COMPONENT_KEYS = (
+    "services",
+    "workers",
+    "jobs",
+    "static_sites",
+    "functions",
+    "databases",
+)
+FORBIDDEN_KEYS = {
+    "github",
+    "gitlab",
+    "repo_clone_url",
+    "deploy_on_push",
+    "dockerfile_path",
+    "source_dir",
+    "envs",
+    "http_port",
+    "health_check",
+}
 
 
-def _spec() -> dict[str, object]:
-    loaded = yaml.safe_load(APP_SPEC.read_text(encoding="utf-8"))
+def _spec(path: Path) -> dict[str, Any]:
+    loaded = yaml.safe_load(path.read_text(encoding="utf-8"))
     assert isinstance(loaded, dict)
     return loaded
 
 
-def test_digitalocean_service_is_single_owner_and_fail_closed() -> None:
-    spec = _spec()
-    services = spec["services"]
-    assert isinstance(services, list)
-    assert len(services) == 1
-    service = services[0]
-
-    assert service["instance_count"] == 1
-    assert "autoscaling" not in service
-    assert service["source_dir"] == "/"
-    assert (REPO_ROOT / service["dockerfile_path"]).is_file()
-
-    envs = {item["key"]: item for item in service["envs"]}
-    expected = {
-        "AUREON_ENABLE_AUTONOMOUS_CONTROL": "1",
-        "LIVE": "0",
-        "DRY_RUN": "1",
-        "AUREON_LIVE_TRADING": "0",
-        "KRAKEN_DRY_RUN": "true",
-        "BINANCE_DRY_RUN": "true",
-        "ALPACA_DRY_RUN": "true",
-        "CAPITAL_DEMO": "true",
-    }
-    for key, value in expected.items():
-        assert envs[key]["scope"] == "RUN_TIME"
-        assert envs[key]["value"] == value
+def _walk_keys(value: object) -> set[str]:
+    if isinstance(value, dict):
+        keys = {str(key) for key in value}
+        for child in value.values():
+            keys.update(_walk_keys(child))
+        return keys
+    if isinstance(value, list):
+        keys: set[str] = set()
+        for child in value:
+            keys.update(_walk_keys(child))
+        return keys
+    return set()
 
 
-def test_digitalocean_secret_values_remain_dashboard_managed() -> None:
-    service = _spec()["services"][0]
-    envs = {item["key"]: item for item in service["envs"]}
-    secret_keys = {
-        "KRAKEN_API_KEY",
-        "KRAKEN_API_SECRET",
-        "BINANCE_API_KEY",
-        "BINANCE_API_SECRET",
-        "ALPACA_API_KEY",
-        "ALPACA_SECRET_KEY",
-        "CAPITAL_API_KEY",
-        "CAPITAL_IDENTIFIER",
-        "CAPITAL_PASSWORD",
-    }
-
-    for key in secret_keys:
-        assert envs[key]["type"] == "SECRET"
-        assert "value" not in envs[key]
+def test_every_digitalocean_manifest_is_an_empty_terminal_hold() -> None:
+    for path in APP_SPECS:
+        spec = _spec(path)
+        assert spec["name"] == "aureon-protection-hold"
+        assert spec["region"] == "lon"
+        for component in COMPONENT_KEYS:
+            assert spec.get(component) == [], f"{path}: {component} is deployable"
 
 
-def test_digitalocean_redis_binding_and_health_contract_parse() -> None:
-    service = _spec()["services"][0]
-    envs = {item["key"]: item for item in service["envs"]}
+def test_holds_have_no_source_binding_runtime_or_secret_surface() -> None:
+    for path in APP_SPECS:
+        keys = _walk_keys(_spec(path))
+        assert keys.isdisjoint(FORBIDDEN_KEYS), f"{path}: {keys & FORBIDDEN_KEYS}"
 
-    assert envs["AUREON_REDIS_URL"]["value"] == "${db.REDIS_URL}"
-    assert service["health_check"]["http_path"] == "/health"
-    assert service["http_port"] == 8080
-    databases = _spec()["databases"]
-    assert databases == [
-        {
-            "name": "db",
-            "engine": "REDIS",
-            "production": True,
-            "version": "7",
-        }
-    ]
+        source = path.read_text(encoding="utf-8")
+        assert "deploy_on_push" not in source
+        assert "type: SECRET" not in source
+        assert "REDIS_URL" not in source
+        assert "AUREON_LIVE_TRADING" not in source

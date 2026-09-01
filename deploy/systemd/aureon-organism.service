@@ -1,20 +1,22 @@
-# Aureon Organism daemon (connectome sweep/heal/weave → 100%) — standalone unit.
-# Adjust WorkingDirectory / ExecStart / User to your install prefix.
 [Unit]
-Description=Aureon Organism daemon — connectome breath (sweep/heal/weave)
-After=network-online.target
-Wants=network-online.target
+Description=Aureon organism protection preflight (terminal HOLD)
 PartOf=aureon.target
 
 [Service]
-Type=simple
+Type=oneshot
 User=aureon
 WorkingDirectory=/opt/aureon
-Environment=PATH=/opt/aureon/.venv/bin:/usr/local/bin:/usr/bin:/bin
-EnvironmentFile=-/opt/aureon/.env
-ExecStart=/opt/aureon/.venv/bin/python -u -m aureon.core.organism_daemon
-Restart=always
-RestartSec=5
+ExecStart=/opt/aureon/.venv/bin/python -I -S -B /opt/aureon/scripts/bootstrap/protected_bootstrap_v05.py --target-id organism
+Restart=no
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+RestrictAddressFamilies=AF_UNIX
+IPAddressDeny=any
+LockPersonality=true
+MemoryDenyWriteExecute=true
+RestrictSUIDSGID=true
 
 [Install]
 WantedBy=aureon.target

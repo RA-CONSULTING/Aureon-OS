@@ -20,7 +20,8 @@ named (which domain fell out, which count went down) — never smoothed over.
 
 Honest by construction: everything is derived from the committed report and
 the disk. A missing report is an honest empty coverage with the blocker
-named, never a guessed number.
+named, never a guessed number. A stale or superseded report is never promoted
+to a current measurement, even if its historical rows all say ``passed``.
 
 Gary Leckey · Aureon Institute
 """
@@ -65,7 +66,7 @@ def _domain_of(module: str) -> str | None:
 
 @dataclass
 class BenchmarkCoverage:
-    status: str                                   # "measured" | "honest_unavailable"
+    status: str                    # "measured" | "stale_superseded" | "honest_unavailable"
     blocker: str = ""
     benchmarks: int = 0
     all_rows_passed: bool = False
@@ -100,10 +101,38 @@ def build_coverage(repo_root: Path | None = None,
     root = Path(repo_root) if repo_root else _REPO_ROOT
     rp = Path(report_path) if report_path else (root / "tests" / "benchmarks" / "report.json")
     try:
-        rows = json.loads(rp.read_text(encoding="utf-8")).get("tier_a", [])
+        report = json.loads(rp.read_text(encoding="utf-8"))
     except (OSError, ValueError) as exc:
         return BenchmarkCoverage(status="honest_unavailable",
                                  blocker=f"committed report unreadable: {exc}")
+    if not isinstance(report, dict):
+        return BenchmarkCoverage(
+            status="honest_unavailable",
+            blocker="committed report must contain a JSON object",
+        )
+    report_status = report.get("report_status")
+    production_ready = report.get("production_ready")
+    current_effect_claim = report.get("current_effect_claim")
+    if not (
+        report_status == "CURRENT"
+        and production_ready is True
+        and current_effect_claim is True
+    ):
+        return BenchmarkCoverage(
+            status="stale_superseded",
+            blocker=(
+                "committed report is not current release evidence: "
+                f"report_status={report_status!r}, "
+                f"production_ready={production_ready is True}, "
+                f"current_effect_claim={current_effect_claim is True}"
+            ),
+        )
+    rows = report.get("tier_a", [])
+    if not isinstance(rows, list) or not all(isinstance(row, dict) for row in rows):
+        return BenchmarkCoverage(
+            status="honest_unavailable",
+            blocker="current report tier_a must be a list of objects",
+        )
     if not rows:
         return BenchmarkCoverage(status="honest_unavailable",
                                  blocker="committed report carries no tier_a rows")
@@ -175,6 +204,8 @@ def write_coverage(cov: BenchmarkCoverage, out_md: Path, out_json: Path) -> None
         "# Benchmark coverage — the march to 100%", "",
         "> Derived from the committed Tier-A report + the filesystem. Nothing invented;",
         "> the uncovered list is the roadmap, the ratchet makes progress one-way.", "",
+        f"- Status: **{cov.status}**",
+        *([f"- Blocker: {cov.blocker}"] if cov.blocker else []),
         f"- Tier-A benchmarks: **{cov.benchmarks}** (all passed: {cov.all_rows_passed})",
         f"- Unique modules pinned: **{cov.module_pin_count}** of {cov.total_modules} on disk",
         f"- Domain coverage: **{len(cov.covered_domains)}/{len(cov.domains)}**"

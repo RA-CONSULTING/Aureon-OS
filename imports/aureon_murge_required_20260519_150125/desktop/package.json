@@ -6,10 +6,11 @@
   "author": "flAmeBorn Academy",
   "main": "main.cjs",
   "scripts": {
-    "start": "electron .",
-    "smoke": "node smoke-check.cjs",
-    "pack:dir": "electron-builder --linux dir",
-    "dist:linux": "electron-builder --linux AppImage"
+    "unavailable": "node -e process.exitCode=2",
+    "start": "npm run unavailable -- start",
+    "smoke": "npm run unavailable -- smoke",
+    "pack:dir": "npm run unavailable -- pack:dir",
+    "dist:linux": "npm run unavailable -- dist:linux"
   },
   "devDependencies": {
     "electron": "^36.3.2",

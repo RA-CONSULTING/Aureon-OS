@@ -1,35 +1,10 @@
-"""
-Aureon OS — capability demonstration ("prove it in one command").
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+"""Aureon OS capability demonstration — unreleased preflight facade.
 
-One command that lets an end-user / investor / researcher verify the whole system works — not by
-reading a stack of markdown, but by booting the real operator app once and exercising the full
-capability surface in front of them, then rolling every existing self-test into one honest artifact.
-
-What it does, in one booted ``create_app()`` (offline-safe, read-only, nothing armed):
-
-  * **Live capability exercises** through the app's test client, grouped into investor-legible classes —
-    Reasoning (``POST /api/cognition/reason``), Operator + conscience (``POST /api/operator/respond``),
-    MCP boundary end-to-end (``GET /mcp/tools`` → ``POST /mcp/call`` with a read-only tool),
-    Connections / providers (``POST …/test`` probes), the full SaaS telemetry GET surface, and the
-    frontend↔backend parity check. Each exercise is classified ``ok`` / ``honest_unavailable`` (a
-    configured-off feature, not a bug) / ``fault`` (500 / crash / HTML where JSON is due).
-  * **Rolled-up self-tests** — the SaaS compliance audit (provenance + truth_status + catalog + the
-    money-gate), the MCP transport membrane self-test (laminar / tamper-detected), the repo-wide
-    coverage audit (every ``aureon/`` package covered), and the 45 Tier-A architectural invariants.
-
-Honest by construction: an offline / unconfigured capability reports ``honest_unavailable`` with a
-declared reason — never a fabricated value and never a silent ``fault``. Read-only by construction: the
-harness only GETs and issues safe POSTs that are themselves read-only or dry by design; it never flips a
-flag, records an approval, arms a local action, moves money, or places a trade. The report is
-byte-identical on rerun (no wall-clock in the artifact).
-
-CLI: ``python -m aureon.saas.capability_demo [--report OUT.md] [--report-json OUT.json] [--json]
-[--fast]`` — exit 0 iff every capability class is proven, every rolled-up suite is green, coverage is
-complete, and all 45 Tier-A invariants pass. ``--fast`` reads the committed Tier-A ``report.json`` instead
-of re-running the 45 benchmarks live.
-
-Gary Leckey · Aureon Institute
+The historical live demonstration is unavailable until the production Magic
+Star release exists. Default execution and every live helper HOLD before app
+construction, route exercise, provider probing, suite rollup, or Tier-A
+execution. ``--fast`` is metadata-only: it reads the committed benchmark report
+and returns a non-production preflight verdict without exercising capabilities.
 """
 
 from __future__ import annotations
@@ -37,6 +12,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import logging
+import os
 import sys
 import tempfile
 from pathlib import Path
@@ -46,15 +22,24 @@ from aureon.saas.connection_verifier import _classify, verify_frontend_parity, v
 
 logger = logging.getLogger("aureon.saas.capability_demo")
 
-_REPO_ROOT = Path(__file__).resolve().parents[2]
+_REPO_ROOT = Path(
+    os.path.abspath(
+        os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)
+    )
+)
+CAPABILITY_DEMO_RELEASE_HOLD = (
+    "capability_demo_hold:production_magic_star_release_unavailable"
+)
 
 # Small classes list every exercise; large sweeps (the SaaS surface) summarise counts + list only the
 # non-ok rows, so the artifact stays readable.
 _DETAIL_MAX = 6
+_MAX_COMMITTED_REPORT_BYTES = 4 * 1024 * 1024
 
 
 def _build_app() -> Any:
-    """Boot the operator app in-process (offline-safe). Raises on failure — the caller decides."""
+    """Hold historical operator-app construction before imports or effects."""
+    raise RuntimeError(CAPABILITY_DEMO_RELEASE_HOLD)
     from aureon.operator.operator_server import create_app
 
     return create_app()
@@ -63,6 +48,7 @@ def _build_app() -> Any:
 def _exercise(client: Any, method: str, path: str,
               json_body: Dict[str, Any] | None = None) -> Tuple[Dict[str, Any], Any]:
     """Issue one request and classify it. Returns (row, payload); a crash IS a fault, recorded not raised."""
+    raise RuntimeError(CAPABILITY_DEMO_RELEASE_HOLD)
     try:
         resp = client.open(path, method=method, json=json_body)
         payload = resp.get_json(silent=True)
@@ -181,6 +167,7 @@ def _parity_class(parity: Dict[str, Any]) -> Dict[str, Any]:
 
 def _rollup_suites() -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
     """The four existing self-tests, each reduced to one ok/detail row. Returns (suites, coverage_audit)."""
+    raise RuntimeError(CAPABILITY_DEMO_RELEASE_HOLD)
     if str(_REPO_ROOT) not in sys.path:
         sys.path.insert(0, str(_REPO_ROOT))  # so `scripts.validation.*` imports in a standalone run
 
@@ -223,6 +210,7 @@ def _rollup_suites() -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
 
 def _load_benchmark_module() -> Any:
     """Load the Tier-A benchmark runner by file path (tests/ is not an importable package)."""
+    raise RuntimeError(CAPABILITY_DEMO_RELEASE_HOLD)
     path = _REPO_ROOT / "tests" / "benchmarks" / "benchmark_aureon_scope.py"
     spec = importlib.util.spec_from_file_location("aureon_benchmark_scope", path)
     if spec is None or spec.loader is None:
@@ -233,18 +221,84 @@ def _load_benchmark_module() -> Any:
 
 
 def _run_tier_a(fast: bool = False) -> Dict[str, Any]:
-    """Run (or read) the 45 Tier-A architectural invariants. Live by default; ``fast`` reads report.json."""
+    """Read committed metadata in fast mode; HOLD every live Tier-A path."""
+    if not fast:
+        raise RuntimeError(CAPABILITY_DEMO_RELEASE_HOLD)
     if fast:
         report_path = _REPO_ROOT / "tests" / "benchmarks" / "report.json"
         try:
-            data = json.loads(report_path.read_text(encoding="utf-8"))
+            with report_path.open("rb") as report_file:
+                report_bytes = report_file.read(_MAX_COMMITTED_REPORT_BYTES + 1)
+            if len(report_bytes) > _MAX_COMMITTED_REPORT_BYTES:
+                raise ValueError("report.json exceeds the metadata read limit")
+            data = json.loads(report_bytes.decode("utf-8", errors="strict"))
         except Exception as exc:  # noqa: BLE001
             return {"passed": 0, "total": 0, "failures": [f"report.json unavailable: {exc}"[:120]],
-                    "mode": "committed_report"}
+                    "mode": "unavailable_report"}
+        if not isinstance(data, dict):
+            return {
+                "passed": 0,
+                "total": 0,
+                "failures": ["report.json must contain a JSON object"],
+                "mode": "unavailable_report",
+            }
+        report_status = data.get("report_status")
+        production_ready = data.get("production_ready")
+        current_effect_claim = data.get("current_effect_claim")
+        if not (
+            report_status == "CURRENT"
+            and production_ready is True
+            and current_effect_claim is True
+        ):
+            return {
+                "passed": 0,
+                "total": 0,
+                "failures": [
+                    "committed report is stale/superseded release evidence"
+                ],
+                "mode": "stale_report",
+                "report_status": report_status,
+                "production_ready": production_ready is True,
+                "current_effect_claim": current_effect_claim is True,
+                "historical_total": (
+                    len(data.get("tier_a", []))
+                    if isinstance(data.get("tier_a", []), list)
+                    else 0
+                ),
+            }
         tier_a = data.get("tier_a", [])
-        passed = sum(1 for r in tier_a if r.get("passed"))
-        failures = [str(r.get("name")) for r in tier_a if not r.get("passed")]
-        return {"passed": passed, "total": len(tier_a), "failures": failures, "mode": "committed_report"}
+        if not isinstance(tier_a, list) or not all(
+            isinstance(row, dict) for row in tier_a
+        ):
+            return {
+                "passed": 0,
+                "total": 0,
+                "failures": ["current report tier_a must be a list of objects"],
+                "mode": "unavailable_report",
+            }
+        if not all(
+            type(row.get("passed")) is bool
+            and isinstance(row.get("name"), str)
+            and bool(row["name"].strip())
+            for row in tier_a
+        ):
+            return {
+                "passed": 0,
+                "total": 0,
+                "failures": ["current report tier_a rows have an invalid result ABI"],
+                "mode": "unavailable_report",
+            }
+        passed = sum(1 for row in tier_a if row["passed"] is True)
+        failures = [row["name"] for row in tier_a if row["passed"] is not True]
+        return {
+            "passed": passed,
+            "total": len(tier_a),
+            "failures": failures,
+            "mode": "committed_report",
+            "report_status": report_status,
+            "production_ready": True,
+            "current_effect_claim": True,
+        }
 
     mod = _load_benchmark_module()
     benchmarks: List[Tuple[str, Any]] = list(mod.TIER_A)
@@ -268,13 +322,48 @@ def _run_tier_a(fast: bool = False) -> Dict[str, Any]:
 
 # ── Orchestration ──────────────────────────────────────────────────────────────────────────────
 
-def demonstrate(app: Any = None, *, fast: bool = False, run_tier_a: bool = True) -> Dict[str, Any]:
-    """Boot the operator app once, exercise the full capability surface, and roll up every self-test.
 
-    Returns one aggregated result. ``healthy`` is True iff every capability class is proven (no faults,
-    parity all-served), every rolled-up suite is green, coverage is complete, and all Tier-A invariants
-    pass. Read-only; never raises on a bad exercise (a crash is recorded as a fault).
-    """
+def _preflight_result(tier_a: Dict[str, Any]) -> Dict[str, Any]:
+    """Build the inert public result without constructing any runtime owner."""
+    return {
+        "status": "HOLD",
+        "reason_code": CAPABILITY_DEMO_RELEASE_HOLD,
+        "production_ready": False,
+        "current_effect_claim": False,
+        "capability_classes": [],
+        "suites": [],
+        "tier_a": tier_a,
+        "coverage_complete": False,
+        "healthy": False,
+        "totals": {
+            "classes_proven": 0,
+            "classes_total": 0,
+            "suites_green": 0,
+            "suites_total": 0,
+        },
+        "note": (
+            "Capability demonstration is preflight-only until the production "
+            "Magic Star release exists; no app, route, provider, suite, or "
+            "benchmark effect was exercised."
+        ),
+    }
+
+
+def demonstrate(app: Any = None, *, fast: bool = False, run_tier_a: bool = True) -> Dict[str, Any]:
+    """Return an inert release HOLD or the stale-aware metadata preflight."""
+    if not fast or not run_tier_a:
+        return _preflight_result({
+            "passed": 0,
+            "total": 0,
+            "failures": [CAPABILITY_DEMO_RELEASE_HOLD],
+            "mode": "release_hold",
+            "production_ready": False,
+            "current_effect_claim": False,
+        })
+
+    tier_a_preflight = _run_tier_a(fast=True)
+    return _preflight_result(tier_a_preflight)
+
     app = app or _build_app()
     client = app.test_client()
 
@@ -290,8 +379,13 @@ def demonstrate(app: Any = None, *, fast: bool = False, run_tier_a: bool = True)
     suites, coverage = _rollup_suites()
     # Annotated so the skipped-run literal joins the live return as one dict type; without it
     # the comparisons below widen to `object` and mypy cannot check them.
-    tier_a: Dict[str, Any] = _run_tier_a(fast=fast) if run_tier_a else {
-        "passed": 0, "total": 0, "failures": [], "mode": "skipped"}
+    tier_a: Dict[str, Any] = (
+        tier_a_preflight
+        if tier_a_preflight is not None
+        else _run_tier_a(fast=fast)
+        if run_tier_a
+        else {"passed": 0, "total": 0, "failures": [], "mode": "skipped"}
+    )
 
     all_proven = all(c["proven"] for c in classes)
     suites_ok = all(s["ok"] for s in suites)
@@ -331,11 +425,10 @@ def write_capability_report(result: Dict[str, Any], out_md: str | Path,
     lines: List[str] = []
     lines.append("# Aureon OS — capability demonstration")
     lines.append("")
-    lines.append("Generated by `python -m aureon.saas.capability_demo --report <OUT.md>` — boots the "
-                 "operator app in-process, exercises the full live capability surface (reasoning, "
-                 "operator, MCP boundary, connection probes, the SaaS telemetry surface, and "
-                 "frontend↔backend parity), then rolls up every existing self-test. Read-only; nothing "
-                 "is armed; no fabricated data.")
+    lines.append(
+        "Generated by the unreleased capability preflight facade. No operator app, "
+        "route, provider, suite, or benchmark effect was exercised."
+    )
     lines.append("")
     lines.append(
         f"**Healthy: {result['healthy']}** · {t['classes_proven']}/{t['classes_total']} capability "
@@ -343,8 +436,14 @@ def write_capability_report(result: Dict[str, Any], out_md: str | Path,
         f"{tier['passed']}/{tier['total']} architectural invariants ({tier['mode']}) · coverage "
         f"complete {result['coverage_complete']}")
     lines.append("")
+    lines.append(
+        f"**Status: {result.get('status', 'HOLD')}** · production_ready="
+        f"{result.get('production_ready', False)} · current_effect_claim="
+        f"{result.get('current_effect_claim', False)}"
+    )
+    lines.append("")
 
-    lines.append("## Capability classes (exercised live)")
+    lines.append("## Capability classes (not exercised while held)")
     lines.append("")
     lines.append("| capability | result | what was exercised |")
     lines.append("|:---|:---:|:---|")
@@ -371,7 +470,7 @@ def write_capability_report(result: Dict[str, Any], out_md: str | Path,
             lines.append(f"| … | | | | {ok_n} further route(s) ok |")
         lines.append("")
 
-    lines.append("## Rolled-up self-tests")
+    lines.append("## Preflight suite status")
     lines.append("")
     lines.append("| suite | result | detail |")
     lines.append("|:---|:---:|:---|")
@@ -389,7 +488,7 @@ def write_capability_report(result: Dict[str, Any], out_md: str | Path,
     lines.append("")
     lines.append("```bash")
     lines.append("AUREON_LLM_OFFLINE=1 AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS=1 \\")
-    lines.append("  python -m aureon.saas.capability_demo --report docs/reports/CAPABILITY_DEMO.md")
+    lines.append("  python -m aureon.saas.capability_demo --fast --report docs/reports/CAPABILITY_DEMO.md")
     lines.append("```")
     lines.append("")
     lines.append(f"_{result['note']}_")
@@ -404,16 +503,16 @@ def write_capability_report(result: Dict[str, Any], out_md: str | Path,
 
 
 def main(argv: List[str] | None = None) -> int:
-    """CLI: demonstrate the full capability surface. Exit 0 iff healthy."""
+    """CLI: return the current release HOLD or metadata-only fast preflight."""
     import argparse
 
     parser = argparse.ArgumentParser(
-        description="Prove Aureon OS works: exercise the full capability surface + roll up every self-test.")
+        description="Report the held Aureon capability preflight without runtime effects.")
     parser.add_argument("--report", metavar="OUT.md", help="write the demonstration as a markdown artifact")
     parser.add_argument("--report-json", metavar="OUT.json", help="also write the JSON record")
     parser.add_argument("--json", action="store_true", help="print the raw JSON result and exit")
     parser.add_argument("--fast", action="store_true",
-                        help="read the committed Tier-A report.json instead of re-running the 45 benchmarks")
+                        help="read only the committed Tier-A report metadata")
     args = parser.parse_args(argv)
 
     result = demonstrate(fast=args.fast)
@@ -444,7 +543,12 @@ def main(argv: List[str] | None = None) -> int:
     return 0 if result["healthy"] else 1
 
 
-__all__ = ["demonstrate", "write_capability_report", "main"]
+__all__ = [
+    "CAPABILITY_DEMO_RELEASE_HOLD",
+    "demonstrate",
+    "write_capability_report",
+    "main",
+]
 
 
 if __name__ == "__main__":  # pragma: no cover - manual entry point

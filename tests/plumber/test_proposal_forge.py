@@ -160,6 +160,32 @@ def test_exact_duplicate_proposal_is_quarantined_by_os_replay_guard() -> None:
     assert forge.public_summary()["active_opaque_proposal_count"] == 1
 
 
+def test_discard_burns_forge_and_os_handles_without_decoding() -> None:
+    forge, boundary = _forge()
+    handle = _forge_one(forge)
+    assert isinstance(handle, OpaqueProposalHandle)
+
+    summary = forge.discard_proposal(
+        handle,
+        reason_code="durable_proposal_vault_unavailable",
+    )
+
+    assert summary["disposition"] == "DISCARDED_HNC"
+    assert summary["proposal_handle_consumed"] is True
+    assert summary["carrier_released"] is False
+    assert summary["plaintext_decoded"] is False
+    assert summary["os_discard_handle_commitment"] == handle.os_handle_commitment
+    assert forge.public_summary()["active_opaque_proposal_count"] == 0
+    assert forge.public_summary()["consumed_opaque_proposal_count"] == 1
+    assert boundary.public_summary()["active_opaque_handle_count"] == 0
+    assert boundary.public_summary()["consumed_opaque_handle_count"] == 1
+    with pytest.raises(
+        ProposalForgeError,
+        match="proposal_handle_unavailable_or_replayed",
+    ):
+        forge.discard_proposal(handle, reason_code="retry_forbidden")
+
+
 @pytest.mark.parametrize(
     "bad_diff",
     [
@@ -439,3 +465,21 @@ def test_forge_module_has_no_repo_mutation_or_code_execution_primitive() -> None
             "write_text",
         }
     )
+
+
+@pytest.mark.parametrize(("key", "ready"), [(MASTER_KEY, True), (None, False)])
+def test_forge_preflight_is_non_authorizing_and_key_free(
+    key: bytes | None,
+    ready: bool,
+) -> None:
+    forge, _boundary_instance = _forge(_boundary(key))
+
+    preflight = forge.preflight()
+
+    assert preflight["schema"] == "aureon.plumber.proposal-forge-preflight.v0"
+    assert preflight["ready"] is ready
+    assert preflight["key_material_returned"] is False
+    assert preflight["proposal_admission_authorized"] is False
+    assert preflight["action_eligible"] is False
+    assert preflight["economic_eligible"] is False
+    assert MASTER_KEY.hex() not in json.dumps(preflight, sort_keys=True)

@@ -1,49 +1,35 @@
-# Nightly live self-verification — boot the three daemons as separate OS
-# processes and re-prove the organism senses itself across the boundary (the
-# metacognition self-loop). The push/PR CI gates the in-process audit + strict
-# tier; only a real multi-process boot can prove the live loop, so it runs on a
-# schedule. Red nightly = the standing guarantee broke.
-name: nightly-benchmark
+# Nightly release-boundary audit. No daemon, listener, target module, or live
+# benchmark is started while the full OS protection release remains on HOLD.
+name: nightly-protection-hold-audit
 
 on:
   schedule:
-    - cron: "0 6 * * *"   # 06:00 UTC daily
+    - cron: "0 6 * * *"
   workflow_dispatch:
-    inputs:
-      wait_s:
-        description: "Max seconds to wait for the self-loop to close (polls; early-exits when ready)"
-        required: false
-        default: "60"
+
+permissions:
+  contents: read
 
 concurrency:
-  group: nightly-benchmark-${{ github.ref }}
+  group: nightly-protection-hold-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  live-benchmark:
+  protection-hold:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-    strategy:
-      matrix:
-        python-version: ["3.12"]
-    env:
-      AUREON_LLM_OFFLINE: "1"
-      AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS: "1"
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install (operator + dev extras)
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verify the isolated boundary and official launch surfaces
         run: |
-          python -m pip install --upgrade pip
-          pip install -e '.[operator,dev]'
-      - name: Live multi-daemon benchmark (self-loop must close across processes)
-        run: python -m scripts.validation.benchmark_live_multidaemon --wait ${{ github.event.inputs.wait_s || '60' }}
-      - name: Upload benchmark report
-        if: always()   # keep the report inspectable even when the nightly fails
-        uses: actions/upload-artifact@v4
-        with:
-          name: live-multidaemon-benchmark
-          path: docs/research/benchmarks/
+          python -m pip install --disable-pip-version-check "pytest>=8,<9" "PyYAML>=6,<7"
+          python -m pytest -q \
+            tests/plumber/test_isolated_protected_bootstrap_v05.py \
+            tests/test_primary_launcher_paths.py \
+            tests/test_digitalocean_app_spec_fail_closed.py \
+            tests/test_linux_packaging.py

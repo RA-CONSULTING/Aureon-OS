@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "node server.mjs",
+    "unavailable": "node -e process.exitCode=2",
+    "start": "npm run unavailable -- start",
     "check": "node --check server.mjs"
   },
   "dependencies": {

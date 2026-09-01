@@ -2,6 +2,10 @@
 OpportunityScanner — every persona scanning for ways to help
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+CURRENT RELEASE: background scanning, threads, and goal dispatch are
+hard-HOLD before effects until the production Magic Star release is available.
+Persona opportunity-shaping functions remain pure and inspectable.
+
 Between user turns, the scanner walks every persona against every
 active LifeEvent and asks ``scan_for_opportunity(event)``. If a
 persona sees a way to help, the scanner emits a ``goal.submit.request``
@@ -30,6 +34,11 @@ from aureon.vault.voice.life_context import LifeContext
 from aureon.vault.voice.persona_action import PersonaAction, PersonaActuator
 
 logger = logging.getLogger("aureon.vault.voice.opportunity_scanner")
+
+
+OPPORTUNITY_SCANNER_RELEASE_HOLD = (
+    "opportunity_scanner_hold:production_magic_star_release_unavailable"
+)
 
 
 @dataclass
@@ -85,6 +94,7 @@ class OpportunityScanner:
     # ─── lifecycle ───────────────────────────────────────────────────────
 
     def start(self) -> None:
+        raise RuntimeError(OPPORTUNITY_SCANNER_RELEASE_HOLD)
         if self._running:
             return
         self._running = True
@@ -107,6 +117,7 @@ class OpportunityScanner:
     def scan_once(self, state: Optional[Dict[str, Any]] = None) -> List[OpportunityHit]:
         """Perform one full sweep: every persona × every active event.
         Returns the list of OpportunityHits dispatched this sweep."""
+        raise RuntimeError(OPPORTUNITY_SCANNER_RELEASE_HOLD)
         state = dict(state or {})
         events = self._life_context.active()
         if not events:
@@ -146,6 +157,7 @@ class OpportunityScanner:
         return fired
 
     def _dispatch(self, hit: OpportunityHit, event: Any) -> None:
+        raise RuntimeError(OPPORTUNITY_SCANNER_RELEASE_HOLD)
         action = PersonaAction(
             kind="goal.submit",
             topic=hit.goal_text,
@@ -174,6 +186,7 @@ class OpportunityScanner:
     # ─── loop ────────────────────────────────────────────────────────────
 
     def _loop(self) -> None:
+        raise RuntimeError(OPPORTUNITY_SCANNER_RELEASE_HOLD)
         while self._running:
             time.sleep(self.interval_s)
             if not self._running:

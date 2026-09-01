@@ -66,11 +66,11 @@ CORE_UNITS = (
     "aureon-organism.service",
     "aureon-hnc.service",
 )
-BOOT_MARKER = "AUREON_APPLIANCE_BOOTABLE_FIRSTBOOT_REQUIRED"
+BOOT_MARKER = "AUREON_APPLIANCE_BOOTABLE_PROTECTION_HOLD"
 BOOT_ATTESTATION = {
     "schema": "aureon.appliance.boot.v1",
     "status": "hold",
-    "reason": "local_console_firstboot_required",
+    "reason": "native_appliance_release_boundary_required",
     "core_started": False,
 }
 
@@ -456,8 +456,11 @@ def load_profile(path: Path) -> dict[str, Any]:
             "unsafe_runtime",
             "only boot attestation and the owner console gate may be enabled in the image",
         )
-    if runtime["enabled_after_firstboot"] != ["aureon-appliance.target"]:
-        raise ApplianceHold("unsafe_runtime", "first boot may enable only aureon-appliance.target")
+    if runtime["enabled_after_firstboot"] != []:
+        raise ApplianceHold(
+            "unsafe_runtime",
+            "terminal-HOLD appliance may not enable a runtime after first boot",
+        )
     if (
         hnc.get("model") != "film_reel_engineering_translation_v1"
         or hnc.get("immutable_frames") is not True
@@ -1721,7 +1724,7 @@ def _boot_verify(inputs: Mapping[str, Any], work_dir: Path, vhdx: Path, iso: Pat
     }
     return {
         "status": "pass",
-        "marker": "AUREON_APPLIANCE_BOOTABLE_FIRSTBOOT_REQUIRED",
+        "marker": "AUREON_APPLIANCE_BOOTABLE_PROTECTION_HOLD",
         "targets": targets,
         "network": "qemu_nic_none",
         "input": "snapshot_vhdx_and_read_only_el_torito_candidate",

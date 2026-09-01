@@ -16,7 +16,8 @@
       "LICENSE",
       "README.md",
       "aureon",
-      "pyproject.toml"
+      "pyproject.toml",
+      "scripts/bootstrap/protected_bootstrap_v05.py"
     ],
     "el_torito": true
   },
@@ -25,9 +26,7 @@
       "aureon-boot-attestation.service",
       "aureon-firstboot-console.service"
     ],
-    "enabled_after_firstboot": [
-      "aureon-appliance.target"
-    ],
+    "enabled_after_firstboot": [],
     "safe_environment": {
       "AUREON_AUDIT_MODE": "1",
       "AUREON_LIVE_TRADING": "0",

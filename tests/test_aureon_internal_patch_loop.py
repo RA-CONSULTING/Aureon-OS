@@ -12,6 +12,7 @@ from aureon.autonomous.aureon_agent_company_brain_fabric import (
     provision_agent_company_brain_fabric as _provision_agent_company_brain_fabric,
 )
 from aureon.autonomous.aureon_internal_coding_workforce import (
+    LOCAL_SELF_CODER_PROVIDER_MODE,
     ResolvedBrain,
 )
 from aureon.autonomous.aureon_internal_coding_workforce import (
@@ -22,11 +23,45 @@ from aureon.autonomous.aureon_internal_patch_loop import (
     _canonicalize_full_replacement_diff,
     _git_apply_check,
     build_patch_request,
-    run_internal_patch_cycle,
+    run_internal_patch_cycle as _run_internal_patch_cycle,
 )
 from aureon.autonomous.aureon_safe_code_control import SafeCodeControl
 from aureon.inhouse_ai.llm_adapter import LLMAdapter, LLMResponse, StreamChunk
-from tests.aureon_ten_nine_one_fixtures import build_test_thought_path
+from aureon.plumber.os_protection import LocalOSProtectionBoundary
+from aureon.plumber.proposal_forge import LocalProposalForge
+from tests.aureon_ten_nine_one_fixtures import (
+    build_confidential_self_coder_test_thought_path,
+)
+
+
+PATCH_LOOP_BASE_COMMIT = "a" * 40
+PATCH_LOOP_ADVISER_EVIDENCE = hashlib.sha256(b"patch-loop-test-adviser").hexdigest()
+TEST_LOCAL_URL = "http://127.0.0.1:11434/v1"
+TEST_LOCAL_DIGEST = hashlib.sha256(TEST_LOCAL_URL.encode()).hexdigest()
+
+
+def build_test_thought_path():
+    return build_confidential_self_coder_test_thought_path()
+
+
+def _proposal_forge() -> LocalProposalForge:
+    return LocalProposalForge(
+        forge_id="patch-loop-test-proposal-forge",
+        os_boundary=LocalOSProtectionBoundary(
+            boundary_id="patch-loop-test-os-boundary",
+            master_key_provider=lambda: b"patch-loop-test-hnc-key-material",
+            max_ingress_bytes=1024 * 1024,
+        ),
+    )
+
+
+def run_internal_patch_cycle(*args, **kwargs):
+    kwargs.setdefault("proposal_forge", _proposal_forge())
+    kwargs.setdefault("base_commit", PATCH_LOOP_BASE_COMMIT)
+    kwargs.setdefault("adviser_id", "openai:codex-test-adviser")
+    kwargs.setdefault("reviewer_id", "openai:codex-test-reviewer")
+    kwargs.setdefault("adviser_evidence_sha256", PATCH_LOOP_ADVISER_EVIDENCE)
+    return _run_internal_patch_cycle(*args, **kwargs)
 
 
 def provision_agent_company_brain_fabric(*args, **kwargs):
@@ -75,6 +110,8 @@ class PatchAdapter(LLMAdapter):
         decision_text: str = "",
         first_patch_text: str = "",
     ) -> None:
+        self.base_url = TEST_LOCAL_URL
+        self.strict_loopback_no_redirects = True
         self.lane = lane
         self.patch_text = patch_text
         self.invalid_once = invalid_once
@@ -148,6 +185,18 @@ class PatchResolver:
     def resolve(self, lane: str) -> ResolvedBrain:
         return self.resolve_for(lane, nerve_id=f"lane:{lane}")
 
+    def self_coder_transport_preflight(self) -> dict[str, Any]:
+        return {
+            "schema_version": "aureon-self-coder-transport-preflight-v1",
+            "ready": True,
+            "provider_mode": LOCAL_SELF_CODER_PROVIDER_MODE,
+            "endpoint_authority_digest": TEST_LOCAL_DIGEST,
+            "endpoint_loopback": True,
+            "external_source_egress_authorized": False,
+            "action_eligible": False,
+            "economic_eligible": False,
+        }
+
     def resolve_for(self, lane: str, *, nerve_id: str) -> ResolvedBrain:
         adapter = self.adapters.setdefault(
             lane,
@@ -169,7 +218,7 @@ class PatchResolver:
             working=self.ready,
             catalog_size=5,
             catalog_refreshed_at=1_787_000_000.0,
-            endpoint_authority_digest="f" * 64,
+            endpoint_authority_digest=TEST_LOCAL_DIGEST,
             routing_receipt_id=(
                 "ollama:hnc-route:" + hashlib.sha256(nerve_id.encode()).hexdigest()
                 if self.ready
@@ -178,7 +227,7 @@ class PatchResolver:
             hnc_receipt_id="hnc:live_field:test" if self.ready else "",
             hnc_gamma=0.9 if self.ready else None,
             hnc_coherence_band="active" if self.ready else "",
-            provider_mode="ollama_cloud_primary" if self.ready else "",
+            provider_mode=LOCAL_SELF_CODER_PROVIDER_MODE if self.ready else "",
         )
 
     @property
@@ -217,20 +266,22 @@ def test_aureon_authors_but_never_applies_a_real_unified_diff(tmp_path: Path, mo
     resolver = PatchResolver()
     workforce = provision_agent_company_brain_fabric(resolver)
     controller = _controller(tmp_path, monkeypatch)
-    controller.pending_proposals.append({"status": "pending_review", "title": "older proposal"})
-    controller._persist()
+    forge = _proposal_forge()
 
     cycle = run_internal_patch_cycle(
         root=tmp_path,
         request=_request(tmp_path),
         workforce=workforce,
         controller=controller,
+        proposal_forge=forge,
     )
 
     assert source.read_text(encoding="utf-8") == "def answer():\n    return 1\n"
-    assert cycle["status"] == "internal_patch_proposal_held_for_senior_review"
+    assert cycle["status"] == "internal_patch_transient_hnc_seal_held"
     assert cycle["applied"] is False
-    assert cycle["pending_senior_review"] is True
+    assert cycle["pending_senior_review"] is False
+    assert cycle["proposal_recoverable"] is False
+    assert cycle["transient_hnc_seal_verified"] is True
     assert cycle["proposal"]["source"] == "aureon_internal_coding_workforce"
     assert cycle["proposal"]["status"] == "proposal_reviewed_hold"
     assert cycle["proposal"]["reviewer"] == "aureon:pre_apply_council"
@@ -238,14 +289,23 @@ def test_aureon_authors_but_never_applies_a_real_unified_diff(tmp_path: Path, mo
     assert cycle["proposal"]["execution_authorized"] is False
     assert cycle["proposal"]["release_authorized"] is False
     assert cycle["proposal"]["metadata"]["codex_implementation"] is False
+    assert cycle["proposal"]["patch_text"] == ""
+    assert cycle["proposal_protection"]["admitted_hnc"] is True
+    assert cycle["proposal_protection"]["aureon_receipt_stores_raw_goal"] is False
+    assert cycle["proposal_protection"]["aureon_receipt_stores_raw_diff"] is False
+    assert cycle["proposal_protection"]["thought_bus_stores_answer_commitment_only"] is True
+    assert cycle["proposal_protection"]["transient_hnc_handle_burned"] is True
+    assert cycle["proposal_protection"]["proposal_recoverable"] is False
+    assert forge.public_summary()["active_opaque_proposal_count"] == 0
+    assert forge.public_summary()["consumed_opaque_proposal_count"] == 1
     assert cycle["authoring_correction_attempted"] is False
     assert len(cycle["author_work_receipt_ids"]) == 1
     assert cycle["patch_validation"]["target_paths"] == ["sample.py"]
     assert cycle["apply_evidence"] == {
-        "status": "held_proposal_only",
+        "status": "held_transient_hnc_seal_only",
         "applied": False,
         "effect_attempted": False,
-        "blocked_reason": "production_magic_star_release_unavailable",
+        "blocked_reason": "durable_proposal_vault_unavailable",
         "test_commands_executed": False,
         "repository_mutation_authorized": False,
         "generated_code_execution_authorized": False,
@@ -297,10 +357,59 @@ def test_aureon_authors_but_never_applies_a_real_unified_diff(tmp_path: Path, mo
     assert author_budgets == [4_096]
     assert council_budgets == [512] * 16
     persisted = json.loads(controller.state_path.read_text(encoding="utf-8"))
-    assert persisted["pending_count"] == 1
-    assert persisted["pending_proposals"][0]["title"] == "older proposal"
+    assert persisted["pending_count"] == 0
     assert persisted["recent_reviews"][-1]["status"] == "proposal_reviewed_hold"
     assert persisted["recent_reviews"][-1]["reviewer"] == "aureon:pre_apply_council"
+    assert persisted["recent_reviews"][-1]["patch_text"] == ""
+    assert GOOD_PATCH not in json.dumps(persisted, sort_keys=True)
+
+
+def test_patch_cycle_requires_hnc_forge_before_any_model_call(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    source = _source(tmp_path)
+    resolver = PatchResolver()
+    workforce = provision_agent_company_brain_fabric(resolver)
+    controller = _controller(tmp_path, monkeypatch)
+
+    with pytest.raises(InternalPatchHold, match="trusted_local_proposal_forge_required"):
+        _run_internal_patch_cycle(
+            root=tmp_path,
+            request=_request(tmp_path),
+            workforce=workforce,
+            controller=controller,
+        )
+
+    assert resolver.prompt_call_count == 0
+    assert controller.status()["pending_count"] == 0
+    assert controller.status()["recent_reviews"] == []
+    assert source.read_text(encoding="utf-8") == "def answer():\n    return 1\n"
+
+
+def test_existing_proposal_state_requires_archive_before_any_model_call(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    source = _source(tmp_path)
+    resolver = PatchResolver()
+    workforce = provision_agent_company_brain_fabric(resolver)
+    controller = _controller(tmp_path, monkeypatch)
+    controller.pending_proposals.append(
+        {"status": "pending_review", "patch_text": GOOD_PATCH}
+    )
+    controller._persist()
+
+    with pytest.raises(InternalPatchHold, match="existing_proposal_state"):
+        run_internal_patch_cycle(
+            root=tmp_path,
+            request=_request(tmp_path),
+            workforce=workforce,
+            controller=controller,
+        )
+
+    assert resolver.prompt_call_count == 0
+    assert source.read_text(encoding="utf-8") == "def answer():\n    return 1\n"
 
 
 def test_git_invalid_truncated_hunk_gets_one_receipted_correction(
@@ -571,8 +680,8 @@ def test_test_commands_are_never_executed_by_proposal_only_cycle(tmp_path: Path,
 
     assert source.read_text(encoding="utf-8") == "def answer():\n    return 1\n"
     assert cycle["applied"] is False
-    assert cycle["status"] == "internal_patch_proposal_held_for_senior_review"
-    assert cycle["apply_evidence"]["status"] == "held_proposal_only"
+    assert cycle["status"] == "internal_patch_transient_hnc_seal_held"
+    assert cycle["apply_evidence"]["status"] == "held_transient_hnc_seal_only"
     assert cycle["apply_evidence"]["effect_attempted"] is False
     assert cycle["apply_evidence"]["test_commands_executed"] is False
 
@@ -717,7 +826,7 @@ def test_unready_brain_fabric_holds_without_model_or_patch(tmp_path: Path, monke
     resolver = PatchResolver(ready=False)
     workforce = provision_agent_company_brain_fabric(resolver)
 
-    with pytest.raises(InternalPatchHold, match="full_agent_company_brain_fabric_required"):
+    with pytest.raises(InternalPatchHold, match="local_confidential_runtime_required"):
         run_internal_patch_cycle(
             root=tmp_path,
             request=_request(tmp_path),

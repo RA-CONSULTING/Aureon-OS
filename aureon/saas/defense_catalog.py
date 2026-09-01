@@ -22,13 +22,16 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import re
 from pathlib import Path
 from typing import Any, Dict, List
 
 logger = logging.getLogger("aureon.saas.defense_catalog")
 
-_REPO_ROOT = Path(__file__).resolve().parents[2]
+_REPO_ROOT = Path(
+    os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
+)
 _REPORT_PATH = _REPO_ROOT / "tests" / "benchmarks" / "report.json"
 
 # ── the three groups (what layer of the body a bio module belongs to) ─────────

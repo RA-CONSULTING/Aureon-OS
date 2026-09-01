@@ -49,6 +49,11 @@ from aureon.vault.voice.temporal_causality import (  # noqa: E402
 from aureon.vault.voice.vault_feed_audit import VaultFeedAudit  # noqa: E402
 
 
+STRESS_FULL_PATHWAY_RELEASE_HOLD = (
+    "stress_full_pathway_hold:production_magic_star_release_unavailable"
+)
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Output
 # ─────────────────────────────────────────────────────────────────────────────
@@ -147,6 +152,7 @@ class _StageCounter:
 
 
 def run(n_events: int = 1000) -> int:
+    raise RuntimeError(STRESS_FULL_PATHWAY_RELEASE_HOLD)
     banner(f"Stage 6.4 — full-pathway stress ({n_events} events)")
 
     bus = ThoughtBus()

@@ -14,7 +14,7 @@ import 'dotenv/config';
 import fs from 'fs';
 import path from 'path';
 
-const GAMMA_API_KEY = process.env.GAMMA_API_KEY || 'sk-gamma-0iwjLpcbswHzIuX1yGJLxvKmQsR7drEcV9ppnRyycUs';
+const GAMMA_API_KEY = process.env.GAMMA_API_KEY;
 const GAMMA_BASE_URL = 'https://public-api.gamma.app/v1.0';
 const COMMAND_SERVER_URL = process.env.NEXUS_COMMAND_URL || 'http://localhost:8790';
 const STATE_DIR = path.resolve(process.cwd(), process.env.AUREON_STATE_DIR || 'state');
@@ -93,6 +93,9 @@ async function gammaRequest<T>(
   method: 'GET' | 'POST' = 'GET',
   body?: unknown
 ): Promise<T> {
+  if (!GAMMA_API_KEY) {
+    throw new Error('GAMMA_API_KEY is required; embedded credentials are forbidden.');
+  }
   const url = `${GAMMA_BASE_URL}${endpoint}`;
   const headers: Record<string, string> = {
     'X-API-KEY': GAMMA_API_KEY,

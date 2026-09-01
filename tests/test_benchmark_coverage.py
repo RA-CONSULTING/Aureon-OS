@@ -28,7 +28,12 @@ def _fixture_tree(tmp_path, rows):
     (tmp_path / "aureon" / "beta").mkdir(parents=True)
     (tmp_path / "aureon" / "beta" / "__init__.py").write_text("", encoding="utf-8")
     report = tmp_path / "report.json"
-    report.write_text(json.dumps({"tier_a": rows}), encoding="utf-8")
+    report.write_text(json.dumps({
+        "report_status": "CURRENT",
+        "production_ready": True,
+        "current_effect_claim": True,
+        "tier_a": rows,
+    }), encoding="utf-8")
     return report
 
 
@@ -48,6 +53,37 @@ def test_missing_report_is_honest_unavailable(tmp_path):
     cov = build_coverage(repo_root=tmp_path, report_path=tmp_path / "nope.json")
     assert cov.status == "honest_unavailable"
     assert "unreadable" in cov.blocker
+
+
+def test_non_mapping_report_is_honest_unavailable(tmp_path):
+    report = tmp_path / "report.json"
+    report.write_text("[]", encoding="utf-8")
+
+    cov = build_coverage(repo_root=tmp_path, report_path=report)
+
+    assert cov.status == "honest_unavailable"
+    assert cov.all_rows_passed is False
+    assert "JSON object" in cov.blocker
+
+
+def test_stale_report_is_not_promoted_to_measured_coverage(tmp_path):
+    report = _fixture_tree(tmp_path, [
+        {"module": "aureon/alpha/engine.py", "passed": True}])
+    payload = json.loads(report.read_text(encoding="utf-8"))
+    payload.update({
+        "report_status": "STALE_SUPERSEDED",
+        "production_ready": False,
+        "current_effect_claim": False,
+    })
+    report.write_text(json.dumps(payload), encoding="utf-8")
+
+    cov = build_coverage(repo_root=tmp_path, report_path=report)
+
+    assert cov.status == "stale_superseded"
+    assert cov.all_rows_passed is False
+    assert cov.benchmarks == 0
+    assert cov.pinned_modules == []
+    assert "not current release evidence" in cov.blocker
 
 
 def test_module_named_in_report_but_absent_on_disk_is_named(tmp_path):
@@ -88,19 +124,19 @@ def test_writer_renders_roadmap_and_json_round_trips(tmp_path):
     assert json.loads(js.read_text(encoding="utf-8"))["uncovered_domains"] == ["beta"]
 
 
-def test_live_repo_measurement_is_sane():
+def test_live_repo_measurement_reports_committed_stale_evidence():
     cov = build_coverage()
-    assert cov.status == "measured"
-    assert cov.benchmarks >= 62
-    assert cov.missing_modules == []                  # every pin names a real file
-    assert cov.module_pin_count >= 58
-    assert "operator" in cov.covered_domains          # the one door is pinned
-    # honest: the gap is real and named until the march closes it
-    assert isinstance(cov.uncovered_domains, list)
+    assert cov.status == "stale_superseded"
+    assert cov.benchmarks == 0
+    assert cov.all_rows_passed is False
+    assert cov.module_pin_count == 0
+    assert cov.covered_domains == []
+    assert "STALE_SUPERSEDED" in cov.blocker
 
 
-def test_committed_baseline_ratchet_holds_on_live_repo():
+def test_committed_baseline_ratchet_cannot_pass_on_stale_live_report():
     live = build_coverage()
     baseline = load_baseline()
     verdict = ratchet_check(live, baseline)
-    assert verdict["ok"] is True, verdict["regressions"]
+    assert verdict["ok"] is False
+    assert verdict["regressions"]

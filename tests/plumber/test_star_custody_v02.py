@@ -142,6 +142,7 @@ class _CustodyFixture:
 def _configuration(
     *,
     handler: Callable[[bytes], Mapping[str, Any]] = _safe_capability,
+    result_schema: Mapping[str, str] | None = None,
 ) -> _CustodyConfiguration:
     keys = {role: _private_key(f"authority-{role}") for role in AUTHORIZATION_ROLES}
     trust = {role: _binding(role, keys[role]) for role in AUTHORIZATION_ROLES}
@@ -149,6 +150,7 @@ def _configuration(
         capability_id=CAPABILITY_ID,
         measurement_sha256=_digest("registered-capability-measurement"),
         policy_measurement_sha256=_digest("policy-measurement"),
+        result_schema=result_schema or {"signature_valid": "bool"},
         handler=handler,
     )
     return _CustodyConfiguration(
@@ -234,11 +236,12 @@ def _build_authorization_chain(
 def _build_custody(
     *,
     handler: Callable[[bytes], Mapping[str, Any]] = _safe_capability,
+    result_schema: Mapping[str, str] | None = None,
     additional_capabilities: Mapping[str, RegisteredCapabilityV02] | None = None,
     master_key: bytes | str = MASTER_KEY,
     carrier: Mapping[str, Any] | None = None,
 ) -> _CustodyFixture:
-    config = _configuration(handler=handler)
+    config = _configuration(handler=handler, result_schema=result_schema)
     capabilities = {
         **config.capabilities,
         **dict(additional_capabilities or {}),
@@ -414,6 +417,7 @@ def test_star_custody_releases_prechange_v1_key_profiles(vector) -> None:
     carrier, master_key = _legacy_single_carrier(vector)
     fixture = _build_custody(
         handler=lambda plaintext: {"legacy_profile_valid": plaintext == b"legacy-profile"},
+        result_schema={"legacy_profile_valid": "bool"},
         master_key=master_key,
         carrier=carrier,
     )
@@ -740,7 +744,8 @@ def test_star_custody_binds_signed_policy_to_selected_capability() -> None:
         capability_id=capability_b_id,
         measurement_sha256=_digest("alternate-capability-measurement"),
         policy_measurement_sha256=_digest("alternate-policy-measurement"),
-        handler=lambda _plaintext: {"selected": "B"},
+        result_schema={"selected": "bool"},
+        handler=lambda _plaintext: {"selected": True},
     )
     fixture = _build_custody(
         additional_capabilities={capability_b_id: capability_b},
@@ -793,8 +798,34 @@ def test_star_custody_rejects_capability_that_returns_plaintext() -> None:
 
     with pytest.raises(
         StarCustodyError,
-        match="capability_plaintext_exfiltration_denied",
+        match="capability_result_schema_denied",
     ):
+        fixture.custody.release_to_capability(
+            fixture.packet,
+            lease=fixture.lease,
+            authorization_chain=fixture.authorization_chain,
+            capability_id=CAPABILITY_ID,
+        )
+
+
+@pytest.mark.parametrize(
+    "encoder",
+    [
+        lambda plaintext: list(plaintext),
+        lambda plaintext: int.from_bytes(plaintext, "big"),
+        lambda plaintext: plaintext[::-1].decode("utf-8"),
+        lambda plaintext: {"bytes": list(plaintext)},
+    ],
+    ids=["integer_vector", "large_integer", "reversed_text", "nested_vector"],
+)
+def test_star_custody_typed_result_abi_blocks_reversible_plaintext_encodings(
+    encoder: Callable[[bytes], Any],
+) -> None:
+    fixture = _build_custody(
+        handler=lambda plaintext: {"signature_valid": encoder(plaintext)}
+    )
+
+    with pytest.raises(StarCustodyError, match="capability_result_schema_denied"):
         fixture.custody.release_to_capability(
             fixture.packet,
             lease=fixture.lease,

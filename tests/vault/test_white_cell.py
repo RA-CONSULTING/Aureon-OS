@@ -12,9 +12,7 @@ White cell agent tests:
 
 import os
 import sys
-import tempfile
-import shutil
-from pathlib import Path
+import pytest
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 if REPO_ROOT not in sys.path:
@@ -26,8 +24,6 @@ from aureon.vault import (
     ThreatReport,
     detect_threats,
 )
-from aureon.code_architect import CodeArchitect, SkillLibrary
-from aureon.autonomous.vm_control import VMControlDispatcher
 
 
 PASS = 0
@@ -44,62 +40,25 @@ def check(condition: bool, msg: str) -> None:
         print(f"  [!!] {msg}")
 
 
-def _build_architect():
-    tmp = Path(tempfile.mkdtemp(prefix="aureon_vault_wc_"))
-    lib = SkillLibrary(storage_dir=tmp)
-    dispatcher = VMControlDispatcher()
-    sid = dispatcher.create_session(backend="simulated", name="wc-vm", make_default=True)
-    dispatcher.get_session(sid).arm(dry_run=False)
-    arch = CodeArchitect(library=lib, dispatcher=dispatcher)
-    arch.bootstrap_atomics()
-    return arch, dispatcher, tmp
+@pytest.mark.parametrize("kind", ["failed_skill", "casimir_drift"])
+def test_engage_is_held_before_architect_or_bus_effect(kind: str):
+    print(f"\n[A/B] WhiteCellAgent {kind} engagement remains held")
 
+    class Bomb:
+        def __getattribute__(self, _name: str):
+            raise AssertionError("release-held cell touched an effect owner")
 
-def test_engage_failed_skill():
-    print("\n[A] WhiteCellAgent engages a failed_skill threat")
-    arch, dispatcher, tmp = _build_architect()
-    try:
-        cell = WhiteCellAgent(architect=arch)
-        threat = ThreatReport(
-            threat_id="fs_001",
-            kind="failed_skill",
-            description="synthetic failure",
-            severity=0.7,
-        )
-
-        outcome = cell.engage(threat)
-
-        check(outcome.threat_id == "fs_001", "outcome references the threat")
-        check(outcome.recovery_skill_name is not None, "recovery skill authored")
-        check(
-            outcome.recovery_skill_name in arch.library,
-            f"recovery skill stored in library ({outcome.recovery_skill_name})",
-        )
-        check(outcome.duration_s > 0, "duration measured")
-        check(outcome.success, f"engagement succeeded (reasoning: {outcome.reasoning[:80]})")
-    finally:
-        dispatcher.destroy_all()
-        shutil.rmtree(tmp, ignore_errors=True)
-
-
-def test_engage_casimir_drift():
-    print("\n[B] WhiteCellAgent engages a casimir_drift threat")
-    arch, dispatcher, tmp = _build_architect()
-    try:
-        cell = WhiteCellAgent(architect=arch)
-        threat = ThreatReport(
-            threat_id="cd_001",
-            kind="casimir_drift",
-            description="drift force 7.0",
-            severity=0.9,
-        )
-        outcome = cell.engage(threat)
-        check(outcome.success, "casimir_drift recovery succeeded")
-        check("recover_casimir_drift" in outcome.recovery_skill_name,
-              f"recovery named correctly ({outcome.recovery_skill_name})")
-    finally:
-        dispatcher.destroy_all()
-        shutil.rmtree(tmp, ignore_errors=True)
+    cell = WhiteCellAgent(architect=Bomb(), thought_bus=Bomb())
+    threat = ThreatReport(
+        threat_id=f"{kind}_001",
+        kind=kind,
+        description="synthetic threat",
+        severity=0.9,
+    )
+    with pytest.raises(RuntimeError, match="white_cell_agent_hold"):
+        cell.engage(threat)
+    with pytest.raises(RuntimeError, match="white_cell_agent_hold"):
+        cell._auto_wire()
 
 
 def test_detect_threats_from_vault():
@@ -137,8 +96,8 @@ def main():
     print("  WHITE CELL TEST SUITE")
     print("=" * 80)
 
-    test_engage_failed_skill()
-    test_engage_casimir_drift()
+    test_engage_is_held_before_architect_or_bus_effect("failed_skill")
+    test_engage_is_held_before_architect_or_bus_effect("casimir_drift")
     test_detect_threats_from_vault()
 
     print()

@@ -20,6 +20,7 @@ from collections.abc import Callable, Mapping
 from typing import Any, Protocol, runtime_checkable
 
 from aureon.autonomous.aureon_ten_nine_one_thought_path import (
+    SELF_CODER_CONFIDENTIAL_PREFLIGHT_SCHEMA,
     TenNineOneEvidenceResolver,
     TenNineOneHold,
     TenNineOnePropagator,
@@ -208,7 +209,7 @@ class _TruthInterceptingResolver:
         if _sha256(self._answer) != answer_digest or self._hnc.get("receipt_id") != hnc_receipt_id:
             raise TenNineOneHold("truth_gate_answer_lineage_mismatch")
         try:
-            verdict = screen_ingress(self._answer, source="ollama_cloud_brain")
+            verdict = screen_ingress(self._answer, source="aureon_hnc_brain")
         except Exception as exc:  # noqa: BLE001 - membrane failure must hold closed
             raise TenNineOneHold("brain_reply_membrane_unavailable") from exc
         self.reply_screen = {
@@ -286,6 +287,38 @@ class TruthGatedTenNineOneThoughtPath:
         """Return validated outer receipts through the legacy path interface."""
 
         return tuple(json.loads(_canonical_json(item)) for item in self._receipts)
+
+    def self_coder_confidential_preflight(self) -> dict[str, Any]:
+        """Prove the exact local resolver, truth gate, and commitment sink.
+
+        This is a composition check, not action authority. Exact-type checks
+        prevent a caller-supplied resolver, gate, or plaintext propagator from
+        opting in merely by exposing a truthy attribute or matching protocol.
+        """
+
+        from aureon.autonomous.aureon_ten_nine_one_thought_path import (
+            CommitmentOnlyHiveMyceliaPropagator,
+            LocalHncAurisEvidenceResolver,
+        )
+
+        local_resolver = type(self._resolver) is LocalHncAurisEvidenceResolver
+        receipt_gate = type(self._truth_gate) is ReceiptBackedTenNineOneTruthGate
+        commitment_propagator = (
+            type(self._propagator) is CommitmentOnlyHiveMyceliaPropagator
+        )
+        ready = local_resolver and receipt_gate and commitment_propagator
+        return {
+            "schema_version": SELF_CODER_CONFIDENTIAL_PREFLIGHT_SCHEMA,
+            "ready": ready,
+            "truth_gate_enforced": True,
+            "trusted_local_evidence_resolver": local_resolver,
+            "trusted_receipt_backed_truth_gate": receipt_gate,
+            "commitment_only_propagation": commitment_propagator,
+            "raw_answer_bus_persistence_authorized": False,
+            "raw_answer_trace_persistence_authorized": False,
+            "action_eligible": False,
+            "economic_eligible": False,
+        }
 
     def execute(
         self,
@@ -397,7 +430,7 @@ def validate_truth_gated_ten_nine_one_receipt(
             "false_claims",
             "boundary",
         }
-        or screen.get("source") != "ollama_cloud_brain"
+        or screen.get("source") != "aureon_hnc_brain"
         or screen.get("contained") is not False
         or screen.get("injection_matches") != []
         or screen.get("blocked_action_claim") is not False

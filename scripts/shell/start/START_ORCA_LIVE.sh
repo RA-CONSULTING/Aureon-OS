@@ -1,67 +1,15 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+# Legacy start route: fixed isolated protection HOLD only.
+set -euo pipefail
 
-cd /workspaces/aureon-trading
+SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+REPO_ROOT="$(CDPATH= cd -- "$SCRIPT_DIR/../../.." && pwd -P)"
+PYTHON_EXE="$REPO_ROOT/.venv/bin/python"
+BOOTSTRAP="$REPO_ROOT/scripts/bootstrap/protected_bootstrap_v05.py"
 
-echo ""
-echo "╔════════════════════════════════════════════════════════════════════════════════╗"
-echo "║                                                                                ║"
-echo "║              🔥🐙 ORCA KILL CYCLE - FULL LIVE AUTONOMOUS MODE 🐙🔥              ║"
-echo "║                                                                                ║"
-echo "║                   Capital Ready: £50 GBP + $130 USD                            ║"
-echo "║                   Mode: 🔴 LIVE (REAL TRADES - NO SIMULATION)                  ║"
-echo "║                   Autonomy: ✅ ACTIVATED                                        ║"
-echo "║                                                                                ║"
-echo "╚════════════════════════════════════════════════════════════════════════════════╝"
-echo ""
+if [[ ! -x "$PYTHON_EXE" || ! -r "$BOOTSTRAP" ]]; then
+  echo "Fixed protected runtime bootstrap unavailable; refusing launch." >&2
+  exit 1
+fi
 
-# ═════════════════════════════════════════════════════════════════════════════
-# ENVIRONMENT SETUP - FULL LIVE MODE
-# ═════════════════════════════════════════════════════════════════════════════
-export LIVE=1
-export LIVE_MODE=true
-export AUTONOMOUS_MODE=true
-export DRY_RUN=0
-export DRY_RUN_MODE=false
-
-# Exchange settings - LIVE TRADING
-export ALPACA_DRY_RUN=false
-export ALPACA_PAPER=false
-export KRAKEN_DRY_RUN=false
-export BINANCE_DRY_RUN=false
-export BINANCE_USE_TESTNET=false
-
-# Deployment settings
-export DEPLOY_SCOUTS_IMMEDIATELY=True
-export ENABLE_FIRE_TRADER=true
-export ENABLE_AVALANCHE_HARVESTER=true
-export ENABLE_ETERNAL_MACHINE=true
-export ENABLE_QUANTUM_FROG=true
-
-# Queen settings - AGGRESSIVE MODE
-export QUEEN_MIN_PROFIT_PCT=0.3
-export AGGRESSIVE_MODE=true
-export ORCA_MAX_POSITIONS=unlimited
-
-# Logging
-export AUREON_DEBUG_STARTUP=0
-
-echo "✅ Environment Variables Set:"
-echo "   LIVE=$LIVE"
-echo "   ALPACA_DRY_RUN=$ALPACA_DRY_RUN"
-echo "   KRAKEN_DRY_RUN=$KRAKEN_DRY_RUN"
-echo "   BINANCE_DRY_RUN=$BINANCE_DRY_RUN"
-echo ""
-
-# ═════════════════════════════════════════════════════════════════════════════
-# START ORCA IN FULL AUTONOMOUS MODE
-# ═════════════════════════════════════════════════════════════════════════════
-echo "🚀 Starting ORCA Kill Cycle..."
-echo ""
-
-/bin/python3 orca_complete_kill_cycle.py \
-  --autonomous \
-  0 \
-  10.0 \
-  0.5
-
+exec "$PYTHON_EXE" -I -S -B "$BOOTSTRAP" --target-id cloud-orca

@@ -1,31 +1,21 @@
-# Aureon — the whole system as one service (operator + HNC + organism + swarm).
-# Runs supervisord (deploy/supervisord.linux.conf) under the project venv.
-#
-# Install (adjust the install prefix / user to yours):
-#   sudo cp deploy/systemd/aureon.service /etc/systemd/system/
-#   # edit WorkingDirectory / ExecStart / User below if not /opt/aureon + user 'aureon'
-#   sudo systemctl daemon-reload && sudo systemctl enable --now aureon
-#
-# SAFETY: AUREON_LIVE_TRADING=0 by default (dry/paper). Set it to 1 in the drop-in
-# or /opt/aureon/.env to arm live trading — the hard boundary (conscience veto,
-# AUREON_LOCAL_ACTIONS_ARMED / AUREON_SOUL_ACT unset) still holds.
 [Unit]
-Description=Aureon — the whole organism (operator + HNC + trading swarm)
-After=network-online.target
-Wants=network-online.target
+Description=Aureon whole-system protection preflight (terminal HOLD)
 
 [Service]
-Type=simple
+Type=oneshot
 User=aureon
 WorkingDirectory=/opt/aureon
-Environment=PATH=/opt/aureon/.venv/bin:/usr/local/bin:/usr/bin:/bin
-Environment=AUREON_START_SWARM=true
-Environment=AUREON_START_FRONTEND=true
-Environment=AUREON_LIVE_TRADING=0
-EnvironmentFile=-/opt/aureon/.env
-ExecStart=/opt/aureon/.venv/bin/supervisord -n -c deploy/supervisord.linux.conf
-Restart=always
-RestartSec=5
+ExecStart=/opt/aureon/.venv/bin/python -I -S -B /opt/aureon/scripts/bootstrap/protected_bootstrap_v05.py --target-id linux-supervisor
+Restart=no
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+RestrictAddressFamilies=AF_UNIX
+IPAddressDeny=any
+LockPersonality=true
+MemoryDenyWriteExecute=true
+RestrictSUIDSGID=true
 
 [Install]
 WantedBy=multi-user.target

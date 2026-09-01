@@ -2,6 +2,10 @@
 AffinityChorus — many thoughts, one unified softmax
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+CURRENT RELEASE: local contribution math remains available, while ThoughtBus
+subscription/publication and PersonaVacuum chorus wiring hard-HOLD until the
+production Magic Star release is available.
+
 Each PersonaVacuum ordinarily samples from its OWN local affinity vector —
 ten numbers, one per persona, derived from the vault slice + cognition
 snapshot + DJ drop at the moment of observation. Two vacuums on the same
@@ -39,6 +43,11 @@ from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional
 
 logger = logging.getLogger("aureon.vault.voice.affinity_chorus")
+
+
+AFFINITY_CHORUS_RELEASE_HOLD = (
+    "affinity_chorus_hold:production_magic_star_release_unavailable"
+)
 
 _CHORUS_TOPIC: str = "persona.affinity"
 DEFAULT_TTL_S: float = 5.0
@@ -98,6 +107,7 @@ class AffinityChorus:
 
     def start(self) -> None:
         """Attach to the bus if one is present. Safe to call twice."""
+        raise RuntimeError(AFFINITY_CHORUS_RELEASE_HOLD)
         if self._subscribed or self.thought_bus is None:
             return
         try:
@@ -149,6 +159,7 @@ class AffinityChorus:
         can pick it up. Also stamps it into the local table so a single-bus
         case works without relying on the subscription round trip.
         """
+        raise RuntimeError(AFFINITY_CHORUS_RELEASE_HOLD)
         ts = time.time()
         self.add(peer_id=peer_id, scores=scores, ts=ts)
         if self.thought_bus is None:
@@ -272,6 +283,7 @@ def make_vault_seed_fn(vault: Any) -> Callable[[], int]:
 
 
 __all__ = [
+    "AFFINITY_CHORUS_RELEASE_HOLD",
     "AffinityChorus",
     "AffinityContribution",
     "DEFAULT_TTL_S",

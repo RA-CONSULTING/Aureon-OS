@@ -26,6 +26,18 @@ if (-not (Test-Path -LiteralPath $Python)) {
     throw "Python venv not found: $Python"
 }
 
+# The data ocean is a declared primary launcher.  Its phase-one gate runs in an
+# isolated standard-library interpreter before any Aureon module can import.
+$ProtectedBootstrap = Join-Path $RepoRoot "scripts\bootstrap\protected_bootstrap_v05.py"
+if (-not (Test-Path -LiteralPath $ProtectedBootstrap -PathType Leaf)) {
+    throw "Protected bootstrap missing: $ProtectedBootstrap"
+}
+& $Python -I -S -B $ProtectedBootstrap --target-id data-ocean
+$protectedBootstrapExit = $LASTEXITCODE
+if ($protectedBootstrapExit -ne 0) {
+    throw "Protected bootstrap returned HOLD (exit=$protectedBootstrapExit). No data-ocean Python target was started."
+}
+
 $env:PYTHONUNBUFFERED = "1"
 $env:PYTHONUTF8 = "1"
 $env:PYTHONIOENCODING = "utf-8"

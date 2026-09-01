@@ -77,6 +77,7 @@ class RegisteredCapabilityV02:
     capability_id: str
     measurement_sha256: str
     policy_measurement_sha256: str
+    result_schema: Mapping[str, str]
     handler: Callable[[bytes], Mapping[str, Any]] = field(repr=False, compare=False)
 
     def __post_init__(self) -> None:
@@ -85,6 +86,19 @@ class RegisteredCapabilityV02:
         _sha256(
             self.policy_measurement_sha256,
             code="capability_policy_measurement_invalid",
+        )
+        if not isinstance(self.result_schema, Mapping) or not self.result_schema:
+            raise StarCustodyError("capability_result_schema_invalid")
+        normalized_schema: dict[str, str] = {}
+        for key, value_type in self.result_schema.items():
+            selected_key = _identifier(key, code="capability_result_schema_invalid")
+            if value_type != "bool" or selected_key in normalized_schema:
+                raise StarCustodyError("capability_result_schema_invalid")
+            normalized_schema[selected_key] = value_type
+        object.__setattr__(
+            self,
+            "result_schema",
+            freeze_mapping(normalized_schema, field="capability_result_schema"),
         )
         if not callable(self.handler):
             raise StarCustodyError("capability_handler_invalid")
@@ -143,8 +157,21 @@ def _assert_result_does_not_expose_plaintext(
     result: Mapping[str, Any],
     *,
     plaintext: bytes,
+    result_schema: Mapping[str, str],
 ) -> bytes:
-    """Reject direct encodings of plaintext at the last same-process boundary."""
+    """Enforce a non-extensible scalar result ABI before public return.
+
+    The current local release supports boolean evidence flags only.  Lists,
+    integers, strings, nested mappings and byte-like values are all denied, so
+    plaintext cannot be returned as a byte vector or a reversible text
+    transformation under an otherwise allowed field name.
+    """
+
+    if not result or not set(result).issubset(result_schema):
+        raise StarCustodyError("capability_result_schema_denied")
+    for key, value in result.items():
+        if result_schema.get(key) != "bool" or type(value) is not bool:
+            raise StarCustodyError("capability_result_schema_denied")
 
     encoded = canonical_json_bytes(dict(result))
     if len(encoded) > _MAX_CAPABILITY_RESULT_BYTES:
@@ -184,7 +211,11 @@ def _invoke_capability_safely(
     except BaseException:
         return None, "capability_execution_failed"
     try:
-        _assert_result_does_not_expose_plaintext(public_result, plaintext=plaintext)
+        _assert_result_does_not_expose_plaintext(
+            public_result,
+            plaintext=plaintext,
+            result_schema=capability.result_schema,
+        )
     except StarCustodyError as exc:
         return None, exc.code
     except BaseException:
@@ -317,7 +348,10 @@ def validate_magic_star_hnc_packet_v02(
         )
     try:
         nonce = b64url_decode(packet.nonce_b64, expected_bytes=12)
-        ciphertext = b64url_decode(packet.ciphertext_b64)
+        ciphertext = b64url_decode(
+            packet.ciphertext_b64,
+            max_bytes=_MAX_INNER_BYTES + 16,
+        )
     except Exception as exc:
         raise StarCustodyError("protected_packet_cipher_encoding_invalid") from exc
     if len(ciphertext) < 17 or len(ciphertext) > _MAX_INNER_BYTES + 16:
@@ -362,6 +396,76 @@ def validate_magic_star_hnc_packet_v02(
         "packet_commitment": packet.packet_commitment,
         "structural_preflight_only": True,
         "aead_authenticated": False,
+        "production_ready": False,
+    }
+
+
+def _build_inner_carrier_material_v02(
+    *,
+    packet_id: str,
+    purpose: str,
+    legacy_carrier: Mapping[str, Any],
+    legacy_master_key: bytes | str,
+) -> tuple[dict[str, Any], str, bytes, bytes]:
+    """Return the exact bounded inner envelope material used by custody."""
+
+    identity = _identifier(packet_id, code="packet_id_invalid")
+    bounded_purpose = _identifier(purpose, code="purpose_invalid")
+    carrier = dict(legacy_carrier)
+    contract = validate_hnc_packet_contract(carrier)
+    if contract.get("valid") is not True:
+        raise StarCustodyError("legacy_carrier_contract_invalid")
+    metadata_candidate = carrier.get("metadata")
+    metadata: Mapping[str, Any] = (
+        metadata_candidate if isinstance(metadata_candidate, Mapping) else {}
+    )
+    if metadata.get("purpose") != bounded_purpose:
+        raise StarCustodyError("legacy_carrier_purpose_mismatch")
+    try:
+        key_bytes = _normalize_hnc_key_material_for_validated_contract(
+            legacy_master_key,
+            contract,
+        )
+    except HNCPacketError as exc:
+        raise StarCustodyError("legacy_master_key_invalid") from exc
+    if len(key_bytes) > 4096:
+        raise StarCustodyError("legacy_master_key_size_invalid")
+    carrier_commitment = sha256_hex(legacy_canonical_json_bytes(carrier))
+    inner = legacy_canonical_json_bytes(
+        {
+            "schema": "aureon.plumber.magic-star.inner-carrier.v02",
+            "packet_id": identity,
+            "purpose": bounded_purpose,
+            "carrier": carrier,
+            "carrier_master_key_b64": b64url_encode(key_bytes),
+            "carrier_commitment": carrier_commitment,
+        }
+    )
+    if len(inner) > _MAX_INNER_BYTES:
+        raise StarCustodyError("inner_carrier_too_large")
+    return carrier, carrier_commitment, key_bytes, inner
+
+
+def validate_magic_star_inner_carrier_capacity_v02(
+    *,
+    packet_id: str,
+    purpose: str,
+    legacy_carrier: Mapping[str, Any],
+    legacy_master_key: bytes | str,
+) -> dict[str, Any]:
+    """Preflight the exact custody envelope without retaining or releasing it."""
+
+    _carrier, carrier_commitment, _key_bytes, inner = _build_inner_carrier_material_v02(
+        packet_id=packet_id,
+        purpose=purpose,
+        legacy_carrier=legacy_carrier,
+        legacy_master_key=legacy_master_key,
+    )
+    return {
+        "valid": True,
+        "carrier_commitment": carrier_commitment,
+        "inner_size_bytes": len(inner),
+        "inner_limit_bytes": _MAX_INNER_BYTES,
         "production_ready": False,
     }
 
@@ -428,6 +532,13 @@ class LocalDevelopmentStarCustodyV02:
             raise StarCustodyError("capability_not_registered")
         return capability.policy_measurement_sha256
 
+    def capability_result_schema(self, capability_id: str) -> dict[str, str]:
+        selected = _identifier(capability_id, code="capability_id_invalid")
+        capability = self._capabilities.get(selected)
+        if capability is None:
+            raise StarCustodyError("capability_not_registered")
+        return dict(capability.result_schema)
+
     def protect_carrier(
         self,
         *,
@@ -440,39 +551,14 @@ class LocalDevelopmentStarCustodyV02:
         identity = _identifier(packet_id, code="packet_id_invalid")
         bounded_purpose = _identifier(purpose, code="purpose_invalid")
         context = _sha256(release_context_sha256, code="release_context_invalid")
-        carrier = dict(legacy_carrier)
-        contract = validate_hnc_packet_contract(carrier)
-        if contract.get("valid") is not True:
-            raise StarCustodyError("legacy_carrier_contract_invalid")
-        metadata_candidate = carrier.get("metadata")
-        metadata: Mapping[str, Any] = (
-            metadata_candidate if isinstance(metadata_candidate, Mapping) else {}
-        )
-        if metadata.get("purpose") != bounded_purpose:
-            raise StarCustodyError("legacy_carrier_purpose_mismatch")
-        try:
-            key_bytes = _normalize_hnc_key_material_for_validated_contract(
-                legacy_master_key,
-                contract,
+        carrier, carrier_commitment, key_bytes, inner = (
+            _build_inner_carrier_material_v02(
+                packet_id=identity,
+                purpose=bounded_purpose,
+                legacy_carrier=legacy_carrier,
+                legacy_master_key=legacy_master_key,
             )
-        except HNCPacketError as exc:
-            raise StarCustodyError("legacy_master_key_invalid") from exc
-        if len(key_bytes) > 4096:
-            raise StarCustodyError("legacy_master_key_size_invalid")
-        carrier_bytes = legacy_canonical_json_bytes(carrier)
-        carrier_commitment = sha256_hex(carrier_bytes)
-        inner = legacy_canonical_json_bytes(
-            {
-                "schema": "aureon.plumber.magic-star.inner-carrier.v02",
-                "packet_id": identity,
-                "purpose": bounded_purpose,
-                "carrier": carrier,
-                "carrier_master_key_b64": b64url_encode(key_bytes),
-                "carrier_commitment": carrier_commitment,
-            }
         )
-        if len(inner) > _MAX_INNER_BYTES:
-            raise StarCustodyError("inner_carrier_too_large")
         kek = os.urandom(32)
         shares = _split_five(kek)
         share_bindings = tuple(
@@ -641,7 +727,10 @@ class LocalDevelopmentStarCustodyV02:
             try:
                 inner_bytes = AESGCM(kek).decrypt(
                     b64url_decode(packet.nonce_b64, expected_bytes=12),
-                    b64url_decode(packet.ciphertext_b64),
+                    b64url_decode(
+                        packet.ciphertext_b64,
+                        max_bytes=_MAX_INNER_BYTES + 16,
+                    ),
                     canonical_json_bytes(aad_fields),
                 )
             except InvalidTag as exc:
@@ -677,7 +766,10 @@ class LocalDevelopmentStarCustodyV02:
                 legacy_canonical_json_bytes(carrier)
             ) != packet.carrier_commitment:
                 raise StarCustodyError("inner_carrier_commitment_mismatch")
-            master_key = b64url_decode(str(inner["carrier_master_key_b64"]))
+            master_key = b64url_decode(
+                str(inner["carrier_master_key_b64"]),
+                max_bytes=4096,
+            )
             try:
                 decoded = decode_hnc_quantum_packet(
                     carrier,
@@ -744,5 +836,6 @@ __all__ = [
     "ProtectedMagicStarPacketV02",
     "RegisteredCapabilityV02",
     "StarCustodyError",
+    "validate_magic_star_inner_carrier_capacity_v02",
     "validate_magic_star_hnc_packet_v02",
 ]

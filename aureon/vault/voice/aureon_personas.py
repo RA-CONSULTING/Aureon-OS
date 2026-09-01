@@ -730,13 +730,7 @@ AUREON_PERSONA_REGISTRY: Dict[str, type] = {
 
 
 def build_aureon_personas(adapter: Any = None) -> Dict[str, ResonantPersona]:
-    """Instantiate the ten Aureon personas with a shared (or default) adapter."""
-    if adapter is None:
-        try:
-            from aureon.inhouse_ai.llm_adapter import build_voice_adapter
-            adapter = build_voice_adapter(lane="general")
-        except Exception:
-            adapter = None
+    """Build inert personas; provider-backed speaking remains release-held."""
     return {name: cls(adapter=adapter) for name, cls in AUREON_PERSONA_REGISTRY.items()}
 
 

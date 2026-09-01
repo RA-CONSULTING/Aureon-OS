@@ -1,66 +1,21 @@
-# Optimize Docker builds by excluding unnecessary files
-.git
-.github
-.venv
-venv
-__pycache__
-*.pyc
-*.pyo
-*.pyd
-.Python
-*.so
-*.egg
-*.egg-info
-dist
-build
-*.log
-*.pot
-.coverage
-.pytest_cache
-.DS_Store
-# Runtime credentials are injected by the deployment environment and must
-# never become image-layer content. Keep the documented example available.
-.env
-.env.*
-.env1
-!.env.example
-secrets/
-*.pem
-*.key
-id_rsa*
-node_modules
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.idea
-.vscode
-*.swp
-*.swo
-*~
-.mypy_cache
-.dmypy.json
-dmypy.json
-htmlcov
-.tox
-.hypothesis
-
-# Historical source bundles are evidence only, never image build input.
+# Default-deny build context. Terminal HOLD images need only their fixed
+# bootstrap; the frontend build additionally needs its public source tree.
+*
 imports/
 archive/
-
-# Documentation
-*.md
-docs/
-*.txt
-!requirements.txt
-
-# Test files
-test_*.py
-*_test.py
-tests/
-
-# Large data files (if any)
-*.csv
-*.xlsx
-*.db
-*.sqlite
+!Dockerfile
+!Dockerfile.ephemeris
+!.dockerignore
+!deploy/
+deploy/*
+!deploy/operator.Dockerfile
+!deploy/frontend.Dockerfile
+!production/
+production/*
+!production/Dockerfile
+!scripts/
+scripts/*
+!scripts/bootstrap/
+scripts/bootstrap/*
+!scripts/bootstrap/protected_bootstrap_v05.py
+!scripts/bootstrap/frontend_container_hold_v05.sh

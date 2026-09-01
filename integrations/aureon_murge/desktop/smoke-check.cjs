@@ -1,11 +1,4 @@
-const { RuntimeManager } = require('./runtime-manager.cjs');
+#!/usr/bin/env node
 
-(async () => {
-  const manager = new RuntimeManager();
-  const status = await manager.getStatus();
-  console.log(JSON.stringify(status, null, 2));
-  process.exit(0);
-})().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+// Terminal HOLD: operational route is unavailable.
+process.exitCode = 2;

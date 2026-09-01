@@ -55,7 +55,16 @@ test ! -e /opt/aureon/source/logs
 ln -s /var/lib/aureon /opt/aureon/source/state
 ln -s /var/log/aureon /opt/aureon/source/logs
 
-/opt/aureon/.venv/bin/python -c 'import aureon; import aureon.operator.operator_server; import aureon.core.organism_daemon; import aureon.core.hnc_live_daemon'
+set +e
+bootstrap_receipt=$(/opt/aureon/.venv/bin/python -I -S -B \
+    /opt/aureon/source/scripts/bootstrap/protected_bootstrap_v05.py \
+    --target-id linux-supervisor)
+bootstrap_status=$?
+set -e
+test "$bootstrap_status" -eq 1
+printf '%s' "$bootstrap_receipt" | grep -q '"decision":"HOLD"'
+printf '%s' "$bootstrap_receipt" | grep -q '"target_registered":true'
+printf '%s' "$bootstrap_receipt" | grep -q '"process_start_authorized":false'
 
 rm -f /etc/ssh/ssh_host_* /var/lib/systemd/random-seed
 rm -f /etc/machine-id

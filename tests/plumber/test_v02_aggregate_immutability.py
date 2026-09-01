@@ -233,6 +233,7 @@ def test_mutable_recipient_and_capability_policy_inputs_are_normalized_to_tuples
         capability_id="capability",
         capability_measurement_sha256=_SHA256,
         allowed_output_keys=cast(Any, allowed),
+        output_types_by_key={"signature_valid": "bool"},
         required_output_keys=cast(Any, required),
     )
     policy_commitment = policy.commitment

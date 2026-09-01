@@ -1,7 +1,18 @@
 @echo off
-:loop
-echo Generating probability batch...
-python generate_live_probability_batch.py
-echo Sleeping for 60 seconds...
-timeout /t 60
-goto loop
+setlocal
+for %%I in ("%~dp0..") do set "REPO_ROOT=%%~fI"
+set "PYTHON_EXE=%REPO_ROOT%\.venv\Scripts\python.exe"
+set "BOOTSTRAP=%REPO_ROOT%\scripts\bootstrap\protected_bootstrap_v05.py"
+
+if not exist "%PYTHON_EXE%" (
+  echo Fixed repository Python executable is unavailable; refusing operation. 1>&2
+  endlocal & exit /b 1
+)
+if not exist "%BOOTSTRAP%" (
+  echo Fixed protected bootstrap is unavailable; refusing operation. 1>&2
+  endlocal & exit /b 1
+)
+
+"%PYTHON_EXE%" -I -S -B "%BOOTSTRAP%" --target-id self-questioning
+set "EXIT_CODE=%ERRORLEVEL%"
+endlocal & exit /b %EXIT_CODE%

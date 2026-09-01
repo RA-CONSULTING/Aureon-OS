@@ -56,6 +56,7 @@ CLASSIFICATIONS = (LOCAL_DEVELOPMENT_PROTECTED, EXPLICIT_HOLD, BLOCKER)
 CATEGORIES = (
     "http-server-ingress",
     "websocket-server-ingress",
+    "interprocess-capability-dispatch",
     "subprocess-shell",
     "dynamic-code-execution",
     "unsafe-deserialization",
@@ -66,7 +67,95 @@ CATEGORIES = (
 )
 
 _OS_PROTECTION_MODULE = "aureon.plumber.os_protection"
+_PRODUCTION_RELEASE_BROKER_V03_FILE = (
+    "aureon/plumber/production_release_broker_v03.py"
+)
+_PRODUCTION_RELEASE_BROKER_V03_SCOPE = (
+    "ProductionReleaseBrokerV03.execute_release"
+)
+_PRODUCTION_RELEASE_BROKER_V03_EXECUTOR_CALL = "self._executor.execute"
+_CONSTRUCTOR_REQUIRED_KEYWORDS = {
+    "LocalOSProtectionBoundary": frozenset(
+        {"boundary_id", "master_key_provider"}
+    ),
+    "RegisteredCapabilityV02": frozenset(
+        {
+            "capability_id",
+            "handler",
+            "measurement_sha256",
+            "policy_measurement_sha256",
+            "result_schema",
+        }
+    ),
+    "LocalDevelopmentStarCustodyV02": frozenset(
+        {
+            "allow_insecure_same_process",
+            "authorization_trust",
+            "capabilities",
+            "source_authority",
+            "source_private_key",
+            "state_store",
+        }
+    ),
+    "LocalDevelopmentReleaseBoundaryV02": frozenset(
+        {
+            "allow_insecure_same_process",
+            "authorization_trust",
+            "capability_policies",
+            "continuity_state_probe",
+            "custody",
+            "epas_store",
+            "evidence_expectations_probe",
+            "live_binding_probe",
+            "receipt_authority",
+            "receipt_private_key",
+            "recipient_verifier",
+            "release_evidence_trust",
+            "star_trust",
+            "state_store",
+        }
+    ),
+}
+_LITERAL_TRUE_CONSTRUCTORS = frozenset(
+    {
+        "LocalDevelopmentStarCustodyV02",
+        "LocalDevelopmentReleaseBoundaryV02",
+    }
+)
+_ADMISSION_REQUIRED_KEYWORDS = frozenset(
+    {"source_id", "ingress_kind", "purpose"}
+)
+_HANDOFF_REQUIRED_KEYWORDS = frozenset(
+    {"custody", "release_context_sha256"}
+)
+_RELEASE_REQUIRED_KEYWORDS = frozenset(
+    {
+        "authorization_chain",
+        "capability_id",
+        "challenge",
+        "expected_channel_binding_sha256",
+        "expected_live_binding_sha256",
+        "expected_runtime_measurement_sha256",
+        "observer_commitment",
+        "recipient_proof",
+        "release_evidence",
+        "session_id",
+        "star",
+        "temporal_commitment",
+    }
+)
 _ROUTE_TAILS = {"delete", "get", "head", "options", "patch", "post", "put", "route"}
+_SERVER_CONSTRUCTOR_TAILS = {
+    "apirouter",
+    "application",
+    "fastapi",
+    "flask",
+    "httpserver",
+    "tcpserver",
+}
+_FRAMEWORK_SERVER_TYPE_EXPORTS = {
+    "flask": frozenset({"Flask"}),
+}
 _MUTATING_FILE_TAILS = {
     "append_text",
     "appendfile",
@@ -251,6 +340,7 @@ class _Admission:
     outcome: str
     boundary: str
     node: ast.Call
+    source_parameters: frozenset[str]
 
 
 @dataclass(frozen=True, slots=True)
@@ -354,16 +444,321 @@ class _PythonScanner(ast.NodeVisitor):
         self.star_custody_module_aliases: set[str] = set()
         self.release_boundary_aliases: set[str] = set()
         self.release_boundary_module_aliases: set[str] = set()
+        self.server_types: set[str] = set()
+        self.server_factories: set[str] = set()
         self.server_receivers: set[str] = set()
+        self.server_binding_events: dict[
+            ast.AST,
+            dict[str, list[tuple[int, int, ast.AST | None]]],
+        ] = {}
         self.websocket_receivers: set[str] = set()
         self.local_action_receivers: set[str] = set()
-        self.false_constants: set[str] = set()
-        self.module_boundary_vars: set[str] = set()
+        self.import_aliases: set[str] = set()
+        self.binding_events: dict[ast.AST, dict[str, list[ast.AST]]] = {}
         self.release_registries: dict[
             str,
             tuple[str, dict[str, ast.FunctionDef | ast.AsyncFunctionDef]],
         ] = {}
+        self._prepare_bindings()
         self._prepare()
+
+    def _record_binding_event(
+        self,
+        *,
+        owner: ast.AST,
+        name: str,
+        event: ast.AST,
+    ) -> None:
+        self.binding_events.setdefault(owner, {}).setdefault(name, []).append(event)
+
+    def _binding_event_node(self, node: ast.Name) -> ast.AST:
+        current: ast.AST = node
+        binding_nodes = (
+            ast.Assign,
+            ast.AnnAssign,
+            ast.AugAssign,
+            ast.NamedExpr,
+            ast.For,
+            ast.AsyncFor,
+            ast.With,
+            ast.AsyncWith,
+            ast.Delete,
+            ast.comprehension,
+        )
+        while current in self.parent:
+            current = self.parent[current]
+            if isinstance(current, binding_nodes):
+                return current
+            if isinstance(
+                current,
+                (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Lambda),
+            ):
+                break
+        return node
+
+    def _prepare_bindings(self) -> None:
+        for node in ast.walk(self.tree):
+            if isinstance(node, ast.Name) and isinstance(
+                node.ctx,
+                (ast.Store, ast.Del),
+            ):
+                self._record_binding_event(
+                    owner=self._lexical_owner(node),
+                    name=node.id,
+                    event=self._binding_event_node(node),
+                )
+            elif isinstance(node, ast.arg):
+                self._record_binding_event(
+                    owner=self._lexical_owner(node),
+                    name=node.arg,
+                    event=node,
+                )
+            elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                self._record_binding_event(
+                    owner=self._lexical_owner(node),
+                    name=node.name,
+                    event=node,
+                )
+            elif isinstance(node, (ast.Import, ast.ImportFrom)):
+                owner = self._lexical_owner(node)
+                for alias in node.names:
+                    local = alias.asname or alias.name.split(".", 1)[0]
+                    self._record_binding_event(
+                        owner=owner,
+                        name=local,
+                        event=node,
+                    )
+                    if owner is self.tree:
+                        self.import_aliases.add(local)
+            elif isinstance(node, ast.ExceptHandler) and node.name is not None:
+                self._record_binding_event(
+                    owner=self._lexical_owner(node),
+                    name=node.name,
+                    event=node,
+                )
+            elif isinstance(node, (ast.Global, ast.Nonlocal)):
+                owner = self._lexical_owner(node)
+                for name in node.names:
+                    self._record_binding_event(owner=owner, name=name, event=node)
+
+    def _is_exact_single_binding(
+        self,
+        *,
+        owner: ast.AST,
+        name: str,
+        expected: ast.AST,
+    ) -> bool:
+        events = self.binding_events.get(owner, {}).get(name, ())
+        return len(events) == 1 and events[0] is expected
+
+    def _is_unshadowed_module_import(self, name: str, node: ast.AST) -> bool:
+        module_events = self.binding_events.get(self.tree, {}).get(name, ())
+        if len(module_events) != 1 or not isinstance(
+            module_events[0],
+            (ast.Import, ast.ImportFrom),
+        ):
+            return False
+        owner = self._lexical_owner(node)
+        for candidate_owner in self._owner_chain(owner):
+            if candidate_owner is self.tree:
+                break
+            if self.binding_events.get(candidate_owner, {}).get(name):
+                return False
+        return True
+
+    def _is_module_scope(self, node: ast.AST) -> bool:
+        parent = self.parent.get(node)
+        while parent is not None:
+            if isinstance(
+                parent,
+                (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Lambda),
+            ):
+                return False
+            parent = self.parent.get(parent)
+        return True
+
+    @staticmethod
+    def _is_server_type_expression(node: ast.AST, server_types: set[str]) -> bool:
+        if isinstance(node, (ast.Name, ast.Attribute)):
+            return _callee(node) in server_types
+        if isinstance(node, ast.IfExp):
+            return any(
+                _PythonScanner._is_server_type_expression(branch, server_types)
+                for branch in (node.body, node.orelse)
+            )
+        return False
+
+    @staticmethod
+    def _is_server_instance_expression(
+        node: ast.AST,
+        *,
+        server_types: set[str],
+        server_factories: set[str],
+        server_bindings: set[str],
+    ) -> bool:
+        if isinstance(node, ast.Call):
+            callee = _callee(node.func)
+            return callee in server_types or callee in server_factories
+        if isinstance(node, ast.Name):
+            return node.id in server_bindings
+        if isinstance(node, ast.IfExp):
+            return all(
+                _PythonScanner._is_server_instance_expression(
+                    branch,
+                    server_types=server_types,
+                    server_factories=server_factories,
+                    server_bindings=server_bindings,
+                )
+                for branch in (node.body, node.orelse)
+            )
+        return False
+
+    def _function_definitely_returns_server(
+        self,
+        function: ast.FunctionDef | ast.AsyncFunctionDef,
+    ) -> bool:
+        nodes = list(_same_function_nodes(function))
+        assignments: dict[str, list[ast.AST]] = {}
+        for node in nodes:
+            if not isinstance(node, (ast.Assign, ast.AnnAssign)) or node.value is None:
+                continue
+            targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+            for target in targets:
+                for name in _target_names(target):
+                    assignments.setdefault(name, []).append(node.value)
+
+        bindings: set[str] = set()
+        changed = True
+        while changed:
+            changed = False
+            for name, values in assignments.items():
+                if name in bindings or not values:
+                    continue
+                if all(
+                    self._is_server_instance_expression(
+                        value,
+                        server_types=self.server_types,
+                        server_factories=self.server_factories,
+                        server_bindings=bindings,
+                    )
+                    for value in values
+                ):
+                    bindings.add(name)
+                    changed = True
+
+        returns = [node.value for node in nodes if isinstance(node, ast.Return)]
+        return bool(returns) and all(
+            value is not None
+            and self._is_server_instance_expression(
+                value,
+                server_types=self.server_types,
+                server_factories=self.server_factories,
+                server_bindings=bindings,
+            )
+            for value in returns
+        )
+
+    def _lexical_owner(self, node: ast.AST) -> ast.AST:
+        parent = self.parent.get(node)
+        while parent is not None:
+            if isinstance(parent, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                return parent
+            parent = self.parent.get(parent)
+        return self.tree
+
+    def _owner_chain(self, owner: ast.AST) -> Iterator[ast.AST]:
+        current: ast.AST | None = owner
+        while current is not None:
+            if isinstance(
+                current,
+                (ast.Module, ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef),
+            ):
+                yield current
+            current = self.parent.get(current)
+
+    def _record_server_binding(
+        self,
+        *,
+        owner: ast.AST,
+        name: str,
+        line: int,
+        column: int,
+        value: ast.AST | None,
+    ) -> None:
+        events = self.server_binding_events.setdefault(owner, {}).setdefault(name, [])
+        events.append((line, column, value))
+
+    def _server_binding_value(
+        self,
+        value: ast.AST,
+        *,
+        owner: ast.AST,
+        position: tuple[int, int],
+        seen: set[tuple[int, str, int, int]],
+    ) -> bool:
+        if isinstance(value, ast.Call):
+            callee = _callee(value.func)
+            return callee in self.server_types or callee in self.server_factories
+        if isinstance(value, ast.Name):
+            return self._server_name_at(
+                value.id,
+                owner=owner,
+                position=position,
+                seen=seen,
+            )
+        if isinstance(value, ast.IfExp):
+            return all(
+                self._server_binding_value(
+                    branch,
+                    owner=owner,
+                    position=position,
+                    seen=seen,
+                )
+                for branch in (value.body, value.orelse)
+            )
+        return False
+
+    def _server_name_at(
+        self,
+        name: str,
+        *,
+        owner: ast.AST,
+        position: tuple[int, int],
+        seen: set[tuple[int, str, int, int]] | None = None,
+    ) -> bool:
+        visited = set() if seen is None else seen
+        for candidate_owner in self._owner_chain(owner):
+            events = self.server_binding_events.get(candidate_owner, {}).get(name, ())
+            prior = [event for event in events if event[:2] < position]
+            if not prior:
+                continue
+            line, column, value = max(prior, key=lambda event: event[:2])
+            key = (id(candidate_owner), name, line, column)
+            if key in visited or value is None:
+                return False
+            visited.add(key)
+            return self._server_binding_value(
+                value,
+                owner=candidate_owner,
+                position=(line, column),
+                seen=visited,
+            )
+        return False
+
+    def _has_proven_server_receiver(self, call: ast.Call) -> bool:
+        if not isinstance(call.func, ast.Attribute):
+            return False
+        receiver = call.func.value
+        if isinstance(receiver, ast.Call):
+            callee = _callee(receiver.func)
+            return callee in self.server_types or callee in self.server_factories
+        if not isinstance(receiver, ast.Name):
+            return False
+        return self._server_name_at(
+            receiver.id,
+            owner=self._lexical_owner(call),
+            position=(call.lineno, call.col_offset),
+        )
 
     def _prepare(self) -> None:
         for node in self.tree.body:
@@ -393,22 +788,99 @@ class _PythonScanner(ast.NodeVisitor):
                         self.star_custody_module_aliases.add(alias.asname or alias.name)
                     elif alias.name == "aureon.plumber.release_boundary_v02":
                         self.release_boundary_module_aliases.add(alias.asname or alias.name)
-            elif isinstance(node, (ast.Assign, ast.AnnAssign)):
-                targets = (
-                    node.targets
-                    if isinstance(node, ast.Assign)
-                    else [node.target]
-                )
-                value = node.value
-                if isinstance(value, ast.Constant) and value.value is False:
-                    for target in targets:
-                        self.false_constants.update(_target_names(target))
-                if isinstance(value, ast.Call) and self._is_boundary_constructor(value):
-                    for target in targets:
-                        self.module_boundary_vars.update(_target_names(target))
+        module_nodes = [node for node in ast.walk(self.tree) if self._is_module_scope(node)]
+        for node in module_nodes:
+            if isinstance(node, ast.ImportFrom) and node.module is not None:
+                framework = node.module.casefold().split(".", 1)[0]
+                exports = _FRAMEWORK_SERVER_TYPE_EXPORTS.get(framework, ())
+                for alias in node.names:
+                    if alias.name in exports:
+                        self.server_types.add(alias.asname or alias.name)
+            elif isinstance(node, ast.Import):
+                for alias in node.names:
+                    framework = alias.name.casefold().split(".", 1)[0]
+                    exports = _FRAMEWORK_SERVER_TYPE_EXPORTS.get(framework, ())
+                    local = alias.asname or framework
+                    self.server_types.update(f"{local}.{export}" for export in exports)
+
+        type_assignments = [
+            node for node in module_nodes if isinstance(node, (ast.Assign, ast.AnnAssign))
+        ]
+        class_definitions = [node for node in module_nodes if isinstance(node, ast.ClassDef)]
+        changed = True
+        while changed:
+            changed = False
+            for node in type_assignments:
+                if node.value is None or not self._is_server_type_expression(
+                    node.value,
+                    self.server_types,
+                ):
+                    continue
+                targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+                for target in targets:
+                    for name in _target_names(target):
+                        if name not in self.server_types:
+                            self.server_types.add(name)
+                            changed = True
+            for node in class_definitions:
+                if node.name in self.server_types:
+                    continue
+                if any(_callee(base) in self.server_types for base in node.bases):
+                    self.server_types.add(node.name)
+                    changed = True
+
+        factory_definitions = [
+            node
+            for node in module_nodes
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+        ]
+        changed = True
+        while changed:
+            changed = False
+            for node in factory_definitions:
+                if node.name in self.server_factories:
+                    continue
+                if self._function_definitely_returns_server(node):
+                    self.server_factories.add(node.name)
+                    changed = True
+
+        receiver_assignments = [
+            node
+            for node in ast.walk(self.tree)
+            if isinstance(node, (ast.Assign, ast.AnnAssign))
+        ]
+        for node in receiver_assignments:
+            targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+            for target in targets:
+                for name in _target_names(target):
+                    self._record_server_binding(
+                        owner=self._lexical_owner(node),
+                        name=name,
+                        line=node.lineno,
+                        column=node.col_offset,
+                        value=node.value,
+                    )
         for node in ast.walk(self.tree):
-            if not isinstance(node, (ast.Assign, ast.AnnAssign)):
+            if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 continue
+            arguments = [*node.args.posonlyargs, *node.args.args, *node.args.kwonlyargs]
+            if node.args.vararg is not None:
+                arguments.append(node.args.vararg)
+            if node.args.kwarg is not None:
+                arguments.append(node.args.kwarg)
+            for argument in arguments:
+                self._record_server_binding(
+                    owner=node,
+                    name=argument.arg,
+                    line=node.lineno,
+                    column=node.col_offset,
+                    value=None,
+                )
+        for bindings in self.server_binding_events.values():
+            for events in bindings.values():
+                events.sort(key=lambda event: event[:2])
+
+        for node in receiver_assignments:
             value = node.value
             if not isinstance(value, ast.Call):
                 continue
@@ -419,7 +891,7 @@ class _PythonScanner(ast.NodeVisitor):
             )
             callee = _callee(value.func).casefold()
             tail = callee.rsplit(".", 1)[-1]
-            if tail in {"fastapi", "flask", "apirouter", "application", "httpserver", "tcpserver"}:
+            if tail in _SERVER_CONSTRUCTOR_TAILS:
                 self.server_receivers.update(names)
             if "websocket" in callee:
                 self.websocket_receivers.update(names)
@@ -457,9 +929,31 @@ class _PythonScanner(ast.NodeVisitor):
         class_name: str,
     ) -> bool:
         name = _callee(call.func)
-        return name in aliases or any(
-            name == f"{alias}.{class_name}" for alias in module_aliases
+        direct = name in aliases
+        matched_module_alias = next(
+            (
+                alias
+                for alias in module_aliases
+                if name == f"{alias}.{class_name}"
+            ),
+            None,
         )
+        if not direct and matched_module_alias is None:
+            return False
+        import_name = name if direct else matched_module_alias
+        if import_name is None or not self._is_unshadowed_module_import(import_name, call):
+            return False
+        required = _CONSTRUCTOR_REQUIRED_KEYWORDS.get(class_name)
+        if required is None or call.args or any(item.arg is None for item in call.keywords):
+            return False
+        keywords = {item.arg for item in call.keywords if item.arg is not None}
+        if not required <= keywords:
+            return False
+        if class_name in _LITERAL_TRUE_CONSTRUCTORS:
+            insecure = self._keyword(call, "allow_insecure_same_process")
+            if not isinstance(insecure, ast.Constant) or insecure.value is not True:
+                return False
+        return True
 
     def _prepare_release_registries(self) -> None:
         functions_by_name: dict[str, list[ast.FunctionDef | ast.AsyncFunctionDef]] = {}
@@ -488,6 +982,12 @@ class _PythonScanner(ast.NodeVisitor):
             handler_node = self._keyword(node.value, "handler")
             if variable is None or capability_id is None or not isinstance(handler_node, ast.Name):
                 continue
+            if not self._is_exact_single_binding(
+                owner=self.tree,
+                name=variable,
+                expected=node,
+            ):
+                continue
             handler = unique_functions.get(handler_node.id)
             if handler is not None:
                 capabilities[variable] = (capability_id, handler)
@@ -505,6 +1005,12 @@ class _PythonScanner(ast.NodeVisitor):
                 continue
             custody_variable = self._single_assignment_name(node)
             if custody_variable is None:
+                continue
+            if not self._is_exact_single_binding(
+                owner=self.tree,
+                name=custody_variable,
+                expected=node,
+            ):
                 continue
             registered: dict[str, ast.FunctionDef | ast.AsyncFunctionDef] = {}
             for capability_id, variable in self._dict_bindings(
@@ -529,6 +1035,12 @@ class _PythonScanner(ast.NodeVisitor):
             release_variable = self._single_assignment_name(node)
             custody_node = self._keyword(node.value, "custody")
             if release_variable is None or not isinstance(custody_node, ast.Name):
+                continue
+            if not self._is_exact_single_binding(
+                owner=self.tree,
+                name=release_variable,
+                expected=node,
+            ):
                 continue
             registered = custodies.get(custody_node.id)
             if not registered:
@@ -629,12 +1141,18 @@ class _PythonScanner(ast.NodeVisitor):
             return "http-server-ingress", "http-server-construction"
         if lowered in {"uvicorn.run", "aiohttp.web.run_app", "web.run_app"}:
             return "http-server-ingress", tail.replace("_", "-")
-        if tail in _ROUTE_TAILS and receiver_tail in self.server_receivers:
+        proven_server_receiver = self._has_proven_server_receiver(call)
+        if tail in _ROUTE_TAILS and (
+            receiver_tail in self.server_receivers or proven_server_receiver
+        ):
             return "http-server-ingress", f"http-route-{tail}"
-        if tail == "websocket" and receiver_tail in self.server_receivers:
+        if tail == "websocket" and (
+            receiver_tail in self.server_receivers or proven_server_receiver
+        ):
             return "websocket-server-ingress", "websocket-route"
         if tail in {"run", "serve", "listen"} and (
             receiver_tail in self.server_receivers
+            or proven_server_receiver
             or receiver_tail in self.websocket_receivers
             or any(token in lowered for token in ("http", "server", "uvicorn", "websocket"))
         ):
@@ -709,6 +1227,15 @@ class _PythonScanner(ast.NodeVisitor):
         lowered = callee.casefold()
         tail = lowered.rsplit(".", 1)[-1]
         normalized = _normalized_tail(callee)
+        if (
+            self.file == _PRODUCTION_RELEASE_BROKER_V03_FILE
+            and _scope_name(self.scope) == _PRODUCTION_RELEASE_BROKER_V03_SCOPE
+            and callee == _PRODUCTION_RELEASE_BROKER_V03_EXECUTOR_CALL
+        ):
+            return (
+                "interprocess-capability-dispatch",
+                "production-release-broker-v03-executor-dispatch",
+            )
         if lowered in _SUBPROCESS_NAMES or (
             normalized in {"execfile", "execfilesync", "execsync", "fork", "spawn", "spawnsync"}
             and any(token in lowered for token in ("child_process", "childprocess", "subprocess"))
@@ -834,17 +1361,185 @@ class _PythonScanner(ast.NodeVisitor):
         self,
         function: ast.FunctionDef | ast.AsyncFunctionDef,
     ) -> dict[str, ast.Call | None]:
-        result: dict[str, ast.Call | None] = dict.fromkeys(self.module_boundary_vars)
+        result: dict[str, ast.Call | None] = {}
         for node in _same_function_nodes(function):
             if not isinstance(node, (ast.Assign, ast.AnnAssign)) or not isinstance(node.value, ast.Call):
                 continue
             if not self._is_boundary_constructor(node.value):
                 continue
+            if self.parent.get(node) is not function:
+                continue
             targets = node.targets if isinstance(node, ast.Assign) else [node.target]
             for target in targets:
                 for name in _target_names(target):
-                    result[name] = node.value
+                    if self._is_exact_single_binding(
+                        owner=function,
+                        name=name,
+                        expected=node,
+                    ):
+                        result[name] = node.value
         return result
+
+    @staticmethod
+    def _function_parameter_names(
+        function: ast.FunctionDef | ast.AsyncFunctionDef,
+    ) -> frozenset[str]:
+        arguments = [
+            *function.args.posonlyargs,
+            *function.args.args,
+            *function.args.kwonlyargs,
+        ]
+        if function.args.vararg is not None:
+            arguments.append(function.args.vararg)
+        if function.args.kwarg is not None:
+            arguments.append(function.args.kwarg)
+        return frozenset(item.arg for item in arguments)
+
+    def _parameter_derived_expression(
+        self,
+        *,
+        function: ast.FunctionDef | ast.AsyncFunctionDef,
+        node: ast.AST,
+        allowed_parameters: frozenset[str],
+        before: tuple[int, int],
+        seen: set[str] | None = None,
+    ) -> bool:
+        if isinstance(node, ast.Constant):
+            return True
+        if isinstance(node, ast.Name):
+            if node.id in allowed_parameters:
+                return True
+            visited = set() if seen is None else set(seen)
+            if node.id in visited:
+                return False
+            events = self.binding_events.get(function, {}).get(node.id, ())
+            if len(events) != 1:
+                return False
+            event = events[0]
+            if not isinstance(event, (ast.Assign, ast.AnnAssign, ast.NamedExpr)):
+                return False
+            if (event.lineno, event.col_offset) >= before:
+                return False
+            value = event.value
+            if value is None:
+                return False
+            visited.add(node.id)
+            return self._parameter_derived_expression(
+                function=function,
+                node=value,
+                allowed_parameters=allowed_parameters,
+                before=(event.lineno, event.col_offset),
+                seen=visited,
+            )
+        if isinstance(node, (ast.Tuple, ast.List, ast.Set)):
+            return all(
+                self._parameter_derived_expression(
+                    function=function,
+                    node=item,
+                    allowed_parameters=allowed_parameters,
+                    before=before,
+                    seen=seen,
+                )
+                for item in node.elts
+            )
+        if isinstance(node, ast.Dict):
+            return all(
+                item is not None
+                and self._parameter_derived_expression(
+                    function=function,
+                    node=item,
+                    allowed_parameters=allowed_parameters,
+                    before=before,
+                    seen=seen,
+                )
+                for item in (*node.keys, *node.values)
+            )
+        if isinstance(node, ast.Attribute):
+            return self._parameter_derived_expression(
+                function=function,
+                node=node.value,
+                allowed_parameters=allowed_parameters,
+                before=before,
+                seen=seen,
+            )
+        if isinstance(node, ast.Subscript):
+            return all(
+                self._parameter_derived_expression(
+                    function=function,
+                    node=item,
+                    allowed_parameters=allowed_parameters,
+                    before=before,
+                    seen=seen,
+                )
+                for item in (node.value, node.slice)
+            )
+        if isinstance(node, ast.Starred):
+            return self._parameter_derived_expression(
+                function=function,
+                node=node.value,
+                allowed_parameters=allowed_parameters,
+                before=before,
+                seen=seen,
+            )
+        if isinstance(node, ast.UnaryOp):
+            return self._parameter_derived_expression(
+                function=function,
+                node=node.operand,
+                allowed_parameters=allowed_parameters,
+                before=before,
+                seen=seen,
+            )
+        if isinstance(node, ast.BinOp):
+            values = (node.left, node.right)
+        elif isinstance(node, ast.BoolOp):
+            values = tuple(node.values)
+        elif isinstance(node, ast.Compare):
+            values = (node.left, *node.comparators)
+        elif isinstance(node, ast.IfExp):
+            values = (node.test, node.body, node.orelse)
+        elif isinstance(node, ast.JoinedStr):
+            values = tuple(node.values)
+        elif isinstance(node, ast.FormattedValue):
+            values = (node.value,)
+        else:
+            return False
+        return all(
+            self._parameter_derived_expression(
+                function=function,
+                node=item,
+                allowed_parameters=allowed_parameters,
+                before=before,
+                seen=seen,
+            )
+            for item in values
+        )
+
+    @staticmethod
+    def _call_keywords(call: ast.Call) -> set[str] | None:
+        if any(item.arg is None for item in call.keywords):
+            return None
+        names = [item.arg for item in call.keywords if item.arg is not None]
+        if len(names) != len(set(names)):
+            return None
+        return set(names)
+
+    def _complete_boundary_call(
+        self,
+        call: ast.Call,
+        *,
+        primary_name: str,
+        required_keywords: frozenset[str],
+    ) -> ast.AST | None:
+        keywords = self._call_keywords(call)
+        if keywords is None or len(call.args) > 1 or not required_keywords <= keywords:
+            return None
+        primary_keywords = [
+            item.value for item in call.keywords if item.arg == primary_name
+        ]
+        supplied = [*call.args, *primary_keywords]
+        if len(supplied) != 1:
+            return None
+        return supplied[0]
 
     def _admissions(
         self,
@@ -862,10 +1557,36 @@ class _PythonScanner(ast.NodeVisitor):
             boundary = callee.rsplit(".", 1)[0]
             if boundary not in boundaries:
                 continue
+            boundary_constructor = boundaries[boundary]
+            if boundary_constructor is None or boundary_constructor.lineno >= call.lineno:
+                continue
+            admitted_raw = self._complete_boundary_call(
+                call,
+                primary_name="raw",
+                required_keywords=_ADMISSION_REQUIRED_KEYWORDS,
+            )
+            if admitted_raw is None:
+                continue
             targets = node.targets if isinstance(node, ast.Assign) else [node.target]
             names = [name for target in targets for name in _target_names(target)]
-            if len(names) == 1:
-                result[names[0]] = _Admission(names[0], boundary, call)
+            if len(names) != 1 or self.parent.get(node) is not function:
+                continue
+            outcome = names[0]
+            if not self._is_exact_single_binding(
+                owner=function,
+                name=outcome,
+                expected=node,
+            ):
+                continue
+            parameters = self._function_parameter_names(function)
+            if not isinstance(admitted_raw, ast.Name) or admitted_raw.id not in parameters:
+                continue
+            result[outcome] = _Admission(
+                outcome,
+                boundary,
+                call,
+                frozenset({admitted_raw.id}),
+            )
         return result
 
     def _handoffs(
@@ -878,10 +1599,16 @@ class _PythonScanner(ast.NodeVisitor):
             if not isinstance(node, ast.Call):
                 continue
             callee = _callee(node.func)
-            if not callee.endswith(".protect_for_magic_star") or not node.args:
+            if not callee.endswith(".protect_for_magic_star"):
+                continue
+            handle = self._complete_boundary_call(
+                node,
+                primary_name="handle",
+                required_keywords=_HANDOFF_REQUIRED_KEYWORDS,
+            )
+            if handle is None:
                 continue
             boundary = callee.rsplit(".", 1)[0]
-            handle = node.args[0]
             if not (
                 isinstance(handle, ast.Attribute)
                 and handle.attr == "handle"
@@ -939,7 +1666,18 @@ class _PythonScanner(ast.NodeVisitor):
     def _handoff_packet_name(self, handoff: _Handoff) -> str | None:
         parent = self.parent.get(handoff.node)
         if isinstance(parent, (ast.Assign, ast.AnnAssign)) and parent.value is handoff.node:
-            return self._single_assignment_name(parent)
+            name = self._single_assignment_name(parent)
+            owner = self._lexical_owner(parent)
+            if (
+                name is not None
+                and isinstance(owner, (ast.FunctionDef, ast.AsyncFunctionDef))
+                and self._is_exact_single_binding(
+                    owner=owner,
+                    name=name,
+                    expected=parent,
+                )
+            ):
+                return name
         return None
 
     @staticmethod
@@ -948,16 +1686,112 @@ class _PythonScanner(ast.NodeVisitor):
             return call.args[position]
         return next((keyword.value for keyword in call.keywords if keyword.arg == name), None)
 
-    def _handler_has_no_direct_call(
+    def _handler_is_registry_only(
         self,
         handler: ast.FunctionDef | ast.AsyncFunctionDef,
     ) -> bool:
-        return not any(
-            isinstance(node, ast.Call)
-            and isinstance(node.func, ast.Name)
-            and node.func.id == handler.name
+        """Require the registered handler to have no callable escape route.
+
+        A bare-call check is insufficient because ``alias = handler`` followed
+        by ``alias(payload)`` bypasses the release boundary without containing
+        a call whose callee has the handler's original name.  The only allowed
+        load reference is the exact ``handler=...`` value on a canonical
+        ``RegisteredCapabilityV02`` construction.  Returning, aliasing,
+        decorating, partially applying, storing, or directly calling the
+        handler therefore prevents the sink from earning even local-development
+        structural coverage.
+        """
+
+        references = [
+            node
             for node in ast.walk(self.tree)
+            if isinstance(node, ast.Name)
+            and isinstance(node.ctx, ast.Load)
+            and node.id == handler.name
+        ]
+        if len(references) != 1:
+            return False
+        reference = references[0]
+        keyword = self.parent.get(reference)
+        call = self.parent.get(keyword) if isinstance(keyword, ast.keyword) else None
+        return bool(
+            isinstance(keyword, ast.keyword)
+            and keyword.arg == "handler"
+            and keyword.value is reference
+            and isinstance(call, ast.Call)
+            and self._matches_constructor(
+                call,
+                aliases=self.registered_capability_aliases,
+                module_aliases=self.star_custody_module_aliases,
+                class_name="RegisteredCapabilityV02",
+            )
         )
+
+    def _effect_callee_is_payload_or_import_bound(
+        self,
+        *,
+        function: ast.FunctionDef | ast.AsyncFunctionDef,
+        call: ast.Call,
+        parameters: frozenset[str],
+    ) -> bool:
+        callee = call.func
+        if isinstance(callee, ast.Name):
+            return callee.id in self.import_aliases or callee.id in {
+                "__import__",
+                "eval",
+                "exec",
+                "open",
+            }
+        if not isinstance(callee, ast.Attribute):
+            return False
+        root: ast.AST = callee.value
+        while isinstance(root, ast.Attribute):
+            root = root.value
+        if isinstance(root, ast.Name) and root.id in self.import_aliases:
+            return True
+        return self._parameter_derived_expression(
+            function=function,
+            node=callee.value,
+            allowed_parameters=parameters,
+            before=(call.lineno, call.col_offset),
+        )
+
+    def _handler_effects_are_plaintext_derived(
+        self,
+        handler: ast.FunctionDef | ast.AsyncFunctionDef,
+    ) -> bool:
+        parameters = self._function_parameter_names(handler)
+        if len(parameters) != 1:
+            return False
+        handler_candidates = [
+            item for item in self.candidates if item.function is handler
+        ]
+        if not handler_candidates:
+            return False
+        for candidate in handler_candidates:
+            call = candidate.node
+            if not isinstance(call, ast.Call):
+                return False
+            if not self._effect_callee_is_payload_or_import_bound(
+                function=handler,
+                call=call,
+                parameters=parameters,
+            ):
+                return False
+            if any(item.arg is None for item in call.keywords):
+                return False
+            values = [*call.args, *(item.value for item in call.keywords)]
+            if not all(
+                self._parameter_derived_expression(
+                    function=handler,
+                    node=value,
+                    allowed_parameters=parameters,
+                    before=(call.lineno, call.col_offset),
+                )
+                for value in values
+            ):
+                return False
+        return True
 
     def _release_links(
         self,
@@ -991,14 +1825,20 @@ class _PythonScanner(ast.NodeVisitor):
                 callee = _callee(node.func)
                 if not callee.endswith(".release"):
                     continue
+                packet_node = self._complete_boundary_call(
+                    node,
+                    primary_name="packet",
+                    required_keywords=_RELEASE_REQUIRED_KEYWORDS,
+                )
+                if not isinstance(packet_node, ast.Name):
+                    continue
                 release_variable = callee.rsplit(".", 1)[0]
                 registry = self.release_registries.get(release_variable)
                 if registry is None:
                     continue
                 custody_variable, registered_handlers = registry
                 capability_id = _static_string(self._keyword(node, "capability_id"))
-                packet_node = self._call_argument(node, "packet", 0)
-                if capability_id is None or not isinstance(packet_node, ast.Name):
+                if capability_id is None:
                     continue
                 handler = registered_handlers.get(capability_id)
                 handoff = handoffs_by_packet.get(packet_node.id)
@@ -1009,7 +1849,9 @@ class _PythonScanner(ast.NodeVisitor):
                     continue
                 if not self._node_after_handoff(function, node, handoff):
                     continue
-                if not self._handler_has_no_direct_call(handler):
+                if not self._handler_is_registry_only(handler):
+                    continue
+                if not self._handler_effects_are_plaintext_derived(handler):
                     continue
                 handlers.add(handler)
                 orchestrators.add(function)
@@ -1022,9 +1864,7 @@ class _PythonScanner(ast.NodeVisitor):
             current = self.parent[current]
             if isinstance(current, ast.If):
                 test = current.test
-                statically_false = (
-                    isinstance(test, ast.Constant) and test.value is False
-                ) or (isinstance(test, ast.Name) and test.id in self.false_constants)
+                statically_false = isinstance(test, ast.Constant) and test.value is False
                 if statically_false and _in_body(current, candidate.node):
                     return True
             if isinstance(current, (ast.FunctionDef, ast.AsyncFunctionDef)):
@@ -1045,6 +1885,13 @@ class _PythonScanner(ast.NodeVisitor):
             if self._disabled(candidate):
                 candidate.classification = EXPLICIT_HOLD
                 candidate.evidence = ("statically-unreachable-or-explicit-hold",)
+                continue
+            # A v0.3 broker dispatch is an isolation boundary that needs fresh
+            # out-of-process attestation.  The same-process V02 structural
+            # pattern can never upgrade it to protected coverage.  A statically
+            # unreachable dispatch was handled above as an explicit hold;
+            # every reachable dispatch remains a blocker.
+            if candidate.category == "interprocess-capability-dispatch":
                 continue
             function = candidate.function
             if function is None:

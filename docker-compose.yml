@@ -1,112 +1,18 @@
-# 🐳 Docker Compose - Multi-Container Setup
-# Includes trading engine + monitoring (Prometheus + Grafana)
-# Usage: docker-compose up -d
-
+# Aureon root container protection preflight.
+# This service is intentionally terminal: it returns HOLD and starts no Aureon runtime.
 services:
-  # Main trading engine
-  trading-engine:
-    build: .
-    container_name: aureon-trading
-    restart: unless-stopped
-    env_file: .env
-    environment:
-      - PYTHONIOENCODING=utf-8
-      - PYTHONUNBUFFERED=1
-      - AUREON_STATE_DIR=/app/state
-    volumes:
-      # Persist state files
-      - ./state:/app/state
-      - ./logs:/app/logs
-      # Mount JSON state files
-      - ./*.json:/app/*.json
-    ports:
-      - "8080:8080"  # Optional: health check endpoint
-    networks:
-      - aureon-net
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-    deploy:
-      replicas: 1
-      resources:
-        limits:
-          cpus: '2'
-          memory: 4G
-        reservations:
-          cpus: '1'
-          memory: 2G
-    healthcheck:
-      test: ["CMD", "curl", "-fsS", "http://localhost:8080/health"]
-      interval: 60s
-      timeout: 10s
-      retries: 3
-      start_period: 120s
-
-  # 👑 Aureon Command Center - Web Dashboard (Port 8800)
-  command-center:
-    build: .
-    container_name: aureon-web-ui
-    restart: unless-stopped
-    env_file: .env
-    environment:
-      - PYTHONIOENCODING=utf-8
-      - PYTHONUNBUFFERED=1
-      - AUREON_STATE_DIR=/app/state
-    command: ["python", "-m", "aureon.command_centers.aureon_command_center_ui"]
-    volumes:
-      - ./state:/app/state
-      - ./logs:/app/logs
-      - ./*.json:/app/*.json
-    ports:
-      - "8800:8800"
-    networks:
-      - aureon-net
-    deploy:
-      replicas: 1
-      resources:
-        limits:
-          memory: 1G
-
-  # Prometheus - Metrics collection (optional)
-  prometheus:
-    image: prom/prometheus:v3.12.0
-    container_name: aureon-prometheus
-    restart: unless-stopped
-    volumes:
-      - prometheus-data:/prometheus
-    ports:
-      - "9090:9090"
-    networks:
-      - aureon-net
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.console.libraries=/etc/prometheus/console_libraries'
-      - '--web.console.templates=/etc/prometheus/consoles'
-
-  # Grafana - Dashboards (optional)
-  grafana:
-    image: grafana/grafana:13.0.2
-    container_name: aureon-grafana
-    restart: unless-stopped
-    volumes:
-      - grafana-data:/var/lib/grafana
-    ports:
-      - "3000:3000"
-    networks:
-      - aureon-net
-    environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=${GF_ADMIN_PASSWORD:?GF_ADMIN_PASSWORD must be set}
-      - GF_USERS_ALLOW_SIGN_UP=false
-      - GF_AUTH_ANONYMOUS_ENABLED=false
-
-networks:
-  aureon-net:
-    driver: bridge
-
-volumes:
-  prometheus-data:
-  grafana-data:
+  protection-preflight:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: aureon-protection-preflight:local
+    restart: "no"
+    command: []
+    network_mode: "none"
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=16m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true

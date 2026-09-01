@@ -119,6 +119,7 @@ def test_ready_truth_runs_auris_then_delivers_to_hive_and_mycelia():
 
     assert result.answer == ANSWER
     assert receipt["status"] == "truth_grounded_coherent_and_propagated"
+    assert receipt["brain_reply_screen"]["source"] == "aureon_hnc_brain"
     assert receipt["truth_gate_receipt"]["status"] == "READY_FOR_AURIS"
     assert receipt["inner_receipt"]["stage_order"] == [10, 9, 1]
     assert gate.calls == 1

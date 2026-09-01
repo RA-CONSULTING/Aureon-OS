@@ -2,8 +2,10 @@
 AureonVaultUI — Flask Server for Communicating with the Vault
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-A small Flask HTTP server that exposes the self-feedback vault and its
-voice layer as a REST API plus a single-file web UI. Lets the user:
+A small Flask HTTP server that exposes a HOLD-only, authenticated loopback
+inspection API. Effectful requests are converted to HNC, burned, and held.
+The legacy HTML/PWA assets remain checked in but are not released by this
+boundary: ordinary browser navigation cannot safely attach the bearer header.
 
   • Watch the vault's state in real time (love, gratitude, Casimir, Λ(t),
     dominant chakra, rally status, vote consensus)
@@ -28,36 +30,39 @@ Endpoints:
   POST /api/loop/start         — start the loop daemon
   POST /api/loop/stop          — stop the loop daemon
 
-Phi-bridge (phone ↔ desktop intranet sync):
+Phi-bridge (authenticated local inspection only while release is on HOLD):
   GET  /api/bridge/info        — bridge state, peers, cadence, desktop view
   GET  /api/bridge/peers       — coupled peers only
   POST /api/bridge/register    — register / refresh a peer
   POST /api/bridge/sync        — peer pushes state, gets desktop view back
   POST /api/bridge/drop        — explicit peer disconnect
 
-Phi-bridge mesh (P2P card-level gossip between desktops on the LAN):
+Phi-bridge mesh (P2P mutation routes are admitted to HNC and held):
   POST /api/bridge/cards           — peers exchange VaultContent cards here
   GET  /api/bridge/mesh/info       — mesh stats (cycles, cards in/out, peers)
   GET  /api/bridge/discovery/peers — peers discovered via UDP LAN broadcast
 
-The discovery + gossip loop start at app boot.
+UDP discovery, card gossip, background loops, and mutation handlers do not
+start or execute while the production Magic-Star release boundary is absent.
 
-Usage:
+HOLD-only API usage:
     from aureon.vault.ui import create_app, run_server
     run_server(host="127.0.0.1", port=5566)
 
 Or programmatically:
-    from aureon.vault import AureonSelfFeedbackLoop
     from aureon.vault.ui import create_app
-    loop = AureonSelfFeedbackLoop()
-    app = create_app(loop=loop)
+    app = create_app()
     app.run(port=5566)
 """
 
 from __future__ import annotations
 
+import hashlib
+import hmac
+import ipaddress
 import logging
 import os
+import re
 import threading
 import time
 import uuid
@@ -65,31 +70,220 @@ from typing import Any, Dict, Optional
 
 try:
     from flask import Flask, jsonify, request, send_from_directory
+    from werkzeug.serving import WSGIRequestHandler
     _FLASK_AVAILABLE = True
 except Exception:  # pragma: no cover
     Flask = None  # type: ignore[assignment,misc]
     jsonify = None  # type: ignore[assignment]
     request = None  # type: ignore[assignment]
     send_from_directory = None  # type: ignore[assignment]
+    WSGIRequestHandler = object  # type: ignore[assignment,misc]
     _FLASK_AVAILABLE = False
 
+_VaultUIFlaskBase = Flask if Flask is not None else object
+
 from aureon.harmonic.auris_voice_filter import get_auris_voice_filter
-from aureon.harmonic.phi_bridge import get_phi_bridge
-from aureon.harmonic.phi_bridge_discovery import (
-    DEFAULT_PORT as _DISCOVERY_PORT,
-    PhiBridgeDiscovery,
+from aureon.harmonic.hnc_quantum_packet_crypto import (
+    normalize_hnc_key_material,
+    packet_master_key_from_env,
 )
-from aureon.harmonic.phi_bridge_mesh import get_phi_bridge_mesh
+from aureon.harmonic.phi_bridge import PhiBridge
+from aureon.harmonic.phi_bridge_discovery import PhiBridgeDiscovery
+from aureon.harmonic.phi_bridge_mesh import PhiBridgeMesh
 from aureon.harmonic.phi_swarm_router import get_phi_swarm_router
 from aureon.queen.conversation_memory import get_conversation_memory
 from aureon.queen.meaning_resolver import get_meaning_resolver
 from aureon.queen.queen_action_bridge import get_queen_action_bridge
 from aureon.vault.self_feedback_loop import AureonSelfFeedbackLoop
-from aureon.ollama_config import is_ollama_cloud_url
+from aureon.plumber.os_protection import (
+    AdmittedHNC,
+    LocalOSProtectionBoundary,
+    QuarantinedHNC,
+)
 
 logger = logging.getLogger("aureon.vault.ui")
 
 STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
+VAULT_UI_AUTH_ENV = "AUREON_VAULT_UI_BEARER_TOKEN"
+VAULT_UI_MAX_REQUEST_BYTES = 64 * 1024
+VAULT_UI_MAX_PATH_BYTES = 4 * 1024
+VAULT_UI_MAX_QUERY_BYTES = 4 * 1024
+VAULT_UI_MAX_HEADER_BYTES = 16 * 1024
+VAULT_UI_MAX_AUTHORIZATION_BYTES = 1024
+VAULT_UI_MAX_METHOD_BYTES = 32
+VAULT_UI_MAX_CONTENT_TYPE_BYTES = 1024
+VAULT_UI_MAX_REMOTE_ADDRESS_BYTES = 64
+VAULT_UI_MAX_INGRESS_BYTES = (
+    len(b"AUREON_VAULT_UI_HTTP_INTENT_V1\x00")
+    + (9 * 4)
+    + VAULT_UI_MAX_REQUEST_BYTES
+    + VAULT_UI_MAX_PATH_BYTES
+    + VAULT_UI_MAX_QUERY_BYTES
+    + VAULT_UI_MAX_HEADER_BYTES
+    + VAULT_UI_MAX_METHOD_BYTES
+    + VAULT_UI_MAX_CONTENT_TYPE_BYTES
+    + VAULT_UI_MAX_PATH_BYTES
+    + VAULT_UI_MAX_REMOTE_ADDRESS_BYTES
+    + 32
+)
+_VAULT_UI_TOKEN_PATTERN = re.compile(r"^[A-Za-z0-9._~-]{43,512}$")
+_SAFE_READ_HTTP_METHODS = frozenset({"GET", "HEAD"})
+_VAULT_UI_SAFE_READ_RULES = frozenset({
+    "/api/health",
+    "/api/status",
+    "/api/voices",
+    "/api/utterances",
+    "/api/message/<job_id>",
+    "/api/bridge/invite",
+    "/api/bridge/mesh/info",
+    "/api/bridge/discovery/peers",
+})
+_HTTP_INTENT_CARRIER_MAGIC = b"AUREON_VAULT_UI_HTTP_INTENT_V1\x00"
+
+
+def _configured_vault_ui_token() -> Optional[str]:
+    token = str(os.environ.get(VAULT_UI_AUTH_ENV, "") or "").strip()
+    return token if _VAULT_UI_TOKEN_PATTERN.fullmatch(token) is not None else None
+
+
+def _loopback_address(value: object) -> bool:
+    candidate = str(value or "").strip()
+    if candidate.casefold() == "localhost":
+        return True
+    try:
+        return ipaddress.ip_address(candidate).is_loopback
+    except ValueError:
+        return False
+
+
+def _hnc_master_key_configured() -> bool:
+    try:
+        normalize_hnc_key_material(packet_master_key_from_env() or None)
+        return True
+    except BaseException:
+        return False
+
+
+def _http_intent_carrier(*parts: bytes) -> bytes:
+    carrier = bytearray(_HTTP_INTENT_CARRIER_MAGIC)
+    for part in parts:
+        carrier.extend(len(part).to_bytes(4, "big"))
+        carrier.extend(part)
+    return bytes(carrier)
+
+
+def _header_bytes(value: object) -> bytes:
+    return str(value or "").encode("utf-8", errors="replace")
+
+
+def _canonical_non_authorization_headers(headers: object) -> bytes:
+    """Bind every non-secret request header into an effect-intent carrier."""
+
+    pairs = []
+    for name, value in headers.items():
+        normalized_name = str(name or "").strip().casefold()
+        if normalized_name == "authorization":
+            continue
+        pairs.append((normalized_name, str(value or "")))
+    encoded = bytearray()
+    for name, value in sorted(pairs):
+        name_bytes = _header_bytes(name)
+        value_bytes = _header_bytes(value)
+        encoded.extend(len(name_bytes).to_bytes(4, "big"))
+        encoded.extend(name_bytes)
+        encoded.extend(len(value_bytes).to_bytes(4, "big"))
+        encoded.extend(value_bytes)
+    return bytes(encoded)
+
+
+def vault_ui_security_preflight(*, host: str = "127.0.0.1", debug: bool = False) -> dict[str, Any]:
+    """Return a non-secret, fail-closed bind preflight for the Vault UI."""
+
+    denial_codes: list[str] = []
+    if not _loopback_address(host):
+        denial_codes.append("loopback_bind_required")
+    if debug is not False:
+        denial_codes.append("debug_server_forbidden")
+    if _configured_vault_ui_token() is None:
+        denial_codes.append("vault_ui_bearer_token_unavailable_or_invalid")
+    if not _hnc_master_key_configured():
+        denial_codes.append("hnc_master_key_unavailable_or_invalid")
+    return {
+        "schema": "aureon.vault-ui.security-preflight.v1",
+        "status": "READY_LOCAL_HOLD" if not denial_codes else "HOLD",
+        "denial_codes": denial_codes,
+        "loopback_only": True,
+        "long_well_formed_bearer_required": True,
+        "minimum_bearer_characters": 43,
+        "effectful_ingress_hnc_required": True,
+        "production_magic_star_release_available": False,
+        "lan_binding_authorized": False,
+        "public_tunnel_authorized": False,
+        "production_ready": False,
+    }
+
+
+class VaultUIRedactedRequestHandler(WSGIRequestHandler):
+    """Bound slow clients and never place request targets in access logs."""
+
+    timeout = 5
+
+    def setup(self) -> None:
+        super().setup()
+        try:
+            self.connection.settimeout(self.timeout)
+        except Exception:
+            pass
+
+    def log_request(self, code: int | str = "-", size: int | str = "-") -> None:
+        self.log("info", '"[vault-target-redacted]" %s %s', str(code), str(size))
+
+    def log_error(self, _format: str, *_args: Any) -> None:
+        self.log("error", "[vault-request-error-redacted]")
+
+    def log_message(self, _format: str, *_args: Any) -> None:
+        self.log("info", "[vault-request-message-redacted]")
+
+
+class VaultUIFlask(_VaultUIFlaskBase):
+    """Flask app whose public run method cannot enable external/debug serving."""
+
+    def run(
+        self,
+        host: str | None = None,
+        port: int | None = None,
+        debug: bool | None = None,
+        load_dotenv: bool = False,
+        **options: Any,
+    ) -> None:
+        requested_host = host or "127.0.0.1"
+        requested_debug = bool(debug) or bool(self.debug) or any(
+            bool(options.get(name))
+            for name in ("use_debugger", "use_evalex", "use_reloader")
+        )
+        preflight = vault_ui_security_preflight(
+            host=requested_host,
+            debug=requested_debug,
+        )
+        if preflight["status"] != "READY_LOCAL_HOLD":
+            codes = ",".join(preflight["denial_codes"])
+            raise RuntimeError(f"vault_ui_bind_preflight_failed:{codes}")
+        self.debug = False
+        options.update({
+            "use_debugger": False,
+            "use_evalex": False,
+            "use_reloader": False,
+            "threaded": False,
+            "processes": 1,
+            "request_handler": VaultUIRedactedRequestHandler,
+        })
+        super().run(
+            host="127.0.0.1",
+            port=port,
+            debug=False,
+            load_dotenv=False,
+            **options,
+        )
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -104,6 +298,61 @@ def _check_flask() -> None:
         )
 
 
+def _stop_runtime_component(component: object, *, reason_code: str) -> None:
+    """Stop inherited background state and fail if any worker survives."""
+
+    if component is None:
+        return
+    stop = getattr(component, "stop", None)
+    if callable(stop):
+        try:
+            stop()
+        except Exception as exc:
+            raise RuntimeError(f"{reason_code}:stop_failed") from exc
+    if bool(getattr(component, "_running", False)):
+        raise RuntimeError(f"{reason_code}:still_running")
+    for attribute in ("_thread", "_announce_thread", "_listen_thread"):
+        worker = getattr(component, attribute, None)
+        is_alive = getattr(worker, "is_alive", None)
+        if callable(is_alive) and is_alive():
+            raise RuntimeError(f"{reason_code}:worker_survived")
+
+
+def _vault_ui_loop_denial_codes(loop: object) -> list[str]:
+    codes: list[str] = []
+    if type(loop) is not AureonSelfFeedbackLoop:
+        codes.append("canonical_feedback_loop_required")
+        return codes
+    worker = getattr(loop, "_thread", None)
+    worker_alive = getattr(worker, "is_alive", None)
+    if bool(getattr(loop, "_running", False)) or (
+        callable(worker_alive) and worker_alive()
+    ):
+        codes.append("feedback_loop_must_be_stopped")
+    if getattr(loop, "voice_engine", None) is not None:
+        codes.append("voice_engine_must_be_absent")
+    if bool(getattr(loop, "_enhance_enabled", False)) or getattr(
+        loop, "_enhancer", None
+    ) is not None:
+        codes.append("self_enhancement_must_be_absent")
+    casimir = getattr(loop, "casimir", None)
+    if getattr(casimir, "_engine", None) is not None or getattr(
+        casimir, "_engine_kind", "stub"
+    ) != "stub":
+        codes.append("native_casimir_must_be_absent")
+    pinger = getattr(loop, "pinger", None)
+    if getattr(pinger, "_chirp_bus", None) is not None:
+        codes.append("chirp_bus_must_be_absent")
+    if getattr(pinger, "_thought_bus", None) is not None:
+        codes.append("pinger_thought_bus_must_be_absent")
+    vault = getattr(loop, "vault", None)
+    if bool(getattr(vault, "_subscribed", False)) or getattr(
+        vault, "_thought_bus", None
+    ) is not None:
+        codes.append("vault_thought_bus_subscription_must_be_absent")
+    return codes
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # App factory
 # ─────────────────────────────────────────────────────────────────────────────
@@ -112,7 +361,7 @@ def _check_flask() -> None:
 def create_app(
     loop: Optional[AureonSelfFeedbackLoop] = None,
     base_interval_s: float = 1.0,
-    enable_voice: bool = True,
+    enable_voice: bool = False,
     *,
     mesh_discovery: Optional[PhiBridgeDiscovery] = None,
     mesh_port: Optional[int] = None,
@@ -120,37 +369,297 @@ def create_app(
     mesh_kind: str = "desktop",
 ) -> "Flask":
     """
-    Create a Flask app bound to a SelfFeedbackLoop.
+    Create a HOLD-only Flask app with a factory-owned inert feedback loop.
 
-    If no loop is provided, a fresh one is constructed.
+    Supplied loops are rejected because their constructors may already have
+    subscribed to shared buses, probed providers, or started other effects.
 
-    Mesh wiring:
-      PhiBridgeDiscovery (UDP LAN broadcast) and the card-level gossip
-      loop start at app boot. Pass ``mesh_discovery`` to inject a pre-
-      built discovery (tests use this with a stub transport instead of
-      binding real sockets). ``mesh_port`` is the HTTP port this app is
-      reachable on — announced so peers know where to POST.
+    Mesh wiring is retained only as inert inspection state. UDP discovery and
+    card gossip do not start here because the checked-in Plumber/Magic-Star
+    boundary has no production release authority.
     """
     _check_flask()
+    preflight = vault_ui_security_preflight(host="127.0.0.1", debug=False)
+    if preflight["status"] != "READY_LOCAL_HOLD":
+        codes = ",".join(preflight["denial_codes"])
+        raise RuntimeError(f"vault_ui_factory_preflight_failed:{codes}")
 
-    if loop is None:
-        loop = AureonSelfFeedbackLoop(
-            base_interval_s=base_interval_s,
-            enable_voice=enable_voice,
+    if loop is not None:
+        raise RuntimeError(
+            "vault_ui_supplied_feedback_loop_forbidden:factory_owned_inert_loop_required"
+        )
+    if mesh_discovery is not None:
+        raise RuntimeError(
+            "vault_ui_supplied_mesh_discovery_forbidden:app_owned_inert_mesh_required"
+        )
+    if enable_voice:
+        raise RuntimeError(
+            "vault_ui_voice_startup_hold:production_magic_star_release_unavailable"
+        )
+    loop = AureonSelfFeedbackLoop(
+        base_interval_s=base_interval_s,
+        auto_wire_bus=False,
+        enable_voice=False,
+        enable_self_enhancement=False,
+        enable_native_casimir=False,
+        enable_harmonic_buses=False,
+    )
+    loop_denial_codes = _vault_ui_loop_denial_codes(loop)
+    if loop_denial_codes:
+        raise RuntimeError(
+            "vault_ui_feedback_loop_preflight_failed:"
+            + ",".join(loop_denial_codes)
         )
 
-    app = Flask(
+    app = VaultUIFlask(
         "aureon_vault_ui",
         static_folder=STATIC_DIR,
         static_url_path="/static",
     )
+    # Read at most one sentinel byte beyond the admitted body limit so a
+    # chunked/no-Content-Length stream cannot be silently truncated.
+    app.config["MAX_CONTENT_LENGTH"] = VAULT_UI_MAX_REQUEST_BYTES + 1
+
+    bearer_token_configured = _configured_vault_ui_token() is not None
+    ingress_boundary = LocalOSProtectionBoundary(
+        boundary_id="aureon-vault-ui-http-ingress-v1",
+        master_key_provider=lambda: packet_master_key_from_env() or None,
+        max_ingress_bytes=VAULT_UI_MAX_INGRESS_BYTES,
+        max_active_handles=32,
+        max_active_ingress_bytes=4 * 1024 * 1024,
+        max_replay_tokens=8192,
+        max_quarantine_evidence=2048,
+    )
+    app.config["AUREON_VAULT_UI_SECURITY"] = {
+        "schema": "aureon.vault-ui.runtime-security.v1",
+        "authentication_configured": bearer_token_configured,
+        "hnc_master_key_configured": _hnc_master_key_configured(),
+        "loopback_only": True,
+        "effectful_ingress_disposition": "HOLD",
+        "safe_read_rules": sorted(_VAULT_UI_SAFE_READ_RULES),
+        "browser_ui_status": "HOLD_API_CLIENT_ONLY",
+        "production_magic_star_release_available": False,
+        "production_ready": False,
+    }
+    app.config["AUREON_VAULT_UI_INGRESS_BOUNDARY"] = ingress_boundary
+
+    def _presented_bearer(header: str) -> str:
+        scheme, separator, token = header.partition(" ")
+        if separator and scheme.casefold() == "bearer":
+            return token.strip()
+        return ""
+
+    @app.before_request
+    def _require_plumber_hnc_ingress():
+        """Authenticate every request and burn every mutating intent on HOLD."""
+
+        current_bearer_token = _configured_vault_ui_token()
+        if current_bearer_token is None:
+            return jsonify({
+                "status": "HOLD",
+                "reason_code": "vault_ui_authorization_not_configured",
+                "request_executed": False,
+                "production_ready": False,
+            }), 503
+        header_size = sum(
+            len(_header_bytes(name)) + len(_header_bytes(value)) + 4
+            for name, value in request.headers.items()
+        )
+        if header_size > VAULT_UI_MAX_HEADER_BYTES:
+            return jsonify({
+                "status": "HOLD",
+                "reason_code": "request_header_limit_exceeded",
+                "request_executed": False,
+            }), 431
+        authorization = str(request.headers.get("Authorization", "") or "")
+        if len(_header_bytes(authorization)) > VAULT_UI_MAX_AUTHORIZATION_BYTES:
+            return jsonify({
+                "status": "HOLD",
+                "reason_code": "authorization_header_limit_exceeded",
+                "request_executed": False,
+            }), 431
+        if not _loopback_address(request.remote_addr):
+            return jsonify({
+                "status": "HOLD",
+                "reason_code": "loopback_transport_required",
+                "request_executed": False,
+            }), 403
+        presented = _presented_bearer(authorization)
+        if (
+            len(presented) > 512
+            or not presented
+            or not hmac.compare_digest(presented, current_bearer_token)
+        ):
+            return jsonify({
+                "status": "HOLD",
+                "reason_code": "authentication_required",
+                "request_executed": False,
+            }), 401
+        method_bytes = str(request.method or "").encode("ascii", errors="replace")
+        if not method_bytes or len(method_bytes) > VAULT_UI_MAX_METHOD_BYTES:
+            return jsonify({
+                "status": "HOLD",
+                "reason_code": "request_method_limit_exceeded",
+                "request_executed": False,
+            }), 400
+        content_type_bytes = _header_bytes(request.headers.get("Content-Type", ""))
+        if len(content_type_bytes) > VAULT_UI_MAX_CONTENT_TYPE_BYTES:
+            return jsonify({
+                "status": "HOLD",
+                "reason_code": "content_type_header_limit_exceeded",
+                "request_executed": False,
+            }), 431
+        query_bytes = bytes(request.query_string or b"")
+        path_bytes = str(request.path or "").encode("utf-8", errors="replace")
+        if len(path_bytes) > VAULT_UI_MAX_PATH_BYTES:
+            return jsonify({
+                "status": "HOLD",
+                "reason_code": "path_size_limit_exceeded",
+                "request_executed": False,
+            }), 414
+        if len(query_bytes) > VAULT_UI_MAX_QUERY_BYTES:
+            return jsonify({
+                "status": "HOLD",
+                "reason_code": "query_size_limit_exceeded",
+                "request_executed": False,
+            }), 414
+        route_rule = str(getattr(request.url_rule, "rule", "") or "")
+        route_rule_bytes = route_rule.encode("utf-8", errors="replace")
+        if len(route_rule_bytes) > VAULT_UI_MAX_PATH_BYTES:
+            return jsonify({
+                "status": "HOLD",
+                "reason_code": "route_rule_size_limit_exceeded",
+                "request_executed": False,
+            }), 414
+        remote_address_bytes = _header_bytes(request.remote_addr)
+        if len(remote_address_bytes) > VAULT_UI_MAX_REMOTE_ADDRESS_BYTES:
+            return jsonify({
+                "status": "HOLD",
+                "reason_code": "remote_address_size_limit_exceeded",
+                "request_executed": False,
+            }), 400
+        canonical_headers = _canonical_non_authorization_headers(request.headers)
+        if len(canonical_headers) > VAULT_UI_MAX_HEADER_BYTES:
+            return jsonify({
+                "status": "HOLD",
+                "reason_code": "canonical_header_limit_exceeded",
+                "request_executed": False,
+            }), 431
+        authorization_fingerprint = hashlib.sha256(
+            authorization.encode("utf-8", errors="replace")
+        ).digest()
+        raw_body = request.get_data(cache=False, as_text=False)
+        if len(raw_body) > VAULT_UI_MAX_REQUEST_BYTES:
+            return jsonify({
+                "status": "HOLD",
+                "reason_code": "request_size_limit_exceeded",
+                "request_executed": False,
+                "production_ready": False,
+            }), 413
+        safe_read = (
+            request.method in _SAFE_READ_HTTP_METHODS
+            and route_rule in _VAULT_UI_SAFE_READ_RULES
+            and len(raw_body) == 0
+        )
+        if safe_read:
+            if not _hnc_master_key_configured():
+                return jsonify({
+                    "status": "HOLD",
+                    "reason_code": "hnc_master_key_unavailable_or_invalid",
+                    "request_executed": False,
+                    "production_ready": False,
+                }), 503
+            return None
+
+        raw = _http_intent_carrier(
+            method_bytes,
+            path_bytes,
+            query_bytes,
+            content_type_bytes,
+            route_rule_bytes,
+            remote_address_bytes,
+            canonical_headers,
+            authorization_fingerprint,
+            raw_body,
+        )
+        outcome = ingress_boundary.admit_external(
+            raw,
+            source_id="vault-ui-authenticated-loopback",
+            ingress_kind="http-effect-intent",
+            purpose="aureon.vault-ui.effect-intent.v1",
+            operator_aad={
+                "authenticated": True,
+                "loopback_transport": True,
+                "method": request.method,
+                "path_sha256": hashlib.sha256(path_bytes).hexdigest(),
+                "route_rule_sha256": hashlib.sha256(
+                    route_rule_bytes
+                ).hexdigest(),
+                "query_sha256": hashlib.sha256(query_bytes).hexdigest(),
+                "content_type_sha256": hashlib.sha256(content_type_bytes).hexdigest(),
+            },
+            content_validator=lambda view: (
+                isinstance(view, memoryview)
+                and bytes(view[:len(_HTTP_INTENT_CARRIER_MAGIC)])
+                == _HTTP_INTENT_CARRIER_MAGIC
+            ),
+        )
+        admission = outcome.public_summary()
+        if isinstance(outcome, AdmittedHNC):
+            disposal = ingress_boundary.discard_admitted(
+                outcome.handle,
+                reason_code="production_magic_star_release_unavailable",
+            )
+            return jsonify({
+                "status": "HOLD",
+                "reason_code": "production_magic_star_release_unavailable",
+                "request_executed": False,
+                "effect_attempted": False,
+                "plumber_hnc_admitted": True,
+                "magic_star_release_required": True,
+                "admission": admission,
+                "disposal": disposal,
+                "production_ready": False,
+            }), 423
+        if not isinstance(outcome, QuarantinedHNC):  # pragma: no cover - total boundary
+            raise RuntimeError("vault_ui_hnc_outcome_invalid")
+        return jsonify({
+            "status": "QUARANTINED_HNC",
+            "reason_code": "hnc_admission_denied",
+            "request_executed": False,
+            "effect_attempted": False,
+            "plumber_hnc_admitted": False,
+            "magic_star_release_required": True,
+            "admission": admission,
+            "production_ready": False,
+        }), 409
+
+    @app.after_request
+    def _secure_vault_ui_response(response):
+        response.headers["Cache-Control"] = "no-store"
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["Referrer-Policy"] = "no-referrer"
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
+        )
+        return response
+
+    @app.errorhandler(413)
+    def _request_too_large(_error):
+        return jsonify({
+            "status": "HOLD",
+            "reason_code": "request_size_limit_exceeded",
+            "request_executed": False,
+            "production_ready": False,
+        }), 413
 
     # Expose the loop on the app config so tests can reach it
     app.config["AUREON_LOOP"] = loop
 
-    # PhiBridge — process-wide singleton, attached to this loop's vault.
-    # The voices read it through the same vault that the bridge writes to.
-    bridge = get_phi_bridge(vault=loop.vault)
+    # App-owned bridge state prevents cross-app peers, counters, and vault
+    # ownership from leaking through a process singleton.
+    bridge = PhiBridge(vault=loop.vault)
     app.config["AUREON_PHI_BRIDGE"] = bridge
     # Make the voice engine reachable via the vault for the bridge's
     # "last utterance" lookup. We attach a private attribute so we don't
@@ -170,77 +679,14 @@ def create_app(
     pending_jobs_lock = threading.Lock()
     app.config["AUREON_PENDING_JOBS"] = pending_jobs
 
-    # ─────────────────────────────────────────────────────────────────
-    # LLM pre-warm + pin-in-RAM daemon.
-    # Ollama unloads idle models after 5 min by default; on a 3.7 GiB
-    # box the reload + prompt processing blows a phone fetch. We send
-    # a tiny ping now and every 3 minutes to keep qwen2.5:0.5b hot in
-    # RAM so phone messages land on a warm model every time.
-    # ─────────────────────────────────────────────────────────────────
-    def _llm_warm_ping(why: str) -> None:
-        """
-        Pin the local LLM in RAM.
-
-        Ollama's OpenAI-compatible /v1 shim ignores keep_alive, so we hit
-        its NATIVE /api/generate endpoint which does accept it. Each ping
-        extends the model's TTL by 30 minutes, so a 3-minute warmer loop
-        plus the boot ping means the model is effectively pinned for as
-        long as the server runs.
-        """
-        if loop.voice_engine is None:
-            return
-        try:
-            any_voice = next(iter(loop.voice_engine.voices.values()))
-            adapter = any_voice.adapter
-            if adapter is None:
-                return
-            bridge = getattr(adapter, "bridge", None)
-            base_url = getattr(adapter, "base_url", "") or getattr(bridge, "base_url", "")
-            model = getattr(adapter, "model", "") or getattr(bridge, "chat_model", "")
-            if not base_url or not model:
-                return
-            # Derive the native endpoint from the /v1 base_url.
-            #   http://localhost:11434/v1  →  http://localhost:11434/api/generate
-            native = base_url.rstrip("/")
-            if native.endswith("/v1"):
-                native = native[:-3]
-            native = native + "/api/generate"
-            if is_ollama_cloud_url(native):
-                # Hosted models need no local RAM keepalive. Avoid recurring
-                # cloud inference solely for local warm-state management.
-                return
-            import requests as _requests
-            headers_fn = getattr(adapter, "_headers", None)
-            headers = headers_fn() if callable(headers_fn) else dict(
-                getattr(bridge, "_authorization_headers", {}) or {}
-            )
-            t0 = time.time()
-            _requests.post(
-                native,
-                json={
-                    "model": model,
-                    "prompt": "ping",
-                    "stream": False,
-                    "keep_alive": "30m",
-                    "options": {"num_predict": 1},
-                },
-                headers=headers,
-                timeout=60,
-            )
-            dt = (time.time() - t0) * 1000.0
-            logger.info("LLM warm ping (%s) via %s: %.0f ms", why, native, dt)
-        except Exception as e:
-            logger.debug("LLM warm ping failed (%s): %s", why, e)
-
-    # Pre-warm once at app creation, then every 3 minutes in the background.
-    threading.Thread(target=_llm_warm_ping, args=("boot",), daemon=True).start()
-
-    def _warm_loop():
-        while True:
-            time.sleep(180)
-            _llm_warm_ping("keepalive")
-
-    threading.Thread(target=_warm_loop, daemon=True).start()
+    # Model probing and warm-up egress are absent from this HOLD-only app.
+    app.config["AUREON_LLM_WARMER_RUNTIME"] = {
+        "status": "HOLD",
+        "boot_ping_started": False,
+        "keepalive_thread_started": False,
+        "reason_code": "production_magic_star_release_unavailable",
+        "production_ready": False,
+    }
 
     # ─────────────────────────────────────────────────────────────────────
     # UI page
@@ -271,7 +717,12 @@ def create_app(
     @app.route("/api/voices")
     def api_voices():
         if loop.voice_engine is None:
-            return jsonify({"ok": False, "error": "voice engine disabled"}), 400
+            return jsonify({
+                "ok": True,
+                "voices": [],
+                "status": "HOLD",
+                "reason_code": "voice_engine_disabled",
+            })
         return jsonify({
             "ok": True,
             "voices": list(loop.voice_engine.voices.keys()),
@@ -280,7 +731,7 @@ def create_app(
     @app.route("/api/utterances")
     def api_utterances():
         if loop.voice_engine is None:
-            return jsonify({"ok": True, "utterances": []})
+            return jsonify({"ok": True, "count": 0, "utterances": []})
         n = request.args.get("n", default=50, type=int)
         history = loop.voice_engine.history[-n:]
         return jsonify({
@@ -1007,44 +1458,24 @@ def create_app(
 
     @app.route("/api/bridge/invite")
     def api_bridge_invite():
-        """
-        Tell the caller what URL the phone should open.
-        We pick the LAN-facing IPv4 of this host using the standard
-        "connect to a public address" trick — no packet is actually sent.
-        """
-        import socket
+        """Return a loopback-only HOLD receipt without probing the network."""
 
-        lan_ip = ""
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
-            sock.connect(("8.8.8.8", 80))
-            lan_ip = sock.getsockname()[0]
-        except Exception:
-            try:
-                lan_ip = socket.gethostbyname(socket.gethostname())
-            except Exception:
-                lan_ip = ""
-        finally:
-            try:
-                sock.close()
-            except Exception:
-                pass
-
-        host = request.host  # includes port
-        scheme = request.scheme
-        # Rewrite 127.0.0.1 / localhost to the LAN IP for the phone URL.
-        phone_host = host
-        if lan_ip and ("127.0.0.1" in host or "localhost" in host or "0.0.0.0" in host):
-            port = host.split(":", 1)[1] if ":" in host else "5566"
-            phone_host = f"{lan_ip}:{port}"
-        phone_url = f"{scheme}://{phone_host}/bridge"
+            port = int(request.environ.get("SERVER_PORT", 5566))
+        except (TypeError, ValueError):
+            port = 5566
+        if not 1 <= port <= 65535:
+            port = 5566
+        local_origin = f"http://127.0.0.1:{port}"
         return jsonify({
             "ok": True,
-            "lan_ip": lan_ip,
-            "phone_url": phone_url,
-            "desktop_url": f"{scheme}://{phone_host}/",
-            "invite_url": f"{scheme}://{phone_host}/bridge-invite",
-            "hostname": socket.gethostname(),
+            "status": "HOLD",
+            "reason_code": "production_magic_star_release_unavailable",
+            "lan_ip": "",
+            "phone_url": None,
+            "desktop_url": f"{local_origin}/",
+            "invite_url": f"{local_origin}/bridge-invite",
+            "loopback_only": True,
         })
 
     @app.route("/api/bridge/state")
@@ -1133,8 +1564,9 @@ def create_app(
     # have that they haven't listed in `our_hashes`. Eventually consistent
     # union — any two nodes converge by replaying each other's history.
 
-    mesh = get_phi_bridge_mesh(vault=loop.vault)
+    mesh = PhiBridgeMesh(vault=loop.vault, discovery=None)
     app.config["AUREON_PHI_BRIDGE_MESH"] = mesh
+    app.config["AUREON_PHI_BRIDGE_DISCOVERY"] = None
 
     @app.route("/api/bridge/cards", methods=["POST"])
     def api_bridge_cards():
@@ -1279,63 +1711,26 @@ def create_app(
     # Mesh — UDP discovery + φ²-cadenced card gossip
     # ─────────────────────────────────────────────────────────────────────
 
-    http_port = int(mesh_port or os.environ.get("AUREON_UI_PORT") or 8000)
-    discovery = mesh_discovery
-    if discovery is None:
-        discovery = PhiBridgeDiscovery(
-            host="",  # auto-detect the LAN IP
-            port=http_port,
-            label=str(mesh_label),
-            kind=str(mesh_kind),
-            fingerprint_fn=lambda: str(loop.vault.fingerprint()) if hasattr(loop.vault, "fingerprint") else "",
-        )
-
-    mesh.discovery = discovery
-    app.config["AUREON_PHI_BRIDGE_DISCOVERY"] = discovery
-
-    try:
-        discovery.start()
-    except Exception as e:
-        logger.warning("phi-bridge discovery failed to start: %s", e)
-    try:
-        mesh.start()
-    except Exception as e:
-        logger.warning("phi-bridge mesh failed to start: %s", e)
-
-    # Stop the background threads cleanly on interpreter shutdown.
-    import atexit as _atexit
-    def _shutdown_mesh():
-        try:
-            discovery.stop()
-        except Exception:
-            pass
-        try:
-            mesh.stop()
-        except Exception:
-            pass
-    _atexit.register(_shutdown_mesh)
+    _ = mesh_port
+    _ = mesh_label
+    _ = mesh_kind
+    app.config["AUREON_PHI_BRIDGE_MESH_RUNTIME"] = {
+        "status": "HOLD",
+        "udp_discovery_started": False,
+        "card_gossip_started": False,
+        "reason_code": "production_magic_star_release_unavailable",
+        "production_ready": False,
+    }
 
     @app.route("/api/bridge/discovery/peers")
     def api_bridge_discovery_peers():
-        disc = app.config.get("AUREON_PHI_BRIDGE_DISCOVERY")
-        if disc is None:
-            return jsonify({
-                "ok": True, "running": False,
-                "peers": [],
-            })
-        try:
-            return jsonify({
-                "ok": True,
-                "running": True,
-                "self_peer_id": disc.peer_id,
-                "host": disc.host,
-                "port": disc.port,
-                "announce_count": disc.announce_count,
-                "recv_count": disc.recv_count,
-                "peers": disc.known_peers_dict(),
-            })
-        except Exception as e:
-            return jsonify({"ok": False, "error": str(e)}), 500
+        return jsonify({
+            "ok": True,
+            "running": False,
+            "status": "HOLD",
+            "reason_code": "production_magic_star_release_unavailable",
+            "peers": [],
+        })
 
     return app
 
@@ -1351,11 +1746,22 @@ def run_server(
     loop: Optional[AureonSelfFeedbackLoop] = None,
     start_loop: bool = False,
     debug: bool = False,
+    base_interval_s: float = 1.0,
 ) -> None:
-    """Blocking server run. Use `start_loop=True` to also spawn the loop."""
-    app = create_app(loop=loop)
+    """Run the local HOLD-only server after an exact fail-closed preflight."""
+
+    preflight = vault_ui_security_preflight(host=host, debug=debug)
+    if preflight["status"] != "READY_LOCAL_HOLD":
+        codes = ",".join(preflight["denial_codes"])
+        raise RuntimeError(f"vault_ui_security_preflight_failed:{codes}")
     if start_loop:
-        cfg_loop = app.config["AUREON_LOOP"]
-        cfg_loop.start()
+        raise RuntimeError(
+            "vault_ui_loop_start_hold:production_magic_star_release_unavailable"
+        )
+    if loop is not None:
+        raise RuntimeError(
+            "vault_ui_supplied_feedback_loop_forbidden:factory_owned_inert_loop_required"
+        )
+    app = create_app(loop=loop, base_interval_s=base_interval_s)
     logger.info("Aureon Vault UI listening on http://%s:%d/", host, port)
-    app.run(host=host, port=port, debug=debug, use_reloader=False, threaded=True)
+    app.run(host="127.0.0.1", port=port, debug=False, load_dotenv=False)

@@ -20,7 +20,11 @@ back on itself. Ten modules:
 Gary Leckey / Aureon Institute — 2026
 """
 
-from aureon.vault.aureon_vault import AureonVault, VaultContent
+from aureon.vault.aureon_vault import (
+    AUREON_VAULT_RELEASE_HOLD,
+    AureonVault,
+    VaultContent,
+)
 from aureon.vault.fibonacci_shuffler import (
     FibonacciCardShuffler,
     FIBONACCI_INTERVALS,
@@ -69,6 +73,7 @@ from aureon.vault.voice import (
 __all__ = [
     # Vault core
     "AureonVault",
+    "AUREON_VAULT_RELEASE_HOLD",
     "VaultContent",
     # Shuffler
     "FibonacciCardShuffler",

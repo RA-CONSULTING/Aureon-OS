@@ -20,8 +20,10 @@ import time
 from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from typing import Any, Dict, Mapping, Protocol, Sequence
+from urllib.parse import urlsplit
 
 from aureon.autonomous.aureon_ten_nine_one_thought_path import (
+    SELF_CODER_CONFIDENTIAL_PREFLIGHT_SCHEMA,
     TenNineOneHold,
     ThoughtPathRequest,
     build_local_ten_nine_one_thought_path,
@@ -39,6 +41,11 @@ TRUTH_GATED_THOUGHT_RECEIPT_PREFIX = "thought:10-9-1:truth-gated:"
 MIN_INTERNAL_SHARE_PERCENT = 99
 INTERNAL_BRAIN_MAX_TOKENS = 512
 INTERNAL_AUTHOR_MAX_TOKENS = 4_096
+LOCAL_SELF_CODER_PROVIDER_MODE = "ollama_local_hnc_protected"
+SUPPORTED_HNC_PROVIDER_MODES = frozenset(
+    {"ollama_cloud_primary", LOCAL_SELF_CODER_PROVIDER_MODE}
+)
+SELF_CODER_TRANSPORT_PREFLIGHT_SCHEMA = "aureon-self-coder-transport-preflight-v1"
 
 INTERNAL_ACTOR = "aureon_internal"
 SENIOR_OVERSIGHT_ACTOR = "codex_senior_oversight"
@@ -149,6 +156,14 @@ def _canonical_digest(value: str, *, label: str) -> str:
     return result
 
 
+def _valid_hnc_gamma(value: Any) -> bool:
+    if type(value) not in {int, float}:
+        return False
+    assert isinstance(value, (int, float))
+    gamma = float(value)
+    return math.isfinite(gamma) and 0.0 <= gamma <= 1.0
+
+
 @dataclass(frozen=True)
 class ResolvedBrain:
     """A runtime adapter plus non-secret evidence from the Ollama switchboard."""
@@ -190,6 +205,27 @@ class OllamaSwitchboardBrainResolver:
     def resolve(self, lane: str) -> ResolvedBrain:
         return self.resolve_for(lane, nerve_id=f"lane:{lane}")
 
+    def self_coder_transport_preflight(self) -> dict[str, Any]:
+        """Reject hosted or ambiguous endpoints before self-coder plaintext exists."""
+
+        base_url = str(
+            getattr(getattr(self.switchboard, "bridge", None), "base_url", "") or ""
+        )
+        canonical_endpoint = _canonical_self_coder_loopback_endpoint(base_url)
+        ready = bool(canonical_endpoint)
+        return {
+            "schema_version": SELF_CODER_TRANSPORT_PREFLIGHT_SCHEMA,
+            "ready": ready,
+            "provider_mode": LOCAL_SELF_CODER_PROVIDER_MODE if ready else "hold",
+            "endpoint_authority_digest": _text_digest(
+                canonical_endpoint if ready else base_url
+            ),
+            "endpoint_loopback": ready,
+            "external_source_egress_authorized": False,
+            "action_eligible": False,
+            "economic_eligible": False,
+        }
+
     def resolve_for(self, lane: str, *, nerve_id: str) -> ResolvedBrain:
         lane_name = _canonical_id(lane, label="lane").lower()
         nerve = _canonical_id(nerve_id, label="nerve_id")
@@ -208,6 +244,11 @@ class OllamaSwitchboardBrainResolver:
             adapter, selection = self.switchboard.compatible_adapter_for(lane_name)
             route = None
         base_url = str(getattr(getattr(self.switchboard, "bridge", None), "base_url", "") or "")
+        canonical_endpoint = _canonical_self_coder_loopback_endpoint(base_url)
+        if canonical_endpoint:
+            enable_strict = getattr(adapter, "enable_strict_loopback_transport", None)
+            if callable(enable_strict):
+                enable_strict()
         source = str(getattr(selection, "source", "") or "")
         resolved = ResolvedBrain(
             adapter=adapter,
@@ -218,7 +259,7 @@ class OllamaSwitchboardBrainResolver:
             working=source.startswith("live_probe_passed:"),
             catalog_size=int(getattr(selection, "catalog_size", 0) or 0),
             catalog_refreshed_at=float(getattr(selection, "catalog_refreshed_at", 0.0) or 0.0),
-            endpoint_authority_digest=_text_digest(base_url),
+            endpoint_authority_digest=_text_digest(canonical_endpoint or base_url),
             routing_receipt_id=str(getattr(route, "receipt_id", "") or ""),
             hnc_receipt_id=str(getattr(route, "hnc_receipt_id", "") or ""),
             hnc_gamma=getattr(route, "coherence_gamma", None),
@@ -285,6 +326,34 @@ def _brain_causal_payload(passport: BrainPassport) -> Dict[str, Any]:
     return payload
 
 
+def _canonical_self_coder_loopback_endpoint(base_url: str) -> str:
+    """Return one canonical literal local Ollama endpoint or an empty HOLD."""
+
+    try:
+        parsed = urlsplit(str(base_url or "").strip())
+        if not (
+            parsed.scheme == "http"
+            and parsed.hostname in {"127.0.0.1", "::1"}
+            and parsed.port == 11434
+            and parsed.username is None
+            and parsed.password is None
+            and parsed.query == ""
+            and parsed.fragment == ""
+            and parsed.path.rstrip("/") in {"", "/v1"}
+        ):
+            return ""
+    except (TypeError, ValueError):
+        return ""
+    host = f"[{parsed.hostname}]" if parsed.hostname == "::1" else parsed.hostname
+    return f"http://{host}:11434/v1"
+
+
+def _is_exact_self_coder_loopback_endpoint(base_url: str) -> bool:
+    """Accept only a literal unauthenticated local Ollama endpoint shape."""
+
+    return bool(_canonical_self_coder_loopback_endpoint(base_url))
+
+
 def _work_causal_payload(receipt: WorkReceipt) -> Dict[str, Any]:
     payload = receipt.to_dict()
     payload.pop("receipt_id", None)
@@ -329,11 +398,8 @@ def validate_brain_passport(passport: BrainPassport) -> bool:
             or not passport.routing_receipt_id.startswith("ollama:hnc-route:")
             or not passport.hnc_receipt_id.startswith("hnc:live_field:")
             or passport.hnc_coherence_band not in {"lighthouse", "active", "organizing", "low"}
-            or passport.provider_mode != "ollama_cloud_primary"
-            or type(passport.hnc_gamma) not in {int, float}
-            or isinstance(passport.hnc_gamma, bool)
-            or not math.isfinite(float(passport.hnc_gamma))
-            or not 0.0 <= float(passport.hnc_gamma) <= 1.0
+            or passport.provider_mode not in SUPPORTED_HNC_PROVIDER_MODES
+            or not _valid_hnc_gamma(passport.hnc_gamma)
         ):
             return False
         if not passport.selection_source.startswith("live_probe_passed:hnc_"):
@@ -412,14 +478,12 @@ def _issue_brain_passport(
         and resolved.routing_receipt_id.startswith("ollama:hnc-route:")
         and resolved.hnc_receipt_id.startswith("hnc:live_field:")
         and resolved.hnc_coherence_band in {"lighthouse", "active", "organizing", "low"}
-        and resolved.provider_mode == "ollama_cloud_primary"
-        and type(resolved.hnc_gamma) in {int, float}
-        and not isinstance(resolved.hnc_gamma, bool)
-        and math.isfinite(float(resolved.hnc_gamma))
-        and 0.0 <= float(resolved.hnc_gamma) <= 1.0
+        and resolved.provider_mode in SUPPORTED_HNC_PROVIDER_MODES
+        and _valid_hnc_gamma(resolved.hnc_gamma)
     )
     if ready:
         assert resolved is not None
+        assert resolved.hnc_gamma is not None
         passport = BrainPassport(
             schema_version=BRAIN_SCHEMA_VERSION,
             subject_type=subject_type,
@@ -547,6 +611,71 @@ class InternalCodingWorkforce:
         if not process_id:
             raise WorkforceHold("role_process_binding_missing")
         return process_id
+
+    def assert_sensitive_local_only(self, *, endpoint_authority_digest: str) -> None:
+        """Fail closed unless every brain and the thought path are local/confidential.
+
+        The check runs before any self-coder decision.  It deliberately refuses
+        cloud brains even though they remain supported for non-sensitive workforce
+        use elsewhere in Aureon.
+        """
+
+        endpoint_digest = _canonical_digest(
+            endpoint_authority_digest,
+            label="endpoint_authority_digest",
+        )
+        preflight = getattr(self._thought_path, "self_coder_confidential_preflight", None)
+        thought = preflight() if callable(preflight) else None
+        if (
+            not isinstance(thought, Mapping)
+            or set(thought)
+            != {
+                "schema_version",
+                "ready",
+                "truth_gate_enforced",
+                "trusted_local_evidence_resolver",
+                "trusted_receipt_backed_truth_gate",
+                "commitment_only_propagation",
+                "raw_answer_bus_persistence_authorized",
+                "raw_answer_trace_persistence_authorized",
+                "action_eligible",
+                "economic_eligible",
+            }
+            or thought.get("schema_version")
+            != SELF_CODER_CONFIDENTIAL_PREFLIGHT_SCHEMA
+            or thought.get("ready") is not True
+            or thought.get("truth_gate_enforced") is not True
+            or thought.get("trusted_local_evidence_resolver") is not True
+            or thought.get("trusted_receipt_backed_truth_gate") is not True
+            or thought.get("commitment_only_propagation") is not True
+            or thought.get("raw_answer_bus_persistence_authorized") is not False
+            or thought.get("raw_answer_trace_persistence_authorized") is not False
+            or thought.get("action_eligible") is not False
+            or thought.get("economic_eligible") is not False
+        ):
+            raise WorkforceHold("self_coder_commitment_only_thought_path_required")
+        if self._decision_observer is not None:
+            raise WorkforceHold("self_coder_plaintext_decision_observer_forbidden")
+        if not self._passports or any(
+            not passport.brain_ready
+            or passport.provider_mode != LOCAL_SELF_CODER_PROVIDER_MODE
+            or passport.endpoint_authority_digest != endpoint_digest
+            for passport in self._passports
+        ):
+            raise WorkforceHold("self_coder_local_brain_passports_required")
+        runtimes = [*self._agents.values(), *self._process_brains.values()]
+        if len(runtimes) != len(self._passports):
+            raise WorkforceHold("self_coder_local_brain_runtime_count_mismatch")
+        for runtime in runtimes:
+            adapter = getattr(runtime, "adapter", None)
+            base_url = str(getattr(adapter, "base_url", "") or "")
+            canonical_endpoint = _canonical_self_coder_loopback_endpoint(base_url)
+            if (
+                not canonical_endpoint
+                or _text_digest(canonical_endpoint) != endpoint_digest
+                or getattr(adapter, "strict_loopback_no_redirects", None) is not True
+            ):
+                raise WorkforceHold("self_coder_strict_loopback_adapter_required")
 
     def _append_work(
         self,
@@ -743,7 +872,7 @@ class InternalCodingWorkforce:
         """Let every active Aureon seat and its process brain decide in sequence."""
 
         prompt_text = _bounded_prompt(prompt)
-        active_roles = list(self._role_brain_lanes)
+        active_roles: list[str] = list(self._role_brain_lanes)
         if selected_roles is not None:
             chosen = tuple(str(role or "").strip() for role in selected_roles)
             if (
@@ -755,7 +884,9 @@ class InternalCodingWorkforce:
                 raise WorkforceHold("selected_deliberation_roles_invalid")
             active_roles = list(chosen)
         elif not scope_locked:
-            preferred = [role for role in ("Estimator", "Project Manager") if role in active_roles]
+            preferred: list[str] = [
+                role for role in ("Estimator", "Project Manager") if role in active_roles
+            ]
             active_roles = preferred or active_roles[:2]
         decisions: list[Dict[str, Any]] = []
         prior_digest = _text_digest(prompt_text)
@@ -863,7 +994,7 @@ class InternalCodingWorkforce:
         )
         hnc_routed_brain_count = sum(
             item.brain_ready
-            and item.provider_mode == "ollama_cloud_primary"
+            and item.provider_mode in SUPPORTED_HNC_PROVIDER_MODES
             and item.routing_receipt_id.startswith("ollama:hnc-route:")
             and item.hnc_receipt_id.startswith("hnc:live_field:")
             for item in self._passports
@@ -899,7 +1030,12 @@ class InternalCodingWorkforce:
             "codex_role": "senior_review_and_veto_only",
             "codex_implementation_allowed": False,
             "cloud_fallback_used": False,
-            "provider_mode": "ollama_cloud_primary" if all_brains_hnc_routed else "hold",
+            "provider_mode": (
+                next(iter({item.provider_mode for item in self._passports}))
+                if all_brains_hnc_routed
+                and len({item.provider_mode for item in self._passports}) == 1
+                else "hold"
+            ),
             "hnc_routed_brain_count": hnc_routed_brain_count,
             "all_brains_hnc_routed": all_brains_hnc_routed,
             "truth_gate_enforced": truth_gate_enforced,
@@ -1095,6 +1231,7 @@ __all__ = [
     "INTERNAL_ACTOR",
     "INTERNAL_BRAIN_MAX_TOKENS",
     "INTERNAL_AUTHOR_MAX_TOKENS",
+    "LOCAL_SELF_CODER_PROVIDER_MODE",
     "MIN_INTERNAL_SHARE_PERCENT",
     "PROCESS_BRAIN_BINDINGS",
     "ROLE_PROCESS_BINDINGS",
@@ -1102,6 +1239,8 @@ __all__ = [
     "SCHEMA_VERSION",
     "SENIOR_OVERSIGHT_ACTOR",
     "SENIOR_OVERSIGHT_STAGES",
+    "SELF_CODER_TRANSPORT_PREFLIGHT_SCHEMA",
+    "SUPPORTED_HNC_PROVIDER_MODES",
     "TRUTH_GATED_THOUGHT_RECEIPT_PREFIX",
     "WORK_SCHEMA_VERSION",
     "BrainPassport",

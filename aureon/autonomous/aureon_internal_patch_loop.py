@@ -1,15 +1,17 @@
 """Aureon-authored, proposal-only internal patch loop.
 
 The internal coding workforce observes a bounded source file, deliberates,
-authors one unified diff, validates its exact shape, and submits it to
-SafeCodeControl for review.  This module deliberately has no repository
-mutation path: the checked-in Plumber and Magic Star components are
-local-development controls and cannot grant production release authority.
+authors one unified diff, validates its exact shape, and must seal it through
+the local Plumber proposal forge before SafeCodeControl receives a metadata-
+only review record.  This module deliberately has no repository mutation path:
+the checked-in Plumber and Magic Star components are local-development controls
+and cannot grant production release authority.
 
-No Codex implementation receipt is created here.  A valid proposal remains
-``pending_senior_review`` and HOLD.  A future release service must consume the
-exact evidence digest through an independently reviewed production boundary;
-that service is not implemented by this module.
+No Codex implementation receipt is created here.  A valid local result proves
+only a transient HNC seal and remains HOLD; it is explicitly not recoverable or
+pending review because no durable authenticated proposal vault exists.  A future
+review/release service must consume ciphertext through an independently reviewed
+production boundary; that service is not implemented by this module.
 """
 
 from __future__ import annotations
@@ -31,10 +33,17 @@ from aureon.autonomous.aureon_internal_coding_workforce import (
     InternalCodingWorkforce,
 )
 from aureon.autonomous.aureon_safe_code_control import CodeProposal, SafeCodeControl
+from aureon.plumber.proposal_forge import (
+    LocalProposalForge,
+    OpaqueProposalHandle,
+    ProposalForgeError,
+    QuarantinedProposal,
+)
 
-SCHEMA_VERSION = "aureon-internal-patch-cycle-v1"
+SCHEMA_VERSION = "aureon-internal-patch-cycle-v2"
 MAX_SOURCE_BYTES = 512 * 1024
 MAX_PATCH_BYTES = 128 * 1024
+MAX_GOAL_BYTES = 8 * 1024
 MAX_CHANGED_LINES = 500
 MAX_WORKFORCE_PROMPT_CHARS = 65_536
 MAX_COUNCIL_EXCERPT_CHARS = 1_500
@@ -77,6 +86,7 @@ PRE_APPLY_COUNCIL_ROLES = (
     "Archive Librarian",
 )
 PRE_APPLY_COUNCIL_REVIEWER = "aureon:pre_apply_council"
+PROTECTED_PROPOSAL_SCHEMA = "aureon-internal-hnc-proposal-binding-v1"
 
 
 class InternalPatchHold(RuntimeError):
@@ -93,6 +103,147 @@ def _canonical_json(payload: Any) -> str:
 
 def _evidence_digest(payload: dict[str, Any]) -> str:
     return _sha256_bytes(_canonical_json(payload).encode("utf-8"))
+
+
+def _metadata_only_request(request: "InternalPatchRequest") -> dict[str, Any]:
+    """Return review metadata without retaining the goal or command arguments."""
+
+    return {
+        "schema_version": "aureon-internal-patch-request-summary-v1",
+        "request_sha256": _evidence_digest(request.to_dict()),
+        "goal_sha256": _sha256_bytes(request.goal.encode("utf-8")),
+        "target_path": request.target_path,
+        "expected_source_sha256": request.expected_source_sha256,
+        "test_commands_sha256": _evidence_digest(
+            {"test_commands": [list(command) for command in request.test_commands]}
+        ),
+        "test_command_count": len(request.test_commands),
+        "raw_goal_included": False,
+        "raw_test_commands_included": False,
+    }
+
+
+def _metadata_only_deliberation(deliberation: dict[str, Any]) -> dict[str, Any]:
+    """Commit to every decision while omitting untrusted model prose."""
+
+    decisions: list[dict[str, Any]] = []
+    for item in deliberation.get("decisions") or ():
+        if not isinstance(item, dict):
+            continue
+        decisions.append(
+            {
+                "role": str(item.get("role") or ""),
+                "process_id": str(item.get("process_id") or ""),
+                "lane": str(item.get("lane") or ""),
+                "agent_decision_sha256": _sha256_bytes(
+                    str(item.get("agent_decision") or "").encode("utf-8")
+                ),
+                "process_decision_sha256": _sha256_bytes(
+                    str(item.get("process_decision") or "").encode("utf-8")
+                ),
+                "agent_verdict": str(item.get("agent_verdict") or ""),
+                "process_verdict": str(item.get("process_verdict") or ""),
+                "agent_work_receipt_id": str(item.get("agent_work_receipt_id") or ""),
+                "process_work_receipt_id": str(item.get("process_work_receipt_id") or ""),
+                "raw_decisions_included": False,
+            }
+        )
+    return {
+        key: value
+        for key, value in deliberation.items()
+        if key != "decisions"
+    } | {
+        "deliberation_sha256": _evidence_digest(deliberation),
+        "decisions": decisions,
+        "raw_decisions_included": False,
+    }
+
+
+def _implementation_passport(report: dict[str, Any]) -> dict[str, Any]:
+    matches = [
+        item
+        for item in report.get("passports") or ()
+        if isinstance(item, dict)
+        and item.get("subject_type") == "agent"
+        and item.get("subject_id") == "Implementation Worker"
+        and item.get("brain_ready") is True
+    ]
+    if len(matches) != 1:
+        raise InternalPatchHold("implementation_worker_brain_passport_required")
+    return matches[0]
+
+
+def _forge_model_id(passport: dict[str, Any]) -> str:
+    model = str(passport.get("model") or "").strip()
+    if not model:
+        raise InternalPatchHold("implementation_worker_model_id_required")
+    if model.startswith(("ollama:", "aureon-local:")):
+        return model
+    return f"ollama:{model}"
+
+
+def _council_receipt_ids(council: dict[str, Any]) -> list[str]:
+    return [
+        receipt_id
+        for item in council.get("decisions") or ()
+        if isinstance(item, dict)
+        for receipt_id in (
+            str(item.get("agent_work_receipt_id") or ""),
+            str(item.get("process_work_receipt_id") or ""),
+        )
+        if receipt_id
+    ]
+
+
+def _protected_provenance(
+    *,
+    request: "InternalPatchRequest",
+    base_commit: str,
+    deliberation_digest: str,
+    author_prompt_context: dict[str, Any],
+    author_work_receipt_ids: list[str],
+    patch_validation: dict[str, Any],
+    git_apply_check: dict[str, Any],
+    structural_canonicalization: dict[str, Any],
+    pre_apply_council: dict[str, Any],
+    pre_apply_council_digest: str,
+    workforce_report: dict[str, Any],
+) -> dict[str, Any]:
+    passport = _implementation_passport(workforce_report)
+    return {
+        "schema_version": PROTECTED_PROPOSAL_SCHEMA,
+        "artifact_origin": "Aureon",
+        "generator_role": "Implementation Worker",
+        "openai_role": "adviser_and_reviewer_only",
+        "openai_implementation": False,
+        "ownership_claim": "none",
+        "base_commit": base_commit,
+        "request_sha256": _evidence_digest(request.to_dict()),
+        "target_path": request.target_path,
+        "expected_source_sha256": request.expected_source_sha256,
+        "deliberation_sha256": deliberation_digest,
+        "author_prompt_context_sha256": _evidence_digest(author_prompt_context),
+        "author_work_receipt_ids": list(author_work_receipt_ids),
+        "patch_validation_sha256": _evidence_digest(patch_validation),
+        "git_apply_check_sha256": _evidence_digest(git_apply_check),
+        "structural_canonicalization_sha256": _evidence_digest(
+            structural_canonicalization
+        ),
+        "pre_apply_council_sha256": pre_apply_council_digest,
+        "pre_apply_council_work_receipt_ids": _council_receipt_ids(
+            pre_apply_council
+        ),
+        "implementation_brain_passport_id": str(passport.get("receipt_id") or ""),
+        "implementation_hnc_routing_receipt_id": str(
+            passport.get("routing_receipt_id") or ""
+        ),
+        "implementation_hnc_receipt_id": str(passport.get("hnc_receipt_id") or ""),
+        "workforce_report_sha256": _evidence_digest(workforce_report),
+        "repository_mutation_authorized": False,
+        "generated_code_execution_authorized": False,
+        "action_eligible": False,
+        "economic_eligible": False,
+    }
 
 
 def _exact_pre_apply_council_accepted(council: dict[str, Any]) -> bool:
@@ -454,7 +605,11 @@ def build_patch_request(
     if not source or len(source) > MAX_SOURCE_BYTES:
         raise InternalPatchHold("source_size_limit_failed")
     goal_text = str(goal or "").strip()
-    if not goal_text or len(goal_text) > 8192:
+    try:
+        goal_bytes = goal_text.encode("utf-8", errors="strict")
+    except UnicodeEncodeError as exc:
+        raise InternalPatchHold("goal_size_limit_failed") from exc
+    if not goal_bytes or len(goal_bytes) > MAX_GOAL_BYTES:
         raise InternalPatchHold("goal_size_limit_failed")
     commands = tuple(tuple(str(part) for part in command) for command in test_commands)
     if not commands or any(not command or not all(command) for command in commands):
@@ -508,16 +663,60 @@ def run_internal_patch_cycle(
     request: InternalPatchRequest,
     workforce: InternalCodingWorkforce,
     controller: SafeCodeControl | None = None,
+    proposal_forge: LocalProposalForge | None = None,
+    base_commit: str = "",
+    adviser_id: str = "",
+    reviewer_id: str = "",
+    adviser_evidence_sha256: str = "",
 ) -> dict[str, Any]:
-    """Run one Aureon-authored proposal cycle without mutating the repository."""
+    """Seal one Aureon-authored proposal without mutating the repository."""
 
     repo_root = Path(root).resolve()
     proposal_controller = _trusted_proposal_controller(repo_root, controller)
+    if type(proposal_forge) is not LocalProposalForge:
+        raise InternalPatchHold("trusted_local_proposal_forge_required")
+    forge_preflight = proposal_forge.preflight()
+    if (
+        not isinstance(forge_preflight, dict)
+        or forge_preflight.get("schema")
+        != "aureon.plumber.proposal-forge-preflight.v0"
+        or forge_preflight.get("ready") is not True
+        or forge_preflight.get("key_material_returned") is not False
+        or forge_preflight.get("proposal_admission_authorized") is not False
+    ):
+        raise InternalPatchHold("hnc_proposal_master_key_unavailable")
+    initial_report = workforce.report()
+    endpoint_digests = {
+        str(item.get("endpoint_authority_digest") or "")
+        for item in initial_report.get("passports") or ()
+        if isinstance(item, dict)
+    }
+    if len(endpoint_digests) != 1:
+        raise InternalPatchHold("self_coder_local_endpoint_binding_required")
+    try:
+        workforce.assert_sensitive_local_only(
+            endpoint_authority_digest=next(iter(endpoint_digests))
+        )
+    except Exception as exc:
+        raise InternalPatchHold("self_coder_local_confidential_runtime_required") from exc
+    if re.fullmatch(r"(?:[0-9a-f]{40}|[0-9a-f]{64})", base_commit) is None:
+        raise InternalPatchHold("proposal_base_commit_required")
+    if not adviser_id.strip() or not reviewer_id.strip():
+        raise InternalPatchHold("proposal_adviser_and_reviewer_ids_required")
+    if re.fullmatch(r"[0-9a-f]{64}", adviser_evidence_sha256) is None:
+        raise InternalPatchHold("proposal_adviser_evidence_digest_required")
+    prior_items = [
+        *proposal_controller.pending_proposals,
+        *proposal_controller.recent_reviews,
+    ]
+    if prior_items:
+        raise InternalPatchHold(
+            "existing_proposal_state_requires_manual_protected_archive"
+        )
     target = _normalize_target(request.target_path)
     if target != request.target_path:
         raise InternalPatchHold("request_target_not_canonical")
     source = _source_for_authoring(repo_root, request)
-    initial_report = workforce.report()
     expected = CANONICAL_AGENT_COMPANY_ROLE_COUNT
     if (
         not initial_report.get("brain_fabric_ready")
@@ -662,49 +861,173 @@ def run_internal_patch_cycle(
     if not _exact_pre_apply_council_accepted(pre_apply_council):
         raise InternalPatchHold("pre_apply_council_held")
 
-    proposal_spec = CodeProposal(
-        kind="aureon_internal_unified_diff",
-        title=request.goal[:120],
-        summary="Aureon's Ollama-backed workforce authored this exact-source-bound unified diff.",
-        target_files=[target],
-        patch_text=patch_text,
-        metadata={
-            "request": request.to_dict(),
+    author_work_receipt_ids = [receipt.receipt_id for receipt in author_receipts]
+    workforce_report = workforce.report()
+    proposal_status = "internal_patch_transient_hnc_seal_held"
+    pending_senior_review = False
+    proposal_protection: dict[str, Any]
+    public_request = request.to_dict()
+    public_deliberation = deliberation
+    public_pre_apply_council = pre_apply_council
+
+    if proposal_forge is not None:
+        provenance = _protected_provenance(
+            request=request,
+            base_commit=base_commit,
+            deliberation_digest=deliberation_digest,
+            author_prompt_context=author_prompt_context,
+            author_work_receipt_ids=author_work_receipt_ids,
+            patch_validation=patch_validation,
+            git_apply_check=git_apply_check,
+            structural_canonicalization=structural_canonicalization,
+            pre_apply_council=pre_apply_council,
+            pre_apply_council_digest=pre_apply_council_digest,
+            workforce_report=workforce_report,
+        )
+        try:
+            forge_outcome = proposal_forge.forge_proposal(
+                source_request=request.goal,
+                unified_diff=patch_text,
+                model_id=_forge_model_id(_implementation_passport(workforce_report)),
+                adviser_id=adviser_id,
+                reviewer_id=reviewer_id,
+                adviser_evidence_sha256=adviser_evidence_sha256,
+                provenance=provenance,
+                base_commit=base_commit,
+            )
+        except ProposalForgeError as exc:
+            raise InternalPatchHold(f"hnc_proposal_forge_failed:{exc.code}") from None
+
+        hnc_summary = forge_outcome.public_summary()
+        public_request = _metadata_only_request(request)
+        public_deliberation = _metadata_only_deliberation(deliberation)
+        public_pre_apply_council = _metadata_only_deliberation(pre_apply_council)
+        protected_metadata = {
+            "request": public_request,
             "deliberation_digest": deliberation_digest,
             "author_prompt_context": author_prompt_context,
             "author_work_receipt_id": author_receipts[-1].receipt_id,
-            "author_work_receipt_ids": [receipt.receipt_id for receipt in author_receipts],
+            "author_work_receipt_ids": author_work_receipt_ids,
             "authoring_correction_attempted": correction_attempted,
             "authoring_failure_reason": authoring_failure_reason,
             "patch_validation": patch_validation,
             "git_apply_check": git_apply_check,
             "structural_canonicalization": structural_canonicalization,
             "pre_apply_council_digest": pre_apply_council_digest,
-            "pre_apply_council_receipt_ids": [
-                receipt_id
-                for item in pre_apply_council["decisions"]
-                for receipt_id in (
-                    item["agent_work_receipt_id"],
-                    item["process_work_receipt_id"],
-                )
-            ],
+            "pre_apply_council_receipt_ids": _council_receipt_ids(pre_apply_council),
+            "provenance_sha256": _evidence_digest(provenance),
+            "hnc_proposal": hnc_summary,
             "brain_fabric_ready": True,
             "codex_implementation": False,
-        },
-        source="aureon_internal_coding_workforce",
-    )
-    prior_auto_approve = proposal_controller.auto_approve
-    proposal_controller.auto_approve = False
-    try:
-        proposal = proposal_controller.propose(proposal_spec)
-    finally:
-        proposal_controller.auto_approve = prior_auto_approve
-    proposal = _record_exact_council_proposal_hold(proposal_controller, proposal)
+            "aureon_receipt_raw_goal_retained": False,
+            "aureon_receipt_raw_diff_retained": False,
+            "local_model_nonretention_verified": False,
+        }
+        if isinstance(forge_outcome, OpaqueProposalHandle):
+            try:
+                discard_summary = proposal_forge.discard_proposal(
+                    forge_outcome,
+                    reason_code="durable_proposal_vault_unavailable",
+                )
+            except ProposalForgeError as exc:
+                raise InternalPatchHold(
+                    f"hnc_transient_proposal_burn_failed:{exc.code}"
+                ) from None
+            protected_metadata["hnc_discard"] = discard_summary
+            proposal_spec = CodeProposal(
+                kind="aureon_internal_hnc_unified_diff",
+                title=f"HNC-protected Aureon proposal for {target}"[:120],
+                summary=(
+                    "Aureon's workforce authored this exact-source-bound diff; "
+                    "Plumber verified one transient opaque HNC seal. No durable "
+                    "review capability exists in this local implementation."
+                ),
+                target_files=[target],
+                patch_text="",
+                metadata=protected_metadata,
+                source="aureon_internal_coding_workforce",
+            )
+            prior_auto_approve = proposal_controller.auto_approve
+            proposal_controller.auto_approve = False
+            try:
+                proposal = proposal_controller.propose(proposal_spec)
+            finally:
+                proposal_controller.auto_approve = prior_auto_approve
+            proposal = _record_exact_council_proposal_hold(
+                proposal_controller,
+                proposal,
+            )
+            proposal_protection = {
+                "mode": "local_in_memory_opaque_hnc_handle_burned",
+                "admitted_hnc": True,
+                "quarantined_hnc": False,
+                "transient_hnc_seal_verified": True,
+                "transient_hnc_handle_burned": True,
+                "proposal_recoverable": False,
+                "durable_proposal_vault_available": False,
+                "aureon_receipt_stores_raw_goal": False,
+                "aureon_receipt_stores_raw_diff": False,
+                "thought_bus_stores_answer_commitment_only": True,
+                "client_external_model_egress_attempted": False,
+                "local_model_server_downstream_egress_verified": False,
+                "local_model_nonretention_verified": False,
+                "opaque_handle_persistent": False,
+                "local_development_only": True,
+                "production_ready": False,
+            }
+        elif isinstance(forge_outcome, QuarantinedProposal):
+            proposal_status = "internal_patch_proposal_quarantined_hnc"
+            proposal = {
+                "kind": "aureon_internal_hnc_unified_diff",
+                "title": f"Quarantined Aureon proposal for {target}"[:120],
+                "summary": "Plumber quarantined the candidate; no raw proposal was retained.",
+                "target_files": [target],
+                "patch_text": "",
+                "metadata": protected_metadata,
+                "source": "aureon_internal_coding_workforce",
+                "status": "hnc_quarantined",
+                "proposal_only": True,
+                "execution_authorized": False,
+                "release_authorized": False,
+                "production_ready": False,
+            }
+            proposal_protection = {
+                "mode": "metadata_only_hnc_quarantine",
+                "admitted_hnc": False,
+                "quarantined_hnc": True,
+                "transient_hnc_seal_verified": False,
+                "transient_hnc_handle_burned": False,
+                "proposal_recoverable": False,
+                "durable_proposal_vault_available": False,
+                "aureon_receipt_stores_raw_goal": False,
+                "aureon_receipt_stores_raw_diff": False,
+                "thought_bus_stores_answer_commitment_only": True,
+                "client_external_model_egress_attempted": False,
+                "local_model_server_downstream_egress_verified": False,
+                "local_model_nonretention_verified": False,
+                "opaque_handle_persistent": False,
+                "local_development_only": True,
+                "production_ready": False,
+            }
+        else:  # pragma: no cover - proposal forge has a closed outcome union
+            raise InternalPatchHold("hnc_proposal_forge_outcome_invalid")
+
+        # Drop the two raw model artifacts before assembling any serializable receipt.
+        model_output = ""
+        patch_text = ""
     apply_evidence = {
-        "status": "held_proposal_only",
+        "status": (
+            "held_transient_hnc_seal_only"
+            if proposal_protection.get("transient_hnc_seal_verified") is True
+            else "quarantined_proposal_only"
+        ),
         "applied": False,
         "effect_attempted": False,
-        "blocked_reason": "production_magic_star_release_unavailable",
+        "blocked_reason": (
+            "durable_proposal_vault_unavailable"
+            if proposal_protection.get("transient_hnc_seal_verified") is True
+            else "hnc_proposal_quarantined"
+        ),
         "test_commands_executed": False,
         "repository_mutation_authorized": False,
         "generated_code_execution_authorized": False,
@@ -716,24 +1039,29 @@ def run_internal_patch_cycle(
         "local_development_only": True,
         "production_ready": False,
     }
-    workforce_report = workforce.report()
     cycle = {
         "schema_version": SCHEMA_VERSION,
-        "status": "internal_patch_proposal_held_for_senior_review",
+        "status": proposal_status,
         "applied": False,
-        "pending_senior_review": True,
-        "request": request.to_dict(),
+        "pending_senior_review": pending_senior_review,
+        "proposal_recoverable": False,
+        "transient_hnc_seal_verified": proposal_protection.get(
+            "transient_hnc_seal_verified"
+        )
+        is True,
+        "request": public_request,
         "source_sha256": request.expected_source_sha256,
-        "deliberation": deliberation,
+        "deliberation": public_deliberation,
         "deliberation_digest": deliberation_digest,
         "author_prompt_context": author_prompt_context,
         "proposal": proposal,
+        "proposal_protection": proposal_protection,
         "patch_validation": patch_validation,
-        "pre_apply_council": pre_apply_council,
+        "pre_apply_council": public_pre_apply_council,
         "pre_apply_council_digest": pre_apply_council_digest,
         "authoring_correction_attempted": correction_attempted,
         "authoring_failure_reason": authoring_failure_reason,
-        "author_work_receipt_ids": [receipt.receipt_id for receipt in author_receipts],
+        "author_work_receipt_ids": author_work_receipt_ids,
         "git_apply_check": git_apply_check,
         "structural_canonicalization": structural_canonicalization,
         "apply_evidence": apply_evidence,

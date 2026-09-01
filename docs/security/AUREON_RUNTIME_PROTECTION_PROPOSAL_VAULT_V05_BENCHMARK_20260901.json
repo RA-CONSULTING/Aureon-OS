@@ -1,0 +1,98 @@
+{
+  "benchmark_harness_sha256": "4af6fb497eb9a21ce336f266b6878341f7c258a8fdc081ea0afeda997faa854c",
+  "candidate_apply_authorized": false,
+  "candidate_code_generated": true,
+  "candidate_files_written": false,
+  "candidate_import_authorized": false,
+  "candidate_plaintext_absent_from_public_material": true,
+  "capacity_scaling_audit": {
+    "method": "independent_instrumented_source_row_and_lock_measurement",
+    "rejected_source_capacity_128_vault_entries_4": {
+      "aggregate_source_lock_max_ms": 1282.82,
+      "longest_single_source_lock_ms": 651.112,
+      "preflight_max_ms": 1305.198,
+      "preflight_median_ms": 1157.779,
+      "source_lock_acquisitions": 2,
+      "source_row_validations": 260,
+      "source_rows": 130
+    },
+    "selected_declared_source_capacity_limit": 64,
+    "source_capacity_64_vault_entries_4": {
+      "aggregate_source_lock_max_ms": 621.526,
+      "longest_single_source_lock_ms": 325.387,
+      "preflight_max_ms": 647.779,
+      "preflight_median_ms": 501.616,
+      "source_lock_acquisitions": 2,
+      "source_row_validations": 132,
+      "source_rows": 66
+    }
+  },
+  "current_open_key_matches_authenticated_metadata": true,
+  "empty_open_ms": 347.6013,
+  "external_head_anchor_attested": false,
+  "external_model_invoked": false,
+  "generated_code_execution_authorized": false,
+  "head_stable_across_restart": true,
+  "host": {
+    "platform": "Windows-11-10.0.22621-SP0",
+    "python": "3.12.0"
+  },
+  "idempotent_replay_ms": {
+    "iterations": 20,
+    "max": 92.8334,
+    "median": 84.0387,
+    "min": 82.3878,
+    "p95": 91.9387
+  },
+  "implementation_sha256": "a1ca31395feb395f5ae478128315d4fcfb60b6e8b786d92d1a0cb70a43df7503",
+  "independent_key_custody_attested": false,
+  "key_provider_restart_continuity_attested": false,
+  "limitations": [
+    "valid_prefix_rollback_and_byte_copy_clone_not_detectable",
+    "same_process_arbitrary_code_execution_outside_proof",
+    "local_key_provider_restart_continuity_not_attested",
+    "commitment_only_intrusion_projection_yields_generic_event_family_candidate",
+    "candidate_semantic_correctness_and_integration_not_attested",
+    "no_candidate_apply_import_execute_or_release_authority",
+    "no_independent_monotonic_head_anchor"
+  ],
+  "live_verify_ms": {
+    "max": 95.6972,
+    "median": 82.8076,
+    "min": 81.4791,
+    "p95": 95.6972
+  },
+  "measured_at_local_audit_date": "2026-09-01",
+  "measured_at_utc": "2026-09-01T06:38:53.493065+00:00",
+  "mode": "local_offline_hold_only_performance_measurement",
+  "plaintext_markers_absent_from_vault_db_wal_shm": true,
+  "production_ready": false,
+  "proposal_count": 8,
+  "proposal_forge_invoked": false,
+  "release_authorized": false,
+  "repository_mutation_authorized": false,
+  "restart_entry_count": 8,
+  "restart_open_and_authenticate_all_ms": 139.5073,
+  "review_read_ms": {
+    "max": 68.9288,
+    "median": 59.3187,
+    "min": 58.1316,
+    "p95": 68.9288
+  },
+  "schema": "aureon.autonomous.runtime-protection-proposal-vault-benchmark.v05",
+  "seal_ms": {
+    "max": 1485.2399,
+    "median": 385.5959,
+    "min": 146.499,
+    "p95": 1485.2399
+  },
+  "self_coder_invoked": false,
+  "source_authentication_scaling": "O(source_entries+vault_entries)",
+  "source_capacity_bound_enforced": true,
+  "source_declared_capacity": 16,
+  "source_max_violation_entries_supported_by_vault": 64,
+  "source_violation_count": 8,
+  "vault_declared_capacity": 8,
+  "vault_max_proposals_supported": 64,
+  "verified_receipt_required_for_authentication": true
+}

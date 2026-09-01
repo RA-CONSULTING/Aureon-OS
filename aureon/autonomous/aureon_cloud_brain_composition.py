@@ -27,6 +27,7 @@ from aureon.autonomous.aureon_internal_coding_workforce import (
     WorkReceipt,
 )
 from aureon.autonomous.aureon_ten_nine_one_thought_path import (
+    CommitmentOnlyHiveMyceliaPropagator,
     LocalHncAurisEvidenceResolver,
     TenNineOneEvidenceResolver,
     TenNineOnePropagator,
@@ -80,6 +81,57 @@ class TruthAuthorityBundle:
             raise ValueError("allowlisted_claim_authority_required")
         if self.diagnostic_authority.authority_id not in self.allowed_diagnostic_authority_ids:
             raise ValueError("allowlisted_diagnostic_authority_required")
+
+
+def build_local_confidential_self_coder_thought_path(
+    authorities: TruthAuthorityBundle | None = None,
+    *,
+    evidence_resolver: TenNineOneEvidenceResolver | None = None,
+    bus: Any = None,
+    root: Path | None = None,
+    max_age_s: float = DEFAULT_MAX_AGE_S,
+    now: Callable[[], float] = time.time,
+) -> TruthGatedTenNineOneThoughtPath:
+    """Build the local-only, commitment-only path for confidential self-coding.
+
+    The factory never constructs or deserializes truth authorities.  A trusted
+    process-owned composition root must supply the already-validated bundle.
+    This prevents local prompt material, environment strings, or model output
+    from becoming their own truth anchor.
+    """
+
+    if authorities is None:
+        raise ValueError("authenticated_self_coder_truth_authority_bundle_required")
+    if not isinstance(authorities, TruthAuthorityBundle):
+        raise ValueError("authenticated_self_coder_truth_authority_bundle_required")
+    resolver = evidence_resolver or LocalHncAurisEvidenceResolver(
+        bus=bus,
+        root=root,
+        require_active_pair=True,
+        pair_max_age_s=max_age_s,
+        clock=now,
+    )
+    release = CommitmentOnlyHiveMyceliaPropagator(bus=bus)
+    gate = ReceiptBackedTenNineOneTruthGate(
+        claim_authority=authorities.claim_authority,
+        diagnostic_authority=authorities.diagnostic_authority,
+        allowed_claim_authority_ids=authorities.allowed_claim_authority_ids,
+        allowed_evidence_issuer_ids=authorities.allowed_evidence_issuer_ids,
+        allowed_diagnostic_authority_ids=authorities.allowed_diagnostic_authority_ids,
+        max_age_s=max_age_s,
+        now=now,
+    )
+    path = TruthGatedTenNineOneThoughtPath(
+        resolver=resolver,
+        propagator=release,
+        truth_gate=gate,
+        max_age_s=max_age_s,
+        now=now,
+    )
+    preflight = path.self_coder_confidential_preflight()
+    if preflight.get("ready") is not True:
+        raise ValueError("confidential_self_coder_thought_path_unavailable")
+    return path
 
 
 def build_truth_gated_cloud_thought_path(
@@ -205,6 +257,7 @@ def provision_material_truth_gated_cloud_agent_company(
 
 __all__ = [
     "TruthAuthorityBundle",
+    "build_local_confidential_self_coder_thought_path",
     "build_material_truth_gated_cloud_thought_path",
     "build_truth_gated_cloud_thought_path",
     "provision_material_truth_gated_cloud_agent_company",

@@ -2,9 +2,10 @@
 
 Operator approval is necessary, but it is not evidence that the runtime is
 ready.  This module binds the current source checkout to the twelve-layer
-production read-back, the 10 -> 9 -> 1 HNC/Auris field, the economic mutation
-census, live configuration, and the configured Ollama brain.  It never places
-an order or grants economic authority; it only returns an evidence receipt.
+production read-back, the 10 -> 9 -> 1 HNC/Auris field, the full OS-protection
+census, the economic mutation census, live configuration, and the configured
+Ollama brain.  It never places an order or grants economic authority; it only
+returns an evidence receipt.
 """
 
 from __future__ import annotations
@@ -75,8 +76,25 @@ class FullLiveReleaseResult:
 ScopeDigestFn = Callable[[Path], str]
 StackProbeFn = Callable[[Path, str, float], Mapping[str, Any]]
 EconomicAuditFn = Callable[[Path], Mapping[str, Any]]
+OSProtectionAuditFn = Callable[[Path], Mapping[str, Any]]
 FieldProbeFn = Callable[[Path, float], Mapping[str, Any]]
 OllamaProbeFn = Callable[[Mapping[str, str]], Mapping[str, Any]]
+
+_OS_PROTECTION_SCHEMA = "aureon.os-protection-boundary-census.v1"
+_OS_PROTECTION_SUMMARY_KEYS = {
+    "ok",
+    "reason",
+    "schema",
+    "source_files_scanned",
+    "detected_count",
+    "classified_count",
+    "blocker_count",
+    "protected_count",
+    "explicit_hold_count",
+    "parse_error_count",
+    "inventory_sha256",
+    "certified_full_os_protection",
+}
 
 
 def _canonical_bytes(value: Mapping[str, Any]) -> bytes:
@@ -276,6 +294,124 @@ def run_economic_audit(root: Path) -> dict[str, Any]:
     }
 
 
+def _exact_nonnegative_count(value: Any, label: str) -> int:
+    if type(value) is not int or value < 0:
+        raise ValueError(f"exact_nonnegative_{label}_required")
+    return value
+
+
+def _os_protection_reason(
+    *,
+    source_files_scanned: int,
+    detected_count: int,
+    classified_count: int,
+    blocker_count: int,
+    protected_count: int,
+    explicit_hold_count: int,
+    parse_error_count: int,
+    certified_full_os_protection: bool,
+) -> str:
+    if parse_error_count:
+        return "os_protection_parse_errors"
+    if blocker_count:
+        return "unprotected_os_routes_remain"
+    if source_files_scanned == 0 or detected_count == 0:
+        return "os_protection_inventory_required"
+    if classified_count != detected_count:
+        return "os_protection_classification_incomplete"
+    if protected_count != detected_count or explicit_hold_count:
+        return "exclusive_os_protection_required"
+    if not certified_full_os_protection:
+        return "production_os_protection_certification_required"
+    return "full_os_protection_certified"
+
+
+def validate_os_protection_summary(payload: Mapping[str, Any]) -> dict[str, Any]:
+    """Validate a compact census result without trusting its claimed decision."""
+
+    if not isinstance(payload, Mapping) or set(payload) != _OS_PROTECTION_SUMMARY_KEYS:
+        raise ValueError("exact_os_protection_summary_required")
+    if payload.get("schema") != _OS_PROTECTION_SCHEMA:
+        raise ValueError("os_protection_census_schema_required")
+    counts = {
+        name: _exact_nonnegative_count(payload.get(name), name)
+        for name in (
+            "source_files_scanned",
+            "detected_count",
+            "classified_count",
+            "blocker_count",
+            "protected_count",
+            "explicit_hold_count",
+            "parse_error_count",
+        )
+    }
+    if counts["blocker_count"] + counts["protected_count"] + counts["explicit_hold_count"] != counts[
+        "classified_count"
+    ]:
+        raise ValueError("complete_os_protection_classification_partition_required")
+    digest = payload.get("inventory_sha256")
+    if (
+        type(digest) is not str
+        or len(digest) != 64
+        or any(character not in "0123456789abcdef" for character in digest)
+    ):
+        raise ValueError("os_protection_inventory_sha256_required")
+    certified = payload.get("certified_full_os_protection")
+    if type(certified) is not bool:
+        raise ValueError("exact_os_protection_certification_flag_required")
+    reason = _os_protection_reason(
+        **counts,
+        certified_full_os_protection=certified,
+    )
+    if payload.get("reason") != reason:
+        raise ValueError("causal_os_protection_reason_required")
+    expected_ok = reason == "full_os_protection_certified"
+    if payload.get("ok") is not expected_ok:
+        raise ValueError("causal_os_protection_decision_required")
+    return dict(payload)
+
+
+def run_os_protection_audit(root: Path) -> dict[str, Any]:
+    """Run the whole-source census and return only release-gate evidence."""
+
+    from scripts.validation.audit_os_protection_boundaries import audit
+
+    raw = audit(root=root)
+    parse_errors = raw.get("parse_errors")
+    if not isinstance(parse_errors, list):
+        raise ValueError("os_protection_parse_error_list_required")
+    counts = {
+        name: _exact_nonnegative_count(raw.get(name), name)
+        for name in (
+            "source_files_scanned",
+            "detected_count",
+            "classified_count",
+            "blocker_count",
+            "protected_count",
+            "explicit_hold_count",
+        )
+    }
+    certified = raw.get("certified_full_os_protection")
+    if type(certified) is not bool:
+        raise ValueError("exact_os_protection_certification_flag_required")
+    reason = _os_protection_reason(
+        **counts,
+        parse_error_count=len(parse_errors),
+        certified_full_os_protection=certified,
+    )
+    return validate_os_protection_summary(
+        {
+            "ok": reason == "full_os_protection_certified",
+            "reason": reason,
+            "schema": raw.get("schema"),
+            **counts,
+            "parse_error_count": len(parse_errors),
+            "inventory_sha256": raw.get("inventory_sha256"),
+            "certified_full_os_protection": certified,
+        }
+    )
+
+
 class _NoThoughtBus:
     @staticmethod
     def recall(topic: str, limit: int = 1) -> list[Any]:
@@ -313,11 +449,11 @@ def probe_ten_nine_one_fields(root: Path, now: float) -> dict[str, Any]:
     moment = validate_provider_moment(hnc, raw_auris or {}, now=now)
     gamma = (raw_auris or {}).get("coherence_gamma")
     gate_open = (raw_auris or {}).get("gate_open") is True
-    gamma_ok = (
-        not isinstance(gamma, bool)
-        and isinstance(gamma, (int, float))
-        and float(gamma) >= PATH_ACTIVE_THRESHOLD
-    )
+    if isinstance(gamma, bool) or not isinstance(gamma, (int, float)):
+        numeric_gamma = None
+    else:
+        numeric_gamma = float(gamma)
+    gamma_ok = numeric_gamma is not None and numeric_gamma >= PATH_ACTIVE_THRESHOLD
     return {
         "ok": gate_open and gamma_ok,
         "hnc_receipt_id": moment.hnc_receipt_id,
@@ -325,7 +461,7 @@ def probe_ten_nine_one_fields(root: Path, now: float) -> dict[str, Any]:
         "provider_moment_digest": moment.provider_moment_digest,
         "provider_receipt_ids": list(moment.provider_receipt_ids),
         "provider_source_timestamp": moment.source_timestamp,
-        "auris_gamma": float(gamma) if gamma_ok else None,
+        "auris_gamma": numeric_gamma if gamma_ok else None,
         "auris_gate_open": gate_open,
         "active_threshold": ACTIVE_COHERENCE_THRESHOLD,
     }
@@ -371,6 +507,7 @@ def evaluate_full_live_release(
     now: float | None = None,
     scope_digest_fn: ScopeDigestFn = compute_source_scope_digest,
     stack_probe_fn: StackProbeFn = probe_full_stack,
+    os_protection_audit_fn: OSProtectionAuditFn = run_os_protection_audit,
     economic_audit_fn: EconomicAuditFn = run_economic_audit,
     field_probe_fn: FieldProbeFn = probe_ten_nine_one_fields,
     ollama_probe_fn: OllamaProbeFn = probe_ollama,
@@ -428,6 +565,28 @@ def evaluate_full_live_release(
         failures.append("ten_nine_one_fields")
 
     try:
+        os_protection = validate_os_protection_summary(
+            os_protection_audit_fn(resolved)
+        )
+    except Exception:  # noqa: BLE001 - audit failure is a fixed HOLD code
+        os_protection = {
+            "ok": False,
+            "reason": "os_protection_audit_failed",
+            "schema": _OS_PROTECTION_SCHEMA,
+            "source_files_scanned": 0,
+            "detected_count": 0,
+            "classified_count": 0,
+            "blocker_count": 0,
+            "protected_count": 0,
+            "explicit_hold_count": 0,
+            "parse_error_count": 1,
+            "inventory_sha256": "0" * 64,
+            "certified_full_os_protection": False,
+        }
+    if os_protection.get("ok") is not True:
+        failures.append("full_os_protection")
+
+    try:
         economic = dict(economic_audit_fn(resolved))
     except Exception:  # noqa: BLE001 - audit failure is a fixed HOLD code
         economic = {
@@ -458,6 +617,7 @@ def evaluate_full_live_release(
         "live_flags": live_flags,
         "ollama": ollama,
         "ten_nine_one_fields": fields,
+        "full_os_protection": os_protection,
         "economic_zero_bypass": economic,
         "checked_at": current,
         **_FALSE_FLAGS,
@@ -528,4 +688,6 @@ __all__ = [
     "probe_ollama",
     "probe_ten_nine_one_fields",
     "run_economic_audit",
+    "run_os_protection_audit",
+    "validate_os_protection_summary",
 ]

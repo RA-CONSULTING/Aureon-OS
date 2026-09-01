@@ -31,18 +31,16 @@ require_enablement aureon-boot-attestation.service enabled
 require_enablement aureon-firstboot-console.service enabled
 require_enablement getty@tty1.service masked
 
-if [ ! -e /etc/aureon/firstboot.complete ]; then
-    for unit in aureon-appliance.target aureon-operator.service aureon-organism.service aureon-hnc.service; do
-        require_enablement "$unit" disabled
-        if systemctl is-active --quiet "$unit"; then
-            policy_hold "unexpected_active_unit=$unit"
-        fi
-    done
-    printf '%s\n' 'AUREON_APPLIANCE_BOOTABLE_FIRSTBOOT_REQUIRED'
-    printf '%s\n' '{"schema":"aureon.appliance.boot.v1","status":"hold","reason":"local_console_firstboot_required","core_started":false}'
-    exit 0
+for unit in aureon-appliance.target aureon-operator.service aureon-organism.service aureon-hnc.service; do
+    require_enablement "$unit" disabled
+    if systemctl is-active --quiet "$unit"; then
+        policy_hold "unexpected_active_unit=$unit"
+    fi
+done
+
+if [ -e /etc/aureon/firstboot.complete ]; then
+    policy_hold "unexpected_firstboot_marker"
 fi
 
-require_enablement aureon-appliance.target enabled
-printf '%s\n' 'AUREON_APPLIANCE_BOOTABLE_PROVISIONED'
-printf '%s\n' '{"schema":"aureon.appliance.boot.v1","status":"pass","reason":"local_console_firstboot_complete","core_start_requested":true}'
+printf '%s\n' 'AUREON_APPLIANCE_BOOTABLE_PROTECTION_HOLD'
+printf '%s\n' '{"schema":"aureon.appliance.boot.v1","status":"hold","reason":"native_appliance_release_boundary_required","core_started":false}'

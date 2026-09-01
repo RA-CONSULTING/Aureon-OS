@@ -1,105 +1,30 @@
 #!/usr/bin/env python3
-"""
-Aureon Boot Diagnostic
-======================
-Boots the Integrated Cognitive System and prints the live status
-of every subsystem — vault, mycelium, thought bus, goal engine, etc.
-"""
-import sys, os, time, logging
+"""Read-only release diagnostic for the public Aureon ICS facade."""
 
-# Suppress all internal logging — we control what prints
-logging.disable(logging.CRITICAL)
+from __future__ import annotations
 
-_repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-os.chdir(_repo_root)
-if _repo_root not in sys.path:
-    sys.path.insert(0, _repo_root)
+import json
+import os
+import sys
+from pathlib import Path
 
-PHASE_LABELS = {
-    "thought_bus":        "ThoughtBus      (neural signal highway)",
-    "vault":              "AureonVault     (memory + knowledge store)",
-    "temporal_knowledge": "TemporalKnowledge (time-aware memory)",
-    "temporal_dialer":    "TemporalDialer  (HNC frequency tuner)",
-    "self_dialogue":      "SelfDialogue    (inner voice engine)",
-    "lambda_engine":      "LambdaEngine    (HNC master formula)",
-    "cortex":             "QueenCortex     (decision + veto layer)",
-    "feedback_loop":      "FeedbackLoop    (self-improvement loop)",
-    "sentient_loop":      "SentientLoop    (consciousness cycle)",
-    "mycelium_mind":      "MyceliumMind    (thought propagation mesh)",
-    "metacognition":      "Metacognition   (5W self-reflection)",
-    "love_stream":        "LoveStream      (standing wave coherence)",
-    "conscience":         "QueenConscience (ethical substrate)",
-    "source_law":         "SourceLaw       (coherence gate)",
-    "mirror":             "NarratorMirror  (self-awareness)",
-    "agent_core":         "AgentCore       (autonomous action)",
-    "action_bridge":      "ActionBridge    (goal -> real-world act)",
-    "being_model":        "BeingModel      (identity + continuity)",
-    "elephant_memory":    "ElephantMemory  (cross-session recall)",
-    "swarm":              "SwarmMotion     (multi-agent mesh)",
-    "temporal_ground":    "TemporalGround  (time anchor)",
-    "nexus":              "AureonNexus     (central nervous system)",
-    "knowledge_dataset":  "KnowledgeDataset (queen knowledge base)",
-    "knowledge_interpreter": "KnowledgeInterpreter (semantic parser)",
-    "stash_pockets":      "StashPockets    (queen working memory)",
-    "goal_engine":        "GoalEngine      (think -> act -> achieve)",
-    "dashboard":          "CognitiveDashboard (live cognitive HUD)",
-    "auris":              "AurisMetacognition (perception layer)",
-    "phi_bridge":         "PhiBridge       (device mesh gateway)",
-    "vault_ui":           "VaultUI         (web interface)",
-    "world_data":         "WorldDataIngester (live market feed)",
-    "self_research":      "SelfResearchLoop (autonomous learning)",
-    "vault_bridge":       "VaultKnowledgeBridge (vault <-> queen)",
-    "integrations":       "Integrations    (external wiring)",
-    "prose_composer":     "ProseComposer   (natural language output)",
-}
 
-print()
-print("=" * 65)
-print("  AUREON INTEGRATED COGNITIVE SYSTEM — BOOT DIAGNOSTIC")
-print("=" * 65)
-print()
+REPO_ROOT = Path(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)))
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
-t0 = time.time()
+from aureon.core.integrated_cognitive_system import (  # noqa: E402
+    integrated_cognitive_system_security_preflight,
+)
 
-print("  Importing subsystems...", flush=True)
-from aureon.core.integrated_cognitive_system import IntegratedCognitiveSystem
-print(f"  ICS loaded in {time.time()-t0:.1f}s")
-print()
-print("  Booting all phases...")
-print()
 
-ics = IntegratedCognitiveSystem()
-boot_t0 = time.time()
-status = ics.boot()
-elapsed = time.time() - boot_t0
+def main() -> int:
+    """Print the authoritative non-secret ICS release state."""
 
-# Print results
-alive, failed, skipped = [], [], []
-for key, state in status.items():
-    label = PHASE_LABELS.get(key, key)
-    if state == "alive":
-        print(f"  [LIVE]   {label}")
-        alive.append(key)
-    elif state.startswith("failed"):
-        reason = state.replace("failed: ", "")
-        print(f"  [FAIL]   {label}")
-        print(f"           -> {reason[:80]}")
-        failed.append(key)
-    else:
-        print(f"  [SKIP]   {label}")
-        skipped.append(key)
+    status = integrated_cognitive_system_security_preflight()
+    print(json.dumps(status, sort_keys=True))
+    return 0 if status.get("production_ready") is True else 2
 
-print()
-print("=" * 65)
-print(f"  BOOT COMPLETE in {elapsed:.1f}s")
-print(f"  LIVE:    {len(alive)}")
-print(f"  FAILED:  {len(failed)}")
-print(f"  SKIPPED: {len(skipped)}")
-print("=" * 65)
-print()
 
-if failed:
-    print("  FAILED SUBSYSTEMS:")
-    for k in failed:
-        print(f"    - {PHASE_LABELS.get(k, k)}: {status[k]}")
-    print()
+if __name__ == "__main__":
+    raise SystemExit(main())

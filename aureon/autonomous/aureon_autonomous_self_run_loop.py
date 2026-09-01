@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import sys
@@ -38,7 +39,7 @@ from aureon.autonomous.aureon_unified_self_evolution_loop import (
     build_and_write_unified_self_evolution_loop,
 )
 
-SCHEMA_VERSION = "aureon-autonomous-self-run-loop-v1"
+SCHEMA_VERSION = "aureon-autonomous-self-run-loop-v2"
 GOAL_DISPATCHER_SCHEMA_VERSION = "aureon-goal-contract-dispatcher-v1"
 DEFAULT_STATE_PATH = Path("state/aureon_autonomous_self_run_loop_last_run.json")
 DEFAULT_AUDIT_JSON = Path("docs/audits/aureon_autonomous_self_run_loop.json")
@@ -59,6 +60,28 @@ CODING_BRIDGE_EVIDENCE_PATHS = [
     Path("docs/audits/aureon_coding_organism_bridge.json"),
     Path("frontend/public/aureon_coding_organism_bridge.json"),
 ]
+_SELF_CODER_STATUSES = frozenset(
+    {
+        "internal_self_coder_disabled",
+        "internal_self_coder_evidence_hold",
+        "internal_self_coder_error",
+        "internal_self_coder_existing_evidence_hold",
+        "internal_self_coder_held",
+    }
+)
+_SELF_CODER_REASON_CODES = frozenset(
+    {
+        "existing_self_coder_evidence_invalid",
+        "internal_coding_workforce_hold",
+        "internal_patch_hold",
+        "internal_self_coder_hold",
+        "internal_self_coder_not_enabled",
+        "internal_self_coder_receipt_invalid",
+        "internal_self_coder_receipt_unattested",
+        "internal_work_ledger_hold",
+        "unexpected_internal_self_coder_error",
+    }
+)
 
 HARD_BOUNDARY_PATTERNS = {
     "credential_reveal": ("reveal credential", "show api key", "show secret", "private key", "password"),
@@ -110,6 +133,25 @@ def _env_bool(name: str, default: bool = False) -> bool:
     if raw is None:
         return default
     return str(raw).strip().lower() in {"1", "true", "yes", "on", "y"}
+
+
+def _compact_self_coder_summary(value: Any) -> Dict[str, Any]:
+    """Return a fixed no-authority envelope for untrusted self-coder output."""
+
+    if not isinstance(value, Mapping):
+        return {}
+    compact: Dict[str, Any] = {
+        "applied": False,
+        "pending_senior_review": False,
+        "release_ready": False,
+        "codex_implementation": False,
+        "action_eligible": False,
+        "economic_eligible": False,
+    }
+    reason_code = str(value.get("reason_code") or "")
+    if reason_code in _SELF_CODER_REASON_CODES:
+        compact["reason_code"] = reason_code
+    return compact
 
 
 def _detect_hard_holds(prompt: str) -> List[Dict[str, Any]]:
@@ -365,7 +407,10 @@ def run_goal_contract_dispatcher(
         )
         route_names = _goal_route_names(routes)
         claimed_payload = dict(claimed.payload) if claimed else {}
-        claimed_gap = claimed_payload.get("gap") if isinstance(claimed_payload.get("gap"), dict) else {}
+        claimed_gap_value = claimed_payload.get("gap")
+        claimed_gap: Dict[str, Any] = (
+            claimed_gap_value if isinstance(claimed_gap_value, dict) else {}
+        )
         execution_objective = (
             " ".join(
                 part
@@ -558,7 +603,7 @@ def _task_contract(task_id: str) -> Dict[str, Any]:
         },
         INTERNAL_SELF_CODING_TASK_ID: {
             "title": "Aureon internal self-coding cycle",
-            "authority": "safe_local_patch_apply_pending_senior_review",
+            "authority": "local_transient_seal_only_no_review_or_release_authority",
             "critical": True,
         },
         "autonomous_job_executor": {
@@ -593,6 +638,12 @@ def _run_task(task_id: str, runner: Runner, root: Path, prompt: str) -> Dict[str
         ok = bool(result.get("ok", True))
         status = str(result.get("status") or ("ok" if ok else "attention"))
         summary = result.get("summary") if isinstance(result.get("summary"), dict) else {}
+        output_files = result.get("output_files", [])
+        if task_id == INTERNAL_SELF_CODING_TASK_ID:
+            ok = False
+            status = status if status in _SELF_CODER_STATUSES else "internal_self_coder_held"
+            summary = _compact_self_coder_summary(summary)
+            output_files = []
         return {
             "id": task_id,
             "title": contract["title"],
@@ -602,11 +653,11 @@ def _run_task(task_id: str, runner: Runner, root: Path, prompt: str) -> Dict[str
             "status": status,
             "duration_ms": round((time.perf_counter() - started) * 1000),
             "summary": summary,
-            "output_files": result.get("output_files", []),
+            "output_files": output_files,
             "autonomous_next_action": "continue" if ok else "create self-fix work order and rerun",
         }
     except Exception as exc:
-        return {
+        failure = {
             "id": task_id,
             "title": contract["title"],
             "authority": contract["authority"],
@@ -614,9 +665,14 @@ def _run_task(task_id: str, runner: Runner, root: Path, prompt: str) -> Dict[str
             "ok": False,
             "status": "runner_exception",
             "duration_ms": round((time.perf_counter() - started) * 1000),
-            "error": f"{type(exc).__name__}: {exc}",
             "autonomous_next_action": "record exception as repair work order and continue the loop",
         }
+        if task_id == INTERNAL_SELF_CODING_TASK_ID:
+            failure["error_type"] = "self_coder_runner_exception"
+            failure["status"] = "internal_self_coder_error"
+        else:
+            failure["error"] = f"{type(exc).__name__}: {exc}"
+        return failure
 
 
 def _work_orders_from_cycle(cycle: Dict[str, Any], hard_holds: Sequence[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -735,37 +791,55 @@ def build_and_write_autonomous_self_run_loop(
     runner_overrides: Optional[Dict[str, Runner]] = None,
 ) -> Dict[str, Any]:
     root = Path(root or _default_root()).resolve()
-    hard_holds = _detect_hard_holds(prompt)
-    patch_lane_blocked = bool(
-        enable_internal_self_coding
-        and self_coding_patch_lane_blocked(root)
-    )
+    prompt_text = str(prompt or "")
+    prompt_sha256 = hashlib.sha256(prompt_text.encode("utf-8")).hexdigest()
+    hard_holds = _detect_hard_holds(prompt_text)
+    patch_lane_blocked = False
     effective_runner_overrides = dict(runner_overrides or {})
     injected_self_coder = effective_runner_overrides.pop(INTERNAL_SELF_CODING_TASK_ID, None)
     if enable_internal_self_coding and not hard_holds:
-        effective_runner_overrides[INTERNAL_SELF_CODING_TASK_ID] = injected_self_coder or (
-            lambda cycle_root, cycle_prompt: run_self_coding_task(
-                cycle_root,
-                cycle_prompt,
-                enabled=True,
-                target_path=internal_self_coder_target_path,
-                test_commands=internal_self_coder_test_commands,
-                resolver=internal_self_coder_resolver,
+        if injected_self_coder is None:
+            effective_runner_overrides[INTERNAL_SELF_CODING_TASK_ID] = (
+                lambda cycle_root, _cycle_prompt: run_self_coding_task(
+                    cycle_root,
+                    prompt_text,
+                    enabled=True,
+                    target_path=internal_self_coder_target_path,
+                    test_commands=internal_self_coder_test_commands,
+                    resolver=internal_self_coder_resolver,
+                )
             )
+        else:
+            selected_self_coder = injected_self_coder
+            effective_runner_overrides[INTERNAL_SELF_CODING_TASK_ID] = (
+                lambda cycle_root, _cycle_prompt: selected_self_coder(
+                    cycle_root,
+                    prompt_text,
+                )
+            )
+    public_cycle_prompt = prompt_text
+    if enable_internal_self_coding:
+        public_cycle_prompt = (
+            "A confidential internal self-coding goal is active. Continue only "
+            f"non-confidential support work for goal_sha256={prompt_sha256}."
         )
     cycle_records: List[Dict[str, Any]] = []
     cycle_count = max(1, int(cycles or 1))
     for index in range(1, cycle_count + 1):
+        patch_lane_blocked = bool(
+            enable_internal_self_coding
+            and self_coding_patch_lane_blocked(root)
+        )
         cycle_records.append(
             _build_cycle(
                 root=root,
-                prompt=prompt,
+                prompt=public_cycle_prompt,
                 cycle_index=index,
                 include_stress=include_stress,
                 max_stress_attempts=max_stress_attempts,
                 runner_overrides=effective_runner_overrides,
                 suppressed_task_ids=(
-                    SELF_CODING_PENDING_SUPPRESSED_TASK_IDS
+                    tuple(sorted(SELF_CODING_PENDING_SUPPRESSED_TASK_IDS))
                     if patch_lane_blocked
                     else ()
                 ),
@@ -790,7 +864,7 @@ def build_and_write_autonomous_self_run_loop(
                 "title": f"Senior review required: {task.get('title')}",
                 "owner": "codex_senior_reviewer",
                 "autonomous": False,
-                "next_action": "Review the exact self-coder evidence digest and record the bounded release receipt.",
+                "next_action": "Review the exact self-coder evidence digest and record the bounded proposal-review receipt.",
                 "source_status": task.get("status"),
                 "evidence_digest": task["summary"].get("evidence_digest"),
             }
@@ -822,7 +896,9 @@ def build_and_write_autonomous_self_run_loop(
         "status": status,
         "ok": handover_ready,
         "generated_at": written_at,
-        "prompt": prompt,
+        "prompt_sha256": prompt_sha256,
+        "prompt_length": len(prompt_text),
+        "raw_prompt_retained": False,
         "autonomy_mode": "full_safe_local_autonomy",
         "heartbeat": heartbeat,
         "loop_contract": {
@@ -832,7 +908,7 @@ def build_and_write_autonomous_self_run_loop(
             "internal_self_coding": {
                 "enabled": bool(enable_internal_self_coding),
                 "one_cycle_per_loop_cycle": True,
-                "pending_review_blocks_next_patch": True,
+                "any_existing_evidence_blocks_next_patch": True,
                 "patch_lane_blocked": patch_lane_blocked,
                 "suppressed_mutation_tasks": (
                     sorted(SELF_CODING_PENDING_SUPPRESSED_TASK_IDS)

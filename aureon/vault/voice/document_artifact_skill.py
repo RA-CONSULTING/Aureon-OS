@@ -1,9 +1,10 @@
-"""Aureon document artifact skill.
+"""Aureon document artifact skill compatibility surface.
 
-This module gives the goal engine a concrete path from a natural-language
-writing request to files on disk. It composes long-form prose from Aureon's
-own live-state prose composer, expands it with a deterministic topic weaver,
-renders Markdown, and exports a PDF artifact.
+CURRENT RELEASE: construction, prompt parsing, and deterministic formatting
+helpers remain inspectable. Runtime composition, ICS/fallback bootstrapping,
+source-file loading, rendering, filesystem writes, bus publication, shutdown,
+and the CLI all hard-HOLD before their first effect until a production Magic
+Star release and receipt-backed governance are available.
 """
 
 from __future__ import annotations
@@ -13,14 +14,32 @@ import json
 import re
 import sys
 import time
-from zipfile import ZipFile
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from xml.etree import ElementTree as ET
 from typing import Any, Dict, Iterable, List, Optional
-
+from xml.etree import ElementTree as ET
+from zipfile import ZipFile
 
 WORD_RE = re.compile(r"\b[\w']+\b")
+
+
+DOCUMENT_ARTIFACT_RELEASE_HOLD = (
+    "document_artifact_hold:production_magic_star_release_unavailable"
+)
+
+
+def preflight() -> Dict[str, Any]:
+    """Return the current release decision without performing any I/O."""
+    return {
+        "status": "HOLD",
+        "reason_code": "production_magic_star_release_unavailable",
+        "production_ready": False,
+        "effect_enabled": False,
+    }
+
+
+def _hold() -> None:
+    raise RuntimeError(DOCUMENT_ARTIFACT_RELEASE_HOLD)
 
 
 MEANING_SECTIONS = [
@@ -154,13 +173,13 @@ def count_words(text: str) -> int:
 
 
 def repo_root() -> Path:
-    return Path(__file__).resolve().parents[3]
+    """Return the lexical checkout root without resolving the filesystem."""
+    return Path(__file__).parents[3]
 
 
 def desktop_dir() -> Path:
-    user_profile = Path.home()
-    desktop = user_profile / "Desktop"
-    return desktop if desktop.exists() else user_profile
+    """Return the lexical Desktop target without probing the filesystem."""
+    return Path.home() / "Desktop"
 
 
 def slugify(value: str, fallback: str = "document") -> str:
@@ -192,6 +211,7 @@ def extract_topic(prompt: str, default: str = "the meaning of life") -> str:
 
 def load_bhoy_voice_profile(root: Optional[Path] = None) -> BhoyVoiceProfile:
     """Load style cues from Through a Bhoy's Eyes material already in the repo."""
+    _hold()
     root = root or repo_root()
     profile = BhoyVoiceProfile()
 
@@ -220,6 +240,7 @@ def load_bhoy_voice_profile(root: Optional[Path] = None) -> BhoyVoiceProfile:
 
 
 def _extract_docx_paragraphs(path: Path, *, max_paragraphs: int) -> List[str]:
+    _hold()
     paragraphs: List[str] = []
     try:
         with ZipFile(path) as zf:
@@ -289,7 +310,7 @@ class DocumentArtifactResult:
 
 
 class AureonDocumentArtifactSkill:
-    """Compose and export long-form documents as Aureon artifacts."""
+    """Inspectable shell for the unreleased document artifact runtime."""
 
     def __init__(
         self,
@@ -312,6 +333,7 @@ class AureonDocumentArtifactSkill:
         output_dir: Optional[str | Path] = None,
         evidence_dir: Optional[str | Path] = None,
     ) -> "AureonDocumentArtifactSkill":
+        _hold()
         skill = cls(output_dir=output_dir, evidence_dir=evidence_dir)
         try:
             from aureon.core.integrated_cognitive_system import IntegratedCognitiveSystem
@@ -326,6 +348,7 @@ class AureonDocumentArtifactSkill:
         return skill
 
     def close(self) -> None:
+        _hold()
         if self._owned_runtime is not None:
             try:
                 self._owned_runtime.shutdown()
@@ -342,6 +365,7 @@ class AureonDocumentArtifactSkill:
         output_dir: Optional[str | Path] = None,
         title: Optional[str] = None,
     ) -> DocumentArtifactResult:
+        _hold()
         prompt = (prompt or "").strip()
         resolved_topic = topic or extract_topic(prompt)
         requested_words = int(target_words or extract_target_words(prompt))
@@ -473,6 +497,7 @@ class AureonDocumentArtifactSkill:
             return result
 
     def _compose_live_reflection(self, *, topic: str, target_words: int) -> tuple[str, Dict[str, Any], str]:
+        _hold()
         composer = self.composer or self._fallback_composer()
         self.composer = composer
         try:
@@ -488,6 +513,7 @@ class AureonDocumentArtifactSkill:
             return self._fallback_reflection(topic, state), state, "fallback_topic_weaver"
 
     def _fallback_composer(self) -> Any:
+        _hold()
         try:
             from aureon.queen.queen_prose_composer import QueenProseComposer
 
@@ -859,6 +885,7 @@ class AureonDocumentArtifactSkill:
         return " ".join((text or "").split()[:limit]).strip()
 
     def _render_pdf(self, path: Path, title: str, markdown: str) -> bool:
+        _hold()
         try:
             tools_dir = repo_root() / "Kings_Accounting_Suite" / "tools"
             if str(tools_dir) not in sys.path:
@@ -893,6 +920,7 @@ class AureonDocumentArtifactSkill:
         return compact
 
     def _publish(self, topic: str, payload: Dict[str, Any]) -> None:
+        _hold()
         if self.thought_bus is None:
             return
         try:
@@ -907,6 +935,7 @@ class AureonDocumentArtifactSkill:
 
 
 def main(argv: Optional[Iterable[str]] = None) -> int:
+    _hold()
     parser = argparse.ArgumentParser(description="Prompt Aureon to create a Markdown/PDF document artifact.")
     parser.add_argument("--prompt", required=True, help="Natural-language document prompt.")
     parser.add_argument("--topic", default="", help="Explicit topic override.")
@@ -934,3 +963,20 @@ def main(argv: Optional[Iterable[str]] = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+
+__all__ = [
+    "DOCUMENT_ARTIFACT_RELEASE_HOLD",
+    "AureonDocumentArtifactSkill",
+    "BhoyVoiceProfile",
+    "DocumentArtifactResult",
+    "count_words",
+    "desktop_dir",
+    "extract_target_words",
+    "extract_topic",
+    "load_bhoy_voice_profile",
+    "main",
+    "preflight",
+    "repo_root",
+    "slugify",
+]

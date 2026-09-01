@@ -1,21 +1,6 @@
+# Aureon production metrics collection is on terminal HOLD.
 global:
   scrape_interval: 15s
   evaluation_interval: 15s
 
-alerting:
-  alertmanagers:
-    - static_configs:
-        - targets: []
-
-scrape_configs:
-  # Aureon Trading Metrics
-  - job_name: 'aureon'
-    static_configs:
-      - targets: ['aureon:9090']
-    metrics_path: /metrics
-    scrape_interval: 10s
-
-  # Prometheus self-monitoring
-  - job_name: 'prometheus'
-    static_configs:
-      - targets: ['localhost:9090']
+scrape_configs: []

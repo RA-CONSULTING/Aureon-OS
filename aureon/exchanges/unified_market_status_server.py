@@ -12,24 +12,23 @@ import argparse
 import json
 import os
 import re
-import shutil
 import time
 from datetime import datetime, timedelta
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
 
 from aureon.core.aureon_env import apply_env_aliases, env_presence
 from aureon.harmonic.hnc_quantum_packet_crypto import (
     LEGACY_MASTER_KEY_ENV,
     MASTER_KEY_ENV,
     HNCPacketError,
+    build_hnc_packet_evidence,
     encode_env_packet,
-    env_packet_summary,
     is_env_packet,
     normalize_hnc_key_material,
     packet_master_key_from_env,
-    write_hnc_packet_evidence,
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -39,9 +38,29 @@ MARKET_INTENT_PATH = STATE_ROOT / "aureon_market_reboot_intent.json"
 ENV_UPDATE_INTENT_PATH = STATE_ROOT / "aureon_env_update_intent.json"
 HNC_PACKET_EVIDENCE_PATH = STATE_ROOT / "aureon_hnc_quantum_packet_last_run.json"
 ENV_PATH = Path(os.getenv("AUREON_ENV_FILE") or (REPO_ROOT / ".env")).expanduser()
+CREDENTIAL_UPDATE_FILESYSTEM_HOLD = "credential_update_filesystem_release_hold"
+CREDENTIAL_STATUS_READ_HOLD = "credential_status_read_release_hold"
 HOST = "127.0.0.1"
 STATUS_FILE_STALE_AFTER_SEC = float(os.getenv("UNIFIED_STATUS_FILE_STALE_AFTER_SEC", "60") or 60)
 TICK_STALE_AFTER_SEC = float(os.getenv("UNIFIED_READY_STALE_AFTER_SEC", "45") or 45)
+
+
+def _is_local_browser_origin(origin: str) -> bool:
+    if not isinstance(origin, str) or not origin:
+        return False
+    try:
+        parsed = urlsplit(origin)
+        return (
+            parsed.scheme in {"http", "https"}
+            and parsed.hostname in {"127.0.0.1", "::1", "localhost"}
+            and parsed.username is None
+            and parsed.password is None
+            and parsed.path in {"", "/"}
+            and not parsed.query
+            and not parsed.fragment
+        )
+    except ValueError:
+        return False
 TICK_RUNNING_STALE_AFTER_SEC = max(
     TICK_STALE_AFTER_SEC,
     float(os.getenv("UNIFIED_TICK_RUNNING_STALE_AFTER_SEC", "600") or 600),
@@ -336,15 +355,6 @@ def _parse_env_values(path: Path | None = None) -> dict[str, str]:
     return values
 
 
-def _quote_env_value(value: str) -> str:
-    text = str(value)
-    if not text:
-        return ""
-    if any(ch.isspace() for ch in text) or "#" in text or '"' in text or "'" in text:
-        return json.dumps(text)
-    return text
-
-
 def _env_packet_master_key(env_values: dict[str, str] | None = None) -> str:
     values = env_values or _parse_env_values()
     return packet_master_key_from_env(os.environ) or str(
@@ -373,75 +383,28 @@ def _env_packet_master_key_status(master_key: str) -> dict[str, Any]:
     return {"configured": True, "valid": True, "error_code": None}
 
 
-def _packetize_env_updates(updates: dict[str, str]) -> tuple[dict[str, str], list[str], dict[str, Any] | None]:
+def _packetize_env_updates(
+    updates: dict[str, str],
+) -> tuple[dict[str, str], list[str], dict[str, Any]]:
     master_key = _env_packet_master_key()
     if not master_key:
-        return dict(updates), [], None
+        raise HNCPacketError("credential_update_requires_valid_hnc_master_key")
+    normalize_hnc_key_material(master_key)
     stored: dict[str, str] = {}
     encrypted_keys: list[str] = []
-    summaries: dict[str, Any] = {}
     for key, value in updates.items():
         token = encode_env_packet(value, master_key, env_key=key)
         stored[key] = token
         encrypted_keys.append(key)
-        summaries[key] = env_packet_summary(token)
-    evidence = {
-        "event": "env_credentials_packetized",
-        "updated_keys": sorted(updates),
-        "encrypted_keys": sorted(encrypted_keys),
-        "packet_format": "hncqp1",
-        "packet_summaries": summaries,
-    }
-    write_hnc_packet_evidence(evidence, HNC_PACKET_EVIDENCE_PATH)
+    evidence = build_hnc_packet_evidence(stored)
     return stored, sorted(encrypted_keys), evidence
 
 
 def _write_env_updates(updates: dict[str, str]) -> dict[str, Any]:
-    ENV_PATH.parent.mkdir(parents=True, exist_ok=True)
-    existing_text = ENV_PATH.read_text(encoding="utf-8", errors="replace") if ENV_PATH.exists() else ""
-    lines = existing_text.splitlines()
-    updated_keys = set(updates)
-    stored_updates, encrypted_keys, packet_evidence = _packetize_env_updates(updates)
-    written: set[str] = set()
-    output: list[str] = []
-    for raw_line in lines:
-        stripped = raw_line.strip()
-        prefix = ""
-        check_line = stripped
-        if check_line.startswith("export "):
-            prefix = "export "
-            check_line = check_line[len("export ") :].strip()
-        if "=" in check_line:
-            key = check_line.split("=", 1)[0].strip()
-            if key in stored_updates:
-                output.append(f"{prefix}{key}={_quote_env_value(stored_updates[key])}")
-                written.add(key)
-                continue
-        output.append(raw_line)
-    missing = [key for key in stored_updates if key not in written]
-    if missing and output and output[-1].strip():
-        output.append("")
-    for key in missing:
-        output.append(f"{key}={_quote_env_value(stored_updates[key])}")
-
-    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-    backup_path = None
-    if ENV_PATH.exists():
-        backup_path = ENV_PATH.with_name(f"{ENV_PATH.name}.bak-{timestamp}")
-        shutil.copy2(ENV_PATH, backup_path)
-    temp_path = ENV_PATH.with_name(f"{ENV_PATH.name}.tmp-{timestamp}")
-    temp_path.write_text("\n".join(output).rstrip() + "\n", encoding="utf-8")
-    os.replace(temp_path, ENV_PATH)
-    for key, value in updates.items():
-        os.environ[key] = value
-    apply_env_aliases(os.environ, override=False)
-    return {
-        "env_file": str(ENV_PATH),
-        "backup_file": str(backup_path) if backup_path else None,
-        "updated_keys": sorted(updated_keys),
-        "hnc_packet_encrypted_keys": encrypted_keys,
-        "hnc_packet_evidence": packet_evidence,
-    }
+    # The public credential writer is not released.  Hold before inspecting or
+    # creating any filesystem path so neither plaintext nor encrypted values
+    # can be persisted through this local status server.
+    raise HNCPacketError(CREDENTIAL_UPDATE_FILESYSTEM_HOLD)
 
 
 def _env_credentials_status() -> dict[str, Any]:
@@ -472,15 +435,18 @@ def _env_credentials_status() -> dict[str, Any]:
         "restart_required": pending_restart,
         "restart_intent": intent,
         "hnc_packet_encryption": {
-            "enabled": master_key_status["valid"],
+            "enabled": False,
             "format": "hncqp1",
             "encoded_key_count": len(packet_encoded_keys),
             "encoded_keys": packet_encoded_keys,
             "master_key_present": master_key_status["configured"],
             "master_key_valid": master_key_status["valid"],
+            "packetization_available": master_key_status["valid"],
+            "filesystem_write_released": False,
+            "release_hold": CREDENTIAL_UPDATE_FILESYSTEM_HOLD,
             "configuration_error": master_key_status["error_code"],
             "evidence_file": str(HNC_PACKET_EVIDENCE_PATH),
-            "policy": "new local credential writes are packet-encrypted at rest only when AUREON_HNC_PACKET_MASTER_KEY is present and valid",
+            "policy": "credential filesystem updates are held; in-memory HNC packetization does not persist values or evidence",
             "secret_policy": "metadata_only_no_values_returned",
         },
         "secret_policy": "metadata_only_no_values_returned",
@@ -624,7 +590,13 @@ class StatusHandler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         if self.path in {"/", "/health", "/api/terminal-state", "/api/flight-test", "/api/reboot-advice", "/api/env-credentials"}:
             if self.path == "/api/env-credentials":
-                self._json(200, _env_credentials_status())
+                # Credential presence, key names, master-key state and local
+                # filesystem paths are security-sensitive even without values.
+                # Hold the public read before inspecting any credential source.
+                self._json(
+                    403,
+                    {"ok": False, "error": CREDENTIAL_STATUS_READ_HOLD},
+                )
                 return
             if self.path in {"/api/flight-test", "/api/reboot-advice"}:
                 self._json(200, _flight_test())
@@ -691,16 +663,14 @@ class StatusHandler(BaseHTTPRequestHandler):
 
     def _cors(self) -> None:
         origin = self.headers.get("Origin", "")
-        if origin.startswith("http://127.0.0.1") or origin.startswith("http://localhost"):
+        if _is_local_browser_origin(origin):
             self.send_header("Access-Control-Allow-Origin", origin)
-        else:
-            self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
         self.send_header("Access-Control-Allow-Headers", "Content-Type, X-Aureon-Local-Operator")
 
     def _local_origin_allowed(self) -> bool:
         origin = self.headers.get("Origin", "")
-        return not origin or origin.startswith("http://127.0.0.1") or origin.startswith("http://localhost")
+        return not origin or _is_local_browser_origin(origin)
 
     def _json(self, status: int, payload: dict[str, Any]) -> None:
         body = json.dumps(payload, default=str).encode("utf-8")

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from aureon.core.aureon_thought_bus import ThoughtBus
 from aureon.core.organism_contracts import (
     CONTRACT_SCHEMA_VERSION,
@@ -177,10 +179,6 @@ def test_integrated_cognitive_system_contract_commands(tmp_path):
     ics.thought_bus = bus
     ics.contract_stack = stack
 
-    response = ics.process_user_input("/contracts goal reconcile internal task queues")
-    assert "Contract workflow queued" in response
-    assert stack.status()["queue_count"] == 1
-
-    status = ics.process_user_input("/contracts")
-    assert "ORGANISM CONTRACT STACK" in status
-    assert "Queued work orders: 1" in status
+    with pytest.raises(RuntimeError, match="integrated_cognitive_input_hold"):
+        ics.process_user_input("/contracts goal reconcile internal task queues")
+    assert stack.status()["queue_count"] == 0

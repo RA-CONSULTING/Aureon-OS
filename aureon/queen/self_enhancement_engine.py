@@ -69,6 +69,10 @@ from aureon.ollama_config import (
 
 logger = logging.getLogger("aureon.queen.self_enhancement_engine")
 
+SELF_ENHANCEMENT_RELEASE_HOLD = (
+    "self_enhancement_engine_hold:production_magic_star_release_unavailable"
+)
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Data types
@@ -417,21 +421,27 @@ def build_generation_prompt(gap: Gap, existing_skill_names: List[str]) -> str:
 
 
 class EnhancementLog:
-    """Rolling 500-entry log of all enhancement attempts, persisted to JSON."""
+    """In-memory HOLD snapshot; persistence requires a production release."""
 
     MAX_ENTRIES = 500
     LOG_DIR = Path("state/enhancement")
     LOG_FILE = "log.json"
 
-    def __init__(self, storage_dir: Optional[Path] = None):
+    def __init__(
+        self,
+        storage_dir: Optional[Path] = None,
+        *,
+        persistence_enabled: bool = False,
+    ):
+        if persistence_enabled:
+            raise RuntimeError(SELF_ENHANCEMENT_RELEASE_HOLD)
         self._dir = Path(storage_dir or self.LOG_DIR)
-        self._dir.mkdir(parents=True, exist_ok=True)
         self._path = self._dir / self.LOG_FILE
         self._entries: List[Dict[str, Any]] = []
         self._lock = threading.Lock()
-        self._load()
 
     def _load(self) -> None:
+        raise RuntimeError(SELF_ENHANCEMENT_RELEASE_HOLD)
         if not self._path.exists():
             return
         try:
@@ -447,11 +457,6 @@ class EnhancementLog:
             self._entries.append(record.to_dict())
             if len(self._entries) > self.MAX_ENTRIES:
                 self._entries = self._entries[-self.MAX_ENTRIES:]
-            try:
-                with open(self._path, "w", encoding="utf-8") as f:
-                    json.dump(self._entries, f, indent=2)
-            except Exception as e:
-                logger.debug("enhancement log save failed: %s", e)
 
     def recent(self, n: int = 20) -> List[Dict[str, Any]]:
         with self._lock:
@@ -489,6 +494,7 @@ class _LLMCodeCaller:
     TIMEOUT_S = 90.0
 
     def __init__(self) -> None:
+        raise RuntimeError(SELF_ENHANCEMENT_RELEASE_HOLD)
         explicit_url = os.environ.get("OLLAMA_BASE_URL") or None
         ensure_ollama_runtime_config(explicit_config=explicit_url is not None)
         self.OLLAMA_URL = resolve_ollama_native_base_url(explicit_url)
@@ -513,6 +519,7 @@ class _LLMCodeCaller:
         )
 
     def call(self, prompt: str) -> str:
+        raise RuntimeError(SELF_ENHANCEMENT_RELEASE_HOLD)
         # Path 1: direct Ollama (retry once — model may need warm-up time).
         text = self._call_ollama(prompt)
         if text:
@@ -525,6 +532,7 @@ class _LLMCodeCaller:
         return self._call_voice(prompt)
 
     def _call_ollama(self, prompt: str) -> str:
+        raise RuntimeError(SELF_ENHANCEMENT_RELEASE_HOLD)
         try:
             import requests as _req
             payload = {
@@ -549,6 +557,7 @@ class _LLMCodeCaller:
             return ""
 
     def _call_voice(self, prompt: str) -> str:
+        raise RuntimeError(SELF_ENHANCEMENT_RELEASE_HOLD)
         try:
             from aureon.vault.ui.server import get_voice_engine
             engine = get_voice_engine()
@@ -628,11 +637,13 @@ class SelfEnhancementEngine:
         auto_start: bool = False,
         storage_dir: Optional[Path] = None,
     ):
+        if auto_start:
+            raise RuntimeError(SELF_ENHANCEMENT_RELEASE_HOLD)
         self._library = skill_library
         self._vault = vault
         self._validator = validator
         self._executor = executor
-        self._caller = llm_caller or _LLMCodeCaller()
+        self._caller = llm_caller
         self._interval = max(30.0, enhancement_interval_s)
         self._log = EnhancementLog(storage_dir)
         self._analyser = GapAnalyzer(skill_library=skill_library, vault=vault)
@@ -651,6 +662,7 @@ class SelfEnhancementEngine:
 
     def _ensure_wired(self) -> None:
         """Lazy-initialise validator and executor from the running system."""
+        raise RuntimeError(SELF_ENHANCEMENT_RELEASE_HOLD)
         if self._validator is None:
             try:
                 from aureon.code_architect.validator import SkillValidator
@@ -675,6 +687,7 @@ class SelfEnhancementEngine:
         Run one complete enhancement attempt.  Returns an EnhancementRecord
         whether or not it succeeds.  Safe to call from any thread.
         """
+        raise RuntimeError(SELF_ENHANCEMENT_RELEASE_HOLD)
         import uuid as _uuid
         record = EnhancementRecord(record_id=_uuid.uuid4().hex[:8])
         t0 = time.time()
@@ -927,6 +940,7 @@ class SelfEnhancementEngine:
 
     def _make_proposal(self, gap: Gap, code: str) -> Any:
         """Build a SkillProposal for the validator."""
+        raise RuntimeError(SELF_ENHANCEMENT_RELEASE_HOLD)
         try:
             from aureon.code_architect.skill import SkillProposal, SkillLevel
             return SkillProposal(
@@ -960,6 +974,7 @@ class SelfEnhancementEngine:
         without raising KeyError / TypeError / ZeroDivisionError from the
         missing data — the stub returns a safe sentinel for any access.
         """
+        raise RuntimeError(SELF_ENHANCEMENT_RELEASE_HOLD)
         class _StubValue:
             """Sentinel that tolerates almost any access pattern without error."""
             # Iteration returns empty sequence
@@ -1041,6 +1056,7 @@ class SelfEnhancementEngine:
             return False
 
     def _register(self, gap: Gap, code: str) -> bool:
+        raise RuntimeError(SELF_ENHANCEMENT_RELEASE_HOLD)
         if self._library is None:
             return False
         try:
@@ -1073,6 +1089,7 @@ class SelfEnhancementEngine:
             return False
 
     def _publish_to_vault(self, gap: Gap, code: str) -> None:
+        raise RuntimeError(SELF_ENHANCEMENT_RELEASE_HOLD)
         if self._vault is None:
             return
         try:
@@ -1096,6 +1113,7 @@ class SelfEnhancementEngine:
 
     def start(self) -> None:
         """Start the background enhancement loop."""
+        raise RuntimeError(SELF_ENHANCEMENT_RELEASE_HOLD)
         with self._lock:
             if self._running:
                 return
@@ -1118,6 +1136,7 @@ class SelfEnhancementEngine:
         self._running = False
 
     def _loop(self) -> None:
+        raise RuntimeError(SELF_ENHANCEMENT_RELEASE_HOLD)
         while not self._stop_event.is_set():
             try:
                 record = self.enhance_once()

@@ -2,17 +2,20 @@ from __future__ import annotations
 
 import hashlib
 import json
+from pathlib import Path
 
 import pytest
 
 from aureon.autonomous.aureon_cloud_brain_composition import (
     TruthAuthorityBundle,
+    build_local_confidential_self_coder_thought_path,
     build_truth_gated_cloud_thought_path,
 )
 from aureon.autonomous.aureon_ten_nine_one_thought_path import (
     TenNineOneHold,
     ThoughtPathRequest,
 )
+from aureon.core.aureon_thought_bus import Thought, ThoughtBus
 from aureon.governance.trusted_truth_evidence import (
     CLAIM_SET_PREFIX,
     CLAIM_SET_SCHEMA,
@@ -25,6 +28,8 @@ from tests.aureon_ten_nine_one_fixtures import (
     NOW,
     TestEvidenceResolver,
     TestPropagator,
+    valid_auris,
+    valid_hnc,
 )
 
 CLAIM_AUTHORITY = "aureon:test:cloud-claim-authority"
@@ -236,3 +241,69 @@ def test_authority_identities_must_be_allowlisted_and_disjoint() -> None:
             allowed_evidence_issuer_ids=frozenset({EVIDENCE_ISSUER}),
             allowed_diagnostic_authority_ids=frozenset({DIAGNOSTIC_AUTHORITY}),
         )
+
+
+def test_confidential_self_coder_factory_requires_explicit_authorities() -> None:
+    with pytest.raises(
+        ValueError,
+        match="authenticated_self_coder_truth_authority_bundle_required",
+    ):
+        build_local_confidential_self_coder_thought_path()
+
+
+def test_confidential_self_coder_factory_persists_only_commitments(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    trace_dir = tmp_path / "traces"
+    monkeypatch.setenv("AUREON_BUS_TRACE_DIR", str(trace_dir))
+    bus = ThoughtBus(persist_path=str(tmp_path / "thoughts.jsonl"))
+    hnc = valid_hnc()
+    bus.publish(
+        Thought(
+            source="test:hnc-producer",
+            topic="symbolic.life.pulse",
+            payload=hnc,
+        )
+    )
+    bus.publish(
+        Thought(
+            source="test:auris-producer",
+            topic="auris.throne.cosmic_state",
+            payload=valid_auris(hnc),
+        )
+    )
+    path = build_local_confidential_self_coder_thought_path(
+        _bundle(),
+        bus=bus,
+        max_age_s=30,
+        now=lambda: NOW,
+    )
+    preflight = path.self_coder_confidential_preflight()
+    assert preflight == {
+        "schema_version": "aureon-self-coder-thought-path-preflight-v2",
+        "ready": True,
+        "truth_gate_enforced": True,
+        "trusted_local_evidence_resolver": True,
+        "trusted_receipt_backed_truth_gate": True,
+        "commitment_only_propagation": True,
+        "raw_answer_bus_persistence_authorized": False,
+        "raw_answer_trace_persistence_authorized": False,
+        "action_eligible": False,
+        "economic_eligible": False,
+    }
+    private_answer = "PRIVATE_SELF_CODER_DIFF_SENTINEL_4fb53e"
+    result = path.execute(
+        request=_request("Repair only the locally grounded target."),
+        prompt="Repair only the locally grounded target.",
+        infer=lambda _organized: private_answer,
+    )
+
+    persisted = "\n".join(
+        item.read_text(encoding="utf-8")
+        for item in tmp_path.rglob("*")
+        if item.is_file()
+    )
+    assert private_answer not in persisted
+    assert hashlib.sha256(private_answer.encode()).hexdigest() in persisted
+    assert result.answer == private_answer

@@ -200,6 +200,26 @@ def test_rejected_material_creates_metadata_only_hnc_quarantine(
     assert raw.decode() not in json.dumps(evidence, sort_keys=True)
 
 
+def test_magic_star_capacity_is_preflighted_before_handle_issue(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    boundary = _boundary(max_ingress_bytes=2048)
+    monkeypatch.setattr(
+        "aureon.plumber.star_custody_v02._MAX_INNER_BYTES",
+        512,
+    )
+
+    outcome = _admit(boundary, b"X" * 1024)
+
+    assert isinstance(outcome, QuarantinedHNC)
+    assert "magic_star_inner_capacity_exceeded" in outcome.denial_codes
+    summary = boundary.public_summary()
+    assert summary["active_opaque_handle_count"] == 0
+    assert summary["consumed_opaque_handle_count"] == 0
+    assert summary["active_ingress_bytes"] == 0
+    assert outcome.public_summary()["raw_material_retained"] is False
+
+
 @pytest.mark.parametrize(
     ("key", "expected_code"),
     [(None, "master_key_unavailable"), (b"short", "master_key_invalid")],
@@ -437,3 +457,26 @@ def test_quarantine_evidence_store_is_bounded() -> None:
     assert "quarantine_evidence_capacity_exhausted" in second.denial_codes
     assert second.hnc_evidence_binding is None
     assert boundary.public_summary()["quarantine_evidence_count"] == 1
+
+
+@pytest.mark.parametrize(
+    ("key", "ready", "reason"),
+    [
+        (MASTER_KEY, True, "ready"),
+        (None, False, "master_key_unavailable"),
+        (b"short", False, "master_key_invalid"),
+    ],
+)
+def test_key_preflight_returns_metadata_only(
+    key: bytes | None,
+    ready: bool,
+    reason: str,
+) -> None:
+    preflight = _boundary(key=key).key_preflight()
+
+    assert preflight["schema"] == "aureon.plumber.os-key-preflight.v0"
+    assert preflight["ready"] is ready
+    assert preflight["reason_code"] == reason
+    assert preflight["key_material_returned"] is False
+    assert preflight["admission_authorized"] is False
+    assert MASTER_KEY.hex() not in json.dumps(preflight, sort_keys=True)

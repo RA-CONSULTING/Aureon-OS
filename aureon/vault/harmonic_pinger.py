@@ -24,6 +24,10 @@ from typing import Any, Dict, Optional
 
 logger = logging.getLogger("aureon.vault.pinger")
 
+HARMONIC_PINGER_RELEASE_HOLD = (
+    "harmonic_pinger_hold:production_magic_star_release_unavailable"
+)
+
 
 @dataclass
 class PingResult:
@@ -44,17 +48,27 @@ class HarmonicPinger:
                              payload={"cycle": 42})
     """
 
-    def __init__(self):
+    def __init__(
+        self,
+        *,
+        enable_chirp_bus: bool = False,
+        enable_thought_bus: bool = False,
+    ):
+        if enable_chirp_bus or enable_thought_bus:
+            raise RuntimeError(HARMONIC_PINGER_RELEASE_HOLD)
         self._chirp_bus: Any = None
         self._thought_bus: Any = None
         self._chirp_kind: str = "stub"
         self._total_pings: int = 0
         self._chirp_success: int = 0
         self._thought_success: int = 0
-        self._load_chirp_bus()
-        self._load_thought_bus()
+        if enable_chirp_bus:
+            self._load_chirp_bus()
+        if enable_thought_bus:
+            self._load_thought_bus()
 
     def _load_chirp_bus(self) -> None:
+        raise RuntimeError(HARMONIC_PINGER_RELEASE_HOLD)
         try:
             from aureon.core.aureon_chirp_bus import get_chirp_bus
             self._chirp_bus = get_chirp_bus(create_if_missing=True)
@@ -67,6 +81,7 @@ class HarmonicPinger:
             self._chirp_kind = "stub"
 
     def _load_thought_bus(self) -> None:
+        raise RuntimeError(HARMONIC_PINGER_RELEASE_HOLD)
         try:
             from aureon.core.aureon_thought_bus import get_thought_bus
             self._thought_bus = get_thought_bus()
@@ -86,6 +101,7 @@ class HarmonicPinger:
         payload: Optional[Dict[str, Any]] = None,
     ) -> PingResult:
         """Emit a ping on both channels. Returns PingResult."""
+        raise RuntimeError(HARMONIC_PINGER_RELEASE_HOLD)
         self._total_pings += 1
         freq_int = int(max(0, min(65535, frequency_hz)))
         coh = float(max(0.0, min(1.0, coherence)))
@@ -109,6 +125,7 @@ class HarmonicPinger:
 
     def _emit_chirp(self, freq: int, coh: float, conf: float) -> bool:
         """Emit a ChirpPacket PING on the real ChirpBus if available."""
+        raise RuntimeError(HARMONIC_PINGER_RELEASE_HOLD)
         if not self._chirp_bus:
             return False
         try:
@@ -162,6 +179,7 @@ class HarmonicPinger:
         payload: Dict[str, Any],
     ) -> bool:
         """Publish a heartbeat Thought for observability."""
+        raise RuntimeError(HARMONIC_PINGER_RELEASE_HOLD)
         if not self._thought_bus:
             return False
         try:
