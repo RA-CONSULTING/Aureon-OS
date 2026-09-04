@@ -1,0 +1,33 @@
+Bootstrap: docker
+From: nvcr.io/nvidia/pytorch:25.05-py3
+
+%labels
+    org.opencontainers.image.title Aureon Global Plant Harmonic Atlas runtime
+    org.opencontainers.image.description GPU runtime for deterministic AGPHA protein sequence signatures
+    org.opencontainers.image.authors Gary Leckey, R&A Consulting / Aureon Institute
+
+%post
+    python -m pip install --no-cache-dir \
+        requests>=2.32.0 \
+        python-dotenv>=1.0.0 \
+        rich>=13.7.0
+
+%environment
+    export PYTHONUNBUFFERED=1
+    export PYTHONDONTWRITEBYTECODE=1
+    export PYTHONHASHSEED=0
+    export AGPHA_SEQUENCE_BACKEND=torch
+    export AGPHA_TORCH_DEVICE=cuda
+    export AGPHA_SEQUENCE_BATCH_SIZE=64
+
+%test
+    python - <<'PY'
+import platform
+import torch
+assert platform.machine() in {"aarch64", "arm64"}, platform.machine()
+print("torch", torch.__version__)
+print("cuda available at build test", torch.cuda.is_available())
+PY
+
+%runscript
+    exec python "$@"

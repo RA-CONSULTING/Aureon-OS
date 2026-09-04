@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aureoninstitute.com/schemas/agpha.run-manifest.v1.schema.json",
+  "title": "AGPHA deterministic run manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "run_id",
+    "snapshot_id",
+    "created_at",
+    "source_snapshot_root",
+    "output_root",
+    "shard_count",
+    "lanes",
+    "shards",
+    "algorithm_versions",
+    "network_policy",
+    "require_source_checksums",
+    "schema_version",
+    "metadata"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "snapshot_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_snapshot_root": {
+      "type": "string",
+      "minLength": 1
+    },
+    "output_root": {
+      "type": "string",
+      "minLength": 1
+    },
+    "shard_count": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "lanes": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "spectral_measured",
+          "spectral_computed",
+          "structure_normal_mode",
+          "sequence_signature",
+          "ortholog_inferred",
+          "legacy_hnc_packet"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "shards": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/shard"
+      }
+    },
+    "algorithm_versions": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "network_policy": {
+      "const": "staged_snapshot_only"
+    },
+    "require_source_checksums": {
+      "type": "boolean"
+    },
+    "schema_version": {
+      "const": "agpha.run-manifest.v1"
+    },
+    "metadata": {
+      "type": "object"
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{64}$"
+    },
+    "workItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "taxon_key",
+        "input_relpath",
+        "input_sha256"
+      ],
+      "properties": {
+        "taxon_key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "input_relpath": {
+          "type": "string",
+          "minLength": 1
+        },
+        "input_sha256": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/sha256"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "shard": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "index",
+        "items",
+        "expected_item_count",
+        "assignment_sha256"
+      ],
+      "properties": {
+        "index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/workItem"
+          }
+        },
+        "expected_item_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "assignment_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    }
+  }
+}
