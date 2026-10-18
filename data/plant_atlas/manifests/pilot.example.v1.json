@@ -1,0 +1,62 @@
+{
+  "run_id": "agpha-pilot-2026-09-04",
+  "snapshot_id": "agpha-pilot-snapshot-2026-09-04",
+  "created_at": "2026-09-04T13:00:00Z",
+  "source_snapshot_root": "data/plant_atlas/input_examples",
+  "output_root": "artifacts/agpha-pilot-2026-09-04",
+  "shard_count": 4,
+  "lanes": [
+    "spectral_measured",
+    "spectral_computed",
+    "sequence_signature"
+  ],
+  "shards": [
+    {
+      "index": 0,
+      "items": [],
+      "expected_item_count": 0,
+      "assignment_sha256": "d30fcb379ba46f226796a8ceb4ac873745868b3f644ef8cc58ba237826f9f7f7"
+    },
+    {
+      "index": 1,
+      "items": [],
+      "expected_item_count": 0,
+      "assignment_sha256": "d766c1d7107cf6241461a2508b6bc48fe33a3eb79e21650a229e7e3d6d5a6ff7"
+    },
+    {
+      "index": 2,
+      "items": [
+        {
+          "taxon_key": "ncbitaxon:114937",
+          "input_relpath": "taxa/2a7c755c244b005650598ec3.json",
+          "input_sha256": "2f495dca7c45b93b9e428912dcb8f2dbfd2fd56202106660837ea20510691919"
+        },
+        {
+          "taxon_key": "ncbitaxon:50225",
+          "input_relpath": "taxa/411a8b2c848ac4261bd1a997.json",
+          "input_sha256": "2d471186c7ac3f03fb7b36a1ca58b5a7c68cbe73d8254ec2ab5c3bd023ed71f5"
+        }
+      ],
+      "expected_item_count": 2,
+      "assignment_sha256": "8af898cb63a443e711d18c89add4ab29c4a85c8149a5a261ac5e5faac1e7bf8f"
+    },
+    {
+      "index": 3,
+      "items": [],
+      "expected_item_count": 0,
+      "assignment_sha256": "ff9de622fa5ec6f20e6bd1892aee4add7e313e84562b2f5a327afe31b547538b"
+    }
+  ],
+  "algorithm_versions": {
+    "spectral": "agpha.spectral-octave.v1",
+    "sequence": "agpha.sequence-dft.v1",
+    "schema": "agpha.species-shard.v1"
+  },
+  "network_policy": "staged_snapshot_only",
+  "require_source_checksums": true,
+  "schema_version": "agpha.run-manifest.v1",
+  "metadata": {
+    "purpose": "Executable Blackthorn/dandelion worker contract example",
+    "working_directory": "Aureon-OS repository root"
+  }
+}

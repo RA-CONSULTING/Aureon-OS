@@ -1,0 +1,138 @@
+{
+  "schema_version": "agpha.input-bundle.v1",
+  "taxon_key": "ncbitaxon:114937",
+  "shard_id": "agpha:species:ncbitaxon:114937",
+  "taxon": {
+    "accepted_name": "Prunus spinosa",
+    "rank": "species",
+    "family": "Rosaceae",
+    "genus": "Prunus",
+    "identifiers": {
+      "ncbitaxon": "114937"
+    },
+    "synonyms": []
+  },
+  "claim_ceiling": "preclinical_hypothesis",
+  "boundary_statement": "In-vitro and cell-free research inventory only. No human or animal administration; no therapeutic, clinical, diagnostic, genome-repair, or safety claim. No harmonic packet is emitted until direct molecular/spectral evidence passes the atlas provenance gates.",
+  "evidence": [
+    {
+      "provider": "NCBI Taxonomy",
+      "record_id": "ncbitaxon:114937",
+      "state": "curated_direct",
+      "source_uri": "https://www.ncbi.nlm.nih.gov/datasets/taxonomy/114937/",
+      "licence": null,
+      "retrieved_at": "2026-09-04",
+      "checksum_sha256": null,
+      "notes": null
+    },
+    {
+      "provider": "Aureon Institute",
+      "record_id": "Aureon_Architecture_WeedBlackthorn_White_Paper_v4",
+      "state": "curated_direct",
+      "source_uri": null,
+      "licence": null,
+      "retrieved_at": "2026-09-04",
+      "checksum_sha256": null,
+      "notes": "Research artifact reviewed for the pilot; in-vitro boundary and negative evidence retained."
+    }
+  ],
+  "proteins": [],
+  "molecules": [],
+  "spectral_peaks": [],
+  "observations": [
+    {
+      "observation_id": "blackthorn:selectivity-benchmark",
+      "statement": "In the compiled evidence, no blackthorn preparation met the pre-specified 2.0x selectivity gate; the best reported value was 1.62.",
+      "evidence_state": "negative_result",
+      "evidence": [
+        {
+          "provider": "Aureon Institute",
+          "record_id": "Aureon_Architecture_WeedBlackthorn_White_Paper_v4",
+          "state": "curated_direct",
+          "source_uri": null,
+          "licence": null,
+          "retrieved_at": "2026-09-04",
+          "checksum_sha256": null,
+          "notes": "Research artifact reviewed for the pilot; in-vitro boundary and negative evidence retained."
+        }
+      ],
+      "interpretation_boundary": "A negative candidate-governance result, not proof of universal inactivity or safety."
+    },
+    {
+      "observation_id": "blackthorn:branch-genotoxicity",
+      "statement": "The reviewed branch condensed-tannin preparation showed broad genotoxicity, with a larger fold increase in normal Vero cells than in HeLa cells.",
+      "evidence_state": "negative_result",
+      "evidence": [
+        {
+          "provider": "Aureon Institute",
+          "record_id": "Aureon_Architecture_WeedBlackthorn_White_Paper_v4",
+          "state": "curated_direct",
+          "source_uri": null,
+          "licence": null,
+          "retrieved_at": "2026-09-04",
+          "checksum_sha256": null,
+          "notes": "Research artifact reviewed for the pilot; in-vitro boundary and negative evidence retained."
+        }
+      ],
+      "interpretation_boundary": "Preparation-specific in-vitro evidence; it blocks advancement of that preparation and cannot be generalised to every blackthorn fraction."
+    },
+    {
+      "observation_id": "blackthorn:combination-unperformed",
+      "statement": "The proposed weed/blackthorn combination experiment has not been performed.",
+      "evidence_state": "no_data",
+      "evidence": [
+        {
+          "provider": "Aureon Institute",
+          "record_id": "Aureon_Architecture_WeedBlackthorn_White_Paper_v4",
+          "state": "curated_direct",
+          "source_uri": null,
+          "licence": null,
+          "retrieved_at": "2026-09-04",
+          "checksum_sha256": null,
+          "notes": "Research artifact reviewed for the pilot; in-vitro boundary and negative evidence retained."
+        }
+      ],
+      "interpretation_boundary": "The combination remains a hypothesis and must not be represented as an observed biological effect."
+    }
+  ],
+  "gaps": [
+    {
+      "gap_id": "blackthorn:gap:wfo-crosswalk",
+      "layer": "taxonomy",
+      "state": "query_not_run",
+      "query_scope": "Prunus spinosa against frozen WFO Plant List release",
+      "reason": "The pilot is anchored to NCBI Taxonomy; a release-pinned WFO identifier has not yet been ingested.",
+      "next_action": "run the WFO name-matching adapter and preserve the release receipt"
+    },
+    {
+      "gap_id": "blackthorn:gap:genome-proteome",
+      "layer": "genome_proteome",
+      "state": "query_not_run",
+      "query_scope": "NCBI Datasets and UniProt for ncbitaxon:114937",
+      "reason": "Global acquisition has not yet produced an accession-pinned genome/protein inventory for this shard.",
+      "next_action": "run NCBI/UniProt Phase-1 adapters; mark direct, inferred, and absent-query results separately"
+    },
+    {
+      "gap_id": "blackthorn:gap:metabolite-occurrence",
+      "layer": "metabolite_occurrence",
+      "state": "query_not_run",
+      "query_scope": "LOTUS, PubChem cross-references, MetaboLights, and cited blackthorn studies",
+      "reason": "A species-part-preparation-resolved open metabolite inventory has not yet been assembled.",
+      "next_action": "resolve occurrences to plant part, preparation, citation, and chemical identifiers"
+    },
+    {
+      "gap_id": "blackthorn:gap:vibrational-spectra",
+      "layer": "spectra",
+      "state": "query_not_run",
+      "query_scope": "experimental IR/Raman spectra for directly evidenced Prunus spinosa constituents",
+      "reason": "No provenance-complete peak table has yet passed the spectral connector for this species shard.",
+      "next_action": "ingest citable spectra only after chemical identity and occurrence are resolved"
+    }
+  ],
+  "metadata": {
+    "pilot_role": "negative-evidence and safety-governance pilot",
+    "advance_status": "do_not_advance_standalone_branch_extract",
+    "harmonic_packet_status": "withheld",
+    "input_example": true
+  }
+}
