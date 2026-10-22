@@ -96,6 +96,15 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.check:
         report = read_health()
+        from .hnc_core import organ_running
+
+        alive, why = organ_running()
+        report["hnc_core_organ"] = "running" if alive else "not_running"
+        if not alive:
+            report["ok"] = False
+            report["hnc_core_organ_reason"] = why
+            prior = report.get("blocked")
+            report["blocked"] = why if not prior else f"{prior}; {why}"
         print(json.dumps(report))
         return 0 if report.get("ok") else 1
 

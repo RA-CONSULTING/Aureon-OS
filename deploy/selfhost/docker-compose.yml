@@ -116,6 +116,27 @@ services:
       retries: 20
     restart: unless-stopped
 
+  hnc_core:
+    build:
+      context: ./image
+      dockerfile: Dockerfile
+    command: ["python", "-m", "aureon_fusion.hnc_core", "--supervise"]
+    environment:
+      AUREON_LIVE_TRADING: "0"
+      AUREON_FUSION_ARM_LIVE: ""
+      AUREON_DISABLE_REAL_ORDERS: "1"
+      SERO_WORKSPACE: /workspace
+    volumes:
+      - ../../:/workspace:ro
+      - ../../aureon_fusion/state:/workspace/aureon_fusion/state
+    healthcheck:
+      test: ["CMD", "python", "-c", "import os,sys; sys.exit(0 if os.path.isfile('/workspace/aureon_fusion/state/hnc_core_state.json') else 1)"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+    restart: unless-stopped
+
   nginx:
     image: nginx:1.27-alpine
     ports:

@@ -83,8 +83,19 @@ LAMBDA_HISTORY_PATH = FUSION_STATE / "lambda_history.json"
 FITTED_PARAMS_PATH = FUSION_STATE / "hnc_fitted_params.json"
 HISTORY_DB_PATH = FUSION_STATE / "aureon_global_history.sqlite"
 CORE_STATE_PATH = FUSION_STATE / "hnc_core_state.json"
+ORGAN_PID_PATH = FUSION_STATE / "hnc_core.pid"
 
-GAMMA_TARGET = 0.945          # minimum coherence for a stable timeline
+# Organ timeline target. This is the lighthouse coherence threshold
+# (aureon.autonomous.aureon_ten_nine_one_thought_path.LIGHTHOUSE_COHERENCE_THRESHOLD),
+# and it sits strictly above the source-law entry floor of 0.938. The organ
+# may chirp a timeline the source-law gate would still be willing to read;
+# lowering 0.945 to 0.938 would accept a timeline the lighthouse still calls
+# unstable. The source-law EXECUTE gate is not this constant and is not loosened
+# by it.
+GAMMA_TARGET = 0.945
+SOURCE_LAW_ENTRY_FLOOR = 0.938
+if GAMMA_TARGET < SOURCE_LAW_ENTRY_FLOOR:
+    raise RuntimeError("hnc_core GAMMA_TARGET loosened below the source-law floor")
 CHIRP_STREAK = 3              # sustained low-Γ steps before chirping
 DEFAULT_INTERVAL = 60.0       # organ step period, seconds
 SOURCE_RECEIPT_IDS = ("aureon_fusion:hnc_core",)
@@ -471,13 +482,15 @@ def _record_memory(payload: dict) -> None:
 
 
 def _save_core_state(payload: dict) -> None:
-    try:
-        tmp = CORE_STATE_PATH.with_suffix(".tmp")
-        with open(tmp, "w", encoding="utf-8") as fh:
-            json.dump(payload, fh, indent=2, ensure_ascii=False)
-        os.replace(tmp, CORE_STATE_PATH)
-    except Exception:
-        pass
+    """Persist the organ state. Write errors propagate — a swallowed failure
+    leaves --check looking at a stale file and calling a dead organ fresh."""
+    CORE_STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    tmp = CORE_STATE_PATH.with_suffix(".tmp")
+    with open(tmp, "w", encoding="utf-8") as fh:
+        json.dump(payload, fh, indent=2, ensure_ascii=False)
+        fh.flush()
+        os.fsync(fh.fileno())
+    os.replace(tmp, CORE_STATE_PATH)
 
 
 # ───────────────────────────── the step ────────────────────────────────────
@@ -521,6 +534,9 @@ def step_once(publish: bool = True):
         "history_load_status": engine.history_load_status,
         "input_count": len(readings),
         "inputs": meta,
+        "organ_pid": os.getpid(),
+        "organ_heartbeat": time.time(),
+        "supervised": True,
     }
 
     _save_core_state(payload)
@@ -552,6 +568,60 @@ def step_once(publish: bool = True):
 
 # ───────────────────────────── organ loop ──────────────────────────────────
 
+def _pid_is_hnc_core(pid: int) -> bool:
+    cmdline = Path(f"/proc/{pid}/cmdline")
+    try:
+        raw = cmdline.read_bytes()
+    except OSError:
+        return False
+    text = raw.replace(b"\x00", b" ").decode("utf-8", "replace")
+    return "hnc_core" in text
+
+
+def organ_running(now: float | None = None) -> tuple[bool, str]:
+    """Whether the supervised HNC organ is alive.
+
+    A same-host pid whose cmdline is hnc_core counts. A containerised organ
+    is visible through a fresh supervised heartbeat in the state file (the
+    compose volume), because the container pid is not this host's pid.
+    A faculty refresh that only writes a step does not set that heartbeat.
+    """
+    reason = "hnc_core organ is not running"
+    if ORGAN_PID_PATH.is_file():
+        try:
+            pid = int(ORGAN_PID_PATH.read_text(encoding="utf-8").strip())
+        except (OSError, ValueError):
+            pid = 0
+        if pid and _pid_is_hnc_core(pid):
+            return True, ""
+    if CORE_STATE_PATH.is_file():
+        try:
+            state = json.loads(CORE_STATE_PATH.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            state = None
+        if isinstance(state, dict) and state.get("supervised") is True:
+            try:
+                age = (time.time() if now is None else now) - float(state.get("organ_heartbeat"))
+            except (TypeError, ValueError):
+                age = None
+            if age is not None and 0.0 <= age <= DEFAULT_INTERVAL * 3:
+                return True, ""
+    return False, reason
+
+
+def _mark_organ_pid() -> None:
+    FUSION_STATE.mkdir(parents=True, exist_ok=True)
+    ORGAN_PID_PATH.write_text(str(os.getpid()), encoding="utf-8")
+
+
+def _clear_organ_pid() -> None:
+    try:
+        if ORGAN_PID_PATH.is_file() and ORGAN_PID_PATH.read_text(encoding="utf-8").strip() == str(os.getpid()):
+            ORGAN_PID_PATH.unlink()
+    except OSError:
+        return
+
+
 def run(interval: float = DEFAULT_INTERVAL, cycles: int | None = None,
         publish: bool = True) -> int:
     """Continuous organ mode: one Master-Equation step every `interval` s.
@@ -564,6 +634,7 @@ def run(interval: float = DEFAULT_INTERVAL, cycles: int | None = None,
     except Exception:
         pass
     engine = get_engine()
+    _mark_organ_pid()
     print("═" * 78)
     print(f"Λ HNC CORE — Master Equation organ online (history: "
           f"{LAMBDA_HISTORY_PATH})")
@@ -589,6 +660,7 @@ def run(interval: float = DEFAULT_INTERVAL, cycles: int | None = None,
     except KeyboardInterrupt:
         print("\nΛ HNC CORE interrupted — committing history and leaving.")
     finally:
+        _clear_organ_pid()
         try:
             receipt = engine.save_history(source_receipt_ids=SOURCE_RECEIPT_IDS)
             if receipt:
@@ -641,11 +713,12 @@ def status() -> dict:
 
 def _print_help() -> None:
     print("usage: python -m aureon_fusion.hnc_core "
-          "[run [--interval S] [--cycles N] | --once | status | --help]")
+          "[run [--interval S] [--cycles N] | --supervise | --once | status | --help]")
     print()
     print("  run                continuous organ mode (60s step; Ctrl+C exits)")
     print("  run --interval S   override the step period")
     print("  run --cycles N     stop after N steps (smoke/dry-run)")
+    print("  --supervise        same loop as run; writes the organ state file")
     print("  --once             one Master-Equation step, then exit")
     print("  status             engine/memory snapshot without stepping")
     print("  --help             this message")
@@ -662,6 +735,8 @@ def main(argv=None) -> int:
         return 0
 
     verb = argv[0]
+    if verb in ("--supervise", "supervise"):
+        return run(interval=DEFAULT_INTERVAL, cycles=None)
     if verb == "run":
         interval = DEFAULT_INTERVAL
         cycles = None
@@ -685,7 +760,7 @@ def main(argv=None) -> int:
     if verb == "status":
         print(json.dumps(status(), indent=2, ensure_ascii=False))
         return 0
-    print(f"unknown verb: {verb} (expected run | --once | status | --help)",
+    print(f"unknown verb: {verb} (expected run | --supervise | --once | status | --help)",
           file=sys.stderr)
     return 2
 

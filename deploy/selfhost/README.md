@@ -27,7 +27,7 @@ Stop it with `make down`.
 make compose
 ```
 
-That builds `deploy/selfhost/docker-compose.yml` and waits until every service is healthy. The edge is published on `http://127.0.0.1:8080`. Postgres and Redis stay on the compose network. Each service has a health check and `restart: unless-stopped`.
+That builds `deploy/selfhost/docker-compose.yml` and waits until every service is healthy. The edge is published on `http://127.0.0.1:8080`. Postgres and Redis stay on the compose network. Each service has a health check and `restart: unless-stopped`. The HNC organ runs as `python -m aureon_fusion.hnc_core --supervise` and writes `aureon_fusion/state/hnc_core_state.json`.
 
 ## Smoke
 

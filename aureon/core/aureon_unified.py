@@ -797,8 +797,8 @@ class MasterEquationSystem:
     
     NAME = "MasterEquation"
     
-    # 9 Auris Nodes with frequencies
-    AURIS_NODES = {
+    # Quarantined drift (Tiger 741 / Clownfish 639). Not consulted.
+    QUARANTINED_AURIS_NODES = {
         'Tiger': {'freq': 741.0, 'role': 'Disruptor'},
         'Falcon': {'freq': 852.0, 'role': 'Perception'},
         'Hummingbird': {'freq': 963.0, 'role': 'Flow'},
@@ -808,6 +808,18 @@ class MasterEquationSystem:
         'Panda': {'freq': 412.3, 'role': 'Empathy Core'},
         'CargoShip': {'freq': 174.0, 'role': 'Integration'},
         'Clownfish': {'freq': 639.0, 'role': 'Symbiosis'},
+    }
+    # Canonical aureon/ table: Tiger 220 … Clownfish 963.
+    AURIS_NODES = {
+        'Tiger': {'freq': 220.0, 'role': 'Disruptor'},
+        'Falcon': {'freq': 285.0, 'role': 'Perception'},
+        'Hummingbird': {'freq': 396.0, 'role': 'Flow'},
+        'Dolphin': {'freq': 528.0, 'role': 'Signal Clarity'},
+        'Deer': {'freq': 639.0, 'role': 'Grounding'},
+        'Owl': {'freq': 741.0, 'role': 'Memory'},
+        'Panda': {'freq': 852.0, 'role': 'Empathy Core'},
+        'CargoShip': {'freq': 936.0, 'role': 'Integration'},
+        'Clownfish': {'freq': 963.0, 'role': 'Symbiosis'},
     }
     
     def __init__(self, data_system: DataIngestionSystem):

@@ -51,6 +51,8 @@ TTL_OVERRIDES = {
 }
 
 TRUTH_DEFAULTS = {
+    # A measured HNC step is real_derived. A zero-input step is reclassified
+    # below to degraded / no_data — an empty step is not a derivation.
     "hnc_core": "real_derived",
     "real_time_data": "live",
     "schumann": "live",
@@ -302,6 +304,23 @@ def _value_summary(name: str, data: dict[str, Any]) -> str:
 
 # ───────────────────────────── cycle logic ─────────────────────────────
 
+def _hnc_zero_input(data: dict[str, Any]) -> bool:
+    """True when an HNC step carried no measured inputs.
+
+    A missing count is not treated as zero: a faculty refresh that records a
+    real NOAA-derived step omits ``input_count`` and stays real_derived.
+    """
+    if data.get("input_count") == 0:
+        return True
+    inputs = data.get("inputs")
+    if isinstance(inputs, (list, dict)) and len(inputs) == 0:
+        return True
+    readings = data.get("readings")
+    if isinstance(readings, list) and len(readings) == 0 and "input_count" not in data and "inputs" not in data:
+        return True
+    return False
+
+
 def _build_record(now: float, faculty: dict[str, Any]) -> dict[str, Any]:
     name = faculty["name"]
     path: Path = faculty["path"]
@@ -352,6 +371,11 @@ def _build_record(now: float, faculty: dict[str, Any]) -> dict[str, Any]:
         truth_status = "test_fixture"
     if status == "blocked":
         truth_status = "blocked"
+    elif name == "hnc_core" and _hnc_zero_input(data):
+        # A zero-input step must not wear the real_derived default.
+        truth_status = "no_data"
+        if status == "fresh":
+            status = "degraded"
 
     record = {
         "ts": datetime.now(timezone.utc).isoformat(),

@@ -80,17 +80,29 @@ HFT_DAILY_LOSS_LIMIT_USD = -25.0 # Daily loss limit
 HFT_WIN_STREAK_RESET = 3        # Reset after 3 wins
 HFT_LOSS_STREAK_PAUSE = 3       # Pause after 3 losses
 
-# Auris Node Frequencies (Animal Spirit Guides)
+# Quarantined drift (tiger 186 … clownfish 285). Not consulted.
+_QUARANTINED_AURIS_FREQUENCIES = {
+    'tiger': 186.0,
+    'falcon': 210.0,
+    'hummingbird': 324.0,
+    'dolphin': 432.0,
+    'deer': 396.0,
+    'owl': 528.0,
+    'panda': 639.0,
+    'cargoship': 174.0,
+    'clownfish': 285.0,
+}
+# Canonical aureon/ table: Tiger 220 … Clownfish 963.
 AURIS_FREQUENCIES = {
-    'tiger': 186.0,      # Power - Volatility
-    'falcon': 210.0,     # Precision - Momentum
-    'hummingbird': 324.0, # Agility - Frequency
-    'dolphin': 432.0,    # Flow - Liquidity
-    'deer': 396.0,       # Grace - Stability
-    'owl': 528.0,        # Wisdom - Pattern
-    'panda': 639.0,      # Balance - Harmony
-    'cargoship': 174.0,  # Persistence - Volume
-    'clownfish': 285.0,  # Adaptation - Resilience
+    'tiger': 220.0,
+    'falcon': 285.0,
+    'hummingbird': 396.0,
+    'dolphin': 528.0,
+    'deer': 639.0,
+    'owl': 741.0,
+    'panda': 852.0,
+    'cargoship': 936.0,
+    'clownfish': 963.0,
 }
 
 # Brainwave Frequencies

@@ -246,16 +246,19 @@ CONFIG = {
     'COMPOUND_PCT': 0.90,           # 90% compounds
     'HARVEST_PCT': 0.10,            # 10% harvests
     
-    # Auris Node Frequencies (Hz)
-    'FREQ_TIGER': 741.0,
-    'FREQ_FALCON': 852.0,
-    'FREQ_HUMMINGBIRD': 963.0,
+    # Quarantined drift (Tiger 741 / Clownfish 639). Not the live table.
+    'QUARANTINED_FREQ_TIGER': 741.0,
+    'QUARANTINED_FREQ_CLOWNFISH': 639.0,
+    # Canonical Auris node frequencies (Hz): Tiger 220 … Clownfish 963.
+    'FREQ_TIGER': 220.0,
+    'FREQ_FALCON': 285.0,
+    'FREQ_HUMMINGBIRD': 396.0,
     'FREQ_DOLPHIN': 528.0,
-    'FREQ_DEER': 396.0,
-    'FREQ_OWL': 432.0,
-    'FREQ_PANDA': 412.3,
-    'FREQ_CARGOSHIP': 174.0,
-    'FREQ_CLOWNFISH': 639.0,
+    'FREQ_DEER': 639.0,
+    'FREQ_OWL': 741.0,
+    'FREQ_PANDA': 852.0,
+    'FREQ_CARGOSHIP': 936.0,
+    'FREQ_CLOWNFISH': 963.0,
     
     # Coherence Thresholds - 🧬 SANDBOX EVOLVED (trade like evolution learned!)
     'HIGH_COHERENCE_MODE': False,  # Disabled - too conservative

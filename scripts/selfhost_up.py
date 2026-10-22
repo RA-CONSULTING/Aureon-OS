@@ -153,6 +153,12 @@ def start() -> None:
             env,
             "frontend.out",
         ),
+        "hnc_core": _spawn(
+            "hnc_core",
+            [sys.executable, "-m", "aureon_fusion.hnc_core", "--supervise"],
+            env,
+            "hnc_core.out",
+        ),
     }
     nginx = subprocess.Popen(["nginx", "-c", str(NGINX_CONF)], start_new_session=True)
     pids["nginx"] = nginx.pid
@@ -185,6 +191,13 @@ def start() -> None:
                     )
                 elif name == "error_sink":
                     current[name] = _spawn(name, [sys.executable, str(ROOT / "deploy" / "selfhost" / "error_sink.py")], env, "error_sink.out")
+                elif name == "hnc_core":
+                    current[name] = _spawn(
+                        name,
+                        [sys.executable, "-m", "aureon_fusion.hnc_core", "--supervise"],
+                        env,
+                        "hnc_core.out",
+                    )
                 elif name.startswith("api_"):
                     port = "8765" if name == "api_a" else "8766"
                     current[name] = _spawn(name, [sys.executable, "-m", "aureon_fusion.http_service"], _api_env(name, port), f"{name}.out")
