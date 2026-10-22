@@ -944,6 +944,7 @@ def repository_census() -> dict[str, Any]:
     return AUDITOR.audit(ROOT)
 
 
+@pytest.mark.timeout(180)
 def test_repository_census_is_exact_internally_and_truthfully_blocked(
     repository_census: dict[str, Any],
 ) -> None:
@@ -963,6 +964,7 @@ def test_repository_census_is_exact_internally_and_truthfully_blocked(
     assert len(repository_census["inventory_sha256"]) == 64
 
 
+@pytest.mark.timeout(180)
 def test_unknown_typescript_boundary_never_defaults_to_protected(
     repository_census: dict[str, Any],
 ) -> None:

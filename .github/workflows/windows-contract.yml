@@ -1,0 +1,36 @@
+name: Windows contract
+
+# Voice runners and the release-update contract are Windows entrypoints.
+# They run here instead of being dropped on Linux with no record.
+# Live trading stays off. This job does not deploy and does not place orders.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  windows-contract:
+    name: voice and release contract
+    runs-on: windows-latest
+    env:
+      AUREON_LIVE_TRADING: "0"
+      AUREON_FUSION_ARM_LIVE: ""
+      BINANCE_TESTNET: "true"
+      PAPER_MODE: "true"
+      AUREON_DISABLE_REAL_ORDERS: "1"
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pytest
+        run: python -m pip install --upgrade pip pytest pytest-timeout
+      - name: Voice runners and release update
+        env:
+          PYTHONPATH: .
+        run: python -m pytest tests/test_voice_runner_paths.py tests/test_release_update.py -q --tb=line --timeout=60 -m "not live"

@@ -143,5 +143,9 @@ no_implicit_optional = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-q --timeout=60"
+addopts = "-q --timeout=60 -m \"not live and not windows\""
 filterwarnings = ["ignore::DeprecationWarning"]
+markers = [
+  "live: opt-in exchange or executor tests; excluded from the default suite",
+  "windows: contract tests that run on the windows-latest CI job",
+]
