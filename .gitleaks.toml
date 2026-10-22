@@ -1,0 +1,25 @@
+# Tree scan allowlist for findings that were reviewed and are not live
+# credentials. The live credentials are listed in ROTATE_KEYS.md and are
+# not allowlisted. A history scan is not this file's job.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Reviewed non-credentials. See ROTATE_KEYS.md."
+paths = [
+  '''state/''',
+  '''__pycache__/''',
+  '''(^|/)tests/''',
+  '''aureon/plumber/(crypto|packet|quorum|receipts)\.py''',
+  '''aureon_unified_exchange_request_broker_6a19337032\.json''',
+  '''aureon_parallel_strategy_unity_57200f1a9f\.json''',
+  '''aureon_parallel_strategy_unity_stress_audit_206a3616d4\.json''',
+  '''aureon_power_station_request_governor_1158ef0164\.json''',
+  '''LOCAL_DELTA_IMPORTED_MANIFEST_20260705_3e7eaa5653\.csv''',
+  '''QUICKSTART_DIGITALOCEAN''',
+  '''aureon_radar/_kraken_adapter_probe\.py''',
+  '''sources/NEXUS-LIVE-FEED-/''',
+  '''HarmonicWaveform6DStatus\.tsx''',
+  '''tools/(aureon_website_design_audit_v27|refresh_website_shell_v27)\.js''',
+  '''scripts/validation/audit_economic_mutation_boundaries\.py''',
+]

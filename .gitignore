@@ -23,15 +23,12 @@ dist-ssr
 *.sln
 *.sw?
 
-# Environment files
-.env
-.env.*
-.env1
+# Environment files. .env* covers .env, .env1.txt, and any other dump.
+# .env.example and .env.sample stay committable. History is not rewritten;
+# credentials already on main are listed in ROTATE_KEYS.md.
+.env*
 !.env.example
-.env.local
-.env.*.local
-.env*.txt
-# *.env  -- REMOVED
+!.env.sample
 scripts/binanceKeys.json
 .venv/
 
@@ -263,10 +260,6 @@ sniper_million_model.json
 
 # Local rendered source-document review artifacts
 /tmp/pdfs/
-
-# Stray env dump — removed from tracking (contained live keys; rotate them)
-.env1.txt
-.env*.txt
 
 # Self-host runtime and the staged image context
 /deploy/selfhost/runtime/

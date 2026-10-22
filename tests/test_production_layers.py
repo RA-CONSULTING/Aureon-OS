@@ -17,7 +17,7 @@ WINDOWS_CI = ROOT / ".github" / "workflows" / "windows-contract.yml"
 FRONTEND_CI = ROOT / ".github" / "workflows" / "frontend-ci.yml"
 
 
-def test_readiness_marks_every_layer_proven_or_blocked() -> None:
+def test_readiness_marks_every_layer_without_claiming_ci() -> None:
     text = READINESS.read_text(encoding="utf-8")
     for layer in (
         "Frontend",
@@ -34,7 +34,9 @@ def test_readiness_marks_every_layer_proven_or_blocked() -> None:
         "Error tracking/logs",
     ):
         assert f"| {layer} |" in text
-    assert text.count("| PROVEN |") + text.count("| BLOCKED |") >= 12
+    assert "| PROVEN |" not in text
+    assert "aureon-os-upstream/" not in text
+    assert "supabase/migrations/20260811210525_lock_down_legacy_public_tables.sql" in text
 
 
 def test_rate_limit_and_cache_are_local_and_disarmed(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -72,23 +74,24 @@ def test_ci_keeps_live_trading_off_and_has_a_windows_job() -> None:
     assert FRONTEND_CI.is_file()
 
 
-def test_hosted_layers_are_proven_self_hosted() -> None:
+def test_hosted_layers_are_not_proven_until_ci_is_green() -> None:
     text = READINESS.read_text(encoding="utf-8")
     assert "end user's choice" in text
-    for layer in (
-        "Frontend",
-        "APIs",
-        "DB/storage",
-        "Auth",
-        "Hosting/deploy",
-        "Cloud",
-        "CI/CD",
-        "Security/RLS",
-        "Rate limiting",
-        "Caching/CDN",
-        "Load balancing/scaling",
-        "Error tracking/logs",
-    ):
+    assert "nothing is PROVEN" in text or "Nothing is PROVEN" in text
+    expected = {
+        "Frontend": "local-only",
+        "APIs": "local-only",
+        "DB/storage": "local-only",
+        "Auth": "local-only",
+        "Hosting/deploy": "local-only",
+        "Cloud": "local-only",
+        "CI/CD": "missing",
+        "Security/RLS": "policy text only",
+        "Rate limiting": "local-only",
+        "Caching/CDN": "local-only",
+        "Load balancing/scaling": "local-only",
+        "Error tracking/logs": "local-only",
+    }
+    for layer, status in expected.items():
         row = next(line for line in text.splitlines() if line.startswith(f"| {layer} |"))
-        assert "| PROVEN |" in row
-        assert "self-hosted" in row or "selfhost" in row or "scripts/selfhost_smoke.py" in row
+        assert f"| {status} |" in row

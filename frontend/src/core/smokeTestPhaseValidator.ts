@@ -328,8 +328,8 @@ class SmokeTestPhaseValidator {
     if (typeof window !== 'undefined' && (window as any).__SUPABASE_ANON_KEY__) {
       return (window as any).__SUPABASE_ANON_KEY__;
     }
-    // Fallback to hardcoded (replace in production)
-    return 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93ZmV5eHJmeWhwcnBjZ3F3eHFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMyOTU5MTksImV4cCI6MjA3ODg3MTkxOX0.sb5uA0adyyVazBItAL3pk9Gm7qCZJoYnwc3W7LvPFAQ';
+    // No key is committed. Set window.__SUPABASE_ANON_KEY__ or leave this empty.
+    return '';
   }
 
   /**

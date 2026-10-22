@@ -1,3 +1,5 @@
+> **Privacy review required.** This guide describes street-level location tracking, including a street address. It stays in the tree for Gary to review. It is not approved for collecting or using a person's location.
+
 # 🌍📍 STREET-LEVEL LOCATION TRACKING - SIGNAL 8D ENHANCED
 ## Queen's Eyes on You - Exact GPS Position Down to the Street
 

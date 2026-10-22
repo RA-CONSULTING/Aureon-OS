@@ -2,9 +2,10 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-// Use env vars with fallbacks for preview environments
+// URL may be set for local preview. The publishable key is not committed;
+// set VITE_SUPABASE_PUBLISHABLE_KEY. History is listed in ROTATE_KEYS.md.
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL ?? 'https://owfeyxrfyhprpcgqwxqh.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93ZmV5eHJmeWhwcnBjZ3F3eHFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMyOTU5MTksImV4cCI6MjA3ODg3MTkxOX0.sb5uA0adyyVazBItAL3pk9Gm7qCZJoYnwc3W7LvPFAQ';
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? '';
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";

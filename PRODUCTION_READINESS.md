@@ -27,16 +27,18 @@ Checked by `aureon/autonomous/self_repair_guard.py` before Queen writes, before 
 ## Where this was run
 
 ```
-cd aureon-os-upstream && PYTHONPATH=. python3 -m pytest tests/test_sandbox_self_repair.py tests/test_protected_patch_denylist.py tests/test_safe_code_control.py tests/test_orca_windows_stdio.py -q --tb=line
-................                                                         [100%]
-16 passed
+PYTHONPATH=. python3 -m pytest tests/test_sandbox_self_repair.py tests/test_protected_patch_denylist.py tests/test_safe_code_control.py tests/test_orca_windows_stdio.py -q --tb=line
 ```
 
-The market-data WebSocket notes remain in `aureon-os-upstream/docs/runbooks/PRODUCTION_READINESS.md` and `aureon-trading/docs/runbooks/PRODUCTION_READINESS.md`. They are not a switch for live trading.
+That command is from the repository root. There is no separate upstream checkout directory in this tree.
+
+The market-data WebSocket notes remain in `docs/runbooks/PRODUCTION_READINESS.md` and `aureon-trading/docs/runbooks/PRODUCTION_READINESS.md`. They are not a switch for live trading.
 
 ## Twelve production layers
 
-Checked 22 Oct 2026. PROVEN means the self-hosted stack shows the layer. Hosting is the end user's choice: any machine that can run `make up` or `make compose`. No cloud project and no provider credential is required. Live trading stays off. `may_act` stays false. The HOLD gate and the self-repair denylist were not changed.
+Checked 22 Oct 2026. Nothing is PROVEN without a green CI run. GitHub Actions on `c90d087f` did not start: every Actions job failed in about two seconds because the account is locked due to a billing issue. Local smoke is not that green run.
+
+Hosting is the end user's choice: any machine that can run `make up` or `make compose`. No cloud project and no provider credential is required. Live trading stays off. `may_act` stays false. The HOLD gate and the self-repair denylist were not changed.
 
 Deploy:
 
@@ -53,20 +55,20 @@ python3 scripts/selfhost_smoke.py
 
 `make compose` builds `deploy/selfhost/docker-compose.yml`. The operator steps are in `deploy/selfhost/README.md`. The smoke test is `.github/workflows/selfhost-ci.yml`. The loopback bearer token is `local-selfhost-token`. It is not a provider key.
 
-| Layer | Status | Proof or reason |
+| Layer | Status | What exists, and why it is not PROVEN |
 |---|---|---|
-| Frontend | PROVEN | self-hosted `aureon/operator/local_http_profile.py` serves `frontend/index.html`. `scripts/selfhost_smoke.py` requires HTTP 200 from `/` and `/app/`. |
-| APIs | PROVEN | self-hosted `aureon_fusion.http_service` behind nginx. `tests/test_fusion_http.py` and `scripts/selfhost_smoke.py` cover `/healthz`. |
-| DB/storage | PROVEN | self-hosted Postgres. `scripts/selfhost_smoke.py` reads `relrowsecurity` on `schumann_resonance_data` after the init scripts. |
-| Auth | PROVEN | self-hosted bearer check. `tests/test_fusion_http.py` and `scripts/selfhost_smoke.py` require `AUREON_FUSION_API_TOKEN` and reject a missing bearer token. |
-| Hosting/deploy | PROVEN | self-hosted. Hosting is the end user's choice. `make up` and `make compose` are the deploy. `scripts/selfhost_smoke.py` requires `"hosting": "self-hosted"`. |
-| Cloud | PROVEN | self-hosted. No cloud project is required. The same compose file is the cloud-shaped run, proven by `.github/workflows/selfhost-ci.yml`. |
-| CI/CD | PROVEN | self-hosted `.github/workflows/selfhost-ci.yml` brings up compose and runs `scripts/selfhost_smoke.py`. `.github/workflows/fusion-ci.yml` pins `AUREON_LIVE_TRADING=0`. `.github/workflows/windows-contract.yml` runs the Windows contract on `windows-latest`. |
-| Security/RLS | PROVEN | self-hosted. `supabase/migrations/20260811210525_lock_down_legacy_public_tables.sql` is applied to a live Postgres. `scripts/selfhost_smoke.py` checks `ENABLE ROW LEVEL SECURITY` is on, `deny_direct_client_access` exists, `anon` cannot read, and `service_role` can. |
-| Rate limiting | PROVEN | self-hosted nginx `limit_req` plus `aureon_fusion.http_service.allow`. `tests/test_fusion_http.py` expects 429. `scripts/selfhost_smoke.py` expects nginx 429. |
-| Caching/CDN | PROVEN | self-hosted Redis. `cached_status` returns `cache_layer=redis`. `scripts/selfhost_smoke.py` reads the Redis key. A public CDN is not claimed. |
-| Load balancing/scaling | PROVEN | self-hosted nginx round-robin across `api_a` and `api_b`, both with health checks and `restart: unless-stopped`. `scripts/selfhost_smoke.py` requires both replica ids. |
-| Error tracking/logs | PROVEN | self-hosted JSON logs and `deploy/selfhost/error_sink.py`. `tests/test_fusion_http.py` records a local exception. `scripts/selfhost_smoke.py` requires the sink to store `fusion_error_sink_test`. |
+| Frontend | local-only | `aureon/operator/local_http_profile.py` can serve `frontend/index.html`. No green CI run. |
+| APIs | local-only | `aureon_fusion.http_service` answers `/healthz` on a machine that runs the stack. No green CI run. |
+| DB/storage | local-only | Compose and `make up` can start Postgres. No green CI run. |
+| Auth | local-only | The fusion service rejects a missing bearer token when it is run locally. No green CI run. |
+| Hosting/deploy | local-only | `make up` and `make compose` are the deploy. Hosting is the end user's choice. No green CI run. |
+| Cloud | local-only | No cloud project is required. The compose file is not a green CI run. |
+| CI/CD | missing | Workflow files exist, including `.github/workflows/selfhost-ci.yml`. The runners did not start. |
+| Security/RLS | policy text only | The SQL is `supabase/migrations/20260811210525_lock_down_legacy_public_tables.sql` plus the earlier `ENABLE ROW LEVEL SECURITY` migrations under `supabase/migrations/`. It still has to be enforced and tested against a live Postgres in the compose stack on a green CI run. |
+| Rate limiting | local-only | nginx `limit_req` and `aureon_fusion.http_service.allow` exist. No green CI run. |
+| Caching/CDN | local-only | Redis caching exists in the local stack. A public CDN is not claimed. No green CI run. |
+| Load balancing/scaling | local-only | nginx is configured for `api_a` and `api_b`. No green CI run. |
+| Error tracking/logs | local-only | JSON logs and `deploy/selfhost/error_sink.py` exist. No green CI run. |
 
 Faculty launcher: `python3 -m aureon_fusion.fleet_launcher --check`. It exits 2 when `AUREON_LIVE_TRADING` is set or `aureon_fusion/state/capital_release.flag` exists. The unity supervisor in tmux session `unity-supervisor` is the process manager that keeps the paper-mode organs alive.
 

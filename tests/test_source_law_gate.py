@@ -205,6 +205,77 @@ def test_check_reports_when_hnc_core_organ_is_not_running(monkeypatch, tmp_path,
     assert "hnc_core organ is not running" in captured
 
 
+def test_lambda_matches_the_master_equation(tmp_path):
+    """Λ(t) = Σ wᵢ sin(2πfᵢt + φᵢ) + α tanh(g Λ̄_Δt) + β Λ(t−τ)."""
+    import math
+
+    from aureon.core.aureon_lambda_engine import (
+        ALPHA,
+        BETA,
+        DELTA_T,
+        FREQUENCIES,
+        G,
+        TAU,
+        WEIGHTS,
+        LambdaEngine,
+        SubsystemReading,
+    )
+
+    engine = LambdaEngine(state_path=tmp_path / "lambda.json")
+    readings = [
+        SubsystemReading(name="a", value=0.4, confidence=1.0, state="measured"),
+        SubsystemReading(name="b", value=0.6, confidence=0.5, state="measured"),
+    ]
+    history: list[float] = []
+    for step in range(1, 13):
+        state = engine.step(readings, volatility=0.0, auto_persist=False)
+        harmonic_sum = sum(
+            weight * math.sin(2 * math.pi * (freq / 1000.0) * step)
+            for freq, weight in zip(FREQUENCIES, WEIGHTS)
+        )
+        subsystem_avg = sum(item.value * item.confidence for item in readings) / len(readings)
+        substrate = (harmonic_sum + subsystem_avg) / 2.0
+        observer = 0.0
+        if len(history) >= DELTA_T:
+            recent = history[-DELTA_T:]
+            observer = ALPHA * math.tanh(G * (sum(recent) / len(recent)))
+        echo = 0.0
+        if len(history) >= TAU:
+            echo = BETA * history[-TAU]
+        assert state.substrate == pytest.approx(substrate)
+        assert state.observer == pytest.approx(observer)
+        assert state.echo == pytest.approx(echo)
+        assert state.lambda_t == pytest.approx(substrate + observer + echo)
+        history.append(state.lambda_t)
+    assert len(history) > TAU
+
+
+def test_real_engine_gamma_gate(tmp_path, monkeypatch):
+    """Γ from the lambda engine, then the 0.938 source-law gate."""
+    from aureon.core.aureon_lambda_engine import LambdaEngine
+
+    monkeypatch.setattr(
+        "aureon.core.hnc_field.canonical_field_reading",
+        lambda *args, **kwargs: None,
+    )
+    out = law.CognitionOutput()
+    out._lambda_engine = LambdaEngine(state_path=tmp_path / "gate.json")
+
+    equal = _readings(confidence=1.0)
+    for row in equal:
+        row["value"] = 0.8
+    executed = out.collapse(equal, 9, 1)
+    assert executed.coherence_gamma >= 0.938
+    assert executed.action == "EXECUTE"
+
+    spread = _readings(confidence=1.0)
+    for index, row in enumerate(spread):
+        row["value"] = 0.1 if index % 2 == 0 else 0.95
+    held = out.collapse(spread, 9, 2)
+    assert held.coherence_gamma < 0.938
+    assert held.action == "HOLD"
+
+
 def test_canonical_auris_table_tiger_220_clownfish_963():
     from aureon.core.aureon_unified import MasterEquationSystem
     from aureon.trading.aureon_unified_ecosystem import CONFIG as trading_config
