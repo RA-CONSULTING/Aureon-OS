@@ -69,7 +69,6 @@ ROLE_BRAIN_LANES: Dict[str, str] = {
     "Snagging Inspector": "self_evolution",
     "Release Manager": "general",
     "Archive Librarian": "fast",
-    "Code Architect": "architecture",
 }
 
 PROCESS_BRAIN_BINDINGS: Dict[str, tuple[str, str]] = {
@@ -82,7 +81,6 @@ PROCESS_BRAIN_BINDINGS: Dict[str, tuple[str, str]] = {
     "snagging": ("self_evolution", "Snagging Inspector"),
     "client_handover": ("general", "Release Manager"),
     "memory_assimilation": ("fast", "Archive Librarian"),
-    "architecture_selection": ("architecture", "Code Architect"),
 }
 
 ROLE_PROCESS_BINDINGS: Dict[str, str] = {

@@ -332,7 +332,10 @@ def _build_record(now: float, faculty: dict[str, Any]) -> dict[str, Any]:
         except Exception:
             ts = None
 
-    if ts is None:
+    if data.get("blocked") is True:
+        age_s = None
+        status = "blocked"
+    elif ts is None:
         age_s = None
         status = "missing"
     else:
@@ -342,8 +345,13 @@ def _build_record(now: float, faculty: dict[str, Any]) -> dict[str, Any]:
     simulated_flags = _scan_simulated(data)
     explicit_test = _is_explicit_test_mode(data)
     truth_status = TRUTH_DEFAULTS.get(name, "real_derived")
+    declared = str(data.get("truth_status") or "")
+    if declared in {"live", "real_derived", "real_observed", "dry_run", "no_data", "blocked"}:
+        truth_status = declared
     if simulated_flags and not explicit_test:
         truth_status = "test_fixture"
+    if status == "blocked":
+        truth_status = "blocked"
 
     record = {
         "ts": datetime.now(timezone.utc).isoformat(),
@@ -355,6 +363,7 @@ def _build_record(now: float, faculty: dict[str, Any]) -> dict[str, Any]:
         "source_id": data.get("source") or source_id,
         "value_summary": _value_summary(name, data),
         "simulated": False,
+        "blocked_reason": str(data.get("blocked_reason") or "") if status == "blocked" else "",
     }
     # Preserve the finding for health aggregation even though the line schema says false.
     record["_simulated_flags"] = simulated_flags
@@ -394,21 +403,25 @@ def _append_records(records: list[dict[str, Any]]) -> None:
 
 def _write_health(records: list[dict[str, Any]]) -> dict[str, Any]:
     stale_list: list[str] = []
+    blocked: dict[str, str] = {}
     simulated_detected: list[str] = []
     fresh_count = 0
     for r in records:
-        if r["status"] != "fresh":
-            stale_list.append(r["faculty"])
-        else:
+        if r["status"] == "fresh":
             fresh_count += 1
+        elif r["status"] == "blocked":
+            blocked[r["faculty"]] = str(r.get("blocked_reason") or "blocked")
+        else:
+            stale_list.append(r["faculty"])
         flags = r.get("_simulated_flags", [])
         if flags and not r.get("_explicit_test"):
             simulated_detected.append(r["faculty"])
 
     health = {
         "ts": datetime.now(timezone.utc).isoformat(),
-        "all_fresh": len(stale_list) == 0,
+        "all_fresh": len(stale_list) == 0 and len(blocked) == 0,
         "stale_list": stale_list,
+        "blocked": blocked,
         "simulated_detected": simulated_detected,
         "faculties_count": len(records),
         "fresh_count": fresh_count,

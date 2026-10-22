@@ -58,12 +58,14 @@ def read_health(path: Path | None = None) -> dict:
     total = health.get("faculties_count")
     stale = health.get("stale_list") or []
     simulated = health.get("simulated_detected") or []
+    blocked_faculties = health.get("blocked") or {}
     ok = (
         health.get("all_fresh") is True
         and fresh == FACULTY_COUNT
         and total == FACULTY_COUNT
         and stale == []
         and simulated == []
+        and not blocked_faculties
     )
     report = {
         "ok": ok,
@@ -71,6 +73,7 @@ def read_health(path: Path | None = None) -> dict:
         "faculties_count": total,
         "all_fresh": health.get("all_fresh"),
         "stale_list": stale,
+        "blocked_faculties": blocked_faculties,
         "simulated_detected": simulated,
         "ts": health.get("ts"),
     }

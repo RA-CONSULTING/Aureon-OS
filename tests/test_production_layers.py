@@ -72,9 +72,23 @@ def test_ci_keeps_live_trading_off_and_has_a_windows_job() -> None:
     assert FRONTEND_CI.is_file()
 
 
-def test_hosted_layers_are_not_marked_proven() -> None:
+def test_hosted_layers_are_proven_self_hosted() -> None:
     text = READINESS.read_text(encoding="utf-8")
-    for layer in ("Hosting/deploy", "Cloud", "Load balancing/scaling", "Frontend"):
+    assert "end user's choice" in text
+    for layer in (
+        "Frontend",
+        "APIs",
+        "DB/storage",
+        "Auth",
+        "Hosting/deploy",
+        "Cloud",
+        "CI/CD",
+        "Security/RLS",
+        "Rate limiting",
+        "Caching/CDN",
+        "Load balancing/scaling",
+        "Error tracking/logs",
+    ):
         row = next(line for line in text.splitlines() if line.startswith(f"| {layer} |"))
-        assert "| BLOCKED |" in row
-        assert "Gary" in row or "host" in row.lower() or "profile" in row.lower() or "project" in row.lower()
+        assert "| PROVEN |" in row
+        assert "self-hosted" in row or "selfhost" in row or "scripts/selfhost_smoke.py" in row

@@ -267,3 +267,10 @@ sniper_million_model.json
 # Stray env dump — removed from tracking (contained live keys; rotate them)
 .env1.txt
 .env*.txt
+
+# Self-host runtime and the staged image context
+/deploy/selfhost/runtime/
+/deploy/selfhost/image/
+/aureon_fusion/state/
+/schumann_state.json
+/real_time_data.json

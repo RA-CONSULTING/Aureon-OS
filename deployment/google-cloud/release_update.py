@@ -517,6 +517,8 @@ def rollback_operator_source_directory_plan(
             os.chown(target, *row["before_owner"])
             os.chmod(target, row["before_mode"])
         else:
+            if not target.exists():
+                continue
             try:
                 target.rmdir()
             except OSError as error:

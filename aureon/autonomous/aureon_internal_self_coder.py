@@ -57,7 +57,6 @@ from aureon.autonomous.aureon_safe_code_control import SafeCodeControl
 from aureon.autonomous.aureon_ten_nine_one_thought_path import (
     SELF_CODER_CONFIDENTIAL_PREFLIGHT_SCHEMA,
     TenNineOneThoughtPath,
-    build_local_ten_nine_one_confidential_thought_path,
 )
 from aureon.autonomous.aureon_truth_gated_ten_nine_one import (
     TruthGatedTenNineOneThoughtPath,
@@ -312,13 +311,6 @@ def _require_forge_preflight(forge: LocalProposalForge) -> dict[str, Any]:
         "local_development_only",
         "production_ready",
     }
-    local_only_ok = (
-        preflight.get("local_development_only") is True
-        and preflight.get("key_material_returned") is False
-        and preflight.get("proposal_admission_authorized") is False
-        and preflight.get("production_ready") is False
-        and preflight.get("reason_code") == "master_key_unavailable"
-    )
     if (
         not isinstance(preflight, dict)
         or set(preflight) != expected
@@ -329,10 +321,7 @@ def _require_forge_preflight(forge: LocalProposalForge) -> dict[str, Any]:
         or preflight.get("action_eligible") is not False
         or preflight.get("economic_eligible") is not False
         or preflight.get("local_development_only") is not True
-        or (
-            preflight.get("ready") is not True
-            and not local_only_ok
-        )
+        or preflight.get("ready") is not True
     ):
         raise InternalSelfCoderHold("hnc_proposal_master_key_unavailable")
     return preflight
@@ -859,10 +848,8 @@ def run_autonomous_self_coding(
     selected_thought_path = thought_path
     if selected_thought_path is None:
         if truth_authorities is None:
-            # Local-only cognition-only path: no external truth authorities,
-            # no trading/operational authority, HNC-sealed internal decisions only.
-            selected_thought_path = build_local_ten_nine_one_confidential_thought_path(
-                root=repo_root,
+            raise InternalSelfCoderHold(
+                "authenticated_self_coder_truth_authority_bundle_required"
             )
         else:
             try:

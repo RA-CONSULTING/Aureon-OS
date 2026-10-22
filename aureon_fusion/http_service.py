@@ -70,6 +70,29 @@ def reset_limits() -> None:
     _HITS.clear()
     _CACHE["at"] = 0.0
     _CACHE["body"] = None
+    _CACHE["redis"] = None
+
+
+def _redis_client():
+    """Shared cache. Absent URL or a dead server keeps the in-process cache."""
+
+    url = os.environ.get("AUREON_REDIS_URL", "").strip()
+    if not url:
+        return None
+    cached = _CACHE.get("redis")
+    if cached is not None:
+        return cached
+    try:
+        import redis
+    except ImportError:
+        return None
+    try:
+        client = redis.Redis.from_url(url, socket_timeout=0.3, socket_connect_timeout=0.3)
+        client.ping()
+    except Exception:
+        return None
+    _CACHE["redis"] = client
+    return client
 
 
 def authorized(header: str, token: str) -> bool:
@@ -84,6 +107,38 @@ def authorized(header: str, token: str) -> bool:
 
 def cached_status() -> dict[str, Any]:
     ttl = float(os.environ.get("AUREON_FUSION_CACHE_TTL_S", "5"))
+    client = _redis_client()
+    if client is not None:
+        try:
+            raw = client.get("aureon:fusion:status")
+        except Exception:
+            raw = None
+        if raw:
+            try:
+                saved = json.loads(raw)
+                if time.time() - float(saved["at"]) < ttl:
+                    body = dict(saved["body"])
+                    body["cache"] = "hit"
+                    body["cache_layer"] = "redis"
+                    body["live_trading"] = False
+                    body["may_act"] = False
+                    return body
+            except (TypeError, ValueError, json.JSONDecodeError):
+                pass
+        body = status_report()
+        body["cache"] = "miss"
+        body["cache_layer"] = "redis"
+        body["live_trading"] = False
+        body["may_act"] = False
+        try:
+            client.set(
+                "aureon:fusion:status",
+                json.dumps({"at": time.time(), "body": body}, sort_keys=True),
+                ex=max(1, int(ttl)),
+            )
+        except Exception:
+            pass
+        return body
     now = time.monotonic()
     if _CACHE["body"] is not None and now - float(_CACHE["at"]) < ttl:
         body = dict(_CACHE["body"])
@@ -185,7 +240,17 @@ def make_handler(token: str):
                 self.wfile.write(body)
                 return 429
             if path == "/healthz":
-                return self._send(200, {"status": "ok", "live_trading": False, "paper_default": True})
+                return self._send(
+                    200,
+                    {
+                        "status": "ok",
+                        "live_trading": False,
+                        "paper_default": True,
+                        "may_act": False,
+                        "hosting": "self-hosted",
+                        "replica": os.environ.get("AUREON_REPLICA_ID", "single"),
+                    },
+                )
             if path == "/readyz":
                 report = cached_status()
                 ready = all(item["present"] for item in report["capabilities"].values())

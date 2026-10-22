@@ -1,0 +1,138 @@
+# Self-hosted Aureon OS. Live trading is off. Hosting is the machine that runs this file.
+name: aureon-selfhost
+
+x-api-environment: &api_env
+  AUREON_FUSION_BIND: 0.0.0.0
+  AUREON_FUSION_PORT: "8765"
+  AUREON_FUSION_API_TOKEN: local-selfhost-token
+  AUREON_LIVE_TRADING: "0"
+  AUREON_FUSION_ARM_LIVE: ""
+  AUREON_FUSION_RATE_LIMIT: "100000"
+  AUREON_REDIS_URL: redis://redis:6379/0
+  AUREON_ERROR_WEBHOOK_URL: http://error_sink:8088/envelope
+  AUREON_FUSION_CACHE_TTL_S: "30"
+
+x-api-health: &api_health
+  test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8765/healthz', timeout=2)"]
+  interval: 5s
+  timeout: 3s
+  retries: 20
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: aureon
+      POSTGRES_PASSWORD: local_only
+      POSTGRES_DB: aureon
+    volumes:
+      - ./postgres/01_roles.sql:/docker-entrypoint-initdb.d/01_roles.sql:ro
+      - ./postgres/02_tables.sql:/docker-entrypoint-initdb.d/02_tables.sql:ro
+      - ../../supabase/migrations/20260811210525_lock_down_legacy_public_tables.sql:/docker-entrypoint-initdb.d/03_lock_down.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aureon -d aureon"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  error_sink:
+    build:
+      context: ./image
+      dockerfile: Dockerfile
+    command: ["python", "/app/error_sink.py"]
+    environment:
+      AUREON_ERROR_SINK_BIND: 0.0.0.0
+      AUREON_ERROR_SINK_PORT: "8088"
+      AUREON_ERROR_SINK_PATH: /var/log/aureon/errors.jsonl
+      AUREON_LIVE_TRADING: "0"
+    volumes:
+      - ./runtime:/var/log/aureon
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8088/healthz', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  api_a:
+    build:
+      context: ./image
+      dockerfile: Dockerfile
+    environment:
+      <<: *api_env
+      AUREON_REPLICA_ID: api_a
+      AUREON_LOG_PATH: /var/log/aureon/api_a.jsonl
+    volumes:
+      - ./runtime:/var/log/aureon
+    depends_on:
+      redis:
+        condition: service_healthy
+      error_sink:
+        condition: service_healthy
+    healthcheck: *api_health
+    restart: unless-stopped
+
+  api_b:
+    build:
+      context: ./image
+      dockerfile: Dockerfile
+    environment:
+      <<: *api_env
+      AUREON_REPLICA_ID: api_b
+      AUREON_LOG_PATH: /var/log/aureon/api_b.jsonl
+    volumes:
+      - ./runtime:/var/log/aureon
+    depends_on:
+      redis:
+        condition: service_healthy
+      error_sink:
+        condition: service_healthy
+    healthcheck: *api_health
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./image
+      dockerfile: Dockerfile
+    command: ["python", "-m", "aureon.operator.local_http_profile", "--serve", "--host", "0.0.0.0", "--port", "5173", "--root", "/frontend"]
+    environment:
+      AUREON_LIVE_TRADING: "0"
+    volumes:
+      - ../../frontend:/frontend:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5173/', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:1.27-alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./www:/usr/share/nginx/html/console:ro
+    depends_on:
+      api_a:
+        condition: service_healthy
+      api_b:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped

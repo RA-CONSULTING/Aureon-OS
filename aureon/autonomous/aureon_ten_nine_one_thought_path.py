@@ -547,6 +547,7 @@ class TenNineOneThoughtPath:
         max_age_s: float = DEFAULT_MAX_AGE_S,
         now: Callable[[], float] = time.time,
         cognition_only: bool = False,
+        truth_gate_enforced: bool = False,
     ) -> None:
         if not isinstance(resolver, TenNineOneEvidenceResolver):
             raise ValueError("trusted_10_9_1_evidence_resolver_required")
@@ -562,7 +563,7 @@ class TenNineOneThoughtPath:
         self._commitment_only = bool(
             getattr(propagator, "confidential_output_propagation", False) is True
         )
-        self.truth_gate_enforced = True
+        self.truth_gate_enforced = bool(truth_gate_enforced)
         self._receipts: list[Mapping[str, Any]] = []
 
     @property
@@ -965,6 +966,7 @@ def build_local_ten_nine_one_thought_path(
     return TenNineOneThoughtPath(
         resolver=LocalHncAurisEvidenceResolver(bus=bus, root=root),
         propagator=ThoughtBusHiveMyceliaPropagator(bus=bus),
+        truth_gate_enforced=True,
     )
 
 
@@ -993,6 +995,7 @@ def build_local_ten_nine_one_confidential_thought_path(
         propagator=CommitmentOnlyHiveMyceliaPropagator(bus=bus),
         max_age_s=max_age_s,
         cognition_only=True,
+        truth_gate_enforced=True,
     )
 
 

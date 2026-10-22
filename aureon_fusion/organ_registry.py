@@ -1194,28 +1194,36 @@ def _start_locked(organ: str) -> dict:
     if sys.platform == "win32":
         flags = getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
         flags |= getattr(subprocess, "CREATE_NO_WINDOW", 0)
-    if spec.get("executable"):
-        cmd = [spec["executable"], spec["script"], *spec["args"]]
-    elif spec.get("module"):
-        cmd = [sys.executable, "-u", "-m", spec["module"], *spec["args"]]
-    else:
-        cmd = [sys.executable, "-u", spec["script"], *spec["args"]]
     env = spec.get("env")
+    profile_module = None
     if organ in {"operator_gateway", "frontend_vite"}:
-        # Load only the installed account-protected HTTP profile, at spawn time.
-        # Keep credentials out of the registry, command line and event receipts.
+        # Local HTTP profile: bind address only. No credentials are loaded.
         import importlib.util
 
         profile_path = AUREON_UPSTREAM / "aureon" / "operator" / "local_http_profile.py"
         required_profile = spec.get("requires_local_http_profile") is True
         if required_profile and not profile_path.is_file():
             return {"ok": False, "organ": organ, "state": "blocked",
-                    "reason": "commissioned HTTP credential loader missing"}
+                    "reason": "local HTTP profile missing"}
         if profile_path.is_file():
             module_spec = importlib.util.spec_from_file_location("aureon_local_http_profile", profile_path)
             profile_module = importlib.util.module_from_spec(module_spec)
             module_spec.loader.exec_module(profile_module)
             env = profile_module.service_environment(organ, dict(env or os.environ), required=required_profile)
+    if spec.get("executable"):
+        executable = spec["executable"]
+        if (
+            organ == "frontend_vite"
+            and profile_module is not None
+            and not Path(executable).is_file()
+        ):
+            cmd = profile_module.frontend_command(env)
+        else:
+            cmd = [spec["executable"], spec["script"], *spec["args"]]
+    elif spec.get("module"):
+        cmd = [sys.executable, "-u", "-m", spec["module"], *spec["args"]]
+    else:
+        cmd = [sys.executable, "-u", spec["script"], *spec["args"]]
     with open(log_path, "a", encoding="utf-8", errors="replace") as logf:
         proc = subprocess.Popen(
             cmd, cwd=spec["cwd"],
