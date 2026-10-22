@@ -386,7 +386,7 @@ def run_repo_self_repair(
         ],
         safety={
             "audit_mode": True,
-            "live_trading_disabled": True,
+            "venue_orders_disarmed": True,
             "real_orders_disabled": True,
             "secret_values_written": False,
             "external_mutations": False,

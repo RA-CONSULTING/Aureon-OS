@@ -122,7 +122,7 @@ def compute_logic_flow(*, seed_score: float = 0.639, trace_id: str = "logicflow0
     plumbing (a renamed topic, a field that no longer reads back) shows up as a failed invariant.
     """
     from aureon.core.aureon_thought_bus import Thought, payload_of
-    from aureon.core.hnc_field import read_canonical_field
+    from aureon.core.hnc_field import build_hnc_live_field_receipt_id, read_canonical_field
 
     bus = _fresh_bus()
     observed: list[str] = []
@@ -134,6 +134,10 @@ def compute_logic_flow(*, seed_score: float = 0.639, trace_id: str = "logicflow0
 
     # 1. The harmonic core speaks — one authoritative pulse (the daemon's own shape).
     observed_at = time.time()
+    memory_hash = "cd" * 32
+    memory_receipt = f"hnc:lambda_history:{memory_hash}"
+    seed_receipt = f"logic_flow:seed:{trace_id}"
+    input_receipt_ids = sorted({memory_receipt, seed_receipt})
     pulse_payload = {
         "symbolic_life_score": seed_score,
         "coherence_gamma": 0.945,
@@ -146,10 +150,12 @@ def compute_logic_flow(*, seed_score: float = 0.639, trace_id: str = "logicflow0
         "source_timestamp": observed_at,
         "received_at": observed_at,
         "ts": observed_at,
-        "receipt_id": f"hnc:live_field:logic-flow-{trace_id}",
+        "step": 1,
+        "memory_receipt_id": memory_receipt,
+        "memory_canonical_hash": memory_hash,
         "receipt_type": "hnc_live_field",
         "provider_receipt_type": "hnc_live_field",
-        "input_receipt_ids": [f"logic_flow:seed:{trace_id}"],
+        "input_receipt_ids": input_receipt_ids,
         "data_status": "live",
         "truth_status": "real_derived",
         "generated_values": False,
@@ -167,6 +173,16 @@ def compute_logic_flow(*, seed_score: float = 0.639, trace_id: str = "logicflow0
         "eligible_for_learning": False,
         "action_gate_passed": False,
     }
+    pulse_payload["receipt_id"] = build_hnc_live_field_receipt_id(
+        input_receipt_ids=tuple(input_receipt_ids),
+        source_timestamp=observed_at,
+        received_at=observed_at,
+        step=1,
+        lambda_t=1.0,
+        coherence_gamma=0.945,
+        consciousness_psi=0.707,
+        symbolic_life_score=seed_score,
+    )
     bus.publish(Thought(source="hnc_live_daemon", topic=PULSE_TOPIC, trace_id=trace_id, payload=pulse_payload))
     pulses = bus.recall(PULSE_TOPIC, limit=1) or []
     pulse_published = len(pulses) == 1

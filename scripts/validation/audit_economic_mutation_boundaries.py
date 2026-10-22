@@ -41,6 +41,9 @@ SKIP_PARTS = {
     "site-packages",
     "vendor",
 }
+# Staged by scripts/stage_selfhost_image.py. It is a generated copy of the
+# packages, gitignored, and must not become a second economic census.
+SKIP_RELATIVE_PREFIXES = ("deploy/selfhost/image/",)
 
 CLASSIFICATIONS = {
     "economic-boundary-last-mile",
@@ -293,11 +296,28 @@ def _relative(path: Path) -> str:
     return path.relative_to(ROOT).as_posix()
 
 
+def _relative_posix(root: Path, directory: str) -> str:
+    relative = Path(directory).resolve().relative_to(root.resolve()).as_posix()
+    return "" if relative == "." else relative
+
+
+def _skip_relative(relative: str) -> bool:
+    probe = f"{relative}/" if relative else ""
+    return any(probe.startswith(prefix) for prefix in SKIP_RELATIVE_PREFIXES)
+
+
 def source_paths(root: Path = ROOT) -> list[Path]:
     paths: list[Path] = []
     for directory, child_directories, filenames in os.walk(root):
+        relative = _relative_posix(root, directory)
+        if _skip_relative(relative):
+            child_directories[:] = []
+            continue
         child_directories[:] = sorted(
-            name for name in child_directories if name not in SKIP_PARTS
+            name
+            for name in child_directories
+            if name not in SKIP_PARTS
+            and not _skip_relative(f"{relative}/{name}" if relative else name)
         )
         base = Path(directory)
         paths.extend(

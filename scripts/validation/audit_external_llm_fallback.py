@@ -115,15 +115,19 @@ def _is_trusted_same_origin_worker_proxy(relative: str, source: str) -> bool:
 def _source_files() -> list[Path]:
     extensions = {".py", ".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs"}
     files: list[Path] = []
-    files.extend(path for path in REPO_ROOT.rglob("*") if path.suffix.lower() in extensions)
-    return sorted(
-        path
-        for path in files
-        if not any(
+    for path in REPO_ROOT.rglob("*"):
+        if path.suffix.lower() not in extensions:
+            continue
+        relative = path.relative_to(REPO_ROOT).as_posix()
+        if relative.startswith("deploy/selfhost/image/"):
+            continue
+        if any(
             part in {".git", ".venv", "node_modules", "__pycache__", "tests", "dist", "build"}
             for part in path.parts
-        )
-    )
+        ):
+            continue
+        files.append(path)
+    return sorted(files)
 
 
 def static_inventory() -> dict[str, Any]:

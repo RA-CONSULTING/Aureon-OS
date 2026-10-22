@@ -26,7 +26,6 @@ import hashlib
 import json
 import os
 import re
-import shutil
 import subprocess
 import sys
 import tempfile
@@ -171,13 +170,6 @@ STOP_WORDS = {
     "to",
     "with",
 }
-
-
-def _env_bool(name: str) -> bool:
-    raw = os.getenv(name)
-    if raw is None:
-        return False
-    return str(raw).strip().lower() in {"1", "true", "yes", "on"}
 
 
 class InternalSelfCoderHold(RuntimeError):
@@ -813,15 +805,6 @@ def run_autonomous_self_coding(
     # default ledger file.  Use a per-run isolated ledger so each self-repair
     # context has a clean causal chain.  The temp directory is removed after
     # the cycle completes.
-    tmp_ledger_dir: Path | None = None
-    if (
-        str(ledger_path) == str(DEFAULT_LEDGER_PATH)
-        and _env_bool("AUREON_CODE_AUTO_APPROVE")
-    ):
-        tmp_ledger_dir = Path(
-            tempfile.mkdtemp(dir=repo_root / "state", prefix="self_coder_ledger_")
-        )
-        ledger_path = tmp_ledger_dir / "ledger.json"
     if target_path:
         target = _repo_relative(target_path)
         _clean_tracked_target(repo_root, target)
@@ -1046,11 +1029,6 @@ def run_autonomous_self_coding(
 
     evidence = {**core, "evidence_digest": _digest(core)}
     _write_evidence(evidence_file, evidence)
-    if tmp_ledger_dir is not None:
-        try:
-            shutil.rmtree(tmp_ledger_dir, ignore_errors=True)
-        except Exception:
-            pass
     return evidence
 
 

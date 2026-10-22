@@ -199,8 +199,10 @@ def test_unquoted_display_name_spoof_defeats_parseaddr_but_not_this_module():
     stranger the owner.
     """
     header = f"{OWNER} <{ATTACKER}>"
-    assert parseaddr(header)[1] == OWNER          # the trap, documented
-    assert sender_of(header) is None              # two addresses -> no sender
+    # The module must refuse this header even when parseaddr does not hand
+    # back the display text. Two addresses means there is no single sender.
+    assert parseaddr(header)[1] != ATTACKER
+    assert sender_of(header) is None
     assert sender_is_owner(header, OWNER) is False
 
 

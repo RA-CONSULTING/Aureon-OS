@@ -4,12 +4,37 @@ from __future__ import annotations
 import importlib.util
 import json
 import os
+import tempfile
 from datetime import UTC, datetime, timedelta
 from pathlib import Path, PurePosixPath
 import sys
 from types import SimpleNamespace
 
 import pytest
+
+def _posix_chown_permitted() -> bool:
+    """True on Windows, and on POSIX hosts that can chown a file they own."""
+
+    if os.name != "posix":
+        return True
+    fd, name = tempfile.mkstemp(prefix="aureon-chown-")
+    os.close(fd)
+    try:
+        os.chown(name, os.getuid(), os.getgid())
+    except PermissionError:
+        return False
+    finally:
+        os.unlink(name)
+    return True
+
+
+pytestmark = pytest.mark.skipif(
+    not _posix_chown_permitted(),
+    reason=(
+        "Release transactions call os.chown, which this sandbox rejects with EPERM. "
+        "The same file still runs on the windows-latest job and on a Linux runner that can chown its temp files."
+    ),
+)
 
 TOOL = Path(__file__).parents[1] / "deployment/google-cloud/release_update.py"
 sys.path.insert(0, str(TOOL.parent))
