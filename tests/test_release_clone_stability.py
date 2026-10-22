@@ -60,12 +60,15 @@ def test_release_hashes_are_clone_stable_with_autocrlf(tmp_path):
 
     windows_clone = tmp_path / "windows-clone"
     linux_clone = tmp_path / "linux-clone"
+    # ``git clone -c`` writes the setting into the new repository. ``git -c``
+    # only affects the clone process, so a later status sees CRLF bytes as a
+    # dirty checkout and the release gate correctly refuses it.
     subprocess.run(
         [
             "git",
+            "clone",
             "-c",
             "core.autocrlf=true",
-            "clone",
             "--quiet",
             str(source),
             str(windows_clone),
@@ -75,9 +78,9 @@ def test_release_hashes_are_clone_stable_with_autocrlf(tmp_path):
     subprocess.run(
         [
             "git",
+            "clone",
             "-c",
             "core.autocrlf=false",
-            "clone",
             "--quiet",
             str(source),
             str(linux_clone),

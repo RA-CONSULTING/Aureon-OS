@@ -1,6 +1,7 @@
 name: Windows contract
 
-# Voice runners and the release-update contract are Windows entrypoints.
+# Voice runners, the release-update contract, the reviewed PowerShell
+# builder, and the sealed compiler contract are Windows entrypoints.
 # They run here instead of being dropped on Linux with no record.
 # Live trading stays off. This job does not deploy and does not place orders.
 
@@ -34,3 +35,7 @@ jobs:
         env:
           PYTHONPATH: .
         run: python -m pytest tests/test_voice_runner_paths.py tests/test_release_update.py -q --tb=line --timeout=60 -m "not live"
+      - name: PowerShell builder and sealed compiler
+        env:
+          PYTHONPATH: .
+        run: python -m pytest tests/test_website_source_rationalisation.py tests/test_design_candidate_control.py -q --tb=line --timeout=180 -m "windows"

@@ -12,15 +12,19 @@ from types import SimpleNamespace
 
 import pytest
 
-def _posix_chown_permitted() -> bool:
-    """True on Windows, and on POSIX hosts that can chown a file they own."""
+def _posix_root_chown_permitted() -> bool:
+    """True on Windows, and on POSIX hosts that can chown a file to root.
+
+    Release transactions set source-directory ownership to uid 0. Chowning a
+    file to the current user is not that capability.
+    """
 
     if os.name != "posix":
         return True
     fd, name = tempfile.mkstemp(prefix="aureon-chown-")
     os.close(fd)
     try:
-        os.chown(name, os.getuid(), os.getgid())
+        os.chown(name, 0, 0)
     except PermissionError:
         return False
     finally:
@@ -29,10 +33,11 @@ def _posix_chown_permitted() -> bool:
 
 
 pytestmark = pytest.mark.skipif(
-    not _posix_chown_permitted(),
+    not _posix_root_chown_permitted(),
     reason=(
-        "Release transactions call os.chown, which this sandbox rejects with EPERM. "
-        "The same file still runs on the windows-latest job and on a Linux runner that can chown its temp files."
+        "Release transactions chown source directories to root (uid 0), which this process cannot do. "
+        "The same file runs on the windows-latest job, where that POSIX ownership plan is not applied, "
+        "and on a Linux runner that can chown to root."
     ),
 )
 
