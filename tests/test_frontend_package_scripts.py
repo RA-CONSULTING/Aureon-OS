@@ -100,6 +100,12 @@ def test_every_operational_script_routes_to_terminal_hold() -> None:
         assert forbidden not in routed
 
 
+def test_playwright_does_not_call_the_quarantined_dev_script() -> None:
+    config = (FRONTEND / 'playwright.config.ts').read_text(encoding='utf-8')
+    assert 'npm run dev' not in config
+    assert 'npx vite --host 127.0.0.1 --port 8081' in config
+
+
 def test_only_offline_static_build_lint_and_typecheck_remain_active() -> None:
     scripts = _scripts()
     active = {

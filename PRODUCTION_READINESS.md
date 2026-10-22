@@ -1,4 +1,4 @@
-# Production readiness
+# Twelve layers
 
 Live trading is never armed by the system. Evidence gates are never loosened. Those rules are enforced in the writer, the sandbox repair, and the self-coder before a patch is applied.
 
@@ -34,9 +34,17 @@ That command is from the repository root. There is no separate upstream checkout
 
 The market-data WebSocket notes remain in `docs/runbooks/PRODUCTION_READINESS.md` and `aureon-trading/docs/runbooks/PRODUCTION_READINESS.md`. They are not a switch for live trading.
 
-## Twelve production layers
+## Twelve layers
 
 Checked 22 Oct 2026. Nothing is PROVEN without a green CI run. GitHub Actions on `c90d087f` did not start: every Actions job failed in about two seconds because the account is locked due to a billing issue. Local smoke is not that green run.
+
+The four jobs that have to finish green on the hosted runner are `fusion tests` (Aureon Fusion CI), `compile + offline test suite` (Aureon CI, Python 3.12), `Supabase functions and RLS policy contract`, and `Frontend typecheck, lint, build, and E2E`. Their commands pass on this machine. A hosted run ID is linked in the list below only after that job finishes green.
+
+Green hosted run IDs:
+
+- none yet
+
+Secret rotation is not a merge blocker. `ROTATE_KEYS.md` is still the inventory (provider, type, file, commit, never the value). Gitleaks still guards new commits, in the pre-commit hook and in the tree scan. History is not rewritten from this branch.
 
 Hosting is the end user's choice: any machine that can run `make up` or `make compose`. No cloud project and no provider credential is required. Live trading stays off. `may_act` stays false. The HOLD gate and the self-repair denylist were not changed.
 
@@ -72,7 +80,7 @@ python3 scripts/selfhost_smoke.py
 
 Faculty launcher: `python3 -m aureon_fusion.fleet_launcher --check`. It exits 2 when `AUREON_LIVE_TRADING` is set or `aureon_fusion/state/capital_release.flag` exists. The unity supervisor in tmux session `unity-supervisor` is the process manager that keeps the paper-mode organs alive.
 
-Exchange tests that arm a live executor are marked `live` and are excluded unless pytest is run with `-m live`. They are not part of the default suite. Voice and release contract tests also run on the Windows CI job.
+Exchange tests that arm a live executor are marked `live` and are excluded unless pytest is run with `-m live`. They are not part of the default suite. Every `live` and `windows` marker states its reason (`tests/test_quarantined_marker_reasons.py`). The optional plant-atlas GPU test is skipped with the reason `optional torch backend not installed`. Voice and release contract tests also run on the Windows CI job.
 
 ## Gary-leckey/aureon-trading
 

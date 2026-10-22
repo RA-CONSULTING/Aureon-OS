@@ -5,7 +5,10 @@ import type { Database } from './types';
 // URL may be set for local preview. The publishable key is not committed;
 // set VITE_SUPABASE_PUBLISHABLE_KEY. History is listed in ROTATE_KEYS.md.
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL ?? 'https://owfeyxrfyhprpcgqwxqh.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? '';
+const configuredKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? '';
+// createClient throws on an empty key and that blanked the shell before first
+// paint. This string is not a credential. A real key comes only from the env.
+const SUPABASE_PUBLISHABLE_KEY = configuredKey || 'local-preview-no-credential';
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
@@ -13,7 +16,7 @@ const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
     storage: localStorage,
-    persistSession: true,
-    autoRefreshToken: true,
+    persistSession: Boolean(configuredKey),
+    autoRefreshToken: Boolean(configuredKey),
   }
 });

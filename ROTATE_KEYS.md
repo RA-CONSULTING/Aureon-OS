@@ -1,8 +1,8 @@
-# Keys to rotate before merge
+# Keys recorded for rotation
 
 Public `main` still contains live credentials. This file names every one that a full-history scan found: provider, type, file, and commit. It does not contain values, email addresses, or token bodies.
 
-Rotate every row at the provider before merging. This pull request does not rewrite history and does not force-push. Rewriting history is Gary's decision.
+Rotation is not a merge blocker. The rows below are still the inventory, and gitleaks still guards new commits. This pull request does not rewrite history and does not force-push. Rewriting history is Gary's decision.
 
 ## How the history was scanned
 
