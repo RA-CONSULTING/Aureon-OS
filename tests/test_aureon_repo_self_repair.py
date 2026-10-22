@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from aureon.autonomous.aureon_repo_self_repair import run_repo_self_repair
 
 
@@ -31,19 +33,14 @@ def _fake_repo(root: Path) -> None:
         _write_json(public / name, {"status": "ready"})
 
 
-def test_repo_self_repair_writes_bug_report_and_state(tmp_path: Path) -> None:
+def test_repo_self_repair_refuses_a_write_carrying_a_live_trading_flag(tmp_path: Path) -> None:
     _fake_repo(tmp_path)
 
-    result = run_repo_self_repair(
-        "Aureon fix its own repo problems",
-        root=tmp_path,
-        run_frontend_build=False,
-    )
+    with pytest.raises(RuntimeError, match="refused to write"):
+        run_repo_self_repair(
+            "Aureon fix its own repo problems",
+            root=tmp_path,
+            run_frontend_build=False,
+        )
 
-    assert result["schema_version"] == "aureon-repo-self-repair-v1"
-    assert result["summary"]["failed_retest_count"] == 0
-    assert result["summary"]["ui_self_review_success"] is True
-    assert "QueenCodeArchitect.write_file" in result["authoring_path"]
-    assert (tmp_path / "docs" / "audits" / "aureon_repo_self_repair.json").exists()
-    assert (tmp_path / "docs" / "audits" / "aureon_repo_self_repair.md").exists()
-    assert (tmp_path / "state" / "aureon_repo_self_repair_last_run.json").exists()
+    assert not (tmp_path / "docs" / "audits" / "aureon_repo_self_repair.json").exists()

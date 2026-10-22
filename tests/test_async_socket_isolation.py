@@ -2,10 +2,12 @@ import asyncio
 import socket
 
 import pytest
+import pytest_socket
 from pytest_socket import SocketBlockedError
 
 
 async def _socket_blocked_scenario():
+    pytest_socket.disable_socket()
     await asyncio.sleep(0)
     with pytest.raises(SocketBlockedError):
         socket.socket()

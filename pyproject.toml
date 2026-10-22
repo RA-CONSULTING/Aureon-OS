@@ -53,9 +53,16 @@ dev = [
   "mypy>=1.10",
   "black>=24.0",
   "pytest>=8.0",
+  "pytest-timeout>=2.3",
+  "pytest-socket>=0.7",
   "jsonschema>=4.23,<5",
   "pre-commit>=3.7",
   "types-requests",
+  "httpx>=0.27",
+  "pillow>=10.0",
+  "matplotlib>=3.8",
+  "scipy>=1.11",
+  "imageio>=2.34",
 ]
 
 [project.scripts]
@@ -136,5 +143,5 @@ no_implicit_optional = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-q"
+addopts = "-q --timeout=60"
 filterwarnings = ["ignore::DeprecationWarning"]

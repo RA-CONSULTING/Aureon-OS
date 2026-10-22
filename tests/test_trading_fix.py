@@ -8,6 +8,8 @@ import sys
 import os
 import subprocess
 
+import pytest
+
 def _command_starts():
     """Test the exact command the game launcher uses"""
     print("Testing the exact command the game launcher uses...")
@@ -51,6 +53,7 @@ def _command_starts():
         print(f"❌ ERROR: {e}")
         return False
 
+@pytest.mark.skip(reason="Starts the trading engine with --duration 86400. The offline suite does not launch it.")
 def test_command():
     assert _command_starts()
 

@@ -45,6 +45,12 @@ from aureon.operator.design_editorial_asset_provenance import (
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+_SOURCE_ART = REPO_ROOT / "docs/design-assets/substack-public-art"
+pytestmark = pytest.mark.skipif(
+    not (_SOURCE_ART / "feedback-loop.jpg").is_file()
+    or not (_SOURCE_ART / "ai-evidence.jpg").is_file(),
+    reason="Substack source artwork bytes are not in this repository",
+)
 MANIFEST_PATH = REPO_ROOT / DEFAULT_MANIFEST_PATH
 SCHEMA_PATH = REPO_ROOT / "docs/research/schemas/AUREON_DESIGN_EDITORIAL_ASSET_PROVENANCE_V1.schema.json"
 DELIVERY_PATH = (
