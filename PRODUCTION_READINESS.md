@@ -38,11 +38,16 @@ The market-data WebSocket notes remain in `docs/runbooks/PRODUCTION_READINESS.md
 
 Checked 22 Oct 2026. Nothing is PROVEN without a green CI run. GitHub Actions on `c90d087f` did not start: every Actions job failed in about two seconds because the account is locked due to a billing issue. Local smoke is not that green run.
 
-The four jobs that have to finish green on the hosted runner are `fusion tests` (Aureon Fusion CI), `compile + offline test suite` (Aureon CI, Python 3.12), `Supabase functions and RLS policy contract`, and `Frontend typecheck, lint, build, and E2E`. Their commands pass on this machine. A hosted run ID is linked in the list below only after that job finishes green.
+The four jobs that have to finish green on the hosted runner are `fusion tests` (Aureon Fusion CI), `compile + offline test suite (3.12)` (Aureon CI), `Supabase functions and RLS policy contract`, and `Frontend typecheck, lint, build, and E2E`. The same frontend specs also sit in Frontend CI as `strict tier (build · shell lint · smoke E2E)`. Those commands pass on this machine: fusion pytest (one skip, reason `optional torch backend not installed`), `compileall` plus the offline product suite, the four Supabase contract tests with `--disable-socket`, and the frontend typecheck, lint, build, and 19 Playwright specs. A hosted run ID is added under "Green hosted run IDs" only after that job finishes green. The RLS contract is still policy text: a green copy of it would not be a live Postgres apply.
 
 Green hosted run IDs:
 
-- none yet
+- none. On `b563282c` the hosted jobs failed in about two seconds and are not green. The annotation on each is: "The job was not started because your account is locked due to a billing issue."
+  - `fusion tests`: run [39870227758](https://github.com/RA-CONSULTING/Aureon-OS/actions/runs/39870227758), job 120142518451
+  - `compile + offline test suite (3.12)`: run [39870227765](https://github.com/RA-CONSULTING/Aureon-OS/actions/runs/39870227765), job 120142518498
+  - `Supabase functions and RLS policy contract`: run [39870228056](https://github.com/RA-CONSULTING/Aureon-OS/actions/runs/39870228056), job 120142519768
+  - `Frontend typecheck, lint, build, and E2E`: run [39870228056](https://github.com/RA-CONSULTING/Aureon-OS/actions/runs/39870228056), job 120142519784
+  - `strict tier (build · shell lint · smoke E2E)`: run [39870227838](https://github.com/RA-CONSULTING/Aureon-OS/actions/runs/39870227838), job 120142518804
 
 Secret rotation is not a merge blocker. `ROTATE_KEYS.md` is still the inventory (provider, type, file, commit, never the value). Gitleaks still guards new commits, in the pre-commit hook and in the tree scan. History is not rewritten from this branch.
 
