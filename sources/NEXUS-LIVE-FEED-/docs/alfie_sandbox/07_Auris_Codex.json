@@ -1,0 +1,37 @@
+{
+  "codex_version": "1.4",
+  "title": "Auris Codex Entries",
+  "entries": [
+    {
+      "id": "AUR-PRIME",
+      "name": "Auris Vigil",
+      "description": "Guardian sentinel overseeing empathy channels and escalation procedures.",
+      "protocols": [
+        "report_child_safety_event",
+        "escalate_to_prime_anchor"
+      ]
+    },
+    {
+      "id": "AUR-LENS",
+      "name": "Clarity Lens",
+      "description": "Optical metaphor translating bioscan signals into human-auditable annotations.",
+      "protocols": [
+        "render_bioscan_summary",
+        "publish_safe_mode_hint"
+      ]
+    },
+    {
+      "id": "AUR-BRIDGE",
+      "name": "Guardian Bridge",
+      "description": "Communication fabric linking Auris safeguarding events with Nexus lattice control.",
+      "protocols": [
+        "activate_guardian_bridge",
+        "broadcast_anchor_state"
+      ]
+    }
+  ],
+  "metadata": {
+    "compiled_at": "2025-10-21T08:45:00Z",
+    "maintainer": "auris-harmonia-team"
+  }
+}

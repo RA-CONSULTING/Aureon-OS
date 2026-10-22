@@ -1,0 +1,62 @@
+Quantum Gravity in the Act” (QGITA)
+Gary leckey
+October 2025
+1 Introduction
+2 Quantum Gravity in the Act: A Two-Stage
+Framework for High-Fidelity Event Detection
+in Complex Signals
+Gary Leckey, Director, Aureon Institute October 19, 2025
+2.0.1 Abstract
+Conventional methods for anomaly detection in complex, noisy signals fre -
+quently fail to reliably identify rare, ﬂeeting structural even ts. This paper
+presents Quantum Gravity in the Act (QGITA), a novel two-stage frame work
+designed to overcome these limitations by integrating a geometric ti me-pattern
+probe with multi-metric consensus validation. In Stage 1, QGITA iden tiﬁes can-
+didate anomalies as Fibonacci-Tightened Curvature Points (FTCPs)—mome nts
+in time where a signiﬁcant spike in the signal’s discrete curvatur e coincides
+with a near-golden-ratio spacing of adjacent temporal samples. This geome tric-
+temporal ﬁlter isolates points of high structural resonance. In Stage 2, a ”Li ght-
+house” consensus model subjects these candidates to rigorous validat ion by fus-
+ing ﬁve independent metrics of system behavior, including lin ear and nonlinear
+coherence, a geometric anomaly signal, and a sharp anomaly pointer. A con-
+ﬁrmed structural event is declared only when a strong consensus th roughout the
+system corroborates the localized geometric anomaly. In a representati ve sim-
+ulation of a complex system, the QGITA framework demonstrated a profoun d
+enhancement in detection speciﬁcity by more than two orders of magnit ude,
+successfully distilling hundreds of ambiguous candidate anomalies i nto a single
+validated structural transition. This work introduces a new paradigm for event
+detection, one that leverages the resonance between a geometrically st ructured
+observer and the intrinsic dynamics of the system, oﬀering a power ful and rig-
+orous methodology with broad implications for physics, signal processin g, and
+systems engineering.
+1
+---
+Keywords: Complex signals; Structural anomaly detection; Golden ratio;
+Fibonacci sequence; Multi-metric consensus; Signal coherence; System s theory;
+Geometric and Temporal Patterns.
+2.0.2 I. The Challenge of Fleeting Structures in Complex Dynamics
+1.1 The Ubiquity and Criticality of Rare Events Complex dynami-
+cal systems—from fundamental physical ﬁelds and engineered networks to bi-
+ological and ﬁnancial systems—are often characterized by extended perio ds of
+quasi-stable behavior, punctuated by sudden, transient structu ral events. These
+brief episodes, which can manifest as phase changes, critical regime changes,
+catastrophic failures, or synchronization events, are of paramount import ance.
+Although infrequent, they often carry the most critical information abou t a sys-
+tem’s underlying state, its governing dynamics, and its future e volution. The
+ability to reliably identify these rare occurrences is a central challenge across
+a wide spectrum of disciplines, including the detection of inci pient faults in in-
+dustrial machinery, the identiﬁcation of precursor signals to ﬁnanci al market
+crashes, and the search for elusive, high-energy phenomena in simul ations of
+physics.
+1.2 Critique of Conventional Methodologies Despite their signiﬁcance,
+such ﬂeeting structures are notoriously diﬃcult to detect against a noisy and
+variable background. Conventional anomaly detection methods, which typ ically
+rely on single-metric thresholding or linear ﬁltering, often prove inadequate for
+this task. By monitoring a single observable (e.g., amplitude, varianc e, or spec-
+tral power) and ﬂagging any value that exceeds a predeﬁned limit, thes e ap-
+proaches are highly susceptible to an unmanageable rate of false positives . In
+a complex, non-stationary environment, it is often impossible to set a thresh-
+old that is both sensitive enough to capture subtle events and speciﬁ c enough
+to avoid being constantly triggered by benign ﬂuctuations and instrum ental
+noise. This fundamental limitation stems from two primary failures: ﬁrst, these
+methods igno

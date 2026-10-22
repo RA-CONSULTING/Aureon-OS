@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Harmonic Nexus Interface</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --primary-glow: #c9a3ff;
+            --secondary-glow: #00ffff;
+            --background-dark: #0c0c1a;
+            --ui-panel: rgba(10, 10, 30, 0.6);
+            --border-color: rgba(120, 100, 255, 0.3);
+            --text-color: #e0e0ff;
+        }
+
+        body {
+            margin: 0;
+            background-color: var(--background-dark);
+            color: var(--text-color);
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- Sidebar / Control Panel --- */
+        #control-panel {
+            width: 280px;
+            height: 100%;
+            background-color: var(--ui-panel);
+            border-right: 1px solid var(--border-color);
+            padding: 25px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 10;
+        }
+
+        .panel-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .panel-header h1 {
+            font-size: 1.8em;
+            margin: 0;
+            color: var(--primary-glow);
+            text-shadow: 0 0 10px var(--primary-glow);
+        }
+
+        .panel-header p {
+            font-size: 0.9em;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            flex-grow: 1;
+        }
+
+        .nav-item button {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: none;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-color);
+            font-size: 1.1em;
+            text-align: left;
+            cursor: pointer;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .nav-item button:hover {
+            background-color: var(--border-color);
+            border-color: var(--primary-glow);
+        }
+        
+        .nav-item button.active {
+             background-color: var(--primary-glow);
+             color: var(--background-dark);
+             font-weight: bold;
+             text-shadow: none;
+             border-color: var(--primary-glow);
+        }
+
+        .status-footer {
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            font-size: 1.1em;
+        }
+        
+        .status-light {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--secondary-glow);
+            margin-right: 10px;
+            box-shadow: 0 0 10px var(--secondary-glow);
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+
+        /* --- Main Content Area --- */
+        #main-content {
+            flex-grow: 1;
+            position: relative;
+        }
+
+        .content-view {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0s 0.5s, opacity 0.5s ease;
+        }
+        
+        .content-view.active {
+            visibility: visible;
+            opacity: 1;
+            transition: opacity 0.5s ease;
+            z-index: 5;
+        }
+
+        /* --- Stargate View Specific --- */
+        #stargate-view {
+            background: var(--background-dark);
+        }
+        
+        #stargate-canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* --- Analytics View Specific --- */
+        #analytics-view {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+        
+        #analytics-view h2 {
+            font-size: 2.5em;
+            color: var(--primary-glow);
+            text-shadow: 0 0 15px var(--primary-glow), 0 0 5px #ffffff;
+            margin-bottom: 30px;
+        }
+
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 25px;
+            width: 100%;
+            max-width: 1400px;
+        }
+
+        .chart-card {
+            background-color: var(--ui-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(100, 80, 220, 0.2);
+        }
+        
+        .chart-title {
+            font-size: 1.4em;
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- === LEFT SIDEBAR: CONTROLS & NAVIGATION === -->
+    <aside id="control-panel">
+        <div class="panel-header">
+            <h1>Nexus Control</h1>
+            <p>Harmonic Interface v1.0</p>
+        </div>
+        
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <button id="btn-stargate" class="active" data-view="stargate-view">
+                    Stargate Visualizer
+                </button>
+            </li>
+            <li class="nav-item">
+                <button id="btn-analytics" data-view="analytics-view">
+                    Analytics Dashboard
+                </button>
+            </li>
+        </ul>
+        
+        <div class="status-footer">
+             <div class="status-indicator">
+                <div class="status-light"></div>
+                <span id="status-text">Network Status: ACTIVE</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- === RIGHT CONTENT AREA === -->
+    <main id="main-content">
+        <!-- View 1: 3D Stargate Visualizer -->
+        <div id="stargate-view" class="content-view active">
+            <!-- Three.js canvas will be inserted here -->
+        </div>
+
+        <!-- View 2: Analytics Dashboard -->
+        <div id="analytics-view" class="content-view">
+            <h2>Harmonic Nexus Analytics</h2>
+            <div class="dashboard-container">
+                <div class="chart-card">
+                    <h3 class="chart-title">Real-time Energy Resonance (Hz)</h3>
+                    <canvas id="energyChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3 class="chart-title">Nexus Stability Index</h3>
+                    <canvas id="stabilityChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3 class="chart-title">Stargate Traffic (Last 24h)</h3>
+                    <canvas id="trafficChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3 class="chart-title">Harmonic Spectrograph Signature</h3>
+                    <canvas id="spectrographChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // --- Global Variables & Initial Setup ---
+        let stargateInitialized = false;
+        let analyticsInitialized = false;
+        let threejsAnimationId;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const navButtons = document.querySelectorAll('.nav-item button');
+            const contentviews = document.querySelectorAll('.content-view');
+
+            // --- Navigation Logic ---
+            function switchView(viewId) {
+                contentviews.forEach(view => {
+                    view.classList.remove('active');
+                });
+                navButtons.forEach(btn => {
+                    btn.classList.remove('active');
+                });
+
+                const activeView = document.getElementById(viewId);
+                const activeButton = document.querySelector(`button[data-view="${viewId}"]`);
+                
+                activeView.classList.add('active');
+                activeButton.classList.add('active');
+
+                // Initialize or manage animations based on view
+                if (viewId === 'stargate-view') {
+                    if (!stargateInitialized) {
+                        initStargate();
+                        stargateInitialized = true;
+                    }
+                    if (threejsAnimationId === undefined) animateStargate(); // Resume animation
+                } else {
+                     if (threejsAnimationId) {
+                        cancelAnimationFrame(threejsAnimationId); // Pause animation
+                        threejsAnimationId = undefined;
+                     }
+                }
+
+                if (viewId === 'analytics-view' && !analyticsInitialized) {
+                    initAnalytics();
+                    analyticsInitialized = true;
+                }
+            }
+
+            navButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    switchView(button.dataset.view);
+                });
+            });
+
+            // --- Initial View ---
+            switchView('stargate-view');
+        });
+
+        // =======================================================
+        // --- STARGATE VISUALIZER LOGIC (from previous file) ----
+        // =======================================================
+        let scene, camera, renderer, controls, nexus, stargates = [], particleSystem;
+
+        function initStargate() {
+            const container = document.getElementById('stargate-view');
+            // Scene
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x00000a, 0.08);
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.z = 25;
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            container.appendChild(renderer.domElement);
+            renderer.domElement.id = 'stargate-canvas';
+
+            // Controls
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.minDistance = 10;
+            controls.maxDistance = 100;
+            controls.autoRotate = true;
+            controls.autoRotateSpeed = 0.3;
+
+            createLights();
+            createNexus();
+            createStargates();
+            createParticleField();
+
+            window.addEventListener('resize', onWindowResize, false);
+            animateStargate();
+        }
+
+        function createLights() {
+            scene.add(new THREE.AmbientLight(0x4040ff, 1));
+            const nexusLight = new THREE.PointLight(0xffaaff, 3, 100);
+            scene.add(nexusLight);
+        }
+
+        function createNexus() {
+            const geometry = new THREE.TorusKnotGeometry(4, 1.2, 150, 20, 2, 3);
+            const material = new THREE.MeshStandardMaterial({
+                color: 0xaa88ff, emissive: 0x8a2be2, emissiveIntensity: 1.5,
+                metalness: 0.8, roughness: 0.3
+            });
+            nexus = new THREE.Mesh(geometry, material);
+            scene.add(nexus);
+        }
+        
+        function createStargates() {
+             stargates = [];
+             const stargateCount = 8;
+            for (let i = 0; i < stargateCount; i++) {
+                const geometry = new THREE.IcosahedronGeometry(1.2, 0);
+                const material = new THREE.MeshBasicMaterial({ color: new THREE.Color().setHSL(Math.random(), 0.8, 0.6), wireframe: true });
+                const stargate = new THREE.Mesh(geometry, material);
+                const angle = (i / stargateCount) * Math.PI * 2;
+                stargate.position.set(Math.cos(angle) * 15, (Math.random() - 0.5) * 8, Math.sin(angle) * 15);
+                stargate.userData.rotationSpeed = new THREE.Vector3((Math.random() - 0.5) * 0.02, (Math.random() - 0.5) * 0.02, 0);
+                stargates.push(stargate);
+                scene.add(stargate);
+            }
+        }
+
+        function createParticleField() {
+            const vertices = [];
+            for (let i = 0; i < 20000; i++) {
+                vertices.push(THREE.MathUtils.randFloatSpread(100), THREE.MathUtils.randFloatSpread(100), THREE.MathUtils.randFloatSpread(100));
+            }
+            const geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+            const material = new THREE.PointsMaterial({ color: 0x88aaff, size: 0.1, transparent: true, blending: THREE.AdditiveBlending });
+            particleSystem = new THREE.Points(geometry, material);
+            scene.add(particleSystem);
+        }
+
+        function onWindowResize() {
+            if (!renderer) return;
+            const container = document.getElementById('stargate-view');
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        }
+
+        function animateStargate() {
+            threejsAnimationId = requestAnimationFrame(animateStargate);
+            const time = Date.now() * 0.0005;
+            
+            nexus.rotation.y += 0.005;
+            nexus.material.emissiveIntensity = Math.sin(time * 2) * 0.5 + 1.5;
+
+            stargates.forEach(stargate => {
+                stargate.rotation.x += stargate.userData.rotationSpeed.x;
+                stargate.rotation.y += stargate.userData.rotationSpeed.y;
+            });
+
+            particleSystem.rotation.y += 0.0005;
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // =======================================================
+        // --- ANALYTICS DASHBOARD LOGIC (from previous file) ----
+        // =======================================================
+        function initAnalytics() {
+            Chart.defaults.color = 'rgba(224, 224, 255, 0.8)';
+            Chart.defaults.borderColor = 'rgba(120, 100, 255, 0.2)';
+            Chart.defaults.font.family = "'Inter', sans-serif";
+
+            // -- Energy Chart --
+            const ctxEnergy = document.getElementById('energyChart').getContext('2d');
+            const energyGradient = ctxEnergy.createLinearGradient(0, 0, 0, 400);
+            energyGradient.addColorStop(0, 'rgba(120, 80, 255, 0.6)');
+            energyGradient.addColorStop(1, 'rgba(120, 80, 255, 0.05)');
+            const energyChart = new Chart(ctxEnergy, { type: 'line', data: { labels: Array(15).fill(''), datasets: [{ label: 'Resonance', data: Array(15).fill(0).map(() => 963 + (Math.random() - 0.5) * 10), borderColor: '#c9a3ff', borderWidth: 2, pointRadius: 0, fill: true, backgroundColor: energyGradient, tension: 0.4 }] }, options: { scales: { y: { suggestedMin: 950, suggestedMax: 975 }, x: { grid: { display: false } } }, plugins: { legend: { display: false } } } });
+            setInterval(() => { energyChart.data.datasets[0].data.shift(); energyChart.data.datasets[0].data.push(963 + (Math.random() - 0.5) * 10); energyChart.data.labels.shift(); energyChart.data.labels.push(new Date().toLocaleTimeString([], { second: '2-digit' })); energyChart.update('quiet'); }, 1500);
+
+            // -- Stability Chart --
+            const ctxStability = document.getElementById('stabilityChart').getContext('2d');
+            new Chart(ctxStability, { type: 'doughnut', data: { labels: ['Stable', 'Fluctuation'], datasets: [{ data: [98.6, 1.4], backgroundColor: ['#7850ff', 'rgba(255, 255, 255, 0.1)'], borderColor: ['#c9a3ff', 'rgba(0,0,0,0)'], borderWidth: 1, circumference: 180, rotation: 270 }] }, options: { responsive: true, plugins: { legend: { display: false }, tooltip: { enabled: false } }, cutout: '75%' } });
+
+            // -- Traffic Chart --
+            const ctxTraffic = document.getElementById('trafficChart').getContext('2d');
+            const trafficGradient = ctxTraffic.createLinearGradient(0, 0, 0, 400);
+            trafficGradient.addColorStop(0, 'rgba(0, 255, 255, 0.7)');
+            trafficGradient.addColorStop(1, 'rgba(120, 80, 255, 0.7)');
+            new Chart(ctxTraffic, { type: 'bar', data: { labels: ['Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta'], datasets: [{ label: 'Connections', data: [120, 190, 80, 150, 210, 95], backgroundColor: trafficGradient, borderRadius: 5 }] }, options: { indexAxis: 'y', scales: { x: { grid: { display: false } } }, plugins: { legend: { display: false } } } });
+
+            // -- Spectrograph Chart --
+            const ctxSpectrograph = document.getElementById('spectrographChart').getContext('2d');
+            const spectrographChart = new Chart(ctxSpectrograph, { type: 'radar', data: { labels: ['Theta', 'Alpha', 'Beta', 'Gamma', 'Hyper-Gamma', 'Lambda'], datasets: [{ label: 'Amplitude', data: [65, 59, 90, 81, 56, 55], fill: true, backgroundColor: 'rgba(0, 255, 255, 0.3)', borderColor: 'rgba(0, 255, 255, 0.8)' }] }, options: { scales: { r: { angleLines: { color: 'rgba(224, 224, 255, 0.2)' }, grid: { color: 'rgba(224, 224, 255, 0.2)' }, pointLabels: { color: 'rgba(224, 224, 255, 0.9)' }, suggestedMin: 0, suggestedMax: 100 } }, plugins: { legend: { display: false } } } });
+            setInterval(() => { spectrographChart.data.datasets.forEach(dataset => { dataset.data = dataset.data.map(() => Math.random() * 80 + 20); }); spectrographChart.update('quiet'); }, 2000);
+        }
+
+    </script>
+</body>
+</html>

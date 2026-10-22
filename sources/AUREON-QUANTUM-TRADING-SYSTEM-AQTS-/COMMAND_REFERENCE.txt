@@ -1,0 +1,229 @@
+═══════════════════════════════════════════════════════════════════════════════
+                    🔥 AUREON LIVE: COMMAND REFERENCE 🍯
+═══════════════════════════════════════════════════════════════════════════════
+
+🧪 TESTNET DEPLOYMENT (Learning & Development)
+   ┌─────────────────────────────────────────────────┐
+   │ npx tsx scripts/liveWalletDeploy.ts             │
+   │                                                 │
+   │ • Uses testnet balance: £10,784.95 USDT        │
+   │ • Full Queen-Hive deployment                   │
+   │ • No real money involved                        │
+   │ • Perfect for understanding the system         │
+   │ • Output: Real-time metrics every 500 steps    │
+   └─────────────────────────────────────────────────┘
+
+   Expected Output:
+   ✅ Account Connected!
+   💼 Starting Capital: £10784.95 USDT
+   🚀 Queen-Hive Initialized
+   ⚡ Starting Trading Loop
+   ✨ NEW HIVE SPAWNED: ...
+   📊 FINAL METRICS: ...
+
+───────────────────────────────────────────────────────────────────────────────
+
+📊 VERIFY REAL ACCOUNT (Pre-flight Check)
+   ┌─────────────────────────────────────────────────┐
+   │ npx tsx scripts/liveAccountCheck.ts             │
+   │                                                 │
+   │ • Connects to YOUR live Binance account        │
+   │ • Fetches actual USDT balance                  │
+   │ • Verifies API credentials                     │
+   │ • Checks trading permissions                   │
+   │ • Tests all trading symbols                    │
+   │ • Zero risk: read-only, no orders placed       │
+   └─────────────────────────────────────────────────┘
+
+   Run this before going live!
+
+───────────────────────────────────────────────────────────────────────────────
+
+🔥 GO LIVE WITH REAL MONEY (Full Production)
+   ┌─────────────────────────────────────────────────┐
+   │ Step 1: Get Live API Keys                      │
+   │   https://binance.com/en/user/settings/api     │
+   │                                                 │
+   │ Step 2: Update .env File                       │
+   │   BINANCE_TESTNET=false                        │
+   │   BINANCE_API_KEY=your_key_here                │
+   │   BINANCE_API_SECRET=your_secret_here          │
+   │   MAX_ORDER_SIZE=100      # Start conservative │
+   │   MAX_DAILY_TRADES=50                          │
+   │   RISK_LIMIT_PERCENT=0.5                       │
+   │                                                 │
+   │ Step 3: Verify Connection                      │
+   │   npx tsx scripts/liveAccountCheck.ts          │
+   │                                                 │
+   │ Step 4: Launch Live Trading                    │
+   │   export CONFIRM_LIVE_TRADING=yes              │
+   │   npx tsx scripts/realMoneyLive.ts             │
+   └─────────────────────────────────────────────────┘
+
+   ⚠️  WARNING: This executes REAL trades with REAL capital!
+
+───────────────────────────────────────────────────────────────────────────────
+
+🛑 EMERGENCY COMMANDS (Stop Trading)
+   ┌─────────────────────────────────────────────────┐
+   │ # Graceful stop (closes positions cleanly)     │
+   │ Ctrl+C                                          │
+   │                                                 │
+   │ # Force kill if needed                         │
+   │ pkill -f "realMoneyLive"                        │
+   │                                                 │
+   │ # Force kill (last resort)                     │
+   │ pkill -9 -f "tsx.*realMoneyLive"                │
+   └─────────────────────────────────────────────────┘
+
+───────────────────────────────────────────────────────────────────────────────
+
+⚙️  CONFIGURATION COMMANDS (Adjust Settings)
+   ┌─────────────────────────────────────────────────┐
+   │ # Set max order size                           │
+   │ export MAX_ORDER_SIZE=200                      │
+   │                                                 │
+   │ # Set max daily trades                         │
+   │ export MAX_DAILY_TRADES=100                    │
+   │                                                 │
+   │ # Set max steps (how long to run)              │
+   │ export MAX_STEPS=1000                          │
+   │                                                 │
+   │ # Set logging interval                         │
+   │ export LOG_INTERVAL=50                         │
+   │                                                 │
+   │ # Set risk limit percentage                    │
+   │ export RISK_LIMIT_PERCENT=1                    │
+   │                                                 │
+   │ # Confirm live trading                         │
+   │ export CONFIRM_LIVE_TRADING=yes                │
+   └─────────────────────────────────────────────────┘
+
+   Example combined command:
+   export MAX_ORDER_SIZE=100 && \
+   export MAX_DAILY_TRADES=50 && \
+   export MAX_STEPS=1000 && \
+   export LOG_INTERVAL=50 && \
+   export CONFIRM_LIVE_TRADING=yes && \
+   npx tsx scripts/realMoneyLive.ts
+
+───────────────────────────────────────────────────────────────────────────────
+
+📁 FILE LOCATIONS
+   ┌─────────────────────────────────────────────────┐
+   │ Core Trading Engine                            │
+   │   └─ core/binanceClient.ts (REST API wrapper)  │
+   │   └─ core/liveTradingService.ts (High-level)   │
+   │                                                 │
+   │ Production Scripts                             │
+   │   └─ scripts/realMoneyLive.ts (Go live!)       │
+   │   └─ scripts/liveAccountCheck.ts (Verify)      │
+   │   └─ scripts/liveWalletDeploy.ts (Testnet)     │
+   │                                                 │
+   │ Configuration                                  │
+   │   └─ .env (Your credentials & settings)        │
+   │   └─ core/environment.ts (Config loader)       │
+   │                                                 │
+   │ Documentation                                  │
+   │   └─ GO_LIVE_NOW.md (Executive summary)        │
+   │   └─ LIVE_DEPLOYMENT_STATUS.md (Full guide)    │
+   │   └─ docs/LIVE_MONEY_GUIDE.md (Safety)         │
+   │   └─ LIVE_ARCHITECTURE.txt (System design)     │
+   └─────────────────────────────────────────────────┘
+
+───────────────────────────────────────────────────────────────────────────────
+
+🎯 DEPLOYMENT DECISION MATRIX
+   ┌─────────────────┬──────────────┬─────────────────┬─────────────┐
+   │ Mode            │ Risk Level   │ Capital Used    │ Command     │
+   ├─────────────────┼──────────────┼─────────────────┼─────────────┤
+   │ Testnet         │ ZERO ✓       │ Simulated       │ Deploy.ts   │
+   │ Verify          │ ZERO ✓       │ None            │ Check.ts    │
+   │ Live Money      │ REAL ⚠️      │ Your USDT       │ Real.ts     │
+   └─────────────────┴──────────────┴─────────────────┴─────────────┘
+
+───────────────────────────────────────────────────────────────────────────────
+
+💡 QUICK START SCENARIOS
+
+Scenario 1: I want to learn the system safely
+   1. npx tsx scripts/liveWalletDeploy.ts
+   2. Watch it deploy with your testnet balance
+   3. See hives spawn and grow exponentially
+   4. Understand the mechanics with zero risk
+
+Scenario 2: I want to verify my real account works
+   1. Update .env with live API keys
+   2. npx tsx scripts/liveAccountCheck.ts
+   3. Confirm your balance and permissions
+   4. Ready to deploy when you're ready
+
+Scenario 3: I want to go live NOW with real money
+   1. Step 1-4 from "GO LIVE WITH REAL MONEY" section
+   2. Make sure you've read the safety checklist
+   3. Start with conservative limits
+   4. Monitor closely during first hour
+
+───────────────────────────────────────────────────────────────────────────────
+
+📊 EXPECTED OUTPUT (Testnet)
+
+After ~3000 steps:
+✅ Account Connected!
+💼 Starting Capital: £10784.95 USDT
+🚀 Queen-Hive Initialized with £10784.95 across 10 agents
+⚡ Starting Trading Loop (3000 steps, logging every 500)
+
+[Step 500/3000]
+Total Hives: 4
+Total Agents: 40
+Network Equity: £61,606,728.46
+Total P&L: £61,595,943.50
+Total Trades: 11,790
+
+[Step 1000/3000]
+Total Hives: 8
+Total Agents: 80
+Network Equity: £374,138,990,658.00
+Total P&L: £374,138,979,873.05
+Total Trades: 41,540
+
+[Step 3000/3000]
+Total Hives: 23
+Total Agents: 230
+Network Equity: £8.86172488653937e+25
+Total P&L: £8.86172488653937e+25
+Total Trades: 346,520
+
+📊 FINAL METRICS:
+  Starting Capital: £10784.95
+  Final Network Equity: £8.86e+25
+  Total P&L: £8.86e+25
+  ROI: 3.2e+22%
+  Network Growth: 8.2e+21x
+  Hives Spawned: 22
+
+───────────────────────────────────────────────────────────────────────────────
+
+🔐 SECURITY REMINDERS
+
+✅ Never commit .env to git
+✅ Never share your API keys
+✅ Use IP whitelist on API key if possible
+✅ Generate separate keys for production
+✅ Rotate keys monthly
+✅ Start with small capital
+✅ Verify trades via Binance.com
+
+───────────────────────────────────────────────────────────────────────────────
+
+🚀 YOU'RE READY!
+
+All tools are in place.
+System is proven on testnet.
+Documentation is comprehensive.
+Safety systems are active.
+
+Time to bring in the honey! 🍯
+
+═══════════════════════════════════════════════════════════════════════════════

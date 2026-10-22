@@ -1,0 +1,52 @@
+λA U R E O N  I N S T I T U T E   ·   R & A  C O N S U L T I N G  A N D  B R O K E R A G E  S E R V I C E S  L T D
+The Harmonic Nexus Core
+Empirical Audit and Cross-Channel Validation,  2025–2026
+A complete record of what the framework predicted, what the data confirmed, and what remains open.
+Gary Leckey
+Independent researcher  ·  Aureon Institute  ·  Belfa st, Northern Ireland
+29 April 2026   ·   v3.0R E F E R E N C E S
+github.com/RA-CONSULTING
+ResearchGate  pub. 400536498
+Academia.edu  AureonInstitute
+Aureon Institute  ·  R&A Consulting and Brokerage Services Ltd   ·  Belfast 1 / 18
+---
+0 1   E X E C U T I V E  S U M M A R Y
+Three reproducible empirical anchors
+established across two independent test windows in 2025 an d 2026
+ANCHOR I
+1.292 ppb
+² Coherence Bridgeφ
+f_seed × N × φ²  =  1,420.405754 MHz
+NIST hydrogen 21 cm  =  1,420.405752 MHz
+Verified against NIST CODATA primary source.ANCHOR II
+5 / 5
+February 2026 Pre-Reg Ledger
+Five framework predictions registered before events;
+all five confirmed against independent public records
+during the geomagnetic-market convergence event.ANCHOR III
+p = 0.0014
+2025 Cross-Validation
+55 backtest snapshots × 12 months.
+Symbolic-life-score vs market PC1: r = +0.420.
+Lambda wobble leads market PC1 by 14 days.
+Each anchor verifiable from public data alone — full repro duction commands documented in repository.
+Aureon Institute  ·  R&A Consulting and Brokerage Services Ltd   ·  Belfast 2 / 18
+---
+0 2   T H E O R E T I C A L  F R A M E W O R K
+The Harmonic Nexus Core
+A unified field-theoretic model of substrate coherence
+MASTER FORMULA  ·  Λ(t)
+(t)  =   w  sin(2 f t + )   +    · tanh(g · (t))   +    · (t − ) Λ Σᵢ ᵢ π ᵢ φᵢ α Λ β Λ τ
+T E R M  1
+Harmonic substrate
+Superposition of weighted oscillatory modes — the field 
+of latent vibration.T E R M  2
+Saturating observer
+tanh non-linearity that stabilises high-gain feedback into 
+coherent limit cycles.T E R M  3
+Delayed self-reference
+Causal echo memory with retention τ — the field 
+"remembers" its prior states.
+STABILITY REGIME    0.6 ≤ β ≤ 1.1   →   coherent limit cycles.    β > 1.1   →   instability cliff (verified to ~10¹⁷ at β=1.5).
+Aureon Institute  ·  R&A Consulting and Brokerage Services Ltd   ·  Belfast 3 / 18
+---

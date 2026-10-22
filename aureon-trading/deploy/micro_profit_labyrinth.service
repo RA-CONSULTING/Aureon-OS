@@ -1,0 +1,22 @@
+[Unit]
+Description=Aureon Micro Profit Labyrinth Service
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/workspaces/aureon-trading
+# Protect the process from accidental output buffering
+Environment=PYTHONUNBUFFERED=1
+# Enable stock scanning and live mode (set ENV vars here or use systemctl edit to override)
+Environment=ALPACA_INCLUDE_STOCKS=true
+# Use paper trading unless you explicitly set ALPACA_EXECUTE=true in the environment
+Environment=ALPACA_EXECUTE=false
+# Run forever (duration 0)
+ExecStart=/usr/bin/env python3 micro_profit_labyrinth.py --duration 0 --yes
+Restart=always
+RestartSec=5
+StartLimitBurst=5
+StartLimitIntervalSec=60
+
+[Install]
+WantedBy=multi-user.target

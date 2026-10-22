@@ -1,0 +1,51 @@
+version: 0.1.0
+published: 2024-05-01
+
+integrity:
+  zscore_window: 60
+  benford_threshold: 0.08
+  volume_spike_sigma: 4
+
+cci:
+  alpha: 1.0
+  beta: 5.0
+  sigma_window: 20
+  state_thresholds:
+    calm: 0.0
+    watch: 0.65
+    storm: 1.2
+
+polaris:
+  baseline_date: 2020-01-02
+  decay_half_life_days: 180
+
+choerance:
+  sigma_window: 60
+
+ping_pong:
+  window_corr: 30
+  data_sources:
+    - schumann_amp
+    - kp_index
+
+grav_reflection:
+  window_corr: 45
+  min_events: 3
+
+unity:
+  components: [integrity, cci, choerance, ping_pong, grav_reflection]
+
+inercha:
+  lookback: 5
+
+coherence_index:
+  weights:
+    integrity: 0.2
+    cci: 0.2
+    polaris: 0.15
+    choerance: 0.15
+    ping_pong: 0.1
+    grav_reflection: 0.1
+    unity: 0.05
+    inercha: 0.05
+  calibration_period: 2015-01-01/2023-12-31

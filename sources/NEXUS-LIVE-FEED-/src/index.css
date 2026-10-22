@@ -1,0 +1,71 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Zen+Dots&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 8 10 32;
+    --foreground: 232 241 255;
+    --card: 16 20 56;
+    --card-foreground: 232 241 255;
+    --muted: 38 40 86;
+    --muted-foreground: 168 183 255;
+    --accent: 245 210 106;
+    --accent-foreground: 12 14 28;
+    color-scheme: dark;
+  }
+
+  * {
+    @apply antialiased;
+  }
+
+  body {
+    @apply min-h-screen bg-[#050b21] text-[#e8f1ff];
+    font-family: 'Space Grotesk', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background-image:
+      radial-gradient(circle at 20% 18%, rgba(68, 97, 234, 0.28), transparent 55%),
+      radial-gradient(circle at 76% 12%, rgba(103, 58, 183, 0.22), transparent 60%),
+      radial-gradient(circle at 52% 78%, rgba(25, 162, 255, 0.2), transparent 70%),
+      linear-gradient(195deg, rgba(5, 8, 27, 0.95) 0%, rgba(9, 16, 43, 0.96) 60%, rgba(6, 8, 24, 1) 100%);
+    background-attachment: fixed;
+  }
+
+  body::before,
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    mix-blend-mode: screen;
+    opacity: 0.4;
+  }
+
+  body::before {
+    background:
+      radial-gradient(circle at 18% 12%, rgba(120, 76, 255, 0.24), transparent 55%),
+      radial-gradient(circle at 84% 20%, rgba(56, 189, 248, 0.2), transparent 60%);
+    filter: blur(80px);
+  }
+
+  body::after {
+    background:
+      radial-gradient(circle at 48% 88%, rgba(72, 198, 255, 0.18), transparent 65%),
+      linear-gradient(160deg, rgba(245, 210, 106, 0.12), rgba(134, 93, 255, 0.1));
+    filter: blur(95px);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: 'Zen Dots', 'Space Grotesk', 'Inter', sans-serif;
+    letter-spacing: 0.06em;
+  }
+
+  ::selection {
+    background: rgba(214, 172, 121, 0.45);
+    color: #1c140d;
+  }
+}

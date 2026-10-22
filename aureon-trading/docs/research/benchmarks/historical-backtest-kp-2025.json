@@ -1,0 +1,1131 @@
+{
+  "aggregates": {
+    "active_rocks_at_end": 0,
+    "direction_distribution": {
+      "NEUTRAL": 55
+    },
+    "final_state": {
+      "coherence_score": 0.0,
+      "consciousness_level": "INTUITIVE",
+      "consciousness_psi": 0.6842928189907553,
+      "lambda_t": 203.63463915415778,
+      "regime": "QUIET"
+    },
+    "kp_category_distribution": {
+      "Active": 322,
+      "Quiet": 924,
+      "Severe": 14,
+      "Storm": 141,
+      "Unsettled": 1359
+    },
+    "regime_distribution": {
+      "QUIET": 55
+    },
+    "rock_events_total": 0,
+    "samples": 2760,
+    "snapshots": 55
+  },
+  "snapshots": [
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "CONNECTED",
+      "consciousness_psi": 0.7414912065685926,
+      "date": "2025-01-07",
+      "kp": 2.667,
+      "kp_category": "Unsettled",
+      "lambda_t": 21.19799671307064,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 50,
+      "symbolic_life_score": 0.537697668052884
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "CONNECTED",
+      "consciousness_psi": 0.7283316638055151,
+      "date": "2025-01-13",
+      "kp": 2.333,
+      "kp_category": "Unsettled",
+      "lambda_t": 24.256390575824085,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 100,
+      "symbolic_life_score": 0.5122299094479466
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "CONNECTED",
+      "consciousness_psi": 0.7250926743593713,
+      "date": "2025-01-19",
+      "kp": 3.0,
+      "kp_category": "Unsettled",
+      "lambda_t": 27.985835990842528,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 150,
+      "symbolic_life_score": 0.5530157580983448
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "CONNECTED",
+      "consciousness_psi": 0.7000157099439333,
+      "date": "2025-01-25",
+      "kp": 0.667,
+      "kp_category": "Quiet",
+      "lambda_t": 31.35962212243071,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 200,
+      "symbolic_life_score": 0.5018728072075517
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "CONNECTED",
+      "consciousness_psi": 0.7185206885544098,
+      "date": "2025-02-01",
+      "kp": 3.667,
+      "kp_category": "Unsettled",
+      "lambda_t": 34.72639702886981,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 250,
+      "symbolic_life_score": 0.524430269395374
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "CONNECTED",
+      "consciousness_psi": 0.7188716868183289,
+      "date": "2025-02-07",
+      "kp": 0.667,
+      "kp_category": "Quiet",
+      "lambda_t": 38.8366033487943,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 300,
+      "symbolic_life_score": 0.5144195048152249
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "CONNECTED",
+      "consciousness_psi": 0.7159953534516257,
+      "date": "2025-02-13",
+      "kp": 2.333,
+      "kp_category": "Unsettled",
+      "lambda_t": 41.41379942467213,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 350,
+      "symbolic_life_score": 0.5051322686740527
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "CONNECTED",
+      "consciousness_psi": 0.7259255334455867,
+      "date": "2025-02-19",
+      "kp": 3.0,
+      "kp_category": "Unsettled",
+      "lambda_t": 45.085072877889374,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 400,
+      "symbolic_life_score": 0.5244469506876009
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "CONNECTED",
+      "consciousness_psi": 0.717131058538111,
+      "date": "2025-02-26",
+      "kp": 3.333,
+      "kp_category": "Unsettled",
+      "lambda_t": 48.76021076033065,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 450,
+      "symbolic_life_score": 0.504138257762965
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "CONNECTED",
+      "consciousness_psi": 0.7330932383714577,
+      "date": "2025-03-04",
+      "kp": 1.333,
+      "kp_category": "Quiet",
+      "lambda_t": 51.622041562397804,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 500,
+      "symbolic_life_score": 0.5182049198940666
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "CONNECTED",
+      "consciousness_psi": 0.7292750535307959,
+      "date": "2025-03-10",
+      "kp": 2.667,
+      "kp_category": "Unsettled",
+      "lambda_t": 55.39544758445856,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 550,
+      "symbolic_life_score": 0.5387755727396142
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "CONNECTED",
+      "consciousness_psi": 0.715067675545205,
+      "date": "2025-03-16",
+      "kp": 2.667,
+      "kp_category": "Unsettled",
+      "lambda_t": 58.100253570404156,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 600,
+      "symbolic_life_score": 0.5289028075858115
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "CONNECTED",
+      "consciousness_psi": 0.7279207557035312,
+      "date": "2025-03-23",
+      "kp": 2.0,
+      "kp_category": "Unsettled",
+      "lambda_t": 61.75971971700234,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 650,
+      "symbolic_life_score": 0.5191718322584866
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "CONNECTED",
+      "consciousness_psi": 0.7017103539444289,
+      "date": "2025-03-29",
+      "kp": 1.333,
+      "kp_category": "Quiet",
+      "lambda_t": 64.97515682937393,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 700,
+      "symbolic_life_score": 0.4971099897810607
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "CONNECTED",
+      "consciousness_psi": 0.7180002004204131,
+      "date": "2025-04-04",
+      "kp": 4.333,
+      "kp_category": "Active",
+      "lambda_t": 67.9521338132467,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 750,
+      "symbolic_life_score": 0.5132610949442538
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "CONNECTED",
+      "consciousness_psi": 0.7104906603541572,
+      "date": "2025-04-10",
+      "kp": 4.0,
+      "kp_category": "Active",
+      "lambda_t": 71.9471074829836,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 800,
+      "symbolic_life_score": 0.5128079165547517
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "CONNECTED",
+      "consciousness_psi": 0.7058696840381373,
+      "date": "2025-04-17",
+      "kp": 3.667,
+      "kp_category": "Unsettled",
+      "lambda_t": 74.4232729532054,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 850,
+      "symbolic_life_score": 0.4895052850000961
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "CONNECTED",
+      "consciousness_psi": 0.7123957409710098,
+      "date": "2025-04-23",
+      "kp": 2.667,
+      "kp_category": "Unsettled",
+      "lambda_t": 77.83826693971557,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 900,
+      "symbolic_life_score": 0.5094244681282405
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "INTUITIVE",
+      "consciousness_psi": 0.6954622069317378,
+      "date": "2025-04-29",
+      "kp": 1.333,
+      "kp_category": "Quiet",
+      "lambda_t": 81.70524294160776,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 950,
+      "symbolic_life_score": 0.4716585603145937
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "CONNECTED",
+      "consciousness_psi": 0.702260379267968,
+      "date": "2025-05-05",
+      "kp": 4.0,
+      "kp_category": "Active",
+      "lambda_t": 84.10434185787204,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 1000,
+      "symbolic_life_score": 0.4856194408999489
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "INTUITIVE",
+      "consciousness_psi": 0.6895813786436465,
+      "date": "2025-05-12",
+      "kp": 1.667,
+      "kp_category": "Quiet",
+      "lambda_t": 88.04446782767074,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 1050,
+      "symbolic_life_score": 0.49145160652145514
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "INTUITIVE",
+      "consciousness_psi": 0.6988666247543895,
+      "date": "2025-05-18",
+      "kp": 2.667,
+      "kp_category": "Unsettled",
+      "lambda_t": 90.83757531469875,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 1100,
+      "symbolic_life_score": 0.4734402537656703
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "CONNECTED",
+      "consciousness_psi": 0.7086710610980265,
+      "date": "2025-05-24",
+      "kp": 0.667,
+      "kp_category": "Quiet",
+      "lambda_t": 94.59395089763822,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 1150,
+      "symbolic_life_score": 0.5218568020430137
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "INTUITIVE",
+      "consciousness_psi": 0.690743464283287,
+      "date": "2025-05-30",
+      "kp": 3.667,
+      "kp_category": "Unsettled",
+      "lambda_t": 98.05594451742456,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 1200,
+      "symbolic_life_score": 0.4583710609594806
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "CONNECTED",
+      "consciousness_psi": 0.7033863157910298,
+      "date": "2025-06-06",
+      "kp": 1.333,
+      "kp_category": "Quiet",
+      "lambda_t": 100.22807224165524,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 1250,
+      "symbolic_life_score": 0.46689107365449994
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "INTUITIVE",
+      "consciousness_psi": 0.6958735629225349,
+      "date": "2025-06-12",
+      "kp": 3.333,
+      "kp_category": "Unsettled",
+      "lambda_t": 104.1438769154783,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 1300,
+      "symbolic_life_score": 0.466910580266167
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "INTUITIVE",
+      "consciousness_psi": 0.6966357152923363,
+      "date": "2025-06-18",
+      "kp": 2.333,
+      "kp_category": "Unsettled",
+      "lambda_t": 107.02957286966063,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 1350,
+      "symbolic_life_score": 0.45064984805808705
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "CONNECTED",
+      "consciousness_psi": 0.7071304927768536,
+      "date": "2025-06-24",
+      "kp": 1.333,
+      "kp_category": "Quiet",
+      "lambda_t": 110.33675109205863,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 1400,
+      "symbolic_life_score": 0.4779137612228122
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "INTUITIVE",
+      "consciousness_psi": 0.6860691395273149,
+      "date": "2025-07-01",
+      "kp": 2.0,
+      "kp_category": "Unsettled",
+      "lambda_t": 114.27647016826612,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 1450,
+      "symbolic_life_score": 0.4471073776418874
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "CONNECTED",
+      "consciousness_psi": 0.7019152606990902,
+      "date": "2025-07-07",
+      "kp": 2.667,
+      "kp_category": "Unsettled",
+      "lambda_t": 117.01721260007366,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 1500,
+      "symbolic_life_score": 0.4597788201247859
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "INTUITIVE",
+      "consciousness_psi": 0.6924515394503086,
+      "date": "2025-07-13",
+      "kp": 3.0,
+      "kp_category": "Unsettled",
+      "lambda_t": 120.86827864013755,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 1550,
+      "symbolic_life_score": 0.46005691187490133
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "INTUITIVE",
+      "consciousness_psi": 0.693486878309198,
+      "date": "2025-07-19",
+      "kp": 1.0,
+      "kp_category": "Quiet",
+      "lambda_t": 123.80583697053535,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 1600,
+      "symbolic_life_score": 0.4486653245932549
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "CONNECTED",
+      "consciousness_psi": 0.7092114378705119,
+      "date": "2025-07-26",
+      "kp": 1.0,
+      "kp_category": "Quiet",
+      "lambda_t": 127.30902887316095,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 1650,
+      "symbolic_life_score": 0.4690035918853245
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "INTUITIVE",
+      "consciousness_psi": 0.6937291280631741,
+      "date": "2025-08-01",
+      "kp": 2.333,
+      "kp_category": "Unsettled",
+      "lambda_t": 131.38835529490882,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 1700,
+      "symbolic_life_score": 0.4485234958849169
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "CONNECTED",
+      "consciousness_psi": 0.7214276353927265,
+      "date": "2025-08-07",
+      "kp": 0.333,
+      "kp_category": "Quiet",
+      "lambda_t": 134.2517299736593,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 1750,
+      "symbolic_life_score": 0.4592990174317113
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "INTUITIVE",
+      "consciousness_psi": 0.6955464069631854,
+      "date": "2025-08-13",
+      "kp": 3.333,
+      "kp_category": "Unsettled",
+      "lambda_t": 138.1686238987959,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 1800,
+      "symbolic_life_score": 0.4588308006529877
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "INTUITIVE",
+      "consciousness_psi": 0.6974069881640776,
+      "date": "2025-08-20",
+      "kp": 3.0,
+      "kp_category": "Unsettled",
+      "lambda_t": 141.66845223880642,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 1850,
+      "symbolic_life_score": 0.4455830508276771
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "CONNECTED",
+      "consciousness_psi": 0.7153583584682452,
+      "date": "2025-08-26",
+      "kp": 2.333,
+      "kp_category": "Unsettled",
+      "lambda_t": 144.89148197673444,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 1900,
+      "symbolic_life_score": 0.4649690146581596
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "INTUITIVE",
+      "consciousness_psi": 0.6944826008350848,
+      "date": "2025-09-01",
+      "kp": 1.667,
+      "kp_category": "Quiet",
+      "lambda_t": 148.94718955315705,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 1950,
+      "symbolic_life_score": 0.4464619086861918
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "CONNECTED",
+      "consciousness_psi": 0.7204110338663421,
+      "date": "2025-09-07",
+      "kp": 2.0,
+      "kp_category": "Unsettled",
+      "lambda_t": 151.70739490888417,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 2000,
+      "symbolic_life_score": 0.45899956560589217
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "CONNECTED",
+      "consciousness_psi": 0.7007691984939579,
+      "date": "2025-09-14",
+      "kp": 1.667,
+      "kp_category": "Quiet",
+      "lambda_t": 155.74762039604656,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 2050,
+      "symbolic_life_score": 0.4546727820226715
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "CONNECTED",
+      "consciousness_psi": 0.7009754636158587,
+      "date": "2025-09-20",
+      "kp": 1.0,
+      "kp_category": "Quiet",
+      "lambda_t": 159.1229423242071,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 2100,
+      "symbolic_life_score": 0.4455444716457845
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "CONNECTED",
+      "consciousness_psi": 0.7139801363040748,
+      "date": "2025-09-26",
+      "kp": 0.667,
+      "kp_category": "Quiet",
+      "lambda_t": 162.3310090917659,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 2150,
+      "symbolic_life_score": 0.4572638284909044
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "INTUITIVE",
+      "consciousness_psi": 0.6889043098505976,
+      "date": "2025-10-02",
+      "kp": 4.333,
+      "kp_category": "Active",
+      "lambda_t": 166.12147794245678,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 2200,
+      "symbolic_life_score": 0.44673738279431996
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "CONNECTED",
+      "consciousness_psi": 0.7047938259584157,
+      "date": "2025-10-09",
+      "kp": 0.333,
+      "kp_category": "Quiet",
+      "lambda_t": 169.00832306074068,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 2250,
+      "symbolic_life_score": 0.4628754267276968
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "INTUITIVE",
+      "consciousness_psi": 0.6829882036372883,
+      "date": "2025-10-15",
+      "kp": 2.333,
+      "kp_category": "Unsettled",
+      "lambda_t": 172.53308198472132,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 2300,
+      "symbolic_life_score": 0.4535462591920235
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "INTUITIVE",
+      "consciousness_psi": 0.6805629765400263,
+      "date": "2025-10-21",
+      "kp": 1.333,
+      "kp_category": "Quiet",
+      "lambda_t": 176.33762177876702,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 2350,
+      "symbolic_life_score": 0.4417417770574315
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "INTUITIVE",
+      "consciousness_psi": 0.68753741896562,
+      "date": "2025-10-27",
+      "kp": 3.0,
+      "kp_category": "Unsettled",
+      "lambda_t": 179.47423172933108,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 2400,
+      "symbolic_life_score": 0.4466585986209383
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "INTUITIVE",
+      "consciousness_psi": 0.676197517907694,
+      "date": "2025-11-03",
+      "kp": 3.333,
+      "kp_category": "Unsettled",
+      "lambda_t": 183.15061478684675,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 2450,
+      "symbolic_life_score": 0.4424660193405303
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "INTUITIVE",
+      "consciousness_psi": 0.6892498467584984,
+      "date": "2025-11-09",
+      "kp": 1.0,
+      "kp_category": "Quiet",
+      "lambda_t": 185.8655255273859,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 2500,
+      "symbolic_life_score": 0.4506884819398118
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "INTUITIVE",
+      "consciousness_psi": 0.6823453042250907,
+      "date": "2025-11-15",
+      "kp": 1.667,
+      "kp_category": "Quiet",
+      "lambda_t": 189.3061055579747,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 2550,
+      "symbolic_life_score": 0.46141561140866955
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "INTUITIVE",
+      "consciousness_psi": 0.6832503359677671,
+      "date": "2025-11-21",
+      "kp": 1.333,
+      "kp_category": "Quiet",
+      "lambda_t": 192.97202337150887,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 2600,
+      "symbolic_life_score": 0.47327494021905087
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "INTUITIVE",
+      "consciousness_psi": 0.688625092917358,
+      "date": "2025-11-28",
+      "kp": 3.0,
+      "kp_category": "Unsettled",
+      "lambda_t": 195.58989117830154,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 2650,
+      "symbolic_life_score": 0.46501117609025816
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "INTUITIVE",
+      "consciousness_psi": 0.6788294557843271,
+      "date": "2025-12-04",
+      "kp": 4.0,
+      "kp_category": "Active",
+      "lambda_t": 199.5950471039191,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 2700,
+      "symbolic_life_score": 0.4571803787058958
+    },
+    {
+      "coherence_gamma": 0.5,
+      "coherence_score": 0.0,
+      "consciousness_level": "INTUITIVE",
+      "consciousness_psi": 0.6880094022054736,
+      "date": "2025-12-10",
+      "kp": 2.333,
+      "kp_category": "Unsettled",
+      "lambda_t": 202.95497925562702,
+      "n_rocks_fast": 0,
+      "n_rocks_slow": 0,
+      "predictor": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "regime": "QUIET",
+      "sample_index": 2750,
+      "symbolic_life_score": 0.4674518057525601
+    }
+  ],
+  "tag": "kp-2025"
+}

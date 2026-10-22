@@ -1,0 +1,32 @@
+{
+  "acceptance": [
+    "HTML artifact exists",
+    "Canvas game renders without external assets",
+    "Keyboard controls are visible to the end user",
+    "Game mechanics match the operator prompt",
+    "No cloud provider or unsafe authority is used"
+  ],
+  "asset_path": "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\frontend\\public\\aureon_generated_apps\\make_me_a_game_where_a_man_walks_up_to_a_glowing_2fba717be4c8.html",
+  "build_id": "2fba717be4c8",
+  "controls": [
+    "Arrow keys",
+    "WASD",
+    "Space",
+    "R"
+  ],
+  "game_kind": "platformer_adventure",
+  "kind": "html_game",
+  "project_id": "aureon-interactive_game-2fba717be4c8",
+  "prompt": "Make me a game where a man walks up to a glowing door and tell the end user how to play from the keyboard.",
+  "public_url": "/aureon_generated_apps/make_me_a_game_where_a_man_walks_up_to_a_glowing_2fba717be4c8.html",
+  "schema_version": "aureon-local-interactive-artifact-v1",
+  "uniqueness_contract": {
+    "build_id": "2fba717be4c8",
+    "family": "interactive_game",
+    "policy": "fresh_project_per_coding_request",
+    "project_id": "aureon-interactive_game-2fba717be4c8",
+    "prompt_sha256": "d93be15f0da1858451ee7478b60b6c0872a853bd5e916e371eea8782b9ec2a65",
+    "reuse_allowed_for_handover": false,
+    "rule": "Every coding/app/tool artifact must be a fresh project instance, even when the prompt resembles an older job."
+  }
+}

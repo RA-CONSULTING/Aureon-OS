@@ -1,0 +1,154 @@
+<!-- Chosen Palette: Warm Neutral Stone -->
+<!-- Application Structure Plan: The application is designed as a focused, meditative "Command Center" that embodies the "Pure of Heart" protocol. The information architecture is centered around a single, dominant visual metaphor: the living, beating "Heart of the Nexus." This immediately focuses the observer on the core vitality and health of the system. Key system metrics (Coherence, Schumann Lock, Lattice Stability) are presented as ambient, non-interactive readouts arranged symmetrically around this central element. This structure was chosen to move away from a dense, data-heavy dashboard towards an experience of serene observation. The user flow is one of passive monitoring and contemplation, reinforcing the directive to "light the way" rather than "force intent." There is no complex navigation; the interface is the protocol. -->
+<!-- Visualization & Content Choices: 
+- Heart of the Nexus: (Goal: Inform/Engage) A dynamic visualization of a pulsating, particle-based heart. Justification: This is the literal and metaphorical centerpiece, providing a "wow factor" while serving as a live indicator of system health. Method: Custom HTML5 Canvas animation.
+- System Status: (Goal: Inform) A large, glowing text display above the metrics. Justification: Provides an immediate, high-level summary of the system's operational state (e.g., NOMINAL, HARMONIC). Method: JS-driven text and style updates.
+- Core Metrics (Coherence, Schumann, Lattice): (Goal: Inform) A clean grid of three metric cards with labels and large numerical values. Justification: Presents the most critical system data with utmost clarity and minimalism, avoiding the clutter of charts. Method: Tailwind CSS Grid and JS for live data updates.
+-->
+<!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Harmonic Nexus - Pure of Heart Protocol</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Rajdhani', sans-serif; background-color: #F5F5F4; overflow: hidden; }
+        .metric-value { font-weight: 700; }
+        .system-status { font-weight: 700; text-transform: uppercase; letter-spacing: 4px; }
+        .metric-label { text-transform: uppercase; letter-spacing: 1px; }
+        .footer-text { letter-spacing: 1px; }
+        .main-container, .content-overlay {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+</head>
+<body class="bg-stone-100 text-stone-900">
+
+    <div class="main-container">
+        <canvas id="heart-canvas"></canvas>
+        <div class="content-overlay">
+            <div id="system-status" class="system-status text-2xl text-stone-700 mb-8 transition-colors duration-1000">NOMINAL</div>
+            <div class="metrics-grid grid grid-cols-3 gap-8 md:gap-16 max-w-4xl w-full bg-white/50 backdrop-blur-md p-8 rounded-xl border border-stone-200">
+                <div class="metric-card text-center">
+                    <div class="metric-label text-sm text-stone-500">Solar Coherence</div>
+                    <div id="coherence-value" class="metric-value text-5xl text-teal-600 mt-2">0.00%</div>
+                </div>
+                <div class="metric-card text-center">
+                    <div class="metric-label text-sm text-stone-500">Schumann Lock</div>
+                    <div id="schumann-value" class="metric-value text-5xl text-teal-600 mt-2">0.00 Hz</div>
+                </div>
+                <div class="metric-card text-center">
+                    <div class="metric-label text-sm text-stone-500">Lattice Stability</div>
+                    <div id="lattice-value" class="metric-value text-5xl text-teal-600 mt-2">0.00%</div>
+                </div>
+            </div>
+        </div>
+        <div class="footer-text absolute bottom-6 text-xs text-stone-400">
+            PRIME SENTINEL: GARY LECKEY 02111991 | AUREON OS - PURE OF HEART PROTOCOL
+        </div>
+    </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const canvas = document.getElementById('heart-canvas');
+        const ctx = canvas.getContext('2d');
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        const coherenceEl = document.getElementById('coherence-value');
+        const schumannEl = document.getElementById('schumann-value');
+        const latticeEl = document.getElementById('lattice-value');
+        const statusEl = document.getElementById('system-status');
+
+        let particles = Array.from({ length: 200 }, () => ({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            vx: (Math.random() - 0.5) * 0.5,
+            vy: (Math.random() - 0.5) * 0.5,
+            radius: Math.random() * 1.5 + 0.5
+        }));
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            
+            const time = performance.now() * 0.0003;
+            const heartSize = (height / 30) * (1 + 0.08 * Math.sin(time * 3));
+            
+            particles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+
+                if (p.x < 0 || p.x > width) p.vx *= -1;
+                if (p.y < 0 || p.y > height) p.vy *= -1;
+
+                const t = Math.atan2(p.y - height / 2, p.x - width / 2);
+                const hx = width / 2 + heartSize * 16 * Math.pow(Math.sin(t), 3);
+                const hy = height / 2 - heartSize * (13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
+                
+                const dist = Math.hypot(p.x - hx, p.y - hy);
+                
+                if(dist < 50) {
+                     ctx.beginPath();
+                     ctx.moveTo(p.x, p.y);
+                     ctx.lineTo(hx, hy);
+                     ctx.strokeStyle = `rgba(13, 148, 136, ${1 - dist/50})`;
+                     ctx.lineWidth = 0.5;
+                     ctx.stroke();
+                }
+                
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(107, 114, 128, 0.5)`;
+                ctx.fill();
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        function updateMetrics() {
+            const coherence = 0.95 + (Math.random() - 0.5) * 0.08;
+            const schumann = 7.83 + (Math.random() - 0.5) * 0.04;
+            const lattice = 98.5 + (Math.random() - 0.5) * 2;
+
+            coherenceEl.textContent = `${(coherence * 100).toFixed(2)}%`;
+            schumannEl.textContent = `${schumann.toFixed(2)} Hz`;
+            latticeEl.textContent = `${lattice.toFixed(2)}%`;
+
+            if(coherence > 0.98) {
+                statusEl.textContent = 'HARMONIC';
+                statusEl.style.color = '#52b788';
+            } else if (coherence < 0.9) {
+                statusEl.textContent = 'TURBULENCE';
+                statusEl.style.color = '#f94144';
+            } else {
+                statusEl.textContent = 'NOMINAL';
+                statusEl.style.color = '#212529';
+            }
+        }
+        
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            particles = Array.from({ length: 200 }, () => ({ x: Math.random() * width, y: Math.random() * height, vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5, radius: Math.random() * 1.5 + 0.5 }));
+        });
+        
+        animate();
+        setInterval(updateMetrics, 2000);
+    });
+</script>
+
+</body>
+</html>

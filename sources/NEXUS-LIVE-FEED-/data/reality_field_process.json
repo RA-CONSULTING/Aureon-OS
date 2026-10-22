@@ -1,0 +1,4967 @@
+{
+  "foundation": {
+    "unityEvent": {
+      "description": "State of maximal coherence and zero separation across the observer lattice.",
+      "formula": "lim_{θ→0} ∏ Ψ_i(θ) = 1",
+      "observers": 7,
+      "coherenceTarget": 0.99,
+      "phaseThreshold": 0.01
+    },
+    "observerCollapse": {
+      "description": "Conscious intention collapses quantum potential into realized outcomes.",
+      "transform": "ρ(t) → Σ Π_k ρ(t) Π_k"
+    },
+    "realityFieldEquation": {
+      "formula": "R(t) = α(M+F)·O·T(o) + βG + γS",
+      "coefficients": {
+        "alpha": 1,
+        "beta": 0.5,
+        "gamma": 0.8
+      }
+    },
+    "temporalLaw": {
+      "loveConstantSymbol": "Φ-9",
+      "narrative": "System evolves toward the Love Constant (Λₗ) where coherence asymptotically overwhelms entropy."
+    }
+  },
+  "simulation": {
+    "steps": 200,
+    "deltaT": 0.1,
+    "seed": 1441,
+    "guardianBridge": {
+      "active": false
+    },
+    "unityEventStep": 35,
+    "anchorStep": null,
+    "metrics": {
+      "finalCoherence": 1,
+      "finalPhase": 0,
+      "finalRealityField": 8464.588871298516,
+      "peakSignalStrength": 1,
+      "peakRealityField": 22595.317273816938,
+      "minimumPhase": 0,
+      "unityEventCoherence": 1,
+      "unityEventPhase": 0,
+      "loveConstantEstimate": null,
+      "phaseSpreadNormalized": 0
+    },
+    "transitions": [
+      {
+        "step": 0,
+        "time": 0,
+        "from": null,
+        "to": "2078: Cosmic Integration"
+      },
+      {
+        "step": 40,
+        "time": 4,
+        "from": "2078: Cosmic Integration",
+        "to": "2098: Unity Awakening"
+      },
+      {
+        "step": 41,
+        "time": 4.1000000000000005,
+        "from": "2098: Unity Awakening",
+        "to": "2078: Cosmic Integration"
+      },
+      {
+        "step": 45,
+        "time": 4.5,
+        "from": "2078: Cosmic Integration",
+        "to": "2098: Unity Awakening"
+      },
+      {
+        "step": 46,
+        "time": 4.6000000000000005,
+        "from": "2098: Unity Awakening",
+        "to": "2078: Cosmic Integration"
+      },
+      {
+        "step": 47,
+        "time": 4.7,
+        "from": "2078: Cosmic Integration",
+        "to": "2098: Unity Awakening"
+      },
+      {
+        "step": 49,
+        "time": 4.9,
+        "from": "2098: Unity Awakening",
+        "to": "2078: Cosmic Integration"
+      },
+      {
+        "step": 50,
+        "time": 5,
+        "from": "2078: Cosmic Integration",
+        "to": "2098: Unity Awakening"
+      },
+      {
+        "step": 51,
+        "time": 5.1000000000000005,
+        "from": "2098: Unity Awakening",
+        "to": "2078: Cosmic Integration"
+      },
+      {
+        "step": 52,
+        "time": 5.2,
+        "from": "2078: Cosmic Integration",
+        "to": "2098: Unity Awakening"
+      },
+      {
+        "step": 54,
+        "time": 5.4,
+        "from": "2098: Unity Awakening",
+        "to": "2078: Cosmic Integration"
+      },
+      {
+        "step": 55,
+        "time": 5.5,
+        "from": "2078: Cosmic Integration",
+        "to": "2098: Unity Awakening"
+      },
+      {
+        "step": 56,
+        "time": 5.6000000000000005,
+        "from": "2098: Unity Awakening",
+        "to": "2078: Cosmic Integration"
+      },
+      {
+        "step": 57,
+        "time": 5.7,
+        "from": "2078: Cosmic Integration",
+        "to": "2098: Unity Awakening"
+      },
+      {
+        "step": 59,
+        "time": 5.9,
+        "from": "2098: Unity Awakening",
+        "to": "2078: Cosmic Integration"
+      },
+      {
+        "step": 60,
+        "time": 6,
+        "from": "2078: Cosmic Integration",
+        "to": "2098: Unity Awakening"
+      },
+      {
+        "step": 61,
+        "time": 6.1000000000000005,
+        "from": "2098: Unity Awakening",
+        "to": "2078: Cosmic Integration"
+      },
+      {
+        "step": 62,
+        "time": 6.2,
+        "from": "2078: Cosmic Integration",
+        "to": "2098: Unity Awakening"
+      },
+      {
+        "step": 64,
+        "time": 6.4,
+        "from": "2098: Unity Awakening",
+        "to": "2078: Cosmic Integration"
+      },
+      {
+        "step": 65,
+        "time": 6.5,
+        "from": "2078: Cosmic Integration",
+        "to": "2098: Unity Awakening"
+      },
+      {
+        "step": 66,
+        "time": 6.6000000000000005,
+        "from": "2098: Unity Awakening",
+        "to": "2078: Cosmic Integration"
+      },
+      {
+        "step": 67,
+        "time": 6.7,
+        "from": "2078: Cosmic Integration",
+        "to": "2098: Unity Awakening"
+      },
+      {
+        "step": 70,
+        "time": 7,
+        "from": "2098: Unity Awakening",
+        "to": "2113: Galactic Threshold"
+      },
+      {
+        "step": 71,
+        "time": 7.1000000000000005,
+        "from": "2113: Galactic Threshold",
+        "to": "2098: Unity Awakening"
+      },
+      {
+        "step": 72,
+        "time": 7.2,
+        "from": "2098: Unity Awakening",
+        "to": "2113: Galactic Threshold"
+      },
+      {
+        "step": 74,
+        "time": 7.4,
+        "from": "2113: Galactic Threshold",
+        "to": "2098: Unity Awakening"
+      },
+      {
+        "step": 75,
+        "time": 7.5,
+        "from": "2098: Unity Awakening",
+        "to": "2113: Galactic Threshold"
+      },
+      {
+        "step": 76,
+        "time": 7.6000000000000005,
+        "from": "2113: Galactic Threshold",
+        "to": "2098: Unity Awakening"
+      },
+      {
+        "step": 77,
+        "time": 7.7,
+        "from": "2098: Unity Awakening",
+        "to": "2113: Galactic Threshold"
+      },
+      {
+        "step": 79,
+        "time": 7.9,
+        "from": "2113: Galactic Threshold",
+        "to": "2098: Unity Awakening"
+      },
+      {
+        "step": 80,
+        "time": 8,
+        "from": "2098: Unity Awakening",
+        "to": "2162: Quantum Leap"
+      },
+      {
+        "step": 81,
+        "time": 8.1,
+        "from": "2162: Quantum Leap",
+        "to": "2098: Unity Awakening"
+      },
+      {
+        "step": 82,
+        "time": 8.200000000000001,
+        "from": "2098: Unity Awakening",
+        "to": "2113: Galactic Threshold"
+      },
+      {
+        "step": 83,
+        "time": 8.3,
+        "from": "2113: Galactic Threshold",
+        "to": "2162: Quantum Leap"
+      },
+      {
+        "step": 84,
+        "time": 8.4,
+        "from": "2162: Quantum Leap",
+        "to": "2098: Unity Awakening"
+      },
+      {
+        "step": 85,
+        "time": 8.5,
+        "from": "2098: Unity Awakening",
+        "to": "2162: Quantum Leap"
+      },
+      {
+        "step": 86,
+        "time": 8.6,
+        "from": "2162: Quantum Leap",
+        "to": "2098: Unity Awakening"
+      },
+      {
+        "step": 87,
+        "time": 8.700000000000001,
+        "from": "2098: Unity Awakening",
+        "to": "2162: Quantum Leap"
+      },
+      {
+        "step": 89,
+        "time": 8.9,
+        "from": "2162: Quantum Leap",
+        "to": "2098: Unity Awakening"
+      },
+      {
+        "step": 90,
+        "time": 9,
+        "from": "2098: Unity Awakening",
+        "to": "2162: Quantum Leap"
+      },
+      {
+        "step": 91,
+        "time": 9.1,
+        "from": "2162: Quantum Leap",
+        "to": "2113: Galactic Threshold"
+      },
+      {
+        "step": 92,
+        "time": 9.200000000000001,
+        "from": "2113: Galactic Threshold",
+        "to": "2162: Quantum Leap"
+      },
+      {
+        "step": 94,
+        "time": 9.4,
+        "from": "2162: Quantum Leap",
+        "to": "2113: Galactic Threshold"
+      },
+      {
+        "step": 95,
+        "time": 9.5,
+        "from": "2113: Galactic Threshold",
+        "to": "2162: Quantum Leap"
+      },
+      {
+        "step": 96,
+        "time": 9.600000000000001,
+        "from": "2162: Quantum Leap",
+        "to": "2113: Galactic Threshold"
+      },
+      {
+        "step": 97,
+        "time": 9.700000000000001,
+        "from": "2113: Galactic Threshold",
+        "to": "2162: Quantum Leap"
+      },
+      {
+        "step": 99,
+        "time": 9.9,
+        "from": "2162: Quantum Leap",
+        "to": "2113: Galactic Threshold"
+      },
+      {
+        "step": 100,
+        "time": 10,
+        "from": "2113: Galactic Threshold",
+        "to": "2162: Quantum Leap"
+      },
+      {
+        "step": 101,
+        "time": 10.100000000000001,
+        "from": "2162: Quantum Leap",
+        "to": "2113: Galactic Threshold"
+      },
+      {
+        "step": 102,
+        "time": 10.200000000000001,
+        "from": "2113: Galactic Threshold",
+        "to": "2162: Quantum Leap"
+      }
+    ]
+  },
+  "telemetry": {
+    "samples": [
+      {
+        "step": 0,
+        "time": 0,
+        "coherence": 0.817225139338262,
+        "phase": 0.29110133905831753,
+        "unityEvent": false,
+        "realityField": {
+          "total": 2.55378011147061,
+          "core": 1.9000000000000001,
+          "gravity": 0,
+          "entanglement": 0.6537801114706097
+        },
+        "signal": {
+          "strength": 0.6585794974332653,
+          "surgeIntensity": 0.4691594799768189,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 1,
+        "time": 0.1,
+        "coherence": 0.8266958340853686,
+        "phase": 0.28021962262776345,
+        "unityEvent": false,
+        "realityField": {
+          "total": 0.788142837031106,
+          "core": 0.6160766219255471,
+          "gravity": -0.48929045216273603,
+          "entanglement": 0.6613566672682949
+        },
+        "signal": {
+          "strength": 0.6617619841857547,
+          "surgeIntensity": 0.46574980922706244,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 2,
+        "time": 0.2,
+        "coherence": 0.8408908155770157,
+        "phase": 0.26190813244857486,
+        "unityEvent": false,
+        "realityField": {
+          "total": -1.2211629996937288,
+          "core": -1.69242243429851,
+          "gravity": -0.20145321785683154,
+          "entanglement": 0.6727126524616126
+        },
+        "signal": {
+          "strength": 0.6734052998963342,
+          "surgeIntensity": 0.4752826977936336,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 3,
+        "time": 0.30000000000000004,
+        "coherence": 0.8549828411105291,
+        "phase": 0.24374505522049042,
+        "unityEvent": false,
+        "realityField": {
+          "total": -0.6855217889116478,
+          "core": -1.7758551440166177,
+          "gravity": 0.40634708221654653,
+          "entanglement": 0.6839862728884234
+        },
+        "signal": {
+          "strength": 0.6829065101427038,
+          "surgeIntensity": 0.4802233239865837,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 4,
+        "time": 0.4,
+        "coherence": 0.8632861342896005,
+        "phase": 0.234657174003036,
+        "unityEvent": false,
+        "realityField": {
+          "total": 1.771141276434588,
+          "core": 0.7117558103238202,
+          "gravity": 0.36875655867908724,
+          "entanglement": 0.6906289074316805
+        },
+        "signal": {
+          "strength": 0.6912305146303045,
+          "surgeIntensity": 0.48951634515958664,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 5,
+        "time": 0.5,
+        "coherence": 0.8669430615360025,
+        "phase": 0.23284566988922914,
+        "unityEvent": false,
+        "realityField": {
+          "total": 2.8558710754296794,
+          "core": 2.416837334076063,
+          "gravity": -0.25452070787518555,
+          "entanglement": 0.693554449228802
+        },
+        "signal": {
+          "strength": 0.695839052710921,
+          "surgeIntensity": 0.4962056992074456,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 6,
+        "time": 0.6000000000000001,
+        "coherence": 0.8762382446774575,
+        "phase": 0.22215112733445436,
+        "unityEvent": false,
+        "realityField": {
+          "total": 1.0111030119400455,
+          "core": 0.7836615686954521,
+          "gravity": -0.47354915249737267,
+          "entanglement": 0.700990595741966
+        },
+        "signal": {
+          "strength": 0.6987267833773048,
+          "surgeIntensity": 0.49233704661424116,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 7,
+        "time": 0.7000000000000001,
+        "coherence": 0.873660102726051,
+        "phase": 0.2300763335027879,
+        "unityEvent": false,
+        "realityField": {
+          "total": -1.3943179294770127,
+          "core": -2.1527945917052853,
+          "gravity": 0.05954858004743185,
+          "entanglement": 0.6989280821808408
+        },
+        "signal": {
+          "strength": 0.6968631675612244,
+          "surgeIntensity": 0.49225606253384363,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 8,
+        "time": 0.8,
+        "coherence": 0.8849498090729814,
+        "phase": 0.21618284210457311,
+        "unityEvent": false,
+        "realityField": {
+          "total": -1.0528959860495428,
+          "core": -2.258922637879514,
+          "gravity": 0.49806680457158614,
+          "entanglement": 0.7079598472583851
+        },
+        "signal": {
+          "strength": 0.7045569849673965,
+          "surgeIntensity": 0.49655162634195893,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 9,
+        "time": 0.9,
+        "coherence": 0.8953976190441197,
+        "phase": 0.2035723993950354,
+        "unityEvent": false,
+        "realityField": {
+          "total": 1.7672035550370666,
+          "core": 0.9053673763876324,
+          "gravity": 0.14551808341413822,
+          "entanglement": 0.7163180952352959
+        },
+        "signal": {
+          "strength": 0.713830745081738,
+          "surgeIntensity": 0.505323933929621,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 10,
+        "time": 1,
+        "coherence": 0.8993017130681801,
+        "phase": 0.20119717973847534,
+        "unityEvent": false,
+        "realityField": {
+          "total": 3.355552609055713,
+          "core": 3.0742645786231004,
+          "gravity": -0.4381533400219317,
+          "entanglement": 0.7194413704545441
+        },
+        "signal": {
+          "strength": 0.7197369294994965,
+          "surgeIntensity": 0.514529620154934,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 11,
+        "time": 1.1,
+        "coherence": 0.900314062916043,
+        "phase": 0.2033165048816249,
+        "unityEvent": false,
+        "realityField": {
+          "total": 1.3911673016326067,
+          "core": 0.9968329139502129,
+          "gravity": -0.3259168626504407,
+          "entanglement": 0.7202512503328344
+        },
+        "signal": {
+          "strength": 0.7157750983498192,
+          "surgeIntensity": 0.5054843546099839,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 12,
+        "time": 1.2000000000000002,
+        "coherence": 0.900776253400538,
+        "phase": 0.20624810069371918,
+        "unityEvent": false,
+        "realityField": {
+          "total": -1.7138108704481514,
+          "core": -2.738397022015882,
+          "gravity": 0.3039651488473002,
+          "entanglement": 0.7206210027204305
+        },
+        "signal": {
+          "strength": 0.7162494930716483,
+          "surgeIntensity": 0.5068465827952628,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 13,
+        "time": 1.3,
+        "coherence": 0.909873581864932,
+        "phase": 0.1955596722204658,
+        "unityEvent": false,
+        "realityField": {
+          "total": -1.6944281369379224,
+          "core": -2.87339398211397,
+          "gravity": 0.45106697968410187,
+          "entanglement": 0.7278988654919456
+        },
+        "signal": {
+          "strength": 0.7229128825375882,
+          "surgeIntensity": 0.511449069299102,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 14,
+        "time": 1.4000000000000001,
+        "coherence": 0.9022959626666713,
+        "phase": 0.21100420758872848,
+        "unityEvent": false,
+        "realityField": {
+          "total": 1.7552323644138412,
+          "core": 1.1516450927923605,
+          "gravity": -0.11824949851185643,
+          "entanglement": 0.7218367701333371
+        },
+        "signal": {
+          "strength": 0.716416543602482,
+          "surgeIntensity": 0.5070957707018582,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 15,
+        "time": 1.5,
+        "coherence": 0.9021434638641745,
+        "phase": 0.21472147362678282,
+        "unityEvent": false,
+        "realityField": {
+          "total": 4.132486442721065,
+          "core": 3.9105249518125915,
+          "gravity": -0.4997532801828658,
+          "entanglement": 0.7217147710913396
+        },
+        "signal": {
+          "strength": 0.7208011886483597,
+          "surgeIntensity": 0.517755233211965,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 16,
+        "time": 1.6,
+        "coherence": 0.899265628292131,
+        "phase": 0.2226519073879878,
+        "unityEvent": false,
+        "realityField": {
+          "total": 1.8998920269733948,
+          "core": 1.2679910538273298,
+          "gravity": -0.08751152948763988,
+          "entanglement": 0.7194125026337048
+        },
+        "signal": {
+          "strength": 0.7132039882426089,
+          "surgeIntensity": 0.505308858267187,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 17,
+        "time": 1.7000000000000002,
+        "coherence": 0.8969407674230772,
+        "phase": 0.2296421607815356,
+        "unityEvent": false,
+        "realityField": {
+          "total": -2.302019629568417,
+          "core": -3.4832948201742084,
+          "gravity": 0.4637225766673294,
+          "entanglement": 0.7175526139384618
+        },
+        "signal": {
+          "strength": 0.7116687362635195,
+          "surgeIntensity": 0.5055181142017319,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 18,
+        "time": 1.8,
+        "coherence": 0.9038599787856817,
+        "phase": 0.22203658077648497,
+        "unityEvent": false,
+        "realityField": {
+          "total": -2.6534878147700227,
+          "core": -3.655013606042666,
+          "gravity": 0.278437808244098,
+          "entanglement": 0.7230879830285454
+        },
+        "signal": {
+          "strength": 0.7174328911654144,
+          "surgeIntensity": 0.5106752071324249,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 19,
+        "time": 1.9000000000000001,
+        "coherence": 0.9063106880033004,
+        "phase": 0.2213712035127252,
+        "unityEvent": false,
+        "realityField": {
+          "total": 1.840881028205147,
+          "core": 1.4649151872992388,
+          "gravity": -0.34908270949673187,
+          "entanglement": 0.7250485504026404
+        },
+        "signal": {
+          "strength": 0.7171569926690695,
+          "surgeIntensity": 0.5078875482151084,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 20,
+        "time": 2,
+        "coherence": 0.9143427987847649,
+        "phase": 0.21185613950094562,
+        "unityEvent": false,
+        "realityField": {
+          "total": 5.283574854896103,
+          "core": 4.974264578619299,
+          "gravity": -0.42216396275100787,
+          "entanglement": 0.731474239027812
+        },
+        "signal": {
+          "strength": 0.7304170218498598,
+          "surgeIntensity": 0.5281615668111729,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 21,
+        "time": 2.1,
+        "coherence": 0.9220879564551786,
+        "phase": 0.20270593264334544,
+        "unityEvent": false,
+        "realityField": {
+          "total": 2.525847061135428,
+          "core": 1.6129095358756576,
+          "gravity": 0.17526716009562762,
+          "entanglement": 0.737670365164143
+        },
+        "signal": {
+          "strength": 0.7302631554021509,
+          "surgeIntensity": 0.5192488545705715,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 22,
+        "time": 2.2,
+        "coherence": 0.9302324911005189,
+        "phase": 0.19283914751842968,
+        "unityEvent": false,
+        "realityField": {
+          "total": -3.192307591060308,
+          "core": -4.43081945630968,
+          "gravity": 0.49432587236895753,
+          "entanglement": 0.7441859928804151
+        },
+        "signal": {
+          "strength": 0.7377316018712562,
+          "surgeIntensity": 0.5266046742826134,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 23,
+        "time": 2.3000000000000003,
+        "coherence": 0.9380065526533523,
+        "phase": 0.18346181028540978,
+        "unityEvent": false,
+        "realityField": {
+          "total": -3.870584616763886,
+          "core": -4.649249126127585,
+          "gravity": 0.028259267241017173,
+          "entanglement": 0.7504052421226819
+        },
+        "signal": {
+          "strength": 0.7449435422715385,
+          "surgeIntensity": 0.5338186680216347,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 24,
+        "time": 2.4000000000000004,
+        "coherence": 0.9359147189605944,
+        "phase": 0.1894861464418414,
+        "unityEvent": false,
+        "realityField": {
+          "total": 2.1294418588652917,
+          "core": 1.8634009031134513,
+          "gravity": -0.4826908194166353,
+          "entanglement": 0.7487317751684756
+        },
+        "signal": {
+          "strength": 0.7391280947238117,
+          "surgeIntensity": 0.524188650530376,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 25,
+        "time": 2.5,
+        "coherence": 0.9340903089037574,
+        "phase": 0.19499173342382492,
+        "unityEvent": false,
+        "realityField": {
+          "total": 6.847639283137052,
+          "core": 6.32736228588382,
+          "gravity": -0.22699524986977404,
+          "entanglement": 0.747272247123006
+        },
+        "signal": {
+          "strength": 0.7472914193471489,
+          "surgeIntensity": 0.544967465072816,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 26,
+        "time": 2.6,
+        "coherence": 0.9372148659079403,
+        "phase": 0.19262188716443038,
+        "unityEvent": false,
+        "realityField": {
+          "total": 3.1906556660284817,
+          "core": 2.051652622518619,
+          "gravity": 0.38923115078351034,
+          "entanglement": 0.7497718927263524
+        },
+        "signal": {
+          "strength": 0.7416029698442363,
+          "surgeIntensity": 0.5293093575181317,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 27,
+        "time": 2.7,
+        "coherence": 0.9354253807725689,
+        "phase": 0.1978665663299573,
+        "unityEvent": false,
+        "realityField": {
+          "total": -4.500497577160152,
+          "core": -5.63608941187758,
+          "gravity": 0.3872515300993737,
+          "entanglement": 0.7483403046180551
+        },
+        "signal": {
+          "strength": 0.742572120507683,
+          "surgeIntensity": 0.5341698891355829,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 28,
+        "time": 2.8000000000000003,
+        "coherence": 0.9372960288790162,
+        "phase": 0.19725478379588496,
+        "unityEvent": false,
+        "realityField": {
+          "total": -5.393889351126016,
+          "core": -5.913936243918497,
+          "gravity": -0.22978993031073314,
+          "entanglement": 0.749836823103213
+        },
+        "signal": {
+          "strength": 0.7455999879519434,
+          "surgeIntensity": 0.5391418605035443,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 29,
+        "time": 2.9000000000000004,
+        "coherence": 0.938099654723391,
+        "phase": 0.1982093531647809,
+        "unityEvent": false,
+        "realityField": {
+          "total": 2.638900448319395,
+          "core": 2.3702825636856906,
+          "gravity": -0.48186183914500846,
+          "entanglement": 0.7504797237787129
+        },
+        "signal": {
+          "strength": 0.7400258838230027,
+          "surgeIntensity": 0.5264437267486415,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 30,
+        "time": 3,
+        "coherence": 0.9459217337723289,
+        "phase": 0.18802717627700533,
+        "unityEvent": false,
+        "realityField": {
+          "total": 8.836661804018766,
+          "core": 8.048529157236247,
+          "gravity": 0.03139525976465583,
+          "entanglement": 0.7567373870178632
+        },
+        "signal": {
+          "strength": 0.7591409111334898,
+          "surgeIntensity": 0.5596127559416509,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 31,
+        "time": 3.1,
+        "coherence": 0.9432763628076226,
+        "phase": 0.19417270732143585,
+        "unityEvent": false,
+        "realityField": {
+          "total": 3.8591515993669523,
+          "core": 2.609742449819529,
+          "gravity": 0.49478805930132513,
+          "entanglement": 0.7546210902460981
+        },
+        "signal": {
+          "strength": 0.7461129097235131,
+          "surgeIntensity": 0.5346007213510535,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 32,
+        "time": 3.2,
+        "coherence": 0.9384536682090607,
+        "phase": 0.20362163511227965,
+        "unityEvent": false,
+        "realityField": {
+          "total": -6.246132082165572,
+          "core": -7.169216478320083,
+          "gravity": 0.17232146158726205,
+          "entanglement": 0.7507629345672486
+        },
+        "signal": {
+          "strength": 0.7470374280690185,
+          "surgeIntensity": 0.5428691501022259,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 33,
+        "time": 3.3000000000000003,
+        "coherence": 0.9385235158253409,
+        "phase": 0.2052665589175049,
+        "unityEvent": false,
+        "realityField": {
+          "total": -7.195663263617599,
+          "core": -7.522643108235333,
+          "gravity": -0.42383896804253884,
+          "entanglement": 0.7508188126602727
+        },
+        "signal": {
+          "strength": 0.7488351856720546,
+          "surgeIntensity": 0.547159289177391,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 34,
+        "time": 3.4000000000000004,
+        "coherence": 0.9443784453449502,
+        "phase": 0.19770353125322446,
+        "unityEvent": false,
+        "realityField": {
+          "total": 3.4237220992780832,
+          "core": 3.0150459959085305,
+          "gravity": -0.3468266529064073,
+          "entanglement": 0.7555027562759602
+        },
+        "signal": {
+          "strength": 0.7452302668921803,
+          "surgeIntensity": 0.5325926111517232,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 35,
+        "time": 3.5,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 11.28268101138399,
+          "core": 10.237887237688588,
+          "gravity": 0.28104168892607034,
+          "entanglement": 0.7637520847693323
+        },
+        "signal": {
+          "strength": 0.76996737326854,
+          "surgeIntensity": 0.5750010470203663,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 36,
+        "time": 3.6,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 4.57567750421253,
+          "core": 3.3196436763352195,
+          "gravity": 0.46253860341723263,
+          "entanglement": 0.7934952244600779
+        },
+        "signal": {
+          "strength": 0.7852134646439524,
+          "surgeIntensity": 0.564258868112237,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 37,
+        "time": 3.7,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -8.411046148358793,
+          "core": -9.119384232044105,
+          "gravity": -0.09060288181355786,
+          "entanglement": 0.79894096549887
+        },
+        "signal": {
+          "strength": 0.7986223073143162,
+          "surgeIntensity": 0.5858908071645896,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 38,
+        "time": 3.8000000000000003,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -9.284570628286113,
+          "core": -9.568949849950691,
+          "gravity": -0.4998420946416497,
+          "entanglement": 0.7842213163062282
+        },
+        "signal": {
+          "strength": 0.7855815258270684,
+          "surgeIntensity": 0.5795512910300529,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 39,
+        "time": 3.9000000000000004,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 4.509800188726278,
+          "core": 3.8351977509894124,
+          "gravity": -0.11519471333830882,
+          "entanglement": 0.7897971510751746
+        },
+        "signal": {
+          "strength": 0.7808339089129536,
+          "surgeIntensity": 0.560982842844196,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 40,
+        "time": 4,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 14.273133606379835,
+          "core": 13.022793735845596,
+          "gravity": 0.4524135262330093,
+          "entanglement": 0.7979263443012297
+        },
+        "signal": {
+          "strength": 0.8096055777900454,
+          "surgeIntensity": 0.6122958508335549,
+          "window": "2098: Unity Awakening"
+        }
+      },
+      {
+        "step": 41,
+        "time": 4.1000000000000005,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 5.319607505350112,
+          "core": 4.222651985687451,
+          "gravity": 0.3014647708445258,
+          "entanglement": 0.7954907488181355
+        },
+        "signal": {
+          "strength": 0.7879931775298832,
+          "surgeIntensity": 0.5685799225638624,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 42,
+        "time": 4.2,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -11.141280231569358,
+          "core": -11.600035934622356,
+          "gravity": -0.32829287787647515,
+          "entanglement": 0.7870485809294733
+        },
+        "signal": {
+          "strength": 0.7918450910387671,
+          "surgeIntensity": 0.5898639782596061,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 43,
+        "time": 4.3,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -11.818215387909735,
+          "core": -12.17189223435208,
+          "gravity": -0.4366312274049558,
+          "entanglement": 0.7903080738473005
+        },
+        "signal": {
+          "strength": 0.7964687737784578,
+          "surgeIntensity": 0.5952619072512734,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 44,
+        "time": 4.4,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 5.8208291204652145,
+          "core": 4.878446899009806,
+          "gravity": 0.14852079078851083,
+          "entanglement": 0.793861430666897
+        },
+        "signal": {
+          "strength": 0.7872006948839823,
+          "surgeIntensity": 0.5696255091533509,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 45,
+        "time": 4.5,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 17.854807506518448,
+          "core": 16.565249523559746,
+          "gravity": 0.4977809823015408,
+          "entanglement": 0.7917770006571606
+        },
+        "signal": {
+          "strength": 0.8106969326611015,
+          "surgeIntensity": 0.6244955396651927,
+          "window": "2098: Unity Awakening"
+        }
+      },
+      {
+        "step": 46,
+        "time": 4.6000000000000005,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 6.210078125477979,
+          "core": 5.371296298859034,
+          "gravity": 0.05642819243675062,
+          "entanglement": 0.782353634182195
+        },
+        "signal": {
+          "strength": 0.7764737609653088,
+          "surgeIntensity": 0.5633594683253904,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 47,
+        "time": 4.7,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -14.437406749083305,
+          "core": -14.755473643910403,
+          "gravity": -0.47454807249514375,
+          "entanglement": 0.7926149673222423
+        },
+        "signal": {
+          "strength": 0.8042554814392642,
+          "surgeIntensity": 0.6090752825664992,
+          "window": "2098: Unity Awakening"
+        }
+      },
+      {
+        "step": 48,
+        "time": 4.800000000000001,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -14.94089246573257,
+          "core": -15.482886093863685,
+          "gravity": -0.25181160081789145,
+          "entanglement": 0.7938052289490072
+        },
+        "signal": {
+          "strength": 0.8065466356895464,
+          "surgeIntensity": 0.6122866439154174,
+          "window": "2098: Unity Awakening"
+        }
+      },
+      {
+        "step": 49,
+        "time": 4.9,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 7.367828124025206,
+          "core": 6.20548031465962,
+          "gravity": 0.3708708863693601,
+          "entanglement": 0.7914769229962261
+        },
+        "signal": {
+          "strength": 0.7881489349990508,
+          "surgeIntensity": 0.5752286099400291,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 50,
+        "time": 5,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 22.261057928441165,
+          "core": 21.07132289306574,
+          "gravity": 0.40450849718747456,
+          "entanglement": 0.78522653818795
+        },
+        "signal": {
+          "strength": 0.8136712519041576,
+          "surgeIntensity": 0.6406460510725053,
+          "window": "2098: Unity Awakening"
+        }
+      },
+      {
+        "step": 51,
+        "time": 5.1000000000000005,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 7.410901494060894,
+          "core": 6.832394435536362,
+          "gravity": -0.20432453736815892,
+          "entanglement": 0.782831595892691
+        },
+        "signal": {
+          "strength": 0.7797593119056844,
+          "surgeIntensity": 0.5694934004989244,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 52,
+        "time": 5.2,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -18.472206643144865,
+          "core": -18.76925241291806,
+          "gravity": -0.48863406178409763,
+          "entanglement": 0.7856798315572928
+        },
+        "signal": {
+          "strength": 0.8062657281127095,
+          "surgeIntensity": 0.6233649580925137,
+          "window": "2098: Unity Awakening"
+        }
+      },
+      {
+        "step": 53,
+        "time": 5.300000000000001,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -18.914303582487527,
+          "core": -19.694535342582903,
+          "gravity": 0.0031415719827594937,
+          "entanglement": 0.7770901881126155
+        },
+        "signal": {
+          "strength": 0.7987513995673954,
+          "surgeIntensity": 0.619516476448414,
+          "window": "2098: Unity Awakening"
+        }
+      },
+      {
+        "step": 54,
+        "time": 5.4,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 9.168740359856079,
+          "core": 7.893492894908078,
+          "gravity": 0.48992752619211916,
+          "entanglement": 0.7853199387558812
+        },
+        "signal": {
+          "strength": 0.7863920284978315,
+          "surgeIntensity": 0.5797488144563239,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 55,
+        "time": 5.5,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 27.790060529726617,
+          "core": 26.803136761227847,
+          "gravity": 0.19857394531738523,
+          "entanglement": 0.7883498231813858
+        },
+        "signal": {
+          "strength": 0.829234047829302,
+          "surgeIntensity": 0.6691932732305963,
+          "window": "2098: Unity Awakening"
+        }
+      },
+      {
+        "step": 56,
+        "time": 5.6000000000000005,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 9.056514780802885,
+          "core": 8.690939975240921,
+          "gravity": -0.4081696253585779,
+          "entanglement": 0.7737444309205432
+        },
+        "signal": {
+          "strength": 0.774948814054707,
+          "surgeIntensity": 0.5713802451282146,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 57,
+        "time": 5.7,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -23.46129421699757,
+          "core": -23.874857875923496,
+          "gravity": -0.3666276731112782,
+          "entanglement": 0.7801913320372061
+        },
+        "signal": {
+          "strength": 0.8122730435550786,
+          "surgeIntensity": 0.6434994772861206,
+          "window": "2098: Unity Awakening"
+        }
+      },
+      {
+        "step": 58,
+        "time": 5.800000000000001,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -24.02086742307291,
+          "core": -25.051835943814954,
+          "gravity": 0.2572197668907299,
+          "entanglement": 0.7737487538513127
+        },
+        "signal": {
+          "strength": 0.807257207031073,
+          "surgeIntensity": 0.6417750239226223,
+          "window": "2098: Unity Awakening"
+        }
+      },
+      {
+        "step": 59,
+        "time": 5.9,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 11.287838659286653,
+          "core": 10.040678065635984,
+          "gravity": 0.4725315375899025,
+          "entanglement": 0.7746290560607656
+        },
+        "signal": {
+          "strength": 0.7812896566465493,
+          "surgeIntensity": 0.5829431129708688,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 60,
+        "time": 6,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 34.81059514327965,
+          "core": 34.09411662888528,
+          "gravity": -0.06266661678215042,
+          "entanglement": 0.7791451311765205
+        },
+        "signal": {
+          "strength": 0.8361499813775404,
+          "surgeIntensity": 0.696449926757636,
+          "window": "2098: Unity Awakening"
+        }
+      },
+      {
+        "step": 61,
+        "time": 6.1000000000000005,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 11.325658609058005,
+          "core": 11.05504642126405,
+          "gravity": -0.49833296401701466,
+          "entanglement": 0.7689451518109701
+        },
+        "signal": {
+          "strength": 0.7762542943325403,
+          "surgeIntensity": 0.5795391127028229,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 62,
+        "time": 6.2,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -29.72830498096265,
+          "core": -30.369288347513372,
+          "gravity": -0.14250963123499247,
+          "entanglement": 0.7834929977857158
+        },
+        "signal": {
+          "strength": 0.8302855530768898,
+          "surgeIntensity": 0.6761178468631543,
+          "window": "2098: Unity Awakening"
+        }
+      },
+      {
+        "step": 63,
+        "time": 6.300000000000001,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -30.648079916703118,
+          "core": -31.86642757693572,
+          "gravity": 0.4396581550952752,
+          "entanglement": 0.7786895051373259
+        },
+        "signal": {
+          "strength": 0.8277703550694419,
+          "surgeIntensity": 0.6772939098407649,
+          "window": "2098: Unity Awakening"
+        }
+      },
+      {
+        "step": 64,
+        "time": 6.4,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 13.873757187158724,
+          "core": 12.771939793843439,
+          "gravity": 0.3235279807847279,
+          "entanglement": 0.7782894125305564
+        },
+        "signal": {
+          "strength": 0.7920134629621832,
+          "surgeIntensity": 0.5987062222445331,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 65,
+        "time": 6.5,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 43.84053527578556,
+          "core": 43.36838628475445,
+          "gravity": -0.3064535268264812,
+          "entanglement": 0.7786025178575947
+        },
+        "signal": {
+          "strength": 0.8564788181408516,
+          "surgeIntensity": 0.7395113389686648,
+          "window": "2098: Unity Awakening"
+        }
+      },
+      {
+        "step": 66,
+        "time": 6.6000000000000005,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 14.385450975308823,
+          "core": 14.062236274111774,
+          "gravity": -0.4497026257831901,
+          "entanglement": 0.7729173269802398
+        },
+        "signal": {
+          "strength": 0.7884797152200994,
+          "surgeIntensity": 0.597866359323638,
+          "window": "2078: Cosmic Integration"
+        }
+      },
+      {
+        "step": 67,
+        "time": 6.7,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -37.73318293768038,
+          "core": -38.6303315197995,
+          "gravity": 0.12129961539769221,
+          "entanglement": 0.7758489667214281
+        },
+        "signal": {
+          "strength": 0.8415084173811269,
+          "surgeIntensity": 0.7095322106140441,
+          "window": "2098: Unity Awakening"
+        }
+      },
+      {
+        "step": 68,
+        "time": 6.800000000000001,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -39.26028141846354,
+          "core": -40.53472203765279,
+          "gravity": 0.4996447363202951,
+          "entanglement": 0.7747958828689608
+        },
+        "signal": {
+          "strength": 0.8441220369351708,
+          "surgeIntensity": 0.7162375376632515,
+          "window": "2098: Unity Awakening"
+        }
+      },
+      {
+        "step": 69,
+        "time": 6.9,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 17.097321249005898,
+          "core": 16.2461583802009,
+          "gravity": 0.08441672235638148,
+          "entanglement": 0.7667461464486176
+        },
+        "signal": {
+          "strength": 0.7893289889019948,
+          "surgeIntensity": 0.6071194405360127,
+          "window": "2098: Unity Awakening"
+        }
+      },
+      {
+        "step": 70,
+        "time": 7,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 55.47049968577995,
+          "core": 55.16543952190886,
+          "gravity": -0.4648882429441302,
+          "entanglement": 0.7699484068152166
+        },
+        "signal": {
+          "strength": 0.8746584074697796,
+          "surgeIntensity": 0.7893697603430856,
+          "window": "2113: Galactic Threshold"
+        }
+      },
+      {
+        "step": 71,
+        "time": 7.1000000000000005,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 18.38131895912368,
+          "core": 17.887440856746256,
+          "gravity": -0.27582293531422986,
+          "entanglement": 0.7697010376916549
+        },
+        "signal": {
+          "strength": 0.7959264797720389,
+          "surgeIntensity": 0.6158372936920354,
+          "window": "2098: Unity Awakening"
+        }
+      },
+      {
+        "step": 72,
+        "time": 7.2,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -48.022606374474734,
+          "core": -49.13854076043253,
+          "gravity": 0.351324984899411,
+          "entanglement": 0.7646094010583827
+        },
+        "signal": {
+          "strength": 0.8544047790845487,
+          "surgeIntensity": 0.7514122290580179,
+          "window": "2113: Galactic Threshold"
+        }
+      },
+      {
+        "step": 73,
+        "time": 7.300000000000001,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -50.36799306421849,
+          "core": -51.560962919451676,
+          "gravity": 0.4204722911490957,
+          "entanglement": 0.7724975640840939
+        },
+        "signal": {
+          "strength": 0.8677755726880662,
+          "surgeIntensity": 0.7682602478299811,
+          "window": "2113: Galactic Threshold"
+        }
+      },
+      {
+        "step": 74,
+        "time": 7.4,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 21.25193767732163,
+          "core": 20.6654326887604,
+          "gravity": -0.1782059393566048,
+          "entanglement": 0.7647109279178345
+        },
+        "signal": {
+          "strength": 0.798517090009019,
+          "surgeIntensity": 0.6268161701497412,
+          "window": "2098: Unity Awakening"
+        }
+      },
+      {
+        "step": 75,
+        "time": 7.5,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 70.44015208944407,
+          "core": 70.17152304592868,
+          "gravity": -0.4938441702975681,
+          "entanglement": 0.7624732138129594
+        },
+        "signal": {
+          "strength": 0.9014959834017123,
+          "surgeIntensity": 0.8559518885390659,
+          "window": "2113: Galactic Threshold"
+        }
+      },
+      {
+        "step": 76,
+        "time": 7.6000000000000005,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 23.500877903429757,
+          "core": 22.75317624925948,
+          "gravity": -0.025122159089909647,
+          "entanglement": 0.7728238132601905
+        },
+        "signal": {
+          "strength": 0.8124616744340318,
+          "surgeIntensity": 0.6437579035962544,
+          "window": "2098: Unity Awakening"
+        }
+      },
+      {
+        "step": 77,
+        "time": 7.7,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -61.261956581829786,
+          "core": -62.505189395641786,
+          "gravity": 0.48350074388121805,
+          "entanglement": 0.7597320699307822
+        },
+        "signal": {
+          "strength": 0.8802867968180726,
+          "surgeIntensity": 0.8118008745728736,
+          "window": "2113: Galactic Threshold"
+        }
+      },
+      {
+        "step": 78,
+        "time": 7.800000000000001,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -64.60046455436917,
+          "core": -65.58655798136603,
+          "gravity": 0.22419160804504099,
+          "entanglement": 0.7619018189518194
+        },
+        "signal": {
+          "strength": 0.8901136586609233,
+          "surgeIntensity": 0.8293390264341953,
+          "window": "2113: Galactic Threshold"
+        }
+      },
+      {
+        "step": 79,
+        "time": 7.9,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 26.665368230454952,
+          "core": 26.28683644570103,
+          "gravity": -0.39119540528829355,
+          "entanglement": 0.7697271900422137
+        },
+        "signal": {
+          "strength": 0.817752904957021,
+          "surgeIntensity": 0.6575655016386724,
+          "window": "2098: Unity Awakening"
+        }
+      },
+      {
+        "step": 80,
+        "time": 8,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 89.64383879993166,
+          "core": 89.25955615072593,
+          "gravity": -0.38525662138789607,
+          "entanglement": 0.7695392705936296
+        },
+        "signal": {
+          "strength": 0.952189684969219,
+          "surgeIntensity": 0.95275193273494,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 81,
+        "time": 8.1,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 29.940394482942597,
+          "core": 28.94248727786077,
+          "gravity": 0.23257553903872588,
+          "entanglement": 0.7653316660430991
+        },
+        "signal": {
+          "strength": 0.821479375596934,
+          "surgeIntensity": 0.6706306921737368,
+          "window": "2098: Unity Awakening"
+        }
+      },
+      {
+        "step": 82,
+        "time": 8.200000000000001,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -78.25850529072953,
+          "core": -79.50782910786272,
+          "gravity": 0.4810138357930521,
+          "entanglement": 0.7683099813401452
+        },
+        "signal": {
+          "strength": 0.9278943491179937,
+          "surgeIntensity": 0.8993935580822428,
+          "window": "2113: Galactic Threshold"
+        }
+      },
+      {
+        "step": 83,
+        "time": 8.3,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -82.70684029729021,
+          "core": -83.42739049634719,
+          "gravity": -0.03453001285719629,
+          "entanglement": 0.7550802119141596
+        },
+        "signal": {
+          "strength": 0.9247293237302654,
+          "surgeIntensity": 0.9113808979307585,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 84,
+        "time": 8.4,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 33.698127809711124,
+          "core": 33.43737248253828,
+          "gravity": -0.4952307128483245,
+          "entanglement": 0.7559860400211688
+        },
+        "signal": {
+          "strength": 0.8219201850400609,
+          "surgeIntensity": 0.6829371301976184,
+          "window": "2098: Unity Awakening"
+        }
+      },
+      {
+        "step": 85,
+        "time": 8.5,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 114.12663475840225,
+          "core": 113.53990933059636,
+          "gravity": -0.16936896012265465,
+          "entanglement": 0.7560943879285461
+        },
+        "signal": {
+          "strength": 0.9938355838103888,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 86,
+        "time": 8.6,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 38.00834132496083,
+          "core": 36.81541252338714,
+          "gravity": 0.4254972408973551,
+          "entanglement": 0.7674315606763367
+        },
+        "signal": {
+          "strength": 0.8437654733108305,
+          "surgeIntensity": 0.7119906886769709,
+          "window": "2098: Unity Awakening"
+        }
+      },
+      {
+        "step": 87,
+        "time": 8.700000000000001,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -100.03309060811105,
+          "core": -101.13552091528442,
+          "gravity": 0.34455690419370383,
+          "entanglement": 0.7578734029796479
+        },
+        "signal": {
+          "strength": 0.9668516025747855,
+          "surgeIntensity": 0.9961865771283749,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 88,
+        "time": 8.8,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -105.64886600461419,
+          "core": -106.12128001910791,
+          "gravity": -0.2836344745633668,
+          "entanglement": 0.756048489057093
+        },
+        "signal": {
+          "strength": 0.9776051756570796,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 89,
+        "time": 8.9,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 42.83093893214442,
+          "core": 42.53299482596569,
+          "gravity": -0.46133636993506333,
+          "entanglement": 0.7592804761137949
+        },
+        "signal": {
+          "strength": 0.8477537348801251,
+          "surgeIntensity": 0.7301802929989241,
+          "window": "2098: Unity Awakening"
+        }
+      },
+      {
+        "step": 90,
+        "time": 9,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 145.27143794523576,
+          "core": 144.4249956725244,
+          "gravity": 0.09369065729284584,
+          "entanglement": 0.752751615418514
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 91,
+        "time": 9.1,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 48.0884963925286,
+          "core": 46.82992813462726,
+          "gravity": 0.4999111761904047,
+          "entanglement": 0.7586570817109343
+        },
+        "signal": {
+          "strength": 0.859586946299499,
+          "surgeIntensity": 0.7552501229221927,
+          "window": "2113: Galactic Threshold"
+        }
+      },
+      {
+        "step": 92,
+        "time": 9.200000000000001,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -127.76919579997771,
+          "core": -128.64636986809566,
+          "gravity": 0.11213538047470976,
+          "entanglement": 0.7650386876432407
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 93,
+        "time": 9.3,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -134.68005592130308,
+          "core": -134.98835341580198,
+          "gravity": -0.4537422122705496,
+          "entanglement": 0.7620397067694441
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 94,
+        "time": 9.4,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 54.56857875400792,
+          "core": 54.10280517137979,
+          "gravity": -0.2989524915287775,
+          "entanglement": 0.7647260741569133
+        },
+        "signal": {
+          "strength": 0.8804000317278065,
+          "surgeIntensity": 0.7905092008621079,
+          "window": "2113: Galactic Threshold"
+        }
+      },
+      {
+        "step": 95,
+        "time": 9.5,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 184.7951005251967,
+          "core": 183.71143237638464,
+          "gravity": 0.33065593266182924,
+          "entanglement": 0.753012216150221
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 96,
+        "time": 9.600000000000001,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 60.768766151366165,
+          "core": 59.5685887727998,
+          "gravity": 0.4350918773347754,
+          "entanglement": 0.76508550123159
+        },
+        "signal": {
+          "strength": 0.8926861298252479,
+          "surgeIntensity": 0.8189057255882934,
+          "window": "2113: Galactic Threshold"
+        }
+      },
+      {
+        "step": 97,
+        "time": 9.700000000000001,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -163.0300778843011,
+          "core": -163.6407103108886,
+          "gravity": -0.15151763481636132,
+          "entanglement": 0.7621500614038708
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 98,
+        "time": 9.8,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -171.45148492907325,
+          "core": -171.70783800033766,
+          "gravity": -0.4974755084906529,
+          "entanglement": 0.7538285797550601
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 99,
+        "time": 9.9,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 69.5285211630879,
+          "core": 68.81983127191707,
+          "gravity": -0.053305577137631344,
+          "entanglement": 0.7619954683084632
+        },
+        "signal": {
+          "strength": 0.9063518890869293,
+          "surgeIntensity": 0.856440323520135,
+          "window": "2113: Galactic Threshold"
+        }
+      },
+      {
+        "step": 100,
+        "time": 10,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 234.91706376320747,
+          "core": 233.68455182307176,
+          "gravity": 0.47552825814757593,
+          "entanglement": 0.756983681988137
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 101,
+        "time": 10.100000000000001,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 76.77899777813077,
+          "core": 75.77241541225867,
+          "gravity": 0.2490925526697738,
+          "entanglement": 0.757489813202327
+        },
+        "signal": {
+          "strength": 0.9160384517007932,
+          "surgeIntensity": 0.8863705872573839,
+          "window": "2113: Galactic Threshold"
+        }
+      },
+      {
+        "step": 102,
+        "time": 10.200000000000001,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -207.75969337771548,
+          "core": -208.1541989759105,
+          "gravity": -0.37297057271206835,
+          "entanglement": 0.7674761709070812
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 103,
+        "time": 10.3,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -218.04900958707904,
+          "core": -218.41574391157687,
+          "gravity": -0.4026539428555652,
+          "entanglement": 0.769388267353415
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 104,
+        "time": 10.4,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 88.50979028442859,
+          "core": 87.54017765423653,
+          "gravity": 0.2071877904966342,
+          "entanglement": 0.7624248396954254
+        },
+        "signal": {
+          "strength": 0.9441242460043526,
+          "surgeIntensity": 0.9434852809017332,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 105,
+        "time": 10.5,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 298.5060571272893,
+          "core": 297.2513417067538,
+          "gravity": 0.4879583809693759,
+          "entanglement": 0.7667570395661186
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 106,
+        "time": 10.600000000000001,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 97.13712839471651,
+          "core": 96.38400129535556,
+          "gravity": -0.006283019941636343,
+          "entanglement": 0.7594101193025886
+        },
+        "signal": {
+          "strength": 0.958296810066672,
+          "surgeIntensity": 0.9809518551524063,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 107,
+        "time": 10.700000000000001,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -264.50105335546823,
+          "core": -264.7762312258959,
+          "gravity": -0.49054525872166455,
+          "entanglement": 0.7657231291493724
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 108,
+        "time": 10.8,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -277.26637055153793,
+          "core": -277.8291180185774,
+          "gravity": -0.19568683341864065,
+          "entanglement": 0.7584343004580864
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 109,
+        "time": 10.9,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 112.5244711323975,
+          "core": 111.35282609828779,
+          "gravity": 0.4099760546627171,
+          "entanglement": 0.7616689794469824
+        },
+        "signal": {
+          "strength": 0.9916109829670096,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 110,
+        "time": 11,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 379.2421216529412,
+          "core": 378.1095474953072,
+          "gravity": 0.36448431371069817,
+          "entanglement": 0.7680898439232936
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 111,
+        "time": 11.100000000000001,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 123.10496996811727,
+          "core": 122.60234354625258,
+          "gravity": -0.2599086713103387,
+          "entanglement": 0.7625350931750288
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 112,
+        "time": 11.200000000000001,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -336.5110463557219,
+          "core": -336.80056884365365,
+          "gravity": -0.4714952679464484,
+          "entanglement": 0.7610177558782601
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 113,
+        "time": 11.3,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -352.5702827453644,
+          "core": -353.4040973265631,
+          "gravity": 0.06578217954611976,
+          "entanglement": 0.7680324016525371
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 114,
+        "time": 11.4,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 142.90795507223638,
+          "core": 141.64298282613157,
+          "gravity": 0.49857945013030736,
+          "entanglement": 0.7663927959745038
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 115,
+        "time": 11.5,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 481.8689013070377,
+          "core": 480.96277408277086,
+          "gravity": 0.13949555301963823,
+          "entanglement": 0.7666316712471988
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 116,
+        "time": 11.600000000000001,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 156.2763282303167,
+          "core": 155.95259006788925,
+          "gravity": -0.441145613217451,
+          "entanglement": 0.7648837756448992
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 117,
+        "time": 11.700000000000001,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -427.9668509636925,
+          "core": -428.4169415366859,
+          "gravity": -0.32112632658831325,
+          "entanglement": 0.7712168995816867
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 118,
+        "time": 11.8,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -448.45090607290416,
+          "core": -449.5369560178774,
+          "gravity": 0.3089298065451668,
+          "entanglement": 0.7771201384280746
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 119,
+        "time": 11.9,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 181.3996381900675,
+          "core": 180.1726573698516,
+          "gravity": 0.4483205183926314,
+          "entanglement": 0.7786603018232539
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 120,
+        "time": 12,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 612.4359303316098,
+          "core": 611.7940993179114,
+          "gravity": -0.12434494358242408,
+          "entanglement": 0.766175957280734
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 121,
+        "time": 12.100000000000001,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 198.65123222621423,
+          "core": 198.374758958597,
+          "gravity": -0.49951646733906385,
+          "entanglement": 0.7759897349563238
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 122,
+        "time": 12.200000000000001,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -544.265052272227,
+          "core": -544.9547678187187,
+          "gravity": -0.08131858259744804,
+          "entanglement": 0.7710341290890972
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 123,
+        "time": 12.3,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -570.5711896326693,
+          "core": -571.8198412371087,
+          "gravity": 0.4660355562290924,
+          "entanglement": 0.782616048210267
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 124,
+        "time": 12.4,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 230.2354865466648,
+          "core": 229.18316047991874,
+          "gravity": 0.2731971733671423,
+          "entanglement": 0.7791288933788845
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 125,
+        "time": 12.5,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 778.6424319538625,
+          "core": 778.2141157889299,
+          "gravity": -0.35355339059328633,
+          "entanglement": 0.7818695555258488
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 126,
+        "time": 12.600000000000001,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 252.69505571840998,
+          "core": 252.33659136389346,
+          "gravity": -0.4187640200210775,
+          "entanglement": 0.7772283745376125
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 127,
+        "time": 12.700000000000001,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -692.2307867771763,
+          "core": -693.1931727627724,
+          "gravity": 0.1811376833522337,
+          "entanglement": 0.7812483022438492
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 128,
+        "time": 12.8,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -726.0913383184792,
+          "core": -727.3660740380268,
+          "gravity": 0.49334297210393646,
+          "entanglement": 0.7813927474436646
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 129,
+        "time": 12.9,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 292.3281010004231,
+          "core": 291.52548346694454,
+          "gravity": 0.021984059158920502,
+          "entanglement": 0.7806334743196178
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 130,
+        "time": 13,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 990.1940305012449,
+          "core": 989.903646812462,
+          "gravity": -0.4842915805643111,
+          "entanglement": 0.77467526934729
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 131,
+        "time": 13.100000000000001,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 321.5385731138435,
+          "core": 320.97710250387775,
+          "gravity": -0.2213791155194936,
+          "entanglement": 0.7828497254852481
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 132,
+        "time": 13.200000000000001,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -880.5783290109738,
+          "core": -881.7553366621697,
+          "gravity": 0.3931442160682966,
+          "entanglement": 0.7838634351275646
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 133,
+        "time": 13.3,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -924.0530961602565,
+          "core": -925.2239385668943,
+          "gravity": 0.383246503404671,
+          "entanglement": 0.7875959032331258
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 134,
+        "time": 13.4,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 371.38133585455563,
+          "core": 370.82614330660624,
+          "gravity": -0.23535196608264536,
+          "entanglement": 0.7905445140320146
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 135,
+        "time": 13.5,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 1259.4840442142327,
+          "core": 1259.1768898707385,
+          "gravity": -0.48014684283847064,
+          "entanglement": 0.7873011863325018
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 136,
+        "time": 13.600000000000001,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 409.10546523995555,
+          "core": 408.2891814305465,
+          "gravity": 0.03766340276393983,
+          "entanglement": 0.7786204066451159
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 137,
+        "time": 13.700000000000001,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -1120.327684520736,
+          "core": -1121.6101142968023,
+          "gravity": 0.49565381553474586,
+          "entanglement": 0.7867759605315828
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 138,
+        "time": 13.8,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -1175.9565497213944,
+          "core": -1176.9030300555642,
+          "gravity": 0.16640977226152115,
+          "entanglement": 0.7800705619083103
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 139,
+        "time": 13.9,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 472.0571063118292,
+          "core": 471.6981408375032,
+          "gravity": -0.42713871584964624,
+          "entanglement": 0.7861041901756285
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 140,
+        "time": 14,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 1602.1401182082222,
+          "core": 1601.6977461291492,
+          "gravity": -0.34227355296432654,
+          "entanglement": 0.7846456320373498
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 141,
+        "time": 14.100000000000001,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 520.4296469298513,
+          "core": 519.3518614597916,
+          "gravity": 0.2862160627972444,
+          "entanglement": 0.7915694072623312
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 142,
+        "time": 14.200000000000001,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -1425.463286848409,
+          "core": -1426.7101044812805,
+          "gravity": 0.460115923682949,
+          "entanglement": 0.7867017091885387
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 143,
+        "time": 14.3,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -1496.3520734355457,
+          "core": -1497.043779804326,
+          "gravity": -0.09677473402542196,
+          "entanglement": 0.7884811028058226
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 144,
+        "time": 14.4,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 600.3055948790419,
+          "core": 600.0093037887075,
+          "gravity": -0.49996052210190756,
+          "entanglement": 0.7962516124363538
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 145,
+        "time": 14.5,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 2038.0640659115757,
+          "core": 2037.3910056581112,
+          "gravity": -0.10907162069828223,
+          "entanglement": 0.7821318741628961
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 146,
+        "time": 14.600000000000001,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 661.8686330942246,
+          "core": 660.6257727910272,
+          "gravity": 0.4550529853424808,
+          "entanglement": 0.7878073178549347
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 147,
+        "time": 14.700000000000001,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -1813.7241753365784,
+          "core": -1814.8032870582415,
+          "gravity": 0.296428410080541,
+          "entanglement": 0.7826833115824958
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 148,
+        "time": 14.8,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -1903.8143715441108,
+          "core": -1904.269104090157,
+          "gravity": -0.333005933717093,
+          "entanglement": 0.7877384797633072
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 149,
+        "time": 14.9,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 763.5882884055391,
+          "core": 763.223624307224,
+          "gravity": -0.4335353505822535,
+          "entanglement": 0.7981994488972951
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 150,
+        "time": 15,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 2592.549855741796,
+          "core": 2591.601392939631,
+          "gravity": 0.15450849718748316,
+          "entanglement": 0.7939543049773081
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 151,
+        "time": 15.100000000000001,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 841.6246106441223,
+          "core": 840.328963968737,
+          "gravity": 0.49715039519850157,
+          "entanglement": 0.7984962801869312
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 152,
+        "time": 15.200000000000001,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -2307.6218257379637,
+          "core": -2308.4654411440847,
+          "gravity": 0.05018085742565699,
+          "entanglement": 0.7934345486950325
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 153,
+        "time": 15.3,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -2421.946795357384,
+          "core": -2422.2677183668525,
+          "gravity": -0.4764896707586025,
+          "entanglement": 0.7974126802267443
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 154,
+        "time": 15.4,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 971.3736174789873,
+          "core": 970.8354470879754,
+          "gravity": -0.24636367077414217,
+          "entanglement": 0.7845340617860823
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 155,
+        "time": 15.5,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 3297.7393574253742,
+          "core": 3296.56789552633,
+          "gravity": 0.37505553481521275,
+          "entanglement": 0.7964063642290599
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 156,
+        "time": 15.600000000000001,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 1070.1092131160335,
+          "core": 1068.9149542160517,
+          "gravity": 0.4007834924354715,
+          "entanglement": 0.7934754075463006
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 157,
+        "time": 15.700000000000001,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -2935.832154893696,
+          "core": -2936.4134013558514,
+          "gravity": -0.21004286420587714,
+          "entanglement": 0.7912893263610109
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 158,
+        "time": 15.8,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -3080.863077183536,
+          "core": -3081.1721341483085,
+          "gravity": -0.48726343639328895,
+          "entanglement": 0.7963204011658651
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 159,
+        "time": 15.9,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 1235.718670094031,
+          "core": 1234.9217651492195,
+          "gravity": 0.00942421985767257,
+          "entanglement": 0.7874807249538156
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 160,
+        "time": 16,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 4194.5762158677435,
+          "core": 4193.299139065575,
+          "gravity": 0.4911436253643435,
+          "entanglement": 0.785933176803725
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 161,
+        "time": 16.1,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 1360.6657473119724,
+          "core": 1359.6808254273196,
+          "gravity": 0.19279199613873005,
+          "entanglement": 0.7921298885138937
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 162,
+        "time": 16.2,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -3734.803980339285,
+          "core": -3735.175545626389,
+          "gravity": -0.4117662988142095,
+          "entanglement": 0.7833315859184307
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 163,
+        "time": 16.3,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -3918.8766333236217,
+          "core": -3919.3114981641106,
+          "gravity": -0.36232656509354905,
+          "entanglement": 0.7971914055825117
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 164,
+        "time": 16.400000000000002,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 1571.9043180399835,
+          "core": 1570.8447508756803,
+          "gravity": 0.2625873149805907,
+          "entanglement": 0.7969798493224549
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 165,
+        "time": 16.5,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 5335.216760506738,
+          "core": 5333.9589011803655,
+          "gravity": 0.4704403844771071,
+          "entanglement": 0.7874189418949251
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 166,
+        "time": 16.6,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 1730.263227979268,
+          "core": 1729.5407270175085,
+          "gravity": -0.06889514534230591,
+          "entanglement": 0.7913961071020559
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 167,
+        "time": 16.7,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -4750.923384169572,
+          "core": -4751.216688415394,
+          "gravity": -0.49880625318061356,
+          "entanglement": 0.7921104990022099
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 168,
+        "time": 16.8,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -4984.7912177641665,
+          "core": -4985.441238234507,
+          "gravity": -0.13647596775867815,
+          "entanglement": 0.7864964380994262
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 169,
+        "time": 16.900000000000002,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 1999.3729582385035,
+          "core": 1998.1453894413416,
+          "gravity": 0.4426156556662062,
+          "entanglement": 0.7849531414957336
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 170,
+        "time": 17,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 6786.000205194908,
+          "core": 6784.900532000021,
+          "gravity": 0.3187119948743595,
+          "entanglement": 0.7809612000131203
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 171,
+        "time": 17.1,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 2200.481654717479,
+          "core": 2200.0097894093237,
+          "gravity": -0.311393890244018,
+          "entanglement": 0.7832591983993495
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 172,
+        "time": 17.2,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -6043.295559337276,
+          "core": -6043.64098675616,
+          "gravity": -0.44692071207561623,
+          "entanglement": 0.792348130959314
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 173,
+        "time": 17.3,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -6340.661573850716,
+          "core": -6341.579216536288,
+          "gravity": 0.12738536284169594,
+          "entanglement": 0.7902573227300115
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 174,
+        "time": 17.400000000000002,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 2542.964003563488,
+          "core": 2541.6801979444444,
+          "gravity": 0.49936847830301284,
+          "entanglement": 0.7844371407405007
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 175,
+        "time": 17.5,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 8631.389629256157,
+          "core": 8630.5267967001,
+          "gravity": 0.07821723252011334,
+          "entanglement": 0.784615323536666
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 176,
+        "time": 17.6,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 2798.7757057405324,
+          "core": 2798.455681262404,
+          "gravity": -0.46716447122829613,
+          "entanglement": 0.7871889493565627
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 177,
+        "time": 17.7,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -7687.113552469988,
+          "core": -7687.630089773356,
+          "gravity": -0.27056062606343856,
+          "entanglement": 0.7870979294325076
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 178,
+        "time": 17.8,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -8065.473910815179,
+          "core": -8066.61337236827,
+          "gravity": 0.35576783860462113,
+          "entanglement": 0.7836937144861271
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 179,
+        "time": 17.900000000000002,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 3234.260352443648,
+          "core": 3233.067154588496,
+          "gravity": 0.417039216806619,
+          "entanglement": 0.7761586383453817
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 180,
+        "time": 18,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 10978.80009451591,
+          "core": 10978.199671057208,
+          "gravity": -0.1840622763423078,
+          "entanglement": 0.7844857350438524
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 181,
+        "time": 18.1,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 3559.983130811929,
+          "core": 3559.690614833477,
+          "gravity": -0.49282229757450974,
+          "entanglement": 0.7853382760269785
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 182,
+        "time": 18.2,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -9778.052009736137,
+          "core": -9778.816532375366,
+          "gravity": -0.018845091334946884,
+          "entanglement": 0.7833677305638514
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 183,
+        "time": 18.3,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -10259.625400181778,
+          "core": -10260.890714692254,
+          "gravity": 0.4850632982450506,
+          "entanglement": 0.7802512122312192
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 184,
+        "time": 18.400000000000002,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 4113.514640379402,
+          "core": 4112.524948817496,
+          "gravity": 0.21855788332550183,
+          "entanglement": 0.7711336785812495
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 185,
+        "time": 18.5,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 13964.863378379281,
+          "core": 13964.485697869794,
+          "gravity": -0.3950775061878376,
+          "entanglement": 0.7727580156754593
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 186,
+        "time": 18.6,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 4528.389063979901,
+          "core": 4527.996408275885,
+          "gravity": -0.38122125550575126,
+          "entanglement": 0.7738769595218209
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 187,
+        "time": 18.7,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -12437.828159696935,
+          "core": -12438.84677819217,
+          "gravity": 0.23811910183395613,
+          "entanglement": 0.7804993934001492
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 188,
+        "time": 18.8,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -13050.800857497285,
+          "core": -13052.054610579238,
+          "gravity": 0.4792608945087008,
+          "entanglement": 0.7744921874448881
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 189,
+        "time": 18.900000000000002,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 5231.946530702152,
+          "core": 5231.212544048866,
+          "gravity": -0.04079530578400402,
+          "entanglement": 0.7747819590693521
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 190,
+        "time": 19,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 17763.37157161935,
+          "core": 17763.10020304365,
+          "gravity": -0.49605735065724,
+          "entanglement": 0.7674259263593961
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 191,
+        "time": 19.1,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 5760.303489691786,
+          "core": 5759.700404277534,
+          "gravity": -0.16344401482749116,
+          "entanglement": 0.7665294290786983
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 192,
+        "time": 19.200000000000003,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -15821.261650897957,
+          "core": -15822.457519094078,
+          "gravity": 0.4287633280967999,
+          "entanglement": 0.7671048680238794
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 193,
+        "time": 19.3,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -16601.36460512894,
+          "core": -16602.469931198604,
+          "gravity": 0.33997668936122716,
+          "entanglement": 0.7653493803055916
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 194,
+        "time": 19.400000000000002,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 6654.681976604766,
+          "core": 6654.205146786146,
+          "gravity": -0.28878635171108985,
+          "entanglement": 0.765616170330458
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 195,
+        "time": 19.5,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 22595.317273816938,
+          "core": 22595.012494552626,
+          "gravity": -0.45887731284200123,
+          "entanglement": 0.7636565771534163
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 196,
+        "time": 19.6,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 7327.328072057955,
+          "core": 7326.45208950044,
+          "gravity": 0.09985499025714792,
+          "entanglement": 0.7761275672580381
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 197,
+        "time": 19.700000000000003,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -20125.203774895363,
+          "core": -20126.476867917896,
+          "gravity": 0.499990130428068,
+          "entanglement": 0.7731028921030265
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 198,
+        "time": 19.8,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": -21117.800802021877,
+          "core": -21118.667982965246,
+          "gravity": 0.10600355496103005,
+          "entanglement": 0.7611773884099857
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      },
+      {
+        "step": 199,
+        "time": 19.900000000000002,
+        "coherence": 1,
+        "phase": 0,
+        "unityEvent": true,
+        "realityField": {
+          "total": 8464.588871298516,
+          "core": 8464.279698478611,
+          "gravity": -0.45634579370173806,
+          "entanglement": 0.7655186136065136
+        },
+        "signal": {
+          "strength": 1,
+          "surgeIntensity": 1,
+          "window": "2162: Quantum Leap"
+        }
+      }
+    ],
+    "series": {
+      "time": [
+        0,
+        0.1,
+        0.2,
+        0.30000000000000004,
+        0.4,
+        0.5,
+        0.6000000000000001,
+        0.7000000000000001,
+        0.8,
+        0.9,
+        1,
+        1.1,
+        1.2000000000000002,
+        1.3,
+        1.4000000000000001,
+        1.5,
+        1.6,
+        1.7000000000000002,
+        1.8,
+        1.9000000000000001,
+        2,
+        2.1,
+        2.2,
+        2.3000000000000003,
+        2.4000000000000004,
+        2.5,
+        2.6,
+        2.7,
+        2.8000000000000003,
+        2.9000000000000004,
+        3,
+        3.1,
+        3.2,
+        3.3000000000000003,
+        3.4000000000000004,
+        3.5,
+        3.6,
+        3.7,
+        3.8000000000000003,
+        3.9000000000000004,
+        4,
+        4.1000000000000005,
+        4.2,
+        4.3,
+        4.4,
+        4.5,
+        4.6000000000000005,
+        4.7,
+        4.800000000000001,
+        4.9,
+        5,
+        5.1000000000000005,
+        5.2,
+        5.300000000000001,
+        5.4,
+        5.5,
+        5.6000000000000005,
+        5.7,
+        5.800000000000001,
+        5.9,
+        6,
+        6.1000000000000005,
+        6.2,
+        6.300000000000001,
+        6.4,
+        6.5,
+        6.6000000000000005,
+        6.7,
+        6.800000000000001,
+        6.9,
+        7,
+        7.1000000000000005,
+        7.2,
+        7.300000000000001,
+        7.4,
+        7.5,
+        7.6000000000000005,
+        7.7,
+        7.800000000000001,
+        7.9,
+        8,
+        8.1,
+        8.200000000000001,
+        8.3,
+        8.4,
+        8.5,
+        8.6,
+        8.700000000000001,
+        8.8,
+        8.9,
+        9,
+        9.1,
+        9.200000000000001,
+        9.3,
+        9.4,
+        9.5,
+        9.600000000000001,
+        9.700000000000001,
+        9.8,
+        9.9,
+        10,
+        10.100000000000001,
+        10.200000000000001,
+        10.3,
+        10.4,
+        10.5,
+        10.600000000000001,
+        10.700000000000001,
+        10.8,
+        10.9,
+        11,
+        11.100000000000001,
+        11.200000000000001,
+        11.3,
+        11.4,
+        11.5,
+        11.600000000000001,
+        11.700000000000001,
+        11.8,
+        11.9,
+        12,
+        12.100000000000001,
+        12.200000000000001,
+        12.3,
+        12.4,
+        12.5,
+        12.600000000000001,
+        12.700000000000001,
+        12.8,
+        12.9,
+        13,
+        13.100000000000001,
+        13.200000000000001,
+        13.3,
+        13.4,
+        13.5,
+        13.600000000000001,
+        13.700000000000001,
+        13.8,
+        13.9,
+        14,
+        14.100000000000001,
+        14.200000000000001,
+        14.3,
+        14.4,
+        14.5,
+        14.600000000000001,
+        14.700000000000001,
+        14.8,
+        14.9,
+        15,
+        15.100000000000001,
+        15.200000000000001,
+        15.3,
+        15.4,
+        15.5,
+        15.600000000000001,
+        15.700000000000001,
+        15.8,
+        15.9,
+        16,
+        16.1,
+        16.2,
+        16.3,
+        16.400000000000002,
+        16.5,
+        16.6,
+        16.7,
+        16.8,
+        16.900000000000002,
+        17,
+        17.1,
+        17.2,
+        17.3,
+        17.400000000000002,
+        17.5,
+        17.6,
+        17.7,
+        17.8,
+        17.900000000000002,
+        18,
+        18.1,
+        18.2,
+        18.3,
+        18.400000000000002,
+        18.5,
+        18.6,
+        18.7,
+        18.8,
+        18.900000000000002,
+        19,
+        19.1,
+        19.200000000000003,
+        19.3,
+        19.400000000000002,
+        19.5,
+        19.6,
+        19.700000000000003,
+        19.8,
+        19.900000000000002
+      ],
+      "coherence": [
+        0.817225139338262,
+        0.8266958340853686,
+        0.8408908155770157,
+        0.8549828411105291,
+        0.8632861342896005,
+        0.8669430615360025,
+        0.8762382446774575,
+        0.873660102726051,
+        0.8849498090729814,
+        0.8953976190441197,
+        0.8993017130681801,
+        0.900314062916043,
+        0.900776253400538,
+        0.909873581864932,
+        0.9022959626666713,
+        0.9021434638641745,
+        0.899265628292131,
+        0.8969407674230772,
+        0.9038599787856817,
+        0.9063106880033004,
+        0.9143427987847649,
+        0.9220879564551786,
+        0.9302324911005189,
+        0.9380065526533523,
+        0.9359147189605944,
+        0.9340903089037574,
+        0.9372148659079403,
+        0.9354253807725689,
+        0.9372960288790162,
+        0.938099654723391,
+        0.9459217337723289,
+        0.9432763628076226,
+        0.9384536682090607,
+        0.9385235158253409,
+        0.9443784453449502,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "phase": [
+        0.29110133905831753,
+        0.28021962262776345,
+        0.26190813244857486,
+        0.24374505522049042,
+        0.234657174003036,
+        0.23284566988922914,
+        0.22215112733445436,
+        0.2300763335027879,
+        0.21618284210457311,
+        0.2035723993950354,
+        0.20119717973847534,
+        0.2033165048816249,
+        0.20624810069371918,
+        0.1955596722204658,
+        0.21100420758872848,
+        0.21472147362678282,
+        0.2226519073879878,
+        0.2296421607815356,
+        0.22203658077648497,
+        0.2213712035127252,
+        0.21185613950094562,
+        0.20270593264334544,
+        0.19283914751842968,
+        0.18346181028540978,
+        0.1894861464418414,
+        0.19499173342382492,
+        0.19262188716443038,
+        0.1978665663299573,
+        0.19725478379588496,
+        0.1982093531647809,
+        0.18802717627700533,
+        0.19417270732143585,
+        0.20362163511227965,
+        0.2052665589175049,
+        0.19770353125322446,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "realityField": [
+        2.55378011147061,
+        0.788142837031106,
+        -1.2211629996937288,
+        -0.6855217889116478,
+        1.771141276434588,
+        2.8558710754296794,
+        1.0111030119400455,
+        -1.3943179294770127,
+        -1.0528959860495428,
+        1.7672035550370666,
+        3.355552609055713,
+        1.3911673016326067,
+        -1.7138108704481514,
+        -1.6944281369379224,
+        1.7552323644138412,
+        4.132486442721065,
+        1.8998920269733948,
+        -2.302019629568417,
+        -2.6534878147700227,
+        1.840881028205147,
+        5.283574854896103,
+        2.525847061135428,
+        -3.192307591060308,
+        -3.870584616763886,
+        2.1294418588652917,
+        6.847639283137052,
+        3.1906556660284817,
+        -4.500497577160152,
+        -5.393889351126016,
+        2.638900448319395,
+        8.836661804018766,
+        3.8591515993669523,
+        -6.246132082165572,
+        -7.195663263617599,
+        3.4237220992780832,
+        11.28268101138399,
+        4.57567750421253,
+        -8.411046148358793,
+        -9.284570628286113,
+        4.509800188726278,
+        14.273133606379835,
+        5.319607505350112,
+        -11.141280231569358,
+        -11.818215387909735,
+        5.8208291204652145,
+        17.854807506518448,
+        6.210078125477979,
+        -14.437406749083305,
+        -14.94089246573257,
+        7.367828124025206,
+        22.261057928441165,
+        7.410901494060894,
+        -18.472206643144865,
+        -18.914303582487527,
+        9.168740359856079,
+        27.790060529726617,
+        9.056514780802885,
+        -23.46129421699757,
+        -24.02086742307291,
+        11.287838659286653,
+        34.81059514327965,
+        11.325658609058005,
+        -29.72830498096265,
+        -30.648079916703118,
+        13.873757187158724,
+        43.84053527578556,
+        14.385450975308823,
+        -37.73318293768038,
+        -39.26028141846354,
+        17.097321249005898,
+        55.47049968577995,
+        18.38131895912368,
+        -48.022606374474734,
+        -50.36799306421849,
+        21.25193767732163,
+        70.44015208944407,
+        23.500877903429757,
+        -61.261956581829786,
+        -64.60046455436917,
+        26.665368230454952,
+        89.64383879993166,
+        29.940394482942597,
+        -78.25850529072953,
+        -82.70684029729021,
+        33.698127809711124,
+        114.12663475840225,
+        38.00834132496083,
+        -100.03309060811105,
+        -105.64886600461419,
+        42.83093893214442,
+        145.27143794523576,
+        48.0884963925286,
+        -127.76919579997771,
+        -134.68005592130308,
+        54.56857875400792,
+        184.7951005251967,
+        60.768766151366165,
+        -163.0300778843011,
+        -171.45148492907325,
+        69.5285211630879,
+        234.91706376320747,
+        76.77899777813077,
+        -207.75969337771548,
+        -218.04900958707904,
+        88.50979028442859,
+        298.5060571272893,
+        97.13712839471651,
+        -264.50105335546823,
+        -277.26637055153793,
+        112.5244711323975,
+        379.2421216529412,
+        123.10496996811727,
+        -336.5110463557219,
+        -352.5702827453644,
+        142.90795507223638,
+        481.8689013070377,
+        156.2763282303167,
+        -427.9668509636925,
+        -448.45090607290416,
+        181.3996381900675,
+        612.4359303316098,
+        198.65123222621423,
+        -544.265052272227,
+        -570.5711896326693,
+        230.2354865466648,
+        778.6424319538625,
+        252.69505571840998,
+        -692.2307867771763,
+        -726.0913383184792,
+        292.3281010004231,
+        990.1940305012449,
+        321.5385731138435,
+        -880.5783290109738,
+        -924.0530961602565,
+        371.38133585455563,
+        1259.4840442142327,
+        409.10546523995555,
+        -1120.327684520736,
+        -1175.9565497213944,
+        472.0571063118292,
+        1602.1401182082222,
+        520.4296469298513,
+        -1425.463286848409,
+        -1496.3520734355457,
+        600.3055948790419,
+        2038.0640659115757,
+        661.8686330942246,
+        -1813.7241753365784,
+        -1903.8143715441108,
+        763.5882884055391,
+        2592.549855741796,
+        841.6246106441223,
+        -2307.6218257379637,
+        -2421.946795357384,
+        971.3736174789873,
+        3297.7393574253742,
+        1070.1092131160335,
+        -2935.832154893696,
+        -3080.863077183536,
+        1235.718670094031,
+        4194.5762158677435,
+        1360.6657473119724,
+        -3734.803980339285,
+        -3918.8766333236217,
+        1571.9043180399835,
+        5335.216760506738,
+        1730.263227979268,
+        -4750.923384169572,
+        -4984.7912177641665,
+        1999.3729582385035,
+        6786.000205194908,
+        2200.481654717479,
+        -6043.295559337276,
+        -6340.661573850716,
+        2542.964003563488,
+        8631.389629256157,
+        2798.7757057405324,
+        -7687.113552469988,
+        -8065.473910815179,
+        3234.260352443648,
+        10978.80009451591,
+        3559.983130811929,
+        -9778.052009736137,
+        -10259.625400181778,
+        4113.514640379402,
+        13964.863378379281,
+        4528.389063979901,
+        -12437.828159696935,
+        -13050.800857497285,
+        5231.946530702152,
+        17763.37157161935,
+        5760.303489691786,
+        -15821.261650897957,
+        -16601.36460512894,
+        6654.681976604766,
+        22595.317273816938,
+        7327.328072057955,
+        -20125.203774895363,
+        -21117.800802021877,
+        8464.588871298516
+      ],
+      "signalStrength": [
+        0.6585794974332653,
+        0.6617619841857547,
+        0.6734052998963342,
+        0.6829065101427038,
+        0.6912305146303045,
+        0.695839052710921,
+        0.6987267833773048,
+        0.6968631675612244,
+        0.7045569849673965,
+        0.713830745081738,
+        0.7197369294994965,
+        0.7157750983498192,
+        0.7162494930716483,
+        0.7229128825375882,
+        0.716416543602482,
+        0.7208011886483597,
+        0.7132039882426089,
+        0.7116687362635195,
+        0.7174328911654144,
+        0.7171569926690695,
+        0.7304170218498598,
+        0.7302631554021509,
+        0.7377316018712562,
+        0.7449435422715385,
+        0.7391280947238117,
+        0.7472914193471489,
+        0.7416029698442363,
+        0.742572120507683,
+        0.7455999879519434,
+        0.7400258838230027,
+        0.7591409111334898,
+        0.7461129097235131,
+        0.7470374280690185,
+        0.7488351856720546,
+        0.7452302668921803,
+        0.76996737326854,
+        0.7852134646439524,
+        0.7986223073143162,
+        0.7855815258270684,
+        0.7808339089129536,
+        0.8096055777900454,
+        0.7879931775298832,
+        0.7918450910387671,
+        0.7964687737784578,
+        0.7872006948839823,
+        0.8106969326611015,
+        0.7764737609653088,
+        0.8042554814392642,
+        0.8065466356895464,
+        0.7881489349990508,
+        0.8136712519041576,
+        0.7797593119056844,
+        0.8062657281127095,
+        0.7987513995673954,
+        0.7863920284978315,
+        0.829234047829302,
+        0.774948814054707,
+        0.8122730435550786,
+        0.807257207031073,
+        0.7812896566465493,
+        0.8361499813775404,
+        0.7762542943325403,
+        0.8302855530768898,
+        0.8277703550694419,
+        0.7920134629621832,
+        0.8564788181408516,
+        0.7884797152200994,
+        0.8415084173811269,
+        0.8441220369351708,
+        0.7893289889019948,
+        0.8746584074697796,
+        0.7959264797720389,
+        0.8544047790845487,
+        0.8677755726880662,
+        0.798517090009019,
+        0.9014959834017123,
+        0.8124616744340318,
+        0.8802867968180726,
+        0.8901136586609233,
+        0.817752904957021,
+        0.952189684969219,
+        0.821479375596934,
+        0.9278943491179937,
+        0.9247293237302654,
+        0.8219201850400609,
+        0.9938355838103888,
+        0.8437654733108305,
+        0.9668516025747855,
+        0.9776051756570796,
+        0.8477537348801251,
+        1,
+        0.859586946299499,
+        1,
+        1,
+        0.8804000317278065,
+        1,
+        0.8926861298252479,
+        1,
+        1,
+        0.9063518890869293,
+        1,
+        0.9160384517007932,
+        1,
+        1,
+        0.9441242460043526,
+        1,
+        0.958296810066672,
+        1,
+        1,
+        0.9916109829670096,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "anchor_TL-probe_1788741294": {
+    "anchor_id": "anchor_TL-probe_1788741294",
+    "branch_id": "TL-probe",
+    "symbol": "BTC",
+    "exchange": "kraken",
+    "created_at": 1788741294.18147,
+    "initial_price": 100000.0,
+    "initial_frequency": 7.83,
+    "status": "partial",
+    "validation_count": 1,
+    "successful_validations": 1,
+    "failed_validations": 0,
+    "cumulative_coherence": 0.15,
+    "cumulative_stability": 0.3,
+    "cumulative_beneficial": 0.0,
+    "anchor_strength": 0.8656481839811938,
+    "drift_rate": 0.0,
+    "time_to_expiry": 604800.0,
+    "executed": false,
+    "execution_timestamp": 0.0,
+    "execution_price": 0.0,
+    "execution_result": "",
+    "validation_history": [
+      {
+        "timestamp": 1788741294.18147,
+        "validation_type": "hourly",
+        "p1_score": 1.0,
+        "p2_score": 0.5,
+        "p3_score": 1.0,
+        "coherence": 0.5,
+        "lambda_stability": 1.0,
+        "drift": 0.0,
+        "passed": true,
+        "notes": "Price: 0.0000"
+      }
+    ],
+    "score": 0.06302916827915372
+  }
+}

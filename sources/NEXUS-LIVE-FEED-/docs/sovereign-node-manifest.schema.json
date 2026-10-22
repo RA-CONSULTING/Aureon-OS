@@ -1,0 +1,165 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nexus/specs/sovereign-node-manifest.json",
+  "title": "SovereignNodeManifest",
+  "type": "object",
+  "required": [
+    "capsule_id",
+    "pubkeys",
+    "consent_policy",
+    "balance_contract",
+    "proofs",
+    "capabilities",
+    "revocation"
+  ],
+  "properties": {
+    "capsule_id": {
+      "type": "string",
+      "description": "SHA-256 or Blake3 hash of human-readable declaration."
+    },
+    "pubkeys": {
+      "type": "object",
+      "required": [
+        "sign",
+        "encrypt"
+      ],
+      "properties": {
+        "sign": {
+          "type": "string",
+          "description": "ed25519 public key (base58/hex)."
+        },
+        "encrypt": {
+          "type": "string",
+          "description": "x25519 public key for E2EE."
+        }
+      }
+    },
+    "consent_policy": {
+      "type": "object",
+      "required": [
+        "mode",
+        "revocable",
+        "ttl"
+      ],
+      "properties": {
+        "mode": {
+          "enum": [
+            "explicit",
+            "explicit+schedule"
+          ],
+          "default": "explicit"
+        },
+        "revocable": {
+          "type": "boolean",
+          "const": true
+        },
+        "ttl": {
+          "type": "string",
+          "description": "ISO 8601 duration for default consent windows."
+        }
+      }
+    },
+    "balance_contract": {
+      "type": "object",
+      "required": [
+        "B_dot_le_0",
+        "ceilings",
+        "weights"
+      ],
+      "properties": {
+        "B_dot_le_0": {
+          "type": "boolean",
+          "const": true
+        },
+        "ceilings": {
+          "type": "object",
+          "properties": {
+            "energy_safe": {
+              "type": "number"
+            },
+            "gini_max": {
+              "type": "number"
+            },
+            "phase_error": {
+              "type": "number"
+            }
+          }
+        },
+        "weights": {
+          "type": "object",
+          "properties": {
+            "planet": {
+              "type": "number",
+              "default": 1.0
+            },
+            "people": {
+              "type": "number",
+              "default": 0.8
+            },
+            "progress": {
+              "type": "number",
+              "default": 0.6
+            },
+            "profit": {
+              "type": "number",
+              "default": 0.2
+            },
+            "dissonance": {
+              "type": "number",
+              "default": 0.7
+            },
+            "coherence": {
+              "type": "number",
+              "default": 0.5
+            }
+          }
+        }
+      }
+    },
+    "proofs": {
+      "type": "object",
+      "required": [
+        "existence",
+        "sovereign_oath"
+      ],
+      "properties": {
+        "existence": {
+          "type": "string",
+          "description": "Bitcoin/OpenTimestamps attestation of capsule_id."
+        },
+        "sovereign_oath": {
+          "type": "string",
+          "description": "Signature over Source-Law clause by sign key."
+        }
+      }
+    },
+    "capabilities": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Declared minimal capabilities (read/write topics, coupling types)."
+    },
+    "revocation": {
+      "type": "object",
+      "required": [
+        "strategy"
+      ],
+      "properties": {
+        "strategy": {
+          "enum": [
+            "time-lock",
+            "multi-sig",
+            "social-recovery"
+          ]
+        },
+        "guardians": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

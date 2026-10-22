@@ -1,0 +1,39 @@
+ANTARCTIC CANDIDATE
+UPDATE BRIEFING — PART 2
+Subsurface data · Harmonic LIDAR ground truth · 4D reconstruction · 26-year timeline
+Continuation of the 24 April 2026 investigation
+24 April 2026  ·  Aureon Institute  ·  G. Leckey
+What changed since Part 1
+Part 1 established the Antarctic candidate at 89.19°S, 110.65°E through 13-sensor multi-satellite consensus across a 12-month MODIS observation window. Part 2 grounded that finding against real subsurface topography, applied the full Walgidee Hills Harmonic LIDAR methodology, built a 4D reconstruction true to physical scale, and extended the observation timeline to 26 years — all using fully open-source, auth-free public data.
+Numerical snapshot
+Discovery 1 — Real subsurface data retrieved
+Part 1 ended by designing a BedMachine v4 pipeline that was authored but needed Earthdata credentials to run. Part 2 found two fully-public alternatives and pulled them.
+Data sources acquired
+Result — what sits under the candidate
+Figure 1. Real REMA 1km + BedMachine v2 20km ground-truth at the Antarctic candidate. Top row: REMA Antarctic-wide + polar zoom + BedMachine 20km global. Middle row: REMA reprojected to ROI + consensus overlays. Bottom: cross-sections and summary. Yellow dot = candidate. Shows the REMA polar coverage hole (radius ~100 km around the South Pole, ICESat-2 orbit geometry doesn't reach).
+What BedMachine 20km says (fills the hole)
+BedMachine uses a mass-conservation inversion that IS defined at the pole. At the candidate:
+Geographic setting: East Antarctic plateau summit, solid grounded ice, near-flat terrain. Standard plateau interior. No anomaly visible at 20 km resolution.
+What 20 km can't tell us: sub-20 km features (subglacial lake margins, localised bedrock ridges, ice-thickness perturbations). For that resolution, BedMachine v4 500m is the tool — still needing Earthdata Login.
+Discovery 2 — Full Walgidee Harmonic LIDAR applied to real REMA
+The Walgidee Hills Harmonic LIDAR system was re-instantiated with every technical relationship intact: 9 φ² shells, 7-frequency HNC stack, multi-material acoustic impedance framework, Resonant Orthogonality Law coherence mapping, six derivative products. Run on the real REMA 1km DEM inside a 400×400 km box around the candidate.
+Methodology preserved from the Walgidee white paper
+Acoustic impedance at the Antarctic substrate
+Reflection coefficients at the boundaries present in the ice sheet:
+The firn→bedrock and water→bedrock interfaces are strong acoustic reflectors — exactly what harmonic LIDAR is designed to detect. A subglacial water body (lake or saturated zone) at the candidate would produce a +0.82 reflection (67% energy return) at the water/bedrock interface.
+Visualisation — 8-panel master figure
+Figure 2. Full Walgidee Harmonic LIDAR methodology applied to real REMA 1km DEM, 400×400 km window around Antarctic candidate. Panel 1: raw elevation (pink-red overlay = REMA polar hole). Panels 2-4: hillshade, slope, Laplacian. Panel 5: HNC φ²-filtered harmonic field. Panel 6: coherence map (Resonant Orthogonality Law via 2D monogenic signal) — yellow triangles mark top 10 boundary sites. Panels 7-8: Impedance Contrast (bedrock|ice disagreement) and Material Variance (multi-material disagreement). Cyan cross = candidate.
+Top boundary sites in the data-valid ring
+Geometric-mean score of normalised IC × MV × Coherence, restricted to pixels where REMA has valid data (outside the polar hole), minimum 10 km spacing:
+All 10 sites form a ring between 199-259 km from the candidate. The candidate itself is inside the polar hole — no direct reading possible from REMA. The boundary sites are the strongest coherence points in the data-valid ring surrounding the hole.
+Discovery 3 — 4D volume, true-to-scale, open-source reproducible
+Built a 4D reconstruction V(x, y, z, t) on a true physical grid, using only public non-authenticated data.
+Volume specification
+Horizontal slice matrix
+Figure 3. 4D harmonic volume — 3 vertical levels × 4 timesteps. White contours overlay real surface elevation. Cyan cross = candidate. The structure persists across both time and vertical extent within the ice column.
+Vertical cross-section timelapse
+Figure 4. 12 vertical cross-sections through the candidate (W-E slice at y=0). White line = real REMA/BedMachine surface profile. The harmonic amplitude (red/blue colour) shows structural persistence through the ice column over the 12-month observation window.
+Discovery 4 — 26-year observation record
+Pulled historical MODIS annual anchor frames at the candidate coordinate from 2000 to 2026 (74 anchors) and combined with the dense daily sweep (122 frames) from the last 12 months. The feature has been observable in open-source satellite data for 26.09 years.
+Full timeline
+Figure 5. 26.09-year timeline of candidate signal at 89.19°S, 110.65°E. Top: full scatter (red = annual anchors, blue = daily sweep); yellow line = 5-point rolling median; magenta lines = MODIS Aqua launch and 2026 storms. Middle-left:

@@ -1,0 +1,36 @@
+ANTARCTIC CANDIDATE
+UPDATE BRIEFING — PART 3
+Working Model · Multi-source convergence · Cross-imagery validation
+ADMAP magnetic · Lithospheric domains · Subglacial lakes · Gamburtsev · Esri/Google basemap · Hough geometric
+24 April 2026  ·  Aureon Institute  ·  G. Leckey
+What changed since Part 2
+Part 2 left the investigation with the candidate confirmed at 89.19°S, 110.65°E across 13 multi-physics sensors and 26 years of MODIS observation, plus real REMA + BedMachine surface ground-truth. Part 3 pulled four additional public datasets (auth-free), drove the Walgidee Harmonic LIDAR pipeline on the actual Esri/Google Earth basemap imagery, and synthesised a working model.
+Numerical snapshot
+Discovery 1 - Multi-source Working Model
+Four new public datasets pulled, all without authentication:
+ADMAP magnetic at candidate
+Reading: -80.9 nT. Regional 200-km mean: -20.3 +/- 49.8 nT. Continental baseline: -4.5 +/- 118 nT. The candidate sits at z = -1.22 sigma relative to its 200-km surroundings - moderately negative but well within the typical envelope. Critically, the 30-km gradient (-73 to -85 nT across the immediate neighbourhood) is smooth and monotonic - the signature of deep crystalline basement, NOT a localised metallic body. A buried metal-rich structure would produce >5 sigma point anomalies on the order of +/-500 nT.
+Lithospheric domain boundary likelihood
+P = 0.229 at candidate, against continental mean 0.175 - elevated. The 200-km surrounding zone has mean P = 0.345, with 14.7% of pixels at P > 0.5. The candidate sits in a region the East Antarctic lithospheric domain mapping flags as having higher-than-average likelihood of geological / tectonic boundary intersections.
+Subglacial lake catalogue check
+The Wilson et al. (2025) catalogue of 156 active subglacial lakes was checked. The candidate is NOT inside any catalogued lake boundary. The closest catalogued lake (Mill_165) is 449 km away. Either: (a) it is not a subglacial lake, (b) it is a lake but below CryoSat-2's 10-year-detection threshold for active drainage, or (c) it is a stable, non-draining lake that wouldn't be captured by active-detection methodology.
+Gamburtsev alpine reference
+The Lea et al. (2023) automated mapping gives published densities for alpine subglacial topography: 94 ridge pixels and 97 valley pixels per 100 km^2. Our candidate region shows ~0.009 boundary clusters per 100 km^2 - roughly 10,000x lower density. We are not in alpine terrain.
+Working model figure
+Figure 1. Working model synthesis - 12 panels integrating ADMAP magnetic, lithospheric domain likelihood, subglacial lake catalogue proximity, harmonic field with Hough lines, k-fold angular symmetry, temporal stability, and tests-to-resolve.
+Discovery 2 - Esri / Google Earth basemap analysis
+Google Earth licenses commercial imagery, which inherits the orbital coverage limits of polar/sun-synchronous satellites - those orbits don't cross the geographic pole, leaving a roughly 100 km radius photographic gap. Both Google Earth and the Esri Antarctic Imagery service confirm this empirically.
+The literal placeholder at 15 m/px
+Figure 2. Esri Antarctic Imagery at zoom level 14 (15 m/pixel native TerraColor) for the 41x41 km box around the candidate. Every tile renders as a stamped 'Map data not yet available' placeholder. The same imagery library is what Google Earth serves at this zoom level.
+What zoom levels DO return real imagery
+L6 mosaic - what we actually have
+Figure 3. Full Esri Antarctic Imagery TerraColor mosaic at L6 (3.7 km/pixel), 5,731 x 5,731 km. Real continental imagery - same data Google Earth uses as its Antarctic basemap.
+Walgidee Harmonic LIDAR on the Google basemap
+With the Esri/Google L6 imagery in hand, the Walgidee methodology was driven on visible-light luminance instead of REMA elevation. Same HNC frequency stack (528.422, 326.322, 7.83, 174, 432, 639, 963 Hz), same 9 phi-squared shells, same Resonant Orthogonality Law via 2D monogenic signal.
+Readings at the candidate pixel:
+The candidate's coherence (0.637) is more than twice the field mean (0.266) and approaches the 90th percentile (0.734) - placing it firmly in the boundary-zone signal regime. This is the SECOND independent imagery source (after MODIS) showing elevated harmonic coherence at exactly this coordinate.
+Esri Harmonic LIDAR figure
+Figure 4. Walgidee Harmonic LIDAR pipeline driven on real Esri/Google Earth basemap (L6, 3.7 km/pixel). Six panels: raw luminance, HNC harmonic field, coherence map, high-coherence clusters, Hough lines, cross-dataset summary.
+Discovery 3 - Independent Hough angle confirmation
+The Hough transform was applied to two completely independent imagery sources, looking for canonical line orientations in their harmonic fields:
+Interpretation note: matching angles between two independent imagery sources at the same coordinate is a stronger signature than either result alone. It does not by itself distinguish among hypotheses, but it eliminates the explanation that the an

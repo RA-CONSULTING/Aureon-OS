@@ -1,0 +1,48 @@
+{
+  "agent_build_flow": [
+    "Product Manager scoped the prompt into CRUD workflow proof.",
+    "Data Modeler defined task items and summary contract.",
+    "API Engineer wrote backend/server.py.",
+    "Frontend Engineer wrote static browser UI.",
+    "Integration Test Pilot compiled and imported the backend contract.",
+    "Security Auditor confirmed local-only/no-secret/no-live-action boundaries."
+  ],
+  "architecture": {
+    "backend": "Python standard-library JSON API",
+    "data": "local JSON store",
+    "frontend": "static HTML/CSS/JS client",
+    "tests": "imported backend contract plus pytest-compatible test file"
+  },
+  "build_id": "35f63ccbc2de",
+  "kind": "full_stack_system",
+  "preview_url": "/aureon_full_stack_apps/build_a_full_stack_client_task_tracker_with_back_35f63ccbc2de/frontend/index.html",
+  "project_id": "aureon-full_stack-35f63ccbc2de",
+  "prompt": "Build a full-stack client task tracker with backend API, frontend dashboard, local data store, tests, runbook, and browser preview proof.",
+  "provider_policy": "local_only_v1",
+  "public_url": "/aureon_full_stack_apps/build_a_full_stack_client_task_tracker_with_back_35f63ccbc2de/frontend/index.html",
+  "run_commands": [
+    "cd C:\\Users\\user\\aureon-trading-integrated-main-20260508\\frontend\\public\\aureon_full_stack_apps\\build_a_full_stack_client_task_tracker_with_back_35f63ccbc2de",
+    "python backend/server.py --port 8787",
+    "python -m pytest C:\\Users\\user\\aureon-trading-integrated-main-20260508\\frontend\\public\\aureon_full_stack_apps\\build_a_full_stack_client_task_tracker_with_back_35f63ccbc2de\\tests\\test_contract.py"
+  ],
+  "uniqueness_contract": {
+    "build_id": "35f63ccbc2de",
+    "family": "full_stack",
+    "policy": "fresh_project_per_coding_request",
+    "project_id": "aureon-full_stack-35f63ccbc2de",
+    "prompt_sha256": "24c81a0d73da7818d5c3869a034778a13b085aede29424af97d232cb226a8254",
+    "reuse_allowed_for_handover": false,
+    "rule": "Every coding/app/tool artifact must be a fresh project instance, even when the prompt resembles an older job."
+  },
+  "validation": {
+    "backend_imported": true,
+    "crud_ok": true,
+    "errors": [],
+    "health_ok": true,
+    "py_compile_backend": true,
+    "py_compile_test": true,
+    "pytest_command": "python -m pytest C:\\Users\\user\\aureon-trading-integrated-main-20260508\\frontend\\public\\aureon_full_stack_apps\\build_a_full_stack_client_task_tracker_with_back_35f63ccbc2de\\tests\\test_contract.py",
+    "status": "contract_validated",
+    "summary_ok": true
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "ts_utc": "2026-09-06T15:40:29.597743+00:00",
+  "account": "CAPITAL DEMO (forced in-process; .env untouched)",
+  "steps": {
+    "demo_host_forced": {
+      "ok": true,
+      "detail": "base_url=https://demo-api-capital.backend-capital.com/api/v1"
+    },
+    "credentials_present_names_only": {
+      "ok": true,
+      "detail": "CAPITAL_API_KEY / CAPITAL_IDENTIFIER / CAPITAL_PASSWORD present (values withheld)"
+    },
+    "session_established": {
+      "ok": true,
+      "detail": "enabled=True cst=<redacted> xsec=<redacted> init_error=''"
+    },
+    "authenticated_property": {
+      "ok": true,
+      "detail": "authenticated property"
+    },
+    "accounts_fetched": {
+      "ok": true,
+      "detail": "[{\"accountId\": \"3223\\u2026\", \"balance\": 1097.22, \"available\": 50.34, \"currency\": \"GBP\"}]"
+    },
+    "primary_balance": {
+      "ok": true,
+      "detail": "get_account_balance()=50.34"
+    },
+    "eurusd_quote": {
+      "ok": true,
+      "detail": "epic=EURUSD_W bid=1.16042 ask=1.16132 price=1.16087"
+    },
+    "market_status_known": {
+      "ok": true,
+      "detail": "EURUSD marketStatus='TRADEABLE'"
+    },
+    "order_submitted": {
+      "ok": false,
+      "detail": "{\"error\": \"HTTP 400: {\\\"errorCode\\\":\\\"Rejected. EURUSD is currently closed. Timetable in place: UTC; Mon - 20:59:50, 21:05 -; Tue - 20:59:50, 21:05 -; Wed - 20:59:50, 21:05 -; Thu - 20:59:50, 21:05 -; Fri - 20:59:50; Sun 21:\"}"
+    },
+    "order_confirmed": {
+      "ok": false,
+      "detail": "status=None level=None size=None dealId="
+    },
+    "fill_verified_in_positions": {
+      "ok": false,
+      "detail": "open_positions=29"
+    },
+    "close_ok": {
+      "ok": false,
+      "detail": "{}"
+    },
+    "flat_after_close": {
+      "ok": true,
+      "detail": "eurusd_positions_after=0 total_positions_after=29"
+    },
+    "calculate_micro_tp_eurusd": {
+      "ok": true,
+      "detail": "micro_tp=1.1612"
+    },
+    "dual_get_demo_balance": {
+      "ok": false,
+      "detail": "BUG REPRODUCED: get_demo_balance()=0.0 despite real demo balance (calls nonexistent CapitalClient._get_accounts)"
+    }
+  },
+  "all_pass": false
+}

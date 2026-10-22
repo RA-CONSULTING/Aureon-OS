@@ -1,0 +1,1069 @@
+[
+  {
+
+    "date": "2025-10-16",
+    "synoptic_overview": "Slow-moving cold front drifts inland; jet streak overhead supports organized convection.",
+    "hazard_ratings": {
+      "storm": {
+        "level": "Moderate",
+
+        "notes": "Embedded thunderstorms produce brief hail cores."
+      },
+      "flood": {
+        "level": "Moderate",
+        "confidence": 0.57,
+
+      },
+      "heat": {
+        "level": "Low",
+        "confidence": 0.3,
+
+      },
+      "wildfire": {
+        "level": "Low",
+        "confidence": 0.25,
+        "notes": "Fuel moisture elevated after overnight rain."
+      },
+      "seismic": {
+        "level": "Background",
+        "confidence": 0.28,
+        "notes": "Crustal stress remains nominal."
+      }
+    },
+    "alerts": [
+      "Activate urban ponding advisory for Puget Sound corridor.",
+      "Standby convective spotters along I-5 belt."
+    ],
+    "preparedness_actions": [
+      "Clear storm drains and deploy portable pumps in low-lying intersections.",
+      "Coordinate messaging with transportation hubs about slick conditions."
+    ]
+  },
+  {
+    "date": "2025-10-17",
+    "synoptic_overview": "Frontal boundary stalls; secondary low near Vancouver Island drives persistent rain shield.",
+    "hazard_ratings": {
+      "storm": {
+        "level": "Moderate",
+        "confidence": 0.68,
+        "notes": "45 kt southerly gusts persist through afternoon."
+      },
+      "flood": {
+        "level": "High",
+        "confidence": 0.66,
+
+      },
+      "heat": {
+        "level": "Low",
+        "confidence": 0.32,
+        "notes": "Cloud deck suppresses diurnal range."
+      },
+      "wildfire": {
+        "level": "Low",
+        "confidence": 0.22,
+        "notes": "Widespread precipitation keeps fuels cool."
+      },
+      "seismic": {
+        "level": "Background",
+        "confidence": 0.27,
+        "notes": "Low-level tremor counts average."
+      }
+    },
+    "alerts": [
+      "Escalate to flood watch for Chehalis and Snohomish basins.",
+      "Notify emergency shelters about potential evacuations within 48 hours."
+    ],
+    "preparedness_actions": [
+      "Pre-stage sandbags and barriers at chronic flood nodes.",
+      "Initiate daily levee inspections and log seepage observations."
+    ]
+  },
+  {
+    "date": "2025-10-18",
+    "synoptic_overview": "Shortwave ridge briefly settles; showers taper but saturated soils remain sensitive.",
+    "hazard_ratings": {
+      "storm": {
+        "level": "Guarded",
+        "confidence": 0.44,
+        "notes": "Scattered showers with isolated rumbles."
+      },
+      "flood": {
+        "level": "Moderate",
+        "confidence": 0.55,
+        "notes": "Tributaries cresting near action stage."
+      },
+      "heat": {
+        "level": "Low",
+        "confidence": 0.33,
+        "notes": "Seasonal temps return."
+      },
+      "wildfire": {
+        "level": "Low",
+        "confidence": 0.2,
+        "notes": "No ignition concern."
+      },
+      "seismic": {
+        "level": "Background",
+        "confidence": 0.29,
+        "notes": "Microseisms tied to surf continue."
+      }
+    },
+    "alerts": [
+      "Maintain flood watch downstream of saturated basins.",
+      "Advise landslide watch for steep terrain near recent burn scars."
+    ],
+    "preparedness_actions": [
+      "Survey hillside communities for slope instability signs.",
+      "Replenish shelter supplies in coastal counties."
+    ]
+  },
+  {
+    "date": "2025-10-19",
+    "synoptic_overview": "Atmospheric river reloads and aligns with stalled boundary over Willamette Valley.",
+    "hazard_ratings": {
+      "storm": {
+        "level": "High",
+        "confidence": 0.72,
+        "notes": "Convective elements within AR produce damaging gusts."
+      },
+      "flood": {
+        "level": "High",
+        "confidence": 0.73,
+
+      },
+      "heat": {
+        "level": "Low",
+        "confidence": 0.28,
+        "notes": "Cool sector entrenched."
+      },
+      "wildfire": {
+        "level": "Low",
+        "confidence": 0.18,
+        "notes": "Precipitation suppresses fire spread."
+      },
+      "seismic": {
+        "level": "Background",
+        "confidence": 0.3,
+        "notes": "Tremor unchanged."
+      }
+    },
+    "alerts": [
+      "Upgrade to flood warning for lower Columbia tributaries.",
+      "Coordinate with DOT on potential road closures due to mudslides."
+    ],
+    "preparedness_actions": [
+      "Deploy high-water rescue teams to western valleys.",
+      "Broadcast flood safety messaging across bilingual channels."
+    ]
+  },
+  {
+    "date": "2025-10-20",
+    "synoptic_overview": "Moisture plume shifts south; northern counties drying while southern Oregon remains under heavy rain.",
+    "hazard_ratings": {
+      "storm": {
+        "level": "Moderate",
+        "confidence": 0.58,
+        "notes": "Localized thunderstorms along retreating boundary."
+      },
+      "flood": {
+        "level": "Moderate",
+        "confidence": 0.6,
+        "notes": "Southern watersheds still climbing."
+      },
+      "heat": {
+        "level": "Low",
+        "confidence": 0.3,
+        "notes": "Temperatures remain subdued."
+      },
+      "wildfire": {
+        "level": "Low",
+        "confidence": 0.2,
+        "notes": "Fuel moisture high."
+      },
+      "seismic": {
+        "level": "Background",
+        "confidence": 0.31,
+        "notes": "Slight uptick in tremor near Blanco fracture zone."
+      }
+    },
+    "alerts": [
+      "Maintain flood warning south of Eugene.",
+      "Issue debris flow advisory for burn scar near Rogue River."
+    ],
+    "preparedness_actions": [
+      "Check culverts and drainage in mountain passes for blockage.",
+      "Prepare shelters for potential mudflow evacuees."
+    ]
+  },
+  {
+    "date": "2025-10-21",
+    "synoptic_overview": "Brief lull as ridge amplifies; grounds begin drying though rivers remain high.",
+    "hazard_ratings": {
+      "storm": {
+        "level": "Guarded",
+        "confidence": 0.4,
+        "notes": "Passing stratiform rain only."
+      },
+      "flood": {
+        "level": "Moderate",
+        "confidence": 0.52,
+        "notes": "Residual high water on lower Columbia."
+      },
+      "heat": {
+        "level": "Low",
+        "confidence": 0.34,
+        "notes": "Seasonal temps."
+      },
+      "wildfire": {
+        "level": "Low",
+        "confidence": 0.24,
+        "notes": "No concern."
+      },
+      "seismic": {
+        "level": "Background",
+        "confidence": 0.3,
+        "notes": "Seafloor pressure sensors nominal."
+      }
+    },
+    "alerts": [
+      "Downgrade most flood warnings to advisories but keep high-water signage.",
+      "Monitor levees for delayed seepage."
+    ],
+    "preparedness_actions": [
+      "Conduct post-event infrastructure assessments.",
+      "Catalog community needs for recovery assistance."
+    ]
+  },
+  {
+    "date": "2025-10-22",
+    "synoptic_overview": "Cut-off low organizes 900 km west-southwest; projected to curve toward coast within five days.",
+    "hazard_ratings": {
+      "storm": {
+        "level": "Guarded",
+        "confidence": 0.45,
+        "notes": "Swells build but impacts stay offshore."
+      },
+      "flood": {
+        "level": "Guarded",
+        "confidence": 0.43,
+        "notes": "Rivers falling yet soils remain moist."
+      },
+      "heat": {
+        "level": "Low",
+        "confidence": 0.36,
+        "notes": "Mild conditions."
+      },
+      "wildfire": {
+        "level": "Low",
+        "confidence": 0.26,
+        "notes": "High humidity suppresses fire behavior."
+      },
+      "seismic": {
+        "level": "Background",
+        "confidence": 0.3,
+        "notes": "Quiet seismic network."
+      }
+    },
+    "alerts": [
+      "Begin tracking potential cyclone development in incident action plans.",
+      "Notify fisheries of increasing swell heights by Day 5."
+    ],
+    "preparedness_actions": [
+      "Review evacuation routing for coastal communities in case of future landfall.",
+      "Inspect backup power at emergency operations centers."
+    ]
+  },
+  {
+    "date": "2025-10-23",
+    "synoptic_overview": "Developing cyclone deepens to 985 mb; forecast cone includes central Oregon coastline in 96 hours.",
+    "hazard_ratings": {
+      "storm": {
+        "level": "High",
+        "confidence": 0.71,
+        "notes": "Model consensus for hurricane-force gusts along headlands."
+      },
+      "flood": {
+        "level": "Moderate",
+        "confidence": 0.58,
+        "notes": "Antecedent saturation increases runoff potential."
+      },
+      "heat": {
+        "level": "Low",
+        "confidence": 0.29,
+        "notes": "Cool marine layer persists."
+      },
+      "wildfire": {
+        "level": "Low",
+        "confidence": 0.22,
+        "notes": "Moist conditions."
+      },
+      "seismic": {
+        "level": "Background",
+        "confidence": 0.32,
+        "notes": "No change."
+      }
+    },
+    "alerts": [
+      "Issue hurricane-force wind watch for coastal capes.",
+      "Trigger multi-county coordination call for potential evacuations."
+    ],
+    "preparedness_actions": [
+      "Stage generators and temporary shelters inland.",
+      "Pre-position utility crews for rapid power restoration."
+    ]
+  },
+  {
+    "date": "2025-10-24",
+    "synoptic_overview": "Cyclone accelerates northeast; landfall probability increases for north coast within 72 hours.",
+    "hazard_ratings": {
+      "storm": {
+        "level": "Severe",
+        "confidence": 0.78,
+
+      },
+      "flood": {
+        "level": "High",
+        "confidence": 0.7,
+        "notes": "Storm surge 1.2 m atop high tide threatens harbor districts."
+      },
+      "heat": {
+        "level": "Low",
+        "confidence": 0.28,
+        "notes": "Dense cloud shield keeps temps cool."
+      },
+      "wildfire": {
+        "level": "Low",
+        "confidence": 0.2,
+        "notes": "Precipitation ensures low fire risk."
+      },
+      "seismic": {
+        "level": "Background",
+        "confidence": 0.33,
+        "notes": "Microseisms from swell energy increase."
+      }
+    },
+    "alerts": [
+      "Upgrade to hurricane-force wind warning for north coast counties.",
+      "Issue coastal flood warning for bays and estuaries."
+    ],
+    "preparedness_actions": [
+      "Execute voluntary evacuations in surge-prone zones.",
+      "Harden communication towers and verify redundancy."
+    ]
+  },
+  {
+    "date": "2025-10-25",
+    "synoptic_overview": "Cyclone makes landfall overnight; post-tropical transition pushes gale-force winds inland.",
+    "hazard_ratings": {
+      "storm": {
+        "level": "Severe",
+        "confidence": 0.81,
+        "notes": "Wind gusts 70 kt inland, widespread treefall potential."
+      },
+      "flood": {
+        "level": "High",
+        "confidence": 0.74,
+        "notes": "Urban flash flooding and minor river flooding ongoing."
+      },
+      "heat": {
+        "level": "Low",
+        "confidence": 0.27,
+
+      },
+      "wildfire": {
+        "level": "Low",
+        "confidence": 0.18,
+        "notes": "Soaked fuels minimize fire threat."
+      },
+      "seismic": {
+        "level": "Background",
+        "confidence": 0.34,
+        "notes": "Strong wave action masks small tremor changes."
+      }
+    },
+    "alerts": [
+      "Maintain high wind warning and expand inland coverage.",
+      "Extend flash flood warnings across metro corridors."
+    ],
+    "preparedness_actions": [
+      "Deploy damage assessment teams at first light.",
+      "Coordinate debris clearance crews to priority routes."
+    ]
+  },
+  {
+    "date": "2025-10-26",
+    "synoptic_overview": "Storm exits; wraparound showers continue while rivers crest.",
+    "hazard_ratings": {
+      "storm": {
+        "level": "Moderate",
+        "confidence": 0.56,
+
+      },
+      "flood": {
+        "level": "High",
+        "confidence": 0.68,
+        "notes": "Several rivers crest in minor to moderate flood stage."
+      },
+      "heat": {
+        "level": "Low",
+        "confidence": 0.29,
+        "notes": "Cool air mass lingers."
+      },
+      "wildfire": {
+        "level": "Low",
+        "confidence": 0.2,
+        "notes": "No ignition potential."
+      },
+      "seismic": {
+        "level": "Background",
+        "confidence": 0.32,
+        "notes": "No anomalous quake clusters."
+      }
+    },
+    "alerts": [
+      "Keep river flood warnings active until crests pass.",
+      "Monitor saturated slopes for delayed slides."
+    ],
+    "preparedness_actions": [
+      "Support community relief centers with additional staffing.",
+      "Document infrastructure impacts for recovery funding."
+    ]
+  },
+  {
+    "date": "2025-10-27",
+    "synoptic_overview": "Transient ridge brings calmer conditions; cool nights increase fog formation.",
+    "hazard_ratings": {
+      "storm": {
+        "level": "Low",
+        "confidence": 0.32,
+        "notes": "Only isolated drizzle along coast."
+      },
+      "flood": {
+        "level": "Guarded",
+        "confidence": 0.41,
+        "notes": "Floodwaters recede though some fields remain inundated."
+      },
+      "heat": {
+        "level": "Low",
+        "confidence": 0.35,
+        "notes": "Overnight lows dip but stay above freezing."
+      },
+      "wildfire": {
+        "level": "Low",
+        "confidence": 0.24,
+        "notes": "Damp fuels keep risk minimal."
+      },
+      "seismic": {
+        "level": "Background",
+        "confidence": 0.3,
+        "notes": "Steady microseism readings."
+      }
+    },
+    "alerts": [
+      "Cancel remaining wind headlines; maintain residual flood advisories.",
+      "Issue dense fog outlook for river valleys at dawn."
+    ],
+    "preparedness_actions": [
+      "Repair temporary levees and reinforce weak points.",
+      "Shift focus to debris removal from secondary roads."
+    ]
+  },
+  {
+    "date": "2025-10-28",
+    "synoptic_overview": "Deepening inland trough drives continental air southward; mountain snow levels fall to 1200 m.",
+    "hazard_ratings": {
+      "storm": {
+        "level": "Moderate",
+        "confidence": 0.52,
+        "notes": "Snow squalls along Cascades create whiteout bursts."
+      },
+      "flood": {
+        "level": "Guarded",
+        "confidence": 0.39,
+        "notes": "Rising snowpack slows runoff."
+      },
+      "heat": {
+        "level": "Low",
+        "confidence": 0.33,
+        "notes": "Below-normal highs regionwide."
+      },
+      "wildfire": {
+        "level": "Low",
+        "confidence": 0.22,
+        "notes": "Cold damp air keeps fuels saturated."
+      },
+      "seismic": {
+        "level": "Background",
+        "confidence": 0.31,
+        "notes": "Stable seismic trend."
+      }
+    },
+    "alerts": [
+      "Post winter weather watch for mountain passes.",
+      "Advise transporters of potential chain controls within 72 hours."
+    ],
+    "preparedness_actions": [
+      "Stage plow crews and abrasives at high elevation depots.",
+      "Review avalanche response protocols with ski patrol partners."
+    ]
+  },
+  {
+    "date": "2025-10-29",
+    "synoptic_overview": "Inland trough sharpens; Arctic-origin air mass poised to drop south after Halloween.",
+    "hazard_ratings": {
+      "storm": {
+        "level": "Moderate",
+        "confidence": 0.49,
+        "notes": "Strong pressure gradient sets up gusty easterlies in Columbia Gorge."
+      },
+      "flood": {
+        "level": "Guarded",
+        "confidence": 0.37,
+        "notes": "River levels near bankfull but trending downward."
+      },
+      "heat": {
+        "level": "Guarded",
+        "confidence": 0.46,
+
+      },
+      "wildfire": {
+        "level": "Low",
+        "confidence": 0.28,
+        "notes": "Moist fuels offset breezy conditions."
+      },
+      "seismic": {
+        "level": "Background",
+        "confidence": 0.32,
+        "notes": "Seasonal microseism variation."
+      }
+    },
+    "alerts": [
+      "Issue freeze watch for interior valleys by Day 3.",
+      "Highlight strong gorge winds for utility partners."
+    ],
+    "preparedness_actions": [
+      "Prepare warming shelters for vulnerable populations.",
+      "Inspect power infrastructure for wind vulnerability."
+    ]
+  },
+  {
+    "date": "2025-10-30",
+    "synoptic_overview": "Early-season snowstorm organizes east of Cascades with deep moisture plume meeting cold air.",
+    "hazard_ratings": {
+      "storm": {
+        "level": "High",
+        "confidence": 0.67,
+        "notes": "Blizzard potential along Blue Mountains and interior Columbia Plateau."
+      },
+      "flood": {
+        "level": "Guarded",
+        "confidence": 0.36,
+        "notes": "Frozen precipitation limits runoff."
+      },
+      "heat": {
+        "level": "Moderate",
+        "confidence": 0.54,
+
+      },
+      "wildfire": {
+        "level": "Low",
+        "confidence": 0.2,
+        "notes": "Snow cover suppresses fire behavior."
+      },
+      "seismic": {
+        "level": "Background",
+        "confidence": 0.33,
+        "notes": "Crustal stress steady."
+      }
+    },
+    "alerts": [
+      "Post blizzard watch for interior northwest counties.",
+      "Issue wind chill advisory for exposed plateaus."
+    ],
+    "preparedness_actions": [
+      "Stockpile fuel and food supplies at rural shelters.",
+      "Schedule continuity-of-operations drills for remote sites."
+    ]
+  },
+  {
+    "date": "2025-10-31",
+    "synoptic_overview": "Snowstorm peaks; heavy wet snow accumulates across interior while coast remains rainy and cold.",
+    "hazard_ratings": {
+      "storm": {
+        "level": "High",
+        "confidence": 0.7,
+        "notes": "Whiteout conditions east of Cascades, gusts 50 kt."
+      },
+      "flood": {
+        "level": "Guarded",
+        "confidence": 0.38,
+        "notes": "Minor ice jams possible on smaller streams."
+      },
+      "heat": {
+        "level": "Moderate",
+        "confidence": 0.55,
+        "notes": "Dangerous wind chills persist."
+      },
+      "wildfire": {
+        "level": "Low",
+        "confidence": 0.18,
+        "notes": "Snow cover negates fire threat."
+      },
+      "seismic": {
+        "level": "Background",
+        "confidence": 0.33,
+        "notes": "Seismic noise from wind and surf elevated."
+      }
+    },
+    "alerts": [
+      "Upgrade blizzard watch to warning for interior counties.",
+      "Issue travel ban guidance for exposed rural highways."
+    ],
+    "preparedness_actions": [
+      "Deploy search-and-rescue teams with tracked vehicles on standby.",
+      "Coordinate with utilities on rapid snow load assessments."
+    ]
+  },
+  {
+    "date": "2025-11-01",
+    "synoptic_overview": "Storm exits; cold air entrenched with clear nights encouraging hard freeze regionwide.",
+    "hazard_ratings": {
+      "storm": {
+        "level": "Guarded",
+        "confidence": 0.41,
+        "notes": "Lingering snow showers diminish."
+      },
+      "flood": {
+        "level": "Low",
+        "confidence": 0.33,
+        "notes": "Runoff frozen in place."
+      },
+      "heat": {
+        "level": "Moderate",
+        "confidence": 0.58,
+
+      "wildfire": {
+        "level": "Low",
+        "confidence": 0.21,
+        "notes": "Cold moist surfaces."
+      },
+      "seismic": {
+        "level": "Background",
+        "confidence": 0.32,
+        "notes": "No anomalous tremor."
+      }
+    },
+    "alerts": [
+      "Maintain hard freeze warning for agricultural zones.",
+      "Advise homeowners to protect vulnerable plumbing."
+    ],
+    "preparedness_actions": [
+      "Activate warming centers during overnight hours.",
+      "Inspect shelters for generator readiness."
+    ]
+  },
+  {
+    "date": "2025-11-02",
+    "synoptic_overview": "High pressure shifts east; southerly return flow begins moderating temperatures.",
+    "hazard_ratings": {
+      "storm": {
+        "level": "Guarded",
+        "confidence": 0.39,
+        "notes": "Light warm-advection showers late."
+      },
+      "flood": {
+        "level": "Low",
+        "confidence": 0.32,
+        "notes": "Frozen soils delay runoff."
+      },
+      "heat": {
+        "level": "Guarded",
+        "confidence": 0.44,
+        "notes": "Diurnal swings widen but mornings remain cold."
+      },
+      "wildfire": {
+        "level": "Low",
+        "confidence": 0.24,
+        "notes": "No ignition risk."
+      },
+      "seismic": {
+        "level": "Background",
+        "confidence": 0.31,
+        "notes": "Microseisms back to seasonal baseline."
+      }
+    },
+    "alerts": [
+      "Downgrade freeze warnings but keep frost advisories in valleys.",
+      "Notify growers of gradual thaw to plan irrigation blowouts."
+    ],
+    "preparedness_actions": [
+      "Assess roads for refreezing after sunset.",
+      "Continue distribution of cold-weather supplies to houseless residents."
+    ]
+  },
+  {
+    "date": "2025-11-03",
+    "synoptic_overview": "Strong subtropical jet aims at region; new Pacific storm due within 72 hours.",
+    "hazard_ratings": {
+      "storm": {
+        "level": "Moderate",
+        "confidence": 0.55,
+        "notes": "Increasing mid-level winds signal next storm cycle."
+      },
+      "flood": {
+        "level": "Guarded",
+        "confidence": 0.42,
+        "notes": "Snowpack will enhance runoff once warm sector arrives."
+      },
+      "heat": {
+        "level": "Guarded",
+        "confidence": 0.47,
+        "notes": "Mild daytime highs but cold nights persist."
+      },
+      "wildfire": {
+        "level": "Low",
+        "confidence": 0.26,
+        "notes": "Moisture advection maintains low risk."
+      },
+      "seismic": {
+        "level": "Background",
+        "confidence": 0.32,
+        "notes": "Stable."
+      }
+    },
+    "alerts": [
+      "Initiate coordination call for potential rain-on-snow event.",
+      "Alert avalanche centers about impending warm pulse."
+    ],
+    "preparedness_actions": [
+      "Model runoff scenarios using updated snow water equivalent data.",
+      "Pre-stage barrier materials near chronic slide areas."
+    ]
+  },
+  {
+    "date": "2025-11-04",
+    "synoptic_overview": "Warm sector surges inland; freezing levels jump to 2500 m triggering rain-on-snow response.",
+    "hazard_ratings": {
+      "storm": {
+        "level": "High",
+        "confidence": 0.68,
+
+      },
+      "flood": {
+        "level": "High",
+        "confidence": 0.71,
+        "notes": "Rain-on-snow melt drives sharp river rises."
+      },
+      "heat": {
+        "level": "Guarded",
+        "confidence": 0.49,
+
+      },
+      "wildfire": {
+        "level": "Low",
+        "confidence": 0.23,
+        "notes": "Wet conditions persist."
+      },
+      "seismic": {
+        "level": "Background",
+        "confidence": 0.34,
+        "notes": "No stress anomalies."
+      }
+    },
+    "alerts": [
+      "Upgrade to flood watch for Cascade-fed rivers.",
+      "Prepare swiftwater teams for potential rescues."
+    ],
+    "preparedness_actions": [
+      "Issue targeted alerts to river communities and recreation outfitters.",
+      "Test emergency notification system for flood messaging."
+    ]
+  },
+  {
+    "date": "2025-11-05",
+    "synoptic_overview": "Cold front sweeps through; post-frontal showers accompanied by isolated thunderstorms.",
+    "hazard_ratings": {
+      "storm": {
+        "level": "Moderate",
+        "confidence": 0.59,
+        "notes": "Thunderstorms capable of small hail and funnel clouds."
+      },
+      "flood": {
+        "level": "Moderate",
+        "confidence": 0.56,
+        "notes": "Rivers crest but hold below major flood."
+      },
+      "heat": {
+        "level": "Low",
+        "confidence": 0.34,
+        "notes": "Temps drop back toward normal."
+      },
+      "wildfire": {
+        "level": "Low",
+        "confidence": 0.24,
+        "notes": "Moist air keeps risk minimal."
+      },
+      "seismic": {
+        "level": "Background",
+        "confidence": 0.33,
+        "notes": "Slight noise increase from surf."
+      }
+    },
+    "alerts": [
+      "Maintain flood watch through crest cycle.",
+      "Issue special weather statement for small hail potential."
+    ],
+    "preparedness_actions": [
+      "Monitor levees for rapid stage changes overnight.",
+      "Document thunderstorm reports to refine warning thresholds."
+    ]
+  },
+  {
+    "date": "2025-11-06",
+    "synoptic_overview": "Upper low lingers; repeated showers keep soils saturated in western lowlands.",
+    "hazard_ratings": {
+      "storm": {
+        "level": "Guarded",
+        "confidence": 0.46,
+        "notes": "Occasional thunder with graupel in higher hills."
+      },
+      "flood": {
+        "level": "Moderate",
+        "confidence": 0.53,
+        "notes": "Groundwater responds with seep issues in basements."
+      },
+      "heat": {
+        "level": "Low",
+        "confidence": 0.31,
+        "notes": "Cooler than average afternoons."
+      },
+      "wildfire": {
+        "level": "Low",
+        "confidence": 0.22,
+        "notes": "No fire activity expected."
+      },
+      "seismic": {
+        "level": "Background",
+        "confidence": 0.32,
+        "notes": "Steady microseism levels."
+      }
+    },
+    "alerts": [
+      "Continue areal flood advisories for saturated soils.",
+      "Release guidance on basement pump usage and mold prevention."
+    ],
+    "preparedness_actions": [
+      "Coordinate with public works on seepage mitigation.",
+      "Provide community workshops on post-flood cleanup safety."
+    ]
+  },
+  {
+    "date": "2025-11-07",
+    "synoptic_overview": "Pattern break; high pressure builds with dry easterly flow promoting rapid drying.",
+    "hazard_ratings": {
+      "storm": {
+        "level": "Low",
+        "confidence": 0.3,
+        "notes": "Fair skies dominate."
+      },
+      "flood": {
+        "level": "Low",
+        "confidence": 0.28,
+        "notes": "Rivers recede to normal levels."
+      },
+      "heat": {
+        "level": "Guarded",
+        "confidence": 0.45,
+
+      },
+      "wildfire": {
+        "level": "Guarded",
+        "confidence": 0.42,
+        "notes": "Dry east winds lower fuel moisture."
+      },
+      "seismic": {
+        "level": "Background",
+        "confidence": 0.3,
+        "notes": "Quiet network."
+      }
+    },
+    "alerts": [
+      "Cancel flood advisories; note drying trend.",
+      "Issue fire weather watch east of Cascades if humidity drops below 20%."
+    ],
+    "preparedness_actions": [
+      "Inspect recent burn scars for new drying cracks.",
+      "Coordinate with forestry partners on patrol coverage."
+    ]
+  },
+  {
+    "date": "2025-11-08",
+    "synoptic_overview": "Offshore flow intensifies; downslope warming spikes temperatures east of Cascades.",
+    "hazard_ratings": {
+      "storm": {
+        "level": "Low",
+        "confidence": 0.28,
+        "notes": "No significant storm activity."
+      },
+      "flood": {
+        "level": "Low",
+        "confidence": 0.25,
+        "notes": "Dry spell continues."
+      },
+      "heat": {
+        "level": "Moderate",
+        "confidence": 0.52,
+
+      },
+      "wildfire": {
+        "level": "Moderate",
+        "confidence": 0.58,
+        "notes": "Single-digit humidity and gusty winds elevate fire spread potential."
+      },
+      "seismic": {
+        "level": "Background",
+        "confidence": 0.31,
+        "notes": "No anomaly."
+      }
+    },
+    "alerts": [
+      "Issue red flag warning for Columbia Basin and Okanogan Highlands.",
+      "Alert utilities to increased wildfire ignition risk near transmission corridors."
+    ],
+    "preparedness_actions": [
+      "Pre-position wildfire strike teams along transport corridors.",
+      "Enforce burn bans and patrol for illegal burns."
+    ]
+  },
+  {
+    "date": "2025-11-09",
+    "synoptic_overview": "Dry east winds persist; fuels rapidly cure in grasslands.",
+    "hazard_ratings": {
+      "storm": {
+        "level": "Low",
+        "confidence": 0.26,
+        "notes": "Clear skies."
+      },
+      "flood": {
+        "level": "Low",
+        "confidence": 0.23,
+        "notes": "No hydrologic threat."
+      },
+      "heat": {
+        "level": "Moderate",
+        "confidence": 0.51,
+        "notes": "Continued warm afternoons."
+      },
+      "wildfire": {
+        "level": "High",
+        "confidence": 0.64,
+        "notes": "Wind-driven fire spread possible in wheat country."
+      },
+      "seismic": {
+        "level": "Background",
+        "confidence": 0.3,
+        "notes": "Normal crustal noise."
+      }
+    },
+    "alerts": [
+      "Maintain red flag warnings through duration of east wind event.",
+      "Coordinate evacuation readiness messaging for rural towns."
+    ],
+    "preparedness_actions": [
+      "Inspect critical infrastructure for spark mitigation readiness.",
+      "Deploy mobile air-quality monitors near vulnerable communities."
+    ]
+  },
+  {
+    "date": "2025-11-10",
+    "synoptic_overview": "Ridge shifts; marine push returns with higher humidity and cooler temps.",
+    "hazard_ratings": {
+      "storm": {
+        "level": "Guarded",
+        "confidence": 0.35,
+        "notes": "Morning low clouds, isolated drizzle."
+      },
+      "flood": {
+        "level": "Low",
+        "confidence": 0.26,
+        "notes": "Hydrology stable."
+      },
+      "heat": {
+        "level": "Low",
+        "confidence": 0.38,
+        "notes": "Temps trend back toward normal."
+      },
+      "wildfire": {
+        "level": "Guarded",
+        "confidence": 0.44,
+        "notes": "Humidity recovery slows fire behavior but fuels remain dry."
+      },
+      "seismic": {
+        "level": "Background",
+        "confidence": 0.31,
+        "notes": "Minor microseism uptick from returning surf."
+      }
+    },
+    "alerts": [
+      "Downgrade red flag warnings but keep fire weather watch for lagging fuels.",
+      "Issue air-quality advisory for smoke trapped in valleys."
+    ],
+    "preparedness_actions": [
+      "Support mop-up efforts on any new fire starts.",
+      "Provide respirators to communities impacted by residual smoke."
+    ]
+  },
+  {
+    "date": "2025-11-11",
+    "synoptic_overview": "Split flow develops; southern stream low approaches California while northern stream stays progressive.",
+    "hazard_ratings": {
+      "storm": {
+        "level": "Guarded",
+        "confidence": 0.37,
+        "notes": "Isolated showers possible mainly along coast."
+      },
+      "flood": {
+        "level": "Low",
+        "confidence": 0.27,
+        "notes": "Rivers steady."
+      },
+      "heat": {
+        "level": "Low",
+        "confidence": 0.36,
+        "notes": "Seasonal temperatures."
+      },
+      "wildfire": {
+        "level": "Guarded",
+        "confidence": 0.41,
+        "notes": "Dry fuels linger east of Cascades."
+      },
+      "seismic": {
+        "level": "Background",
+        "confidence": 0.32,
+        "notes": "No unusual tremor."
+      }
+    },
+    "alerts": [
+      "Monitor California low for potential moisture transport northward in 96 hours.",
+      "Continue outreach on controlled burn protocols once humidity rebounds."
+    ],
+    "preparedness_actions": [
+      "Update contingency plans for simultaneous wildfire and flood responses.",
+      "Check satellite communication gear ahead of next storm cycle."
+    ]
+  },
+  {
+    "date": "2025-11-12",
+
+      }
+    },
+    "alerts": [
+      "Issue lightning watch east of Cascades.",
+      "Coordinate with aviation partners on convective routing options."
+    ],
+    "preparedness_actions": [
+      "Prepare rapid-response fire crews for potential holdover strikes.",
+      "Brief public on safe sheltering during lightning."
+
+  }
+]

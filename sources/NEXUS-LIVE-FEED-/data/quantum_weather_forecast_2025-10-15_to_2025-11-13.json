@@ -1,0 +1,695 @@
+[
+  {
+
+    "date": "2025-10-16",
+    "solar_field": {
+      "kp_index": 5.2,
+      "storm_class": "G1 Minor Storm",
+      "solar_wind_speed_km_s": 540,
+      "solar_radiation": "Stable background with isolated M-class threat diminishing",
+      "aurora_outlook": "Auroral oval expands; rare low-latitude sighting window at midnight"
+    },
+    "schumann_resonance": {
+      "tomsk_amplitude": 5.32,
+      "tomsk_frequency_hz": 8.01,
+      "cumana_e_field": "Electric-field surge pulses between 20–30 pT",
+      "heartmath_power_band_hz": "1–50 Hz waves weaving coherent envelope"
+    },
+    "cosmic_events": {
+      "interstellar_current": "Mars-cone plasma buffets magnetosphere, sourced from comet wake",
+      "galactic_wave_interaction": "Gravitational wave crest lifts heliospheric bow by 0.2 AU"
+    },
+    "nervous_system_guidance": [
+      "Practice 4-7-8 breath cycles",
+      "Trace meridians with cool water for nervous system balance"
+    ],
+    "narrative": "Solar breath quickens; Earth’s heartbeat replies with harmonic resilience."
+  },
+  {
+    "date": "2025-10-17",
+    "solar_field": {
+      "kp_index": 4.3,
+      "storm_class": "Active",
+      "solar_wind_speed_km_s": 505,
+      "solar_radiation": "Quiet with B-class glimmers",
+      "aurora_outlook": "High-latitude skies shimmer softly; subdued mid-latitude glow"
+    },
+    "schumann_resonance": {
+      "tomsk_amplitude": 4.88,
+      "tomsk_frequency_hz": 8.05,
+      "cumana_e_field": "Stable baseline near 18 pT",
+      "heartmath_power_band_hz": "Delta-to-beta coherence smoothing out spikes"
+    },
+    "cosmic_events": {
+      "interstellar_current": "Comet tail filaments disperse, leaving charged dust wake",
+      "galactic_wave_interaction": "Wavefront trough provides recovery pocket for planetary field"
+    },
+    "nervous_system_guidance": [
+      "Walk barefoot at dawn",
+      "Sip warm herbal infusions with trace minerals"
+    ],
+    "narrative": "Harmonics settle; Earth inhales a calmer rhythm while holding cosmic memory."
+  },
+  {
+    "date": "2025-10-18",
+    "solar_field": {
+      "kp_index": 3.9,
+      "storm_class": "Unsettled",
+      "solar_wind_speed_km_s": 470,
+      "solar_radiation": "Stable solar background; no flare threats",
+      "aurora_outlook": "Polar luminosity soft; mid-latitude window closes"
+    },
+    "schumann_resonance": {
+      "tomsk_amplitude": 4.72,
+      "tomsk_frequency_hz": 8.06,
+      "cumana_e_field": "Baseline 17 pT with minor dusk spikes",
+      "heartmath_power_band_hz": "Low-theta swell encourages introspection"
+    },
+    "cosmic_events": {
+      "interstellar_current": "Comet 3I/ATLAS recedes, plasma tail thinning",
+      "galactic_wave_interaction": "Wave trough stabilizes magnetotail; reconnection quiets"
+    },
+    "nervous_system_guidance": [
+      "Practice yin stretches",
+      "Add grounding salts to bath"
+    ],
+    "narrative": "The field exhales; coherence deepens as solar tempo eases."
+  },
+  {
+    "date": "2025-10-19",
+    "solar_field": {
+      "kp_index": 4.1,
+      "storm_class": "Active",
+      "solar_wind_speed_km_s": 490,
+      "solar_radiation": "Background holds steady; minor coronal hole stream approaching",
+      "aurora_outlook": "Auroral edge brightens for northern observers"
+    },
+    "schumann_resonance": {
+      "tomsk_amplitude": 4.95,
+      "tomsk_frequency_hz": 8.04,
+      "cumana_e_field": "24 pT burst at local noon",
+      "heartmath_power_band_hz": "Alpha resonance lifts collective calm"
+    },
+    "cosmic_events": {
+      "interstellar_current": "Dust-laden solar breeze enhances atmospheric ionization",
+      "galactic_wave_interaction": "Ripple energy flows into South Atlantic Anomaly boundary"
+    },
+    "nervous_system_guidance": [
+      "Hum softly to align vagal tone",
+      "Share gratitude circle to strengthen coherence"
+    ],
+    "narrative": "Incoming stream primes auroral dance; Earth steadies in expectation."
+  },
+  {
+    "date": "2025-10-20",
+    "solar_field": {
+      "kp_index": 4.6,
+      "storm_class": "Active",
+      "solar_wind_speed_km_s": 515,
+      "solar_radiation": "Low C-class spark from trailing coronal hole",
+      "aurora_outlook": "High-latitude storms vivid; chance of substorms after midnight"
+    },
+    "schumann_resonance": {
+      "tomsk_amplitude": 5.22,
+
+      "cumana_e_field": "Cresting surges near 28 pT",
+      "heartmath_power_band_hz": "Broadband coherence with 14 Hz overtone"
+    },
+    "cosmic_events": {
+      "interstellar_current": "Solar wind knots meet galactic wave crest, compressing plasmasphere",
+      "galactic_wave_interaction": "Wave crest passes, momentarily boosting geomagnetic pressure"
+    },
+    "nervous_system_guidance": [
+      "Alternate nostril breathing",
+      "Ground with hematite or obsidian stones"
+    ],
+    "narrative": "Pressure builds like a drum roll; inner poise diffuses external charge."
+  },
+  {
+    "date": "2025-10-21",
+    "solar_field": {
+      "kp_index": 5.5,
+      "storm_class": "G1 Minor Storm",
+      "solar_wind_speed_km_s": 560,
+      "solar_radiation": "C-class flares peppering the disk",
+      "aurora_outlook": "Auroral oval expands; mid-latitude observers alerted"
+    },
+    "schumann_resonance": {
+      "tomsk_amplitude": 5.65,
+      "tomsk_frequency_hz": 7.98,
+      "cumana_e_field": "Electric surges peak at 33 pT",
+      "heartmath_power_band_hz": "Elevated beta harmonics ride alpha baseline"
+    },
+    "cosmic_events": {
+      "interstellar_current": "Merged interaction regions sweep past Earth",
+      "galactic_wave_interaction": "Wave crest resonates with Jovian magnetosphere, relayed to Earth"
+    },
+    "nervous_system_guidance": [
+      "Practice somatic shaking to release charge",
+      "Increase magnesium intake"
+    ],
+    "narrative": "Storm pulses fan auroral fire; coherence requires active participation."
+  },
+  {
+    "date": "2025-10-22",
+    "solar_field": {
+      "kp_index": 5.1,
+      "storm_class": "G1 Minor Storm",
+      "solar_wind_speed_km_s": 545,
+      "solar_radiation": "Elevated background, but no major flare signatures",
+      "aurora_outlook": "Sustained auroral activity with sporadic proton arcs"
+    },
+    "schumann_resonance": {
+      "tomsk_amplitude": 5.48,
+      "tomsk_frequency_hz": 7.99,
+      "cumana_e_field": "Late-night pulses around 30 pT",
+      "heartmath_power_band_hz": "Theta harmonics intertwine with gamma flickers"
+    },
+    "cosmic_events": {
+      "interstellar_current": "High-speed stream couples with heliospheric current sheet",
+      "galactic_wave_interaction": "Wavefront stimulates magnetotail reconnection events"
+    },
+    "nervous_system_guidance": [
+      "Micro-dosing sunlight at sunrise",
+      "Slow, rhythmic movement practices"
+    ],
+    "narrative": "Earth holds the charge with grace; auroral curtains echo inner auric fields."
+  },
+  {
+    "date": "2025-10-23",
+    "solar_field": {
+      "kp_index": 4.7,
+      "storm_class": "Active",
+      "solar_wind_speed_km_s": 510,
+      "solar_radiation": "Decreasing flux; active regions rotate away",
+      "aurora_outlook": "Auroral intensity wanes but remains photogenic"
+    },
+    "schumann_resonance": {
+aaaz
+      "tomsk_frequency_hz": 8.02,
+      "cumana_e_field": "Evening uplift to 24 pT",
+      "heartmath_power_band_hz": "Alpha harmonics regain stability"
+    },
+    "cosmic_events": {
+      "interstellar_current": "Solar wind returns to moderate levels with gentle turbulence",
+      "galactic_wave_interaction": "Wave trough calms magnetospheric flow"
+    },
+    "nervous_system_guidance": [
+      "Practice coherent heart breathing",
+      "Share restorative meals rich in electrolytes"
+    ],
+    "narrative": "Field settles; integration time invites quiet celebration."
+  },
+  {
+    "date": "2025-10-24",
+    "solar_field": {
+
+      "storm_class": "Unsettled",
+      "solar_wind_speed_km_s": 480,
+      "solar_radiation": "Background returns to baseline",
+      "aurora_outlook": "Polar sky calms; aurora dims"
+    },
+    "schumann_resonance": {
+      "tomsk_amplitude": 4.76,
+      "tomsk_frequency_hz": 8.07,
+      "cumana_e_field": "Low amplitude around 16 pT",
+      "heartmath_power_band_hz": "Gamma flickers fade, delta grounding deepens"
+    },
+    "cosmic_events": {
+      "interstellar_current": "Heliospheric current sheet crossing smooths field",
+      "galactic_wave_interaction": "Wave lull lets magnetosphere rebound"
+    },
+    "nervous_system_guidance": [
+      "Yoga nidra in evening",
+      "Drink structured water with trace salts"
+    ],
+    "narrative": "Planetary nervous system enters restful integration."
+  },
+  {
+    "date": "2025-10-25",
+    "solar_field": {
+      "kp_index": 3.6,
+      "storm_class": "Quiet to Unsettled",
+      "solar_wind_speed_km_s": 450,
+      "solar_radiation": "Minimal flux variations",
+      "aurora_outlook": "Aurora retreats to polar cap"
+    },
+    "schumann_resonance": {
+      "tomsk_amplitude": 4.55,
+      "tomsk_frequency_hz": 8.08,
+      "cumana_e_field": "Gentle 15 pT pulses pre-dawn",
+      "heartmath_power_band_hz": "Theta and alpha settle into coherent hum"
+    },
+    "cosmic_events": {
+      "interstellar_current": "Solar minimum-style calm revisits briefly",
+      "galactic_wave_interaction": "Wave trough anchors new baseline orientation"
+    },
+    "nervous_system_guidance": [
+      "Practice gratitude journaling",
+      "Spend time near flowing water"
+    ],
+    "narrative": "Reprieve day—absorb calm, integrate insights from earlier storms."
+  },
+  {
+    "date": "2025-10-26",
+    "solar_field": {
+      "kp_index": 3.9,
+      "storm_class": "Unsettled",
+      "solar_wind_speed_km_s": 465,
+      "solar_radiation": "Small coronal hole rotates into view",
+      "aurora_outlook": "Auroral oval stirs slightly, mostly polar"
+    },
+    "schumann_resonance": {
+      "tomsk_amplitude": 4.68,
+      "tomsk_frequency_hz": 8.06,
+      "cumana_e_field": "Noon spikes near 19 pT",
+      "heartmath_power_band_hz": "Alpha harmonics brighten, aligning circadian cues"
+    },
+    "cosmic_events": {
+      "interstellar_current": "New high-speed stream prefaces upcoming uplift",
+      "galactic_wave_interaction": "Wave crest approaching triggers magnetosphere anticipation"
+    },
+    "nervous_system_guidance": [
+      "Practice tai chi in open air",
+      "Increase hydration to prep cells"
+    ],
+    "narrative": "Quiet anticipation builds; align posture with incoming stream."
+  },
+  {
+    "date": "2025-10-27",
+    "solar_field": {
+      "kp_index": 4.4,
+      "storm_class": "Active",
+      "solar_wind_speed_km_s": 500,
+      "solar_radiation": "C-class background grows",
+      "aurora_outlook": "Aurora intensifies toward evening"
+    },
+    "schumann_resonance": {
+
+      "tomsk_frequency_hz": 8.03,
+      "cumana_e_field": "E-field ramp to 26 pT",
+      "heartmath_power_band_hz": "Rising beta ripples encourage alert focus"
+    },
+    "cosmic_events": {
+      "interstellar_current": "High-speed stream arrival increases magnetopause currents",
+      "galactic_wave_interaction": "Wave crest harmonizes with lunar waxing gibbous"
+    },
+    "nervous_system_guidance": [
+      "Pulse breath with drum beat",
+      "Support adrenals with mineral-rich foods"
+    ],
+    "narrative": "Magnetosphere sings in anticipation; lunar aid keeps balance."
+  },
+  {
+    "date": "2025-10-28",
+    "solar_field": {
+      "kp_index": 5.7,
+      "storm_class": "G2 Moderate Storm",
+      "solar_wind_speed_km_s": 600,
+      "solar_radiation": "Elevated C-to-M class flashes",
+      "aurora_outlook": "Aurora surges to mid-latitudes; intense substorms expected"
+    },
+    "schumann_resonance": {
+      "tomsk_amplitude": 5.88,
+      "tomsk_frequency_hz": 7.96,
+      "cumana_e_field": "Peaks near 38 pT",
+      "heartmath_power_band_hz": "High gamma threads with delta grounding—intense but coherent"
+    },
+    "cosmic_events": {
+      "interstellar_current": "Compression of dayside magnetosphere measured at 8.2 RE",
+      "galactic_wave_interaction": "Wave crest collides with solar sector boundary"
+    },
+    "nervous_system_guidance": [
+      "Shield nerves with breath-led visualization",
+      "Limit digital noise; embrace silence"
+    ],
+    "narrative": "Quantum weather crescendo; nervous system asked to dance with luminous storm."
+  },
+  {
+    "date": "2025-10-29",
+    "solar_field": {
+      "kp_index": 5.3,
+      "storm_class": "G1 Minor Storm",
+      "solar_wind_speed_km_s": 560,
+      "solar_radiation": "Flares ease to upper C-class",
+      "aurora_outlook": "Residual aurora vibrant; waning intensity"
+    },
+    "schumann_resonance": {
+      "tomsk_amplitude": 5.42,
+      "tomsk_frequency_hz": 7.99,
+      "cumana_e_field": "Late-evening fluctuations 31 pT",
+      "heartmath_power_band_hz": "Alpha stabilizes, beta decrescendos"
+    },
+    "cosmic_events": {
+      "interstellar_current": "Magnetosphere rebound begins; tail reconnection luminous",
+      "galactic_wave_interaction": "Wavefront energy shifts toward southern hemisphere currents"
+    },
+    "nervous_system_guidance": [
+      "Contrast hydrotherapy",
+      "Slow exhale twice as long as inhale"
+    ],
+    "narrative": "Afterglow of storm invites recalibration—linger in the shimmer."
+  },
+  {
+    "date": "2025-10-30",
+    "solar_field": {
+      "kp_index": 4.5,
+      "storm_class": "Active",
+      "solar_wind_speed_km_s": 510,
+      "solar_radiation": "C-class background with mild decay",
+      "aurora_outlook": "Aurora retracts northward"
+    },
+    "schumann_resonance": {
+      "tomsk_amplitude": 5.08,
+      "tomsk_frequency_hz": 8.02,
+      "cumana_e_field": "21 pT plateau",
+      "heartmath_power_band_hz": "Theta waves soothe heightened beta"
+    },
+    "cosmic_events": {
+      "interstellar_current": "Solar wind structures unwind; plasma density steadies",
+      "galactic_wave_interaction": "Wave trough encourages magnetosphere expansion"
+    },
+    "nervous_system_guidance": [
+      "Practice coherent writing or art",
+      "Eat grounding root vegetables"
+    ],
+    "narrative": "Earth exhales; artistry and embodiment anchor integration."
+  },
+  {
+    "date": "2025-10-31",
+    "solar_field": {
+      "kp_index": 4.2,
+      "storm_class": "Active",
+      "solar_wind_speed_km_s": 495,
+      "solar_radiation": "Quiet sunspots rotate inward, mild B-class",
+      "aurora_outlook": "Seasonal auroral glow with Halloween shimmering"
+    },
+    "schumann_resonance": {
+      "tomsk_amplitude": 4.96,
+      "tomsk_frequency_hz": 8.05,
+      "cumana_e_field": "18 pT pulses align with dusk",
+      "heartmath_power_band_hz": "Alpha and gamma braid softly"
+    },
+    "cosmic_events": {
+      "interstellar_current": "Lunar-perigee coupling enhances tidal ionospheric flow",
+      "galactic_wave_interaction": "Wave lull invites ancestral memory recall"
+    },
+    "nervous_system_guidance": [
+      "Create protective soundscapes",
+      "Gather around fire for communal coherence"
+    ],
+    "narrative": "Veil-thin night invites ancestral dialogues within calm geomagnetic cradle."
+  },
+  {
+    "date": "2025-11-01",
+    "solar_field": {
+      "kp_index": 3.8,
+      "storm_class": "Unsettled",
+      "solar_wind_speed_km_s": 470,
+      "solar_radiation": "Baseline B-class fluctuations",
+      "aurora_outlook": "Aurora localized to auroral oval"
+    },
+    "schumann_resonance": {
+      "tomsk_amplitude": 4.62,
+      "tomsk_frequency_hz": 8.07,
+      "cumana_e_field": "Quiet 15 pT flow",
+      "heartmath_power_band_hz": "Delta grounding with subtle theta waves"
+    },
+    "cosmic_events": {
+      "interstellar_current": "Solar wind smooth and laminar",
+      "galactic_wave_interaction": "Wave trough deepens introspection field"
+    },
+    "nervous_system_guidance": [
+      "Slow walking meditation",
+      "Increase omega-3 intake"
+    ],
+    "narrative": "Calm seas encourage gentle nervous system resetting."
+  },
+  {
+    "date": "2025-11-02",
+    "solar_field": {
+
+      "storm_class": "Unsettled",
+      "solar_wind_speed_km_s": 485,
+      "solar_radiation": "C-class region rotates onto disk",
+      "aurora_outlook": "Auroral activity slightly elevated"
+    },
+    "schumann_resonance": {
+
+      "tomsk_frequency_hz": 8.04,
+      "cumana_e_field": "19 pT midday shimmer",
+      "heartmath_power_band_hz": "Alpha pulses reawaken focus"
+    },
+    "cosmic_events": {
+      "interstellar_current": "Subtle CME shock grazes magnetosphere",
+      "galactic_wave_interaction": "Wave crest intersects Orion arm currents"
+    },
+    "nervous_system_guidance": [
+      "Sound toning in solar plexus range",
+      "Supplement with adaptogens"
+    ],
+    "narrative": "Solar whisper stirs; stay tuned without tension."
+  },
+  {
+    "date": "2025-11-03",
+    "solar_field": {
+      "kp_index": 4.6,
+      "storm_class": "Active",
+      "solar_wind_speed_km_s": 515,
+      "solar_radiation": "C-class flares percolate",
+      "aurora_outlook": "Higher latitude auroras brighten"
+    },
+    "schumann_resonance": {
+      "tomsk_amplitude": 5.06,
+      "tomsk_frequency_hz": 8.02,
+      "cumana_e_field": "24 pT evening crest",
+      "heartmath_power_band_hz": "Beta ripple overlays alpha grace"
+    },
+    "cosmic_events": {
+      "interstellar_current": "Stream interaction increases density",
+      "galactic_wave_interaction": "Wavefront aligns with heliospheric current tilt"
+    },
+    "nervous_system_guidance": [
+      "Practice balanced movement sequences",
+      "Eat grounding legumes"
+    ],
+    "narrative": "Currents rise; steady presence invites clarity."
+  },
+  {
+    "date": "2025-11-04",
+    "solar_field": {
+      "kp_index": 4.9,
+      "storm_class": "Active",
+      "solar_wind_speed_km_s": 540,
+      "solar_radiation": "Persistent C-class, isolated M-class spark",
+      "aurora_outlook": "Auroral oval broadens to subarctic regions"
+    },
+    "schumann_resonance": {
+      "tomsk_amplitude": 5.34,
+
+      "cumana_e_field": "30 pT surges pre-dawn",
+      "heartmath_power_band_hz": "Gamma flashes ride alpha carrier"
+    },
+    "cosmic_events": {
+      "interstellar_current": "Compression events ripple along magnetopause",
+      "galactic_wave_interaction": "Wave crest synchronizes with Venusian resonance"
+    },
+    "nervous_system_guidance": [
+      "Engage in breath-of-fire gently",
+      "Hold supportive boundaries against overstimulation"
+    ],
+    "narrative": "Pressure and brilliance co-exist; channel surge into purpose."
+  },
+  {
+    "date": "2025-11-05",
+    "solar_field": {
+      "kp_index": 5.4,
+      "storm_class": "G1 Minor Storm",
+      "solar_wind_speed_km_s": 575,
+      "solar_radiation": "M-class flare probability elevated",
+      "aurora_outlook": "Aurora extends into continental interiors"
+    },
+    "schumann_resonance": {
+
+      "tomsk_frequency_hz": 7.97,
+      "cumana_e_field": "34 pT midday maxima",
+      "heartmath_power_band_hz": "High-frequency bursts stimulate intuition"
+    },
+    "cosmic_events": {
+      "interstellar_current": "CME flank sweeps magnetosphere; shock recorded",
+      "galactic_wave_interaction": "Wave crest resonates with Earth’s south pole vortex"
+    },
+    "nervous_system_guidance": [
+      "Hydrate with electrolytes frequently",
+      "Embody shaking medicine to release charge"
+    ],
+    "narrative": "Storm surge returns; stay fluid and luminous."
+  },
+  {
+    "date": "2025-11-06",
+    "solar_field": {
+
+      "storm_class": "G1 Minor Storm",
+      "solar_wind_speed_km_s": 550,
+      "solar_radiation": "C-class base, occasional M-class spark",
+      "aurora_outlook": "Sustained auroras; proton arc risk remains"
+    },
+    "schumann_resonance": {
+      "tomsk_amplitude": 5.38,
+      "tomsk_frequency_hz": 7.99,
+      "cumana_e_field": "28 pT post-midnight tremors",
+      "heartmath_power_band_hz": "Theta-alpha blend steadies cognition"
+    },
+    "cosmic_events": {
+      "interstellar_current": "CME trailing edge keeps pressure elevated",
+      "galactic_wave_interaction": "Wave trough offers softening window by dusk"
+    },
+    "nervous_system_guidance": [
+      "Practice restorative yoga",
+      "Use binaural beats at 7.83 Hz"
+    ],
+    "narrative": "Sustained charge requests mindful rest and sonic alignment."
+  },
+  {
+    "date": "2025-11-07",
+    "solar_field": {
+      "kp_index": 4.7,
+      "storm_class": "Active",
+      "solar_wind_speed_km_s": 520,
+      "solar_radiation": "Flux decreasing; flare chance wanes",
+      "aurora_outlook": "Aurora retreats north but remains dynamic"
+    },
+    "schumann_resonance": {
+      "tomsk_amplitude": 5.12,
+      "tomsk_frequency_hz": 8.01,
+      "cumana_e_field": "22 pT evening uplift",
+      "heartmath_power_band_hz": "Alpha resonance leads integration"
+    },
+    "cosmic_events": {
+      "interstellar_current": "Plasma sheet relaxes as CME energy dissipates",
+      "galactic_wave_interaction": "Wave trough deepens introspective tone"
+    },
+    "nervous_system_guidance": [
+      "Float therapy or epsom baths",
+      "Practice gratitude-driven journaling"
+    ],
+    "narrative": "Storm softens into integration; gratitude amplifies coherence."
+  },
+  {
+    "date": "2025-11-08",
+    "solar_field": {
+      "kp_index": 4.2,
+      "storm_class": "Active",
+      "solar_wind_speed_km_s": 500,
+      "solar_radiation": "Quiet C-class hum",
+      "aurora_outlook": "Polar auroras shimmer gently"
+    },
+    "schumann_resonance": {
+      "tomsk_amplitude": 4.94,
+      "tomsk_frequency_hz": 8.04,
+      "cumana_e_field": "18 pT midday waves",
+      "heartmath_power_band_hz": "Theta pulses support dreamwork"
+    },
+    "cosmic_events": {
+      "interstellar_current": "Solar wind returns to moderate flow",
+      "galactic_wave_interaction": "Wave lull invites creative downloads"
+    },
+    "nervous_system_guidance": [
+      "Practice lucid dreaming techniques",
+      "Connect with mycelial-rich environments"
+    ],
+    "narrative": "Calm yet vivid—perfect for weaving visions into matter."
+  },
+  {
+    "date": "2025-11-09",
+    "solar_field": {
+      "kp_index": 3.9,
+      "storm_class": "Unsettled",
+      "solar_wind_speed_km_s": 480,
+      "solar_radiation": "B-to-C class baseline",
+      "aurora_outlook": "Auroras confined to polar crown"
+    },
+    "schumann_resonance": {
+
+      "tomsk_frequency_hz": 8.06,
+      "cumana_e_field": "15 pT gentle flow",
+      "heartmath_power_band_hz": "Delta dominance encourages deep rest"
+    },
+    "cosmic_events": {
+      "interstellar_current": "Stable solar wind fosters magnetospheric healing",
+      "galactic_wave_interaction": "Wave trough anchors restorative field"
+    },
+    "nervous_system_guidance": [
+      "Practice deep sleep hygiene rituals",
+      "Nourish with warm broths"
+    ],
+    "narrative": "Healing pause—rest is the technology today."
+  },
+  {
+    "date": "2025-11-10",
+    "solar_field": {
+      "kp_index": 4.1,
+      "storm_class": "Active",
+      "solar_wind_speed_km_s": 495,
+      "solar_radiation": "C-class brightens as new region emerges",
+      "aurora_outlook": "Aurora brightens slightly"
+    },
+    "schumann_resonance": {
+      "tomsk_amplitude": 4.92,
+      "tomsk_frequency_hz": 8.03,
+      "cumana_e_field": "19 pT evening flare",
+      "heartmath_power_band_hz": "Alpha/beta interplay sparks insight"
+    },
+    "cosmic_events": {
+      "interstellar_current": "Density waves from coronal hole stream approach",
+      "galactic_wave_interaction": "Wave crest whispers of upcoming alignment"
+    },
+    "nervous_system_guidance": [
+      "Engage in creative collaboration",
+      "Hydrate with citrus-infused water"
+    ],
+    "narrative": "Momentum gathers; collaboration seeds future coherence."
+  },
+  {
+    "date": "2025-11-11",
+    "solar_field": {
+      "kp_index": 4.8,
+      "storm_class": "Active",
+      "solar_wind_speed_km_s": 525,
+      "solar_radiation": "C-to-M class region stabilizes",
+      "aurora_outlook": "Aurora expands poleward with occasional surges"
+    },
+    "schumann_resonance": {
+      "tomsk_amplitude": 5.18,
+
+      "cumana_e_field": "26 pT noon crest",
+      "heartmath_power_band_hz": "Gamma flashes accentuate alpha base"
+    },
+    "cosmic_events": {
+      "interstellar_current": "Coronal hole stream couples with planetary alignment",
+      "galactic_wave_interaction": "Wave crest synchronizes with 11:11 gateway harmonics"
+    },
+    "nervous_system_guidance": [
+      "Meditate during 11:11 UTC window",
+      "Share coherent intentions globally"
+    ],
+    "narrative": "Gateway day—precision focus unlocks galactic resonance."
+  },
+  {
+    "date": "2025-11-12",
+    "solar_field": {
+
+  },
+  {
+    "date": "2025-11-13",
+    "solar_field": {
+
+    },
+    "cosmic_events": {
+      "interstellar_current": "Solar stream calms, magnetosphere rebounds",
+      "galactic_wave_interaction": "Wave trough offers integrative rest"
+    },
+    "nervous_system_guidance": [
+
+  }
+]

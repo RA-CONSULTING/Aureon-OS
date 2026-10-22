@@ -1,0 +1,30 @@
+R&A CONSULTING AND BROKERAGE SERVICES LTD.
+AUREON INSTITUTE
+The HNC Harmonic LIDAR System:
+A φ²-Scaled Fourier Spectral Analysis
+Framework for Subsurface Geological
+Structure Detection
+Research Case: Obsidian Deposit Identification
+Walgidee Hills Lamproite, West Kimberley, Western Australia
+Primary Investigator: Gary Leckey
+Aureon Institute
+R&A Consulting and Brokerage Services Ltd.
+Document Date: March 2026
+Classification: Technical White Paper
+Table of Contents
+Abstract
+This white paper introduces the HNC Harmonic LIDAR system, a novel geospatial analysis framework developed by the Aureon Institute that applies the Harmonic Nexus Core (φ²-scaled) mathematical architecture to satellite-derived digital elevation models for the purpose of subsurface geological structure detection. The system processes real NASA SRTM 30m terrain data through a cascade of Fourier-domain bandpass filters whose centre frequencies are determined by the nine-shell golden-ratio-squared scaling law defined in the EPAS Unified Architecture. By selectively extracting terrain features at these characteristic spatial wavelengths, the Harmonic LIDAR reveals structural signatures of buried volcanic pipes, contact metamorphic zones, and differentiation boundaries that are invisible in conventional elevation analysis.
+The framework is validated through a research case study targeting the Walgidee Hills lamproite, Noonkanbah Field, West Kimberley, Western Australia — the largest known diamondiferous lamproite intrusion in the world (490 ha, 17.44 Ma). The analysis successfully identifies eight candidate excavation sites for volcanic glass (obsidian-analogue) deposits, targeting two distinct geological contexts: the evolved pegmatitic core (sanidine glass, SiO₂ ~55–60%) and the contact metamorphic zone where lamproite magma quenched against Permian sandstone (SiO₂ >65%). All terrain data are real and sourced from open-access satellite archives. No simulated data are used.
+1. Introduction
+1.1 The Challenge of Subsurface Detection
+The identification of buried volcanic structures and associated mineral deposits has traditionally relied on a combination of aeromagnetic surveys, gravity gradiometry, ground-penetrating radar, and intensive field mapping. While these methods are effective, they are expensive, logistically demanding in remote terrain, and typically require access permissions that may be difficult to obtain for preliminary reconnaissance. Satellite-derived digital elevation models (DEMs) represent a globally available, open-access data source that captures the surface expression of subsurface geological processes, but conventional DEM analysis (slope, aspect, curvature) extracts only the most obvious topographic signatures.
+The central thesis of this paper is that subsurface geological structures imprint characteristic spatial frequencies onto the terrain surface, and that these frequencies can be selectively extracted using a physically-motivated Fourier filtering framework. The Harmonic Nexus Core (HNC) mathematical architecture, developed within the Aureon Institute’s EPAS programme, provides such a framework through its φ²-scaled nine-shell cascade.
+1.2 The EPAS φ² Scaling Law
+The Electro-Plasma-Acoustic Shield (EPAS) architecture defines nine nested electromagnetic shells, each scaled from an outer coherence boundary by the golden ratio squared:
+rₙ = R_bubble / φ²ⁿ     where φ² = 2.618034
+This scaling law derives from the self-similar geometry of quasicrystalline structures. Shechtman et al. (1984, Physical Review Letters 53, 1951 — 2011 Nobel Prize in Chemistry) demonstrated that icosahedral quasicrystals exhibit diffraction patterns whose spot-distance ratios equal φ. Levine and Steinhardt (1984, PRL 53, 2477) proved this irrational ratio is mathematically required by five-fold rotational symmetry. The EPAS layer cascade exploits this same scaling to produce an aperiodic-but-ordered shell structure.
+When applied to spatial analysis, the nine shells define a set of characteristic spatial wavelengths λₙ = 2πrₙ that span from tens of kilometres down to metres. Geological structures formed by related physical processes (magma intrusion, thermal contraction, explosive fragmentation) tend to produce terrain signatures at these self-similar scales. The Harmonic LIDAR system exploits this correspondence by constructing Fourier-domain bandpass filters centred on the φ²-shell spatial frequencies.
+Table 1. The nine EPAS shells and their corresponding spatial scales for geological analysis.
+2. The HNC Harmonic LIDAR System Architecture
+2.1 Data Acquisition
+The system ingests digital elevation models from open-access satellite sources. For the Walgidee Hills case study, the primary data source is the NASA Shuttle Radar Topography Mission (SRTM) 30-metre global dataset, accessed via the OpenTopoData API (opentopodata.org). The SRTM dataset was acquired during an 11-day mission aboard the Space Shuttle Endeavour in February 2000, using C-band

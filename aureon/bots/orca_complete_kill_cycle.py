@@ -20205,12 +20205,22 @@ def _precheck_exchange_network(live_mode: bool, timeout_sec: float = 2.0) -> Non
     print(f"  Network precheck OK ({len(reachable)}/{len(targets)} reachable): {', '.join(reachable)}")
 
 if __name__ == "__main__":
-    # Windows UTF-8 wrapper
+    # Windows UTF-8 wrapper. Reconfigure the text stream in place. Wrapping
+    # the underlying buffer lets the original wrapper close it mid-run
+    # ("write to closed file"). From Gary-leckey/aureon-trading
+    # fix/windows-closed-stdout-orca @ 6b149e9eca.
     import sys
     if sys.platform == "win32":
-        import codecs
-        sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer, 'strict')
-        sys.stderr = codecs.getwriter('utf-8')(sys.stderr.buffer, 'strict')
+        os.environ.setdefault("PYTHONUTF8", "1")
+        os.environ.setdefault("PYTHONIOENCODING", "utf-8")
+        try:
+            sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
+        try:
+            sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
 
     import argparse
     import traceback

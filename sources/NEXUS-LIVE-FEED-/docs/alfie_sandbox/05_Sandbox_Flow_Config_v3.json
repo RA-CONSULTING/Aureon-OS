@@ -1,0 +1,59 @@
+{
+  "config_version": "3.0",
+  "flow": {
+    "id": "alfie-sandbox-v3",
+    "stages": [
+      {
+        "name": "bootstrap",
+        "description": "Validate pillars and start chronicle recorder.",
+        "entrypoint": "sandbox_system_run.run_sandbox_validation",
+        "success_criteria": {
+          "pillars_active": true,
+          "events_recorded_min": 3
+        }
+      },
+      {
+        "name": "coherence-scan",
+        "description": "Stream telemetry through CognitiveCoherenceFilter and compute harmonic metrics.",
+        "entrypoint": "harmonic_nexus_metrics.compute_metrics_from_streams",
+        "success_criteria": {
+          "uvc": {
+            "min": 0.72,
+            "target": 0.9
+          },
+          "coherence_delta_positive": true
+        }
+      },
+      {
+        "name": "guardian-bridge",
+        "description": "Activate Guardian Bridge anchor and publish SAFE_MODE watchpoints.",
+        "entrypoint": "nexus_system_simulator.activateGuardianBridgeAnchorProtocol",
+        "success_criteria": {
+          "anchor_threshold": 0.94,
+          "phase_compression": 0.28
+        }
+      },
+      {
+        "name": "audit",
+        "description": "Export manifests, update glyph metadata, and archive to guardian ledger.",
+        "entrypoint": "prime_web_validator.export_guardian_digest",
+        "success_criteria": {
+          "audit_hash_created": true,
+          "ots_timestamp": true
+        }
+      }
+    ]
+  },
+  "alerts": {
+    "channels": ["streamlit", "guardian-audit"],
+    "severity_levels": {
+      "info": "blue",
+      "warning": "amber",
+      "critical": "crimson"
+    }
+  },
+  "fallbacks": {
+    "on_failure": "issue WITHDRAW(sandbox-alpha) and revert to last stable chronicle snapshot",
+    "escalation_contact": "prime-anchor"
+  }
+}

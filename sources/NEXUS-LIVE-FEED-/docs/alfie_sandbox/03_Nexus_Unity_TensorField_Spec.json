@@ -1,0 +1,68 @@
+{
+  "spec_version": "0.9",
+  "tensor_field": {
+    "name": "UnityField",
+    "dimensions": [
+      {
+        "axis": "observer",
+        "size": 7,
+        "meaning": "Chakra-aligned observer lattice"
+      },
+      {
+        "axis": "phase",
+        "size": 64,
+        "meaning": "Phase deltas sampled in milliradians"
+      },
+      {
+        "axis": "time",
+        "size": 240,
+        "meaning": "Simulation steps (50ms increments for 12 minutes)"
+      }
+    ],
+    "components": {
+      "coherence": {
+        "type": "float",
+        "range": [0.0, 1.0],
+        "description": "Instantaneous lattice coherence"
+      },
+      "phase_spread": {
+        "type": "float",
+        "range": [0.0, 3.14],
+        "description": "Spread of observer phases"
+      },
+      "guardian_anchor": {
+        "type": "float",
+        "range": [0.0, 1.0],
+        "description": "Guardian Bridge anchor intensity"
+      },
+      "balance_derivative": {
+        "type": "float",
+        "range": [-1.0, 1.0],
+        "description": "First derivative of the Balance functional"
+      }
+    }
+  },
+  "initial_conditions": {
+    "coherence": 0.55,
+    "phase_spread": 1.21,
+    "guardian_anchor": 0.32,
+    "balance_derivative": -0.04
+  },
+  "unity_event": {
+    "condition": "coherence >= 0.94 and phase_spread <= 0.05",
+    "stability_window_steps": 36,
+    "actions": [
+      "record_unity_event",
+      "notify_guardian_bridge",
+      "seal_with_prime_anchor"
+    ]
+  },
+  "export": {
+    "format": "application/vnd.nexus.tensor",
+    "compression": "zstd",
+    "metadata": {
+      "checksum": "sha256:unity-field-spec-v0.9",
+      "author": "nexus-lattice-lab"
+    }
+  }
+}

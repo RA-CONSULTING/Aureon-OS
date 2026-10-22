@@ -1,0 +1,23 @@
+{
+  "build_id": "35f63ccbc2de",
+  "items": [
+    {
+      "id": "task-001",
+      "title": "Scope client brief",
+      "owner": "Product Manager",
+      "status": "ready"
+    },
+    {
+      "id": "task-002",
+      "title": "Build API contract",
+      "owner": "API Engineer",
+      "status": "in_progress"
+    },
+    {
+      "id": "task-003",
+      "title": "Run integration proof",
+      "owner": "Test Pilot",
+      "status": "queued"
+    }
+  ]
+}

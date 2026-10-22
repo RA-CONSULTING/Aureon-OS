@@ -1,0 +1,14 @@
+{"ts": "2025-11-20T21:07:30.803035Z", "symbol": "BNBBTC", "side": "SELL", "qty": 0.011, "price": 0.010102, "equity_usdt": 118.56532629603794, "pnl_delta": -0.11017136015099993, "wins": 0, "losses": 1}
+{"ts": "2025-11-20T21:09:40.907973Z", "symbol": "BNBBTC", "side": "BUY", "qty": 0.03, "price": 0.010095, "equity_usdt": 118.66998154932025, "pnl_delta": -0.09249798988224711, "wins": 0, "losses": 1}
+{"ts": "2025-11-20T21:14:43.985059Z", "symbol": "BNBBTC", "side": "SELL", "qty": 0.017, "price": 0.010081, "equity_usdt": 118.68432508136003, "pnl_delta": 0.014343532039774232, "wins": 1, "losses": 1}
+{"ts": "2025-11-20T21:19:47.068009Z", "symbol": "BNBBTC", "side": "BUY", "qty": 0.026, "price": 0.010068, "equity_usdt": 119.04067243486804, "pnl_delta": 0.3563473535080135, "wins": 2, "losses": 1}
+{"ts": "2025-11-20T21:24:50.142778Z", "symbol": "BNBBTC", "side": "BUY", "qty": 0.018, "price": 0.010067, "equity_usdt": 119.28520579178753, "pnl_delta": 0.24453335691949007, "wins": 3, "losses": 1}
+{"ts": "2025-11-20T21:29:53.248171Z", "symbol": "BNBBTC", "side": "SELL", "qty": 0.025, "price": 0.010056, "equity_usdt": 118.84813146790667, "pnl_delta": -0.4370743238808643, "wins": 3, "losses": 2}
+{"ts": "2025-11-20T21:34:56.366492Z", "symbol": "BNBBTC", "side": "BUY", "qty": 0.02, "price": 0.010059, "equity_usdt": 119.06728587016, "pnl_delta": 0.21915440225333782, "wins": 4, "losses": 2}
+{"ts": "2025-11-20T21:39:59.456980Z", "symbol": "BNBBTC", "side": "BUY", "qty": 0.014, "price": 0.010061, "equity_usdt": 119.0620842536265, "pnl_delta": -0.00520161653351181, "wins": 4, "losses": 3}
+{"ts": "2025-11-21T00:05:53.831573Z", "symbol": "BNBBTC", "side": "SELL", "qty": 0.028, "price": 0.009987, "equity_usdt": 118.02043062541873, "pnl_delta": 0.2305193163007715, "wins": 1, "losses": 0}
+{"ts": "2025-11-21T00:10:57.167916Z", "symbol": "BNBBTC", "side": "BUY", "qty": 0.018, "price": 0.009996, "equity_usdt": 118.172548154195, "pnl_delta": 0.15211752877627305, "wins": 2, "losses": 0}
+{"ts": "2025-11-21T00:16:10.583180Z", "symbol": "BNBBTC", "side": "SELL", "qty": 0.025, "price": 0.009976, "equity_usdt": 118.23706335124979, "pnl_delta": 0.06451519705478859, "wins": 3, "losses": 0}
+{"ts": "2025-11-21T00:21:13.905867Z", "symbol": "BNBBTC", "side": "BUY", "qty": 0.021, "price": 0.009976, "equity_usdt": 118.19935362764109, "pnl_delta": -0.03770972360869962, "wins": 3, "losses": 1}
+{"ts": "2025-11-21T00:26:16.972866Z", "symbol": "BNBBTC", "side": "BUY", "qty": 0.014, "price": 0.009966, "equity_usdt": 118.2467238096703, "pnl_delta": 0.04737018202921206, "wins": 4, "losses": 1}
+{"ts": "2025-11-21T00:32:01.325254Z", "symbol": "BNBBTC", "side": "SELL", "qty": 0.028, "price": 0.009961, "equity_usdt": 118.02357245530165, "pnl_delta": -0.2231513543686532, "wins": 4, "losses": 2}

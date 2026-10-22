@@ -1,0 +1,15 @@
+PLATYPUS COHERENCE ANALYSIS - KEY DISCOVERY
+==================================================
+
+Date: 2025-12-12
+Dataset: 2023-2024 (synthetic ephemeris + real GFZ Kp)
+
+FINDING: INVERSE Γ-Kp COUPLING
+
+Q ↔ Kp correlation: r = -0.14 (p < 0.0001)
+Lighthouse events: Kp 1.57 vs background 1.99
+T-test p-value: < 0.0001 (highly significant)
+
+INTERPRETATION:
+Higher planetary alignment correlates with LOWER geomagnetic activity.
+Inverse to naive expectation.

@@ -1,0 +1,19 @@
+{
+  "anchors": [
+    {
+      "id": "gary.leckey",
+      "display_name": "Gary Leckey",
+      "constellation": "Brown-Leckey",
+      "members": [
+        { "name": "Deirdre Leckey", "birth_date": "1974-08-27", "relation": "family", "weight": 0.92, "consent": true },
+        { "name": "Philip Leckey", "birth_date": "1965-08-28", "relation": "family", "weight": 0.9, "consent": true },
+        { "name": "Jennete Leckey", "birth_date": "1961-11-19", "relation": "family", "weight": 0.88, "consent": true },
+        { "name": "Alice Leckey", "birth_date": "1967-09-22", "relation": "family", "weight": 0.89, "consent": true },
+        { "name": "Ann Leckey", "birth_date": "1969-11-13", "relation": "family", "weight": 0.9, "consent": true },
+        { "name": "Susan Leckey", "birth_date": "1963-08-24", "relation": "family", "weight": 0.91, "consent": true },
+        { "name": "Samuel O G Leckey", "birth_date": "1971-05-19", "relation": "family", "weight": 0.9, "consent": true },
+        { "name": "Samuel Leckey", "birth_date": "1942-03-08", "relation": "family", "weight": 0.87, "consent": true }
+      ]
+    }
+  ]
+}

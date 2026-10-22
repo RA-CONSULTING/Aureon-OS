@@ -10,7 +10,9 @@ It provides a reviewable queue for:
 
 By default proposals are pending review. Set AUREON_CODE_AUTO_APPROVE=1 only
 for an explicitly trusted local workflow that wants proposals marked approved
-immediately; this still does not apply patches by itself.
+immediately; this still does not apply patches by itself. Auto-approve does
+not cover protected paths: live-trading flags, evidence gates, position
+sizing, and credential files stay pending human review.
 """
 
 from __future__ import annotations
@@ -22,6 +24,7 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from aureon.autonomous.self_repair_guard import block_reason_for_proposal
 from aureon.code_architect.expression import build_code_expression_context
 
 
@@ -65,6 +68,21 @@ class SafeCodeControl:
     def propose(self, proposal: CodeProposal) -> Dict[str, Any]:
         self._attach_expression_context(proposal)
         item = asdict(proposal)
+        protected = block_reason_for_proposal(
+            proposal.target_files,
+            proposal.patch_text,
+            proposal.title,
+            proposal.summary,
+        )
+        if protected:
+            item["status"] = "pending_human_review"
+            item["human_review"] = True
+            item["reason"] = protected
+            item["reviewer"] = ""
+            self.pending_proposals.append(item)
+            self.pending_proposals = self.pending_proposals[-self.max_pending :]
+            self._persist()
+            return item
         if self.auto_approve:
             item["status"] = "approved"
             item["reviewed_at"] = time.time()
@@ -135,6 +153,24 @@ class SafeCodeControl:
         self.recent_reviews = self.recent_reviews[-self.max_recent :]
         self._persist()
         return {"ok": True, "proposal": item}
+
+    def mark_reviewed_applied(self, proposal: Dict[str, Any]) -> Dict[str, Any]:
+        """Mark a reviewed proposal as applied so it is not reloaded."""
+        created_at = proposal.get("created_at")
+        title = proposal.get("title")
+        matched = False
+        for item in self.recent_reviews:
+            if item.get("title") != title:
+                continue
+            if created_at is not None and item.get("created_at") != created_at:
+                continue
+            item["status"] = "applied"
+            item["applied_at"] = time.time()
+            matched = True
+            break
+        if matched:
+            self._persist()
+        return {"ok": matched, "matched": matched}
 
     def clear_pending(self) -> None:
         self.pending_proposals = []

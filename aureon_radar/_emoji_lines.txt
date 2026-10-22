@@ -1,0 +1,11 @@
+786:             logger.info("║  🐝 HIVE AUTO-ARMED — LIVE TRADING ACTIVE 🐝     ║")
+794:         logger.error("🚨 PANIC MODE — ALL TRADING HALTED 🚨")
+843:                     logger.info(f"🌐 UNIFIED: {symbol} {hub_direction} conf={hub_conf:.2f} "
+870:                         logger.info(f"🌉 AUREON SHADOW: {symbol} {direction} "
+875:                             logger.info(f"🌉 AUREON LIVE: {symbol} {direction} approved for live")
+877:                             logger.info(f"🌉 AUREON BLOCKED: {symbol} {direction} "
+924:                                 logger.info(f"🌉 AUREON BRIDGE: {sym} {sig.get('direction')} "
+943:                                 logger.info(f"🧠 OLLAMA: {sym} {sig.get('direction')} "
+1039:             logger.info(f"🐝 FORCE ARMED: Executing LIVE + SHADOW for {signal.symbol}")
+1130:                 logger.info(f"🐝 LIVE EXECUTED: {trade.symbol} {trade.direction} "
+1158:         logger.info("║     🐝 AUREON PHI-RADAR — AUTO-HIVE MODE 🐝                  ║")

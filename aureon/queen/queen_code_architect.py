@@ -25,6 +25,13 @@
 """
 
 from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
+from aureon.autonomous.self_repair_guard import (
+    SelfRepairBlocked,
+    append_review,
+    inspect_delete,
+    inspect_execution,
+    inspect_write,
+)
 import os
 import sys
 import shutil
@@ -119,7 +126,22 @@ class QueenCodeArchitect:
         Creates parent directories if needed.
         """
         try:
-            full_path = self._resolve_path(file_path)
+            previous = None
+            existing = self._resolve_path(file_path)
+            if existing.exists() and existing.is_file():
+                previous = existing.read_text(encoding="utf-8")
+            try:
+                full_path = inspect_write(self.repo_path, file_path, content, previous)
+            except SelfRepairBlocked as blocked:
+                append_review(
+                    self.repo_path,
+                    "write_refused",
+                    path=file_path,
+                    reason=blocked.reason,
+                    human_review=blocked.reason != "kill_switch",
+                )
+                logger.error("Self-repair guard refused write to %s: %s", file_path, blocked.reason)
+                return False
             
             # Create parent directories
             full_path.parent.mkdir(parents=True, exist_ok=True)
@@ -136,6 +158,7 @@ class QueenCodeArchitect:
             
             # Write the file
             full_path.write_text(content, encoding='utf-8')
+            append_review(self.repo_path, "write_allowed", path=file_path)
             
             self.created_files.append({
                 'timestamp': datetime.now().isoformat(),
@@ -161,21 +184,13 @@ class QueenCodeArchitect:
             return False
     
     def append_to_file(self, file_path: str, content: str) -> bool:
-        """Append content to an existing file."""
+        """Append content to an existing file. The combined text is checked before it is written."""
         try:
             full_path = self._resolve_path(file_path)
-            
-            # Create if doesn't exist
             if not full_path.exists():
                 return self.write_file(file_path, content, backup=False)
-            
-            # Append
-            with open(full_path, 'a', encoding='utf-8') as f:
-                f.write(content)
-            
-            logger.info(f"👑🏗️ Queen appended to: {file_path}")
-            return True
-            
+            previous = full_path.read_text(encoding="utf-8")
+            return self.write_file(file_path, previous + content, backup=True)
         except Exception as e:
             logger.error(f"Error appending to {file_path}: {e}")
             return False
@@ -237,11 +252,23 @@ class QueenCodeArchitect:
                 logger.error(f"Edit rejected: {result['reason']}")
                 return False
                 
+            previous = self.read_file(file_path)
+            try:
+                full_path = inspect_write(self.repo_path, file_path, result["new_content"], previous)
+            except SelfRepairBlocked as blocked:
+                append_review(
+                    self.repo_path,
+                    "write_refused",
+                    path=file_path,
+                    reason=blocked.reason,
+                    human_review=blocked.reason != "kill_switch",
+                )
+                logger.error("Self-repair guard refused edit to %s: %s", file_path, blocked.reason)
+                return False
             if backup:
                 self._create_backup(file_path)
-                
-            full_path = self._resolve_path(file_path)
             full_path.write_text(result['new_content'], encoding='utf-8')
+            append_review(self.repo_path, "write_allowed", path=file_path)
             
             self.active_modifications.append({
                 'timestamp': datetime.now().isoformat(),
@@ -292,19 +319,23 @@ class QueenCodeArchitect:
     # ═══════════════════════════════════════════════════════════════════════════
     
     def delete_file(self, file_path: str, backup: bool = True) -> bool:
-        """Delete a file (with optional backup)."""
+        """Delete a file (with optional backup). Protected paths are refused first."""
         try:
             full_path = self._resolve_path(file_path)
             if not full_path.exists():
-                return True  # Already gone
-            
+                return True
+            previous = full_path.read_text(encoding="utf-8") if full_path.is_file() else ""
+            try:
+                inspect_delete(self.repo_path, file_path, previous)
+            except SelfRepairBlocked as blocked:
+                append_review(self.repo_path, "write_refused", path=file_path, reason=blocked.reason, human_review=True)
+                logger.error("Self-repair guard refused delete of %s: %s", file_path, blocked.reason)
+                return False
             if backup:
                 self._create_backup(file_path)
-            
             full_path.unlink()
             logger.info(f"👑🏗️ Queen deleted: {file_path}")
             return True
-            
         except Exception as e:
             logger.error(f"Error deleting {file_path}: {e}")
             return False
@@ -507,6 +538,13 @@ def get_{name.lower()}_neuron():
             'error': None
         }
         
+        try:
+            inspect_execution(code)
+        except SelfRepairBlocked as blocked:
+            append_review(self.repo_path, "execution_refused", reason=blocked.reason)
+            result['error'] = blocked.reason
+            return result
+
         # Validate syntax first
         if not self._validate_python_syntax(code):
             result['error'] = 'Syntax error in code'

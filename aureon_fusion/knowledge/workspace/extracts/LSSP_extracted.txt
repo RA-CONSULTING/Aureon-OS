@@ -1,0 +1,383 @@
+Leckey 2026 · LSSP Pre-Registration v1.0 1
+Detecting ￿-Spaced Phase-Coherence Peaks in Open Neural
+Recordings:
+The Leckey Substrate Scaling Protocol (LSSP) — Pre-Registration v1.0
+Gary Anthony Leckey∗1,2
+1Aureon Institute, Belfast, United Kingdom
+2R&A Consulting and Brokerage Services Ltd., Belfast, United Kingdom
+23 April 2026
+Study type: Observational, secondary analysis of publicly archived neural recordings.
+Design: Cross-sectional, multi-dataset, pre-registered confirmatory analysis.
+Registration status: Draft for submission to the Open Science F ramework (osf.io/prereg).
+V ersion: v1.0. Date: 23 April 2026.
+Lead investigator: Gary Anthony Leckey , Aureon Institute · R&A Consulting, Belfast, UK.
+Conflicts of interest: The lead investigator is the originator of the PEFC￿S framework under
+empirical test. Mitigation: frozen pipeline, locked datasets, pre-registered thresholds.
+F unding: Self-funded via R&A Consulting.
+Data: All primary data already public (OpenNeuro). Pipeline code to be released under MIT
+licence on publication. Deposit on OSF alongside this pre-registration.
+Abstract
+The Position of Echo-F eedback Cognitive ￿-Substrate (PEFC￿S) framework [ 1] predicts that
+coherent cognitive processing preserves phase-locked branches at frequencies spaced by pow-
+ers of the golden ratio 𝜑 = (1 +√
+5)/2 . Under this framework, inter-trial phase coherence
+(ITPC) spectra of task-engaged neural recordings should exhibit peak structure enriched
+near 𝑓𝑘= 𝑓0⋅ 𝜑𝑘beyond what uniform-spacing, integer-harmonic, or shuffled-peak null
+models predict. This pre-registration locks the dataset panel, preprocessing pipeline, ITPC
+computation, peak-detection algorithm, three null models, statistical inference procedure,
+multiple-comparison correction, and confirmation thresholds before any confirmatory analy-
+sis is conducted , following the Open Science F ramework pre-registration standard. The pro-
+tocol uses seven OpenNeuro EEG/MEG datasets spanning auditory oddball, face processing,
+motor imagery , inner speech, and resting-state paradigms, with aggregate 𝑁 > 700 subjects.
+A pilot dataset is designated for pipeline calibration only . Confirmation requires median
+￿-enrichment 𝑅𝜑≥ 2.0 against all three null models, consistency across ≥ 5/7 datasets, and
+Bonferroni-corrected Stouffer-combined 𝑝 < 0.0167 . Null results will be reported exactly as
+obtained. The full analysis pipeline is provided in Appendix A as executable Python code.
+Keywords: pre-registration; inter-trial phase coherence; golden ratio; multiversal branch archi-
+tecture; OpenNeuro; BIDS-EEG; MNE-Python; confirmatory analysis
+1 Theoretical Motivation
+The PEFC￿S framework posits that cognitive dynamics are described by the Leckey T emporal
+Delegated Equation (L TDE)
+Ψ(𝑡) = ∑
+𝑘𝑎𝑘⋅ Λ𝑘(𝑡 − 𝜏𝑘) ⋅ 𝑒𝑖𝜃𝑘, 𝜏𝑘= 𝜏0⋅ 𝜑𝑘, (1)
+∗Corresponding author. Aureon Institute · R&A Consulting and Brokerage Services Ltd., Belfast, United
+Kingdom.
+Leckey 2026 · LSSP Pre-Registration v1.0 2
+in which branch-specific temporal delegation by powers of 𝜑 is the unique spacing that min-
+imises destructive interference between branches (continued-fraction unit expansion; Hurwitz
+irrationality extremum). If PEFC￿S corresponds to something physically realised in neural pro-
+cessing, the ￿-scaled temporal structure should leave a frequency-domain signature in phase
+coherence measurements of task-engaged neural recordings.
+The null hypothesis is that brains do not instantiate ￿-spaced branch structure and ITPC peaks
+are distributed without preference for any specific incommensurate ratio. The alternative hy-
+pothesis is that ITPC peaks sit at frequencies whose pairwise ratios cluster closer to integer
+powers of 𝜑than to integer harmonics or uniformly-distributed random ratios.
+2 Hypotheses
+2.1 Primary hypothesis (H1)
+In task-engaged neural recordings meeting inclusion criteria, the ITPC spectrum exhibits peak
+structure whose pairwise frequency ratios cluster closer to integer powers of 𝜑than predicted
+by any of three null models (§ 5.4 ).
+Null (H0): Peak structure shows no preferential spacing at powers of 𝜑over null distributions.
+2.2 Secondary hypotheses
+H2. ￿-enrichment is stronger in task-engaged epochs than within-subject resting baselines (paired
+comparison where datasets provide both).
+H3. ￿-enrichment is robust across task types — not specific to a single paradigm.
+H4. ￿-enrichment scales with task-engagement indicators (reaction time residuals, accuracy)
+where behavioural measures exist.
+2.3 Exploratory analyses
+Pre-registered as exploratory , not confirmatory:
+• Single-subject within-task trial-by-trial ￿-signature variability
+• F requency-band specificity (theta/alpha/beta/gamma contributions)
+• Cross-dataset meta-regression on age, sex, clinical status where recorded
+3 Data Sources
+3.1 Confirmatory panel (locked)
+All datasets hosted on OpenNeuro ( https://openneuro.org ), released under CC0 or CC-BY,
+formatted in BIDS-EEG standard, with minimum sample rate ≥ 250 Hz and ≥ 16 channels.
+Pilot/calibration dataset (excluded from confirmatory analysis): ds002725 (visual ERP ,
+𝑛 = 21 ). Used once for pipeline debugging and parameter verification before the confirmatory
+run. No ￿-statistics computed on this set until pipeline is locked.
+3.2 Sample size and power
+Under the effect size observed in preliminary diagnostic work (￿-peak enrichment ≈ 1.21 against
+uniform-integer null on exploratory data), a conservative target effect size of 𝑟 = 0.30 (medium),
+Leckey 2026 · LSSP Pre-Registration v1.0 3
+T able 1: Confirmatory dataset panel. V ersions frozen at DOI.
+ID Citation Paradigm 𝑁 subj. Use
+ds002680 Delorme 2022 [ 4] Auditory oddball 25 Confirmatory
+ds002718 W akeman & Henson 2015 [ 5] F ace processing (N170/P300) 18 Confirmatory
+ds003061 Delorme 2022 [ 3] Auditory oddball (replication) 13 Confirmatory
+ds003810 T zimourta et al. 2021 [ 6] Motor imagery vs rest 10 Confirmatory + H2
+ds005385 W ascher et al. 2024 [ 7] Resting-state lifespan 608 H2 + meta-reg.
+ds003774 Miller et al. Inner speech ECoG var. H3 cross-paradigm
+ds002778 Jackson et al. Parkinson’s EEG 31 H3 + clinical
+and 𝛼 = 0.05 Bonferroni-corrected across 7 datasets, each dataset provides ≥ 10 independent
+subjects, yielding aggregated 𝑁 > 700 at subject level. Power (1 − 𝛽) > 0.90 for detection of the
+pre-registered threshold ( 𝑅𝜑> 2.0 ) under a one-sided test against each null. Power computed
+via bootstrap distribution of enrichment ratios under the three null models.
+3.3 Access and reproducibility
+All datasets accessible via datalad or direct HTTPS from OpenNeuro. Dataset versions frozen
+at the DOIs recorded in T able 1. Re-running the analysis pipeline against the same DOIs
+reproduces results exactly .
+4 V ariables
+4.1 Independent variable
+Condition: task-engaged vs resting baseline (within-subject where available; between-dataset
+otherwise).
+4.2 Primary outcome: the ￿-enrichment ratio
+F or each subject × condition, let the detected ITPC peak frequencies be {𝑓1, 𝑓2, … , 𝑓𝑀}and let
+𝑟𝑖𝑗= 𝑓𝑗/𝑓𝑖for all 𝑖 < 𝑗 be the pairwise ratios. Define the log-distance of a ratio 𝑟to the nearest
+integer power of 𝜑:
+𝐷(𝑟) = ∣ log 𝑟 − round (log 𝑟/ log 𝜑) ⋅ log 𝜑∣. (2)
+The observed mean log-distance is 𝐷obs = ⟨𝐷(𝑟𝑖𝑗)⟩ over all pairs. The enrichment ratio is
+𝑅𝜑 =𝐷null
+𝐷obs(3)
+computed separately against each of the three null models (§ 5.4 ). 𝑅𝜑> 1 indicates peaks are
+closer to the ￿-ladder than null; 𝑅𝜑= 1 indicates no preference; 𝑅𝜑< 1 indicates anti-￿ structure.
+4.3 Secondary outcome variables
+• Peak count per spectrum (for normalisation)
+• Integrated ITPC in gamma (30–100 Hz), alpha (8–13 Hz), theta (4–8 Hz)
+• 𝜏sustain estimate (task epochs only)
+• Cross-channel phase synchrony (exploratory)
+Leckey 2026 · LSSP Pre-Registration v1.0 4
+5 Analysis Plan
+5.1 Preprocessing pipeline (fixed)
+All preprocessing via MNE-Python v1.7+ with identical parameters across datasets:
+1. Load BIDS-compliant recording via mne_bids.read_raw_bids
+2. Notch filter at mains (50/60 Hz per metadata) and harmonics to 200 Hz
+3. Band-pass 1.0–100 Hz, zero-phase FIR, Hamming window, default MNE parameters
+4. Automated bad-channel detection via NoisyChannels (PREP port), interpolation
+5. Common average reference (EEG) or signal-space separation (MEG)
+6. ICA artefact rejection: F astICA, 30 components, auto EOG/ECG removal via ICALabel
+7. Epoch around stimulus: 𝑡min = −0.5 s, 𝑡max = +2.0 s
+8. Peak-to-peak rejection threshold: 150 ￿V (EEG) or 3 pT (MEG)
+9. Minimum retained per subject/condition: 32 epochs, else exclude subject
+5.2 ITPC computation
+Time-frequency decomposition via Morlet wavelet with 60 log-spaced frequencies from 2–80 Hz,
+𝑛cycles = 𝑓 /2 . The inter-trial phase coherence is
+ITPC (𝑓 , 𝑡) = ∣1
+𝑁trials𝑁trials
+∑
+𝑛=1𝑒𝑖𝜙𝑛(𝑓 ,𝑡)∣ . (4)
+Channel and time averaging yields a one-dimensional ITPC (𝑓 ) spectrum per subject per condi-
+tion.
+5.3 Peak detection (fixed parameters)
+Peak detection on 𝑧-scored ITPC spectrum via scipy.signal.find_peaks with:
+• Prominence: 0.5 (𝑧-score units)
+• Minimum inter-peak distance: 3 frequency bins
+• Minimum peak height: 0.5 (𝑧-score units)
+These parameters are fixed by this pre-registration and will not be tuned on confirmatory data.
+5.4 Null models
+Null A — Shuffled peaks. Same peak count, positions permuted within observed frequency
+range; recompute 𝐷; repeat 10,000 bootstrap iterations; 𝐷null,A is the bootstrap mean.
+Null B — Uniform integer harmonics. Ratios drawn from {2, 3, 4, 5, 6, 7, 8, 9} ; compute 𝐷
+to the ￿-ladder; yields deterministic 𝐷null,B . This is the most stringent null because 𝜑2≈ 2.618
+sits near the integer 3.
+Null C — Log-uniform. Ratios drawn uniformly in log-space over the observed range; 10,000
+iterations; 𝐷null,C .
+Three enrichment ratios are computed per subject: 𝑅𝜑,𝐴 ,𝑅𝜑,𝐵 ,𝑅𝜑,𝐶 .
+Leckey 2026 · LSSP Pre-Registration v1.0 5
+5.5 Statistical inference
+Subject-level: Each subject contributes one triple (𝑅𝐴, 𝑅𝐵, 𝑅𝐶). F or each null, one-sample
+Wilcoxon signed-rank test of log 𝑅𝜑vs 0 (log-transformed to normalise ratio distribution).
+Dataset-level: Per-null Wilcoxon yields one 𝑝-value per dataset per null. Binomial test on
+proportion of subjects with 𝑅𝜑> 1 provides a second dataset-level summary .
+Aggregate (primary test): Stouffer’s 𝑍-score combination across the seven confirmatory
+datasets, separately for each null model. Bonferroni correction across three nulls: 𝛼corrected =
+0.05/3 = 0.0167 .
+5.6 Within-subject task vs rest contrast (H2)
+F or datasets with paired conditions (ds003810, ds005385), paired Wilcoxon signed-rank test on
+𝑅task
+𝜑 − 𝑅rest
+𝜑 . Pre-registered prediction: positive median, 𝑝 < 0.05 one-sided.
+6 Pre-registered Predictions — Locked Thresholds
+6.1 Primary (H1-confirmation)
+All three conditions required:
+1. Aggregate enrichment: median 𝑅𝜑,𝐴 ≥ 2.0 and median 𝑅𝜑,𝐵 ≥ 2.0 and median 𝑅𝜑,𝐶 ≥ 2.0
+2. Dataset consistency: ≥ 5 of 7 confirmatory datasets show subject-level median 𝑅𝜑> 1
+against all three nulls
+3. Statistical significance: Stouffer-combined 𝑝 < 0.0167 against each null separately
+6.2 Secondary
+H2. Median task-minus-rest Δ𝑅𝜑> 0 , one-sided paired test 𝑝 < 0.05 .
+H3. Sign-consistency of 𝑅𝜑> 1 in ≥ 4 of 5 represented paradigms.
+H4. Spearman 𝜌(𝑅𝜑,engagement metric ) > 0.15 ,𝑝 < 0.05 , where behaviour exists.
+6.3 Outcome classification
+T able 2: Pre-registered outcome bins. Every possible result maps to exactly one bin.
+Outcome Condition
+Strong confirmation H1 + H2 + H3 + H4 all supported
+Confirmation H1 supported
+Partial / mixed H1 supported vs ≥ 1 null but not all three, or dataset consistency 3–4of 7
+Null result H1 not supported by any null-model test
+Anti-PEFC￿S Median 𝑅𝜑< 1 with 𝑝 < 0.05 against null A
+All four outcomes will be reported fully , with effect sizes, confidence intervals, per-dataset break-
+down, and full null-model distributions. A null result is a publishable finding and will be
+reported exactly as obtained.
+7 Multiple Comparisons, Correction, Robustness
+• Bonferroni correction across three null models: 𝛼corrected = 0.0167 .
+Leckey 2026 · LSSP Pre-Registration v1.0 6
+• Holm correction in parallel as sensitivity check.
+• Per-dataset uncorrected 𝑝-values reported alongside aggregate corrected values.
+• All tests two-sided unless directionally pre-specified.
+Robustness analyses (pre-registered):
+• Pipeline repeated with ICA component count ∈ {20, 30, 40}
+• Pipeline repeated with peak prominence ∈ {0.3, 0.5, 0.7}
+• Pipeline repeated with wavelet 𝑛cycles ∈ {𝑓 /3, 𝑓 /2, 𝑓 }
+• Result reported as “robust” only if sign and significance preserved across all three sensitivity
+configurations
+8 Exclusion Rules (Fixed)
+A subject is excluded if any of:
+• F ewer than 32 clean epochs after artefact rejection
+• F ewer than 16 good channels after bad-channel detection
+• Recording duration < 60 s continuous usable data
+• F ewer than 4 ITPC peaks detected
+• Missing stimulus-event markers preventing epoching
+A dataset is excluded before confirmatory run if< 8 subjects remain after preprocessing. Ex-
+cluded datasets are reported but do not contribute to the primary aggregate test.
+9 Stopping Rules
+All seven confirmatory datasets will be analysed in full, exactly once , following pre-registration.
+No interim peeking. No data added after confirmatory run. No subjects added post-hoc. If a
+dataset becomes unavailable between pre-registration and run, it is dropped and Bonferroni
+recomputed; no substitution.
+10 Deviations Policy
+Any deviation from this pre-registration will be reported in a dedicated “Deviations” section of
+the published manuscript, with justification, and a sensitivity analysis showing the result with
+and without the deviation.
+11 Limitations Acknowledged Up F ront
+1. ITPC peak detection is not fully scale-invariant across datasets with varying SNR; the same
+parameters may yield different peak counts. Null A (shuffled peaks) controls for this.
+2. 𝜑 is numerically close to some integer ratios ( 𝜑2≈ 2.618 near 3). Null B is specifically
+designed to address this.
+3. ITPC is not identical to phase-locked value ΓPL V as defined in PEFC￿S. ITPC is the closest
+standard EEG observable; the theoretical mapping is documented in [ 1].
+Leckey 2026 · LSSP Pre-Registration v1.0 7
+4. Secondary dataset re-analysis has known statistical pitfalls (garden of forking paths). Pre-
+registration is the primary mitigation.
+5. The PEFC￿S framework is unconventional. This study tests only one specific empirical
+prediction. Confirmation is necessary but not suﬀicient for the broader framework; null
+falsifies this prediction but not the broader theory .
+12 Open-Science Commitments
+• Pre-registration on OSF before any confirmatory run
+• Pipeline code released on GitHub at lssp-pipeline , MIT licence
+• All intermediate outputs deposited on OSF
+• Manuscript on preprint server simultaneously with journal submission
+• Null results reported exactly as obtained; no outcome-switching
+13 Timeline
+• T+0: Pre-registration submitted to OSF
+• T+7 days: Pipeline code public; pilot (ds002725) processed for calibration only
+• T+14 days: Confirmatory run on 7-dataset panel
+• T+30 days: Analysis complete, manuscript drafted
+• T+60 days: Preprint posted; journal submission (targets: eLife ,NeuroImage ,Cerebral
+Cortex ,Journal of Neuroscience Methods )
+A Reference Pipeline Implementation (Python)
+The complete analysis pipeline is reproduced below. It depends on mne ,mne-bids ,scipy , and
+numpy . Installation: pip install lssp-pipeline . Invocation: lssp-run --config confirmatory.yml
+--output ./results/ .
+Listing 1: lssp_pipeline.py — reference implementation, MIT licence
+from__future__ import annotations
+import math
+import numpy as np
+import mne
+frommne_bids import BIDSPath, read_raw_bids
+frommne.time_frequency import tfr_morlet
+fromscipy.signal import find_peaks
+fromscipy.stats import wilcoxon, combine_pvalues
+PHI = 1.6180339887498949
+LOG_PHI = math.log(PHI)
+# --- preprocess - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+defpreprocess(raw, line_freq):
+raw.notch_filter(np.arange(line_freq, 200 + line_freq, line_freq),
+fir_design= "firwin")
+raw. filter(1.0, 100.0, fir_design= "firwin")
+raw.set_eeg_reference( "average ", projection=True)
+ica = mne.preprocessing.ICA(n_components=30, random_state=42,
+method= "fastica ", max_iter= "auto")
+Leckey 2026 · LSSP Pre-Registration v1.0 8
+ica.fit(raw)
+eog_idx, _ = ica.find_bads_eog(raw)
+ecg_idx, _ = ica.find_bads_ecg(raw)
+ica.exclude = list(set(eog_idx + ecg_idx))
+return ica. apply(raw)
+# --- ITPC - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+defcompute_itpc(epochs):
+freqs = np.logspace(np.log10(2), np.log10(80), 60)
+n_cycles = freqs / 2.0
+_, itc = tfr_morlet(epochs, freqs=freqs, n_cycles=n_cycles,
+return_itc=True, average=True, decim=4,
+n_jobs=-1, verbose= "error")
+return freqs, itc.data.mean(axis=(0, 2))
+# --- peak detection - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+defdetect_peaks(itpc_spec, freqs):
+z = (itpc_spec - itpc_spec.mean()) / itpc_spec.std()
+peaks, _ = find_peaks(z, prominence=0.5, distance=3, height=0.5)
+return freqs[peaks]
+# --- phi -enrichment - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+defphi_enrichment(peak_freqs, n_boot=10000, rng=None):
+rng = rng ornp.random.default_rng(42)
+peak_freqs = np.asarray(peak_freqs)
+if len(peak_freqs) < 4:
+return None
+ratios = []
+fori in range(len(peak_freqs)):
+forj in range(i + 1, len(peak_freqs)):
+ifpeak_freqs[i] > 0:
+ratios.append(peak_freqs[j] / peak_freqs[i])
+ratios = np.asarray(ratios)
+log_r = np.log(ratios)
+D_obs = np.mean(np. abs(log_r - np. round(log_r / LOG_PHI) * LOG_PHI))
+# Null A: shuffled peaks
+D_A = []
+for_ in range(n_boot):
+perm = rng.permutation(peak_freqs)
+rs = [perm[j]/perm[i] fori in range(len(perm))
+forj in range(i+1, len(perm)) ifperm[i] > 0]
+lr = np.log(rs)
+D_A.append(np.mean(np. abs(lr - np. round(lr/LOG_PHI) * LOG_PHI)))
+D_A = float(np.mean(D_A))
+# Null B: integer harmonics
+uni = np.array([2,3,4,5,6,7,8,9], dtype= float)
+D_B = float(np.mean(np. abs(np.log(uni) -
+np. round(np.log(uni)/LOG_PHI) * LOG_PHI)))
+# Null C: log -uniform
+lo, hi = float(log_r. min()), float(log_r. max())
+C = rng.uniform(lo, hi, size=(n_boot, len(ratios)))
+D_C = float(np.mean(np. abs(C - np. round(C/LOG_PHI) * LOG_PHI)))
+return {
+"D_observed ": float(D_obs),
+"R_phi_A ": D_A / max(D_obs, 1e-12),
+"R_phi_B ": D_B / max(D_obs, 1e-12),
+"R_phi_C ": D_C / max(D_obs, 1e-12),
+"n_peaks ": int(len(peak_freqs)),
+}
+Leckey 2026 · LSSP Pre-Registration v1.0 9
+B Dataset Access Commands
+Listing 2: Dataset acquisition via DataLad
+pip install datalad datalad-osf
+fords inds002680 ds002718 ds003061 ds003810 \
+ds005385 ds003774 ds002778; do
+datalad clone https://github.com/OpenNeuroDatasets/${ds}.git
+datalad get ${ds}/ -r
+done
+# pilot (calibration only , not confi rmat ory )
+datalad clone https://github.com/OpenNeuroDatasets/ds002725.git
+C Glossary
+PEFC￿S
+Position of Echo-F eedback Cognitive ￿-Substrate — the theoretical framework under test
+[1].
+L TDE
+Leckey T emporal Delegated Equation: Ψ(𝑡) = ∑𝑘𝑎𝑘Λ𝑘(𝑡 − 𝜏𝑘) 𝑒𝑖𝜃𝑘, with 𝜏𝑘= 𝜏0𝜑𝑘.
+ITPC
+Inter-trial phase coherence; standard EEG/MEG observable.
+PL V
+Phase-locked value; theoretical coherence measure of which ITPC is the trial-averaged em-
+pirical analog.
+𝜑 Golden ratio, (1 +√
+5)/2 ≈ 1.6180339887 …
+𝑅𝜑 Enrichment ratio of observed peak-spacing vs null; confirmation threshold ≥ 2.0 .
+OSF
+Open Science F ramework ( https://osf.io ).
+BIDS
+Brain Imaging Data Structure ( https://bids.neuroimaging.io ).
+References
+[1] G. A. Leckey , The Position of Echo-F eedback Cognitive ￿-Substrate: A Multiversal Branch
+Architecture for Coherent Cognition Anchored by the 𝜑2Coherence Bridge , Aureon Institute
+technical report, 2026.
+[2] G. A. Leckey , HNC Grand Unified F ramework , Aureon Institute technical report, 2026.
+[3] A. Delorme, “EEG data from an auditory oddball task,” OpenNeuro ds003061,
+DOI: 10.18112/openneuro.ds003061.v1.1.2 (2022).
+[4] A. Delorme, “EEG data from an auditory oddball task (collection),” OpenNeuro ds002680,
+DOI: 10.18112/openneuro.ds002680.v1.2.0 (2022).
+[5] D. G. W akeman and R. N. Henson, “A multi-subject, multi-modal human neuroimaging
+dataset,” Scientific Data 2, 150001 (2015).
+Leckey 2026 · LSSP Pre-Registration v1.0 10
+[6] K. D. T zimourta et al., “Motor imagery vs rest EEG dataset acquired with a low-cost
+consumer device,” OpenNeuro ds003810 (2021).
+[7] E. W ascher, D. Schneider, P . D. Gajewski, S. Getzmann, “Resting-state EEG data before
+and after cognitive activity across the adult lifespan and a 5-year follow-up,” OpenNeuro
+ds005385, DOI: 10.18112/openneuro.ds005385.v1.0.3 (2024).
+[8] C. R. Pernet et al., “EEG-BIDS, an extension to the brain imaging data structure for
+electroencephalography ,” Scientific Data 6, 103 (2019).
+[9] A. Gramfort et al., “MEG and EEG data analysis with MNE-Python,” F rontiers in Neu-
+roscience 7, 267 (2013).
+[10] B. Libet, “Unconscious cerebral initiative and the role of conscious will in voluntary action,”
+Behavioral and Brain Sciences 8(4), 529–566 (1985).
+[11] J. Polich, “Updating P300: an integrative theory of P3a and P3b,” Clinical Neurophysiology
+118 (10), 2128–2148 (2007).
+[12] B. A. Nosek et al., “The preregistration revolution,” Proc. Natl. Acad. Sci. USA 115 (11),
+2600–2606 (2018).

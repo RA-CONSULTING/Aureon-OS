@@ -1,0 +1,19 @@
+{
+  "acceptance": [
+    "HTML artifact exists",
+    "Canvas game renders without external assets",
+    "Keyboard controls are visible to the end user",
+    "No cloud provider or unsafe authority is used"
+  ],
+  "asset_path": "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\frontend\\public\\aureon_generated_apps\\make_me_a_game_where_a_man_walks_up_to_a_glowing_9b69835622a4.html",
+  "controls": [
+    "Arrow keys",
+    "WASD",
+    "Space",
+    "R"
+  ],
+  "kind": "html_game",
+  "prompt": "Make me a game where a man walks up to a glowing door and tell the end user how to play from the keyboard.",
+  "public_url": "/aureon_generated_apps/make_me_a_game_where_a_man_walks_up_to_a_glowing_9b69835622a4.html",
+  "schema_version": "aureon-local-interactive-artifact-v1"
+}

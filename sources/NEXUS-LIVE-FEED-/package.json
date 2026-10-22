@@ -1,0 +1,52 @@
+{
+  "name": "illumination-engine-frontend",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Frontend for the Illumination Engine, providing a real-time interface.",
+  "main": "src/index.tsx",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "vite",
+    "build": "vite build",
+    "refresh:forecast": "node scripts/updateForecastWindow.js",
+    "verify:nexus": "node scripts/verifyNexusSystem.js",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@google-ai/generativelanguage": "^3.4.0",
+    "@google-cloud/vertexai": "0.2.1",
+    "@radix-ui/react-tabs": "^1.1.13",
+    "chart.js": "^4.5.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "js-sha256": "^0.11.1",
+    "lucide-react": "^0.544.0",
+    "react": "^18.2.0",
+    "react-chartjs-2": "^5.3.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^7.9.1",
+    "tailwind-merge": "^3.3.1",
+    "three": "^0.180.0"
+  },
+  "engines": {
+    "node": "20.x",
+    "npm": "10.x"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.9.2",
+    "vite": "^5.3.1",
+    "vite-tsconfig-paths": "^4.3.2",
+    "vitest": "^1.6.0",
+    "supertest": "^6.3.4",
+    "@noble/ed25519": "^2.3.0"
+  }
+}

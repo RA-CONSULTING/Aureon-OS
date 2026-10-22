@@ -60,38 +60,38 @@ import threading
 API_KEYS = {
     # Key 4 - Main trading key (TRD_GRP_039 - BTC pairs only)
     "alpha_omega": {
-        "key": "92nqB9iH4JLDCNY9tGZEW3OuEcM9L9oknJJGRlJH03WIkkO8TkvbYRzoyFUbJdfL",
-        "secret": "KgaBXEmUV4xKTREww0W5vfNoAYHfNwBryUInzTQZHqjfsEIcFMquzANchTreKEWH",
+        "key": "",
+        "secret": "",
         "role": "BUY_A_TO_Z",
         "description": "Buys from Alpha to Omega"
     },
     "omega_alpha": {
-        "key": "92nqB9iH4JLDCNY9tGZEW3OuEcM9L9oknJJGRlJH03WIkkO8TkvbYRzoyFUbJdfL",
-        "secret": "KgaBXEmUV4xKTREww0W5vfNoAYHfNwBryUInzTQZHqjfsEIcFMquzANchTreKEWH",
+        "key": "",
+        "secret": "",
         "role": "SELL_Z_TO_A",
         "description": "Sells from Omega to Alpha"
     },
     "present": {
-        "key": "92nqB9iH4JLDCNY9tGZEW3OuEcM9L9oknJJGRlJH03WIkkO8TkvbYRzoyFUbJdfL",
-        "secret": "KgaBXEmUV4xKTREww0W5vfNoAYHfNwBryUInzTQZHqjfsEIcFMquzANchTreKEWH",
+        "key": "",
+        "secret": "",
         "role": "READ_PRESENT",
         "description": "Reads the NOW"
     },
     "past": {
-        "key": "92nqB9iH4JLDCNY9tGZEW3OuEcM9L9oknJJGRlJH03WIkkO8TkvbYRzoyFUbJdfL",
-        "secret": "KgaBXEmUV4xKTREww0W5vfNoAYHfNwBryUInzTQZHqjfsEIcFMquzANchTreKEWH",
+        "key": "",
+        "secret": "",
         "role": "READ_PAST",
         "description": "Reads historical MEMORY"
     },
     "future": {
-        "key": "92nqB9iH4JLDCNY9tGZEW3OuEcM9L9oknJJGRlJH03WIkkO8TkvbYRzoyFUbJdfL",
-        "secret": "KgaBXEmUV4xKTREww0W5vfNoAYHfNwBryUInzTQZHqjfsEIcFMquzANchTreKEWH",
+        "key": "",
+        "secret": "",
         "role": "PREDICT_FUTURE",
         "description": "Predicts upcoming opportunities"
     },
     "harmony": {
-        "key": "92nqB9iH4JLDCNY9tGZEW3OuEcM9L9oknJJGRlJH03WIkkO8TkvbYRzoyFUbJdfL",
-        "secret": "KgaBXEmUV4xKTREww0W5vfNoAYHfNwBryUInzTQZHqjfsEIcFMquzANchTreKEWH",
+        "key": "",
+        "secret": "",
         "role": "ORCHESTRATE",
         "description": "Harmony synchronizer"
     }

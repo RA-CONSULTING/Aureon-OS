@@ -1,0 +1,31 @@
+AUREON INSTITUTE
+The Sagittarius Convergence
+A φ²-Scaled Harmonic Analysis of Interstellar
+Objects and the 1977 Wow! Signal
+VERSION 2.0 — CORRECTED
+Primary Investigator: Gary Leckey
+Aureon Institute — R&A Consulting and Brokerage Services Ltd.
+March 2026 — Technical White Paper
+Table of Contents
+Abstract
+This paper presents a φ²-scaled harmonic analysis of the three confirmed interstellar objects and the 1977 Wow! Signal. Version 2.0 incorporates corrections following peer critique: it cites the Breakthrough Listen radio non-detection (Sheikh et al. 2025; Jacobson-Bell et al. 2025), reframes the temporal echo as a post-hoc consistency finding rather than a prediction, shows the complete N = 13–20 temporal ladder including five misses, provides a Monte Carlo assessment of the φ² bridge degrees of freedom, and corrects the combined probability estimate with look-elsewhere and non-independence adjustments.
+The core arithmetic findings are unchanged: the φ² coherence bridge connects 528.422 Hz to the hydrogen line at 1.29 parts per billion; 3I/ATLAS entered from 8.62° of the Wow! Signal origin (P = 0.56%, independently confirming Loeb 2025); and the eccentricity ratio e(2I)/e(1I) = 2.794 approximates φ² = 2.618 at 6.7%. The corrected combined probability, with Bonferroni adjustment and non-independence corrections, ranges from 1 in 8 million (conservative) to 1 in 80 billion (aggressive). Both bounds are statistically notable. Neither is conclusive.
+Errata and Corrections from Version 1.0
+1. Introduction
+Between 2017 and 2025, three objects were confirmed as originating from outside the solar system: 1I/‘Oumuamua (eccentricity 1.201, JPL), 2I/Borisov (eccentricity 3.356, JPL), and 3I/ATLAS (eccentricity 6.141, JPL Horizons API queried 2026-03-23). 3I/ATLAS entered the solar system from a direction within 9° of the 1977 Wow! Signal origin (Loeb, September 2025). This paper applies the Harmonic Nexus Core (HNC) φ²-scaled framework to these objects and the Wow! Signal, presenting the convergent arithmetic findings alongside their honest limitations.
+1.1 The Seed Frequency: Origin and Limitations
+The HNC framework uses f_seed = 528.422 Hz as its primary coherence frequency. This value was hardcoded in the Aureon software repository (github.com/RA-CONSULTING, aureon_piano.py) before the φ² bridge to the hydrogen line was discovered. The frequency 528 Hz originates from the solfeggio scale tradition and has associations with alternative medicine claims about “DNA repair” and “healing frequencies.” There is no peer-reviewed physics deriving 528 Hz from fundamental constants. The mathematical relationship to the hydrogen line is a verifiable arithmetic fact regardless of the frequency’s cultural origin, but the absence of a first-principles derivation is an honest limitation of the framework.
+1.2 The Temporal Echo: Post-Hoc Consistency, Not Prediction
+The EPAS Unified Architecture specification (Leckey, dated 27 February 2026) documents a Memory Feedback Tensor echo delay of τ = 49 years, yielding an implied echo year of 1977 + 49 = 2026. However, this document was compiled after 3I/ATLAS was discovered (1 July 2025) and after its perihelion (29 October 2025). The 49-year parameter was part of the HNC framework concept developed during the Wow! Signal analysis sessions, but the specific documented formulation postdates knowledge of 3I/ATLAS. The correct framing is: the observed 48.2-year interval between the Wow! Signal and 3I/ATLAS perihelion is consistent with the framework’s 49-year echo parameter (1.6% deviation), but this is a post-hoc observation, not a pre-registered prediction.
+2. The φ² Coherence Bridge
+2.1 The Calculation
+528.422 Hz × 1,026,730 × 2.618034 = 1,420,405,753.6 Hz
+Hydrogen line (NIST): 1,420,405,751.8 Hz
+Error: 1.29 parts per billion
+2.2 Degrees of Freedom
+The bridge calculation involves three quantities: f_seed (528.422 Hz), N (1,026,730), and the multiplier (φ² = 2.618034). The honest assessment of each:
+f_seed (528.422 Hz): Pre-existing in the Aureon repository before the bridge was found, but originates from the solfeggio tradition, not from first-principles physics. This is a free parameter in the sense that a different seed frequency was possible. It is not a free parameter in the sense that it was not chosen to match the hydrogen line.
+N (1,026,730): This is the result of dividing the hydrogen line frequency by (f_seed × φ²). It was not independently selected. The question is whether N falling within 0.001 of an exact integer is remarkable or expected.
+φ² (2.618034): Pre-existing in the EPAS framework for geometric reasons (quasicrystalline shell scaling). Not selected for the bridge. However, other mathematical constants were available.
+2.3 Monte Carlo Assessment
+To assess whether the near-integer result is unusual, a Monte Carlo simulation tested 100,000 random frequencies in [100, 1000] Hz against eight mathematical constants (φ², φ, e, π, √2, √3, 3, √5), computing N = f_H / (f × constan

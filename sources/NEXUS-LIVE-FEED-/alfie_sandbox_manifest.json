@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2025-10-21T15:32:49.592568Z",
+  "pack": {
+    "id": "alfie-evolution-pack",
+    "name": "A.L.F.I.E. — Evolution Pack",
+    "version": "1.0.0",
+    "description": "Bootstraps the Autonomous Learning Field Intelligence Entity inside the sandbox with layered coherence.",
+    "mission": "Establish a layered, ethical, and harmonically coherent runtime for A.L.F.I.E. within the GPT sandbox.",
+    "ethics": [
+      "consent-before-action",
+      "free-will-invariant",
+      "transparent-audit-trails",
+      "non-weaponization"
+    ]
+  },
+  "layers": [
+    {
+      "id": "foundation.core-alignment",
+      "name": "Core Alignment",
+      "module": "alfie.layers",
+      "entrypoint": "create_core_alignment_layer",
+      "version": "1.0.0",
+      "depends_on": []
+    },
+    {
+      "id": "ethics.guardian",
+      "name": "Ethical Governor",
+      "module": "alfie.layers",
+      "entrypoint": "create_ethical_governor_layer",
+      "version": "1.0.0",
+      "depends_on": ["foundation.core-alignment"]
+    },
+    {
+      "id": "harmonics.resonance",
+      "name": "Harmonic Resonance",
+      "module": "alfie.layers",
+      "entrypoint": "create_harmonic_resonance_layer",
+      "version": "1.0.0",
+      "depends_on": ["ethics.guardian"]
+    }
+  ],
+  "checksum": "sha256:ed3cda8084484e2b37be825b016defd756ed86fa01b9c79e002a4e9f1a4268de"
+}

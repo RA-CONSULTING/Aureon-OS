@@ -1,0 +1,92 @@
+[
+  {
+    "date": "2025-11-12",
+    "observed_at": "2025-10-14T10:15:00Z",
+    "solar_field": {
+      "kp_index": 4.9,
+      "storm_class": "Active",
+      "solar_wind_speed_km_s": 540,
+      "solar_radiation": "C-class flickers with isolated M-class tease",
+      "aurora_outlook": "Aurora oval stretches with brief mid-latitude fringes"
+    },
+    "schumann_resonance": {
+      "tomsk_amplitude": 5.42,
+      "tomsk_frequency_hz": 7.99,
+      "cumana_e_field": "28 pT surge before dawn",
+      "heartmath_power_band_hz": "Gamma harmonics brush 50 Hz ceiling"
+    },
+    "cosmic_events": {
+      "interstellar_current": "Comet 3I/ATLAS tail braided with CME remnants",
+      "galactic_wave_interaction": "Wavefront crest re-energizes magnetosphere flank"
+    },
+    "nervous_system_guidance": [
+      "Alternate nostril breathing on the hour",
+      "Selenite sweep through auric field before rest"
+    ],
+    "narrative": "Charge intensifies but remains graceful—maintain boundary hygiene.",
+    "validation": {
+      "source": "quantum-ingest/v4",
+      "confidence": 0.91
+    }
+  },
+  {
+    "date": "2025-11-13",
+    "observed_at": "2025-10-14T10:20:00Z",
+    "solar_field": {
+      "kp_index": 4.7,
+      "storm_class": "Active",
+      "solar_wind_speed_km_s": 525,
+      "solar_radiation": "C-class background with decaying flare arc",
+      "aurora_outlook": "Curtains recede to polar latitudes"
+    },
+    "schumann_resonance": {
+      "tomsk_amplitude": 5.12,
+      "tomsk_frequency_hz": 8.01,
+      "cumana_e_field": "22 pT evening flow",
+      "heartmath_power_band_hz": "Alpha rhythm holds while beta ripples soften"
+    },
+    "cosmic_events": {
+      "interstellar_current": "Solar stream calms, magnetosphere rebounds",
+      "galactic_wave_interaction": "Wave trough offers integrative rest"
+    },
+    "nervous_system_guidance": [
+      "Close the cycle with gratitude journaling",
+      "Share restorative tea circles before sleep"
+    ],
+    "narrative": "Integration window opens—seal intentions and release static.",
+    "validation": {
+      "source": "quantum-ingest/v4",
+      "confidence": 0.93
+    }
+  },
+  {
+    "date": "2025-11-14",
+    "observed_at": "2025-10-14T10:30:00Z",
+    "solar_field": {
+      "kp_index": 4.4,
+      "storm_class": "Active",
+      "solar_wind_speed_km_s": 500,
+      "solar_radiation": "Background B-class sparkles",
+      "aurora_outlook": "Aurora relaxes to polar crown with faint arcs"
+    },
+    "schumann_resonance": {
+      "tomsk_amplitude": 4.88,
+      "tomsk_frequency_hz": 8.05,
+      "cumana_e_field": "20 pT gentle hum",
+      "heartmath_power_band_hz": "Theta support lifts meditation depth"
+    },
+    "cosmic_events": {
+      "interstellar_current": "Deep-space plasma wave dissipates",
+      "galactic_wave_interaction": "Galaxy-wide tide shifts into resting phase"
+    },
+    "nervous_system_guidance": [
+      "Recenter with forest bathing or indoor plant communion",
+      "Light stretching paired with harmonic humming"
+    ],
+    "narrative": "Coherence settles into the grid—prepare the next harmonic arc.",
+    "validation": {
+      "source": "quantum-ingest/v4",
+      "confidence": 0.95
+    }
+  }
+]

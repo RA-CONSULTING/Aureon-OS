@@ -1,0 +1,26 @@
+{
+  "profile": {
+    "schumann_mean": 7.864497702323207,
+    "schumann_std": 0.10623326819610422,
+    "schumann_min": 7.466,
+    "schumann_max": 8.266,
+    "amplitude_mean": 0.3952984426857289,
+    "amplitude_std": 0.09309750776401261,
+    "beta_calibrated": 0.7742,
+    "lambda_baseline": 0.74,
+    "lambda_target": 0.8090169943749475,
+    "stability_threshold_low": 0.6,
+    "stability_threshold_high": 1.1,
+    "singing_threshold_lambda": 0.8,
+    "singing_threshold_coherence": 0.6,
+    "historical_stability_pct": 93.73244830227215,
+    "historical_singing_pct": 53.35716109267297,
+    "historical_phi_lock_pct": 26.359458769466425,
+    "solar_correlation_enabled": true,
+    "k_index_latest": null,
+    "data_source": "zenodo_nizhny_2024",
+    "n_samples": 7834,
+    "calibrated_at": "2026-06-20T19:23:55.854315+00:00"
+  },
+  "generated_at": "2026-06-20T19:23:55.854573+00:00"
+}
