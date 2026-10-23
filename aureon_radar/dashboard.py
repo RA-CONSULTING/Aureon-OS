@@ -13,7 +13,7 @@ import os
 from datetime import datetime, timezone
 from pathlib import Path
 
-RADAR_DIR = Path("C:/Users/user/.kimi_openclaw/workspace/aureon_radar")
+RADAR_DIR = Path(__file__).resolve().parent
 
 def clear():
     os.system('cls' if os.name == 'nt' else 'clear')

@@ -630,8 +630,7 @@ class ResearchCorpusIndex:
         """
         Build the stable doc_id for an absolute path: ``<root_basename>/<rel>``
         with forward slashes. This way ``docs/HNC_UNIFIED_WHITE_PAPER.md`` is
-        the id whether the repo lives in ``/home/user/aureon-trading`` or
-        ``C:\\Users\\ayman kattan\\aureon-trading``.
+        the id whether the checkout lives under a POSIX home or a Windows profile.
         """
         try:
             rel = os.path.relpath(abs_path, start=self.root)

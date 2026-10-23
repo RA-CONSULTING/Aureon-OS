@@ -107,6 +107,7 @@ queen_backups/
 queen_configs/*.bak
 runs/
 logs/
+.aureon_runtime/
 harmonic_cache/
 ws_cache/
 cache/wisdom_cache/

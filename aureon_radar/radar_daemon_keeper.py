@@ -22,7 +22,7 @@ import logging
 from pathlib import Path
 from datetime import datetime, timezone
 
-WORKSPACE = Path("C:/Users/user/.kimi_openclaw/workspace")
+WORKSPACE = Path(os.environ.get("SERO_WORKSPACE") or Path(__file__).resolve().parents[1])
 RADAR_DIR = WORKSPACE / "aureon_radar"
 PID_TRACKER = RADAR_DIR / ".radar_daemon_pids.json"
 HEARTBEAT_LOG = RADAR_DIR / "daemon_heartbeat.log"

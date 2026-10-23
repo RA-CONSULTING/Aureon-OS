@@ -1,7 +1,9 @@
 import sys
 sys.stdout.reconfigure(encoding='utf-8')
 
-with open(r'C:\Users\user\.kimi_openclaw\workspace\aureon-os-upstream\aureon\exchanges\capital_cfd_trader.py', 'r', encoding='utf-8') as f:
+from pathlib import Path
+_trader = Path(__file__).resolve().parents[1] / "aureon" / "exchanges" / "capital_cfd_trader.py"
+with open(_trader, "r", encoding="utf-8") as f:
     content = f.read()
 
 print('=== SCANNER/INTELLIGENCE IMPORTS ===')

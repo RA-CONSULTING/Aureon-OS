@@ -4,7 +4,8 @@ import os
 
 # Load env
 from dotenv import load_dotenv
-load_dotenv(r'C:\Users\user\.kimi_openclaw\workspace\aureon_radar\.env')
+from pathlib import Path
+load_dotenv(Path(__file__).resolve().parent / ".env")
 
 # Now check the actual Capital.com API
 import requests

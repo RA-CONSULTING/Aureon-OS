@@ -17,11 +17,15 @@ available for producing the truthful inventory while migration is incomplete;
 inventory drift still fails in either mode.
 
 Every live-capable-unguarded-blocker entry is an inventory classification,
-not a guard. These entries are safe only while live trading is off. Each
-one must get a structural guard before live trading can ever be armed.
-The live-arming gate reads AUREON_LIVE_TRADING, AUREON_FUSION_ARM_LIVE, and
+not a guard. In the public default, guarded mode, these entries are safe
+only while live trading is off. Each one must get a structural guard before
+live trading can ever be armed in that mode. The live-arming gate reads
+AUREON_LIVE_TRADING, AUREON_FUSION_ARM_LIVE, and
 aureon_fusion/state/capital_release.flag, and fails closed while any
-unguarded blocker remains. That gate does not import repository modules.
+unguarded blocker remains. AUREON_AUTONOMY_MODE=full is the owner's local
+acceptance of that inventory, so the gate stays quiet there. The gate does
+not import repository modules. The kill switch is separate and still stops
+dispatch.
 """
 
 from __future__ import annotations
@@ -1560,6 +1564,29 @@ def live_trading_is_armed(root: Path | None = None) -> bool:
     return (base / "aureon_fusion" / "state" / "capital_release.flag").is_file()
 
 
+def autonomy_mode_is_full(root: Path | None = None) -> bool:
+    """True when the owner opened full autonomy. This does not import the fleet.
+
+    The environment wins. Otherwise ``state/autonomy_mode.json`` in the given
+    root may say ``{"mode": "full"}``. The public default is guarded.
+    """
+
+    raw = os.environ.get("AUREON_AUTONOMY_MODE", "").strip().lower()
+    if raw == "full":
+        return True
+    if raw:
+        return False
+    base = ROOT if root is None else root
+    path = base / "state" / "autonomy_mode.json"
+    if not path.is_file():
+        return False
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError, UnicodeError):
+        return False
+    return isinstance(payload, dict) and str(payload.get("mode", "")).strip().lower() == "full"
+
+
 def live_arming_refusal(
     report: dict[str, Any],
     root: Path | None = None,
@@ -1568,9 +1595,13 @@ def live_arming_refusal(
 
     Unguarded means a classified live-capable blocker, or a discovered call
     the allowlist does not name. A clean inventory with zero blockers does
-    not trip this gate.
+    not trip this gate. Full autonomy mode is the owner's explicit acceptance
+    of that inventory, so the refusal stays quiet there. Guarded mode still
+    refuses. The kill switch is a separate off switch and is not this gate.
     """
 
+    if autonomy_mode_is_full(root):
+        return None
     if not live_trading_is_armed(root):
         return None
     blockers = int(report.get("blocker_count") or 0)

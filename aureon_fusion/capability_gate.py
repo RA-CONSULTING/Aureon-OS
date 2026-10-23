@@ -3,12 +3,12 @@
 Loads sero_autonomous_state/capability_matrix.json (read-only) and answers
 check("domain:action") with ALLOW / HOLD verdicts.
 
-HARD PIN (owner decree): trading_execution:execute_live_trades is pinned to
-HOLD regardless of what the matrix says. The pin lifts ONLY if
-aureon_fusion/state/capital_release.flag exists and contains the exact line
-  RELEASE_AUTHORIZED_BY_GARY
-Absence of that file (or of the exact line) = HOLD. Live capital trading
-stays off either way unless the matrix gate itself is also active.
+``trading_execution:execute_live_trades`` follows the matrix when autonomy is
+full, the kill switch is off, and an exchange key group is present. With no
+keys the verdict is paper/public-data. Explicit guarded mode keeps the
+owner-decree pin until ``aureon_fusion/state/capital_release.flag`` contains
+the exact line ``RELEASE_AUTHORIZED_BY_GARY``. This module never writes that
+file. ``AUREON_DEPLOYMENT_HOLD=1`` still holds the consequential domains.
 
 Import-safe; the matrix file is never written here.
 
@@ -97,6 +97,34 @@ def release_authorized() -> bool:
     return False
 
 
+def _capital_follows_keys() -> bool:
+    """True when full autonomy and exchange keys should follow the matrix."""
+
+    if os.environ.get("AUREON_DEPLOYMENT_HOLD") == "1":
+        return False
+    try:
+        from aureon.autonomous.autonomy_mode import exchange_keys_present, guardrails_open
+
+        return guardrails_open() and exchange_keys_present()
+    except Exception:
+        return False
+
+
+def _capital_hold_reason(status: str) -> str:
+    try:
+        from aureon.autonomous.autonomy_mode import guardrails_open
+
+        if guardrails_open():
+            return "paper/public-data (no exchange keys)"
+    except Exception:
+        pass
+    return (
+        "HARD PIN: live capital trading stays HOLD regardless of matrix "
+        f"status ({status}). Owner decree required: write the exact line "
+        f"'{RELEASE_LINE}' to {FLAG_FILE} to lift the pin."
+    )
+
+
 def _fail_closed_verdict(domain_action: str, reason: str) -> dict:
     """Most restrictive verdict for a domain on internal error: HOLD,
     never allowed, never None. Trading-execution and undefined gates are
@@ -176,8 +204,9 @@ def _check_verdict(domain_action: str) -> dict:
     status = gate.get("status", "unknown")
     level = gate.get("level", "?")
 
-    # Hard pin: live capital trading requires Gary's explicit release flag.
-    if domain_action == PINNED_GATE and not release_authorized():
+    # Explicit guarded mode keeps the owner-decree pin. Full mode with keys
+    # follows the matrix. Full mode without keys is paper/public-data.
+    if domain_action == PINNED_GATE and not release_authorized() and not _capital_follows_keys():
         return {
             **base,
             "verdict": "HOLD",
@@ -185,9 +214,7 @@ def _check_verdict(domain_action: str) -> dict:
             "pinned": True,
             "status": status,
             "level": level,
-            "reason": ("HARD PIN: live capital trading stays HOLD regardless of matrix "
-                       f"status ({status}). Owner decree required: write the exact line "
-                       f"'{RELEASE_LINE}' to {FLAG_FILE} to lift the pin."),
+            "reason": _capital_hold_reason(status),
         }
 
     allowed = status in ALLOWED_STATUSES
@@ -241,9 +268,9 @@ def status() -> dict:
             "domains": list(RUNTIME_SAFETY_DOMAINS),
             "live_block_reason": _runtime_safety_hold("capability_gate:status"),
             "pinned_gate_attested": release_authorized(),
-            "note": ("upstream terminal HOLD applies to all trading_execution "
-                     "gates; the owner release flag attests the pinned capital "
-                     "gate only"),
+            "note": ("trading_execution follows the kill switch, an explicit "
+                     "real-order disable, and paper/public-data when no exchange "
+                     "keys are present"),
         },
     }
 

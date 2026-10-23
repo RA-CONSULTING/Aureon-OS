@@ -36,7 +36,7 @@ META_LOG = RADAR_DIR / "ollama_meta.log"
 # ─── CONFIG ───────────────────────────────────────────────────────────────────
 # ─── OLLAMA CONFIG ────────────────────────────────────────────────────────────
 # Use Aureon OS ollama_config for proper cloud/local detection and auth
-sys.path.insert(0, str(Path("C:/Users/user/.kimi_openclaw/workspace/aureon-os-upstream")))
+sys.path.insert(0, str(Path(os.environ.get("SERO_WORKSPACE") or Path(__file__).resolve().parents[1])))
 try:
     from aureon.ollama_config import (
         resolve_ollama_api_key,

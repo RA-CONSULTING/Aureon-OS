@@ -21,9 +21,10 @@ from typing import Dict, List, Optional, Callable, Set
 from enum import Enum
 import logging
 
-# Import AEDS core
+# Import AEDS core from this directory. The sibling module ships with the bridge.
 import sys
-sys.path.insert(0, 'C:\\Users\\user\\.kimi_openclaw\\workspace\\kimi-group-chat\\the bhoys')
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 from aureon_environmental_defense_system import (
     EnvironmentalThreat, ThreatLevel, ActionType, HNCFramework
 )

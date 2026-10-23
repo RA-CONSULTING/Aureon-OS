@@ -97,7 +97,13 @@ def join_layers(
         field_transport=field_transport,
         market_transport=market_transport,
     )
-    if layers.get("may_act") is not False or layers.get("action_eligible") is not False:
+    try:
+        from aureon.autonomous.autonomy_mode import guardrails_open
+
+        opened = guardrails_open()
+    except Exception:
+        opened = False
+    if not opened and (layers.get("may_act") is not False or layers.get("action_eligible") is not False):
         layers = dict(layers)
         layers["may_act"] = False
         layers["action_eligible"] = False
@@ -107,17 +113,31 @@ def join_layers(
 
 
 def status_report() -> dict[str, Any]:
-    """Offline status. No network, no orders, live trading forced off."""
+    """Offline status. No network and no orders.
 
+    The public default is full. Live trading follows exchange keys. may_act
+    is on unless the mode is guarded or the kill switch is on. This report
+    does not place an order.
+    """
+
+    try:
+        from aureon.autonomous.autonomy_mode import runtime_authority
+
+        auth = runtime_authority()
+        live = auth.get("live_trading") is True
+        may_act = auth.get("may_act") is True
+    except Exception:
+        live = False
+        may_act = False
     return {
         "schema": SCHEMA,
         "name": "Aureon Fusion",
-        "live_trading": False,
-        "paper_default": True,
-        "dry_run_default": True,
+        "live_trading": live,
+        "paper_default": not live,
+        "dry_run_default": not live,
         "arm_env": "AUREON_FUSION_ARM_LIVE",
-        "may_act": False,
-        "action_eligible": False,
+        "may_act": may_act,
+        "action_eligible": may_act,
         "deployed": False,
         "publication_target": "RA-CONSULTING/Aureon-OS",
         "publication_status": "pull-request-into-public-main",

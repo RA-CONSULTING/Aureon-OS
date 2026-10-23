@@ -143,9 +143,33 @@ class RegistryStartTests(unittest.TestCase):
         self.assertEqual(result["organs"]["test_worker"], {"mode": "test-only"})
         save.assert_not_called()
 
-    def test_capital_release_and_dormant_gates_still_refuse_spawn(self):
+    def test_capital_release_holds_only_in_guarded_mode(self):
         self.spec["requires_release"] = True
-        self.assertEqual(self.registry.start("test_worker")["state"], "held")
+        previous = os.environ.get("AUREON_AUTONOMY_MODE")
+        previous_hold = os.environ.pop("AUREON_DEPLOYMENT_HOLD", None)
+        previous_kill = os.environ.pop("AUREON_SELF_REPAIR_KILL", None)
+        os.environ["AUREON_AUTONOMY_MODE"] = "guarded"
+        try:
+            self.assertEqual(self.registry.start("test_worker")["state"], "held")
+            self.popen.assert_not_called()
+            os.environ["AUREON_AUTONOMY_MODE"] = "full"
+            self.popen.return_value.pid = 4242
+            self.assertEqual(self.registry.start("test_worker")["state"], "started")
+            self.popen.assert_called()
+        finally:
+            if previous is None:
+                os.environ.pop("AUREON_AUTONOMY_MODE", None)
+            else:
+                os.environ["AUREON_AUTONOMY_MODE"] = previous
+            if previous_hold is None:
+                os.environ.pop("AUREON_DEPLOYMENT_HOLD", None)
+            else:
+                os.environ["AUREON_DEPLOYMENT_HOLD"] = previous_hold
+            if previous_kill is None:
+                os.environ.pop("AUREON_SELF_REPAIR_KILL", None)
+            else:
+                os.environ["AUREON_SELF_REPAIR_KILL"] = previous_kill
+        self.popen.reset_mock()
         self.spec["dormant"] = True
         self.assertEqual(self.registry.start("test_worker")["state"], "dormant")
         self.popen.assert_not_called()

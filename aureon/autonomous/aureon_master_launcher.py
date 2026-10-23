@@ -1338,47 +1338,21 @@ def run_preflight() -> None:
 
 
 def main():
-    """Main launcher function"""
-    # Parse arguments
-    parser = argparse.ArgumentParser(description='Aureon Master Launcher')
-    parser.add_argument('--test', action='store_true', help='Run force trade test in dry-run mode')
-    parser.add_argument('--preflight', action='store_true', help='UI, thought bus, and public prices. Live trading stays off.')
-    parser.add_argument('--production', action='store_true', help='Unified orchestrator (spawns UI/data heads)')
-    parser.add_argument('--live', action='store_true', help='Enable live execution (use with --production)')
-    parser.add_argument('--legacy', action='store_true', help='Use legacy sequential boot (skip Queen Layer)')
-    parser.add_argument('--no-command-center', action='store_true', help='Do not spawn the command center in production mode')
-    parser.add_argument('--no-market-feeds', action='store_true', help='Do not spawn market feed processes in production mode')
-    args = parser.parse_args()
+    """Preflight stays here. Every other invocation is the canonical launcher.
 
-    if args.test:
-        test_force_trade()
-        return
+    ``wire_queen_systems`` and the older boot functions stay importable.
+    ``--preflight`` checks the UI, the thought bus, and public prices with
+    live trading forced off. Anything else goes to ``aureon.launch.master``,
+    which does not place an order by itself. Gary's key switch stays outside
+    this entry point.
+    """
 
-    if args.preflight:
+    if "--preflight" in sys.argv[1:]:
         run_preflight()
         return
+    from aureon.launch.master import main as canonical
 
-    if args.production:
-        # Dry-run unless live execution is explicitly enabled.
-        env_live = live_trading_from_env("0")
-        live_trading = bool(args.live) or env_live
-        run_production_orchestrator(
-            live_trading=live_trading,
-            spawn_command_center=not args.no_command_center,
-            spawn_market_feeds=not args.no_market_feeds,
-        )
-        return
-
-    # Default: Queen Layer boot (all systems active)
-    # Use --legacy to fall back to the old sequential boot
-    _start_circulation_quietly()
-    env_live = live_trading_from_env("0")
-    live_trading = bool(args.live) or env_live
-
-    if args.legacy or not QUEEN_LAYER_AVAILABLE:
-        main_legacy()
-    else:
-        main_queen_layer(live_trading=live_trading)
+    raise SystemExit(canonical())
 
 
 if __name__ == "__main__":

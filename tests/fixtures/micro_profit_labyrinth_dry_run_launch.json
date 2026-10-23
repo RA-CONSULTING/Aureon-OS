@@ -1,0 +1,16 @@
+{
+  "schema": "aureon.recorded-launch.v1",
+  "command": [
+    "-m",
+    "aureon.trading.micro_profit_labyrinth",
+    "--dry-run",
+    "--multi-exchange",
+    "--duration",
+    "86400"
+  ],
+  "banner": "RECORDED_DRY_RUN_LAUNCH_OK",
+  "venues_contacted": [],
+  "orders_submitted": 0,
+  "network": "none",
+  "mainnet": false
+}

@@ -27,8 +27,22 @@ def _truthy(name: str) -> bool:
 
 
 def blocked_reason() -> str | None:
-    """Why the launcher must not start. None when paper mode is allowed."""
+    """Why this paper fleet launcher must not start.
 
+    Full autonomy does not treat a live flag or the capital-release file as
+    a boot refusal. ``AUREON_DEPLOYMENT_HOLD=1`` still refuses. Explicit
+    guarded mode keeps the older refusals.
+    """
+
+    try:
+        from aureon.autonomous.autonomy_mode import guardrails_open
+
+        if os.environ.get("AUREON_DEPLOYMENT_HOLD") == "1":
+            return "deployment hold"
+        if guardrails_open():
+            return None
+    except Exception:
+        pass
     if _truthy("AUREON_LIVE_TRADING") or _truthy("AUREON_FUSION_ARM_LIVE"):
         return "live trading flag is set"
     if CAPITAL_RELEASE_FLAG.exists():

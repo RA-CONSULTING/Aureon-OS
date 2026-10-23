@@ -7,9 +7,10 @@ Captures all output to file for debugging.
 
 import sys
 import traceback
+from pathlib import Path
 
-# Redirect all output to file
-sys.stdout = open(r'C:\Users\user\.kimi_openclaw\workspace\aureon_radar\_switchboard_test.log', 'w')
+# Redirect all output to a log beside this script.
+sys.stdout = open(Path(__file__).resolve().parent / "_switchboard_test.log", "w", encoding="utf-8")
 sys.stderr = sys.stdout
 
 print("Starting switchboard test...")

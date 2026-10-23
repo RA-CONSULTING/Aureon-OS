@@ -1,28 +1,41 @@
 name: Live sandbox
 
 # Opt-in venue tests. Live trading stays off. This job never targets a
-# mainnet host: the endpoint pins below are sandbox or testnet only.
-# A pull request with no remaining live-marked tests exits 5 from pytest;
-# that is a pass, because the recorded offline fixtures cover those paths.
+# mainnet host. A pull request with no remaining live-marked tests exits 5
+# from pytest; that is a pass, because the recorded offline fixtures cover
+# those paths.
 
 on:
+  pull_request:
   push:
     branches: [main]
-  pull_request:
   workflow_dispatch:
 
+concurrency:
+  group: aureon-live-sandbox-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  live-sandbox:
-    name: live marker against sandbox
+  live:
+    name: pytest -m live
     runs-on: ubuntu-latest
     env:
       AUREON_LIVE_TRADING: "0"
+      AUREON_FUSION_ARM_LIVE: ""
       AUREON_DISABLE_REAL_ORDERS: "1"
       AUREON_DISABLE_EXCHANGE_MUTATIONS: "1"
       AUREON_LLM_OFFLINE: "1"
+      AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS: "1"
+      BINANCE_TESTNET: "true"
+      KRAKEN_SANDBOX: "true"
+      ALPACA_PAPER: "true"
+      CAPITAL_DEMO: "true"
+      PAPER_MODE: "true"
+      OANDA_ENVIRONMENT: "practice"
       KRAKEN_API_URL: "https://api.sandbox.kraken.com"
       BINANCE_API_URL: "https://testnet.binance.vision"
       ALPACA_API_BASE_URL: "https://paper-api.alpaca.markets"
+      PYTHONPATH: .
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -31,20 +44,43 @@ jobs:
       - name: Refuse mainnet endpoints
         run: |
           python - <<'PY'
-          import os, sys
-          banned = ("https://api.kraken.com", "https://api.binance.com", "https://api.alpaca.markets")
-          blob = "\n".join(f"{key}={value}" for key, value in sorted(os.environ.items()))
-          for host in banned:
-              if host in blob:
-                  sys.exit(f"mainnet endpoint refused: {host}")
+          import os
+          forbidden = (
+              "https://api.kraken.com",
+              "https://api.binance.com",
+              "https://api.alpaca.markets",
+              "live.capital.com",
+          )
+          blob = "\n".join(f"{key}={value}" for key, value in os.environ.items())
+          hits = [host for host in forbidden if host in blob]
+          if hits:
+              raise SystemExit("mainnet endpoint in the live job environment: " + ", ".join(hits))
+          if os.environ.get("BINANCE_TESTNET", "").lower() not in {"1", "true", "yes", "on"}:
+              raise SystemExit("BINANCE_TESTNET must stay on")
+          if os.environ.get("AUREON_LIVE_TRADING", "0") not in {"0", "false", "no", "off", ""}:
+              raise SystemExit("the live job must not arm AUREON_LIVE_TRADING")
           print("sandbox endpoints only")
           PY
-      - name: Install pytest
-        run: python -m pip install --disable-pip-version-check "pytest>=8,<9" pytest-timeout
-      - name: Run live-marked tests
+      - name: Install the suite the live marker collects
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          # PyAudio needs a system portaudio and no remaining live test imports it.
+          skip = {"pyaudio"}
+          kept = []
+          for line in Path("requirements.txt").read_text().splitlines():
+              name = line.split(">=")[0].split("==")[0].split("[")[0].strip().lower()
+              if name in skip:
+                  continue
+              kept.append(line)
+          Path("/tmp/requirements-live.txt").write_text("\n".join(kept) + "\n")
+          PY
+          python -m pip install --upgrade pip
+          python -m pip install -r /tmp/requirements-live.txt
+      - name: Sandbox and testnet marker
         run: |
           set +e
-          python -m pytest -m live -p no:randomly -q --timeout=60 -o addopts=
+          python -m pytest -m live --tb=line -q -p no:randomly
           code=$?
           if [ "$code" -eq 5 ]; then
             echo "no live-marked tests collected; recorded offline fixtures cover the suite"

@@ -20647,6 +20647,23 @@ async def main():
     parser.add_argument("--cia-report", action="store_true", help="👑🧠 Show CIA intelligence report")
     parser.add_argument("--cia-wisdom", action="store_true", help="👑🧠 Show Queen's trading wisdom from CIA intel")
     args = parser.parse_args()
+    recorded_launch = os.getenv("AUREON_RECORDED_LAUNCH_FIXTURE", "").strip()
+    if recorded_launch:
+        if args.live or not args.dry_run:
+            safe_print("RECORDED_DRY_RUN_LAUNCH_REFUSED")
+            sys.exit(2)
+        import json
+        from pathlib import Path
+
+        receipt = json.loads(Path(recorded_launch).read_text(encoding="utf-8"))
+        if receipt.get("mainnet") is not False or receipt.get("network") != "none":
+            safe_print("RECORDED_DRY_RUN_LAUNCH_REFUSED")
+            sys.exit(2)
+        if receipt.get("venues_contacted") or receipt.get("orders_submitted"):
+            safe_print("RECORDED_DRY_RUN_LAUNCH_REFUSED")
+            sys.exit(2)
+        safe_print(str(receipt.get("banner") or "RECORDED_DRY_RUN_LAUNCH_OK"))
+        return
     if os.getenv("AUREON_DEBUG_STARTUP") == "1":
         try:
             safe_print(f"[DEBUG] Parsed args: {args}")

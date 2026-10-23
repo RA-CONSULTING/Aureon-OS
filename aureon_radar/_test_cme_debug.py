@@ -1,5 +1,6 @@
 import sys
-sys.path.insert(0, r'C:\.kimi_openclaw\Aureon-OS\aureon\data_feeds')
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "aureon" / "data_feeds"))
 from aureon_space_weather_bridge import SpaceWeatherBridge
 import os
 

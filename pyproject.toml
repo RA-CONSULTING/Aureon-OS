@@ -56,6 +56,7 @@ dev = [
   "pytest-timeout>=2.3",
   "pytest-socket>=0.7",
   "pytest-xdist>=3.6",
+  "pytest-randomly>=3.15",
   "jsonschema>=4.23,<5",
   "pre-commit>=3.7",
   "types-requests",
@@ -144,7 +145,7 @@ no_implicit_optional = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-q --timeout=60 -m \"not live and not windows\""
+addopts = "-q --timeout=60 -m \"not live and not windows\" -p no:randomly"
 filterwarnings = ["ignore::DeprecationWarning"]
 markers = [
   "live: opt-in exchange or executor tests; excluded from the default suite",

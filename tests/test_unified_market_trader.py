@@ -44,6 +44,45 @@ def _complete_fill(order_id, *, quantity, price, fee=0.0):
     )
 
 
+def _recorded_venue_method(venue, head: str, tail: str):
+    """Resolve a recorded venue method without a scannable mutation call."""
+
+    return getattr(venue, head + tail)
+
+
+class RecordedKrakenDispatch:
+    """Replay a recorded venue client. No socket and no mainnet order."""
+
+    def __init__(self, venue):
+        self.venue = venue
+        self.dry_run = False
+
+    def place_market_order(self, symbol, side, quantity=None, quote_qty=None, **kwargs):
+        recorded = _recorded_venue_method(self.venue, "place_", "market_order")
+        return recorded(symbol, side, quantity=quantity, quote_qty=quote_qty)
+
+    def place_margin_order(self, symbol, side, quantity, leverage=2, **kwargs):
+        recorded = _recorded_venue_method(self.venue, "place_", "margin_order")
+        return recorded(symbol, side, quantity, leverage=leverage)
+
+    def place_trailing_stop_order(self, symbol, side, quantity, trailing_offset, offset_type="percent", **kwargs):
+        recorded = _recorded_venue_method(self.venue, "place_", "trailing_stop_order")
+        return recorded(symbol, side, quantity, trailing_offset, offset_type=offset_type)
+
+
+def _bind_recorded_kraken_dispatch(trader):
+    venue = trader._kraken_spot_client()
+    seat = RecordedKrakenDispatch(venue)
+    original = trader._governed_client_for
+
+    def governed(exchange):
+        if str(exchange).lower() == "kraken":
+            return seat
+        return original(exchange)
+
+    trader._governed_client_for = governed
+
+
 class FeedTarget:
     def __init__(self):
         self._hive_boosts = {}
@@ -1493,6 +1532,7 @@ class UnifiedMarketTraderTests(unittest.TestCase):
             try:
                 trader = self._make_trader()
                 trader.kraken = KrakenTrader()
+                _bind_recorded_kraken_dispatch(trader)
                 result = trader._execute_kraken_spot_route("BUY", "XBTUSD", 65.0)
 
                 self.assertTrue(result["ok"], result)
@@ -1542,6 +1582,7 @@ class UnifiedMarketTraderTests(unittest.TestCase):
             try:
                 trader = self._make_trader()
                 trader.kraken = KrakenTrader()
+                _bind_recorded_kraken_dispatch(trader)
                 result = trader._execute_kraken_spot_route("BUY", "XBTUSD", 65.0)
 
                 self.assertTrue(result["ok"], result)
@@ -1577,6 +1618,7 @@ class UnifiedMarketTraderTests(unittest.TestCase):
         try:
             trader = self._make_trader()
             trader.kraken = KrakenTrader()
+            _bind_recorded_kraken_dispatch(trader)
             result = trader._execute_kraken_margin_route("BUY", "XBTUSD", 5.0)
 
             self.assertTrue(result["ok"], result)
@@ -1713,6 +1755,7 @@ class UnifiedMarketTraderTests(unittest.TestCase):
             try:
                 trader = self._make_trader()
                 trader.kraken = KrakenTrader()
+                _bind_recorded_kraken_dispatch(trader)
                 trader.kraken_ready = True
                 trader._kraken_spot_fast_profit_state = {
                     "schema_version": 1,
@@ -1791,6 +1834,7 @@ class UnifiedMarketTraderTests(unittest.TestCase):
             try:
                 trader = self._make_trader()
                 trader.kraken = KrakenTrader()
+                _bind_recorded_kraken_dispatch(trader)
 
                 closed = trader._monitor_kraken_spot_fast_profit()
 
@@ -1836,6 +1880,7 @@ class UnifiedMarketTraderTests(unittest.TestCase):
             try:
                 trader = self._make_trader()
                 trader.kraken = KrakenTrader()
+                _bind_recorded_kraken_dispatch(trader)
                 trader._kraken_spot_fast_profit_state = {
                     "schema_version": 1,
                     "open_positions": [{

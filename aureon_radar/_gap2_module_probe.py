@@ -18,7 +18,7 @@ from pathlib import Path
 os.environ["AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS"] = "1"
 os.environ["AUREON_AUDIT_MODE"] = "1"
 
-RADAR_DIR = Path("C:/Users/user/.kimi_openclaw/workspace/aureon_radar")
+RADAR_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(RADAR_DIR))
 
 # Same guards as unified_hub.py

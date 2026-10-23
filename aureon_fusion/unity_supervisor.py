@@ -117,8 +117,13 @@ def _supervise_cycle(dry_run: bool = False) -> dict:
             })
             continue
 
-        # Capital-gated live trading stays pinned HOLD unless released.
-        if spec.get("requires_release") and not release_granted:
+        # Guarded mode still skips capital-gated organs until the flag exists.
+        # Full autonomy does not.
+        if (
+            spec.get("requires_release")
+            and not release_granted
+            and not organ_registry._autonomy_releases_capital_pin()
+        ):
             if info["state"] != "running":
                 decisions.append({
                     "organ": name,

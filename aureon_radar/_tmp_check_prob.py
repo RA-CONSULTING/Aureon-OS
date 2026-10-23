@@ -2,7 +2,8 @@ import json
 import sys
 sys.stdout.reconfigure(encoding='utf-8')
 
-state_file = r'C:\Users\user\.kimi_openclaw\workspace\aureon_radar\probability_matrix_state.json'
+from pathlib import Path
+state_file = Path(__file__).resolve().parent / "probability_matrix_state.json"
 try:
     with open(state_file, 'r') as f:
         data = json.load(f)
