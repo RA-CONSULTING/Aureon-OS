@@ -114,11 +114,15 @@ The local installer is the path that brings a clone up. Linux and macOS:
 `bash production/install.sh`. Windows: `production\Install-AUREON.ps1` (or
 `production\install-windows.bat`). `bash scripts/linux/aureon-up.sh` calls that
 installer when the virtualenv is missing, then starts the same preflight.
-Live trading stays off. The shell is `http://127.0.0.1:5173/`. Dashboard and
-Command Center are tabs of the local console at `http://127.0.0.1:5173/console/local`.
-The launcher does not bind port 8080. The thought bus is `http://127.0.0.1:8799/health`.
-The fusion seat keeps `http://127.0.0.1:8765/healthz`.
-No order is placed.
+The shell is `http://127.0.0.1:5173/`. Dashboard and Command Center are tabs of
+the local console at `http://127.0.0.1:5173/console/local`. The launcher leaves
+port 8080 alone. Live mode turns on when a complete exchange key group is in
+`.env`. With no complete group the boot stays paper/public-data and the health
+report says `trading_mode=paper/public-data (no exchange keys)`. With keys it
+says `trading_mode=live (exchange keys present)`. The launcher does not place
+an order by itself. The thought bus health check is
+`http://127.0.0.1:8799/healthz`. The fusion seat keeps
+`http://127.0.0.1:8765/healthz`.
 A HOLD receipt proves only that the fail-closed preflight ran; it is not proof
 that the whole system is protected or production-ready.
 
@@ -170,6 +174,8 @@ bash production/install.sh
 ```
 
 Windows: `production\Install-AUREON.ps1`, or `production\install-windows.bat`. Running it again is safe. It installs Python, venv, Node, npm, git, and curl when apt, dnf, Homebrew, or winget can, writes `.env` from `.env.example` only when `.env` is absent, installs and builds the frontend, then calls the master launcher above. Docker images are used when the daemon answers. With no daemon the launcher uses its native fallbacks. When the UI answers, the installer prints `Aureon UI: http://127.0.0.1:5173/`.
+
+`PyAudio` in `requirements.txt` needs the system audio headers (`portaudio`) before pip can build it. The Linux installer uses `requirements-linux.txt`, which leaves that package out and includes pytest, so `tests/test_preflight_snags.py` can run in the installer environment. Build the test virtualenv with `python -m venv --copies .venv`. A symlinked interpreter fails 32 evidence tests. The installer creates `.venv` with `--copies`.
 
 ### Archive of unreferenced root files
 

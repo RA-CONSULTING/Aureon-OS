@@ -1,7 +1,8 @@
 """Organism circulation — one thought bus, every named seat publishing and listening.
 
 The HTTP seat listens on 127.0.0.1:8799 (override with AUREON_ORGANISM_HTTP_PORT).
-The fusion seat keeps 127.0.0.1:8765. A taken circulation port is a failed boot.
+GET /healthz and GET /health report that seat. The fusion seat keeps
+127.0.0.1:8765. A taken circulation port is a failed boot.
 metacognition, queen reasoning, logic, neural, lighthouse, QGITA, mycelium,
 baton relay, and council each subscribe to ``organism.circulation`` and
 publish their own pulse. Connectors switch on at boot. Self-code records a
@@ -281,7 +282,7 @@ class _Handler(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:  # noqa: N802
         parsed = urlparse(self.path)
-        if parsed.path in ("/health", "/"):
+        if parsed.path in ("/healthz", "/health", "/"):
             with _LOCK:
                 port = _STATE.get("port")
                 loops = dict(_STATE.get("loops") or {})

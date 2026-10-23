@@ -457,15 +457,44 @@ def _usable_venv(repo: Path) -> Path | None:
     return None
 
 
+def _materialize_interpreter(python: Path | None) -> None:
+    """Replace a symlinked venv interpreter with a real file.
+
+    ``python -m venv --copies`` already does this. ``uv venv`` still symlinks
+    the interpreter, and ``--link-mode copy`` only copies cached packages.
+    A symlinked interpreter fails 32 evidence tests.
+    """
+
+    if python is None or not python.is_symlink():
+        return
+    try:
+        source = python.resolve()
+        if not source.is_file():
+            return
+        temporary = python.with_name(python.name + ".aureon-copy")
+        shutil.copy2(source, temporary)
+        temporary.replace(python)
+    except OSError:
+        if python.with_name(python.name + ".aureon-copy").exists():
+            python.with_name(python.name + ".aureon-copy").unlink(missing_ok=True)
+
+
 def _ensure_venv(repo: Path) -> tuple[Path | None, str]:
     existing = _usable_venv(repo)
-    if existing:
+    if existing and not existing.is_symlink():
         return existing, "venv present"
     target = repo / ".venv"
-    ok, detail = _run_install([sys.executable, "-m", "venv", str(target)], repo, timeout=180)
+    if target.exists():
+        shutil.rmtree(target, ignore_errors=True)
+    ok, detail = _run_install(
+        [sys.executable, "-m", "venv", "--copies", str(target)],
+        repo,
+        timeout=180,
+    )
     created = _usable_venv(repo)
-    if created:
-        note = "venv created" if ok else "venv created without ensurepip"
+    _materialize_interpreter(created)
+    if created and created.is_file() and not created.is_symlink():
+        note = "venv created with --copies" if ok else "venv created with --copies without ensurepip"
         return created, note
     if target.exists():
         shutil.rmtree(target, ignore_errors=True)
@@ -473,17 +502,18 @@ def _ensure_venv(repo: Path) -> tuple[Path | None, str]:
     if not uv:
         reason = detail if not ok else "venv python missing"
         return None, (
-            f"python -m venv failed: {reason}; uv is not installed; "
+            f"python -m venv --copies failed: {reason}; uv is not installed; "
             "launcher does not install into the system interpreter"
         )
     ok, detail = _run_install(
-        [uv, "venv", "--clear", str(target), "--python", sys.executable],
+        [uv, "venv", "--clear", "--link-mode", "copy", str(target), "--python", sys.executable],
         repo,
         timeout=180,
     )
     created = _usable_venv(repo)
-    if ok and created:
-        return created, "venv created with uv"
+    _materialize_interpreter(created)
+    if ok and created and created.is_file() and not created.is_symlink():
+        return created, "venv created with uv; interpreter copied"
     return None, f"uv venv failed: {detail}; launcher does not install into the system interpreter"
 
 
@@ -506,7 +536,12 @@ def _install_python(repo: Path) -> tuple[bool, str]:
     digest = hashlib.sha256(requirements.read_bytes()).hexdigest()
     stamp = repo / ".venv" / ".aureon-requirements-stamp"
     python = venv_python(repo)
-    if python and stamp.is_file() and stamp.read_text(encoding="utf-8").strip() == f"{label} {digest}":
+    if (
+        python
+        and not python.is_symlink()
+        and stamp.is_file()
+        and stamp.read_text(encoding="utf-8").strip() == f"{label} {digest}"
+    ):
         return True, f"{label} already installed in .venv"
     python, note = _ensure_venv(repo)
     if python is None:
@@ -1525,7 +1560,7 @@ def _refresh_http(repo: Path, runner: Runner, rows: list[Row]) -> list[Row]:
         "compose/frontend": "http://127.0.0.1:5173/",
         "seat/trading_world_v5b": "http://127.0.0.1:8765/healthz",
         "organ/frontend_vite": "http://127.0.0.1:5173/",
-        "organ/organism_circulation": "http://127.0.0.1:8799/health",
+        "organ/organism_circulation": "http://127.0.0.1:8799/healthz",
         "organ/operator_gateway": "http://127.0.0.1:8790/healthz",
         "organ/unified_market_status": "http://127.0.0.1:8791/healthz",
         "organ/mind_thought_action_hub": "http://127.0.0.1:13002/",

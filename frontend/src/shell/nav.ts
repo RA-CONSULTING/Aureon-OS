@@ -141,7 +141,7 @@ export const NAV_SECTIONS: NavSection[] = [
       {
         path: "/console/local",
         label: "Local console",
-        description: "Dashboard and Command Center. Live trading stays off. The launcher does not bind port 8080.",
+        description: "Dashboard and Command Center. Live mode follows exchange keys in .env. The launcher leaves port 8080 alone.",
         icon: TerminalSquare,
         Component: lazy(() => import("./pages/LauncherPage")),
       },

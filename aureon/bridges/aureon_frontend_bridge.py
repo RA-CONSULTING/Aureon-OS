@@ -147,13 +147,19 @@ except ImportError:
     NEXUS_AVAILABLE = False
     print("   ⚠️ Probability Nexus: Not available")
 
-# Internal Multiverse
+# Internal Multiverse — simulated 10 worlds × $10.
+# The import and the LOADED line run only when AUREON_SIMULATED_BOOT is on.
+MULTIVERSE_AVAILABLE = False
+InternalMultiverse = None
 try:
-    from aureon.simulation.aureon_internal_multiverse import InternalMultiverse
-    MULTIVERSE_AVAILABLE = True
-    print("   🌌 Internal Multiverse: LOADED")
+    from aureon.core.simulated_boot import INTERNAL_MULTIVERSE, take_simulated
+    if take_simulated(INTERNAL_MULTIVERSE, "aureon.simulation, 10 worlds × $10"):
+        from aureon.simulation.aureon_internal_multiverse import InternalMultiverse
+        MULTIVERSE_AVAILABLE = True
+        print("   🌌 Internal Multiverse: LOADED")
 except ImportError:
     MULTIVERSE_AVAILABLE = False
+    InternalMultiverse = None
     print("   ⚠️ Internal Multiverse: Not available")
 
 # Miner Brain

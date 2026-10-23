@@ -1,15 +1,16 @@
 /**
  * Local console — the page that used to be a separate listener on port 8080.
  *
- * Dashboard and Command Center are tabs of this shell. The launcher does not
- * bind 8080. Live trading stays off. No order is placed from this page.
+ * Dashboard and Command Center are tabs of this shell. The launcher leaves
+ * port 8080 alone. Live mode turns on when exchange keys are in .env.
+ * This page does not place an order.
  */
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-const CIRCULATION = "http://127.0.0.1:8799/health";
+const CIRCULATION = "http://127.0.0.1:8799/healthz";
 const GATEWAY = "http://127.0.0.1:8790/healthz";
 const FUSION = "http://127.0.0.1:8765/healthz";
 const STATUS = "http://127.0.0.1:8791/healthz";
@@ -19,8 +20,9 @@ export default function LauncherPage() {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
-        <Badge>DRY RUN · LIVE TRADING OFF · PAPER DEFAULT</Badge>
-        <Badge variant="outline">port 8080 is not bound by the launcher</Badge>
+        <Badge>PAPER UNTIL EXCHANGE KEYS</Badge>
+        <Badge variant="outline">LIVE WHEN A KEY GROUP IS IN .env</Badge>
+        <Badge variant="outline">launcher leaves port 8080 alone</Badge>
       </div>
       <div>
         <h1 className="text-2xl font-medium tracking-tight">Aureon OS — local console</h1>
@@ -38,7 +40,7 @@ export default function LauncherPage() {
           <Card>
             <CardHeader>
               <CardTitle>Dashboard</CardTitle>
-              <CardDescription>Thought bus, fusion seat, and market status. Live trading stays off.</CardDescription>
+              <CardDescription>Thought bus, fusion seat, and market status. Health checks stay read-only.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
               <p>

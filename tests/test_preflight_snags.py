@@ -6,6 +6,7 @@ import ast
 import json
 import os
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -92,12 +93,15 @@ def test_thought_bus_organs_publish_and_subscribe(monkeypatch: pytest.MonkeyPatc
         sources: set[str] = set()
         body = {}
         while time.time() < deadline and not required <= sources:
-            with urllib.request.urlopen(f"http://127.0.0.1:{started['port']}/health", timeout=2) as resp:
+            with urllib.request.urlopen(f"http://127.0.0.1:{started['port']}/healthz", timeout=2) as resp:
+                assert resp.status == 200
                 body = json.loads(resp.read().decode("utf-8"))
             sources = set(body.get("sources") or [])
             time.sleep(0.05)
         for name in sorted(required):
             assert name in sources
+        with urllib.request.urlopen(f"http://127.0.0.1:{started['port']}/health", timeout=2) as resp:
+            assert resp.status == 200
         assert body["listening"] is True
         assert body["loops"]["council"] == "running"
         assert body["loops"]["baton_relay"] == "running"
@@ -186,6 +190,7 @@ def test_simulated_components_are_off_by_default(monkeypatch: pytest.MonkeyPatch
         "aureon/trading/micro_profit_labyrinth.py",
         "aureon/command_centers/aureon_command_center_ui.py",
         "aureon/intelligence/aureon_timeline_oracle.py",
+        "aureon/bridges/aureon_frontend_bridge.py",
     ):
         tree = ast.parse((REPO / relative).read_text(encoding="utf-8"))
         assert tree is not None
@@ -240,3 +245,95 @@ def test_installer_and_aureon_up_do_not_refuse() -> None:
     assert bash_up.returncode == 0, bash_up.stderr
     assert os.access(REPO / "production/install.sh", os.X_OK)
     assert os.access(REPO / "scripts/linux/aureon-up.sh", os.X_OK)
+
+
+def test_readme_names_the_live_switch_and_the_thought_bus() -> None:
+    readme = (REPO / "README.md").read_text(encoding="utf-8")
+    assert "Live trading stays off" not in readme
+    assert "http://127.0.0.1:5173/" in readme
+    assert "http://127.0.0.1:8799/healthz" in readme
+    assert "http://127.0.0.1:8765/healthz" in readme
+    assert "trading_mode=live (exchange keys present)" in readme
+    assert "portaudio" in readme
+    assert "python -m venv --copies" in readme
+    assert "32 evidence tests" in readme
+    linux = (REPO / "requirements-linux.txt").read_text(encoding="utf-8")
+    assert "pytest>=" in linux
+    master = (REPO / "aureon/launch/master.py").read_text(encoding="utf-8")
+    assert '"-m", "venv", "--copies"' in master
+    assert '"--link-mode", "copy"' in master
+    page = (REPO / "frontend/src/shell/pages/LauncherPage.tsx").read_text(encoding="utf-8")
+    assert "http://127.0.0.1:8799/healthz" in page
+
+
+def test_frontend_bridge_does_not_load_the_multiverse_by_default(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    """Run the bridge's own multiverse gate. The rest of that module imports the swarm."""
+    monkeypatch.setenv("AUREON_SIMULATED_BOOT", "0")
+    text = (REPO / "aureon/bridges/aureon_frontend_bridge.py").read_text(encoding="utf-8")
+    start = text.index("# Internal Multiverse")
+    end = text.index("# Miner Brain")
+    snippet = text[start:end]
+    tree = ast.parse(snippet)
+    imports = [
+        node
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom) and node.module == "aureon.simulation.aureon_internal_multiverse"
+    ]
+    assert len(imports) == 1
+    guarded = False
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.If):
+            continue
+        call = node.test
+        name = call.func.id if isinstance(call, ast.Call) and isinstance(call.func, ast.Name) else ""
+        if name == "take_simulated" and imports[0] in list(ast.walk(node)):
+            guarded = True
+    assert guarded
+    namespace: dict[str, object] = {}
+    exec(compile(snippet, "aureon_frontend_bridge.py", "exec"), namespace)
+    captured = capsys.readouterr().out
+    assert namespace["MULTIVERSE_AVAILABLE"] is False
+    assert namespace["InternalMultiverse"] is None
+    assert "Internal Multiverse: LOADED" not in captured
+    assert "skipped on the default boot" in captured
+
+
+def test_ensure_venv_uses_copies_and_replaces_a_symlink(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from aureon.launch.master import _ensure_venv
+
+    calls: list[list[str]] = []
+
+    def fake_run(cmd: list[str], repo: Path, timeout: int = 180) -> tuple[bool, str]:
+        calls.append(list(cmd))
+        leaf = repo / ".venv" / "bin"
+        leaf.mkdir(parents=True, exist_ok=True)
+        python = leaf / "python"
+        python.write_text("#!/bin/sh\n", encoding="utf-8")
+        python.chmod(0o755)
+        (repo / ".venv" / "pyvenv.cfg").write_text("home = /usr\n", encoding="utf-8")
+        return True, "ok"
+
+    monkeypatch.setattr("aureon.launch.master._run_install", fake_run)
+    created, note = _ensure_venv(tmp_path)
+    assert created is not None
+    assert not created.is_symlink()
+    assert note == "venv created with --copies"
+    assert calls[0][1:4] == ["-m", "venv", "--copies"]
+
+    link_root = tmp_path / "linked"
+    leaf = link_root / ".venv" / "bin"
+    leaf.mkdir(parents=True)
+    (leaf / "python").symlink_to(sys.executable)
+    (link_root / ".venv" / "pyvenv.cfg").write_text("home = /usr\n", encoding="utf-8")
+    calls.clear()
+    replaced, replaced_note = _ensure_venv(link_root)
+    assert replaced is not None
+    assert not replaced.is_symlink()
+    assert replaced_note == "venv created with --copies"
+    assert calls and calls[0][1:4] == ["-m", "venv", "--copies"]
+
+    before = len(calls)
+    kept, kept_note = _ensure_venv(tmp_path)
+    assert kept == created
+    assert kept_note == "venv present"
+    assert len(calls) == before
