@@ -117,10 +117,10 @@ that the whole system is protected or production-ready.
 The terminal-HOLD bootstraps stay holds. The organism launcher is a separate entry and does not arm live trading:
 
 ```bash
-python -m aureon.launch.master
+scripts/launch/aureon-master.sh
 ```
 
-It installs Python requirements into `.venv`, Node packages for `frontend/`, and the self-host Docker images, then starts the gated stack and prints a health table. A missing credential, binary, or daemon is a blocked row. See [`LAUNCHER_INVENTORY.md`](LAUNCHER_INVENTORY.md).
+Windows uses `scripts/launch/aureon-master.ps1` and `scripts/launch/aureon-master.bat`. It installs Python requirements into `.venv`, Node packages for `frontend/`, and the self-host Docker images, then starts the gated stack and prints a health table. A missing credential, binary, or daemon is a blocked row. The module name and the table are in [`LAUNCHER_INVENTORY.md`](LAUNCHER_INVENTORY.md).
 
 ### Archive of unreferenced root files
 
