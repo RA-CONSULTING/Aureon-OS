@@ -112,6 +112,20 @@ starts no operator, frontend, supervisor, network listener, or trading process.
 A HOLD receipt proves only that the fail-closed preflight ran; it is not proof
 that the whole system is protected or production-ready.
 
+### Canonical organism launcher
+
+The terminal-HOLD bootstraps stay holds. The organism launcher is a separate entry and does not arm live trading:
+
+```bash
+python -m aureon.launch.master
+```
+
+It installs Python requirements into `.venv`, Node packages for `frontend/`, and the self-host Docker images, then starts the gated stack and prints a health table. A missing credential, binary, or daemon is a blocked row. See [`LAUNCHER_INVENTORY.md`](LAUNCHER_INVENTORY.md).
+
+### Archive of unreferenced root files
+
+`archive/workspace-root/` holds notes, one-off scripts, and captured ledgers that the running fleet does not import. Live organ paths stay where [`aureon_fusion/paths.py`](aureon_fusion/paths.py) and [`aureon_fusion/organ_registry.py`](aureon_fusion/organ_registry.py) name them. Fleet output stays untracked.
+
 Direct-module and go-live runbooks are superseded until native process
 containment, target-source measurement, external HNC head anchoring, and
 provider-side read-back are proven.

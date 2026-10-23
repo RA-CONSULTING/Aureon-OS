@@ -1,6 +1,7 @@
 """Canonical Aureon master launcher.
 
-One entry point for Linux and Windows. It walks the self-host compose stack,
+One entry point for Linux and Windows. It installs Python requirements, Node
+packages, and the self-host Docker images, then walks the compose stack,
 every organ in ``aureon_fusion.organ_registry``, the flight-recorder faculties,
 the queen, the unity supervisor, the temporal refresh loop, self-repair and
 the self-coder, the trading-world seat on 127.0.0.1:8765, the dashboards, and
@@ -17,6 +18,7 @@ The process never sets ``AUREON_LIVE_TRADING`` to 1 and never creates
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import shutil
@@ -333,9 +335,219 @@ class Runner:
         if seconds > 0:
             time.sleep(seconds)
 
+    def install_python(self) -> tuple[bool, str]:
+        return _install_python(self.repo)
+
+    def install_node(self) -> tuple[bool, str]:
+        return _install_node(self.repo)
+
+    def install_docker(self) -> tuple[bool, str]:
+        return _install_docker(self)
+
 
 def repo_root() -> Path:
     return Path(__file__).resolve().parents[2]
+
+
+def venv_python(repo: Path) -> Path | None:
+    leaf = Path("Scripts") / "python.exe" if os.name == "nt" else Path("bin") / "python"
+    candidate = repo / ".venv" / leaf
+    return candidate if candidate.is_file() else None
+
+
+def project_python(repo: Path) -> str:
+    """Interpreter for children. The system interpreter is only a fallback."""
+
+    found = venv_python(repo)
+    return str(found) if found else sys.executable
+
+
+_DESKTOP_EXTRAS = (
+    "PyAudio",
+    "pycaw",
+    "opencv-python",
+    "pytesseract",
+    "screeninfo",
+    "keyboard",
+    "mouse",
+    "pyautogui",
+    "sounddevice",
+)
+_INSTALL_TIMEOUT = 900
+
+
+def _requirement_name(line: str) -> str:
+    body = line.split("#", 1)[0].strip()
+    if not body:
+        return ""
+    body = body.split(";", 1)[0].split("[", 1)[0]
+    for mark in ("=", ">", "<", "~", "!"):
+        body = body.split(mark, 1)[0]
+    return body.strip()
+
+
+def _without_desktop_extras(text: str) -> str:
+    skip = {name.lower() for name in _DESKTOP_EXTRAS}
+    kept: list[str] = []
+    for line in text.splitlines():
+        name = _requirement_name(line)
+        if name.lower() in skip:
+            kept.append(f"# skipped by launcher (desktop or audio extra): {line.strip()}")
+            continue
+        kept.append(line)
+    return "\n".join(kept) + "\n"
+
+
+def _run_install(cmd: list[str], cwd: Path, timeout: float = _INSTALL_TIMEOUT) -> tuple[bool, str]:
+    try:
+        proc = subprocess.run(
+            cmd,
+            cwd=str(cwd),
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            check=False,
+        )
+    except subprocess.TimeoutExpired:
+        return False, f"{Path(cmd[0]).name} timed out"
+    except OSError as exc:
+        return False, f"{Path(cmd[0]).name} failed: {exc.__class__.__name__}"
+    if proc.returncode != 0:
+        return False, _last_line(proc.stderr or proc.stdout or "command failed")
+    return True, "ok"
+
+
+def _requirements_file(repo: Path) -> tuple[Path | None, str]:
+    linux = repo / "requirements-linux.txt"
+    full = repo / "requirements.txt"
+    if os.name != "nt" and linux.is_file():
+        return linux, "requirements-linux.txt"
+    if full.is_file():
+        return full, "requirements.txt"
+    return None, "requirements.txt missing"
+
+
+def _ensure_venv(repo: Path) -> tuple[Path | None, str]:
+    existing = venv_python(repo)
+    if existing:
+        return existing, "venv present"
+    target = repo / ".venv"
+    ok, detail = _run_install([sys.executable, "-m", "venv", str(target)], repo, timeout=180)
+    created = venv_python(repo)
+    if ok and created:
+        return created, "venv created"
+    uv = shutil.which("uv")
+    if not uv:
+        reason = detail if not ok else "venv python missing"
+        return None, (
+            f"python -m venv failed: {reason}; uv is not installed; "
+            "launcher does not install into the system interpreter"
+        )
+    ok, detail = _run_install([uv, "venv", str(target), "--python", sys.executable], repo, timeout=180)
+    created = venv_python(repo)
+    if ok and created:
+        return created, "venv created with uv"
+    return None, f"uv venv failed: {detail}; launcher does not install into the system interpreter"
+
+
+def _pip_install(repo: Path, python: Path, requirements: Path) -> tuple[bool, str]:
+    uv = shutil.which("uv")
+    if uv:
+        cmd = [uv, "pip", "install", "--python", str(python), "-r", str(requirements)]
+    else:
+        cmd = [str(python), "-m", "pip", "install", "-r", str(requirements)]
+    ok, detail = _run_install(cmd, repo)
+    if not ok:
+        return False, f"pip install failed: {detail}"
+    return True, f"installed {requirements.name} into .venv"
+
+
+def _install_python(repo: Path) -> tuple[bool, str]:
+    requirements, label = _requirements_file(repo)
+    if requirements is None:
+        return False, label
+    digest = hashlib.sha256(requirements.read_bytes()).hexdigest()
+    stamp = repo / ".venv" / ".aureon-requirements-stamp"
+    python = venv_python(repo)
+    if python and stamp.is_file() and stamp.read_text(encoding="utf-8").strip() == f"{label} {digest}":
+        return True, f"{label} already installed in .venv"
+    python, note = _ensure_venv(repo)
+    if python is None:
+        return False, note
+    ok, detail = _pip_install(repo, python, requirements)
+    if not ok:
+        filtered = state_dir(repo) / "requirements-launcher.txt"
+        filtered.parent.mkdir(parents=True, exist_ok=True)
+        filtered.write_text(_without_desktop_extras(requirements.read_text(encoding="utf-8")), encoding="utf-8")
+        ok, detail = _pip_install(repo, python, filtered)
+        if ok:
+            detail = f"{detail}; PyAudio and other desktop-only packages skipped"
+    if not ok:
+        return False, detail
+    stamp.write_text(f"{label} {digest}\n", encoding="utf-8")
+    if label == "requirements-linux.txt":
+        detail = f"{detail}; desktop-only packages in requirements.txt are omitted on this platform"
+    return True, f"{detail}; {note}"
+
+
+def _npm_binary(node: str | None) -> str | None:
+    found = shutil.which("npm")
+    if found:
+        return found
+    if not node:
+        return None
+    sibling = Path(node).resolve().parent / ("npm.cmd" if os.name == "nt" else "npm")
+    return str(sibling) if sibling.is_file() else None
+
+
+def _install_node(repo: Path) -> tuple[bool, str]:
+    frontend = repo / "frontend"
+    if not (frontend / "package.json").is_file():
+        return False, "frontend/package.json missing"
+    vite = frontend / "node_modules" / "vite" / "bin" / "vite.js"
+    node = shutil.which("node")
+    if os.name == "nt" and not node and shutil.which("winget"):
+        _run_install(
+            [
+                "winget",
+                "install",
+                "-e",
+                "--id",
+                "OpenJS.NodeJS.LTS",
+                "--accept-package-agreements",
+                "--accept-source-agreements",
+            ],
+            repo,
+            timeout=300,
+        )
+        node = shutil.which("node")
+    npm = _npm_binary(node)
+    if vite.is_file() and node and npm:
+        return True, "vite.js already present"
+    if not node or not npm:
+        return False, "node or npm is not on PATH; launcher does not apt-get"
+    ok, detail = _run_install([npm, "install", "--no-audit", "--no-fund"], frontend)
+    if not ok:
+        return False, f"npm install failed: {detail}"
+    if not vite.is_file():
+        return False, "npm install finished but vite.js is still absent"
+    return True, "npm install finished; vite.js present"
+
+
+def _install_docker(runner: Runner) -> tuple[bool, str]:
+    ready, note = runner.docker_ready()
+    if not ready:
+        return False, note
+    base = runner.compose_base()
+    if not base:
+        return False, "docker compose plugin not installed"
+    compose = compose_file(runner.repo)
+    pull_ok, pull_detail = _run_install([*base, "-f", str(compose), "pull"], runner.repo)
+    pull_note = "pull ok" if pull_ok else f"pull failed: {pull_detail}"
+    build_ok, build_detail = _run_install([*base, "-f", str(compose), "build"], runner.repo)
+    if not build_ok:
+        return False, f"docker compose build failed: {build_detail}; {pull_note}"
+    return True, f"docker images ready; {pull_note}; build ok"
 
 
 def state_dir(repo: Path) -> Path:
@@ -543,23 +755,29 @@ def build_inventory(repo: Path) -> tuple[list[Component], str | None]:
     notes = "; ".join(item for item in (compose_error, organ_error, faculty_error) if item)
 
     components: list[Component] = [
+        Component("deps/python", "python_deps"),
+        Component("deps/node", "node_deps"),
+        Component("deps/docker", "docker_deps"),
         Component("stdio/windows", "stdio"),
     ]
     for name, deps in compose.items():
+        compose_deps = tuple(f"compose/{dep}" for dep in deps if dep in compose)
         components.append(
             Component(
                 f"compose/{name}",
                 "compose",
-                depends_on=tuple(f"compose/{dep}" for dep in deps if dep in compose),
+                depends_on=compose_deps + ("deps/docker",),
             )
         )
-    components.append(Component("seat/trading_world_v5b", "seat"))
+    components.append(Component("seat/trading_world_v5b", "seat", depends_on=("deps/python",)))
     known_organs = set(organs)
     for name in organs:
         spec = organ_specs.get(name) or {}
         depends: list[str] = []
         if name == "frontend_vite":
-            depends.append("compose/frontend")
+            depends.extend(("compose/frontend", "deps/node"))
+        else:
+            depends.append("deps/python")
         components.append(Component(f"organ/{name}", "organ", depends_on=tuple(depends), organ=name))
         del spec
     for faculty in faculties:
@@ -767,10 +985,11 @@ def organ_command(repo: Path, name: str, spec: dict) -> list[str]:
         exe_path = Path(str(executable))
         exe = str(exe_path if exe_path.is_file() else shutil.which("node") or executable)
         return [exe, str(spec.get("script")), *args]
+    python = project_python(repo)
     module = spec.get("module")
     if module:
-        return [sys.executable, "-u", "-m", str(module), *args]
-    return [sys.executable, "-u", str(spec.get("script")), *args]
+        return [python, "-u", "-m", str(module), *args]
+    return [python, "-u", str(spec.get("script")), *args]
 
 
 def child_env(repo: Path, spec: dict, extra: dict[str, str] | None = None) -> dict[str, str]:
@@ -901,7 +1120,7 @@ def launch_compose_service(
         env["AUREON_ERROR_SINK_PORT"] = "8088"
         env["AUREON_ERROR_SINK_PATH"] = str(state_dir(repo) / "errors.jsonl")
         status, health, reason = spawn_owned(
-            repo, state, runner, name, [sys.executable, "-u", str(script)], repo, env
+            repo, state, runner, name, [project_python(repo), "-u", str(script)], repo, env
         )
         return Row(name, status, health, f"{docker_note}; host error_sink {reason}")
     if service == "api_b":
@@ -921,7 +1140,7 @@ def launch_compose_service(
             state,
             runner,
             name,
-            [sys.executable, "-u", "-m", "aureon_fusion.http_service"],
+            [project_python(repo), "-u", "-m", "aureon_fusion.http_service"],
             repo,
             env,
         )
@@ -938,7 +1157,7 @@ def launch_compose_service(
             runner,
             name,
             [
-                sys.executable,
+                project_python(repo),
                 "-u",
                 "-m",
                 "aureon.operator.local_http_profile",
@@ -1034,7 +1253,7 @@ def launch_trading_world(repo: Path, state: dict, runner: Runner) -> Row:
         state,
         runner,
         name,
-        [sys.executable, "-u", "-m", "aureon_fusion.http_service"],
+        [project_python(repo), "-u", "-m", "aureon_fusion.http_service"],
         repo,
         env,
     )
@@ -1182,6 +1401,36 @@ def _refresh_http(repo: Path, runner: Runner, rows: list[Row]) -> list[Row]:
     return refreshed
 
 
+def _dependency_status(repo: Path, runner: Runner, component: Component) -> Row:
+    """Report an install row without installing. ``--status`` stays read-only."""
+
+    if component.kind == "python_deps":
+        python = venv_python(repo)
+        stamp = repo / ".venv" / ".aureon-requirements-stamp"
+        if python and stamp.is_file():
+            return Row(component.name, "started", "ok", "requirements already installed in .venv")
+        return Row(component.name, "blocked", "down", "python requirements not installed")
+    if component.kind == "node_deps":
+        vite = repo / "frontend" / "node_modules" / "vite" / "bin" / "vite.js"
+        if vite.is_file():
+            return Row(component.name, "started", "ok", "vite.js already present")
+        return Row(component.name, "blocked", "down", "node dependencies not installed")
+    ready, note = runner.docker_ready()
+    if ready:
+        return Row(component.name, "started", "ok", "docker daemon answered; image pull happens on start")
+    return Row(component.name, "blocked", "down", note)
+
+
+def _dependency_start(repo: Path, runner: Runner, component: Component) -> Row:
+    if component.kind == "python_deps":
+        ok, detail = runner.install_python()
+    elif component.kind == "node_deps":
+        ok, detail = runner.install_node()
+    else:
+        ok, detail = runner.install_docker()
+    return Row(component.name, "started" if ok else "blocked", "ok" if ok else "down", detail)
+
+
 def status_rows(repo: Path, runner: Runner, components: list[Component]) -> list[Row]:
     """Health only. Nothing is spawned."""
 
@@ -1194,6 +1443,9 @@ def status_rows(repo: Path, runner: Runner, components: list[Component]) -> list
     docker_ok, docker_note = runner.docker_ready()
     rows: list[Row] = []
     for component in components:
+        if component.kind in {"python_deps", "node_deps", "docker_deps"}:
+            rows.append(_dependency_status(repo, runner, component))
+            continue
         if component.kind == "stdio":
             rows.append(launch_stdio())
             continue
@@ -1257,24 +1509,29 @@ def start_rows(repo: Path, runner: Runner, components: list[Component]) -> list[
         for component in components
         if component.kind == "compose" and component.name.split("/", 1)[1] in compose
     ]
-    docker_ok, docker_note = (False, compose_error or "compose file missing")
+    docker_note = compose_error or "compose file missing"
     docker_up = False
-    if selected_compose and compose_error is None:
-        docker_ok, docker_note = runner.docker_ready()
-        if docker_ok:
-            docker_up, up_note = runner.compose_up(compose_file(repo), selected_compose)
-            if docker_up:
-                state["compose_started"] = True
-                state["compose_services"] = selected_compose
-                save_state(repo, state)
-                docker_note = up_note
-            else:
-                docker_note = up_note
+    compose_attempted = False
     rows: list[Row] = []
     for component in components:
+        if component.kind in {"python_deps", "node_deps", "docker_deps"}:
+            rows.append(_dependency_start(repo, runner, component))
+            continue
         if component.kind == "stdio":
             rows.append(launch_stdio())
         elif component.kind == "compose":
+            if selected_compose and compose_error is None and not compose_attempted:
+                compose_attempted = True
+                _ready, docker_note = runner.docker_ready()
+                if docker_ok:
+                    docker_up, up_note = runner.compose_up(compose_file(repo), selected_compose)
+                    if docker_up:
+                        state["compose_started"] = True
+                        state["compose_services"] = selected_compose
+                        save_state(repo, state)
+                        docker_note = up_note
+                    else:
+                        docker_note = up_note
             service = component.name.split("/", 1)[1]
             rows.append(launch_compose_service(repo, state, runner, service, docker_note, docker_up))
         elif component.kind == "seat":

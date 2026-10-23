@@ -22,6 +22,7 @@ from aureon.launch.master import (
     missing_exchange_credential,
     organ_command,
     paper_env,
+    project_python,
     parse_args,
     parse_compose,
     repo_root,
@@ -41,7 +42,20 @@ class FakeRunner(Runner):
         self.ollama = False
         self.stopped: list[int] = []
         self.stopped_compose: list[str] = []
+        self.installs: list[str] = []
         self._next = 4000
+
+    def install_python(self) -> tuple[bool, str]:
+        self.installs.append("python")
+        return True, "fake python requirements satisfied"
+
+    def install_node(self) -> tuple[bool, str]:
+        self.installs.append("node")
+        return True, "fake node packages satisfied"
+
+    def install_docker(self) -> tuple[bool, str]:
+        self.installs.append("docker")
+        return True, "fake docker images satisfied"
 
     def settle(self, seconds: float) -> None:
         return None
@@ -136,6 +150,9 @@ def test_inventory_covers_compose_organs_and_faculties() -> None:
     for faculty in FACULTY_FILES:
         assert f"faculty/{faculty['name']}" in names
     for extra in (
+        "deps/python",
+        "deps/node",
+        "deps/docker",
         "stdio/windows",
         "seat/trading_world_v5b",
         "loop/self_repair",
@@ -143,7 +160,22 @@ def test_inventory_covers_compose_organs_and_faculties() -> None:
         "dashboards",
     ):
         assert extra in names
+    by_name = {component.name: component for component in components}
+    assert by_name["compose/nginx"].depends_on[-1] == "deps/docker"
+    assert "deps/python" in by_name["seat/trading_world_v5b"].depends_on
+    assert "deps/node" in by_name["organ/frontend_vite"].depends_on
+    assert "deps/python" in by_name["organ/hnc_core"].depends_on
+    assert [component.name for component in components[:3]] == ["deps/python", "deps/node", "deps/docker"]
     assert all(isinstance(component, Component) for component in components)
+
+
+def test_desktop_extras_are_stripped_from_a_failed_requirements_retry() -> None:
+    from aureon.launch.master import _without_desktop_extras
+
+    text = _without_desktop_extras("PyAudio>=0.2.14\nrequests>=2\npycaw\n")
+    assert "requests>=2" in text
+    assert "skipped by launcher" in text
+    assert "\nPyAudio" not in text
 
 
 def test_missing_exchange_credential_skips_the_trader(launcher_state: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -177,6 +209,7 @@ def test_only_stdio_does_not_spawn_or_arm(launcher_state: Path, monkeypatch: pyt
     code, output = _run(["--only", "stdio/windows"], runner)
     assert code == 0
     assert runner.spawned == []
+    assert runner.installs == []
     assert "live_trading_armed_by_launcher=false" in output
     assert "stdio/windows" in output
     assert "started" in output
@@ -190,6 +223,7 @@ def test_child_env_stays_paper_when_the_parent_switch_is_on(launcher_state: Path
     assert code == 0
     assert os.environ["AUREON_LIVE_TRADING"] == "1"
     assert "live_trading_armed_by_launcher=false" in output
+    assert runner.installs == ["python"]
     assert len(runner.spawned) == 1
     child = runner.spawned[0]
     assert child.env["AUREON_LIVE_TRADING"] == "0"
@@ -198,7 +232,7 @@ def test_child_env_stays_paper_when_the_parent_switch_is_on(launcher_state: Path
     assert child.env["AUREON_FUSION_BIND"] == "127.0.0.1"
     assert child.env["AUREON_FUSION_PORT"] == "8765"
     assert child.env["AUREON_FUSION_API_TOKEN"] == LOCAL_FUSION_TOKEN
-    assert child.cmd[:4] == [sys.executable, "-u", "-m", "aureon_fusion.http_service"]
+    assert child.cmd[:4] == [project_python(ROOT), "-u", "-m", "aureon_fusion.http_service"]
     assert isinstance(child.cmd, list)
 
 
@@ -207,6 +241,7 @@ def test_status_and_stop_do_not_start_new_processes(launcher_state: Path) -> Non
     code, output = _run(["--status", "--only", "organ/hnc_core"], runner)
     assert code == 0
     assert runner.spawned == []
+    assert runner.installs == []
     assert "not running" in output or "blocked" in output
     code, output = _run(["--stop"], runner)
     assert code == 0
@@ -257,7 +292,7 @@ def test_ignored_live_flag_does_not_change_the_environment(launcher_state: Path,
 
 def test_organ_command_is_a_list_and_supervisor_stays_dry_run() -> None:
     command = organ_command(ROOT, "hnc_core", {"module": "aureon_fusion.hnc_core", "args": ["run"]})
-    assert command == [sys.executable, "-u", "-m", "aureon_fusion.hnc_core", "run"]
+    assert command == [project_python(ROOT), "-u", "-m", "aureon_fusion.hnc_core", "run"]
     supervisor = organ_command(ROOT, "unity_supervisor", {"module": "aureon_fusion.unity_supervisor", "args": []})
     assert supervisor[-1] == "--dry-run"
     env = paper_env({"AUREON_LIVE_TRADING": "1", "PYTHONPATH": ""}, ROOT)
@@ -315,7 +350,7 @@ def test_report_table_has_the_health_columns() -> None:
     assert "started=1 blocked=0 total=1" in text
 
 
-@pytest.mark.timeout(300)
+@pytest.mark.timeout(1600)
 def test_fresh_clone_smoke_prints_the_health_table(tmp_path: Path) -> None:
     clone = tmp_path / "clone"
     cloned = subprocess.run(
@@ -339,12 +374,15 @@ def test_fresh_clone_smoke_prints_the_health_table(tmp_path: Path) -> None:
         env=env,
         capture_output=True,
         text=True,
-        timeout=180,
+        timeout=1500,
         check=False,
     )
     try:
         assert proc.returncode == 0, proc.stderr
         assert "live_trading_armed_by_launcher=false" in proc.stdout
+        assert "deps/python" in proc.stdout
+        assert "deps/node" in proc.stdout
+        assert "deps/docker" in proc.stdout
         assert "compose/postgres" in proc.stdout
         assert "seat/trading_world_v5b" in proc.stdout
         assert "organ/queen_mind" in proc.stdout

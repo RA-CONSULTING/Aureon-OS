@@ -23,7 +23,7 @@ The terminal-hold scripts stay holds. `deploy/start_master_launcher.sh`, `script
 
 | Flag | What it does |
 |---|---|
-| *(none)* | Start every component, in dependency order, then print the health table. |
+| *(none)* | Install Python requirements, Node packages, and Docker images, then start every component, in dependency order, and print the health table. |
 | `--status` | Health-check only. Nothing is spawned. |
 | `--stop` | Stop processes this launcher recorded. Postgres, Redis, or nginx it did not start are left alone. |
 | `--only a,b` | Start the named components and the dependencies they declare. |
@@ -45,70 +45,75 @@ When Docker is down, compose services fall back to a host process where one exis
 
 ## Component catalog
 
-Built from `deploy/selfhost/docker-compose.yml`, `aureon_fusion.organ_registry.ORGAN_ORDER`, and `aureon_fusion.flight_recorder.FACULTY_FILES`, plus the seat, the two loops, the dashboard rollup, and the Windows stdio repair. Sixty components.
+Built from `deploy/selfhost/docker-compose.yml`, `aureon_fusion.organ_registry.ORGAN_ORDER`, and `aureon_fusion.flight_recorder.FACULTY_FILES`, plus the dependency installers, the seat, the two loops, the dashboard rollup, and the Windows stdio repair. Sixty-three components.
+
+`deps/python` creates `.venv` (via `python -m venv`, or `uv venv` when that module is missing) and installs `requirements-linux.txt` on Linux or `requirements.txt` on Windows. It never installs into the system interpreter. A PyAudio or desktop-extra failure is retried without those packages. `deps/node` runs `npm install` in `frontend/` when `node` and `npm` are on PATH. It does not run `apt-get`. `deps/docker` runs `docker compose pull` and `docker compose build` for `deploy/selfhost/docker-compose.yml` when the daemon answers. Compose up stays `--no-build`. A missing daemon is a blocked row; host fallbacks still run.
 
 | order | name | kind | depends on |
 |---:|---|---|---|
-| 1 | stdio/windows | stdio | — |
-| 2 | compose/postgres | compose | — |
-| 3 | compose/redis | compose | — |
-| 4 | compose/error_sink | compose | — |
-| 5 | compose/api_a | compose | compose/redis, compose/error_sink |
-| 6 | compose/api_b | compose | compose/redis, compose/error_sink |
-| 7 | compose/frontend | compose | — |
-| 8 | compose/hnc_core | compose | — |
-| 9 | compose/nginx | compose | compose/api_a, compose/api_b, compose/frontend |
-| 10 | seat/trading_world_v5b | seat | — |
-| 11 | organ/unified_market_trader | organ | exchange key pair, or the row is blocked |
-| 12 | organ/operator_gateway | organ | — |
-| 13 | organ/frontend_vite | organ | compose/frontend |
-| 14 | organ/unified_market_status | organ | — |
-| 15 | organ/market_stream_feeder | organ | — |
-| 16 | organ/real_time_data_feeder | organ | script at the workspace root |
-| 17 | organ/schumann_real_daemon | organ | script at the workspace root |
-| 18 | organ/planetary_monitor_daemon | organ | script at the workspace root |
-| 19 | organ/solar_system_collector | organ | script at the workspace root |
-| 20 | organ/sero_space_weather | organ | script at the workspace root |
-| 21 | organ/sero_autonomous_expansion | organ | script at the workspace root |
-| 22 | organ/aureon_radar_bridge | organ | signal/dry-run bridge |
-| 23 | organ/aureon_radar_suite | organ | not started; live suite |
-| 24 | organ/mind_thought_action_hub | organ | — |
-| 25 | organ/self_questioning_ai | organ | Ollama on 127.0.0.1:11434 |
-| 26 | organ/hnc_core | organ | — |
-| 27 | organ/soul_protection_daemon | organ | script at the workspace root |
-| 28 | organ/mind_neural_canvas | organ | — |
-| 29 | organ/queen_mind | organ | the queen |
-| 30 | organ/heartbeat_daemon | organ | — |
-| 31 | organ/grand_wheel | organ | — |
-| 32 | organ/knowledge_pulse_feeder | organ | — |
-| 33 | organ/trading_progress_monitor | organ | — |
-| 34 | organ/_portfolio_writer_loop | organ | — |
-| 35 | organ/_temporal_refresh_loop | organ | temporal refresh |
-| 36 | organ/_world_digest_loop | organ | — |
-| 37 | organ/_harmonic_seed_loop | organ | upstream producer |
-| 38 | organ/global_energy_aggregator | organ | — |
-| 39 | organ/orca_unified_kill_chain | organ | not started; order loop |
-| 40 | organ/orca_command_center | organ | dashboard |
-| 41 | organ/unity_supervisor | organ | dry-run supervisor |
-| 42 | organ/flight_recorder | organ | faculty recorder |
-| 43 | organ/bus_bridge | organ | — |
-| 44 | organ/assessment_snapshot_producer | organ | module must exist |
-| 45 | organ/harmonic_affect_producer | organ | — |
-| 46 | organ/hnc_live_daemon | organ | HNC loop |
-| 47 | faculty/hnc_core | faculty | organ/hnc_core |
-| 48 | faculty/real_time_data | faculty | organ/real_time_data_feeder |
-| 49 | faculty/schumann | faculty | organ/schumann_real_daemon |
-| 50 | faculty/knowledge_pulse | faculty | organ/knowledge_pulse_feeder |
-| 51 | faculty/trading_progress | faculty | organ/trading_progress_monitor |
-| 52 | faculty/real_portfolio | faculty | organ/_portfolio_writer_loop |
-| 53 | faculty/temporal_outlook | faculty | organ/_temporal_refresh_loop |
-| 54 | faculty/prophecy_summary | faculty | organ/flight_recorder |
-| 55 | faculty/news_geo_digest | faculty | organ/flight_recorder |
-| 56 | faculty/heartbeat_last_results | faculty | organ/heartbeat_daemon |
-| 57 | faculty/organ_registry | faculty | organ/flight_recorder |
-| 58 | loop/self_repair | repair | enable flag and config; respects `AUREON_AUTONOMY_MODE` |
-| 59 | loop/self_coder | coder | respects `AUREON_AUTONOMY_MODE`; kill switch blocks it |
-| 60 | dashboards | dashboards | frontend, vite, neural canvas, orca command center, mind hub, market status |
+| 1 | deps/python | python_deps | — |
+| 2 | deps/node | node_deps | — |
+| 3 | deps/docker | docker_deps | — |
+| 4 | stdio/windows | stdio | — |
+| 5 | compose/postgres | compose | deps/docker |
+| 6 | compose/redis | compose | deps/docker |
+| 7 | compose/error_sink | compose | deps/docker |
+| 8 | compose/api_a | compose | compose/redis, compose/error_sink, deps/docker |
+| 9 | compose/api_b | compose | compose/redis, compose/error_sink, deps/docker |
+| 10 | compose/frontend | compose | deps/docker |
+| 11 | compose/hnc_core | compose | deps/docker |
+| 12 | compose/nginx | compose | compose/api_a, compose/api_b, compose/frontend, deps/docker |
+| 13 | seat/trading_world_v5b | seat | deps/python |
+| 14 | organ/unified_market_trader | organ | exchange key pair, or the row is blocked, deps/python |
+| 15 | organ/operator_gateway | organ | deps/python |
+| 16 | organ/frontend_vite | organ | compose/frontend, deps/node |
+| 17 | organ/unified_market_status | organ | deps/python |
+| 18 | organ/market_stream_feeder | organ | deps/python |
+| 19 | organ/real_time_data_feeder | organ | script at the workspace root, deps/python |
+| 20 | organ/schumann_real_daemon | organ | script at the workspace root, deps/python |
+| 21 | organ/planetary_monitor_daemon | organ | script at the workspace root, deps/python |
+| 22 | organ/solar_system_collector | organ | script at the workspace root, deps/python |
+| 23 | organ/sero_space_weather | organ | script at the workspace root, deps/python |
+| 24 | organ/sero_autonomous_expansion | organ | script at the workspace root, deps/python |
+| 25 | organ/aureon_radar_bridge | organ | signal/dry-run bridge, deps/python |
+| 26 | organ/aureon_radar_suite | organ | not started; live suite, deps/python |
+| 27 | organ/mind_thought_action_hub | organ | deps/python |
+| 28 | organ/self_questioning_ai | organ | Ollama on 127.0.0.1:11434, deps/python |
+| 29 | organ/hnc_core | organ | deps/python |
+| 30 | organ/soul_protection_daemon | organ | script at the workspace root, deps/python |
+| 31 | organ/mind_neural_canvas | organ | deps/python |
+| 32 | organ/queen_mind | organ | the queen, deps/python |
+| 33 | organ/heartbeat_daemon | organ | deps/python |
+| 34 | organ/grand_wheel | organ | deps/python |
+| 35 | organ/knowledge_pulse_feeder | organ | deps/python |
+| 36 | organ/trading_progress_monitor | organ | deps/python |
+| 37 | organ/_portfolio_writer_loop | organ | deps/python |
+| 38 | organ/_temporal_refresh_loop | organ | temporal refresh, deps/python |
+| 39 | organ/_world_digest_loop | organ | deps/python |
+| 40 | organ/_harmonic_seed_loop | organ | upstream producer, deps/python |
+| 41 | organ/global_energy_aggregator | organ | deps/python |
+| 42 | organ/orca_unified_kill_chain | organ | not started; order loop, deps/python |
+| 43 | organ/orca_command_center | organ | dashboard, deps/python |
+| 44 | organ/unity_supervisor | organ | dry-run supervisor, deps/python |
+| 45 | organ/flight_recorder | organ | faculty recorder, deps/python |
+| 46 | organ/bus_bridge | organ | deps/python |
+| 47 | organ/assessment_snapshot_producer | organ | module must exist, deps/python |
+| 48 | organ/harmonic_affect_producer | organ | deps/python |
+| 49 | organ/hnc_live_daemon | organ | HNC loop, deps/python |
+| 50 | faculty/hnc_core | faculty | organ/hnc_core |
+| 51 | faculty/real_time_data | faculty | organ/real_time_data_feeder |
+| 52 | faculty/schumann | faculty | organ/schumann_real_daemon |
+| 53 | faculty/knowledge_pulse | faculty | organ/knowledge_pulse_feeder |
+| 54 | faculty/trading_progress | faculty | organ/trading_progress_monitor |
+| 55 | faculty/real_portfolio | faculty | organ/_portfolio_writer_loop |
+| 56 | faculty/temporal_outlook | faculty | organ/_temporal_refresh_loop |
+| 57 | faculty/prophecy_summary | faculty | organ/flight_recorder |
+| 58 | faculty/news_geo_digest | faculty | organ/flight_recorder |
+| 59 | faculty/heartbeat_last_results | faculty | organ/heartbeat_daemon |
+| 60 | faculty/organ_registry | faculty | organ/flight_recorder |
+| 61 | loop/self_repair | repair | enable flag and config; respects `AUREON_AUTONOMY_MODE` |
+| 62 | loop/self_coder | coder | respects `AUREON_AUTONOMY_MODE`; kill switch blocks it |
+| 63 | dashboards | dashboards | frontend, vite, neural canvas, orca command center, mind hub, market status |
 
 ## Fresh-clone health table
 
