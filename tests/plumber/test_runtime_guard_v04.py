@@ -93,6 +93,7 @@ def test_runtime_effect_manifest_is_exact_canonical_and_bounded() -> None:
             max_uses=1,
         )
     for event_name in (
+        "_thread.start_joinable_thread",
         "_thread.start_new_thread",
         "ctypes.dlopen",
         "open",

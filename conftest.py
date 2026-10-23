@@ -313,6 +313,25 @@ def _restore_process_singletons():
             setattr(mod, attr, None)
 
 
+def _pin_xdist_thought_journal() -> None:
+    """Give each xdist worker its own thought journal.
+
+    ``get_thought_bus()`` otherwise appends to the checkout's ``thoughts.jsonl``.
+    Workers share that file, so a test that proves it did not touch the
+    checkout sees another worker's append and fails at teardown. The pin is
+    taken before the environment snapshot, so the per-test restore keeps it.
+    A single-process run leaves the checkout path alone.
+    """
+
+    worker = os.environ.get("PYTEST_XDIST_WORKER")
+    if not worker or os.environ.get("AUREON_THOUGHT_BUS_PATH"):
+        return
+    journal = Path(os.environ.get("TMPDIR") or "/tmp") / f"aureon-thoughts-{worker}.jsonl"
+    os.environ["AUREON_THOUGHT_BUS_PATH"] = str(journal)
+
+
+_pin_xdist_thought_journal()
+
 # Freeze the snapshot after this module's own imports, still before collection.
 _OS_ENVIRON_BEFORE_COLLECTION.update(os.environ)
 

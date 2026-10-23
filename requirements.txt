@@ -5,10 +5,10 @@ python-binance>=1.0.19
 krakenex>=2.1.0
 numpy>=1.26.0
 pandas>=2.1.0
-matplotlib>=3.8.0
+matplotlib>=3.8
 # --- rendering (bio harmonic overlays / convergence maps / blueprints) ---
-Pillow>=10.0.0
-imageio>=2.34.0
+pillow>=10.0
+imageio>=2.34
 imageio-ffmpeg>=0.5.1
 svgwrite>=1.4.0
 aiohttp>=3.9.0
@@ -20,9 +20,10 @@ skyfield
 ephem
 astroquery
 astropy
-scipy
-cryptography
-flask
+scipy>=1.11
+cryptography>=46
+flask>=3.0
+waitress>=3.0
 psutil>=5.9.0
 supervisor
 rich>=13.7.0
@@ -30,7 +31,7 @@ alpaca-py>=0.20.0
 pyttsx3>=2.90
 redis>=4.5.0
 websocket-client>=1.9.0
-prometheus_client>=0.24.0
+prometheus-client>=0.24.0
 anthropic>=0.40.0
 yfinance>=0.2.36,<0.2.59
 fredapi>=0.5.2
@@ -49,3 +50,10 @@ httpx>=0.27
 pytest>=8.0
 pytest-timeout>=2.3
 pytest-socket>=0.7
+pytest-xdist>=3.6
+jsonschema>=4.23,<5
+ruff>=0.6
+mypy>=1.10
+black>=24.0
+pre-commit>=3.7
+types-requests

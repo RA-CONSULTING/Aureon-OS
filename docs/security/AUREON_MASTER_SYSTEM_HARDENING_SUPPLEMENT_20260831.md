@@ -724,6 +724,13 @@ Inventory alignment proves that the known routes are classified; it does not
 authorize the 1,236 blocker routes or prove they are unreachable from arbitrary
 imports/manual execution.
 
+The figures in this section are the settled 2026-09-01 receipt. They are not
+the current tree. The current inventory is
+`scripts/validation/economic_mutation_allowlist.json`. Every
+live-capable-unguarded-blocker entry is an inventory classification, not a
+guard. These entries are safe only while live trading is off. Each one must
+get a structural guard before live trading can ever be armed.
+
 ### Settled whole-repository protection census
 
 Receipt:

@@ -83,6 +83,10 @@ python3 scripts/selfhost_smoke.py
 | Load balancing/scaling | local-only | nginx is configured for `api_a` and `api_b`. No green CI run. |
 | Error tracking/logs | local-only | JSON logs and `deploy/selfhost/error_sink.py` exist. No green CI run. |
 
+Ten of the twelve layers are local-only. CI/CD is missing. Security/RLS is policy text only.
+
+The economic-mutation census still lists live-capable unguarded blockers in `scripts/validation/economic_mutation_allowlist.json`. Every live-capable-unguarded-blocker entry is an inventory classification, not a guard. These entries are safe only while live trading is off. Each one must get a structural guard before live trading can ever be armed. Setting `AUREON_LIVE_TRADING` or `AUREON_FUSION_ARM_LIVE`, or creating `aureon_fusion/state/capital_release.flag`, while any of those entries remain fails the gate `unguarded_economic_mutations_block_live_trading`.
+
 Faculty launcher: `python3 -m aureon_fusion.fleet_launcher --check`. It exits 2 when `AUREON_LIVE_TRADING` is set or `aureon_fusion/state/capital_release.flag` exists. The unity supervisor in tmux session `unity-supervisor` is the process manager that keeps the paper-mode organs alive.
 
 Exchange tests that arm a live executor are marked `live` and are excluded unless pytest is run with `-m live`. They are not part of the default suite. Every `live` and `windows` marker states its reason (`tests/test_quarantined_marker_reasons.py`). The optional plant-atlas GPU test is skipped with the reason `optional torch backend not installed`. Voice and release contract tests also run on the Windows CI job.
