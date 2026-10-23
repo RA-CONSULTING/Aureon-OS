@@ -131,7 +131,7 @@ def _load_local_env() -> None:
 
 
 SAMUEL_REST_PORT = _bounded_port(os.environ.get("SAMUEL_REST_PORT"), 8891)
-NEXUS_WS_URL = f"ws://localhost:{os.environ.get('NEXUS_COMMAND_PORT', 8790)}/command-stream"
+NEXUS_WS_URL = f"ws://localhost:{os.environ.get('NEXUS_COMMAND_PORT', 8787)}/command-stream"
 LIGHTHOUSE_GAMMA = 0.945
 
 

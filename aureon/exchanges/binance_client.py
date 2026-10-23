@@ -1139,6 +1139,10 @@ class BinanceClient:
     def ping(self) -> bool:
         try:
             r = self.session.get(f"{self.base}/api/v3/ping", timeout=5)
+            if r.status_code == 451:
+                self.last_error = "ping_failed_http_451"
+                self.init_error = "region blocked"
+                return False
             if r.status_code != 200:
                 self.last_error = f"ping_failed_http_{r.status_code}"
             return r.status_code == 200

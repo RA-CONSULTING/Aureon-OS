@@ -51,14 +51,14 @@ import {
   surfacesForScreen,
   UnifiedFrontendState,
 } from "@/services/aureonAutonomousFrontend";
+import { terminalStateUrls } from "@/config/serviceEndpoints";
 
 const queryClient = new QueryClient();
 const ENV_LOCAL_TERMINAL_ENDPOINT = import.meta.env.VITE_LOCAL_TERMINAL_URL as string | undefined;
 const DEFAULT_RUNTIME_ENDPOINTS = [
   ENV_LOCAL_TERMINAL_ENDPOINT,
   "/api/terminal-state", // production: nginx proxies /api to the gateway
-  "http://127.0.0.1:8791/api/terminal-state",
-  "http://127.0.0.1:8790/api/terminal-state",
+  ...terminalStateUrls,
 ].filter((value): value is string => Boolean(value));
 const MANIFEST_REFRESH_MS = 15000;
 const RUNTIME_REFRESH_MS = 2500;

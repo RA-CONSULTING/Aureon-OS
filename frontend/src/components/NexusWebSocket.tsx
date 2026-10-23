@@ -1,9 +1,10 @@
 // WebSocket hook and main dashboard component
 import React, { useEffect, useRef, useState } from "react";
 import { AurisMetrics, AuraMetrics } from "./NexusLiveDashboardComplete";
+import { bridgeWsUrl } from "@/config/serviceEndpoints";
 
 // ---------- WebSocket hook ----------
-export function useAurisWS(url = "ws://localhost:8787"){
+export function useAurisWS(url = bridgeWsUrl){
   const [connected, setConnected] = useState(false);
   const [auris, setAuris] = useState<AurisMetrics>({});
   const [aura,  setAura]  = useState<AuraMetrics>({});

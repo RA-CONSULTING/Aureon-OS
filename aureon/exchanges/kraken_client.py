@@ -1,4 +1,4 @@
-import os, time, json, hmac, hashlib, base64, threading, logging, math
+import os, time, json, hmac, hashlib, base64, threading, logging, math, re
 from pathlib import Path
 from typing import Dict, Any, List, Tuple
 from decimal import Decimal
@@ -371,6 +371,59 @@ def _get_next_nonce() -> int:
             # Fallback: use time + PID + deterministic offset.
             return current_ns + (os.getpid() % 10000) * 1000 + _next_nonce_offset()
 
+
+def _persist_nonce_floor(sent: int, error_text: str = "") -> int:
+    """Remember a rejected nonce and persist one strictly above it.
+
+    Kraken keeps the highest nonce it has seen for the key. A lost counter
+    file, or a retry that only re-reads the clock, stays under that high-water
+    and every later call returns EAPI:Invalid nonce. The stored value climbs
+    by at least one billion so the next call is monotonic across processes.
+    """
+
+    mentioned: list[int] = []
+    for token in re.findall(r"\d{6,}", error_text or ""):
+        try:
+            mentioned.append(int(token))
+        except ValueError:
+            continue
+    floor = max([int(sent or 0), *mentioned, 0])
+    target = floor + 1_000_000_000
+    with _nonce_lock:
+        current_ns = time.time_ns()
+        try:
+            if os.path.exists(NONCE_FILE):
+                with open(NONCE_FILE, "r+") as handle:
+                    _lock_file(handle)
+                    try:
+                        last_nonce = _read_nonce_text(handle.read())
+                    except Exception:
+                        last_nonce = 0
+                    new_nonce = max(current_ns, last_nonce + 1, target)
+                    handle.seek(0)
+                    handle.truncate()
+                    handle.write(str(new_nonce))
+                    handle.flush()
+                    try:
+                        os.fsync(handle.fileno())
+                    except Exception:
+                        pass
+                    _unlock_file(handle)
+                    return new_nonce
+            new_nonce = max(current_ns, target)
+            with open(NONCE_FILE, "w+") as handle:
+                _lock_file(handle)
+                handle.write(str(new_nonce))
+                handle.flush()
+                try:
+                    os.fsync(handle.fileno())
+                except Exception:
+                    pass
+                _unlock_file(handle)
+            return new_nonce
+        except Exception:
+            return max(current_ns, target)
+
 class KrakenClient:
     """
     Minimal Kraken REST client exposing a Binance-like interface expected by the
@@ -720,11 +773,18 @@ class KrakenClient:
                         else:
                             raise RuntimeError(f"Kraken error: {errors}")
                     
-                    # Handle invalid nonce (retry with fresh nonce)
-                    if "EAPI:Invalid nonce" in error_str and attempt < max_retries - 1:
-                        logger.warning(f"Kraken invalid nonce on {path}, retrying...")
-                        time.sleep(0.5)
-                        continue
+                    # Handle invalid nonce: persist a higher nonce, then retry.
+                    if "EAPI:Invalid nonce" in error_str:
+                        self.last_error = error_str
+                        try:
+                            sent_nonce = int(wire_data.get("nonce") or 0)
+                        except (TypeError, ValueError):
+                            sent_nonce = 0
+                        _persist_nonce_floor(sent_nonce, error_str)
+                        logger.warning(f"Kraken invalid nonce on {path}, nonce advanced, retrying...")
+                        if attempt < max_retries - 1:
+                            time.sleep(0.5)
+                            continue
                     
                     raise RuntimeError(f"Kraken error: {errors}")
                 

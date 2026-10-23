@@ -3,6 +3,7 @@
  */
 
 import { useEffect, useMemo, useState } from "react";
+import { terminalStateUrls } from "@/config/serviceEndpoints";
 import {
   Activity,
   AlertTriangle,
@@ -46,10 +47,7 @@ const PUBLIC_ENDPOINTS: Record<string, string> = {
   hncProof: "/aureon_hnc_cognitive_proof.json",
 };
 
-const RUNTIME_FALLBACKS = [
-  "http://127.0.0.1:8791/api/terminal-state",
-  "http://127.0.0.1:8790/api/terminal-state",
-];
+const RUNTIME_FALLBACKS = terminalStateUrls;
 
 const EXCHANGES = ["kraken", "binance", "alpaca", "capital"];
 

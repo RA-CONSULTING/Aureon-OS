@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SEAT_TABS, type SeatTab } from "../seatManifest";
+import { operatorPort } from "@/config/serviceEndpoints";
 
 interface Reading {
   id?: string;
@@ -147,7 +148,7 @@ export default function LiveSeatsPage() {
       <div>
         <h1 className="text-2xl font-medium tracking-tight">Live seats</h1>
         <p className="text-sm text-muted-foreground">
-          Every separate dashboard is a tab here. The gateway on 8790 proxies the buses and APIs.
+          Every separate dashboard is a tab here. The gateway on {operatorPort} proxies the buses and APIs.
           A quiet source shows why it is empty.
         </p>
       </div>

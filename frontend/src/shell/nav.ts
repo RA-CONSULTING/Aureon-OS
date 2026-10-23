@@ -7,6 +7,7 @@
  */
 
 import { type ComponentType, lazy } from "react";
+import { marketStatusPort, operatorPort } from "@/config/serviceEndpoints";
 import {
   Activity,
   BarChart3,
@@ -148,7 +149,7 @@ export const NAV_SECTIONS: NavSection[] = [
       {
         path: "/console/seats",
         label: "Live seats",
-        description: "8080, Orca 8888, market status 8791, gateway 8790, fusion 8765, circulation 8799, and the other status pages, as tabs of this UI.",
+        description: `8080, Orca 8888, market status ${marketStatusPort}, gateway ${operatorPort}, fusion 8765, circulation 8799, and the other status pages, as tabs of this UI.`,
         icon: Radio,
         Component: lazy(() => import("./pages/LiveSeatsPage")),
         live: true,

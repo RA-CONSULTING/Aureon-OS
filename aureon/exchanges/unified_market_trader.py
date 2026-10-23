@@ -2028,7 +2028,9 @@ class UnifiedMarketTrader:
                 "binance_spot_margin_execution_route",
                 self.binance is not None and binance_network_ok,
                 "warning" if self.binance is not None else "warning",
-                self.binance_error or ("ready" if binance_network_ok else "network_unavailable"),
+                self.binance_error
+                or str((binance_diag.get("init_error") if isinstance(binance_diag, dict) else "") or "")
+                or ("ready" if binance_network_ok else "network_unavailable"),
                 meta={
                     "market_type": "spot_crypto_and_margin",
                     "intent_route": True,
@@ -2398,6 +2400,7 @@ class UnifiedMarketTrader:
             "combined": {
                 "open_positions": 0,
                 "kraken_equity": 0.0,
+                "kraken_equity_reason": self._runtime_writer_lock_reason or "duplicate runtime suppressed; equity is not a reading",
                 "capital_equity_gbp": 0.0,
                 "kraken_ready": False,
                 "capital_ready": False,
@@ -2808,6 +2811,7 @@ class UnifiedMarketTrader:
             "combined": {
                 "open_positions": 0,
                 "kraken_equity": 0.0,
+                "kraken_equity_reason": kraken_error if not self.kraken_ready else "",
                 "capital_equity_gbp": 0.0,
                 "kraken_session_pnl": 0.0,
                 "capital_session_pnl_gbp": 0.0,
@@ -2952,6 +2956,11 @@ class UnifiedMarketTrader:
             "combined": {
                 "open_positions": len(kraken_payload.get("positions", [])) + len(capital_payload.get("positions", [])),
                 "kraken_equity": kraken_equity,
+                "kraken_equity_reason": (
+                    str(kraken_payload.get("error") or self.kraken_error or "")
+                    if not kraken_equity
+                    else ""
+                ),
                 "capital_equity_gbp": float(capital_payload.get("equity_gbp", 0.0) or 0.0),
                 "kraken_session_pnl": float(kraken_payload.get("session_profit", 0.0) or 0.0),
                 "capital_session_pnl_gbp": float(capital_payload.get("stats", {}).get("total_pnl_gbp", 0.0) or 0.0),

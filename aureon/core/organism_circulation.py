@@ -226,6 +226,28 @@ def _metacognition_reading() -> dict[str, Any]:
         return {"truth_status": "no_data", "note": str(exc)[:180]}
 
 
+def publish_faculty_reading(source: str, payload: dict[str, Any]) -> dict[str, Any]:
+    """Publish one faculty reading and its baton link. No model is called.
+
+    Metacognition and self-questioning use this when Ollama is absent. The
+    payload is the reading already in hand, or an explicit unavailable reason.
+    """
+
+    body = dict(payload)
+    body["ollama"] = False
+    body.setdefault("live_trading", False)
+    bus = get_thought_bus()
+    bus.publish(Thought(source=source, topic=f"organism.{source}", payload=body))
+    link = bus.publish(
+        Thought(
+            source=source,
+            topic="baton.link",
+            payload={"module": source, "ollama": False, "live_trading": False},
+        )
+    )
+    return {"published": True, "source": source, "id": getattr(link, "id", None)}
+
+
 def _on_circulation(thought: Thought) -> None:
     """Every other seat hears the pulse. Receipts stay in memory so the log is not a storm."""
     source = str(getattr(thought, "source", "") or "")
@@ -422,6 +444,8 @@ def _metacognition_loop(stop: threading.Event) -> None:
     while not stop.is_set():
         reading = _metacognition_reading()
         reading["loop"] = "running"
+        reading["ollama"] = False
+        reading.setdefault("reason", "no model is called")
         with _LOCK:
             heard = list((_STATE.get("audit_consumed") or {}).get("metacognition") or [])
             if heard:
@@ -431,6 +455,10 @@ def _metacognition_loop(stop: threading.Event) -> None:
             _META.update(reading)
             _META["audit_concern"] = concern
             _META["audit_confidence"] = confidence
+        try:
+            publish_faculty_reading("metacognition", reading)
+        except Exception:
+            pass
         stop.wait(5.0)
 
 

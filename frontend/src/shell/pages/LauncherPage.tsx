@@ -9,11 +9,12 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { gatewayHealthUrl, marketStatusHealthUrl, operatorPort } from "@/config/serviceEndpoints";
 
 const CIRCULATION = "http://127.0.0.1:8799/healthz";
-const GATEWAY = "http://127.0.0.1:8790/healthz";
+const GATEWAY = gatewayHealthUrl;
 const FUSION = "http://127.0.0.1:8765/healthz";
-const STATUS = "http://127.0.0.1:8791/healthz";
+const STATUS = marketStatusHealthUrl;
 const ORCA = "http://127.0.0.1:8888/health";
 
 export default function LauncherPage() {
@@ -72,7 +73,7 @@ export default function LauncherPage() {
                 Orca: <a className="text-primary underline" href={ORCA}>{ORCA}</a>
               </p>
               <p className="text-muted-foreground">
-                The overview shows gateway offline until 8790/healthz answers. This tab does not open a second dashboard on 8080.
+                The overview shows gateway offline until {operatorPort}/healthz answers. This tab does not open a second dashboard on 8080.
               </p>
             </CardContent>
           </Card>

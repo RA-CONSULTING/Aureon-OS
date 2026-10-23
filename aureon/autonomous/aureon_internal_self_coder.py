@@ -22,10 +22,12 @@ proposal vault and production Plumber/Magic Star boundary exist.
 from __future__ import annotations
 
 import argparse
+import base64
 import hashlib
 import json
 import os
 import re
+import secrets
 import subprocess
 import sys
 import tempfile
@@ -1149,6 +1151,76 @@ def _parse_test_command(value: str) -> tuple[str, ...]:
     return tuple(payload)
 
 
+def _canonical_hnc_master_key() -> str:
+    raw = secrets.token_bytes(32)
+    return base64.urlsafe_b64encode(raw).decode("ascii").rstrip("=")
+
+
+def ensure_hnc_master_key_preflight(root: Path) -> dict[str, Any]:
+    """Make the HNC proposal key available on a fresh box.
+
+    An existing environment key is used as-is. Otherwise a local state file is
+    read or generated. The key is not printed and is not written into ``.env``.
+    """
+
+    from aureon.harmonic.hnc_quantum_packet_crypto import (
+        MASTER_KEY_ENV,
+        normalize_hnc_key_material,
+        packet_master_key_from_env,
+    )
+
+    source = "env"
+    existing = packet_master_key_from_env().strip()
+    path = Path(root) / "state" / "hnc_packet_master_key"
+    if not existing:
+        if path.is_file():
+            existing = path.read_text(encoding="utf-8").strip()
+            source = "state_file"
+        else:
+            existing = _canonical_hnc_master_key()
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(existing + "\n", encoding="utf-8")
+            try:
+                path.chmod(0o600)
+            except OSError:
+                pass
+            source = "generated"
+        os.environ[MASTER_KEY_ENV] = existing
+    try:
+        normalize_hnc_key_material(packet_master_key_from_env())
+        ready = True
+        reason = "ready"
+    except Exception:
+        ready = False
+        reason = "master_key_invalid"
+    return {
+        "ready": ready,
+        "source": source,
+        "key_material_returned": False,
+        "reason": reason,
+        "state_file": str(path),
+    }
+
+
+def openai_compatible_model_endpoint() -> dict[str, Any]:
+    """OpenAI-compatible chat endpoint for the self-coder and the benchmark harness.
+
+    ``AUREON_SELF_CODER_OPENAI_BASE_URL`` defaults to a loopback server.
+    ``AUREON_SELF_CODER_MODEL`` names the model. ``AUREON_SELF_CODER_API_KEY``
+    is reported only as present or absent.
+    """
+
+    base = (os.environ.get("AUREON_SELF_CODER_OPENAI_BASE_URL") or "http://127.0.0.1:8000/v1").strip()
+    model = (os.environ.get("AUREON_SELF_CODER_MODEL") or "kimi-k2.5").strip()
+    return {
+        "base_url": base.rstrip("/"),
+        "model": model,
+        "api_key_configured": bool((os.environ.get("AUREON_SELF_CODER_API_KEY") or "").strip()),
+        "api_key_returned": False,
+        "wire_api": "openai-chat-completions",
+    }
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Run one held Aureon transient HNC seal-and-burn experiment."
@@ -1164,6 +1236,15 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     parser.add_argument("--root", type=Path, default=Path.cwd())
     args = parser.parse_args(argv)
+    prepared = ensure_hnc_master_key_preflight(args.root)
+    if prepared.get("ready") is not True:
+        print(json.dumps({
+            "ok": False,
+            "status": "hold",
+            "reason": "hnc_proposal_master_key_unavailable",
+            "key_material_returned": False,
+        }, sort_keys=True))
+        return 2
     try:
         result = run_autonomous_self_coding(
             root=args.root,
@@ -1226,6 +1307,8 @@ __all__ = [
     "derive_test_commands",
     "discover_clean_python_candidates",
     "read_self_coding_evidence",
+    "ensure_hnc_master_key_preflight",
+    "openai_compatible_model_endpoint",
     "run_autonomous_self_coding",
     "record_senior_proposal_review",
     "record_senior_release_review",

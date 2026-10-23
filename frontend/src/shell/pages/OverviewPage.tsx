@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Rocket, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { operatorPort } from "@/config/serviceEndpoints";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -275,7 +276,7 @@ export default function OverviewPage() {
           <CardContent className="text-xs text-muted-foreground">
             {status
               ? `${status.domains_reachable ?? "?"}/${status.domains_total ?? "?"} domains reachable`
-              : "Start the operator gateway (:8790) for live health."}
+              : `Start the operator gateway (:${operatorPort}) for live health.`}
           </CardContent>
         </Card>
         <Card>

@@ -46,6 +46,7 @@ export const TradingAnalytics = () => {
   });
   const [timeSeriesData, setTimeSeriesData] = useState<TimeSeriesData[]>([]);
   const [symbolPerformance, setSymbolPerformance] = useState<any[]>([]);
+  const [signInRequired, setSignInRequired] = useState(false);
 
   useEffect(() => {
     loadAnalytics();
@@ -69,12 +70,25 @@ export const TradingAnalytics = () => {
     const timeFilter = getTimeRangeFilter();
 
     // Load closed positions
-    const { data: closedPositions } = await supabase
+    const { data: closedPositions, error } = await supabase
       .from('trading_positions')
       .select('*')
       .eq('status', 'closed')
       .gte('closed_at', timeFilter)
       .order('closed_at', { ascending: true });
+
+    const status = (error as { status?: number; code?: string; message?: string } | null);
+    const message = String(status?.message || "");
+    if (
+      status
+      && (status.status === 401 || status.code === "401" || /jwt|unauthorized|not authorized/i.test(message))
+    ) {
+      setSignInRequired(true);
+      setTimeSeriesData([]);
+      setSymbolPerformance([]);
+      return;
+    }
+    setSignInRequired(false);
 
     if (!closedPositions || closedPositions.length === 0) {
       setMetrics({
@@ -176,6 +190,14 @@ export const TradingAnalytics = () => {
 
   return (
     <div className="space-y-6">
+      {signInRequired && (
+        <Card className="p-4">
+          <p className="text-sm font-medium">Sign-in required</p>
+          <p className="text-sm text-muted-foreground">
+            Supabase refused this analytics read. No trade totals are shown until a session is signed in.
+          </p>
+        </Card>
+      )}
       {/* Time Range Selector */}
       <div className="flex gap-2">
         {(['24h', '7d', '30d', 'all'] as const).map((range) => (

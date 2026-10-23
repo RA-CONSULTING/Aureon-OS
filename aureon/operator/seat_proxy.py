@@ -9,6 +9,7 @@ an order.
 from __future__ import annotations
 
 import json
+import os
 import socket
 import threading
 from datetime import datetime, timezone
@@ -133,19 +134,22 @@ SEATS: tuple[dict[str, str | None], ...] = (
         "id": "system-hub",
         "label": "System hub",
         "was": "port 13001 system hub dashboard",
-        "upstream": "http://127.0.0.1:13001/",
+        "upstream": None,
+        "hold": "Retired from this boot. The separate server is not started, so this tab does not report a refused connection. No reading is invented.",
     },
     {
         "id": "bot-hunter",
         "label": "Bot hunter",
         "was": "port 9999 bot hunter dashboard",
-        "upstream": "http://127.0.0.1:9999/",
+        "upstream": None,
+        "hold": "Retired from this boot. The separate server is not started, so this tab does not report a refused connection. No reading is invented.",
     },
     {
         "id": "dashboard-api",
         "label": "Dashboard API",
         "was": "port 13334 unified dashboard API",
-        "upstream": "http://127.0.0.1:13334/",
+        "upstream": None,
+        "hold": "Retired from this boot. Its command routes are not started, so this tab does not report a refused connection and does not place an order.",
     },
     {
         "id": "queen-power",
@@ -174,6 +178,12 @@ SEATS: tuple[dict[str, str | None], ...] = (
         "was": "separate command center UI",
         "upstream": None,
         "hold": "The separate command center stays off unless AUREON_SIMULATED_BOOT is set, because its page draws invented motion. Dashboard and Command Center inside this UI stay at /console/local.",
+    },
+    {
+        "id": "live-bridge",
+        "label": "Live Bridge",
+        "was": "frontend bridge websocket",
+        "upstream": "http://127.0.0.1:8787/health",
     },
 )
 
@@ -262,6 +272,22 @@ def _read_upstream(url: str) -> tuple[int, str, bytes]:
     return status, content_type, body[:_MAX_BYTES]
 
 
+def _resolved_upstream(seat: dict[str, str | None]) -> str | None:
+    """Honor a taken-port override without rewriting the seat table."""
+
+    seat_id = seat.get("id")
+    if seat_id == "market-status":
+        override = os.environ.get("AUREON_MARKET_STATUS_URL", "").strip()
+        if override:
+            return override
+    if seat_id == "live-bridge":
+        override = os.environ.get("AUREON_FRONTEND_BRIDGE_URL", "").strip()
+        if override:
+            return override
+    upstream = seat.get("upstream")
+    return str(upstream) if upstream else None
+
+
 def read_seat(seat_id: str, gateway: "GatewaySwitch | None" = None) -> dict[str, Any]:
     """Read one seat. A missed upstream is unavailable, with the reason."""
 
@@ -278,7 +304,10 @@ def read_seat(seat_id: str, gateway: "GatewaySwitch | None" = None) -> dict[str,
     hold = seat.get("hold")
     if hold:
         return _reading(seat, available=False, reason=str(hold), payload=None)
-    upstream = seat["upstream"]
+    upstream = _resolved_upstream(seat)
+    if upstream:
+        seat = dict(seat)
+        seat["upstream"] = upstream
     if not upstream:
         return _reading(seat, available=True, reason=None, payload=_local_payload(seat_id, gateway))
     try:

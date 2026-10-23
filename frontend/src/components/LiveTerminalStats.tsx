@@ -512,7 +512,10 @@ export function LiveTerminalStats() {
       <div className="mt-4 rounded border border-border/40 bg-background/60 p-3">
         <div className="mb-2 font-mono text-xs font-semibold text-foreground">ACCOUNT SUMMARY</div>
         <div className="grid gap-1.5 md:grid-cols-3">
-          <ExchangeMetric label="Portfolio" value={`€${totalEquity.toFixed(2)}`} />
+          <ExchangeMetric
+            label="Portfolio"
+            value={state.equityNote ? state.equityNote : `€${totalEquity.toFixed(2)}`}
+          />
           <ExchangeMetric label="Available" value={`€${available.toFixed(2)}`} />
           <ExchangeMetric
             label="Session"

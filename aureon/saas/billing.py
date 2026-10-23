@@ -150,12 +150,22 @@ def register_billing(app: Any) -> Any:
 
     @app.get("/api/billing/balance")
     def billing_balance() -> Any:
+        if not jwt_secret:
+            return jsonify({
+                "configured": False,
+                "status": "not configured",
+                "reason": "tenancy bridge disabled (AUREON_SUPABASE_JWT_SECRET unset)",
+            })
         tenant, err = _require_tenant()
         if err is not None:
             return err
-        missing = _require_supabase()
-        if missing is not None:
-            return missing
+        if rest is None:
+            return jsonify({
+                "configured": False,
+                "status": "not configured",
+                "reason": "billing backend not configured",
+                "missing": config.missing(),
+            })
         assert rest is not None
         rows = rest.select(_ACCOUNTS_TABLE, {"user_id": f"eq.{tenant}"}, limit=1)
         if rows is None:

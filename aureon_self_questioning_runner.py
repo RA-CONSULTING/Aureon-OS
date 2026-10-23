@@ -32,6 +32,12 @@ def main(argv: list[str] | None = None) -> int:
         temporary = _PATH.with_suffix(".json.tmp")
         temporary.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         temporary.replace(_PATH)
+        try:
+            from aureon.core.organism_circulation import publish_faculty_reading
+
+            publish_faculty_reading("self_questioning", payload)
+        except Exception as exc:
+            print(f"self-questioning thought not published: {exc.__class__.__name__}", flush=True)
         print("self-questioning runner standing by; no model call; live_trading=false", flush=True)
         time.sleep(max(1.0, float(args.interval)))
 

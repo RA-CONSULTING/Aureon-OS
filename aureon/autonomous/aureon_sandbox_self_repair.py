@@ -243,6 +243,82 @@ def _operator_edit(path: Path, node: ast.FunctionDef, assertions: list[dict[str,
     return old, new
 
 
+def _denominator_edit(path: Path, node: ast.FunctionDef, assertions: list[dict[str, Any]]) -> tuple[str, str] | None:
+    """Repair ``return n // k`` when every assertion wants ``k`` one step away."""
+
+    if len(node.args.args) != 1 or len(node.body) != 1 or not isinstance(node.body[0], ast.Return):
+        return None
+    value = node.body[0].value
+    if not isinstance(value, ast.BinOp) or not isinstance(value.op, ast.FloorDiv):
+        return None
+    name = node.args.args[0].arg
+    if not isinstance(value.left, ast.Name) or value.left.id != name:
+        return None
+    if not isinstance(value.right, ast.Constant) or isinstance(value.right.value, bool):
+        return None
+    if not isinstance(value.right.value, int):
+        return None
+    if not assertions or any(len(item["args"]) != 1 or isinstance(item["args"][0], bool) for item in assertions):
+        return None
+    current = int(value.right.value)
+    winners: list[int] = []
+    for candidate in (current - 1, current + 1):
+        if candidate == 0:
+            continue
+        try:
+            matches = all(operator.floordiv(item["args"][0], candidate) == item["expected"] for item in assertions)
+        except Exception:
+            matches = False
+        if matches:
+            winners.append(candidate)
+    if len(winners) != 1 or winners[0] == current:
+        return None
+    line = path.read_text(encoding="utf-8").splitlines()[node.body[0].lineno - 1]
+    old = f"return {name} // {current}"
+    new = f"return {name} // {winners[0]}"
+    if old not in line:
+        return None
+    return old, new
+
+
+def _parity_edit(path: Path, node: ast.FunctionDef, assertions: list[dict[str, Any]]) -> tuple[str, str] | None:
+    """Repair ``return n % 2 == 0`` when the assertions want the other residue."""
+
+    if len(node.args.args) != 1 or len(node.body) != 1 or not isinstance(node.body[0], ast.Return):
+        return None
+    value = node.body[0].value
+    if not isinstance(value, ast.Compare) or len(value.ops) != 1 or not isinstance(value.ops[0], ast.Eq):
+        return None
+    if len(value.comparators) != 1 or not isinstance(value.comparators[0], ast.Constant):
+        return None
+    bit = value.comparators[0].value
+    if bit not in (0, 1) or isinstance(bit, bool):
+        return None
+    mod = value.left
+    if not isinstance(mod, ast.BinOp) or not isinstance(mod.op, ast.Mod):
+        return None
+    name = node.args.args[0].arg
+    if not isinstance(mod.left, ast.Name) or mod.left.id != name:
+        return None
+    if not isinstance(mod.right, ast.Constant) or mod.right.value != 2:
+        return None
+    if not assertions or any(len(item["args"]) != 1 for item in assertions):
+        return None
+    flipped = 0 if bit == 1 else 1
+    try:
+        matches = all(((item["args"][0] % 2) == flipped) == item["expected"] for item in assertions)
+    except Exception:
+        matches = False
+    if not matches:
+        return None
+    line = path.read_text(encoding="utf-8").splitlines()[node.body[0].lineno - 1]
+    old = f"return {name} % 2 == {bit}"
+    new = f"return {name} % 2 == {flipped}"
+    if old not in line:
+        return None
+    return old, new
+
+
 def _names_in_file(tree: ast.AST) -> set[str]:
     names: set[str] = set()
     for node in ast.walk(tree):
@@ -359,7 +435,12 @@ def _attempt(root: Path, output: str, architect: Any) -> dict[str, Any] | None:
             continue
         path, node = located
         relative = path.relative_to(root).as_posix()
-        edit = _literal_return_edit(path, node, group) or _operator_edit(path, node, group)
+        edit = (
+            _literal_return_edit(path, node, group)
+            or _operator_edit(path, node, group)
+            or _denominator_edit(path, node, group)
+            or _parity_edit(path, node, group)
+        )
         if edit is None:
             continue
         old, new = edit

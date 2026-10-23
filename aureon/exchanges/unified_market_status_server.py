@@ -235,6 +235,7 @@ def _read_status() -> dict[str, Any]:
         "combined": {
             "open_positions": 0,
             "kraken_equity": 0.0,
+            "kraken_equity_reason": "trader is still booting; equity is not a reading yet",
             "capital_equity_gbp": 0.0,
         },
         "exchanges": {
@@ -409,6 +410,9 @@ def _write_env_updates(updates: dict[str, str]) -> dict[str, Any]:
 
 def _env_credentials_status() -> dict[str, Any]:
     env_values = _parse_env_values()
+    for key, value in os.environ.items():
+        if str(value).strip() and not str(env_values.get(key, "")).strip():
+            env_values[key] = value
     apply_env_aliases(env_values, override=False)
     master_key = _env_packet_master_key(env_values)
     master_key_status = _env_packet_master_key_status(master_key)

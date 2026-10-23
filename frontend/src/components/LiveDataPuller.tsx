@@ -3,6 +3,7 @@ import { useHarmonicAuth } from '@/hooks/useHarmonicAuth';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
+import { bridgeWsUrl } from '@/config/serviceEndpoints';
 
 interface LiveDataStream {
   timestamp: number;
@@ -21,7 +22,7 @@ export function LiveDataPuller() {
 
     const connectToLiveData = () => {
       try {
-        const ws = new WebSocket('ws://localhost:8787');
+        const ws = new WebSocket(bridgeWsUrl);
         
         ws.onopen = () => {
           console.log('🔗 Connected to live data stream');

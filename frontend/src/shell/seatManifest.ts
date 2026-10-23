@@ -9,12 +9,15 @@ export interface SeatTab {
   was: string;
 }
 
+const gatewayPort = import.meta.env.VITE_OPERATOR_PORT || "8790";
+const marketPort = import.meta.env.VITE_MARKET_STATUS_PORT || "8791";
+
 export const SEAT_TABS: SeatTab[] = [
   { id: "local-console", label: "Local console", was: "port 8080 dashboard" },
-  { id: "gateway", label: "Operator gateway", was: "port 8790" },
+  { id: "gateway", label: "Operator gateway", was: `operator gateway port ${gatewayPort}` },
   { id: "circulation", label: "Circulation bus", was: "port 8799" },
   { id: "fusion", label: "Fusion seat", was: "port 8765" },
-  { id: "market-status", label: "Market status", was: "port 8791" },
+  { id: "market-status", label: "Market status", was: `market status port ${marketPort}` },
   { id: "orca", label: "Orca", was: "port 8888" },
   { id: "neural-canvas", label: "Neural canvas", was: "port 13012" },
   { id: "thought-hub", label: "Thought-action hub", was: "port 13002" },
@@ -30,7 +33,8 @@ export const SEAT_TABS: SeatTab[] = [
   { id: "bot-hunter", label: "Bot hunter", was: "port 9999 bot hunter dashboard" },
   { id: "dashboard-api", label: "Dashboard API", was: "port 13334 unified dashboard API" },
   { id: "queen-power", label: "Queen power", was: "port 8080 queen power dashboard" },
-  { id: "trader-local", label: "Trader telemetry", was: "unified market trader local dashboard on 8790" },
+  { id: "trader-local", label: "Trader telemetry", was: `unified market trader local dashboard on port ${gatewayPort}` },
   { id: "kraken-local", label: "Kraken telemetry", was: "kraken penny trader local dashboard" },
   { id: "command-center-legacy", label: "Legacy command center", was: "separate command center UI" },
+  { id: "live-bridge", label: "Live Bridge", was: "frontend bridge websocket" },
 ];

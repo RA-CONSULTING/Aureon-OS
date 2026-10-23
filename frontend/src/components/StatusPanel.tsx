@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import { bridgeHttpBase } from '@/config/serviceEndpoints';
 
 type BotTail = { name: string; tail: string[] };
 
 const API_BASES = [
   '',
   typeof window !== 'undefined' ? `${window.location.origin}` : '',
-  'http://localhost:8787',
+  bridgeHttpBase,
 ];
 
 async function fetchJson(path: string) {

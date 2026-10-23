@@ -272,3 +272,37 @@ def test_review_log_is_json(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> 
     for line in review_log_path(root).read_text(encoding="utf-8").splitlines():
         json.loads(line)
     assert os.environ.get("AUREON_LIVE_TRADING", "0") != "1"
+
+
+def test_repairs_denominator_parity_and_literal_in_one_sandbox(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    root = tmp_path / "planted"
+    root.mkdir()
+    (root / "bands.py").write_text(
+        "def third(n):\n"
+        "    return n // 2\n\n"
+        "def is_even(n):\n"
+        "    return n % 2 == 1\n\n"
+        "def band_offset():\n"
+        "    return 1\n",
+        encoding="utf-8",
+    )
+    (root / "test_bands.py").write_text(
+        "from bands import band_offset, is_even, third\n\n"
+        "def test_third():\n"
+        "    assert third(9) == 3\n\n"
+        "def test_even():\n"
+        "    assert is_even(4) == True\n\n"
+        "def test_offset():\n"
+        "    assert band_offset() == 0\n",
+        encoding="utf-8",
+    )
+    _enable(root, monkeypatch)
+    report = repair_sandbox(root)
+    text = (root / "bands.py").read_text(encoding="utf-8")
+    assert report["status"] == "repaired", report
+    assert "return n // 3" in text
+    assert "return n % 2 == 0" in text
+    assert "return 0" in text
+    assert "return n // 2" not in text
+    assert "return n % 2 == 1" not in text
+    assert "assert third(9) == 3" in (root / "test_bands.py").read_text(encoding="utf-8")

@@ -24,7 +24,7 @@ DATA SOURCES:
     - Omega (high confidence signals)
 
 FRONTEND OUTPUT:
-  - ws://localhost:8790/command-stream (real-time data)
+  - ws://127.0.0.1:8787/command-stream (real-time data)
   - Supabase tables (persistent storage)
 
 Gary Leckey | January 2026 | ALL PLATFORMS → FRONTEND
@@ -66,8 +66,19 @@ logger = logging.getLogger(__name__)
 # ════════════════════════════════════════════════════════════════════════════
 # CONFIGURATION
 # ════════════════════════════════════════════════════════════════════════════
-WS_HOST = os.getenv("NEXUS_WS_HOST", "0.0.0.0")
-WS_PORT = int(os.getenv("NEXUS_COMMAND_PORT", "8790"))
+def bridge_bind() -> tuple[str, int]:
+    """Match the UI sockets. Bind the loopback interface unless the operator overrides it."""
+
+    host = os.getenv("NEXUS_WS_HOST", "127.0.0.1") or "127.0.0.1"
+    raw = os.getenv("AUREON_FRONTEND_BRIDGE_PORT") or os.getenv("NEXUS_COMMAND_PORT") or "8787"
+    try:
+        port = int(raw)
+    except (TypeError, ValueError):
+        port = 8787
+    return host, port
+
+
+WS_HOST, WS_PORT = bridge_bind()
 UPDATE_INTERVAL = float(os.getenv("NEXUS_UPDATE_INTERVAL", "1.0"))  # seconds
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -867,9 +878,29 @@ class AureonFrontendBridge:
         print(f"   WebSocket: ws://{WS_HOST}:{WS_PORT}/command-stream")
         print(f"   Update Interval: {UPDATE_INTERVAL}s")
         print()
-        
-        # Start WebSocket server
-        async with serve(self.handle_client, WS_HOST, WS_PORT):
+
+        async def _http_health(path, _request_headers):
+            if str(path).split("?", 1)[0] not in {"/health", "/healthz"}:
+                return None
+            body = json.dumps(
+                {
+                    "ok": True,
+                    "service": "aureon-frontend-bridge",
+                    "listening": True,
+                    "live_trading": False,
+                    "orders": 0,
+                    "bind": WS_HOST,
+                    "port": WS_PORT,
+                }
+            ).encode("utf-8")
+            return (
+                200,
+                [("Content-Type", "application/json"), ("Content-Length", str(len(body)))],
+                body,
+            )
+
+        # Start WebSocket server. GET /health answers the seat tab.
+        async with serve(self.handle_client, WS_HOST, WS_PORT, process_request=_http_health):
             print(f"✅ WebSocket server running on ws://{WS_HOST}:{WS_PORT}")
             
             # Run stream loop
