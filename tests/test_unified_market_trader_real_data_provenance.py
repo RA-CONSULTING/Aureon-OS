@@ -363,6 +363,12 @@ def test_provider_submission_exception_is_pending_reconciliation_not_failure_or_
 
     trader = _trader()
     trader.alpaca = AlpacaStub()
+
+    class RaisingBrain:
+        def place_market_order(self, *_args, **_kwargs):
+            raise TimeoutError("provider response lost")
+
+    trader._queen_exchange_brains = {"alpaca": RaisingBrain()}
     trader._runtime_real_orders_allowed = lambda: True
     trader._fresh_route_price_receipt = lambda _venue, _symbol: {
         "status": "live",
@@ -651,6 +657,7 @@ def test_live_route_reports_submission_as_pending_without_opening_position():
 
     trader = _trader()
     trader.kraken = SimpleNamespace(client=OrderStub())
+    trader._queen_exchange_brains = {"kraken": OrderStub()}
     trader._runtime_real_orders_allowed = lambda: True
     trader._fresh_route_price_receipt = lambda _venue, _symbol: {
         "status": "live",
@@ -756,6 +763,7 @@ def test_monitor_uses_terminal_fill_values_for_realized_pnl_and_learning():
 
     trader = _trader()
     trader.kraken = SimpleNamespace(client=OrderStub())
+    trader._queen_exchange_brains = {"kraken": OrderStub()}
     trader._runtime_real_orders_allowed = lambda: True
     position = {
         "id": "P-REAL-1",

@@ -602,6 +602,9 @@ def _run_sealed_compiler(
     )
 
 
+@pytest.mark.windows(
+    reason="No reviewed Node toolchain binding is published for linux; the sealed compiler contract runs on the windows-latest job."
+)
 def test_sealed_compiler_ingresses_reject_all_transitive_source_mutations_before_execution(
     tmp_path: Path,
 ) -> None:
@@ -676,6 +679,9 @@ def test_sealed_compiler_ingresses_reject_all_transitive_source_mutations_before
     } == original_hashes
 
 
+@pytest.mark.windows(
+    reason="No reviewed Node toolchain binding is published for linux; the sealed compiler contract runs on the windows-latest job."
+)
 def test_sealed_verify_only_compiler_processes_are_exactly_read_only(
     tmp_path: Path,
 ) -> None:

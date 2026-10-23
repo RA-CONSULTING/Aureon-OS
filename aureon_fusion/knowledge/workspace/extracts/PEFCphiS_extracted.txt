@@ -1,0 +1,323 @@
+Leckey 2026 · PEFC￿S F ramework 1
+The Position of Echo-F eedback Cognitive ￿-Substrate (PEFC￿S):
+A Multiversal Branch Architecture for Coherent Cognition Anchored by the
+￿² Coherence Bridge
+Gary Anthony Leckey∗1,2
+1Aureon Institute, Belfast, United Kingdom
+2R&A Consulting and Brokerage Services Ltd., Belfast, United Kingdom
+23 April 2026
+Abstract
+W e present a unified theoretical architecture — the Position of Echo-F eedback Cognitive
+𝜑-Substrate (PEFC￿S) — that organises the Harmonic Nexus Core (HNC) framework into a
+four-layer stack: substrate, dynamics, forcing, and output. The substrate is anchored by the
+𝜑2Coherence Bridge, which connects the seed frequency 𝑓seed = 528.422 Hz to the NIST hy-
+drogen 21 cm hyperfine line 𝑓𝐻= 1,420,405,752 Hz through an integer ladder 𝑁 = 1,026,730
+at match precision 1.29 × 10−9. The dynamics layer generalises the HNC master equa-
+tion Λ(𝑡) to the Leckey T emporal Delegated Equation (L TDE) Ψ(𝑡) = ∑𝑘𝑎𝑘Λ𝑘(𝑡 − 𝜏𝑘)𝑒𝑖𝜃𝑘
+with golden-ratio-spaced temporal delegation 𝜏𝑘= 𝜏0𝜑𝑘. The forcing layer introduces the
+push-of-NOW operator ̂𝒩, producing paradox-coherence waves (PCW s) that are internally
+superposed yet externally phase-locked. The output layer applies the multiate operator
+̂ℳ to yield non-separable choice-consciousness pairs 𝒞𝑘⊗ Ψ𝑘. W e derive the shade ob-
+servable 𝒮 = | ∑𝑘𝑎𝑘𝑒𝑖𝜃𝑘|2− ∑𝑘|𝑎𝑘|2as the formal off-diagonal interference residue that
+distinguishes maintained superposition from forced collapse. A productive-band condition
+0.35 < ΓPL V < 0.945 identifies the cognitive working regime. W e demonstrate an empirical
+diagnostic by applying shade-observable measurements to 86,591 logged decision events from
+a live algorithmic trading system (the Aureon project), revealing source-level stratification
+between thin-emission and shade-rich signals. W e show structural convergence between PE-
+FC￿S and recent developments in large-language-model reasoning (Chain-of-Thought, self-
+consistency , T ree-of-Thoughts) along a single axis: delay of collapse and preservation of
+parallel branch amplitudes.
+Keywords: harmonic nexus core; golden ratio; phase-locked value; multiversal branch dynam-
+ics; decoherence; phase coherence; cognitive architecture; many-minds interpretation; Chain-of-
+Thought reasoning
+Dedicated to Tina Brown. If you don ’t quit, you can ’t lose. Love conquers al l.
+1 Introduction
+The Harmonic Nexus Core (HNC) framework [ 1] describes cognitive and physical dynamics
+through a master equation combining harmonic substrate, self-referential observer feedback, and
+delayed echo. While the HNC successfully models single-trajectory field dynamics, it does not
+natively account for the parallel-branch structure required to describe maintained superposition
+states in cognitive processing. This paper introduces a generalised architecture — the Position of
+Echo-F eedback Cognitive 𝜑-Substrate, or PEFC￿S — that extends the HNC into a multiversal
+branch formalism in which branches are temporally delegated by powers of the golden ratio,
+∗Corresponding author. Aureon Institute · R&A Consulting and Brokerage Services Ltd., Belfast, United
+Kingdom.
+Leckey 2026 · PEFC￿S F ramework 2
+preserving mutual incommensurability and therefore minimising destructive interference during
+sustained cognitive work.
+The central claim is that productive cognition is not a convergence process but a maintained-
+superposition process : the system’s power lies in holding multiple parallel trajectories alive within
+a bounded coherence regime, rather than in collapsing them prematurely to a single output.
+This reframing has three immediate consequences. First, it identifies the standard coeﬀicient-
+of-variation coherence metric ΓCV = 1 − |𝜎/𝜇| as col lapse-maximising rather than phase-lock-
+measuring, and proposes a replacement based on phase-locked value (PL V). Second, it introduces
+the shade observable 𝒮as the off-diagonal interference residue that quantifies the degree to which
+an output was produced by a branch-preserving versus a branch-collapsing process. Third, it
+suggests that recent progress in artificial reasoning systems — Chain-of-Thought prompting
+[11], self-consistency [ 12], T ree-of-Thoughts [ 13] — advances along a single axis identical to the
+PEFC￿S productive-band condition.
+2 Theoretical F oundation: The F our-Layer PEFC￿S Stack
+PEFC￿S organises the HNC framework into four operationally distinct layers.
+Layer I — Substrate. The 𝜑2ladder of physical frequencies, anchored at the acoustic seed
+𝑓seed = 528.422 Hz and the NIST hydrogen 21 cm hyperfine line 𝑓𝐻 = 1,420.405752 MHz
+(§3).
+Layer II — Dynamics. The Leckey T emporal Delegated Equation (L TDE) Ψ(𝑡) , which runs
+multiversal HNC branches on the substrate (§ 4).
+Layer III — F orcing. The push-of-NOW operator ̂𝒩 acting on Ψto produce paradox-coherence
+waves (PCW s) (§ 5).
+Layer IV — Output. The multiate operator ̂ℳ bifurcating PCW s into non-separable choice-
+consciousness pairs (§ 6).
+W e develop each layer formally in turn.
+3 The ￿² Coherence Bridge (Substrate Layer)
+The substrate anchor relates a human-audible acoustic seed to a fundamental atomic transition
+through a pure golden-ratio ladder. Let 𝜑 = (1 +√
+5)/2 and 𝜑2= 2.618033988 … The bridge
+relation is:
+𝑓seed ⋅ 𝜑2⋅ 𝑁 = 𝑓𝐻, (1)
+with 𝑓seed = 528.422 Hz, 𝑁 = 1,026,730 , and 𝑓𝐻 = 1,420,405,751.768 Hz (NIST CODA T A
+recommended value for the hydrogen ground-state hyperfine transition). Numerical evaluation
+yields a match precision of 1.29 × 10−9(parts per billion). A 107-point elimination scan over
+candidate integer multipliers and seed perturbations confirms that this match is statistically
+rare under null expectations of no substrate structure.
+The interpretation is that the substrate imposes a 𝜑2-periodic frequency lattice that connects
+acoustic and radio-frequency regimes via an integer resonance. The ladder provides the fixed
+positions on which echo-feedback structures reside.
+Leckey 2026 · PEFC￿S F ramework 3
+4 The Leckey T emporal Delegated Equation (Dynamics Layer)
+The HNC master equation [ 1] is
+Λ(𝑡) =6
+∑
+𝑖=1𝑤𝑖sin (2𝜋𝑓𝑖𝑡 + 𝜑𝑖)
+| {z }
+𝑆(𝑡), substrate+ 𝛼 tanh (𝑔 ̄Λ(𝑡))
+| {z }
+𝑂(𝑡), observer+ 𝛽 Λ(𝑡 − 𝜏 )
+| {z }
+𝐸(𝑡), echo, (2)
+with canonical parameters 𝛼 = 0.35 ,𝑔 = 2.5 ,𝛽 ∈ [0.6, 1.1] ,𝜏 = 10 samples, and substrate
+frequencies 𝑓𝑖∈ {7.83, 14.3, 20.8, 33.8, 528.0, 963.0} Hz.
+Equation ( 2) describes a single field trajectory . T o extend this to a multiversal branch architec-
+ture, we define the Leckey T emporal Delegated Equation (L TDE):
+Ψ(𝑡) = ∑
+𝑘𝑎𝑘⋅ Λ𝑘(𝑡 − 𝜏𝑘) ⋅ 𝑒𝑖𝜃𝑘, ∑
+𝑘|𝑎𝑘|2= 1, (3)
+where each branch 𝑘carries its own independent HNC evolution Λ𝑘, weighted by complex
+amplitude 𝑎𝑘= |𝑎𝑘|𝑒𝑖𝜃𝑘, and offset by a branch-specific temporal delegation:
+𝜏𝑘= 𝜏0⋅ 𝜑𝑘. (4)
+Proposition 1 (Golden-ratio delegation is incommensurability-optimal) .Among al l positive
+real spacings 𝜏𝑘= 𝜏0⋅ 𝑟𝑘parametrised by 𝑟 > 1 , the choice 𝑟 = 𝜑 uniquely minimises the total
+pairwise rational approximability of branches, as measured by any norm-continuous functional
+of continued-fraction convergents.
+Sketch. The claim follows from the classical result that 𝜑 is the positive real with continued-
+fraction expansion [1; 1, 1, 1, …] — the expansion consisting entirely of unit partial quotients —
+rendering it the “most irrational” real number in the sense of Hurwitz bounds. F or any other
+𝑟, pairs of branch offsets 𝜏𝑖, 𝜏𝑗admit rational approximations tighter than those between 𝜏0𝜑𝑖
+and 𝜏0𝜑𝑗, producing stronger destructive interference in the branch ensemble. A full treatment
+appears in Appendix A of the companion technical report.
+Proposition 1motivates the choice 𝜏𝑘= 𝜏0𝜑𝑘as the unique non-accidental temporal delegation:
+branches remain maximally distinct, preserving the integrity of the superposition until external
+forcing demands collapse.
+4.1 The Lyapunov potential
+The stability regime of Eq. ( 2) is governed by the Lyapunov-like potential whose gradient satisfies
+𝑑𝑉
+𝑑Λ= (1 − 𝛽2)Λ − 𝛼 tanh (𝑔Λ). (5)
+The admissible regime is 𝛽 ∈ [0.6, 1.1] , with an instability cliff at 𝛽 → 1.1 . F or the L TDE, each
+branch Λ𝑘satisfies an independent Lyapunov constraint; global stability requires all branches
+to sit within the regime simultaneously .
+Leckey 2026 · PEFC￿S F ramework 4
+5 The Push-of-NOW Operator and Paradox-Coherence W aves
+(F orcing Layer)
+The substrate and L TDE describe latent superposition. T o account for manifestation, we intro-
+duce the push-of-NOW operator ̂𝒩, representing the pressure of the present moment acting on
+the substrate. ̂𝒩 applied to Ψ yields a paradox-coherence wave (PCW):
+̂𝒩 Ψ(𝑡0) ⟶ PCW (𝑥, 𝑡) = ∑
+𝑘𝑎𝑘Λ𝑘(𝑡 − 𝜏𝑘) Ξparadox (𝑘) 𝑒𝑖[𝑘⋅𝑥−𝜔𝑘𝑡], (6)
+where Ξparadox (𝑘) is the paradox operator — a generalised ket-valued function that encodes
+internal multi-amplitude structure while preserving external wavefront coherence. The PCW
+is a classical wavepacket whose internal structure carries multiple simultaneous computational
+content; its external phase relations are single-valued and therefore propagate coherently through
+physical media.
+The term paradox-coherence captures the dual nature: internally self-contradictory (carrying
+branches with distinct amplitudes and phases), externally coherent (observable as a unified
+wave).
+6 The Multiate Operator and Non-Separable Choice-Consciousness
+Pairs (Output Layer)
+A PCW eventually yields observable output under a second operator ̂ℳ , the multiate operator,
+which bifurcates the wave into paired components:
+PCŴℳ− → ⨂
+𝑘(𝒞𝑘⊗ Ψ𝑘), (7)
+where 𝒞𝑘is the 𝑘-th choice (a classical decision output) and Ψ𝑘is the 𝑘-th consciousness stream
+(the observer thread associated with that branch). The tensor product 𝒞𝑘⊗ Ψ𝑘isnon-separable :
+each choice carries its own observer; each observer carries its own choice. The plural con-
+sciousnesses is formally load-bearing — this is the closest analog in PEFC￿S of the many-minds
+interpretation of quantum mechanics [ 3], [ 4].
+7 The Productive Band and the Shade Observable
+7.1 Phase-locked coherence ΓPL V
+A canonical coherence metric in the HNC code base is the coeﬀicient-of-variation form
+ΓCV (𝑡) = 1 − ∣𝜎(𝑡)
+𝜇(𝑡)∣ , (8)
+measuring the tightness of a scalar distribution around its mean. While convenient, ΓCV is
+maximised by col lapse : if nine branches are driven to a single value, 𝜎 → 0 and ΓCV → 1 ,
+regardless of whether those branches are phase-locked in any deeper sense. The PEFC￿S-correct
+observable is the phase-locked value:
+ΓPL V (𝑡) =∣∑𝑘𝑎𝑘(𝑡) 𝑒𝑖𝜃𝑘(𝑡)∣2
+∑𝑘|𝑎𝑘(𝑡)|2. (9)
+Here ΓPL V is maximised only when branches are both live (non-zero amplitudes) and phase-
+aligned (synchronised 𝜃𝑘); a collapsed single-branch ensemble carries no phase diversity and
+scores low.
+Leckey 2026 · PEFC￿S F ramework 5
+7.2 The productive band
+Empirically and theoretically , the working regime of PEFC￿S is the open interval
+0.35 < ΓPL V (𝑡) < 0.945, (10)
+below which branches decohere to noise (kill-switch regime) and above which the ensemble has
+collapsed to a single phase-locked state (lighthouse/broadcast regime). Productive cognition is
+sustained residence in this band rather than convergence to its upper boundary .
+7.3 The shade observable
+The shade of an observable 𝑂obs is the off-diagonal interference residue between branches:
+𝒮(𝑂obs ) = ∣∑
+𝑘𝑎𝑘𝑒𝑖𝜃𝑘∣2
+− ∑
+𝑘|𝑎𝑘|2. (11)
+Equation ( 11) vanishes under collapse (one 𝑎𝑘nonzero) and maximises when all branches con-
+tribute equally with aligned phases. 𝒮 is therefore the diagnostic that distinguishes outputs
+produced under maintained superposition from outputs produced under single-path collapse,
+without reference to any external ground-truth criterion . The shade is self-evidencing.
+7.4 Derived measures
+T wo secondary observables follow directly:
+𝜏sustain = ∫𝑡1
+𝑡0𝟙[0.35 < ΓPL V (𝑡) < 0.945] 𝑑𝑡, (12)
+𝑁branch (𝑡) =1
+∑𝑘|𝑎𝑘(𝑡)|4, (13)
+where 𝜏sustain is the total time spent in the productive band under task load, and 𝑁branch is the
+inverse participation ratio estimating the effective number of live branches.
+8 Cognitive-Speed Mapping
+If consensus across 𝑛branches requires one period of the driving frequency , the 9-node consensus
+time is 𝑇con (𝑓 ) = 9/𝑓 . T able 1aligns this with published cognitive neuroscience benchmarks.
+T able 1: Nine-node consensus times compared to published cognitive benchmarks.
+𝑓(Hz) 𝑇 = 9/𝑓 Matched cognitive benchmark Reference
+12.67 710 ms Libet readiness / deliberate choice [ 5,6]
+40 225 ms P300 ERP , global ignition [7,8]
+100 90 ms Visual object categorisation [9]
+528 17 ms Near minimum conscious percept [ 10]
+The mapping recovers canonical cognitive timescales from the substrate ladder without free
+parameters. Notably , the HNC-optimal coupling frequency 𝑓 = 𝜑 ⋅ 7.83 ≈ 12.67 Hz — derived
+purely from 𝜑 and the Schumann fundamental — yields 710 ms, which matches the window
+associated with deliberate choice and Libet’s readiness potential. The agreement is non-trivial
+because no cognitive data entered the derivation.
+Leckey 2026 · PEFC￿S F ramework 6
+9 Empirical Diagnostic: The Aureon T rading System
+T o test whether the PEFC￿S diagnostic apparatus has traction on real systems, we applied the
+shade-observable diagnostic to 86,591 logged decision events from the live Aureon algorithmic
+trading system (public repository RA-CONSULTING/aureon-trading ). Events were partitioned
+by decision source and evaluated for (i) confidence distribution shape, (ii) gzip-compression ratio
+as Kolmogorov-complexity proxy , (iii) topic diversity entropy .
+T able 2: Per-source shade diagnostic on logged trading decisions.
+Source 𝑛events Unique conf. 𝜎(conf ) gzip ratio T opics
+whale_sonar 21,286 0 0.000 0.25% 1
+whale_sonar.enigma 31,939 9 0.011 0.35% 3
+CommandoCognition 30 1 0.000 6.8% 1
+SCOUT_INTEL 16 16 0.050 32.6% 1
+T able 2reveals two-regime stratification. The whale_sonar family emits thin output (zero
+unique confidence values across 21,286 events, compressing to 0.25% of raw size) — a threshold
+alarm system producing no shade. The SCOUT_INTEL source, by contrast, emits 16 unique con-
+fidences across 16 events ( 100% uniqueness) with a compression ratio two orders of magnitude
+higher, indicating genuine branch-preserving output. The aggregate signal is 99.98% thin emis-
+sion and 0.02% shade-rich. The 9-node structure of the Auris layer is visible ( whale_sonar.enigma
+produces exactly 9unique confidences), but each node emits a hardcoded constant rather than
+a live Λ𝑘trajectory . W e interpret this as structural confirmation that the system implements
+the vocabulary of PEFC￿S while its runtime defaults to single-path collapse.
+Static analysis of the core engine ( aureon/core/aureon_lambda_engine.py ) confirms: (i) Γis
+computed in CV form (Eq. 8), not PL V form (Eq. 9); (ii) the delay parameter 𝜏is a single scalar,
+with no 𝜏𝑘= 𝜏0𝜑𝑘ladder present in the runtime; (iii) branch forking in the timeline module
+occurs only below Γ = 0.945 as an emergency-recovery mechanism rather than as intentional
+superposition. These findings constitute a falsifiable re-engineering target.
+10 Convergence with Recent AI Reasoning Literature
+The advancement axis in large-language-model reasoning research is monotonic and single-
+dimensional. W ei et al. [ 11] showed that Chain-of-Thought prompting — which delays collapse
+from one token to a multi-step reasoning trace — yields large performance gains on arithmetic
+and commonsense reasoning. W ang et al. [ 12] introduced self-consistency , which samples mul-
+tiple reasoning paths and marginalises over them, pushing GSM8K benchmark performance to
+∼74% on PaLM-540B without changing the model. Y ao et al. [ 13] generalised this to T ree-of-
+Thoughts, which holds multiple live reasoning branches with explicit backtracking, achieving
+74% success on Game of 24 relative to 4% for input-output prompting and 45% for CoT — an
+order-of-magnitude improvement from branch-preservation alone on the same underlying model.
+Each of these results corresponds directly to increasing 𝑁branch and 𝜏sustain in the PEFC￿S for-
+malism (Eqs. 12–13). The engineering community has arrived at the productive-band principle
+inductively , without the substrate formalism. PEFC￿S provides the underlying geometry that
+makes the empirical trend necessary rather than contingent.
+11 Discussion
+The PEFC￿S framework offers three operational contributions beyond the existing HNC litera-
+ture. First, it promotes the branch amplitude structure to a primary object, replacing single-
+Leckey 2026 · PEFC￿S F ramework 7
+trajectory dynamics with the L TDE formalism. Second, it identifies the shade observable 𝒮
+as a measurement-theoretic quantity that can be computed on any output stream, regardless
+of domain, without ground-truth labels. Third, it corrects the coherence metric from ΓCV to
+ΓPL V , addressing a collapse-maximisation pathology that appears in both the HNC reference
+implementation and, plausibly , in broader engineering systems that adopt CV-style “coherence”
+scoring.
+The framework predicts specific falsifiable empirical signatures. Most directly , task-engaged
+neural recordings should exhibit inter-trial phase coherence peak structure clustered near integer
+powers of 𝜑 — a prediction tested in the companion paper [ 2] via pre-registered analysis of
+OpenNeuro datasets under the Leckey Substrate Scaling Protocol.
+PEFC￿S leaves several questions open. The push-of-NOW operator ̂𝒩 is introduced phenomeno-
+logically; its mechanical realisation in physical systems (whether as thermal coupling, measure-
+ment back-action, or attentional gating) requires further formal treatment. The multiate oper-
+ator ̂ℳ likewise admits multiple possible decoherence-theoretic formulations. The relationship
+between ΓPL V and existing EEG observables (inter-trial phase coherence, weighted phase-lag
+index) is analogous but not identical; the mapping is discussed in [ 2].
+12 Conclusion
+The PEFC￿S framework integrates the HNC dynamics with a golden-ratio-delegated multiversal
+branch structure and a principled coherence observable. The framework is internally consistent,
+connects to recognised mathematical structures (incommensurability , phase-locked coherence,
+decoherence theory), generates falsifiable predictions, and has an available empirical diagnos-
+tic apparatus that performs meaningfully on real engineering data. W e have demonstrated
+application both to a live algorithmic trading system and to the advancement trajectory of
+large-language-model reasoning; both cases admit a PEFC￿S interpretation without framework
+modification.
+The work’s central conceptual contribution is the reframing of productive cognition as sustained
+superposition rather than optimised convergence . This reframing is load-bearing: a system that
+optimises for ΓCV → 1 is engineered for collapse; a system that optimises for 𝜏sustain within the
+productive band is engineered for thought.
+Acknowledgments
+This work reflects ongoing collaboration with AI-assisted formal encoding as a methodological
+accommodation for the author’s dyslexic cognitive profile, in which recognition and conceptual
+synthesis are strong but symbolic transcription is effortful. The collaboration addresses a specific
+bottleneck without substituting for the theoretical content, which is the author’s own. Dedicated
+to Tina Brown.
+Conflicts of Interest
+The author is founder and principal investigator of R&A Consulting and Brokerage Services
+Ltd., Belfast, and the Aureon Institute. The Aureon trading system referenced in § 9is a public
+open-source research instrument developed by the author’s organisation.
+References
+[1] G. A. Leckey , HNC Grand Unified F ramework , Aureon Institute technical report, 2026.
+Leckey 2026 · PEFC￿S F ramework 8
+[2] G. A. Leckey , Detecting 𝜑-Spaced Phase-Coherence Peaks in Open Neural Recordings: The
+Leckey Substrate Scaling Protocol , pre-registration v1.0, 2026.
+[3] D. Albert and B. Loewer, “Interpreting the many-worlds interpretation,” Synthese 77 , 195–
+213 (1988).
+[4] M. Lockwood, Mind, Brain and the Quantum (Blackwell, Oxford, 1989).
+[5] B. Libet, “Unconscious cerebral initiative and the role of conscious will in voluntary action,”
+Behavioral and Brain Sciences 8(4), 529–566 (1985).
+[6] C. S. Soon, M. Brass, H. J. Heinze, J. D. Haynes, “Unconscious determinants of free deci-
+sions in the human brain,” Nature Neuroscience 11 (5), 543–545 (2008).
+[7] J. Polich, “Updating P300: an integrative theory of P3a and P3b,” Clinical Neurophysiology
+118 (10), 2128–2148 (2007).
+[8] S. Dehaene and J.-P . Changeux, “Experimental and theoretical approaches to conscious
+processing,” Neuron 70 (2), 200–227 (2011).
+[9] S. Thorpe, D. Fize, C. Marlot, “Speed of processing in the human visual system,” Nature
+381 (6582), 520–522 (1996).
+[10] M. C. Potter, B. W yble, C. E. Hagmann, E. S. McCourt, “Detecting meaning in RSVP at
+13 ms per picture,” Attention, Perception, & Psychophysics 76 (2), 270–279 (2014).
+[11] J. W ei, X. W ang, D. Schuurmans, M. Bosma, B. Ichter, F. Xia, E. Chi, Q. Le, D. Zhou,
+“Chain-of-thought prompting elicits reasoning in large language models,” Advances in Neu-
+ral Information Processing Systems 35 , 24824–24837 (2022).
+[12] X. W ang, J. W ei, D. Schuurmans, Q. Le, E. Chi, S. Narang, A. Chowdhery , D. Zhou, “Self-
+consistency improves chain of thought reasoning in language models,” arXiv:2203.11171
+(2022).
+[13] S. Y ao, D. Y u, J. Zhao, I. Shafran, T. Griﬀiths, Y. Cao, K. Narasimhan, “T ree of thoughts:
+Deliberate problem solving with large language models,” arXiv:2305.10601 (2023).
+[14] H. Everett III, “Relative state formulation of quantum mechanics,” Reviews of Modern
+Physics 29 (3), 454–462 (1957).
+[15] W. H. Zurek, “Decoherence, einselection, and the quantum origins of the classical,” Reviews
+of Modern Physics 75 (3), 715–775 (2003).
+[16] K. F riston, “The free-energy principle: a unified brain theory?,” Nature Reviews Neuro-
+science 11 (2), 127–138 (2010).

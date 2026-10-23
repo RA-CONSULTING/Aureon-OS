@@ -1,0 +1,19 @@
+{
+  "acceptance": [
+    "HTML artifact exists",
+    "Canvas game renders without external assets",
+    "Keyboard controls are visible to the end user",
+    "No cloud provider or unsafe authority is used"
+  ],
+  "asset_path": "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\frontend\\public\\aureon_generated_apps\\make_me_a_game_where_a_man_walks_up_to_a_glowing_a000e3d46f78.html",
+  "controls": [
+    "Arrow keys",
+    "WASD",
+    "Space",
+    "R"
+  ],
+  "kind": "html_game",
+  "prompt": "Make me a game where a man walks up to a glowing door and tell the end user how to play from the keyboard.\n\nClient-approved scope answers:\n- goal: Make a playable local game where a man walks up to a glowing door.\n- deliverables: Playable HTML game, keyboard instructions, quality proof, and public preview URL.\n- target_system: frontend/public/aureon_generated_apps and Aureon coding cockpit artifact preview.\n- constraints: Local-only, no live trading, payment, filing, credential, or destructive OS action.\n- acceptance: A browser-openable HTML artifact exists, keyboard controls are visible, and no blocking snags remain.",
+  "public_url": "/aureon_generated_apps/make_me_a_game_where_a_man_walks_up_to_a_glowing_a000e3d46f78.html",
+  "schema_version": "aureon-local-interactive-artifact-v1"
+}

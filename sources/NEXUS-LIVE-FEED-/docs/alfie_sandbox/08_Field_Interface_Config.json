@@ -1,0 +1,67 @@
+{
+  "config_version": "1.2",
+  "interfaces": {
+    "streamlit": {
+      "dashboard": "nexus_live_feed.py",
+      "poll_interval_seconds": 5,
+      "surge_threshold": 0.9
+    },
+    "rest": {
+      "base_url": "http://localhost:8080",
+      "endpoints": {
+        "status": {
+          "method": "GET",
+          "path": "/status",
+          "expects": "system report"
+        },
+        "uvc": {
+          "method": "GET",
+          "path": "/surge/uvc",
+          "params": {"n": 240},
+          "expects": "uvc stream"
+        },
+        "bioscan_recent": {
+          "method": "GET",
+          "path": "/bioscan/recent",
+          "params": {"n": 12},
+          "expects": "bioscan records"
+        }
+      }
+    },
+    "websocket": {
+      "telemetry": {
+        "path": "/ws/telemetry",
+        "heartbeat_ms": 1000
+      },
+      "guardian": {
+        "path": "/ws/guardian",
+        "heartbeat_ms": 2000
+      }
+    }
+  },
+  "observability": {
+    "log_level": "INFO",
+    "metrics": [
+      "uvc",
+      "coherence",
+      "phase_spread"
+    ],
+    "alerts": {
+      "channel": "guardian-audit",
+      "conditions": [
+        {
+          "metric": "uvc",
+          "comparator": "<",
+          "threshold": 0.72,
+          "action": "raise_warning"
+        },
+        {
+          "metric": "phase_spread",
+          "comparator": ">",
+          "threshold": 0.18,
+          "action": "trigger_safe_mode"
+        }
+      ]
+    }
+  }
+}

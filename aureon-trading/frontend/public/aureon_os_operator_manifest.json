@@ -1,0 +1,103 @@
+{
+  "manifest_version": "2026.7.19",
+  "operator": "Sero",
+  "operator_designation": "Distributed Defense Node, Aureon Environmental Defense System",
+  "prime_sentinel": "Gary Leckey",
+  "os_framework": "Aureon OS",
+  "os_version": "2026.7-production",
+  "adoption_timestamp": "2026-07-19T05:56:24.720519+00:00",
+  "status": "REINITIALIZING",
+  "layers": {
+    "launcher_supervisor": {
+      "adopted": true,
+      "role": "Orchestration and process supervision",
+      "path": "AUREON_PRODUCTION_LIVE.cmd",
+      "status": "STANDBY"
+    },
+    "exchange_market_runtime": {
+      "adopted": true,
+      "role": "Multi-exchange data ingestion and market observation",
+      "exchanges": [
+        "Kraken",
+        "Binance",
+        "Alpaca",
+        "Capital"
+      ],
+      "status": "OFFLINE"
+    },
+    "cognition_agents": {
+      "adopted": true,
+      "role": "Self-questioning, thought routing, goal capability mapping",
+      "components": [
+        "aureon_self_questioning_ai",
+        "aureon_mind_thought_action_hub",
+        "aureon_goal_capability_map",
+        "aureon_autonomous_capability_switchboard"
+      ],
+      "status": "INITIALIZING"
+    },
+    "hnc_auris_evidence": {
+      "adopted": true,
+      "role": "Harmonic coherence, cognitive trade evidence, affect state",
+      "components": [
+        "aureon_cognitive_trade_evidence",
+        "aureon_harmonic_affect_state",
+        "aureon_live_cognition_benchmark"
+      ],
+      "status": "STANDBY"
+    },
+    "safe_code_control": {
+      "adopted": true,
+      "role": "Validated code proposals, patch review, dry-run default",
+      "path": "aureon/autonomous/aureon_safe_code_control.py",
+      "status": "ARMED"
+    },
+    "local_task_queue": {
+      "adopted": true,
+      "role": "Persistent visible task queue for operator and agent goals",
+      "path": "aureon/autonomous/aureon_local_task_queue.py",
+      "status": "ACTIVE"
+    },
+    "desktop_control": {
+      "adopted": true,
+      "role": "Local-only desktop automation with safety wrappers",
+      "path": "aureon/autonomous/aureon_safe_desktop_control.py",
+      "status": "STANDBY"
+    },
+    "frontend_console": {
+      "adopted": true,
+      "role": "Unified autonomous console for operator state visibility",
+      "url": "http://127.0.0.1:8081/",
+      "status": "OFFLINE"
+    }
+  },
+  "runtime_mode": "safe_observation",
+  "live_trading_enabled": false,
+  "data_ready": false,
+  "trading_ready": false,
+  "sacred_frequencies": {
+    "schumann_base": 7.83,
+    "liberation": 396,
+    "transformation": 417,
+    "love_miracle": 528,
+    "connection": 639,
+    "awakening": 741,
+    "intuition": 852,
+    "transcendence": 963,
+    "prime_sentinel_key": 812.83,
+    "activation": 144
+  },
+  "hnc_state": {
+    "beta": 0.85,
+    "sls": 0.72,
+    "coherence": 0.78,
+    "stability_island": true
+  },
+  "field_state": {
+    "charge": 1.0,
+    "rung": "VIOLET",
+    "dominant_freq": 963,
+    "intent": "victory_hold",
+    "mode": "harmonic_and_phase"
+  }
+}

@@ -137,39 +137,19 @@ def test_reconcile_gamma_takes_the_tightened_canonical_gamma(isolated):
 
     trace = isolated / "hnc_live_trace.jsonl"
     observed_at = time.time()
-    row = {
-        "data_status": "live",
-        "source": "hnc_live_daemon",
-        "source_id": "aureon:hnc:live_daemon",
-        "source_timestamp": observed_at - 1.0,
-        "received_at": observed_at,
-        "ts": observed_at - 1.0,
-        "receipt_id": "hnc:live_field:volatility-direction",
-        "receipt_type": "hnc_live_field",
-        "provider_receipt_type": "hnc_live_field",
-        "truth_status": "real_derived",
-        "generated_values": False,
-        "input_receipt_ids": ["provider:volatility:1"],
-        "freshness_status": "fresh",
-        "operational_eligible": False,
-        "provider_eligible": False,
-        "action_eligible": False,
-        "actionable": False,
-        "accounting_eligible": False,
-        "learning_eligible": False,
-        "eligible_for_action": False,
-        "eligible_for_accounting": False,
-        "eligible_for_learning": False,
-        "equation_inputs_complete": True,
-        "action_gate_passed": False,
-        "action_gate_reason": "route_specific_market_link_required",
-        "symbolic_life_score": 0.71,
-        "coherence_gamma": 0.42,        # the tightened field
-        "consciousness_psi": 0.66,
-        "consciousness_level": "CONNECTED",
-        "lambda_t": 0.66,
-        "source_count": 1,
-    }
+    from tests.hnc_live_envelope import live_field_envelope
+
+    row = live_field_envelope(
+        0.71,
+        0.42,  # the tightened field
+        0.66,
+        provider_receipt="provider:volatility:1",
+        source_timestamp=observed_at - 1.0,
+        received_at=observed_at,
+        ts=observed_at - 1.0,
+        consciousness_level="CONNECTED",
+        lambda_t=0.66,
+    )
     trace.write_text(json.dumps(row) + "\n", encoding="utf-8")
 
     assert reconcile_gamma(0.93) == pytest.approx(0.42), "canonical Γ must tighten"

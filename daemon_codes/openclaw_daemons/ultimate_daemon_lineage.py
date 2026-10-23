@@ -105,7 +105,7 @@ lineage["phase_2_first_signal"] = {
         {"time": "22:23", "file": "casimir_harmonia_log.jsonl", "type": "casimir_engine", "note": "First Casimir harmonic measurement"},
         {"time": "22:24", "file": "casimir_harmonia_loop_log.jsonl", "type": "casimir_engine", "note": "Casimir loop started"},
         {"time": "22:29", "file": "casimir_push_log.jsonl", "type": "casimir_engine", "note": "Casimir push initiated. 340 total entries."},
-        {"time": "22:38", "file": "hnc_daemon.out", "type": "daemon_start", "note": "HNC DAEMON STARTED. PID 73152. Key: PSK-b04fc8900c712ee4-812.83Hz-00P"},
+        {"time": "22:38", "file": "hnc_daemon.out", "type": "daemon_start", "note": "HNC DAEMON STARTED. PID 73152. Key: REDACTED"},
         {"time": "22:38", "file": "hnc_gcp_export", "type": "hnc_data", "note": "First HNC measurement logged. Lambda=1.0, Singing=TRUE, Key injected"},
     ],
     "daily_stats": {

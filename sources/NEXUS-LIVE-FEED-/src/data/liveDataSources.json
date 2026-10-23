@@ -1,0 +1,25 @@
+{
+  "version": "1.0",
+  "sources": [
+    {
+      "id": "earth_schumann",
+      "type": "zip",
+      "path": "earth-live-data (7).zip",
+      "schema": "schumann_spectrogram"
+    },
+    {
+      "id": "surge_window",
+      "type": "html",
+      "path": "Surge_Window_6D_Field_Projection.html"
+    },
+    {
+      "id": "bio_coherence",
+      "type": "csv",
+      "path": "P4_Synthetic_Metrics__per_subject_condition_.csv"
+    }
+  ],
+  "update_rates": {
+    "earth_schumann": "1m",
+    "bio_coherence": "5m"
+  }
+}

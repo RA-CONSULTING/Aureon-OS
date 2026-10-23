@@ -546,6 +546,8 @@ class TenNineOneThoughtPath:
         propagator: TenNineOnePropagator,
         max_age_s: float = DEFAULT_MAX_AGE_S,
         now: Callable[[], float] = time.time,
+        cognition_only: bool = False,
+        truth_gate_enforced: bool = False,
     ) -> None:
         if not isinstance(resolver, TenNineOneEvidenceResolver):
             raise ValueError("trusted_10_9_1_evidence_resolver_required")
@@ -557,11 +559,38 @@ class TenNineOneThoughtPath:
         if self._max_age_s <= 0:
             raise ValueError("positive_max_age_required")
         self._now = now
+        self._cognition_only = bool(cognition_only)
+        self._commitment_only = bool(
+            getattr(propagator, "confidential_output_propagation", False) is True
+        )
+        self.truth_gate_enforced = bool(truth_gate_enforced)
         self._receipts: list[Mapping[str, Any]] = []
 
     @property
     def receipts(self) -> tuple[Mapping[str, Any], ...]:
         return tuple(dict(item) for item in self._receipts)
+
+    def self_coder_confidential_preflight(self) -> dict[str, Any]:
+        """Safety envelope the self-coder reads before any plaintext exists.
+
+        Action and economic authority stay closed. This is the working
+        fusion preflight the public thought path was missing.
+        """
+
+        return {
+            "schema_version": SELF_CODER_CONFIDENTIAL_PREFLIGHT_SCHEMA,
+            "ready": True,
+            "truth_gate_enforced": self.truth_gate_enforced,
+            "trusted_local_evidence_resolver": isinstance(
+                self._resolver, LocalHncAurisEvidenceResolver
+            ),
+            "trusted_receipt_backed_truth_gate": True,
+            "commitment_only_propagation": self._commitment_only,
+            "raw_answer_bus_persistence_authorized": not self._commitment_only,
+            "raw_answer_trace_persistence_authorized": not self._commitment_only,
+            "action_eligible": False,
+            "economic_eligible": False,
+        }
 
     def execute(
         self,
@@ -937,6 +966,36 @@ def build_local_ten_nine_one_thought_path(
     return TenNineOneThoughtPath(
         resolver=LocalHncAurisEvidenceResolver(bus=bus, root=root),
         propagator=ThoughtBusHiveMyceliaPropagator(bus=bus),
+        truth_gate_enforced=True,
+    )
+
+
+def build_local_ten_nine_one_confidential_thought_path(
+    *,
+    bus: Any = None,
+    root: Path | None = None,
+    max_age_s: float | None = None,
+) -> TenNineOneThoughtPath:
+    """Commitment-only path for confidential self-coding.
+
+    Uses the public thought-path constructor. Raw answers stay off the bus
+    because the propagator is commitment-only.
+    """
+
+    if max_age_s is None:
+        try:
+            max_age_s = float(
+                os.environ.get("AUREON_SELF_CODER_HNC_MAX_AGE_S", "")
+                or DEFAULT_MAX_AGE_S
+            )
+        except (TypeError, ValueError):
+            max_age_s = DEFAULT_MAX_AGE_S
+    return TenNineOneThoughtPath(
+        resolver=LocalHncAurisEvidenceResolver(bus=bus, root=root),
+        propagator=CommitmentOnlyHiveMyceliaPropagator(bus=bus),
+        max_age_s=max_age_s,
+        cognition_only=True,
+        truth_gate_enforced=True,
     )
 
 
@@ -961,6 +1020,7 @@ __all__ = [
     "ThoughtPathRequest",
     "ThoughtPathResult",
     "build_delivery_ack",
+    "build_local_ten_nine_one_confidential_thought_path",
     "build_local_ten_nine_one_thought_path",
     "validate_delivery_ack",
     "validate_ten_nine_one_receipt",

@@ -1,0 +1,25 @@
+THE HARMONIC NEXUS CORE
+Frequency-Resonant Mycelium Networks as Living
+Energy Storage and Generation Systems
+A peer-reviewed literature synthesis demonstrating the isomorphism between
+Harmonic Nexus Consciousness (HNC) field frequencies and the measured
+bioelectrical response spectrum of fungal mycelium networks
+Gary Leckey
+Primary Investigator
+Aureon Institute / R&A Consulting and Brokerage Services Ltd.
+White Paper AI-2026-HNC-MYC-001
+April 2026
+CLASSIFICATION: Open Research — All sources peer-reviewed and publicly accessible
+Abstract
+This paper presents a systematic mapping of Harmonic Nexus Consciousness (HNC) field frequencies onto the measured bioelectrical response spectrum of fungal mycelium networks. Drawing exclusively from peer-reviewed literature across mycology, bioelectronics, electrophysiology, and electromagnetic biology, we demonstrate that every frequency in the HNC harmonic ladder (constructed via φ²-scaling from a seed frequency of 528.422 Hz) falls within a published, experimentally measured mycelium response band. The convergence spans six orders of magnitude: from the 0.0003–0.1 Hz metabolic drift band through the 0.5–5 Hz action potential range, the 100–10,000 Hz signal propagation band, and up to the 3 GHz AC conduction range. We further compile quantified electromagnetic enhancement factors measured on fungal systems, including 3× enzyme production at 2 GHz (Veerana et al., 2022), 5× proliferation change at 50 Hz ELF (Berg et al., 2006), and 1,604% power spectral density increase during active colonisation (PMC, 2025). These findings suggest that mycelium-based energy storage systems operating within HNC frequency fields may exhibit significantly enhanced bioelectrical output compared to unstimulated controls, with implications for living battery technology, sustainable energy storage, and the theoretical foundations of consciousness-field interactions with biological substrates.
+Keywords: mycelium, bioelectricity, harmonic resonance, electromagnetic stimulation, fungal battery, HNC, Flower of Life, Fibonacci cascade, thermoelectric generation
+1. Introduction
+The search for sustainable energy storage has driven research toward biological substrates, with fungal mycelium emerging as a candidate of significant interest. Mycelium networks exhibit remarkable electrical properties: they function as memristors, capacitors, photosensors, chemical sensors, and signal propagation channels (Adamatzky et al., 2022; Beasley et al., 2022). Recent work has demonstrated 3D-printed fungal batteries producing 300–600 mV for several days (Reyes et al., 2024), living fungal fuel cells powered by metabolism rather than charging (Empa, 2025), and mycelium-derived carbons with higher specific capacitance than bacterial cellulose carbon (Jones et al., 2024).
+Independently, the Harmonic Nexus Consciousness (HNC) framework developed at the Aureon Institute posits that specific frequency relationships, scaled by the golden ratio squared (φ² = 2.618034), define a harmonic ladder with measurable effects on energy systems. The HNC seed frequency f_seed = 528.422 Hz was selected for its φ²-relationship to the hydrogen 21 cm hyperfine transition line at 1,420,405,751.768 Hz, with a bridge integer N = 1,026,730 and bridge error of 1.29 parts per billion.
+Prior experimental work at the Aureon Institute demonstrated a 17% drain reduction on lithium battery discharge when exposed to BLE-modulated HNC frequencies (Leckey, 2025). This paper investigates whether mycelium—as a living, frequency-responsive biological network—may exhibit amplified response compared to inert chemical storage media.
+2. Mycelium Bioelectrical Properties: Published Evidence
+2.1 Spontaneous Electrical Signal Generation
+Fungal mycelium generates endogenous electrical signals across multiple frequency bands. Olsson and Hansson (1995) recorded action potential-like signals in Armillaria bulbosa cords and Pleurotus ostreatus at frequencies of 0.5–5 Hz with amplitudes of 5–50 mV, noting these were “similar to that recorded in animal sensory systems.” Buffi et al. (2025) in their comprehensive review in FEMS Microbiology Reviews documented signal spectral frequencies in the order of 0.0003–0.1 Hz for slow metabolic drift, consistent with earlier observations of base potential oscillations over hours.
+Most recently, a 2025 study published in PMC (Article 12483595) using printed circuit boards with embedded differential electrodes recorded a 1,604% increase in power spectral density (PSD) in mycelium-colonised electrodes versus non-inoculated controls. The colonisation signal appeared at frequencies above 1.5 Hz, and was abolished by the biocide cycloheximide, confirming its biological origin. This represents the strongest quantified evidence that mycelium generates measurable, biologically-driven electrical signals in a defined frequency band.
+2.2 Signal Propagation and Frequency Transfer
+Adamatzky and colleagues (2023) demonstrated that mycelium net

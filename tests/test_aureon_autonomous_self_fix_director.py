@@ -375,7 +375,8 @@ def test_self_coding_modules_have_no_execution_or_environment_bypass_calls() -> 
     expected_subprocess_functions = {
         "aureon_autonomous_self_fix_director.py": set(),
         "aureon_internal_patch_loop.py": {"_git_apply_check"},
-        "aureon_internal_self_coder.py": {"_git"},
+        # git apply stays in _apply_approved_patch, and only after the self-repair denylist.
+        "aureon_internal_self_coder.py": {"_git", "_apply_approved_patch"},
     }
     for name, expected in expected_subprocess_functions.items():
         path = root / "aureon" / "autonomous" / name

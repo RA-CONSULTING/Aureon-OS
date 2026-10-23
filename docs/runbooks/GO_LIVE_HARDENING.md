@@ -19,3 +19,9 @@ Go-live requires all of the following, none inferred from a local test pass:
 
 Until those receipts exist, the correct outcome is `HOLD`, not a partially
 configured listener.
+
+Operator contract names are not injected by go-live: `AUREON_OPERATOR_ENV`,
+`AUREON_OPERATOR_API_KEY`, `AUREON_OPERATOR_RATE_RPS`,
+`AUREON_OPERATOR_RATE_BURST`, `AUREON_OPERATOR_MAX_BODY`,
+`AUREON_OPERATOR_TRUSTED_PROXY_CIDRS`, `AUREON_OPERATOR_HTTP_PROCESSES`,
+`AUREON_OPERATOR_REPLICAS`.

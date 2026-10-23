@@ -1,0 +1,1819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👑 AUREON QUEEN OMNISCIENT COMMAND CENTER</title>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <!-- Lightweight Charts for Candles -->
+    <script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 100%);
+            color: #00ff9f;
+            padding: 15px;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 2000px;
+            margin: 0 auto;
+        }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(90deg, #ff006e 0%, #8338ec 50%, #3a86ff 100%);
+            padding: 25px;
+            text-align: center;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 0 30px rgba(255, 0, 110, 0.5);
+            animation: pulse 3s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 30px rgba(255, 0, 110, 0.5); }
+            50% { box-shadow: 0 0 50px rgba(255, 0, 110, 0.9); }
+        }
+        
+        .header h1 {
+            font-size: 42px;
+            color: white;
+            text-shadow: 0 0 20px #fff;
+            margin-bottom: 8px;
+        }
+        
+        .header .subtitle {
+            font-size: 16px;
+            color: #ffd60a;
+            letter-spacing: 3px;
+        }
+        
+        /* Systems Status Bar */
+        .systems-status {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .system-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            border: 2px solid;
+            transition: all 0.3s;
+        }
+        
+        .system-badge.online {
+            background: rgba(0, 255, 159, 0.2);
+            border-color: #00ff9f;
+            color: #00ff9f;
+        }
+        
+        .system-badge.offline {
+            background: rgba(255, 0, 110, 0.2);
+            border-color: #ff006e;
+            color: #ff006e;
+        }
+        
+        .system-badge:hover {
+            transform: scale(1.1);
+        }
+        
+        /* Stats Grid - Extended */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .stat-card {
+            background: rgba(26, 10, 46, 0.8);
+            border: 2px solid #8338ec;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(131, 56, 236, 0.5);
+        }
+        
+        .stat-card .label {
+            font-size: 12px;
+            color: #8338ec;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .stat-card .value {
+            font-size: 36px;
+            color: #00ff9f;
+            font-weight: bold;
+            text-shadow: 0 0 10px #00ff9f;
+        }
+        
+        .stat-card .subvalue {
+            font-size: 14px;
+            color: #ffd60a;
+            margin-top: 5px;
+        }
+        
+        /* Main Grid - 3 columns */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        /* Panels */
+        .panel {
+            background: rgba(26, 10, 46, 0.9);
+            border: 2px solid #00ff9f;
+            border-radius: 10px;
+            padding: 15px;
+        }
+        
+        .panel.full-width {
+            grid-column: span 3;
+        }
+        
+        .panel.half-width {
+            grid-column: span 2;
+        }
+        
+        .panel-header {
+            font-size: 20px;
+            color: #ffd60a;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #8338ec;
+            text-align: center;
+        }
+        
+        /* Queen's Voice */
+        .queen-voice {
+            background: rgba(255, 0, 110, 0.1);
+            border: 3px solid #ff006e;
+            animation: glow 2s infinite;
+        }
+        
+        @keyframes glow {
+            0%, 100% { border-color: #ff006e; }
+            50% { border-color: #ffd60a; }
+        }
+        
+        .queen-message {
+            margin-bottom: 10px;
+            padding: 12px;
+            border-left: 4px solid #ff006e;
+            background: rgba(255, 0, 110, 0.1);
+            border-radius: 5px;
+            animation: slideIn 0.5s;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .queen-message .timestamp {
+            font-size: 10px;
+            color: #8338ec;
+            margin-bottom: 3px;
+        }
+        
+        .queen-message .text {
+            font-size: 14px;
+            color: #ffd60a;
+            line-height: 1.4;
+        }
+        
+        .queen-message.critical .text {
+            color: #ff006e;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .queen-message.warning .text {
+            color: #ffd60a;
+        }
+        
+        .queen-message.success .text {
+            color: #00ff9f;
+        }
+        
+        /* Thought Stream */
+        .thought-item {
+            padding: 10px;
+            margin-bottom: 8px;
+            background: rgba(58, 134, 255, 0.1);
+            border-left: 3px solid #3a86ff;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+        
+        .thought-source {
+            color: #3a86ff;
+            font-weight: bold;
+        }
+        
+        .thought-topic {
+            color: #8338ec;
+            font-size: 10px;
+        }
+        
+        .thought-message {
+            color: #00ff9f;
+            margin-top: 3px;
+        }
+        
+        /* Firm Tracker */
+        .firm-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            margin-bottom: 8px;
+            background: rgba(131, 56, 236, 0.1);
+            border-left: 4px solid #8338ec;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        .firm-item:hover {
+            background: rgba(131, 56, 236, 0.3);
+            transform: translateX(5px);
+        }
+        
+        .firm-name {
+            font-size: 16px;
+            color: #00ff9f;
+            font-weight: bold;
+        }
+        
+        .firm-info {
+            font-size: 12px;
+            color: #8338ec;
+        }
+        
+        .firm-count {
+            font-size: 20px;
+            color: #ffd60a;
+            font-weight: bold;
+        }
+        
+        /* Symbol Radar */
+        .symbol-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            margin-bottom: 6px;
+            background: rgba(0, 255, 159, 0.05);
+            border-radius: 5px;
+        }
+        
+        .symbol-name {
+            font-size: 14px;
+            color: #00ff9f;
+            font-weight: bold;
+        }
+        
+        .symbol-bar {
+            flex: 1;
+            margin: 0 12px;
+            height: 18px;
+            background: rgba(131, 56, 236, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .symbol-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #8338ec, #00ff9f);
+            transition: width 0.5s;
+        }
+        
+        .symbol-count {
+            font-size: 14px;
+            color: #ffd60a;
+            font-weight: bold;
+        }
+        
+        /* Event Feed */
+        .event-feed {
+            max-height: 350px;
+            overflow-y: auto;
+        }
+        
+        .event-item {
+            padding: 10px;
+            margin-bottom: 6px;
+            background: rgba(0, 255, 159, 0.05);
+            border-left: 3px solid #00ff9f;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+        
+        .event-item.whale {
+            border-left-color: #ff006e;
+            background: rgba(255, 0, 110, 0.1);
+        }
+        
+        .event-item.shark {
+            border-left-color: #ffd60a;
+            background: rgba(255, 214, 10, 0.1);
+        }
+        
+        .event-timestamp {
+            color: #8338ec;
+            font-size: 10px;
+            margin-bottom: 3px;
+        }
+        
+        .event-details {
+            color: #00ff9f;
+        }
+        
+        .event-firm {
+            color: #ff006e;
+            font-weight: bold;
+            margin-top: 3px;
+        }
+        
+        /* System Activity */
+        .activity-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(131, 56, 236, 0.3);
+        }
+        
+        .activity-system {
+            color: #00ff9f;
+            font-weight: bold;
+        }
+        
+        .activity-count {
+            color: #ffd60a;
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(26, 10, 46, 0.5);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #8338ec;
+            border-radius: 5px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ff006e;
+        }
+        
+        /* Threat indicator */
+        .threat-MODERATE { color: #ffd60a; }
+        .threat-HIGH { color: #ff006e; animation: blink 1s infinite; }
+        .threat-CRITICAL { color: #ff006e; animation: blink 0.5s infinite; font-size: 48px !important; }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* Deep Intelligence Panel */
+        .deep-panel {
+            background: linear-gradient(180deg, rgba(26, 10, 46, 0.95) 0%, rgba(10, 10, 26, 0.95) 100%);
+            border: 2px solid #7209b7;
+            box-shadow: 0 0 15px rgba(114, 9, 183, 0.3);
+        }
+
+        .thesis-box {
+            background: rgba(114, 9, 183, 0.1);
+            border: 1px dashed #7209b7;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+
+        .thesis-title {
+            color: #f72585;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .thesis-content {
+            color: #b5179e;
+            font-size: 16px;
+            line-height: 1.4;
+        }
+
+        .insight-item {
+            padding: 10px;
+            margin-bottom: 8px;
+            border-left: 3px solid;
+            background: rgba(255, 255, 255, 0.03);
+            font-size: 13px;
+        }
+
+        .insight-type-hypothesis { border-color: #4cc9f0; color: #4cc9f0; }
+        .insight-type-correlation { border-color: #f72585; color: #f72585; }
+        .insight-type-firm_attribution { border-color: #ffd60a; color: #ffd60a; }
+        .insight-type-market_thesis { border-color: #00ff9f; color: #00ff9f; }
+        .insight-type-manipulation { border-color: #ff006e; color: #ff006e; animation: blink 2s infinite; }
+        .insight-type-opportunity { border-color: #00ff9f; color: #00ff9f; }
+        .insight-type-warning { border-color: #ffd60a; color: #ffd60a; }
+        .insight-type-pattern { border-color: #8338ec; color: #8338ec; }
+        .insight-type-sentiment_shift { border-color: #f72585; color: #f72585; }
+
+        /* Filter Controls */
+        .filter-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filter-bar select, .filter-bar input {
+            background: rgba(26, 10, 46, 0.9);
+            border: 1px solid #8338ec;
+            color: #00ff9f;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-family: inherit;
+            font-size: 11px;
+        }
+        .filter-bar label {
+            font-size: 11px;
+            color: #8338ec;
+        }
+
+        /* === VISUALIZATION PANELS === */
+        
+        /* Global Map */
+        .world-map-container {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .world-map-svg {
+            width: 100%;
+            height: 100%;
+        }
+        .map-hotspot {
+            fill: #ff006e;
+            opacity: 0.8;
+            animation: map-pulse 2s infinite;
+        }
+        .map-hotspot.active {
+            fill: #00ff9f;
+            filter: drop-shadow(0 0 8px #00ff9f);
+        }
+        @keyframes map-pulse {
+            0%, 100% { opacity: 0.6; r: 4; }
+            50% { opacity: 1; r: 8; }
+        }
+        .map-label {
+            fill: #fff;
+            font-size: 8px;
+            font-family: monospace;
+        }
+        
+        /* Candlestick Chart */
+        .chart-container {
+            width: 100%;
+            height: 220px;
+            background: rgba(0,0,0,0.4);
+            border-radius: 8px;
+            position: relative;
+        }
+        .chart-symbol-tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 5px;
+        }
+        .chart-tab {
+            padding: 4px 10px;
+            background: rgba(131, 56, 236, 0.2);
+            border: 1px solid #8338ec;
+            border-radius: 4px;
+            color: #8338ec;
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .chart-tab.active {
+            background: #8338ec;
+            color: #fff;
+        }
+        .chart-tab:hover {
+            background: rgba(131, 56, 236, 0.4);
+        }
+        
+        /* Spectrogram */
+        .spectrogram-container {
+            width: 100%;
+            height: 150px;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+        .spectrogram-canvas {
+            width: 100%;
+            height: 100%;
+        }
+        .spectrogram-legend {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            font-size: 9px;
+            color: #8338ec;
+            background: rgba(0,0,0,0.7);
+            padding: 3px 6px;
+            border-radius: 3px;
+        }
+        
+        /* Harmonic Monitor */
+        .harmonic-monitor {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            padding: 10px;
+        }
+        .harmonic-gauge {
+            text-align: center;
+            padding: 10px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            border: 1px solid #7209b7;
+        }
+        .gauge-ring {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 8px;
+            position: relative;
+        }
+        .gauge-ring svg {
+            transform: rotate(-90deg);
+        }
+        .gauge-bg {
+            fill: none;
+            stroke: rgba(114, 9, 183, 0.2);
+            stroke-width: 6;
+        }
+        .gauge-fill {
+            fill: none;
+            stroke-width: 6;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.5s;
+        }
+        .gauge-value {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 12px;
+            font-weight: bold;
+            color: #fff;
+        }
+        .gauge-label {
+            font-size: 10px;
+            color: #b5179e;
+            text-transform: uppercase;
+        }
+        .gauge-freq {
+            font-size: 9px;
+            color: #7209b7;
+            margin-top: 3px;
+        }
+        
+        /* 🦈🔪 ORCA KILLER WHALE PANEL */
+        .orca-panel {
+            border-color: #00d4ff !important;
+            background: linear-gradient(135deg, rgba(0, 26, 46, 0.95), rgba(0, 50, 73, 0.9)) !important;
+        }
+        .orca-panel .viz-title {
+            color: #00d4ff;
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+        }
+        .orca-status-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .orca-stat {
+            text-align: center;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #00d4ff33;
+        }
+        .orca-stat-label {
+            font-size: 10px;
+            color: #00d4ff;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        .orca-stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+        }
+        .orca-stat-value.hunting {
+            color: #ff6b35;
+            animation: pulse-hunt 1s infinite;
+        }
+        @keyframes pulse-hunt {
+            0%, 100% { text-shadow: 0 0 5px #ff6b35; }
+            50% { text-shadow: 0 0 20px #ff6b35, 0 0 30px #ff6b35; }
+        }
+        .orca-opportunities {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 10px;
+        }
+        .orca-opp-header {
+            font-size: 11px;
+            color: #00d4ff;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        .orca-hunt-list {
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        .orca-hunt-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 10px;
+            margin-bottom: 5px;
+            background: rgba(0, 212, 255, 0.1);
+            border-radius: 5px;
+            border-left: 3px solid;
+        }
+        .orca-hunt-item.buy { border-left-color: #00ff88; }
+        .orca-hunt-item.sell { border-left-color: #ff4444; }
+        .orca-hunt-symbol {
+            font-weight: bold;
+            font-size: 13px;
+        }
+        .orca-hunt-conf {
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 3px;
+            background: rgba(0, 0, 0, 0.5);
+        }
+        .orca-hunt-conf.high { color: #00ff88; }
+        .orca-hunt-conf.med { color: #ffd60a; }
+        .orca-hunt-conf.low { color: #ff6b6b; }
+        .orca-hunt-reason {
+            font-size: 10px;
+            color: #888;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .orca-no-hunts {
+            text-align: center;
+            color: #666;
+            padding: 20px;
+            font-style: italic;
+        }
+        
+        .orca-hunt-item.exit-signal {
+            border-left-color: #ff6b35 !important;
+            background: rgba(255, 107, 53, 0.1) !important;
+        }
+        .orca-hunt-pnl {
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 3px;
+            background: rgba(0, 0, 0, 0.5);
+        }
+        .orca-hunt-pnl.profit {
+            color: #00ff88;
+        }
+        .orca-hunt-pnl.loss {
+            color: #ff4444;
+        }
+        
+        /* Visualization Grid */
+        .viz-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .viz-panel {
+            background: rgba(26, 10, 46, 0.9);
+            border: 2px solid #7209b7;
+            border-radius: 10px;
+            padding: 12px;
+        }
+        .viz-title {
+            font-size: 14px;
+            color: #f72585;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            border-bottom: 1px solid rgba(247, 37, 133, 0.3);
+            padding-bottom: 5px;
+        }
+
+        .audio-btn {
+            background: #ff006e;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 12px;
+            margin-top: 10px;
+            transition: all 0.3s;
+        }
+
+        .audio-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(255, 0, 110, 0.8);
+        }
+        
+        .audio-btn.active {
+            background: #00ff9f;
+            color: #000;
+            box-shadow: 0 0 15px rgba(0, 255, 159, 0.5);
+        }
+
+        .mycelium-ring {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+            background: #8338ec;
+            box-shadow: 0 0 5px #8338ec;
+            animation: pulse-ring 2s infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>👑 AUREON QUEEN OMNISCIENT COMMAND CENTER 👑</h1>
+            <div class="subtitle">ALL-SEEING INTELLIGENCE ACROSS ALL DIMENSIONS</div>
+            <div style="margin-top: 8px; color: white; font-size: 12px;">
+                UPTIME: <span id="uptime">00:00:00</span> | 
+                SYSTEMS ONLINE: <span id="systems-count">0/0</span> |
+                37 GLOBAL FIRMS PROFILED
+            </div>
+            <div style="display:flex; gap:10px; align-items:center; margin-left: 10px;">
+                <div id="deep-intel-status" style="padding:6px 10px; border-radius: 12px; background: rgba(255,255,255,0.03); color: #fff; font-size: 12px;">
+                    DEEP INTEL: --
+                </div>
+                <button id="audio-toggle" class="audio-btn" onclick="toggleAudio()">🔇 ENABLE VOICE OF THE REVOLUTION</button>
+            </div>
+        </div>
+        
+        <!-- Systems Status Bar -->
+        <div id="systems-status" class="systems-status">
+            <!-- System badges appear here -->
+        </div>
+        
+        <!-- Extended Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="label">🤖 Total Bots</div>
+                <div class="value" id="total-bots">0</div>
+                <div class="subvalue"><span id="bots-per-minute">0.0</span>/min</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="label">🦈 Sharks</div>
+                <div class="value" id="sharks">0</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="label">🐋 Whales</div>
+                <div class="value" id="whales">0</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="label">💰 Volume</div>
+                <div class="value" id="volume">$0</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="label">🏢 Firms</div>
+                <div class="value" id="firms-active">0</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="label">⚠️ Threat</div>
+                <div class="value" id="threat-level">MODERATE</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="label">🧠 Systems</div>
+                <div class="value" id="systems-online">0</div>
+                <div class="subvalue">/<span id="systems-total">0</span></div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="label">🍄 Neural</div>
+                <div class="value" id="neural-connections">0</div>
+            </div>
+        </div>
+
+        <!-- Deep Intelligence Matrix -->
+        <div class="panel full-width deep-panel" style="margin-bottom: 15px;">
+            <div class="panel-header">🧠 DEEP INTELLIGENCE MATRIX</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <!-- Left: Thesis & Status -->
+                <div>
+                    <div id="market-thesis-container" class="thesis-box">
+                        <div class="thesis-title">CURRENT MARKET THESIS</div>
+                        <div id="market-thesis" class="thesis-content">Initializing deep market analysis...</div>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <div class="panel" style="flex: 1; min-height: 100px;">
+                            <div class="thesis-title">MYCELIUM CORRELATIONS</div>
+                            <div id="mycelium-visual" style="font-size: 12px; color: #8338ec;">
+                                <span class="mycelium-ring"></span> Deep Logic Active<br>
+                                <span class="mycelium-ring" style="animation-delay: 0.5s"></span> Cross-Asset Scan<br>
+                                <span class="mycelium-ring" style="animation-delay: 1s"></span> Whale Tracking
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Right: Insight Stream with Filters -->
+                <div class="panel" style="border: 1px solid #7209b7; background: rgba(0,0,0,0.3);">
+                    <div class="thesis-title">AUTONOMOUS THOUGHT STREAM</div>
+                    <!-- Filter Bar -->
+                    <div class="filter-bar">
+                        <label>Type:</label>
+                        <select id="insight-type-filter" onchange="applyInsightFilters()">
+                            <option value="all">All Types</option>
+                            <option value="market_thesis">Market Thesis</option>
+                            <option value="firm_attribution">Firm Attribution</option>
+                            <option value="opportunity">Opportunity</option>
+                            <option value="warning">Warning</option>
+                            <option value="manipulation">Manipulation</option>
+                            <option value="hypothesis">Hypothesis</option>
+                            <option value="correlation">Correlation</option>
+                            <option value="pattern">Pattern</option>
+                        </select>
+                        <label>Min Conf:</label>
+                        <input type="range" id="insight-conf-filter" min="0" max="100" value="0" onchange="applyInsightFilters()" style="width: 80px;">
+                        <span id="conf-value" style="color:#00ff9f; font-size:11px;">0%</span>
+                    </div>
+                    <div id="deep-insights-feed" style="height: 180px; overflow-y: auto;">
+                        <div style="text-align: center; color: #560bad; padding: 20px;">Waiting for autonomous thoughts...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- === VISUALIZATION ROW: Map + Candles === -->
+        <div class="viz-grid">
+            <!-- Global Activity Map -->
+            <div class="viz-panel">
+                <div class="viz-title">🌍 GLOBAL FIRM ACTIVITY MAP</div>
+                <div class="world-map-container">
+                    <svg class="world-map-svg" viewBox="0 0 400 200" preserveAspectRatio="xMidYMid meet">
+                        <!-- Simplified world map paths -->
+                        <path d="M50,80 Q80,60 120,75 L140,90 Q130,110 100,105 Z" fill="#1a0a2e" stroke="#3a3a5c" stroke-width="0.5"/>
+                        <path d="M180,50 Q220,40 280,55 L300,80 Q290,120 240,110 L200,95 Z" fill="#1a0a2e" stroke="#3a3a5c" stroke-width="0.5"/>
+                        <path d="M280,90 Q320,85 360,100 L370,130 Q350,150 310,140 L290,110 Z" fill="#1a0a2e" stroke="#3a3a5c" stroke-width="0.5"/>
+                        <path d="M100,120 Q130,115 150,130 L145,160 Q120,165 95,150 Z" fill="#1a0a2e" stroke="#3a3a5c" stroke-width="0.5"/>
+                        <path d="M320,130 Q350,125 380,140 L385,170 Q360,180 330,165 Z" fill="#1a0a2e" stroke="#3a3a5c" stroke-width="0.5"/>
+                        
+                        <!-- Trading Hub Hotspots -->
+                        <circle id="hub-nyc" class="map-hotspot" cx="95" cy="70" r="5"><title>New York</title></circle>
+                        <circle id="hub-chicago" class="map-hotspot" cx="80" cy="68" r="4"><title>Chicago</title></circle>
+                        <circle id="hub-london" class="map-hotspot active" cx="195" cy="55" r="5"><title>London</title></circle>
+                        <circle id="hub-frankfurt" class="map-hotspot" cx="210" cy="58" r="3"><title>Frankfurt</title></circle>
+                        <circle id="hub-tokyo" class="map-hotspot" cx="355" cy="70" r="5"><title>Tokyo</title></circle>
+                        <circle id="hub-singapore" class="map-hotspot" cx="330" cy="110" r="4"><title>Singapore</title></circle>
+                        <circle id="hub-hongkong" class="map-hotspot" cx="340" cy="90" r="4"><title>Hong Kong</title></circle>
+                        <circle id="hub-sydney" class="map-hotspot" cx="365" cy="160" r="3"><title>Sydney</title></circle>
+                        
+                        <!-- Labels -->
+                        <text class="map-label" x="95" y="82">NYC</text>
+                        <text class="map-label" x="195" y="47">LDN</text>
+                        <text class="map-label" x="355" y="62">TKY</text>
+                        <text class="map-label" x="330" y="122">SIN</text>
+                    </svg>
+                    <div style="position:absolute; bottom:5px; left:10px; font-size:9px; color:#8338ec;">
+                        <span style="display:inline-block; width:8px; height:8px; background:#ff006e; border-radius:50%; margin-right:3px;"></span>Idle
+                        <span style="display:inline-block; width:8px; height:8px; background:#00ff9f; border-radius:50%; margin-left:10px; margin-right:3px;"></span>Active
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Candlestick Chart -->
+            <div class="viz-panel">
+                <div class="viz-title">📈 LIVE PRICE ACTION</div>
+                <div class="chart-symbol-tabs">
+                    <div class="chart-tab active" data-symbol="BTCUSD" onclick="switchChart('BTCUSD')">BTC/USD</div>
+                    <div class="chart-tab" data-symbol="ETHUSD" onclick="switchChart('ETHUSD')">ETH/USD</div>
+                    <div class="chart-tab" data-symbol="SOLUSD" onclick="switchChart('SOLUSD')">SOL/USD</div>
+                </div>
+                <div id="candlestick-chart" class="chart-container"></div>
+            </div>
+        </div>
+        
+        <!-- === VISUALIZATION ROW: Spectrogram + Harmonic Monitor === -->
+        <div class="viz-grid">
+            <!-- Market Frequency Spectrogram -->
+            <div class="viz-panel">
+                <div class="viz-title">🎵 MARKET FREQUENCY SPECTROGRAM</div>
+                <div class="spectrogram-container">
+                    <canvas id="spectrogram-canvas" class="spectrogram-canvas"></canvas>
+                    <div class="spectrogram-legend">
+                        <div>↑ High Freq (HFT)</div>
+                        <div>↓ Low Freq (Whales)</div>
+                    </div>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-top:5px; font-size:10px; color:#7209b7;">
+                    <span>-60s</span>
+                    <span>-30s</span>
+                    <span>NOW</span>
+                </div>
+            </div>
+            
+            <!-- Harmonic Resonance Monitor -->
+            <div class="viz-panel">
+                <div class="viz-title">🔮 HARMONIC RESONANCE MONITOR</div>
+                <div class="harmonic-monitor">
+                    <!-- Schumann Resonance -->
+                    <div class="harmonic-gauge">
+                        <div class="gauge-ring">
+                            <svg viewBox="0 0 60 60">
+                                <circle class="gauge-bg" cx="30" cy="30" r="24"/>
+                                <circle id="gauge-schumann" class="gauge-fill" cx="30" cy="30" r="24" 
+                                    stroke="#00ff9f" stroke-dasharray="150.8" stroke-dashoffset="45"/>
+                            </svg>
+                            <div class="gauge-value" id="schumann-value">7.83</div>
+                        </div>
+                        <div class="gauge-label">Schumann</div>
+                        <div class="gauge-freq">7.83 Hz Base</div>
+                    </div>
+                    
+                    <!-- Golden Ratio -->
+                    <div class="harmonic-gauge">
+                        <div class="gauge-ring">
+                            <svg viewBox="0 0 60 60">
+                                <circle class="gauge-bg" cx="30" cy="30" r="24"/>
+                                <circle id="gauge-phi" class="gauge-fill" cx="30" cy="30" r="24" 
+                                    stroke="#ffd60a" stroke-dasharray="150.8" stroke-dashoffset="30"/>
+                            </svg>
+                            <div class="gauge-value" id="phi-value">φ</div>
+                        </div>
+                        <div class="gauge-label">Golden φ</div>
+                        <div class="gauge-freq">1.618 Ratio</div>
+                    </div>
+                    
+                    <!-- Love Frequency -->
+                    <div class="harmonic-gauge">
+                        <div class="gauge-ring">
+                            <svg viewBox="0 0 60 60">
+                                <circle class="gauge-bg" cx="30" cy="30" r="24"/>
+                                <circle id="gauge-love" class="gauge-fill" cx="30" cy="30" r="24" 
+                                    stroke="#f72585" stroke-dasharray="150.8" stroke-dashoffset="60"/>
+                            </svg>
+                            <div class="gauge-value" id="love-value">528</div>
+                        </div>
+                        <div class="gauge-label">Love Freq</div>
+                        <div class="gauge-freq">528 Hz</div>
+                    </div>
+                    
+                    <!-- Market Coherence -->
+                    <div class="harmonic-gauge">
+                        <div class="gauge-ring">
+                            <svg viewBox="0 0 60 60">
+                                <circle class="gauge-bg" cx="30" cy="30" r="24"/>
+                                <circle id="gauge-coherence" class="gauge-fill" cx="30" cy="30" r="24" 
+                                    stroke="#4cc9f0" stroke-dasharray="150.8" stroke-dashoffset="75"/>
+                            </svg>
+                            <div class="gauge-value" id="coherence-value">0.62</div>
+                        </div>
+                        <div class="gauge-label">Coherence</div>
+                        <div class="gauge-freq">Market Sync</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 🦈🔪 ORCA KILLER WHALE INTELLIGENCE PANEL -->
+            <div class="viz-panel orca-panel">
+                <div class="viz-title">🦈🔪 ORCA KILLER WHALE INTELLIGENCE</div>
+                <div class="orca-status-grid">
+                    <div class="orca-stat">
+                        <div class="orca-stat-label">Mode</div>
+                        <div class="orca-stat-value" id="orca-mode">STALKING</div>
+                    </div>
+                    <div class="orca-stat">
+                        <div class="orca-stat-label">Hunt Count</div>
+                        <div class="orca-stat-value" id="orca-hunts">0</div>
+                    </div>
+                    <div class="orca-stat">
+                        <div class="orca-stat-label">Win Rate</div>
+                        <div class="orca-stat-value" id="orca-winrate">--%</div>
+                    </div>
+                    <div class="orca-stat">
+                        <div class="orca-stat-label">Profit (pips)</div>
+                        <div class="orca-stat-value" id="orca-profit">0.00</div>
+                    </div>
+                </div>
+                
+                <div class="orca-opportunities">
+                    <div class="orca-opp-header">🎯 ACTIVE HUNTS</div>
+                    <div id="orca-hunt-list" class="orca-hunt-list">
+                        <div class="orca-no-hunts">Stalking for whales...</div>
+                    </div>
+                </div>
+                
+                <div class="orca-exits">
+                    <div class="orca-opp-header">⚠️ EXIT SIGNALS</div>
+                    <div id="orca-exit-list" class="orca-hunt-list">
+                        <div class="orca-no-hunts">No exits needed</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Grid -->
+        <div class="main-grid">
+            <!-- Queen's Voice -->
+            <div class="panel queen-voice">
+                <div class="panel-header">👑 THE QUEEN SPEAKS</div>
+                <div id="queen-messages" style="max-height: 400px; overflow-y: auto;">
+                    <!-- Messages appear here -->
+                </div>
+            </div>
+            
+            <!-- Thought Bus Stream -->
+            <div class="panel" style="border-color: #3a86ff;">
+                <div class="panel-header">🧠 THOUGHT BUS STREAM</div>
+                <div id="thought-stream" style="max-height: 400px; overflow-y: auto;">
+                    <div style="text-align: center; color: #8338ec; padding: 20px;">
+                        Listening to system thoughts...
+                    </div>
+                </div>
+            </div>
+            
+            <!-- System Activity Monitor -->
+            <div class="panel">
+                <div class="panel-header">📊 SYSTEM ACTIVITY</div>
+                <div id="system-activity">
+                    <div style="text-align: center; color: #8338ec; padding: 20px;">
+                        Monitoring subsystems...
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Firm Tracker -->
+            <div class="panel">
+                <div class="panel-header">🦈 GLOBAL PREDATORS</div>
+                <div id="firm-tracker">
+                    <div style="text-align: center; color: #8338ec; padding: 20px;">
+                        Scanning for trading firms...
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Symbol Radar -->
+            <div class="panel">
+                <div class="panel-header">📡 MARKET RADAR</div>
+                <div id="symbol-radar">
+                    <div style="text-align: center; color: #8338ec; padding: 20px;">
+                        Monitoring trading pairs...
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Live Event Feed -->
+            <div class="panel">
+                <div class="panel-header">📊 LIVE DETECTIONS</div>
+                <div id="event-feed" class="event-feed">
+                    <div style="text-align: center; color: #8338ec; padding: 20px;">
+                        Waiting for bot detections...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Connect to WebSocket
+        const socket = io();
+        let audioEnabled = false;
+        let speakQueue = [];
+        let isSpeaking = false;
+        
+        // === CANDLESTICK CHART ===
+        let chart = null;
+        let candleSeries = null;
+        let volumeSeries = null;
+        let currentSymbol = 'BTCUSD';
+        let candleData = {
+            BTCUSD: [],
+            ETHUSD: [],
+            SOLUSD: []
+        };
+        
+        function initCandlestickChart() {
+            const container = document.getElementById('candlestick-chart');
+            if (!container || typeof LightweightCharts === 'undefined') return;
+            
+            chart = LightweightCharts.createChart(container, {
+                width: container.clientWidth,
+                height: 220,
+                layout: {
+                    background: { type: 'solid', color: 'transparent' },
+                    textColor: '#8338ec',
+                },
+                grid: {
+                    vertLines: { color: 'rgba(131, 56, 236, 0.1)' },
+                    horzLines: { color: 'rgba(131, 56, 236, 0.1)' },
+                },
+                crosshair: {
+                    mode: LightweightCharts.CrosshairMode.Normal,
+                },
+                rightPriceScale: {
+                    borderColor: '#8338ec',
+                },
+                timeScale: {
+                    borderColor: '#8338ec',
+                    timeVisible: true,
+                },
+            });
+            
+            candleSeries = chart.addCandlestickSeries({
+                upColor: '#00ff9f',
+                downColor: '#ff006e',
+                borderUpColor: '#00ff9f',
+                borderDownColor: '#ff006e',
+                wickUpColor: '#00ff9f',
+                wickDownColor: '#ff006e',
+            });
+            
+            // Generate initial demo data
+            generateDemoCandles('BTCUSD', 95000);
+            generateDemoCandles('ETHUSD', 3200);
+            generateDemoCandles('SOLUSD', 180);
+            
+            candleSeries.setData(candleData[currentSymbol]);
+        }
+        
+        function generateDemoCandles(symbol, basePrice) {
+            const now = Math.floor(Date.now() / 1000);
+            const data = [];
+            let price = basePrice;
+            
+            for (let i = 60; i >= 0; i--) {
+                const time = now - (i * 60);
+                const volatility = basePrice * 0.002;
+                const open = price;
+                const close = price + (Math.random() - 0.5) * volatility * 2;
+                const high = Math.max(open, close) + Math.random() * volatility;
+                const low = Math.min(open, close) - Math.random() * volatility;
+                
+                data.push({ time, open, high, low, close });
+                price = close;
+            }
+            candleData[symbol] = data;
+        }
+        
+        function switchChart(symbol) {
+            currentSymbol = symbol;
+            document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`[data-symbol="${symbol}"]`).classList.add('active');
+            if (candleSeries && candleData[symbol]) {
+                candleSeries.setData(candleData[symbol]);
+            }
+        }
+        
+        function updateCandle(symbol, priceData) {
+            if (!candleData[symbol] || candleData[symbol].length === 0) return;
+            
+            const now = Math.floor(Date.now() / 1000);
+            const lastCandle = candleData[symbol][candleData[symbol].length - 1];
+            const newPrice = priceData.price || lastCandle.close * (1 + (Math.random() - 0.5) * 0.001);
+            
+            // Update or add candle
+            if (now - lastCandle.time < 60) {
+                lastCandle.close = newPrice;
+                lastCandle.high = Math.max(lastCandle.high, newPrice);
+                lastCandle.low = Math.min(lastCandle.low, newPrice);
+            } else {
+                candleData[symbol].push({
+                    time: now,
+                    open: lastCandle.close,
+                    high: newPrice,
+                    low: newPrice,
+                    close: newPrice
+                });
+                if (candleData[symbol].length > 100) candleData[symbol].shift();
+            }
+            
+            if (symbol === currentSymbol && candleSeries) {
+                candleSeries.setData(candleData[symbol]);
+            }
+        }
+        
+        // === SPECTROGRAM ===
+        let spectrogramCtx = null;
+        let spectrogramData = [];
+        const SPECTROGRAM_BINS = 32;
+        const SPECTROGRAM_WIDTH = 120;
+        
+        function initSpectrogram() {
+            const canvas = document.getElementById('spectrogram-canvas');
+            if (!canvas) return;
+            
+            spectrogramCtx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            
+            // Initialize with noise
+            for (let i = 0; i < SPECTROGRAM_WIDTH; i++) {
+                const column = [];
+                for (let j = 0; j < SPECTROGRAM_BINS; j++) {
+                    column.push(Math.random() * 0.3);
+                }
+                spectrogramData.push(column);
+            }
+            
+            renderSpectrogram();
+        }
+        
+        function updateSpectrogram(activityData) {
+            // Generate frequency distribution from activity
+            const column = [];
+            for (let i = 0; i < SPECTROGRAM_BINS; i++) {
+                // Higher bins = higher frequency (HFT), lower = whales
+                let intensity = Math.random() * 0.2;
+                
+                if (activityData) {
+                    // HFT activity shows in high frequencies
+                    if (i > SPECTROGRAM_BINS * 0.7 && activityData.hft_count > 0) {
+                        intensity += activityData.hft_count * 0.05;
+                    }
+                    // Whale activity shows in low frequencies
+                    if (i < SPECTROGRAM_BINS * 0.3 && activityData.whale_count > 0) {
+                        intensity += activityData.whale_count * 0.1;
+                    }
+                    // General volume affects mid frequencies
+                    if (i > SPECTROGRAM_BINS * 0.3 && i < SPECTROGRAM_BINS * 0.7) {
+                        intensity += (activityData.volume || 0) / 1000000 * 0.05;
+                    }
+                }
+                
+                column.push(Math.min(1, intensity));
+            }
+            
+            spectrogramData.push(column);
+            if (spectrogramData.length > SPECTROGRAM_WIDTH) {
+                spectrogramData.shift();
+            }
+            
+            renderSpectrogram();
+        }
+        
+        function renderSpectrogram() {
+            if (!spectrogramCtx) return;
+            
+            const canvas = spectrogramCtx.canvas;
+            const binHeight = canvas.height / SPECTROGRAM_BINS;
+            const colWidth = canvas.width / SPECTROGRAM_WIDTH;
+            
+            spectrogramCtx.fillStyle = '#000';
+            spectrogramCtx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            for (let x = 0; x < spectrogramData.length; x++) {
+                const column = spectrogramData[x];
+                for (let y = 0; y < column.length; y++) {
+                    const intensity = column[y];
+                    // Color gradient: blue (low) -> purple -> magenta -> yellow (high)
+                    const hue = 280 - intensity * 220;
+                    const lightness = 20 + intensity * 50;
+                    spectrogramCtx.fillStyle = `hsl(${hue}, 100%, ${lightness}%)`;
+                    spectrogramCtx.fillRect(
+                        x * colWidth,
+                        (SPECTROGRAM_BINS - 1 - y) * binHeight,
+                        colWidth + 1,
+                        binHeight + 1
+                    );
+                }
+            }
+        }
+        
+        // === HARMONIC GAUGES ===
+        function updateHarmonicGauges(data) {
+            const circumference = 150.8; // 2 * PI * 24
+            
+            // Schumann resonance alignment (0-1)
+            const schumannAlign = data?.schumann || (0.7 + Math.random() * 0.3);
+            const schumannOffset = circumference * (1 - schumannAlign);
+            document.getElementById('gauge-schumann').style.strokeDashoffset = schumannOffset;
+            document.getElementById('schumann-value').textContent = (7.83 * schumannAlign).toFixed(2);
+            
+            // Golden ratio alignment
+            const phiAlign = data?.phi || (0.6 + Math.random() * 0.4);
+            const phiOffset = circumference * (1 - phiAlign);
+            document.getElementById('gauge-phi').style.strokeDashoffset = phiOffset;
+            document.getElementById('phi-value').textContent = phiAlign > 0.8 ? 'φ✓' : 'φ';
+            
+            // Love frequency (528 Hz) resonance
+            const loveAlign = data?.love || (0.5 + Math.random() * 0.5);
+            const loveOffset = circumference * (1 - loveAlign);
+            document.getElementById('gauge-love').style.strokeDashoffset = loveOffset;
+            document.getElementById('love-value').textContent = Math.round(528 * loveAlign);
+            
+            // Market coherence
+            const coherence = data?.coherence || (0.4 + Math.random() * 0.6);
+            const cohOffset = circumference * (1 - coherence);
+            document.getElementById('gauge-coherence').style.strokeDashoffset = cohOffset;
+            document.getElementById('coherence-value').textContent = coherence.toFixed(2);
+            
+            // Color based on alignment
+            const cohGauge = document.getElementById('gauge-coherence');
+            cohGauge.style.stroke = coherence > 0.618 ? '#00ff9f' : coherence > 0.4 ? '#ffd60a' : '#ff006e';
+        }
+        
+        // === 🦈🔪 ORCA KILLER WHALE UPDATES ===
+        function updateOrcaPanel() {
+            fetch('/api/orca/status')
+                .then(r => r.json())
+                .then(data => {
+                    if (!data.enabled) {
+                        document.getElementById('orca-mode').textContent = 'OFFLINE';
+                        return;
+                    }
+                    
+                    // Update stats
+                    const modeEl = document.getElementById('orca-mode');
+                    modeEl.textContent = data.mode;
+                    modeEl.className = 'orca-stat-value' + (data.mode === 'HUNTING' ? ' hunting' : '');
+                    
+                    document.getElementById('orca-hunts').textContent = data.hunt_count || 0;
+                    document.getElementById('orca-winrate').textContent = 
+                        data.win_rate ? (data.win_rate * 100).toFixed(0) + '%' : '--%';
+                    document.getElementById('orca-profit').textContent = 
+                        data.total_profit ? data.total_profit.toFixed(2) : '0.00';
+                    
+                    // Update hunt list
+                    const huntList = document.getElementById('orca-hunt-list');
+                    if (data.opportunities && data.opportunities.length > 0) {
+                        huntList.innerHTML = data.opportunities.map(opp => {
+                            const confClass = opp.confidence > 0.8 ? 'high' : opp.confidence > 0.5 ? 'med' : 'low';
+                            const dirClass = opp.direction === 'buy' ? 'buy' : 'sell';
+                            const arrow = opp.direction === 'buy' ? '↗' : '↘';
+                            return `
+                                <div class="orca-hunt-item ${dirClass}">
+                                    <span class="orca-hunt-symbol">${arrow} ${opp.symbol}</span>
+                                    <span class="orca-hunt-reason">${opp.reasoning}</span>
+                                    <span class="orca-hunt-conf ${confClass}">${(opp.confidence * 100).toFixed(0)}%</span>
+                                </div>
+                            `;
+                        }).join('');
+                    } else {
+                        huntList.innerHTML = '<div class="orca-no-hunts">🦈 Stalking for whales...</div>';
+                    }
+                    
+                    // Update exit signals
+                    const exitList = document.getElementById('orca-exit-list');
+                    if (data.exit_signals && data.exit_signals.length > 0) {
+                        exitList.innerHTML = data.exit_signals.map(signal => {
+                            const pnlClass = signal.potential_pnl >= 0 ? 'profit' : 'loss';
+                            const pnlSign = signal.potential_pnl >= 0 ? '+' : '';
+                            return `
+                                <div class="orca-hunt-item exit-signal">
+                                    <div class="orca-hunt-header">
+                                        <span class="orca-hunt-symbol">${signal.symbol}</span>
+                                        <span class="orca-hunt-pnl ${pnlClass}">${pnlSign}$${signal.potential_pnl.toFixed(4)}</span>
+                                    </div>
+                                    <div class="orca-hunt-details">
+                                        <div>Exit Reason: ${signal.exit_reason}</div>
+                                        <div>Entry: $${signal.entry_price.toFixed(4)} | Current: $${signal.current_price.toFixed(4)}</div>
+                                        <div>Exit Size: ${signal.exit_size.toFixed(2)}%</div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                    } else {
+                        exitList.innerHTML = '<div class="orca-no-hunts">✅ No exits needed</div>';
+                    }
+                })
+                .catch(e => {
+                    console.log('Orca update error:', e);
+                });
+        }
+        
+        // === GLOBAL MAP ===
+        function updateMapHotspots(firmActivity) {
+            // Map firm locations to hub IDs
+            const hubMapping = {
+                'New York': 'hub-nyc',
+                'Chicago': 'hub-chicago',
+                'London': 'hub-london',
+                'Frankfurt': 'hub-frankfurt',
+                'Tokyo': 'hub-tokyo',
+                'Singapore': 'hub-singapore',
+                'Hong Kong': 'hub-hongkong',
+                'Sydney': 'hub-sydney'
+            };
+            
+            // Reset all hotspots
+            document.querySelectorAll('.map-hotspot').forEach(h => h.classList.remove('active'));
+            
+            // Activate based on firm activity
+            if (firmActivity && firmActivity.length > 0) {
+                firmActivity.forEach(firm => {
+                    const hubId = hubMapping[firm.hq];
+                    if (hubId) {
+                        const hub = document.getElementById(hubId);
+                        if (hub && firm.count > 0) {
+                            hub.classList.add('active');
+                            hub.setAttribute('r', Math.min(10, 4 + firm.count));
+                        }
+                    }
+                });
+            }
+        }
+        
+        // === INITIALIZATION ===
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                initCandlestickChart();
+                initSpectrogram();
+                
+                // Start update loops
+                setInterval(() => updateSpectrogram(null), 500);
+                setInterval(() => updateHarmonicGauges(null), 2000);
+                setInterval(() => updateOrcaPanel(), 5000);  // 🦈 Orca updates every 5s
+                setInterval(() => {
+                    // Simulate candle updates
+                    updateCandle('BTCUSD', {});
+                    updateCandle('ETHUSD', {});
+                    updateCandle('SOLUSD', {});
+                }, 1000);
+                
+                // Initial Orca fetch
+                updateOrcaPanel();
+            }, 500);
+        });
+        
+        // Resize handler
+        window.addEventListener('resize', () => {
+            if (chart) {
+                const container = document.getElementById('candlestick-chart');
+                chart.applyOptions({ width: container.clientWidth });
+            }
+            initSpectrogram();
+        });
+        
+        // --- Audio / Voice Engine ---
+        function toggleAudio() {
+            audioEnabled = !audioEnabled;
+            const btn = document.getElementById('audio-toggle');
+            if(audioEnabled) {
+                btn.textContent = "🔊 VOICE ACTIVE";
+                btn.classList.add('active');
+                speakText("Voice of the Revolution is online. Listening for signals.");
+            } else {
+                btn.textContent = "🔇 ENABLE VOICE OF THE REVOLUTION";
+                btn.classList.remove('active');
+                window.speechSynthesis.cancel();
+            }
+        }
+
+        function speakText(text) {
+            if (!audioEnabled) return;
+            
+            // Add to queue
+            speakQueue.push(text);
+            processSpeakQueue();
+        }
+
+        function processSpeakQueue() {
+            if (isSpeaking || speakQueue.length === 0) return;
+            
+            isSpeaking = true;
+            const text = speakQueue.shift();
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 1.0;
+            utterance.pitch = 0.9; // Slightly lower pitch for authority
+            
+            // Try to find a good authoritative female voice
+            const voices = window.speechSynthesis.getVoices();
+            const preferred = voices.find(v => v.name.includes('Google US English') || v.name.includes('Samantha'));
+            if (preferred) utterance.voice = preferred;
+
+            utterance.onend = () => {
+                isSpeaking = false;
+                setTimeout(processSpeakQueue, 200); // Small pause between sentences
+            };
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // --- Deep Intelligence Rendering ---
+        let allInsights = [];  // Store all insights for filtering
+        
+        function applyInsightFilters() {
+            const typeFilter = document.getElementById('insight-type-filter').value;
+            const confFilter = parseInt(document.getElementById('insight-conf-filter').value) / 100;
+            document.getElementById('conf-value').textContent = Math.round(confFilter * 100) + '%';
+            
+            const filtered = allInsights.filter(insight => {
+                const typeMatch = typeFilter === 'all' || insight.type === typeFilter;
+                const confMatch = insight.confidence >= confFilter;
+                return typeMatch && confMatch;
+            });
+            
+            renderInsights(filtered);
+        }
+        
+        function renderInsights(insights) {
+            const feed = document.getElementById('deep-insights-feed');
+            if (!insights || insights.length === 0) {
+                feed.innerHTML = '<div style="text-align: center; color: #560bad; padding: 20px;">No insights match filters...</div>';
+                return;
+            }
+            
+            const html = insights.map(insight => {
+                const typeClass = `insight-type-${insight.type}`;
+                const typeLabel = (insight.title || insight.type.toUpperCase().replace('_', ' '));
+                const confPct = Math.round((insight.confidence || 0) * 100);
+                
+                // Use normalized summary or fall back to content parsing
+                let contentStr = insight.summary || '';
+                if (!contentStr && insight.content) {
+                    if (insight.type === 'firm_attribution') {
+                        contentStr = `Attributed to ${insight.content.firm || 'Unknown'}`;
+                    } else if (insight.type === 'market_thesis') {
+                        contentStr = insight.content.narrative || 'Market analysis';
+                    } else {
+                        contentStr = JSON.stringify(insight.content).substring(0, 80);
+                    }
+                }
+                
+                // First reasoning point or fallback
+                const reasoning = insight.reasoning && insight.reasoning.length > 0 
+                    ? insight.reasoning[0] 
+                    : 'Pattern analysis';\n                \n                return `\n                    <div class=\"insight-item ${typeClass}\">\n                        <div style=\"display:flex; justify-content:space-between; margin-bottom: 3px;\">\n                            <span style=\"font-weight:bold;\">${typeLabel}</span>\n                            <span style=\"opacity:0.7;\">${insight.timestamp} | ${confPct}%</span>\n                        </div>\n                        <div style=\"color: #fff; margin-bottom: 4px;\">${contentStr}</div>\n                        <div style=\"font-style: italic; opacity: 0.7; font-size: 11px;\">\"${reasoning}\"</div>\n                    </div>\n                `;\n            }).reverse().join('');\n            \n            feed.innerHTML = html;\n        }\n\n        function updateDeepIntel(data) {\n            // Market Thesis\n            if (data.market_thesis) {\n                const thesisEl = document.getElementById('market-thesis');\n                const thesis = data.market_thesis;\n                const narrative = thesis.narrative || \"Analyzing market structure...\";\n                const regime = thesis.regime || \"neutral\";\n                const confidence = thesis.confidence ? Math.round(thesis.confidence * 100) : 0;\n                \n                thesisEl.innerHTML = `\n                    <div style=\"font-weight: bold; color: #fff; margin-bottom: 5px;\">\n                        REGIME: <span style=\"color: ${regime === 'bull' ? '#00ff9f' : regime === 'bear' ? '#ff006e' : '#ffd60a'}\">${regime.toUpperCase()}</span>\n                        | CONFIDENCE: ${confidence}%\n                    </div>\n                    <div>${narrative}</div>\n                `;\n            }\n\n            // Deep Insights Stream\n            if (data.deep_insights && data.deep_insights.length > 0) {\n                // Mycelium Visual Pulse - Respond to new intelligence\n                const rings = document.querySelectorAll('.mycelium-ring');\n                rings.forEach(ring => {\n                     ring.style.boxShadow = '0 0 15px #f72585';\n                     ring.style.borderColor = '#f72585';\n                     setTimeout(() => {\n                         ring.style.boxShadow = '0 0 5px #8338ec';\n                         ring.style.borderColor = '#8338ec';\n                     }, 800);\n                });\n                \n                // Store all insights and apply filters\n                allInsights = data.deep_insights;\n                applyInsightFilters();\n            }\n        }
+
+        // --- Main State Update ---
+        function updateState(data) {
+            // Update stats
+            document.getElementById('uptime').textContent = data.uptime;
+            document.getElementById('total-bots').textContent = data.total_bots.toLocaleString();
+            document.getElementById('sharks').textContent = data.sharks.toLocaleString();
+            document.getElementById('whales').textContent = data.whales.toLocaleString();
+            document.getElementById('volume').textContent = '$' + data.total_volume.toLocaleString(undefined, {maximumFractionDigits: 0});
+            document.getElementById('bots-per-minute').textContent = data.bots_per_minute.toFixed(1);
+            document.getElementById('firms-active').textContent = data.firms_active;
+            document.getElementById('systems-online').textContent = data.systems_online || 0;
+            document.getElementById('systems-total').textContent = data.systems_total || 0;
+            document.getElementById('systems-count').textContent = `${data.systems_online || 0}/${data.systems_total || 0}`;
+            document.getElementById('neural-connections').textContent = data.neural_connections || 0;
+            
+            // Threat level
+            const threatEl = document.getElementById('threat-level');
+            threatEl.textContent = data.threat_level;
+            threatEl.className = 'value threat-' + data.threat_level;
+            
+            // Update Queen messages
+            const queenDiv = document.getElementById('queen-messages');
+            queenDiv.innerHTML = data.queen_messages.map(msg => `
+                <div class="queen-message ${msg.level}">
+                    <div class="timestamp">[${msg.timestamp}]</div>
+                    <div class="text">${msg.message}</div>
+                </div>
+            `).reverse().join('');
+
+            // Deep Intelligence status badge
+            const deepBadge = document.getElementById('deep-intel-status');
+            if (typeof data.deep_intelligence_active !== 'undefined') {
+                deepBadge.textContent = data.deep_intelligence_active ? 'DEEP INTEL: ACTIVE' : 'DEEP INTEL: OFFLINE';
+                deepBadge.style.background = data.deep_intelligence_active ? 'linear-gradient(90deg,#00ff9f,#00a86b)' : 'rgba(255,255,255,0.03)';
+                deepBadge.style.color = data.deep_intelligence_active ? '#000' : '#fff';
+            }
+            
+            // Update Thought Stream
+            if (data.thought_stream && data.thought_stream.length > 0) {
+                const thoughtDiv = document.getElementById('thought-stream');
+                thoughtDiv.innerHTML = data.thought_stream.map(thought => `
+                    <div class="thought-item">
+                        <div class="thought-topic">[${thought.timestamp}] ${thought.topic}</div>
+                        <div class="thought-source">📡 ${thought.source}</div>
+                        <div class="thought-message">${thought.message}</div>
+                    </div>
+                `).reverse().join('');
+            }
+
+            // Update Deep Intelligence
+            updateDeepIntel(data);
+            
+            // === UPDATE VISUALIZATIONS ===
+            // Map hotspots from firm data
+            if (data.top_firms) {
+                updateMapHotspots(data.top_firms);
+            }
+            
+            // Spectrogram from activity
+            updateSpectrogram({
+                hft_count: data.bots_per_minute || 0,
+                whale_count: data.whales || 0,
+                volume: data.total_volume || 0
+            });
+            
+            // Harmonic gauges from any harmonic data
+            if (data.harmonic_data) {
+                updateHarmonicGauges(data.harmonic_data);
+            }
+            
+            // Update System Activity
+            if (data.system_activity && data.system_activity.length > 0) {
+                const activityDiv = document.getElementById('system-activity');
+                activityDiv.innerHTML = data.system_activity.map(activity => `
+                    <div class="activity-item">
+                        <div class="activity-system">🔹 ${activity.system}</div>
+                        <div class="activity-count">${activity.count} thoughts</div>
+                    </div>
+                `).join('');
+            }
+            
+            // Update firms
+            const firmDiv = document.getElementById('firm-tracker');
+            if (data.top_firms.length > 0) {
+                firmDiv.innerHTML = data.top_firms.map(firm => {
+                    const capital = firm.capital >= 1e12 ? 
+                        '$' + (firm.capital / 1e12).toFixed(1) + 'T' :
+                        firm.capital >= 1e9 ?
+                        '$' + (firm.capital / 1e9).toFixed(1) + 'B' :
+                        '$' + (firm.capital / 1e6).toFixed(1) + 'M';
+                    
+                    return `
+                        <div class="firm-item">
+                            <div>
+                                <div class="firm-name">${firm.animal} ${firm.name}</div>
+                                <div class="firm-info">${firm.hq} | ${capital}</div>
+                            </div>
+                            <div class="firm-count">${firm.count}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            // Update symbols
+            const symbolDiv = document.getElementById('symbol-radar');
+            if (data.top_symbols.length > 0) {
+                const maxCount = Math.max(...data.top_symbols.map(s => s.count));
+                symbolDiv.innerHTML = data.top_symbols.map(sym => {
+                    const pct = (sym.count / maxCount * 100);
+                    return `
+                        <div class="symbol-item">
+                            <div class="symbol-name">${sym.symbol}</div>
+                            <div class="symbol-bar">
+                                <div class="symbol-bar-fill" style="width: ${pct}%"></div>
+                            </div>
+                            <div class="symbol-count">${sym.count}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            // Update event feed
+            const eventDiv = document.getElementById('event-feed');
+            if (data.recent_events.length > 0) {
+                eventDiv.innerHTML = data.recent_events.map(evt => {
+                    const sizeClass = evt.size.toLowerCase();
+                    const firmText = evt.firm ? 
+                        `<div class="event-firm">🏢 ${evt.firm_animal} ${evt.firm}</div>` : '';
+                    
+                    return `
+                        <div class="event-item ${sizeClass}">
+                            <div class="event-timestamp">[${evt.timestamp}]</div>
+                            <div class="event-details">
+                                ${evt.size} ${evt.pattern} on ${evt.symbol} 
+                                ($${evt.volume.toLocaleString()})
+                            </div>
+                            ${firmText}
+                        </div>
+                    `;
+                }).reverse().join('');
+            }
+        }
+        
+        // Update systems status
+        function updateSystemsStatus(systems) {
+            const statusDiv = document.getElementById('systems-status');
+            statusDiv.innerHTML = systems.map(sys => `
+                <div class="system-badge ${sys.online ? 'online' : 'offline'}">
+                    ${sys.online ? '✅' : '❌'} ${sys.name}
+                </div>
+            `).join('');
+        }
+        
+        // Socket events
+        socket.on('connect', () => {
+            console.log('Connected to Queen Omniscient Command Center');
+        });
+        
+        socket.on('state_update', (data) => {
+            updateState(data);
+        });
+        
+        socket.on('systems_status', (data) => {
+            updateSystemsStatus(data.systems);
+        });
+        
+        // Enhanced socket listeners for autonomous thought
+        socket.on('deep_insight', (insight) => {
+            console.log('Deep Insight received:', insight);
+            
+            // Add to allInsights array and re-render
+            allInsights.unshift(insight);
+            if (allInsights.length > 50) allInsights.pop(); // Keep last 50
+            applyInsightFilters();
+            
+            // Use normalized speak_text if audible
+            if (insight.audible && insight.speak_text) {
+                speakText(insight.speak_text);
+            }
+        });
+
+        socket.on('new_bot_detection', (event) => {
+            console.log('New bot detected:', event);
+            if (event.size === 'WHALE' || event.size === 'MEGALODON') {
+                speakText(`Large order detected on ${event.symbol}.`);
+            }
+        });
+        
+        socket.on('new_thought', (thought) => {
+            // Only speak critical alerts
+            if (thought.message && thought.message.includes('ALERT')) {
+                speakText(thought.message);
+            }
+        });
+        
+        // Initial load
+        fetch('/api/state')
+            .then(r => r.json())
+            .then(data => updateState(data));
+        
+        fetch('/api/systems')
+            .then(r => r.json())
+            .then(data => {
+                updateSystemsStatus(data.systems);
+            });
+    </script>
+</body>
+</html>

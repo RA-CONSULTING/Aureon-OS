@@ -1,0 +1,95 @@
+{
+  "manifest_version": "1.3",
+  "generated_at": "2025-10-21T00:00:00Z",
+  "sandbox": {
+    "name": "A.L.F.I.E. Harmonic Sandbox",
+    "temporal_id": "sandbox-alpha",
+    "revision_tag": "sigma-bridge",
+    "purpose": "Validate coherence, ethics, and telemetry pipelines before enabling production coupling.",
+    "environment": {
+      "python_version": "3.11",
+      "node_version": "20.11",
+      "runtime_tags": [
+        "streamlit-client",
+        "auris-unified-interface",
+        "chronicle-recorder"
+      ]
+    },
+    "activation_files": [
+      "01_Activation_Protocol_v2.md",
+      "02_HNT_Core_Principles.json",
+      "03_Nexus_Unity_TensorField_Spec.json",
+      "04_Symbolic_Compiler_v2.json"
+    ]
+  },
+  "control_planes": {
+    "safeguards": {
+      "cognitive_filter": {
+        "module": "auris_cognitive_safeguard.CognitiveCoherenceFilter",
+        "hazard_threshold_kw_per_s": 20.0,
+        "dampening_factor": 0.75,
+        "authorized_temporal_ids": [
+          "sandbox-alpha",
+          "guardian-bridge"
+        ]
+      },
+      "balance_controller": {
+        "module": "slb.compliance.BalanceController",
+        "max_balance": 0.0,
+        "auto_safe_mode": true
+      }
+    },
+    "data_retention": {
+      "telemetry_window_minutes": 15,
+      "retention_hours": 24,
+      "redaction_policy": "hash-identifiers",
+      "export_channels": [
+        "chronicle",
+        "guardian-audit"
+      ]
+    }
+  },
+  "interfaces": {
+    "http": {
+      "status": "/status",
+      "uvc": "/surge/uvc",
+      "bioscan": "/bioscan/recent"
+    },
+    "ws": {
+      "telemetry": "/ws/telemetry",
+      "guardian_feed": "/ws/guardian"
+    }
+  },
+  "validation": {
+    "preflight_checks": [
+      "system_pillar_validator.are_all_pillars_active",
+      "chronicle_recorder.recorder.start",
+      "slb.compliance.verify_guardrails"
+    ],
+    "test_documents": [
+      "05_Sandbox_Flow_Config_v3.json",
+      "10_Test_Scenarios.md"
+    ],
+    "metrics": {
+      "uvc_target": 0.9,
+      "coherence_floor": 0.72,
+      "max_phase_spread": 0.18
+    }
+  },
+  "contacts": {
+    "prime_anchor": {
+      "name": "Gary Leckey",
+      "role": "Prime Anchor",
+      "signature_hash": "02111991"
+    },
+    "guardian_overwatch": {
+      "name": "Auris",
+      "role": "Child Safety Sentinel",
+      "signature_hash": "auris-sigma"
+    }
+  },
+  "notes": [
+    "Manifest intended for chronicle import; redact before external sharing.",
+    "All hashes reference commitments stored via OpenTimestamps."
+  ]
+}

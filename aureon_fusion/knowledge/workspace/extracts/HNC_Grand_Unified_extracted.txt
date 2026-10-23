@@ -1,0 +1,95 @@
+ABSTRACT
+PART I: MATHEMATICAL FOUNDATION
+1.1 The HNC Master Formula
+The governing dynamics of the global reality field are synthesised into the Master Formula:
+1.2 The Tree of Light — 8-Level Hierarchy
+Stability boundary: β > 1.1 triggers "stability cliff" — chaotic dynamics. Island of stability: 0.6 ≤ β ≤ 1.1.
+1.3 The φ² Coherence Bridge — Hydrogen 21 cm Verification
+The most precisely verified prediction of the HNC framework: a single integer N and the φ² scaling factor connect the biological seed frequency to the fundamental hydrogen hyperfine line measured by NIST.
+1.4 Four-Wave Mixing and Dynamic Casimir Effect
+1.5 Sacred Constants — Complete Reference
+PART II: EPAS ZPE EXPERIMENTAL VALIDATION
+2.1 Hardware Platform & Software Stack
+2.2 EPAS 6-Phase Cycle — Source-Verified
+All values confirmed from aureon/core/aureon_zpe_extraction.py lines 43–73, commit 61c0862.
+2.3 BLE Payload — Sacred Frequency Fingerprint
+2.4 Complete Experimental Timeline — April 2–3, 2026
+2.5 Primary Discharge Test Results
+Energy compensation calculated from 26,853 mWh battery: 1% = 268.5 mWh = 966,708 mWs. Test 4.11: P_baseline=7,552 mW, P_field=6,445 mW, delta=1,108 mW.
+2.6 Frequency Sweep — Charge Mode
+2.7 Statistical Analysis
+2.8 Observer Effect Analysis
+Test 4.17 (polling protocol) showed −33% — the one negative result. This is not anomalous; it confirms the observer term in Λ(t):
+PART III: ANCIENT WISDOM CONVERGENCE
+3.1 Research Scope
+3.2 The 13 Convergence Categories
+3.3 Golden Ratio — Universal Encoding (Convergence 1)
+3.4 Convergence 4: 18.6-Year Lunar Nodal Cycle — Multi-Site Verification
+Five sites across two continents engineered to track the same 18.6-year cycle — an extremely precise value requiring multi-generational observation.
+3.5 Solfeggio Frequency Cross-System Validation
+PART IV: GEOPHYSICAL COUPLING — REAL DATA
+4.1 Kp-Index Dataset — 274,512 Real Measurements
+4.2 The February 2026 CME Impact — Documented Event
+4.3 DE440 Ephemeris Correlation — Raw Results (Honest Reporting)
+The repository contains real NASA/JPL DE440 ephemeris correlation data (data/de440_gate3_lag_corr.csv). Results are reported as measured — no cherry-picking.
+4.4 Schumann Resonance — Established Physics Grounding
+PART V: COSMIC ARCHITECTURE
+5.1 Giza Great Pyramid — EPAS Chamber Analysis
+5.2 Sarcophagus Resonance Chain — Full Derivation
+5.3 The Wow! Signal — Sagittarius Convergence & Doorbell Hypothesis
+From: The_Sagittarius_Convergence_v2_Corrected.docx & The_Doorbell_Hypothesis_Leckey.docx (docs/)
+5.4 Harmonic Solar System Survey
+From: Harmonic_Solar_System_Survey_Leckey.docx — DE440 ephemeris (data/de440_ephemeris.csv)
+Note: DE440 lag correlation test (r=0.025, p=0.31) does not yet confirm market coupling to planetary positions. Orbital ratios are observationally documented but causal mechanism unproven.
+5.5 Walgidee Hills — HNC Harmonic LIDAR
+From: HNC_Harmonic_LIDAR_v2_AluminiumFluid_Leckey.docx (docs/). Western Australia archaeological site.
+PART VI: FINANCIAL MARKET APPLICATION
+6.1 Aureon Trading System Architecture
+6.2 Bot Detection System
+6.3 Archetypal Extraction Patterns — Documented Cycles
+Attribution evidence: peak trading 13–16 UTC (NYC morning), US holiday gaps, Americas timezone, accumulation-focused low-aggression profile.
+6.4 Real Trading Results — 63 Confirmed Trades
+Source: docs/BACKTEST_RESULTS.md — 63 real Alpaca live trades, Rising Star accumulation strategy.
+Notable: 3 of top 5 wins occurred on NEGATIVE price movement — DCA accumulation made price decline profitable.
+6.5 The $33.5 Trillion Extraction Timeline
+PART VII: PROJECT DRUID — SCALING ARCHITECTURE
+7.1 DCE Power Scaling Law — Computed Values
+Note: P₀ = 10 mW/node is inferred from EPAS experiments — not yet independently measured. N² scaling requires validated multi-node array test.
+7.2 Hardware Roadmap — Project Druid
+PART VIII: PRE-REGISTERED FALSIFIABLE PREDICTIONS
+All predictions below are pre-registered in this document (April 2026). Each can be confirmed or refuted by independent observation or experiment.
+PART IX: SOURCE CODE AUDIT — COMMIT 61c0862
+9.1 Constant Verification — IEEE 754 Exact
+9.2 Items Verified in Code vs Theory-Only
+PART X: REFERENCES
+[1] Casimir, H.B.G. (1948). On the attraction between two perfectly conducting plates. Proc. Koninklijke Nederlandse Akademie van Wetenschappen, 51, 793–795.
+[2] Wilson, C.M., et al. (2011). Observation of the dynamical Casimir effect in a superconducting circuit. Nature, 479, 376–379.
+[3] Schumann, W.O. (1952). Über die strahlungslosen Eigenschwingungen einer leitenden Kugel, die von einer Luftschicht und einer Ionosphärenhülle umgeben ist. Zeitschrift und Naturforschung, 7a, 149–154.
+[4] McCraty, R., et al. (2017). Synchronization of human autonomic nervous system rhythms with geomagnetic activity in the local environment. Int. J. Environ. Res. Public Health, 14(7), 770.
+[5] Persinger, M.A. (2014). Schumann resonances and human brain activity: Are they related? Journal of Scientific Exploration, 28(2), 247–265.
+[6] Meissner, P.K. (1975). The 1420 MHz hydrogen line. Astronomy & Astrophysics, 41, 397–408.
+[7] NIST Standard Reference Database. Hydrogen hyperfine structure. f_H = 1,420,405,751.768 Hz.
+[8] Ehman, J.R. (1977). Wow! Signal. Big Ear Radio Observatory, Ohio State University. August 15, 1977.
+[9] Micheli, M., et al. (2018). Non-gravitational acceleration in the trajectory of 1I/2017 U1 ('Oumuamua). Nature, 559, 223–226.
+[10] Guzik, P., et al. (2020). Initial characterization of interstellar comet 2I/Borisov. Nature Astronomy, 4, 53–57.
+[11] Standish, E.M., & Williams, J.G. (2012). Orbital Ephemerides of the Sun, Moon, and Planets. In Explanatory Supplement to the Astronomical Almanac. JPL DE440.
+[12] NOAA Space Weather Prediction Center. Kp-index data archive, 1932–2025. ftp.ngdc.noaa.gov.
+[13] GFZ Potsdam. Kp, ap, and F10.7 geomagnetic index dataset. 274,512 3-hourly rows used in this study.
+[14] Garner, H.D. (1977). Detection of anomalous radio signal at 21 cm. Big Ear newsletter. Ohio State University.
+[15] Boyer, T.H. (1975). Random electrodynamics: The theory of classical electrodynamics with classical electromagnetic zero-point radiation. Physical Review D, 11(4), 790.
+[16] Milonni, P.W. (1994). The Quantum Vacuum: An Introduction to Quantum Electrodynamics. Academic Press.
+[17] Leckey, G. (2026). HNC Unified White Paper. Aureon Institute. github.com/RA-CONSULTING/aureon-trading/blob/main/docs/HNC_UNIFIED_WHITE_PAPER.md
+[18] Leckey, G. (2026). EPAS ZPE Research Paper. Commit 61c0862. github.com/RA-CONSULTING/aureon-trading
+[19] Leckey, G. (2026). The Sagittarius Convergence (v2 corrected). Aureon Institute. docs/The_Sagittarius_Convergence_v2_Corrected.docx
+[20] Leckey, G. (2026). The Doorbell Hypothesis. Aureon Institute. docs/The_Doorbell_Hypothesis_Leckey.docx
+[21] Leckey, G. (2026). Harmonic Solar System Survey. Aureon Institute. docs/Harmonic_Solar_System_Survey_Leckey.docx
+[22] Leckey, G. (2026). HNC Harmonic LIDAR White Paper v2 — Aluminium-Obsidian Findings. docs/HNC_Harmonic_LIDAR_v2_AluminiumFluid_Leckey.docx
+[23] Leckey, G. (2026). The Dormant Seed — Maeshowe Runic Dual-Voice Protocol. docs/The_Dormant_Seed.docx
+[24] Leckey, G. (2026). Source Oscillator Constraint White Paper. docs/The_Source_Oscillator_Constraint_Whitepa.docx
+[25] CIA Declassified. HNC-relevant intelligence documents. memory/cia_declassified/packets.json
+[26] Alpaca Markets. Live trading data, 63 real trades, Rising Star strategy. data/execution_audit.jsonl
+[27] Binance API. BTC, ETH, DOGE, SOL, LINK, UNI, LTC, ADA, AVAX, XRP real-time data. data/probability_predictions.jsonl
+APPENDIX A: COMPLETE CONSTANT REGISTRY
+APPENDIX B: EMERALD TABLET DECODER
+APPENDIX C: ANCIENT CONVERGENCE PROBABILITY ANALYSIS
+APPENDIX D: OPEN DATA FOR REPLICATION

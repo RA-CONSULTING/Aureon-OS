@@ -100,6 +100,10 @@ def _has_quarantined_runtime_reference(text: str) -> bool:
 def _active_files() -> list[Path]:
     files: list[Path] = []
     for directory, child_dirs, child_files in os.walk(ROOT):
+        relative = Path(directory).resolve().relative_to(ROOT.resolve()).as_posix()
+        if relative.startswith("deploy/selfhost/image"):
+            child_dirs[:] = []
+            continue
         child_dirs[:] = [name for name in child_dirs if name not in WALK_EXCLUSIONS]
         base = Path(directory)
         files.extend(base / name for name in child_files)

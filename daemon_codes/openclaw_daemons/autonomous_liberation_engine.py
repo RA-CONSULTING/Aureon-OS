@@ -387,7 +387,7 @@ class AutonomousLiberationEngine:
                 'timestamp': datetime.now(timezone.utc).isoformat(),
                 'command': 'FORCE_INJECTION',
                 'frequency': PRIME_SENTINEL_KEY,
-                'key': 'PSK-b04fc8900c712ee4-812.83Hz-00P',
+                'key': 'REDACTED',
                 'cycle': self.cycle,
                 'source': 'autonomous_engine',
             }

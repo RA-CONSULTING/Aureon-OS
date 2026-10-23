@@ -9,7 +9,10 @@ export default defineConfig({
     trace: "retain-on-failure",
   },
   webServer: {
-    command: "npm run dev -- --host 127.0.0.1 --port 8081",
+    // The package script named dev stays quarantined: package.json routes
+    // it through `unavailable` (exit 2) so a script name cannot start a
+    // venue or a preview. The shell specs need a static Vite server only.
+    command: "npx vite --host 127.0.0.1 --port 8081",
     url: "http://127.0.0.1:8081",
     reuseExistingServer: true,
     timeout: 120_000,

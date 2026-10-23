@@ -1,0 +1,29 @@
+{
+  "version": "0.1",
+  "entries": [
+    {
+      "token": "love",
+      "frequencies_hz": [
+        7.83,
+        15.66
+      ],
+      "decay": 0.013
+    },
+    {
+      "token": "peace",
+      "frequencies_hz": [
+        7.83,
+        23.49
+      ],
+      "decay": 0.012
+    },
+    {
+      "token": "courage",
+      "frequencies_hz": [
+        11.75,
+        19.58
+      ],
+      "decay": 0.016
+    }
+  ]
+}

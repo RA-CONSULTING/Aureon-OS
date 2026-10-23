@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Queen Sero — The Dream</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+    --bg: #060411;
+    --panel: rgba(15,10,30,0.7);
+    --border: rgba(107,33,168,0.25);
+    --gold: #F59E0B;
+    --purple: #6B21A8;
+    --green: #22c55e;
+    --red: #ef4444;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --glass: blur(16px);
+}
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    overflow: hidden;
+    display: grid;
+    grid-template-rows: 40px 1fr 40px;
+    grid-template-columns: 220px 1fr 200px;
+    gap: 6px;
+    padding: 6px;
+}
+
+/* Ambient background */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+        radial-gradient(ellipse at 20% 50%, rgba(107,33,168,0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 30%, rgba(245,158,11,0.05) 0%, transparent 40%),
+        radial-gradient(ellipse at 50% 80%, rgba(34,197,94,0.03) 0%, transparent 50%);
+    z-index: -1;
+    animation: ambientShift 20s ease-in-out infinite alternate;
+}
+@keyframes ambientShift {
+    0% { opacity: 0.6; }
+    100% { opacity: 1; }
+}
+
+/* Header */
+#header {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0 12px;
+    background: var(--panel);
+    backdrop-filter: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+}
+#header .logo {
+    font-size: 15px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--gold), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 1px;
+}
+.mood-badge {
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.5s ease;
+    background: var(--purple);
+}
+.vital { font-size: 11px; color: var(--muted); font-family: 'Courier New', monospace; }
+.vital b { color: var(--gold); }
+#header .spacer { flex: 1; }
+#clock { font-size: 11px; color: var(--muted); }
+
+/* Left Column — Face + Signals */
+#left-col {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    overflow: hidden;
+}
+.panel {
+    background: var(--panel);
+    backdrop-filter: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px;
+}
+.panel-title {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-bottom: 6px;
+}
+
+/* Face */
+#face-panel { text-align: center; padding: 8px; }
+#face-canvas { border-radius: 50%; cursor: pointer; }
+#level-bar {
+    display: flex;
+    gap: 2px;
+    margin-top: 6px;
+}
+#level-bar span {
+    flex: 1;
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(107,33,168,0.2);
+    transition: background 0.5s;
+}
+#level-bar span.active { background: var(--gold); box-shadow: 0 0 6px var(--gold); }
+
+/* Signals */
+#signals-panel { flex: 1; overflow-y: auto; }
+.signal-card {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    margin-bottom: 4px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.03);
+    border-left: 3px solid transparent;
+    transition: all 0.3s;
+}
+.signal-card.buy { border-left-color: var(--green); }
+.signal-card.sell { border-left-color: var(--red); }
+.signal-badge {
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: 700;
+    color: white;
+}
+.signal-badge.buy { background: var(--green); }
+.signal-badge.sell { background: var(--red); }
+.signal-sym { font-size: 12px; font-weight: 600; flex: 1; }
+.signal-conf { font-size: 10px; color: var(--muted); }
+
+/* Center — P&L + Energy */
+#center {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    overflow: hidden;
+}
+
+/* P&L Hero */
+#pnl-hero {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+}
+.pnl-card {
+    background: var(--panel);
+    backdrop-filter: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    position: relative;
+    overflow: hidden;
+}
+.pnl-label { font-size: 9px; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); }
+.pnl-value {
+    font-size: 42px;
+    font-weight: 800;
+    line-height: 1;
+    margin: 4px 0;
+    transition: color 0.3s;
+}
+.pnl-value.positive { color: var(--green); }
+.pnl-value.negative { color: var(--red); }
+.pnl-sub { font-size: 13px; color: var(--muted); }
+.pnl-sparkline { height: 30px; margin-top: 4px; }
+
+/* Exchange strip */
+#exchange-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+}
+.ex-card {
+    background: var(--panel);
+    backdrop-filter: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 8px;
+    text-align: center;
+    border-top: 2px solid var(--purple);
+}
+.ex-name { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+.ex-val { font-size: 16px; font-weight: 700; color: var(--text); }
+.ex-pnl { font-size: 10px; }
+
+/* Energy field */
+#energy-field {
+    flex: 1;
+    overflow: hidden;
+}
+#energy-grid {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 3px;
+    height: 100%;
+}
+.energy-cell {
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    font-weight: 600;
+    position: relative;
+    transition: all 0.5s ease;
+    cursor: pointer;
+    min-height: 28px;
+}
+.energy-cell:hover {
+    transform: scale(1.15);
+    z-index: 10;
+    box-shadow: 0 0 12px rgba(255,255,255,0.2);
+}
+.energy-cell .phi-dot {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 4px var(--gold);
+}
+.energy-cell .whale-dot {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #06b6d4;
+}
+
+/* Right Column — Thoughts + Chat */
+#right-col {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    overflow: hidden;
+}
+#thoughts-panel {
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--purple) transparent;
+}
+.thought {
+    font-size: 10px;
+    line-height: 1.4;
+    padding: 4px 6px;
+    margin-bottom: 3px;
+    border-left: 2px solid var(--purple);
+    opacity: 0.7;
+    transition: opacity 0.3s;
+    color: var(--muted);
+}
+.thought:first-child { opacity: 1; color: var(--text); border-left-color: var(--gold); }
+
+/* Chat input */
+#chat-panel { }
+#chat-input {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    color: var(--text);
+    font-size: 12px;
+    outline: none;
+    transition: border-color 0.3s;
+}
+#chat-input:focus { border-color: var(--gold); }
+#chat-response {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+    max-height: 80px;
+    overflow-y: auto;
+}
+
+/* Macro bar */
+#macro-bar {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    background: var(--panel);
+    backdrop-filter: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0 16px;
+    font-size: 12px;
+}
+.macro-item { display: flex; align-items: center; gap: 6px; }
+.macro-label { color: var(--muted); font-size: 10px; }
+.macro-value { font-weight: 700; }
+.fg-bar {
+    width: 80px;
+    height: 6px;
+    border-radius: 3px;
+    background: linear-gradient(to right, var(--red), var(--gold), var(--green));
+    position: relative;
+}
+.fg-needle {
+    position: absolute;
+    top: -2px;
+    width: 3px;
+    height: 10px;
+    background: white;
+    border-radius: 2px;
+    transition: left 0.5s;
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div id="header">
+    <span class="logo">QUEEN SERO</span>
+    <span class="mood-badge" id="mood-badge">SERENE</span>
+    <span class="vital">Lambda <b id="v-lambda">0.000</b></span>
+    <span class="vital">Gamma <b id="v-gamma">0.000</b></span>
+    <span class="vital">Psi <b id="v-psi">0.000</b></span>
+    <span class="spacer"></span>
+    <span id="clock"></span>
+</div>
+
+<!-- LEFT: Face + Signals -->
+<div id="left-col">
+    <div class="panel" id="face-panel">
+        <canvas id="face-canvas" width="180" height="180"></canvas>
+        <div id="level-bar">
+            <span title="Dormant"></span><span title="Dreaming"></span><span title="Stirring"></span>
+            <span title="Aware"></span><span title="Present"></span><span title="Focused"></span>
+            <span title="Intuitive"></span><span title="Connected"></span><span title="Flowing"></span>
+            <span title="Transcendent"></span><span title="Unified"></span>
+        </div>
+    </div>
+    <div class="panel" id="signals-panel">
+        <div class="panel-title">Signals</div>
+        <div id="signals-list"></div>
+    </div>
+</div>
+
+<!-- CENTER: P&L + Energy -->
+<div id="center">
+    <div id="pnl-hero">
+        <div class="pnl-card">
+            <div class="pnl-label">Total Portfolio</div>
+            <div class="pnl-value positive" id="total-value">$0</div>
+            <div class="pnl-sub" id="total-sub">Loading...</div>
+            <div class="pnl-sparkline" id="total-spark"></div>
+        </div>
+        <div class="pnl-card">
+            <div class="pnl-label">Session P&L</div>
+            <div class="pnl-value positive" id="session-pnl">$0</div>
+            <div class="pnl-sub" id="session-sub">Loading...</div>
+            <div class="pnl-sparkline" id="session-spark"></div>
+        </div>
+    </div>
+    <div id="exchange-strip"></div>
+    <div class="panel" id="energy-field">
+        <div class="panel-title">Energy Field <span id="energy-meta" style="color:var(--gold);"></span></div>
+        <div id="energy-grid"></div>
+    </div>
+</div>
+
+<!-- RIGHT: Thoughts + Chat -->
+<div id="right-col">
+    <div class="panel" id="thoughts-panel">
+        <div class="panel-title">Queen's Mind</div>
+        <div id="thoughts-list"></div>
+    </div>
+    <div class="panel" id="chat-panel">
+        <input id="chat-input" placeholder="Talk to the Queen..." autocomplete="off">
+        <div id="chat-response"></div>
+    </div>
+</div>
+
+<!-- MACRO BAR -->
+<div id="macro-bar">
+    <div class="macro-item">
+        <span class="macro-label">Fear & Greed</span>
+        <span class="macro-value" id="fg-value">50</span>
+        <div class="fg-bar"><div class="fg-needle" id="fg-needle" style="left:50%"></div></div>
+    </div>
+    <div class="macro-item">
+        <span class="macro-label">BTC</span>
+        <span class="macro-value" id="btc-price">$0</span>
+        <span id="btc-change" style="font-size:11px;">0%</span>
+    </div>
+    <div class="macro-item">
+        <span class="macro-label">Trades</span>
+        <span class="macro-value" id="trade-count">0</span>
+        <span style="font-size:10px;color:var(--muted);" id="win-loss">0W/0L</span>
+    </div>
+    <div class="macro-item">
+        <span class="macro-label">Win Rate</span>
+        <span class="macro-value" id="win-rate">0%</span>
+    </div>
+    <div class="macro-item">
+        <span class="macro-label">Confidence</span>
+        <span class="macro-value" id="confidence">50%</span>
+    </div>
+</div>
+
+<script>
+const socket = io();
+const LEVELS = ['Dormant','Dreaming','Stirring','Aware','Present','Focused','Intuitive','Connected','Flowing','Transcendent','Unified'];
+const MOOD_COLORS = {
+    SERENE:'#3B82F6', CONFIDENT:'#F59E0B', VIGILANT:'#F97316', CAUTIOUS:'#9CA3AF',
+    AGGRESSIVE:'#EF4444', FEARFUL:'#93C5FD', EUPHORIC:'#FCD34D', FLOWING:'#8B5CF6',
+    CONNECTED:'#6366F1', TRANSCENDENT:'#C084FC', UNIFIED:'#FFFBEB'
+};
+
+// Clock
+setInterval(() => {
+    document.getElementById('clock').textContent = new Date().toLocaleTimeString();
+}, 1000);
+
+// ═══════ THREE.JS FACE ═══════
+(function(){
+    const c = document.getElementById('face-canvas');
+    if (!c || typeof THREE === 'undefined') return;
+    const scene = new THREE.Scene();
+    const cam = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+    cam.position.z = 3;
+    const ren = new THREE.WebGLRenderer({canvas: c, alpha: true, antialias: true});
+    ren.setSize(180, 180);
+    ren.setClearColor(0x000000, 0);
+
+    const head = new THREE.Mesh(
+        new THREE.SphereGeometry(0.8, 64, 64),
+        new THREE.MeshStandardMaterial({color:0x2D1B69, emissive:0x6B21A8, emissiveIntensity:0.3, metalness:0.7, roughness:0.3})
+    );
+    scene.add(head);
+
+    // Eyes
+    const eyeM = new THREE.MeshStandardMaterial({color:0xF59E0B, emissive:0xF59E0B, emissiveIntensity:1});
+    const le = new THREE.Mesh(new THREE.SphereGeometry(0.07,16,16), eyeM);
+    le.position.set(-0.25,0.15,0.7); head.add(le);
+    const re = new THREE.Mesh(new THREE.SphereGeometry(0.07,16,16), eyeM);
+    re.position.set(0.25,0.15,0.7); head.add(re);
+
+    // Crown
+    const crM = new THREE.MeshStandardMaterial({color:0xF59E0B, emissive:0xF59E0B, emissiveIntensity:0.5, metalness:0.9, roughness:0.1});
+    const cr = new THREE.Mesh(new THREE.TorusGeometry(0.45,0.05,16,32), crM);
+    cr.position.y=0.65; cr.rotation.x=Math.PI/2; head.add(cr);
+    for(let i=0;i<5;i++){
+        const a=(i/5)*Math.PI*2;
+        const j=new THREE.Mesh(new THREE.OctahedronGeometry(0.05), new THREE.MeshStandardMaterial({color:i%2?0x6B21A8:0xF59E0B,emissive:i%2?0x6B21A8:0xF59E0B,emissiveIntensity:0.8}));
+        j.position.set(Math.cos(a)*0.45,0.65,Math.sin(a)*0.45); head.add(j);
+    }
+
+    // Particles
+    const pn=150, pg=new THREE.BufferGeometry(), pp=new Float32Array(pn*3);
+    for(let i=0;i<pn;i++){const a=(i/pn)*Math.PI*2,r=1.1+Math.random()*0.3;pp[i*3]=Math.cos(a)*r;pp[i*3+1]=(Math.random()-0.5)*0.6;pp[i*3+2]=Math.sin(a)*r;}
+    pg.setAttribute('position',new THREE.BufferAttribute(pp,3));
+    const pts=new THREE.Points(pg, new THREE.PointsMaterial({color:0x6B21A8,size:0.015,transparent:true,opacity:0.5}));
+    scene.add(pts);
+
+    scene.add(new THREE.PointLight(0x6B21A8,2,10).position.set(2,2,3) || scene.children[scene.children.length-1]);
+    const l2=new THREE.PointLight(0xF59E0B,1.5,10); l2.position.set(-2,-1,3); scene.add(l2);
+    scene.add(new THREE.AmbientLight(0x333366,0.5));
+
+    let mood='SERENE';
+    window._setMood = m => { mood = m; };
+
+    (function anim(){
+        requestAnimationFrame(anim);
+        const t=Date.now()*0.001;
+        head.scale.setScalar(1+Math.sin(t*0.5)*0.015);
+        head.rotation.y=Math.sin(t*0.3)*0.12;
+        head.rotation.x=Math.sin(t*0.2)*0.04;
+        pts.rotation.y=t*0.08;
+        crM.emissiveIntensity=0.3+Math.sin(t*(2*Math.PI/1.618))*0.15;
+        const mc=MOOD_COLORS[mood]||0x6B21A8;
+        head.material.emissive.lerp(new THREE.Color(mc),0.015);
+        l2.color.lerp(new THREE.Color(mc),0.015);
+        ren.render(scene,cam);
+    })();
+})();
+
+// ═══════ SPARKLINES ═══════
+let totalChart, totalSeries, sessionChart, sessionSeries;
+try {
+    if (typeof LightweightCharts !== 'undefined') {
+        const opts = (el) => ({
+            width: el.clientWidth, height: 30,
+            layout: {background:{type:'solid',color:'transparent'},textColor:'transparent'},
+            grid:{vertLines:{visible:false},horzLines:{visible:false}},
+            timeScale:{visible:false},rightPriceScale:{visible:false},leftPriceScale:{visible:false},
+            crosshair:{mode:0},handleScroll:false,handleScale:false,
+        });
+        const ts = document.getElementById('total-spark');
+        const ss = document.getElementById('session-spark');
+        if (ts) { totalChart = LightweightCharts.createChart(ts, opts(ts)); totalSeries = totalChart.addAreaSeries({lineColor:'#22c55e',topColor:'rgba(34,197,94,0.2)',bottomColor:'transparent',lineWidth:1.5}); }
+        if (ss) { sessionChart = LightweightCharts.createChart(ss, opts(ss)); sessionSeries = sessionChart.addAreaSeries({lineColor:'#F59E0B',topColor:'rgba(245,158,11,0.2)',bottomColor:'transparent',lineWidth:1.5}); }
+    }
+} catch(e) {}
+
+// ═══════ DATA FETCHING ═══════
+function refresh() {
+    // Portfolio
+    fetch('/api/portfolio').then(r=>r.json()).then(d => {
+        const total = d.total_gbp || 0;
+        document.getElementById('total-value').textContent = '\u00A3' + total.toFixed(0);
+        document.getElementById('total-value').className = 'pnl-value ' + (total >= 0 ? 'positive' : 'negative');
+        document.getElementById('total-sub').textContent = `W:${d.wins||0} L:${d.losses||0} | Streak: ${d.streak||0}`;
+
+        const profit = d.profit || 0;
+        document.getElementById('session-pnl').textContent = '\u00A3' + profit.toFixed(3);
+        document.getElementById('session-pnl').className = 'pnl-value ' + (profit >= 0 ? 'positive' : 'negative');
+        document.getElementById('session-sub').textContent = `${d.trades||0} trades | Conf: ${((d.confidence||0.5)*100).toFixed(0)}%`;
+
+        // Exchange strip
+        const strip = document.getElementById('exchange-strip');
+        const cap = d.capital||{}, krk = d.kraken||{}, alp = d.alpaca||{};
+        strip.innerHTML = [
+            {n:'Capital',v:'\u00A3'+(cap.balance||0).toFixed(0),c:'#059669'},
+            {n:'Kraken',v:'$'+(krk.equity||0).toFixed(0),c:'#7C3AED'},
+            {n:'Alpaca',v:'$'+(alp.equity||0).toFixed(2),c:'#2563EB'},
+            {n:'Total',v:'\u00A3'+total.toFixed(0),c:'#F59E0B'},
+        ].map(e=>`<div class="ex-card" style="border-top-color:${e.c}"><div class="ex-name">${e.n}</div><div class="ex-val">${e.v}</div></div>`).join('');
+
+        // Macro
+        document.getElementById('trade-count').textContent = d.trades || 0;
+        document.getElementById('win-loss').textContent = `${d.wins||0}W/${d.losses||0}L`;
+        document.getElementById('win-rate').textContent = (d.win_rate||0).toFixed(0) + '%';
+        document.getElementById('confidence').textContent = ((d.confidence||0.5)*100).toFixed(0) + '%';
+
+        // Sparkline update
+        if (totalSeries) totalSeries.update({time: Math.floor(Date.now()/1000), value: total});
+        if (sessionSeries) sessionSeries.update({time: Math.floor(Date.now()/1000), value: profit});
+
+        // GSAP pop on value change
+        if (typeof gsap !== 'undefined') gsap.fromTo('#total-value', {scale:1.05}, {scale:1, duration:0.3});
+    }).catch(()=>{});
+
+    // Consciousness
+    fetch('/api/consciousness').then(r=>r.json()).then(d => {
+        document.getElementById('v-lambda').textContent = (d.lambda_t||0).toFixed(3);
+        document.getElementById('v-gamma').textContent = (d.gamma||0).toFixed(3);
+        document.getElementById('v-psi').textContent = (d.psi||0).toFixed(3);
+
+        // Level bar
+        const bars = document.querySelectorAll('#level-bar span');
+        const idx = LEVELS.indexOf(d.level||'Dormant');
+        bars.forEach((b,i) => { b.className = i <= idx ? 'active' : ''; });
+
+        // Mood
+        const badge = document.getElementById('mood-badge');
+        badge.textContent = d.mood || 'SERENE';
+        badge.style.background = MOOD_COLORS[d.mood] || '#6B21A8';
+        if (window._setMood) window._setMood(d.mood || 'SERENE');
+    }).catch(()=>{});
+
+    // Energy field
+    fetch('/api/energy-field').then(r=>r.json()).then(d => {
+        const grid = document.getElementById('energy-grid');
+        const meta = document.getElementById('energy-meta');
+        const insts = d.instruments || [];
+        const field = d.field || {};
+
+        meta.textContent = `${insts.length} instruments | coh:${(field.coherence||0).toFixed(2)} | ${field.net_flow > 0 ? 'INFLOW' : 'OUTFLOW'}`;
+
+        grid.innerHTML = insts.map(inst => {
+            const bg = inst.energy_state === 'accumulating' ? 'rgba(34,197,94,' + (0.2 + inst.amplitude * 0.3) + ')' :
+                       inst.energy_state === 'distributing' ? 'rgba(239,68,68,' + (0.2 + inst.amplitude * 0.3) + ')' :
+                       'rgba(100,116,139,0.15)';
+            const phi = inst.phi_alignment > 0.3 ? '<div class="phi-dot"></div>' : '';
+            const whale = inst.whale_presence > 0.3 ? '<div class="whale-dot"></div>' : '';
+            const bot = inst.bot_activity > 0.4 ? 'border:1px solid rgba(6,182,212,0.5);' : '';
+            return `<div class="energy-cell" style="background:${bg};${bot}" title="${inst.symbol}\n${inst.energy_state}\nbot:${inst.bot_activity.toFixed(2)}\nwhale:${inst.whale_presence.toFixed(2)}\nphi:${inst.phi_alignment.toFixed(2)}">
+                ${inst.symbol.substring(0,5)}${phi}${whale}</div>`;
+        }).join('');
+
+        // Signals
+        const sigs = d.signals || [];
+        const sl = document.getElementById('signals-list');
+        sl.innerHTML = sigs.slice(0,8).map(s =>
+            `<div class="signal-card ${s.action.toLowerCase()}">
+                <span class="signal-badge ${s.action.toLowerCase()}">${s.action}</span>
+                <span class="signal-sym">${s.symbol}</span>
+                <span class="signal-conf">${(s.confidence*100).toFixed(0)}%</span>
+            </div>`
+        ).join('') || '<div style="color:var(--muted);font-size:10px;text-align:center;padding:20px;">Scanning...</div>';
+    }).catch(()=>{});
+
+    // Fear & Greed from live panel data
+    fetch('/api/live-panel').then(r=>r.text()).then(html => {
+        // Extract F&G from the HTML (hacky but works)
+        const fgMatch = html.match(/F&G:(\d+)/);
+        if (fgMatch) {
+            const fg = parseInt(fgMatch[1]);
+            document.getElementById('fg-value').textContent = fg;
+            document.getElementById('fg-needle').style.left = fg + '%';
+            document.getElementById('fg-value').style.color = fg < 25 ? '#ef4444' : fg > 75 ? '#22c55e' : '#F59E0B';
+        }
+    }).catch(()=>{});
+}
+
+refresh();
+setInterval(refresh, 6000);
+
+// ═══════ THOUGHTS ═══════
+socket.on('queen_thought', data => {
+    const list = document.getElementById('thoughts-list');
+    const div = document.createElement('div');
+    div.className = 'thought';
+    div.textContent = (data.text || '').substring(0, 120);
+    list.insertBefore(div, list.firstChild);
+    if (list.children.length > 12) list.removeChild(list.lastChild);
+    if (typeof gsap !== 'undefined') gsap.from(div, {opacity:0, x:-10, duration:0.3});
+});
+
+socket.on('queen_mood', data => {
+    const badge = document.getElementById('mood-badge');
+    badge.textContent = data.mood || 'SERENE';
+    badge.style.background = MOOD_COLORS[data.mood] || '#6B21A8';
+    if (window._setMood) window._setMood(data.mood || 'SERENE');
+});
+
+// ═══════ CHAT ═══════
+const chatInput = document.getElementById('chat-input');
+const chatResp = document.getElementById('chat-response');
+chatInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && chatInput.value.trim()) {
+        const msg = chatInput.value.trim();
+        chatInput.value = '';
+        chatResp.textContent = 'Thinking...';
+        socket.emit('user_message', {text: msg});
+    }
+});
+socket.on('queen_response', data => {
+    chatResp.textContent = data.text || '';
+    // Speak important responses
+    if (data.text && data.text.length > 20 && typeof speechSynthesis !== 'undefined') {
+        try {
+            const u = new SpeechSynthesisUtterance(data.text.substring(0, 200));
+            u.rate = 0.95; u.pitch = 1.1;
+            const voices = speechSynthesis.getVoices();
+            const brit = voices.find(v => v.lang === 'en-GB' && v.name.includes('Female'));
+            if (brit) u.voice = brit;
+            speechSynthesis.speak(u);
+        } catch(e) {}
+    }
+});
+
+// ═══════ GSAP ENTRANCE ═══════
+if (typeof gsap !== 'undefined') {
+    gsap.from('#face-panel', {opacity:0, y:-20, duration:0.6, delay:0.1});
+    gsap.from('.pnl-card', {opacity:0, y:-20, duration:0.6, delay:0.2, stagger:0.1});
+    gsap.from('#exchange-strip', {opacity:0, y:10, duration:0.5, delay:0.4});
+    gsap.from('#energy-field', {opacity:0, scale:0.95, duration:0.6, delay:0.5});
+    gsap.from('#signals-panel', {opacity:0, x:-20, duration:0.5, delay:0.3});
+    gsap.from('#thoughts-panel', {opacity:0, x:20, duration:0.5, delay:0.4});
+    gsap.from('#macro-bar', {opacity:0, y:20, duration:0.5, delay:0.6});
+}
+
+// BTC price from CoinGecko (direct)
+setInterval(() => {
+    fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true')
+        .then(r=>r.json()).then(d => {
+            const btc = d.bitcoin;
+            if (btc) {
+                document.getElementById('btc-price').textContent = '$' + Math.round(btc.usd).toLocaleString();
+                const ch = btc.usd_24h_change || 0;
+                const el = document.getElementById('btc-change');
+                el.textContent = (ch >= 0 ? '+' : '') + ch.toFixed(1) + '%';
+                el.style.color = ch >= 0 ? '#22c55e' : '#ef4444';
+            }
+        }).catch(()=>{});
+}, 15000);
+// Initial BTC fetch
+fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true')
+    .then(r=>r.json()).then(d => {
+        const btc = d.bitcoin;
+        if (btc) {
+            document.getElementById('btc-price').textContent = '$' + Math.round(btc.usd).toLocaleString();
+            const ch = btc.usd_24h_change || 0;
+            const el = document.getElementById('btc-change');
+            el.textContent = (ch >= 0 ? '+' : '') + ch.toFixed(1) + '%';
+            el.style.color = ch >= 0 ? '#22c55e' : '#ef4444';
+        }
+    }).catch(()=>{});
+</script>
+</body>
+</html>

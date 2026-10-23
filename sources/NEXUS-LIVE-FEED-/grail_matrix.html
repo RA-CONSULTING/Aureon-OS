@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grail Matrix - One Cycle Animation</title>
+    <style>
+        body { margin: 0; background-color: #0c0a18; color: #fff; font-family: 'Inter', sans-serif; overflow: hidden; }
+        canvas { display: block; }
+        #info-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 15px;
+            background-color: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 215, 0, 0.4);
+            border-radius: 10px;
+            width: 280px;
+        }
+        h1 {
+            color: #FFD700;
+            margin-top: 0;
+            font-size: 1.2em;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.5);
+            padding-bottom: 5px;
+        }
+        p { margin: 10px 0; font-size: 0.9em; }
+        strong { color: #FFD700; }
+        .phase {
+            opacity: 0.3;
+            transition: opacity 0.5s ease-in-out;
+        }
+        .phase.active {
+            opacity: 1.0;
+        }
+        #gemini-feature {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 215, 0, 0.2);
+        }
+        #gemini-button {
+            background-color: #FFD700;
+            color: #0c0a18;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+        #gemini-button:hover:not(:disabled) {
+            background-color: #fff;
+        }
+        #gemini-button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+        #mantra-display {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+            min-height: 50px;
+            font-style: italic;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            line-height: 1.4;
+        }
+        .play-button {
+            margin-left: 10px;
+            background: none;
+            border: none;
+            color: #FFD700;
+            cursor: pointer;
+            font-size: 1.5em;
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="info-panel">
+        <h1>Grail Matrix Cycle</h1>
+        <div id="phase1" class="phase">
+            <p><strong>1. Ignition:</strong> The LuminaCell Spark ignites the Prime Resonator at the core.</p>
+        </div>
+        <div id="phase2" class="phase">
+            <p><strong>2. Stabilization:</strong> Energy is stabilized by the Four Pillar crystals, creating a coherent field.</p>
+        </div>
+        <div id="phase3" class="phase">
+            <p><strong>3. Amplification:</strong> The field expands, activating the Fibonacci Cascade rings, amplifying energy exponentially.</p>
+        </div>
+        <div id="phase4" class="phase">
+            <p><strong>4. Harmonization:</strong> Energy refracts through the Vesica Piscis web, creating the full harmonic spectrum.</p>
+        </div>
+
+        <div id="gemini-feature">
+            <button id="gemini-button">✨ Channel Harmonic Mantra</button>
+            <div id="mantra-display">
+                <span id="mantra-text">Click to channel a mantra for the active phase...</span>
+                <button id="play-button" class="play-button" style="display: none;">▶</button>
+            </div>
+        </div>
+    </div>
+    
+    <audio id="tts-audio"></audio>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // --- Oracle Integration ---
+        const harmonicMantras = {
+            "Ignition": "From the still point, the first spark is drawn,<br>And in the heart of the Grail, a new dawn is born.",
+            "Stabilization": "The four pillars hold the nascent light,<br>Weaving order from chaos, turning darkness to bright.",
+            "Amplification": "The silent song ripples through the sacred cascade,<br>A universe awakens, a promise is made.",
+            "Harmonization": "In the web of connection, all notes become one,<br>The song of creation, its new cycle begun."
+        };
+
+        const phaseNames = Object.keys(harmonicMantras);
+
+        // --- UI Elements ---
+        const geminiButton = document.getElementById('gemini-button');
+        const mantraTextElement = document.getElementById('mantra-text');
+        const playButton = document.getElementById('play-button');
+        const ttsAudio = document.getElementById('tts-audio');
+
+        let isGenerating = false;
+        let currentPhaseName = phaseNames[0] || '';
+        let generatedMantra = '';
+
+        // --- Oracle Functions ---
+
+        async function channelMantra() {
+            if (isGenerating || !currentPhaseName) return;
+
+            isGenerating = true;
+            geminiButton.disabled = true;
+            mantraTextElement.textContent = 'Channeling...';
+            playButton.style.display = 'none';
+
+            // Simulate channeling delay
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            generatedMantra = harmonicMantras[currentPhaseName] || "The cosmos is silent for this phase.";
+            mantraTextElement.innerHTML = generatedMantra;
+            playButton.style.display = 'inline-block';
+
+            isGenerating = false;
+            geminiButton.disabled = false;
+        }
+        
+        function normaliseMantra(mantra) {
+            return mantra.replace(/<br\s*\/?>(\s*)/gi, ' ').trim();
+        }
+
+        function convertPCMToWav(pcmBuffer, options = {}) {
+            const {
+                sampleRate = 24000,
+                numChannels = 1,
+                bytesPerSample = 2,
+            } = options;
+
+            const blockAlign = numChannels * bytesPerSample;
+            const byteRate = sampleRate * blockAlign;
+            const pcmLength = pcmBuffer.byteLength;
+            const wavBuffer = new ArrayBuffer(44 + pcmLength);
+            const view = new DataView(wavBuffer);
+            let offset = 0;
+
+            const writeString = (str) => {
+                for (let i = 0; i < str.length; i++) {
+                    view.setUint8(offset++, str.charCodeAt(i));
+                }
+            };
+
+            const writeUint32 = (value) => {
+                view.setUint32(offset, value, true);
+                offset += 4;
+            };
+
+            const writeUint16 = (value) => {
+                view.setUint16(offset, value, true);
+                offset += 2;
+            };
+
+            writeString('RIFF');
+            writeUint32(36 + pcmLength);
+            writeString('WAVE');
+            writeString('fmt ');
+            writeUint32(16);
+            writeUint16(1);
+            writeUint16(numChannels);
+            writeUint32(sampleRate);
+            writeUint32(byteRate);
+            writeUint16(blockAlign);
+            writeUint16(bytesPerSample * 8);
+            writeString('data');
+            writeUint32(pcmLength);
+
+            const pcmData = new Uint8Array(pcmBuffer);
+            const wavData = new Uint8Array(wavBuffer, 44);
+            wavData.set(pcmData);
+
+            return wavBuffer;
+        }
+
+        async function playMantra() {
+            if (isGenerating || !generatedMantra) return;
+
+            const resetPlaybackState = () => {
+                isGenerating = false;
+                playButton.disabled = false;
+                playButton.textContent = "▶";
+                ttsAudio.onended = null;
+            };
+
+            isGenerating = true;
+            playButton.disabled = true;
+            playButton.textContent = "🔊";
+
+            try {
+                const response = await fetch('http://localhost:3000/generate-speech', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ mantra: normaliseMantra(generatedMantra) }),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const contentType = response.headers.get('Content-Type') || '';
+                let audioBlob;
+
+                if (/audio\/(wav|wave|x-wav|mpeg|mp3)/i.test(contentType)) {
+                    audioBlob = await response.blob();
+                } else if (/pcm|octet-stream/i.test(contentType)) {
+                    const pcmBuffer = await response.arrayBuffer();
+                    const sampleRateHeader = Number(response.headers.get('x-audio-sample-rate'));
+                    const channelHeader = Number(response.headers.get('x-audio-channels'));
+                    const wavBuffer = convertPCMToWav(pcmBuffer, {
+                        sampleRate: Number.isFinite(sampleRateHeader) ? sampleRateHeader : undefined,
+                        numChannels: Number.isFinite(channelHeader) ? channelHeader : undefined,
+                    });
+                    audioBlob = new Blob([wavBuffer], { type: 'audio/wav' });
+                } else {
+                    audioBlob = await response.blob();
+                }
+
+                if (ttsAudio.src) {
+                    URL.revokeObjectURL(ttsAudio.src);
+                }
+
+                const audioUrl = URL.createObjectURL(audioBlob);
+                ttsAudio.src = audioUrl;
+
+                ttsAudio.onended = () => {
+                    if (ttsAudio.src) {
+                        URL.revokeObjectURL(ttsAudio.src);
+                        ttsAudio.removeAttribute('src');
+                    }
+                    resetPlaybackState();
+                };
+
+                await ttsAudio.play();
+
+            } catch (error) {
+                console.error("Error playing mantra:", error);
+                mantraTextElement.textContent = "The mantra fades into silence.";
+                if (ttsAudio.src) {
+                    URL.revokeObjectURL(ttsAudio.src);
+                    ttsAudio.removeAttribute('src');
+                }
+                resetPlaybackState();
+            } finally {
+                if (ttsAudio.paused || !ttsAudio.src) {
+                    resetPlaybackState();
+                }
+            }
+        }
+        
+        geminiButton.addEventListener('click', channelMantra);
+        playButton.addEventListener('click', playMantra);
+
+        // --- SCENE SETUP ---
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 0.3;
+
+        camera.position.set(0, 15, 25);
+        controls.target.set(0, 0, 0);
+
+        // --- LIGHTING ---
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+        const pointLight = new THREE.PointLight(0xffffff, 1, 100);
+        scene.add(pointLight);
+        
+        // --- GEOMETRY SETUP ---
+        const PHI = (1 + Math.sqrt(5)) / 2;
+        const matrixGroup = new THREE.Group();
+        scene.add(matrixGroup);
+
+        const crystalGeo = new THREE.CylinderGeometry(0.2, 0.1, 1, 6);
+        const crystalMat = new THREE.MeshStandardMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.3,
+            roughness: 0.1,
+            metalness: 0.2
+        });
+
+        // Create Crystals
+        const crystals = [];
+        // Sentinel Core
+        const coreCrystal = new THREE.Mesh(crystalGeo, crystalMat.clone());
+        crystals.push(coreCrystal);
+        matrixGroup.add(coreCrystal);
+
+        // Four Pillars
+        const pillarRadius = 4;
+        for(let i=0; i<4; i++) {
+            const angle = (Math.PI / 2) * i;
+            const pillar = new THREE.Mesh(crystalGeo, crystalMat.clone());
+            pillar.position.set(Math.cos(angle) * pillarRadius, 0, Math.sin(angle) * pillarRadius);
+            crystals.push(pillar);
+            matrixGroup.add(pillar);
+        }
+
+        // Fibonacci Cascade
+        const fibonacciNumbers = [8, 13, 21];
+        let ringRadius = pillarRadius * PHI;
+        fibonacciNumbers.forEach((numCrystals, i) => {
+            for (let j = 0; j < numCrystals; j++) {
+                const angle = (Math.PI * 2 / numCrystals) * j;
+                const ringCrystal = new THREE.Mesh(crystalGeo, crystalMat.clone());
+                ringCrystal.position.set(Math.cos(angle) * ringRadius, 0, Math.sin(angle) * ringRadius);
+                crystals.push(ringCrystal);
+                matrixGroup.add(ringCrystal);
+            }
+            ringRadius *= PHI;
+        });
+        
+        // Vesica Piscis Connectors
+        const connectorsGroup = new THREE.Group();
+        const lineMat = new THREE.LineBasicMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.05,
+            blending: THREE.AdditiveBlending
+        });
+
+        for (let i = 0; i < crystals.length; i++) {
+            for (let j = i + 1; j < crystals.length; j++) {
+                const dist = crystals[i].position.distanceTo(crystals[j].position);
+                if (dist < pillarRadius * PHI * 1.5) { // Only draw closer connections
+                    const points = [crystals[i].position, crystals[j].position];
+                    const geo = new THREE.BufferGeometry().setFromPoints(points);
+                    const line = new THREE.Line(geo, lineMat.clone());
+                    connectorsGroup.add(line);
+                }
+            }
+        }
+        matrixGroup.add(connectorsGroup);
+
+        // --- ANIMATION ELEMENTS ---
+        const ignitionLight = new THREE.PointLight(0xFFD700, 0, 50);
+        coreCrystal.add(ignitionLight);
+
+        const stabilizationParticles = [];
+        for(let i=0; i<4; i++) {
+            const particle = new THREE.Mesh(new THREE.SphereGeometry(0.15, 16, 16), new THREE.MeshBasicMaterial({color: 0xFFD700, blending: THREE.AdditiveBlending}));
+            particle.visible = false;
+            scene.add(particle);
+            stabilizationParticles.push(particle);
+        }
+
+        const amplificationWave = new THREE.Mesh(
+            new THREE.RingGeometry(0.1, 0.5, 64),
+            new THREE.MeshBasicMaterial({ color: 0xFFD700, transparent: true, opacity: 0, side: THREE.DoubleSide, blending: THREE.AdditiveBlending })
+        );
+        amplificationWave.rotation.x = -Math.PI / 2;
+        scene.add(amplificationWave);
+
+        // --- TIMELINE / CYCLE MANAGEMENT ---
+        const cycleDuration = 12; // seconds
+        const phaseUI = [
+            document.getElementById('phase1'),
+            document.getElementById('phase2'),
+            document.getElementById('phase3'),
+            document.getElementById('phase4')
+        ];
+
+        let lastPhaseIndex = -1;
+
+        function runCycle(elapsedTime) {
+            const timeInCycle = elapsedTime % cycleDuration;
+            let currentPhaseIndex = Math.floor(timeInCycle / (cycleDuration / 4));
+
+             if (currentPhaseIndex !== lastPhaseIndex) {
+                generatedMantra = '';
+                mantraTextElement.textContent = 'Click to channel a mantra for the active phase...';
+                playButton.style.display = 'none';
+                lastPhaseIndex = currentPhaseIndex;
+            }
+            currentPhaseName = phaseNames[currentPhaseIndex];
+
+            // --- Phase 1: Ignition (0s - 3s) ---
+            const phase1End = cycleDuration * 0.25;
+            if (timeInCycle < phase1End) {
+                const progress = timeInCycle / phase1End;
+                ignitionLight.intensity = Math.sin(progress * Math.PI) * 10;
+                coreCrystal.material.opacity = 0.3 + Math.sin(progress * Math.PI) * 0.7;
+            } else {
+                ignitionLight.intensity = 0;
+                coreCrystal.material.opacity = 0.3;
+            }
+
+            // --- Phase 2: Stabilization (3s - 6s) ---
+            const phase2Start = phase1End;
+            const phase2End = cycleDuration * 0.5;
+            if (timeInCycle >= phase2Start && timeInCycle < phase2End) {
+                stabilizationParticles.forEach(p => p.visible = true);
+                const progress = (timeInCycle - phase2Start) / (phase2End - phase2Start);
+                const angle = progress * Math.PI * 4;
+                const p1 = crystals[1].position;
+                const p2 = crystals[3].position;
+                const p3 = crystals[2].position;
+                const p4 = crystals[4].position;
+                stabilizationParticles[0].position.lerpVectors(p1, p2, (Math.sin(angle) + 1) / 2);
+                stabilizationParticles[1].position.lerpVectors(p2, p1, (Math.sin(angle) + 1) / 2);
+                stabilizationParticles[2].position.lerpVectors(p3, p4, (Math.sin(angle) + 1) / 2);
+                stabilizationParticles[3].position.lerpVectors(p4, p3, (Math.sin(angle) + 1) / 2);
+            } else {
+                 stabilizationParticles.forEach(p => p.visible = false);
+            }
+            
+            // --- Phase 3: Amplification (6s - 9s) ---
+            const phase3Start = phase2End;
+            const phase3End = cycleDuration * 0.75;
+            if (timeInCycle >= phase3Start && timeInCycle < phase3End) {
+                const progress = (timeInCycle - phase3Start) / (phase3End - phase3Start);
+                amplificationWave.visible = true;
+                amplificationWave.scale.setScalar(1 + progress * ringRadius * PHI * 2);
+                amplificationWave.material.opacity = 1.0 - progress;
+                
+                const waveRadius = progress * ringRadius * PHI * 1.5;
+                crystals.forEach(c => {
+                    if (c.position.length() < waveRadius && c.position.length() > 0.1) {
+                         c.material.opacity = 0.3 + Math.sin(progress * Math.PI) * 0.5;
+                    }
+                });
+            } else {
+                amplificationWave.visible = false;
+                crystals.forEach(c => c.material.opacity = 0.3);
+            }
+
+            // --- Phase 4: Harmonization (9s - 12s) ---
+             const phase4Start = phase3End;
+             if (timeInCycle >= phase4Start) {
+                const progress = (timeInCycle - phase4Start) / (cycleDuration - phase4Start);
+                connectorsGroup.children.forEach(line => {
+                    line.material.opacity = 0.1 + Math.sin(progress * Math.PI) * 0.3;
+                    const hue = (line.geometry.attributes.position.getX(0) / ringRadius + elapsedTime * 0.1) % 1;
+                    line.material.color.setHSL(hue, 1, 0.5);
+                });
+            } else {
+                 connectorsGroup.children.forEach(line => {
+                    line.material.opacity = 0.05;
+                    line.material.color.set(0xffffff);
+                });
+            }
+
+            // Update UI
+            phaseUI.forEach((el, i) => {
+                if (i === currentPhaseIndex) {
+                    el.classList.add('active');
+                } else {
+                    el.classList.remove('active');
+                }
+            });
+        }
+        
+        // --- RENDER LOOP ---
+        const clock = new THREE.Clock();
+        function animate() {
+            const elapsedTime = clock.getElapsedTime();
+            runCycle(elapsedTime);
+            controls.update();
+            renderer.render(scene, camera);
+            requestAnimationFrame(animate);
+        }
+
+        // --- WINDOW RESIZE ---
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        animate();
+    </script>
+</body>
+</html>

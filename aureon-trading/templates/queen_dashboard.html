@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👑 AUREON QUEEN COMMAND CENTER</title>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 100%);
+            color: #00ff9f;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(90deg, #ff006e 0%, #8338ec 50%, #3a86ff 100%);
+            padding: 30px;
+            text-align: center;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 30px rgba(255, 0, 110, 0.5);
+            animation: pulse 3s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 30px rgba(255, 0, 110, 0.5); }
+            50% { box-shadow: 0 0 50px rgba(255, 0, 110, 0.9); }
+        }
+        
+        .header h1 {
+            font-size: 48px;
+            color: white;
+            text-shadow: 0 0 20px #fff;
+            margin-bottom: 10px;
+        }
+        
+        .header .subtitle {
+            font-size: 18px;
+            color: #ffd60a;
+            letter-spacing: 3px;
+        }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: rgba(26, 10, 46, 0.8);
+            border: 2px solid #8338ec;
+            border-radius: 10px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(131, 56, 236, 0.5);
+        }
+        
+        .stat-card .label {
+            font-size: 14px;
+            color: #8338ec;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .stat-card .value {
+            font-size: 42px;
+            color: #00ff9f;
+            font-weight: bold;
+            text-shadow: 0 0 10px #00ff9f;
+        }
+        
+        .stat-card .subvalue {
+            font-size: 16px;
+            color: #ffd60a;
+            margin-top: 5px;
+        }
+        
+        /* Main Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        /* Panels */
+        .panel {
+            background: rgba(26, 10, 46, 0.9);
+            border: 2px solid #00ff9f;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        
+        .panel-header {
+            font-size: 24px;
+            color: #ffd60a;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #8338ec;
+            text-align: center;
+        }
+        
+        /* Queen's Voice */
+        .queen-voice {
+            background: rgba(255, 0, 110, 0.1);
+            border: 3px solid #ff006e;
+            animation: glow 2s infinite;
+        }
+        
+        @keyframes glow {
+            0%, 100% { border-color: #ff006e; }
+            50% { border-color: #ffd60a; }
+        }
+        
+        .queen-message {
+            margin-bottom: 15px;
+            padding: 15px;
+            border-left: 4px solid #ff006e;
+            background: rgba(255, 0, 110, 0.1);
+            border-radius: 5px;
+            animation: slideIn 0.5s;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .queen-message .timestamp {
+            font-size: 12px;
+            color: #8338ec;
+            margin-bottom: 5px;
+        }
+        
+        .queen-message .text {
+            font-size: 16px;
+            color: #ffd60a;
+            line-height: 1.6;
+        }
+        
+        .queen-message.critical .text {
+            color: #ff006e;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .queen-message.warning .text {
+            color: #ffd60a;
+        }
+        
+        .queen-message.success .text {
+            color: #00ff9f;
+        }
+        
+        /* Firm Tracker */
+        .firm-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: rgba(131, 56, 236, 0.1);
+            border-left: 4px solid #8338ec;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        .firm-item:hover {
+            background: rgba(131, 56, 236, 0.3);
+            transform: translateX(5px);
+        }
+        
+        .firm-name {
+            font-size: 18px;
+            color: #00ff9f;
+            font-weight: bold;
+        }
+        
+        .firm-info {
+            font-size: 14px;
+            color: #8338ec;
+        }
+        
+        .firm-count {
+            font-size: 24px;
+            color: #ffd60a;
+            font-weight: bold;
+        }
+        
+        /* Symbol Radar */
+        .symbol-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 8px;
+            background: rgba(0, 255, 159, 0.05);
+            border-radius: 5px;
+        }
+        
+        .symbol-name {
+            font-size: 16px;
+            color: #00ff9f;
+            font-weight: bold;
+        }
+        
+        .symbol-bar {
+            flex: 1;
+            margin: 0 15px;
+            height: 20px;
+            background: rgba(131, 56, 236, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .symbol-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #8338ec, #00ff9f);
+            transition: width 0.5s;
+        }
+        
+        .symbol-count {
+            font-size: 16px;
+            color: #ffd60a;
+            font-weight: bold;
+        }
+        
+        /* Event Feed */
+        .event-feed {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .event-item {
+            padding: 12px;
+            margin-bottom: 8px;
+            background: rgba(0, 255, 159, 0.05);
+            border-left: 3px solid #00ff9f;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .event-item.whale {
+            border-left-color: #ff006e;
+            background: rgba(255, 0, 110, 0.1);
+        }
+        
+        .event-item.shark {
+            border-left-color: #ffd60a;
+            background: rgba(255, 214, 10, 0.1);
+        }
+        
+        .event-timestamp {
+            color: #8338ec;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+        
+        .event-details {
+            color: #00ff9f;
+        }
+        
+        .event-firm {
+            color: #ff006e;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(26, 10, 46, 0.5);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #8338ec;
+            border-radius: 5px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ff006e;
+        }
+        
+        /* Threat indicator */
+        .threat-MODERATE { color: #ffd60a; }
+        .threat-HIGH { color: #ff006e; animation: blink 1s infinite; }
+        .threat-CRITICAL { color: #ff006e; animation: blink 0.5s infinite; font-size: 52px !important; }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>👑 AUREON QUEEN COMMAND CENTER 👑</h1>
+            <div class="subtitle">OMNISCIENT MARKET INTELLIGENCE DASHBOARD</div>
+            <div style="margin-top: 10px; color: white; font-size: 14px;">
+                UPTIME: <span id="uptime">00:00:00</span> | 
+                LIVE TRACKING | 
+                37 GLOBAL FIRMS PROFILED
+            </div>
+        </div>
+        
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="label">🤖 Total Bots</div>
+                <div class="value" id="total-bots">0</div>
+                <div class="subvalue"><span id="bots-per-minute">0.0</span>/min</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="label">🦈 Sharks</div>
+                <div class="value" id="sharks">0</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="label">🐋 Whales</div>
+                <div class="value" id="whales">0</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="label">💰 Volume Tracked</div>
+                <div class="value" id="volume">$0</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="label">🏢 Active Firms</div>
+                <div class="value" id="firms-active">0</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="label">⚠️ Threat Level</div>
+                <div class="value" id="threat-level">MODERATE</div>
+            </div>
+        </div>
+        
+        <!-- Main Grid -->
+        <div class="main-grid">
+            <!-- Queen's Voice -->
+            <div class="panel queen-voice">
+                <div class="panel-header">👑 THE QUEEN SPEAKS</div>
+                <div id="queen-messages" style="max-height: 500px; overflow-y: auto;">
+                    <!-- Messages appear here -->
+                </div>
+            </div>
+            
+            <!-- Firm Tracker -->
+            <div class="panel">
+                <div class="panel-header">🦈 GLOBAL PREDATOR TRACKER</div>
+                <div id="firm-tracker">
+                    <div style="text-align: center; color: #8338ec; padding: 20px;">
+                        Scanning for trading firms...
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Symbol Radar -->
+            <div class="panel">
+                <div class="panel-header">📡 MARKET RADAR</div>
+                <div id="symbol-radar">
+                    <div style="text-align: center; color: #8338ec; padding: 20px;">
+                        Monitoring trading pairs...
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Live Event Feed -->
+            <div class="panel">
+                <div class="panel-header">📊 LIVE DETECTION FEED</div>
+                <div id="event-feed" class="event-feed">
+                    <div style="text-align: center; color: #8338ec; padding: 20px;">
+                        Waiting for bot detections...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Connect to WebSocket
+        const socket = io();
+        
+        // Update state
+        function updateState(data) {
+            // Update stats
+            document.getElementById('uptime').textContent = data.uptime;
+            document.getElementById('total-bots').textContent = data.total_bots.toLocaleString();
+            document.getElementById('sharks').textContent = data.sharks.toLocaleString();
+            document.getElementById('whales').textContent = data.whales.toLocaleString();
+            document.getElementById('volume').textContent = '$' + data.total_volume.toLocaleString(undefined, {maximumFractionDigits: 0});
+            document.getElementById('bots-per-minute').textContent = data.bots_per_minute.toFixed(1);
+            document.getElementById('firms-active').textContent = data.firms_active;
+            
+            // Threat level
+            const threatEl = document.getElementById('threat-level');
+            threatEl.textContent = data.threat_level;
+            threatEl.className = 'value threat-' + data.threat_level;
+            
+            // Update Queen messages
+            const queenDiv = document.getElementById('queen-messages');
+            queenDiv.innerHTML = data.queen_messages.map(msg => `
+                <div class="queen-message ${msg.level}">
+                    <div class="timestamp">[${msg.timestamp}]</div>
+                    <div class="text">${msg.message}</div>
+                </div>
+            `).reverse().join('');
+            
+            // Update firms
+            const firmDiv = document.getElementById('firm-tracker');
+            if (data.top_firms.length > 0) {
+                firmDiv.innerHTML = data.top_firms.map(firm => {
+                    const capital = firm.capital >= 1e12 ? 
+                        '$' + (firm.capital / 1e12).toFixed(1) + 'T' :
+                        firm.capital >= 1e9 ?
+                        '$' + (firm.capital / 1e9).toFixed(1) + 'B' :
+                        '$' + (firm.capital / 1e6).toFixed(1) + 'M';
+                    
+                    return `
+                        <div class="firm-item">
+                            <div>
+                                <div class="firm-name">${firm.animal} ${firm.name}</div>
+                                <div class="firm-info">${firm.hq} | ${capital}</div>
+                            </div>
+                            <div class="firm-count">${firm.count}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            // Update symbols
+            const symbolDiv = document.getElementById('symbol-radar');
+            if (data.top_symbols.length > 0) {
+                const maxCount = Math.max(...data.top_symbols.map(s => s.count));
+                symbolDiv.innerHTML = data.top_symbols.map(sym => {
+                    const pct = (sym.count / maxCount * 100);
+                    return `
+                        <div class="symbol-item">
+                            <div class="symbol-name">${sym.symbol}</div>
+                            <div class="symbol-bar">
+                                <div class="symbol-bar-fill" style="width: ${pct}%"></div>
+                            </div>
+                            <div class="symbol-count">${sym.count}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            // Update event feed
+            const eventDiv = document.getElementById('event-feed');
+            if (data.recent_events.length > 0) {
+                eventDiv.innerHTML = data.recent_events.map(evt => {
+                    const sizeClass = evt.size.toLowerCase();
+                    const firmText = evt.firm ? 
+                        `<div class="event-firm">🏢 ATTRIBUTED TO: ${evt.firm_animal} ${evt.firm}</div>` : '';
+                    
+                    return `
+                        <div class="event-item ${sizeClass}">
+                            <div class="event-timestamp">[${evt.timestamp}]</div>
+                            <div class="event-details">
+                                ${evt.size} ${evt.pattern} on ${evt.symbol} 
+                                ($${evt.volume.toLocaleString()})
+                            </div>
+                            ${firmText}
+                        </div>
+                    `;
+                }).reverse().join('');
+            }
+        }
+        
+        // Socket events
+        socket.on('connect', () => {
+            console.log('Connected to Queen Command Center');
+        });
+        
+        socket.on('state_update', (data) => {
+            updateState(data);
+        });
+        
+        socket.on('new_bot_detection', (event) => {
+            console.log('New bot detected:', event);
+        });
+        
+        // Initial load
+        fetch('/api/state')
+            .then(r => r.json())
+            .then(data => updateState(data));
+    </script>
+</body>
+</html>

@@ -10,3 +10,9 @@ may validate source contracts offline, but their success does not authorize a
 runtime. Production operation requires zero unresolved source-boundary
 blockers, native outer containment, externally anchored HNC evidence, signed
 packaging, credential custody, and authenticated provider read-back.
+
+Canonical launcher paths remain on HOLD and are not an approved start:
+`scripts/launchers/AUREON_PRODUCTION_LIVE.cmd`,
+`scripts/launchers/AUREON_WAKE_UP_FULL_AUTONOMOUS.ps1`,
+`scripts/launchers/AUREON_DATA_OCEAN.cmd`,
+`scripts/launchers/AUREON_DATA_OCEAN.ps1`.

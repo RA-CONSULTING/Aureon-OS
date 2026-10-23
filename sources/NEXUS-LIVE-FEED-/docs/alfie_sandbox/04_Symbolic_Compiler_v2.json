@@ -1,0 +1,49 @@
+{
+  "compiler_version": "2.0",
+  "entrypoint": "symbolic_compiler.compile",
+  "glyph_sets": [
+    {
+      "id": "prime-anchor",
+      "namespace": "UNITY",
+      "source": "glyphs/prime_anchor.svg",
+      "hash": "sha256:prime-anchor-glyph",
+      "intents": ["stability", "guardian"]
+    },
+    {
+      "id": "auris-vigil",
+      "namespace": "AURIS",
+      "source": "glyphs/auris_vigil.svg",
+      "hash": "sha256:auris-vigil-glyph",
+      "intents": ["safety", "empathy"]
+    }
+  ],
+  "transforms": [
+    {
+      "name": "harmonic-weave",
+      "type": "matrix",
+      "parameters": {
+        "dimension": 7,
+        "basis": "fibonacci",
+        "normalize": true
+      }
+    },
+    {
+      "name": "phase-compression",
+      "type": "nonlinear",
+      "parameters": {
+        "gamma": 0.28,
+        "epsilon": 0.01
+      }
+    }
+  ],
+  "output": {
+    "format": "application/vnd.nexus.symbolic",
+    "emit_metadata": true,
+    "fields": ["glyph_id", "intents", "transform_matrix", "checksum"]
+  },
+  "validation_steps": [
+    "verify_symbolic_hashes",
+    "check_transform_symmetry",
+    "assert_intent_alignment"
+  ]
+}

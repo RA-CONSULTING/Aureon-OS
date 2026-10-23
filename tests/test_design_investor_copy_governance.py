@@ -20,6 +20,13 @@ import aureon.operator.design_investor_copy_governance as governance
 NOW = datetime(2026, 7, 30, 10, 0, tzinfo=UTC)
 DECIDED_AT = NOW - timedelta(minutes=5)
 SOURCE_ROOT = Path(__file__).resolve().parents[1]
+pytestmark = pytest.mark.skipif(
+    not (
+        SOURCE_ROOT
+        / "artifacts/website-operator/20260730T045336Z-design-cycle-4204c795.json"
+    ).is_file(),
+    reason="Website-operator design-cycle fixture is not in this repository",
+)
 
 # This is the complete dependency closure used by the proposal/source replay and
 # the unmodified claim, stakeholder-feedback, and design-brief audits.  Every

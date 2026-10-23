@@ -1711,16 +1711,29 @@ CONFIG = {
     # GREEN = Yellow (East) + Blue (Sky) = Heart chakra = 528Hz LOVE
     # ═══════════════════════════════════════════════════════════════════════
     
-    # Auris Node Frequencies (Hz) - Aligned with Medicine Wheel
-    'FREQ_TIGER': 741.0,           # SOL - Awakening intuition
-    'FREQ_FALCON': 852.0,          # LA - Spiritual order (EAST spirit animal variant)
-    'FREQ_HUMMINGBIRD': 963.0,     # SI - Unity/NORTH Elder wisdom
-    'FREQ_DOLPHIN': 528.0,         # MI - GREEN BORAX LOVE 💚 CENTER/EAST
-    'FREQ_DEER': 396.0,            # UT - Liberation/SOUTH Growth
-    'FREQ_OWL': 432.0,             # Cosmic harmony/WEST Harvest
-    'FREQ_PANDA': 412.3,           # Transition frequency
-    'FREQ_CARGOSHIP': 174.0,       # Foundation/grounding
-    'FREQ_CLOWNFISH': 639.0,       # FA - Connection/relationships
+    # Quarantined drift. Tiger 741 / Clownfish 639 is not the live table.
+    # Nothing in the node path reads QUARANTINED_FREQ_*.
+    'QUARANTINED_FREQ_TIGER': 741.0,
+    'QUARANTINED_FREQ_FALCON': 852.0,
+    'QUARANTINED_FREQ_HUMMINGBIRD': 963.0,
+    'QUARANTINED_FREQ_DOLPHIN': 528.0,
+    'QUARANTINED_FREQ_DEER': 396.0,
+    'QUARANTINED_FREQ_OWL': 432.0,
+    'QUARANTINED_FREQ_PANDA': 412.3,
+    'QUARANTINED_FREQ_CARGOSHIP': 174.0,
+    'QUARANTINED_FREQ_CLOWNFISH': 639.0,
+
+    # Canonical Auris node frequencies (Hz): Tiger 220 … Clownfish 963.
+    # Same table as aureon/core/aureon_nexus.py and aureon/trading/aureon_piano.py.
+    'FREQ_TIGER': 220.0,
+    'FREQ_FALCON': 285.0,
+    'FREQ_HUMMINGBIRD': 396.0,
+    'FREQ_DOLPHIN': 528.0,
+    'FREQ_DEER': 639.0,
+    'FREQ_OWL': 741.0,
+    'FREQ_PANDA': 852.0,
+    'FREQ_CARGOSHIP': 936.0,
+    'FREQ_CLOWNFISH': 963.0,
     
     # Medicine Wheel Direction Frequencies (Native American Light Language)
     'MEDICINE_WHEEL_EAST': 528.0,  # Yellow/Fire - Birth - EAGLE spirit
@@ -10741,7 +10754,8 @@ class CargoShipNode(AurisNode):
 class ClownfishNode(AurisNode):
     """🐠 Symbiosis - ULTIMATE Micro-Change Detection & Market Connection (v2.0)
     
-    The Clownfish operates at 639Hz (FA frequency - Connection/Relationships).
+    The Clownfish operates at 963Hz (canonical aureon/ node). The 639Hz
+    connection band stays in the medicine-wheel boosts; it is not this node.
     It detects micro-movements BEFORE they become visible to other indicators.
     
     ═══════════════════════════════════════════════════════════════════════════
@@ -10770,7 +10784,7 @@ class ClownfishNode(AurisNode):
     """
     
     # Sacred frequencies for harmonic analysis
-    CLOWNFISH_FREQ = 639.0  # FA - Connection frequency
+    CLOWNFISH_FREQ = 963.0  # canonical Clownfish node (aureon/ table)
     SCHUMANN_BASE = 7.83    # Earth's heartbeat
     PHI = 1.618033988749895  # Golden ratio
     

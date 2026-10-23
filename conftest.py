@@ -183,6 +183,46 @@ def pytest_runtest_setup(item):
         item.stash[_ASYNC_LOOP_KEY] = asyncio.new_event_loop()
 
 
+# Taken when this conftest finishes loading, before pytest imports test modules.
+# Those modules write LIVE, PYTHON_DOTENV_DISABLED, and the self-repair safe-env
+# keys onto the process and do not put them back. Restoring this snapshot around
+# every test keeps a credential bootstrap and an inert constructor from seeing a
+# neighbour's mutation.
+_OS_ENVIRON_BEFORE_COLLECTION: dict[str, str] = {}
+
+
+def _apply_environ_snapshot() -> None:
+    """Restore the pre-collection environment without dropping pytest's own keys.
+
+    ``PYTEST_CURRENT_TEST`` is set per test, after collection, and pytest reads
+    it again during teardown. A full ``os.environ.clear()`` removes it and the
+    teardown raises KeyError. Keys pytest adds after the snapshot stay; every
+    other mutation is put back.
+    """
+    preserved = {
+        key: value
+        for key, value in os.environ.items()
+        if key.startswith("PYTEST_") and key not in _OS_ENVIRON_BEFORE_COLLECTION
+    }
+    os.environ.clear()
+    os.environ.update(_OS_ENVIRON_BEFORE_COLLECTION)
+    os.environ.update(preserved)
+
+
+@pytest.fixture(autouse=True)
+def _restore_os_environ():
+    """Put os.environ back to the pre-collection process environment.
+
+    monkeypatch only undoes keys it changed. Direct writes such as
+    ``os.environ['LIVE'] = '0'`` and ``os.environ.update(...)`` leak into every
+    later test unless the whole mapping is snapshotted and restored. Setup runs
+    before other function fixtures; teardown runs after them.
+    """
+    _apply_environ_snapshot()
+    yield
+    _apply_environ_snapshot()
+
+
 @pytest.fixture(autouse=True)
 def _socket_blocked_asyncio_run(request, monkeypatch):
     """Run async tests on the pre-created loop while sockets stay blocked."""
@@ -271,6 +311,10 @@ def _restore_process_singletons():
             # the module was imported DURING this test module; clear whatever
             # singleton it created so it cannot leak forward
             setattr(mod, attr, None)
+
+
+# Freeze the snapshot after this module's own imports, still before collection.
+_OS_ENVIRON_BEFORE_COLLECTION.update(os.environ)
 
 
 def pytest_pyfunc_call(pyfuncitem):

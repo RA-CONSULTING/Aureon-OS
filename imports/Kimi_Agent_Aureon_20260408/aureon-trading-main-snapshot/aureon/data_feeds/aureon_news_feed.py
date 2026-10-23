@@ -575,7 +575,7 @@ def create_news_feed(api_key: str, thought_bus: Optional['ThoughtBus'] = None) -
 # Demo and testing
 async def demo():
     """Demo the news feed functionality."""
-    api_key = os.environ.get("WORLD_NEWS_API_KEY", "1e67384add34486d8b14a951b220fe8a")
+    api_key = os.environ.get("WORLD_NEWS_API_KEY", "")
     
     print("=" * 60)
     print("AUREON NEWS FEED DEMO")

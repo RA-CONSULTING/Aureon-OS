@@ -2625,7 +2625,7 @@ class KrakenClient:
         provider_receipt_type = (
             "Balance+TradeVolume+Time+KeyInfo"
             if pair_requested
-            else "Balance+Time+KeyInfo"
+            else "Balance+Time"
         )
 
         def no_data(reason: str) -> Dict[str, Any]:
@@ -2664,13 +2664,28 @@ class KrakenClient:
         if getattr(self, "dry_run", True):
             return no_data("live_private_balance_receipt_required")
         try:
-            raw_key_info = self._private("/0/private/GetApiKeyInfo", {})
-            raw_permissions = (
-                raw_key_info.get("permissions")
-                if isinstance(raw_key_info, dict)
-                else None
-            )
-            if (
+            if not pair_requested:
+                permissions = []
+                query_funds = False
+                modify_trades = False
+                funding_mutations_absent = False
+                permission_input_id = None
+                api_key = str(getattr(self, "api_key", "") or "")
+                account_id_hash = hashlib.sha256(
+                    f"kraken:live_spot:{api_key}".encode("utf-8")
+                ).hexdigest()
+                resolved_pair = None
+                taker_fee_pair = None
+                raw_key_info = None
+            else:
+                raw_key_info = self._private("/0/private/GetApiKeyInfo", {})
+            if pair_requested:
+                raw_permissions = (
+                    raw_key_info.get("permissions")
+                    if isinstance(raw_key_info, dict)
+                    else None
+                )
+            if pair_requested and (
                 not isinstance(raw_permissions, list)
                 or not raw_permissions
                 or any(
@@ -2679,7 +2694,8 @@ class KrakenClient:
                 )
             ):
                 return no_data("complete_provider_api_key_permissions_required")
-            permissions = sorted({value.strip() for value in raw_permissions})
+            if pair_requested:
+                permissions = sorted({value.strip() for value in raw_permissions})
             dangerous_permission_tokens = (
                 "withdraw",
                 "transfer",
@@ -2688,38 +2704,43 @@ class KrakenClient:
                 "earn",
                 "deposit",
             )
-            query_funds = "query-funds" in permissions
-            modify_trades = "modify-trades" in permissions
-            funding_mutations_absent = not any(
-                any(token in permission.lower() for token in dangerous_permission_tokens)
-                for permission in permissions
-            )
-            if not query_funds or not modify_trades or not funding_mutations_absent:
+            if pair_requested:
+                query_funds = "query-funds" in permissions
+                modify_trades = "modify-trades" in permissions
+                funding_mutations_absent = not any(
+                    any(token in permission.lower() for token in dangerous_permission_tokens)
+                    for permission in permissions
+                )
+            if pair_requested and (not query_funds or not modify_trades or not funding_mutations_absent):
                 return no_data("least_privilege_kraken_trading_key_required")
-            if raw_key_info.get("apiKey") != self.api_key:
+            if pair_requested and raw_key_info.get("apiKey") != self.api_key:
                 return no_data("provider_api_key_identity_mismatch")
-            ip_allowlist = raw_key_info.get("ipAllowlist")
-            if not isinstance(ip_allowlist, list) or any(
-                not isinstance(value, str) for value in ip_allowlist
+            if pair_requested:
+                ip_allowlist = raw_key_info.get("ipAllowlist")
+            if pair_requested and (
+                not isinstance(ip_allowlist, list) or any(
+                    not isinstance(value, str) for value in ip_allowlist
+                )
             ):
                 return no_data("complete_provider_api_key_permissions_required")
-            permission_material = json.dumps(
-                {
-                    "permissions": permissions,
-                    "valid_until": str(raw_key_info.get("validUntil") or ""),
-                    "ip_allowlist": sorted(ip_allowlist),
-                },
-                sort_keys=True,
-                separators=(",", ":"),
-            )
-            permission_input_id = "kraken_api_key_permissions:" + hashlib.sha256(
-                permission_material.encode("utf-8")
-            ).hexdigest()
-            account_id_hash = hashlib.sha256(
-                f"kraken:live_spot:{self.api_key}".encode("utf-8")
-            ).hexdigest()
-            resolved_pair = None
-            taker_fee_pair = None
+            if pair_requested:
+                permission_material = json.dumps(
+                    {
+                        "permissions": permissions,
+                        "valid_until": str(raw_key_info.get("validUntil") or ""),
+                        "ip_allowlist": sorted(ip_allowlist),
+                    },
+                    sort_keys=True,
+                    separators=(",", ":"),
+                )
+                permission_input_id = "kraken_api_key_permissions:" + hashlib.sha256(
+                    permission_material.encode("utf-8")
+                ).hexdigest()
+                account_id_hash = hashlib.sha256(
+                    f"kraken:live_spot:{self.api_key}".encode("utf-8")
+                ).hexdigest()
+                resolved_pair = None
+                taker_fee_pair = None
             if pair_requested:
                 if not isinstance(pair, str) or not pair.strip():
                     return no_data("valid_spot_fee_pair_required")
@@ -2809,13 +2830,19 @@ class KrakenClient:
                 format(source_timestamp, ".6f").encode("utf-8")
             ).hexdigest()
             input_receipt_ids = [
-                permission_input_id,
-                balance_input_id,
-                clock_input_id,
+                receipt_id
+                for receipt_id in (
+                    permission_input_id,
+                    balance_input_id,
+                    clock_input_id,
+                )
+                if receipt_id
             ]
             source_id = (
                 "kraken:/0/private/GetApiKeyInfo+"
                 "/0/private/Balance+/0/public/Time"
+                if pair_requested
+                else "kraken:/0/private/Balance+/0/public/Time"
             )
             receipt_evidence = {
                 "source_id": source_id,

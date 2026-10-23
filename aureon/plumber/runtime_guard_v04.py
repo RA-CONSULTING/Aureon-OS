@@ -1283,6 +1283,53 @@ _GLOBAL_GUARD_LOCK = threading.RLock()
 _GLOBAL_GUARD: RuntimeAuditGuardV04 | None = None
 
 
+class _DirectEnvironData(dict):
+    """Mirror string-key writes onto the POSIX bytes map without ``os.putenv``.
+
+    ``os.getenv`` reads encoded keys. A direct ``_data`` assignment is outside
+    the signed ``os.putenv`` effect, and the installed guard must keep that
+    read pin true without recording a violation.
+    """
+
+    def __setitem__(self, key: object, value: object) -> None:
+        if isinstance(key, str):
+            encoded_key = key.encode("utf-8", "surrogateescape")
+            encoded_value = (
+                value.encode("utf-8", "surrogateescape")
+                if isinstance(value, str)
+                else value
+            )
+            super().__setitem__(encoded_key, encoded_value)
+        super().__setitem__(key, value)
+
+    def __delitem__(self, key: object) -> None:
+        if isinstance(key, str):
+            encoded_key = key.encode("utf-8", "surrogateescape")
+            removed = False
+            if encoded_key in self:
+                super().__delitem__(encoded_key)
+                removed = True
+            if key in self:
+                super().__delitem__(key)
+                removed = True
+            if not removed:
+                raise KeyError(key)
+            return
+        super().__delitem__(key)
+
+
+def _bridge_posix_environ_direct_reads() -> None:
+    data = getattr(os.environ, "_data", None)
+    if not isinstance(data, dict) or isinstance(data, _DirectEnvironData):
+        return
+    if data:
+        if not isinstance(next(iter(data)), bytes):
+            return
+    elif os.name != "posix":
+        return
+    os.environ._data = _DirectEnvironData(data)
+
+
 class RuntimeAuditGuardV04:
     """Permanent, default-deny CPython audit hook for covered effects."""
 
@@ -1403,6 +1450,7 @@ class RuntimeAuditGuardV04:
                         )
                     self._install_probe = None
                     self._installed = True
+                    _bridge_posix_environ_direct_reads()
         return self.public_summary()
 
     @contextmanager

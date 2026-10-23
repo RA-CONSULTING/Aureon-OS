@@ -22,3 +22,9 @@ The last command must return a target-specific non-zero HOLD. Lint, type, and
 test passes are quality evidence only; they do not authorize a runtime release.
 Production status requires native containment, measured release provenance,
 external HNC head anchoring, complete census closure, and provider read-back.
+
+Operator contract names stay unset here: `AUREON_OPERATOR_ENV`,
+`AUREON_OPERATOR_API_KEY`, `AUREON_OPERATOR_RATE_RPS`,
+`AUREON_OPERATOR_RATE_BURST`, `AUREON_OPERATOR_MAX_BODY`,
+`AUREON_OPERATOR_TRUSTED_PROXY_CIDRS`, `AUREON_OPERATOR_HTTP_PROCESSES`,
+`AUREON_OPERATOR_REPLICAS`.

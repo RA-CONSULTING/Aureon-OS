@@ -1,0 +1,32 @@
+{
+  "acceptance": [
+    "HTML artifact exists",
+    "Canvas game renders without external assets",
+    "Keyboard controls are visible to the end user",
+    "Game mechanics match the operator prompt",
+    "No cloud provider or unsafe authority is used"
+  ],
+  "asset_path": "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\frontend\\public\\aureon_generated_apps\\build_me_an_advanced_game_that_i_am_a_space_ship_68e3cba0f206.html",
+  "build_id": "68e3cba0f206",
+  "controls": [
+    "Arrow keys",
+    "WASD",
+    "Space",
+    "R"
+  ],
+  "game_kind": "space_shooter",
+  "kind": "html_game",
+  "project_id": "aureon-interactive_game-68e3cba0f206",
+  "prompt": "Build me an advanced game that I am a space ship shooting enemies.",
+  "public_url": "/aureon_generated_apps/build_me_an_advanced_game_that_i_am_a_space_ship_68e3cba0f206.html",
+  "schema_version": "aureon-local-interactive-artifact-v1",
+  "uniqueness_contract": {
+    "build_id": "68e3cba0f206",
+    "family": "interactive_game",
+    "policy": "fresh_project_per_coding_request",
+    "project_id": "aureon-interactive_game-68e3cba0f206",
+    "prompt_sha256": "1b1661532ca09980fc5b3567532c8c41af170949cf7a9a1fdd587d982ee1aeff",
+    "reuse_allowed_for_handover": false,
+    "rule": "Every coding/app/tool artifact must be a fresh project instance, even when the prompt resembles an older job."
+  }
+}

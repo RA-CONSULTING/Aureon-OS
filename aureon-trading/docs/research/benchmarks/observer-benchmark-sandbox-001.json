@@ -1,0 +1,1033 @@
+{
+  "aggregates": {
+    "coherence_max": 0.0,
+    "coherence_mean": 0.0,
+    "coherence_min": 0.0,
+    "duration_s": 170.6959035396576,
+    "engine_snapshots": 18,
+    "fetchers": {
+      "gdelt": {
+        "error_count": 0,
+        "has_reading": true,
+        "interval_s": 900,
+        "lag_s": 171.9402356147766,
+        "last_fetch_ts": 1777204969.3430982
+      },
+      "space_weather": {
+        "error_count": 0,
+        "has_reading": true,
+        "interval_s": 60,
+        "lag_s": 58.75629448890686,
+        "last_fetch_ts": 1777205082.5270393
+      }
+    },
+    "kelly_buffer_multiplier_mean": 1.5,
+    "n_rocks_final": 0,
+    "periodic_reads": 7,
+    "predictor_consensus_directions": {
+      "NEUTRAL": 7
+    },
+    "regime_histogram": {
+      "QUIET": 14,
+      "WARMING": 4
+    },
+    "rock_event_kinds": {},
+    "rock_events": 0
+  },
+  "engine_snapshots": [
+    {
+      "engine_state": {},
+      "snapshot": {
+        "coherence_score": 0.0,
+        "has_numpy": false,
+        "has_scipy": false,
+        "latest_field": {
+          "coherence_gamma": null,
+          "consciousness_level": null,
+          "consciousness_psi": null,
+          "lambda_t": null,
+          "ts": null
+        },
+        "n_events_emitted": 0,
+        "n_ingested": 0,
+        "n_samples_fast": 0,
+        "n_samples_slow": 0,
+        "regime": "WARMING",
+        "rocks_fast": [],
+        "rocks_slow": [],
+        "ts": 1777204961.2525628,
+        "uptime_s": 0.34566807746887207
+      },
+      "ts": 1777204961.2525847
+    },
+    {
+      "engine_state": {
+        "ac_adaptive_recursion": 1.0,
+        "ac_energy_stability": 0.7396079602544874,
+        "ac_meaning_propagation": 0.25,
+        "ac_memory_persistence": 0.55,
+        "ac_self_organization": 0.644327910157537,
+        "coherence_gamma": 0.5,
+        "coherence_nonlinear": 0.5,
+        "coherence_phi": 0.5,
+        "consciousness_level": "INTUITIVE",
+        "consciousness_psi": 0.6237260759768392,
+        "echo": -0.018870426787899294,
+        "effective_gain": 1.35,
+        "lambda_t": 0.5546116441227149,
+        "observer": 0.2603920397455126,
+        "quality_factor": 1.0,
+        "step": 11,
+        "substrate": 0.3130900311651016,
+        "symbolic_life_score": 0.599287174082405,
+        "timestamp": 1777204966.2787514
+      },
+      "snapshot": {
+        "coherence_score": 0.0,
+        "has_numpy": false,
+        "has_scipy": false,
+        "latest_field": {
+          "coherence_gamma": 0.5,
+          "consciousness_level": "INTUITIVE",
+          "consciousness_psi": 0.6237260759768392,
+          "lambda_t": 0.5546116441227149,
+          "ts": 1777204966.2787514
+        },
+        "n_events_emitted": 0,
+        "n_ingested": 2,
+        "n_samples_fast": 2,
+        "n_samples_slow": 2,
+        "regime": "WARMING",
+        "rocks_fast": [],
+        "rocks_slow": [],
+        "ts": 1777204971.2552845,
+        "uptime_s": 10.348396301269531
+      },
+      "ts": 1777204971.2553267
+    },
+    {
+      "engine_state": {
+        "ac_adaptive_recursion": 1.0,
+        "ac_energy_stability": 0.6849255317650085,
+        "ac_meaning_propagation": 0.0,
+        "ac_memory_persistence": 0.65,
+        "ac_self_organization": 0.5724740372781162,
+        "coherence_gamma": 0.0,
+        "coherence_nonlinear": 0.11920292202211757,
+        "coherence_phi": 1.0,
+        "consciousness_level": "FOCUSED",
+        "consciousness_psi": 0.5757998553819765,
+        "echo": -0.051380987029643305,
+        "effective_gain": 1.35,
+        "lambda_t": 0.49410877764544703,
+        "observer": 0.31507446823499147,
+        "quality_factor": 2.7,
+        "step": 13,
+        "substrate": 0.2304152964400989,
+        "symbolic_life_score": 0.5314799138086249,
+        "timestamp": 1777204976.2830763
+      },
+      "snapshot": {
+        "coherence_score": 0.0,
+        "has_numpy": false,
+        "has_scipy": false,
+        "latest_field": {
+          "coherence_gamma": 0.0,
+          "consciousness_level": "FOCUSED",
+          "consciousness_psi": 0.5757998553819765,
+          "lambda_t": 0.49410877764544703,
+          "ts": 1777204976.2830763
+        },
+        "n_events_emitted": 0,
+        "n_ingested": 4,
+        "n_samples_fast": 4,
+        "n_samples_slow": 4,
+        "regime": "WARMING",
+        "rocks_fast": [],
+        "rocks_slow": [],
+        "ts": 1777204981.2589905,
+        "uptime_s": 20.352096557617188
+      },
+      "ts": 1777204981.2590353
+    },
+    {
+      "engine_state": {
+        "ac_adaptive_recursion": 0.3800954505160523,
+        "ac_energy_stability": 0.6700463263205061,
+        "ac_meaning_propagation": 0.0,
+        "ac_memory_persistence": 0.75,
+        "ac_self_organization": 0.5784157273211584,
+        "coherence_gamma": 0.0,
+        "coherence_nonlinear": 0.11920292202211757,
+        "coherence_phi": 1.0,
+        "consciousness_level": "INTUITIVE",
+        "consciousness_psi": 0.600541273327169,
+        "echo": -0.06916972267964093,
+        "effective_gain": 1.35,
+        "lambda_t": 0.5663204133225025,
+        "observer": 0.32995367367949385,
+        "quality_factor": 2.7,
+        "step": 15,
+        "substrate": 0.3055364623226495,
+        "symbolic_life_score": 0.4567067283057408,
+        "timestamp": 1777204986.286427
+      },
+      "snapshot": {
+        "coherence_score": 0.0,
+        "has_numpy": false,
+        "has_scipy": false,
+        "latest_field": {
+          "coherence_gamma": 0.0,
+          "consciousness_level": "INTUITIVE",
+          "consciousness_psi": 0.600541273327169,
+          "lambda_t": 0.5663204133225025,
+          "ts": 1777204986.286427
+        },
+        "n_events_emitted": 0,
+        "n_ingested": 6,
+        "n_samples_fast": 6,
+        "n_samples_slow": 6,
+        "regime": "WARMING",
+        "rocks_fast": [],
+        "rocks_slow": [],
+        "ts": 1777204991.25994,
+        "uptime_s": 30.35304570198059
+      },
+      "ts": 1777204991.2600112
+    },
+    {
+      "engine_state": {
+        "ac_adaptive_recursion": 0.1872977393856856,
+        "ac_energy_stability": 0.6601212147410261,
+        "ac_meaning_propagation": 0.0,
+        "ac_memory_persistence": 0.85,
+        "ac_self_organization": 0.592984972384772,
+        "coherence_gamma": 0.0,
+        "coherence_nonlinear": 0.11920292202211757,
+        "coherence_phi": 1.0,
+        "consciousness_level": "INTUITIVE",
+        "consciousness_psi": 0.6149888843037048,
+        "echo": 0.06463534049597953,
+        "effective_gain": 1.35,
+        "lambda_t": 0.7825164880556895,
+        "observer": 0.33987878525897386,
+        "quality_factor": 2.7,
+        "step": 17,
+        "substrate": 0.3780023623007361,
+        "symbolic_life_score": 0.4487158983330125,
+        "timestamp": 1777204996.2911942
+      },
+      "snapshot": {
+        "coherence_score": 0.0,
+        "has_numpy": false,
+        "has_scipy": false,
+        "latest_field": {
+          "coherence_gamma": 0.0,
+          "consciousness_level": "INTUITIVE",
+          "consciousness_psi": 0.6149888843037048,
+          "lambda_t": 0.7825164880556895,
+          "ts": 1777204996.2911942
+        },
+        "n_events_emitted": 0,
+        "n_ingested": 8,
+        "n_samples_fast": 8,
+        "n_samples_slow": 8,
+        "regime": "QUIET",
+        "rocks_fast": [],
+        "rocks_slow": [],
+        "ts": 1777205001.2612233,
+        "uptime_s": 40.35433077812195
+      },
+      "ts": 1777205001.2612627
+    },
+    {
+      "engine_state": {
+        "ac_adaptive_recursion": 0.13293123965608045,
+        "ac_energy_stability": 0.6548848127612432,
+        "ac_meaning_propagation": 0.0,
+        "ac_memory_persistence": 0.95,
+        "ac_self_organization": 0.5170350053115408,
+        "coherence_gamma": 0.0,
+        "coherence_nonlinear": 0.11920292202211757,
+        "coherence_phi": 1.0,
+        "consciousness_level": "INTUITIVE",
+        "consciousness_psi": 0.6295407110252914,
+        "echo": 0.3158564104517053,
+        "effective_gain": 1.35,
+        "lambda_t": 1.0986561591936752,
+        "observer": 0.3451151872387568,
+        "quality_factor": 2.7,
+        "step": 19,
+        "substrate": 0.43768456150321294,
+        "symbolic_life_score": 0.4443236495629688,
+        "timestamp": 1777205006.2951674
+      },
+      "snapshot": {
+        "coherence_score": 0.0,
+        "has_numpy": false,
+        "has_scipy": false,
+        "latest_field": {
+          "coherence_gamma": 0.0,
+          "consciousness_level": "INTUITIVE",
+          "consciousness_psi": 0.6295407110252914,
+          "lambda_t": 1.0986561591936752,
+          "ts": 1777205006.2951674
+        },
+        "n_events_emitted": 0,
+        "n_ingested": 10,
+        "n_samples_fast": 10,
+        "n_samples_slow": 10,
+        "regime": "QUIET",
+        "rocks_fast": [],
+        "rocks_slow": [],
+        "ts": 1777205011.265449,
+        "uptime_s": 50.35855317115784
+      },
+      "ts": 1777205011.2654803
+    },
+    {
+      "engine_state": {
+        "ac_adaptive_recursion": 0.24619046242623055,
+        "ac_energy_stability": 0.6525143445648997,
+        "ac_meaning_propagation": 0.0,
+        "ac_memory_persistence": 1.0,
+        "ac_self_organization": 0.5364508768076992,
+        "coherence_gamma": 0.0,
+        "coherence_nonlinear": 0.11920292202211757,
+        "coherence_phi": 1.0,
+        "consciousness_level": "INTUITIVE",
+        "consciousness_psi": 0.6675432220440809,
+        "echo": 0.5546116441227149,
+        "effective_gain": 1.35,
+        "lambda_t": 1.3785768527279276,
+        "observer": 0.34748565543510035,
+        "quality_factor": 2.7,
+        "step": 21,
+        "substrate": 0.4764795531701125,
+        "symbolic_life_score": 0.4747216136384544,
+        "timestamp": 1777205016.301415
+      },
+      "snapshot": {
+        "coherence_score": 0.0,
+        "has_numpy": false,
+        "has_scipy": false,
+        "latest_field": {
+          "coherence_gamma": 0.0,
+          "consciousness_level": "INTUITIVE",
+          "consciousness_psi": 0.6675432220440809,
+          "lambda_t": 1.3785768527279276,
+          "ts": 1777205016.301415
+        },
+        "n_events_emitted": 0,
+        "n_ingested": 12,
+        "n_samples_fast": 12,
+        "n_samples_slow": 12,
+        "regime": "QUIET",
+        "rocks_fast": [],
+        "rocks_slow": [],
+        "ts": 1777205021.2667236,
+        "uptime_s": 60.35982871055603
+      },
+      "ts": 1777205021.2667532
+    },
+    {
+      "engine_state": {
+        "ac_adaptive_recursion": 0.2499829037795669,
+        "ac_energy_stability": 0.6509287838642988,
+        "ac_meaning_propagation": 0.0,
+        "ac_memory_persistence": 1.0,
+        "ac_self_organization": 0.5512211652255181,
+        "coherence_gamma": 0.0,
+        "coherence_nonlinear": 0.11920292202211757,
+        "coherence_phi": 1.0,
+        "consciousness_level": "INTUITIVE",
+        "consciousness_psi": 0.6920364369701831,
+        "echo": 0.49410877764544703,
+        "effective_gain": 1.35,
+        "lambda_t": 1.3327605614135043,
+        "observer": 0.3490712161357012,
+        "quality_factor": 2.7,
+        "step": 23,
+        "substrate": 0.4895805676323561,
+        "symbolic_life_score": 0.4779274253848984,
+        "timestamp": 1777205026.3072267
+      },
+      "snapshot": {
+        "coherence_score": 0.0,
+        "has_numpy": false,
+        "has_scipy": false,
+        "latest_field": {
+          "coherence_gamma": 0.0,
+          "consciousness_level": "INTUITIVE",
+          "consciousness_psi": 0.6920364369701831,
+          "lambda_t": 1.3327605614135043,
+          "ts": 1777205026.3072267
+        },
+        "n_events_emitted": 0,
+        "n_ingested": 14,
+        "n_samples_fast": 14,
+        "n_samples_slow": 14,
+        "regime": "QUIET",
+        "rocks_fast": [],
+        "rocks_slow": [],
+        "ts": 1777205031.2694,
+        "uptime_s": 70.36250472068787
+      },
+      "ts": 1777205031.2694306
+    },
+    {
+      "engine_state": {
+        "ac_adaptive_recursion": 0.17808455597842077,
+        "ac_energy_stability": 0.6505849153170535,
+        "ac_meaning_propagation": 0.0,
+        "ac_memory_persistence": 1.0,
+        "ac_self_organization": 0.6502684889491506,
+        "coherence_gamma": 0.0,
+        "coherence_nonlinear": 0.11920292202211757,
+        "coherence_phi": 1.0,
+        "consciousness_level": "CONNECTED",
+        "consciousness_psi": 0.7120643610386861,
+        "echo": 0.5663204133225025,
+        "effective_gain": 1.35,
+        "lambda_t": 1.3918401900732476,
+        "observer": 0.3494150846829464,
+        "quality_factor": 2.7,
+        "step": 25,
+        "substrate": 0.47610469206779876,
+        "symbolic_life_score": 0.486883364250004,
+        "timestamp": 1777205036.3115573
+      },
+      "snapshot": {
+        "coherence_score": 0.0,
+        "has_numpy": false,
+        "has_scipy": false,
+        "latest_field": {
+          "coherence_gamma": 0.0,
+          "consciousness_level": "CONNECTED",
+          "consciousness_psi": 0.7120643610386861,
+          "lambda_t": 1.3918401900732476,
+          "ts": 1777205036.3115573
+        },
+        "n_events_emitted": 0,
+        "n_ingested": 16,
+        "n_samples_fast": 16,
+        "n_samples_slow": 16,
+        "regime": "QUIET",
+        "rocks_fast": [],
+        "rocks_slow": [],
+        "ts": 1777205041.2719185,
+        "uptime_s": 80.36502265930176
+      },
+      "ts": 1777205041.2719455
+    },
+    {
+      "engine_state": {
+        "ac_adaptive_recursion": 0.08011169627401182,
+        "ac_energy_stability": 0.6503488964230559,
+        "ac_meaning_propagation": 0.0,
+        "ac_memory_persistence": 1.0,
+        "ac_self_organization": 0.7532268400668888,
+        "coherence_gamma": 0.0,
+        "coherence_nonlinear": 0.11920292202211757,
+        "coherence_phi": 1.0,
+        "consciousness_level": "CONNECTED",
+        "consciousness_psi": 0.7046234559983555,
+        "echo": 0.7825164880556895,
+        "effective_gain": 1.35,
+        "lambda_t": 1.57116245469633,
+        "observer": 0.34965110357694407,
+        "quality_factor": 2.7,
+        "step": 27,
+        "substrate": 0.4389948630636964,
+        "symbolic_life_score": 0.4927319017390907,
+        "timestamp": 1777205046.315171
+      },
+      "snapshot": {
+        "coherence_score": 0.0,
+        "has_numpy": false,
+        "has_scipy": false,
+        "latest_field": {
+          "coherence_gamma": 0.0,
+          "consciousness_level": "CONNECTED",
+          "consciousness_psi": 0.7046234559983555,
+          "lambda_t": 1.57116245469633,
+          "ts": 1777205046.315171
+        },
+        "n_events_emitted": 0,
+        "n_ingested": 18,
+        "n_samples_fast": 18,
+        "n_samples_slow": 18,
+        "regime": "QUIET",
+        "rocks_fast": [],
+        "rocks_slow": [],
+        "ts": 1777205051.2733989,
+        "uptime_s": 90.36650371551514
+      },
+      "ts": 1777205051.2734199
+    },
+    {
+      "engine_state": {
+        "ac_adaptive_recursion": 0.08994939601265006,
+        "ac_energy_stability": 0.6502071869135669,
+        "ac_meaning_propagation": 0.0,
+        "ac_memory_persistence": 1.0,
+        "ac_self_organization": 0.6966035673217126,
+        "coherence_gamma": 0.0,
+        "coherence_nonlinear": 0.11920292202211757,
+        "coherence_phi": 1.0,
+        "consciousness_level": "INTUITIVE",
+        "consciousness_psi": 0.6895770120355236,
+        "echo": 1.0986561591936752,
+        "effective_gain": 1.35,
+        "lambda_t": 1.8327095887241844,
+        "observer": 0.34979281308643306,
+        "quality_factor": 2.7,
+        "step": 29,
+        "substrate": 0.3842606164440762,
+        "symbolic_life_score": 0.48285456024895346,
+        "timestamp": 1777205056.319722
+      },
+      "snapshot": {
+        "coherence_score": 0.0,
+        "has_numpy": false,
+        "has_scipy": false,
+        "latest_field": {
+          "coherence_gamma": 0.0,
+          "consciousness_level": "INTUITIVE",
+          "consciousness_psi": 0.6895770120355236,
+          "lambda_t": 1.8327095887241844,
+          "ts": 1777205056.319722
+        },
+        "n_events_emitted": 0,
+        "n_ingested": 20,
+        "n_samples_fast": 20,
+        "n_samples_slow": 20,
+        "regime": "QUIET",
+        "rocks_fast": [],
+        "rocks_slow": [],
+        "ts": 1777205061.274464,
+        "uptime_s": 100.36756873130798
+      },
+      "ts": 1777205061.2744932
+    },
+    {
+      "engine_state": {
+        "ac_adaptive_recursion": 0.0947118221053751,
+        "ac_energy_stability": 0.6501314767397786,
+        "ac_meaning_propagation": 0.0,
+        "ac_memory_persistence": 1.0,
+        "ac_self_organization": 0.7057441923202465,
+        "coherence_gamma": 0.0,
+        "coherence_nonlinear": 0.11920292202211757,
+        "coherence_phi": 1.0,
+        "consciousness_level": "INTUITIVE",
+        "consciousness_psi": 0.6904024871273904,
+        "echo": 1.3785768527279276,
+        "effective_gain": 1.35,
+        "lambda_t": 2.0481918261441074,
+        "observer": 0.34986852326022144,
+        "quality_factor": 2.7,
+        "step": 31,
+        "substrate": 0.31974645015595826,
+        "symbolic_life_score": 0.4853819071278113,
+        "timestamp": 1777205066.324133
+      },
+      "snapshot": {
+        "coherence_score": 0.0,
+        "has_numpy": false,
+        "has_scipy": false,
+        "latest_field": {
+          "coherence_gamma": 0.0,
+          "consciousness_level": "INTUITIVE",
+          "consciousness_psi": 0.6904024871273904,
+          "lambda_t": 2.0481918261441074,
+          "ts": 1777205066.324133
+        },
+        "n_events_emitted": 0,
+        "n_ingested": 22,
+        "n_samples_fast": 22,
+        "n_samples_slow": 22,
+        "regime": "QUIET",
+        "rocks_fast": [],
+        "rocks_slow": [],
+        "ts": 1777205071.2759414,
+        "uptime_s": 110.36904573440552
+      },
+      "ts": 1777205071.2760067
+    },
+    {
+      "engine_state": {
+        "ac_adaptive_recursion": 0.0947118221053751,
+        "ac_energy_stability": 0.6500578832468087,
+        "ac_meaning_propagation": 0.0,
+        "ac_memory_persistence": 1.0,
+        "ac_self_organization": 0.706567187347451,
+        "coherence_gamma": 0.0,
+        "coherence_nonlinear": 0.11920292202211757,
+        "coherence_phi": 1.0,
+        "consciousness_level": "INTUITIVE",
+        "consciousness_psi": 0.6978931345623556,
+        "echo": 1.3327605614135043,
+        "effective_gain": 1.35,
+        "lambda_t": 1.9363999916610188,
+        "observer": 0.34994211675319126,
+        "quality_factor": 2.7,
+        "step": 33,
+        "substrate": 0.25369731349432334,
+        "symbolic_life_score": 0.48553178743465825,
+        "timestamp": 1777205076.3281014
+      },
+      "snapshot": {
+        "coherence_score": 0.0,
+        "has_numpy": false,
+        "has_scipy": false,
+        "latest_field": {
+          "coherence_gamma": 0.0,
+          "consciousness_level": "INTUITIVE",
+          "consciousness_psi": 0.6978931345623556,
+          "lambda_t": 1.9363999916610188,
+          "ts": 1777205076.3281014
+        },
+        "n_events_emitted": 0,
+        "n_ingested": 24,
+        "n_samples_fast": 24,
+        "n_samples_slow": 24,
+        "regime": "QUIET",
+        "rocks_fast": [],
+        "rocks_slow": [],
+        "ts": 1777205081.2774813,
+        "uptime_s": 120.3705849647522
+      },
+      "ts": 1777205081.2775002
+    },
+    {
+      "engine_state": {
+        "ac_adaptive_recursion": 0.14893236338749194,
+        "ac_energy_stability": 0.650040956963297,
+        "ac_meaning_propagation": 0.0,
+        "ac_memory_persistence": 1.0,
+        "ac_self_organization": 0.7691327108574632,
+        "coherence_gamma": 0.0,
+        "coherence_nonlinear": 0.11920292202211757,
+        "coherence_phi": 1.0,
+        "consciousness_level": "CONNECTED",
+        "consciousness_psi": 0.7276355779742634,
+        "echo": 1.3918401900732476,
+        "effective_gain": 1.35,
+        "lambda_t": 1.9352113537063849,
+        "observer": 0.34995904303670305,
+        "quality_factor": 2.7,
+        "step": 35,
+        "substrate": 0.19341212059643415,
+        "symbolic_life_score": 0.5061745880722759,
+        "timestamp": 1777205086.3340738
+      },
+      "snapshot": {
+        "coherence_score": 0.0,
+        "has_numpy": false,
+        "has_scipy": false,
+        "latest_field": {
+          "coherence_gamma": 0.0,
+          "consciousness_level": "CONNECTED",
+          "consciousness_psi": 0.7276355779742634,
+          "lambda_t": 1.9352113537063849,
+          "ts": 1777205086.3340738
+        },
+        "n_events_emitted": 0,
+        "n_ingested": 26,
+        "n_samples_fast": 26,
+        "n_samples_slow": 26,
+        "regime": "QUIET",
+        "rocks_fast": [],
+        "rocks_slow": [],
+        "ts": 1777205091.2793665,
+        "uptime_s": 130.37247133255005
+      },
+      "ts": 1777205091.2793968
+    },
+    {
+      "engine_state": {
+        "ac_adaptive_recursion": 0.14299286343434847,
+        "ac_energy_stability": 0.6500255020191914,
+        "ac_meaning_propagation": 0.0,
+        "ac_memory_persistence": 1.0,
+        "ac_self_organization": 0.8028952641576368,
+        "coherence_gamma": 0.0,
+        "coherence_nonlinear": 0.11920292202211757,
+        "coherence_phi": 1.0,
+        "consciousness_level": "CONNECTED",
+        "consciousness_psi": 0.7152121553516175,
+        "echo": 1.57116245469633,
+        "effective_gain": 1.35,
+        "lambda_t": 2.065373245435178,
+        "observer": 0.34997449798080854,
+        "quality_factor": 2.7,
+        "step": 37,
+        "substrate": 0.14423629275803956,
+        "symbolic_life_score": 0.512033082750518,
+        "timestamp": 1777205096.3381402
+      },
+      "snapshot": {
+        "coherence_score": 0.0,
+        "has_numpy": false,
+        "has_scipy": false,
+        "latest_field": {
+          "coherence_gamma": 0.0,
+          "consciousness_level": "CONNECTED",
+          "consciousness_psi": 0.7152121553516175,
+          "lambda_t": 2.065373245435178,
+          "ts": 1777205096.3381402
+        },
+        "n_events_emitted": 0,
+        "n_ingested": 28,
+        "n_samples_fast": 28,
+        "n_samples_slow": 28,
+        "regime": "QUIET",
+        "rocks_fast": [],
+        "rocks_slow": [],
+        "ts": 1777205101.2810242,
+        "uptime_s": 140.37413001060486
+      },
+      "ts": 1777205101.2810562
+    },
+    {
+      "engine_state": {
+        "ac_adaptive_recursion": 0.16105530344499197,
+        "ac_energy_stability": 0.6500147109814909,
+        "ac_meaning_propagation": 0.0,
+        "ac_memory_persistence": 1.0,
+        "ac_self_organization": 0.6908616068350447,
+        "coherence_gamma": 0.0,
+        "coherence_nonlinear": 0.11920292202211757,
+        "coherence_phi": 1.0,
+        "consciousness_level": "INTUITIVE",
+        "consciousness_psi": 0.6873717521130154,
+        "echo": 1.8327095887241844,
+        "effective_gain": 1.35,
+        "lambda_t": 2.2917491267296812,
+        "observer": 0.3499852890185091,
+        "quality_factor": 2.7,
+        "step": 39,
+        "substrate": 0.10905424898698776,
+        "symbolic_life_score": 0.4923335590800559,
+        "timestamp": 1777205106.342001
+      },
+      "snapshot": {
+        "coherence_score": 0.0,
+        "has_numpy": false,
+        "has_scipy": false,
+        "latest_field": {
+          "coherence_gamma": 0.0,
+          "consciousness_level": "INTUITIVE",
+          "consciousness_psi": 0.6873717521130154,
+          "lambda_t": 2.2917491267296812,
+          "ts": 1777205106.342001
+        },
+        "n_events_emitted": 0,
+        "n_ingested": 30,
+        "n_samples_fast": 30,
+        "n_samples_slow": 30,
+        "regime": "QUIET",
+        "rocks_fast": [],
+        "rocks_slow": [],
+        "ts": 1777205111.2819917,
+        "uptime_s": 150.37509608268738
+      },
+      "ts": 1777205111.2820194
+    },
+    {
+      "engine_state": {
+        "ac_adaptive_recursion": 0.1113616129544086,
+        "ac_energy_stability": 0.6500085764931786,
+        "ac_meaning_propagation": 0.0,
+        "ac_memory_persistence": 1.0,
+        "ac_self_organization": 0.7389480155234947,
+        "coherence_gamma": 0.0,
+        "coherence_nonlinear": 0.11920292202211757,
+        "coherence_phi": 1.0,
+        "consciousness_level": "INTUITIVE",
+        "consciousness_psi": 0.6992451125105295,
+        "echo": 2.0481918261441074,
+        "effective_gain": 1.35,
+        "lambda_t": 2.4865072418534693,
+        "observer": 0.34999142350682144,
+        "quality_factor": 2.7,
+        "step": 41,
+        "substrate": 0.08832399220254036,
+        "symbolic_life_score": 0.49449556034649594,
+        "timestamp": 1777205116.348177
+      },
+      "snapshot": {
+        "coherence_score": 0.0,
+        "has_numpy": false,
+        "has_scipy": false,
+        "latest_field": {
+          "coherence_gamma": 0.0,
+          "consciousness_level": "INTUITIVE",
+          "consciousness_psi": 0.6992451125105295,
+          "lambda_t": 2.4865072418534693,
+          "ts": 1777205116.348177
+        },
+        "n_events_emitted": 0,
+        "n_ingested": 32,
+        "n_samples_fast": 32,
+        "n_samples_slow": 32,
+        "regime": "QUIET",
+        "rocks_fast": [],
+        "rocks_slow": [],
+        "ts": 1777205121.2828157,
+        "uptime_s": 160.3759207725525
+      },
+      "ts": 1777205121.28285
+    },
+    {
+      "engine_state": {
+        "ac_adaptive_recursion": 0.08611200775911332,
+        "ac_energy_stability": 0.6500033721136289,
+        "ac_meaning_propagation": 0.0,
+        "ac_memory_persistence": 1.0,
+        "ac_self_organization": 0.6748800628033111,
+        "coherence_gamma": 0.0,
+        "coherence_nonlinear": 0.11920292202211757,
+        "coherence_phi": 1.0,
+        "consciousness_level": "INTUITIVE",
+        "consciousness_psi": 0.6924967572982486,
+        "echo": 1.9363999916610188,
+        "effective_gain": 1.35,
+        "lambda_t": 2.3669721451666974,
+        "observer": 0.34999662788637104,
+        "quality_factor": 2.7,
+        "step": 43,
+        "substrate": 0.08057552561930767,
+        "symbolic_life_score": 0.477893488147255,
+        "timestamp": 1777205126.351916
+      },
+      "snapshot": {
+        "coherence_score": 0.0,
+        "has_numpy": false,
+        "has_scipy": false,
+        "latest_field": {
+          "coherence_gamma": 0.0,
+          "consciousness_level": "INTUITIVE",
+          "consciousness_psi": 0.6924967572982486,
+          "lambda_t": 2.3669721451666974,
+          "ts": 1777205126.351916
+        },
+        "n_events_emitted": 0,
+        "n_ingested": 34,
+        "n_samples_fast": 34,
+        "n_samples_slow": 34,
+        "regime": "QUIET",
+        "rocks_fast": [],
+        "rocks_slow": [],
+        "ts": 1777205131.283784,
+        "uptime_s": 170.37688875198364
+      },
+      "ts": 1777205131.283815
+    }
+  ],
+  "params": {
+    "alpha": 0.35,
+    "beta": 1.0,
+    "delta_t": 5,
+    "fitted_at": null,
+    "fitted_from": null,
+    "g": 2.5,
+    "r_squared": null,
+    "tau": 10
+  },
+  "periodic_reads": [
+    {
+      "consensus": {
+        "agreement_ratio": 0.0,
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "harmonic_observer_signal": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "n_aligned_rocks": 0,
+        "regime": "WARMING",
+        "strength": 0.0
+      },
+      "kelly_baseline_r_prime_buffer": 0.003780357036976323,
+      "kelly_buffer_multiplier": 1.5,
+      "kelly_observed_r_prime_buffer": 0.005670535555464484,
+      "n_predictors": 1,
+      "observer_coherence_used": 0.0,
+      "predictor_directions": {
+        "harmonic_observer": "NEUTRAL"
+      },
+      "predictor_strengths": {
+        "harmonic_observer": 0.0
+      },
+      "ts": 1777204961.2652767
+    },
+    {
+      "consensus": {
+        "agreement_ratio": 0.0,
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "harmonic_observer_signal": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "n_aligned_rocks": 0,
+        "regime": "WARMING",
+        "strength": 0.0
+      },
+      "kelly_baseline_r_prime_buffer": 0.003780357036976323,
+      "kelly_buffer_multiplier": 1.5,
+      "kelly_observed_r_prime_buffer": 0.005670535555464484,
+      "n_predictors": 1,
+      "observer_coherence_used": 0.0,
+      "predictor_directions": {
+        "harmonic_observer": "NEUTRAL"
+      },
+      "predictor_strengths": {
+        "harmonic_observer": 0.0
+      },
+      "ts": 1777204991.2666864
+    },
+    {
+      "consensus": {
+        "agreement_ratio": 0.0,
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "harmonic_observer_signal": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "n_aligned_rocks": 0,
+        "regime": "QUIET",
+        "strength": 0.0
+      },
+      "kelly_baseline_r_prime_buffer": 0.003780357036976323,
+      "kelly_buffer_multiplier": 1.5,
+      "kelly_observed_r_prime_buffer": 0.005670535555464484,
+      "n_predictors": 1,
+      "observer_coherence_used": 0.0,
+      "predictor_directions": {
+        "harmonic_observer": "NEUTRAL"
+      },
+      "predictor_strengths": {
+        "harmonic_observer": 0.0
+      },
+      "ts": 1777205021.2671
+    },
+    {
+      "consensus": {
+        "agreement_ratio": 0.0,
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "harmonic_observer_signal": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "n_aligned_rocks": 0,
+        "regime": "QUIET",
+        "strength": 0.0
+      },
+      "kelly_baseline_r_prime_buffer": 0.003780357036976323,
+      "kelly_buffer_multiplier": 1.5,
+      "kelly_observed_r_prime_buffer": 0.005670535555464484,
+      "n_predictors": 1,
+      "observer_coherence_used": 0.0,
+      "predictor_directions": {
+        "harmonic_observer": "NEUTRAL"
+      },
+      "predictor_strengths": {
+        "harmonic_observer": 0.0
+      },
+      "ts": 1777205051.2691617
+    },
+    {
+      "consensus": {
+        "agreement_ratio": 0.0,
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "harmonic_observer_signal": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "n_aligned_rocks": 0,
+        "regime": "QUIET",
+        "strength": 0.0
+      },
+      "kelly_baseline_r_prime_buffer": 0.003780357036976323,
+      "kelly_buffer_multiplier": 1.5,
+      "kelly_observed_r_prime_buffer": 0.005670535555464484,
+      "n_predictors": 1,
+      "observer_coherence_used": 0.0,
+      "predictor_directions": {
+        "harmonic_observer": "NEUTRAL"
+      },
+      "predictor_strengths": {
+        "harmonic_observer": 0.0
+      },
+      "ts": 1777205081.2711494
+    },
+    {
+      "consensus": {
+        "agreement_ratio": 0.0,
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "harmonic_observer_signal": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "n_aligned_rocks": 0,
+        "regime": "QUIET",
+        "strength": 0.0
+      },
+      "kelly_baseline_r_prime_buffer": 0.003780357036976323,
+      "kelly_buffer_multiplier": 1.5,
+      "kelly_observed_r_prime_buffer": 0.005670535555464484,
+      "n_predictors": 1,
+      "observer_coherence_used": 0.0,
+      "predictor_directions": {
+        "harmonic_observer": "NEUTRAL"
+      },
+      "predictor_strengths": {
+        "harmonic_observer": 0.0
+      },
+      "ts": 1777205111.2734497
+    },
+    {
+      "consensus": {
+        "agreement_ratio": 0.0,
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "strength": 0.0
+      },
+      "harmonic_observer_signal": {
+        "confidence": 0.0,
+        "direction": "NEUTRAL",
+        "n_aligned_rocks": 0,
+        "regime": "QUIET",
+        "strength": 0.0
+      },
+      "kelly_baseline_r_prime_buffer": 0.003780357036976323,
+      "kelly_buffer_multiplier": 1.5,
+      "kelly_observed_r_prime_buffer": 0.005670535555464484,
+      "n_predictors": 1,
+      "observer_coherence_used": 0.0,
+      "predictor_directions": {
+        "harmonic_observer": "NEUTRAL"
+      },
+      "predictor_strengths": {
+        "harmonic_observer": 0.0
+      },
+      "ts": 1777205141.2756147
+    }
+  ],
+  "rock_events": [],
+  "started_at": 1777204960.5879114,
+  "tag": "sandbox-001"
+}

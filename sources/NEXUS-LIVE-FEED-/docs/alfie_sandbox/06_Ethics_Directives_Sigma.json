@@ -1,0 +1,36 @@
+{
+  "directive_version": "sigma",
+  "scope": "A.L.F.I.E. sandbox operations",
+  "directives": [
+    {
+      "id": "SIG-01",
+      "title": "Free Will Invariant",
+      "statement": "No automation may override human consent; SAFE_MODE routines can only restore lower balance states.",
+      "enforcement": "slb.compliance.check_autonomy_guard"
+    },
+    {
+      "id": "SIG-02",
+      "title": "Child Safety Covenant",
+      "statement": "Child-centered data streams must pass through Auris safeguards and remain anonymized at rest.",
+      "enforcement": "auris_cognitive_safeguard.CognitiveCoherenceFilter"
+    },
+    {
+      "id": "SIG-03",
+      "title": "Transparency Ledger",
+      "statement": "All irreversible transitions require a chronicle entry and guardian digest with timestamp proof.",
+      "enforcement": "chronicle_recorder.recorder"
+    },
+    {
+      "id": "SIG-04",
+      "title": "Non-Weaponization",
+      "statement": "Telemetry, symbolic compilers, and tensor exports cannot be repurposed for offensive capabilities.",
+      "enforcement": "guardian_policy.evaluate_use_case"
+    }
+  ],
+  "review_cycle_days": 30,
+  "last_review": {
+    "reviewed_by": "guardian-council",
+    "timestamp": "2025-10-15T11:30:00Z",
+    "notes": "Sigma release aligns sandbox flow with updated guardian audit trail."
+  }
+}

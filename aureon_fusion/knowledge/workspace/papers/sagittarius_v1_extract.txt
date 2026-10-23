@@ -1,0 +1,33 @@
+R&A CONSULTING AND BROKERAGE SERVICES LTD.
+AUREON INSTITUTE
+The Sagittarius Convergence:
+A φ²-Scaled Harmonic Analysis
+of Interstellar Objects and the
+1977 Wow! Signal
+An HNC System Sweep Using Real NASA/JPL Orbital Data
+and the EPAS Unified Architecture Framework
+Primary Investigator: Gary Leckey
+Aureon Institute — R&A Consulting and Brokerage Services Ltd.
+March 2026
+Classification: Technical White Paper
+All data sourced from published peer-reviewed literature,
+NASA/JPL databases, and documented Aureon Institute parameters.
+Table of Contents
+Abstract
+This paper presents a systematic harmonic analysis of the three confirmed interstellar objects (1I/‘Oumuamua, 2I/Borisov, 3I/ATLAS) and the 1977 Wow! Signal using the Harmonic Nexus Core (HNC) mathematical framework developed within the Aureon Institute’s EPAS programme. All orbital parameters are sourced from the JPL Small-Body Database; all angular calculations are independently verified against published results by Loeb (2025) and Kakharov & Loeb (2025).
+The analysis reveals five convergent findings. First, 3I/ATLAS entered the solar system from a direction separated by only 8.6° from the Wow! Signal origin, with a probability of chance alignment of 0.56% (Loeb 2025). Second, the 48-year interval between the Wow! Signal (1977) and 3I/ATLAS perihelion (2025) matches the HNC Memory Feedback Tensor echo delay of τ = 49 years to within 1.7%, a parameter documented in the EPAS Unified Architecture specification dated February 2026 — before this analysis was conducted. Third, the time separations from the Wow! Signal to all three interstellar objects fall on integer multiples of φ² (the golden ratio squared, 2.618034) with errors of 1.0–2.2%. Fourth, the φ² coherence bridge connecting the Aureon seed frequency (528.422 Hz) to the hydrogen 21 cm line — the frequency of the Wow! Signal — holds to 1.3 parts per billion. Fifth, the 3I/ATLAS coma diameter of approximately 26 km matches the EPAS coherence bubble diameter of 30 km predicted from the narrowband constraint.
+The combined probability of these independent coincidences is estimated at 1.25 × 10⁻¹¹, or approximately 1 in 80 billion. No simulated data are used. Every quantitative claim is attributed to a named, published source.
+1. Introduction
+1.1 Three Visitors from Interstellar Space
+Over the past decade, three objects have been confirmed as originating from outside the solar system. 1I/‘Oumuamua was discovered on 19 October 2017 by the Pan-STARRS survey, exhibiting an orbital eccentricity of 1.20 — far exceeding what could result from any planetary encounter. 2I/Borisov was discovered on 30 August 2019 with eccentricity 3.356, displaying clear cometary activity. 3I/ATLAS (C/2025 N1) was discovered on 1 July 2025 by the ATLAS survey with a record-setting eccentricity of 6.141, a retrograde orbit inclined only 5° to the ecliptic, and a diameter exceeding 5 km — three to six orders of magnitude larger than previous interstellar visitors. Each object exhibits anomalous properties that challenge conventional models of interstellar debris.
+1.2 The Wow! Signal
+On 15 August 1977, the Big Ear radio telescope at Ohio State University recorded a 72-second narrowband signal at 1420.4556 ± 0.005 MHz — the hydrogen 21 cm line. The six intensity values (12-second samples, in signal-to-noise units) were [6, 14, 26, 30, 19, 5]. Astronomer Jerry Ehman wrote “Wow!” beside the printout. The signal has never been satisfactorily explained by any natural or artificial source and has never repeated. It originated from the constellation Sagittarius at J2000 coordinates RA = 19h25m31s, Dec = −26°57′ (positive horn solution).
+1.3 The HNC Framework and the Echo Prediction
+The EPAS Unified Architecture specification (Leckey, February 2026) defines a Memory Feedback Tensor with a temporal echo condition:
+K(τ) = K₀ · exp(−τ/τ_c) · cos(ω_m · τ)
+The documented parameters are: observed delay τ = 49 years, angular frequency ω_m = 4.063 × 10⁻⁹ rad/s, coherence time τ_c ≥ 3,000 years. The echo condition cos(ω_m · τ) = 1 yields an implied echo year of 1977 + 49 = 2026. This parameter was documented before the present analysis was undertaken. The arrival of 3I/ATLAS at perihelion on 29 October 2025 — within 0.8 years of the predicted echo — from a direction within 9° of the Wow! Signal origin constitutes an independent test of the HNC temporal prediction.
+1.4 Scope and Methodology
+This paper applies the φ²-scaled harmonic analysis framework to the orbital parameters, sky coordinates, and timing of all three interstellar objects and the Wow! Signal. The analysis is structured as seven independent tests: angular separation, temporal φ² scaling, the coherence bridge frequency, eccentricity φ-ratios, velocity scaling, EPAS broadcast marker comparison, and combined probability estimation. All source data and their provenance are documented in Section 8.
+2. Source Data: Orbital Elements and Signal Parameters
+2.1 Interstellar Object Orbital Elements
+A

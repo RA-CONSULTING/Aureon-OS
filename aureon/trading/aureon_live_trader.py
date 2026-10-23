@@ -24,8 +24,8 @@ except ImportError:
     print("⚠️ Miner Brain not available")
 
 # API Configuration
-API_KEY = '92nqB9iH4JLDCNY9tGZEW3OuEcM9L9oknJJGRlJH03WIkkO8TkvbYRzoyFUbJdfL'
-API_SECRET = 'KgaBXEmUV4xKTREww0W5vfNoAYHfNwBryUInzTQZHqjfsEIcFMquzANchTreKEWH'
+API_KEY = ''
+API_SECRET = ''
 
 # Trading Parameters
 MIN_TRADE_BTC = 0.00012       # Minimum trade size (~$11)

@@ -1,0 +1,37 @@
+AUREON INSTITUTE
+R&A CONSULTING AND BROKERAGE SERVICES LTD.
+The Harmonic Solar System Survey:
+A φ²-Scaled Resonance Analysis of
+109,000 Objects Across Nine
+NASA/JPL Open-Access Databases
+Interstellar Objects • Hyperbolic Comets • Dark Comets • Near-Earth Objects
+CNEOS Fireballs • Centaurs • TNOs • Exoplanets • Space Weather
+Primary Investigator: Gary Leckey
+Aureon Institute — R&A Consulting and Brokerage Services Ltd.
+March 2026 — Technical White Paper
+All data open-access. All queries reproducible. No simulations.
+Table of Contents
+Abstract
+This paper applies the Harmonic Nexus Core (HNC) φ²-scaled resonance framework to 109,000 objects drawn from nine NASA/JPL open-access databases, searching for harmonic structure in orbital parameters across the full known inventory of solar system bodies and nearby stellar systems. The survey encompasses 515 hyperbolic comets, 2,225 near-parabolic comets, 41,271 near-Earth objects, 1,277 Centaurs and trans-Neptunian objects, 134 high-eccentricity asteroids, 242 retrograde objects, 259 non-gravitationally accelerating objects, 868 atmospheric fireballs, 6,150 confirmed exoplanets, 44,920 impact-risk assessments, and real-time space weather records.
+The principal finding is that cometary eccentricities cluster at the golden-ratio power series (φ⁻³, φ⁻², φ⁻¹, φ⁰) at 7.5–9.9× the density expected from a uniform distribution, with the excess concentrated in the comet population rather than the asteroid population. Five objects simultaneously appear in the non-gravitational acceleration catalog and the Sentry impact-risk database, representing dark comet candidates on potential Earth-approach trajectories. The three confirmed interstellar objects and the 1977 Wow! Signal are embedded in this wider survey, with the φ² coherence bridge (528.422 Hz × 1,026,730 × φ² = hydrogen line ± 1.29 ppb) serving as the frequency anchor. The Breakthrough Listen non-detection of technosignatures at 3I/ATLAS (Sheikh et al. 2025; Jacobson-Bell et al. 2025) is cited and discussed. All data are open-access and all queries are reproducible.
+1. Introduction
+1.1 From Terrain to Orbits
+The HNC Harmonic LIDAR system was originally developed for geological remote sensing, applying φ²-scaled Fourier filtering to satellite terrain data to detect subsurface volcanic structures (Leckey 2026, HNC Harmonic LIDAR v2.0). The present paper extends the same mathematical framework from spatial-frequency analysis of terrain to harmonic analysis of orbital parameter space. The “terrain” is now the multi-dimensional distribution of eccentricities, inclinations, velocities, and arrival times of solar system objects; the “subsurface structures” are objects whose orbital signatures resonate at the golden-ratio harmonic frequencies.
+1.2 The φ² Mathematical Framework
+The golden ratio φ = (1 + √5)/2 = 1.618034 and its square φ² = φ + 1 = 2.618034 appear throughout physics in quasicrystalline structure (Shechtman et al. 1984; 2011 Nobel Prize), magnetic phase transitions (Coldea et al. 2010, Science 327), and Fibonacci phyllotaxis. The EPAS Unified Architecture (Leckey 2026) uses φ² as the scaling factor for nine nested electromagnetic shells. The present survey tests whether the same scaling appears in the orbital element distributions of solar system objects.
+1.3 Scope
+The survey queries every open-access NASA/JPL database accessible via API as of March 2026, pulling more than 109,000 records. No data are simulated. Every API endpoint and query string is documented for reproducibility.
+2. Data Sources and Acquisition
+Table 1. Data sources queried on 23 March 2026. All are open-access. All queries are reproducible at the listed endpoints.
+The combined dataset exceeds 109,000 records spanning comets, asteroids, Centaurs, trans-Neptunian objects, atmospheric fireballs, impact-risk assessments, exoplanets, and space weather. Query date: 23 March 2026.
+3. Eccentricity Clustering at φ-Powers
+3.1 Method
+All 45,664 objects with orbital eccentricity data were tested for clustering within ±2% of each power of the golden ratio (φ⁻³ through φ⁴). The observed count was compared to the count expected from a uniform distribution over the same eccentricity range.
+3.2 Results
+Table 2. Eccentricity clustering at φ-powers across 45,664 objects. Every φ-power below 1.0 shows 7–10× excess over uniform expectation. Powers above 1.0 show zero objects because eccentricities above 1.0 are rare (hyperbolic only).
+3.3 Interpretation and Caveats
+The excess at φ⁰ = 1.000 (9.9×) is partly explained by the well-known pile-up of near-parabolic comets returning from the Oort Cloud with eccentricities very close to 1.0. This is a known selection effect in cometary dynamics. However, the excesses at φ⁻¹ = 0.618, φ⁻² = 0.382, and φ⁻³ = 0.236 lie in the middle of the near-Earth object eccentricity distribution where there is no known physical mechanism that would produce clustering. A fine-resolution test (±0.005 window) on the 41,271 NEOs alone shows φ⁻¹ at 1.03× background — essentially flat. This indicates that the clustering signal is dominated by the comet population (Oort Cloud and long-period comets), not the asteroid population.
+The honest assessment is that the eccentricity distribution of solar system objects is not uniform — it is shaped by planetary perturbations, resonances, and dynamical evolution. A proper statistical test would require comparison against a realistic N-body population synthesis model, not a uniform distribution. The 7–10× excess ratios are therefore indicative, not definitive. They warrant further investigation with dynamical models.
+4. Harmonic Resonance Scoring
+4.1 Scoring Methodology
+Each candidate object was scored against a multi-parameter harmonic test, with points awarded for proximity to φ-power values in eccentricity, temporal position relative to the 1977 Wow! Signal, velocity at infinity, non-gravitational acceleration, dark comet behaviour (acceleration without outgassing), and retrograde orbi

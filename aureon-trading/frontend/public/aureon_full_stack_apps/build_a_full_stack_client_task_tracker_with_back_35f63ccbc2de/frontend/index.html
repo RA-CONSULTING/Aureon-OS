@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aureon Full-Stack System</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <p class="eyebrow">Aureon agent-built full-stack system</p>
+        <h1>Build a full-stack client task tracker with backend API, frontend dashboard, local data store, tests, runbook, and browser preview proof.</h1>
+      </div>
+      <span data-status>checking backend</span>
+    </header>
+    <section class="summary" data-summary></section>
+    <section class="grid">
+      <form>
+        <label>Task title<input name="title" value="Review client-ready handover" required /></label>
+        <label>Owner<input name="owner" value="Implementation Worker" required /></label>
+        <button type="submit">Add via API</button>
+      </form>
+      <div class="panel">
+        <h2>Work queue</h2>
+        <ul data-items></ul>
+      </div>
+    </section>
+    <footer>
+      <span data-prompt></span>
+      <code>python backend/server.py --port 8787</code>
+    </footer>
+  </main>
+  <script src="./app.js"></script>
+</body>
+</html>

@@ -60,7 +60,9 @@ test("coding cockpit exposes the capability forge quality lane", async ({ page }
   await expect(page.getByText(/audit (autonomous_safe|pending|passed|failed|waiting)/).first()).toBeVisible();
   await expect(page.getByText("Selected Repairs", { exact: true })).toBeVisible();
   await expect(page.getByText("Ollama Cognitive Handshake")).toBeVisible();
-  await expect(page.getByText("Ollama reachable")).toBeVisible();
+  // The badge is the published bridge, not a live probe. With no operator and
+  // no generated public report, "Ollama offline" is the honest state.
+  await expect(page.getByText(/Ollama (reachable|offline)/)).toBeVisible();
   await expect(page.getByText("Handshake Proof")).toBeVisible();
   await expect(page.getByText("Metacognitive Creative Process Guardian")).toBeVisible();
   await expect(page.getByText(/HNC\/Auris (ready|held|waiting)/).first()).toBeVisible();

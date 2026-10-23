@@ -1,5 +1,7 @@
 import json
 
+import pytest
+
 from aureon.autonomous.aureon_system_readiness_audit import (
     AureonSystemReadinessAudit,
     CapabilityProof,

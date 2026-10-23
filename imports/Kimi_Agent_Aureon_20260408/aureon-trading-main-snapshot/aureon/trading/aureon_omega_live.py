@@ -32,8 +32,8 @@ from binance_client import get_binance_client
 # ═══════════════════════════════════════════════════════════════════════════════
 
 # API Keys (Key 4 - TRD_GRP_039)
-API_KEY = '92nqB9iH4JLDCNY9tGZEW3OuEcM9L9oknJJGRlJH03WIkkO8TkvbYRzoyFUbJdfL'
-API_SECRET = 'KgaBXEmUV4xKTREww0W5vfNoAYHfNwBryUInzTQZHqjfsEIcFMquzANchTreKEWH'
+API_KEY = ''
+API_SECRET = ''
 
 # Trading parameters
 TRADE_AMOUNT_BTC = 0.00008  # ~$7 per trade

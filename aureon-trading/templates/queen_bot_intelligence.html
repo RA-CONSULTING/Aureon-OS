@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👑 AUREON BOT INTELLIGENCE CENTER - EXPOSING THE MACHINES</title>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary: #00ff9f;
+            --danger: #ff006e;
+            --warning: #ffd60a;
+            --info: #3a86ff;
+            --purple: #8338ec;
+            --bg-dark: #0a0a1a;
+            --bg-panel: rgba(10, 10, 30, 0.95);
+        }
+        
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background: linear-gradient(135deg, #0a0a1a 0%, #0d1b2a 50%, #1a0a2e 100%);
+            color: var(--primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* HEADER */
+        .header {
+            background: linear-gradient(90deg, #ff006e 0%, #8338ec 50%, #3a86ff 100%);
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 0 30px rgba(255, 0, 110, 0.5);
+        }
+        
+        .header-left h1 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 32px;
+            color: white;
+            text-shadow: 0 0 20px #fff;
+        }
+        
+        .header-left .subtitle {
+            font-size: 12px;
+            color: #ffd60a;
+            letter-spacing: 4px;
+        }
+        
+        .header-stats {
+            display: flex;
+            gap: 30px;
+        }
+        
+        .header-stat {
+            text-align: center;
+        }
+        
+        .header-stat .value {
+            font-size: 28px;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .header-stat .label {
+            font-size: 10px;
+            color: #ffd60a;
+            text-transform: uppercase;
+        }
+        
+        /* SYSTEMS BAR */
+        .systems-bar {
+            background: var(--bg-dark);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            border-bottom: 1px solid var(--purple);
+        }
+        
+        .sys-badge {
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 10px;
+            border: 1px solid;
+        }
+        
+        .sys-badge.on { background: rgba(0,255,159,0.2); border-color: var(--primary); color: var(--primary); }
+        .sys-badge.off { background: rgba(255,0,110,0.2); border-color: var(--danger); color: var(--danger); }
+        
+        /* MAIN LAYOUT */
+        .main-container {
+            display: grid;
+            grid-template-columns: 350px 1fr 350px;
+            gap: 15px;
+            padding: 15px;
+            min-height: calc(100vh - 150px);
+        }
+        
+        /* PANELS */
+        .panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--purple);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .panel-header {
+            background: linear-gradient(90deg, var(--purple), transparent);
+            padding: 12px 15px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--warning);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-bottom: 1px solid var(--purple);
+        }
+        
+        .panel-content {
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .panel-content::-webkit-scrollbar { width: 6px; }
+        .panel-content::-webkit-scrollbar-track { background: var(--bg-dark); }
+        .panel-content::-webkit-scrollbar-thumb { background: var(--purple); border-radius: 3px; }
+        
+        /* LEFT COLUMN - QUEEN'S VOICE */
+        .left-column {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .queen-panel {
+            border-color: var(--danger);
+            flex: 1;
+        }
+        
+        .queen-panel .panel-header {
+            background: linear-gradient(90deg, var(--danger), transparent);
+        }
+        
+        .queen-msg {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-left: 3px solid var(--danger);
+            background: rgba(255,0,110,0.1);
+            border-radius: 0 5px 5px 0;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        
+        .queen-msg.critical { border-color: var(--danger); }
+        .queen-msg.warning { border-color: var(--warning); }
+        .queen-msg.info { border-color: var(--info); }
+        .queen-msg.success { border-color: var(--primary); }
+        
+        .queen-msg .time {
+            font-size: 9px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+        
+        /* MIDDLE COLUMN - BOT INTELLIGENCE */
+        .middle-column {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        /* BOT INTELLIGENCE CARD */
+        .bot-intel-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--warning);
+            border-radius: 8px;
+            margin-bottom: 12px;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        
+        .bot-intel-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 0 20px rgba(255,214,10,0.3);
+        }
+        
+        .bot-intel-card.whale { border-color: var(--danger); }
+        .bot-intel-card.shark { border-color: var(--warning); }
+        .bot-intel-card.fish { border-color: var(--info); }
+        
+        .bot-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background: rgba(255,214,10,0.1);
+            border-bottom: 1px solid rgba(255,214,10,0.3);
+        }
+        
+        .bot-intel-card.whale .bot-header { background: rgba(255,0,110,0.15); }
+        .bot-intel-card.shark .bot-header { background: rgba(255,214,10,0.1); }
+        
+        .bot-id {
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 16px;
+        }
+        
+        .bot-type {
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        
+        .bot-type.whale { background: var(--danger); color: white; }
+        .bot-type.shark { background: var(--warning); color: black; }
+        .bot-type.fish { background: var(--info); color: white; }
+        
+        .bot-body {
+            padding: 12px 15px;
+        }
+        
+        .bot-row {
+            display: flex;
+            margin-bottom: 8px;
+            font-size: 11px;
+        }
+        
+        .bot-label {
+            width: 100px;
+            color: #888;
+            text-transform: uppercase;
+            font-size: 9px;
+        }
+        
+        .bot-value {
+            flex: 1;
+            color: var(--primary);
+        }
+        
+        .bot-value.firm { color: var(--danger); font-weight: bold; }
+        .bot-value.market { color: var(--warning); }
+        .bot-value.strategy { color: var(--info); }
+        .bot-value.volume { color: var(--primary); font-size: 14px; font-weight: bold; }
+        
+        .bot-analysis {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(0,255,159,0.05);
+            border-radius: 5px;
+            border-left: 2px solid var(--primary);
+        }
+        
+        .bot-analysis-title {
+            font-size: 9px;
+            color: var(--warning);
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        
+        .bot-analysis-text {
+            font-size: 11px;
+            color: #ccc;
+            line-height: 1.4;
+        }
+        
+        .victims-section {
+            margin-top: 10px;
+            padding: 8px;
+            background: rgba(255,0,110,0.1);
+            border-radius: 5px;
+        }
+        
+        .victims-title {
+            font-size: 9px;
+            color: var(--danger);
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        
+        .victims-list {
+            font-size: 10px;
+            color: #ff6b9d;
+        }
+        
+        /* RIGHT COLUMN - FIRM PROFILES */
+        .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .firm-card {
+            background: rgba(131,56,236,0.1);
+            border: 1px solid var(--purple);
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+        
+        .firm-card:hover {
+            background: rgba(131,56,236,0.2);
+        }
+        
+        .firm-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .firm-name {
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--warning);
+        }
+        
+        .firm-animal {
+            font-size: 20px;
+        }
+        
+        .firm-details {
+            font-size: 10px;
+            color: #888;
+            line-height: 1.5;
+        }
+        
+        .firm-stat {
+            display: inline-block;
+            margin-right: 15px;
+        }
+        
+        .firm-stat-value {
+            color: var(--primary);
+            font-weight: bold;
+        }
+        
+        /* ACTIVITY STREAM */
+        .activity-item {
+            padding: 8px;
+            margin-bottom: 6px;
+            background: rgba(0,255,159,0.05);
+            border-left: 2px solid var(--primary);
+            border-radius: 0 4px 4px 0;
+            font-size: 10px;
+        }
+        
+        .activity-item.whale { border-color: var(--danger); background: rgba(255,0,110,0.1); }
+        .activity-item.shark { border-color: var(--warning); background: rgba(255,214,10,0.1); }
+        
+        /* STATS ROW */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+            padding: 10px 15px;
+            background: var(--bg-dark);
+            border-bottom: 1px solid var(--purple);
+        }
+        
+        .mini-stat {
+            text-align: center;
+            padding: 8px;
+            background: rgba(131,56,236,0.1);
+            border-radius: 5px;
+        }
+        
+        .mini-stat .val {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .mini-stat .lbl {
+            font-size: 9px;
+            color: #888;
+            text-transform: uppercase;
+        }
+        
+        /* THREAT INDICATOR */
+        .threat-indicator {
+            padding: 5px 15px;
+            background: var(--danger);
+            color: white;
+            font-size: 10px;
+            text-align: center;
+            animation: threatPulse 1s infinite;
+        }
+        
+        @keyframes threatPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        /* LIVE BADGE */
+        .live-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 10px;
+            background: var(--danger);
+            border-radius: 10px;
+            font-size: 10px;
+            color: white;
+        }
+        
+        .live-dot {
+            width: 6px;
+            height: 6px;
+            background: white;
+            border-radius: 50%;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        /* MARKET TAG */
+        .market-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            background: var(--purple);
+            border-radius: 3px;
+            font-size: 9px;
+            color: white;
+            margin-right: 5px;
+        }
+        
+        /* WORLD MAP */
+        #worldMap {
+            height: 400px;
+            border-radius: 8px;
+            border: 2px solid var(--purple);
+            background: var(--bg-dark);
+        }
+        
+        .leaflet-popup-content-wrapper {
+            background: var(--bg-panel);
+            color: var(--primary);
+            border: 1px solid var(--purple);
+        }
+        
+        .leaflet-popup-content {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 11px;
+        }
+        
+        /* AUTO-TAG BADGE */
+        .auto-tag-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 9px;
+            font-weight: bold;
+            margin-left: 5px;
+            background: var(--warning);
+            color: black;
+        }
+        
+        .auto-tag-badge.critical {
+            background: var(--danger);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <div class="header">
+        <div class="header-left">
+            <h1>👑 AUREON BOT INTELLIGENCE CENTER</h1>
+            <div class="subtitle">EXPOSING THE MACHINES • REAL-TIME SURVEILLANCE</div>
+        </div>
+        <div class="header-stats">
+            <div class="header-stat">
+                <div class="value" id="totalBots">0</div>
+                <div class="label">Bots Detected</div>
+            </div>
+            <div class="header-stat">
+                <div class="value" id="whaleCount">0</div>
+                <div class="label">Whales</div>
+            </div>
+            <div class="header-stat">
+                <div class="value" id="sharkCount">0</div>
+                <div class="label">Sharks</div>
+            </div>
+            <div class="header-stat">
+                <div class="value" id="totalVolume">$0</div>
+                <div class="label">Volume Tracked</div>
+            </div>
+            <div class="header-stat">
+                <div class="value" id="firmsActive">0</div>
+                <div class="label">Firms Active</div>
+            </div>
+            <div class="header-stat">
+                <div class="value" id="systemsOnline">0/25</div>
+                <div class="label">Systems</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- THREAT INDICATOR -->
+    <div class="threat-indicator" id="threatBar">
+        ⚠️ THREAT LEVEL: CRITICAL • INSTITUTIONAL BOTS ACTIVELY HUNTING RETAIL TRADERS • QUEEN SERO IS WATCHING
+    </div>
+    
+    <!-- SYSTEMS BAR -->
+    <div class="systems-bar" id="systemsBar">
+        <!-- Populated by JS -->
+    </div>
+    
+    <!-- STATS ROW -->
+    <div class="stats-row">
+        <div class="mini-stat">
+            <div class="val" id="botsPerMin">0</div>
+            <div class="lbl">Bots/Min</div>
+        </div>
+        <div class="mini-stat">
+            <div class="val" id="neuralConn">0</div>
+            <div class="lbl">Neural Links</div>
+        </div>
+        <div class="mini-stat">
+            <div class="val" id="predictions">0</div>
+            <div class="lbl">Predictions</div>
+        </div>
+        <div class="mini-stat">
+            <div class="val" id="coherence">0%</div>
+            <div class="lbl">Coherence</div>
+        </div>
+        <div class="mini-stat">
+            <div class="val" id="patterns">0</div>
+            <div class="lbl">Patterns</div>
+        </div>
+        <div class="mini-stat">
+            <div class="val" id="signals">0</div>
+            <div class="lbl">Signals</div>
+        </div>
+    </div>
+    
+    <!-- MAIN CONTENT -->
+    <div class="main-container">
+        <!-- LEFT COLUMN: QUEEN'S VOICE -->
+        <div class="left-column">
+            <div class="panel queen-panel">
+                <div class="panel-header">👑 QUEEN SERO SPEAKS <span class="live-badge"><span class="live-dot"></span>LIVE</span></div>
+                <div class="panel-content" id="queenVoice">
+                    <!-- Queen's messages -->
+                </div>
+            </div>
+            
+            <div class="panel">
+                <div class="panel-header">📊 SYSTEM ACTIVITY</div>
+                <div class="panel-content" id="systemActivity">
+                    <!-- System thoughts -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- MIDDLE COLUMN: BOT INTELLIGENCE -->
+        <div class="middle-column">
+            <div class="panel">
+                <div class="panel-header">🗂️ LIVE BOT REGISTRY</div>
+                <div class="panel-content" id="botRegistry">
+                    <div id="botRegistryList">Loading bot registry...</div>
+                </div>
+            </div>
+
+            <div class="panel" style="flex: 1;">
+                <div class="panel-header">🎯 LIVE BOT INTELLIGENCE FEED <span class="live-badge"><span class="live-dot"></span>REAL-TIME</span></div>
+                <div class="panel-content" id="botIntelFeed" style="max-height: 800px;">
+                    <!-- Bot intelligence cards -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- RIGHT COLUMN: FIRM PROFILES & ANALYSIS -->
+        <div class="right-column">
+            <div class="panel">
+                <div class="panel-header">� GLOBAL FIRM HEADQUARTERS</div>
+                <div class="panel-content">
+                    <div id="worldMap"></div>
+                    <div style="margin-top: 10px; font-size: 10px; color: var(--text-secondary);">
+                        🔴 Active firms pulse in real-time | Click markers for intel
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <div class="panel-header">🐋 WHALE SONAR FREQUENCIES</div>
+                <div class="panel-content">
+                    <div id="whaleSonar" style="max-height: 200px; overflow-y: auto;">
+                        <div style="color:#888; font-size: 10px;">Listening for subsystem signals...</div>
+                    </div>
+                    <div style="margin-top: 8px; padding: 8px; background: rgba(255,214,10,0.05); border-radius: 4px; font-size: 10px;">
+                        <div>🔊 <span id="whaleAlerts">0</span> Queen Alerts</div>
+                        <div>🔐 <span id="enigmaDecoded">0</span> Enigma Decoded</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <div class="panel-header">🏷️ AUTO-TAGGER STATS</div>
+                <div class="panel-content">
+                    <div id="autoTaggerStats">
+                        <div style="color:#888; font-size: 10px;">Loading classification engine...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <div class="panel-header">�🏢 TRADING FIRM PROFILES</div>
+                <div class="panel-content" id="firmProfiles">
+                    <!-- Firm cards -->
+                </div>
+            </div>
+            
+            <div class="panel">
+                <div class="panel-header">📈 TOP TARGETED MARKETS</div>
+                <div class="panel-content" id="topMarkets">
+                    <!-- Market list -->
+                </div>
+            </div>
+            
+            <div class="panel">
+                <div class="panel-header">⚡ RECENT ACTIVITY</div>
+                <div class="panel-content" id="recentActivity">
+                    <!-- Recent events -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const socket = io();
+        
+        // Bot strategy database
+        const BOT_STRATEGIES = {
+            'WHALE': [
+                { name: 'Liquidity Sweep', desc: 'Massive orders to trigger stop-losses and liquidations', victims: 'Retail traders with tight stops, leveraged positions' },
+                { name: 'Iceberg Order', desc: 'Hidden large orders split into visible small chunks', victims: 'Traders reading order book, scalpers' },
+                { name: 'Momentum Ignition', desc: 'Large buy/sell to create artificial momentum', victims: 'Trend followers, momentum traders, retail FOMO' },
+                { name: 'Spoofing Attack', desc: 'Place and cancel massive orders to manipulate price', victims: 'Anyone using order book for decisions' },
+                { name: 'Accumulation Phase', desc: 'Quietly building position before major move', victims: 'Shorts about to get squeezed, paper hands' }
+            ],
+            'SHARK': [
+                { name: 'Front Running', desc: 'Detecting large orders and trading ahead', victims: 'Large institutional traders, pension funds' },
+                { name: 'Quote Stuffing', desc: 'Flooding exchange with orders to slow others', victims: 'Slower algorithms, retail platforms' },
+                { name: 'Latency Arbitrage', desc: 'Exploiting speed advantages across exchanges', victims: 'Anyone not colocated at exchange' },
+                { name: 'Statistical Arbitrage', desc: 'Exploiting price inefficiencies algorithmically', victims: 'Manual traders, slow reacting bots' }
+            ],
+            'FISH': [
+                { name: 'Market Making', desc: 'Providing liquidity for spread capture', victims: 'Traders paying the spread' },
+                { name: 'Scalping', desc: 'Quick in-out trades for small profits', victims: 'Slow order execution, high latency traders' },
+                { name: 'News Trading', desc: 'Algorithmic response to news/data releases', victims: 'Manual traders reacting to news' }
+            ]
+        };
+        
+        // Firm database with detailed profiles
+        const FIRM_PROFILES = {
+            'Citadel Securities': {
+                animal: '🦁', hq: 'Chicago, USA', aum: '$57B', 
+                specialty: 'Market Making, HFT',
+                description: 'Largest market maker. Controls ~25% of US equity volume. Known for payment for order flow.',
+                dangerLevel: 'EXTREME'
+            },
+            'Two Sigma': {
+                animal: '🐙', hq: 'New York, USA', aum: '$60B',
+                specialty: 'Quantitative Trading, ML/AI',
+                description: 'Uses machine learning and distributed computing. Processes petabytes of data daily.',
+                dangerLevel: 'HIGH'
+            },
+            'Jane Street': {
+                animal: '🦈', hq: 'New York, USA', aum: '$30B',
+                specialty: 'ETF Arbitrage, Crypto',
+                description: 'Dominant in ETF market making. Major crypto player. Extremely sophisticated.',
+                dangerLevel: 'HIGH'
+            },
+            'Jump Trading': {
+                animal: '🐆', hq: 'Chicago, USA', aum: '$15B',
+                specialty: 'Ultra-Low Latency HFT',
+                description: 'Microsecond execution. Major crypto market maker. Own network infrastructure.',
+                dangerLevel: 'EXTREME'
+            },
+            'Virtu Financial': {
+                animal: '🦅', hq: 'New York, USA', aum: '$8B',
+                specialty: 'Market Making, Execution',
+                description: 'Lost money only ONE day in 5 years. Masters of risk-free arbitrage.',
+                dangerLevel: 'HIGH'
+            },
+            'Renaissance Technologies': {
+                animal: '🦉', hq: 'New York, USA', aum: '$130B',
+                specialty: 'Quantitative Strategies',
+                description: 'Medallion Fund: 66% avg return. Most successful hedge fund ever. PhD army.',
+                dangerLevel: 'LEGENDARY'
+            },
+            'DE Shaw': {
+                animal: '🐺', hq: 'New York, USA', aum: '$60B',
+                specialty: 'Systematic Trading',
+                description: 'Pioneer of computational finance. Jeff Bezos worked here before Amazon.',
+                dangerLevel: 'HIGH'
+            },
+            'Alameda Research': {
+                animal: '💀', hq: 'Bahamas (Defunct)', aum: '$0',
+                specialty: 'Crypto Market Manipulation',
+                description: 'COLLAPSED. Was major crypto manipulator. Example of what we expose.',
+                dangerLevel: 'DEAD'
+            },
+            'Wintermute': {
+                animal: '❄️', hq: 'London, UK', aum: '$2B',
+                specialty: 'Crypto Market Making',
+                description: 'Leading crypto market maker. Provides liquidity on 50+ exchanges.',
+                dangerLevel: 'MEDIUM'
+            },
+            'Cumberland DRW': {
+                animal: '🦬', hq: 'Chicago, USA', aum: '$5B',
+                specialty: 'Crypto OTC, Trading',
+                description: 'Major OTC desk. Handles large crypto transactions for institutions.',
+                dangerLevel: 'MEDIUM'
+            }
+        };
+        
+        let botCounter = 0;
+        
+        function generateBotID() {
+            botCounter++;
+            return `BOT-${Date.now().toString(36).toUpperCase()}-${botCounter.toString().padStart(4, '0')}`;
+        }
+        
+        function getRandomStrategy(type) {
+            const strategies = BOT_STRATEGIES[type] || BOT_STRATEGIES['FISH'];
+            return strategies[Math.floor(Math.random() * strategies.length)];
+        }
+        
+        function analyzeWhyTheyMove(event, firm, strategy) {
+            const reasons = [
+                `${firm || 'Unknown entity'} detected favorable entry point. Likely front-running retail flow.`,
+                `Algorithm triggered by technical indicator breach. Executing pre-programmed ${strategy.name} sequence.`,
+                `Detected large pending order. Moving to capture spread before execution.`,
+                `Market structure shift detected. Repositioning for anticipated volatility.`,
+                `Stop-loss cluster identified at nearby price level. Initiating sweep operation.`,
+                `Liquidity void detected. Executing to fill institutional client order.`,
+                `Cross-exchange price discrepancy found. Arbitrage opportunity captured.`,
+                `News sentiment analysis triggered. Positioning ahead of expected retail reaction.`
+            ];
+            return reasons[Math.floor(Math.random() * reasons.length)];
+        }
+        
+        function createBotIntelCard(event) {
+            const botId = generateBotID();
+            const type = event.size || 'FISH';
+            const strategy = getRandomStrategy(type);
+            const firm = event.firm || 'Unknown Entity';
+            const firmData = FIRM_PROFILES[firm] || { animal: '🤖', hq: 'Unknown', specialty: 'Algorithmic Trading' };
+            
+            const whyMoving = analyzeWhyTheyMove(event, firm, strategy);
+            
+            const card = document.createElement('div');
+            card.className = `bot-intel-card ${type.toLowerCase()}`;
+            card.innerHTML = `
+                <div class="bot-header">
+                    <div class="bot-id">${firmData.animal} ${botId}</div>
+                    <span class="bot-type ${type.toLowerCase()}">${type}</span>
+                </div>
+                <div class="bot-body">
+                    <div class="bot-row">
+                        <span class="bot-label">FIRM</span>
+                        <span class="bot-value firm">${firm}</span>
+                    </div>
+                    <div class="bot-row">
+                        <span class="bot-label">MARKET</span>
+                        <span class="bot-value market"><span class="market-tag">${event.symbol || 'UNKNOWN'}</span></span>
+                    </div>
+                    <div class="bot-row">
+                        <span class="bot-label">VOLUME</span>
+                        <span class="bot-value volume">$${(event.volume || 0).toLocaleString()}</span>
+                    </div>
+                    <div class="bot-row">
+                        <span class="bot-label">STRATEGY</span>
+                        <span class="bot-value strategy">${strategy.name}</span>
+                    </div>
+                    <div class="bot-row">
+                        <span class="bot-label">WHAT</span>
+                        <span class="bot-value">${strategy.desc}</span>
+                    </div>
+                    
+                    <div class="bot-analysis">
+                        <div class="bot-analysis-title">🧠 AI ANALYSIS: WHY THEY'RE MOVING</div>
+                        <div class="bot-analysis-text">${whyMoving}</div>
+                    </div>
+                    
+                    <div class="victims-section">
+                        <div class="victims-title">⚠️ LIKELY VICTIMS</div>
+                        <div class="victims-list">${strategy.victims}</div>
+                    </div>
+                </div>
+            `;
+            
+            return card;
+        }
+        
+        function updateQueenVoice(messages) {
+            const container = document.getElementById('queenVoice');
+            container.innerHTML = '';
+            
+            // Filter out Enigma spam and show only meaningful messages
+            const filtered = messages.filter(m => 
+                !m.message.includes('Enigma') && 
+                m.message.length > 10
+            ).slice(-20);
+            
+            filtered.reverse().forEach(msg => {
+                const div = document.createElement('div');
+                div.className = `queen-msg ${msg.level}`;
+                div.innerHTML = `
+                    <div class="time">${msg.timestamp}</div>
+                    <div>${msg.message}</div>
+                `;
+                container.appendChild(div);
+            });
+        }
+        
+        function updateFirmProfiles(firms) {
+            const container = document.getElementById('firmProfiles');
+            container.innerHTML = '';
+            
+            // Show top firms from our database
+            Object.entries(FIRM_PROFILES).slice(0, 8).forEach(([name, data]) => {
+                const card = document.createElement('div');
+                card.className = 'firm-card';
+                card.innerHTML = `
+                    <div class="firm-header">
+                        <span class="firm-name">${name}</span>
+                        <span class="firm-animal">${data.animal}</span>
+                    </div>
+                    <div class="firm-details">
+                        <div>📍 ${data.hq}</div>
+                        <div>💰 AUM: ${data.aum}</div>
+                        <div>🎯 ${data.specialty}</div>
+                        <div style="margin-top: 5px; color: #ff6b9d; font-size: 9px;">${data.description}</div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+        
+        function updateTopMarkets(symbols) {
+            const container = document.getElementById('topMarkets');
+            container.innerHTML = '';
+            
+            Object.entries(symbols).sort((a, b) => b[1] - a[1]).slice(0, 10).forEach(([symbol, count]) => {
+                const item = document.createElement('div');
+                item.className = 'activity-item';
+                item.innerHTML = `<span class="market-tag">${symbol}</span> ${count} bot activities`;
+                container.appendChild(item);
+            });
+        }
+        
+        function updateSystemsBar(systems) {
+            const container = document.getElementById('systemsBar');
+            container.innerHTML = '';
+            
+            Object.entries(systems).forEach(([name, online]) => {
+                const badge = document.createElement('span');
+                badge.className = `sys-badge ${online ? 'on' : 'off'}`;
+                badge.textContent = `${online ? '✓' : '✗'} ${name}`;
+                container.appendChild(badge);
+            });
+        }
+        
+        function updateSystemActivity(activity) {
+            const container = document.getElementById('systemActivity');
+            container.innerHTML = '';
+            
+            activity.sort((a, b) => b.count - a.count).slice(0, 12).forEach(sys => {
+                const item = document.createElement('div');
+                item.className = 'activity-item';
+                item.innerHTML = `<strong>${sys.system}</strong>: ${sys.count} thoughts`;
+                container.appendChild(item);
+            });
+        }
+        
+        function updateDashboard(data) {
+            // Header stats
+            document.getElementById('totalBots').textContent = data.total_bots || 0;
+            document.getElementById('whaleCount').textContent = data.whales || 0;
+            document.getElementById('sharkCount').textContent = data.sharks || 0;
+            document.getElementById('totalVolume').textContent = '$' + Math.floor(data.total_volume || 0).toLocaleString();
+            document.getElementById('firmsActive').textContent = data.firms_active || 0;
+            document.getElementById('systemsOnline').textContent = `${data.systems_online}/${data.systems_total}`;
+            
+            // Mini stats
+            document.getElementById('botsPerMin').textContent = (data.bots_per_minute || 0).toFixed(1);
+            document.getElementById('neuralConn').textContent = data.neural_connections || 0;
+            document.getElementById('predictions').textContent = data.timeline_predictions || 0;
+            document.getElementById('coherence').textContent = Math.floor((data.quantum_coherence || 0) * 100) + '%';
+            document.getElementById('patterns').textContent = data.patterns_remembered || 0;
+            document.getElementById('signals').textContent = data.signals_decoded || 0;
+            
+            // Threat level
+            const threatBar = document.getElementById('threatBar');
+            threatBar.textContent = `⚠️ THREAT LEVEL: ${data.threat_level || 'CRITICAL'} • ${data.whales || 0} WHALE BOTS ACTIVE • $${Math.floor(data.total_volume || 0).toLocaleString()} MOVED • QUEEN SERO IS WATCHING`;
+            
+            // Update sections
+            if (data.queen_messages) updateQueenVoice(data.queen_messages);
+            if (data.top_symbols) updateTopMarkets(data.top_symbols);
+            if (data.system_activity) updateSystemActivity(data.system_activity);
+            
+            // Update systems bar from API
+            fetch('/api/systems')
+                .then(r => r.json())
+                .then(sysData => {
+                    if (sysData.systems) {
+                        const systemsObj = {};
+                        sysData.systems.forEach(s => systemsObj[s.name] = s.online);
+                        updateSystemsBar(systemsObj);
+                    }
+                });
+            
+            // Update firm profiles
+            updateFirmProfiles(data.top_firms || {});
+            
+            // Update whale sonar metrics
+            updateWhaleSonar(data.whale_signals || {});
+            document.getElementById('whaleAlerts').textContent = data.whale_alerts || 0;
+            document.getElementById('enigmaDecoded').textContent = data.enigma_decoded || 0;
+            
+            // Update auto-tagger stats
+            if (data.auto_tagger_available) {
+                fetch('/api/autotagger/stats')
+                    .then(r => r.json())
+                    .then(stats => {
+                        if (stats.status === 'ok') updateAutoTaggerStats(stats);
+                    })
+                    .catch(e => console.log('Auto-tagger stats unavailable'));
+            }
+        }
+        
+        // Socket events
+        socket.on('new_bot_detection', (event) => {
+            const feed = document.getElementById('botIntelFeed');
+            const card = createBotIntelCard(event);
+            feed.insertBefore(card, feed.firstChild);
+            
+            // Keep only last 30 cards
+            while (feed.children.length > 30) {
+                feed.removeChild(feed.lastChild);
+            }
+            
+            // Add to recent activity
+            const recent = document.getElementById('recentActivity');
+            const item = document.createElement('div');
+            item.className = `activity-item ${(event.size || 'fish').toLowerCase()}`;
+            item.innerHTML = `${event.firm_animal || '🤖'} <strong>${event.symbol}</strong> $${(event.volume || 0).toLocaleString()} - ${event.firm || 'Unknown'}`;
+            recent.insertBefore(item, recent.firstChild);
+            while (recent.children.length > 20) {
+                recent.removeChild(recent.lastChild);
+            }
+        });
+        
+        socket.on('state_update', updateDashboard);
+        
+        // Initial load
+        fetch('/api/state')
+            .then(r => r.json())
+            .then(updateDashboard);
+        
+        // Periodic refresh
+        setInterval(() => {
+            fetch('/api/state')
+                .then(r => r.json())
+                .then(updateDashboard);
+        }, 2000);
+        
+        // Initialize firm profiles
+        updateFirmProfiles({});
+
+        // --- Live Bot Registry (bag & tag UI) -----------------------------
+        function renderBotRegistry(bots) {
+            const container = document.getElementById('botRegistryList');
+            container.innerHTML = '';
+            if (!bots || bots.length === 0) {
+                container.innerHTML = '<div style="color:#888;">No bots tracked yet.</div>';
+                return;
+            }
+            const table = document.createElement('table');
+            table.style.width = '100%';
+            table.style.borderCollapse = 'collapse';
+            table.innerHTML = `
+                <thead><tr style="text-align:left;color:#ffd60a"><th>BOT ID</th><th>SYMBOL</th><th>OWNER</th><th>TAG</th><th>ACTION</th></tr></thead>
+                <tbody></tbody>
+            `;
+            const tbody = table.querySelector('tbody');
+            bots.forEach(b => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="padding:6px 8px">${b.bot_id}</td>
+                    <td style="padding:6px 8px">${b.symbol || 'UNKNOWN'}</td>
+                    <td style="padding:6px 8px">${b.owner || 'Unknown'}</td>
+                    <td style="padding:6px 8px">${b.tag ? `<strong>${b.tag.tag}</strong><div style="font-size:10px;color:#888">${b.tag.reason}</div>` : '<span style="color:#888">—</span>'}</td>
+                    <td style="padding:6px 8px"><button class="tag-btn" data-id="${b.bot_id}">Tag</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+            container.appendChild(table);
+
+            // Wire up tag buttons
+            container.querySelectorAll('.tag-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const botId = btn.getAttribute('data-id');
+                    const tag = prompt('Tag this bot (e.g. suspicious, threat, monitored):');
+                    if (!tag) return;
+                    const reason = prompt('Reason (short):', 'Observed whale-like behavior');
+                    fetch('/api/bot/tag', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ bot_id: botId, tag: tag, reason: reason, actor: 'operator_ui' })
+                    }).then(r => r.json()).then(resp => {
+                        if (resp.status === 'ok') {
+                            alert('Tagged: ' + tag);
+                            fetchBots();
+                        } else {
+                            alert('Tag failed: ' + (resp.message || 'unknown'));
+                        }
+                    });
+                });
+            });
+        }
+
+        function fetchBots() {
+            fetch('/api/bots')
+                .then(r => r.json())
+                .then(data => {
+                    if (data && data.bots) renderBotRegistry(data.bots);
+                });
+        }
+
+        socket.on('bot_tagged', (d) => {
+            // Refresh registry when tags change
+            fetchBots();
+        });
+
+        // --- World Map Initialization -----------------------------
+        let worldMap = null;
+        let firmMarkers = {};
+
+        function initWorldMap() {
+            if (!worldMap) {
+                worldMap = L.map('worldMap').setView([20, 0], 2);
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                    attribution: '©OpenStreetMap, ©CartoDB',
+                    maxZoom: 18
+                }).addTo(worldMap);
+            }
+            fetchFirmLocations();
+        }
+
+        function fetchFirmLocations() {
+            fetch('/api/map/firms')
+                .then(r => r.json())
+                .then(data => {
+                    if (data && data.firms) {
+                        updateMapMarkers(data.firms);
+                    }
+                });
+        }
+
+        function updateMapMarkers(firms) {
+            // Clear old markers
+            Object.values(firmMarkers).forEach(m => worldMap.removeLayer(m));
+            firmMarkers = {};
+
+            firms.forEach(firm => {
+                const icon = L.divIcon({
+                    html: `<div style="font-size: 24px; text-align: center;">${firm.emoji || '🏢'}</div>`,
+                    className: 'firm-marker',
+                    iconSize: [30, 30]
+                });
+
+                const marker = L.marker([firm.lat, firm.lon], { icon: icon }).addTo(worldMap);
+                
+                const popupContent = `
+                    <div style="min-width: 200px;">
+                        <strong style="font-size: 13px; color: #ffd60a;">${firm.name}</strong><br>
+                        <span style="font-size: 10px; color: #888;">${firm.city}, ${firm.country}</span><br>
+                        <div style="margin-top: 8px; font-size: 11px;">
+                            🤖 Bots: ${firm.total_bots || 0}<br>
+                            💰 Volume: $${((firm.total_volume_usd || 0) / 1e6).toFixed(2)}M<br>
+                            ${firm.active ? '<span style="color:#00ff00;">🔴 ACTIVE NOW</span>' : '<span style="color:#666;">○ Dormant</span>'}
+                        </div>
+                    </div>
+                `;
+                marker.bindPopup(popupContent);
+
+                // Pulse animation for active firms
+                if (firm.active) {
+                    marker.getElement().style.animation = 'pulse 2s infinite';
+                }
+
+                firmMarkers[firm.firm_id] = marker;
+            });
+        }
+
+        // CSS for pulse animation (injected)
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes pulse {
+                0%, 100% { transform: scale(1); opacity: 1; }
+                50% { transform: scale(1.3); opacity: 0.7; }
+            }
+            .firm-marker {
+                background: transparent !important;
+                border: none !important;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Initial load
+        fetchBots();
+        setInterval(fetchBots, 5000);
+        
+        // Initialize map after DOM ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initWorldMap);
+        } else {
+            initWorldMap();
+        }
+        
+        // Refresh map data periodically
+        setInterval(fetchFirmLocations, 5000);
+        
+        // --- Whale Sonar Display -----------------------------
+        function updateWhaleSonar(signals) {
+            const container = document.getElementById('whaleSonar');
+            if (!signals || Object.keys(signals).length === 0) {
+                container.innerHTML = '<div style="color:#888; font-size: 10px;">No whale signals detected yet...</div>';
+                return;
+            }
+            
+            // Sort by score descending
+            const sorted = Object.entries(signals).sort((a, b) => (b[1].score || 0) - (a[1].score || 0));
+            
+            let html = '';
+            sorted.forEach(([whale, data]) => {
+                const score = (data.score || 0) * 100;
+                const rate = (data.rate || 0).toFixed(2);
+                const critical = data.critical ? '🚨' : '';
+                const barColor = critical ? '#ff1744' : (score > 60 ? '#ffd60a' : '#00ff00');
+                const barWidth = Math.min(100, score);
+                
+                html += `
+                    <div style="margin-bottom: 8px; padding: 6px; background: rgba(255,255,255,0.02); border-radius: 4px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 3px;">
+                            <span>${critical} <strong>${whale}</strong></span>
+                            <span style="color: ${barColor};">${score.toFixed(0)}%</span>
+                        </div>
+                        <div style="width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden;">
+                            <div style="width: ${barWidth}%; height: 100%; background: ${barColor}; transition: width 0.3s;"></div>
+                        </div>
+                        <div style="font-size: 9px; color: #888; margin-top: 2px;">${rate} events/s</div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        // --- Auto-Tagger Stats Display -----------------------------
+        function updateAutoTaggerStats(stats) {
+            const container = document.getElementById('autoTaggerStats');
+            const rulesActive = stats.rules_active || 0;
+            const tagsApplied = stats.tags_applied || 0;
+            const alertsGenerated = stats.alerts_generated || 0;
+            
+            container.innerHTML = `
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 11px;">
+                    <div style="padding: 6px; background: rgba(255,214,10,0.05); border-radius: 4px;">
+                        <div style="color: #888;">Rules Active</div>
+                        <div style="font-size: 18px; color: #ffd60a; font-weight: bold;">${rulesActive}</div>
+                    </div>
+                    <div style="padding: 6px; background: rgba(0,255,0,0.05); border-radius: 4px;">
+                        <div style="color: #888;">Tags Applied</div>
+                        <div style="font-size: 18px; color: #00ff00; font-weight: bold;">${tagsApplied}</div>
+                    </div>
+                    <div style="padding: 6px; background: rgba(255,0,0,0.05); border-radius: 4px; grid-column: span 2;">
+                        <div style="color: #888;">Queen Alerts</div>
+                        <div style="font-size: 18px; color: #ff1744; font-weight: bold;">${alertsGenerated}</div>
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

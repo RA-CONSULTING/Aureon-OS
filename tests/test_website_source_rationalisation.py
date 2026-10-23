@@ -153,6 +153,9 @@ def _validation_receipt(*, decision_sha256: str, check_ids: list[str]) -> dict[s
     return validation
 
 
+@pytest.mark.windows(
+    reason="Reviewed PowerShell builder is pinned to C:/Windows/System32/WindowsPowerShell/v1.0/powershell.exe and runs on the windows-latest job."
+)
 def test_fixture_plan_proves_partition_budget_but_has_no_production_authority(
     tmp_path: Path,
 ) -> None:
@@ -309,6 +312,9 @@ def test_validation_writer_replay_catches_mutation_before_write(
         source_control.SECURE_WRITER_PATH,
     ],
 )
+@pytest.mark.windows(
+    reason="Reviewed PowerShell builder is pinned to C:/Windows/System32/WindowsPowerShell/v1.0/powershell.exe and runs on the windows-latest job."
+)
 def test_reviewed_source_drift_blocks_before_fixture_runner(
     tmp_path: Path,
     relative: Path,
@@ -368,6 +374,9 @@ def test_fixed_runner_uses_only_minimal_environment_and_never_retries(
     assert waits == [source_control.PROCESS_TIMEOUT_SECONDS]
 
 
+@pytest.mark.windows(
+    reason="Reviewed PowerShell builder is pinned to C:/Windows/System32/WindowsPowerShell/v1.0/powershell.exe and runs on the windows-latest job."
+)
 def test_source_pins_review_only_authority_and_no_pre_auth_repo_imports() -> None:
     root = source_control._canonical_repo_root()  # noqa: SLF001
     assert _sha256(root / source_control.TRUSTED_LAUNCHER_PATH) == (

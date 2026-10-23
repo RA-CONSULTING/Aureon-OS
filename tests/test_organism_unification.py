@@ -32,43 +32,14 @@ def _bus():
 
 
 def _pulse_payload(symbolic_life_score, coherence_gamma=None, **extra):
-    received_at = time.time()
-    gamma = symbolic_life_score if coherence_gamma is None else coherence_gamma
-    payload = {
-        "data_status": "live",
-        "source": "hnc_live_daemon",
-        "source_id": "aureon:hnc:live_daemon",
-        "source_timestamp": received_at,
-        "received_at": received_at,
-        "ts": received_at,
-        "receipt_id": "hnc:live_field:test-organism",
-        "receipt_type": "hnc_live_field",
-        "provider_receipt_type": "hnc_live_field",
-        "input_receipt_ids": ["test.provider:organism"],
-        "symbolic_life_score": symbolic_life_score,
-        "coherence_gamma": gamma,
-        "consciousness_psi": gamma,
-        "consciousness_level": "AWARE",
-        "lambda_t": symbolic_life_score,
-        "source_count": 1,
-        "truth_status": "real_derived",
-        "generated_values": False,
-        "freshness_status": "fresh",
-        "operational_eligible": False,
-        "provider_eligible": False,
-        "action_eligible": False,
-        "actionable": False,
-        "accounting_eligible": False,
-        "learning_eligible": False,
-        "eligible_for_action": False,
-        "eligible_for_accounting": False,
-        "eligible_for_learning": False,
-        "equation_inputs_complete": True,
-        "action_gate_passed": False,
-        "action_gate_reason": "route_specific_market_link_required",
-    }
-    payload.update(extra)
-    return payload
+    from tests.hnc_live_envelope import live_field_envelope
+
+    return live_field_envelope(
+        symbolic_life_score,
+        coherence_gamma,
+        provider_receipt="test.provider:organism",
+        **extra,
+    )
 
 
 def _pin_minimal_connectome_manifest(connectome):

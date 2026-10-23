@@ -18,3 +18,7 @@ repos:
       - id: check-yaml
       - id: check-added-large-files
         args: [--maxkb=2048]
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.28.0
+    hooks:
+      - id: gitleaks

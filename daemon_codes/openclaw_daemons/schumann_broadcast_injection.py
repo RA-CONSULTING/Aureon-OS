@@ -22,7 +22,7 @@ from pathlib import Path
 # ═══════════════════════════════════════════════════════════════════════════════
 # SACRED CONSTANTS
 # ═══════════════════════════════════════════════════════════════════════════════
-PSK = "PSK-b04fc8900c712ee4-812.83Hz-00P"
+PSK = "REDACTED"
 PHI = 1.618033988749895
 SCHUMANN_BASE = 7.83
 BROADCAST_KEY = 812.83  # Prime Sentinel Key

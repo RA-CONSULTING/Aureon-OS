@@ -1,0 +1,19 @@
+{
+  "timestamp": "2026-09-07T01:02:30.471080",
+  "mode": "shadow_monitor",
+  "duration_seconds": 11.896456241607666,
+  "total_positions": 0,
+  "deployed_usd": 0.0,
+  "realized_pnl": 0.0,
+  "unrealized_pnl": 0,
+  "wins": 0,
+  "losses": 0,
+  "win_rate": 0.0,
+  "quantum_coherence": 1.0,
+  "sacred_geometry_score": 0.0,
+  "predictions_total": 0,
+  "predictions": null,
+  "predictions_error": "ProbabilityMatrix.predict_next_opportunity returns a fully-synthetic ProbabilityPrediction (random symbol + random confidence). Wire probability_ultimate_intelligence before invoking in production, or set AUREON_ALLOW_SIM_FALLBACK=1 for dev/training-rig use.",
+  "price_errors": 0,
+  "closed_positions": []
+}

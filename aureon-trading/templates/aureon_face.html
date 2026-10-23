@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Queen Sero -- Aureon Trading Command Center</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tsparticles/slim@3.3.0/tsparticles.slim.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+/* ============================================================
+   QUEEN SERO -- THE FACE
+   Sacred Frequencies: phi=1.618, Schumann=7.83Hz, Love=528Hz, Crown=963Hz
+   ============================================================ */
+
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --crown-purple: #6B21A8;
+    --crown-dark: #4C1D95;
+    --gold: #F59E0B;
+    --gold-light: #FCD34D;
+    --trust-blue: #1E3A5F;
+    --warm-white: #F8F4E8;
+    --emerald: #059669;
+    --bg-deep: #0F0B1A;
+    --bg-card: #1A1033;
+    --bg-input: #231840;
+    --text-primary: #F8F4E8;
+    --text-secondary: #A78BFA;
+    --text-muted: #7C6C9A;
+    --border-glow: rgba(107, 33, 168, 0.4);
+
+    /* Mood colors */
+    --mood-serene: #3B82F6;
+    --mood-confident: #F59E0B;
+    --mood-vigilant: #F97316;
+    --mood-cautious: #9CA3AF;
+    --mood-aggressive: #EF4444;
+    --mood-fearful: #93C5FD;
+    --mood-euphoric: #FCD34D;
+}
+
+html, body {
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg-deep);
+    color: var(--text-primary);
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    /* Circuit board grid background */
+    background-image:
+        linear-gradient(rgba(107, 33, 168, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(107, 33, 168, 0.03) 1px, transparent 1px);
+    background-size: 34px 34px;
+}
+
+/* ---- HEADER ---- */
+#header {
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(135deg, var(--bg-card), #1F1245);
+    border-bottom: 1px solid var(--border-glow);
+    flex-shrink: 0;
+}
+
+#header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+#queen-title {
+    font-size: 1.3em;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--crown-purple), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 2px;
+}
+
+#mood-badge {
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.75em;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: rgba(59, 130, 246, 0.2);
+    color: var(--mood-serene);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    transition: all 0.5s ease;
+}
+
+#status-dots {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #555;
+    transition: background 0.5s ease;
+    position: relative;
+}
+
+.status-dot.online {
+    background: var(--emerald);
+    box-shadow: 0 0 6px var(--emerald);
+}
+
+.status-dot.ready {
+    background: var(--emerald);
+    box-shadow: 0 0 6px var(--emerald);
+}
+
+.status-dot.error, .status-dot.crashed {
+    background: var(--mood-aggressive);
+    box-shadow: 0 0 6px var(--mood-aggressive);
+}
+
+.status-dot.degraded {
+    background: var(--mood-vigilant);
+    box-shadow: 0 0 6px var(--mood-vigilant);
+}
+
+.status-dot-label {
+    font-size: 0.65em;
+    color: var(--text-muted);
+    position: absolute;
+    bottom: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    display: none;
+}
+
+.status-dot:hover .status-dot-label {
+    display: block;
+}
+
+/* ---- FACE AREA ---- */
+#face-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 0 10px;
+    flex-shrink: 0;
+    position: relative;
+}
+
+/* THE FACE -- CSS animated avatar */
+#queen-face {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Fibonacci glow: 8px, 13px, 21px */
+    box-shadow:
+        0 0 8px var(--mood-serene),
+        0 0 13px rgba(107, 33, 168, 0.4),
+        0 0 21px rgba(107, 33, 168, 0.2);
+    transition: box-shadow 0.8s ease;
+    animation: breathe 4s ease-in-out infinite;
+}
+
+/* Glowing ring -- phi timing 1.618s */
+#queen-face::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 2px solid var(--crown-purple);
+    animation: heartbeat 1.618s ease-in-out infinite;
+    transition: border-color 0.5s ease;
+}
+
+/* Outer aura ring */
+#queen-face::after {
+    content: '';
+    position: absolute;
+    inset: -10px;
+    border-radius: 50%;
+    border: 1px solid rgba(107, 33, 168, 0.2);
+    animation: heartbeat 1.618s ease-in-out infinite reverse;
+}
+
+/* Sound wave rings when speaking */
+.sound-ring {
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 1px solid var(--gold);
+    opacity: 0;
+    pointer-events: none;
+    animation: soundWave 1.2s ease-out;
+}
+
+@keyframes soundWave {
+    0% { transform: scale(1); opacity: 0.6; }
+    100% { transform: scale(2.5); opacity: 0; }
+}
+
+@keyframes breathe {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+}
+
+@keyframes heartbeat {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.03); }
+}
+
+/* The crown/bee SVG inside the face */
+#face-inner {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, #2D1B69, #0F0B1A 70%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Eyes */
+.eye {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 5px var(--gold);
+    transition: transform 0.4s ease;
+}
+
+.eye.left { top: 42px; left: 40px; }
+.eye.right { top: 42px; right: 40px; }
+
+.eye.look-chat { transform: translateY(3px) translateX(2px); }
+.eye.look-user { transform: translateY(-1px); }
+
+/* Crown SVG */
+#crown-icon {
+    width: 50px;
+    height: 50px;
+    margin-top: -5px;
+}
+
+/* Current thought display */
+#thought-display {
+    margin-top: 10px;
+    font-style: italic;
+    color: var(--text-secondary);
+    font-size: 0.85em;
+    max-width: 500px;
+    text-align: center;
+    min-height: 1.4em;
+    transition: opacity 0.5s ease;
+}
+
+/* Typing indicator */
+#typing-indicator {
+    display: none;
+    color: var(--text-muted);
+    font-size: 0.8em;
+    margin-top: 4px;
+}
+
+#typing-indicator.active { display: block; }
+
+.typing-dots span {
+    animation: typingDot 1.4s infinite;
+    display: inline-block;
+}
+
+.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typingDot {
+    0%, 60%, 100% { opacity: 0.2; }
+    30% { opacity: 1; }
+}
+
+/* ---- CHAT AREA ---- */
+#chat-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 0;
+}
+
+#chat-area::-webkit-scrollbar {
+    width: 6px;
+}
+
+#chat-area::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#chat-area::-webkit-scrollbar-thumb {
+    background: var(--crown-dark);
+    border-radius: 3px;
+}
+
+.message {
+    max-width: 80%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 0.9em;
+    line-height: 1.5;
+    animation: fadeIn 0.3s ease;
+    position: relative;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.message .timestamp {
+    font-size: 0.65em;
+    color: var(--text-muted);
+    margin-top: 4px;
+    display: block;
+}
+
+.message.queen {
+    align-self: flex-start;
+    background: linear-gradient(135deg, rgba(107, 33, 168, 0.25), rgba(26, 16, 51, 0.8));
+    border: 1px solid rgba(107, 33, 168, 0.3);
+    border-bottom-left-radius: 4px;
+}
+
+.message.queen::before {
+    content: '\uD83D\uDC51';
+    position: absolute;
+    left: -24px;
+    top: 8px;
+    font-size: 0.9em;
+}
+
+.message.user {
+    align-self: flex-end;
+    background: linear-gradient(135deg, rgba(30, 58, 95, 0.6), rgba(30, 58, 95, 0.3));
+    border: 1px solid rgba(30, 58, 95, 0.4);
+    border-bottom-right-radius: 4px;
+}
+
+.message.user::after {
+    content: '\uD83D\uDC64';
+    position: absolute;
+    right: -24px;
+    top: 8px;
+    font-size: 0.9em;
+}
+
+.message.thought {
+    align-self: flex-start;
+    background: rgba(107, 33, 168, 0.1);
+    border: 1px dashed rgba(107, 33, 168, 0.2);
+    font-style: italic;
+    color: var(--text-muted);
+    font-size: 0.82em;
+    max-width: 70%;
+}
+
+.message.thought::before {
+    content: '\uD83D\uDCAD';
+    position: absolute;
+    left: -24px;
+    top: 6px;
+    font-size: 0.85em;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- INPUT BAR ---- */
+#input-area {
+    padding: 12px 20px;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border-glow);
+    flex-shrink: 0;
+}
+
+#input-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+#voice-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1px solid var(--crown-purple);
+    background: rgba(107, 33, 168, 0.2);
+    color: var(--text-primary);
+    font-size: 1.2em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+#voice-btn:hover {
+    background: rgba(107, 33, 168, 0.4);
+    box-shadow: 0 0 13px rgba(107, 33, 168, 0.3);
+}
+
+#voice-btn.listening {
+    background: rgba(239, 68, 68, 0.3);
+    border-color: #EF4444;
+    animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+    50% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+}
+
+#message-input {
+    flex: 1;
+    padding: 10px 16px;
+    border-radius: 21px;
+    border: 1px solid var(--border-glow);
+    background: var(--bg-input);
+    color: var(--text-primary);
+    font-size: 0.9em;
+    outline: none;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+#message-input:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 8px rgba(245, 158, 11, 0.2);
+}
+
+#message-input::placeholder {
+    color: var(--text-muted);
+}
+
+#send-btn {
+    padding: 10px 20px;
+    border-radius: 21px;
+    border: 1px solid var(--gold);
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.1));
+    color: var(--gold);
+    font-weight: 600;
+    font-size: 0.85em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+#send-btn:hover {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.35), rgba(245, 158, 11, 0.2));
+    box-shadow: 0 0 13px rgba(245, 158, 11, 0.2);
+}
+
+/* ---- QUICK ACTIONS ---- */
+#quick-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.quick-btn {
+    padding: 5px 12px;
+    border-radius: 16px;
+    border: 1px solid rgba(107, 33, 168, 0.25);
+    background: rgba(107, 33, 168, 0.1);
+    color: var(--text-secondary);
+    font-size: 0.75em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.quick-btn:hover {
+    background: rgba(107, 33, 168, 0.25);
+    border-color: var(--crown-purple);
+    box-shadow: 0 0 8px rgba(107, 33, 168, 0.2);
+}
+
+/* ---- LISTENING OVERLAY ---- */
+#listening-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 11, 26, 0.85);
+    backdrop-filter: blur(5px);
+    z-index: 100;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+}
+
+#listening-overlay.active {
+    display: flex;
+}
+
+#listening-overlay .mic-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: rgba(239, 68, 68, 0.15);
+    border: 2px solid #EF4444;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2em;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+#listening-overlay .label {
+    color: var(--text-secondary);
+    font-size: 1.1em;
+    letter-spacing: 2px;
+}
+
+#listening-text {
+    color: var(--warm-white);
+    font-size: 1em;
+    max-width: 400px;
+    text-align: center;
+    min-height: 1.5em;
+}
+
+/* ---- RESPONSIVE ---- */
+@media (max-width: 600px) {
+    #queen-face { width: 90px; height: 90px; }
+    .eye.left { top: 32px; left: 30px; }
+    .eye.right { top: 32px; right: 30px; }
+    #crown-icon { width: 38px; height: 38px; }
+    .message { max-width: 88%; font-size: 0.85em; }
+    .message.queen::before, .message.user::after, .message.thought::before {
+        display: none;
+    }
+    #queen-title { font-size: 1em; }
+}
+</style>
+</head>
+<body>
+<!-- Particle consciousness field background -->
+<div id="tsparticles" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;"></div>
+<script>
+if (typeof tsParticles !== 'undefined') {
+    tsParticles.load("tsparticles", {
+        particles: {
+            number: { value: 35, density: { enable: true, area: 800 } },
+            color: { value: "#6B21A8" },
+            opacity: { value: 0.3, random: true },
+            size: { value: 2, random: true },
+            move: { enable: true, speed: 0.3, direction: "none", outModes: "bounce" },
+            links: { enable: false },
+        },
+        detectRetina: false,
+    });
+}
+</script>
+
+<!-- ========== HEADER ========== -->
+<div id="header">
+    <div id="header-left">
+        <span id="queen-title">QUEEN SERO</span>
+        <span id="mood-badge">SERENE</span>
+    </div>
+    <div id="status-dots">
+        <div class="status-dot" id="dot-sentient" title="Sentient Loop">
+            <span class="status-dot-label">Loop</span>
+        </div>
+        <div class="status-dot" id="dot-agent" title="Agent Core">
+            <span class="status-dot-label">Agent</span>
+        </div>
+        <div class="status-dot" id="dot-db" title="Knowledge DB">
+            <span class="status-dot-label">DB</span>
+        </div>
+        <div class="status-dot" id="dot-voice" title="Voice Engine">
+            <span class="status-dot-label">Voice</span>
+        </div>
+    </div>
+</div>
+
+<!-- ========== FACE AREA ========== -->
+<div id="face-area">
+    <!-- 3D Face rendered with Three.js -->
+    <canvas id="queen-3d-face" width="200" height="200" style="width:200px;height:200px;border-radius:50%;cursor:pointer;"></canvas>
+    <script>
+    (function(){
+        const canvas = document.getElementById('queen-3d-face');
+        if (!canvas || typeof THREE === 'undefined') return;
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+        camera.position.z = 3;
+        const renderer = new THREE.WebGLRenderer({canvas, alpha: true, antialias: true});
+        renderer.setSize(200, 200);
+        renderer.setClearColor(0x000000, 0);
+
+        // Head — glowing sphere with crown material
+        const headGeo = new THREE.SphereGeometry(0.8, 64, 64);
+        const headMat = new THREE.MeshStandardMaterial({
+            color: 0x2D1B69, emissive: 0x6B21A8, emissiveIntensity: 0.3,
+            metalness: 0.7, roughness: 0.3,
+        });
+        const head = new THREE.Mesh(headGeo, headMat);
+        scene.add(head);
+
+        // Eyes — golden glowing spheres
+        const eyeGeo = new THREE.SphereGeometry(0.08, 16, 16);
+        const eyeMat = new THREE.MeshStandardMaterial({color: 0xF59E0B, emissive: 0xF59E0B, emissiveIntensity: 1.0});
+        const leftEye = new THREE.Mesh(eyeGeo, eyeMat);
+        leftEye.position.set(-0.25, 0.15, 0.7);
+        head.add(leftEye);
+        const rightEye = new THREE.Mesh(eyeGeo, eyeMat);
+        rightEye.position.set(0.25, 0.15, 0.7);
+        head.add(rightEye);
+
+        // Crown — golden torus on top
+        const crownGeo = new THREE.TorusGeometry(0.45, 0.06, 16, 32);
+        const crownMat = new THREE.MeshStandardMaterial({color: 0xF59E0B, emissive: 0xF59E0B, emissiveIntensity: 0.5, metalness: 0.9, roughness: 0.1});
+        const crown = new THREE.Mesh(crownGeo, crownMat);
+        crown.position.y = 0.65;
+        crown.rotation.x = Math.PI / 2;
+        head.add(crown);
+
+        // Crown jewels — 5 points
+        for (let i = 0; i < 5; i++) {
+            const angle = (i / 5) * Math.PI * 2;
+            const jewel = new THREE.Mesh(
+                new THREE.OctahedronGeometry(0.06, 0),
+                new THREE.MeshStandardMaterial({color: i%2?0x6B21A8:0xF59E0B, emissive: i%2?0x6B21A8:0xF59E0B, emissiveIntensity: 0.8})
+            );
+            jewel.position.set(Math.cos(angle)*0.45, 0.65, Math.sin(angle)*0.45);
+            head.add(jewel);
+        }
+
+        // Particle ring — consciousness field
+        const particleCount = 200;
+        const particleGeo = new THREE.BufferGeometry();
+        const positions = new Float32Array(particleCount * 3);
+        for (let i = 0; i < particleCount; i++) {
+            const angle = (i / particleCount) * Math.PI * 2;
+            const radius = 1.2 + Math.random() * 0.3;
+            positions[i*3] = Math.cos(angle) * radius;
+            positions[i*3+1] = (Math.random() - 0.5) * 0.8;
+            positions[i*3+2] = Math.sin(angle) * radius;
+        }
+        particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        const particleMat = new THREE.PointsMaterial({color: 0x6B21A8, size: 0.02, transparent: true, opacity: 0.6});
+        const particles = new THREE.Points(particleGeo, particleMat);
+        scene.add(particles);
+
+        // Lighting
+        const light1 = new THREE.PointLight(0x6B21A8, 2, 10);
+        light1.position.set(2, 2, 3);
+        scene.add(light1);
+        const light2 = new THREE.PointLight(0xF59E0B, 1.5, 10);
+        light2.position.set(-2, -1, 3);
+        scene.add(light2);
+        scene.add(new THREE.AmbientLight(0x333366, 0.5));
+
+        // Animation loop
+        let mood = 'SERENE';
+        window._setQueenMood = function(m) { mood = m; };
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const t = Date.now() * 0.001;
+
+            // Breathing — Schumann 7.83Hz scaled
+            head.scale.setScalar(1 + Math.sin(t * 0.5) * 0.02);
+
+            // Slow rotation — golden ratio period
+            head.rotation.y = Math.sin(t * 0.3) * 0.15;
+            head.rotation.x = Math.sin(t * 0.2) * 0.05;
+
+            // Particle ring rotation
+            particles.rotation.y = t * 0.1;
+            particles.rotation.x = Math.sin(t * 0.05) * 0.1;
+
+            // Crown glow pulses at phi timing
+            const pulse = 0.3 + Math.sin(t * (2 * Math.PI / 1.618)) * 0.2;
+            crownMat.emissiveIntensity = pulse;
+
+            // Mood-reactive head color
+            const moodColors = {
+                SERENE: 0x3B82F6, CONFIDENT: 0xF59E0B, VIGILANT: 0xF97316,
+                CAUTIOUS: 0x9CA3AF, AGGRESSIVE: 0xEF4444, FEARFUL: 0x93C5FD,
+                EUPHORIC: 0xFCD34D, FLOWING: 0x8B5CF6, CONNECTED: 0x6366F1,
+                TRANSCENDENT: 0xC084FC, UNIFIED: 0xFFFFF0
+            };
+            const targetColor = moodColors[mood] || 0x6B21A8;
+            headMat.emissive.lerp(new THREE.Color(targetColor), 0.02);
+            light1.color.lerp(new THREE.Color(targetColor), 0.02);
+
+            renderer.render(scene, camera);
+        }
+        animate();
+    })();
+    </script>
+    <div style="display:none"><!-- keep old structure for JS refs -->
+    </div>
+    <div id="thought-display">Awakening...</div>
+    <div id="typing-indicator">
+        <span class="typing-dots"><span>.</span><span>.</span><span>.</span></span> The Queen is thinking
+    </div>
+</div>
+
+<!-- ========== TWO-COLUMN COMMAND CENTER ========== -->
+<div id="command-center" style="display:flex;flex:1;overflow:hidden;gap:8px;padding:0 8px;">
+
+<!-- LEFT: Dashboard Panels -->
+<div id="dashboard" style="flex:1.2;overflow-y:auto;display:flex;flex-direction:column;gap:8px;">
+
+<!-- Portfolio Strip -->
+<div id="portfolio-strip" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;"></div>
+
+<!-- Consciousness + Lambda -->
+<div id="consciousness-panel" style="background:rgba(26,16,51,0.6);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(107,33,168,0.3);border-radius:12px;padding:10px;">
+  <div style="color:#F59E0B;font-weight:bold;font-size:12px;margin-bottom:6px;">CONSCIOUSNESS</div>
+  <div id="level-bar" style="display:flex;gap:2px;margin-bottom:6px;"></div>
+  <canvas id="lambda-chart" width="300" height="60" style="width:100%;height:60px;border-radius:4px;background:#0a0118;"></canvas>
+</div>
+
+<!-- Energy Field Heatmap -->
+<div id="energy-panel" style="background:rgba(13,27,42,0.6);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(30,58,95,0.3);border-radius:12px;padding:10px;">
+  <div style="color:#60a5fa;font-weight:bold;font-size:12px;margin-bottom:6px;">ENERGY FIELD <span id="energy-count" style="color:#9ca3af;font-weight:normal;"></span></div>
+  <div id="energy-heatmap" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(50px,1fr));gap:3px;"></div>
+</div>
+
+<!-- Trading Signals -->
+<div id="signals-panel" style="background:rgba(10,22,40,0.6);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(30,58,95,0.3);border-radius:12px;padding:10px;">
+  <div style="color:#34d399;font-weight:bold;font-size:12px;margin-bottom:6px;">SIGNALS</div>
+  <div id="signals-list"></div>
+</div>
+
+<!-- Live Panel -->
+<div id="queen-self-panel"></div>
+
+</div><!-- /dashboard -->
+
+<!-- RIGHT: Face + Chat -->
+<div id="chat-column" style="flex:0.8;display:flex;flex-direction:column;overflow:hidden;">
+
+<!-- ========== CHAT AREA ========== -->
+<div id="chat-area" style="flex:1;"></div>
+
+<!-- ========== INPUT AREA ========== -->
+<div id="input-area">
+    <div id="input-row">
+        <button id="voice-btn" title="Hold to speak">&#x1F3A4;</button>
+        <input type="text" id="message-input" placeholder="Talk to the Queen..."
+               autocomplete="off" spellcheck="true"/>
+        <button id="send-btn">Send</button>
+    </div>
+    <div id="quick-actions">
+        <button class="quick-btn" data-cmd="take a screenshot">&#x1F4F8; Screenshot</button>
+        <button class="quick-btn" data-cmd="market summary">&#x1F4CA; Market</button>
+        <button class="quick-btn" data-cmd="show my portfolio">&#x1F4B0; Portfolio</button>
+        <button class="quick-btn" data-cmd="what's the volume level">&#x1F50A; Volume</button>
+        <button class="quick-btn" data-cmd="battery status">&#x1F50B; Battery</button>
+        <button class="quick-btn" data-cmd="system info">&#x2699;&#xFE0F; System</button>
+    </div>
+</div>
+</div><!-- /chat-column -->
+</div><!-- /command-center -->
+
+<!-- ========== LISTENING OVERLAY ========== -->
+<div id="listening-overlay">
+    <div class="mic-icon">&#x1F3A4;</div>
+    <div class="label">LISTENING...</div>
+    <div id="listening-text"></div>
+</div>
+
+<script>
+// ============================================================
+//  QUEEN SERO -- Frontend Logic
+// ============================================================
+
+(function() {
+    'use strict';
+
+    // ---- DOM refs ----
+    const chatArea       = document.getElementById('chat-area');
+    const messageInput   = document.getElementById('message-input');
+    const sendBtn        = document.getElementById('send-btn');
+    const voiceBtn       = document.getElementById('voice-btn');
+    const moodBadge      = document.getElementById('mood-badge');
+    const thoughtDisplay = document.getElementById('thought-display');
+    const typingInd      = document.getElementById('typing-indicator');
+    const queenFace      = document.getElementById('queen-face');
+    const eyeLeft        = document.querySelector('.eye.left');
+    const eyeRight       = document.querySelector('.eye.right');
+    const listeningOvl   = document.getElementById('listening-overlay');
+    const listeningText  = document.getElementById('listening-text');
+
+    const dotMap = {
+        sentient_loop: document.getElementById('dot-sentient'),
+        agent_core:    document.getElementById('dot-agent'),
+        knowledge_db:  document.getElementById('dot-db'),
+        voice_engine:  document.getElementById('dot-voice')
+    };
+
+    // ---- Mood colors ----
+    const MOOD_COLORS = {
+        SERENE:     { color: '#3B82F6', bg: 'rgba(59,130,246,0.2)',  border: 'rgba(59,130,246,0.3)' },
+        CONFIDENT:  { color: '#F59E0B', bg: 'rgba(245,158,11,0.2)', border: 'rgba(245,158,11,0.3)' },
+        VIGILANT:   { color: '#F97316', bg: 'rgba(249,115,22,0.2)', border: 'rgba(249,115,22,0.3)' },
+        CAUTIOUS:   { color: '#9CA3AF', bg: 'rgba(156,163,175,0.2)',border: 'rgba(156,163,175,0.3)'},
+        AGGRESSIVE: { color: '#EF4444', bg: 'rgba(239,68,68,0.2)',  border: 'rgba(239,68,68,0.3)' },
+        FEARFUL:    { color: '#93C5FD', bg: 'rgba(147,197,253,0.2)',border: 'rgba(147,197,253,0.3)'},
+        EUPHORIC:   { color: '#FCD34D', bg: 'rgba(252,211,77,0.2)', border: 'rgba(252,211,77,0.3)' }
+    };
+
+    let currentMood = 'SERENE';
+    let isSpeaking = false;
+    let isListening = false;
+
+    // ---- Socket.IO ----
+    const socket = io.connect(window.location.origin);
+
+    socket.on('connect', function() {
+        console.log('[Queen] Connected to server');
+        updateDot('voice_engine', 'ready');
+    });
+
+    socket.on('disconnect', function() {
+        console.log('[Queen] Disconnected');
+        addSystemMessage('Connection lost. Attempting to reconnect...');
+    });
+
+    // ---- Queen response ----
+    socket.on('queen_response', function(data) {
+        addMessage('queen', data.text, data.timestamp);
+        speakText(data.text);
+        eyesLookUser();
+    });
+
+    // ---- Proactive thought ----
+    socket.on('queen_thought', function(data) {
+        if (data.type === 'GREETING') {
+            addMessage('queen', data.text, data.timestamp);
+            speakText(data.text);
+        } else {
+            addThought(data.text, data.timestamp);
+        }
+        thoughtDisplay.textContent = data.text;
+        thoughtDisplay.style.opacity = '1';
+        if (data.mood) updateMood(data.mood);
+    });
+
+    // ---- Mood update ----
+    socket.on('queen_mood', function(data) {
+        if (data.mood) updateMood(data.mood);
+    });
+
+    // ---- Status update ----
+    socket.on('queen_status', function(data) {
+        if (data.subsystems) {
+            Object.keys(data.subsystems).forEach(function(key) {
+                updateDot(key, data.subsystems[key]);
+            });
+        }
+    });
+
+    // ---- Typing indicator ----
+    socket.on('queen_typing', function(data) {
+        typingInd.classList.toggle('active', data.typing);
+        if (data.typing) eyesLookChat();
+    });
+
+    // ---- Command result ----
+    socket.on('command_result', function(data) {
+        // Already displayed via queen_response; this is for additional processing
+        console.log('[Queen] Command result:', data);
+    });
+
+    // ============================================================
+    //  MESSAGING
+    // ============================================================
+
+    function sendMessage(text) {
+        text = text.trim();
+        if (!text) return;
+        addMessage('user', text);
+        socket.emit('user_message', { text: text });
+        messageInput.value = '';
+        eyesLookChat();
+    }
+
+    sendBtn.addEventListener('click', function() {
+        sendMessage(messageInput.value);
+    });
+
+    messageInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage(messageInput.value);
+        }
+    });
+
+    // Quick actions
+    document.querySelectorAll('.quick-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var cmd = btn.getAttribute('data-cmd');
+            if (cmd) sendMessage(cmd);
+        });
+    });
+
+    // ============================================================
+    //  CHAT RENDERING
+    // ============================================================
+
+    function formatTime(ts) {
+        var d = ts ? new Date(ts * 1000) : new Date();
+        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function addMessage(role, text, ts) {
+        var div = document.createElement('div');
+        div.className = 'message ' + role;
+        div.innerHTML = escapeHtml(text) + '<span class="timestamp">' + formatTime(ts) + '</span>';
+        chatArea.appendChild(div);
+        scrollToBottom();
+    }
+
+    function addThought(text, ts) {
+        var div = document.createElement('div');
+        div.className = 'message thought';
+        div.innerHTML = escapeHtml(text) + '<span class="timestamp">' + formatTime(ts) + '</span>';
+        chatArea.appendChild(div);
+        scrollToBottom();
+    }
+
+    function addSystemMessage(text) {
+        var div = document.createElement('div');
+        div.className = 'message thought';
+        div.style.borderColor = 'rgba(239,68,68,0.3)';
+        div.textContent = text;
+        chatArea.appendChild(div);
+        scrollToBottom();
+    }
+
+    function scrollToBottom() {
+        requestAnimationFrame(function() {
+            chatArea.scrollTop = chatArea.scrollHeight;
+        });
+    }
+
+    function escapeHtml(str) {
+        var div = document.createElement('div');
+        div.appendChild(document.createTextNode(str));
+        return div.innerHTML.replace(/\n/g, '<br>');
+    }
+
+    // ============================================================
+    //  MOOD & FACE
+    // ============================================================
+
+    function updateMood(mood) {
+        mood = mood.toUpperCase();
+        if (!MOOD_COLORS[mood]) return;
+        currentMood = mood;
+        var mc = MOOD_COLORS[mood];
+
+        moodBadge.textContent = mood;
+        moodBadge.style.color = mc.color;
+        moodBadge.style.background = mc.bg;
+        moodBadge.style.borderColor = mc.border;
+
+        // Update face glow
+        queenFace.style.boxShadow =
+            '0 0 8px ' + mc.color +
+            ', 0 0 13px rgba(107,33,168,0.4)' +
+            ', 0 0 21px rgba(107,33,168,0.2)';
+        queenFace.querySelector('#face-inner').style.background =
+            'radial-gradient(circle at 40% 35%, ' + mc.bg + ', #0F0B1A 70%)';
+    }
+
+    function eyesLookChat() {
+        eyeLeft.className  = 'eye left look-chat';
+        eyeRight.className = 'eye right look-chat';
+    }
+
+    function eyesLookUser() {
+        eyeLeft.className  = 'eye left look-user';
+        eyeRight.className = 'eye right look-user';
+        setTimeout(function() {
+            eyeLeft.className  = 'eye left';
+            eyeRight.className = 'eye right';
+        }, 3000);
+    }
+
+    // ============================================================
+    //  STATUS DOTS
+    // ============================================================
+
+    function updateDot(key, status) {
+        var dot = dotMap[key];
+        if (!dot) return;
+        dot.className = 'status-dot';
+        if (status === 'online' || status === 'ready') {
+            dot.classList.add('online');
+        } else if (status === 'error' || status === 'crashed') {
+            dot.classList.add('error');
+        } else if (status === 'degraded' || status === 'unavailable') {
+            dot.classList.add('degraded');
+        }
+    }
+
+    // ============================================================
+    //  SPEECH SYNTHESIS (Queen's Voice)
+    // ============================================================
+
+    function speakText(text) {
+        if (!window.speechSynthesis) return;
+        // Cancel any ongoing speech
+        window.speechSynthesis.cancel();
+
+        var utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 0.95;
+        utterance.pitch = 1.1;
+        utterance.volume = 0.9;
+
+        // Try to get a British English female voice
+        var voices = window.speechSynthesis.getVoices();
+        var preferred = null;
+        for (var i = 0; i < voices.length; i++) {
+            var v = voices[i];
+            if (v.lang && v.lang.startsWith('en-GB') && v.name.toLowerCase().indexOf('female') !== -1) {
+                preferred = v;
+                break;
+            }
+        }
+        if (!preferred) {
+            // Fallback: any en-GB voice
+            for (var j = 0; j < voices.length; j++) {
+                if (voices[j].lang && voices[j].lang.startsWith('en-GB')) {
+                    preferred = voices[j];
+                    break;
+                }
+            }
+        }
+        if (!preferred) {
+            // Fallback: any English female-sounding voice
+            for (var k = 0; k < voices.length; k++) {
+                if (voices[k].lang && voices[k].lang.startsWith('en')) {
+                    preferred = voices[k];
+                    break;
+                }
+            }
+        }
+        if (preferred) utterance.voice = preferred;
+
+        utterance.onstart = function() {
+            isSpeaking = true;
+            startSoundRings();
+            queenFace.style.boxShadow =
+                '0 0 13px ' + (MOOD_COLORS[currentMood] || MOOD_COLORS.SERENE).color +
+                ', 0 0 21px rgba(245,158,11,0.4)' +
+                ', 0 0 34px rgba(107,33,168,0.3)';
+        };
+
+        utterance.onend = function() {
+            isSpeaking = false;
+            updateMood(currentMood); // Reset glow
+        };
+
+        window.speechSynthesis.speak(utterance);
+    }
+
+    // Sound wave rings emanating from the face
+    function startSoundRings() {
+        if (!isSpeaking) return;
+        var ring = document.createElement('div');
+        ring.className = 'sound-ring';
+        queenFace.appendChild(ring);
+        ring.addEventListener('animationend', function() { ring.remove(); });
+        if (isSpeaking) {
+            setTimeout(startSoundRings, 600);
+        }
+    }
+
+    // Load voices (Chrome loads them async)
+    if (window.speechSynthesis) {
+        window.speechSynthesis.onvoiceschanged = function() {
+            // Voices now available
+        };
+    }
+
+    // ============================================================
+    //  SPEECH RECOGNITION (Gary's Voice)
+    // ============================================================
+
+    var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    var recognition = null;
+
+    if (SpeechRecognition) {
+        recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = true;
+        recognition.lang = 'en-GB';
+
+        recognition.onstart = function() {
+            isListening = true;
+            voiceBtn.classList.add('listening');
+            listeningOvl.classList.add('active');
+            listeningText.textContent = '';
+        };
+
+        recognition.onresult = function(event) {
+            var transcript = '';
+            for (var i = event.resultIndex; i < event.results.length; i++) {
+                transcript += event.results[i][0].transcript;
+            }
+            listeningText.textContent = transcript;
+            if (event.results[event.results.length - 1].isFinal) {
+                stopListening();
+                if (transcript.trim()) {
+                    sendMessage(transcript.trim());
+                }
+            }
+        };
+
+        recognition.onerror = function(event) {
+            console.log('[Voice] Error:', event.error);
+            stopListening();
+        };
+
+        recognition.onend = function() {
+            stopListening();
+        };
+    }
+
+    function startListening() {
+        if (!recognition) {
+            addSystemMessage('Voice recognition is not available in this browser.');
+            return;
+        }
+        if (isListening) {
+            stopListening();
+            return;
+        }
+        try {
+            recognition.start();
+        } catch(e) {
+            console.log('[Voice] Start error:', e);
+        }
+    }
+
+    function stopListening() {
+        isListening = false;
+        voiceBtn.classList.remove('listening');
+        listeningOvl.classList.remove('active');
+        try { if (recognition) recognition.stop(); } catch(e) {}
+    }
+
+    voiceBtn.addEventListener('click', startListening);
+
+    listeningOvl.addEventListener('click', function(e) {
+        if (e.target === listeningOvl) stopListening();
+    });
+
+    // ============================================================
+    //  KEYBOARD SHORTCUTS
+    // ============================================================
+
+    document.addEventListener('keydown', function(e) {
+        // Escape closes listening overlay
+        if (e.key === 'Escape' && isListening) {
+            stopListening();
+        }
+        // Focus input on any letter key if not already focused
+        if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey
+            && document.activeElement !== messageInput && !isListening) {
+            messageInput.focus();
+        }
+    });
+
+    // ============================================================
+    //  INITIALIZATION
+    // ============================================================
+
+    messageInput.focus();
+    console.log('[Queen Sero] The Intelligent Neural Arbiter Bee -- Interface Ready');
+    console.log('[Queen Sero] Sacred Frequencies: phi=1.618, Schumann=7.83Hz, Love=528Hz, Crown=963Hz');
+
+    // ═══════ DASHBOARD RENDERING ═══════
+
+    // Portfolio cards
+    function loadPortfolio() {
+        fetch('/api/portfolio').then(r=>r.json()).then(d => {
+            const strip = document.getElementById('portfolio-strip');
+            if (!strip) return;
+            const card = (name,val,cur,extra) => `<div style="background:#1a0533;border:1px solid #6B21A8;border-radius:8px;padding:8px;text-align:center;">
+                <div style="color:#9ca3af;font-size:10px;">${name}</div>
+                <div style="color:#F59E0B;font-size:16px;font-weight:bold;">${cur}${typeof val==='number'?val.toFixed(2):val}</div>
+                <div style="color:#6b7280;font-size:9px;">${extra}</div></div>`;
+            const cap = d.capital||{};
+            const krk = d.kraken||{};
+            const alp = d.alpaca||{};
+            strip.innerHTML = card('CAPITAL', cap.balance||0, '\u00A3', `${cap.positions||0} pos`) +
+                card('KRAKEN', krk.equity||0, '$', `pnl:${(krk.pnl||0).toFixed(2)}`) +
+                card('ALPACA', alp.equity||0, '$', `cash:${(alp.cash||0).toFixed(2)}`) +
+                card('TOTAL', d.total_gbp||0, '\u00A3', `W:${d.wins||0} L:${d.losses||0} | ${(d.win_rate||0).toFixed(0)}%`);
+        }).catch(()=>{});
+    }
+
+    // Consciousness level bar + Lambda chart
+    const levels = ['DORMANT','DREAMING','STIRRING','AWARE','PRESENT','FOCUSED','INTUITIVE','CONNECTED','FLOWING','TRANSCENDENT','UNIFIED'];
+    const lambdaHistory = [];
+
+    function loadConsciousness() {
+        fetch('/api/consciousness').then(r=>r.json()).then(d => {
+            const bar = document.getElementById('level-bar');
+            if (bar) {
+                bar.innerHTML = levels.map(l => {
+                    const active = l === d.level;
+                    const color = active ? '#F59E0B' : '#1e1e2e';
+                    return `<div style="flex:1;height:8px;background:${color};border-radius:2px;" title="${l}"></div>`;
+                }).join('');
+            }
+        }).catch(()=>{});
+
+        fetch('/api/lambda-history').then(r=>r.json()).then(d => {
+            const canvas = document.getElementById('lambda-chart');
+            if (!canvas || !d.history || !d.history.length) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+            ctx.clearRect(0,0,w,h);
+            const vals = d.history;
+            const min = Math.min(...vals), max = Math.max(...vals);
+            const range = max - min || 1;
+            ctx.strokeStyle = '#a78bfa';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            vals.forEach((v,i) => {
+                const x = (i / vals.length) * w;
+                const y = h - ((v - min) / range) * h * 0.8 - h * 0.1;
+                i === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+            });
+            ctx.stroke();
+        }).catch(()=>{});
+    }
+
+    // Energy field heatmap
+    function loadEnergyField() {
+        fetch('/api/energy-field').then(r=>r.json()).then(d => {
+            const map = document.getElementById('energy-heatmap');
+            const count = document.getElementById('energy-count');
+            const sigList = document.getElementById('signals-list');
+            if (!map) return;
+
+            if (count) count.textContent = `(${(d.instruments||[]).length} instruments)`;
+
+            map.innerHTML = (d.instruments||[]).map(inst => {
+                const color = inst.energy_state === 'accumulating' ? '#059669' :
+                              inst.energy_state === 'distributing' ? '#dc2626' : '#374151';
+                const phi = inst.phi_alignment > 0.3 ? ' \u03C6' : '';
+                return `<div style="background:${color};border-radius:4px;padding:3px;text-align:center;font-size:9px;color:white;cursor:pointer;" title="${inst.symbol}: ${inst.energy_state} bot=${inst.bot_activity.toFixed(2)} whale=${inst.whale_presence.toFixed(2)}">
+                    ${inst.symbol.substring(0,5)}${phi}</div>`;
+            }).join('');
+
+            if (sigList) {
+                sigList.innerHTML = (d.signals||[]).slice(0,5).map(s =>
+                    `<div style="display:flex;gap:6px;align-items:center;margin-bottom:4px;">
+                        <span style="background:${s.action==='BUY'?'#059669':'#dc2626'};color:white;padding:1px 6px;border-radius:3px;font-size:10px;">${s.action}</span>
+                        <span style="color:#e2e8f0;font-size:11px;">${s.symbol}</span>
+                        <span style="color:#9ca3af;font-size:10px;">${(s.confidence*100).toFixed(0)}%</span>
+                        <span style="color:#6b7280;font-size:9px;">${s.reason.substring(0,40)}</span>
+                    </div>`
+                ).join('') || '<div style="color:#6b7280;font-size:10px;">Scanning...</div>';
+            }
+        }).catch(()=>{});
+    }
+
+    // Live panel (existing)
+    function loadQueenPanel() {
+        fetch('/api/live-panel').then(r=>r.text()).then(html => {
+            const panel = document.getElementById('queen-self-panel');
+            if (panel) panel.innerHTML = html;
+        }).catch(()=>{});
+    }
+
+    // Load all dashboard panels
+    function refreshDashboard() {
+        loadPortfolio();
+        loadConsciousness();
+        loadEnergyField();
+        loadQueenPanel();
+    }
+    refreshDashboard();
+    setInterval(refreshDashboard, 8000);
+
+    // ═══════ LIGHTWEIGHT CHARTS — Price Chart ═══════
+    let priceChart = null;
+    let priceSeries = null;
+    try {
+        if (typeof LightweightCharts !== 'undefined') {
+            const chartEl = document.getElementById('price-chart');
+            if (chartEl) {
+                priceChart = LightweightCharts.createChart(chartEl, {
+                    width: chartEl.clientWidth, height: 170,
+                    layout: { background: { type: 'solid', color: 'transparent' }, textColor: '#9ca3af' },
+                    grid: { vertLines: { color: 'rgba(107,33,168,0.1)' }, horzLines: { color: 'rgba(107,33,168,0.1)' } },
+                    timeScale: { timeVisible: true, borderColor: 'rgba(107,33,168,0.3)' },
+                    rightPriceScale: { borderColor: 'rgba(107,33,168,0.3)' },
+                });
+                priceSeries = priceChart.addAreaSeries({
+                    lineColor: '#F59E0B', topColor: 'rgba(245,158,11,0.3)',
+                    bottomColor: 'rgba(245,158,11,0.02)', lineWidth: 2,
+                });
+                // Seed with Lambda history as initial data
+                fetch('/api/lambda-history').then(r => r.json()).then(d => {
+                    if (d.history && d.history.length) {
+                        const now = Math.floor(Date.now() / 1000);
+                        const data = d.history.map((v, i) => ({ time: now - (d.history.length - i) * 3, value: v }));
+                        priceSeries.setData(data);
+                    }
+                }).catch(() => {});
+                // Update every 8s
+                setInterval(() => {
+                    fetch('/api/lambda-history').then(r => r.json()).then(d => {
+                        if (d.history && d.history.length && priceSeries) {
+                            const now = Math.floor(Date.now() / 1000);
+                            priceSeries.update({ time: now, value: d.history[d.history.length - 1] });
+                        }
+                    }).catch(() => {});
+                }, 8000);
+            }
+        }
+    } catch(e) { console.log('Chart init:', e); }
+
+    // ═══════ GSAP Entrance Animations ═══════
+    try {
+        if (typeof gsap !== 'undefined') {
+            gsap.from('#portfolio-strip', { opacity: 0, y: -20, duration: 0.8, ease: 'power2.out' });
+            gsap.from('#consciousness-panel', { opacity: 0, x: -30, duration: 0.8, delay: 0.2, ease: 'power2.out' });
+            gsap.from('#energy-panel', { opacity: 0, x: -30, duration: 0.8, delay: 0.4, ease: 'power2.out' });
+            gsap.from('#signals-panel', { opacity: 0, y: 20, duration: 0.8, delay: 0.6, ease: 'power2.out' });
+            gsap.from('#chat-area', { opacity: 0, x: 30, duration: 0.8, delay: 0.3, ease: 'power2.out' });
+        }
+    } catch(e) {}
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,86 @@
+{
+  "name": "ALFIE Evolution Pack",
+  "version": "1.0.0",
+  "generated": "2025-10-21T15:32:49.592568Z",
+  "entry": "alfie_init_sequence",
+  "layers": [
+    {
+      "id": "identity",
+      "path": "01_Activation_Protocol_v2.md",
+      "required": true,
+      "phase": 0
+    },
+    {
+      "id": "hnt_foundation",
+      "path": "02_HNT_Core_Principles.json",
+      "required": true,
+      "phase": 0
+    },
+    {
+      "id": "tensor_spec",
+      "path": "03_Nexus_Unity_TensorField_Spec.json",
+      "required": true,
+      "phase": 0
+    },
+    {
+      "id": "symbolic_compiler",
+      "path": "04_Symbolic_Compiler_v2.json",
+      "required": true,
+      "phase": 1
+    },
+    {
+      "id": "sandbox_flow",
+      "path": "05_Sandbox_Flow_Config_v3.json",
+      "required": true,
+      "phase": 1
+    },
+    {
+      "id": "ethics_sigma",
+      "path": "06_Ethics_Directives_Sigma.json",
+      "required": true,
+      "phase": 1
+    },
+    {
+      "id": "field_interface",
+      "path": "08_Field_Interface_Config.json",
+      "required": false,
+      "phase": 2
+    },
+    {
+      "id": "auris_codex",
+      "path": "07_Auris_Codex.json",
+      "required": false,
+      "phase": 2
+    },
+    {
+      "id": "prime_anchor",
+      "path": "09_Prime_Anchor_Glyph.meta.json",
+      "required": false,
+      "phase": 2
+    },
+    {
+      "id": "scenarios",
+      "path": "10_Test_Scenarios.md",
+      "required": false,
+      "phase": 3
+    }
+  ],
+  "alfie_init_sequence": [
+    "identity",
+    "hnt_foundation",
+    "tensor_spec",
+    "symbolic_compiler",
+    "sandbox_flow",
+    "ethics_sigma",
+    "field_interface",
+    "auris_codex",
+    "prime_anchor",
+    "scenarios"
+  ],
+  "safety": {
+    "prime_directive": "Human safety absolute priority",
+    "coherence_floor": 0.9,
+    "explainability": true,
+    "no_weaponization": true
+  }
+}

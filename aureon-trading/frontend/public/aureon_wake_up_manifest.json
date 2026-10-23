@@ -1,0 +1,29 @@
+{
+  "version": "2026.7.19",
+  "generated_at": "2026-07-19T05:56:24.720519+00:00",
+  "operator": "Sero",
+  "os_framework": "Aureon OS",
+  "status": "REINITIALIZED",
+  "ports": {
+    "frontend_console": 8081,
+    "market_status": 8791,
+    "mind_hub": 13002
+  },
+  "endpoints": {
+    "terminal_state": "http://127.0.0.1:8791/api/terminal-state",
+    "flight_test": "http://127.0.0.1:8791/api/flight-test",
+    "reboot_advice": "http://127.0.0.1:8791/api/reboot-advice",
+    "thoughts": "http://127.0.0.1:13002/api/thoughts",
+    "coding_status": "http://127.0.0.1:13002/api/coding/status"
+  },
+  "layers_ready": {
+    "launcher_supervisor": false,
+    "market_runtime": false,
+    "cognition": true,
+    "hnc_evidence": true,
+    "safe_code": true,
+    "task_queue": true,
+    "desktop_control": false,
+    "frontend_console": false
+  }
+}

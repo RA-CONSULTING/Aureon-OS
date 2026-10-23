@@ -616,7 +616,7 @@ def build_report(goal: str, root: Optional[Path] = None) -> WorkOrderExecutionRe
             "legacy_systems_executed": False,
             "read_only_adapters": True,
             "secret_values_written": False,
-            "live_trading_mutation": False,
+            "venue_order_mutation": False,
             "official_filing_or_payment": False,
         },
         notes=[

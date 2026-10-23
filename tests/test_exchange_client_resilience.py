@@ -80,7 +80,11 @@ class BinanceRestClientResilienceTests(unittest.TestCase):
         client = binance_mod.BinanceClient.__new__(binance_mod.BinanceClient)
         client.uk_mode = False
         client.dry_run = False
-        client.get_free_balance = balance_result
+        client.get_asset_balance = balance_result
+        client._pending_orders = {}
+        client._pending_conversions = {}
+        client._symbol_filters_cache = {}
+        client._economic_dispatches = {}
         client._signed_request = Mock(side_effect=AssertionError("MARKET endpoint must not be called"))
         return client
 
@@ -89,21 +93,22 @@ class BinanceRestClientResilienceTests(unittest.TestCase):
 
         result = client.place_market_order("ETHUSDT", "SELL", quantity=1.25)
 
-        self.assertTrue(result["rejected"])
-        self.assertEqual(result["error"], "balance_check_unavailable")
+        self.assertFalse(result["submitted"])
+        self.assertEqual(result["reason"], "balance_check_unavailable")
         self.assertEqual(result["truth_status"], "no_data")
-        self.assertEqual(result["decision_status"], "denied")
+        self.assertFalse(result["eligible_for_action"])
         self.assertFalse(result["generated_values"])
         client._signed_request.assert_not_called()
 
     def test_sell_nonfinite_balance_receipt_denies_before_market_dispatch(self):
-        client = self._client(Mock(return_value=float("nan")))
+        client = self._client(Mock(return_value={"free": float("nan")}))
 
         result = client.place_market_order("ETHUSDT", "SELL", quantity=1.25)
 
-        self.assertTrue(result["rejected"])
+        self.assertFalse(result["submitted"])
         self.assertEqual(result["truth_status"], "no_data")
-        self.assertEqual(result["decision_status"], "denied")
+        self.assertFalse(result["eligible_for_action"])
+        self.assertNotEqual(result["reason"], "dry_run")
         client._signed_request.assert_not_called()
 
 

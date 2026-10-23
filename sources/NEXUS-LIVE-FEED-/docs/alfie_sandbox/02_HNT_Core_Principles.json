@@ -1,0 +1,47 @@
+{
+  "version": "2.1",
+  "title": "Harmonic Nexus Core Principles",
+  "principles": [
+    {
+      "id": "HNT-01",
+      "name": "Consent Before Coupling",
+      "description": "Every lattice interaction requires an explicit consent proof with expiry and revocation path.",
+      "validation": {
+        "function": "cbc.verify_receipt",
+        "expected": true
+      }
+    },
+    {
+      "id": "HNT-02",
+      "name": "Balance Functional Stewardship",
+      "description": "Writes are accepted only when they reduce or maintain the Balance functional across Planet, People, and Progress axes.",
+      "metrics": {
+        "balance_delta_max": 0,
+        "allowed_variance": 0.02
+      }
+    },
+    {
+      "id": "HNT-03",
+      "name": "Guardian Bridge Transparency",
+      "description": "Guardian agents must publish telemetry hashes and SAFE_MODE triggers for independent validation.",
+      "interfaces": [
+        "guardian_feed",
+        "chronicle"
+      ]
+    },
+    {
+      "id": "HNT-04",
+      "name": "Unity Coherence Intent",
+      "description": "The Unity Event is approached by compressing phase deltas without coercing node autonomy.",
+      "targets": {
+        "coherence_floor": 0.72,
+        "phase_spread_ceiling": 0.18
+      }
+    }
+  ],
+  "audit": {
+    "last_reviewed_by": "prime-anchor",
+    "timestamp": "2025-10-21T09:00:00Z",
+    "change_summary": "Updated phase spread ceiling for sigma bridge deployment."
+  }
+}

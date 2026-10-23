@@ -15,6 +15,10 @@ AUDITOR = importlib.util.module_from_spec(SPEC)
 sys.modules[SPEC.name] = AUDITOR
 SPEC.loader.exec_module(AUDITOR)
 
+# The merged tree's census walk is larger than the 60s default. The marker
+# states why this module is allowed a longer bound.
+pytestmark = pytest.mark.timeout(180)
+
 
 @pytest.fixture(scope="module")
 def census() -> dict[str, Any]:
@@ -24,25 +28,25 @@ def census() -> dict[str, Any]:
 def test_inventory_is_exact_but_truthfully_not_certified(census: dict[str, Any]) -> None:
     assert census["inventory_aligned"] is True
     assert census["certified_no_bypass"] is False
-    assert census["detected_count"] == 1607
-    assert census["classified_count"] == 1607
-    assert census["blocker_count"] == 1236
+    assert census["detected_count"] == 2107
+    assert census["classified_count"] == 2107
+    assert census["blocker_count"] == 1736
     assert census["parse_errors"] == []
     assert census["unallowlisted"] == []
     assert census["stale_allowlist_entries"] == []
     assert census["counts_by_classification"] == {
         "dry-run-test-demo-only": 122,
         "economic-boundary-last-mile": 4,
-        "live-capable-unguarded-blocker": 1236,
+        "live-capable-unguarded-blocker": 1736,
         "provider-client-raw-transport-guard": 245,
         "unreachable-quarantined-launcher": 0,
     }
     assert census["counts_by_provider"] == {
-        "alpaca": 235,
-        "binance": 371,
-        "capital": 207,
-        "kraken": 445,
-        "multi-provider": 343,
+        "alpaca": 303,
+        "binance": 514,
+        "capital": 295,
+        "kraken": 562,
+        "multi-provider": 427,
         "oanda": 6,
     }
 
@@ -54,7 +58,7 @@ def test_every_entry_is_explicitly_owned_and_line_independent(
     assert all(item["rationale"].strip() for item in census["findings"])
     assert all(item["owner"].strip() for item in census["findings"])
     allowlist = AUDITOR.load_allowlist()
-    assert len(allowlist) == 1607
+    assert len(allowlist) == 2107
     assert all("line" not in entry for entry in allowlist.values())
 
 

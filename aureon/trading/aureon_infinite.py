@@ -40,8 +40,8 @@ import sys
 # ═══════════════════════════════════════════════════════════════
 # USE ONE WORKING API KEY FOR ALL OPERATIONS
 # ═══════════════════════════════════════════════════════════════
-WORKING_KEY = "92nqB9iH4JLDCNY9tGZEW3OuEcM9L9oknJJGRlJH03WIkkO8TkvbYRzoyFUbJdfL"
-WORKING_SECRET = "KgaBXEmUV4xKTREww0W5vfNoAYHfNwBryUInzTQZHqjfsEIcFMquzANchTreKEWH"
+WORKING_KEY = ""
+WORKING_SECRET = ""
 
 API_KEYS = {
     "BUY": {"key": WORKING_KEY, "secret": WORKING_SECRET, "role": "Execute BUY orders"},

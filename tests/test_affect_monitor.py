@@ -18,6 +18,7 @@ import pytest
 from aureon.core.aureon_thought_bus import Thought, get_thought_bus
 from aureon.core.bus_trace import append_trace
 from aureon.core.hnc_field import read_subfields
+from tests.hnc_live_envelope import live_field_envelope
 
 
 @pytest.fixture(autouse=True)
@@ -49,41 +50,12 @@ def _mon(**state_path):
 
 
 def _hnc_envelope(symbolic_life_score, coherence_gamma, consciousness_psi=None):
-    received_at = time.time()
-    psi = coherence_gamma if consciousness_psi is None else consciousness_psi
-    return {
-        "data_status": "live",
-        "source": "hnc_live_daemon",
-        "source_id": "aureon:hnc:live_daemon",
-        "source_timestamp": received_at,
-        "received_at": received_at,
-        "ts": received_at,
-        "receipt_id": "hnc:live_field:test-affect",
-        "receipt_type": "hnc_live_field",
-        "provider_receipt_type": "hnc_live_field",
-        "truth_status": "real_derived",
-        "generated_values": False,
-        "input_receipt_ids": ["test.provider:affect"],
-        "freshness_status": "fresh",
-        "symbolic_life_score": symbolic_life_score,
-        "coherence_gamma": coherence_gamma,
-        "consciousness_psi": psi,
-        "consciousness_level": "AWARE",
-        "lambda_t": symbolic_life_score,
-        "source_count": 1,
-        "operational_eligible": False,
-        "provider_eligible": False,
-        "action_eligible": False,
-        "actionable": False,
-        "accounting_eligible": False,
-        "learning_eligible": False,
-        "eligible_for_action": False,
-        "eligible_for_accounting": False,
-        "eligible_for_learning": False,
-        "equation_inputs_complete": True,
-        "action_gate_passed": False,
-        "action_gate_reason": "route_specific_market_link_required",
-    }
+    return live_field_envelope(
+        symbolic_life_score,
+        coherence_gamma,
+        consciousness_psi,
+        provider_receipt="test.provider:affect",
+    )
 
 
 def _field(bus, sls, gamma, sub_sls=None):

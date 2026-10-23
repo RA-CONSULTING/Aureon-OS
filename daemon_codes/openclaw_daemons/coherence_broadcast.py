@@ -24,7 +24,7 @@ import subprocess
 # ═══════════════════════════════════════════════════════════════════════════════
 PHI = 1.618033988749895
 SCHUMANN = 7.83
-PSK = "PSK-b04fc8900c712ee4-812.83Hz-00P"
+PSK = "REDACTED"
 
 # The Rainbow Ladder — Harmonic Rung Frequencies
 RAINBOW_LADDER = {

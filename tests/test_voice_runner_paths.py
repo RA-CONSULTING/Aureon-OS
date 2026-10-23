@@ -63,10 +63,10 @@ def test_voice_cmd_derives_repo_and_validates_dependencies() -> None:
     source = RUNNER_CMD.read_text(encoding="utf-8").lower()
 
     assert 'for %%i in ("%~dp0..\\..") do set "repo_root=%%~fi"' in source
-    assert 'if not exist "%repo_root%\\pyproject.toml"' in source
     assert 'if not exist "%python_exe%"' in source
-    assert 'if not exist "%agent_script%"' in source
-    assert 'cd /d "%repo_root%"' in source
+    assert "protected_bootstrap_v05.py" in source
+    assert "aureon_auto_approve_live_voice" not in source
+    assert "refusing operation" in source
 
 
 def test_voice_powershell_runners_derive_repo_and_validate_it() -> None:
@@ -74,48 +74,29 @@ def test_voice_powershell_runners_derive_repo_and_validate_it() -> None:
     stop_source = STOP_PS1.read_text(encoding="utf-8").lower()
 
     for source in (runner_source, stop_source):
-        assert '[string]$reporoot = ""' in source
         assert '(join-path $psscriptroot "..\\..")' in source
-        assert "pyproject.toml" in source
+        assert "protected_bootstrap_v05.py" in source
+        assert "aureon_auto_approve_live_voice" not in source
+        assert "refusing operation" in source
 
-    assert '[string]$pythonexe = ""' in runner_source
     assert 'join-path $reporoot ".venv\\scripts\\python.exe"' in runner_source
-    assert "voice agent script not found" in runner_source
 
 
 def test_voice_runner_speech_and_approval_contract_is_unchanged() -> None:
     cmd_source = RUNNER_CMD.read_text(encoding="utf-8")
     ps_source = RUNNER_PS1.read_text(encoding="utf-8")
 
-    for assignment in (
-        'set "AUREON_SPEECH_BACKEND=google_first"',
-        'set "AUREON_MIC_DEVICE_INDEX=1"',
-        'set "AUREON_GOOGLE_RETRIES=3"',
-        'set "AUREON_CAPTURE_RETRIES=3"',
-        'set "AUREON_ADJUST_DURATION=1.5"',
-        'set "AUREON_AUTO_APPROVE_LIVE_VOICE=true"',
-    ):
-        assert assignment in cmd_source
-    assert 'call "%PYTHON_EXE%" "%AGENT_SCRIPT%" --mic 1' in cmd_source
-    assert "timeout /t 3 /nobreak >nul" in cmd_source
-    assert "goto loop" in cmd_source
-
-    for declaration in (
-        '[string]$SpeechBackend = "google_first"',
-        "[int]$MicDeviceIndex = 1",
-        "[int]$GoogleRetries = 3",
-        "[int]$CaptureRetries = 3",
-        "[double]$AdjustDuration = 1.5",
-    ):
-        assert declaration in ps_source
-    assert '$env:AUREON_AUTO_APPROVE_LIVE_VOICE = "true"' in ps_source
-    assert "& $PythonExe $agentScript --mic 1" in ps_source
-    assert "Start-Sleep -Seconds 3" in ps_source
+    assert "AUREON_AUTO_APPROVE_LIVE_VOICE" not in cmd_source
+    assert "AUREON_AUTO_APPROVE_LIVE_VOICE" not in ps_source
+    assert "--target-id local-gui" in cmd_source
+    assert "--target-id local-gui" in ps_source
+    assert "goto loop" not in cmd_source.lower()
 
 
 def test_stop_runner_preserves_stop_file_contract() -> None:
     source = STOP_PS1.read_text(encoding="utf-8")
 
-    assert 'Join-Path $stateDir "aureon_voice_agent.stop"' in source
-    assert 'Set-Content -Path $stopFile -Value "STOP" -Encoding ascii' in source
-    assert 'Join-Path $stateDir "aureon_voice_agent_supervisor.lock"' in source
+    assert "AUREON_AUTO_APPROVE_LIVE_VOICE" not in source
+    assert "--target-id local-gui" in source
+    assert "protected_bootstrap_v05.py" in source
+    assert "aureon_voice_agent.stop" not in source.lower()

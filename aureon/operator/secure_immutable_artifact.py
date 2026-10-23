@@ -456,7 +456,15 @@ def _posix_write(output: Path, payload: bytes) -> None:
         file_flags = (
             os.O_RDWR | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_CLOEXEC", 0)
         )
-        file_fd = os.open(output.name, file_flags, 0o600, dir_fd=parent_fd)
+        try:
+            file_fd = os.open(output.name, file_flags, 0o600, dir_fd=parent_fd)
+        except FileExistsError as exc:
+            # exists() and O_EXCL are not one step. A concurrent creator wins
+            # the exclusive open; the loser is the same refusal as a file that
+            # was already there, not an uncaught OS error.
+            raise SecureImmutableArtifactError(
+                "Immutable artifact output already exists."
+            ) from exc
         initial_identity = os.fstat(file_fd)
         if not stat.S_ISREG(initial_identity.st_mode) or int(initial_identity.st_nlink) != 1:
             raise SecureImmutableArtifactError("Created artifact is not a single-link regular file.")

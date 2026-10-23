@@ -1,0 +1,227 @@
+╔════════════════════════════════════════════════════════════════════════╗
+║                                                                        ║
+║               🦁 AUREON LION HUNT — QUICK REFERENCE 🦁                ║
+║                                                                        ║
+║                      "Leave No Stone Unturned"                         ║
+║                                                                        ║
+╚════════════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────────────┐
+│ SYSTEM STATUS: ✅ ALL SYSTEMS OPERATIONAL                              │
+└────────────────────────────────────────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ QUICK START COMMANDS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+▶ SCAN THE PRIDE (One-time market scan)
+  npm run pride:scan
+
+▶ START THE HUNT (Continuous adaptive trading)
+  npm run lion:hunt
+
+▶ TESTNET HUNT (Safe testing mode)
+  npm run lion:testnet
+
+▶ SINGLE SYMBOL (Rainbow Architect on specific pair)
+  npm run rainbow:live
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ ADVANCED COMMANDS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+▶ CUSTOM LION HUNT
+  npx tsx scripts/lionHunt.ts [OPTIONS]
+  
+  Options:
+    --cycles=N         Cycles per target (default: 20)
+    --interval=MS      MS per cycle (default: 5000)
+    --volatility=PCT   Min volatility % (default: 2.0)
+    --volume=AMOUNT    Min volume $ (default: 100000)
+  
+  Examples:
+    # Quick test: 2 cycles, 3s intervals, >5% volatility
+    npx tsx scripts/lionHunt.ts --cycles=2 --interval=3000 --volatility=5.0
+    
+    # Aggressive: 50 cycles, 2s intervals, >1% volatility
+    npx tsx scripts/lionHunt.ts --cycles=50 --interval=2000 --volatility=1.0
+    
+    # Conservative: 10 cycles, 10s intervals, >10% volatility
+    npx tsx scripts/lionHunt.ts --cycles=10 --interval=10000 --volatility=10.0
+
+▶ CUSTOM RAINBOW ARCHITECT
+  RAINBOW_CYCLES=N npx tsx scripts/rainbowArch.ts [SYMBOL] [OPTIONS]
+  
+  Examples:
+    # BTCUSDT, 100 cycles, 5s intervals
+    RAINBOW_CYCLES=100 npx tsx scripts/rainbowArch.ts BTCUSDT --live --interval=5000
+    
+    # SOLUSDT, 20 cycles, 3s intervals
+    RAINBOW_CYCLES=20 npx tsx scripts/rainbowArch.ts SOLUSDT --live --interval=3000
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ SYSTEM ARCHITECTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  1. PRIDE SCANNER          2. TARGET SELECTION         3. RAINBOW ARCHITECT
+     ┌────────────┐            ┌────────────┐             ┌────────────┐
+     │ Scan 1606  │───────────>│  Filter &  │────────────>│  4-Layer   │
+     │   pairs    │            │   Rank     │             │Consciousness│
+     └────────────┘            └────────────┘             └────────────┘
+          │                         │                           │
+          │                         │                           │
+    ETH: 49 pairs            Score = vol × $            WebSocket
+    USDT: 438 pairs          Select highest            Master Equation
+    Cross: 49 pairs          opportunity               Rainbow Bridge
+                                                        The Prism
+                                                             │
+                                                             V
+     ┌────────────┐                                    ┌────────────┐
+     │   LOOP     │<───────────────────────────────────│   TRADE    │
+     └────────────┘                                    └────────────┘
+     Return to pride                                   Γ > 0.945
+     Wait 10s                                          6/9 votes
+     Repeat                                            Execute
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ CURRENT PERFORMANCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Testnet Balance:    $113,811 USDT
+  
+  Top Opportunities:
+    1. KDAUSDT     -47.37%   $2.63M   Score: 12,447
+    2. ZECUSDT     +17.86%   $1.57M   Score: 2,804
+    3. DASHUSDT    +14.16%   $2.02M   Score: 2,860
+    4. LAUSDT      +25.19%   $0.67M   Score: 1,688
+    5. ZENUSDT     +16.39%   $0.90M   Score: 1,475
+  
+  Pride Scanner:      ✅ 3-5 seconds per scan
+  Rainbow Architect:  ✅ 4 layers operational
+  Lion Hunt:          ✅ Continuous adaptive loop
+  Trade Logic:        ✅ Protection active (Γ < 0.945 → HOLD)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ TRADE EXECUTION RULES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ALL must be true:
+    ✓ Coherence Γ > 0.945 (94.5% reality alignment)
+    ✓ 6/9 Auris nodes vote same direction
+    ✓ Each node > 0.7 confidence threshold
+  
+  If ANY condition fails:
+    → HOLD (no trade)
+    → Continue monitoring
+    → Wait for alignment
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ SAFETY FEATURES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ✓ Testnet mode (BINANCE_TESTNET=true)
+  ✓ High coherence threshold (Γ > 0.945)
+  ✓ Vote consensus required (6/9 nodes)
+  ✓ Cycle limits (prevents runaway)
+  ✓ Graceful shutdown (Ctrl+C)
+  ✓ Capital protection (holds during uncertainty)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ STOP/CONTROL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ▶ Graceful Stop
+    Ctrl+C (in terminal running hunt)
+  
+  ▶ Force Kill (if needed)
+    pkill -f lionHunt.ts
+    pkill -f rainbowArch.ts
+  
+  ▶ View Running Processes
+    ps aux | grep tsx
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ MONITORING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ▶ Pride Map (JSON export)
+    artifacts/pride_map.json
+  
+  ▶ Terminal Output
+    Real-time hunt progress
+    Target selection
+    Rainbow Architect cycles
+    Trade executions
+  
+  ▶ Logs
+    Check artifacts/ directory for exports
+    Check logs/ directory for system logs
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ ENVIRONMENT SETUP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Required in .env:
+    BINANCE_API_KEY=your_key
+    BINANCE_API_SECRET=your_secret
+    BINANCE_TESTNET=true
+    CONFIRM_LIVE_TRADING=yes
+    DRY_RUN=false
+  
+  Or export before running:
+    export BINANCE_API_KEY=xxx
+    export BINANCE_API_SECRET=yyy
+    export BINANCE_TESTNET=true
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ TROUBLESHOOTING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ❌ "No suitable targets found"
+     → Market too flat, lower --volatility threshold
+     → Or wait for market conditions to improve
+  
+  ❌ "Coherence never reaches 0.945"
+     → Market conditions unclear
+     → System correctly holding (protection active)
+     → Wait for volatility spike
+  
+  ❌ "API rate limit"
+     → Increase sleep time between hunts
+     → Current: 10 seconds (should be sufficient)
+  
+  ❌ "WebSocket disconnected"
+     → Auto-reconnect should handle
+     → If persists, check network/API keys
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ DOCUMENTATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Complete Flow:        docs/LION_HUNT_FLOW.md
+  System Status:        docs/SYSTEM_STATUS.md
+  Architecture:         docs/AQTS_System_Architecture.md
+  Testnet Setup:        TESTNET_SETUP.md
+  README:               README.md
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ PHILOSOPHY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  "The lion scans his pride and hunts where the herd is weakest."
+  
+  We leave no stone unturned.
+  We know our baseline (ETH/USDT).
+  We map every coin tradeable from the base.
+  The bots make plays on all connected coins.
+  The Lion hunts with full consciousness.
+
+╔════════════════════════════════════════════════════════════════════════╗
+║                                                                        ║
+║                 🦁 THE LION IS READY TO HUNT 🌈💎                     ║
+║                                                                        ║
+╚════════════════════════════════════════════════════════════════════════╝
+
+Last Updated: November 15, 2025
+Version: 1.0.0
+Status: OPERATIONAL ✅

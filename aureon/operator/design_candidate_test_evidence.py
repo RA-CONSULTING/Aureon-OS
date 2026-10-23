@@ -784,14 +784,37 @@ def _resolve_reviewed_node_toolchain() -> Path:
     return executable
 
 
+def _reviewed_python_executable() -> Path:
+    """The interpreter, after one same-directory alternative link.
+
+    Debian and Ubuntu install ``/usr/bin/python3`` as a relative symlink to
+    ``python3.12`` in that same directory. That link is the reviewed
+    interpreter. A link that leaves the directory, an absolute target, or a
+    parent directory that is itself a link is still refused.
+    """
+
+    executable = Path(sys.executable)
+    if executable.is_symlink():
+        target = os.readlink(executable)
+        target_path = Path(target)
+        if (
+            not target_path.is_absolute()
+            and ".." not in target_path.parts
+            and len(target_path.parts) == 1
+        ):
+            resolved = executable.parent / target_path
+            if resolved.is_file() and not resolved.is_symlink():
+                executable = resolved
+    return _regular_file(
+        executable,
+        label="python executable",
+        single_link=False,
+    )
+
+
 def _resolve_tool(engine: str) -> tuple[Path, str]:
     if engine == "python":
-        executable = _regular_file(
-            Path(sys.executable),
-            label="python executable",
-            single_link=False,
-        )
-        return executable, "{python}"
+        return _reviewed_python_executable(), "{python}"
     return _resolve_reviewed_node_toolchain(), "{node}"
 
 

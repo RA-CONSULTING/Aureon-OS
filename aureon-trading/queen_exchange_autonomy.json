@@ -1,0 +1,241 @@
+{
+  "blocked_pairs": [
+    [
+      "ADA/USD",
+      "binance"
+    ],
+    [
+      "BTC/USD",
+      "binance"
+    ],
+    [
+      "LTC/USD",
+      "binance"
+    ],
+    [
+      "BCH/USD",
+      "binance"
+    ],
+    [
+      "LINK/USD",
+      "binance"
+    ],
+    [
+      "XRP/USD",
+      "binance"
+    ],
+    [
+      "MATIC/USD",
+      "binance"
+    ],
+    [
+      "ETH/USD",
+      "binance"
+    ],
+    [
+      "BNB/USD",
+      "binance"
+    ],
+    [
+      "SOL/USD",
+      "binance"
+    ],
+    [
+      "AVAX/USD",
+      "binance"
+    ],
+    [
+      "DOT/USD",
+      "binance"
+    ],
+    [
+      "UNI/USD",
+      "binance"
+    ],
+    [
+      "DOGE/USD",
+      "binance"
+    ],
+    [
+      "ATOM/USD",
+      "binance"
+    ]
+  ],
+  "restrictions": [
+    {
+      "exchange": "binance",
+      "restriction_type": "UK_REGULATED",
+      "symbol": "BTC/USD",
+      "error_message": "UK FCA restrictions - symbol not permitted for UK accounts (TRD_GRP_039)",
+      "detected_at": 1775477402.8913162,
+      "expiry_at": null,
+      "permanent": true
+    },
+    {
+      "exchange": "binance",
+      "restriction_type": "UK_REGULATED",
+      "symbol": "ETH/USD",
+      "error_message": "UK FCA restrictions - symbol not permitted for UK accounts (TRD_GRP_039)",
+      "detected_at": 1775477402.8915408,
+      "expiry_at": null,
+      "permanent": true
+    },
+    {
+      "exchange": "binance",
+      "restriction_type": "UK_REGULATED",
+      "symbol": "BNB/USD",
+      "error_message": "UK FCA restrictions - symbol not permitted for UK accounts (TRD_GRP_039)",
+      "detected_at": 1775477402.891746,
+      "expiry_at": null,
+      "permanent": true
+    },
+    {
+      "exchange": "binance",
+      "restriction_type": "UK_REGULATED",
+      "symbol": "ADA/USD",
+      "error_message": "UK FCA restrictions - symbol not permitted for UK accounts (TRD_GRP_039)",
+      "detected_at": 1775477402.8922136,
+      "expiry_at": null,
+      "permanent": true
+    },
+    {
+      "exchange": "binance",
+      "restriction_type": "UK_REGULATED",
+      "symbol": "DOGE/USD",
+      "error_message": "UK FCA restrictions - symbol not permitted for UK accounts (TRD_GRP_039)",
+      "detected_at": 1775477402.8925467,
+      "expiry_at": null,
+      "permanent": true
+    },
+    {
+      "exchange": "binance",
+      "restriction_type": "UK_REGULATED",
+      "symbol": "XRP/USD",
+      "error_message": "UK FCA restrictions - symbol not permitted for UK accounts (TRD_GRP_039)",
+      "detected_at": 1775477402.8927798,
+      "expiry_at": null,
+      "permanent": true
+    },
+    {
+      "exchange": "binance",
+      "restriction_type": "UK_REGULATED",
+      "symbol": "SOL/USD",
+      "error_message": "UK FCA restrictions - symbol not permitted for UK accounts (TRD_GRP_039)",
+      "detected_at": 1775477402.8929808,
+      "expiry_at": null,
+      "permanent": true
+    },
+    {
+      "exchange": "binance",
+      "restriction_type": "UK_REGULATED",
+      "symbol": "DOT/USD",
+      "error_message": "UK FCA restrictions - symbol not permitted for UK accounts (TRD_GRP_039)",
+      "detected_at": 1775477402.8932228,
+      "expiry_at": null,
+      "permanent": true
+    },
+    {
+      "exchange": "binance",
+      "restriction_type": "UK_REGULATED",
+      "symbol": "AVAX/USD",
+      "error_message": "UK FCA restrictions - symbol not permitted for UK accounts (TRD_GRP_039)",
+      "detected_at": 1775477402.8934402,
+      "expiry_at": null,
+      "permanent": true
+    },
+    {
+      "exchange": "binance",
+      "restriction_type": "UK_REGULATED",
+      "symbol": "MATIC/USD",
+      "error_message": "UK FCA restrictions - symbol not permitted for UK accounts (TRD_GRP_039)",
+      "detected_at": 1775477402.8936527,
+      "expiry_at": null,
+      "permanent": true
+    },
+    {
+      "exchange": "binance",
+      "restriction_type": "UK_REGULATED",
+      "symbol": "LINK/USD",
+      "error_message": "UK FCA restrictions - symbol not permitted for UK accounts (TRD_GRP_039)",
+      "detected_at": 1775477402.893885,
+      "expiry_at": null,
+      "permanent": true
+    },
+    {
+      "exchange": "binance",
+      "restriction_type": "UK_REGULATED",
+      "symbol": "UNI/USD",
+      "error_message": "UK FCA restrictions - symbol not permitted for UK accounts (TRD_GRP_039)",
+      "detected_at": 1775477402.894119,
+      "expiry_at": null,
+      "permanent": true
+    },
+    {
+      "exchange": "binance",
+      "restriction_type": "UK_REGULATED",
+      "symbol": "ATOM/USD",
+      "error_message": "UK FCA restrictions - symbol not permitted for UK accounts (TRD_GRP_039)",
+      "detected_at": 1775477402.894358,
+      "expiry_at": null,
+      "permanent": true
+    },
+    {
+      "exchange": "binance",
+      "restriction_type": "UK_REGULATED",
+      "symbol": "LTC/USD",
+      "error_message": "UK FCA restrictions - symbol not permitted for UK accounts (TRD_GRP_039)",
+      "detected_at": 1775477402.8945825,
+      "expiry_at": null,
+      "permanent": true
+    },
+    {
+      "exchange": "binance",
+      "restriction_type": "UK_REGULATED",
+      "symbol": "BCH/USD",
+      "error_message": "UK FCA restrictions - symbol not permitted for UK accounts (TRD_GRP_039)",
+      "detected_at": 1775477402.8948267,
+      "expiry_at": null,
+      "permanent": true
+    },
+    {
+      "exchange": "capital",
+      "restriction_type": "MARKET_CLOSED",
+      "symbol": "*",
+      "error_message": "CFD market - closed on weekends",
+      "detected_at": 1775477402.895085,
+      "expiry_at": null,
+      "permanent": true
+    }
+  ],
+  "exchange_stats": {
+    "kraken": {
+      "api_connected": false,
+      "total_trades": 0,
+      "failed_trades": 0,
+      "last_successful_trade": null,
+      "success_rate": 0.0
+    },
+    "binance": {
+      "api_connected": false,
+      "total_trades": 0,
+      "failed_trades": 0,
+      "last_successful_trade": null,
+      "success_rate": 0.0
+    },
+    "alpaca": {
+      "api_connected": false,
+      "total_trades": 0,
+      "failed_trades": 0,
+      "last_successful_trade": null,
+      "success_rate": 0.0
+    },
+    "capital": {
+      "api_connected": false,
+      "total_trades": 0,
+      "failed_trades": 0,
+      "last_successful_trade": null,
+      "success_rate": 0.0
+    }
+  },
+  "updated_at": "2026-04-06T12:10:02.895096"
+}

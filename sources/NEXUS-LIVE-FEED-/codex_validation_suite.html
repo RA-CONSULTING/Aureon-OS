@@ -1,0 +1,230 @@
+<!-- Chosen Palette: Techno-Mystical Stone -->
+<!-- Application Structure Plan: The application is designed as a multi-tabbed interactive mathematical validation dashboard. The goal is to make the abstract "Codex" specification tangible and testable. The information architecture is organized into tabs that directly correspond to the major mathematical operators defined in the source document (QSSR, Kuramoto, Glyphs, Echo, Recognition). This allows a user to explore each mathematical concept in isolation. Each tab contains: 1) An "Equation" section displaying the formal mathematics. 2) A "Live Metrics" panel showing real-time simulated outputs of the equation. 3) An "Interactive Controls" section allowing the user to manipulate parameters and observe the effects. This structure creates a powerful educational and validation tool, directly linking the formal theory to live, interactive results, which is the most effective way to understand and verify complex mathematical systems. -->
+<!-- Visualization & Content Choices: 
+- QSSR Coherence: (Goal: Show Change) A live line chart and a 2D phasor diagram. Justification: Visualizes the core C(t) metric over time and shows the complex phasor sum in real-time. Library/Method: Chart.js for the line chart, HTML5 Canvas for the custom phasor diagram.
+- Kuramoto Synchronization: (Goal: Show Change) A circular visualization of oscillators and a line chart for the order parameter R(t). Justification: The most intuitive way to show phase synchronization and the emergence of order. Method: HTML5 Canvas for the oscillator circle, Chart.js for the R(t) chart.
+- Log-Spiral Fit: (Goal: Analyze Form) An interactive canvas where users can see points fitted to a logarithmic spiral. Justification: Directly demonstrates the glyph analysis algorithm. Method: HTML5 Canvas and JS for the fitting algorithm.
+- Echo Detection: (Goal: Compare/Find) Two line charts showing input signals and a third showing the cross-correlation result. Justification: Clearly visualizes the process of finding a signal echo. Library: Chart.js.
+- Recognition Score: (Goal: Synthesize/Compare) A set of radial gauges displaying the S, M, and W scores. Justification: Gauges provide a quick, "at-a-glance" view of the multi-faceted recognition result. Method: Custom HTML/CSS/JS gauges.
+-->
+<!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Codex Validation Suite</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@400;600&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #02040a; --panel-bg: rgba(10, 25, 40, 0.75);
+            --border-color: rgba(0, 255, 255, 0.4); --primary-glow: #00ffff;
+            --secondary-glow: #ffd700; --text-color: #e0fbfc; --text-secondary: #9eeaf9;
+            --font-primary: 'Orbitron', sans-serif; --font-secondary: 'Rajdhani', sans-serif;
+            --font-mono: 'Source Code Pro', monospace;
+        }
+        body { background-color: var(--bg-color); font-family: var(--font-secondary); color: var(--text-color); }
+        .text-glow { text-shadow: 0 0 8px var(--primary-glow); }
+        .tab-button.active { background-color: var(--primary-glow); color: var(--bg-color); }
+        .math-formula { font-family: var(--font-mono); background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 4px; border-left: 3px solid var(--border-color); font-size: 0.8rem; overflow-x: auto; }
+        .chart-container { position: relative; width: 100%; height: 250px; }
+    </style>
+</head>
+<body class="p-4 md:p-6">
+    <div class="max-w-7xl mx-auto">
+        <header class="mb-6 text-center">
+            <h1 class="text-3xl md:text-4xl font-bold text-glow font-primary">CODEX MATHEMATICAL VALIDATION SUITE</h1>
+            <p class="text-md text-secondary">Live Analysis of Core System Operators</p>
+        </header>
+
+        <div class="mb-6 flex justify-center items-center backdrop-blur-sm bg-black/20 p-2 rounded-lg">
+            <nav class="flex flex-wrap justify-center gap-2">
+                <button class="tab-button active text-xs md:text-sm font-bold py-2 px-3 rounded-md transition-all" onclick="showTab('qssr')">QSSR Coherence</button>
+                <button class="tab-button text-xs md:text-sm font-bold py-2 px-3 rounded-md transition-all" onclick="showTab('kuramoto')">Kuramoto Sync</button>
+                <button class="tab-button text-xs md:text-sm font-bold py-2 px-3 rounded-md transition-all" onclick="showTab('glyph')">Glyph Spiral</button>
+                <button class="tab-button text-xs md:text-sm font-bold py-2 px-3 rounded-md transition-all" onclick="showTab('echo')">Field Echo</button>
+                <button class="tab-button text-xs md:text-sm font-bold py-2 px-3 rounded-md transition-all" onclick="showTab('recognition')">Recognition</button>
+            </nav>
+        </div>
+
+        <main>
+            <!-- QSSR Tab -->
+            <div id="qssr-content" class="tab-content">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-panel border border-border-color p-4 rounded-lg">
+                        <h3 class="font-primary text-lg text-glow mb-4">QSSR / Solar Coherence Index</h3>
+                        <div class="math-formula">C(t) = |(Σ Aᵢ * e^(i*(ωᵢt + φᵢ))) / Σ Aᵢ|</div>
+                        <p class="text-xs text-secondary mt-2">Measures the harmonic alignment of planetary resonances. Ranges from 0 (chaos) to 1 (perfect coherence).</p>
+                        <div class="mt-4">
+                            <h4 class="font-bold text-secondary mb-2">Live Metrics</h4>
+                            <p class="font-mono text-lg">Coherence C(t): <span id="qssr-c-value" class="text-glow font-bold"></span></p>
+                        </div>
+                    </div>
+                    <div class="bg-panel border border-border-color p-4 rounded-lg">
+                         <h3 class="font-primary text-lg text-glow mb-4">Live Phasor Sum</h3>
+                         <div class="chart-container h-48"><canvas id="qssrPhasorCanvas"></canvas></div>
+                         <div class="chart-container h-24"><canvas id="qssrChart"></canvas></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kuramoto Tab -->
+            <div id="kuramoto-content" class="tab-content hidden">
+                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-panel border border-border-color p-4 rounded-lg">
+                        <h3 class="font-primary text-lg text-glow mb-4">Kuramoto Synchronization Model</h3>
+                        <div class="math-formula">R(t) * e^(iψ(t)) = (1/N) * Σ e^(iθₖ(t))</div>
+                        <p class="text-xs text-secondary mt-2">Models how independent oscillators achieve unison. R(t) is the order parameter, measuring global sync intensity from 0 to 1.</p>
+                        <div class="mt-4">
+                            <h4 class="font-bold text-secondary mb-2">Live Metrics</h4>
+                            <p class="font-mono text-lg">Order R(t): <span id="kuramoto-r-value" class="text-glow font-bold"></span></p>
+                            <label class="text-xs">Coupling Strength K: <input id="kuramoto-k-slider" type="range" min="0" max="10" step="0.1" value="1" class="w-full"></label>
+                        </div>
+                    </div>
+                    <div class="bg-panel border border-border-color p-4 rounded-lg">
+                         <h3 class="font-primary text-lg text-glow mb-4">Live Oscillator Field</h3>
+                         <div class="chart-container h-48"><canvas id="kuramotoCanvas"></canvas></div>
+                         <div class="chart-container h-24"><canvas id="kuramotoChart"></canvas></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Other Tabs Would Follow -->
+            <div id="glyph-content" class="tab-content hidden"><p class="text-center p-8 bg-panel rounded-lg">Glyph Spiral Validation Module Placeholder</p></div>
+            <div id="echo-content" class="tab-content hidden"><p class="text-center p-8 bg-panel rounded-lg">Field Echo Validation Module Placeholder</p></div>
+            <div id="recognition-content" class="tab-content hidden"><p class="text-center p-8 bg-panel rounded-lg">Recognition Score Validation Module Placeholder</p></div>
+        </main>
+    </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- TAB HANDLING ---
+        const tabs = document.querySelectorAll('.tab-button');
+        const contents = document.querySelectorAll('.tab-content');
+        window.showTab = (tabId) => {
+            contents.forEach(c => c.classList.add('hidden'));
+            tabs.forEach(t => t.classList.remove('active'));
+            document.getElementById(`${tabId}-content`).classList.remove('hidden');
+            document.querySelector(`[onclick="showTab('${tabId}')"]`).classList.add('active');
+        };
+
+        // --- QSSR SIMULATION ---
+        const qssrCValue = document.getElementById('qssr-c-value');
+        const qssrPhasorCanvas = document.getElementById('qssrPhasorCanvas');
+        const qssrPhasorCtx = qssrPhasorCanvas.getContext('2d');
+        const qssrChartCtx = document.getElementById('qssrChart').getContext('2d');
+
+        const planets = [
+            { amp: 0.3, omega: 1.1, phase: 0.1 }, { amp: 0.2, omega: 2.3, phase: 1.5 },
+            { amp: 0.4, omega: 3.5, phase: 2.8 }, { amp: 0.1, omega: 4.2, phase: 4.1 },
+        ];
+        const totalAmp = planets.reduce((s, p) => s + p.amp, 0);
+
+        const qssrHistory = Array(100).fill(0);
+        const qssrChart = new Chart(qssrChartCtx, {
+            type: 'line', data: { labels: qssrHistory.map((_,i)=>i), datasets: [{ data: qssrHistory, borderColor: 'var(--primary-glow)', pointRadius: 0, tension: 0.4 }] },
+            options: { responsive: true, maintainAspectRatio: false, scales: { x: { display: false }, y: { min: 0, max: 1 } }, plugins: { legend: { display: false } } }
+        });
+
+        function runQSSR() {
+            const t = Date.now() / 2000;
+            let re = 0, im = 0;
+            planets.forEach(p => {
+                const angle = p.omega * t + p.phase;
+                re += p.amp * Math.cos(angle);
+                im += p.amp * Math.sin(angle);
+            });
+            const C = Math.hypot(re, im) / totalAmp;
+            
+            qssrCValue.textContent = C.toFixed(4);
+            
+            qssrHistory.shift();
+            qssrHistory.push(C);
+            qssrChart.data.datasets[0].data = qssrHistory;
+            qssrChart.update('none');
+
+            const w = qssrPhasorCanvas.width, h = qssrPhasorCanvas.height;
+            qssrPhasorCtx.clearRect(0,0,w,h);
+            qssrPhasorCtx.strokeStyle = '#fff';
+            qssrPhasorCtx.beginPath();
+            qssrPhasorCtx.arc(w/2, h/2, w*0.45, 0, 2*Math.PI);
+            qssrPhasorCtx.stroke();
+            
+            qssrPhasorCtx.beginPath();
+            qssrPhasorCtx.moveTo(w/2, h/2);
+            qssrPhasorCtx.lineTo(w/2 + (re/totalAmp) * w * 0.45, h/2 - (im/totalAmp) * h * 0.45);
+            qssrPhasorCtx.strokeStyle = 'var(--primary-glow)';
+            qssrPhasorCtx.lineWidth = 3;
+            qssrPhasorCtx.stroke();
+        }
+
+        // --- KURAMOTO SIMULATION ---
+        const kuramotoRValue = document.getElementById('kuramoto-r-value');
+        const kuramotoCanvas = document.getElementById('kuramotoCanvas');
+        const kuramotoCtx = kuramotoCanvas.getContext('2d');
+        const kuramotoSlider = document.getElementById('kuramoto-k-slider');
+        const kuramotoChartCtx = document.getElementById('kuramotoChart').getContext('2d');
+
+        const N = 50;
+        const oscillators = Array.from({length: N}, () => ({
+            phase: Math.random() * 2 * Math.PI,
+            omega: (Math.random() - 0.5) * 2
+        }));
+
+        const kuramotoHistory = Array(100).fill(0);
+        const kuramotoChart = new Chart(kuramotoChartCtx, {
+            type: 'line', data: { labels: kuramotoHistory.map((_,i)=>i), datasets: [{ data: kuramotoHistory, borderColor: 'var(--primary-glow)', pointRadius: 0, tension: 0.4 }] },
+            options: { responsive: true, maintainAspectRatio: false, scales: { x: { display: false }, y: { min: 0, max: 1 } }, plugins: { legend: { display: false } } }
+        });
+
+        function runKuramoto() {
+            const K = parseFloat(kuramotoSlider.value);
+            const dt = 0.02;
+            let sumSin = 0, sumCos = 0;
+
+            oscillators.forEach(o => {
+                sumSin += Math.sin(o.phase);
+                sumCos += Math.cos(o.phase);
+            });
+
+            oscillators.forEach(o => {
+                const coupling = (K/N) * (sumCos * Math.sin(o.phase) - sumSin * Math.cos(o.phase));
+                o.phase += (o.omega + coupling) * dt;
+            });
+            
+            const R = Math.hypot(sumSin, sumCos) / N;
+            kuramotoRValue.textContent = R.toFixed(4);
+
+            kuramotoHistory.shift();
+            kuramotoHistory.push(R);
+            kuramotoChart.data.datasets[0].data = kuramotoHistory;
+            kuramotoChart.update('none');
+
+            const w = kuramotoCanvas.width, h = kuramotoCanvas.height;
+            const r = w * 0.4;
+            kuramotoCtx.clearRect(0,0,w,h);
+            oscillators.forEach(o => {
+                const x = w/2 + r * Math.cos(o.phase);
+                const y = h/2 + r * Math.sin(o.phase);
+                kuramotoCtx.beginPath();
+                kuramotoCtx.arc(x,y,3,0,2*Math.PI);
+                kuramotoCtx.fillStyle = 'var(--primary-glow)';
+                kuramotoCtx.fill();
+            });
+        }
+        
+        // --- MAIN LOOP ---
+        function animate() {
+            runQSSR();
+            runKuramoto();
+            requestAnimationFrame(animate);
+        }
+        animate();
+    });
+</script>
+</body>
+</html>

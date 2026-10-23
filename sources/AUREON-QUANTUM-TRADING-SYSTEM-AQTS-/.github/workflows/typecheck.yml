@@ -1,0 +1,88 @@
+name: CI
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install --no-fund --no-audit
+          fi
+
+      - name: Typecheck
+        run: npm run typecheck
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - name: Install dependencies
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install --no-fund --no-audit
+          fi
+      - name: Build web app
+        run: npm run build
+
+  status-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - name: Install dependencies
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install --no-fund --no-audit
+          fi
+      - name: Start status server (mock)
+        run: |
+          nohup npx tsx scripts/statusServer.ts >/dev/null 2>&1 & echo $! > server.pid
+          sleep 2
+        env:
+          STATUS_MOCK: 'true'
+          STATUS_PORT: '8787'
+      - name: Smoke test endpoints
+        run: |
+          set -e
+          curl -sSf http://localhost:8787/api/status | jq . >/dev/null
+          curl -sSf http://localhost:8787/api/bots | jq . >/dev/null
+          curl -sSf 'http://localhost:8787/api/trades?symbols=ETHUSDT' | jq . >/dev/null
+      - name: Stop server
+        if: always()
+        run: |
+          if [ -f server.pid ]; then kill $(cat server.pid) || true; fi

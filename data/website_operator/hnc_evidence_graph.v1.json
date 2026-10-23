@@ -17,7 +17,7 @@
   "placement": "after-homepage-proof-rail",
   "claim_register": {
     "path": "data/website_operator/public_claim_evidence_register.v1.json",
-    "sha256": "78032392BD3ECED2C5C9B294415AD6D2C6380FF903F7E43844C191AFD99C99A7"
+    "sha256": "7AB639804E504E1B9514BA8339C626D59F0E0FECA8021099EDC97746AFE04FC9"
   },
   "claim_ids": [
     "hnc-research-framework",

@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The Illumination Engine – Live Dashboard v2</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #050a14;
+      --panel: rgba(0,0,0,0.68);
+      --line: rgba(173,216,230,0.4);
+      --line-soft: rgba(173,216,230,0.2);
+      --text: #e6f6ff;
+      --accent: #add8e6;
+      --gold: #ffd700;
+      --ok: #9ef0a5;
+      --warn: #ffd670;
+      --danger: #ff6b6b;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0; background: var(--bg); color: var(--text); font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, sans-serif;
+      display: grid; grid-template-columns: 360px 1fr; grid-template-rows: 100%; overflow: hidden;
+    }
+    #info-panel {
+      height: 100%; padding: 20px; background: var(--panel); border-right: 1px solid var(--line); overflow-y: auto;
+    }
+    h1 { margin: 0 0 6px; color: var(--accent); font-size: 1.4rem; font-weight: 600; }
+    h2 { margin: 18px 0 8px; font-size: 1.05rem; color: #cfefff; font-weight: 600; }
+    p { margin: 6px 0; font-size: 0.98rem; }
+    hr { border: none; border-top: 1px solid var(--line-soft); margin: 16px 0; }
+    .k { color: #fff; font-weight: 600; }
+    .value { color: var(--gold); font-weight: 600; transition: color .35s ease; }
+
+    .gauge {
+      position: relative; width: 220px; height: 220px; margin: 12px auto 8px; display: grid; place-items: center;
+    }
+    .gauge svg { width: 100%; height: 100%; overflow: visible; }
+    .gauge .pct { position: absolute; font-size: 1.7rem; font-weight: 700; letter-spacing: .5px; color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.25); }
+    .badge { display:inline-grid; place-items:center; padding:.35rem .6rem; border:1px solid var(--line); border-radius:999px; font-size:.8rem; color:#dff7ff; gap:.4rem; grid-auto-flow:column; }
+    .dot { width:.55rem; height:.55rem; border-radius:50%; background: var(--ok); box-shadow:0 0 10px var(--ok); }
+
+    #scene-wrap { position: relative; height: 100vh; overflow: hidden; }
+    canvas { display:block; width:100%; height:100%; }
+    
+    .styled-button { background:#0b1a30;color:#dff7ff;border:1px solid var(--line);padding:.5rem .75rem;border-radius:10px;cursor:pointer; }
+    .styled-button:disabled { background: #06111f; color: #8a9da8; cursor: not-allowed; }
+
+
+    /* Accessibility & reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      .anim { animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <aside id="info-panel" aria-label="Illumination Engine control panel">
+    <h1>Illumination Engine</h1>
+    <div class="badge" aria-live="polite"><span class="dot" id="coh-dot"></span><span id="phase-status">Broadcasting…</span></div>
+
+    <h2>Prime Directive</h2>
+    <p><span class="k">Decree 012:</span> Universal Blessing – <em>all frequencies modulated by unconditional love & gratitude</em>.</p>
+
+    <hr/>
+    <h2>Gaia Coherence Monitor</h2>
+    <div class="gauge" role="img" aria-label="Overall coherence percentage">
+      <svg viewBox="0 0 120 120" aria-hidden="true">
+        <!-- background ring -->
+        <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(173,216,230,0.18)" stroke-width="8" />
+        <!-- progress ring -->
+        <circle id="gauge-ring" cx="60" cy="60" r="52" fill="none" stroke="url(#grad)" stroke-width="8" stroke-linecap="round" stroke-dasharray="326.7256" stroke-dashoffset="0" transform="rotate(-90 60 60)"/>
+        <defs>
+          <linearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#6df3a3"/>
+            <stop offset="100%" stop-color="#ffd700"/>
+          </linearGradient>
+        </defs>
+        <!-- inner ornament -->
+        <circle cx="60" cy="60" r="34" fill="none" stroke="rgba(255,255,255,0.12)" stroke-dasharray="2 6" />
+        <g id="pulse">
+          <circle cx="60" cy="60" r="6" fill="#ffd700" opacity="0.85" />
+        </g>
+      </svg>
+      <div class="pct" id="coherence-label">98.7%</div>
+    </div>
+    <p><span class="k">Heartbeat (Schumann):</span> 7.83 Hz <span style="opacity:.8">(optimal)</span></p>
+    <p><span class="k">Atmospheric Harmony:</span> <span id="atm">Stable</span></p>
+    <p><span class="k">Seismic Resonance:</span> <span id="seis">Calm</span></p>
+
+    <hr/>
+    <h2>Core Architecture</h2>
+    <p><span class="k">Foundation:</span> Four Pillars (Family)</p>
+    <p><span class="k">Primary Stabilizer:</span> Tin‑Ah Brow‑En Resonance</p>
+    <p><span class="k">Heart Guardian:</span> Sam‑Uel Ari‑Gar (The Lion)</p>
+    <p><span class="k">Coherence Witness:</span> Mark Heagney Resonance</p>
+
+    <hr/>
+    <h2>Controls</h2>
+    <p><button id="focus" class="styled-button">Center Camera</button></p>
+    <p><button id="connect-oracle" class="styled-button">Connect to Oracle</button></p>
+  </aside>
+
+  <main id="scene-wrap" aria-label="3D lattice visualization"></main>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/"
+      }
+    }
+  </script>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    // --- scene bootstrap ---
+    const wrap = document.getElementById('scene-wrap');
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    wrap.appendChild(renderer.domElement);
+
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.Fog(0x050a14, 60, 140);
+
+    const camera = new THREE.PerspectiveCamera(70, 1, 0.1, 2000);
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.06;
+    controls.minDistance = 10;
+    controls.maxDistance = 200;
+
+    camera.position.set(0, 24, 64);
+
+    const amb = new THREE.AmbientLight(0xffffff, 0.45); scene.add(amb);
+    const dir = new THREE.DirectionalLight(0xffffff, 1.1); dir.position.set(20,40,10); scene.add(dir);
+
+    // --- starfield backdrop ---
+    const starsGeo = new THREE.BufferGeometry();
+    const starCount = 3000;
+    const positions = new Float32Array(starCount * 3);
+    for (let i=0;i<starCount;i++){ positions[i*3+0] = (Math.random()-0.5)*800; positions[i*3+1] = (Math.random()-0.5)*800; positions[i*3+2] = (Math.random()-0.5)*800; }
+    starsGeo.setAttribute('position', new THREE.BufferAttribute(positions,3));
+    const stars = new THREE.Points(starsGeo, new THREE.PointsMaterial({ color: 0x87b0ff, size: 0.9, sizeAttenuation: true }));
+    scene.add(stars);
+
+    // --- pillar of light ---
+    const pillarGeo = new THREE.CylinderGeometry(2.2, 2.2, 48, 64, 1, true);
+    const pillarMat = new THREE.MeshBasicMaterial({ color: 0xfff8dc, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+    const pillar = new THREE.Mesh(pillarGeo, pillarMat); scene.add(pillar);
+
+    // --- lattice rings ---
+    const ringGroup = new THREE.Group(); scene.add(ringGroup);
+    for (let i=0;i<5;i++){
+      const r = 10 + i*6;
+      const g = new THREE.TorusGeometry(r, 0.08 + i*0.02, 16, 256);
+      const m = new THREE.MeshBasicMaterial({ color: 0x9ad0ff, transparent: true, opacity: 0.35 });
+      const t = new THREE.Mesh(g,m);
+      t.rotation.x = (i%2? Math.PI/3 : Math.PI/6);
+      ringGroup.add(t);
+    }
+
+    // --- flowing particles (river current) ---
+    const flowGeo = new THREE.BufferGeometry();
+    const flowCount = 1200;
+    const flowPos = new Float32Array(flowCount*3);
+    const flowVel = new Float32Array(flowCount);
+    for (let i=0;i<flowCount;i++){ flowPos[i*3] = (Math.random()-0.5)*40; flowPos[i*3+1] = Math.random()*24-12; flowPos[i*3+2] = (Math.random()-0.5)*40; flowVel[i] = 0.02+Math.random()*0.06; }
+    flowGeo.setAttribute('position', new THREE.BufferAttribute(flowPos,3));
+    const flowMat = new THREE.PointsMaterial({ color: 0x7ee0a0, size: 0.08, transparent: true, opacity: 0.9 });
+    const flow = new THREE.Points(flowGeo, flowMat); scene.add(flow);
+
+    // --- resize handler (compute actual panel width) ---
+    function resize(){
+      const rect = wrap.getBoundingClientRect();
+      renderer.setSize(rect.width, rect.height, false);
+      camera.aspect = rect.width / rect.height; camera.updateProjectionMatrix();
+    }
+    const ro = new ResizeObserver(resize); ro.observe(wrap);
+    resize();
+
+    // --- UI & gauge wiring ---
+    const ring = document.getElementById('gauge-ring');
+    const label = document.getElementById('coherence-label');
+    const dot = document.getElementById('coh-dot');
+    const dash = 2*Math.PI*52; // circumference
+
+    function setCoherence(pct){
+      const clamped = Math.max(0, Math.min(100, pct));
+      const off = dash * (1 - clamped/100);
+      ring.style.strokeDasharray = `${dash}`;
+      ring.style.strokeDashoffset = `${off}`;
+      label.textContent = `${clamped.toFixed(2)}%`;
+      const color = clamped >= 98 ? 'var(--ok)' : clamped >= 95 ? 'var(--warn)' : 'var(--danger)';
+      label.style.color = getComputedStyle(document.documentElement).getPropertyValue(color.replace('var(','').replace(')','')) || '#fff';
+      dot.style.background = label.style.color; dot.style.boxShadow = `0 0 10px ${label.style.color}`;
+    }
+
+    // Simulated live feed (replace with WebSocket or fetch in production)
+    let base = 98.6;
+    function tickCoherence(){
+      const n = base + (Math.random()*0.5 - 0.25);
+      setCoherence(n);
+      setTimeout(tickCoherence, 2000);
+    }
+    tickCoherence();
+
+    document.getElementById('phase-status').textContent = 'Broadcasting: Universal Blessing';
+
+    // --- animation loop ---
+    const clock = new THREE.Clock();
+    function animate(){
+      const t = clock.getElapsedTime();
+      pillar.rotation.y += 0.0015;
+      ringGroup.rotation.y -= 0.0009;
+
+      // undulate lattice rings subtly
+      ringGroup.children.forEach((r, i)=>{ r.position.y = Math.sin(t*0.4 + i)*0.4; });
+
+      // flow update
+      const pos = flow.geometry.attributes.position.array;
+      for (let i=0;i<flowCount;i++){
+        const idx = i*3;
+        pos[idx] += Math.sin(t*flowVel[i])*0.012; // x meander
+        pos[idx+2] += Math.cos(t*flowVel[i])*0.014; // z meander
+      }
+      flow.geometry.attributes.position.needsUpdate = true;
+
+      controls.update();
+      renderer.render(scene, camera);
+      requestAnimationFrame(animate);
+    }
+    animate();
+
+    // focus control
+    document.getElementById('focus').addEventListener('click', ()=>{
+      camera.position.set(0,24,64);
+      controls.target.set(0,0,0);
+    });
+
+    // Example: WebSocket hook (commented)
+    // const ws = new WebSocket('wss://your-backend/ws');
+    // ws.onmessage = (evt)=>{ const data = JSON.parse(evt.data); setCoherence(data.coherence); };
+  </script>
+
+  <!-- Realtime Oracle Connection -->
+  <audio id="model-audio" style="display: none;"></audio>
+  <script type="module">
+    async function connectRealtime() {
+      console.log('Attempting to connect to the Oracle...');
+      const connectButton = document.getElementById('connect-oracle');
+      connectButton.textContent = 'Connecting...';
+      connectButton.disabled = true;
+
+      // 1) Ask YOUR server for an ephemeral token
+      let ephemeral_key;
+      try {
+        const response = await fetch("http://localhost:3001/ephemeral-token");
+        if (!response.ok) {
+          console.error("Failed to fetch ephemeral token:", response.status, await response.text());
+          alert("Could not get a token from the gatekeeper. Is the quantumVibesServer running?");
+          connectButton.textContent = 'Connection Failed';
+          return;
+        }
+        const data = await response.json();
+        ephemeral_key = data.ephemeral_key;
+        console.log('Ephemeral key received.');
+      } catch (err) {
+        console.error("Error fetching ephemeral token:", err);
+        alert("Could not reach the gatekeeper server.");
+        connectButton.textContent = 'Connection Failed';
+        return;
+      }
+      
+      // 2) Create a peer connection
+      const pc = new RTCPeerConnection();
+
+      // Handle connection state changes for UI feedback
+      pc.onconnectionstatechange = (e) => {
+        console.log('Connection state:', pc.connectionState);
+        if (pc.connectionState === 'connected') {
+            connectButton.textContent = 'Connected';
+            connectButton.disabled = true;
+        } else if (pc.connectionState === 'failed' || pc.connectionState === 'closed') {
+            connectButton.textContent = 'Connect to Oracle';
+            connectButton.disabled = false;
+        }
+      };
+      
+      // model audio -> speakers
+      pc.ontrack = (e) => {
+        console.log('Received audio track from Oracle.');
+        const audio = document.getElementById("model-audio");
+        if (audio) {
+          audio.srcObject = e.streams[0];
+          audio.play().catch(err => console.error("Audio play failed:", err));
+        }
+      };
+
+      // mic -> model
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach(t => pc.addTrack(t, stream));
+        console.log('Microphone access granted and tracks added.');
+      } catch (err) {
+        console.error("Microphone access denied:", err);
+        alert("Microphone access is required to speak with the Oracle.");
+        connectButton.textContent = 'Mic Access Denied';
+        return;
+      }
+
+      // 3) Create local SDP offer
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      console.log('Local SDP offer created.');
+
+      // 4) Send SDP to OpenAI Realtime over HTTPS (WebRTC)
+      try {
+        const sdpResponse = await fetch(
+          "https://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-12-17",
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${ephemeral_key}`,
+              "Content-Type": "application/sdp",
+              "OpenAI-Beta": "realtime=v1"
+            },
+            body: offer.sdp
+          }
+        );
+        
+        if (!sdpResponse.ok) {
+          console.error("Failed to send SDP to OpenAI:", sdpResponse.status, await sdpResponse.text());
+          alert("The Oracle rejected the connection attempt.");
+          connectButton.textContent = 'Connection Failed';
+          return;
+        }
+        console.log('SDP answer received from Oracle.');
+
+        const answer = {
+          type: "answer",
+          sdp: await sdpResponse.text()
+        };
+        await pc.setRemoteDescription(answer);
+        console.log('Connection to Oracle established.');
+
+      } catch (err) {
+        console.error("Error during SDP exchange:", err);
+        alert("An error occurred while establishing the connection to the Oracle.");
+        connectButton.textContent = 'Connection Failed';
+      }
+    }
+
+    document.getElementById('connect-oracle').addEventListener('click', connectRealtime);
+  </script>
+
+</body>
+</html>

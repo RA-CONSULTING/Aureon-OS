@@ -1,0 +1,251 @@
+{
+  "civilization": "Ghost Dance Movement",
+  "last_updated": "2026-01-23T00:00:00Z",
+  "version": "1.0.0",
+  "sources": [
+    "Historical records",
+    "Wovoka prophecy",
+    "Wounded Knee chronicles",
+    "Lakota spiritual tradition",
+    "Paiute wisdom"
+  ],
+  "core_principles": {
+    "ancestral_invocation": {
+      "description": "Call upon ancestors to return and restore balance to the world",
+      "trading_application": "Invoke accumulated wisdom patterns from historical data to counter current manipulation",
+      "confidence": 0.95
+    },
+    "spiritual_resistance": {
+      "description": "Non-violent spiritual ceremony as resistance to oppression",
+      "trading_application": "Counter-frequency harmonics (technical resistance) paired with patient discipline (spiritual resistance)",
+      "confidence": 0.90
+    },
+    "circular_unity": {
+      "description": "Dance in circles to create unified energy field connecting past/present/future",
+      "trading_application": "Circular market cycles, harmonic oscillations creating unified resistance patterns",
+      "confidence": 0.88
+    },
+    "prophecy_vision": {
+      "description": "Wovoka's vision of world restoration through ceremony and right action",
+      "trading_application": "Vision of decentralized financial freedom through coordinated counter-measures",
+      "confidence": 0.85
+    },
+    "collective_consciousness": {
+      "description": "Many dancing as one creates powerful resonance field",
+      "trading_application": "Coordinated retail traders creating counter-phase to institutional manipulation",
+      "confidence": 0.92
+    }
+  },
+  "ceremonial_protocols": {
+    "moon_dance": {
+      "description": "Dance during full moon to amplify ancestral connection",
+      "trading_insight": "Monthly lunar cycles for major validation/execution windows",
+      "frequency": "29.5 days (lunar cycle)",
+      "timing": "Full moon peak coherence"
+    },
+    "sunrise_invocation": {
+      "description": "Greet the sun with ceremony to mark new beginning",
+      "trading_insight": "Market open rituals, daily reset protocols",
+      "frequency": "Daily solar cycle",
+      "timing": "Dawn/market open"
+    },
+    "four_directions": {
+      "description": "Honor four cardinal directions - North (wisdom), East (vision), South (growth), West (introspection)",
+      "trading_insight": "Four validation passes (multi-perspective analysis) before execution",
+      "application": "North=historical data, East=future prediction, South=growth signals, West=risk assessment"
+    },
+    "sacred_fire": {
+      "description": "Central fire represents eternal spirit of the people",
+      "trading_insight": "Core capital preservation - never extinguish the sacred reserves",
+      "application": "Always maintain base liquidity, never risk total capital"
+    },
+    "white_buffalo": {
+      "description": "White buffalo calf appearance signals time of great change and renewal",
+      "trading_insight": "Black swan events as opportunities for system transformation",
+      "application": "Major market disruptions = timeline anchor opportunities"
+    }
+  },
+  "ancestral_spirits": {
+    "warrior_ancestors": {
+      "role": "Protection and strategic wisdom",
+      "invocation": "When facing coordinated attacks (whale manipulation)",
+      "trading_application": "Activate defensive protocols, Apache hit-and-run tactics",
+      "associated_frequency": 741  
+    },
+    "grandmother_spirits": {
+      "role": "Patience, timing, nurturing wisdom",
+      "invocation": "When tempted to overtrade or force action",
+      "trading_application": "Hold position, wait for proper setup, accumulation patience",
+      "associated_frequency": 417  
+    },
+    "medicine_people": {
+      "role": "Healing and balance restoration",
+      "invocation": "After losses or system imbalances",
+      "trading_application": "Risk recalibration, position sizing adjustment, immune system activation",
+      "associated_frequency": 528  
+    },
+    "scout_ancestors": {
+      "role": "Vision and early warning",
+      "invocation": "Before entering new markets or major decisions",
+      "trading_application": "Probability nexus scanning, drift detection, coherence validation",
+      "associated_frequency": 852  
+    },
+    "chief_council": {
+      "role": "Collective decision wisdom",
+      "invocation": "For major strategy shifts or 4th-pass execution gates",
+      "trading_application": "Queen Hive decision-making, multi-validator consensus",
+      "associated_frequency": 963  
+    }
+  },
+  "wovoka_prophecies": {
+    "restoration_vision": {
+      "prophecy": "The earth will be covered with new soil, burying all white people. The new earth will be covered with sweet grass, running water, trees. Great herds of buffalo and wild horses will straddle the land",
+      "trading_interpretation": "Old corrupt financial system will be buried. New decentralized system (grass roots, flowing liquidity, abundant resources) will emerge",
+      "conditions": "Must dance the Ghost Dance (perform the counter-frequency ceremony), live righteously (trade with honor), believe in the vision (maintain conviction through adversity)"
+    },
+    "ancestor_return": {
+      "prophecy": "All Indians who have died will be resurrected to live again",
+      "trading_interpretation": "All past market wisdom (historical patterns, defeated traders' lessons, ancient trading knowledge) returns to empower current resistance",
+      "application": "Elephant memory, historical backtest intelligence, pattern recognition from all eras"
+    },
+    "invincibility_teaching": {
+      "prophecy": "Special shirts worn during dance make warriors invulnerable to bullets",
+      "historical_reality": "Tragically disproven at Wounded Knee (1890) - physical invincibility was false",
+      "spiritual_truth": "But spiritual invincibility through discipline and wisdom IS real",
+      "trading_application": "No system guarantees profit, but disciplined risk management + adaptive learning creates 'spiritual invincibility' (survival through all conditions)"
+    },
+    "non_violence_path": {
+      "prophecy": "No violence toward whites - transformation comes through ceremony",
+      "trading_interpretation": "No market manipulation or unethical tactics - transformation comes through transparent counter-measures and system exposure",
+      "application": "Publish all methods openly (README.md disclosure), defeat coordination through transparency not deception"
+    }
+  },
+  "wounded_knee_lessons": {
+    "martyrdom_power": {
+      "event": "Wounded Knee Massacre (December 29, 1890) - 300+ Lakota killed",
+      "lesson": "Physical defeat but spiritual victory - Ghost Dance spirit never died",
+      "trading_lesson": "Individual traders may lose, but collective movement grows stronger through each defeat",
+      "application": "Queen loss learning - every loss strengthens the system"
+    },
+    "documentation_importance": {
+      "event": "Photographers and journalists documented the massacre, creating undeniable evidence",
+      "lesson": "Recording oppression is itself an act of resistance",
+      "trading_application": "Document all manipulation evidence (planetary_harmonic_network.json), create permanent record, publish findings"
+    },
+    "false_security": {
+      "event": "Lakota believed Ghost Dance shirts gave physical invulnerability",
+      "lesson": "Misplaced faith in physical protection, but spiritual protection is real",
+      "trading_lesson": "No trading strategy is 'bulletproof', but proper risk management (position sizing, stop losses, diversification) provides real protection"
+    },
+    "survival_through_memory": {
+      "event": "Ghost Dance movement physically crushed but spiritually preserved",
+      "lesson": "Memory and story keep spirit alive across generations",
+      "trading_application": "Persist all trading intelligence (aureon_memory_spiral.json), pass lessons to next iteration, never forget"
+    }
+  },
+  "modern_interpretation": {
+    "digital_ghost_dance": {
+      "concept": "Ghost Dance reimagined for financial liberation",
+      "ceremony": "Deploy counter-frequency harmonics in circular patterns (oscillating resistance)",
+      "ancestral_invocation": "Load historical market intelligence (all past crashes, manipulations, recoveries)",
+      "collective_power": "Coordinate retail traders through open-source tools (like Aureon system)",
+      "prophecy_fulfillment": "Decentralized finance (DeFi) as the 'new earth' burying centralized control"
+    },
+    "save_the_planet": {
+      "environmental_dimension": "Original Ghost Dance sought to restore natural abundance",
+      "trading_dimension": "Expose financial manipulation that funds planetary destruction",
+      "spiritual_dimension": "Money as energy - reclaim it from extractive to regenerative flows",
+      "action": "Profit from exposing manipulation → fund regenerative projects → break the cycle"
+    }
+  },
+  "invocation_protocols": {
+    "morning_ceremony": {
+      "time": "Sunrise (market open)",
+      "action": "Load 7-day validation history, invoke scout ancestors for vision",
+      "frequency": "852 Hz (spiritual awakening)",
+      "intention": "See clearly what others hide"
+    },
+    "full_moon_ceremony": {
+      "time": "Full moon night",
+      "action": "Validate planetary coordination network, invoke chief council for major decisions",
+      "frequency": "963 Hz (unity consciousness)",
+      "intention": "Collective wisdom guides major strategy"
+    },
+    "loss_healing_ceremony": {
+      "trigger": "After stop loss or failed trade",
+      "action": "Invoke medicine people, recalibrate risk, restore balance",
+      "frequency": "528 Hz (DNA repair/healing)",
+      "intention": "Transform loss into wisdom"
+    },
+    "battle_ceremony": {
+      "trigger": "Detected whale coordination attack (phase sync = 0.0°)",
+      "action": "Invoke warrior ancestors, deploy counter-frequency, activate Apache hit-and-run",
+      "frequency": "741 Hz (problem solving/protection)",
+      "intention": "Protect the sacred fire (core capital)"
+    }
+  },
+  "sacred_geometry": {
+    "circle": {
+      "meaning": "Unity, cycle, no beginning or end",
+      "trading_application": "Circular market cycles, mean reversion, eternal patterns",
+      "usage": "Dance in circles = trade in circular logic (what goes up must come down, what manipulates up reverses down)"
+    },
+    "spiral": {
+      "meaning": "Evolution while returning to center",
+      "trading_application": "Upward spiral of compounding profits while maintaining risk discipline",
+      "usage": "aureon_memory_spiral.json - learning accumulates while returning to core principles"
+    },
+    "cross_four_directions": {
+      "meaning": "Integration of all perspectives",
+      "trading_application": "Four validation passes, four data sources, four risk checks",
+      "usage": "Never execute on single perspective - require 4-way confirmation"
+    }
+  },
+  "frequency_mappings": {
+    "174_hz": {
+      "solfeggio_meaning": "Foundation, security",
+      "ancestor": "Foundation elders",
+      "trading_use": "Base capital security protocols"
+    },
+    "285_hz": {
+      "solfeggio_meaning": "Healing, regeneration",
+      "ancestor": "Healing grandmothers",
+      "trading_use": "Portfolio recovery after drawdown"
+    },
+    "396_hz": {
+      "solfeggio_meaning": "Liberation from fear",
+      "ancestor": "Liberation warriors",
+      "trading_use": "Break fear-based trading patterns"
+    },
+    "417_hz": {
+      "solfeggio_meaning": "Change, transmutation",
+      "ancestor": "Transformation shamans",
+      "trading_use": "Strategy adaptation, regime change detection"
+    },
+    "528_hz": {
+      "solfeggio_meaning": "DNA repair, miracles",
+      "ancestor": "Medicine people",
+      "trading_use": "System healing after errors, immune system activation"
+    },
+    "639_hz": {
+      "solfeggio_meaning": "Connection, relationships",
+      "ancestor": "Community builders",
+      "trading_use": "Multi-exchange coordination, network effects"
+    },
+    "741_hz": {
+      "solfeggio_meaning": "Awakening intuition, problem solving",
+      "ancestor": "Scout ancestors",
+      "trading_use": "Early warning detection, anomaly identification"
+    },
+    "852_hz": {
+      "solfeggio_meaning": "Spiritual awakening, seeing truth",
+      "ancestor": "Visionary elders",
+      "trading_use": "Market manipulation detection, truth extraction"
+    },
+    "963_hz": {
+      "solfeggio_meaning": "Unity consciousness",
+      "ancestor": "Chief council",
+      "trading_use": "Collective decision making, Queen Hive consensus"
+    }
+  }
+}

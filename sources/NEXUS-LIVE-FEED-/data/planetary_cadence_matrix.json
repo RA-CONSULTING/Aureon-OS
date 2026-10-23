@@ -1,0 +1,38 @@
+{
+  "mercury": {
+    "mass_kg": 3.3011e23,
+    "rotational_period_hours": 1407.6,
+    "magnetic_field_strength_nT": 300,
+    "atmospheric_density_kg_per_m3": 1e-15
+  },
+  "venus": {
+    "mass_kg": 4.8675e24,
+    "rotational_period_hours": 5832.5,
+    "magnetic_field_strength_nT": 0,
+    "atmospheric_density_kg_per_m3": 92.1
+  },
+  "earth": {
+    "mass_kg": 5.972e24,
+    "rotational_period_hours": 23.9,
+    "magnetic_field_strength_nT": 50000,
+    "atmospheric_density_kg_per_m3": 1.217
+  },
+  "mars": {
+    "mass_kg": 6.4171e23,
+    "rotational_period_hours": 24.622962,
+    "magnetic_field_strength_nT": 25,
+    "atmospheric_density_kg_per_m3": 0.020
+  },
+  "jupiter": {
+    "mass_kg": 1.8982e27,
+    "rotational_period_hours": 9.9,
+    "magnetic_field_strength_nT": 428000,
+    "atmospheric_density_kg_per_m3": 0.16
+  },
+  "saturn": {
+    "mass_kg": 5.6834e26,
+    "rotational_period_hours": 10.7,
+    "magnetic_field_strength_nT": 21000,
+    "atmospheric_density_kg_per_m3": 0.09
+  }
+}

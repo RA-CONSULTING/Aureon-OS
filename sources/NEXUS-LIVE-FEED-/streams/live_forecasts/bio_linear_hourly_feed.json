@@ -1,0 +1,74 @@
+[
+  {
+    "date": "2025-11-12",
+    "observed_at": "2025-10-14T10:15:00Z",
+    "synoptic_overview": "Final cold-core low exits with wraparound showers.",
+    "hazard_ratings": {
+      "storm": { "level": "Guarded", "confidence": 0.46, "notes": "Isolated thunder with small hail possible." },
+      "flood": { "level": "Guarded", "confidence": 0.44, "notes": "Urban ponding where drains remain clogged." },
+      "heat": { "level": "Low", "confidence": 0.32, "notes": "Temperatures near seasonal." },
+      "wildfire": { "level": "Guarded", "confidence": 0.41, "notes": "Gusty backside winds dry fuels briefly." },
+      "seismic": { "level": "Background", "confidence": 0.29, "notes": "No anomaly; continue passive monitoring." }
+    },
+    "alerts": [
+      "Clear lingering flood advisories as rivers fall below action stage.",
+      "Message transportation crews about slick passes during night transition."
+    ],
+    "preparedness_actions": [
+      "Cycle crews to debris removal on urban drains.",
+      "Rotate IMT duty officers for rest ahead of next system."
+    ],
+    "validation": {
+      "source": "bio-linear-ingest/v2",
+      "confidence": 0.88
+    }
+  },
+  {
+    "date": "2025-11-13",
+    "observed_at": "2025-10-14T10:20:00Z",
+    "synoptic_overview": "Shortwave trough sparks afternoon convection statewide.",
+    "hazard_ratings": {
+      "storm": { "level": "Moderate", "confidence": 0.55, "notes": "Pulse storms with 50 kt outflows." },
+      "flood": { "level": "Guarded", "confidence": 0.41, "notes": "Brief downpours may overwhelm urban drainage." },
+      "heat": { "level": "Low", "confidence": 0.34, "notes": "Seasonal highs maintained." },
+      "wildfire": { "level": "Guarded", "confidence": 0.45, "notes": "Dry lightning risk east of Cascades." },
+      "seismic": { "level": "Background", "confidence": 0.32, "notes": "Monitoring status quo." }
+    },
+    "alerts": [
+      "Issue lightning watch east of Cascades.",
+      "Coordinate with aviation partners on convective routing options."
+    ],
+    "preparedness_actions": [
+      "Prepare rapid-response fire crews for potential holdover strikes.",
+      "Brief public on safe sheltering during lightning."
+    ],
+    "validation": {
+      "source": "bio-linear-ingest/v2",
+      "confidence": 0.9
+    }
+  },
+  {
+    "date": "2025-11-14",
+    "observed_at": "2025-10-14T10:30:00Z",
+    "synoptic_overview": "High pressure rebuilds; offshore gradients spark downslope winds east of Cascades.",
+    "hazard_ratings": {
+      "storm": { "level": "Low", "confidence": 0.33, "notes": "Stable skies with diminishing cloud cover." },
+      "flood": { "level": "Low", "confidence": 0.28, "notes": "Rivers continue gradual recession." },
+      "heat": { "level": "Guarded", "confidence": 0.42, "notes": "Daytime highs nudge above average where downslope warming occurs." },
+      "wildfire": { "level": "Moderate", "confidence": 0.52, "notes": "Dry windy corridor elevates ignition risk east of Cascades." },
+      "seismic": { "level": "Background", "confidence": 0.3, "notes": "Steady microseism backdrop." }
+    },
+    "alerts": [
+      "Post red flag watch for eastern basins if humidity dips below 20%.",
+      "Notify utility partners about potential wind-driven line fatigue."
+    ],
+    "preparedness_actions": [
+      "Pre-position wildfire strike teams in lee of Cascades.",
+      "Stage community cooling and clean-air shelters in high-wind corridors."
+    ],
+    "validation": {
+      "source": "bio-linear-ingest/v2",
+      "confidence": 0.92
+    }
+  }
+]

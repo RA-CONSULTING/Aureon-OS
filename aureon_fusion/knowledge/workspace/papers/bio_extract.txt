@@ -1,0 +1,52 @@
+HNC BioMolecule Packet White Paper v1.0 - Page 1A Falsifiable HNC Biomolecule-to-Frequency Packet 
+Hypothesis
+for Modulating Oxidative DNA-Damage Markers in Normal and 
+Cancer Cell Models
+White Paper / Pre-Experimental Validation Protocol
+Framework: HNC BioMolecule -> Adjacent Frequency Packet Bl ueprint
+Working Version: v1.0 white paper compiled from v0.2 bio molecule packet and v0.3 cancer open-data layer
+Prepared for: R&A Consulting and Brokerage Services Ltd / Aureon Institute
+HNC Certificate: HNC-VER-2025-0407-001
+Date: 7 July 2026
+Claim boundary
+This paper reports a computationally reproducible spectral -packet design and a falsifiable in-vitro testing plan. I t 
+does not report completed wet-lab results, does not make a clinical claim, and does not claim DNA sequence 
+rebuilding unless future sequencing confirms restoration o f a defined allele after treatment.
+---
+HNC BioMolecule Packet White Paper v1.0 - Page 2Abstract
+This white paper formalizes the HNC BioMolecule -> Adja cent Frequency Packet framework as a testable 
+hypothesis rather than a therapeutic claim. The framewor k maps published spectral features of dandelion-
+associated phenolics - chlorogenic acid, chicoric acid and lute olin - into a reproducible modulation-frequency packet 
+through physical frequency conversion, octave downconversion and  adjacent sideband generation. The 
+computational discovery is a 13-tone phenolic coherence packet  spanning 1012.1-1817.7 Hz, with densest 
+convergence in the 1367.2-1439.6 Hz region, generated f rom independent FTIR/Raman/UV-visible peaks. The 
+proposed biological test uses a 660 nm red-light carrier with amplitude modulation and a 10-arm control structu re to 
+determine whether the HNC packet adds signal specificity be yond phytochemistry, carrier effects and 
+randomized/scrambled modulation. Primary endpoints are R OS, 8-oxodG, alkaline and enzyme-modified comet 
+assay, gamma-H2AX/53BP1 kinetics, and base-excision-repair ma rkers including OGG1, APE1/APEX1 and 
+XRCC1. The cancer open-data layer selects A549, HCT116 an d MCF-7 as priority transformed models, with HeLa 
+reserved as an HPV/p53-rewired context, using DepMap/CCLE /Sanger resources for baseline molecular 
+annotation. The hypothesis is falsified if the full HNC arm does not outperform molecule-only, carrier-only, ran dom-
+packet and molecule-plus-random-packet controls, or if appa rent DNA-damage reduction is explained by cell death, 
+temperature, batch effects or nonspecific photobiomodulat ion. DNA rebuilding remains a Level 4 claim requiring 
+targeted or single-cell sequencing evidence of restoration  and persistence of a defined sequence variant.
+Keywords: Taraxacum officinale; chlorogenic acid; chicoric acid; luteol in; spectral conversion; photobiomodulation; 
+oxidative DNA damage; gamma-H2AX; comet assay; DepMap; can cer cell lines; falsifiable hypothesis.
+Executive Summary: What Has Been Discovered and What Has Not
+Table 1. Discovery status and claim boundary.
+Layer Finding / boundary
+Computationally discovered Published biomolecular spectral peaks can be converted into a 
+reproducible 13-tone HNC phenolic coherence packet. Two dense 
+convergence bands were detected: 1367.2-1402.1 Hz and 1398.6-
+1439.6 Hz.
+Scientifically testable A 660 nm carrier can be amplitude-modulated by this packet and 
+tested against sham, carrier-only, random-packet and molecule-only 
+controls in normal and cancer cell models.
+Not yet discovered No wet-lab evidence has yet shown that the packet reduces DNA 
+damage, accelerates repair or restores sequence mutations.
+Claim ceiling before experiments The present claim is computational reproducibility and experimental 
+readiness. DNA protection, repair modulation, mutation prevention 
+and DNA rebuilding remain staged hypotheses.
+1. Background and Rationale
+The originating biological question was whether plant resilience under synthetic signal pressure could be translate d 
+into a biomimetic framework for human-cell stress re

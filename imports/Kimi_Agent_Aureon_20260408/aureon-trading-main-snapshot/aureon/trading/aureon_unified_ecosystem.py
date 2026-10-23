@@ -13820,7 +13820,7 @@ class AureonKrakenEcosystem:
         self._news_poll_counter = 0
         self._news_poll_interval = 60  # Poll every 60 cycles (~2 mins at 2s interval)
         if NEWS_FEED_AVAILABLE:
-            news_api_key = os.environ.get("WORLD_NEWS_API_KEY", "1e67384add34486d8b14a951b220fe8a")
+            news_api_key = os.environ.get("WORLD_NEWS_API_KEY", "")
             if news_api_key:
                 try:
                     import asyncio

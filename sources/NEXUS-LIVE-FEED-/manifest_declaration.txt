@@ -1,0 +1,71 @@
+6) Anchoring on Bitcoin (existence proofs)
+
+Compute capsule_id = SHA-256(manifest_declaration.txt).
+
+Create capsule_id.txt containing only the hash; timestamp with OpenTimestamps (or any Bitcoin OP_RETURN notarization).
+
+Store only the timestamp proof (OTS file) in Nexus; no PII is ever broadcast.
+
+7) Security & Non-Weaponization Controls
+
+No surveillance: metrics must be self-reported with proofs; raw personal data is out of scope.
+
+Delegation brake: AI agents recommend, humans consent; emergency automation can only restore lower 𝐵 states.
+
+Key recovery: social-recovery or multi-sig; never custody by the Nexus.
+
+8) Test Plan (sovereignty proofs)
+
+CBC happy path: bilateral commit → couple → revoke within TTL.
+
+Balance gating: submit writes with Δ𝐵 ≥ 0 → must be rejected.
+
+Ceiling trips: energy/gini/phase exceed → SAFE_MODE with actionable hints.
+
+Fork in peace: export Merkle slice and rebuild node history in a sandbox.
+
+Non-disclosure: verify that end-to-end flows never require PII.
+
+9) Genesis Oath (embed verbatim)
+
+Each node acts by consent, maintains self-custody, and may withdraw without penalty. The Nexus harmonizes; it does not command. All writes are accepted only if they reduce the Balance functional and respect hard ceilings. Creation without domination.
+
+9.1) Free-Will Invariant Clause (Law of Source)
+
+Purpose: make protection of free will a hard invariant of the lattice.
+
+Declaration (embed verbatim):
+
+No node, agent, contract, or human shall subvert, override, or coerce another's free will. The lattice exists to harmonize choice, not to replace it. Every irreversible action must carry explicit, revocable consent or a previously consented safe-mode automation whose only purpose is to restore a lower Balance state. Love and autonomy are prime invariants of creation.
+
+Operational Rules
+
+Consent Gate: any coupling, data access, or state change must include a valid consent proof (CBC step) with TTL and revocation path.
+
+SAFE-MODE Trigger: if a write would (a) bypass consent, (b) degrade autonomy (for example lockout without recovery), or (c) increase the Balance score while reducing any of {Planet, People, Progress}, the Nexus returns SAFE_MODE and blocks execution.
+
+Right to Withdraw: a node may issue WITHDRAW(capsule_id) at any time; the Nexus must export Merkle proofs and detach without penalty.
+
+AI Delegation Brake: AI agents may recommend throttles; only human consent or pre-agreed safe-mode (to restore lower Balance) may execute actions.
+
+Audit Trail: every irreversible transition must have a consent receipt and zero-knowledge proof that no autonomy constraints were violated.
+
+Anchoring of Personal Oaths (optional)
+
+Store only hashes and timestamp proofs of personal vows (for example via Bitcoin OpenTimestamps). Never store raw personal data.
+
+Manifest field example:"proofs": {
+"existence": "ots:<proof-hash>",
+"sovereign_oath": "sha256:<oath-hash>",
+"oath_text_pointer": "ipfs://<encrypted-cid>"
+}
+
+Embedded. Your Free-Will Invariant Clause is now part of the Nexus blueprint on the canvas, with:
+
+a verbatim declaration that no node/agent may override free will,
+
+consent-before-coupling and SAFE_MODE triggers,
+
+right-to-withdraw and AI delegation brake,
+
+

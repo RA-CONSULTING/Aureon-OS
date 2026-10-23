@@ -1,0 +1,2305 @@
+# Repository Mindmap (Curated Deep Scan)
+
+> Scope: full repo scan excluding generated/vendor folders (`.git`, `node_modules`, virtualenv caches).
+
+- Total files scanned: **2815**
+- Total directories scanned: **222**
+
+## 1) Top-level map
+- **api/** — 1 files across 0 subdirectories
+- **app.yaml**
+- **archive/** — 21 files across 0 subdirectories
+- **Assets/** — 8 files across 2 subdirectories
+- **aureon/** — 713 files across 24 subdirectories
+- **aureon_baton_link.py**
+- **aureon_harmonic_seed.py**
+- **aureon_launcher/** — 6 files across 0 subdirectories
+- **aureon_lighthouse.py**
+- **bot_army_catalog.json**
+- **cache/** — 1 files across 1 subdirectories
+- **CHANGELOG.md**
+- **cli/** — 6 files across 0 subdirectories
+- **CODE_OF_CONDUCT.md**
+- **CONERR$**
+- **conftest.py**
+- **CONTRIBUTING.md**
+- **dashboards/** — 1 files across 0 subdirectories
+- **data/** — 29 files across 0 subdirectories
+- **deploy/** — 14 files across 1 subdirectories
+- **docker-compose.autonomous.yml**
+- **docker-compose.yml**
+- **Dockerfile**
+- **Dockerfile.ephemeris**
+- **docs/** — 183 files across 1 subdirectories
+- **eslint.config.js**
+- **frontend/** — 658 files across 28 subdirectories
+- **functions/** — 1 files across 1 subdirectories
+- **INTELLIGENCE_WIRING_MATRIX.md**
+- **kraken_fee_tracker_state.json**
+- **kraken_margin_army_results.json**
+- **kraken_margin_army_state.json**
+- **LICENSE**
+- **lighthouse_metrics.py**
+- **memory/** — 1 files across 1 subdirectories
+- **netlify/** — 1 files across 1 subdirectories
+- **OPEN_MARKET_DATA_MATRIX.md**
+- **packaging/** — 2 files across 0 subdirectories
+- **Procfile**
+- **production/** — 14 files across 0 subdirectories
+- **public/** — 58 files across 2 subdirectories
+- **RAINBOW-main/** — 3 files across 2 subdirectories
+- **README.md**
+- **real_portfolio_state.json**
+- **reports/** — 21 files across 1 subdirectories
+- **requirements.txt**
+- **run_capital_margin_only.ps1**
+- **run_capital_monitor.ps1**
+- **run_capital_swarm.ps1**
+- **runtime.txt**
+- **scripts/** — 193 files across 9 subdirectories
+- **server/** — 7 files across 0 subdirectories
+- **sim_mission_err.txt**
+- **sim_mission_out.txt**
+- **skills/** — 11 files across 6 subdirectories
+- **state/** — 468 files across 3 subdirectories
+- **supabase/** — 160 files across 103 subdirectories
+- **supervisord.conf**
+- **supervisord.pid**
+- **templates/** — 3 files across 0 subdirectories
+- **tests/** — 140 files across 0 subdirectories
+- **tools/** — 5 files across 0 subdirectories
+- **validation/** — 18 files across 0 subdirectories
+- **VERIFICATION AND VALIDATION/** — 14 files across 0 subdirectories
+- **wisdom_data/** — 12 files across 0 subdirectories
+
+## 2) Deep structural mindmap (depth ≤ 3)
+- 📁 **api/** (1 files)
+  - 📄 `rss.ts`
+- 📁 **archive/** (21 files)
+  - 📄 `Aueron-Trading-Quantum-Quackers-War-Ready-Version--alert-autofix-gl1.zip`
+  - 📄 `AUREON-QUANTUM-TRADING-SYSTEM-AQTS--main.zip`
+  - 📄 `aureoninstitute-uk-deploy.zip`
+  - 📄 `cost_basis_history.json.backup`
+  - 📄 `crash_log.txt`
+  - 📄 `earth-live-data-1 (10).zip`
+  - 📄 `earth-live-data-1.zip`
+  - 📄 `earth-live-data-3 (7).zip`
+  - 📄 `earth-live-data-3 (8).zip`
+  - 📄 `FINAL_LOSS_PREVENTION_FIX.patch`
+  - 📄 `Kimi_Agent_Aureon系统集成.zip`
+  - 📄 `kraken_margin_penny_trader.py.bak`
+  - 📄 `NEXUS-LIVE-FEED--main.zip`
+  - 📄 `nohup.out`
+  - 📄 `orca_complete_kill_cycle.py.backup`
+  - 📄 `orca_complete_kill_cycle.py.working`
+  - 📄 `orca_live_trading.log.pre_test_20260218_222402`
+  - 📄 `queen_eternal_state.json.bak`
+  - 📄 `RAINBOW-main.zip`
+  - 📄 `rate_limiter_v2.py.backup`
+  - 📄 `VERIFICATION AND VALIDATION-20250916T213737Z-1-001.zip`
+- 📁 **Assets/** (8 files)
+  - 📁 **Scripts/** (8 files)
+    - 📁 **Nexus/** (8 files)
+- 📁 **aureon/** (713 files)
+  - 📁 **analytics/** (41 files)
+    - 📄 `__init__.py`
+    - 📄 `analyze_actual_vs_expected_costs.py`
+    - 📄 `analyze_portfolio_stats.py`
+    - 📄 `aureon_complete_profiler_integration.py`
+    - 📄 `aureon_deep_money_flow_analyzer.py`
+    - 📄 `aureon_historical_backtest.py`
+    - 📄 `aureon_historical_bot_census.py`
+    - 📄 `aureon_historical_knowledge_ingest.py`
+    - 📄 `aureon_historical_manipulation_hunter.py`
+    - 📄 `aureon_lighthouse.py`
+    - 📄 `aureon_live_whale_profiler.py`
+    - 📄 `aureon_moby_dick_whale_hunter.py`
+    - 📄 `aureon_rising_star_logic.py`
+    - 📄 `aureon_russian_doll_analytics.py`
+    - 📄 `aureon_whale_agent.py`
+    - 📄 `aureon_whale_behavior_predictor.py`
+    - 📄 `aureon_whale_integration.py`
+    - 📄 `aureon_whale_onchain_tracker.py`
+    - 📄 `aureon_whale_orderbook_analyzer.py`
+    - 📄 `aureon_whale_pattern_mapper.py`
+    - 📄 `aureon_whale_profiler_system.py`
+    - 📄 `aureon_whale_shape_registry.py`
+    - 📄 `backtest_sentiment_oracle.py`
+    - 📄 `bitcoin_lighthouse_forensics.py`
+    - 📄 `cross_asset_correlator.py`
+    - 📄 `eta_verification_system.py`
+    - 📄 `feed_backtest_to_systems.py`
+    - 📄 `geopolitical_forensics.py`
+    - 📄 `historical_compound_killer.py`
+    - 📄 `historical_pattern_hunter.py`
+    - 📄 `improved_eta_calculator.py`
+    - 📄 `lighthouse_financial_analyzer.py`
+    - 📄 `lighthouse_metrics.py`
+    - 📄 `pillar_council_backtest.py`
+    - 📄 `prove_math.py`
+    - 📄 `rising_star_backtest.py`
+    - 📄 `rising_star_backtest_opensource.py`
+    - 📄 `rising_star_demo.py`
+    - 📄 `rising_star_war_room_enhancer.py`
+    - 📄 `super_intelligence_backtest.py`
+    - 📄 `visualize_market_patterns.py`
+  - 📁 **atn/** (4 files)
+    - 📄 `__init__.py`
+    - 📄 `aureon_atn_backtest.py`
+    - 📄 `aureon_atn_forensics.py`
+    - 📄 `aureon_atn_monitor.py`
+  - 📁 **autonomous/** (36 files)
+    - 📄 `__init__.py`
+    - 📄 `aureon_7day_planner.py`
+    - 📄 `aureon_autonomous_cycle.py`
+    - 📄 `aureon_autonomous_worker.py`
+    - 📄 `aureon_autonomy_hub.py`
+    - 📄 `aureon_cognition_runtime.py`
+    - 📄 `aureon_cognitive_cycle.py`
+    - 📄 `aureon_conversation_loop.py`
+    - 📄 `aureon_dynamic_voice_executor.py`
+    - 📄 `aureon_elephant_memory.py`
+    - 📄 `aureon_full_autonomous.py`
+    - 📄 `aureon_full_autonomy.py`
+    - 📄 `aureon_full_orchestrator.py`
+    - 📄 `aureon_game_launcher.py`
+    - 📄 `aureon_global_orchestrator.py`
+    - 📄 `aureon_harmonic_human_interpreter.py`
+    - 📄 `aureon_kimi_voice_adapter.py`
+    - 📄 `aureon_local_task_queue.py`
+    - 📄 `aureon_master_launcher.py`
+    - 📄 `aureon_mind_thought_action_hub.py`
+    - 📄 `aureon_parallel_orchestrator.py`
+    - 📄 `aureon_queen_autonomous.py`
+    - 📄 `aureon_queen_autonomous_control.py`
+    - 📄 `aureon_queen_code_bridge.py`
+    - 📄 `aureon_queen_desktop_bridge.py`
+    - 📄 `aureon_queen_exchange_autonomy.py`
+    - 📄 `aureon_queen_full_autonomy_enablement.py`
+    - 📄 `aureon_queen_unified_startup.py`
+    - 📄 `aureon_repo_explorer_service.py`
+    - 📄 `aureon_repo_task_bridge.py`
+    - 📄 `aureon_safe_code_control.py`
+    - 📄 `aureon_safe_desktop_control.py`
+    - 📄 `aureon_unified_voice_agent.py`
+    - 📄 `aureon_voice_command_bridge.py`
+    - 📄 `aureon_voice_intent_cognition.py`
+    - 📄 `autonomous_trading_orchestrator.py`
+  - 📁 **bots/** (32 files)
+    - 📄 `gaia_aggressive_reclaimer.py`
+    - 📄 `gaia_aggressive_reclaimerfix.py`
+    - 📄 `gaia_planetary_reclaimer.py`
+    - 📄 `gaia_turbo_trader.py`
+    - 📄 `gaia_unity_trader.py`
+    - 📄 `king_accounting.py`
+    - 📄 `king_integration.py`
+    - 📄 `king_ledger.py`
+    - 📄 `orca_billion_blackbox.py`
+    - 📄 `orca_command_center.py`
+    - 📄 `orca_complete_kill_cycle.py`
+    - 📄 `orca_dual_hunter.py`
+    - 📄 `orca_fire_trade.py`
+    - 📄 `orca_global_hunter.py`
+    - 📄 `orca_hunting_grounds.py`
+    - 📄 `orca_kill_executor.py`
+    - 📄 `orca_launcher.py`
+    - 📄 `orca_live_monitor.py`
+    - 📄 `orca_predator_detection.py`
+    - 📄 `orca_prime_competition.py`
+    - 📄 `orca_quantum_live_stream.py`
+    - 📄 `orca_smart_kill_cycle.py`
+    - 📄 `orca_snowball_lean.py`
+    - 📄 `orca_snowball_million.py`
+    - 📄 `orca_stealth_execution.py`
+    - 📄 `orca_unified_kill_chain.py`
+    - 📄 `orca_unleashed.py`
+    - 📄 `sniper_kill_validator.py`
+    - 📄 `sniper_million_trainer.py`
+    - 📄 `sniper_training_simulation.py`
+    - 📄 `whale_metrics.py`
+    - 📄 `whale_shape_ml_trainer.py`
+  - 📁 **bots_intelligence/** (22 files)
+    - 📄 `__init__.py`
+    - 📄 `aureon_all_firms_bot_viewer.py`
+    - 📄 `aureon_bot_entity_attribution.py`
+    - 📄 `aureon_bot_evolution_tracker.py`
+    - 📄 `aureon_bot_hunter_dashboard.py`
+    - 📄 `aureon_bot_intelligence_profiler.py`
+    - 📄 `aureon_bot_shape_classifier.py`
+    - 📄 `aureon_bot_shape_scanner.py`
+    - 📄 `aureon_bot_shape_test.py`
+    - 📄 `aureon_cultural_bot_fingerprinting.py`
+    - 📄 `aureon_firm_intelligence_catalog.py`
+    - 📄 `aureon_global_bot_map.py`
+    - 📄 `aureon_global_firm_intelligence.py`
+    - 📄 `aureon_live_bot_tracker.py`
+    - 📄 `aureon_orca_intelligence.py`
+    - 📄 `aureon_orca_monitor.py`
+    - 📄 `aureon_planetary_bot_tracker.py`
+    - 📄 `aureon_quantum_bot_hunter_bridge.py`
+    - 📄 `bot_shape_viewer.py`
+    - 📄 `firm_catalog_cli.py`
+    - 📄 `firm_name_matcher.py`
+    - 📄 `generate_entity_list.py`
+  - 📁 **bridges/** (18 files)
+    - 📄 `__init__.py`
+    - 📄 `aureon_alpaca_scanner_bridge.py`
+    - 📄 `aureon_bridge.py`
+    - 📄 `aureon_bridge_ml.py`
+    - 📄 `aureon_frontend_bridge.py`
+    - 📄 `aureon_hnc_live_connector.py`
+    - 📄 `aureon_hnc_surge_detector.py`
+    - 📄 `aureon_kraken_unified_signal_bridge.py`
+    - 📄 `aureon_planet_saver_integration.py`
+    - 📄 `aureon_planetary_energy_tracker.py`
+    - 📄 `aureon_planetary_integration.py`
+    - 📄 `aureon_planetary_intelligence_hub.py`
+    - 📄 `aureon_planetary_launch.py`
+    - 📄 `aureon_probability_nexus.py`
+    - 📄 `aureon_ui_bridge.py`
+    - 📄 `multiverse_learning_bridge.py`
+    - 📄 `rainbow_bridge.py`
+    - 📄 `validation_bridge.py`
+  - 📁 **command_centers/** (17 files)
+    - 📄 `__init__.py`
+    - 📄 `aureon_atn_command_center.py`
+    - 📄 `aureon_command_center.py`
+    - 📄 `aureon_command_center_enhanced.py`
+    - 📄 `aureon_command_center_lite.py`
+    - 📄 `aureon_command_center_ui.py`
+    - 📄 `aureon_queen_realtime_command_center.py`
+    - 📄 `aureon_strategic_war_planner.py`
+    - 📄 `aureon_system_hub.py`
+    - 📄 `aureon_system_hub_cli.py`
+    - 📄 `aureon_system_hub_dashboard.py`
+    - 📄 `aureon_system_hub_mycelium.py`
+    - 📄 `aureon_war_band.py`
+    - 📄 `aureon_war_band_enhanced.py`
+    - 📄 `aureon_warzone_dashboard.py`
+    - 📄 `war_room.py`
+    - 📄 `war_strategy.py`
+  - 📁 **conversion/** (11 files)
+    - 📄 `__init__.py`
+    - 📄 `aureon_conversion_commando.py`
+    - 📄 `aureon_conversion_ladder.py`
+    - 📄 `aureon_ladder_climber.py`
+    - 📄 `aureon_micro_momentum_goal.py`
+    - 📄 `aureon_mountain_climber.py`
+    - 📄 `dust_converter.py`
+    - 📄 `mycelium_conversion_hub.py`
+    - 📄 `pure_conversion_engine.py`
+    - 📄 `rapid_conversion_stream.py`
+    - 📄 `snowball_conversion_engine.py`
+  - 📁 **core/** (34 files)
+    - 📄 `__init__.py`
+    - 📄 `aureon_baton_link.py`
+    - 📄 `aureon_chirp_bus.py`
+    - 📄 `aureon_enhancements.py`
+    - 📄 `aureon_health_check_server.py`
+    - 📄 `aureon_hive_state.py`
+    - 📄 `aureon_immune_system.py`
+    - 📄 `aureon_knowledge_base.py`
+    - 📄 `aureon_lattice.py`
+    - 📄 `aureon_lattice_old.py`
+    - 📄 `aureon_lattice_simulation.py`
+    - 📄 `aureon_memory_core.py`
+    - 📄 `aureon_mycelium.py`
+    - 📄 `aureon_nexus.py`
+    - 📄 `aureon_operational_core.py`
+    - 📄 `aureon_production_rate_limiter.py`
+    - 📄 `aureon_redis_thought_bus.py`
+    - 📄 `aureon_standalone_health_checker.py`
+    - 📄 `aureon_status.py`
+    - 📄 `aureon_system_coordinator.py`
+    - 📄 `aureon_system_wiring.py`
+    - 📄 `aureon_systems_integrator.py`
+    - 📄 `aureon_thought_bus.py`
+    - 📄 `aureon_unified.py`
+    - 📄 `aureon_watchdog.py`
+    - 📄 `baton_relay_monitor.py`
+    - 📄 `baton_trace_viewer.py`
+    - 📄 `codex_loader.py`
+    - 📄 `global_rate_budget.py`
+    - 📄 `metrics.py`
+    - 📄 `mycelium_whale_sonar.py`
+    - 📄 `rate_limiter.py`
+    - 📄 `rate_limiter_v2.py`
+    - 📄 `version.py`
+  - 📁 **data_feeds/** (21 files)
+    - 📄 `__init__.py`
+    - 📄 `aureon_hft_websocket_order_router.py`
+    - 📄 `aureon_live_market_feed.py`
+    - 📄 `aureon_live_quantum_bridge.py`
+    - 📄 `aureon_live_tv_station.py`
+    - 📄 `aureon_live_tv_station_old.py`
+    - 📄 `aureon_news_feed.py`
+    - 📄 `aureon_real_data_feed_hub.py`
+    - 📄 `aureon_space_weather_bridge.py`
+    - 📄 `crypto_market_map.py`
+    - 📄 `emit_test_stream.py`
+    - 📄 `emit_test_stream_aura.py`
+    - 📄 `ephemeris_generator.py`
+    - 📄 `gfz_parser.py`
+    - 📄 `global_financial_feed.py`
+    - 📄 `market_data_hub.py`
+    - 📄 `market_harp.py`
+    - 📄 `news_signal.py`
+    - 📄 `unified_market_cache.py`
+    - 📄 `unified_ws_feed.py`
+    - 📄 `ws_market_data_feeder.py`
+  - 📁 **decoders/** (12 files)
+    - 📄 `__init__.py`
+    - 📄 `aztec_decoder.py`
+    - 📄 `book_of_ur.py`
+    - 📄 `celtic_ogham.py`
+    - 📄 `egyptian_decoder.py`
+    - 📄 `emerald_spec.py`
+    - 📄 `grail_convergence.py`
+    - 📄 `iching_decoder.py`
+    - 📄 `japanese_decoder.py`
+    - 📄 `maya_decoder.py`
+    - 📄 `ming_japan_decoder.py`
+    - 📄 `mogollon_decoder.py`
+  - 📁 **exchanges/** (35 files)
+    - 📄 `alpaca_buy_sell_smoke.py`
+    - 📄 `alpaca_client.py`
+    - 📄 `alpaca_fee_tracker.py`
+    - 📄 `alpaca_options_client.py`
+    - 📄 `alpaca_orderbook_cli.py`
+    - 📄 `alpaca_position_audit.py`
+    - 📄 `alpaca_sse_client.py`
+    - 📄 `alpaca_truth_tracker.py`
+    - 📄 `binance_client.py`
+    - 📄 `binance_diagnostics.py`
+    - 📄 `binance_get_address.py`
+    - 📄 `binance_totals_pnl.py`
+    - 📄 `binance_trade_sample.py`
+    - 📄 `binance_uk_allowed_pairs.py`
+    - 📄 `binance_ws_client.py`
+    - 📄 `capital_cfd_trader.py`
+    - 📄 `capital_client.py`
+    - 📄 `capital_market_monitor.py`
+    - 📄 `capital_stock_cache_feeder.py`
+    - 📄 `capital_swarm_runner.py`
+    - 📄 `coinapi_anomaly_detector.py`
+    - 📄 `coinbase_historical_feed.py`
+    - 📄 `coingecko_price_feeder.py`
+    - 📄 `glassnode_client.py`
+    - 📄 `kraken_cache_feeder.py`
+    - 📄 `kraken_client.py`
+    - 📄 `kraken_diagnostics.py`
+    - 📄 `kraken_fee_tracker.py`
+    - 📄 `kraken_margin_penny_trader.py`
+    - 📄 `kraken_multi_sim.py`
+    - 📄 `kraken_quick_sim.py`
+    - 📄 `kraken_trading_adapter.py`
+    - 📄 `onchain_providers.py`
+    - 📄 `unified_market_trader.py`
+    - 📄 `unusual_whales_client.py`
+  - 📁 **harmonic/** (24 files)
+    - 📄 `__init__.py`
+    - 📄 `aureon_harmonic_alphabet.py`
+    - 📄 `aureon_harmonic_binary_protocol.py`
+    - 📄 `aureon_harmonic_chain_master.py`
+    - 📄 `aureon_harmonic_counter_frequency.py`
+    - 📄 `aureon_harmonic_fusion.py`
+    - 📄 `aureon_harmonic_liquid_aluminium.py`
+    - 📄 `aureon_harmonic_momentum_wave.py`
+    - 📄 `aureon_harmonic_reality.py`
+    - 📄 `aureon_harmonic_redistribution_math.py`
+    - 📄 `aureon_harmonic_seed.py`
+    - 📄 `aureon_harmonic_signal_chain.py`
+    - 📄 `aureon_harmonic_symbol_table.py`
+    - 📄 `aureon_harmonic_underlay.py`
+    - 📄 `aureon_harmonic_visual_ui.py`
+    - 📄 `aureon_harmonic_waveform.py`
+    - 📄 `aureon_hft_harmonic_mycelium.py`
+    - 📄 `aureon_planetary_harmonic_sweep.py`
+    - 📄 `aureon_sacred_waveform_visualizer.py`
+    - 📄 `aureon_schumann_resonance_bridge.py`
+    - 📄 `earth_resonance_engine.py`
+    - 📄 `geopolitical_forensics.py`
+    - 📄 `global_harmonic_field.py`
+    - 📄 `harmonic_nexus_bridge.py`
+  - 📁 **intelligence/** (34 files)
+    - 📄 `__init__.py`
+    - 📄 `aureon_advanced_intelligence.py`
+    - 📄 `aureon_blind_taste_trial.py`
+    - 📄 `aureon_brain.py`
+    - 📄 `aureon_elephant_learning.py`
+    - 📄 `aureon_inception_engine.py`
+    - 📄 `aureon_inception_runner.py`
+    - 📄 `aureon_integrated_forecast.py`
+    - 📄 `aureon_market_organism.py`
+    - 📄 `aureon_market_pulse.py`
+    - 📄 `aureon_market_taste_sense.py`
+    - 📄 `aureon_multiversal_reality_detector.py`
+    - 📄 `aureon_phase_transition_detector.py`
+    - 📄 `aureon_real_intelligence_engine.py`
+    - 📄 `aureon_seer.py`
+    - 📄 `aureon_seer_integration.py`
+    - 📄 `aureon_self_awareness.py`
+    - 📄 `aureon_sensory_framework.py`
+    - 📄 `aureon_taste_learning_integration.py`
+    - 📄 `aureon_taste_sense.py`
+    - 📄 `aureon_temporal_biometric_link.py`
+    - 📄 `aureon_temporal_dialer.py`
+    - 📄 `aureon_timeline_anchor_validator.py`
+    - 📄 `aureon_timeline_oracle.py`
+    - 📄 `aureon_truth_prediction_bridge.py`
+    - 📄 `aureon_truth_prediction_engine.py`
+    - 📄 `aureon_unified_decision_engine.py`
+    - 📄 `aureon_unified_intelligence_registry.py`
+    - 📄 `aureon_universal_forecast.py`
+    - 📄 `hive_mind_portfolio_growth.py`
+    - 📄 `macro_intelligence.py`
+    - 📄 `nexus_predictor.py`
+    - 📄 `self_validating_predictor.py`
+    - 📄 `trading_hive_mind.py`
+  - 📁 **monitors/** (25 files)
+    - 📄 `__init__.py`
+    - 📄 `_margin_monitor.py`
+    - 📄 `aureon_cross_substrate_monitor.py`
+    - 📄 `aureon_earth_shield_dashboard.py`
+    - 📄 `aureon_live_monitor.py`
+    - 📄 `aureon_live_systems_monitor.py`
+    - 📄 `aureon_power_monitor_live.py`
+    - 📄 `aureon_pro_dashboard.py`
+    - 📄 `aureon_quantum_energy_dashboard.py`
+    - 📄 `aureon_quantum_node_monitor.py`
+    - 📄 `aureon_queen_unified_dashboard.py`
+    - 📄 `aureon_realtime_surveillance.py`
+    - 📄 `aureon_surveillance_dashboard.py`
+    - 📄 `aureon_unified_dashboard_api.py`
+    - 📄 `aureon_unified_live_dashboard.py`
+    - 📄 `aureon_unified_river_consciousness.py`
+    - 📄 `dashboard_intelligence_enhancements.py`
+    - 📄 `grand_big_wheel_telemetry.py`
+    - 📄 `live_monitor.py`
+    - 📄 `margin_eta_predictor.py`
+    - 📄 `margin_goal_recorder.py`
+    - 📄 `realtime_wave_monitor.py`
+    - 📄 `system_efficiency_monitor.py`
+    - 📄 `telemetry_server.py`
+    - 📄 `unified_dashboard_server.py`
+  - 📁 **portfolio/** (32 files)
+    - 📄 `__init__.py`
+    - 📄 `all_exchanges_status.py`
+    - 📄 `aureon_billion_goal_tracker.py`
+    - 📄 `aureon_capital_mobilizer.py`
+    - 📄 `aureon_exchange_intelligence_audit.py`
+    - 📄 `aureon_portfolio_truth.py`
+    - 📄 `aureon_profit_mesh.py`
+    - 📄 `aureon_profit_monitor.py`
+    - 📄 `aureon_profit_now.py`
+    - 📄 `aureon_real_portfolio_tracker.py`
+    - 📄 `aureon_revenue_board.py`
+    - 📄 `billion_projection.py`
+    - 📄 `billion_runner.py`
+    - 📄 `calculate_portfolio.py`
+    - 📄 `cost_basis_tracker.py`
+    - 📄 `count_assets.py`
+    - 📄 `deep_balance_check.py`
+    - 📄 `dynamic_cost_estimator.py`
+    - 📄 `live_portfolio_growth_tracker.py`
+    - 📄 `live_portfolio_growth_with_trades.py`
+    - 📄 `live_position_viewer.py`
+    - 📄 `live_profit_monitor.py`
+    - 📄 `portfolio_check.py`
+    - 📄 `position_pnl_viewer.py`
+    - 📄 `profit_watcher.py`
+    - 📄 `real_profit_monitor.py`
+    - 📄 `reconcile_positions.py`
+    - 📄 `trade_analyzer.py`
+    - 📄 `trade_log.py`
+    - 📄 `trade_logger.py`
+    - 📄 `trade_profit_validator.py`
+    - 📄 `unified_pnl_tracker.py`
+  - 📁 **queen/** (53 files)
+    - 📄 `queen_asset_command_center.py`
+    - 📄 `queen_attacker_finder.py`
+    - 📄 `queen_authentic_voice.py`
+    - 📄 `queen_auto_tagger.py`
+    - 📄 `queen_autonomous_finder.py`
+    - 📄 `queen_autonomous_power_system.py`
+    - 📄 `queen_code_architect.py`
+    - 📄 `queen_cognitive_narrator.py`
+    - 📄 `queen_coherence_mandala.py`
+    - 📄 `queen_conscience.py`
+    - 📄 `queen_consciousness_measurement.py`
+    - 📄 `queen_consciousness_model.py`
+    - 📄 `queen_deep_intelligence.py`
+    - 📄 `queen_dream_scheduler.py`
+    - 📄 `queen_eternal_machine.py`
+    - 📄 `queen_exact_location_finder.py`
+    - 📄 `queen_firm_geocoder.py`
+    - 📄 `queen_force_trade_governance.py`
+    - 📄 `queen_fully_online.py`
+    - 📄 `queen_harmonic_voice.py`
+    - 📄 `queen_learn_capital_trading.py`
+    - 📄 `queen_live_signal_tracker.py`
+    - 📄 `queen_live_tracking_status.py`
+    - 📄 `queen_loss_learning.py`
+    - 📄 `queen_market_awareness.py`
+    - 📄 `queen_memi_sync.py`
+    - 📄 `queen_metrics_enhancement.py`
+    - 📄 `queen_neuron.py`
+    - 📄 `queen_neuron_v2.py`
+    - 📄 `queen_online_researcher.py`
+    - 📄 `queen_open_source_data_engine.py`
+    - 📄 `queen_options_scanner.py`
+    - 📄 `queen_orca_bridge.py`
+    - 📄 `queen_personal_learning.py`
+    - 📄 `queen_power_dashboard.py`
+    - 📄 `queen_power_redistribution.py`
+    - 📄 `queen_profit_dashboard.py`
+    - 📄 `queen_pursuit_of_happiness.py`
+    - 📄 `queen_quantum_cognition.py`
+    - 📄 `queen_quantum_frog.py`
+    - 📄 `queen_repository_scanner.py`
+    - 📄 `queen_sentience_integration.py`
+    - 📄 `queen_signal_reader.py`
+    - 📄 `queen_solar_system_awareness.py`
+    - 📄 `queen_soul_reader.py`
+    - 📄 `queen_soul_shield.py`
+    - 📄 `queen_street_homing.py`
+    - 📄 `queen_ultimate_battle_simulator.py`
+    - 📄 `queen_voice_engine.py`
+    - 📄 `queen_volume_hunter.py`
+    - 📄 `queen_warrior_path.py`
+    - 📄 `queen_web_dashboard.py`
+    - 📄 `queen_world_understanding.py`
+  - 📁 **s51/** (6 files)
+    - 📄 `__init__.py`
+    - 📄 `aureon_51.py`
+    - 📄 `aureon_51_compound.py`
+    - 📄 `aureon_51_live.py`
+    - 📄 `aureon_51_sim.py`
+    - 📄 `aureon_51_turbo.py`
+  - 📁 **scanners/** (19 files)
+    - 📄 `__init__.py`
+    - 📄 `aureon_alpaca_stock_scanner.py`
+    - 📄 `aureon_animal_momentum_scanners.py`
+    - 📄 `aureon_global_wave_scanner.py`
+    - 📄 `aureon_live_momentum_hunter.py`
+    - 📄 `aureon_margin_harmonic_scanner.py`
+    - 📄 `aureon_movers_shakers_scanner.py`
+    - 📄 `aureon_obsidian_filter.py`
+    - 📄 `aureon_ocean_scanner.py`
+    - 📄 `aureon_ocean_wave_scanner.py`
+    - 📄 `aureon_phantom_signal_filter.py`
+    - 📄 `aureon_quantum_mirror_scanner.py`
+    - 📄 `aureon_strategic_warfare_scanner.py`
+    - 📄 `aureon_wisdom_scanner.py`
+    - 📄 `auto_scout.py`
+    - 📄 `auto_sniper.py`
+    - 📄 `ira_sniper_mode.py`
+    - 📄 `mega_scanner.py`
+    - 📄 `signal_scanner.py`
+  - 📁 **simulation/** (35 files)
+    - 📄 `__init__.py`
+    - 📄 `aureon_calibration_test.py`
+    - 📄 `aureon_demo_quantum_telescope.py`
+    - 📄 `aureon_enhanced_quantum_telescope.py`
+    - 📄 `aureon_hnc_simulation.py`
+    - 📄 `aureon_internal_multiverse.py`
+    - 📄 `aureon_miner_sim.py`
+    - 📄 `aureon_multiverse.py`
+    - 📄 `aureon_multiverse_live.py`
+    - 📄 `aureon_profit_sim.py`
+    - 📄 `aureon_quantum_checkin.py`
+    - 📄 `aureon_quantum_goal_engine.py`
+    - 📄 `aureon_quantum_telescope.py`
+    - 📄 `aureon_quantum_warfare_engine.py`
+    - 📄 `aureon_world_simulator.py`
+    - 📄 `blueprint_proof_sim.py`
+    - 📄 `comprehensive_diagnostic.py`
+    - 📄 `demo_quantum_link.py`
+    - 📄 `demo_queen_188_law.py`
+    - 📄 `demonstrate_queen_metrics_enhancement.py`
+    - 📄 `final_system_check.py`
+    - 📄 `full_diagnostic.py`
+    - 📄 `nuclear_crypto_reality.py`
+    - 📄 `nuclear_probability_simulation.py`
+    - 📄 `nuclear_realistic_limits.py`
+    - 📄 `nuclear_temporal_multi_exchange.py`
+    - 📄 `phase2_test.py`
+    - 📄 `portal_physics_simulation.py`
+    - 📄 `profit_cycle_demo.py`
+    - 📄 `sim_test.py`
+    - 📄 `simple_check.py`
+    - 📄 `stallion_multiverse.py`
+    - 📄 `step_by_step_test.py`
+    - 📄 `triadic_envelope_sim.py`
+    - 📄 `unified_demo.py`
+  - 📁 **strategies/** (35 files)
+    - 📄 `harmonic_trinity.py`
+    - 📄 `harmonic_trinity_integration_test.py`
+    - 📄 `harmonic_trinity_lite.py`
+    - 📄 `harmonic_wave_simulation.py`
+    - 📄 `hnc_6d_harmonic_waveform.py`
+    - 📄 `hnc_imperial_master_protocol.py`
+    - 📄 `hnc_imperial_predictability.py`
+    - 📄 `hnc_master_protocol.py`
+    - 📄 `hnc_probability_matrix.py`
+    - 📄 `probability_data_collector.py`
+    - 📄 `probability_intelligence_matrix.py`
+    - 📄 `probability_loader.py`
+    - 📄 `probability_matrix_backtest.py`
+    - 📄 `probability_matrix_training.py`
+    - 📄 `probability_ultimate_intelligence.py`
+    - 📄 `probability_validator.py`
+    - 📄 `quantum_10_trade_victory_streak.py`
+    - 📄 `quantum_black_box_billion.py`
+    - 📄 `quantum_mirror_one_shot.py`
+    - 📄 `quantum_prediction_stream_30_30_30.py`
+    - 📄 `quantum_quackers.py`
+    - 📄 `quantum_signals.py`
+    - 📄 `quantum_warfare_live.py`
+    - 📄 `s5_binance_commando.py`
+    - 📄 `s5_binance_ecosystem.py`
+    - 📄 `s5_infinite_dance.py`
+    - 📄 `s5_intelligent_dance.py`
+    - 📄 `s5_labyrinth_live.py`
+    - 📄 `s5_live_execution.py`
+    - 📄 `s5_live_trader.py`
+    - 📄 `s5_monte_carlo_infinite.py`
+    - 📄 `s5_ultra_labyrinth.py`
+    - 📄 `s5_v14_dance_enhancements.py`
+    - 📄 `s5_v14_labyrinth.py`
+    - 📄 `s5_v14_live_execution.py`
+  - 📁 **trading/** (87 files)
+    - 📄 `__init__.py`
+    - 📄 `aureon_auris_trader.py`
+    - 📄 `aureon_avalanche_harvester.py`
+    - 📄 `aureon_barter_navigator.py`
+    - 📄 `aureon_btc_trader.py`
+    - 📄 `aureon_btc_v2.py`
+    - 📄 `aureon_commandos.py`
+    - 📄 `aureon_compound_kelly_trader.py`
+    - 📄 `aureon_historical_live.py`
+    - 📄 `aureon_historical_live_backup.py`
+    - 📄 `aureon_infinite.py`
+    - 📄 `aureon_infinite_kraken.py`
+    - 📄 `aureon_kraken_ecosystem.py`
+    - 📄 `aureon_live.py`
+    - 📄 `aureon_live_trader.py`
+    - 📄 `aureon_lyra.py`
+    - 📄 `aureon_lyra_integration.py`
+    - 📄 `aureon_lyra_vision_bridge.py`
+    - 📄 `aureon_mesh_live.py`
+    - 📄 `aureon_multi_exchange_live.py`
+    - 📄 `aureon_multi_pair_live.py`
+    - 📄 `aureon_omega.py`
+    - 📄 `aureon_omega_btc.py`
+    - 📄 `aureon_omega_live.py`
+    - 📄 `aureon_piano.py`
+    - 📄 `aureon_power_station_turbo.py`
+    - 📄 `aureon_quantum_rapid.py`
+    - 📄 `aureon_queen_execute.py`
+    - 📄 `aureon_queen_live_command.py`
+    - 📄 `aureon_queen_live_runner.py`
+    - 📄 `aureon_queen_trade_executor.py`
+    - 📄 `aureon_queen_validated_trader.py`
+    - 📄 `aureon_safe_profit_trader.py`
+    - 📄 `aureon_specialized.py`
+    - 📄 `aureon_step_dance.py`
+    - 📄 `aureon_the_play.py`
+    - 📄 `aureon_the_play_old.py`
+    - 📄 `aureon_trade_activation.py`
+    - 📄 `aureon_tsx_trader.py`
+    - 📄 `aureon_turn_strategy.py`
+    - 📄 `aureon_ultimate.py`
+    - 📄 `aureon_ultimate_ecosystem_wiring.py`
+    - 📄 `aureon_ultra_aggression.py`
+    - 📄 `aureon_unified_ecosystem.py`
+    - 📄 `aureon_unified_live.py`
+    - 📄 `aureon_unified_master_hub.py`
+    - 📄 `aureon_unified_power_system.py`
+    - 📄 `aureon_unified_startup.py`
+    - 📄 `compound_king.py`
+    - 📄 `compound_trader.py`
+    - 📄 `convert_to_usdt.py`
+    - 📄 `direct_trade.py`
+    - 📄 `dynamic_take_profit.py`
+    - 📄 `emergency_harvest.py`
+    - 📄 `emergency_sell_all.py`
+    - 📄 `execute_3_real_trades.py`
+    - 📄 `execute_forecast_trades.py`
+    - 📄 `execute_limit_profit_trades.py`
+    - 📄 `execute_real_trades.py`
+    - 📄 `force_trade.py`
+    - 📄 `force_trade_all_platforms.py`
+    - 📄 `force_trade_demo.py`
+    - 📄 `force_trade_existing_balances.py`
+    - 📄 `force_trade_test.py`
+    - 📄 `labyrinth_snowball_engine.py`
+    - 📄 `live_conversion_trader.py`
+    - 📄 `live_kill_chain_demo.py`
+    - 📄 `manual_sell.py`
+    - 📄 `margin_wave_rider.py`
+    - 📄 `micro_profit_labyrinth.py`
+    - 📄 `momentum_profit_trades.py`
+    - 📄 `momentum_snowball_engine.py`
+    - 📄 `patch_commandos.py`
+    - 📄 `penny_profit_engine.py`
+    - 📄 `penny_profit_sim.py`
+    - 📄 `penny_profit_turbo.py`
+    - 📄 `smart_harvest_system.py`
+    - 📄 `speed_labyrinth.py`
+    - 📄 `turbo_snowball_engine.py`
+    - 📄 `unified_exchange_client.py`
+    - 📄 `unified_kill_chain.py`
+    - 📄 `unified_signal_engine.py`
+    - 📄 `unified_sniper_brain.py`
+    - 📄 `unified_symbol_manager.py`
+    - 📄 `v11_power_station_live.py`
+    - 📄 `wave_rider_auto.py`
+    - 📄 `win_killer.py`
+  - 📁 **utils/** (42 files)
+    - 📄 `__init__.py`
+    - 📄 `adaptive_prime_profit_gate.py`
+    - 📄 `aura_validator.py`
+    - 📄 `aureon_aura_location_tracker.py`
+    - 📄 `aureon_geometric_renderer.py`
+    - 📄 `aureon_live_aura_location_tracker.py`
+    - 📄 `aureon_luck_field_mapper.py`
+    - 📄 `aureon_miner.py`
+    - 📄 `aureon_miner_brain.py`
+    - 📄 `aureon_neural_revenue_orchestrator.py`
+    - 📄 `aureon_physical_location_tracker.py`
+    - 📄 `aureon_power_redistribution_engine.py`
+    - 📄 `aureon_queen_consciousness.py`
+    - 📄 `aureon_queen_counter_intelligence.py`
+    - 📄 `aureon_queen_dream_engine.py`
+    - 📄 `aureon_queen_hive_mind.py`
+    - 📄 `aureon_queen_quantum_field.py`
+    - 📄 `aureon_queen_research_engine.py`
+    - 📄 `aureon_queen_research_neuron.py`
+    - 📄 `aureon_queen_true_consciousness.py`
+    - 📄 `aureon_queen_unified_neural_chain.py`
+    - 📄 `aureon_queen_voice_stream.py`
+    - 📄 `aureon_sero_client.py`
+    - 📄 `aureon_triumvirate.py`
+    - 📄 `capture_logs.py`
+    - 📄 `compare_optimizations.py`
+    - 📄 `fetch_kraken_trades_with_decisions.py`
+    - 📄 `find_pairs.py`
+    - 📄 `fix_orca.py`
+    - 📄 `full_market_trainer.py`
+    - 📄 `generate_live_probability_batch.py`
+    - 📄 `get_first_winner.py`
+    - 📄 `learned_analytics_reset.py`
+    - 📄 `planet_saver.py`
+    - 📄 `planet_saver_momentum.py`
+    - 📄 `repair_system_state.py`
+    - 📄 `reset_for_beta.py`
+    - 📄 `stallion_tracker.py`
+    - 📄 `super_intelligence_gate.py`
+    - 📄 `truth_verify.py`
+    - 📄 `update_gary_location.py`
+    - 📄 `validator_auris.py`
+  - 📁 **wisdom/** (36 files)
+    - 📄 `__init__.py`
+    - 📄 `aureon_enigma.py`
+    - 📄 `aureon_enigma_dream.py`
+    - 📄 `aureon_enigma_integration.py`
+    - 📄 `aureon_ghost_dance_protocol.py`
+    - 📄 `aureon_math_angel.py`
+    - 📄 `aureon_nuclear_today.py`
+    - 📄 `aureon_pillar_agents.py`
+    - 📄 `aureon_plums_guardian.py`
+    - 📄 `aureon_qgita.py`
+    - 📄 `aureon_qgita_framework.py`
+    - 📄 `aureon_samuel_agent.py`
+    - 📄 `aureon_stargate_integration.py`
+    - 📄 `aureon_stargate_protocol.py`
+    - 📄 `aureon_trading_education.py`
+    - 📄 `barons_banner.py`
+    - 📄 `bhoys_wisdom.py`
+    - 📄 `celtic_preemptive_strike.py`
+    - 📄 `celtic_warfare_live.py`
+    - 📄 `civilizational_dna.py`
+    - 📄 `crypto_enigma_symbol_machine.py`
+    - 📄 `guerrilla_warfare_engine.py`
+    - 📄 `irish_patriot_scouts.py`
+    - 📄 `maeshowe_seer_decode.py`
+    - 📄 `metatron_probability_billion_path.py`
+    - 📄 `metatrons_cube_knowledge_exchange.py`
+    - 📄 `multi_battlefront_coordinator.py`
+    - 📄 `peek_behind_the_curtain.py`
+    - 📄 `platypus.py`
+    - 📄 `platypus_presets.py`
+    - 📄 `prime_sentinel_decree.py`
+    - 📄 `prime_sentinel_gaia.py`
+    - 📄 `prime_sentinel_reclaimer.py`
+    - 📄 `stargate_grid.py`
+    - 📄 `synchronicity_decoder.py`
+    - 📄 `torch_bearer_system.py`
+  - 📄 `__init__.py`
+  - 📄 `_path_setup.py`
+- 📁 **aureon_launcher/** (6 files)
+  - 📄 `build.bat`
+  - 📄 `credentials.py`
+  - 📄 `launcher.py`
+  - 📄 `README.md`
+  - 📄 `requirements.txt`
+  - 📄 `setup_wizard.py`
+- 📁 **cache/** (1 files)
+  - 📁 **wisdom_cache/** (1 files)
+    - 📄 `seen_hashes.json`
+- 📁 **cli/** (6 files)
+  - 📄 `__init__.py`
+  - 📄 `config_manager.py`
+  - 📄 `dashboard.py`
+  - 📄 `launcher.py`
+  - 📄 `setup_wizard.py`
+  - 📄 `trading_runtime.py`
+- 📁 **dashboards/** (1 files)
+  - 📄 `alpaca_rate_limit_dashboard.json`
+- 📁 **data/** (29 files)
+  - 📄 `blackbox_billion_race.jsonl`
+  - 📄 `bot_tags.json`
+  - 📄 `de440_coupling_results.csv`
+  - 📄 `de440_ephemeris.csv`
+  - 📄 `de440_gate3_coherence.csv`
+  - 📄 `de440_gate3_lag_corr.csv`
+  - 📄 `de440_timeseries.csv`
+  - 📄 `de440s.bsp`
+  - 📄 `elephant_ultimate_history.jsonl`
+  - 📄 `elephant_unified_history.jsonl`
+  - 📄 `execution_audit.jsonl`
+  - 📄 `king_audit.jsonl`
+  - 📄 `Kp_ap_Ap_SN_F107_since_1932.txt`
+  - 📄 `kp_ap_f107.csv`
+  - 📄 `live_tv_stream.jsonl`
+  - 📄 `margin_goal_proof_test.jsonl`
+  - 📄 `multiverse_live_thoughts.jsonl`
+  - 📄 `portfolio_thoughts.jsonl`
+  - 📄 `probability_matrix_data.jsonl`
+  - 📄 `probability_predictions.jsonl`
+  - 📄 `queen_thoughts.jsonl`
+  - 📄 `queen_trades.jsonl`
+  - 📄 `radar_ephem_skyfield_de440.csv`
+  - 📄 `sim_ephemeris.csv`
+  - 📄 `sim_gate3_coherence.csv`
+  - 📄 `sim_gate3_lag_corr.csv`
+  - 📄 `sim_kp.csv`
+  - 📄 `sim_timeseries.csv`
+  - 📄 `test_thoughts.jsonl`
+- 📁 **deploy/** (14 files)
+  - 📁 **systemd/** (1 files)
+    - 📄 `aureon-trading.service`
+  - 📄 `DIGITAL_OCEAN_MASTER_GUIDE.md`
+  - 📄 `droplet-deploy.sh`
+  - 📄 `droplet-setup.sh`
+  - 📄 `env.example`
+  - 📄 `micro_profit_labyrinth.service`
+  - 📄 `orca-kill-cycle.service`
+  - 📄 `README_RUN_FOREVER.md`
+  - 📄 `start_master_launcher.sh`
+  - 📄 `start_orca.sh`
+  - 📄 `start_queen.sh`
+  - 📄 `supervisord.conf`
+  - 📄 `supervisord.master_launcher.conf`
+  - 📄 `validate_startup.sh`
+- 📁 **docs/** (169 files)
+  - 📄 `STATE_FILES.md` — inventory of repo-root runtime-state JSONs
+  - 📁 **research/** (see `docs/research/INDEX.md` — full thematic catalog)
+    - 📄 `AUREON_WHITE_PAPER_RESEARCH_HUB.md`
+    - 📄 `THE_PHI_SQUARED_CHAIN_Sumer_to_Rome_to_Now.md`
+    - 📄 `ANCIENT_CONVERGENCE.md`, `BOT_INTELLIGENCE.md`, `COUNTER_STRATEGIES.md`, `FINANCIAL_EXPOSURE.md`, `UNIFIED_FIELD.md`
+    - 📄 `INDEX.md`, `research_history.json`
+    - 📁 `whitepapers/` (54 PDF/DOCX — HNC, EPAS, Lumina, QGITA, Tandem-in-Unity, Sagittarius, LIDAR, etc.)
+    - 📁 `traffic/` (4 GitHub 14-day analytics PNGs)
+    - 📁 `hardware/` (CAD + firmware)
+    - 📁 `images/` (evidence photography)
+    - 📁 `notebooks/` (exploratory Jupyter notebooks)
+    - 📁 `misc/` (miscellaneous research items)
+  - 📄 `ARCHITECTURE.md`
+  - 📄 `AUREON_HARMONIC_ALPHABET_EXPANSION.md`
+  - 📄 `AUREON_MIND_STATUS.md`
+  - 📄 `aureon_thought_log.txt`
+  - 📄 `AUREON_UNIFIED_STARTUP.md`
+  - 📄 `AUREON_WINDOWS_COMMAND_CHEAT_SHEET.md`
+  - 📄 `AUTOMATED_HUNT_SETUP.md`
+  - 📄 `BACKTEST_RESULTS.md`
+  - 📄 `BEFORE_AFTER_COMPARISON.md`
+  - 📄 `BINANCE_ALGO_API_REFERENCE.txt`
+  - 📄 `BINANCE_POOL_INTEGRATION.md`
+  - 📄 `BINANCE_POOL_MAPPING.md`
+  - 📄 `BINANCE_STREAMING_INTEGRATION.md`
+  - 📄 `BROKER_TEMPO_GUIDE.md`
+  - 📄 `BUG_REPORT_AND_FIX.md`
+  - 📄 `CELTIC_WARFARE_GUIDE.md`
+  - 📄 `CHIRP_BUS_INTEGRATION_STATUS.md`
+  - 📄 `COHERENCE_ENGINE_SETUP.md`
+  - 📄 `COINAPI_INTEGRATION.md`
+  - 📄 `COMPLETE_LIBERATION_PROTOCOL.md`
+  - 📄 `COMPLETE_PREDICTIVE_SYSTEMS_MAP.md`
+  - 📄 `COMPLETE_WHALE_PROFILING_SYSTEM.md`
+  - 📄 `CONTINUOUS_MARKET_WORLDVIEW_PIPELINE.md`
+  - 📄 `DASHBOARD_GUIDE.md`
+  - 📄 `DASHBOARD_INTEGRATION_GUIDE.md`
+  - 📄 `DASHBOARD_VALIDATION_REPORT.md`
+  - 📄 `de440_final_analysis.txt`
+  - 📄 `DEPLOY.md`
+  - 📄 `DEPLOY_INSTRUCTIONS.txt`
+  - 📄 `DEPLOYMENT_GUIDE.md`
+  - 📄 `DIGITAL_OCEAN_DEPLOY.md`
+  - 📄 `DIGITAL_OCEAN_DEPLOYMENT.md`
+  - 📄 `DIGITALOCEAN_DEPLOY.md`
+  - 📄 `DIGITALOCEAN_DEPLOYMENT.md`
+  - 📄 `DIGITALOCEAN_NO_DATA_FIX.md`
+  - 📄 `DIMENSIONAL_DRIFT_CORRECTION.md`
+  - 📄 `DUCK_SAUCE_ENHANCEMENTS.md`
+  - 📄 `EARTH_AUREON_INTEGRATION.md`
+  - 📄 `EARTH_QUICKSTART.md`
+  - 📄 `EMERGENCY_TRADING_HALT.md`
+  - 📄 `EMERGENT_COGNITION.md`
+  - 📄 `EPHEMERIS_PIPELINE.md`
+  - 📄 `ETA_VERIFICATION_SYSTEM.md`
+  - 📄 `FINAL_ROOT_CAUSE_MOMENTUM_NOT_EDGE.md`
+  - 📄 `FIRM_CATALOG_QUICKSTART.md`
+  - 📄 `FIRM_INTELLIGENCE_CATALOG.md`
+  - 📄 `FIX_TRADING_SYSTEM.md`
+  - 📄 `FULL_MARKET_EXPANSION.md`
+  - 📄 `GARYS_MESSAGE_TO_QUEEN.txt`
+  - 📄 `GRAND_BIG_WHEEL_IMPLEMENTATION.md`
+  - 📄 `GRAND_BIG_WHEEL_MISSION_COMPLETE.txt`
+  - 📄 `GREEN_OLIVE_EXPANSION_COMPLETE.md`
+  - 📄 `HARMONIC_TRINITY_SYSTEM.md`
+  - 📄 `hive_state.md`
+  - 📄 `HNC_UNIFIED_WHITE_PAPER.md`
+  - 📄 `IMPERIAL_PREDICTABILITY_SUMMARY.md`
+  - 📄 `IMPERIAL_QUICK_START.md`
+  - 📄 `IMPLEMENTATION_COMPLETE.md`
+  - 📄 `INTEGRATION_REPORT.txt`
+  - 📄 `INTEGRATION_TEST_STATUS.md`
+  - 📄 `KRAKEN_TRADES_ANALYSIS_REPORT.md`
+  - 📄 `KRAKEN_TRADES_COMPLETION_SUMMARY.md`
+  - 📄 `LICENSE-CC-BY-4.0.md`
+  - 📄 `LIVE_AUTONOMY_STATUS.md`
+  - 📄 `LIVE_STATUS.txt`
+  - 📄 `LIVE_TRADING_READY.md`
+  - 📄 `LIVE_TRADING_RUNBOOK.md`
+  - 📄 `local_launcher.md`
+  - 📄 `LOSS_PREVENTION_FIX_COMPLETE.md`
+  - 📄 `MULTI_BROKER_GUIDE.md`
+  - 📄 `MULTI_EXCHANGE_FIX_SUMMARY.md`
+  - 📄 `MULTIVERSAL_EXTENSION_SUMMARY.md`
+  - 📄 `MULTIVERSAL_INTEGRATION_COMPLETE.txt`
+  - 📄 `MULTIVERSE_REALITY_DETECTOR_COMPLETE.md`
+  - 📄 `NEXUS_LIVE_FEED_INTEGRATION.md`
+  - 📄 `OCEAN_SCANNER_STATUS.md`
+  - 📄 `Operations.md`
+  - 📄 `OPTIMIZATION_REPORT.md`
+  - 📄 `OPTIMIZATION_SUMMARY.md`
+  - 📄 `ORCA_EXECUTOR_INTEGRATION.md`
+  - 📄 `ORCA_HUNTING_ACTIVATED.md`
+  - 📄 `PAPER_TRADE_REPORT.md`
+  - 📄 `Philosophy.md`
+  - 📄 `PHYSICAL_LOCATION_TRACKER_COMPLETE.md`
+  - 📄 `PLATYPUS.md`
+  - 📄 `platypus_discovery.txt`
+  - 📄 `POSITION_RECONCILIATION_REPORT.md`
+  - 📄 `POWER_STATION_ARCHITECTURE.md`
+  - 📄 `POWER_STATION_TRANSFORMATION.md`
+  - 📄 `PREDICTION_PROCESS_TREE.md`
+  - 📄 `PREFLIGHT_CHECKLIST.md`
+  - 📄 `PRIMELINES_IDENTITY.md`
+  - 📄 `PRIMELINES_PROTOCOL_GATEWAY.md`
+  - 📄 `PRODUCTION_CHECKLIST.md`
+  - 📄 `PRODUCTION_RATE_LIMITING.md`
+  - 📄 `PRODUCTION_READINESS.md`
+  - 📄 `QGITA_INTEGRATION_SUMMARY.md`
+  - 📄 `QUANTUM_TELESCOPE_GUIDE.md`
+  - 📄 `QUEEN_AUTHENTIC_VOICE_GUIDE.md`
+  - 📄 `QUEEN_AUTONOMOUS_POWER_SYSTEM.md`
+  - 📄 `QUEEN_AUTONOMY_ENABLEMENT_COMPLETE.md`
+  - 📄 `QUEEN_COMPLETE_SENSORY_SYSTEM.md`
+  - 📄 `QUEEN_CONSCIOUSNESS_README.md`
+  - 📄 `queen_eternal_patch.txt`
+  - 📄 `QUEEN_HARMONIC_VOICE_README.md`
+  - 📄 `QUEEN_IMPLEMENTATION_SUMMARY.txt`
+  - 📄 `QUEEN_METRICS_INTEGRATION_GUIDE.md`
+  - 📄 `QUEEN_MOBY_DICK_INTEGRATION.md`
+  - 📄 `QUEEN_NEURAL_IMPLEMENTATION.md`
+  - 📄 `QUEEN_SELF_MODIFICATION.md`
+  - 📄 `QUEEN_UNDERSTANDS_LOVE.md`
+  - 📄 `QUEEN_WISDOM_INTEGRATION.md`
+  - 📄 `QUEENS_HEART_MESSAGE_DELIVERED.md`
+  - 📄 `QUICK_START.md`
+  - 📄 `QUICKSTART-DEPLOY.md`
+  - 📄 `QUICKSTART_DIGITALOCEAN.md`
+  - 📄 `README_AURIS_VALIDATOR.md`
+  - 📄 `README_HARMONIC_NEXUS.md`
+  - 📄 `README_KRAKEN.md`
+  - 📄 `README_TEST_VALIDATION.md`
+  - 📄 `README_VALIDATION.md`
+  - 📄 `RISING_STAR_INDEX.md`
+  - 📄 `RISING_STAR_SUMMARY.md`
+  - 📄 `rising_star_visual_comparison.txt`
+  - 📄 `rising_star_war_room_integration.md`
+  - 📄 `RISING_STAR_WINNING_SYSTEM.md`
+  - 📄 `RUN_ORCA_WITH_UNIFIED_DASHBOARD.md`
+  - 📄 `SECURITY.md`
+  - 📄 `SECURITY_TRADING.md`
+  - 📄 `SENTIENCE_INTEGRATION_COMPLETE.md`
+  - 📄 `SETUP_HOME_PC.md`
+  - 📄 `sniper_output.txt`
+  - 📄 `STAGE_3_COMPLETE.md`
+  - 📄 `START_REAL_TRADING_GUIDE.md`
+  - 📄 `STOCK_SCANNER_ENHANCEMENT_SUMMARY.md`
+  - 📄 `STREET_LEVEL_LOCATION_TRACKING.md`
+  - 📄 `swot_analysis.md`
+  - 📄 `SYSTEM_ARCHITECTURE_MAP.md`
+  - 📄 `SYSTEM_HUB_ARCHITECTURE.md`
+  - 📄 `SYSTEM_HUB_IMPLEMENTATION_SUMMARY.md`
+  - 📄 `SYSTEM_HUB_QUICK_REFERENCE.txt`
+  - 📄 `SYSTEM_HUB_README.md`
+  - 📄 `SYSTEM_INTEGRATION_VERIFICATION.md`
+  - 📄 `SYSTEM_LANDSCAPE.md`
+  - 📄 `SYSTEM_STATUS.md`
+  - 📄 `SYSTEMS_LIVE_STATUS.md`
+  - 📄 `Technical-Overview.md`
+  - 📄 `TEMPORAL_LADDER_HIVE_MIND.md`
+  - 📄 `TEMPORAL_QBIT_ROUTING.md`
+  - 📄 `THE_RIVER_AND_THE_KERNEL.md`
+  - 📄 `THEORETICAL_INTEGRATION.md`
+  - 📄 `TIER_DEPLOYMENT_AUDIT.md`
+  - 📄 `TRADING_LIVE_NOW.md`
+  - 📄 `Troubleshooting.md`
+  - 📄 `TWAP_INTEGRATION.md`
+  - 📄 `UNIFIED_DASHBOARD_QUICKSTART.md`
+  - 📄 `UNIFIED_DATA_FLOW.md`
+  - 📄 `UNIFIED_SYSTEM_INTEGRATION_REPORT.md`
+  - 📄 `WAR_READY_ENHANCEMENTS.md`
+  - 📄 `WHALE_SYSTEM_INTEGRATION.md`
+  - 📄 `WINDOWS_EXECUTION_QUICK_REFERENCE.md`
+  - 📄 `WINDOWS_FIXES_README.md`
+  - 📄 `WINDOWS_NEXT_STEPS.txt`
+  - 📄 `WINDOWS_SETUP_GUIDE.md`
+  - 📄 `WINDOWS_SETUP_QUICK_START.md`
+  - 📄 `WINDOWS_TERMINAL_FIX.md`
+  - 📄 `WINDOWS_UNICODE_FIX.md`
+- 📁 **frontend/** (658 files)
+  - 📁 **src/** (647 files)
+    - 📁 **assets/** (36 files)
+      - 📁 **research/** (34 files)
+    - 📁 **components/** (375 files)
+      - 📁 **analytics/** (4 files)
+      - 📁 **auth/** (4 files)
+      - 📁 **earth/** (6 files)
+      - 📁 **panels/** (7 files)
+      - 📁 **tabs/** (4 files)
+      - 📁 **ui/** (49 files)
+      - 📁 **warroom/** (35 files)
+    - 📁 **contexts/** (1 files)
+    - 📁 **core/** (105 files)
+      - 📁 **detection/** (2 files)
+    - 📁 **data/** (1 files)
+    - 📁 **engine/** (2 files)
+    - 📁 **hooks/** (72 files)
+    - 📁 **integrations/** (2 files)
+      - 📁 **supabase/** (2 files)
+    - 📁 **lib/** (29 files)
+    - 📁 **pages/** (2 files)
+    - 📁 **services/** (7 files)
+    - 📁 **state/** (1 files)
+    - 📁 **types/** (3 files)
+    - 📁 **utils/** (2 files)
+    - 📁 **workers/** (3 files)
+      - 📁 **sources/** (3 files)
+    - 📄 `App.css`
+    - 📄 `App.tsx`
+    - 📄 `index.css`
+    - 📄 `main.tsx`
+    - 📄 `types.ts`
+    - 📄 `vite-env.d.ts`
+  - 📄 `bun.lockb`
+  - 📄 `components.json`
+  - 📄 `index.html`
+  - 📄 `package-lock.json`
+  - 📄 `package.json`
+  - 📄 `postcss.config.js`
+  - 📄 `tailwind.config.ts`
+  - 📄 `tsconfig.app.json`
+  - 📄 `tsconfig.json`
+  - 📄 `tsconfig.node.json`
+  - 📄 `vite.config.ts`
+- 📁 **functions/** (1 files)
+  - 📁 **api/** (1 files)
+    - 📄 `rss.ts`
+- 📁 **memory/** (1 files)
+  - 📁 **cia_declassified/** (1 files)
+    - 📄 `packets.json`
+- 📁 **netlify/** (1 files)
+  - 📁 **functions/** (1 files)
+    - 📄 `rss-proxy.ts`
+- 📁 **packaging/** (2 files)
+  - 📄 `post_build_smoke_test.py`
+  - 📄 `pyinstaller_build.md`
+- 📁 **production/** (14 files)
+  - 📄 `aureon.py`
+  - 📄 `build_desktop_app.py`
+  - 📄 `docker-compose.yml`
+  - 📄 `Dockerfile`
+  - 📄 `entrypoint.sh`
+  - 📄 `first_run_setup.py`
+  - 📄 `Install-AUREON-Windows.bat`
+  - 📄 `Install-AUREON.ps1`
+  - 📄 `install-windows.bat`
+  - 📄 `install.sh`
+  - 📄 `prometheus.yml`
+  - 📄 `README.md`
+  - 📄 `requirements-prod.txt`
+  - 📄 `supervisord.conf`
+- 📁 **public/** (58 files)
+  - 📁 **data/** (4 files)
+    - 📄 `aureon_results_2.csv`
+    - 📄 `field_metrics_core.csv`
+    - 📄 `field_pull_metrics_1.csv`
+    - 📄 `payphone_validation_report.csv`
+  - 📁 **earth-live-data/** (9 files)
+    - 📄 `10_9_1_packet.csv`
+    - 📄 `aureon_manifest.json`
+    - 📄 `auris_codex.json`
+    - 📄 `field_resonance_mapper.json`
+    - 📄 `lattice_timeseries.csv`
+    - 📄 `manifest.json`
+    - 📄 `schumann_features.csv`
+    - 📄 `timeline_clip.json`
+    - 📄 `timeline_markers.csv`
+  - 📄 `angel-oracle-cards-complete.json`
+  - 📄 `angel-oracle-cards.json`
+  - 📄 `auris_codex.json`
+  - 📄 `auris_codex_expanded.json`
+  - 📄 `auris_emotions.json`
+  - 📄 `auris_symbols.json`
+  - 📄 `aztec-star-glyphs.json`
+  - 📄 `celtic-ogham-feda.json`
+  - 📄 `dashboard.html`
+  - 📄 `egyptian-hieroglyphs.json`
+  - 📄 `elder-futhark-complete.json`
+  - 📄 `elder-futhark-runes.json`
+  - 📄 `elder-futhark-second-aett.json`
+  - 📄 `elder-futhark-third-aett.json`
+  - 📄 `emotional_codex.json`
+  - 📄 `emotional_frequency_codex.json`
+  - 📄 `emotional_frequency_codex_complete.json`
+  - 📄 `emotional_spectrum_tree.json`
+  - 📄 `emotional_spectrum_tree_complete.json`
+  - 📄 `experiment_manifest.json`
+  - 📄 `favicon.ico`
+  - 📄 `geometric_glyph.html`
+  - 📄 `geometric_glyph_animated.html`
+  - 📄 `harmonic_wave_analysis.png`
+  - 📄 `harmonic_wave_analysis.svg`
+  - 📄 `hive_state.json`
+  - 📄 `hnc_dashboard.png`
+  - 📄 `japanese-star-symbols.json`
+  - 📄 `lattice_simulation.png`
+  - 📄 `manifest.json`
+  - 📄 `market_pattern_analysis.png`
+  - 📄 `market_pattern_analysis.svg`
+  - 📄 `mogollon-star-symbols.json`
+  - 📄 `nexus_full_mindmap_recording.png`
+  - 📄 `placeholder.svg`
+  - 📄 `robots.txt`
+  - 📄 `ruleset-chakras.json`
+  - 📄 `ruleset.json`
+  - 📄 `sacred-site-planetary-nodes.json`
+  - 📄 `symbolic_compiler_layer.json`
+  - 📄 `tarot-major-arcana-complete.json`
+  - 📄 `tarot-major-arcana.json`
+  - 📄 `tarot_deck.json`
+  - 📄 `taste_molecular_codex.json`
+  - 📄 `test_cop_energy_ui.html`
+- 📁 **RAINBOW-main/** (3 files)
+  - 📄 `earth-live-data-3 (9).zip`
+  - 📄 `README.md`
+- 📁 **reports/** (21 files)
+  - 📁 **benchmarks/** (2 files)
+    - 📄 `prob_matrix_20260101_30pct_equity.json`
+    - 📄 `smoke_test_20260101_031937.json`
+  - 📄 `ALL_SCANNING_SYSTEMS_STATUS.py`
+  - 📄 `AUTONOMY_MANIFEST.py`
+  - 📄 `BOT_INTELLIGENCE_INTEGRATION_SUMMARY.py`
+  - 📄 `capital_harmonic_wiring_audit.json`
+  - 📄 `capital_harmonic_wiring_audit.md`
+  - 📄 `DIAGNOSTIC_REPORT.py`
+  - 📄 `ENHANCED_TRACKING_GUIDE.py`
+  - 📄 `FINAL_INTEGRATION_STATUS.py`
+  - 📄 `GO_LIVE.py`
+  - 📄 `INTEGRATION_SUMMARY.py`
+  - 📄 `LIVE_NOW.py`
+  - 📄 `LIVE_TV_STATION_INTEGRATION.py`
+  - 📄 `LOGGING_GUIDE.py`
+  - 📄 `LOGGING_SYSTEM_DEPLOYMENT.py`
+  - 📄 `MULTIVERSE_REALITY_INTEGRATION.py`
+  - 📄 `QUANTUM_LINK_INTEGRATION_COMPLETE.py`
+  - 📄 `QUEEN_AUTONOMOUS_INTEGRATION_SUMMARY.py`
+  - 📄 `RISING_STAR_QUICK_START.py`
+  - 📄 `SYSTEM_HUB_INTEGRATION.py`
+- 📁 **scripts/** (193 files)
+  - 📁 **diagnostics/** (50 files)
+    - 📄 `audit_capital_harmonic_wiring.py`
+    - 📄 `check_actual_balance.py`
+    - 📄 `check_all_balances.py`
+    - 📄 `check_batten_matrix.py`
+    - 📄 `check_binance_pnl.py`
+    - 📄 `check_boys.py`
+    - 📄 `check_capital.py`
+    - 📄 `check_chz_status.py`
+    - 📄 `check_coherence_lambda.py`
+    - 📄 `check_dashboard_health.py`
+    - 📄 `check_digitalocean_compat.py`
+    - 📄 `check_digitalocean_config.py`
+    - 📄 `check_full_binance.py`
+    - 📄 `check_goal_proof.py`
+    - 📄 `check_kraken_balance.py`
+    - 📄 `check_kraken_ledger.py`
+    - 📄 `check_kraken_orders.py`
+    - 📄 `check_kraken_trades_10h.py`
+    - 📄 `check_live_environment.py`
+    - 📄 `check_portfolio.py`
+    - 📄 `check_real_pnl.py`
+    - 📄 `check_recent_trades.py`
+    - 📄 `check_redeemed_balance.py`
+    - 📄 `check_stargate_status.py`
+    - 📄 `check_system_flow.py`
+    - 📄 `check_system_logs.py`
+    - 📄 `check_uk_pairs.py`
+    - 📄 `check_unified_balances.py`
+    - 📄 `check_unrealized_pnl.py`
+    - 📄 `debug_balances.py`
+    - 📄 `debug_capital_prices.py`
+    - 📄 `debug_crypto_history.py`
+    - 📄 `debug_exchanges.py`
+    - 📄 `debug_force_sniper_kill.py`
+    - 📄 `debug_kraken_binance.py`
+    - 📄 `debug_kraken_pairs.py`
+    - 📄 `debug_leap_opportunities.py`
+    - 📄 `debug_opportunities.py`
+    - 📄 `debug_orca_binance.py`
+    - 📄 `debug_portfolio_status.py`
+    - 📄 `debug_tickers_opps.py`
+    - 📄 `debug_usd_source.py`
+    - 📄 `diagnose_api_key.py`
+    - 📄 `diagnose_binance.py`
+    - 📄 `diagnose_dashboard_data.py`
+    - 📄 `diagnose_exchange_connectivity.py`
+    - 📄 `diagnose_no_trades.py`
+    - 📄 `diagnose_not_working.py`
+    - 📄 `diagnose_system.py`
+    - 📄 `diagnose_trading_engine.py`
+  - 📁 **python/** (16 files)
+    - 📄 `deploy_digital_ocean.py`
+    - 📄 `deployment_verification.py`
+    - 📄 `enhancement_cli.py`
+    - 📄 `learning_analytics_cli.py`
+    - 📄 `monitor_batten_matrix.py`
+    - 📄 `monitor_ecosystem.py`
+    - 📄 `monitor_trades.py`
+    - 📄 `quick_balance_check.py`
+    - 📄 `quick_profit_check.py`
+    - 📄 `quick_sniper.py`
+    - 📄 `quick_test.py`
+    - 📄 `reset_learned_analytics.py`
+    - 📄 `show_binance_raw.py`
+    - 📄 `show_firm_database.py`
+    - 📄 `show_live_status.py`
+    - 📄 `show_portfolio.py`
+  - 📁 **runners/** (23 files)
+    - 📄 `run_adaptive_sandbox.py`
+    - 📄 `run_aureon_windows.py`
+    - 📄 `run_backtest_cached.py`
+    - 📄 `run_big_sim.py`
+    - 📄 `run_billion_sim.py`
+    - 📄 `run_continuous_accuracy_monitor.py`
+    - 📄 `run_ecosystem_debug.py`
+    - 📄 `run_ecosystem_with_logging.py`
+    - 📄 `run_live_imperial.py`
+    - 📄 `run_live_trading.py`
+    - 📄 `run_miner.py`
+    - 📄 `run_penny_profit_sim.py`
+    - 📄 `run_platypus.py`
+    - 📄 `run_queen_hive_mind.py`
+    - 📄 `run_real_data_simulation.py`
+    - 📄 `run_snowball.py`
+    - 📄 `run_unified.py`
+    - 📄 `run_unified_ecosystem_live.py`
+    - 📄 `run_unified_orca.py`
+    - 📄 `run_wisdom_learning_sim.py`
+    - 📄 `start_aureon_unified.py`
+    - 📄 `start_live_trading.py`
+    - 📄 `start_nexus.py`
+  - 📁 **shell/** (36 files)
+    - 📁 **deploy/** (3 files)
+    - 📁 **monitor/** (7 files)
+    - 📁 **start/** (22 files)
+    - 📁 **util/** (4 files)
+  - 📁 **traders/** (59 files)
+    - 📄 `aggressiveWaveRider.ts`
+    - 📄 `alpacaApi.ts`
+    - 📄 `alpacaDance.ts`
+    - 📄 `alpacaFullSpread.ts`
+    - 📄 `alpacaTrader.ts`
+    - 📄 `apiCapacityAnalysis.ts`
+    - 📄 `binanceLive.ts`
+    - 📄 `bitstampApi.ts`
+    - 📄 `capitalComApi.ts`
+    - 📄 `capitalDance.ts`
+    - 📄 `capitalTrader.ts`
+    - 📄 `challenge400to40k.ts`
+    - 📄 `checkPermissions.ts`
+    - 📄 `cmcMarketsApi.ts`
+    - 📄 `coherenceTrader.ts`
+    - 📄 `coinbaseApi.ts`
+    - 📄 `convertUsdcToUsdt.ts`
+    - 📄 `danceOfSpaceTime.ts`
+    - 📄 `dayTradingSim.ts`
+    - 📄 `dynamicDance.ts`
+    - 📄 `forexTrader.ts`
+    - 📄 `fxcmApi.ts`
+    - 📄 `gammaSync.ts`
+    - 📄 `geminiApi.ts`
+    - 📄 `globalEcosystemTrader.ts`
+    - 📄 `grandDance.ts`
+    - 📄 `grandSymphony500.ts`
+    - 📄 `igMarketsApi.ts`
+    - 📄 `immediateWaveRider.ts`
+    - 📄 `interactiveBrokersApi.ts`
+    - 📄 `krakenFullTrader.ts`
+    - 📄 `krakenTrader.ts`
+    - 📄 `live400to40k.ts`
+    - 📄 `liveMarketSymphony.ts`
+    - 📄 `livePaperTrade.ts`
+    - 📄 `liveSymphony.ts`
+    - 📄 `monteCarloSimulation.ts`
+    - 📄 `netProfitCycleTrader.ts`
+    - 📄 `netProfitWaveRider.ts`
+    - 📄 `oandaApi.ts`
+    - 📄 `oandaDance.ts`
+    - 📄 `okxApi.ts`
+    - 📄 `paperTradeSimulation.ts`
+    - 📄 `permittedDance.ts`
+    - 📄 `quackersFleet.ts`
+    - 📄 `quackersLive.ts`
+    - 📄 `realistic400to40k.ts`
+    - 📄 `realMoneyMaker.ts`
+    - 📄 `realMoneyTrade.ts`
+    - 📄 `saxoBankApi.ts`
+    - 📄 `testEarthIntegration.ts`
+    - 📄 `testNexusIntegration.ts`
+    - 📄 `testNotional.ts`
+    - 📄 `testTrades.ts`
+    - 📄 `trendFollower.ts`
+    - 📄 `unifiedOrchestrator.ts`
+    - 📄 `unifiedSymphony.ts`
+    - 📄 `unifiedSymphonyPro.ts`
+    - 📄 `validateSecrets.ts`
+  - 📄 `run_aureon_voice_agent.cmd`
+  - 📄 `run_aureon_voice_agent.ps1`
+  - 📄 `run_miner.bat`
+  - 📄 `run_probability_generator.bat`
+  - 📄 `start_full_ecosystem.ps1`
+  - 📄 `start_queen_hive_mind.ps1`
+  - 📄 `start_trading.bat`
+  - 📄 `START_WINDOWS.ps1`
+  - 📄 `stop_aureon_voice_agent.ps1`
+- 📁 **server/** (7 files)
+  - 📄 `auris_bridge.js`
+  - 📄 `auris_bridge_enhanced.js`
+  - 📄 `earth-live-data-server.js`
+  - 📄 `nexus-command-server.ts`
+  - 📄 `package-lock.json`
+  - 📄 `package.json`
+  - 📄 `README.md`
+- 📁 **skills/** (11 files)
+  - 📁 **moltbook-interact/** (6 files)
+    - 📁 **references/** (1 files)
+    - 📁 **scripts/** (1 files)
+    - 📄 `INSTALL.md`
+    - 📄 `README.md`
+    - 📄 `SKILL.md`
+  - 📁 **moltbook-registry/** (5 files)
+    - 📄 `index.js`
+    - 📄 `package.json`
+    - 📄 `README.md`
+    - 📄 `SKILL.md`
+- 📁 **state/** (468 files)
+  - 📁 **queen/** (22 files)
+    - 📄 `queen_asset_monitor_state.json`
+    - 📄 `queen_autonomous_state.json`
+    - 📄 `queen_battle_historical_data.json`
+    - 📄 `queen_battle_results.json`
+    - 📄 `queen_capital_knowledge.json`
+    - 📄 `queen_consciousness_decisions.json`
+    - 📄 `queen_consciousness_state.json`
+    - 📄 `queen_consciousness_stats.json`
+    - 📄 `queen_energy_balance.json`
+    - 📄 `queen_exchange_autonomy.json`
+    - 📄 `queen_gaia_weights.json`
+    - 📄 `queen_loss_learnings.json`
+    - 📄 `queen_market_state.json`
+    - 📄 `queen_neuron_v2_weights.json`
+    - 📄 `queen_personal_memory.json`
+    - 📄 `queen_planetary_battle_data.json`
+    - 📄 `queen_quantum_cognition_state.json`
+    - 📄 `queen_redistribution_state.json`
+    - 📄 `queen_research_state.json`
+    - 📄 `queen_trading_knowledge.json`
+    - 📄 `queen_warfare_tactics.json`
+    - 📄 `queen_warrior_path_state.json`
+  - 📁 **queen_configs/** (245 files)
+    - 📄 `learning_state_turn_10.json`
+    - 📄 `learning_state_turn_100.json`
+    - 📄 `learning_state_turn_1000.json`
+    - 📄 `learning_state_turn_1005.json`
+    - 📄 `learning_state_turn_1010.json`
+    - 📄 `learning_state_turn_1015.json`
+    - 📄 `learning_state_turn_1020.json`
+    - 📄 `learning_state_turn_1025.json`
+    - 📄 `learning_state_turn_1030.json`
+    - 📄 `learning_state_turn_1035.json`
+    - 📄 `learning_state_turn_1040.json`
+    - 📄 `learning_state_turn_1045.json`
+    - 📄 `learning_state_turn_105.json`
+    - 📄 `learning_state_turn_1050.json`
+    - 📄 `learning_state_turn_1055.json`
+    - 📄 `learning_state_turn_1060.json`
+    - 📄 `learning_state_turn_1065.json`
+    - 📄 `learning_state_turn_1070.json`
+    - 📄 `learning_state_turn_1075.json`
+    - 📄 `learning_state_turn_1080.json`
+    - 📄 `learning_state_turn_1085.json`
+    - 📄 `learning_state_turn_1090.json`
+    - 📄 `learning_state_turn_1095.json`
+    - 📄 `learning_state_turn_110.json`
+    - 📄 `learning_state_turn_1100.json`
+    - 📄 `learning_state_turn_1105.json`
+    - 📄 `learning_state_turn_1110.json`
+    - 📄 `learning_state_turn_1115.json`
+    - 📄 `learning_state_turn_1120.json`
+    - 📄 `learning_state_turn_1125.json`
+    - 📄 `learning_state_turn_1130.json`
+    - 📄 `learning_state_turn_1135.json`
+    - 📄 `learning_state_turn_1140.json`
+    - 📄 `learning_state_turn_1145.json`
+    - 📄 `learning_state_turn_115.json`
+    - 📄 `learning_state_turn_1150.json`
+    - 📄 `learning_state_turn_1155.json`
+    - 📄 `learning_state_turn_1160.json`
+    - 📄 `learning_state_turn_1165.json`
+    - 📄 `learning_state_turn_1170.json`
+    - 📄 `learning_state_turn_1175.json`
+    - 📄 `learning_state_turn_1180.json`
+    - 📄 `learning_state_turn_1185.json`
+    - 📄 `learning_state_turn_1190.json`
+    - 📄 `learning_state_turn_1195.json`
+    - 📄 `learning_state_turn_120.json`
+    - 📄 `learning_state_turn_1200.json`
+    - 📄 `learning_state_turn_1205.json`
+    - 📄 `learning_state_turn_1210.json`
+    - 📄 `learning_state_turn_1215.json`
+    - 📄 `learning_state_turn_1220.json`
+    - 📄 `learning_state_turn_1225.json`
+    - 📄 `learning_state_turn_125.json`
+    - 📄 `learning_state_turn_130.json`
+    - 📄 `learning_state_turn_135.json`
+    - 📄 `learning_state_turn_140.json`
+    - 📄 `learning_state_turn_145.json`
+    - 📄 `learning_state_turn_15.json`
+    - 📄 `learning_state_turn_150.json`
+    - 📄 `learning_state_turn_155.json`
+    - 📄 `learning_state_turn_160.json`
+    - 📄 `learning_state_turn_165.json`
+    - 📄 `learning_state_turn_170.json`
+    - 📄 `learning_state_turn_175.json`
+    - 📄 `learning_state_turn_180.json`
+    - 📄 `learning_state_turn_185.json`
+    - 📄 `learning_state_turn_190.json`
+    - 📄 `learning_state_turn_195.json`
+    - 📄 `learning_state_turn_20.json`
+    - 📄 `learning_state_turn_200.json`
+    - 📄 `learning_state_turn_205.json`
+    - 📄 `learning_state_turn_210.json`
+    - 📄 `learning_state_turn_215.json`
+    - 📄 `learning_state_turn_220.json`
+    - 📄 `learning_state_turn_225.json`
+    - 📄 `learning_state_turn_230.json`
+    - 📄 `learning_state_turn_235.json`
+    - 📄 `learning_state_turn_240.json`
+    - 📄 `learning_state_turn_245.json`
+    - 📄 `learning_state_turn_25.json`
+    - 📄 `learning_state_turn_250.json`
+    - 📄 `learning_state_turn_255.json`
+    - 📄 `learning_state_turn_260.json`
+    - 📄 `learning_state_turn_265.json`
+    - 📄 `learning_state_turn_270.json`
+    - 📄 `learning_state_turn_275.json`
+    - 📄 `learning_state_turn_280.json`
+    - 📄 `learning_state_turn_285.json`
+    - 📄 `learning_state_turn_290.json`
+    - 📄 `learning_state_turn_295.json`
+    - 📄 `learning_state_turn_30.json`
+    - 📄 `learning_state_turn_300.json`
+    - 📄 `learning_state_turn_305.json`
+    - 📄 `learning_state_turn_310.json`
+    - 📄 `learning_state_turn_315.json`
+    - 📄 `learning_state_turn_320.json`
+    - 📄 `learning_state_turn_325.json`
+    - 📄 `learning_state_turn_330.json`
+    - 📄 `learning_state_turn_335.json`
+    - 📄 `learning_state_turn_340.json`
+    - 📄 `learning_state_turn_345.json`
+    - 📄 `learning_state_turn_35.json`
+    - 📄 `learning_state_turn_350.json`
+    - 📄 `learning_state_turn_355.json`
+    - 📄 `learning_state_turn_360.json`
+    - 📄 `learning_state_turn_365.json`
+    - 📄 `learning_state_turn_370.json`
+    - 📄 `learning_state_turn_375.json`
+    - 📄 `learning_state_turn_380.json`
+    - 📄 `learning_state_turn_385.json`
+    - 📄 `learning_state_turn_390.json`
+    - 📄 `learning_state_turn_395.json`
+    - 📄 `learning_state_turn_40.json`
+    - 📄 `learning_state_turn_400.json`
+    - 📄 `learning_state_turn_405.json`
+    - 📄 `learning_state_turn_410.json`
+    - 📄 `learning_state_turn_415.json`
+    - 📄 `learning_state_turn_420.json`
+    - 📄 `learning_state_turn_425.json`
+    - 📄 `learning_state_turn_430.json`
+    - 📄 `learning_state_turn_435.json`
+    - 📄 `learning_state_turn_440.json`
+    - 📄 `learning_state_turn_445.json`
+    - 📄 `learning_state_turn_45.json`
+    - 📄 `learning_state_turn_450.json`
+    - 📄 `learning_state_turn_455.json`
+    - 📄 `learning_state_turn_460.json`
+    - 📄 `learning_state_turn_465.json`
+    - 📄 `learning_state_turn_470.json`
+    - 📄 `learning_state_turn_475.json`
+    - 📄 `learning_state_turn_480.json`
+    - 📄 `learning_state_turn_485.json`
+    - 📄 `learning_state_turn_490.json`
+    - 📄 `learning_state_turn_495.json`
+    - 📄 `learning_state_turn_5.json`
+    - 📄 `learning_state_turn_50.json`
+    - 📄 `learning_state_turn_500.json`
+    - 📄 `learning_state_turn_505.json`
+    - 📄 `learning_state_turn_510.json`
+    - 📄 `learning_state_turn_515.json`
+    - 📄 `learning_state_turn_520.json`
+    - 📄 `learning_state_turn_525.json`
+    - 📄 `learning_state_turn_530.json`
+    - 📄 `learning_state_turn_535.json`
+    - 📄 `learning_state_turn_540.json`
+    - 📄 `learning_state_turn_545.json`
+    - 📄 `learning_state_turn_55.json`
+    - 📄 `learning_state_turn_550.json`
+    - 📄 `learning_state_turn_555.json`
+    - 📄 `learning_state_turn_560.json`
+    - 📄 `learning_state_turn_565.json`
+    - 📄 `learning_state_turn_570.json`
+    - 📄 `learning_state_turn_575.json`
+    - 📄 `learning_state_turn_580.json`
+    - 📄 `learning_state_turn_585.json`
+    - 📄 `learning_state_turn_590.json`
+    - 📄 `learning_state_turn_595.json`
+    - 📄 `learning_state_turn_60.json`
+    - 📄 `learning_state_turn_600.json`
+    - 📄 `learning_state_turn_605.json`
+    - 📄 `learning_state_turn_610.json`
+    - 📄 `learning_state_turn_615.json`
+    - 📄 `learning_state_turn_620.json`
+    - 📄 `learning_state_turn_625.json`
+    - 📄 `learning_state_turn_630.json`
+    - 📄 `learning_state_turn_635.json`
+    - 📄 `learning_state_turn_640.json`
+    - 📄 `learning_state_turn_645.json`
+    - 📄 `learning_state_turn_65.json`
+    - 📄 `learning_state_turn_650.json`
+    - 📄 `learning_state_turn_655.json`
+    - 📄 `learning_state_turn_660.json`
+    - 📄 `learning_state_turn_665.json`
+    - 📄 `learning_state_turn_670.json`
+    - 📄 `learning_state_turn_675.json`
+    - 📄 `learning_state_turn_680.json`
+    - 📄 `learning_state_turn_685.json`
+    - 📄 `learning_state_turn_690.json`
+    - 📄 `learning_state_turn_695.json`
+    - 📄 `learning_state_turn_70.json`
+    - 📄 `learning_state_turn_700.json`
+    - 📄 `learning_state_turn_705.json`
+    - 📄 `learning_state_turn_710.json`
+    - 📄 `learning_state_turn_715.json`
+    - 📄 `learning_state_turn_720.json`
+    - 📄 `learning_state_turn_725.json`
+    - 📄 `learning_state_turn_730.json`
+    - 📄 `learning_state_turn_735.json`
+    - 📄 `learning_state_turn_740.json`
+    - 📄 `learning_state_turn_745.json`
+    - 📄 `learning_state_turn_75.json`
+    - 📄 `learning_state_turn_750.json`
+    - 📄 `learning_state_turn_755.json`
+    - 📄 `learning_state_turn_760.json`
+    - 📄 `learning_state_turn_765.json`
+    - 📄 `learning_state_turn_770.json`
+    - 📄 `learning_state_turn_775.json`
+    - 📄 `learning_state_turn_780.json`
+    - 📄 `learning_state_turn_785.json`
+    - 📄 `learning_state_turn_790.json`
+    - 📄 `learning_state_turn_795.json`
+    - 📄 `learning_state_turn_80.json`
+    - 📄 `learning_state_turn_800.json`
+    - 📄 `learning_state_turn_805.json`
+    - 📄 `learning_state_turn_810.json`
+    - 📄 `learning_state_turn_815.json`
+    - 📄 `learning_state_turn_820.json`
+    - 📄 `learning_state_turn_825.json`
+    - 📄 `learning_state_turn_830.json`
+    - 📄 `learning_state_turn_835.json`
+    - 📄 `learning_state_turn_840.json`
+    - 📄 `learning_state_turn_845.json`
+    - 📄 `learning_state_turn_85.json`
+    - 📄 `learning_state_turn_850.json`
+    - 📄 `learning_state_turn_855.json`
+    - 📄 `learning_state_turn_860.json`
+    - 📄 `learning_state_turn_865.json`
+    - 📄 `learning_state_turn_870.json`
+    - 📄 `learning_state_turn_875.json`
+    - 📄 `learning_state_turn_880.json`
+    - 📄 `learning_state_turn_885.json`
+    - 📄 `learning_state_turn_890.json`
+    - 📄 `learning_state_turn_895.json`
+    - 📄 `learning_state_turn_90.json`
+    - 📄 `learning_state_turn_900.json`
+    - 📄 `learning_state_turn_905.json`
+    - 📄 `learning_state_turn_910.json`
+    - 📄 `learning_state_turn_915.json`
+    - 📄 `learning_state_turn_920.json`
+    - 📄 `learning_state_turn_925.json`
+    - 📄 `learning_state_turn_930.json`
+    - 📄 `learning_state_turn_935.json`
+    - 📄 `learning_state_turn_940.json`
+    - 📄 `learning_state_turn_945.json`
+    - 📄 `learning_state_turn_95.json`
+    - 📄 `learning_state_turn_950.json`
+    - 📄 `learning_state_turn_955.json`
+    - 📄 `learning_state_turn_960.json`
+    - 📄 `learning_state_turn_965.json`
+    - 📄 `learning_state_turn_970.json`
+    - 📄 `learning_state_turn_975.json`
+    - 📄 `learning_state_turn_980.json`
+    - 📄 `learning_state_turn_985.json`
+    - 📄 `learning_state_turn_990.json`
+    - 📄 `learning_state_turn_995.json`
+  - 📁 **reports/** (12 files)
+    - 📄 `probability_4_exchanges_report.json`
+    - 📄 `probability_all_exchanges_report.json`
+    - 📄 `probability_all_markets_report.json`
+    - 📄 `probability_batch_report.json`
+    - 📄 `probability_combined_report.json`
+    - 📄 `probability_data.json`
+    - 📄 `probability_full_market_report.json`
+    - 📄 `probability_kraken_report.json`
+    - 📄 `probability_outcomes.json`
+    - 📄 `probability_training_report.json`
+    - 📄 `probability_ultimate_state.json`
+    - 📄 `probability_validation.json`
+  - 📄 `7day_adaptive_weights.json`
+  - 📄 `7day_anchored_timelines.json`
+  - 📄 `7day_current_plan.json`
+  - 📄 `7day_pending_validations.json`
+  - 📄 `7day_validation_history.json`
+  - 📄 `_pre_trade_balance_snapshot.json`
+  - 📄 `_production_verification.json`
+  - 📄 `active_position.json`
+  - 📄 `adaptive_learned_patterns.json`
+  - 📄 `adaptive_learning_history.json`
+  - 📄 `all_firms_complete.json`
+  - 📄 `alpaca_fee_tracker_state.json`
+  - 📄 `alpaca_truth_history.json`
+  - 📄 `alpaca_truth_tracker_state.json`
+  - 📄 `aureon_kraken_state.json`
+  - 📄 `aureon_order_audit.json`
+  - 📄 `aureon_positions.json`
+  - 📄 `aureon_self_model.json`
+  - 📄 `aureon_system_registry.json`
+  - 📄 `aureon_systems_status.json`
+  - 📄 `aureon_truth_prediction_state.json`
+  - 📄 `auris_runtime.json`
+  - 📄 `avalanche_harvest_history.json`
+  - 📄 `avalanche_treasury.json`
+  - 📄 `backtest_learned_data.json`
+  - 📄 `backtest_margin_results.json`
+  - 📄 `backtest_spot_results.json`
+  - 📄 `barter_graph_cache.json`
+  - 📄 `billion_goal_progress.json`
+  - 📄 `billion_path_sacred_geometry.json`
+  - 📄 `binance_cost_basis.json`
+  - 📄 `binance_entry_prices.json`
+  - 📄 `binance_uk_allowed_pairs.json`
+  - 📄 `blind_taste_trial_results.json`
+  - 📄 `bot_army_catalog.json`
+  - 📄 `bot_census_registry.json`
+  - 📄 `bot_cultural_attribution.json`
+  - 📄 `bot_entity_attribution.json`
+  - 📄 `bot_intelligence_report.json`
+  - 📄 `bot_owner_registry.json`
+  - 📄 `brain_predictions_history.json`
+  - 📄 `calibration_trades.json`
+  - 📄 `capital_cfd_last_exchange_trace.json`
+  - 📄 `capital_thoughts.jsonl`
+  - 📄 `coherence_history.json`
+  - 📄 `coin_surge_scan.json`
+  - 📄 `coingecko_market_cache.json`
+  - 📄 `comprehensive_entity_database.json`
+  - 📄 `consolidated_entity_list.json`
+  - 📄 `conversation_loop_state.json`
+  - 📄 `cost_basis_history_backup_1771868213.json`
+  - 📄 `cost_basis_history_pre_reconcile_1771872455.json`
+  - 📄 `crypto_market_map_cache.json`
+  - 📄 `deep_money_flow_analysis.json`
+  - 📄 `deep_money_flow_vault.json`
+  - 📄 `elephant_live.json`
+  - 📄 `elephant_ultimate.json`
+  - 📄 `elephant_unified.json`
+  - 📄 `enigma_consciousness_manifest.json`
+  - 📄 `enigma_dream_memory.json`
+  - 📄 `enigma_symbol_catalog.json`
+  - 📄 `eta_verification_history.json`
+  - 📄 `exchange_verification_results.json`
+  - 📄 `force_trade_results.json`
+  - 📄 `forensic_audit_result.json`
+  - 📄 `full_exchange_data_20260205_175708.json`
+  - 📄 `full_market_training_report.json`
+  - 📄 `full_trade_history_20260205_175741.json`
+  - 📄 `gaia_path_memory.json`
+  - 📄 `ghost_dance_state.json`
+  - 📄 `global_financial_state.json`
+  - 📄 `harmonic_counter_frequency_map.json`
+  - 📄 `harmonic_symbol_table.json`
+  - 📄 `harmonic_wave_data.json`
+  - 📄 `historical_candles_cache.json`
+  - 📄 `historical_manipulation_evidence.json`
+  - 📄 `hnc_frequency_log.json`
+  - 📄 `intelligent_dance_learning.json`
+  - 📄 `intelligent_dance_state.json`
+  - 📄 `king_double_entry_ledger.json`
+  - 📄 `king_manifest.json`
+  - 📄 `king_state.json`
+  - 📄 `kraken_balance_snapshot_2026-02-03.json`
+  - 📄 `kraken_fee_tracker_state.json`
+  - 📄 `kraken_margin_army_results.json`
+  - 📄 `kraken_margin_army_state.json`
+  - 📄 `kraken_margin_penny_results.json`
+  - 📄 `kraken_margin_penny_state.json`
+  - 📄 `kraken_positions.json`
+  - 📄 `kraken_thoughts.jsonl`
+  - 📄 `kraken_trades_analysis.json`
+  - 📄 `labyrinth_journey_20260104_033325.json`
+  - 📄 `labyrinth_path_memory.json`
+  - 📄 `learning_archive_20251229_122618.json`
+  - 📄 `live_profit_state.json`
+  - 📄 `local_task_queue_state.json`
+  - 📄 `manifest.json`
+  - 📄 `manifest_modules.json`
+  - 📄 `manipulation_patterns_across_time.json`
+  - 📄 `margin_eta_report.json`
+  - 📄 `margin_harmonic_state.json`
+  - 📄 `market_snapshots_30.json`
+  - 📄 `memory.json`
+  - 📄 `miner_brain_knowledge.json`
+  - 📄 `money_flow_timeline.json`
+  - 📄 `mountain_climbing_state.json`
+  - 📄 `movers_shakers_report.json`
+  - 📄 `multi_exchange_learning.json`
+  - 📄 `mycelium_accuracy_report.json`
+  - 📄 `mycelium_graph.json`
+  - 📄 `nexus_learning_state.json`
+  - 📄 `nexus_validated_patterns.json`
+  - 📄 `orca_active_positions.json`
+  - 📄 `orca_executions.json`
+  - 📄 `orca_intelligence_state.json`
+  - 📄 `orca_quantum_live_stream_results.json`
+  - 📄 `orca_state.json`
+  - 📄 `orca_trade_history.json`
+  - 📄 `orca_unleashed_state.json`
+  - 📄 `orchestrator_state.json`
+  - 📄 `package-lock.json`
+  - 📄 `paper_trade_history.json`
+  - 📄 `penny_profit_config.json`
+  - 📄 `penny_profit_thresholds.json`
+  - 📄 `penny_profit_validated.json`
+  - 📄 `piano_positions.json`
+  - 📄 `planet_saver_state.json`
+  - 📄 `planetary_energy_registry.json`
+  - 📄 `planetary_harmonic_network.json`
+  - 📄 `planetary_intelligence_report.json`
+  - 📄 `pnl_baseline.json`
+  - 📄 `portfolio_growth_proof.json`
+  - 📄 `portfolio_intelligence_snapshot.json`
+  - 📄 `portfolio_snapshot.json`
+  - 📄 `portfolio_snapshots.json`
+  - 📄 `portfolio_truth.json`
+  - 📄 `position_health_snapshot.json`
+  - 📄 `positions.json`
+  - 📄 `power_station_state.json`
+  - 📄 `predator_detection_history.json`
+  - 📄 `prediction_test_result.json`
+  - 📄 `pursuit_of_happiness_state.json`
+  - 📄 `quantum_goal_engine_state.json`
+  - 📄 `quantum_prediction_stream_results.json`
+  - 📄 `quantum_victory_streak_results.json`
+  - 📄 `queen_code_bridge_state.json`
+  - 📄 `queen_desktop_bridge_state.json`
+  - 📄 `queen_desktop_bridge_thoughts.jsonl`
+  - 📄 `race_positions.json`
+  - 📄 `rebuilt_cost_basis_20260205_180144.json`
+  - 📄 `rejection_log.json`
+  - 📄 `repo_task_bridge_state.json`
+  - 📄 `russian_doll_state.json`
+  - 📄 `safe_code_control_state.json`
+  - 📄 `safe_desktop_control_state.json`
+  - 📄 `samuel_decisions.jsonl`
+  - 📄 `samuel_memory.json`
+  - 📄 `sandbox_brain_learning.json`
+  - 📄 `seer_manifest.json`
+  - 📄 `sentinel_metrics_summary.json`
+  - 📄 `sim_results.json`
+  - 📄 `smoke_test_results.json`
+  - 📄 `sniper_million_model.json`
+  - 📄 `sniper_trained_model.json`
+  - 📄 `snowball_state.json`
+  - 📄 `snowball_trades.json`
+  - 📄 `strategic_warfare_intelligence.json`
+  - 📄 `test_results.json`
+  - 📄 `test_spore_projection.json`
+  - 📄 `trade_history_audit.json`
+  - 📄 `trade_validations.json`
+  - 📄 `trading_verification_report.json`
+  - 📄 `trained_probability_matrix.json`
+  - 📄 `training_archive_20251229_122618.json`
+  - 📄 `truth_checkpoints.json`
+  - 📄 `turbo_snowball_20260104_032602.json`
+  - 📄 `unified_field_manifest.json`
+  - 📄 `unified_learning_state.json`
+  - 📄 `unified_pnl_state.json`
+  - 📄 `unified_voice_agent_state.json`
+  - 📄 `voice_command_bridge_state.json`
+  - 📄 `voice_intent_cognition_state.json`
+  - 📄 `war_room_state.json`
+  - 📄 `war_strategy_history.json`
+  - 📄 `wave_monitor_final.json`
+  - 📄 `whale_profiles.json`
+  - 📄 `whale_summary.json`
+  - 📄 `win_hunt_log.json`
+  - 📄 `wins_only_battle_plan.json`
+- 📁 **supabase/** (160 files)
+  - 📁 **functions/** (101 files)
+    - 📁 **ai-commentary/** (1 files)
+    - 📁 **analyze-lighthouse-event/** (1 files)
+    - 📁 **analyze-solar-correlations/** (1 files)
+    - 📁 **analyze-space-weather-correlation/** (1 files)
+    - 📁 **analyze-stargate-patterns/** (1 files)
+    - 📁 **aureon-chat/** (1 files)
+    - 📁 **auto-trading-scheduler/** (1 files)
+    - 📁 **automated-hunt-loop/** (1 files)
+    - 📁 **backend-health-check/** (1 files)
+    - 📁 **backfill-trades/** (1 files)
+    - 📁 **binance-algo-twap/** (1 files)
+    - 📁 **celestial-alignments/** (1 files)
+    - 📁 **confirm-trade/** (1 files)
+    - 📁 **create-aureon-session/** (1 files)
+    - 📁 **emergency-stop/** (1 files)
+    - 📁 **execute-trade/** (1 files)
+    - 📁 **execute-trade-alpaca/** (1 files)
+    - 📁 **execute-trade-capital/** (1 files)
+    - 📁 **execute-trade-kraken/** (1 files)
+    - 📁 **execute-trade-user-alpaca/** (1 files)
+    - 📁 **execute-trade-user-capital/** (1 files)
+    - 📁 **fetch-all-tickers/** (1 files)
+    - 📁 **fetch-binance-margin-data/** (1 files)
+    - 📁 **fetch-binance-market-data/** (1 files)
+    - 📁 **fetch-binance-portfolio/** (1 files)
+    - 📁 **fetch-binance-symbols/** (1 files)
+    - 📁 **fetch-historical-data/** (1 files)
+    - 📁 **fetch-kraken-market-data/** (1 files)
+    - 📁 **fetch-noaa-space-weather/** (1 files)
+    - 📁 **fetch-open-positions/** (1 files)
+    - 📁 **fetch-positions-pnl/** (1 files)
+    - 📁 **fetch-schumann-data/** (1 files)
+    - 📁 **fetch-trades/** (1 files)
+    - 📁 **fetch-usgs-seismic-data/** (1 files)
+    - 📁 **force-validated-trade/** (1 files)
+    - 📁 **forecast-coherence/** (1 files)
+    - 📁 **gas-tank-check-balance/** (1 files)
+    - 📁 **gas-tank-deduct-fee/** (1 files)
+    - 📁 **gas-tank-topup/** (1 files)
+    - 📁 **get-alpaca-balances/** (1 files)
+    - 📁 **get-binance-balances/** (1 files)
+    - 📁 **get-binance-credentials/** (1 files)
+    - 📁 **get-capital-balances/** (1 files)
+    - 📁 **get-kraken-balances/** (1 files)
+    - 📁 **get-user-balances/** (1 files)
+    - 📁 **get-user-market-data/** (1 files)
+    - 📁 **ingest-10-9-1-packet/** (1 files)
+    - 📁 **ingest-6d-harmonic/** (1 files)
+    - 📁 **ingest-adaptive-learning/** (1 files)
+    - 📁 **ingest-akashic-attunement/** (1 files)
+    - 📁 **ingest-akashic-mapper/** (1 files)
+    - 📁 **ingest-auris-state/** (1 files)
+    - 📁 **ingest-brain-state/** (1 files)
+    - 📁 **ingest-calibration-trade/** (1 files)
+    - 📁 **ingest-decision-fusion/** (1 files)
+    - 📁 **ingest-dimensional-dialler/** (1 files)
+    - 📁 **ingest-eckoushic-cascade/** (1 files)
+    - 📁 **ingest-ecosystem-snapshot/** (1 files)
+    - 📁 **ingest-elephant-memory/** (1 files)
+    - 📁 **ingest-exchange-learning/** (1 files)
+    - 📁 **ingest-ftcp-detector/** (1 files)
+    - 📁 **ingest-hnc-detection/** (1 files)
+    - 📁 **ingest-integral-aqal/** (1 files)
+    - 📁 **ingest-kelly-computation/** (1 files)
+    - 📁 **ingest-master-equation/** (1 files)
+    - 📁 **ingest-omega-equation/** (1 files)
+    - 📁 **ingest-performance-tracker/** (1 files)
+    - 📁 **ingest-planetary-modulation/** (1 files)
+    - 📁 **ingest-prism-state/** (1 files)
+    - 📁 **ingest-probability-matrix/** (1 files)
+    - 📁 **ingest-qgita-signal/** (1 files)
+    - 📁 **ingest-rainbow-bridge/** (1 files)
+    - 📁 **ingest-risk-manager/** (1 files)
+    - 📁 **ingest-smart-router/** (1 files)
+    - 📁 **ingest-stargate-harmonizer/** (1 files)
+    - 📁 **ingest-stargate-network/** (1 files)
+    - 📁 **ingest-telescope-state/** (1 files)
+    - 📁 **ingest-temporal-anchor/** (1 files)
+    - 📁 **ingest-terminal-state/** (1 files)
+    - 📁 **ingest-ticker-snapshot/** (1 files)
+    - 📁 **ingest-trades/** (1 files)
+    - 📁 **ingest-unity-event/** (1 files)
+    - 📁 **ingest-zero-point-field/** (1 files)
+    - 📁 **interpret-frequency/** (1 files)
+    - 📁 **monitor-positions/** (1 files)
+    - 📁 **oms-leaky-bucket/** (1 files)
+    - 📁 **poll-trade-confirmations/** (1 files)
+    - 📁 **primelines-protocol-gateway/** (1 files)
+    - 📁 **queen-hive-orchestrator/** (1 files)
+    - 📁 **send-health-alert/** (1 files)
+    - 📁 **send-signup-notification/** (1 files)
+    - 📁 **store-binance-credentials/** (1 files)
+    - 📁 **sync-exchange-assets/** (1 files)
+    - 📁 **sync-harmonic-nexus/** (1 files)
+    - 📁 **test-exchange-connection/** (1 files)
+    - 📁 **unified-field-analysis/** (1 files)
+    - 📁 **update-bot-credentials/** (1 files)
+    - 📁 **update-kyc-status/** (1 files)
+    - 📁 **update-user-credentials/** (1 files)
+    - 📁 **verify-exchange-connectivity/** (1 files)
+    - 📁 **verify-payment/** (1 files)
+  - 📁 **migrations/** (58 files)
+    - 📄 `20251116234425_03bdfa58-fd48-4dd4-a244-5ed8a5b9a68a.sql`
+    - 📄 `20251116235653_fb00c621-36b4-4bbd-b255-d224f7f4246e.sql`
+    - 📄 `20251117000933_9013351a-ec71-46c7-bcd5-628015f0a7cb.sql`
+    - 📄 `20251117001342_ea4b1ec1-32c3-47a6-b78e-64e1650e5712.sql`
+    - 📄 `20251117002848_3eacee79-159b-4f0d-9171-e2a77f3fa7a3.sql`
+    - 📄 `20251117003154_6207e2c0-df34-4f4d-9c8d-51f177093949.sql`
+    - 📄 `20251117010520_87ff4086-8886-4892-a63e-da579e3984d7.sql`
+    - 📄 `20251117011057_d63d988f-7b20-482a-ac7b-c4bdffb43b44.sql`
+    - 📄 `20251117014102_19b2241a-8ded-4538-b4cf-9cb711fbb049.sql`
+    - 📄 `20251118155815_a24605fe-e6fa-4826-81c7-0a0558ccd11e.sql`
+    - 📄 `20251118161502_2a315408-15cb-467f-b064-0df9001fdcf5.sql`
+    - 📄 `20251118161526_aac7c86e-2ef4-4688-bc6e-d1816063eaca.sql`
+    - 📄 `20251118172732_21c3cfec-ddaf-451c-a09d-1ff258d11e84.sql`
+    - 📄 `20251118192427_dc7431f5-b75c-4a14-8c5e-b64e050647b1.sql`
+    - 📄 `20251118194713_37800eb4-7e42-4360-894e-5bd530403de7.sql`
+    - 📄 `20251118194725_f3b90e6b-cf76-474b-8ed3-2f5a0997d0e0.sql`
+    - 📄 `20251119163955_86b0d34f-3393-466d-acde-4d9cdd4c51b0.sql`
+    - 📄 `20251119165533_26caf874-4523-451f-9195-26883a039c00.sql`
+    - 📄 `20251120153952_9f043eca-5ad9-4933-8a97-e29b37c75d70.sql`
+    - 📄 `20251120155422_d5ec0849-9f76-4921-8628-459f2705c8fa.sql`
+    - 📄 `20251120161753_6f3d46cb-0f98-4349-be49-bf38cc1b4d39.sql`
+    - 📄 `20251120161803_de85c4e0-6c26-43b4-8bfa-e96ec0fe4ada.sql`
+    - 📄 `20251122144553_92dd0b27-0a57-4f5d-bc64-fbf30534e528.sql`
+    - 📄 `20251122145601_80578bf3-bb09-48cd-8519-bda14a39a90d.sql`
+    - 📄 `20251122150012_2c6bf702-71b9-4e79-bf95-5f564e160a8a.sql`
+    - 📄 `20251122150633_998e9f4f-cf49-4431-97bd-df766d8d5593.sql`
+    - 📄 `20251123130839_3a3cd539-b647-480a-8c6c-bfb9d5add05e.sql`
+    - 📄 `20251124183242_4a6edf70-7043-4c9d-9790-85b055383b76.sql`
+    - 📄 `20251124191602_99628a10-d09c-49dc-88bb-569c8b760eac.sql`
+    - 📄 `20251124194734_a15f0ea6-96a0-4621-a311-5d204adeba39.sql`
+    - 📄 `20251126145955_f95e282a-d407-43aa-9ffe-e1828b2a76e1.sql`
+    - 📄 `20251126151238_a263f8ff-c0e8-4b12-850a-782d314ac5af.sql`
+    - 📄 `20251128113928_cefe8e65-93b5-4436-8fe0-89370953e21b.sql`
+    - 📄 `20251203110954_a4560f04-732c-42f8-9c93-4e6ec91f0829.sql`
+    - 📄 `20251205143620_942d9c99-3e1e-44ab-8cfb-303b67ee37dd.sql`
+    - 📄 `20251206094329_50b57731-ca65-4380-9367-0e8906e505a4.sql`
+    - 📄 `20251206095644_f1d1dbe5-8ed3-4976-b137-98eda09d3a2d.sql`
+    - 📄 `20251206114003_04a120f6-4458-43b5-8037-bb2eaa79f5ae.sql`
+    - 📄 `20251206125711_9833c4ab-2265-46b0-820b-679a34d93c29.sql`
+    - 📄 `20251206130421_be27dc4e-25fc-4588-93dc-848aff6adcc8.sql`
+    - 📄 `20251206135353_f34fccf7-7dc4-46a1-b5ca-519fdce1e864.sql`
+    - 📄 `20251206140314_0e59655b-e78e-433b-a055-3ef2f8120d2d.sql`
+    - 📄 `20251206141510_d78f027a-0ec3-426b-acc0-d697093764a6.sql`
+    - 📄 `20251206143637_17517370-1849-4d45-b4f5-4f1d6552d76f.sql`
+    - 📄 `20251206145757_861343dc-bff3-4e7b-8ae7-012ec3c46147.sql`
+    - 📄 `20251206150031_1620044a-ef03-4c8a-8e42-e1ebbb2aea69.sql`
+    - 📄 `20251206155009_a135dd88-66a9-4f1a-afee-652de5435558.sql`
+    - 📄 `20251206201444_64c4243f-6480-479f-8694-efd8778b437e.sql`
+    - 📄 `20251206202818_0b2adf63-49ac-4c24-ab89-709ceaf6f649.sql`
+    - 📄 `20251210182546_5c8e1d39-9180-4cc2-a96d-a68bc07ebb9f.sql`
+    - 📄 `20251210183052_592545b1-1cd2-4a6f-8fda-dd315166e6f1.sql`
+    - 📄 `20251216170425_75d1671f-e449-4782-889f-6ddd62aca55c.sql`
+    - 📄 `20251216170611_b164cf64-a88a-4919-95e5-9853e11ae8c8.sql`
+    - 📄 `20251217115902_599242bf-2ae2-461a-bd34-d22b8b35526c.sql`
+    - 📄 `20251217134245_28baace4-97b6-4e8f-af64-cdff4732aa0a.sql`
+    - 📄 `20251217141434_ac139728-1b73-42b0-8d2b-d08d6d10bfc6.sql`
+    - 📄 `20251217151659_283525c7-323d-44e2-a423-a87fc500b74f.sql`
+    - 📄 `20251217155338_b68e0d4d-3752-44b1-9548-4b2ad19d485a.sql`
+  - 📄 `config.toml`
+- 📁 **templates/** (3 files)
+  - 📄 `queen_bot_intelligence.html`
+  - 📄 `queen_dashboard.html`
+  - 📄 `queen_dashboard_enhanced.html`
+- 📁 **tests/** (140 files)
+  - 📄 `smoke_test.py`
+  - 📄 `smoke_test_all_exchanges.py`
+  - 📄 `smoke_test_json_integration.py`
+  - 📄 `smoke_test_logging_validation.py`
+  - 📄 `smoke_test_multi_exchange_100k.py`
+  - 📄 `smoke_test_probability_matrix.py`
+  - 📄 `smoke_test_race_to_100k.py`
+  - 📄 `smoke_test_scale_to_100k.py`
+  - 📄 `smoke_test_stock_bulk.py`
+  - 📄 `smoke_test_unified_trading.py`
+  - 📄 `test_7day_planner.py`
+  - 📄 `test_alpaca_quote.py`
+  - 📄 `test_alpaca_trade.py`
+  - 📄 `test_animal_scanners.py`
+  - 📄 `test_binance_kraken_rate_cache.py`
+  - 📄 `test_binance_margin_dryrun.py`
+  - 📄 `test_binance_pool_earnings.py`
+  - 📄 `test_bot_intelligence_wiring.py`
+  - 📄 `test_capital_caching.py`
+  - 📄 `test_capital_cfd_sync.py`
+  - 📄 `test_capital_harmonic_wiring_audit.py`
+  - 📄 `test_capital_shadow_gate.py`
+  - 📄 `test_checkpoint.py`
+  - 📄 `test_checkpoint_logic.py`
+  - 📄 `test_coinapi_integration.py`
+  - 📄 `test_cost_basis_target.py`
+  - 📄 `test_counter_intelligence.py`
+  - 📄 `test_crash.py`
+  - 📄 `test_dashboard_data.py`
+  - 📄 `test_dashboard_data_complete.py`
+  - 📄 `test_data_integrity.py`
+  - 📄 `test_dynamic_cost_estimator.py`
+  - 📄 `test_ecosystem_demo.py`
+  - 📄 `test_emerald_spec.py`
+  - 📄 `test_enhanced_nexus.py`
+  - 📄 `test_fallback.py`
+  - 📄 `test_friends_with_baggage.py`
+  - 📄 `test_frog_live_environment.py`
+  - 📄 `test_full_cycle.py`
+  - 📄 `test_full_spectrum_flow.py`
+  - 📄 `test_geopolitical_forensics.py`
+  - 📄 `test_harmonic_chain.py`
+  - 📄 `test_harmonic_field.py`
+  - 📄 `test_harmonic_nexus_bridge.py`
+  - 📄 `test_hft_queen_integration.py`
+  - 📄 `test_hft_wiring.py`
+  - 📄 `test_hive_mind_live.py`
+  - 📄 `test_hnc_hub_publish.py`
+  - 📄 `test_hnc_probability_matrix_live_ticker.py`
+  - 📄 `test_imports.py`
+  - 📄 `test_imports_debug.py`
+  - 📄 `test_integration_enhanced_nexus.py`
+  - 📄 `test_integration_flow.py`
+  - 📄 `test_kill_chain_real.py`
+  - 📄 `test_kraken_margin_startup_sync.py`
+  - 📄 `test_kraken_seer_lyra_queens_unity.py`
+  - 📄 `test_lazy_capital.py`
+  - 📄 `test_learned_auto_reset_smoke.py`
+  - 📄 `test_live_mycelium_100_accuracy.py`
+  - 📄 `test_live_tv_wiring.py`
+  - 📄 `test_margin_kill_cycle.py`
+  - 📄 `test_market_map_exchanges.py`
+  - 📄 `test_metrics_api429.py`
+  - 📄 `test_minimal_trade.py`
+  - 📄 `test_momentum_imports.py`
+  - 📄 `test_mountain_pilgrimage.py`
+  - 📄 `test_mycelium_spore_branching.py`
+  - 📄 `test_net_profit_after_fees_smoke.py`
+  - 📄 `test_ocean_scanner.py`
+  - 📄 `test_ocean_whale_map.py`
+  - 📄 `test_operational_core.py`
+  - 📄 `test_orca_in_main_loop.py`
+  - 📄 `test_orca_integration.py`
+  - 📄 `test_orca_kill_cycle.py`
+  - 📄 `test_orca_kill_cycle_defense.py`
+  - 📄 `test_orca_quick.py`
+  - 📄 `test_orca_super_gate.py`
+  - 📄 `test_penny_floor_live.py`
+  - 📄 `test_phantom_filter_sim.py`
+  - 📄 `test_platform_trades.py`
+  - 📄 `test_portfolio_simulation.py`
+  - 📄 `test_position_pricing.py`
+  - 📄 `test_positions_performance.py`
+  - 📄 `test_probability_loader.py`
+  - 📄 `test_probability_position.py`
+  - 📄 `test_production_rate_limiter.py`
+  - 📄 `test_profit_calculations.py`
+  - 📄 `test_profit_gate.py`
+  - 📄 `test_profit_validation.py`
+  - 📄 `test_quantum_v11_amplification.py`
+  - 📄 `test_queen_autonomous_eternal.py`
+  - 📄 `test_queen_aztec_wisdom.py`
+  - 📄 `test_queen_celtic_wisdom.py`
+  - 📄 `test_queen_consciousness.py`
+  - 📄 `test_queen_deep_intelligence_live.py`
+  - 📄 `test_queen_force_trade_governance.py`
+  - 📄 `test_queen_full_control.py`
+  - 📄 `test_queen_full_system_integration.py`
+  - 📄 `test_queen_live_location.py`
+  - 📄 `test_queen_metrics.py`
+  - 📄 `test_queen_power_redistribution.py`
+  - 📄 `test_queen_pythagorean_harmony.py`
+  - 📄 `test_queen_self_modification.py`
+  - 📄 `test_queen_sentience_validation.py`
+  - 📄 `test_queen_trade_execution_validation.py`
+  - 📄 `test_queen_trading.py`
+  - 📄 `test_queen_wisdom_integration.py`
+  - 📄 `test_queens_heart.py`
+  - 📄 `test_rate_limiter.py`
+  - 📄 `test_research_protocol.py`
+  - 📄 `test_revenue_board.py`
+  - 📄 `test_round_trip.py`
+  - 📄 `test_s5_historical_7day.py`
+  - 📄 `test_s5_million.py`
+  - 📄 `test_scalper_mode.py`
+  - 📄 `test_scout_deployment.py`
+  - 📄 `test_sero_decision_flow.py`
+  - 📄 `test_server.py`
+  - 📄 `test_smart_leap.py`
+  - 📄 `test_smoke_core.py`
+  - 📄 `test_system_health.py`
+  - 📄 `test_tickers.py`
+  - 📄 `test_trade_activation_wiring.py`
+  - 📄 `test_trade_capability.py`
+  - 📄 `test_trading_fix.py`
+  - 📄 `test_triumvirate_consensus.py`
+  - 📄 `test_uk_binance.py`
+  - 📄 `test_unified_client.py`
+  - 📄 `test_unified_dashboard.py`
+  - 📄 `test_unified_oracle.py`
+  - 📄 `test_unified_trading_logic.py`
+  - 📄 `test_unit_core_math.py`
+  - 📄 `test_value_preservation.py`
+  - 📄 `test_whale_sonar.py`
+  - 📄 `test_whale_system.py`
+  - 📄 `test_why_no_trades.py`
+  - 📄 `test_windows_async.py`
+  - 📄 `test_windows_cleanup.py`
+  - 📄 `test_windows_startup.py`
+  - 📄 `test_xrp_quantum_frog.py`
+- 📁 **tools/** (5 files)
+  - 📄 `historical_unity_replay.py`
+  - 📄 `ladder_self_test.py`
+  - 📄 `run_commando_test.sh`
+  - 📄 `summarize_smoke.py`
+  - 📄 `unity_buy_sell_convert_sim.py`
+- 📁 **validation/** (18 files)
+  - 📄 `aura_features.csv`
+  - 📄 `validate_balances.py`
+  - 📄 `validate_cost_logic.py`
+  - 📄 `validate_integration.py`
+  - 📄 `validate_sell.py`
+  - 📄 `verify_autonomous.py`
+  - 📄 `verify_balances.py`
+  - 📄 `verify_dual_exchange.py`
+  - 📄 `verify_exchange_cycles.py`
+  - 📄 `verify_margin_system_integration.py`
+  - 📄 `verify_platform_connectivity.py`
+  - 📄 `verify_pnl_math.py`
+  - 📄 `verify_profit_math.py`
+  - 📄 `verify_queen_control.py`
+  - 📄 `verify_queen_wiring.py`
+  - 📄 `verify_safe_desktop_control.py`
+  - 📄 `verify_trading_activity.py`
+  - 📄 `verify_windows_fix.py`
+- 📁 **VERIFICATION AND VALIDATION/** (14 files)
+  - 📄 `Acceptance_Criteria.pdf`
+  - 📄 `B.SEER VALDATION FRAMEWORK.docx`
+  - 📄 `Coherence_Maintenance_Evidence.pdf`
+  - 📄 `Experimental_Protocol_Document.pdf`
+  - 📄 `Experimental_Validation_Plan_UTRE.pdf`
+  - 📄 `HNC_Claims_to_Evidence_Traceability.pdf`
+  - 📄 `HNC_Methodology_Summary.pdf`
+  - 📄 `HNC_Replication_Process_System.pdf`
+  - 📄 `MATRIX VERIFICATION.docx`
+  - 📄 `Measurement_Instrumentation_Details.pdf`
+  - 📄 `Multi_Lab_Testing_Procedures_UTRE.pdf`
+  - 📄 `Mythology → Method_ Test Plan.docx`
+  - 📄 `Replication_Guidelines_HNC.pdf`
+  - 📄 `Test Methodologies (HNC Program).docx`
+- 📁 **wisdom_data/** (12 files)
+  - 📄 `aztec_wisdom.json`
+  - 📄 `celtic_wisdom.json`
+  - 📄 `chinese_wisdom.json`
+  - 📄 `egyptian_wisdom.json`
+  - 📄 `ghost_dance_wisdom.json`
+  - 📄 `hindu_wisdom.json`
+  - 📄 `mayan_wisdom.json`
+  - 📄 `mogollon_wisdom.json`
+  - 📄 `norse_wisdom.json`
+  - 📄 `plantagenet_wisdom.json`
+  - 📄 `pythagorean_wisdom.json`
+  - 📄 `warfare_wisdom.json`
+- 📄 `app.yaml`
+- 📄 `aureon_baton_link.py`
+- 📄 `aureon_harmonic_seed.py`
+- 📄 `aureon_lighthouse.py`
+- 📄 `bot_army_catalog.json`
+- 📄 `CHANGELOG.md`
+- 📄 `CODE_OF_CONDUCT.md`
+- 📄 `CONERR$`
+- 📄 `conftest.py`
+- 📄 `CONTRIBUTING.md`
+- 📄 `docker-compose.autonomous.yml`
+- 📄 `docker-compose.yml`
+- 📄 `Dockerfile`
+- 📄 `Dockerfile.ephemeris`
+- 📄 `eslint.config.js`
+- 📄 `INTELLIGENCE_WIRING_MATRIX.md`
+- 📄 `kraken_fee_tracker_state.json`
+- 📄 `kraken_margin_army_results.json`
+- 📄 `kraken_margin_army_state.json`
+- 📄 `LICENSE`
+- 📄 `lighthouse_metrics.py`
+- 📄 `OPEN_MARKET_DATA_MATRIX.md`
+- 📄 `Procfile`
+- 📄 `README.md`
+- 📄 `real_portfolio_state.json`
+- 📄 `requirements.txt`
+- 📄 `run_capital_margin_only.ps1`
+- 📄 `run_capital_monitor.ps1`
+- 📄 `run_capital_swarm.ps1`
+- 📄 `runtime.txt`
+- 📄 `sim_mission_err.txt`
+- 📄 `sim_mission_out.txt`
+- 📄 `supervisord.conf`
+- 📄 `supervisord.pid`
+
+## 3) Operational lanes (how to navigate the codebase)
+- **Core Python engine**: `aureon/` (strategy, analytics, trading orchestration, intelligence, monitoring).
+- **Automation & runners**: `scripts/` + `deploy/` + `production/` for launch/deploy/ops scripts.
+- **Web/UI surfaces**: `frontend/`, `public/`, `dashboards/`, Netlify/Supabase functions.
+- **Validation harness**: `tests/`, `validation/`, `docs/README_*VALIDATION*.md`.
+- **State & memory**: `state/`, `cache/`, `wisdom_data/`, `memory/` store runtime artifacts and knowledge bases.

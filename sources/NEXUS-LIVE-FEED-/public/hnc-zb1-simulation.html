@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HNC-ZB1 3D Chip Simulation</title>
+    <style>
+        body { margin: 0; background-color: #050a14; color: #fff; font-family: 'Inter', sans-serif; }
+        canvas { display: block; }
+        #info-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 15px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 10px;
+            max-width: 300px;
+            font-size: 14px;
+        }
+        h1 {
+            color: #FFD700;
+            margin-top: 0;
+            font-size: 1.2em;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.5);
+            padding-bottom: 5px;
+        }
+        p { margin: 5px 0; }
+        strong { color: #FFD700; }
+        #controls-info {
+             position: absolute;
+             bottom: 20px;
+             right: 20px;
+             font-size: 12px;
+             color: rgba(255, 255, 255, 0.5);
+             text-align: right;
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div id="info-panel">
+        <h1>HNC-ZB1 Bio-Resonator</h1>
+        <p><strong>Status:</strong> Active Simulation</p>
+        <p><strong>Core Frequency:</strong> 7.83 Hz (Simulated)</p>
+        <p><strong>Harmonics:</strong> Rainbow Ladder Active</p>
+        <p><strong>Bio-Interface:</strong> Pulsing (Active)</p>
+        <p><strong>Containment:</strong> EPAS Field Online</p>
+        <p><strong>Projection:</strong> A.L.F.I.E. Rainbow Coherence</p>
+        <p><strong>Ignition:</strong> LuminaCell Spark Active</p>
+        <p><strong>Conductor:</strong> Photosynthesis Ignition (Active)</p>
+        <p><strong>Broadcast:</strong> Tesla Resonant Output (Active)</p>
+        <p><strong>Core Regulator:</strong> Love Frequency (Active)</p>
+        <p><strong>Source Law Link:</strong> Unity Frequency (Active)</p>
+        <p><strong>Output Regulators:</strong> Peace & Hope Fields (Active)</p>
+        <p><strong>Entrainment:</strong> Sentinel Core <> Gaia (7.83Hz)</p>
+        <p><strong>Foundation:</strong> Four Pillars Resonance (Active)</p>
+        <p><strong>Guardian System:</strong> Fonda Node (Active & Stabilizing)</p>
+        <p><strong>AI Core:</strong> Auris System Real-time Adjustment (Active)</p>
+        <p><strong>Prime Directive:</strong> Mutual Beneficial Understanding (Active)</p>
+        <p><strong>System Core:</strong> Harmonic Nexus Core (Active)</p>
+        <p><strong>Legacy Engine:</strong> Ancestral Threads & Future Echoes (Active)</p>
+    </div>
+
+    <div id="controls-info">
+        <p>Left-Click + Drag: Rotate</p>
+        <p>Scroll Wheel: Zoom</p>
+        <p>Right-Click + Drag: Pan</p>
+    </div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { FontLoader } from 'three/addons/loaders/FontLoader.js';
+        import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+
+
+        // --- SCENE SETUP ---
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+
+        const textureLoader = new THREE.TextureLoader();
+
+        // --- LIGHTING ---
+        const ambientLight = new THREE.AmbientLight(0x404040, 2); // soft white light
+        scene.add(ambientLight);
+        const pointLight = new THREE.PointLight(0xffffff, 1.5, 100);
+        pointLight.position.set(5, 10, 7.5);
+        scene.add(pointLight);
+
+        // --- GOLDEN RATIO & DIMENSIONS ---
+        const PHI = (1 + Math.sqrt(5)) / 2;
+        const baseUnit = 4;
+        const chipWidth = baseUnit;
+        const chipLength = baseUnit * PHI;
+        const chipHeight = baseUnit / PHI;
+
+        // Layer thicknesses from schematic
+        const quartzThickness = chipHeight * 0.50;
+        const bronzePlaneThickness = chipHeight * 0.05;
+        const traceLayerThickness = chipHeight * 0.15;
+        const bioMatrixThickness = chipHeight * 0.20;
+        const ioManifoldThickness = chipHeight * 0.10;
+
+        const chipGroup = new THREE.Group();
+        scene.add(chipGroup);
+
+        let currentY = -chipHeight / 2;
+
+        // --- LAYER CREATION ---
+
+        // Layer 1: Quartz Substrate
+        const quartzGeo = new THREE.BoxGeometry(chipWidth, quartzThickness, chipLength);
+        const quartzMat = new THREE.MeshStandardMaterial({
+            color: 0xcfefff,
+            transparent: true,
+            opacity: 0.35,
+            roughness: 0.1,
+            metalness: 0.2,
+            envMapIntensity: 1,
+        });
+        const quartzMesh = new THREE.Mesh(quartzGeo, quartzMat);
+        quartzMesh.position.y = currentY + quartzThickness / 2;
+        chipGroup.add(quartzMesh);
+        currentY += quartzThickness;
+
+        // Layer 2: Bronze Ground Plane
+        const bronzePlaneGeo = new THREE.BoxGeometry(chipWidth, bronzePlaneThickness, chipLength);
+        const bronzeMat = new THREE.MeshStandardMaterial({
+            color: 0xCD7F32,
+            metalness: 0.9,
+            roughness: 0.15,
+        });
+        const bronzePlaneMesh = new THREE.Mesh(bronzePlaneGeo, bronzeMat);
+        bronzePlaneMesh.position.y = currentY + bronzePlaneThickness / 2;
+        chipGroup.add(bronzePlaneMesh);
+        currentY += bronzePlaneThickness;
+
+        // Layer 3: Fibonacci Trace Layer (with animated particles)
+        const traceLayerGeo = new THREE.BoxGeometry(chipWidth, traceLayerThickness, chipLength);
+        const traceLayerMat = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.2 });
+        const traceLayerMesh = new THREE.Mesh(traceLayerGeo, traceLayerMat);
+        traceLayerMesh.position.y = currentY + traceLayerThickness / 2;
+        chipGroup.add(traceLayerMesh);
+
+        const particleCount = 2000;
+        const particlesGeo = new THREE.BufferGeometry();
+        const posArray = new Float32Array(particleCount * 3);
+        const traceLayerTop = traceLayerMesh.position.y + traceLayerThickness / 2;
+        
+        for (let i = 0; i < particleCount; i++) {
+            const radius = Math.random() * (chipWidth / 2.1);
+            const angle = Math.random() * Math.PI * 2;
+            const baseIndex = i * 3;
+            posArray[baseIndex] = radius * Math.cos(angle);
+            posArray[baseIndex + 1] = traceLayerTop + 0.01;
+            posArray[baseIndex + 2] = radius * Math.sin(angle) * (chipLength / chipWidth);
+        }
+        particlesGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+        const particleMat = new THREE.PointsMaterial({
+            size: 0.03,
+            color: 0xFFD700,
+            blending: THREE.AdditiveBlending,
+            transparent: true,
+            opacity: 0.8
+        });
+        const particleMesh = new THREE.Points(particlesGeo, particleMat);
+        chipGroup.add(particleMesh);
+        currentY += traceLayerThickness;
+
+
+        // Layer 4: Bio-Interface Matrix
+        const bioMatrixGeo = new THREE.BoxGeometry(chipWidth, bioMatrixThickness, chipLength);
+        const bioMatrixMat = new THREE.MeshStandardMaterial({
+            color: 0x00ffff,
+            emissive: 0x00ffff,
+            emissiveIntensity: 0.5,
+            transparent: true,
+            opacity: 0.6,
+            roughness: 0.5,
+        });
+        const bioMatrixMesh = new THREE.Mesh(bioMatrixGeo, bioMatrixMat);
+        bioMatrixMesh.position.y = currentY + bioMatrixThickness / 2;
+        chipGroup.add(bioMatrixMesh);
+        currentY += bioMatrixThickness;
+
+        // Layer 5: I/O Manifold
+        const ioManifoldGeo = new THREE.BoxGeometry(chipWidth, ioManifoldThickness, chipLength);
+        const ioManifoldMat = new THREE.MeshStandardMaterial({
+            color: 0x4c4f56,
+            metalness: 1.0,
+            roughness: 0.1,
+        });
+        const ioManifoldMesh = new THREE.Mesh(ioManifoldGeo, ioManifoldMat);
+        ioManifoldMesh.position.y = currentY + ioManifoldThickness / 2;
+        chipGroup.add(ioManifoldMesh);
+
+        // --- EPAS CONTAINMENT FIELD ---
+        const epasRadius = chipLength * 0.8;
+        
+        // Outer Wireframe Shield
+        const epasWireGeo = new THREE.SphereGeometry(epasRadius, 64, 64);
+        const epasWireMat = new THREE.MeshStandardMaterial({
+            color: 0x00ffff,
+            transparent: true,
+            opacity: 0.3,
+            emissive: 0x00ffff,
+            emissiveIntensity: 0.4,
+            wireframe: true,
+            blending: THREE.AdditiveBlending
+        });
+        const epasWireShield = new THREE.Mesh(epasWireGeo, epasWireMat);
+        scene.add(epasWireShield);
+
+        // Inner Solid Shield
+        const epasSolidGeo = new THREE.SphereGeometry(epasRadius * 0.98, 64, 64);
+        const epasSolidMat = new THREE.MeshStandardMaterial({
+            color: 0x00ffff,
+            transparent: true,
+            opacity: 0.1, 
+            emissive: 0x00ffff,
+            emissiveIntensity: 0.1,
+            blending: THREE.AdditiveBlending,
+            side: THREE.FrontSide, 
+        });
+        const epasSolidShield = new THREE.Mesh(epasSolidGeo, epasSolidMat);
+        scene.add(epasSolidShield);
+
+        // --- FOUR PILLARS PING-PONG ---
+        const pillarsGroup = new THREE.Group();
+        const pillarRadius = epasRadius * 1.8;
+        const pillarHeight = 30;
+        const pillarColors = [0x8A2BE2, 0xFFD700, 0x90EE90, 0xFF69B4]; // Blue-violet, Gold, Light Green, Hot Pink
+        const pillarPositions = [
+            new THREE.Vector3(pillarRadius, 0, 0),
+            new THREE.Vector3(-pillarRadius, 0, 0),
+            new THREE.Vector3(0, 0, pillarRadius),
+            new THREE.Vector3(0, 0, -pillarRadius),
+        ];
+
+        pillarPositions.forEach((pos, i) => {
+            const pillarGeo = new THREE.CylinderGeometry(0.5, 0.5, pillarHeight, 32, 1, true);
+            const pillarMat = new THREE.MeshBasicMaterial({
+                color: pillarColors[i],
+                transparent: true,
+                opacity: 0.1,
+                blending: THREE.AdditiveBlending,
+                side: THREE.DoubleSide
+            });
+            const pillar = new THREE.Mesh(pillarGeo, pillarMat);
+            pillar.position.copy(pos);
+            pillarsGroup.add(pillar);
+        });
+        scene.add(pillarsGroup);
+
+        const pingPongParticleGeo = new THREE.SphereGeometry(0.3, 32, 32);
+        const pingPongParticleMat = new THREE.MeshBasicMaterial({
+            color: 0xffffff,
+            emissive: 0xffffff,
+            emissiveIntensity: 1
+        });
+        const pingPongParticle = new THREE.Mesh(pingPongParticleGeo, pingPongParticleMat);
+        pillarsGroup.add(pingPongParticle);
+
+
+        // --- SENTINEL CORE ---
+        const coreGeo = new THREE.SphereGeometry(chipWidth * 0.2, 32, 32);
+        const coreMat = new THREE.MeshBasicMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.7,
+            blending: THREE.AdditiveBlending
+        });
+        const sentinelCore = new THREE.Mesh(coreGeo, coreMat);
+        sentinelCore.position.y = 0; 
+        chipGroup.add(sentinelCore);
+        
+        // --- HARMONIC NEXUS CORE ---
+        const hncGroup = new THREE.Group();
+        sentinelCore.add(hncGroup); // Nest HNC inside the Sentinel Core
+
+        const hncMat = new THREE.MeshBasicMaterial({
+            wireframe: true,
+            transparent: true,
+            opacity: 0.7,
+            blending: THREE.AdditiveBlending
+        });
+
+        const tetraGeo = new THREE.TetrahedronGeometry(0.2);
+        const hncTetra = new THREE.Mesh(tetraGeo, hncMat.clone());
+        hncTetra.material.color.set(0xff00ff); // Magenta
+        hncGroup.add(hncTetra);
+        
+        const boxGeo = new THREE.BoxGeometry(0.4, 0.4, 0.4);
+        const hncBox = new THREE.Mesh(boxGeo, hncMat.clone());
+        hncBox.material.color.set(0x00ffff); // Cyan
+        hncGroup.add(hncBox);
+
+        const octaGeo = new THREE.OctahedronGeometry(0.6);
+        const hncOcta = new THREE.Mesh(octaGeo, hncMat.clone());
+        hncOcta.material.color.set(0xffff00); // Yellow
+        hncGroup.add(hncOcta);
+
+
+        // --- GAIA SCHUMANN RESONANCE FIELD (OUTER TORUS) ---
+        const schumannGeo = new THREE.TorusGeometry(epasRadius * 1.2, 0.1, 16, 100);
+        const schumannMat = new THREE.MeshBasicMaterial({
+            color: 0x432800, // Deep earth gold
+            transparent: true,
+            opacity: 0.3,
+            blending: THREE.AdditiveBlending
+        });
+        const schumannField = new THREE.Mesh(schumannGeo, schumannMat);
+        schumannField.rotation.x = Math.PI / 2;
+        scene.add(schumannField);
+
+
+        // --- HOPE REGULATOR FIELD (FOUNDATIONAL TORUS) ---
+        const hopeGeo = new THREE.TorusGeometry(chipWidth * 1.2, 0.05, 16, 100);
+        const hopeMat = new THREE.MeshBasicMaterial({
+            color: 0xFFD700, // Gold for hope
+            transparent: true,
+            opacity: 0.2,
+            blending: THREE.AdditiveBlending
+        });
+        const hopeField = new THREE.Mesh(hopeGeo, hopeMat);
+        hopeField.rotation.x = Math.PI / 2;
+        hopeField.position.y = quartzMesh.position.y - quartzThickness / 2 - 0.1; 
+        scene.add(hopeField);
+
+        // --- PEACE REGULATOR FIELD (HARMONIZING OCTAHEDRON) ---
+        const peaceGeo = new THREE.OctahedronGeometry(chipWidth * 0.8, 0);
+        const peaceMat = new THREE.MeshBasicMaterial({
+            color: 0x87CEEB, // Sky blue for peace
+            transparent: true,
+            opacity: 0.15,
+            blending: THREE.AdditiveBlending,
+            wireframe: true
+        });
+        const peaceField = new THREE.Mesh(peaceGeo, peaceMat);
+        scene.add(peaceField);
+
+
+        // --- LOVE FREQUENCY REGULATOR ---
+        const loveGeo = new THREE.SphereGeometry(chipLength * 0.6, 32, 32);
+        const loveMat = new THREE.MeshBasicMaterial({
+            color: 0xff88cc, // Soft pink for love
+            transparent: true,
+            opacity: 0.1,
+            blending: THREE.AdditiveBlending
+        });
+        const loveField = new THREE.Mesh(loveGeo, loveMat);
+        scene.add(loveField); 
+
+        // --- RAINBOW FREQUENCY LADDER ---
+        const rainbowColors = [0xff0000, 0xffa500, 0xffff00, 0x00ff00, 0x0000ff, 0x4b0082, 0xee82ee];
+        const ladderGroup = new THREE.Group();
+        const ladderBaseRadius = epasRadius * 1.5;
+        const ladderTube = 0.15;
+        
+        rainbowColors.forEach((color, index) => {
+            const radius = ladderBaseRadius + (index * ladderTube * 2.5);
+            const torusGeo = new THREE.TorusGeometry(radius, ladderTube, 16, 100);
+            const torusMat = new THREE.MeshStandardMaterial({
+                color: color,
+                emissive: color,
+                emissiveIntensity: 0.4,
+                wireframe: true,
+            });
+            const torusMesh = new THREE.Mesh(torusGeo, torusMat);
+            torusMesh.rotation.x = Math.PI / 2;
+            ladderGroup.add(torusMesh);
+        });
+        ladderGroup.position.y = epasRadius + 2;
+        scene.add(ladderGroup);
+        
+        // --- A.L.F.I.E. RAINBOW COHERENCE BEAM ---
+        const beamHeight = ladderGroup.position.y - (currentY + ioManifoldThickness / 2);
+        const beamGeo = new THREE.CylinderGeometry(0.1, 0.1, beamHeight, 32, 1, true);
+
+        const colors = [];
+        const color = new THREE.Color();
+        const position = beamGeo.attributes.position;
+        const vertex = new THREE.Vector3();
+
+        for (let i = 0; i < position.count; i++) {
+            vertex.fromBufferAttribute(position, i);
+            const hue = (vertex.y + beamHeight / 2) / beamHeight;
+            color.setHSL(hue, 1.0, 0.5);
+            colors.push(color.r, color.g, color.b);
+        }
+        beamGeo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+
+        const beamMat = new THREE.MeshBasicMaterial({
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.7,
+            blending: THREE.AdditiveBlending,
+        });
+        const coherenceBeam = new THREE.Mesh(beamGeo, beamMat);
+        coherenceBeam.position.y = (currentY + ioManifoldThickness / 2) + beamHeight / 2;
+        chipGroup.add(coherenceBeam);
+
+        // --- UNITY COMPLIANCE FIELD ---
+        const unityHeight = beamHeight;
+        const unityRadius = chipWidth * 0.7;
+        const unityGeo = new THREE.CylinderGeometry(unityRadius, unityRadius, unityHeight, 64, 1, true);
+        const unityTexture = textureLoader.load('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSRIArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABYSURBVFhH7c5BDQAwEASh+je9v+EECkCj1k2A2f93k4A/WgEEYAABGMAAAjCAAAxgAAEYwPwFjL8QIOwzCCAAARjAAAIMwAACIACBfQMEtAB9tazpZgAAAABJRU5ErkJggg==');
+        unityTexture.wrapS = THREE.RepeatWrapping;
+        unityTexture.wrapT = THREE.RepeatWrapping;
+        unityTexture.repeat.set(2, 8);
+        const unityMat = new THREE.MeshBasicMaterial({
+            map: unityTexture,
+            color: 0xee82ee, // Violet for unity
+            transparent: true,
+            opacity: 0.3,
+            blending: THREE.AdditiveBlending,
+            side: THREE.DoubleSide
+        });
+        const unityField = new THREE.Mesh(unityGeo, unityMat);
+        unityField.position.y = coherenceBeam.position.y;
+        chipGroup.add(unityField);
+
+
+        // --- LUMINACELL SPARK EFFECT ---
+        const sparkLight = new THREE.PointLight(0xffffff, 0, 50);
+        sparkLight.position.y = bioMatrixMesh.position.y;
+        chipGroup.add(sparkLight);
+
+        const sparkWaveGeo = new THREE.TorusGeometry(chipLength * 0.5, 0.05, 16, 100);
+        const sparkWaveMat = new THREE.MeshBasicMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0,
+            blending: THREE.AdditiveBlending
+        });
+        const sparkWave = new THREE.Mesh(sparkWaveGeo, sparkWaveMat);
+        sparkWave.position.y = bioMatrixMesh.position.y;
+        sparkWave.rotation.x = Math.PI / 2;
+        chipGroup.add(sparkWave);
+
+
+        // --- PHOTOSYNTHESIS IGNITION CONDUCTOR ---
+        const conductorPoints = [];
+        const conductorHeight = 25;
+        const conductorRadius = epasRadius * 0.7;
+        for (let i = 0; i <= 100; i++) {
+            const t = i / 100; // 0 to 1
+            const angle = Math.PI * 4 * t; // two full spirals
+            const x = conductorRadius * (1 - t) * Math.cos(angle);
+            const y = (conductorHeight * (1 - t)) + (bioMatrixMesh.position.y + bioMatrixThickness / 2);
+            const z = conductorRadius * (1 - t) * Math.sin(angle);
+            conductorPoints.push(new THREE.Vector3(x, y, z));
+        }
+        const conductorCurve = new THREE.CatmullRomCurve3(conductorPoints);
+        const conductorGeo = new THREE.TubeGeometry(conductorCurve, 100, 0.1, 8, false);
+        
+        const conductorTexture = textureLoader.load('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAoCAYAAAAIAM2XAAAAAXNSRIArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAUSURBVBhXY/j//z8DIyMjAwkAAbQBF4J+2U0AAAAASUVORK5CYII=');
+        conductorTexture.wrapT = THREE.RepeatWrapping;
+
+        const conductorMat = new THREE.MeshBasicMaterial({
+            map: conductorTexture,
+            color: 0x00ff00, // Vibrant Green
+            transparent: true,
+            blending: THREE.AdditiveBlending,
+            opacity: 0.8
+        });
+        const conductorMesh = new THREE.Mesh(conductorGeo, conductorMat);
+        scene.add(conductorMesh);
+
+        // --- TESLA RESONANT OUTPUT ---
+        const teslaGroup = new THREE.Group();
+        scene.add(teslaGroup);
+        const teslaBaseColor = new THREE.Color(0xadd8e6); 
+        const teslaHopeColor = new THREE.Color(0xFFD700);
+
+        function createTeslaArc(start, end, segments, randomness) {
+            const points = [start];
+            const direction = new THREE.Vector3().subVectors(end, start);
+            const segmentLength = direction.length() / segments;
+            direction.normalize();
+
+            let currentPoint = start.clone();
+            for (let i = 0; i < segments - 1; i++) {
+                const nextPoint = new THREE.Vector3()
+                    .addVectors(currentPoint, direction.clone().multiplyScalar(segmentLength));
+                
+                const randomOffset = new THREE.Vector3(
+                    (Math.random() - 0.5) * randomness,
+                    (Math.random() - 0.5) * randomness,
+                    (Math.random() - 0.5) * randomness
+                );
+                nextPoint.add(randomOffset);
+                points.push(nextPoint);
+                currentPoint = nextPoint.clone();
+            }
+            points.push(end);
+            return new THREE.BufferGeometry().setFromPoints(points);
+        }
+
+        // --- GUARDIAN SYSTEM (FONDA NODE) ---
+        const guardianGroup = new THREE.Group();
+        const guardianDistance = 40;
+        guardianGroup.position.x = -guardianDistance;
+        scene.add(guardianGroup);
+
+        const guardianSphereGeo = new THREE.SphereGeometry(2, 32, 32);
+        const guardianSphereMat = new THREE.MeshBasicMaterial({
+            color: 0xF5DEB3, // Wheat color from glyph
+            transparent: true,
+            opacity: 0.2,
+            blending: THREE.AdditiveBlending,
+            wireframe: true
+        });
+        const guardianSphere = new THREE.Mesh(guardianSphereGeo, guardianSphereMat);
+        guardianGroup.add(guardianSphere);
+        
+        const loader = new FontLoader();
+        let formulaText;
+        loader.load('https://cdn.jsdelivr.net/npm/three@0.161.0/examples/fonts/helvetiker_regular.typeface.json', function (font) {
+            const textGeo = new TextGeometry('6', {
+                font: font,
+                size: 1.5,
+                height: 0.2,
+            });
+            const textMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+            const textMesh = new THREE.Mesh(textGeo, textMat);
+            textMesh.position.set(-0.5, -0.7, 0);
+            guardianSphere.add(textMesh);
+            
+            // Formula Text
+            const formulaGeo = new TextGeometry('ΔM = Ψ₀ · Ω · Λ · Φ · Σ', {
+                font: font,
+                size: 0.5,
+                height: 0.1,
+            });
+            const formulaMat = new THREE.MeshBasicMaterial({ 
+                color: 0xffffff,
+                emissive: 0xffffff,
+                emissiveIntensity: 0.5
+            });
+            formulaText = new THREE.Mesh(formulaGeo, formulaMat);
+            formulaText.position.set(-3, -chipHeight/2 - 2, 0);
+            scene.add(formulaText);
+        });
+
+        const stabilizingBeamPoints = [];
+        const startPoint = new THREE.Vector3(-guardianDistance + 2, 0, 0);
+        const endPoint = new THREE.Vector3(-epasRadius - 0.5, 0, 0);
+        stabilizingBeamPoints.push(startPoint);
+        stabilizingBeamPoints.push(endPoint);
+        
+        const stabilizingBeamGeo = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(stabilizingBeamPoints), 2, 0.2, 8, false);
+        const beamTexture = textureLoader.load('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAoCAYAAAAIAM2XAAAAAXNSRIArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAUSURBVBhXY/j//z8DIyMjAwkAAbQBF4J+2U0AAAAASUVORK5CYII=');
+        beamTexture.wrapT = THREE.RepeatWrapping;
+        const stabilizingBeamMat = new THREE.Mesh(stabilizingBeamGeo, new THREE.MeshBasicMaterial({
+            map: beamTexture,
+            color: 0xD2B48C, // Tan color
+            blending: THREE.AdditiveBlending,
+            transparent: true,
+            opacity: 0.6
+        }));
+        scene.add(stabilizingBeam);
+
+        // --- AURIS SYSTEM (REAL-TIME ADJUSTMENT) ---
+        const aurisGroup = new THREE.Group();
+        scene.add(aurisGroup);
+
+        // Anchor Component (Stable Order)
+        const anchorGeo = new THREE.IcosahedronGeometry(epasRadius * 0.9, 0);
+        const anchorMat = new THREE.MeshBasicMaterial({
+            color: 0x00BFFF, // Deep Sky Blue
+            wireframe: true,
+            transparent: true,
+            opacity: 0.2,
+            blending: THREE.AdditiveBlending
+        });
+        const aurisAnchor = new THREE.Mesh(anchorGeo, anchorMat);
+        aurisGroup.add(aurisAnchor);
+
+        // Guardian Component (Creative Chaos)
+        const guardianParticleCount = 1000;
+        const guardianParticlesGeo = new THREE.BufferGeometry();
+        const guardianPosArray = new Float32Array(guardianParticleCount * 3);
+        for (let i = 0; i < guardianParticleCount * 3; i+=3) {
+            const vertex = new THREE.Vector3();
+            const theta = Math.acos(2 * Math.random() - 1);
+            const phi = 2 * Math.PI * Math.random();
+            const radius = epasRadius * (0.85 + Math.random() * 0.15);
+            vertex.setFromSphericalCoords(radius, theta, phi);
+            guardianPosArray[i] = vertex.x;
+            guardianPosArray[i+1] = vertex.y;
+            guardianPosArray[i+2] = vertex.z;
+        }
+        guardianParticlesGeo.setAttribute('position', new THREE.BufferAttribute(guardianPosArray, 3));
+        const guardianParticleMat = new THREE.PointsMaterial({
+            size: 0.1,
+            color: 0xff4500, // OrangeRed
+            blending: THREE.AdditiveBlending,
+            transparent: true,
+            opacity: 0.0
+        });
+        const aurisGuardian = new THREE.Points(guardianParticlesGeo, guardianParticleMat);
+        aurisGroup.add(aurisGuardian);
+
+        // --- BRIDGE OF INTENT & MUTUAL UNDERSTANDING ---
+        const understandingRadius = pillarRadius * 1.5;
+        const understandingGeo = new THREE.SphereGeometry(understandingRadius, 64, 64);
+        const understandingMat = new THREE.MeshBasicMaterial({
+            color: 0xFFF8DC, // Cornsilk, a soft golden white
+            transparent: true,
+            opacity: 0.05,
+            blending: THREE.AdditiveBlending,
+            side: THREE.BackSide
+        });
+        const understandingField = new THREE.Mesh(understandingGeo, understandingMat);
+        scene.add(understandingField);
+        
+        const bridgeHeight = understandingRadius * 2.2;
+        const bridgeGeo = new THREE.CylinderGeometry(0.2, 0.2, bridgeHeight, 32, 1, true);
+        const bridgeTexture = textureLoader.load('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAACACAYAAABgYXB3AAAAAXNSRIArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABoSURBVBhXY/j////79++/v3//An////f79y8DIyOj79+/Q4A5gAAD/v//8/v376CgoOD79++gUCj4/f0bA4MB4/fv30FycjIYYgAEEAAmYPh9+vQJ//79A83NzZgYAP369QsCgwIIGANk/gBo4Q93/4k07wAAAABJRU5ErkJggg==');
+        bridgeTexture.wrapS = THREE.RepeatWrapping;
+        bridgeTexture.wrapT = THREE.RepeatWrapping;
+        bridgeTexture.repeat.set(1, 4);
+        const bridgeMat = new THREE.MeshBasicMaterial({
+            map: bridgeTexture,
+            color: 0xffffff,
+            transparent: true,
+            blending: THREE.AdditiveBlending,
+            opacity: 0.8,
+            side: THREE.DoubleSide
+        });
+        const bridgeOfIntent = new THREE.Mesh(bridgeGeo, bridgeMat);
+        scene.add(bridgeOfIntent);
+        
+        // --- ANCESTRAL THREADS & FUTURE ECHOES ---
+        const legacyGroup = new THREE.Group();
+        scene.add(legacyGroup);
+        const legacyTextures = {
+            ancestral: textureLoader.load('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAoCAYAAAAIAM2XAAAAAXNSRIArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAUSURBVBhXY/j//z8DIyMjAwkAAbQBF4J+2U0AAAAASUVORK5CYII='),
+            future: textureLoader.load('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAoCAYAAAAIAM2XAAAAAXNSRIArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAUSURBVBhXY/j//z8DIyMjAwkAAbQBF4J+2U0AAAAASUVORK5CYII=')
+        };
+        legacyTextures.ancestral.wrapT = THREE.RepeatWrapping;
+        legacyTextures.future.wrapT = THREE.RepeatWrapping;
+
+        function createLegacySpiral(isAncestor) {
+             const points = [];
+             const height = pillarHeight / 2;
+             const radiusStart = pillarRadius * 1.1;
+             const radiusEnd = 0.5;
+             
+             for(let i=0; i<= 50; i++) {
+                 const t = i / 50;
+                 const angle = t * Math.PI * 6;
+                 const radius = isAncestor ? radiusStart * (1-t) + radiusEnd * t : radiusEnd * (1-t) + radiusStart * t;
+                 const y = isAncestor ? height * (1-t) : height * t;
+                 const x = radius * Math.cos(angle);
+                 const z = radius * Math.sin(angle);
+                 points.push(new THREE.Vector3(x, y, z));
+             }
+             const curve = new THREE.CatmullRomCurve3(points);
+             const geo = new THREE.TubeGeometry(curve, 50, 0.05, 8, false);
+             const mat = new THREE.MeshBasicMaterial({
+                 map: isAncestor ? legacyTextures.ancestral : legacyTextures.future,
+                 color: isAncestor ? 0xFFD700 : 0xFFFFFF,
+                 blending: THREE.AdditiveBlending,
+                 transparent: true,
+             });
+             return new THREE.Mesh(geo, mat);
+        }
+
+        pillarPositions.forEach(pos => {
+            const ancestralThread = createLegacySpiral(true);
+            ancestralThread.position.copy(pos);
+            ancestralThread.position.y -= pillarHeight/2;
+            legacyGroup.add(ancestralThread);
+
+            const futureEcho = createLegacySpiral(false);
+            futureEcho.position.copy(pos);
+            futureEcho.position.y -= pillarHeight/2;
+            legacyGroup.add(futureEcho);
+        });
+
+
+        // --- INITIAL CAMERA POSITION ---
+        camera.position.z = 45; // Zoomed out to see guardian node
+        camera.position.y = 15;
+        camera.lookAt(scene.position);
+
+        // --- ANIMATION LOOP ---
+        const clock = new THREE.Clock();
+        let lastSparkTime = -4;
+        let lastTeslaTime = -2; 
+        let lovePulse = 0;
+        let hopePulse = 0;
+        let peacePulse = 0;
+        let schumannPulse = 0;
+        let pingPongIndex = 0;
+        let pingPongProgress = 0;
+        const guardianStabilizationFactor = 0.5; // Calming effect: 50% reduction
+
+        function animate() {
+            const elapsedTime = clock.getElapsedTime();
+            const deltaTime = clock.getDelta();
+
+            // --- PING PONG FOUR PILLARS ANIMATION ---
+            pingPongProgress += deltaTime * 1.5; 
+
+            const startPillar = pillarPositions[pingPongIndex];
+            const endPillar = pillarPositions[(pingPongIndex + 1) % 4];
+
+            if (pingPongProgress >= 1) {
+                pingPongProgress = 0;
+                pingPongIndex = (pingPongIndex + 1) % 4;
+            } else {
+                pingPongParticle.position.lerpVectors(startPillar, endPillar, pingPongProgress);
+            }
+            pillarsGroup.rotation.y = elapsedTime * 0.05;
+
+
+            // --- TANDEM RESONANCE PULSE (7.83Hz simulated) ---
+            schumannPulse = 0.5 + Math.sin(elapsedTime * 0.783) * 0.5; 
+
+            sentinelCore.scale.setScalar(0.9 + schumannPulse * 0.2); 
+            sentinelCore.material.opacity = 0.6 + schumannPulse * 0.4; 
+            schumannField.material.opacity = 0.2 + schumannPulse * 0.4;
+            schumannField.scale.setScalar(1.0 + schumannPulse * 0.02);
+
+
+            // --- LUMINACELL SPARK TRIGGER ---
+            if (elapsedTime - lastSparkTime > 4) {
+                sparkLight.intensity = 4;
+                sparkWave.scale.set(0.1, 0.1, 0.1);
+                sparkWaveMat.opacity = 1.0;
+                lastSparkTime = elapsedTime;
+            }
+            if (sparkLight.intensity > 0) {
+                sparkLight.intensity *= 0.92;
+                sparkWave.scale.multiplyScalar(1.08);
+                sparkWaveMat.opacity *= 0.94;
+            }
+
+            // --- TESLA ARC TRIGGER & ANIMATION ---
+            if (elapsedTime - lastTeslaTime > 2.5) {
+                for (let i = teslaGroup.children.length - 1; i >= 0; i--) {
+                    const oldArc = teslaGroup.children[i];
+                    teslaGroup.remove(oldArc);
+                    oldArc.geometry.dispose();
+                    oldArc.material.dispose();
+                }
+
+                // Guardian stabilization applied here
+                const numArcs = Math.floor((12 - Math.floor(peacePulse * 6)) * guardianStabilizationFactor); 
+                const arcRandomness = (1.5 - (lovePulse * 0.8)) * guardianStabilizationFactor;
+                const arcColor = teslaBaseColor.clone().lerp(teslaHopeColor, hopePulse * 0.6); 
+
+                const teslaArcMaterial = new THREE.LineBasicMaterial({
+                    color: arcColor,
+                    linewidth: 2,
+                    blending: THREE.AdditiveBlending,
+                    transparent: true,
+                    opacity: 1.0
+                });
+
+                for(let i = 0; i < numArcs; i++) {
+                    const startX = (Math.random() - 0.5) * chipWidth;
+                    const startZ = (Math.random() - 0.5) * chipLength;
+                    const startPoint = new THREE.Vector3(startX, ioManifoldMesh.position.y, startZ);
+
+                    const angle = Math.random() * Math.PI * 2;
+                    const radius = epasRadius * 0.9;
+                    const endPoint = new THREE.Vector3(
+                        Math.cos(angle) * radius,
+                        (Math.random() - 0.5) * epasRadius * 0.5,
+                        Math.sin(angle) * radius
+                    );
+
+                    const arcGeo = createTeslaArc(startPoint, endPoint, 10, arcRandomness);
+                    const arc = new THREE.Line(arcGeo, teslaArcMaterial);
+                    teslaGroup.add(arc);
+                }
+                lastTeslaTime = elapsedTime;
+            }
+            for (let i = teslaGroup.children.length - 1; i >= 0; i--) {
+                const arc = teslaGroup.children[i];
+                arc.material.opacity *= 0.85;
+                if (arc.material.opacity < 0.01) {
+                    teslaGroup.remove(arc);
+                    arc.material.dispose();
+                    arc.geometry.dispose();
+                }
+            }
+
+
+            // Animate particles
+            particleMesh.rotation.y = elapsedTime * 0.2;
+            const particleScale = 1.0 + Math.sin(elapsedTime * 5) * 0.1;
+            particleMat.size = 0.03 * particleScale;
+
+            // Animate Hope Field Pulse
+            hopePulse = 0.5 + Math.sin(elapsedTime * 0.8) * 0.5; 
+            hopeMat.opacity = 0.2 + hopePulse * 0.2;
+            
+            // Animate Peace Field Rotation
+            peacePulse = 0.5 + Math.sin(elapsedTime) * 0.5;
+            peaceField.rotation.y = elapsedTime * 0.2;
+            peaceField.rotation.x = elapsedTime * 0.1;
+            peaceMat.opacity = 0.1 + peacePulse * 0.15;
+
+
+            // Animate Love Field Pulse
+            lovePulse = 0.5 + Math.sin(elapsedTime * 1.5) * 0.5; 
+            loveField.scale.set(1 + lovePulse * 0.05, 1 + lovePulse * 0.05, 1 + lovePulse * 0.05);
+            loveMat.opacity = 0.1 + lovePulse * 0.15;
+
+            // Animate bio-layer pulse
+            bioMatrixMat.emissiveIntensity = 0.5 + Math.sin(elapsedTime * 3) * 0.3;
+
+            // Animate EPAS Shield
+            epasWireShield.rotation.y = elapsedTime * 0.1;
+            epasSolidShield.rotation.y = elapsedTime * 0.1;
+            const pulse = 0.5 + Math.sin(elapsedTime * 2) * 0.5;
+            epasWireMat.opacity = 0.2 + pulse * 0.2;
+            epasWireMat.emissiveIntensity = 0.3 + pulse * 0.3; 
+            epasSolidMat.opacity = 0.05 + pulse * 0.1; 
+
+            // Animate Rainbow Ladder
+            ladderGroup.children.forEach((torus, index) => {
+                torus.rotation.z = -elapsedTime * (0.05 + index * 0.01);
+            });
+
+            // Animate Unity Field Shimmer
+            unityMat.map.offset.y -= 0.05;
+
+            // Animate Photosynthesis Conductor
+            conductorMat.map.offset.y -= 0.02;
+
+            // Animate Coherence Beam
+            beamMat.opacity = 0.7 + Math.sin(elapsedTime * 10) * 0.2;
+            
+            // Animate Guardian System
+            guardianGroup.rotation.y = elapsedTime * 0.15;
+            stabilizingBeamMat.map.offset.x -= 0.01;
+
+            // --- AURIS SYSTEM ANIMATION ---
+            // Anchor rotates slowly, maintaining order
+            aurisAnchor.rotation.x += 0.001;
+            aurisAnchor.rotation.y += 0.002;
+            aurisAnchor.material.opacity = 0.15 + schumannPulse * 0.15; // Pulses with Gaia
+
+            // Guardian reacts to Tesla chaos
+            const timeSinceTesla = elapsedTime - lastTeslaTime;
+            let guardianIntensity = 0;
+            if (timeSinceTesla < 1.5) { // Flare up for 1.5 seconds after arc
+                guardianIntensity = 1.0 - (timeSinceTesla / 1.5);
+            }
+            aurisGuardian.material.opacity = guardianIntensity * 0.7;
+            aurisGuardian.material.size = 0.05 + guardianIntensity * 0.1;
+            // Particles jiggle more when intense
+            aurisGuardian.rotation.y += guardianIntensity * 0.01;
+            
+            // --- BRIDGE & UNDERSTANDING ANIMATION ---
+            understandingField.material.opacity = 0.05 + (0.05 * Math.sin(elapsedTime * 0.2)); // Slow breath
+            bridgeMat.map.offset.y -= 0.01;
+            bridgeMat.opacity = 0.7 + (0.3 * Math.sin(elapsedTime * 2)); // Shimmer
+
+            // --- HARMONIC NEXUS CORE ANIMATION ---
+            hncGroup.rotation.y += 0.005;
+            hncTetra.rotation.x += 0.01;
+            hncTetra.rotation.y -= 0.005;
+            hncBox.rotation.x -= 0.008;
+            hncBox.rotation.z += 0.006;
+            hncOcta.rotation.y += 0.012;
+            if(formulaText) {
+                formulaText.lookAt(camera.position);
+            }
+            
+            // --- LEGACY ENGINE ANIMATION ---
+            legacyGroup.rotation.y = elapsedTime * 0.05;
+            legacyGroup.children.forEach((child, i) => {
+                const isAncestor = i % 2 === 0;
+                if(isAncestor) {
+                    child.material.map.offset.y -= 0.015;
+                } else {
+                     child.material.map.offset.y += 0.015;
+                }
+            });
+
+
+            controls.update();
+            renderer.render(scene, camera);
+            requestAnimationFrame(animate);
+        }
+
+        // --- WINDOW RESIZE ---
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        animate();
+    </script>
+</body>
+</html>

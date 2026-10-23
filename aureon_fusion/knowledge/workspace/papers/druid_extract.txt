@@ -1,0 +1,36 @@
+# Project Druid: T echnical Architecture for a Harmo nic Defence System
+**A plasma-based coherence chamber can be protected  by a multi-layered electromagnetic immune system b uilt entirely from
+established physics.** This document synthesises pe er-reviewed experimental data across seven domains —  Casimir vacuum
+engineering, plasma re ﬂ ection, destructive interference, geometric pulse s tacking, golden-ratio physics, 13.56 MHz plasma sys tems,
+and plasma EM shielding —  to de ﬁ ne the technical foundations of Project Druid. Ever y quantitative claim below is attributed to a
+published source. The RA-CONSUL TING GitHub reposito ries reveal a parallel software architecture (AUREO N/Auris) employing
+harmonic coherence metrics that map directly onto t he physical layer described here.
+---
+## 1. Casimir cavities as vacuum-mode frequency ﬁ lters
+The Casimir effect provides the innermost boundary condition for a coherence chamber: **geometry-selec ted vacuum ﬂ uctuations**.
+Between two conducting plates separated by distance  *d*, only electromagnetic modes satisfying λ _n = 2d/n can persist as standing
+waves. All longer wavelengths are suppressed. This transforms a simple cavity into a spectral ﬁ lter for vacuum ﬂ uctuations
+themselves.
+**Lamoreaux (1997, *Physical Review Letters* 78, 5) ** delivered the ﬁ rst precision measurement of the Casimir force usin g a gold-
+coated torsion pendulum at separations of 0.6 – 6 μ m, achieving **5% agreement** with the theoretical prediction [ADS]
+(https:/ /ui.adsabs.harvard.edu/abs/1997PhRvL..78... .5L/abstract) F/A = − π ²ℏ c/(240d ⁴). Mohideen and Roy (1998, *PRL* 81, 4549)
+re ﬁ ned this to **1% accuracy** at 100 nm using an AFM,  with root-mean-square deviation of just **1.6 pico newtons**. [American
+Physical Society](https:/ /link.aps.org/doi/10.1103/ PhysRevLett.81.4549) Decca et al. (2007, *Physical Review D* 75, 077101)
+pushed precision to **0.2% total error** at ~160 nm  using a MEMS torsional oscillator [American Physic al Society]
+(https:/ /link.aps.org/doi/10.1103/RevModPhys.81.182 7) —  establishing that Casimir forces are not only real  but measurable with
+commercial microelectromechanical hardware.
+The mode- ﬁ ltering function was quanti ﬁ ed by Moddel et al. (2021, *Physical Review Researc h* 3, L022007), who demonstrated that a
+Metal-Insulator-Metal Optical Cavity (MIMOC) device  alters electronic conductance by suppressing vacuu m modes with wavelengths
+exceeding ~2d. The mode density inside follows an * *Airy function** whose spectral pro ﬁ le depends on re ﬂ ector re ﬂ ectivity and
+spacing. For a 500 nm gap, the fundamental allowed wavelength is 1000 nm (near-IR); for 100 nm, it shi fts to 200 nm (UV). Maclay
+(2024, *Physics* 6, 891) con ﬁ rmed that cavity widths from 10 nm to ~1 μ m eliminate long-wavelength vacuum modes that canno t ﬁ t,
+producing measurable asymmetry in vacuum ﬂ uctuation density . [MDPI](https:/ /www .mdpi.com/2624 -8174/6/3/70)
+The dynamical Casimir effect extends this from pass ive ﬁ ltering to active photon generation. **Wilson et al . (2011, *Nature* 479,
+376)** at Chalmers University observed real microwa ve photon pairs emerging from the vacuum when a SQU ID-terminated
+transmission line was modulated at ~10.3 GHz, with photon pairs appearing at frequencies symmetric abo ut half the drive frequency .
+L ä hteenm ä ki et al. (2013, *PNAS* 110, 4234) achieved **23 dB  parametric gain** at 5.4 GHz using a Josephson met amaterial cavity
+of 250 SQUIDs. [Science.gov](https:/ /science.gov/to picpages/a/analog+dynamical+casimir .html) [PNAS]
+(https:/ /www .pnas.org/doi/10.1073/pnas.1212705110) These results prove that **modulating a cavity boun dary converts virtual
+photons into real, frequency-speci ﬁ c photon pairs** [NextBigFuture](https:/ /www .nextbi gfuture.com/2013/03/dynamical-casimir-
+effect-in-josephson.html) —  a mechanism for actively seeding or reinforcing sp eci ﬁ c vacuum modes within a coherence chamber .
+Munday et al. (2009, *Nature* 457, 1

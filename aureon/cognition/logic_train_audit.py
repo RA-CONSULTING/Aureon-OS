@@ -160,6 +160,8 @@ KNOWN_UNWIRED: Final[dict[str, str]] = {
         "measured unwired at pin time (role=consumer, reads a field, no canonical wire)",
     "aureon/autonomous/aureon_face_app.py":
         "measured unwired at pin time (role=producer, reads a field, no canonical wire)",
+    "aureon/autonomous/aureon_full_live_release.py":
+        "measured unwired at pin time (role=consumer, decides on a field value, no canonical wire)",
     "aureon/autonomous/aureon_gold_capital_intelligence_company.py":
         "measured unwired at pin time (role=producer, reads a field, no canonical wire)",
     "aureon/bridges/aureon_ui_bridge.py":
@@ -168,6 +170,12 @@ KNOWN_UNWIRED: Final[dict[str, str]] = {
         "measured unwired at pin time (role=consumer, reads a field, no canonical wire)",
     "aureon/core/goal_execution_engine.py":
         "measured unwired at pin time (role=producer, reads a field, no canonical wire)",
+    "aureon/gates/benchmark.py":
+        "measured unwired at pin time (role=consumer, decides on a field value, no canonical wire)",
+    "aureon/governance/legacy_unity_composition.py":
+        "measured unwired at pin time (role=consumer, decides on a field value, no canonical wire)",
+    "aureon/governance/live_workforce_calibration.py":
+        "measured unwired at pin time (role=consumer, decides on a field value, no canonical wire)",
     "aureon/harmonic/dj_resonance.py":
         "measured unwired at pin time (role=consumer, reads a field, no canonical wire)",
     "aureon/observer/benchmark.py":

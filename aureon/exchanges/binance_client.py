@@ -1626,7 +1626,15 @@ class BinanceClient:
                     side=normalized_side,
                     requested_quantity=quantity_value,
                 )
-            balance_receipt = self.get_asset_balance(base_asset)
+            try:
+                balance_receipt = self.get_asset_balance(base_asset)
+            except Exception:
+                return self._not_submitted_order_receipt(
+                    "balance_check_unavailable",
+                    symbol=symbol,
+                    side=normalized_side,
+                    requested_quantity=quantity_value,
+                )
             actual_balance = self._finite_number(
                 balance_receipt.get("free") if isinstance(balance_receipt, dict) else None
             )

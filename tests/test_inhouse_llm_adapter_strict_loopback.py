@@ -11,6 +11,15 @@ from aureon.inhouse_ai.llm_adapter import AureonLocalAdapter
 LOCAL_BASE_URL = "http://127.0.0.1:11434/v1"
 
 
+@pytest.fixture(autouse=True)
+def _exercise_mocked_loopback(monkeypatch: pytest.MonkeyPatch) -> None:
+    """These tests inject a fake session. They do not open a live model."""
+
+    monkeypatch.delenv("AUREON_LLM_OFFLINE", raising=False)
+    monkeypatch.delenv("AUREON_DISABLE_LLM_HTTP", raising=False)
+    monkeypatch.delenv("AUREON_AUDIT_MODE", raising=False)
+
+
 class FakeResponse:
     def __init__(
         self,

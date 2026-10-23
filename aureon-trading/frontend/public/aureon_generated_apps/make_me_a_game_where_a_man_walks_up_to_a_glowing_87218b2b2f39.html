@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aureon Local Game Forge</title>
+  <style>
+    :root { color-scheme: dark; font-family: Inter, Segoe UI, Arial, sans-serif; }
+    body { margin: 0; min-height: 100vh; background: #101820; color: #eef6f7; display: grid; place-items: center; }
+    main { width: min(960px, 96vw); display: grid; gap: 12px; }
+    header { display: flex; justify-content: space-between; gap: 16px; align-items: end; }
+    h1 { margin: 0; font-size: 24px; font-weight: 750; }
+    p { margin: 0; color: #b9c8ca; line-height: 1.45; }
+    canvas { width: 100%; aspect-ratio: 16 / 9; background: linear-gradient(#233a44, #162329); border: 1px solid #4f6f76; border-radius: 8px; box-shadow: 0 18px 50px rgba(0,0,0,.35); }
+    .hud { display: flex; flex-wrap: wrap; gap: 8px; }
+    .pill { border: 1px solid #4f6f76; border-radius: 999px; padding: 6px 10px; background: rgba(255,255,255,.06); font-size: 13px; }
+    .proof { color: #98f5c8; }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>Playable Local Game</h1>
+        <p>Make me a game where a man walks up to a glowing door and tell the end user how to play from the keyboard.
+
+Client-approved scope answers:
+- deliverables: Playable HTML game, keyboard instructions, quality proof, and public preview URL.
+- target_system: frontend/public/aureon_generated_apps and Aureon coding cockpit artifact preview.
+- constraints: Local-only, no live trading, payment, filing, credential, or destructive OS action.
+- goal: Make a playable local game where a man walks up to a glowing door.
+- acceptance: A browser-openable HTML artifact exists, keyboard controls are visible, and no blocking snags remain.</p>
+      </div>
+      <p class="proof">Local artifact. No cloud API. Keyboard ready.</p>
+    </header>
+    <canvas id="game" width="960" height="540" aria-label="Playable game canvas"></canvas>
+    <div class="hud">
+      <span class="pill">Move: Arrow keys or WASD</span>
+      <span class="pill">Jump: Space</span>
+      <span class="pill">Restart: R</span>
+      <span class="pill" id="state">Reach the glowing door.</span>
+    </div>
+  </main>
+  <script>
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const stateLabel = document.getElementById('state');
+    const keys = new Set();
+    const player = { x: 70, y: 408, w: 34, h: 64, vx: 0, vy: 0, grounded: false };
+    const world = {
+      gravity: 0.82,
+      floor: 474,
+      goal: { x: 850, y: 372, w: 54, h: 102 },
+      platforms: [
+        { x: 210, y: 405, w: 130, h: 18 },
+        { x: 410, y: 348, w: 130, h: 18 },
+        { x: 610, y: 398, w: 110, h: 18 }
+      ],
+      sparks: Array.from({ length: 26 }, (_, i) => ({ x: 140 + i * 31, y: 90 + (i % 5) * 24, phase: i * .37 }))
+    };
+    function reset() {
+      Object.assign(player, { x: 70, y: 408, vx: 0, vy: 0, grounded: false });
+      stateLabel.textContent = 'Reach the glowing door.';
+    }
+    addEventListener('keydown', (event) => { keys.add(event.key.toLowerCase()); if (event.key.toLowerCase() === 'r') reset(); });
+    addEventListener('keyup', (event) => keys.delete(event.key.toLowerCase()));
+    function rectsTouch(a, b) { return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y; }
+    function update() {
+      const left = keys.has('arrowleft') || keys.has('a');
+      const right = keys.has('arrowright') || keys.has('d');
+      player.vx = (right ? 4.2 : 0) - (left ? 4.2 : 0);
+      if ((keys.has(' ') || keys.has('arrowup') || keys.has('w')) && player.grounded) { player.vy = -15; player.grounded = false; }
+      player.vy += world.gravity;
+      player.x = Math.max(0, Math.min(canvas.width - player.w, player.x + player.vx));
+      player.y += player.vy;
+      player.grounded = false;
+      if (player.y + player.h >= world.floor) { player.y = world.floor - player.h; player.vy = 0; player.grounded = true; }
+      for (const p of world.platforms) {
+        if (player.vy >= 0 && rectsTouch(player, p) && player.y + player.h - player.vy <= p.y + 2) {
+          player.y = p.y - player.h; player.vy = 0; player.grounded = true;
+        }
+      }
+      if (rectsTouch(player, world.goal)) stateLabel.textContent = 'Client proof passed: the player reached the door.';
+    }
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const sky = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      sky.addColorStop(0, '#244a57'); sky.addColorStop(1, '#11191e');
+      ctx.fillStyle = sky; ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#17262b'; ctx.fillRect(0, world.floor, canvas.width, canvas.height - world.floor);
+      ctx.fillStyle = '#6f8f7a';
+      for (const p of world.platforms) ctx.fillRect(p.x, p.y, p.w, p.h);
+      const t = performance.now() / 1000;
+      for (const s of world.sparks) {
+        ctx.fillStyle = `rgba(156, 245, 200, ${0.25 + Math.sin(t + s.phase) * 0.2})`;
+        ctx.beginPath(); ctx.arc(s.x, s.y, 2.4, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.fillStyle = '#9cf5c8'; ctx.fillRect(world.goal.x, world.goal.y, world.goal.w, world.goal.h);
+      ctx.fillStyle = '#f6c06a'; ctx.fillRect(player.x, player.y, player.w, player.h);
+      ctx.fillStyle = '#232323'; ctx.fillRect(player.x + 8, player.y + 14, 5, 5); ctx.fillRect(player.x + 22, player.y + 14, 5, 5);
+      ctx.fillStyle = '#eef6f7'; ctx.font = '18px Segoe UI'; ctx.fillText('Aureon local game forge: playable artifact proof', 24, 36);
+    }
+    function frame() { update(); draw(); requestAnimationFrame(frame); }
+    reset(); frame();
+  </script>
+</body>
+</html>

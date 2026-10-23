@@ -1,0 +1,60 @@
+Leckey 2026 · LSSP Pre-Registration v1.0 1
+Detecting ￿-Spaced Phase-Coherence Peaks in Open Neural
+Recordings:
+The Leckey Substrate Scaling Protocol (LSSP) — Pre-Registration v1.0
+Gary Anthony Leckey∗1,2
+1Aureon Institute, Belfast, United Kingdom
+2R&A Consulting and Brokerage Services Ltd., Belfast, United Kingdom
+23 April 2026
+Study type: Observational, secondary analysis of publicly archived neural recordings.
+Design: Cross-sectional, multi-dataset, pre-registered confirmatory analysis.
+Registration status: Draft for submission to the Open Science F ramework (osf.io/prereg).
+V ersion: v1.0. Date: 23 April 2026.
+Lead investigator: Gary Anthony Leckey , Aureon Institute · R&A Consulting, Belfast, UK.
+Conflicts of interest: The lead investigator is the originator of the PEFC￿S framework under
+empirical test. Mitigation: frozen pipeline, locked datasets, pre-registered thresholds.
+F unding: Self-funded via R&A Consulting.
+Data: All primary data already public (OpenNeuro). Pipeline code to be released under MIT
+licence on publication. Deposit on OSF alongside this pre-registration.
+Abstract
+The Position of Echo-F eedback Cognitive ￿-Substrate (PEFC￿S) framework [ 1] predicts that
+coherent cognitive processing preserves phase-locked branches at frequencies spaced by pow-
+ers of the golden ratio 𝜑 = (1 +√
+5)/2 . Under this framework, inter-trial phase coherence
+(ITPC) spectra of task-engaged neural recordings should exhibit peak structure enriched
+near 𝑓𝑘= 𝑓0⋅ 𝜑𝑘beyond what uniform-spacing, integer-harmonic, or shuffled-peak null
+models predict. This pre-registration locks the dataset panel, preprocessing pipeline, ITPC
+computation, peak-detection algorithm, three null models, statistical inference procedure,
+multiple-comparison correction, and confirmation thresholds before any confirmatory analy-
+sis is conducted , following the Open Science F ramework pre-registration standard. The pro-
+tocol uses seven OpenNeuro EEG/MEG datasets spanning auditory oddball, face processing,
+motor imagery , inner speech, and resting-state paradigms, with aggregate 𝑁 > 700 subjects.
+A pilot dataset is designated for pipeline calibration only . Confirmation requires median
+￿-enrichment 𝑅𝜑≥ 2.0 against all three null models, consistency across ≥ 5/7 datasets, and
+Bonferroni-corrected Stouffer-combined 𝑝 < 0.0167 . Null results will be reported exactly as
+obtained. The full analysis pipeline is provided in Appendix A as executable Python code.
+Keywords: pre-registration; inter-trial phase coherence; golden ratio; multiversal branch archi-
+tecture; OpenNeuro; BIDS-EEG; MNE-Python; confirmatory analysis
+1 Theoretical Motivation
+The PEFC￿S framework posits that cognitive dynamics are described by the Leckey T emporal
+Delegated Equation (L TDE)
+Ψ(𝑡) = ∑
+𝑘𝑎𝑘⋅ Λ𝑘(𝑡 − 𝜏𝑘) ⋅ 𝑒𝑖𝜃𝑘, 𝜏𝑘= 𝜏0⋅ 𝜑𝑘, (1)
+∗Corresponding author. Aureon Institute · R&A Consulting and Brokerage Services Ltd., Belfast, United
+Kingdom.
+---
+Leckey 2026 · LSSP Pre-Registration v1.0 2
+in which branch-specific temporal delegation by powers of 𝜑 is the unique spacing that min-
+imises destructive interference between branches (continued-fraction unit expansion; Hurwitz
+irrationality extremum). If PEFC￿S corresponds to something physically realised in neural pro-
+cessing, the ￿-scaled temporal structure should leave a frequency-domain signature in phase
+coherence measurements of task-engaged neural recordings.
+The null hypothesis is that brains do not instantiate ￿-spaced branch structure and ITPC peaks
+are distributed without preference for any specific incommensurate ratio. The alternative hy-
+pothesis is that ITPC peaks sit at frequencies whose pairwise ratios cluster closer to integer
+powers of 𝜑than to integer harmonics or uniformly-distributed random ratios.
+2 Hypotheses
+2.1 Primary hypothesis (H1)
+In task-engaged neural recordings meeting inclusion criteria, the ITPC spectrum exhibits peak
+structure whose pairwise frequency ratios cluster closer to integer powers of 𝜑than predicted
+by any 

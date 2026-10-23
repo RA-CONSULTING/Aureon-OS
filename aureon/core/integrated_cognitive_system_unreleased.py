@@ -21,17 +21,11 @@ from typing import Any, Dict, Optional
 
 logger = logging.getLogger("aureon.core.ics")
 
-# Source Law coherence thresholds for cognitive execution.
-# Defaults are set for trading (0.938/0.934). The ICS lowers them to 0.55/0.45
-# because we're running user-requested cognitive goals, not autonomous trades.
-# These are passed PER-INSTANCE to this system's own SourceLawEngine — never
-# via process env: the previous os.environ.setdefault here rebound
-# queen_source_law's import-time constants for the WHOLE process, silently
-# loosening the live trading entry gate (0.938 → 0.55) whenever the cognitive
-# system was imported before the trading stack. The shared field may tighten
-# a live gate, never loosen it.
-_COGNITIVE_ENTRY_COHERENCE = 0.55
-_COGNITIVE_EXIT_COHERENCE = 0.45
+# Source-law entry is floored at 0.938 inside CognitionOutput. A cognitive
+# caller used to request 0.55/0.45. That request is refused: the per-instance
+# gate may rise and may not fall. These constants stay on the floor.
+_COGNITIVE_ENTRY_COHERENCE = 0.938
+_COGNITIVE_EXIT_COHERENCE = 0.934
 
 
 def _background_side_effects_suppressed() -> bool:

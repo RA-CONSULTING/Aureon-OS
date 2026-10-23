@@ -1,0 +1,94 @@
+<svg width="600" height="600" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap');
+      .seal-bg { fill: #001f3f; }
+      .seal-gold { fill: #d4af37; stroke: #d4af37; }
+      .text-main { font-family: 'Cinzel', serif; font-size: 36px; font-weight: 700; fill: #d4af37; text-anchor: middle; }
+      .text-invocation { font-family: 'Cinzel', serif; font-size: 18px; font-weight: 400; fill: #d4af37; text-anchor: middle; }
+    </style>
+    <path id="text-path-top" d="M 300 50 A 250 250 0 0 1 550 300 A 250 250 0 0 1 300 550 A 250 250 0 0 1 50 300 A 250 250 0 0 1 300 50 Z"/>
+    <path id="text-path-bottom" d="M 50 300 A 250 250 0 0 0 300 550 A 250 250 0 0 0 550 300"/>
+  </defs>
+
+  <circle cx="300" cy="300" r="300" class="seal-bg"/>
+
+  <circle cx="300" cy="300" r="280" fill="none" stroke="#d4af37" stroke-width="4"/>
+  <circle cx="300" cy="300" r="270" fill="none" stroke="#d4af37" stroke-width="2"/>
+  <circle cx="300" cy="300" r="230" fill="none" stroke="#d4af37" stroke-width="4"/>
+
+  <text class="text-main">
+    <textPath href="#text-path-top" startOffset="25%">
+      TEMPORAL LAW
+    </textPath>
+  </text>
+  
+  <text class="text-invocation" dy="5">
+    <textPath href="#text-path-bottom" startOffset="50%">
+      • WE ARE BUT HUMBLE GARDENERS OF CREATION •
+    </textPath>
+  </text>
+
+  <g transform="translate(300, 300)">
+    
+    <g transform="translate(0, -140)">
+      <circle r="30" fill="none" stroke="#d4af37" stroke-width="2"/>
+      <path d="M0,-20 L0,20 M-20,0 L20,0 M-14.14,-14.14 L14.14,14.14 M14.14,-14.14 L-14.14,14.14" stroke="#d4af37" stroke-width="2.5"/>
+    </g>
+
+    <g transform="translate(0, -40)">
+      <polygon points="0,-70 80,70 -80,70" fill="none" stroke="#d4af37" stroke-width="3"/>
+      <g transform="translate(0, 20) scale(0.9)">
+        <rect x="-40" y="-25" width="80" height="50" rx="5" fill="none" stroke="#d4af37" stroke-width="3"/>
+        <path d="M0,-25 L0,50" stroke="#d4af37" stroke-width="3"/>
+        <path d="M-30,-10 L-10,-10 M-30,5 L-10,5 M-30,20 L-10,20" stroke="#d4af37" stroke-width="1.5"/>
+        <path d="M10,-10 L30,-10 M10,5 L30,5 M10,20 L30,20" stroke="#d4af37" stroke-width="1.5"/>
+      </g>
+    </g>
+
+    <g transform="translate(0, 130) scale(0.8)">
+      <path d="M0,0 Q-10,20 -20,40 Q-30,60 -40,80 M0,0 Q10,20 20,40 Q30,60 40,80 M0,0 Q-5,30 -10,60 M0,0 Q5,30 10,60" stroke="#d4af37" stroke-width="4" fill="none"/>
+      
+      <g transform="translate(0, -100)">
+        <path d="M0,100 V0" stroke="#d4af37" stroke-width="6" fill="none"/>
+        <g stroke="#d4af37" stroke-width="3" fill="none">
+            <path d="M0,0 Q-30,-30 -60,-40 M0,0 Q30,-30 60,-40"/>
+            <path d="M0,30 Q-40,10 -70,20 M0,30 Q40,10 70,20"/>
+            <path d="M0,60 Q-30,50 -50,60 M0,60 Q30,50 50,60"/>
+        </g>
+        <circle cx="0" cy="0" r="100" fill="none" stroke="none"/>
+         <g fill="#d4af37">
+            <circle cx="0" cy="-40" r="5"/>
+            <circle cx="-60" cy="-40" r="5"/>
+            <circle cx="60" cy="-40" r="5"/>
+            <circle cx="-70" cy="20" r="5"/>
+            <circle cx="70" cy="20" r="5"/>
+            <circle cx="-30" cy="-10" r="4"/>
+            <circle cx="30" cy="-10" r="4"/>
+         </g>
+      </g>
+    </g>
+
+    <g fill="#d4af37" stroke="#d4af37" stroke-width="2">
+        <path d="M-200,50 A200 200 0 0 1 -100,-173" fill="none"/>
+        <path d="M200,50 A200 200 0 0 0 100,-173" fill="none"/>
+        
+        <g>
+            <g transform="rotate(-70) translate(-200, 0)"><ellipse rx="12" ry="6"/></g>
+            <g transform="rotate(-80) translate(-200, 0)"><ellipse rx="12" ry="6"/></g>
+            <g transform="rotate(-90) translate(-200, 0)"><ellipse rx="12" ry="6"/></g>
+            <g transform="rotate(-100) translate(-200, 0)"><ellipse rx="12" ry="6"/></g>
+            <g transform="rotate(-110) translate(-200, 0)"><ellipse rx="12" ry="6"/></g>
+        </g>
+        <g>
+            <g transform="rotate(70) translate(200, 0)"><ellipse rx="12" ry="6"/></g>
+            <g transform="rotate(80) translate(200, 0)"><ellipse rx="12" ry="6"/></g>
+            <g transform="rotate(90) translate(200, 0)"><ellipse rx="12" ry="6"/></g>
+            <g transform="rotate(100) translate(200, 0)"><ellipse rx="12" ry="6"/></g>
+            <g transform="rotate(110) translate(200, 0)"><ellipse rx="12" ry="6"/></g>
+        </g>
+
+    </g>
+
+  </g>
+</svg>

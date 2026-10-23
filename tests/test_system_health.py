@@ -113,7 +113,9 @@ def test_env_vars():
         if not present:
             assert os.environ.get("AUREON_LIVE", "0") == "0"
             assert os.environ.get("AUREON_LIVE_TRADING", "0") == "0"
-            assert os.environ.get("AUREON_DRY_RUN", "0") == "1"
+            # Absent is dormant. An explicit 0 is not. The value must come
+            # from this process, not from a previous test's leaked safe-env.
+            assert os.environ.get("AUREON_DRY_RUN", "1") == "1"
         return None
 
     # Load .env if exists

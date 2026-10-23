@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1000" viewBox="0 0 1400 1000">
+  <style>
+    .title { font: 700 20px "Segoe UI", Roboto, Arial, sans-serif; fill: #04293a; }
+    .box-title { font: 700 14px "Segoe UI", Roboto, Arial, sans-serif; fill: #04293a; }
+    .box-body { font: 400 12px "Segoe UI", Roboto, Arial, sans-serif; fill: #03314b; }
+    .box { rx:10; ry:10; stroke:#03314b; stroke-width:1.5; fill:#f6fbff; }
+    .connector { stroke: #03314b; stroke-width:2; fill:none; marker-end: url(#arrow); }
+    .small { font-size:11px; fill:#03314b; }
+  </style>
+
+  <defs>
+    <marker id="arrow" markerUnits="strokeWidth" markerWidth="10" markerHeight="10" viewBox="0 0 10 10" refX="9" refY="5">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#03314b" />
+    </marker>
+  </defs>
+
+  <rect width="100%" height="100%" fill="#f4f9ff"/>
+
+  <!-- Title -->
+  <text x="700" y="40" text-anchor="middle" class="title">SAFE System Schematic — Auris / HNC style</text>
+
+  <!-- Sensors row -->
+  <g transform="translate(60,90)">
+    <rect class="box" width="1220" height="90" fill="#e8f3ff"/>
+    <text x="20" y="40" class="box-title">Sensors &amp; Telemetry</text>
+    <text x="20" y="62" class="box-body">EEG, HRV, skin conductance, system logs, model outputs, reward signals, resource monitors</text>
+  </g>
+
+  <!-- Monitoring &amp; Health -->
+  <g transform="translate(140,210)">
+    <rect class="box" width="380" height="120" fill="#fff8e6"/>
+    <text x="190" y="30" class="box-title" text-anchor="middle">Monitoring &amp; Health Agents</text>
+    <text x="190" y="55" class="box-body" text-anchor="middle">Compute Γ (Coherence), latencies, perf metrics, redundancy cross-checks</text>
+    <text x="190" y="75" class="box-body" text-anchor="middle">Confidence / uncertainty outputs</text>
+  </g>
+
+  <!-- Anomaly &amp; Tripwire -->
+  <g transform="translate(520,210)">
+    <rect class="box" width="360" height="120" fill="#ffeef0"/>
+    <text x="180" y="30" class="box-title" text-anchor="middle">Anomaly &amp; Tripwire Engine</text>
+    <text x="180" y="55" class="box-body" text-anchor="middle">Rule engine (Γ thresholds, reward bounds, lineage mismatch, integrity checks)</text>
+    <text x="180" y="75" class="box-body" text-anchor="middle">Generates tripwire events</text>
+  </g>
+
+  <!-- Safety Controller -->
+  <g transform="translate(940,210)">
+    <rect class="box" width="340" height="120" fill="#e9f8ee"/>
+    <text x="170" y="30" class="box-title" text-anchor="middle">Safety Controller / Quarantine Manager</text>
+    <text x="170" y="55" class="box-body" text-anchor="middle">Decides quarantine / sandbox / rollback / human escalation</text>
+    <text x="170" y="75" class="box-body" text-anchor="middle">Applies policy library &amp; recovery workflows</text>
+  </g>
+
+  <!-- Connectors from sensors to monitoring -->
+  <path class="connector" d="M180,180 L180,210" />
+  <path class="connector" d="M180,180 L540,210" />
+  <path class="connector" d="M180,180 L1000,210" />
+
+  <!-- From Monitoring to Tripwire -->
+  <path class="connector" d="M520,320 L640,320" />
+  <path class="connector" d="M520,340 L640,340" />
+
+  <!-- From Tripwire to Safety Controller -->
+  <path class="connector" d="M880,270 L940,270" />
+  <path class="connector" d="M880,310 L940,310" />
+
+  <!-- Lineage Registry -->
+  <g transform="translate(140,360)">
+    <rect class="box" width="420" height="120" fill="#fff7ef"/>
+    <text x="210" y="30" class="box-title" text-anchor="middle">Lineage Registry &amp; Integrity Store</text>
+    <text x="210" y="58" class="box-body" text-anchor="middle">Append-only log, checksums, cryptographic signatures, audit trail</text>
+    <text x="210" y="78" class="small" text-anchor="middle">Enables rollback and forensic analysis</text>
+  </g>
+
+  <!-- Sandbox &amp; Recovery -->
+  <g transform="translate(640,360)">
+    <rect class="box" width="420" height="120" fill="#f0fbf6"/>
+    <text x="210" y="30" class="box-title" text-anchor="middle">Sandbox / Recovery &amp; Rollback</text>
+    <text x="210" y="58" class="box-body" text-anchor="middle">Quarantined modules, read-only evaluation, rollback to verified versions</text>
+    <text x="210" y="78" class="small" text-anchor="middle">Automated rollback + operator re-test</text>
+  </g>
+
+
+  <path class="connector" d="M460,400 L940,370" />
+  <path class="connector" d="M460,440 L940,430" />
+
+  <!-- Human Oversight -->
+  <g transform="translate(140,520)">
+    <rect class="box" width="420" height="100" fill="#eef6ff"/>
+    <text x="210" y="35" class="box-title" text-anchor="middle">Human Oversight Interface</text>
+    <text x="210" y="62" class="box-body" text-anchor="middle">Dashboards, manual audit, overrides, re-enable controls</text>
+  </g>
+
+  <!-- Audit &amp; Forensics -->
+  <g transform="translate(640,520)">
+    <rect class="box" width="420" height="100" fill="#fff7f0"/>
+    <text x="210" y="35" class="box-title" text-anchor="middle">Audit &amp; Forensics</text>
+    <text x="210" y="62" class="box-body" text-anchor="middle">Safety logs, tripwire events, multi-lab replication records</text>
+  </g>
+
+  <!-- Arrows to Human and Audit from Safety Controller -->
+  <path class="connector" d="M1060,320 L1200,360" />
+  <path class="connector" d="M1200,360 L1200,540" />
+  <path class="connector" d="M1200,540 L1060,560" />
+  <path class="connector" d="M940,330 L820,560" />
+
+  <!-- Footer citations -->
+  <text x="700" y="960" font-family="Segoe UI, Roboto, Arial" font-size="12" text-anchor="middle" fill="#03314b">
+    Reconstructed SAFE schematic using Auris validation materials (lineage, quarantine, tripwires, acceptance criteria)
+  </text>
+</svg>

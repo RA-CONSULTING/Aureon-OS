@@ -1,0 +1,24 @@
+freshness:
+  prices_daily:
+    max_delay: "6h"
+  macro_daily:
+    max_delay: "24h"
+
+completeness:
+  prices_daily:
+    min_symbol_coverage: 0.99
+  macro_daily:
+    min_series_coverage: 0.98
+
+consistency:
+  allow_negative_prices: false
+  max_split_ratio: 20
+
+anomalies:
+  integrity_flag_rate:
+    min: 0.001
+    max: 0.2
+
+promotion_rules:
+  require_signed_officer_review: false
+  require_two_person_rule: true

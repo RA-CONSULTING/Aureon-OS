@@ -188,18 +188,33 @@ class ClownfishNode(AurisNode):
 # AURIS ENGINE
 # ═══════════════════════════════════════════════════════════════════════════════
 
+# Canonical Auris table: Tiger 220 … Clownfish 963.
+# The drifted Tiger 741 / Clownfish 639 assignment is not loaded.
+CANONICAL_AURIS_HZ = {
+    "Tiger": 220.0,
+    "Falcon": 285.0,
+    "Hummingbird": 396.0,
+    "Dolphin": 528.0,
+    "Deer": 639.0,
+    "Owl": 741.0,
+    "Panda": 852.0,
+    "CargoShip": 936.0,
+    "Clownfish": 963.0,
+}
+
+
 class AurisEngine:
     def __init__(self):
         self.nodes = [
-            TigerNode("Tiger", 1.2, 741.0),
-            FalconNode("Falcon", 1.1, 285.0),
-            HummingbirdNode("Hummingbird", 0.8, 963.0),
-            DolphinNode("Dolphin", 1.0, 528.0),
-            DeerNode("Deer", 0.9, 396.0),
-            OwlNode("Owl", 1.0, 432.0),
-            PandaNode("Panda", 0.95, 412.3),
-            CargoShipNode("CargoShip", 1.3, 174.0),
-            ClownfishNode("Clownfish", 0.7, 639.0)
+            TigerNode("Tiger", 1.2, CANONICAL_AURIS_HZ["Tiger"]),
+            FalconNode("Falcon", 1.1, CANONICAL_AURIS_HZ["Falcon"]),
+            HummingbirdNode("Hummingbird", 0.8, CANONICAL_AURIS_HZ["Hummingbird"]),
+            DolphinNode("Dolphin", 1.0, CANONICAL_AURIS_HZ["Dolphin"]),
+            DeerNode("Deer", 0.9, CANONICAL_AURIS_HZ["Deer"]),
+            OwlNode("Owl", 1.0, CANONICAL_AURIS_HZ["Owl"]),
+            PandaNode("Panda", 0.95, CANONICAL_AURIS_HZ["Panda"]),
+            CargoShipNode("CargoShip", 1.3, CANONICAL_AURIS_HZ["CargoShip"]),
+            ClownfishNode("Clownfish", 0.7, CANONICAL_AURIS_HZ["Clownfish"]),
         ]
         self.total_weight = sum(n.weight for n in self.nodes)
 

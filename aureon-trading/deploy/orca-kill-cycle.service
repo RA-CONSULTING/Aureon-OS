@@ -1,0 +1,19 @@
+[Unit]
+Description=Aureon Orca Kill Cycle - Autonomous Trading
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/aureon-trading
+Environment=PYTHONUNBUFFERED=1
+Environment=AUREON_ENV=production
+# Point to the VirtualEnv Python to satisfy numpy/pandas deps
+ExecStart=/root/aureon-trading/venv/bin/python orca_complete_kill_cycle.py --autonomous 50 10.0 1.0
+Restart=always
+RestartSec=10
+StartLimitBurst=5
+StartLimitIntervalSec=60
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,20 @@
+{
+  "front_run_count_24h": 19,
+  "total_orders_24h": 50,
+  "predators": {
+    "synthetic_hunter": {
+      "firm_id": "synthetic_hunter",
+      "times_detected": 19,
+      "avg_reaction_ms": 108.60916354188643,
+      "stalking_score": 1.0,
+      "symbols_targeted": [
+        "PEPE/USD",
+        "ETH/USD",
+        "BTC/USD"
+      ],
+      "last_seen": 1788738779.9871018,
+      "threat_level": "critical"
+    }
+  },
+  "last_updated": 1788738779.9871018
+}

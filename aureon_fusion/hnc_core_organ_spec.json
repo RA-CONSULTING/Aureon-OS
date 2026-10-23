@@ -1,0 +1,38 @@
+{
+  "organ": "hnc_core",
+  "description": "HNC CORE — the Master Equation organ. One shared upstream LambdaEngine stepped every 60s on live organism field data (Kp/Schumann/solar/x-ray + optional radar pulse); auto-persists hash-chained lambda_history.json into fusion state; publishes hnc.lambda (Gamma/rung/charge) at priority 5; chirps on Gamma<0.945 sustained 3 steps; mirrors each step into the SQLite memory (aureon_global_history.sqlite).",
+  "script": "C:\\Users\\user\\.kimi_openclaw\\workspace\\aureon_fusion\\hnc_core.py",
+  "args": ["run"],
+  "cwd": "C:\\Users\\user\\.kimi_openclaw\\workspace",
+  "mode": "continuous (60s HNC step)",
+  "interval_s": 60,
+  "log": "C:\\Users\\user\\.kimi_openclaw\\workspace\\logs\\organ_hnc_core.log",
+  "registry_entry_example": {
+    "hnc_core": {
+      "script": "C:\\Users\\user\\.kimi_openclaw\\workspace\\aureon_fusion\\hnc_core.py",
+      "args": ["run"],
+      "cwd": "C:\\Users\\user\\.kimi_openclaw\\workspace",
+      "mode": "continuous (60s HNC step)",
+      "log": "C:\\Users\\user\\.kimi_openclaw\\workspace\\logs\\organ_hnc_core.log"
+    }
+  },
+  "requires_release": false,
+  "capital_pin_touch": "none — this organ is compute/memory only; it never touches trading_execution gates",
+  "env_set_by_module": {
+    "AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS": "1",
+    "AUREON_AUDIT_MODE": "1",
+    "AUREON_HNC_PERSIST_EVERY": "1"
+  },
+  "state_files": [
+    "aureon_fusion/state/lambda_history.json",
+    "aureon_fusion/state/hnc_fitted_params.json",
+    "aureon_fusion/state/hnc_core_state.json",
+    "aureon_fusion/state/aureon_global_history.sqlite"
+  ],
+  "cli": {
+    "help": "python -m aureon_fusion.hnc_core --help",
+    "status": "python -m aureon_fusion.hnc_core status",
+    "smoke": "python -m aureon_fusion.hnc_core run --cycles 2 --interval 1"
+  },
+  "stop": "registry stop hnc_core (SIGINT-safe: final history commit in finally block)"
+}

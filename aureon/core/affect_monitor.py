@@ -269,7 +269,7 @@ class AffectMonitor:
         winrate, w_ok = self._val(sig, "shadow_winrate", 0.5)
         severity, s_ok = self._val(sig, "lighthouse_severity", 0.0)
         market, m_ok = self._val(sig, "market_confidence", 0.5)
-        approve, _ = self._val(sig, "action_approve_ratio", 0.5)
+        approve, approve_ok = self._val(sig, "action_approve_ratio", 0.5)
         trust, t_ok = self._val(sig, "approval_trust", 0.5)
         blockers, b_ok = self._val(sig, "safety_blockers", 0.0)
 
@@ -299,26 +299,38 @@ class AffectMonitor:
         # once he has decided, so his blessing steadies the organism and his rejections
         # make it appropriately humble — but resolve never feeds caution_bias, so trust
         # can only ever be felt, never used to loosen a gate.
-        resolve_terms = [approve, coherence, (1.0 - divergence)]
+        # Unobserved defaults stay out of resolve. A missing approve ratio is
+        # not a 0.5 blessing, and it must not outvote a measured fear.
+        resolve_terms = []
+        if c_ok:
+            resolve_terms.append(coherence)
+        if d_ok:
+            resolve_terms.append(1.0 - divergence)
+        if approve_ok:
+            resolve_terms.append(approve)
         if t_ok:
             resolve_terms.append(trust)
-        resolve = _clamp(sum(resolve_terms) / len(resolve_terms))
+        resolve = _clamp(sum(resolve_terms) / len(resolve_terms)) if resolve_terms else 0.0
 
         valence = max(-1.0, min(1.0, victory - defeat))
         arousal = _clamp(0.30 + 0.5 * fear + 0.2 * victory)
 
-        feelings = {"victory": victory, "defeat": defeat, "fear": fear, "resolve": resolve}
-        dominant = max(feelings, key=lambda k: feelings[k])
-        if feelings[dominant] < 0.15:
-            dominant, mood = "none", "SERENE"
+        # Resolve is the counter-feeling. It steadies the reading and can
+        # name a quiet RESOLUTE mood, but it does not outvote measured fear
+        # or victory.
+        passion = {"victory": victory, "defeat": defeat, "fear": fear}
+        dominant = max(passion, key=lambda k: passion[k])
+        if passion[dominant] < 0.15:
+            if resolve >= 0.15:
+                dominant, mood = "resolve", "RESOLUTE"
+            else:
+                dominant, mood = "none", "SERENE"
         elif dominant == "fear":
             mood = "FEARFUL"
         elif dominant == "victory":
             mood = "EUPHORIC" if victory > 0.6 else "CONFIDENT"
-        elif dominant == "defeat":
-            mood = "CAUTIOUS"
         else:
-            mood = "RESOLUTE"
+            mood = "CAUTIOUS"
 
         phase = self._select_phase(coherence, blockers > 0, achievement, winrate)
         available = c_ok or d_ok or a_ok or g_ok or w_ok or s_ok or m_ok or b_ok

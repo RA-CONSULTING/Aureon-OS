@@ -1,0 +1,26 @@
+universes:
+  - name: US_Large
+    exchanges: ["NYSE", "NASDAQ"]
+    description: >-
+      Daily equities with average dollar volume above $5M. Corporate actions adjusted using official exchange bulletins.
+    min_adv_usd: 5000000
+    symbols_path: s3://observatory-configs/symbols/us_large.csv
+  - name: Global_Index
+    providers: ["S&P", "MSCI", "FTSE"]
+    description: "Headline equity indices and ETFs for cross-market benchmarks."
+    symbols_path: s3://observatory-configs/symbols/global_index.csv
+
+macro_series:
+  - id: DGS10
+    provider: FRED
+    description: "10-Year Treasury Constant Maturity Rate"
+  - id: GDP
+    provider: WorldBank
+    frequency: quarterly
+
+space_series:
+  - id: KP_INDEX
+    provider: NOAA_SWPC
+  - id: SCHUMANN_AMP
+    provider: CUSTOM_SENSOR
+    disclaimer: "Experimental proxy aggregated from public ELF receivers."

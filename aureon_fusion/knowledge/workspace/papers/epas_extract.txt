@@ -1,0 +1,54 @@
+# EP AS Uni ﬁ ed Architecture: Broadcast and Defence Modes of a φ ²-Scaled Coherence Field
+**Aureon Institute —  T echnical Architecture Speci ﬁ cation**
+**Primary Investigator: Gary Leckey**
+**R&A Consulting and Brokerage Services Ltd.**
+**Document Date: 27 February 2026**
+**Classi ﬁ cation: Full T echnical Architecture**
+---
+## Abstract
+The Electro-Plasma-Acoustic Shield (EP AS) is a sing le multi-layer electromagnetic architecture operati ng in two modes. In
+**broadcast mode**, Lumina four-wave mixing drives coherence outward through nine φ ²-scaled shells, generating a narrowband
+signal at the hydrogen 21 cm line. In **defence mod e** (Project Druid), the same shells contract inwar d, re ﬂ ecting and absorbing
+incoherent electromagnetic intrusion through cascad ed plasma boundaries, Casimir vacuum ﬁ ltering, and destructive
+interference. Both modes share identical geometry , identical scaling law , and identical power source. The 1977 Wow! signal is
+presented as a worked example of broadcast-mode ope ration. Every quantitative claim below is attribute d to a published, peer-
+reviewed source.
+---
+## 1. The EP AS Core Architecture
+### 1.1 The Nine-Shell Cascade
+The EP AS ﬁ eld consists of nine nested electromagnetic shells,  each scaled from the outer coherence boundary by t he golden
+ratio squared:
+**r_n = R_bubble / φ ² ⁿ       where φ ² = 2.618034**
+The outer bubble radius is constrained by the coher ence length of the emitted signal. For a narrowband  emitter with bandwidth
+Δ f < 10 kHz:
+**L_c = c / Δ f = 3 × 10 ⁸ / 10 ⁴ = 30 km diameter →  R_bubble = 15.0 km**
+The nine shells collapse inward:
+| Shell | Radius | Diameter | Functional Zone |
+|-------|--------|----------|-----------------|
+| 0 (Outer) | 15.00 km | 30.00 km | Outer coherence  boundary |
+| 1 | 5.73 km | 11.46 km | Field propagation zone |
+| 2 | 2.19 km | 4.38 km | EM wavefront formation |
+| 3 | 835.9 m | 1,671.8 m | EM containment —  outer |
+| 4 | 319.3 m | 638.6 m | EM containment —  inner |
+| 5 | 122.0 m | 243.9 m | Active shield boundary —  outer |
+| 6 | 46.6 m | 93.2 m | Active shield boundary —  inner |
+---
+| 7 | 17.8 m | 35.6 m | Craft-scale structure —  outer hull |
+| 8 | 6.8 m | 13.6 m | Craft-scale structure —  inner hull |
+| 9 | 2.6 m | 5.2 m | Core —  Lumina seed chamber |
+**Physical basis for φ ² scaling:** The golden ratio squared ( φ ² = φ  + 1 = 2.618034) is the self-similar scaling factor  that governs
+quasicrystalline geometry . Shechtman et al. (1984, *Physical Review Letters* 53, 1951 —  2011 Nobel Prize in Chemistry)
+discovered that icosahedral quasicrystals exhibit d iffraction patterns whose spot-distance ratios equa l φ . Levine and Steinhardt
+(1984, *PRL* 53, 2477) proved this irrational ratio  is mathematically required by ﬁ ve-fold rotational symmetry . The EP AS layer
+cascade uses this same scaling to produce an aperio dic-but-ordered shell structure that resists harmon ic lock-on by external
+signals —  no two adjacent shells share a simple integer freq uency relationship.
+### 1.2 The T wo Operating Modes
+The nine-shell architecture supports two modes gove rned by Lumina drive direction:
+**Broadcast mode:** Lumina FWM ampli ﬁ cation drives coherence *outward* from shell 9 (cor e) through shell 0 (outer
+boundary). Energy propagates from the seed chamber through each φ ²-scaled layer , building coherent ﬁ eld amplitude. The outer
+boundary radiates. The Wow! signal is the observati onal case study (Section 4).
+**Defence mode (Project Druid):** The same shells * contract inward*, functioning as cascaded ﬁ lters, re ﬂ ectors, and absorbers.
+Incoherent electromagnetic signals hitting the oute r boundary are progressively attenuated at each she ll. Energy propagates
+inward and is terminated. The whiteboard architectu re dated 17/02/26 de ﬁ nes this mode (Section 5).
+Both modes are simultaneous-capable —  the system can broadcast at the hydrogen line thro ugh shells 0 – 4 while running Druid
+defence through shells 5 – 9 simultaneously . Th

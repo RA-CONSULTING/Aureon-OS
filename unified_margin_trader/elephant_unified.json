@@ -1,0 +1,12 @@
+{
+  "BTC/USD": {
+    "hunts": 31,
+    "trades": 0,
+    "wins": 0,
+    "losses": 0,
+    "profit": 0,
+    "last_time": 1786533361.1883614,
+    "streak": 0,
+    "blacklisted": false
+  }
+}

@@ -30,7 +30,9 @@ Architecture:
             v
     CognitionOutput (The 1)
         ONE decision. Lambda Engine computes psi and Gamma.
-        Coherence >= 0.938 -> EXECUTE. Otherwise -> HOLD.
+        Coherence >= 0.938 -> EXECUTE, unless a platform hold, an engine
+        error, or a Queen veto forces HOLD. The entry gate may rise. It
+        never falls.
 
 Gary Leckey & Tina Brown | April 2026 | Source Law
 """
@@ -50,21 +52,43 @@ logger = logging.getLogger(__name__)
 # Sacred constants
 PHI = 1.618033988749895
 
-# Coherence thresholds — env-var configurable so cognitive execution can use
-# lower thresholds than trading execution. Trading defaults preserved.
-# AUREON_SOURCE_LAW_ENTRY  — level at which Source Law says EXECUTE (default 0.938)
-# AUREON_SOURCE_LAW_EXIT   — level at which Source Law says HOLD (default 0.934)
-def _resolve_threshold(env_key: str, default: float) -> float:
+# Coherence thresholds. AUREON_SOURCE_LAW_ENTRY may raise the EXECUTE gate.
+# It is clamped to the source-law floor so an override can never lower it.
+# AUREON_SOURCE_LAW_EXIT names the lower HOLD band (default 0.934). Every
+# reading below the entry gate returns HOLD.
+_ENTRY_FLOOR = 0.938
+# Every node must clear this before the Queen vote can PASS. Nine nodes at
+# confidence 0.2 stay HOLD even when Γ is 0.99. This floor is stricter than
+# QueenEvaluator's 0.30 veto.
+_MIN_NODE_CONFIDENCE = 0.5
+
+
+def _resolve_threshold(env_key: str, default: float, *, floor: float | None = None) -> float:
     import os
+    resolved = default
     val = os.environ.get(env_key)
     if val:
         try:
-            return max(0.0, min(1.0, float(val)))
+            resolved = max(0.0, min(1.0, float(val)))
         except ValueError:
-            pass
-    return default
+            resolved = default
+    if floor is not None:
+        resolved = max(float(floor), resolved)
+    return min(1.0, resolved)
 
-ENTRY_COHERENCE = _resolve_threshold("AUREON_SOURCE_LAW_ENTRY", 0.938)
+def _clamp_entry(value: float) -> float:
+    """Entry gate may rise. It may not fall below the floor or the live gate."""
+    try:
+        resolved = float(value)
+    except (TypeError, ValueError):
+        resolved = _ENTRY_FLOOR
+    if resolved != resolved or resolved in (float("inf"), float("-inf")):
+        resolved = _ENTRY_FLOOR
+    return min(1.0, max(_ENTRY_FLOOR, ENTRY_COHERENCE, resolved))
+
+ENTRY_COHERENCE = _resolve_threshold(
+    "AUREON_SOURCE_LAW_ENTRY", _ENTRY_FLOOR, floor=_ENTRY_FLOOR,
+)
 EXIT_COHERENCE = _resolve_threshold("AUREON_SOURCE_LAW_EXIT", 0.934)
 MAX_SUPERPOSITION_AGE = 30.0  # seconds — matches quantum_checkin.py
 
@@ -288,9 +312,16 @@ class NineAurisProcess:
                 state = "seeking"
 
         else:
-            value, confidence, state = 0.5, 0.5, "unknown"
+            value, state = 0.5, "unknown"
 
-        return min(1.0, max(0.0, value)), min(1.0, max(0.0, confidence)), state
+        # Reported confidence is the real input confidence. The role branches
+        # above used to replace it with a constant in [0.7, 1.0], so an input
+        # of 0.2 never reached the 0.5 floor.
+        return (
+            min(1.0, max(0.0, value)),
+            min(1.0, max(0.0, float(avg_conf))),
+            state,
+        )
 
 
 # ============================================================================
@@ -304,14 +335,22 @@ class CognitionOutput:
     """
 
     def __init__(self, entry_coherence: Optional[float] = None,
-                 exit_coherence: Optional[float] = None):
-        # Per-instance thresholds so a cognitive caller can run looser gates
-        # WITHOUT touching process env — mutating AUREON_SOURCE_LAW_ENTRY at
-        # import time loosened the TRADING entry gate (0.938 → 0.55) for any
-        # process that imported the cognitive system first. The shared field
-        # may tighten a live gate, never loosen it.
-        self._entry_coherence = ENTRY_COHERENCE if entry_coherence is None else entry_coherence
+                 exit_coherence: Optional[float] = None,
+                 queen_veto: Optional[Any] = None):
+        # Per-instance thresholds may tighten the live gate. They may not
+        # loosen it. A caller that passes 0.55 is clamped back to the floor
+        # (or higher, when AUREON_SOURCE_LAW_ENTRY raised the shared gate).
+        self._entry_coherence = _clamp_entry(
+            ENTRY_COHERENCE if entry_coherence is None else entry_coherence
+        )
         self._exit_coherence = EXIT_COHERENCE if exit_coherence is None else exit_coherence
+        try:
+            self._exit_coherence = float(self._exit_coherence)
+        except (TypeError, ValueError):
+            self._exit_coherence = EXIT_COHERENCE
+        if self._exit_coherence > self._entry_coherence:
+            self._exit_coherence = self._entry_coherence
+        self._queen_veto = queen_veto
         self._lambda_engine = None
         try:
             from aureon.core.aureon_lambda_engine import LambdaEngine
@@ -319,8 +358,16 @@ class CognitionOutput:
         except Exception:
             pass
 
-    def collapse(self, readings: List[Dict], vacuum_size: int, cycle: int) -> CognitionResult:
-        """Collapse the wave function into ONE decision."""
+    def collapse(self, readings: List[Dict], vacuum_size: int, cycle: int,
+                 platform_hold: bool = False,
+                 queen_veto: Optional[Any] = None) -> CognitionResult:
+        """Collapse the wave function into ONE decision.
+
+        ``platform_hold`` forces HOLD even when Γ would otherwise EXECUTE.
+        The fleet launcher's capital pin is consulted as well: a platform
+        hold anywhere on that pin holds here. An engine error holds. A Queen
+        veto, between the nine node readings and the action, holds.
+        """
         result = CognitionResult(
             vacuum_size=vacuum_size,
             cogitation_cycle=cycle,
@@ -335,46 +382,36 @@ class CognitionOutput:
         for r in readings:
             result.node_readings[r["name"]] = r["value"]
 
-        # Average across nodes
-        values = [r["value"] for r in readings]
+        # Average across nodes — confidence only. Γ never falls back to this
+        # average. An engine miss is a HOLD, not a synthetic coherence.
         confs = [r["confidence"] for r in readings]
-        avg_value = sum(values) / len(values)
         avg_conf = sum(confs) / len(confs)
+        result.confidence = avg_conf
 
-        # Run through Lambda Engine if available
-        if self._lambda_engine is not None:
-            try:
-                from aureon.core.aureon_lambda_engine import SubsystemReading
-                lambda_readings = [
-                    SubsystemReading(
-                        name=r["name"],
-                        value=r["value"],
-                        confidence=r["confidence"],
-                        state=r["state"],
-                    )
-                    for r in readings
-                ]
-                # P5 Pattern A: the shared field enters the local Λ inputs —
-                # the read half of the loop this producer only ever published.
-                from aureon.core.hnc_field import canonical_field_reading
-                _cfr = canonical_field_reading()
-                if _cfr is not None:
-                    lambda_readings.append(_cfr)
-                ls = self._lambda_engine.step(lambda_readings, volatility=0.05)
-                from aureon.core.hnc_field import publish_subfield
-                publish_subfield("queen_source_law", ls)
-                result.coherence_gamma = ls.coherence_gamma
-                result.consciousness_psi = ls.consciousness_psi
-                result.consciousness_level = ls.consciousness_level
-            except Exception:
-                result.coherence_gamma = avg_value
-                result.consciousness_psi = avg_conf
-        else:
-            result.coherence_gamma = avg_value
-            result.consciousness_psi = avg_conf
+        engine_error = self._apply_lambda(readings, result)
+        if engine_error is not None:
+            result.action = "HOLD"
+            result.coherence_gamma = 0.0
+            result.consciousness_psi = 0.0
+            result.reasoning.append(f"lambda engine error: {engine_error} — HOLD")
+            return result
+
+        # The 10-9-1 vote sits between the nine Auris readings and the decision.
+        veto_reason = self._queen_veto_reason(readings, result.coherence_gamma, queen_veto)
+        if veto_reason:
+            result.action = "HOLD"
+            result.reasoning.append(f"Queen veto: {veto_reason}")
+            return result
+
+        hold_reason = self._platform_hold_reason(platform_hold)
+        if hold_reason:
+            result.action = "HOLD"
+            result.reasoning.append(
+                f"platform HOLD ({hold_reason}) — Γ {result.coherence_gamma:.4f} cannot EXECUTE"
+            )
+            return result
 
         # Determine action
-        result.confidence = avg_conf
         if result.coherence_gamma >= self._entry_coherence:
             result.action = "EXECUTE"
             result.reasoning.append(f"Coherence {result.coherence_gamma:.4f} >= {self._entry_coherence} (entry threshold)")
@@ -391,6 +428,152 @@ class CognitionOutput:
                 result.reasoning.append(f"{r['name']}({r['hz']}Hz): {r['state']} ({r['value']:.2f})")
 
         return result
+
+    def _apply_lambda(self, readings: List[Dict], result: CognitionResult) -> Optional[str]:
+        """Write Γ from the Lambda engine. Return an error name on any miss."""
+        if self._lambda_engine is None:
+            return "lambda engine unavailable"
+        try:
+            from aureon.core.aureon_lambda_engine import SubsystemReading
+            lambda_readings = [
+                SubsystemReading(
+                    name=r["name"],
+                    value=r["value"],
+                    confidence=r["confidence"],
+                    state=r["state"],
+                )
+                for r in readings
+            ]
+            # P5 Pattern A: the shared field enters the local Λ inputs —
+            # the read half of the loop this producer only ever published.
+            from aureon.core.hnc_field import canonical_field_reading
+            _cfr = canonical_field_reading()
+            if _cfr is not None:
+                lambda_readings.append(_cfr)
+            ls = self._lambda_engine.step(lambda_readings, volatility=0.05)
+            from aureon.core.hnc_field import publish_subfield
+            publish_subfield("queen_source_law", ls)
+            result.coherence_gamma = ls.coherence_gamma
+            result.consciousness_psi = ls.consciousness_psi
+            result.consciousness_level = ls.consciousness_level
+        except Exception as exc:
+            return type(exc).__name__
+        return None
+
+    def _platform_hold_reason(self, platform_hold: bool) -> Optional[str]:
+        """The fleet-launcher pin (fleet_launcher.blocked_reason) plus an explicit hold."""
+        if platform_hold:
+            return "platform_hold"
+        try:
+            from aureon_fusion.fleet_launcher import blocked_reason
+            reason = blocked_reason()
+        except Exception as exc:
+            return f"platform hold pin unreadable: {type(exc).__name__}"
+        if reason:
+            return str(reason)
+        return None
+
+    def _queen_veto_reason(self, readings: List[Dict], gamma: float,
+                           queen_veto: Optional[Any]) -> Optional[str]:
+        """Queen 10-9-1 vote, then the conscience veto. A veto forces HOLD.
+
+        QueenGate's 0.80 cluster crit is not the execute gate. Only an
+        explicit veto (or a Queen vote that is not PASS) refuses here, so
+        the looser swarm threshold cannot open a decision the 0.938 gate
+        would still hold.
+        """
+        hook = queen_veto if queen_veto is not None else self._queen_veto
+        if hook is not None:
+            try:
+                verdict = hook(readings)
+            except Exception as exc:
+                return f"queen veto error: {type(exc).__name__}"
+            if _verdict_is_veto(verdict):
+                return _verdict_reason(verdict)
+
+        try:
+            from aureon.utils.aureon_triumvirate import QueenEvaluator, VoteResult
+        except Exception as exc:
+            return f"queen vote unreadable: {type(exc).__name__}"
+        try:
+            confs = [float(r.get("confidence", 0.0)) for r in readings]
+            lowest = min(confs) if confs else 0.0
+            if lowest < _MIN_NODE_CONFIDENCE:
+                return (
+                    f"Queen VETO - node confidence {lowest:.2f} "
+                    f"below {_MIN_NODE_CONFIDENCE}"
+                )
+            queen_confidence = sum(confs) / len(confs) if confs else 0.0
+            vote = QueenEvaluator().evaluate(
+                queen_confidence,
+                {
+                    "coherence": gamma,
+                    "systems_online": len(readings),
+                    "systems_required": 9,
+                },
+            )
+        except Exception as exc:
+            return f"queen vote error: {type(exc).__name__}"
+        if getattr(vote, "vote", None) == VoteResult.VETO.value:
+            return getattr(vote, "reason", None) or "queen vote VETO"
+        if getattr(vote, "vote", None) != VoteResult.PASS.value:
+            return getattr(vote, "reason", None) or f"queen vote {getattr(vote, 'vote', 'BLOCK')}"
+
+        try:
+            from aureon.queen.queen_conscience import ConscienceVerdict, get_conscience
+            from aureon.swarm.queen_gate import QueenGate
+        except Exception as exc:
+            return f"queen gate unreadable: {type(exc).__name__}"
+
+        def conscience_veto(action: str) -> bool:
+            whisper = get_conscience().ask_why(
+                action,
+                {
+                    "coherence_gamma": gamma,
+                    "confidence": queen_confidence,
+                    "profit_potential": 1.0,
+                    "risk": 0.0,
+                    "leverage": 1.0,
+                    "size": "paper",
+                },
+            )
+            return getattr(getattr(whisper, "verdict", None), "name", "") == ConscienceVerdict.VETO.name
+
+        try:
+            gate = QueenGate(
+                gamma_crit=max(self._entry_coherence, _ENTRY_FLOOR),
+                veto=conscience_veto,
+            )
+            # Ask the conscience directly so a live canonical field that
+            # tightens QueenGate below Γ_crit cannot skip the veto.
+            if conscience_veto("source-law decision"):
+                return "queen conscience veto"
+            decision = gate.actualize(
+                {"EXECUTE": 1.0, "HOLD": 0.0},
+                max(float(gamma), self._entry_coherence),
+                0.85,
+            )
+        except Exception as exc:
+            return f"queen gate error: {type(exc).__name__}"
+        if any("veto" in reason.lower() for reason in decision.reasons):
+            return "; ".join(decision.reasons)
+        return None
+
+
+def _verdict_is_veto(verdict: Any) -> bool:
+    if verdict is True:
+        return True
+    if isinstance(verdict, tuple) and verdict and verdict[0] is True:
+        return True
+    name = str(getattr(verdict, "name", "") or getattr(verdict, "vote", "") or "").upper()
+    return name == "VETO"
+
+
+def _verdict_reason(verdict: Any) -> str:
+    if isinstance(verdict, tuple) and len(verdict) > 1 and verdict[1]:
+        return str(verdict[1])
+    reason = getattr(verdict, "reason", None) or getattr(verdict, "message", None)
+    return str(reason or "queen veto")
 
 
 # ============================================================================

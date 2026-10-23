@@ -617,7 +617,10 @@ def test_same_size_a_b_tree_race_fails_at_single_manifest_binding(
     root, receipt = _repo(tmp_path)
     target = receipt.parent / "website" / "index.html"
     before = target.read_bytes()
-    replacement = b"<h1>Altered!!</h1>\r\n"
+    # Same length as the fixture bytes, on LF and CRLF checkouts.
+    marker = b"Altered!!"
+    replacement = marker + before[len(marker) :]
+    assert replacement != before
     assert len(replacement) == len(before)
 
     original_verify = compiler.candidate_control.verify_staged_candidate_receipt

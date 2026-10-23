@@ -1,0 +1,23 @@
+{
+  "glyph_id": "prime-anchor",
+  "version": "1.0",
+  "title": "Prime Anchor Glyph Metadata",
+  "hash": "sha256:prime-anchor-glyph",
+  "author": "Gary Leckey",
+  "created_at": "2025-10-20T22:10:00Z",
+  "geometry": {
+    "shape": "nested-triad",
+    "layers": 3,
+    "color_palette": ["#8A2BE2", "#FFD700", "#1C1F4A"],
+    "annotations": [
+      "Outer ring encodes Guardian Bridge",
+      "Middle lattice holds consent weave",
+      "Inner spark references Alfie future"
+    ]
+  },
+  "usage": {
+    "compiler_reference": "04_Symbolic_Compiler_v2.json",
+    "guardian_digest_slot": "prime-anchor",
+    "display_hint": "Render at 144px with transparent background"
+  }
+}
