@@ -861,10 +861,7 @@ def probe_ignition(root: Path) -> CapabilityProof:
             status="repair_pending",
             summary="Ignition audit is missing.",
             systems=["scripts/aureon_ignition.py"],
-            next_action=(
-                "Run the fixed repository Python with -I -S -B against "
-                "scripts/bootstrap/protected_bootstrap_v05.py --target-id ignition; expect HOLD."
-            ),
+            next_action="python scripts/aureon_ignition.py --audit-only",
         )
     checks = data.get("checks") or []
     failed = [check for check in checks if check.get("required") and not check.get("ok")]

@@ -16,6 +16,17 @@ services:
       - ALL
     security_opt:
       - no-new-privileges:true
+# Held operator contract. Names are recorded only. This preflight injects
+# none of them, starts no listener, and does not arm orders.
+# AUREON_OPERATOR_ENV
+# AUREON_OPERATOR_API_KEY: "${AUREON_OPERATOR_API_KEY:?
+# AUREON_OPERATOR_RATE_RPS
+# AUREON_OPERATOR_RATE_BURST
+# AUREON_OPERATOR_MAX_BODY
+# AUREON_OPERATOR_TRUSTED_PROXY_CIDRS
+# AUREON_OPERATOR_HTTP_PROCESSES
+# AUREON_OPERATOR_REPLICAS
+# replicas: 1
   frontend-protection-preflight:
     build:
       context: ..

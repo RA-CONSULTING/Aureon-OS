@@ -299,23 +299,25 @@ def test_ambiguous_submission_suppresses_all_duplicate_attempts() -> None:
 
 
 @pytest.mark.parametrize(
-    "provider_receipt, expected_reason",
+    "build_provider_receipt, expected_reason",
     [
         (
-            binance_fill(provider_time=time.time() - 600),
+            lambda: binance_fill(provider_time=time.time() - 600),
             "missing_stale_or_future_provider_fill_timestamp",
         ),
         (
-            binance_fill(commission_asset="BNB"),
+            lambda: binance_fill(commission_asset="BNB"),
             "provider_fee_conversion_receipt_required",
         ),
     ],
 )
 def test_stale_or_unconvertible_entry_receipt_is_quarantined_without_mutation(
-    provider_receipt: dict[str, Any],
+    build_provider_receipt,
     expected_reason: str,
 ) -> None:
-    client = OfflineClient(responses=[provider_receipt])
+    # Stamp the provider clock when the test runs. A collection-time
+    # time.time() goes stale once the suite passes the 300s receipt window.
+    client = OfflineClient(responses=[build_provider_receipt()])
     trader = make_trader(client)
 
     receipt = trader.enter_position(opportunity(), 1_000.0)

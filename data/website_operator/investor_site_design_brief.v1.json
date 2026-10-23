@@ -20,7 +20,7 @@
   },
   "research_refresh": {
     "declaration_path": "data/website_operator/design_research_sources.v1.json",
-    "declaration_sha256": "C03D421BBBA490D4B7AAA8603C4C3849FA2554CD5AAC16B4053334DF5E70D7C7",
+    "declaration_sha256": "2837A25B11EBA290973616912951705C36E16D45DFB5443CA986189E161E90D9",
     "required_state": "current",
     "required_passed": true,
     "artwork_state": "not-cleared",
@@ -28,7 +28,7 @@
   },
   "feedback_control": {
     "feedback_path": "data/website_operator/design_stakeholder_feedback.v1.json",
-    "feedback_sha256": "A9DC7F847B926FF7E762A0F01EC58357D084624F05D5529E4A9596A96EF5C4DE",
+    "feedback_sha256": "05FD3A4AB24F3DCADE31554D01D6818C740616390A72F05AAF2F94A93D02A1AC",
     "required_state": "current",
     "required_passed": true,
     "signal_ids": [
@@ -43,7 +43,7 @@
   },
   "claim_control": {
     "register_path": "data/website_operator/public_claim_evidence_register.v1.json",
-    "register_sha256": "78032392BD3ECED2C5C9B294415AD6D2C6380FF903F7E43844C191AFD99C99A7",
+    "register_sha256": "7AB639804E504E1B9514BA8339C626D59F0E0FECA8021099EDC97746AFE04FC9",
     "claim_ids": [
       "company-research-led-systems",
       "hnc-research-framework",
@@ -69,25 +69,25 @@
     {
       "id": "research-catalogue",
       "path": "website/data/research-catalogue.json",
-      "sha256": "DFDBEEAF1D82B01788C0EFC590593B7E0F3B7D95ED97BDB83F4B273A19ED3456",
+      "sha256": "6048D03C061C87D92EBA9B4A0BCFA41393F2F0CE8CAF5A25AE7A4503071DB867",
       "role": "Public research identity, catalogue and cross-sector orientation source."
     },
     {
       "id": "innovation-map",
       "path": "website/data/innovation-map.json",
-      "sha256": "C6DE2DB3388190C3C650FCAC5087F5F5C7BE83D9D26C406B50FCEE90A7EBF121",
+      "sha256": "5C8C622A86A092CDED65FA68135AE2395E7288A6FFFA5E621B5F63C92D79E04A",
       "role": "Shared-core application thesis and inspectable-system boundary source."
     },
     {
       "id": "public-attention-updates",
       "path": "website/data/updates.json",
-      "sha256": "794D20BBDCD709E7E3C3111F69721DD4515E84D06563158CB7DF374879A85BCD",
+      "sha256": "31FF4294C48757B4A1A1F4C78AD5C5977F5D6193AA26B5BE2830EF548A30035D",
       "role": "Dated public research-attention signals with explicit non-adoption boundaries."
     },
     {
       "id": "company-positioning",
       "path": "website/data/blades.json",
-      "sha256": "6FDC9D71BA07CAB611A87CFBC6638B79F45F4AADF73A92CD8B5B9A80CF02E962",
+      "sha256": "F114A72A182FCDAD61953F92B0C9C5812362B6FAC4B8A27F7DB6EBED7A4946C2",
       "role": "Research-led company positioning and evidence-labelled application source."
     },
     {

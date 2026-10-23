@@ -48,7 +48,7 @@
       "expires_at": "2026-08-26T19:00:00Z",
       "snapshot": {
         "path": "website/data/research-catalogue.json",
-        "sha256": "DFDBEEAF1D82B01788C0EFC590593B7E0F3B7D95ED97BDB83F4B273A19ED3456"
+        "sha256": "6048D03C061C87D92EBA9B4A0BCFA41393F2F0CE8CAF5A25AE7A4503071DB867"
       },
       "claim_ids": [
         "orcid-research-identity",

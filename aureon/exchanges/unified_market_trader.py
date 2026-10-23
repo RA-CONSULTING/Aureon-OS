@@ -5650,7 +5650,7 @@ class UnifiedMarketTrader:
                     f"{venue_norm}:free-balance:{candidate}",
                     lambda candidate=candidate: {"balance": client.get_free_balance(candidate)},
                     min_interval_sec=0.0,
-                    stale_ttl_sec=0.0,
+                    stale_ttl_sec=PROBE_SYMBOL_STALE_TTL_SEC,
                 )
             except Exception:
                 continue

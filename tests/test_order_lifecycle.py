@@ -306,13 +306,17 @@ def test_order_lifecycle_does_not_duplicate_active_row_outside_top_summaries(tmp
     assert lifecycle.is_active_route(active_route, root=tmp_path) is True
 
 
-@pytest.mark.skip(
-    reason='Capital close no longer writes state/unified_order_lifecycle_latest.json before the absent-position check.'
-)
 def test_capital_close_requires_absent_position_before_position_closed(monkeypatch, tmp_path):
     from aureon.exchanges.capital_cfd_trader import CFDPosition, CapitalCFDTrader
 
+    from aureon.exchanges import capital_cfd_trader as capital_module
+
     monkeypatch.setattr(lifecycle, "REPO_ROOT", tmp_path)
+    monkeypatch.setattr(
+        capital_module,
+        "CAPITAL_EXECUTION_JOURNAL_PATH",
+        tmp_path / "capital_cfd_pending_execution.json",
+    )
 
     class StillOpenClient:
         def close_position(self, deal_id):

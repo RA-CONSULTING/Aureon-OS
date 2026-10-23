@@ -36,6 +36,9 @@ OPERATOR_PACKAGE_ASSETS = frozenset(
         OPERATOR_PACKAGE_PREFIX + "operator/website_operator.defaults.json",
         OPERATOR_PACKAGE_PREFIX + "operator/website_operator.schema.json",
         OPERATOR_PACKAGE_PREFIX + "operator/website_operator_receipts.schema.json",
+        OPERATOR_PACKAGE_PREFIX + "operator/wearable/icon-192.png",
+        OPERATOR_PACKAGE_PREFIX + "operator/wearable/icon-512.png",
+        OPERATOR_PACKAGE_PREFIX + "operator/wearable/icon-maskable.png",
         OPERATOR_PACKAGE_PREFIX + "operator/wearable/icon.svg",
         OPERATOR_PACKAGE_PREFIX + "operator/wearable/index.html",
         OPERATOR_PACKAGE_PREFIX + "operator/wearable/manifest.webmanifest",
@@ -62,16 +65,22 @@ OPERATOR_PACKAGE_RUNTIME_STATE = frozenset(
     }
 )
 
-# Static analysis of the full package finds these repository-local imports
-# outside ``aureon``.  They are explicit because broad sibling-directory copies
-# would pull ledgers, fixtures, and unrelated launchers into the VM release.
+# Static analysis of the package finds these repository-local imports outside
+# ``aureon``.  Upstream-prefixed paths are the release names; the live checkout
+# resolves the same modules without the ``aureon-os-upstream/`` directory.
+# They are explicit because broad sibling-directory copies would pull ledgers,
+# fixtures, and unrelated launchers into the VM release.
 OPERATOR_COMPANION_SOURCES = frozenset(
     {
         "aureon_fusion/__init__.py",
-        "aureon_fusion/conscience_hook.py",
         "aureon_fusion/events.py",
+        "aureon_fusion/fleet_launcher.py",
+        "aureon_fusion/flight_recorder.py",
+        "aureon_fusion/hnc_core.py",
+        "aureon_fusion/organ_registry.py",
         "aureon_fusion/paths.py",
         "aureon_fusion/receipts.py",
+        "aureon_fusion/unity_supervisor.py",
         "aureon-os-upstream/Kings_Accounting_Suite/tools/accounting_system_registry.py",
         "aureon-os-upstream/Kings_Accounting_Suite/tools/combined_bank_data.py",
         "aureon-os-upstream/aureon_mycelium.py",
@@ -86,9 +95,6 @@ OPERATOR_COMPANION_SOURCES = frozenset(
         "aureon-os-upstream/scripts/validation/audit_os_protection_boundaries.py",
         "aureon-os-upstream/scripts/validation/audit_saas_compliance.py",
         "aureon-os-upstream/scripts/validation/validate_real_data_contract.py",
-        "sero_chirp.py",
-        "sero_conscience_engine.py",
-        "sero_thoughtbus.py",
     }
 )
 
@@ -121,6 +127,20 @@ _PACKAGE_SENTINELS = frozenset(
         OPERATOR_PACKAGE_PREFIX + "operator/__init__.py",
         OPERATOR_ENTRYPOINT,
     }
+)
+_SENTINEL_SUFFIXES = frozenset(
+    {
+        "__init__.py",
+        "operator/__init__.py",
+        "operator/operator_server.py",
+    }
+)
+_ASSET_SUFFIXES = frozenset(
+    path[len(OPERATOR_PACKAGE_PREFIX) :] for path in OPERATOR_PACKAGE_ASSETS
+)
+_RUNTIME_STATE_SUFFIXES = frozenset(
+    path[len(OPERATOR_PACKAGE_PREFIX) :]
+    for path in OPERATOR_PACKAGE_RUNTIME_STATE
 )
 _BLOCKED_PARTS = frozenset(
     {
@@ -162,41 +182,66 @@ def _digest_json(value: object) -> str:
     return hashlib.sha256(encoded).hexdigest()
 
 
-def _package_path_kind(relative: str) -> str:
+def _checked_package_prefix(package_prefix: str) -> str:
+    if package_prefix == OPERATOR_PACKAGE_PREFIX:
+        return package_prefix
+    if not package_prefix.endswith("/"):
+        raise OperatorRuntimeClosureError("invalid_operator_runtime_path")
+    _repo_path(package_prefix[:-1])
+    return package_prefix
+
+
+def _package_path_kind(
+    relative: str,
+    package_prefix: str = OPERATOR_PACKAGE_PREFIX,
+) -> str:
     """Classify one tracked path beneath the Aureon package."""
     relative = _repo_path(relative)
-    if not relative.startswith(OPERATOR_PACKAGE_PREFIX):
+    prefix = _checked_package_prefix(package_prefix)
+    if not relative.startswith(prefix):
         raise OperatorRuntimeClosureError("operator_package_path_required")
+    suffix = relative[len(prefix) :]
     parts = tuple(part.casefold() for part in PurePosixPath(relative).parts)
     name = parts[-1]
     if any(part in _BLOCKED_PARTS or part.startswith(".env") for part in parts):
         raise OperatorRuntimeClosureError("private_operator_package_path_forbidden")
-    if relative in OPERATOR_PACKAGE_RUNTIME_STATE:
+    if suffix in _RUNTIME_STATE_SUFFIXES:
         return "runtime_state"
-    if relative in OPERATOR_PACKAGE_ASSETS:
+    if suffix in _ASSET_SUFFIXES:
         return "asset"
     if name.endswith(".py"):
         return "python"
     raise OperatorRuntimeClosureError("unclassified_operator_package_asset")
 
 
-def operator_package_runtime_sources(tracked_paths: Iterable[str]) -> tuple[str, ...]:
-    """Return every immutable tracked package input, rejecting ambiguity."""
+def operator_package_runtime_sources(
+    tracked_paths: Iterable[str],
+    *,
+    package_prefix: str = OPERATOR_PACKAGE_PREFIX,
+) -> tuple[str, ...]:
+    """Return every immutable tracked package input, rejecting ambiguity.
+
+    ``OPERATOR_PACKAGE_PREFIX`` stays the release pin.  A checkout whose
+    package lives at another relative root, such as ``aureon/``, may pass that
+    root and is classified by the same asset and runtime-state suffixes.
+    """
+    prefix = _checked_package_prefix(package_prefix)
     package_paths: list[str] = []
     seen: set[str] = set()
     for raw in tracked_paths:
         relative = _repo_path(raw)
-        if not relative.startswith(OPERATOR_PACKAGE_PREFIX):
+        if not relative.startswith(prefix):
             continue
         folded = relative.casefold()
         if folded in seen:
             raise OperatorRuntimeClosureError("duplicate_operator_package_path")
         seen.add(folded)
-        kind = _package_path_kind(relative)
+        kind = _package_path_kind(relative, prefix)
         if kind != "runtime_state":
             package_paths.append(relative)
     selected = tuple(sorted(package_paths))
-    if not _PACKAGE_SENTINELS.issubset(selected):
+    sentinels = frozenset(prefix + suffix for suffix in _SENTINEL_SUFFIXES)
+    if not sentinels.issubset(selected):
         raise OperatorRuntimeClosureError("operator_package_entrypoints_missing")
     return selected
 

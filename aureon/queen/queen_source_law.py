@@ -312,9 +312,16 @@ class NineAurisProcess:
                 state = "seeking"
 
         else:
-            value, confidence, state = 0.5, 0.5, "unknown"
+            value, state = 0.5, "unknown"
 
-        return min(1.0, max(0.0, value)), min(1.0, max(0.0, confidence)), state
+        # Reported confidence is the real input confidence. The role branches
+        # above used to replace it with a constant in [0.7, 1.0], so an input
+        # of 0.2 never reached the 0.5 floor.
+        return (
+            min(1.0, max(0.0, value)),
+            min(1.0, max(0.0, float(avg_conf))),
+            state,
+        )
 
 
 # ============================================================================

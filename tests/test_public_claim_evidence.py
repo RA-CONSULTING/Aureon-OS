@@ -34,9 +34,6 @@ def _codes(result: dict, claim_id: str | None = None) -> set[str]:
     }
 
 
-@pytest.mark.skip(
-    reason='Bound claim sources drifted after the register was sealed, so the audit fail-closes. The register is not silently refreshed.'
-)
 def test_default_claim_register_is_source_bound_and_non_authoritative() -> None:
     result = audit_public_claim_evidence_file(REGISTER_PATH, repo_root=REPO_ROOT, as_of=AS_OF)
 

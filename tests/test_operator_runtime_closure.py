@@ -108,12 +108,23 @@ def _literal_imports(tree: ast.AST, *, module: str, is_package: bool) -> set[str
     return imports
 
 
+def _checkout_package_prefixes(tracked: list[str]) -> tuple[str, ...]:
+    """Release pin first, then the live ``aureon/`` tree when that is the checkout."""
+    prefixes: list[str] = []
+    if any(path.startswith(closure.OPERATOR_PACKAGE_PREFIX) for path in tracked):
+        prefixes.append(closure.OPERATOR_PACKAGE_PREFIX)
+    if any(path.startswith("aureon/") for path in tracked):
+        prefixes.append("aureon/")
+    return tuple(prefixes)
+
+
 def _recursive_repo_local_imports(tracked: list[str]) -> set[str]:
     module_to_path, path_to_module = _tracked_python_modules(tracked)
+    prefixes = _checkout_package_prefixes(tracked)
     pending = [
         path
         for path in tracked
-        if path.startswith(closure.OPERATOR_PACKAGE_PREFIX) and path.endswith(".py")
+        if path.endswith(".py") and any(path.startswith(prefix) for prefix in prefixes)
     ]
     reached = set(pending)
     while pending:
@@ -135,11 +146,13 @@ def _recursive_repo_local_imports(tracked: list[str]) -> set[str]:
     return reached
 
 
-@pytest.mark.skip(
-    reason="The unified tree has no aureon-os-upstream/aureon checkout; OPERATOR_PACKAGE_PREFIX still names that isolated layout, so the live git closure cannot be classified here."
-)
-def test_current_git_tree_classifies_every_tracked_package_file():
-    result = subprocess.run(
+def _tracked_package_inventory() -> tuple[list[str], str]:
+    """Classify the pinned prefix when it is populated, otherwise the live tree.
+
+    ``OPERATOR_PACKAGE_PREFIX`` stays ``aureon-os-upstream/aureon/``. This
+    checkout keeps the package at ``aureon/``.
+    """
+    pinned = subprocess.run(
         [
             "git",
             "-C",
@@ -152,21 +165,63 @@ def test_current_git_tree_classifies_every_tracked_package_file():
         capture_output=True,
         text=True,
     )
-    tracked = result.stdout.splitlines()
-    sources = set(closure.operator_package_runtime_sources(tracked))
+    tracked = pinned.stdout.splitlines()
+    if tracked:
+        return tracked, closure.OPERATOR_PACKAGE_PREFIX
+    live = subprocess.run(
+        ["git", "-C", str(ROOT), "ls-files", "--", "aureon"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    tracked = [path for path in live.stdout.splitlines() if path.startswith("aureon/")]
+    return tracked, "aureon/"
+
+
+def test_current_git_tree_classifies_every_tracked_package_file():
+    tracked, prefix = _tracked_package_inventory()
+    sources = set(
+        closure.operator_package_runtime_sources(tracked, package_prefix=prefix)
+    )
+    assets = {
+        prefix + path[len(closure.OPERATOR_PACKAGE_PREFIX) :]
+        for path in closure.OPERATOR_PACKAGE_ASSETS
+    }
+    runtime_state = {
+        prefix + path[len(closure.OPERATOR_PACKAGE_PREFIX) :]
+        for path in closure.OPERATOR_PACKAGE_RUNTIME_STATE
+    }
     expected = {
         path
         for path in tracked
-        if path.endswith(".py") or path in closure.OPERATOR_PACKAGE_ASSETS
+        if path.endswith(".py") or path in assets
     }
     assert sources == expected
-    assert sources.isdisjoint(closure.OPERATOR_PACKAGE_RUNTIME_STATE)
+    assert sources.isdisjoint(runtime_state)
     assert len(sources) > 1_000  # A short maintained import list must never pass.
 
 
-@pytest.mark.skip(
-    reason="The unified tree has no aureon-os-upstream/aureon checkout; OPERATOR_PACKAGE_PREFIX still names that isolated layout, so the live git import closure is empty against that prefix."
-)
+def _declared_companion_path(path: str) -> str:
+    """Map a live checkout path onto the release companion name when aliased.
+
+    The prefix pin stays ``aureon-os-upstream/``. This checkout stores those
+    same modules at the repository root.
+    """
+    aliased = "aureon-os-upstream/" + path
+    if aliased in closure.OPERATOR_COMPANION_SOURCES:
+        return aliased
+    return path
+
+
+def _companion_is_in_checkout(path: str, tracked: set[str]) -> bool:
+    if path in tracked:
+        return True
+    prefix = "aureon-os-upstream/"
+    if path.startswith(prefix) and path[len(prefix) :] in tracked:
+        return True
+    return False
+
+
 def test_every_tracked_package_import_resolves_inside_the_declared_closure():
     result = subprocess.run(
         ["git", "-C", str(ROOT), "ls-files", "--", "*.py"],
@@ -175,21 +230,27 @@ def test_every_tracked_package_import_resolves_inside_the_declared_closure():
         text=True,
     )
     tracked = result.stdout.splitlines()
+    tracked_set = set(tracked)
     reached = _recursive_repo_local_imports(tracked)
+    prefixes = _checkout_package_prefixes(tracked)
     outside_package = {
-        path
+        _declared_companion_path(path)
         for path in reached
-        if not path.startswith(closure.OPERATOR_PACKAGE_PREFIX)
+        if not any(path.startswith(prefix) for prefix in prefixes)
     }
     missing = outside_package - set(closure.OPERATOR_COMPANION_SOURCES) - set(
         closure.OPERATOR_DEPLOYMENT_SOURCES
     )
     assert missing == set()
-    # Every companion is a demonstrated static/literal dependency. New broad
-    # sibling-directory inclusions must not silently expand this VM read plane.
-    assert outside_package - set(closure.OPERATOR_DEPLOYMENT_SOURCES) == set(
-        closure.OPERATOR_COMPANION_SOURCES
-    )
+    # Every companion present in this checkout is a demonstrated static/literal
+    # dependency. New broad sibling-directory inclusions must not silently
+    # expand this VM read plane. The release prefix pin is unchanged.
+    demonstrated = {
+        path
+        for path in closure.OPERATOR_COMPANION_SOURCES
+        if _companion_is_in_checkout(path, tracked_set)
+    }
+    assert outside_package - set(closure.OPERATOR_DEPLOYMENT_SOURCES) == demonstrated
 
 
 def test_unknown_package_asset_fails_closed_but_named_state_stays_out():

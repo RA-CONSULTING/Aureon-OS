@@ -24,9 +24,6 @@ def _check(result: dict, identifier: str) -> dict:
     return next(item for item in result["checks"] if item["id"] == identifier)
 
 
-@pytest.mark.skip(
-    reason='Unified-tree design snapshots fail closed against the pinned source contract. The public-claim register does not pass and is not silently refreshed.'
-)
 def test_registry_discovers_current_design_roles_and_operator_capabilities() -> None:
     registry = discover_design_capability_registry(REPO_ROOT)
 
@@ -782,9 +779,6 @@ def test_source_rationalisation_readiness_rejects_unreviewed_import_time_payload
     assert not sentinel.exists()
 
 
-@pytest.mark.skip(
-    reason='Protocol readiness on the unified tree is protocol-blocked, which is stricter than the pinned installed-not-authorised state.'
-)
 def test_new_protocol_readiness_never_executes_decisions_contracts_or_reaudits(monkeypatch) -> None:
     from aureon.autonomous import aureon_public_website_design_runner as delivery_runner
     from aureon.operator import design_candidate_motion_policy_compiler as motion_compiler
@@ -1165,9 +1159,6 @@ def test_registry_verifier_rejects_unsafe_source_path() -> None:
     assert _check(result, "source-freshness")["passed"] is False
 
 
-@pytest.mark.skip(
-    reason='Unified-tree design snapshots fail closed against the pinned source contract. The public-claim register does not pass and is not silently refreshed.'
-)
 def test_brief_blockage_does_not_falsely_break_static_capability_verification(monkeypatch) -> None:
     blocked_readiness = {
         "available": True,

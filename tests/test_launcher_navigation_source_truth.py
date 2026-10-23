@@ -10,9 +10,6 @@ from scripts.validation import generate_saas_integration_manifest
 from scripts.validation import validate_repo_navigation_contract as contract
 
 
-@pytest.mark.skip(
-    reason='Launcher navigation source truth no longer matches every pinned path in the unified tree.'
-)
 def test_launcher_navigation_source_truth() -> None:
     expected_launchers = (
         'scripts/launchers/AUREON_PRODUCTION_LIVE.cmd',

@@ -276,13 +276,37 @@ def test_real_engine_gamma_gate(tmp_path, monkeypatch):
     assert held.action == "HOLD"
 
 
-def test_low_node_confidence_forces_hold_even_at_high_gamma():
-    """Nine nodes at confidence 0.2 cannot EXECUTE, even at Γ 0.99."""
-    held = _output(0.99).collapse(_readings(confidence=0.2), 9, 1)
+def test_real_input_confidence_of_0_2_forces_hold():
+    """Payload confidence 0.2 must reach the 0.5 floor. Injected node rows do not."""
+    from types import SimpleNamespace
+
+    thoughts = [
+        SimpleNamespace(
+            topic="market",
+            source=f"node-{index}",
+            payload={"confidence": 0.2, "coherence": 0.99},
+        )
+        for index in range(9)
+    ]
+    readings = law.NineAurisProcess().process(thoughts)
+    assert readings and all(row["confidence"] == 0.2 for row in readings)
+    held = _output(0.99).collapse(readings, len(thoughts), 1)
     assert held.action == "HOLD"
     assert held.coherence_gamma == 0.99
     assert any("node confidence" in line for line in held.reasoning)
-    cleared = _output(0.99).collapse(_readings(confidence=0.5), 9, 1)
+
+    high = [
+        SimpleNamespace(
+            topic="market",
+            source=f"node-{index}",
+            payload={"confidence": 0.95, "coherence": 0.99},
+        )
+        for index in range(9)
+    ]
+    high_readings = law.NineAurisProcess().process(high)
+    assert all(row["confidence"] == 0.95 for row in high_readings)
+    cleared = _output(0.99).collapse(high_readings, len(high), 1)
+    assert not any("below 0.5" in line for line in cleared.reasoning)
     assert cleared.action == "EXECUTE"
 
 
@@ -304,6 +328,23 @@ def test_canonical_auris_table_tiger_220_clownfish_963():
     assert live["Tiger"] == 220.0 and live["Clownfish"] == 963.0
     kings = {node.name: node.freq for node in HNCAurisEngine().nodes}
     assert kings["Tiger"] == 220.0 and kings["Clownfish"] == 963.0
+    import importlib.util
+    from pathlib import Path
+
+    duplicate_path = (
+        Path(__file__).resolve().parents[1]
+        / "Kings_Accounting_Suite/aureon_systems/auris/aureon_auris_trader.py"
+    )
+    spec = importlib.util.spec_from_file_location(
+        "kings_aureon_systems_auris_trader",
+        duplicate_path,
+    )
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    systems = {node.name: node.freq for node in module.AurisEngine().nodes}
+    assert systems == module.CANONICAL_AURIS_HZ
+    assert systems["Tiger"] == 220.0 and systems["Clownfish"] == 963.0
     from aureon_fusion.hnc_core import GAMMA_TARGET, SOURCE_LAW_ENTRY_FLOOR
 
     assert GAMMA_TARGET >= SOURCE_LAW_ENTRY_FLOOR

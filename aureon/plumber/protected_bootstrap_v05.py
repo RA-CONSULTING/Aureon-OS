@@ -500,6 +500,16 @@ def _parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _cli_os_protection_unattested(_root: Path) -> dict[str, Any]:
+    """Decline the whole-tree census on the CLI path.
+
+    The census cannot override HOLD, and walking every source file blocks the
+    receipt.  The structural gaps already keep the target unimported.
+    """
+
+    raise RuntimeError("bootstrap_cli_declines_unbounded_os_protection_census")
+
+
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     target_arguments = tuple(args.target_arguments)
@@ -513,6 +523,7 @@ def main(argv: list[str] | None = None) -> int:
         result = evaluate_protected_bootstrap_v05(
             root=_MODULE_ROOT,
             request=request,
+            os_protection_audit_fn=_cli_os_protection_unattested,
         )
         receipt = result.receipt
         exit_code = 1

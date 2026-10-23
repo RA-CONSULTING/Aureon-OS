@@ -17,7 +17,7 @@ import hashlib
 import inspect
 import json
 from datetime import UTC, datetime
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import Any, Mapping, Sequence
 
 REGISTRY_SCHEMA = "aureon.design-capability-registry.v1"
@@ -3019,6 +3019,21 @@ def motion_performance_budget_readiness(repo_root: Path) -> dict[str, Any]:
     }
 
 
+def _reviewed_node_path_is_absolute(platform: object, raw_path: str) -> bool:
+    """Recognise a reviewed absolute path using the binding's own platform.
+
+    Discovery may run on a host that is not the reviewed Node platform. A
+    win32 binding stays an absolute reviewed path there; a relative path,
+    drive-relative path, or ambient lookup still does not qualify.
+    """
+
+    if platform == "win32":
+        return PureWindowsPath(raw_path).is_absolute()
+    if platform in {"linux", "darwin"}:
+        return PurePosixPath(raw_path).is_absolute()
+    return Path(raw_path).is_absolute()
+
+
 def candidate_test_evidence_readiness(repo_root: Path) -> dict[str, Any]:
     """Expose the installed trusted-test protocol without executing any test.
 
@@ -3092,7 +3107,7 @@ def candidate_test_evidence_readiness(repo_root: Path) -> dict[str, Any]:
             and node_binding.get("schema") == EXPECTED_NODE_BINDING_SCHEMA
             and node_binding.get("locator_authority") == EXPECTED_NODE_LOCATOR_AUTHORITY
             and isinstance(node_path, str)
-            and Path(node_path).is_absolute()
+            and _reviewed_node_path_is_absolute(node_binding.get("platform"), node_path)
             and isinstance(node_size, int)
             and not isinstance(node_size, bool)
             and node_size > 0

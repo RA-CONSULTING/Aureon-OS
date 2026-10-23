@@ -1043,6 +1043,32 @@ class CapitalCFDTrader:
             "eligible_for_learning": False,
         }
 
+    def _capital_deal_still_open(self, deal_id: str) -> bool:
+        """A close acknowledgement is not a close while the deal is still listed.
+
+        A client with no positions read cannot prove the deal is still open.
+        That absence stays on the receipt path. A positions read that fails
+        cannot prove the deal is gone, so the close stays failed.
+        """
+        client = getattr(self, "client", None)
+        getter = getattr(client, "get_positions", None)
+        if not callable(getter):
+            return False
+        try:
+            rows = getter() or []
+        except Exception:
+            return True
+        wanted = str(deal_id or "").strip()
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            nested = row.get("position")
+            position = nested if isinstance(nested, dict) else row
+            deal = str(position.get("dealId") or position.get("deal_id") or "").strip()
+            if deal and deal == wanted:
+                return True
+        return False
+
     def _submission_ack_is_durable(self, receipt: Any) -> Tuple[bool, str, str]:
         if not isinstance(receipt, dict):
             return False, "", "provider_submission_receipt_missing"
@@ -6147,6 +6173,34 @@ class CapitalCFDTrader:
                 "position": dict(pos.__dict__),
             })
             return self._pending_execution_result(pending)
+
+        if self._capital_deal_still_open(pos.deal_id):
+            self._record_order_lifecycle(
+                "close_failed",
+                "close_failed",
+                lifecycle_id,
+                deal_id=pos.deal_id,
+                route_key=route_key,
+                venue="capital",
+                market_type="cfd",
+                symbol=pos.symbol,
+                side=pos.direction,
+                reason="position_still_open_after_close",
+                source="capital_cfd_trader.close_position",
+            )
+            return {
+                "status": "close_failed",
+                "truth_status": "real_observed",
+                "error": "close_failed",
+                "reason": "position_still_open_after_close",
+                "symbol": pos.symbol,
+                "deal_id": pos.deal_id,
+                "lifecycle_id": lifecycle_id,
+                "generated_values": False,
+                "eligible_for_state": False,
+                "eligible_for_pnl": False,
+                "eligible_for_learning": False,
+            }
 
         ack_ok, deal_reference, ack_reason = self._submission_ack_is_durable(result)
         result_dict = dict(result) if isinstance(result, dict) else {}

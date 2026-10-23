@@ -38,4 +38,4 @@ jobs:
       - name: PowerShell builder and sealed compiler
         env:
           PYTHONPATH: .
-        run: python -m pytest tests/test_website_source_rationalisation.py tests/test_design_candidate_control.py -q --tb=line --timeout=180 -m "windows"
+        run: python -m pytest tests/test_website_source_rationalisation.py tests/test_design_candidate_control.py tests/test_design_candidate_test_evidence.py tests/test_design_candidate_test_policy_compiler.py -q --tb=line --timeout=180 -m "windows"

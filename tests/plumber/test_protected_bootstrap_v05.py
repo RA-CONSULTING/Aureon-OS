@@ -143,39 +143,41 @@ def test_declared_console_commands_route_only_to_inert_bootstrap() -> None:
     ]
 
 
-@pytest.mark.skip(
-    reason='The unified package imports aureon.exchanges.unified_market_trader during bootstrap, so this in-process isolation pin no longer holds. The guard HOLD is unchanged.'
-)
 def test_full_evidence_cannot_override_current_guard_hold(tmp_path: Path) -> None:
     module_name = "aureon.exchanges.unified_market_trader"
-    assert module_name not in sys.modules
+    # Other tests may already have imported the trader. Drop that copy so this
+    # check measures only what the in-process evaluation imports.
+    previous = sys.modules.pop(module_name, None)
+    try:
+        result = _evaluate(tmp_path)
 
-    result = _evaluate(tmp_path)
-
-    assert result.decision == "HOLD"
-    assert result.receipt["target_registered"] is True
-    assert result.receipt["target_imported"] is False
-    assert result.receipt["target_called"] is False
-    assert result.receipt["target_subprocess_started"] is False
-    assert result.receipt["bootstrap_subprocess_absence_attested"] is False
-    assert result.receipt["target_source_sha256"] == "0" * 64
-    assert result.receipt["target_source_bytes_attested"] is False
-    assert result.receipt["target_argument_bounds_validated"] is True
-    assert result.receipt["target_argument_policy_attested"] is False
-    assert result.receipt["measurement_root_module_bound"] is False
-    assert result.receipt["target_import_root_bound"] is False
-    assert result.receipt["process_start_authorized"] is False
-    assert result.receipt["production_ready"] is False
-    assert result.receipt["runtime_guard"]["guard_production_ready"] is False
-    assert "runtime_guard_production_readiness" in result.receipt["failed_checks"]
-    assert "sealed_target_import" in result.receipt["failed_checks"]
-    assert "durable_hnc_evidence" in result.receipt["failed_checks"]
-    assert "bootstrap_subprocess_absence" in result.receipt["failed_checks"]
-    assert "module_bound_measurement_root" in result.receipt["failed_checks"]
-    assert "target_argument_policy" in result.receipt["failed_checks"]
-    assert "target_import_root_binding" in result.receipt["failed_checks"]
-    assert "target_source_attestation" in result.receipt["failed_checks"]
-    assert module_name not in sys.modules
+        assert result.decision == "HOLD"
+        assert result.receipt["target_registered"] is True
+        assert result.receipt["target_imported"] is False
+        assert result.receipt["target_called"] is False
+        assert result.receipt["target_subprocess_started"] is False
+        assert result.receipt["bootstrap_subprocess_absence_attested"] is False
+        assert result.receipt["target_source_sha256"] == "0" * 64
+        assert result.receipt["target_source_bytes_attested"] is False
+        assert result.receipt["target_argument_bounds_validated"] is True
+        assert result.receipt["target_argument_policy_attested"] is False
+        assert result.receipt["measurement_root_module_bound"] is False
+        assert result.receipt["target_import_root_bound"] is False
+        assert result.receipt["process_start_authorized"] is False
+        assert result.receipt["production_ready"] is False
+        assert result.receipt["runtime_guard"]["guard_production_ready"] is False
+        assert "runtime_guard_production_readiness" in result.receipt["failed_checks"]
+        assert "sealed_target_import" in result.receipt["failed_checks"]
+        assert "durable_hnc_evidence" in result.receipt["failed_checks"]
+        assert "bootstrap_subprocess_absence" in result.receipt["failed_checks"]
+        assert "module_bound_measurement_root" in result.receipt["failed_checks"]
+        assert "target_argument_policy" in result.receipt["failed_checks"]
+        assert "target_import_root_binding" in result.receipt["failed_checks"]
+        assert "target_source_attestation" in result.receipt["failed_checks"]
+        assert module_name not in sys.modules
+    finally:
+        if previous is not None:
+            sys.modules[module_name] = previous
 
 
 def test_unknown_target_and_unsupported_runtime_hold_without_passthrough(tmp_path: Path) -> None:
@@ -260,9 +262,6 @@ def test_protected_bootstrap_import_is_inert() -> None:
     assert json.loads(result.stdout) == {"events": [], "targets": len(EXPECTED_TARGET_IDS)}
 
 
-@pytest.mark.skip(
-    reason='The ignition CLI did not return within the 60s suite bound on the unified tree.'
-)
 def test_cli_holds_before_using_target_arguments(tmp_path: Path) -> None:
     canary = tmp_path / "must-not-exist.txt"
     result = subprocess.run(

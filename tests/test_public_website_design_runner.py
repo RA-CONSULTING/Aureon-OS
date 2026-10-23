@@ -8,6 +8,7 @@ import json
 import os
 import shutil
 import sys
+import threading
 from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
 from datetime import UTC, datetime, timedelta
@@ -82,8 +83,10 @@ def _assert_delivery_schema_valid(payload: object) -> None:
 def test_runner_immutable_receipt_write_never_replaces_a_concurrent_writer(tmp_path: Path) -> None:
     target = tmp_path / "artifacts" / "website-delivery" / "run" / "01-work-order-ready.json"
     payloads = [{"writer": "one"}, {"writer": "two"}]
+    started = threading.Barrier(2)
 
     def write(payload: dict[str, str]) -> str:
+        started.wait()
         try:
             runner._atomic_write_json(target, payload)  # noqa: SLF001 - direct immutability boundary
         except runner.PublicWebsiteDesignRunnerError:

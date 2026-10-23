@@ -22,3 +22,9 @@ A future release requires native process containment, exact target-source
 measurement, a shared production limiter where applicable, externally anchored
 HNC evidence, an authenticated deployment receipt, and provider-side read-back.
 None is claimed by the current local HOLD.
+
+The operator contract names, unset in this checkout and not an order arm, are
+`AUREON_OPERATOR_ENV`, `AUREON_OPERATOR_API_KEY`, `AUREON_OPERATOR_RATE_RPS`,
+`AUREON_OPERATOR_RATE_BURST`, `AUREON_OPERATOR_MAX_BODY`,
+`AUREON_OPERATOR_TRUSTED_PROXY_CIDRS`, `AUREON_OPERATOR_HTTP_PROCESSES`, and
+`AUREON_OPERATOR_REPLICAS`. Compose keeps `replicas: 1`.

@@ -27,9 +27,6 @@ def _contract() -> dict:
     return json.loads(CONTRACT_PATH.read_text(encoding="utf-8"))
 
 
-@pytest.mark.skip(
-    reason='The HNC evidence graph fail-closes because the canonical public-claim register does not pass. The register is not silently refreshed.'
-)
 def test_canonical_graph_is_exact_source_bound_and_within_budget() -> None:
     result = audit_hnc_evidence_graph_contract_file(
         repo_root=REPO_ROOT,
@@ -53,9 +50,6 @@ def test_canonical_graph_is_exact_source_bound_and_within_budget() -> None:
     assert result["outputs"]["component.js"]["bytes"] <= 1800
 
 
-@pytest.mark.skip(
-    reason='Changed-claim fail-closed coverage needs a passing canonical register. The unified-tree register does not pass and is not silently refreshed.'
-)
 def test_extra_claim_or_changed_claim_wording_fails_closed() -> None:
     extra = _contract()
     extra["claim_ids"].append("mission-blades-application-model")
@@ -78,9 +72,6 @@ def test_extra_claim_or_changed_claim_wording_fails_closed() -> None:
         )
 
 
-@pytest.mark.skip(
-    reason='Motion-budget fail-closed coverage needs a passing canonical register. The unified-tree register does not pass and is not silently refreshed.'
-)
 def test_motion_budget_and_authority_cannot_expand() -> None:
     motion = _contract()
     motion["motion"]["repeats"] = True

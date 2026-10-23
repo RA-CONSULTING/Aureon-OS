@@ -32,11 +32,11 @@ def _posix_root_chown_permitted() -> bool:
     return True
 
 
-pytestmark = pytest.mark.skipif(
+_requires_root_chown = pytest.mark.skipif(
     not _posix_root_chown_permitted(),
     reason=(
-        "Release transactions chown source directories to root (uid 0), which this process cannot do. "
-        "The same file runs on the windows-latest job, where that POSIX ownership plan is not applied, "
+        "This release transaction chowns source directories to root (uid 0), which this process cannot do. "
+        "It runs on the windows-latest job, where that POSIX ownership plan is not applied, "
         "and on a Linux runner that can chown to root."
     ),
 )
@@ -376,6 +376,7 @@ def prepared(tmp_path, monkeypatch, **kwargs):
     return staged, target, runtime, services
 
 
+@_requires_root_chown
 def test_success_commits_only_source_and_preserves_runtime(tmp_path, monkeypatch):
     staged, target, runtime, services = prepared(tmp_path, monkeypatch)
     original_runtime = runtime.read_bytes()
@@ -408,6 +409,7 @@ def test_success_commits_only_source_and_preserves_runtime(tmp_path, monkeypatch
     assert target.stat().st_uid == json.loads((staged / "journal.json").read_text())["entries"][0]["owner"][0]
 
 
+@_requires_root_chown
 def test_failed_health_rolls_source_back_but_keeps_new_runtime(tmp_path, monkeypatch):
     staged, target, runtime, services = prepared(tmp_path, monkeypatch)
     def failure(*args):
@@ -421,6 +423,7 @@ def test_failed_health_rolls_source_back_but_keeps_new_runtime(tmp_path, monkeyp
     assert release.check(staged)["phase"] == "rolled_back"
 
 
+@_requires_root_chown
 def test_failed_new_source_is_removed_without_recursive_cleanup(tmp_path, monkeypatch):
     staged, target, runtime, services = prepared(tmp_path, monkeypatch, new_file=True)
     with pytest.raises(release.ReleaseError, match="source_rolled_back"):
@@ -433,6 +436,7 @@ def test_failed_new_source_is_removed_without_recursive_cleanup(tmp_path, monkey
     assert not target.exists() and runtime.exists()
 
 
+@_requires_root_chown
 def test_manifest_tampering_is_refused_before_service_operations(tmp_path, monkeypatch):
     workspace, units, bundle, releases, target, runtime, services = fixture(tmp_path, monkeypatch)
     (bundle / "files/aureon_fusion/reader.py").write_bytes(b"VALUE = 99\n")
@@ -442,6 +446,7 @@ def test_manifest_tampering_is_refused_before_service_operations(tmp_path, monke
 
 
 @pytest.mark.parametrize("which", ["target", "staged"])
+@_requires_root_chown
 def test_change_after_prepare_refuses_before_stopping(tmp_path, monkeypatch, which):
     staged, target, runtime, services = prepared(tmp_path, monkeypatch)
     changed = target if which == "target" else staged / "staged/0"
@@ -451,6 +456,7 @@ def test_change_after_prepare_refuses_before_stopping(tmp_path, monkeypatch, whi
     assert services.events == []
 
 
+@_requires_root_chown
 def test_interruption_recovery_restores_source_without_replaying_state(tmp_path, monkeypatch):
     staged, target, runtime, services = prepared(tmp_path, monkeypatch)
     journal = json.loads((staged / "journal.json").read_text())
@@ -469,6 +475,7 @@ def test_interruption_recovery_restores_source_without_replaying_state(tmp_path,
     assert services.active[UNIT]
 
 
+@_requires_root_chown
 def test_backup_corruption_and_newer_source_block_rollback(tmp_path, monkeypatch):
     staged, target, runtime, services = prepared(tmp_path, monkeypatch)
     release.apply(
@@ -490,6 +497,7 @@ def test_backup_corruption_and_newer_source_block_rollback(tmp_path, monkeypatch
     assert services.events == events
 
 
+@_requires_root_chown
 def test_explicit_rollback_disables_boot_before_restoring_source(tmp_path, monkeypatch):
     staged, target, runtime, services = prepared(tmp_path, monkeypatch)
     release.apply(
@@ -524,6 +532,7 @@ def test_source_subdirectories_are_not_confused_with_runtime_state():
         assert release.source_path(path) == path
 
 
+@_requires_root_chown
 def test_invalid_python_is_not_imported_or_installed(tmp_path, monkeypatch):
     workspace, units, bundle, releases, target, runtime, services = fixture(tmp_path, monkeypatch)
     bad = b"def broken(:\n"
@@ -745,6 +754,7 @@ def test_terminal_receipt_collector_is_a_distinct_held_service():
     release.validate_service_names([unit])
 
 
+@_requires_root_chown
 def test_collector_release_manifest_requires_the_intent_bridge_dependency(tmp_path, monkeypatch):
     workspace, units, bundle, releases, _target, _runtime, services = fixture(tmp_path, monkeypatch)
     with pytest.raises(release.ReleaseError, match="trade_receipt_and_intent_bridge_sources_required"):
@@ -754,6 +764,7 @@ def test_collector_release_manifest_requires_the_intent_bridge_dependency(tmp_pa
         )
 
 
+@_requires_root_chown
 def test_operator_release_requires_the_complete_operator_runtime(
     tmp_path, monkeypatch
 ):
@@ -804,6 +815,7 @@ def test_operator_release_dependency_is_exact_and_contains_no_key_material():
     )
 
 
+@_requires_root_chown
 def test_operator_apply_removes_stale_python_and_cache_transactionally(
     tmp_path, monkeypatch
 ):
@@ -918,6 +930,7 @@ def test_operator_apply_removes_stale_python_and_cache_transactionally(
     assert release.check(staged)["phase"] == "rolled_back"
 
 
+@_requires_root_chown
 def test_collector_and_intent_bridge_can_only_be_prepared_together(tmp_path, monkeypatch):
     workspace = tmp_path / "workspace"
     units = tmp_path / "units"
@@ -1206,6 +1219,7 @@ def apply_cutover(tmp_path, staged, services, bridge_readback, **kwargs):
     )
 
 
+@_requires_root_chown
 def test_broker_release_requires_explicit_quiescence_before_apply(
     tmp_path, monkeypatch
 ):
@@ -1227,6 +1241,7 @@ def test_broker_release_requires_explicit_quiescence_before_apply(
     )
 
 
+@_requires_root_chown
 def test_quiescence_records_exact_off_inventory_without_changing_rollback_state(
     tmp_path, monkeypatch
 ):
@@ -1267,6 +1282,7 @@ def test_quiescence_records_exact_off_inventory_without_changing_rollback_state(
     assert release.check(staged)["phase"] == "quiesced"
 
 
+@_requires_root_chown
 def test_interrupted_quiescence_resumes_from_only_recorded_reachable_states(
     tmp_path, monkeypatch
 ):
@@ -1303,6 +1319,7 @@ def test_interrupted_quiescence_resumes_from_only_recorded_reachable_states(
     assert not any(event[0] in {"start", "restart"} for event in services.events)
 
 
+@_requires_root_chown
 def test_interrupted_quiescence_rejects_unrecorded_interim_service_state(
     tmp_path, monkeypatch
 ):
@@ -1334,6 +1351,7 @@ def test_interrupted_quiescence_rejects_unrecorded_interim_service_state(
     assert json.loads((staged / "journal.json").read_text())["phase"] == "quiescing"
 
 
+@_requires_root_chown
 def test_rollback_from_interrupted_quiescence_restores_exact_original_services(
     tmp_path, monkeypatch
 ):
@@ -1368,6 +1386,7 @@ def test_rollback_from_interrupted_quiescence_restores_exact_original_services(
         assert services.snapshot(unit)["enabled"] == state["enabled"]
 
 
+@_requires_root_chown
 def test_apply_rejects_service_drift_after_quiescence_without_mutation(
     tmp_path, monkeypatch
 ):
@@ -1388,6 +1407,7 @@ def test_apply_rejects_service_drift_after_quiescence_without_mutation(
     assert json.loads((staged / "journal.json").read_text())["phase"] == "quiesced"
 
 
+@_requires_root_chown
 def test_quiesced_command_rejects_tampered_recorded_provider_readback(
     tmp_path, monkeypatch
 ):
@@ -1409,6 +1429,7 @@ def test_quiesced_command_rejects_tampered_recorded_provider_readback(
     assert services.events == events_before
 
 
+@_requires_root_chown
 def test_apply_accepts_quiesced_inventory_after_only_volatile_snapshot_changes(
     tmp_path, monkeypatch
 ):
@@ -1435,6 +1456,7 @@ def test_apply_accepts_quiesced_inventory_after_only_volatile_snapshot_changes(
     assert committed["phase"] == "committed"
 
 
+@_requires_root_chown
 def test_prepare_records_old_bridge_state_and_only_stages_contract_migration(
     tmp_path, monkeypatch
 ):
@@ -1472,6 +1494,7 @@ def test_prepare_records_old_bridge_state_and_only_stages_contract_migration(
     assert bridge_readback.expected_revisions == [None]
 
 
+@_requires_root_chown
 def test_apply_refuses_changed_old_bridge_environment_before_service_cutover(
     tmp_path, monkeypatch
 ):
@@ -1500,6 +1523,7 @@ def test_apply_refuses_changed_old_bridge_environment_before_service_cutover(
     ) == (None, ["AUREON_ALLOWED_USER_EMAILS"])
 
 
+@_requires_root_chown
 def test_broker_start_failure_never_starts_dependents_and_requires_external_identity_rollback(
     tmp_path, monkeypatch
 ):
@@ -1531,6 +1555,7 @@ def test_broker_start_failure_never_starts_dependents_and_requires_external_iden
     assert all(not services.active.get(unit, False) for unit in journal["services"])
 
 
+@_requires_root_chown
 def test_public_bridge_mid_replace_failure_restores_source_unit_and_service_state(
     tmp_path, monkeypatch
 ):
@@ -1557,6 +1582,7 @@ def test_public_bridge_mid_replace_failure_restores_source_unit_and_service_stat
     assert services.active[release.PUBLIC_BRIDGE_UNIT]
 
 
+@_requires_root_chown
 def test_release_refuses_vm_certificate_different_from_staged_build(
     tmp_path, monkeypatch
 ):
@@ -1577,6 +1603,7 @@ def test_release_refuses_vm_certificate_different_from_staged_build(
         apply_cutover(tmp_path, staged, services, wrong_san)
 
 
+@_requires_root_chown
 def test_bridge_health_failure_rolls_back_and_success_starts_bridge_last(
     tmp_path, monkeypatch
 ):

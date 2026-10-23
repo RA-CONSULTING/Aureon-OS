@@ -231,9 +231,6 @@ def test_design_cycle_schema_accepts_real_privacy_safe_operator_payload(
     _assert_schema_valid(_design_cycle_validator(), payload)
 
 
-@pytest.mark.skip(
-    reason='The delivery-job schema const on disk is v1 while the pinned constant is v2. The schema file was not bumped.'
-)
 def test_staged_delivery_runner_schema_preserves_pre_owner_boundary() -> None:
     schema = _schema("AUREON_PUBLIC_WEBSITE_DESIGN_DELIVERY_RUNNER_V1.schema.json")
 

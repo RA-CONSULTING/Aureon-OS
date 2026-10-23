@@ -29,7 +29,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install pytest
-        run: python -m pip install --upgrade pip pytest
+        run: python -m pip install --upgrade pip pytest pytest-timeout numpy
       - name: Compile the fusion package
         run: python -m compileall -q aureon_fusion organism
       - name: Fusion, market, and field tests

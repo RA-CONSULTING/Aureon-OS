@@ -424,7 +424,9 @@ def test_unused_trusted_tool_argument_cannot_bless_python_alternate_execution(
         _execute(root, policy_path, policy_hash, policy)
 
 
-@pytest.mark.skip(reason="No reviewed Node toolchain binding is published for linux")
+@pytest.mark.windows(
+    reason="Reviewed Node toolchain binding is the Windows absolute path C:/Program Files/nodejs/node.exe. Linux has no reviewed binding and must not fall back to PATH. The windows-latest job runs this contract."
+)
 def test_unused_trusted_tool_argument_cannot_bless_node_alternate_execution(
     tmp_path: Path,
 ) -> None:
@@ -462,7 +464,9 @@ def test_unused_trusted_tool_argument_cannot_bless_node_alternate_execution(
         _execute(root, policy_path, policy_hash, policy)
 
 
-@pytest.mark.skip(reason="No reviewed Node toolchain binding is published for linux")
+@pytest.mark.windows(
+    reason="Reviewed Node toolchain binding is the Windows absolute path C:/Program Files/nodejs/node.exe. Linux has no reviewed binding and must not fall back to PATH. The windows-latest job runs this contract."
+)
 def test_reviewed_node_resolution_ignores_poisoned_path_and_discovery(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -488,7 +492,9 @@ def test_reviewed_node_resolution_ignores_poisoned_path_and_discovery(
     assert not marker.exists()
 
 
-@pytest.mark.skip(reason="No reviewed Node toolchain binding is published for linux")
+@pytest.mark.windows(
+    reason="Reviewed Node toolchain binding is the Windows absolute path C:/Program Files/nodejs/node.exe. Linux has no reviewed binding and must not fall back to PATH. The windows-latest job runs this contract."
+)
 def test_reviewed_node_resolution_fails_closed_without_ambient_fallback_on_drift(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

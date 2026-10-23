@@ -53,7 +53,7 @@ def _command_starts():
         print(f"❌ ERROR: {e}")
         return False
 
-@pytest.mark.skip(reason="Starts the trading engine with --duration 86400. The offline suite does not launch it.")
+@pytest.mark.live(reason="Starts the trading engine with --duration 86400 and is opt-in. The offline suite does not launch a live executor.")
 def test_command():
     assert _command_starts()
 

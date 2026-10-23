@@ -13,3 +13,8 @@ The release stays on `HOLD` until the whole-source census has no protection
 blockers, a native outer process boundary is independently attested, the HNC
 ledger head is externally anchored, packages are reproducible and signed, and
 provider-side deployment and runtime read-backs are verified.
+
+Canonical launcher paths, still unapproved and not a start command:
+`scripts/launchers/AUREON_PRODUCTION_LIVE.cmd`,
+`scripts/launchers/AUREON_WAKE_UP_FULL_AUTONOMOUS.ps1`,
+`scripts/launchers/AUREON_DATA_OCEAN.cmd`.
