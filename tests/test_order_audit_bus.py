@@ -63,6 +63,14 @@ def _bus_events():
     ]
 
 
+def _bind_current_bus() -> None:
+    """The engine import can replace the process bus after circulation started."""
+
+    from aureon.core.organism_circulation import ensure_audit_subscribers
+
+    ensure_audit_subscribers()
+
+
 def _assert_published(tmp_path: Path, operation: str, exchange: str) -> None:
     from aureon.core.organism_circulation import consumed_audits
 
@@ -122,6 +130,7 @@ def test_unified_market_trader_order_reaches_the_bus(audit_bus, tmp_path: Path) 
     trader._kraken_spot_client = lambda: client
     trader._fresh_route_price_receipt = lambda _venue, _symbol: {"status": "live", "price": 100.0}
     trader._governed_client_for = lambda _exchange: client
+    _bind_current_bus()
     result = trader._execute_kraken_margin_route("BUY", "XBTUSD", 50.0)
     assert result["submitted"] is False or result["ok"] is True or result.get("status")
     _assert_published(tmp_path, "place_margin_order", "kraken")
@@ -138,6 +147,7 @@ def test_capital_cfd_trader_order_reaches_the_bus(audit_bus, tmp_path: Path) -> 
 
     trader = CapitalCFDTrader.__new__(CapitalCFDTrader)
     trader.client = Client()
+    _bind_current_bus()
     submit = trader._submit_capital_pending_order(
         {
             "symbol": "BTCUSD",
@@ -168,6 +178,7 @@ def test_micro_profit_labyrinth_order_reaches_the_bus(audit_bus, tmp_path: Path)
     labyrinth = MicroProfitLabyrinth.__new__(MicroProfitLabyrinth)
     labyrinth.kraken_client = Client()
     labyrinth._mark_not_submitted = lambda *_args, **_kwargs: None
+    _bind_current_bus()
     opp = SimpleNamespace(from_asset="BTC", to_asset="USD", from_amount=0.1)
     assert labyrinth._execute_on_exchange("kraken", opp, 0.0, {}) is False
     _assert_published(tmp_path, "place_market_order", "kraken")

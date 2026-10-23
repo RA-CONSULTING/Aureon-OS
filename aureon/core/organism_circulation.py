@@ -6,7 +6,9 @@ GET /healthz and GET /health report that seat. The fusion seat keeps
 metacognition, queen reasoning, logic, neural, lighthouse, QGITA, mycelium,
 baton relay, and council each subscribe to ``organism.circulation`` and
 publish their own pulse. Autonomy audit records on that same topic are
-consumed by the metacognition and self-repair loops. Connectors switch on
+consumed by the metacognition and self-repair loops. After repeated failed
+self-changes, metacognition raises a concern and lowers its confidence, and
+self-repair deprioritises a target that keeps failing. Connectors switch on
 at boot. Self-code records a proposal; it does not edit the repo and it
 does not arm live trading.
 """
@@ -80,8 +82,38 @@ _SECRET_PATH_MARKERS = (".env", "secret", "credential", "id_rsa", "password")
 _BATON_STAGES = ("intent", "plan", "execute", "confirm")
 _SUBSCRIBED = False
 _AUDIT_WIRED = False
+_AUDIT_BUS_ID: int | None = None
 _AUDIT_CAP = 50
-_META: dict[str, Any] = {"truth_status": "loop_running", "loop": "running"}
+_FAILURE_REPEAT = 2
+_CONFIDENCE_BASE = 1.0
+_CONFIDENCE_FLOOR = 0.2
+_CONFIDENCE_STEP = 0.25
+_FAILED_SELF_CHANGE_EVENTS = frozenset(
+    {
+        "self_patch_kept",
+        "write_refused",
+        "repair_refused",
+        "repair_reverted",
+        "self_patch_merge_failed",
+        "human_review_required",
+    }
+)
+_FAILED_SELF_CHANGE_REASONS = frozenset(
+    {
+        "tests_failed",
+        "write_refused",
+        "retest_failed_change_reverted",
+    }
+)
+_FAILURE_COUNTS: dict[str, int] = {}
+_DEPRIORITISED: list[str] = []
+_SEEN_FAILURE_IDS: set[str] = set()
+_META: dict[str, Any] = {
+    "truth_status": "loop_running",
+    "loop": "running",
+    "audit_concern": None,
+    "audit_confidence": _CONFIDENCE_BASE,
+}
 
 
 def _state_dir() -> Path:
@@ -218,21 +250,96 @@ def _on_circulation(thought: Thought) -> None:
             del heard[:-50]
 
 
-def _audit_record(thought: Thought) -> dict[str, Any] | None:
+def _audit_payload(thought: Thought) -> dict[str, Any] | None:
     source = str(getattr(thought, "source", "") or "")
     payload = getattr(thought, "payload", None)
     if not isinstance(payload, dict):
         return None
     if payload.get("kind") != "autonomy_audit" and source != "autonomy_audit":
         return None
-    return {
+    return payload
+
+
+def _safe_target(payload: dict[str, Any]) -> str:
+    """A repo path the loops may rank. Credential paths are dropped."""
+
+    raw = payload.get("path") or payload.get("target") or payload.get("target_path") or ""
+    text = str(raw).replace("\\", "/").strip()
+    if not text:
+        return ""
+    lowered = text.lower()
+    if any(marker in lowered for marker in _SECRET_PATH_MARKERS):
+        return ""
+    return text
+
+
+def _failed_self_change(payload: dict[str, Any]) -> bool:
+    event = str(payload.get("event") or "")
+    reason = str(payload.get("reason") or "")
+    return event in _FAILED_SELF_CHANGE_EVENTS or reason in _FAILED_SELF_CHANGE_REASONS
+
+
+def _reset_audit_effects() -> None:
+    _FAILURE_COUNTS.clear()
+    _DEPRIORITISED.clear()
+    _SEEN_FAILURE_IDS.clear()
+    _META["audit_concern"] = None
+    _META["audit_confidence"] = _CONFIDENCE_BASE
+
+
+def _apply_failed_self_change(thought: Thought, payload: dict[str, Any]) -> None:
+    """Count one failed self-change and let both loops act on the repeat.
+
+    Subscribers see the same thought. The thought id keeps the count at one.
+    A second failure of the same path deprioritises it. Two failures in total,
+    on one path or across paths, raise the metacognition concern and lower
+    confidence. Credential paths never enter the ranking.
+    """
+
+    if not _failed_self_change(payload):
+        return
+    target = _safe_target(payload)
+    if not target:
+        return
+    identity = str(getattr(thought, "id", "") or "") or str(id(thought))
+    with _LOCK:
+        if identity in _SEEN_FAILURE_IDS:
+            return
+        _SEEN_FAILURE_IDS.add(identity)
+        count = _FAILURE_COUNTS.get(target, 0) + 1
+        _FAILURE_COUNTS[target] = count
+        if count >= _FAILURE_REPEAT and target not in _DEPRIORITISED:
+            _DEPRIORITISED.append(target)
+        total = sum(_FAILURE_COUNTS.values())
+        if total >= _FAILURE_REPEAT:
+            _META["audit_concern"] = f"repeated failed self-change on {target}"
+            dropped = _CONFIDENCE_STEP * (total - 1)
+            _META["audit_confidence"] = max(_CONFIDENCE_FLOOR, round(_CONFIDENCE_BASE - dropped, 4))
+
+
+def _audit_record(thought: Thought) -> dict[str, Any] | None:
+    payload = _audit_payload(thought)
+    if payload is None:
+        return None
+    record = {
         "event": str(payload.get("event") or ""),
         "ts": payload.get("ts"),
         "loop": "",
     }
+    target = _safe_target(payload)
+    if target:
+        record["path"] = target
+    reason = str(payload.get("reason") or "")
+    if reason and not any(marker in reason.lower() for marker in _SECRET_PATH_MARKERS):
+        record["reason"] = reason
+    return record
 
 
 def _remember_audit(loop: str, thought: Thought) -> None:
+    payload = _audit_payload(thought)
+    if payload is None:
+        return
+    _apply_failed_self_change(thought, payload)
     record = _audit_record(thought)
     if record is None:
         return
@@ -260,6 +367,56 @@ def consumed_audits(loop: str) -> list[dict[str, Any]]:
         return [dict(item) for item in box.get(loop, [])]
 
 
+def metacognition_audit_state() -> dict[str, Any]:
+    """Concern and confidence the metacognition loop has drawn from audits."""
+
+    with _LOCK:
+        return {
+            "audit_concern": _META.get("audit_concern"),
+            "audit_confidence": _META.get("audit_confidence", _CONFIDENCE_BASE),
+            "failed_self_changes": sum(_FAILURE_COUNTS.values()),
+        }
+
+
+def deprioritised_targets() -> list[str]:
+    """Paths self-repair has moved behind the rest after repeated failure."""
+
+    with _LOCK:
+        return list(_DEPRIORITISED)
+
+
+def repair_priority(paths: list[str]) -> list[str]:
+    """Keep the caller's order, with repeatedly failing targets last."""
+
+    demoted = set(deprioritised_targets())
+    return sorted(paths, key=lambda path: (path in demoted, paths.index(path)))
+
+
+def ensure_audit_subscribers() -> None:
+    """Subscribe the audit loops on the bus that ``get_thought_bus()`` returns now.
+
+    A later test or importer can replace the process bus. Subscriptions do not
+    move with it, so a publish on the new bus would be stored and never consumed.
+    """
+
+    global _SUBSCRIBED, _AUDIT_WIRED, _AUDIT_BUS_ID
+    bus = get_thought_bus()
+    current = id(bus)
+    if _AUDIT_WIRED and _SUBSCRIBED and _AUDIT_BUS_ID == current:
+        return
+    if _AUDIT_BUS_ID != current:
+        _SUBSCRIBED = False
+        _AUDIT_WIRED = False
+    if not _SUBSCRIBED:
+        bus.subscribe(_CIRCULATION, _on_circulation)
+        _SUBSCRIBED = True
+    if not _AUDIT_WIRED:
+        bus.subscribe(_CIRCULATION, _on_audit_metacognition)
+        bus.subscribe(_CIRCULATION, _on_audit_self_repair)
+        _AUDIT_WIRED = True
+    _AUDIT_BUS_ID = current
+
+
 def _metacognition_loop(stop: threading.Event) -> None:
     while not stop.is_set():
         reading = _metacognition_reading()
@@ -268,7 +425,11 @@ def _metacognition_loop(stop: threading.Event) -> None:
             heard = list((_STATE.get("audit_consumed") or {}).get("metacognition") or [])
             if heard:
                 reading["last_audit_event"] = heard[-1].get("event")
+            concern = _META.get("audit_concern")
+            confidence = _META.get("audit_confidence", _CONFIDENCE_BASE)
             _META.update(reading)
+            _META["audit_concern"] = concern
+            _META["audit_confidence"] = confidence
         stop.wait(5.0)
 
 
@@ -282,6 +443,8 @@ def _self_repair_loop(stop: threading.Event) -> None:
             loops["self_repair"] = "running"
             if heard:
                 loops["self_repair_last_audit"] = str(heard[-1].get("event") or "")
+            if _DEPRIORITISED:
+                loops["self_repair_deprioritised"] = list(_DEPRIORITISED)
             _STATE["loops"] = loops
         stop.wait(5.0)
 
@@ -310,6 +473,8 @@ def _publish_tick(tick: int) -> None:
             running["self_repair"] = previous["self_repair"]
         if previous.get("self_repair_last_audit"):
             running["self_repair_last_audit"] = previous["self_repair_last_audit"]
+        if previous.get("self_repair_deprioritised"):
+            running["self_repair_deprioritised"] = list(previous["self_repair_deprioritised"])
         _STATE["loops"] = running
 
 
@@ -429,26 +594,20 @@ def circulation_status() -> dict[str, Any]:
 def start_organism_circulation(port: int | None = None) -> dict[str, Any]:
     """Start the listener, the organ loops, and the default connectors."""
     with _LOCK:
-        if _STATE.get("started") and _STATE.get("thread") and _STATE["thread"].is_alive():
-            return circulation_status()
-        _STATE["inbox"] = {}
-        _STATE["audit_consumed"] = {"metacognition": [], "self_repair": []}
-        _STATE["error"] = None
-        stop = threading.Event()
-        _STATE["stop"] = stop
+        already = bool(_STATE.get("started") and _STATE.get("thread") and _STATE["thread"].is_alive())
+        if not already:
+            _STATE["inbox"] = {}
+            _STATE["audit_consumed"] = {"metacognition": [], "self_repair": []}
+            _reset_audit_effects()
+            _STATE["error"] = None
+            stop = threading.Event()
+            _STATE["stop"] = stop
+    ensure_audit_subscribers()
+    if already:
+        return circulation_status()
 
     for name in _DEFAULT_CONNECTORS:
         switch_connector(name, True)
-
-    global _SUBSCRIBED, _AUDIT_WIRED
-    bus = get_thought_bus()
-    if not _SUBSCRIBED:
-        bus.subscribe(_CIRCULATION, _on_circulation)
-        _SUBSCRIBED = True
-    if not _AUDIT_WIRED:
-        bus.subscribe(_CIRCULATION, _on_audit_metacognition)
-        bus.subscribe(_CIRCULATION, _on_audit_self_repair)
-        _AUDIT_WIRED = True
 
     chosen = port
     if chosen is None:

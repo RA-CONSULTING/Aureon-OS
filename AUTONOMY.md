@@ -25,7 +25,7 @@ Explicit `AUREON_AUTONOMY_MODE=guarded` puts the self-coding denylist back and k
 
 Credentials are read from `.env` or the OS keychain. They are never written into the repo, into a patch, or into a log. `.env`, key files, and assignments such as `API_SECRET=<value>` are refused in full mode too.
 
-`AUREON_SELF_REPAIR_KILL` and `state/SELF_REPAIR_KILL` do not stop self-writes or order dispatch. Changes and order attempts are appended to `state/autonomy_audit.jsonl`, with secret values redacted, and published on the circulation thought bus for the metacognition and self-repair loops. A self-patch whose tests fail stays applied. A patch whose tests pass still commits on the current branch. Nothing is pushed.
+`AUREON_SELF_REPAIR_KILL` and `state/SELF_REPAIR_KILL` do not stop self-writes or order dispatch. Changes and order attempts are appended to `state/autonomy_audit.jsonl`, with secret values redacted, and published on the circulation thought bus. The metacognition and self-repair loops consume those records. After repeated failed self-changes, metacognition raises a concern and lowers its confidence, and self-repair deprioritises a target that keeps failing. A self-patch whose tests fail stays applied. A patch whose tests pass still commits on the current branch. Nothing is pushed.
 
 `--stop` and `--status` on the master launcher are process control. They are not a trading or self-coding stop.
 
@@ -36,7 +36,7 @@ Full mode means Aureon can change the code that decides whether money moves, can
 ## Where it lives
 
 - `aureon/autonomous/autonomy_mode.py` — mode, runtime authority, key presence, and the append-only audit
-- `aureon/core/organism_circulation.py` — metacognition and self-repair consume audit events on the thought bus
+- `aureon/core/organism_circulation.py` — metacognition and self-repair consume audit events on the thought bus and act on repeated failed self-changes
 - `aureon/launch/master.py` — boot profile, paper without keys, live with keys, `--stop` and `--status`
 - `aureon/autonomous/self_repair_guard.py` — denylist, open when the mode is full
 - `aureon/autonomous/aureon_internal_self_coder.py` — a failed patch stays applied; full mode commits after tests pass
