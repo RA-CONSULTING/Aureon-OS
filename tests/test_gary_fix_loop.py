@@ -24,7 +24,8 @@ def test_isolate_clears_aureon_flags_and_exchange_keys(monkeypatch: pytest.Monke
     assert "KRAKEN_API_SECRET" not in os.environ
     assert "AUREON_CUSTOM_LEAK" not in os.environ
     assert os.environ["AUREON_LIVE_TRADING"] == "0"
-    assert os.environ["AUREON_DISABLE_REAL_ORDERS"] == "1"
+    assert "AUREON_DISABLE_REAL_ORDERS" not in os.environ
+    assert "AUREON_DISABLE_EXCHANGE_MUTATIONS" not in os.environ
     assert os.environ["AUREON_AUTONOMY_MODE"] == "guarded"
     assert os.environ["AUREON_THOUGHT_BUS_PATH"] == "/tmp/keep-journal"
 

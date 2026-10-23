@@ -234,9 +234,9 @@ def _isolate_leaked_credentials() -> None:
             continue
         if key.startswith(_EXCHANGE_ENV_PREFIXES):
             os.environ.pop(key, None)
+    # Clearing is the isolation. Forcing order-disable flags here made the
+    # queen answer AUDIT_SAFE and made a live self-questioning cycle look blocked.
     os.environ["AUREON_LIVE_TRADING"] = "0"
-    os.environ["AUREON_DISABLE_REAL_ORDERS"] = "1"
-    os.environ["AUREON_DISABLE_EXCHANGE_MUTATIONS"] = "1"
     os.environ["AUREON_AUTONOMY_MODE"] = "guarded"
 
 
