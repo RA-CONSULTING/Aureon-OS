@@ -437,15 +437,27 @@ def _uv_binary() -> str | None:
     return None
 
 
+def _usable_venv(repo: Path) -> Path | None:
+    """A venv python plus pyvenv.cfg is enough. ensurepip may be missing."""
+
+    python = venv_python(repo)
+    if python and (repo / ".venv" / "pyvenv.cfg").is_file():
+        return python
+    return None
+
+
 def _ensure_venv(repo: Path) -> tuple[Path | None, str]:
-    existing = venv_python(repo)
+    existing = _usable_venv(repo)
     if existing:
         return existing, "venv present"
     target = repo / ".venv"
     ok, detail = _run_install([sys.executable, "-m", "venv", str(target)], repo, timeout=180)
-    created = venv_python(repo)
-    if ok and created:
-        return created, "venv created"
+    created = _usable_venv(repo)
+    if created:
+        note = "venv created" if ok else "venv created without ensurepip"
+        return created, note
+    if target.exists():
+        shutil.rmtree(target, ignore_errors=True)
     uv = _uv_binary()
     if not uv:
         reason = detail if not ok else "venv python missing"
@@ -453,8 +465,12 @@ def _ensure_venv(repo: Path) -> tuple[Path | None, str]:
             f"python -m venv failed: {reason}; uv is not installed; "
             "launcher does not install into the system interpreter"
         )
-    ok, detail = _run_install([uv, "venv", str(target), "--python", sys.executable], repo, timeout=180)
-    created = venv_python(repo)
+    ok, detail = _run_install(
+        [uv, "venv", "--clear", str(target), "--python", sys.executable],
+        repo,
+        timeout=180,
+    )
+    created = _usable_venv(repo)
     if ok and created:
         return created, "venv created with uv"
     return None, f"uv venv failed: {detail}; launcher does not install into the system interpreter"
