@@ -385,7 +385,22 @@ class HNCAurisEngine:
     All 9 nodes analyse every transaction simultaneously.
     Coherence Γ is calculated from agreement level.
     Same thresholds: entry 0.938, exit 0.700.
+
+    Frequencies are the canonical Auris table (Tiger 220 … Clownfish 963).
+    The drifted Tiger 741 / Clownfish 639 assignment is not loaded.
     """
+
+    CANONICAL_AURIS_HZ = {
+        "Tiger": 220.0,
+        "Falcon": 285.0,
+        "Hummingbird": 396.0,
+        "Dolphin": 528.0,
+        "Deer": 639.0,
+        "Owl": 741.0,
+        "Panda": 852.0,
+        "CargoShip": 936.0,
+        "Clownfish": 963.0,
+    }
 
     def __init__(self):
         self.nodes: List[AurisNode] = [
@@ -399,6 +414,8 @@ class HNCAurisEngine:
             CargoShipNode(),
             ClownfishNode(),
         ]
+        for node in self.nodes:
+            node.freq = self.CANONICAL_AURIS_HZ[node.name]
 
     def _calculate_coherence(self, signals: List[NodeSignal]) -> Tuple[float, str]:
         """

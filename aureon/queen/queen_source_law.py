@@ -57,6 +57,11 @@ PHI = 1.618033988749895
 # AUREON_SOURCE_LAW_EXIT names the lower HOLD band (default 0.934). Every
 # reading below the entry gate returns HOLD.
 _ENTRY_FLOOR = 0.938
+# Every node must clear this before the Queen vote can PASS. Nine nodes at
+# confidence 0.2 stay HOLD even when Γ is 0.99. This floor is stricter than
+# QueenEvaluator's 0.30 veto.
+_MIN_NODE_CONFIDENCE = 0.5
+
 
 def _resolve_threshold(env_key: str, default: float, *, floor: float | None = None) -> float:
     import os
@@ -485,6 +490,12 @@ class CognitionOutput:
             return f"queen vote unreadable: {type(exc).__name__}"
         try:
             confs = [float(r.get("confidence", 0.0)) for r in readings]
+            lowest = min(confs) if confs else 0.0
+            if lowest < _MIN_NODE_CONFIDENCE:
+                return (
+                    f"Queen VETO - node confidence {lowest:.2f} "
+                    f"below {_MIN_NODE_CONFIDENCE}"
+                )
             queen_confidence = sum(confs) / len(confs) if confs else 0.0
             vote = QueenEvaluator().evaluate(
                 queen_confidence,

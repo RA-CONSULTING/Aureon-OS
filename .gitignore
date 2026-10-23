@@ -263,7 +263,8 @@ sniper_million_model.json
 
 # Self-host runtime and the staged image context
 /deploy/selfhost/runtime/
-/deploy/selfhost/image/
+/deploy/selfhost/image/*
+!/deploy/selfhost/image/.gitkeep
 /aureon_fusion/state/
 /schumann_state.json
 /real_time_data.json

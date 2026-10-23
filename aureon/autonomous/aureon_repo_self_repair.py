@@ -386,6 +386,12 @@ def run_repo_self_repair(
         ],
         safety={
             "audit_mode": True,
+            # Both names stay. ``live_trading_disabled`` is the flag the
+            # self-repair denylist refuses, so a report that carries a
+            # live-trading flag is never written. ``venue_orders_disarmed``
+            # is the same refusal under the second name. Self-repair does
+            # not touch live trading.
+            "live_trading_disabled": True,
             "venue_orders_disarmed": True,
             "real_orders_disabled": True,
             "secret_values_written": False,

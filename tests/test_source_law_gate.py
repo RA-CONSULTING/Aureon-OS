@@ -276,9 +276,21 @@ def test_real_engine_gamma_gate(tmp_path, monkeypatch):
     assert held.action == "HOLD"
 
 
+def test_low_node_confidence_forces_hold_even_at_high_gamma():
+    """Nine nodes at confidence 0.2 cannot EXECUTE, even at Γ 0.99."""
+    held = _output(0.99).collapse(_readings(confidence=0.2), 9, 1)
+    assert held.action == "HOLD"
+    assert held.coherence_gamma == 0.99
+    assert any("node confidence" in line for line in held.reasoning)
+    cleared = _output(0.99).collapse(_readings(confidence=0.5), 9, 1)
+    assert cleared.action == "EXECUTE"
+
+
 def test_canonical_auris_table_tiger_220_clownfish_963():
     from aureon.core.aureon_unified import MasterEquationSystem
+    from aureon.trading.aureon_auris_trader import AurisEngine, CANONICAL_AURIS_HZ
     from aureon.trading.aureon_unified_ecosystem import CONFIG as trading_config
+    from Kings_Accounting_Suite.core.hnc_auris_nodes import HNCAurisEngine
 
     assert MasterEquationSystem.AURIS_NODES["Tiger"]["freq"] == 220.0
     assert MasterEquationSystem.AURIS_NODES["Clownfish"]["freq"] == 963.0
@@ -286,6 +298,12 @@ def test_canonical_auris_table_tiger_220_clownfish_963():
     assert trading_config["FREQ_CLOWNFISH"] == 963.0
     assert trading_config["QUARANTINED_FREQ_TIGER"] == 741.0
     assert trading_config["QUARANTINED_FREQ_CLOWNFISH"] == 639.0
+    engine = AurisEngine()
+    live = {node.name: node.freq for node in engine.nodes}
+    assert live == CANONICAL_AURIS_HZ
+    assert live["Tiger"] == 220.0 and live["Clownfish"] == 963.0
+    kings = {node.name: node.freq for node in HNCAurisEngine().nodes}
+    assert kings["Tiger"] == 220.0 and kings["Clownfish"] == 963.0
     from aureon_fusion.hnc_core import GAMMA_TARGET, SOURCE_LAW_ENTRY_FLOOR
 
     assert GAMMA_TARGET >= SOURCE_LAW_ENTRY_FLOOR

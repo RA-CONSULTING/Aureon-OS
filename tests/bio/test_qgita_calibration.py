@@ -49,9 +49,16 @@ def test_fibonacci_lattice_reused():
 
 
 def test_auris_frequencies_reused():
+    from aureon.wisdom.aureon_qgita import CONFIG
+
     freqs = qc.auris_frequencies_hz()
     assert len(freqs) == 9
-    assert 432.0 in freqs and 528.0 in freqs  # QGITA Auris config
+    assert 528.0 in freqs  # canonical node table, Tiger 220 … Clownfish 963
+    # 174 and 432 stay on the rainbow bank, not on the node keys.
+    assert CONFIG["RAINBOW_CARGOSHIP_HZ"] == 174.0
+    assert CONFIG["RAINBOW_OWL_HZ"] == 432.0
+    assert CONFIG["FREQ_CARGOSHIP"] == 936.0
+    assert CONFIG["FREQ_OWL"] == 741.0
 
 
 def test_phi_lattice_ratios_are_phi_powers():

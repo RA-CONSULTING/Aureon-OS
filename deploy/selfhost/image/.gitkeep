@@ -1,0 +1,2 @@
+# Build context for deploy/selfhost/docker-compose.yml.
+# scripts/stage_selfhost_image.py fills this directory before compose build.
