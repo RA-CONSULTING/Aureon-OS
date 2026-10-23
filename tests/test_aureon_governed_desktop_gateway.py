@@ -775,7 +775,25 @@ def test_expected_source_hash_must_be_exact_lowercase_sha_without_echo(
     assert result.ok is False
     assert result.reason == "expected_before_sha256_invalid"
     assert backend.actions == []
-    assert invalid_hash not in evidence.read_text(encoding="utf-8")
+    # A short invalid token can sit inside a generated id. The refusal must
+    # not store the token itself as a value.
+    recorded = evidence.read_text(encoding="utf-8")
+    values: list[str] = []
+
+    def _collect(node: object) -> None:
+        if isinstance(node, dict):
+            for item in node.values():
+                _collect(item)
+        elif isinstance(node, list):
+            for item in node:
+                _collect(item)
+        elif isinstance(node, str):
+            values.append(node)
+
+    for line in recorded.splitlines():
+        if line.strip():
+            _collect(json.loads(line))
+    assert invalid_hash not in values
 
 
 def test_live_mutation_requires_source_hash_before_capture_or_dispatch(tmp_path: Path) -> None:
