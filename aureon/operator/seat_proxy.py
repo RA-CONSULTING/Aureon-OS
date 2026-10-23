@@ -9,11 +9,11 @@ an order.
 from __future__ import annotations
 
 import json
+import socket
 import threading
-import urllib.error
-import urllib.request
 from datetime import datetime, timezone
-from typing import Any, Callable
+from typing import Any
+from urllib.parse import urlparse
 
 from flask import Flask, jsonify
 
@@ -223,7 +223,46 @@ def _local_payload(seat_id: str, gateway: "GatewaySwitch | None") -> dict[str, A
     }
 
 
-def read_seat(seat_id: str, gateway: "GatewaySwitch | None" = None, opener: Callable[..., Any] | None = None) -> dict[str, Any]:
+def _read_upstream(url: str) -> tuple[int, str, bytes]:
+    """GET one loopback URL. This is a status read. It does not place an order."""
+
+    parsed = urlparse(url)
+    host = parsed.hostname or "127.0.0.1"
+    port = int(parsed.port or (443 if parsed.scheme == "https" else 80))
+    path = parsed.path or "/"
+    if parsed.query:
+        path = f"{path}?{parsed.query}"
+    message = (
+        f"GET {path} HTTP/1.0\r\n"
+        f"Host: {host}\r\n"
+        "User-Agent: aureon-seat-proxy\r\n"
+        "Connection: close\r\n\r\n"
+    )
+    with socket.create_connection((host, port), timeout=_FETCH_TIMEOUT_S) as sock:
+        sock.settimeout(_FETCH_TIMEOUT_S)
+        sock.sendall(message.encode("ascii"))
+        chunks: list[bytes] = []
+        total = 0
+        while total < _MAX_BYTES + 8192:
+            block = sock.recv(65536)
+            if not block:
+                break
+            chunks.append(block)
+            total += len(block)
+    raw = b"".join(chunks)
+    head, _, body = raw.partition(b"\r\n\r\n")
+    status_line = head.split(b"\r\n", 1)[0].decode("ascii", "replace")
+    parts = status_line.split()
+    status = int(parts[1]) if len(parts) > 1 and parts[1].isdigit() else 0
+    content_type = ""
+    for line in head.split(b"\r\n")[1:]:
+        if line.lower().startswith(b"content-type:"):
+            content_type = line.split(b":", 1)[1].decode("ascii", "replace").strip()
+            break
+    return status, content_type, body[:_MAX_BYTES]
+
+
+def read_seat(seat_id: str, gateway: "GatewaySwitch | None" = None) -> dict[str, Any]:
     """Read one seat. A missed upstream is unavailable, with the reason."""
 
     seat = seat_by_id(seat_id)
@@ -242,20 +281,8 @@ def read_seat(seat_id: str, gateway: "GatewaySwitch | None" = None, opener: Call
     upstream = seat["upstream"]
     if not upstream:
         return _reading(seat, available=True, reason=None, payload=_local_payload(seat_id, gateway))
-    fetch = opener or urllib.request.urlopen
-    request = urllib.request.Request(str(upstream), headers={"User-Agent": "aureon-seat-proxy"})
     try:
-        with fetch(request, timeout=_FETCH_TIMEOUT_S) as response:
-            raw = response.read(_MAX_BYTES)
-            content_type = str(response.headers.get("Content-Type") or "")
-            status = int(getattr(response, "status", 200) or 200)
-    except urllib.error.HTTPError as exc:
-        return _reading(
-            seat,
-            available=False,
-            reason=f"upstream HTTP {exc.code}",
-            payload=None,
-        )
+        status, content_type, raw = _read_upstream(str(upstream))
     except Exception as exc:
         return _reading(
             seat,
