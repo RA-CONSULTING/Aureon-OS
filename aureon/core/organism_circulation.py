@@ -243,6 +243,10 @@ def _loop(stop: threading.Event) -> None:
         stop.wait(1.0)
 
 
+class _ReuseServer(ThreadingHTTPServer):
+    allow_reuse_address = True
+
+
 class _Handler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
 
@@ -369,7 +373,7 @@ def start_organism_circulation(port: int | None = None) -> dict[str, Any]:
     server: ThreadingHTTPServer | None = None
     http_thread: threading.Thread | None = None
     try:
-        server = ThreadingHTTPServer((_HOST, chosen), _Handler)
+        server = _ReuseServer((_HOST, chosen), _Handler)
         http_thread = threading.Thread(target=server.serve_forever, name="organism-http", daemon=True)
         http_thread.start()
         bound = int(server.server_address[1])

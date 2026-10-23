@@ -14,7 +14,13 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any
 
 _HOST = "127.0.0.1"
-_SERVER: ThreadingHTTPServer | None = None
+
+
+class _ReuseServer(ThreadingHTTPServer):
+    allow_reuse_address = True
+
+
+_SERVER: _ReuseServer | None = None
 _THREAD: threading.Thread | None = None
 _LOCK = threading.Lock()
 
@@ -115,7 +121,7 @@ def start_master_ui(
             (_Handler,),
             {"dashboard_url": dashboard_url, "command_center_url": command_center_url},
         )
-        server = ThreadingHTTPServer((_HOST, chosen), handler)
+        server = _ReuseServer((_HOST, chosen), handler)
         thread = threading.Thread(target=server.serve_forever, name="master-launcher-ui", daemon=True)
         thread.start()
         _SERVER = server

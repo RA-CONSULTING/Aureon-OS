@@ -30,7 +30,7 @@ as_root() {
 install_system() {
   if have apt-get; then
     local pkgs=()
-    if ! have python3 || ! python3 -c "import venv, ssl" >/dev/null 2>&1; then
+    if ! have python3 || ! python3 -c "import venv, ssl, ensurepip" >/dev/null 2>&1; then
       pkgs+=(python3 python3-venv python3-pip ca-certificates)
     fi
     have git || pkgs+=(git)
@@ -53,7 +53,14 @@ install_system() {
 }
 
 ensure_venv() {
+  if ! python3 -c "import ensurepip" >/dev/null 2>&1 && have apt-get; then
+    as_root apt-get update
+    DEBIAN_FRONTEND=noninteractive as_root apt-get install -y python3-venv python3-pip ca-certificates
+  fi
   if [ ! -x "$ROOT/.venv/bin/python" ]; then
+    if [ -d "$ROOT/.venv" ]; then
+      rm -rf "$ROOT/.venv"
+    fi
     python3 -m venv "$ROOT/.venv"
   fi
   PY="$ROOT/.venv/bin/python"
