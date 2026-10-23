@@ -81,6 +81,7 @@ OPERATOR_COMPANION_SOURCES = frozenset(
         "aureon_fusion/paths.py",
         "aureon_fusion/receipts.py",
         "aureon_fusion/unity_supervisor.py",
+        "aureon_radar/bots/orca_command_center.py",
         "aureon-os-upstream/Kings_Accounting_Suite/tools/accounting_system_registry.py",
         "aureon-os-upstream/Kings_Accounting_Suite/tools/combined_bank_data.py",
         "aureon-os-upstream/aureon_mycelium.py",

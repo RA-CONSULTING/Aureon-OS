@@ -10832,6 +10832,13 @@ class MicroProfitLabyrinth:
                         qty=candidate.qty,
                         type='market'
                     )
+                    self._note_order_attempt(
+                        "place_order",
+                        "alpaca",
+                        candidate.symbol if '/' in candidate.symbol else f"{candidate.asset}/USD",
+                        "sell",
+                        sell_result,
+                    )
                     
                     if sell_result:
                         # Record the harvest
@@ -10865,6 +10872,14 @@ class MicroProfitLabyrinth:
                         safe_print(f"      ❌ SELL failed - no result returned")
                         
                 except Exception as e:
+                    self._note_order_attempt(
+                        "place_order",
+                        "alpaca",
+                        getattr(candidate, "symbol", "") or getattr(candidate, "asset", ""),
+                        "sell",
+                        status="error",
+                        reason="harvest_sell_failed",
+                    )
                     safe_print(f"      ❌ SELL failed: {e}")
                     logger.error(f"Harvest sell failed for {candidate.asset}: {e}")
                     continue
@@ -10977,6 +10992,7 @@ class MicroProfitLabyrinth:
                         to_asset=target_quote,
                         amount=amount * 0.95  # 95% safety margin
                     )
+                    self._note_order_attempt("convert_crypto", exchange, asset, "sell", sell_result)
                     
                     if sell_result and not sell_result.get('error'):
                         result['positions_sold'] += 1
@@ -10993,6 +11009,14 @@ class MicroProfitLabyrinth:
                         error_msg = sell_result.get('error', 'Unknown') if sell_result else 'No result'
                         safe_print(f"      ❌ Sell failed: {error_msg}")
                 except Exception as e:
+                    self._note_order_attempt(
+                        "convert_crypto",
+                        exchange,
+                        asset,
+                        "sell",
+                        status="error",
+                        reason="harvest_sell_failed",
+                    )
                     safe_print(f"      ❌ Sell error: {e}")
                     continue
                 
@@ -13897,6 +13921,7 @@ if __name__ == "__main__":
                                 side='sell',
                                 type='market'
                             )
+                            self._note_order_attempt("create_order", dust.exchange, pair, "sell", result)
                         elif dust.exchange == 'kraken':
                             # Kraken uses AddOrder
                             result = await client.add_order(
@@ -13905,6 +13930,7 @@ if __name__ == "__main__":
                                 ordertype='market',
                                 volume=str(dust.amount)
                             )
+                            self._note_order_attempt("add_order", dust.exchange, pair, "sell", result)
                         elif dust.exchange == 'binance':
                             # Binance uses market orders
                             _result = client.create_order(
@@ -13913,6 +13939,7 @@ if __name__ == "__main__":
                                 type='MARKET',
                                 quantity=dust.amount
                             )
+                            self._note_order_attempt("create_order", dust.exchange, pair, "sell", _result)
                         
                         self.dust_converter.record_sweep(dust, success=True)
                         sweeps_executed += 1
@@ -13922,6 +13949,14 @@ if __name__ == "__main__":
                         await self._queen_learn_dust_sweep(dust, success=True)
                         
                     except Exception as e:
+                        self._note_order_attempt(
+                            "dust_sweep",
+                            dust.exchange,
+                            pair,
+                            "sell",
+                            status="error",
+                            reason="dust_sweep_failed",
+                        )
                         self.dust_converter.record_sweep(dust, success=False)
                         safe_print(f"   ❌ Failed to sweep {dust.asset}: {e}")
                         
@@ -17338,6 +17373,7 @@ if __name__ == "__main__":
                 to_asset=opp.to_asset,
                 amount=opp.from_amount
             )
+            self._note_order_attempt("convert_crypto", "kraken", opp.from_asset, "sell", result)
             
             if result.get('error'):
                 error_msg = str(result['error'])
@@ -17367,6 +17403,14 @@ if __name__ == "__main__":
         except Exception as exc:
             logger.error(f"Kraken conversion error: {exc}")
             if submission_attempted:
+                self._note_order_attempt(
+                    "convert_crypto",
+                    "kraken",
+                    getattr(opp, "from_asset", ""),
+                    "sell",
+                    status="error",
+                    reason="order_attempt_exception",
+                )
                 self._mark_reconciliation_required(
                     opp, 'kraken', f'post-submission exception: {type(exc).__name__}'
                 )
@@ -17507,6 +17551,7 @@ if __name__ == "__main__":
                     result = self.binance.place_market_order(
                         symbol=pair, side='SELL', quantity=opp.from_amount
                     )
+                    self._note_order_attempt("place_market_order", "binance", pair, "sell", result)
                     if result and result.get('dryRun'):
                         self._mark_not_submitted(opp, 'binance_client_dry_run')
                         return False
@@ -17544,6 +17589,7 @@ if __name__ == "__main__":
                 to_asset=opp.to_asset,
                 amount=opp.from_amount
             )
+            self._note_order_attempt("convert_crypto", "binance", opp.from_asset, "sell", result)
             
             if not isinstance(result, dict):
                 self._mark_reconciliation_required(
@@ -17582,6 +17628,14 @@ if __name__ == "__main__":
         except Exception as exc:
             logger.error(f"Binance conversion error: {exc}")
             if submission_attempted:
+                self._note_order_attempt(
+                    "convert_crypto",
+                    "binance",
+                    getattr(opp, "from_asset", ""),
+                    "sell",
+                    status="error",
+                    reason="order_attempt_exception",
+                )
                 self._mark_reconciliation_required(
                     opp, 'binance', f'post-submission exception: {type(exc).__name__}'
                 )
@@ -17744,6 +17798,7 @@ if __name__ == "__main__":
                 to_asset=opp.to_asset,
                 amount=opp.from_amount,
             )
+            self._note_order_attempt("convert_crypto", "alpaca", opp.from_asset, "sell", result)
             if not isinstance(result, dict):
                 self._mark_reconciliation_required(
                     opp, 'alpaca', 'non-dictionary response after conversion submission'
@@ -17781,6 +17836,14 @@ if __name__ == "__main__":
         except Exception as exc:
             logger.error(f"Alpaca conversion error: {exc}")
             if submission_attempted:
+                self._note_order_attempt(
+                    "convert_crypto",
+                    "alpaca",
+                    getattr(opp, "from_asset", ""),
+                    "sell",
+                    status="error",
+                    reason="order_attempt_exception",
+                )
                 self._mark_reconciliation_required(
                     opp, 'alpaca', f'post-submission exception: {type(exc).__name__}'
                 )
@@ -17827,11 +17890,13 @@ if __name__ == "__main__":
                 result = client.convert_crypto(
                     opp.from_asset, opp.to_asset, opp.from_amount
                 )
+                self._note_order_attempt("convert_crypto", exchange, opp.from_asset, "sell", result)
             elif hasattr(client, 'place_market_order'):
                 submission_attempted = True
                 result = client.place_market_order(
                     symbol, 'sell', quantity=opp.from_amount
                 )
+                self._note_order_attempt("place_market_order", exchange, symbol, "sell", result)
             elif hasattr(client, 'execute_trade'):
                 if inspect.iscoroutinefunction(client.execute_trade):
                     self._mark_not_submitted(
@@ -17840,6 +17905,7 @@ if __name__ == "__main__":
                     return False
                 submission_attempted = True
                 result = client.execute_trade(symbol, 'sell', opp.from_amount)
+                self._note_order_attempt("execute_trade", exchange, symbol, "sell", result)
             else:
                 return self._try_next_exchange(
                     opp, net_expected_usd, cost_metrics, exclude=sorted(excluded | {exchange})
@@ -17882,6 +17948,14 @@ if __name__ == "__main__":
         except Exception as exc:
             logger.error(f"{exchange} execution error: {exc}")
             if submission_attempted:
+                self._note_order_attempt(
+                    "order",
+                    exchange,
+                    getattr(opp, "from_asset", ""),
+                    "sell",
+                    status="error",
+                    reason="order_attempt_exception",
+                )
                 self._mark_reconciliation_required(
                     opp, exchange, f'post-submission exception: {type(exc).__name__}'
                 )
@@ -18559,6 +18633,34 @@ if __name__ == "__main__":
         else:
             safe_print("\n   RECONCILIATION REQUIRED")
         safe_print("   " + "=" * 60)
+
+    def _note_order_attempt(
+        self,
+        operation: str,
+        exchange: str,
+        symbol: str,
+        side: str,
+        result: Any = None,
+        *,
+        status: str = "",
+        reason: str = "",
+    ) -> None:
+        """Append the attempt to the autonomy audit and the circulation bus."""
+
+        try:
+            from aureon.autonomous.autonomy_mode import note_order_attempt
+
+            note_order_attempt(
+                operation=operation,
+                exchange=exchange,
+                symbol=str(symbol or ""),
+                side=str(side or ""),
+                result=result,
+                status=status,
+                reason=reason,
+            )
+        except Exception:
+            return
 
     def _audit_event(self, event_type: str, payload: Dict[str, Any]) -> None:
         """

@@ -241,6 +241,39 @@ def audit_event(event: str, repo_root: Path | None = None, **fields: object) -> 
     _publish_audit(record)
 
 
+def note_order_attempt(
+    *,
+    operation: str,
+    exchange: str,
+    symbol: str = "",
+    side: str = "",
+    result: object = None,
+    status: str = "",
+    decision: str = "",
+    reason: str = "",
+) -> None:
+    """Record an order attempt and publish it. This does not place or retry the order."""
+
+    if isinstance(result, dict):
+        symbol = symbol or str(result.get("symbol") or "")
+        side = side or str(result.get("side") or result.get("direction") or "")
+        status = status or str(result.get("status") or "")
+        decision = decision or str(result.get("decision") or "")
+        reason = reason or str(result.get("reason") or result.get("error") or "")
+    try:
+        record_order(
+            operation=operation,
+            exchange=exchange,
+            symbol=str(symbol or ""),
+            side=str(side or ""),
+            status=str(status or ""),
+            decision=str(decision or ""),
+            reason=str(reason or ""),
+        )
+    except Exception:
+        return
+
+
 def record_order(
     *,
     operation: str,

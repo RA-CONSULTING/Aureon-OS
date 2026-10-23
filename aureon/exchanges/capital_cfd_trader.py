@@ -3370,6 +3370,34 @@ class CapitalCFDTrader:
             "ready_to_submit": bool(plan.get("ready") and envelope.get("can_submit_pending_orders")),
         }
 
+    def _note_order_attempt(
+        self,
+        operation: str,
+        exchange: str,
+        symbol: str,
+        side: str,
+        result: Any = None,
+        *,
+        status: str = "",
+        reason: str = "",
+    ) -> None:
+        """Append the attempt to the autonomy audit and the circulation bus."""
+
+        try:
+            from aureon.autonomous.autonomy_mode import note_order_attempt
+
+            note_order_attempt(
+                operation=operation,
+                exchange=exchange,
+                symbol=str(symbol or ""),
+                side=str(side or ""),
+                result=result,
+                status=status,
+                reason=reason,
+            )
+        except Exception:
+            return
+
     def _submit_capital_pending_order(self, plan: Dict[str, Any], envelope: Dict[str, Any]) -> Dict[str, Any]:
         client = getattr(self, "client", None)
         if client is None or not hasattr(client, "place_working_order"):
@@ -3389,6 +3417,13 @@ class CapitalCFDTrader:
             )
         except Exception as exc:
             result = {"rejected": True, "error": "exception", "reason": str(exc)}
+        self._note_order_attempt(
+            "place_working_order",
+            "capital",
+            str(plan.get("symbol") or ""),
+            str(plan.get("direction") or ""),
+            result,
+        )
         submit = {
             "ok": not bool(isinstance(result, dict) and (result.get("rejected") or result.get("error"))),
             "result": result,
@@ -5944,7 +5979,16 @@ class CapitalCFDTrader:
                     size,
                     **dict(broker_exit_controls.get("submit_kwargs", {}) or {}),
                 )
+                self._note_order_attempt("place_market_order", "capital", symbol, direction, result)
             except Exception as submit_exc:
+                self._note_order_attempt(
+                    "place_market_order",
+                    "capital",
+                    symbol,
+                    direction,
+                    status="pending_reconciliation",
+                    reason="provider_submission_outcome_unknown",
+                )
                 pending = self._store_pending_execution({
                     "purpose": "open_position",
                     "truth_status": "no_data",
@@ -6156,7 +6200,16 @@ class CapitalCFDTrader:
         )
         try:
             result = self.client.close_position(pos.deal_id)
+            self._note_order_attempt("close_position", "capital", pos.symbol, pos.direction, result)
         except Exception as submit_exc:
+            self._note_order_attempt(
+                "close_position",
+                "capital",
+                pos.symbol,
+                pos.direction,
+                status="pending_reconciliation",
+                reason="provider_close_submission_outcome_unknown",
+            )
             pending = self._store_pending_execution({
                 "purpose": "close_position",
                 "truth_status": "no_data",
