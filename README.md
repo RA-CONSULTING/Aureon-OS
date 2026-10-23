@@ -114,13 +114,13 @@ that the whole system is protected or production-ready.
 
 ### Canonical organism launcher
 
-The terminal-HOLD bootstraps stay holds. The organism launcher is a separate entry and does not arm live trading:
+The terminal-HOLD bootstraps stay holds. The organism launcher is a separate entry. Its default is full autonomy, and it does not place an order by itself:
 
 ```bash
 scripts/launch/aureon-master.sh
 ```
 
-Windows uses `scripts/launch/aureon-master.ps1` and `scripts/launch/aureon-master.bat`. On a fresh clone it writes `.env` from `.env.example` when `.env` is absent, installs Python requirements into `.venv`, Node packages for `frontend/`, and the self-host Docker images, then starts the gated stack and prints a health table. Paths follow the checkout. A missing credential, binary, or daemon is a blocked row. The module name and the table are in [`LAUNCHER_INVENTORY.md`](LAUNCHER_INVENTORY.md). What still names a machine is in [`PORTABILITY.md`](PORTABILITY.md).
+Windows uses `scripts/launch/aureon-master.ps1` and `scripts/launch/aureon-master.bat`. On a fresh clone it writes `.env` from `.env.example` when `.env` is absent, installs Python requirements into `.venv`, Node packages for `frontend/`, and the self-host Docker images, then starts the organism and prints a health table. Paths follow the checkout. Trading is live when the operator's own exchange keys are in `.env`. With no keys the report says `trading_mode=paper/public-data (no exchange keys)`. A missing binary, script, or daemon is a blocked row. The mode is in [`AUTONOMY.md`](AUTONOMY.md). The module name and the table are in [`LAUNCHER_INVENTORY.md`](LAUNCHER_INVENTORY.md). What still names a machine is in [`PORTABILITY.md`](PORTABILITY.md).
 
 ### Archive of unreferenced root files
 

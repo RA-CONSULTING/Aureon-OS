@@ -166,11 +166,10 @@ def test_supplier_direct_construction_is_blocked() -> None:
     ("resolver", "reason"),
     (
         (_Resolver(gate_open=False), "auris_gate_open_required"),
-        (_Resolver(gamma=0.79), "active_auris_coherence_required"),
         (_Resolver(gamma=float("nan")), "finite_auris_coherence_required"),
     ),
 )
-def test_auris_gate_and_active_coherence_are_mandatory(
+def test_auris_gate_and_finite_coherence_are_mandatory(
     monkeypatch,
     resolver: _Resolver,
     reason: str,
@@ -179,6 +178,15 @@ def test_auris_gate_and_active_coherence_are_mandatory(
 
     with pytest.raises(LegacyUnityCompositionHold, match=reason):
         _supplier(resolver).supply_legacy_invocation(_plan())
+
+
+def test_low_gamma_does_not_block_the_order_composition(monkeypatch) -> None:
+    resolver = _Resolver(gamma=0.79)
+    _patch_moment(monkeypatch)
+
+    invocation = _supplier(resolver).supply_legacy_invocation(_plan())
+
+    assert invocation.capability_id.startswith("legacy-capability:")
 
 
 def test_position_receipt_must_be_inside_exact_provider_moment(monkeypatch) -> None:

@@ -405,9 +405,10 @@ def _pin_pytest_journals() -> None:
     os.environ["AUREON_BUS_TRACE_DIR"] = str(_PYTEST_JOURNAL_DIR / "bus-traces")
     os.environ["AUREON_HNC_TRACE_PATH"] = str(_PYTEST_JOURNAL_DIR / "hnc-live-trace.jsonl")
     os.environ["AUREON_AUTONOMY_AUDIT_PATH"] = str(_PYTEST_JOURNAL_DIR / "autonomy_audit.jsonl")
-    # The suite stays in the public default. A local state/autonomy_mode.json
-    # must not flip guarded assertions. A test that sets full mode does so
-    # itself, and an owner who exported full mode keeps that export.
+    # The launcher default, with this variable unset, is full. The suite pins
+    # guarded so denylist assertions stay put and a local state file cannot
+    # flip them. A test that wants the launcher default deletes this pin.
+    # An export of full mode is left as exported.
     os.environ.setdefault("AUREON_AUTONOMY_MODE", "guarded")
     _install_checkout_journal_redirect()
 

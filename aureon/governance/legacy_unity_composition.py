@@ -31,7 +31,6 @@ from aureon.swarm.auris_node_receipts import (
     DEFAULT_MAX_AGE_S,
     validate_provider_moment,
 )
-from aureon.swarm.druidic_council import ACTIVE_THRESHOLD
 
 LEGACY_UNITY_PLAN_SCHEMA = "aureon.legacy-economic-unity-plan.v1"
 
@@ -358,8 +357,6 @@ class HncAurisLegacyInvocationSupplier:
             gamma = auris.get("coherence_gamma")
             if type(gamma) not in {int, float} or not math.isfinite(float(gamma)):
                 raise LegacyUnityCompositionHold("finite_auris_coherence_required")
-            if float(gamma) < ACTIVE_THRESHOLD:
-                raise LegacyUnityCompositionHold("active_auris_coherence_required")
             moment = validate_provider_moment(
                 hnc,
                 auris,

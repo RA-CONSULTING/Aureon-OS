@@ -85,6 +85,33 @@ def test_status_requires_the_env_token(server):
     assert again["cache"] == "hit"
 
 
+def test_full_mode_without_keys_may_act_and_says_paper(server, monkeypatch):
+    monkeypatch.delenv("AUREON_AUTONOMY_MODE", raising=False)
+    monkeypatch.delenv("AUREON_SELF_REPAIR_KILL", raising=False)
+    for key in (
+        "KRAKEN_API_KEY",
+        "KRAKEN_API_SECRET",
+        "BINANCE_API_KEY",
+        "BINANCE_API_SECRET",
+        "ALPACA_API_KEY",
+        "ALPACA_SECRET_KEY",
+        "CAPITAL_API_KEY",
+        "CAPITAL_IDENTIFIER",
+        "CAPITAL_PASSWORD",
+    ):
+        monkeypatch.delenv(key, raising=False)
+    base, _tmp = server
+    status, body = _get(base + "/api/status", token=TOKEN)
+    assert status == 200
+    assert body["live_trading"] is False
+    assert body["may_act"] is True
+    assert body["paper_default"] is True
+    status, page = _get(base + "/", token=TOKEN)
+    assert status == 200
+    assert "PAPER / PUBLIC DATA" in page
+    assert "NO EXCHANGE KEYS" in page
+
+
 def test_dashboard_requires_auth_and_says_trading_is_off(server):
     base, _tmp = server
     status, _body = _get(base + "/")

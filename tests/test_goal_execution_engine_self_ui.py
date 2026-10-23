@@ -120,6 +120,7 @@ def test_goal_engine_routes_ui_problem_goal_to_self_repair(tmp_path: Path, monke
 
 
 def test_goal_engine_routes_repo_problem_goal_to_repo_self_repair(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setenv("AUREON_AUTONOMY_MODE", "guarded")
     _fake_repo(tmp_path)
     monkeypatch.chdir(tmp_path)
 
@@ -137,6 +138,7 @@ def test_goal_engine_routes_repo_problem_goal_to_repo_self_repair(tmp_path: Path
 
 
 def test_goal_engine_refuses_repo_goal_carrying_a_live_trading_flag(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setenv("AUREON_AUTONOMY_MODE", "guarded")
     _fake_repo(tmp_path)
     monkeypatch.chdir(tmp_path)
 

@@ -56,10 +56,11 @@ def test_generated_env_uses_safe_defaults_and_is_not_overwritten(tmp_path: Path)
     ok, detail = _ensure_local_env(tmp_path)
     assert ok, detail
     written = (tmp_path / ".env").read_text(encoding="utf-8")
-    assert "AUREON_LIVE_TRADING=0" in written
-    assert "ALPACA_PAPER=true" in written
-    assert "CAPITAL_DEMO_MODE=true" in written
+    assert "\nAUREON_LIVE_TRADING=" not in f"\n{written}"
+    assert "ALPACA_PAPER=false" in written
+    assert "CAPITAL_DEMO_MODE=false" in written
     assert "QUICKBOOKS_ALLOW_MUTATION=false" in written
+    assert "QUICKBOOKS_ENVIRONMENT=sandbox" in written
     assert "BINANCE_API_KEY=" in written
     assert "SERO_WORKSPACE=" not in written
     assert "C:/Users" not in written
@@ -81,14 +82,17 @@ def test_missing_env_example_is_a_blocked_reason(tmp_path: Path) -> None:
 def test_safe_overlay_keeps_comments_and_empty_secrets() -> None:
     rendered = _apply_safe_overlay("# note\nALPACA_PAPER=false\nBINANCE_API_KEY=\n")
     assert rendered.startswith("# note\n")
-    assert "ALPACA_PAPER=true" in rendered
+    assert "ALPACA_PAPER=false" in rendered
     assert "BINANCE_API_KEY=" in rendered
     for key, value in SAFE_ENV_OVERLAY.items():
         assert f"{key}={value}" in rendered
 
 
-def test_child_workspace_is_the_launched_checkout(tmp_path: Path) -> None:
+def test_child_workspace_is_the_launched_checkout(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.delenv("AUREON_AUTONOMY_MODE", raising=False)
+    monkeypatch.delenv("AUREON_SELF_REPAIR_KILL", raising=False)
     env = paper_env({"SERO_WORKSPACE": "/tmp/other-checkout", "PYTHONPATH": ""}, tmp_path)
     assert env["SERO_WORKSPACE"] == str(tmp_path.resolve())
     assert env["AUREON_LIVE_TRADING"] == "0"
     assert env["AUREON_FUSION_ARM_LIVE"] == ""
+    assert env["AUREON_MAY_ACT"] == "1"

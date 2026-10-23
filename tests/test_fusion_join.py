@@ -25,14 +25,28 @@ def _market(_url: str) -> bytes:
     return json.dumps(MARKET).encode()
 
 
-def test_status_is_offline_and_disarmed():
+def test_status_is_offline_and_paper_without_keys(monkeypatch):
+    monkeypatch.delenv("AUREON_AUTONOMY_MODE", raising=False)
+    monkeypatch.delenv("AUREON_SELF_REPAIR_KILL", raising=False)
+    for key in (
+        "KRAKEN_API_KEY",
+        "KRAKEN_API_SECRET",
+        "BINANCE_API_KEY",
+        "BINANCE_API_SECRET",
+        "ALPACA_API_KEY",
+        "ALPACA_SECRET_KEY",
+        "CAPITAL_API_KEY",
+        "CAPITAL_IDENTIFIER",
+        "CAPITAL_PASSWORD",
+    ):
+        monkeypatch.delenv(key, raising=False)
     report = status_report()
     assert report["schema"] == "aureon.fusion.v1"
     assert report["live_trading"] is False
     assert report["paper_default"] is True
     assert report["dry_run_default"] is True
-    assert report["may_act"] is False
-    assert report["action_eligible"] is False
+    assert report["may_act"] is True
+    assert report["action_eligible"] is True
     assert report["capabilities"]["market"]["present"] is True
     assert report["capabilities"]["field"]["present"] is True
     assert report["capabilities"]["operating"]["present"] is True

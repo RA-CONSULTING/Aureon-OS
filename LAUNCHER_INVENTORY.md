@@ -32,13 +32,12 @@ A missing credential, binary, script, or daemon is a row with status `blocked` a
 
 ## What the launcher will not do
 
-- It never sets `AUREON_LIVE_TRADING=1` and never creates `aureon_fusion/state/capital_release.flag`.
-- Every child it spawns receives `AUREON_LIVE_TRADING=0`, an empty `AUREON_FUSION_ARM_LIVE`, and `AUREON_DISABLE_REAL_ORDERS=1`. Gary's value in the parent shell is left as he set it.
-- `organ/aureon_radar_suite` stays blocked. That suite is the capital live launcher.
-- `organ/orca_unified_kill_chain` stays blocked. That loop places orders and does not read the live-trading switch.
-- `organ/unity_supervisor` is started with `--dry-run`, so it cannot open a second ungated fleet behind this launcher's credential gate.
-- `loop/self_repair` starts only when `AUREON_SELF_REPAIR_ENABLE` is on and `state/self_repair_config.json` says `{"enabled": true}`. The kill switch blocks it in guarded mode and in full mode. The launcher does not enable repair and does not run a repair cycle.
-- `loop/self_coder` stands by in the current `AUREON_AUTONOMY_MODE` (public default `guarded`). The launcher does not invent a goal and does not apply a patch.
+- It does not place an order by itself, and it does not create `aureon_fusion/state/capital_release.flag`.
+- With no complete exchange key group, every child stays on the paper profile (`AUREON_LIVE_TRADING=0`, real orders disabled, dry-run on) and the report says `trading_mode=paper/public-data (no exchange keys)`.
+- With a complete key group and the kill switch off, children get the live profile. The parent process environment is not rewritten.
+- The kill switch (`AUREON_SELF_REPAIR_KILL=1` or `state/SELF_REPAIR_KILL`) forces the paper profile and `AUREON_MAY_ACT=0`.
+- `loop/self_repair` starts only when `AUREON_SELF_REPAIR_ENABLE` is on and `state/self_repair_config.json` says `{"enabled": true}`. The kill switch blocks it. The launcher does not enable repair and does not run a repair cycle.
+- `loop/self_coder` stands by in the current `AUREON_AUTONOMY_MODE` (public default `full`). The launcher does not invent a goal and does not apply a patch.
 - There is no separate v5b module in the tree. `seat/trading_world_v5b` is `aureon_fusion.http_service` bound to `127.0.0.1:8765`. The local fusion token is the one already committed in `deploy/selfhost/docker-compose.yml`.
 
 When Docker is down, compose services fall back to a host process where one exists (error sink, api_b, frontend, nginx, redis). `compose/api_a` points at the trading-world seat instead of binding 8765 twice. `compose/hnc_core` points at `organ/hnc_core`. Postgres is used if `pg_isready -d aureon` answers; the launcher does not run `sudo`.
@@ -95,7 +94,7 @@ Built from `deploy/selfhost/docker-compose.yml`, `aureon_fusion.organ_registry.O
 | 42 | organ/global_energy_aggregator | organ | deps/python |
 | 43 | organ/orca_unified_kill_chain | organ | not started; order loop, deps/python |
 | 44 | organ/orca_command_center | organ | dashboard, deps/python |
-| 45 | organ/unity_supervisor | organ | dry-run supervisor, deps/python |
+| 45 | organ/unity_supervisor | organ | supervisor, deps/python |
 | 46 | organ/flight_recorder | organ | faculty recorder, deps/python |
 | 47 | organ/bus_bridge | organ | deps/python |
 | 48 | organ/assessment_snapshot_producer | organ | module must exist, deps/python |
@@ -124,7 +123,11 @@ Command, inside a clean `python:3.12-slim-bookworm` image with Debian `nodejs` a
 python -m aureon.launch.master
 ```
 
-Docker is not installed in that image, so image pull did not run. Postgres, Redis, and nginx are not installed there either. Ollama was absent. The faculty state files are not tracked. The container exited with the parent process; it did not leave host listeners behind. The exact table:
+Docker is not installed in that image, so image pull did not run. Postgres, Redis, and nginx are not installed there either. Ollama was absent. The faculty state files are not tracked. The container exited with the parent process; it did not leave host listeners behind.
+
+This table was captured before the public default became full autonomy. It shows the earlier guarded paper lock. A fresh boot now prints `autonomy_mode=full` and, with no keys, `trading_mode=paper/public-data (no exchange keys)`. The row counts below are that earlier run.
+
+The exact table:
 
 ```
 AUREON MASTER LAUNCHER

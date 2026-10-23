@@ -93,11 +93,11 @@ his trust rather than proposing more.
 | **Self-direct** | `AUREON_AUTONOMY=1` | the pursuit feeds safe steps to the soul (Phase 33) |
 | **Armed local** | `+ AUREON_SOUL_ACT=1 + AUREON_LOCAL_ACTIONS_ARMED=1` | the company executes SAFE (ascent-gated) verbs |
 | **Email loop** | `AUREON_APPROVAL_EMAIL=1 + AUREON_OWNER_EMAIL + creds` | notify the owner + read his reply as the decision |
-| **Live money / filing** | runtime-gated + manual | **never automatic** — Gary's deliberate act, the hard boundary in force |
+| **Live money** | exchange keys in `.env` | the master launcher arms trading when a key group is present; with no keys it stays paper/public-data |
 
 ## Owner autonomy mode
 
-The desk above is the public default: `AUREON_AUTONOMY_MODE=guarded`. Gary can open a second switch, locally, that is not committed: `AUREON_AUTONOMY_MODE=full`, or `state/autonomy_mode.json` with `{"mode": "full"}`. That mode is specified in [`AUTONOMY.md`](../../AUTONOMY.md). It lets the system edit live flags, the HOLD/RELEASE gate, `may_act`, position sizing, and the trading modules, auto-merge a self-patch after its tests pass, and set the live flag itself. The kill switch (`AUREON_SELF_REPAIR_KILL=1` or `state/SELF_REPAIR_KILL`), the append-only audit, rollback on a failed suite, and the rule that credentials are never written into the repo stay in force. `AUREON_AUTONOMY=1` on the ladder below is the pursuit loop. It is not this mode.
+The public default is `AUREON_AUTONOMY_MODE=full`, specified in [`AUTONOMY.md`](../../AUTONOMY.md). The system may edit live flags, the HOLD/RELEASE gate, `may_act`, position sizing, and the trading modules, and it auto-merges a self-patch after its tests pass. Trading goes live when the operator's own exchange keys are in `.env`. `AUREON_AUTONOMY_MODE=guarded` is the opt-in denylist. The kill switch (`AUREON_SELF_REPAIR_KILL=1` or `state/SELF_REPAIR_KILL`), the append-only audit, rollback on a failed suite, and the rule that credentials are never written into the repo stay in force. `AUREON_AUTONOMY=1` on the ladder above is the pursuit loop. It is not this mode.
 
 ## The fixed line
 

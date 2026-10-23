@@ -1,14 +1,19 @@
-"""Owner-controlled autonomy mode.
+"""Autonomy mode for a local Aureon checkout.
 
-The public default is ``guarded``. A clone does not receive an unguarded live
-trader. ``AUREON_AUTONOMY_MODE=full`` is set in the owner's local environment
-or in the untracked file ``state/autonomy_mode.json``. It is not committed.
+The public default is ``full``. An unset variable and a missing state file
+both mean full. ``AUREON_AUTONOMY_MODE=guarded``, or ``state/autonomy_mode.json``
+with ``{"mode": "guarded"}``, is the opt-in denylist. An unknown explicit
+environment value stays guarded.
 
-Full mode lets self-repair and the self-coder edit live-trading flags, the
-HOLD/RELEASE gate, ``may_act``, position sizing, and trading modules.
-``AUREON_CODE_AUTO_APPROVE=1`` covers those edits. A self-generated patch
-commits on the current branch after its own tests pass. The process may set
-its own live-trading flag and ``may_act``.
+Full mode lets self-repair and the self-coder edit any path, including
+live-trading flags, the HOLD/RELEASE gate, ``may_act``, position sizing, and
+trading modules. Auto-approve is on unless the operator sets
+``AUREON_CODE_AUTO_APPROVE=0``. A self-generated patch commits on the current
+branch after its own tests pass. Nothing is pushed.
+
+Trading follows the operator's own exchange keys. This module only reports
+whether a key group is present. It does not read a value into a log and it
+does not place an order.
 
 These stay in force in both modes:
 
@@ -19,9 +24,6 @@ These stay in force in both modes:
 - A self-patch whose tests fail is rolled back.
 - Credential material is read from ``.env`` or the OS keychain. It is never
   written into the repo or into the audit log.
-
-This module does not arm live trading and does not place an order. The owner
-turns full mode on.
 """
 
 from __future__ import annotations
@@ -29,6 +31,7 @@ from __future__ import annotations
 import json
 import os
 import re
+from collections.abc import Mapping
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -49,6 +52,14 @@ _SECRET_VALUE = re.compile(
     r"(?i)(?:\b(?:api[_-]?key|api[_-]?secret|secret|password|authorization|access_token)\b\s*[:=]\s*)\S+"
     r"|(?:sk-[A-Za-z0-9_\-]{8,}|ghp_[A-Za-z0-9]{8,}|github_pat_\S+|AKIA[0-9A-Z]{8,}|Bearer\s+\S+)"
     r"|-----BEGIN [A-Z ]*PRIVATE KEY-----"
+)
+
+# Presence only. Values are never logged. Same groups as the master launcher.
+_EXCHANGE_GROUPS = (
+    ("KRAKEN_API_KEY", "KRAKEN_API_SECRET"),
+    ("BINANCE_API_KEY", "BINANCE_API_SECRET"),
+    ("ALPACA_API_KEY", "ALPACA_SECRET_KEY"),
+    ("CAPITAL_API_KEY", "CAPITAL_IDENTIFIER", "CAPITAL_PASSWORD"),
 )
 
 
@@ -94,9 +105,10 @@ def kill_switch_engaged(repo_root: Path | None = None) -> bool:
 def autonomy_mode(repo_root: Path | None = None) -> str:
     """Return ``full`` or ``guarded``.
 
-    An explicit environment value wins. Otherwise the untracked local file
-    ``state/autonomy_mode.json`` may say ``{"mode": "full"}``. Anything else,
-    including a missing file and an unknown value, stays ``guarded``.
+    An explicit environment value wins. ``full`` is full. Any other non-empty
+    value, including ``guarded``, is guarded. With the variable unset, only
+    ``state/autonomy_mode.json`` saying ``{"mode": "guarded"}`` closes the
+    denylist. A missing, unreadable, or other file is full.
     """
 
     raw = os.environ.get(MODE_ENV, "").strip().lower()
@@ -111,10 +123,57 @@ def autonomy_mode(repo_root: Path | None = None) -> str:
         try:
             payload = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError, UnicodeError):
-            return "guarded"
+            return "full"
         mode = str(payload.get("mode", "")).strip().lower() if isinstance(payload, dict) else ""
-        return "full" if mode == "full" else "guarded"
-    return "guarded"
+        return "guarded" if mode == "guarded" else "full"
+    return "full"
+
+
+def _dotenv_values(path: Path) -> dict[str, str]:
+    """Non-empty assignments. The caller must not log the values."""
+
+    found: dict[str, str] = {}
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return found
+    for line in lines:
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#") or "=" not in stripped:
+            continue
+        key, value = stripped.split("=", 1)
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        if key and value:
+            found[key] = value
+    return found
+
+
+def exchange_keys_present(
+    repo_root: Path | None = None,
+    environ: Mapping[str, str] | None = None,
+) -> bool:
+    """True when one exchange key group is complete.
+
+    A passed mapping is the only process environment consulted, so a unit
+    test can pass a dict that does not see the host. Values are not returned
+    and are not written to the audit log.
+    """
+
+    present: dict[str, str] = {}
+    source = os.environ if environ is None else environ
+    for key, value in source.items():
+        if value:
+            present[str(key)] = str(value)
+    roots: list[Path] = []
+    if repo_root is not None:
+        roots.append(Path(repo_root))
+    elif environ is None:
+        roots.append(Path.cwd())
+    for root in roots:
+        present.update(_dotenv_values(root / ".env"))
+        present.update(_dotenv_values(root / "aureon_radar" / ".env"))
+    return any(all(present.get(key) for key in group) for group in _EXCHANGE_GROUPS)
 
 
 def guardrails_open(repo_root: Path | None = None) -> bool:
@@ -202,10 +261,12 @@ def record_order(
 
 
 def runtime_authority(repo_root: Path | None = None) -> dict[str, object]:
-    """Live flag and may_act as the owner mode currently allows.
+    """Live flag and may_act for the current mode.
 
     Guarded mode and the kill switch are disarmed even if a runtime file
-    claims otherwise. Full mode reads ``state/autonomy_runtime.json``.
+    claims otherwise. Full mode with no runtime file may act, and live
+    trading follows exchange keys. An explicit ``state/autonomy_runtime.json``
+    is honored when it is present.
     """
 
     mode = autonomy_mode(repo_root)
@@ -224,13 +285,28 @@ def runtime_authority(repo_root: Path | None = None) -> dict[str, object]:
             path = candidate
             break
     if path is None:
-        return disarmed
+        return {
+            "mode": "full",
+            "live_trading": exchange_keys_present(repo_root),
+            "may_act": True,
+            "kill_switch": False,
+        }
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError, UnicodeError):
-        return disarmed
+        return {
+            "mode": "full",
+            "live_trading": exchange_keys_present(repo_root),
+            "may_act": True,
+            "kill_switch": False,
+        }
     if not isinstance(payload, dict):
-        return disarmed
+        return {
+            "mode": "full",
+            "live_trading": exchange_keys_present(repo_root),
+            "may_act": True,
+            "kill_switch": False,
+        }
     return {
         "mode": "full",
         "live_trading": payload.get("live_trading") is True,

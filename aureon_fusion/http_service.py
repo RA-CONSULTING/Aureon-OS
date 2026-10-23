@@ -3,7 +3,8 @@
 /healthz and /readyz are unauthenticated so a load balancer can probe them.
 Every other route requires Authorization: Bearer $AUREON_FUSION_API_TOKEN.
 The process refuses to start when that token is missing, and it never places
-an order. Live trading stays off.
+an order. Live trading follows the process environment: on when the launcher
+saw exchange keys, paper/public-data otherwise.
 """
 
 from __future__ import annotations
@@ -160,6 +161,12 @@ def cached_status() -> dict[str, Any]:
     if _CACHE["body"] is not None and now - float(_CACHE["at"]) < ttl:
         body = dict(_CACHE["body"])
         body["cache"] = "hit"
+        flags = authority_flags()
+        body["live_trading"] = flags["live_trading"]
+        body["may_act"] = flags["may_act"]
+        body["paper_default"] = not flags["live_trading"]
+        body["dry_run_default"] = not flags["live_trading"]
+        body["action_eligible"] = flags["may_act"]
         return body
     body = status_report()
     body["cache"] = "miss"
@@ -186,8 +193,12 @@ def render_page(report: dict[str, Any]) -> bytes:
         "<li><code>{}</code> — {}</li>".format(html.escape(item["repo"]), html.escape(item["reason"]))
         for item in report["unavailable_sources"]
     )
-    armed = bool(report.get("live_trading")) or bool(report.get("may_act"))
-    banner = "OWNER AUTONOMY · LIVE AUTHORITY SET" if armed else "DRY RUN · LIVE TRADING OFF · PAPER DEFAULT"
+    if report.get("live_trading"):
+        banner = "LIVE · EXCHANGE KEYS PRESENT"
+    elif report.get("may_act"):
+        banner = "PAPER / PUBLIC DATA · NO EXCHANGE KEYS"
+    else:
+        banner = "DRY RUN · LIVE TRADING OFF · PAPER DEFAULT"
     gate_line = (
         "may_act = true · action gate = RELEASE"
         if report.get("may_act")

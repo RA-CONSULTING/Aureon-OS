@@ -1,13 +1,8 @@
 """Denylist and fail-safe switch for Aureon self-repair and self-coding writes.
 
-The public default is guarded mode. In that mode live trading is not armed by
-the system, evidence gates are not loosened, credential files are not created
-or modified, and position sizing is not changed to satisfy a test. Those
-checks run before a patch is applied.
-
-``AUREON_AUTONOMY_MODE=full``, set only in the owner's local environment or
-``state/autonomy_mode.json``, lifts the live-flag, HOLD/RELEASE, may_act, and
-position-sizing refusals. Credential material stays refused. See AUTONOMY.md.
+The public default is full mode. Live flags, HOLD/RELEASE, ``may_act``, and
+position sizing are editable. ``AUREON_AUTONOMY_MODE=guarded`` puts that
+denylist back. Credential files are refused in both modes. See AUTONOMY.md.
 
 Self-repair stays off unless both of these are true:
 

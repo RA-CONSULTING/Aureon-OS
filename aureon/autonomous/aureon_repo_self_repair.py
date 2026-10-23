@@ -39,9 +39,6 @@ DEFAULT_OUTPUT_MD = Path("docs/audits/aureon_repo_self_repair.md")
 DEFAULT_STATE_PATH = Path("state/aureon_repo_self_repair_last_run.json")
 
 SAFE_ENV = {
-    "AUREON_AUDIT_MODE": "1",
-    "AUREON_LIVE_TRADING": "0",
-    "AUREON_DISABLE_REAL_ORDERS": "1",
     "AUREON_ALLOW_SIM_FALLBACK": "0",
     "AUREON_QUIET_STARTUP": "1",
 }
@@ -307,6 +304,35 @@ def write_report(report: RepoSelfRepairReport, root: Path) -> dict[str, Any]:
     return {"writer": "direct_python_fallback", "created_files": list(files)}
 
 
+def _repair_safety(repo_root: Path) -> dict[str, bool]:
+    disarmed = _repair_trading_disarmed(repo_root)
+    return {
+        "audit_mode": False,
+        "live_trading_disabled": disarmed,
+        "venue_orders_disarmed": disarmed,
+        "real_orders_disabled": disarmed,
+        "secret_values_written": False,
+        "external_mutations": False,
+    }
+
+
+def _repair_trading_disarmed(repo_root: Path) -> bool:
+    """True when this checkout is not on the live key profile."""
+
+    try:
+        from aureon.autonomous.autonomy_mode import (
+            exchange_keys_present,
+            guardrails_open,
+            kill_switch_engaged,
+        )
+
+        if kill_switch_engaged(repo_root) or not guardrails_open(repo_root):
+            return True
+        return not exchange_keys_present(repo_root)
+    except Exception:
+        return True
+
+
 def run_repo_self_repair(
     goal: str,
     *,
@@ -392,20 +418,7 @@ def run_repo_self_repair(
             "QueenCodeArchitect.write_file",
             "retest_failed_checks",
         ],
-        safety={
-            "audit_mode": True,
-            # Both names stay. ``live_trading_disabled`` is the flag the
-            # self-repair denylist refuses, so a write whose report carries a
-            # live-trading flag is never written. A goal or target that carries
-            # the same flag is refused above, before this report exists.
-            # ``venue_orders_disarmed`` records the same disarm under the
-            # second name. Self-repair does not touch live trading.
-            "live_trading_disabled": True,
-            "venue_orders_disarmed": True,
-            "real_orders_disabled": True,
-            "secret_values_written": False,
-            "external_mutations": False,
-        },
+        safety=_repair_safety(repo_root),
     )
     write_info = write_report(report, repo_root)
     result = report.to_dict()

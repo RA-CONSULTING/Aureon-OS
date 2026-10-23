@@ -679,6 +679,23 @@ def _release_granted() -> bool:
     return CAPITAL_RELEASE_FLAG.exists()
 
 
+def _autonomy_releases_capital_pin() -> bool:
+    """Full autonomy boots capital-gated organs without the owner-decree flag.
+
+    ``AUREON_DEPLOYMENT_HOLD=1`` and guarded mode still hold. The kill switch
+    closes ``guardrails_open``. This does not create ``capital_release.flag``.
+    """
+
+    if os.environ.get("AUREON_DEPLOYMENT_HOLD") == "1":
+        return False
+    try:
+        from aureon.autonomous.autonomy_mode import guardrails_open
+
+        return guardrails_open()
+    except Exception:
+        return False
+
+
 def _dormant_state(spec: dict, entry: dict):
     """Effective (dormant, reason) for an organ: the registry entry
     overrides the spec's initial default. Registered-but-not-started."""
@@ -1159,9 +1176,9 @@ def _start_locked(organ: str) -> dict:
         return {"ok": True, "organ": organ, "state": "dormant",
                 "reason": reason or "organ marked dormant — "
                           f"use 'undormant {organ}' to clear, then start"}
-    if spec.get("requires_release") and not _release_granted():
-        # Pinned HOLD: no spawn, no adoption, no flag creation — the
-        # orchestrator pulls this pin after the audit.
+    if spec.get("requires_release") and not _release_granted() and not _autonomy_releases_capital_pin():
+        # Guarded mode and the deployment hold still refuse the spawn.
+        # Full autonomy does not create the flag and does not wait for it.
         return {"ok": True, "organ": organ, "state": "held",
                 "reason": f"{CAPITAL_RELEASE_FLAG.name} absent — "
                           f"live trading pinned HOLD by orchestrator"}

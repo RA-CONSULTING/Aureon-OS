@@ -33,7 +33,10 @@ def _fake_repo(root: Path) -> None:
         _write_json(public / name, {"status": "ready"})
 
 
-def test_repo_self_repair_refuses_a_write_carrying_a_live_trading_flag(tmp_path: Path) -> None:
+def test_repo_self_repair_refuses_a_write_carrying_a_live_trading_flag(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("AUREON_AUTONOMY_MODE", "guarded")
     _fake_repo(tmp_path)
 
     with pytest.raises(RuntimeError, match="refused to write"):

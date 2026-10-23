@@ -11,7 +11,6 @@ import pytest
 
 from aureon.launch.master import (
     LOCAL_FUSION_TOKEN,
-    NEVER_START,
     PAPER_LOCK,
     Component,
     Runner,
@@ -27,6 +26,26 @@ from aureon.launch.master import (
     parse_compose,
     repo_root,
 )
+
+_EXCHANGE_KEYS = (
+    "KRAKEN_API_KEY",
+    "KRAKEN_API_SECRET",
+    "BINANCE_API_KEY",
+    "BINANCE_API_SECRET",
+    "ALPACA_API_KEY",
+    "ALPACA_SECRET_KEY",
+    "CAPITAL_API_KEY",
+    "CAPITAL_IDENTIFIER",
+    "CAPITAL_PASSWORD",
+)
+
+
+def _clear_trading_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    for key in _EXCHANGE_KEYS:
+        monkeypatch.delenv(key, raising=False)
+    monkeypatch.delenv("AUREON_AUTONOMY_MODE", raising=False)
+    monkeypatch.delenv("AUREON_SELF_REPAIR_KILL", raising=False)
+    monkeypatch.delenv("AUREON_CODE_AUTO_APPROVE", raising=False)
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -189,32 +208,27 @@ def test_desktop_extras_are_stripped_from_a_failed_requirements_retry() -> None:
     assert "\nPyAudio" not in text
 
 
-def test_missing_exchange_credential_skips_the_trader(launcher_state: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    for key in (
-        "KRAKEN_API_KEY",
-        "KRAKEN_API_SECRET",
-        "BINANCE_API_KEY",
-        "BINANCE_API_SECRET",
-        "ALPACA_API_KEY",
-        "ALPACA_SECRET_KEY",
-        "CAPITAL_API_KEY",
-        "CAPITAL_IDENTIFIER",
-        "CAPITAL_PASSWORD",
-    ):
-        monkeypatch.delenv(key, raising=False)
+def test_missing_exchange_credential_starts_the_trader_in_paper(
+    launcher_state: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _clear_trading_env(monkeypatch)
     reason = missing_exchange_credential(ROOT)
     assert reason is not None
     assert reason.startswith("missing credential:")
     runner = FakeRunner(ROOT)
     code, output = _run(["--only", "organ/unified_market_trader"], runner)
     assert code == 0
-    assert runner.spawned == []
+    spawned = [item for item in runner.spawned if item.name == "organ/unified_market_trader"]
+    assert len(spawned) == 1
+    assert spawned[0].env["AUREON_LIVE_TRADING"] == "0"
+    assert spawned[0].env["AUREON_MAY_ACT"] == "1"
     assert "organ/unified_market_trader" in output
-    assert "blocked" in output
-    assert "missing credential:" in output
+    assert "paper/public-data (no exchange keys)" in output
+    assert "live_trading_armed_by_launcher=false" in output
 
 
 def test_only_stdio_does_not_spawn_or_arm(launcher_state: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _clear_trading_env(monkeypatch)
     monkeypatch.setenv("AUREON_LIVE_TRADING", "0")
     runner = FakeRunner(ROOT)
     code, output = _run(["--only", "stdio/windows"], runner)
@@ -222,18 +236,22 @@ def test_only_stdio_does_not_spawn_or_arm(launcher_state: Path, monkeypatch: pyt
     assert runner.spawned == []
     assert runner.installs == []
     assert "live_trading_armed_by_launcher=false" in output
+    assert "trading_mode=paper/public-data (no exchange keys)" in output
+    assert "autonomy_mode=full" in output
     assert "stdio/windows" in output
     assert "started" in output
     assert os.environ["AUREON_LIVE_TRADING"] == "0"
 
 
 def test_child_env_stays_paper_when_the_parent_switch_is_on(launcher_state: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _clear_trading_env(monkeypatch)
     monkeypatch.setenv("AUREON_LIVE_TRADING", "1")
     runner = FakeRunner(ROOT)
     code, output = _run(["--only", "seat/trading_world_v5b"], runner)
     assert code == 0
     assert os.environ["AUREON_LIVE_TRADING"] == "1"
     assert "live_trading_armed_by_launcher=false" in output
+    assert "trading_mode=paper/public-data (no exchange keys)" in output
     assert runner.installs == ["env", "python"]
     assert len(runner.spawned) == 1
     child = runner.spawned[0]
@@ -241,6 +259,8 @@ def test_child_env_stays_paper_when_the_parent_switch_is_on(launcher_state: Path
     assert child.env["AUREON_LIVE_TRADING"] == "0"
     assert child.env["AUREON_FUSION_ARM_LIVE"] == ""
     assert child.env["AUREON_DISABLE_REAL_ORDERS"] == "1"
+    assert child.env["AUREON_MAY_ACT"] == "1"
+    assert child.env["AUREON_AUTONOMY_MODE"] == "full"
     assert child.env["AUREON_FUSION_BIND"] == "127.0.0.1"
     assert child.env["AUREON_FUSION_PORT"] == "8765"
     assert child.env["AUREON_FUSION_API_TOKEN"] == LOCAL_FUSION_TOKEN
@@ -280,17 +300,22 @@ def test_unknown_only_exits_before_spawn(launcher_state: Path) -> None:
     assert runner.spawned == []
 
 
-def test_live_suite_is_not_started_and_the_pin_is_not_created(launcher_state: Path) -> None:
+def test_live_suite_starts_without_creating_the_release_flag(
+    launcher_state: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _clear_trading_env(monkeypatch)
     flag = ROOT / "aureon_fusion" / "state" / "capital_release.flag"
     existed = flag.exists()
     runner = FakeRunner(ROOT)
     code, output = _run(["--only", "aureon_radar_suite,orca_unified_kill_chain"], runner)
     assert code == 0
-    assert runner.spawned == []
-    assert "does not arm live trading" in output
-    assert "does not read the live-trading switch" in output
+    names = {item.name for item in runner.spawned}
+    assert "organ/aureon_radar_suite" in names
+    assert "organ/orca_unified_kill_chain" in names
+    assert "does not arm live trading" not in output
+    assert "does not read the live-trading switch" not in output
     assert flag.exists() is existed
-    assert "aureon_radar_suite" in NEVER_START
+    assert "trading_mode=paper/public-data (no exchange keys)" in output
 
 
 def test_ignored_live_flag_does_not_change_the_environment(launcher_state: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
@@ -302,18 +327,62 @@ def test_ignored_live_flag_does_not_change_the_environment(launcher_state: Path,
     assert runner.spawned == []
 
 
-def test_organ_command_is_a_list_and_supervisor_stays_dry_run() -> None:
+def test_organ_command_is_a_list_and_supervisor_is_not_forced_dry_run(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _clear_trading_env(monkeypatch)
     command = organ_command(ROOT, "hnc_core", {"module": "aureon_fusion.hnc_core", "args": ["run"]})
     assert command == [project_python(ROOT), "-u", "-m", "aureon_fusion.hnc_core", "run"]
     supervisor = organ_command(ROOT, "unity_supervisor", {"module": "aureon_fusion.unity_supervisor", "args": []})
-    assert supervisor[-1] == "--dry-run"
+    assert "--dry-run" not in supervisor
     env = paper_env(
         {"AUREON_LIVE_TRADING": "1", "PYTHONPATH": "", "SERO_WORKSPACE": "/tmp/other-checkout"},
         ROOT,
     )
     assert env["AUREON_LIVE_TRADING"] == "0"
+    assert env["AUREON_MAY_ACT"] == "1"
     assert env["SERO_WORKSPACE"] == str(ROOT.resolve())
     assert PAPER_LOCK["AUREON_LIVE_TRADING"] == "0"
+
+
+def test_exchange_keys_arm_the_child_without_placing_an_order(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _clear_trading_env(monkeypatch)
+    (tmp_path / ".env").write_text(
+        "KRAKEN_API_KEY=local-test-key\nKRAKEN_API_SECRET=local-test-secret\n",
+        encoding="utf-8",
+    )
+    env = paper_env({"PYTHONPATH": ""}, tmp_path)
+    assert env["AUREON_LIVE_TRADING"] == "1"
+    assert env["AUREON_DISABLE_REAL_ORDERS"] == "0"
+    assert env["AUREON_DRY_RUN"] == "0"
+    assert env["AUREON_MAY_ACT"] == "1"
+    assert env["AUREON_ORDER_INTENT_PUBLISH"] == "1"
+    from aureon.launch.master import boot_decision
+
+    label, armed = boot_decision(tmp_path, env)
+    text = format_report([], "full", trading_mode=label, armed=armed)
+    assert armed is True
+    assert "live_trading_armed_by_launcher=true" in text
+    assert "trading_mode=live (exchange keys present)" in text
+    assert "local-test-secret" not in text
+    assert "local-test-key" not in text
+
+
+def test_kill_switch_keeps_a_keyed_child_on_paper(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _clear_trading_env(monkeypatch)
+    (tmp_path / ".env").write_text(
+        "KRAKEN_API_KEY=local-test-key\nKRAKEN_API_SECRET=local-test-secret\n",
+        encoding="utf-8",
+    )
+    kill = tmp_path / "state" / "SELF_REPAIR_KILL"
+    kill.parent.mkdir()
+    kill.write_text("stop\n", encoding="utf-8")
+    env = paper_env({"PYTHONPATH": ""}, tmp_path)
+    assert env["AUREON_LIVE_TRADING"] == "0"
+    assert env["AUREON_MAY_ACT"] == "0"
+    assert env["AUREON_DISABLE_REAL_ORDERS"] == "1"
 
 
 def test_self_repair_respects_enable_gate(launcher_state: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -351,16 +420,17 @@ def test_wrappers_delegate_and_do_not_arm_live() -> None:
     historical = (ROOT / "aureon" / "autonomous" / "aureon_master_launcher.py").read_text(encoding="utf-8")
     assert "from aureon.launch.master import main as canonical" in historical
     source = (ROOT / "aureon" / "launch" / "master.py").read_text(encoding="utf-8")
-    assert 'AUREON_LIVE_TRADING"] = "1"' not in source
-    assert "AUREON_LIVE_TRADING=1" not in source
+    assert "capital_release.flag" in source
+    assert "place_order" not in source
 
 
 def test_report_table_has_the_health_columns() -> None:
     from aureon.launch.master import Row
 
-    text = format_report([Row("stdio/windows", "started", "ok", "posix streams usable")], "guarded")
+    text = format_report([Row("stdio/windows", "started", "ok", "posix streams usable")], "full")
     assert "AUREON MASTER LAUNCHER" in text
     assert "live_trading_armed_by_launcher=false" in text
+    assert "trading_mode=paper/public-data (no exchange keys)" in text
     assert "order" in text and "name" in text and "status" in text and "health" in text and "reason" in text
     assert "stdio/windows" in text
     assert "started=1 blocked=0 total=1" in text
@@ -384,6 +454,8 @@ def test_fresh_clone_smoke_prints_the_health_table(tmp_path: Path) -> None:
     env.pop("AUREON_AUTONOMY_MODE", None)
     env.pop("AUREON_LAUNCHER_STATE", None)
     env.pop("AUREON_FUSION_ARM_LIVE", None)
+    for key in _EXCHANGE_KEYS:
+        env.pop(key, None)
     proc = subprocess.run(
         [sys.executable, "-m", "aureon.launch.master"],
         cwd=clone,
@@ -396,6 +468,7 @@ def test_fresh_clone_smoke_prints_the_health_table(tmp_path: Path) -> None:
     try:
         assert proc.returncode == 0, proc.stderr
         assert "live_trading_armed_by_launcher=false" in proc.stdout
+        assert "trading_mode=paper/public-data (no exchange keys)" in proc.stdout
         assert "deps/python" in proc.stdout
         assert "deps/node" in proc.stdout
         assert "deps/docker" in proc.stdout

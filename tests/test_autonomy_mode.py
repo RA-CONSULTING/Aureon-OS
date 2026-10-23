@@ -1,4 +1,4 @@
-"""Owner autonomy mode. Guarded stays the default. Full mode is explicit."""
+"""Autonomy mode. Full is the default. Guarded is an explicit opt-in."""
 
 from __future__ import annotations
 
@@ -17,7 +17,9 @@ from aureon.autonomous.aureon_sandbox_self_repair import load_architect
 from aureon.autonomous.autonomy_mode import (
     MODE_ENV,
     autonomy_mode,
+    exchange_keys_present,
     kill_switch_engaged,
+    runtime_authority,
     set_runtime_authority,
 )
 from aureon.autonomous.self_repair_guard import review_log_path
@@ -63,22 +65,28 @@ def _auditor():
     return module
 
 
-def test_public_default_is_guarded(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_public_default_is_full(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv(MODE_ENV, raising=False)
+    monkeypatch.delenv("AUREON_SELF_REPAIR_KILL", raising=False)
     monkeypatch.chdir(tmp_path)
-    assert autonomy_mode(tmp_path) == "guarded"
+    assert autonomy_mode(tmp_path) == "full"
+    authority = runtime_authority(tmp_path)
+    assert authority["may_act"] is True
+    assert authority["live_trading"] is False
+    assert exchange_keys_present(tmp_path) is False
 
 
-def test_local_state_file_opens_full_mode_without_being_the_default(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_explicit_guarded_mode_is_opt_in(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv(MODE_ENV, raising=False)
     monkeypatch.chdir(tmp_path)
     state = tmp_path / "state"
     state.mkdir()
-    (state / "autonomy_mode.json").write_text('{"mode": "full"}\n', encoding="utf-8")
+    (state / "autonomy_mode.json").write_text('{"mode": "guarded"}\n', encoding="utf-8")
+    assert autonomy_mode(tmp_path) == "guarded"
+    assert runtime_authority(tmp_path)["may_act"] is False
+    monkeypatch.setenv(MODE_ENV, "full")
     assert autonomy_mode(tmp_path) == "full"
-    monkeypatch.setenv(MODE_ENV, "guarded")
+    monkeypatch.setenv(MODE_ENV, "nope")
     assert autonomy_mode(tmp_path) == "guarded"
 
 

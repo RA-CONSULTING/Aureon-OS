@@ -115,8 +115,9 @@ def join_layers(
 def status_report() -> dict[str, Any]:
     """Offline status. No network and no orders.
 
-    The public default is guarded, so live trading and may_act stay false.
-    Full autonomy mode reports the owner's local runtime authority.
+    The public default is full. Live trading follows exchange keys. may_act
+    is on unless the mode is guarded or the kill switch is on. This report
+    does not place an order.
     """
 
     try:

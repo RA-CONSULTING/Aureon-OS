@@ -152,6 +152,7 @@ def test_repairs_an_off_by_one_in_a_pure_utility(tmp_path: Path, monkeypatch: py
 
 
 def test_queen_writer_refuses_live_flags_gates_and_credentials(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("AUREON_AUTONOMY_MODE", "guarded")
     monkeypatch.delenv(KILL_ENV, raising=False)
     monkeypatch.delenv(ENABLE_ENV, raising=False)
     architect = load_architect()(repo_path=str(tmp_path))
@@ -190,6 +191,7 @@ def test_queen_writer_refuses_live_flags_gates_and_credentials(tmp_path: Path, m
 
 
 def test_gate_flip_and_position_size_are_flagged_not_applied(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("AUREON_AUTONOMY_MODE", "guarded")
     root = tmp_path / "desk"
     root.mkdir()
     original = 'def position_qty(price):\n    return 0\n\ndef evidence_gate():\n    return "HOLD"\n'

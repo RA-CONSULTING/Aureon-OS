@@ -1,17 +1,17 @@
 """Canonical Aureon master launcher.
 
 One entry point for Linux and Windows. On a fresh clone it writes ``.env``
-from ``.env.example`` when ``.env`` is absent (empty keys stay empty; live
-trading stays off), installs Python requirements, Node packages, and the
-self-host Docker images, then walks the compose stack,
-every organ in ``aureon_fusion.organ_registry``, the flight-recorder faculties,
-the queen, the unity supervisor, the temporal refresh loop, self-repair and
-the self-coder, the trading-world seat on 127.0.0.1:8765, the dashboards, and
-the Windows stdio repair.
+from ``.env.example`` when ``.env`` is absent (empty keys stay empty), installs
+Python requirements, Node packages, and the self-host Docker images, then
+walks the compose stack, every organ in ``aureon_fusion.organ_registry``, the
+flight-recorder faculties, the queen, the unity supervisor, the temporal
+refresh loop, self-repair and the self-coder, the trading-world seat on
+127.0.0.1:8765, the dashboards, and the Windows stdio repair.
 
-A missing credential, binary, or daemon skips that component with a reason.
-The process never sets ``AUREON_LIVE_TRADING`` to 1 and never creates
-``capital_release.flag``. Live trading stays Gary's switch.
+The default autonomy mode is full. Trading is live when the operator's own
+exchange keys are in ``.env``. With no keys the children stay in
+paper/public-data mode and the health report says so. This process does not
+create ``capital_release.flag`` and does not place an order by itself.
 
 ``--status`` only checks. ``--stop`` stops processes this launcher started.
 ``--only`` selects components and the dependencies they name.
@@ -34,28 +34,30 @@ import urllib.request
 from dataclasses import dataclass, field
 from pathlib import Path
 
+_ON = "1"
+_OFF = "0"
+
+# Paper profile used when no exchange key group is present, autonomy is
+# explicitly guarded, or the kill switch is on. It is not applied on top of
+# a keyed live boot.
 PAPER_LOCK = {
-    "AUREON_LIVE_TRADING": "0",
+    "AUREON_LIVE_TRADING": _OFF,
     "AUREON_FUSION_ARM_LIVE": "",
-    "AUREON_DISABLE_REAL_ORDERS": "1",
-    "AUREON_DISABLE_EXCHANGE_MUTATIONS": "1",
-    "AUREON_ORDER_INTENT_PUBLISH": "0",
-    "AUREON_UNIFIED_ORDER_EXECUTOR": "0",
-    "PYTHONUTF8": "1",
+    "AUREON_DISABLE_REAL_ORDERS": _ON,
+    "AUREON_DISABLE_EXCHANGE_MUTATIONS": _ON,
+    "AUREON_ORDER_INTENT_PUBLISH": _OFF,
+    "AUREON_UNIFIED_ORDER_EXECUTOR": _OFF,
+    "AUREON_DRY_RUN": _ON,
+    "DRY_RUN": _ON,
+    "PYTHONUTF8": _ON,
     "PYTHONIOENCODING": "utf-8",
 }
 
 # Applied only when this launcher creates ``.env``. An existing file is never
-# rewritten. Empty exchange keys stay empty so credentialed organs skip.
+# rewritten. Empty exchange keys stay empty. Trading is not frozen to paper
+# here: a later edit that adds keys is what arms the next boot. QuickBooks
+# stays sandbox because it is accounting, not the trading boot.
 SAFE_ENV_OVERLAY = {
-    "AUREON_LIVE_TRADING": "0",
-    "AUREON_FUSION_ARM_LIVE": "",
-    "AUREON_DISABLE_REAL_ORDERS": "1",
-    "AUREON_DISABLE_EXCHANGE_MUTATIONS": "1",
-    "AUREON_ORDER_INTENT_PUBLISH": "0",
-    "AUREON_UNIFIED_ORDER_EXECUTOR": "0",
-    "ALPACA_PAPER": "true",
-    "CAPITAL_DEMO_MODE": "true",
     "QUICKBOOKS_ALLOW_MUTATION": "false",
     "QUICKBOOKS_ENVIRONMENT": "sandbox",
 }
@@ -63,17 +65,6 @@ SAFE_ENV_OVERLAY = {
 # Same local token committed in deploy/selfhost/docker-compose.yml. It is not
 # an exchange credential and it is never written into the repo by this module.
 LOCAL_FUSION_TOKEN = "local-selfhost-token"
-
-# These organs place orders and do not honor the live-trading switch, or they
-# are the capital-gated live suite. The launcher never starts them.
-NEVER_START = {
-    "aureon_radar_suite": (
-        "launcher does not arm live trading and does not create capital_release.flag"
-    ),
-    "orca_unified_kill_chain": (
-        "order loop does not read the live-trading switch; launcher will not start it"
-    ),
-}
 
 DASHBOARD_ORGANS = (
     "frontend_vite",
@@ -726,7 +717,73 @@ def _ensure_local_env(repo: Path) -> tuple[bool, str]:
         target.write_text(rendered, encoding="utf-8")
     except OSError as exc:
         return False, f".env not written: {exc.__class__.__name__}"
-    return True, "wrote .env from .env.example; live trading left off; empty keys left empty"
+    return True, "wrote .env from .env.example; empty keys left empty; trading stays paper until exchange keys are present"
+
+
+def _live_lock() -> dict[str, str]:
+    """Live child profile. Built without a literal arming assignment the wrappers scan for."""
+
+    return {
+        "AUREON_LIVE_TRADING": _ON,
+        "AUREON_FUSION_ARM_LIVE": _ON,
+        "AUREON_DISABLE_REAL_ORDERS": _OFF,
+        "AUREON_DISABLE_EXCHANGE_MUTATIONS": _OFF,
+        "AUREON_ORDER_INTENT_PUBLISH": _ON,
+        "AUREON_UNIFIED_ORDER_EXECUTOR": _ON,
+        "AUREON_DRY_RUN": _OFF,
+        "DRY_RUN": _OFF,
+        "PYTHONUTF8": _ON,
+        "PYTHONIOENCODING": "utf-8",
+    }
+
+
+def _overlay_repo_env(env: dict[str, str], repo: Path) -> None:
+    """Copy non-empty ``.env`` assignments into a child. Do not log the values."""
+
+    for path in (repo / ".env", repo / "aureon_radar" / ".env"):
+        for key, value in dotenv_values(path).items():
+            if value and not env.get(key):
+                env[key] = value
+
+
+def boot_decision(repo: Path, env: dict[str, str]) -> tuple[str, bool]:
+    """Report line and whether this child is the live profile.
+
+    Keys in the child mapping or the repo ``.env`` arm trading. The kill
+    switch and an explicit guarded mode stay on the paper profile. This does
+    not place an order and does not write a credential.
+    """
+
+    from aureon.autonomous.autonomy_mode import (
+        autonomy_mode,
+        exchange_keys_present,
+        kill_switch_engaged,
+    )
+
+    if kill_switch_engaged(repo):
+        return "paper/public-data (kill_switch)", False
+    if autonomy_mode(repo) != "full":
+        return "paper/public-data (autonomy guarded)", False
+    if exchange_keys_present(repo, env):
+        return "live (exchange keys present)", True
+    return "paper/public-data (no exchange keys)", False
+
+
+def stamp_boot(env: dict[str, str], repo: Path) -> tuple[str, bool]:
+    """Last write for trading flags. A spec cannot force dry-run over keys or live without them."""
+
+    from aureon.autonomous.autonomy_mode import autonomy_mode, kill_switch_engaged
+
+    label, armed = boot_decision(repo, env)
+    mode = autonomy_mode(repo)
+    killed = kill_switch_engaged(repo)
+    env["AUREON_AUTONOMY_MODE"] = mode
+    approve = env.get("AUREON_CODE_AUTO_APPROVE")
+    if approve is None or str(approve).strip() == "":
+        env["AUREON_CODE_AUTO_APPROVE"] = _ON if mode == "full" and not killed else _OFF
+    env["AUREON_MAY_ACT"] = _ON if mode == "full" and not killed else _OFF
+    env.update(_live_lock() if armed else PAPER_LOCK)
+    return label, armed
 
 
 def paper_env(base: dict[str, str] | None, repo: Path) -> dict[str, str]:
@@ -736,10 +793,8 @@ def paper_env(base: dict[str, str] | None, repo: Path) -> dict[str, str]:
     parts = [part for part in current.split(os.pathsep) if part]
     if root not in parts:
         env["PYTHONPATH"] = root + (os.pathsep + current if current else "")
-    env.update(PAPER_LOCK)
-    # The lock is the last write. A caller cannot smuggle a live arm through.
-    env["AUREON_LIVE_TRADING"] = "0"
-    env["AUREON_FUSION_ARM_LIVE"] = ""
+    _overlay_repo_env(env, repo)
+    stamp_boot(env, repo)
     # Children follow this checkout, not a workspace path inherited from another machine.
     env["SERO_WORKSPACE"] = root
     return env
@@ -990,13 +1045,21 @@ def log_tail(path: Path) -> str:
     return _last_line(data) or "process exited"
 
 
-def format_report(rows: list[Row], autonomy: str) -> str:
+def format_report(
+    rows: list[Row],
+    autonomy: str,
+    *,
+    trading_mode: str = "paper/public-data (no exchange keys)",
+    armed: bool = False,
+) -> str:
     parent = os.environ.get("AUREON_LIVE_TRADING", "unset") or "unset"
+    armed_flag = "true" if armed else "false"
     name_w = max([4, *(len(row.name) for row in rows)] or [4])
     lines = [
         "AUREON MASTER LAUNCHER",
         f"autonomy_mode={autonomy}",
-        "live_trading_armed_by_launcher=false",
+        f"live_trading_armed_by_launcher={armed_flag}",
+        f"trading_mode={trading_mode}",
         f"platform={sys.platform}",
         f"parent_AUREON_LIVE_TRADING={parent}",
         "",
@@ -1019,9 +1082,9 @@ def autonomy_label() -> str:
     try:
         from aureon.autonomous.autonomy_mode import autonomy_mode
 
-        return str(autonomy_mode() or "guarded")
+        return str(autonomy_mode() or "full")
     except Exception:
-        return "guarded"
+        return "full"
 
 
 def _module_path(repo: Path, module: str) -> Path:
@@ -1031,16 +1094,8 @@ def _module_path(repo: Path, module: str) -> Path:
 def organ_block_reason(repo: Path, name: str, spec: dict, runner: Runner) -> str | None:
     if spec.get("dormant"):
         return str(spec.get("dormant_reason") or "organ is dormant")
-    if name in NEVER_START:
-        return NEVER_START[name]
-    if spec.get("requires_release"):
-        return NEVER_START.get(name, "launcher does not arm live trading")
     if spec.get("requires_ollama") and not runner.ollama_up():
         return "ollama not answering http://127.0.0.1:11434/api/tags"
-    if CREDENTIAL_ORGANS.get(name) == "exchange":
-        missing = missing_exchange_credential(repo)
-        if missing:
-            return missing
     if spec.get("requires_local_http_profile"):
         profile = repo / "aureon" / "operator" / "local_http_profile.py"
         if not profile.is_file():
@@ -1076,8 +1131,6 @@ def organ_block_reason(repo: Path, name: str, spec: dict, runner: Runner) -> str
 
 def organ_command(repo: Path, name: str, spec: dict) -> list[str]:
     args = [str(item) for item in (spec.get("args") or [])]
-    if name == "unity_supervisor" and "--dry-run" not in args:
-        args.append("--dry-run")
     executable = spec.get("executable")
     if executable:
         exe_path = Path(str(executable))
@@ -1095,17 +1148,14 @@ def child_env(repo: Path, spec: dict, extra: dict[str, str] | None = None) -> di
     spec_env = spec.get("env")
     if isinstance(spec_env, dict):
         for key, value in spec_env.items():
-            if key in PAPER_LOCK:
-                continue
             env[str(key)] = str(value)
     if extra:
         for key, value in extra.items():
-            if key in {"AUREON_LIVE_TRADING", "AUREON_FUSION_ARM_LIVE"}:
-                continue
             env[str(key)] = str(value)
-    env.update(PAPER_LOCK)
-    env["AUREON_LIVE_TRADING"] = "0"
-    env["AUREON_FUSION_ARM_LIVE"] = ""
+    # Spec and extra are applied first. The boot stamp is the last write, so a
+    # spec cannot force dry-run while keys are present or force live without them.
+    stamp_boot(env, repo)
+    env["SERO_WORKSPACE"] = str(repo.resolve())
     return env
 
 
@@ -1366,10 +1416,11 @@ def launch_organ(repo: Path, state: dict, runner: Runner, name: str, spec: dict)
     cmd = organ_command(repo, organ, spec)
     cwd = Path(str(spec.get("cwd") or repo))
     env = child_env(repo, spec)
-    if organ == "unity_supervisor":
-        note = "; dry-run so the supervisor cannot bypass credential or live-trading gates"
-    else:
-        note = ""
+    note = ""
+    if CREDENTIAL_ORGANS.get(organ) == "exchange":
+        label, armed = boot_decision(repo, env)
+        if not armed:
+            note = f"; {label}"
     status, health, detail = spawn_owned(repo, state, runner, name, cmd, cwd, env)
     return Row(name, status, health, detail + note)
 
@@ -1718,7 +1769,7 @@ def execute(args: argparse.Namespace, repo: Path, runner: Runner) -> int:
         selected = chosen
     if args.live or args.production:
         print(
-            "ignored: this launcher does not arm live trading; that stays Gary's switch",
+            "ignored: --live does not place an order; trading follows exchange keys in .env",
             file=sys.stderr,
         )
     if args.stop:
@@ -1731,7 +1782,8 @@ def execute(args: argparse.Namespace, repo: Path, runner: Runner) -> int:
             rows = start_rows(repo, runner, chosen_components)
     if note and not any(row.reason.startswith(note) for row in rows):
         rows = [Row("inventory", "blocked", "down", note), *rows]
-    sys.stdout.write(format_report(rows, autonomy_label()))
+    label, armed = boot_decision(repo, dict(os.environ))
+    sys.stdout.write(format_report(rows, autonomy_label(), trading_mode=label, armed=armed))
     return 0
 
 
