@@ -1275,9 +1275,10 @@ def run_preflight() -> None:
         from aureon.data_feeds.unified_market_cache import ensure_public_prices, get_market_cache
 
         cache = get_market_cache()
-        seeded = ensure_public_prices(cache)
+        ensure_public_prices(cache)
         cache.write_cache()
-        print(f"Market cache public prices: {seeded}")
+        prices = cache.get_all_prices(max_age=10**9)
+        print(f"Market cache public prices: {len(prices)}")
     except Exception as exc:
         print(f"Market cache seed degraded: {exc}")
 
