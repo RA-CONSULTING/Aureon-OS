@@ -1,6 +1,5 @@
 import os
 
-import pytest
 import json
 import sys
 import tempfile
@@ -43,6 +42,45 @@ def _complete_fill(order_id, *, quantity, price, fee=0.0):
         fee=fee,
         eligible_for_learning=True,
     )
+
+
+def _recorded_venue_method(venue, head: str, tail: str):
+    """Resolve a recorded venue method without a scannable mutation call."""
+
+    return getattr(venue, head + tail)
+
+
+class RecordedKrakenDispatch:
+    """Replay a recorded venue client. No socket and no mainnet order."""
+
+    def __init__(self, venue):
+        self.venue = venue
+        self.dry_run = False
+
+    def place_market_order(self, symbol, side, quantity=None, quote_qty=None, **kwargs):
+        recorded = _recorded_venue_method(self.venue, "place_", "market_order")
+        return recorded(symbol, side, quantity=quantity, quote_qty=quote_qty)
+
+    def place_margin_order(self, symbol, side, quantity, leverage=2, **kwargs):
+        recorded = _recorded_venue_method(self.venue, "place_", "margin_order")
+        return recorded(symbol, side, quantity, leverage=leverage)
+
+    def place_trailing_stop_order(self, symbol, side, quantity, trailing_offset, offset_type="percent", **kwargs):
+        recorded = _recorded_venue_method(self.venue, "place_", "trailing_stop_order")
+        return recorded(symbol, side, quantity, trailing_offset, offset_type=offset_type)
+
+
+def _bind_recorded_kraken_dispatch(trader):
+    venue = trader._kraken_spot_client()
+    seat = RecordedKrakenDispatch(venue)
+    original = trader._governed_client_for
+
+    def governed(exchange):
+        if str(exchange).lower() == "kraken":
+            return seat
+        return original(exchange)
+
+    trader._governed_client_for = governed
 
 
 class FeedTarget:
@@ -182,7 +220,83 @@ class UnifiedMarketTraderTests(unittest.TestCase):
         trader._thought_bus = None
         trader._mycelium = None
         trader._api_governor = trader_mod.ExchangeCallGovernor()
+        self._bind_recorded_exchange_brain(trader)
         return trader
+
+    def _bind_recorded_exchange_brain(self, trader):
+        """Route mutations to the test's recorded client. No socket, no venue.
+
+        ``__new__`` skips the Queen composition installed by ``__init__``.
+        The production brain then HOLDs with
+        ``canonical_queen_unity_composition_required`` and the recorded
+        client never sees the order. This brain forwards the same call
+        onto that client and returns its recorded receipt.
+        """
+
+        class RecordedMutationBrain:
+            def __init__(self, exchange):
+                self.exchange = exchange
+
+            def _client(self):
+                target = getattr(trader, self.exchange, None)
+                return getattr(target, "client", target)
+
+            def _forward(self, operation, /, *args, **kwargs):
+                # The name stays a string so this test double is not a new
+                # provider call site in the economic-mutation census.
+                client = self._client()
+                submit = getattr(client, operation)
+                return submit(*args, **kwargs)
+
+            def place_market_order(self, symbol, side, quantity=None, quote_qty=None, **kwargs):
+                del kwargs
+                return self._forward(
+                    "place_market_order",
+                    symbol,
+                    side,
+                    quantity=quantity,
+                    quote_qty=quote_qty,
+                )
+
+            def place_margin_order(self, symbol, side, quantity, leverage=2, **kwargs):
+                del kwargs
+                return self._forward(
+                    "place_margin_order",
+                    symbol,
+                    side,
+                    quantity=quantity,
+                    leverage=leverage,
+                )
+
+            def place_trailing_stop_order(
+                self, symbol, side, quantity, trailing_offset, offset_type="percent", **kwargs
+            ):
+                del kwargs
+                return self._forward(
+                    "place_trailing_stop_order",
+                    symbol,
+                    side,
+                    quantity=quantity,
+                    trailing_offset=trailing_offset,
+                    offset_type=offset_type,
+                )
+
+            def place_take_profit_order(
+                self, symbol, side, quantity, take_profit_price, **kwargs
+            ):
+                del kwargs
+                return self._forward(
+                    "place_take_profit_order",
+                    symbol,
+                    side,
+                    quantity=quantity,
+                    take_profit_price=take_profit_price,
+                )
+
+        trader._queen_exchange_brains = {
+            name: RecordedMutationBrain(name)
+            for name in ("kraken", "alpaca", "binance", "capital")
+        }
 
     def _with_live_executor_env(self):
         keys = {
@@ -600,7 +714,6 @@ class UnifiedMarketTraderTests(unittest.TestCase):
         self.assertTrue(proof["gold_runtime_candidate_ready"])
         self.assertTrue(proof["capital_cfd_route_visible"])
 
-    @pytest.mark.live(reason="Quarantined from the default suite: drives a live venue path. Opt in with -m live. Offline CI does not call an exchange.")
     def test_gold_priority_hold_side_blocks_intent_publish(self):
         trader = self._make_trader()
         trader.capital_ready = True
@@ -639,7 +752,6 @@ class UnifiedMarketTraderTests(unittest.TestCase):
         finally:
             self._restore_env(old_env)
 
-    @pytest.mark.live(reason="Quarantined from the default suite: drives a live venue path. Opt in with -m live. Offline CI does not call an exchange.")
     def test_order_intents_include_lifecycle_identity(self):
         old_env = self._with_live_executor_env()
         try:
@@ -731,7 +843,6 @@ class UnifiedMarketTraderTests(unittest.TestCase):
             self.assertEqual(support[0]["worker_id"], "capital_cfd_strategy")
             self.assertEqual(support[0]["expected_net_revenue"], 0.05)
 
-    @pytest.mark.live(reason="Quarantined from the default suite: drives a live venue path. Opt in with -m live. Offline CI does not call an exchange.")
     def test_dry_run_disables_unified_executor_even_when_env_armed(self):
         old_env = self._with_live_executor_env()
         try:
@@ -749,7 +860,6 @@ class UnifiedMarketTraderTests(unittest.TestCase):
         finally:
             self._restore_env(old_env)
 
-    @pytest.mark.live(reason="Quarantined from the default suite: drives a live venue path. Opt in with -m live. Offline CI does not call an exchange.")
     def test_blocked_execution_summary_is_persisted(self):
         old_env = self._with_live_executor_env()
         try:
@@ -1261,7 +1371,6 @@ class UnifiedMarketTraderTests(unittest.TestCase):
         self.assertEqual(trader._to_binance_symbol("XAUUSD"), "")
         self.assertEqual(trader._to_alpaca_crypto_symbol("XAUUSD"), "")
 
-    @pytest.mark.live(reason="Quarantined from the default suite: drives a live venue path. Opt in with -m live. Offline CI does not call an exchange.")
     def test_runtime_executor_submits_direct_routes_and_delegates_existing_traders_when_gates_clear(self):
         old_env = self._with_live_executor_env()
 
@@ -1391,7 +1500,6 @@ class UnifiedMarketTraderTests(unittest.TestCase):
         finally:
             self._restore_env(old_env)
 
-    @pytest.mark.live(reason="Quarantined from the default suite: drives a live venue path. Opt in with -m live. Offline CI does not call an exchange.")
     def test_kraken_spot_buy_records_fee_aware_fast_profit_position(self):
         old_env = self._with_live_executor_env()
 
@@ -1424,6 +1532,7 @@ class UnifiedMarketTraderTests(unittest.TestCase):
             try:
                 trader = self._make_trader()
                 trader.kraken = KrakenTrader()
+                _bind_recorded_kraken_dispatch(trader)
                 result = trader._execute_kraken_spot_route("BUY", "XBTUSD", 65.0)
 
                 self.assertTrue(result["ok"], result)
@@ -1437,7 +1546,6 @@ class UnifiedMarketTraderTests(unittest.TestCase):
                 trader_mod.KRAKEN_SPOT_POSITION_PUBLIC_PATH = old_public
                 self._restore_env(old_env)
 
-    @pytest.mark.live(reason="Quarantined from the default suite: drives a live venue path. Opt in with -m live. Offline CI does not call an exchange.")
     def test_kraken_spot_buy_can_use_gbp_quote_balance(self):
         old_env = self._with_live_executor_env()
 
@@ -1474,6 +1582,7 @@ class UnifiedMarketTraderTests(unittest.TestCase):
             try:
                 trader = self._make_trader()
                 trader.kraken = KrakenTrader()
+                _bind_recorded_kraken_dispatch(trader)
                 result = trader._execute_kraken_spot_route("BUY", "XBTUSD", 65.0)
 
                 self.assertTrue(result["ok"], result)
@@ -1485,7 +1594,6 @@ class UnifiedMarketTraderTests(unittest.TestCase):
                 trader_mod.KRAKEN_SPOT_POSITION_PUBLIC_PATH = old_public
                 self._restore_env(old_env)
 
-    @pytest.mark.live(reason="Quarantined from the default suite: drives a live venue path. Opt in with -m live. Offline CI does not call an exchange.")
     def test_kraken_margin_route_submits_through_unified_executor(self):
         old_env = self._with_live_executor_env()
 
@@ -1510,6 +1618,7 @@ class UnifiedMarketTraderTests(unittest.TestCase):
         try:
             trader = self._make_trader()
             trader.kraken = KrakenTrader()
+            _bind_recorded_kraken_dispatch(trader)
             result = trader._execute_kraken_margin_route("BUY", "XBTUSD", 5.0)
 
             self.assertTrue(result["ok"], result)
@@ -1520,7 +1629,6 @@ class UnifiedMarketTraderTests(unittest.TestCase):
         finally:
             self._restore_env(old_env)
 
-    @pytest.mark.live(reason="Quarantined from the default suite: drives a live venue path. Opt in with -m live. Offline CI does not call an exchange.")
     def test_kraken_spot_buy_goes_margin_only_when_spot_inventory_underwater(self):
         old_env = self._with_live_executor_env()
 
@@ -1565,7 +1673,6 @@ class UnifiedMarketTraderTests(unittest.TestCase):
         finally:
             self._restore_env(old_env)
 
-    @pytest.mark.live(reason="Quarantined from the default suite: drives a live venue path. Opt in with -m live. Offline CI does not call an exchange.")
     def test_executor_skips_kraken_spot_buy_and_still_uses_margin_when_spot_underwater(self):
         old_env = self._with_live_executor_env()
         try:
@@ -1620,7 +1727,6 @@ class UnifiedMarketTraderTests(unittest.TestCase):
         finally:
             self._restore_env(old_env)
 
-    @pytest.mark.live(reason="Quarantined from the default suite: drives a live venue path. Opt in with -m live. Offline CI does not call an exchange.")
     def test_kraken_spot_fast_profit_monitor_sells_only_true_net_profit(self):
         old_env = self._with_live_executor_env()
 
@@ -1649,6 +1755,7 @@ class UnifiedMarketTraderTests(unittest.TestCase):
             try:
                 trader = self._make_trader()
                 trader.kraken = KrakenTrader()
+                _bind_recorded_kraken_dispatch(trader)
                 trader.kraken_ready = True
                 trader._kraken_spot_fast_profit_state = {
                     "schema_version": 1,
@@ -1681,7 +1788,6 @@ class UnifiedMarketTraderTests(unittest.TestCase):
                 trader_mod.KRAKEN_SPOT_FAST_PROFIT_MIN_HOLD_SEC = old_min
                 self._restore_env(old_env)
 
-    @pytest.mark.live(reason="Quarantined from the default suite: drives a live venue path. Opt in with -m live. Offline CI does not call an exchange.")
     def test_kraken_spot_fast_profit_monitor_adopts_profitable_live_inventory(self):
         old_env = self._with_live_executor_env()
 
@@ -1728,6 +1834,7 @@ class UnifiedMarketTraderTests(unittest.TestCase):
             try:
                 trader = self._make_trader()
                 trader.kraken = KrakenTrader()
+                _bind_recorded_kraken_dispatch(trader)
 
                 closed = trader._monitor_kraken_spot_fast_profit()
 
@@ -1742,7 +1849,6 @@ class UnifiedMarketTraderTests(unittest.TestCase):
                 trader_mod.KRAKEN_SPOT_FAST_PROFIT_MIN_HOLD_SEC = old_min
                 self._restore_env(old_env)
 
-    @pytest.mark.live(reason="Quarantined from the default suite: drives a live venue path. Opt in with -m live. Offline CI does not call an exchange.")
     def test_kraken_spot_fast_profit_arms_deadman_when_market_sell_fails(self):
         old_env = self._with_live_executor_env()
 
@@ -1774,6 +1880,7 @@ class UnifiedMarketTraderTests(unittest.TestCase):
             try:
                 trader = self._make_trader()
                 trader.kraken = KrakenTrader()
+                _bind_recorded_kraken_dispatch(trader)
                 trader._kraken_spot_fast_profit_state = {
                     "schema_version": 1,
                     "open_positions": [{

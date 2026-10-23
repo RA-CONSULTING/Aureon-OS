@@ -116,22 +116,36 @@ def test_audit_environment_blocks_live_order_paths(monkeypatch):
         raise AssertionError("blocked_order must fail closed")
 
 
-def test_runtime_safety_enforces_terminal_release_hold(monkeypatch):
-    for key in ("AUREON_AUDIT_MODE", "AUREON_LIVE_TRADING", "AUREON_DISABLE_REAL_ORDERS"):
+def test_runtime_safety_follows_the_live_flag_and_paper_without_keys(monkeypatch):
+    for key in (
+        "AUREON_AUDIT_MODE",
+        "AUREON_LIVE_TRADING",
+        "AUREON_DISABLE_REAL_ORDERS",
+        "AUREON_DISABLE_EXCHANGE_MUTATIONS",
+        "AUREON_SELF_REPAIR_KILL",
+        "KRAKEN_API_KEY",
+        "KRAKEN_API_SECRET",
+        "BINANCE_API_KEY",
+        "BINANCE_API_SECRET",
+        "ALPACA_API_KEY",
+        "ALPACA_SECRET_KEY",
+        "CAPITAL_API_KEY",
+        "CAPITAL_IDENTIFIER",
+        "CAPITAL_PASSWORD",
+    ):
         monkeypatch.delenv(key, raising=False)
 
     assert real_orders_allowed() is False
-    assert live_block_reason("test") == (
-        "test: terminal production release HOLD blocks exchange mutations"
-    )
+    assert live_block_reason("test") == "test: paper/public-data (no exchange keys)"
 
     monkeypatch.setenv("AUREON_LIVE_TRADING", "1")
-    assert real_orders_allowed() is False
+    assert real_orders_allowed() is True
 
     monkeypatch.setenv("AUREON_DISABLE_REAL_ORDERS", "1")
     assert real_orders_allowed() is False
-    with pytest.raises(RuntimeError):
-        child_env_for_mode(True, os.environ)
+    child = child_env_for_mode(True, dict(os.environ))
+    assert child["AUREON_LIVE_TRADING"] == "1"
+    assert child["AUREON_DISABLE_REAL_ORDERS"] == "0"
 
     safe_env = child_env_for_mode(False, {})
     assert safe_env["AUREON_LIVE_TRADING"] == "0"
@@ -152,7 +166,7 @@ def test_queen_autonomy_stays_simulated_in_audit_mode(monkeypatch):
     assert os.environ["AUREON_DISABLE_REAL_ORDERS"] == "1"
 
 
-def test_queen_autonomy_live_request_is_forced_to_audit_hold(monkeypatch):
+def test_queen_autonomy_live_request_is_not_forced_back_to_hold(monkeypatch):
     for key in (
         "AUREON_AUDIT_MODE",
         "AUREON_LIVE_TRADING",
@@ -165,24 +179,29 @@ def test_queen_autonomy_live_request_is_forced_to_audit_hold(monkeypatch):
     ):
         monkeypatch.delenv(key, raising=False)
 
-    apply_live_runtime_environment()
+    snapshot = dict(os.environ)
+    try:
+        apply_live_runtime_environment()
 
-    import aureon.autonomous.aureon_queen_full_autonomy_enablement as autonomy_module
+        import aureon.autonomous.aureon_queen_full_autonomy_enablement as autonomy_module
 
-    monkeypatch.setattr(
-        autonomy_module.QueenAutonomyConfig,
-        "verify_autonomy_status",
-        lambda self: {"all_checks_passed": True, "checks": {"unit_test": True}},
-    )
+        monkeypatch.setattr(
+            autonomy_module.QueenAutonomyConfig,
+            "verify_autonomy_status",
+            lambda self: {"all_checks_passed": True, "checks": {"unit_test": True}},
+        )
 
-    result = autonomy_module.initialize_queen_autonomy()
+        result = autonomy_module.initialize_queen_autonomy()
 
-    assert result["safe_mode"] is True
-    assert result["trading_mode"] == "AUDIT_DRY_RUN"
-    assert os.environ["AUREON_AUDIT_MODE"] == "1"
-    assert os.environ["AUREON_LIVE_TRADING"] == "0"
-    assert os.environ["AUREON_DISABLE_REAL_ORDERS"] == "1"
-    assert os.environ["AUREON_DISABLE_EXCHANGE_MUTATIONS"] == "1"
+        assert result.get("safe_mode") is not True
+        assert result["trading_mode"] == "INTENT_ONLY_RUNTIME_GATED_LIVE"
+        assert os.environ["AUREON_LIVE_TRADING"] == "1"
+        assert os.environ["AUREON_DISABLE_REAL_ORDERS"] == "0"
+        assert os.environ["AUREON_DRY_RUN"] == "false"
+        assert result.get("order_submitted", False) is False
+    finally:
+        os.environ.clear()
+        os.environ.update(snapshot)
 
 
 def test_baton_link_preserves_audit_dry_run_flags(monkeypatch):

@@ -1,7 +1,11 @@
 import os, glob, time, json
 
+root = os.environ.get("SERO_WORKSPACE") or os.path.dirname(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+)
+
 print('=== DAEMON VERIFICATION ===')
-pid_files = glob.glob(r'C:\Users\user\.kimi_openclaw\workspace\*.pid')
+pid_files = glob.glob(os.path.join(root, "*.pid"))
 for pf in sorted(pid_files):
     with open(pf) as f:
         pid = f.read().strip()
@@ -11,7 +15,7 @@ for pf in sorted(pid_files):
 print(f'\nTotal PID files: {len(pid_files)}')
 
 print('\n=== ACTIVE OUTPUT FILES ===')
-out_files = glob.glob(r'C:\Users\user\.kimi_openclaw\workspace\*.out')
+out_files = glob.glob(os.path.join(root, "*.out"))
 for of in sorted(out_files):
     size = os.path.getsize(of)
     mtime = os.path.getmtime(of)
@@ -19,7 +23,7 @@ for of in sorted(out_files):
     print(f'{os.path.basename(of)}: {size} bytes, modified {ts}')
 
 print('\n=== FIELD STATUS ===')
-charge_path = r'C:\Users\user\.kimi_openclaw\workspace\active_charge_state.json'
+charge_path = os.path.join(root, "active_charge_state.json")
 if os.path.exists(charge_path):
     with open(charge_path) as f:
         charge = json.load(f)
@@ -28,7 +32,7 @@ else:
     print('No active charge file')
 
 print('\n=== CLEAN SWEEP STATUS ===')
-clean_path = r'C:\Users\user\.kimi_openclaw\workspace\clean_sweep_state.json'
+clean_path = os.path.join(root, "clean_sweep_state.json")
 if os.path.exists(clean_path):
     with open(clean_path) as f:
         clean = json.load(f)

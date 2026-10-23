@@ -28,7 +28,7 @@ os.environ["AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS"] = "1"
 os.environ["AUREON_AUDIT_MODE"] = "1"
 os.environ["RADAR_MAX_NOTIONAL_PCT"] = "1000"
 
-WORKSPACE = Path("C:/Users/user/.kimi_openclaw/workspace")
+WORKSPACE = Path(os.environ.get("SERO_WORKSPACE") or Path(__file__).resolve().parents[1])
 RADAR = WORKSPACE / "aureon_radar"
 sys.path.insert(0, str(RADAR))
 sys.path.insert(0, str(WORKSPACE))
@@ -295,7 +295,7 @@ ab.PROMOTION_LOG = promo
 ab.AUREON_BRIDGE_LOG = bridge_log
 ab.FUSED_SIGNALS = fused
 ab.TRACE_FILE = trace
-live_promo = Path("C:/Users/user/Aureon-OS/state/capital_shadow_promotions.jsonl")
+live_promo = (Path(os.environ.get("SERO_WORKSPACE") or Path(__file__).resolve().parents[1]) / "state" / "capital_shadow_promotions.jsonl")
 promo.write_text(live_promo.read_text(encoding="utf-8", errors="replace")
                  if live_promo.exists() else "")
 bridge = ab.AureonRadarBridge()

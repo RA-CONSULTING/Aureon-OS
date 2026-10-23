@@ -2,9 +2,11 @@ import sys
 sys.stdout.reconfigure(encoding='utf-8')
 import os
 from dotenv import load_dotenv
-load_dotenv(r'C:\Users\user\.kimi_openclaw\workspace\aureon_radar\.env')
+from pathlib import Path
+_radar = Path(__file__).resolve().parent
+load_dotenv(_radar / ".env")
 
-sys.path.insert(0, r'C:\Users\user\.kimi_openclaw\workspace\aureon_radar')
+sys.path.insert(0, str(_radar))
 from aureon_dual_capital import DualCapitalConnector
 
 dc = DualCapitalConnector()

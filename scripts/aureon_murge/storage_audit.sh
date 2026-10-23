@@ -1,33 +1,23 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Audit the checkout and the current user's caches. No host home is named.
+
 echo "== Filesystem =="
-df -h / /home/l
+df -h .
 
 echo
-echo "== Top user directories =="
-du -sh "$HOME/.cache" "$HOME/.npm" "$HOME/.local" "$HOME/Desktop" "$HOME/CodexPROsSparrow" 2>/dev/null | sort -h
+echo "== Checkout =="
+du -sh . .git frontend aureon 2>/dev/null | sort -h || true
 
 echo
-echo "== Largest project paths =="
-du -sh "$HOME/CodexPROsSparrow/desktop" "$HOME/CodexPROsSparrow/node_modules" "$HOME/CodexPROsSparrow/logs" 2>/dev/null | sort -h
+echo "== Home caches (current user) =="
+du -sh "$HOME/.cache" "$HOME/.npm" "$HOME/.local" 2>/dev/null | sort -h || true
 
 echo
 echo "== Desktop hotspots =="
-du -sh "$HOME/Desktop"/* 2>/dev/null | sort -h | tail -n 20
+du -sh "$HOME/Desktop"/* 2>/dev/null | sort -h | tail -n 20 || true
 
 echo
 echo "== Cache hotspots =="
-du -sh "$HOME/.cache"/* 2>/dev/null | sort -h | tail -n 20
-
-echo
-echo "== Candidate offload targets =="
-for path in \
-  "$HOME/Desktop/prace dark neutrino " \
-  "$HOME/Desktop/gary repo nexus" \
-  "$HOME/CodexPROsSparrow/desktop/dist" \
-  "$HOME/.cache/google-chrome"; do
-  if [ -e "$path" ]; then
-    du -sh "$path" 2>/dev/null || true
-  fi
-done
+du -sh "$HOME/.cache"/* 2>/dev/null | sort -h | tail -n 20 || true

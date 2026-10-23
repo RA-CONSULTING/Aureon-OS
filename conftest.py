@@ -14,6 +14,7 @@ import asyncio
 import inspect
 import os
 import sys
+import tempfile
 import threading
 from pathlib import Path
 
@@ -210,17 +211,32 @@ def _apply_environ_snapshot() -> None:
 
 
 @pytest.fixture(autouse=True)
-def _restore_os_environ():
+def _restore_os_environ(tmp_path_factory):
     """Put os.environ back to the pre-collection process environment.
 
     monkeypatch only undoes keys it changed. Direct writes such as
     ``os.environ['LIVE'] = '0'`` and ``os.environ.update(...)`` leak into every
     later test unless the whole mapping is snapshotted and restored. Setup runs
     before other function fixtures; teardown runs after them.
+
+    The snapshot used to drop ``AUREON_THOUGHT_BUS_PATH`` back to unset, and
+    ``get_thought_bus()`` then appended the checkout's ``thoughts.jsonl``.
+    Each test gets its own pytest temporary directory for that journal. It is
+    not the test's ``tmp_path``: a ledger test inventories that directory and
+    must not see the bus. Teardown puts the session journal back and retargets
+    any bus still aimed at the checkout.
     """
     _apply_environ_snapshot()
+    slot = tmp_path_factory.mktemp("aureon-journal")
+    journal = slot / "thoughts.jsonl"
+    os.environ["AUREON_THOUGHT_BUS_PATH"] = str(journal)
+    os.environ["AUREON_BUS_TRACE_DIR"] = str(slot / "bus-traces")
+    os.environ["AUREON_HNC_TRACE_PATH"] = str(slot / "hnc-live-trace.jsonl")
+    os.environ["AUREON_AUTONOMY_AUDIT_PATH"] = str(slot / "autonomy_audit.jsonl")
+    _retarget_checkout_journals(journal)
     yield
     _apply_environ_snapshot()
+    _retarget_checkout_journals(_PYTEST_JOURNAL)
 
 
 @pytest.fixture(autouse=True)
@@ -312,6 +328,118 @@ def _restore_process_singletons():
             # singleton it created so it cannot leak forward
             setattr(mod, attr, None)
 
+
+_CHECKOUT_ROOT = Path(__file__).resolve().parent
+_JOURNAL_NAMES = frozenset(
+    {"thoughts.jsonl", "capital_thoughts.jsonl", "aureon_thought_bus.jsonl"}
+)
+_PYTEST_JOURNAL_DIR = Path(tempfile.mkdtemp(prefix="aureon-pytest-journal-"))
+_PYTEST_JOURNAL = _PYTEST_JOURNAL_DIR / "thoughts.jsonl"
+_THOUGHT_BUS_INIT_PATCHED = False
+
+
+def _is_checkout_journal(path: str) -> bool:
+    """True when a persist path would create or append a checkout journal."""
+
+    candidate = Path(path)
+    if not candidate.is_absolute():
+        candidate = Path.cwd() / candidate
+    try:
+        resolved = candidate.resolve()
+        root = _CHECKOUT_ROOT.resolve()
+        resolved.relative_to(root)
+    except (OSError, ValueError):
+        return False
+    return resolved.name in _JOURNAL_NAMES
+
+
+def _install_checkout_journal_redirect() -> None:
+    """Send ThoughtBus writes that target the checkout into the pytest journal."""
+
+    global _THOUGHT_BUS_INIT_PATCHED
+    if _THOUGHT_BUS_INIT_PATCHED:
+        return
+    import aureon.core.aureon_thought_bus as thought_bus_module
+
+    original = thought_bus_module.ThoughtBus.__init__
+
+    def redirected(self, max_memory: int = 5000, persist_path: str | None = None):
+        if isinstance(persist_path, str) and _is_checkout_journal(persist_path):
+            persist_path = os.environ.get("AUREON_THOUGHT_BUS_PATH") or str(_PYTEST_JOURNAL)
+        original(self, max_memory=max_memory, persist_path=persist_path)
+
+    thought_bus_module.ThoughtBus.__init__ = redirected
+    _THOUGHT_BUS_INIT_PATCHED = True
+
+
+def _retarget_checkout_journals(journal: Path) -> None:
+    """Point an already-built bus off the checkout before the next publish."""
+
+    for mod_name, attr in (
+        ("aureon.core.aureon_thought_bus", "_thought_bus_instance"),
+        ("aureon_thought_bus", "_thought_bus_instance"),
+    ):
+        mod = sys.modules.get(mod_name)
+        if mod is None:
+            continue
+        bus = getattr(mod, attr, None)
+        persist = getattr(bus, "_persist_path", None)
+        if isinstance(persist, str) and _is_checkout_journal(persist):
+            bus._persist_path = str(journal)
+        state_file = getattr(bus, "state_file", None)
+        if isinstance(state_file, str) and _is_checkout_journal(state_file):
+            bus.state_file = str(journal)
+
+
+def _pin_pytest_journals() -> None:
+    """Keep the pre-collection snapshot from restoring a checkout journal.
+
+    ``_restore_os_environ`` puts this mapping back around every test. Without
+    a journal pin, that restore drops ``AUREON_THOUGHT_BUS_PATH`` and the next
+    ``get_thought_bus()`` appends ``thoughts.jsonl`` in the checkout. Each
+    pytest process, including each xdist worker, gets its own directory.
+    The per-test fixture then narrows the path to a pytest temporary directory.
+    """
+
+    os.environ["AUREON_THOUGHT_BUS_PATH"] = str(_PYTEST_JOURNAL)
+    os.environ["AUREON_BUS_TRACE_DIR"] = str(_PYTEST_JOURNAL_DIR / "bus-traces")
+    os.environ["AUREON_HNC_TRACE_PATH"] = str(_PYTEST_JOURNAL_DIR / "hnc-live-trace.jsonl")
+    os.environ["AUREON_AUTONOMY_AUDIT_PATH"] = str(_PYTEST_JOURNAL_DIR / "autonomy_audit.jsonl")
+    # repo_search writes operator_repo_index_v6.json.tmp beside its cache.
+    # Under xdist that file lands in the checkout while another worker
+    # fingerprints state/. Keep the cache in this process's journal.
+    os.environ["AUREON_OPERATOR_REPO_INDEX_PATH"] = str(
+        _PYTEST_JOURNAL_DIR / "operator_repo_index_v6.json"
+    )
+    # The launcher default, with this variable unset, is full. The suite pins
+    # guarded so denylist assertions stay put and a local state file cannot
+    # flip them. A test that wants the launcher default deletes this pin.
+    # An export of full mode is left as exported.
+    os.environ.setdefault("AUREON_AUTONOMY_MODE", "guarded")
+    _install_checkout_journal_redirect()
+
+
+def _fixture_commits_skip_operator_signing() -> None:
+    """Fixture repos call ``git commit``. A machine-wide ``commit.gpgsign``
+    fails those commits when the signing agent has no key. The suite does
+    not check signatures, so the pytest process turns signing off. The
+    operator's git config stays as it is.
+    """
+
+    try:
+        count = int(os.environ.get("GIT_CONFIG_COUNT", "0") or "0")
+    except ValueError:
+        count = 0
+    for index in range(count):
+        if os.environ.get(f"GIT_CONFIG_KEY_{index}") == "commit.gpgsign":
+            return
+    os.environ["GIT_CONFIG_COUNT"] = str(count + 1)
+    os.environ[f"GIT_CONFIG_KEY_{count}"] = "commit.gpgsign"
+    os.environ[f"GIT_CONFIG_VALUE_{count}"] = "false"
+
+
+_pin_pytest_journals()
+_fixture_commits_skip_operator_signing()
 
 # Freeze the snapshot after this module's own imports, still before collection.
 _OS_ENVIRON_BEFORE_COLLECTION.update(os.environ)

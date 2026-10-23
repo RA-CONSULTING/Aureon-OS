@@ -579,10 +579,15 @@ class TimelineOracle:
         # Mycelium is lazily imported to avoid circular imports; ensure it's loaded here
         # so the oracle isn't permanently stuck in low-confidence mode.
         _lazy_load_mycelium()
-        if MYCELIUM_AVAILABLE:
+        from aureon.core.simulated_boot import (
+            INTERNAL_MULTIVERSE,
+            MYCELIUM_HIVE_SEED,
+            take_simulated,
+        )
+        if MYCELIUM_AVAILABLE and take_simulated(MYCELIUM_HIVE_SEED, "hive seed is not an exchange balance"):
             try:
                 self.mycelium = MyceliumNetwork(initial_capital=1000.0)
-                logger.info("   🍄 Mycelium Network: WIRED")
+                logger.info("   🍄 Mycelium Network: WIRED (SIMULATED hive seed $1000)")
             except Exception as e:
                 logger.warning(f"   🍄 Mycelium: Failed ({e})")
         
@@ -596,10 +601,10 @@ class TimelineOracle:
                 logger.warning(f"   🌊 Harmonic Fusion: Failed ({e})")
         
         # 🌌 Multiverse - 10 World Consensus
-        if MULTIVERSE_AVAILABLE:
+        if MULTIVERSE_AVAILABLE and take_simulated(INTERNAL_MULTIVERSE, "aureon.simulation, 10 worlds × $10"):
             try:
-                self.multiverse = InternalMultiverse(initial_equity=10000)
-                logger.info("   🌌 Internal Multiverse: WIRED (10 worlds)")
+                self.multiverse = InternalMultiverse(initial_equity=100.0)
+                logger.info("   🌌 Internal Multiverse: WIRED (SIMULATED, 10 worlds × $10)")
             except Exception as e:
                 logger.warning(f"   🌌 Multiverse: Failed ({e})")
         

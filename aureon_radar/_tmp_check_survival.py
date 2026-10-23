@@ -1,6 +1,7 @@
 import sys
 sys.stdout.reconfigure(encoding='utf-8')
-with open(r'C:\Users\user\.kimi_openclaw\workspace\aureon_radar\aureon_phi_radar.py', 'r', encoding='utf-8') as f:
+from pathlib import Path
+with open(Path(__file__).resolve().parent / "aureon_phi_radar.py", "r", encoding="utf-8") as f:
     content = f.read()
 
 checks = [

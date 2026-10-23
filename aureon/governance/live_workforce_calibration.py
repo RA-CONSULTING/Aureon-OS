@@ -26,7 +26,6 @@ from aureon.autonomous.aureon_internal_coding_workforce import (
     validate_work_receipt,
 )
 from aureon.autonomous.aureon_ten_nine_one_thought_path import (
-    ACTIVE_COHERENCE_THRESHOLD,
     TenNineOneEvidenceResolver,
     ThoughtPathRequest,
 )
@@ -205,7 +204,6 @@ class PinnedProviderMomentResolver:
             isinstance(gamma, bool)
             or not isinstance(gamma, (int, float))
             or not math.isfinite(float(gamma))
-            or float(gamma) < ACTIVE_COHERENCE_THRESHOLD
             or auris_evidence.get("gate_open") is not True
         ):
             raise ValueError("active_auris_provider_moment_required")
@@ -310,7 +308,6 @@ def load_latest_active_provider_pair(
                 and not isinstance(gamma, bool)
                 and isinstance(gamma, (int, float))
                 and math.isfinite(float(gamma))
-                and float(gamma) >= ACTIVE_COHERENCE_THRESHOLD
             ):
                 return dict(hnc), dict(auris)
         except (TypeError, ValueError):

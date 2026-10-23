@@ -69,6 +69,7 @@ _INSTALL_PROBE_EVENT: Final = "aureon.runtime_guard_v04.install_probe"
 
 _ALWAYS_PROTECTED_EVENTS: Final = frozenset(
     {
+        "_thread.start_joinable_thread",
         "_thread.start_new_thread",
         "code.__new__",
         "compile",
@@ -182,6 +183,7 @@ _ALWAYS_PROTECTED_EVENTS: Final = frozenset(
 )
 _DENY_ONLY_EVENT_MINIMUM: Final = frozenset(
     {
+        "_thread.start_joinable_thread",
         "_thread.start_new_thread",
         "open",
         "code.__new__",

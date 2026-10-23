@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
-# Aureon Linux launcher: terminal protection HOLD.
+# Bring Aureon up on Linux. Live trading stays off. Safe to re-run.
 set -euo pipefail
 
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
-PYTHON="$ROOT/.venv/bin/python"
-BOOTSTRAP="$ROOT/scripts/bootstrap/protected_bootstrap_v05.py"
+cd "$ROOT"
+export AUREON_LIVE_TRADING=0
+export AUREON_SIMULATED_BOOT=0
+export PYTHONPATH="${ROOT}${PYTHONPATH:+:$PYTHONPATH}"
 
-if [ ! -x "$PYTHON" ] || [ ! -r "$BOOTSTRAP" ]; then
-  echo "Protected Linux bootstrap unavailable; refusing startup." >&2
-  exit 1
+if [ ! -x "$ROOT/.venv/bin/python" ]; then
+  exec bash "$ROOT/production/install.sh"
 fi
 
-exec "$PYTHON" -I -S -B "$BOOTSTRAP" --target-id linux-supervisor
+exec "$ROOT/.venv/bin/python" -m aureon.autonomous.aureon_master_launcher --preflight

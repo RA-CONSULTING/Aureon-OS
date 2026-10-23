@@ -7,6 +7,7 @@ Fixes the radar after shutdown and restarts all compartments.
 Date: 2026-09-04
 Prime Sentinel: Gary Leckey
 """
+import os
 
 import json
 import time
@@ -15,7 +16,7 @@ import sys
 from pathlib import Path
 from datetime import datetime, timezone
 
-WORKSPACE = Path("C:/Users/user/.kimi_openclaw/workspace")
+WORKSPACE = Path(os.environ.get("SERO_WORKSPACE") or Path(__file__).resolve().parents[1])
 RADAR_DIR = WORKSPACE / "aureon_radar"
 
 def log(msg):

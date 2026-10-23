@@ -71,6 +71,66 @@ def _safe_len(value: Any) -> int:
     return 0
 
 
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+_LIVE_TRUE = ("1", "true", "TRUE", "yes", "YES")
+_SECRET_MARKERS = ("SECRET", "PASSWORD", "API_KEY", "TOKEN", "PRIVATE_KEY")
+_CHILD_SCRIPTS = {
+    "dashboard": ("aureon", "monitors", "aureon_pro_dashboard.py"),
+    "market_cache": ("aureon", "data_feeds", "unified_market_cache.py"),
+    "kraken_cache": ("aureon", "exchanges", "kraken_cache_feeder.py"),
+    "command_center": ("aureon", "command_centers", "aureon_command_center_ui.py"),
+}
+
+
+def live_trading_from_env(default: str = "0") -> bool:
+    """Unset AUREON_LIVE_TRADING stays off. Only an explicit true value arms it."""
+    return os.getenv("AUREON_LIVE_TRADING", default) in _LIVE_TRUE
+
+
+def child_script(name: str) -> str:
+    """Absolute path of a launcher child that used to live at the repo root."""
+    path = _REPO_ROOT.joinpath(*_CHILD_SCRIPTS[name])
+    if not path.is_file():
+        raise FileNotFoundError(path)
+    return str(path)
+
+
+def scrub_child_env(env: dict[str, str], *, live_trading: bool) -> dict[str, str]:
+    """Drop credential-looking variables from a dry child. Never logs values."""
+    if live_trading:
+        cleaned = dict(env)
+        cleaned["AUREON_LIVE_TRADING"] = "1"
+        return cleaned
+    cleaned = {
+        key: value
+        for key, value in env.items()
+        if not any(marker in key.upper() for marker in _SECRET_MARKERS)
+    }
+    cleaned["AUREON_LIVE_TRADING"] = "0"
+    cleaned["AUREON_SIMULATED_BOOT"] = "0"
+    return cleaned
+
+
+def _start_circulation_quietly() -> None:
+    try:
+        from aureon.core.organism_circulation import start_organism_circulation
+
+        status = start_organism_circulation()
+        if status.get("url") and status.get("started"):
+            print(f"Thought bus: {status['url']}", flush=True)
+        else:
+            message = status.get("error") or (
+                "organism circulation failed to bind 127.0.0.1:8799; the fusion seat keeps 8765"
+            )
+            print(message, file=sys.stderr, flush=True)
+    except Exception as exc:
+        print(
+            f"organism circulation failed to bind 127.0.0.1:8799 ({exc}); the fusion seat keeps 8765",
+            file=sys.stderr,
+            flush=True,
+        )
+
+
 def wire_queen_systems(queen: Any, labyrinth: Any) -> Dict[str, Any]:
     """Wire Queen to critical systems and return a wiring summary."""
     summary: Dict[str, Any] = {
@@ -462,8 +522,8 @@ def run_autonomous_trading(engine=None, hub=None):
         queen.trading_enabled = True
         
         labyrinth = MicroProfitLabyrinth()
-        # Default stays "live" unless explicitly disabled (e.g. production-safe mode).
-        live_trading = os.getenv("AUREON_LIVE_TRADING", "1") in ("1", "true", "TRUE", "yes", "YES")
+        # Unset AUREON_LIVE_TRADING stays dry. Live execution is an explicit opt-in.
+        live_trading = live_trading_from_env("0")
         labyrinth.dry_run = not live_trading
         if labyrinth.dry_run:
             print("🔒 DRY-RUN MODE: Active (AUREON_LIVE_TRADING=0)")
@@ -749,11 +809,19 @@ def _http_ok(url: str, timeout_s: float = 1.5) -> bool:
 
 
 class _ManagedProcess:
-    def __init__(self, name: str, cmd: list[str], cwd: str | None = None, env: dict[str, str] | None = None):
+    def __init__(
+        self,
+        name: str,
+        cmd: list[str],
+        cwd: str | None = None,
+        env: dict[str, str] | None = None,
+        scrub_secrets: bool = False,
+    ):
         self.name = name
         self.cmd = cmd
-        self.cwd = cwd
+        self.cwd = cwd or str(_REPO_ROOT)
         self.env = env or {}
+        self.scrub_secrets = scrub_secrets
         self.proc: subprocess.Popen | None = None
 
     def start(self) -> None:
@@ -761,6 +829,8 @@ class _ManagedProcess:
             return
         child_env = os.environ.copy()
         child_env.update(self.env)
+        if self.scrub_secrets:
+            child_env = scrub_child_env(child_env, live_trading=False)
         self.proc = subprocess.Popen(self.cmd, cwd=self.cwd, env=child_env)
 
     def alive(self) -> bool:
@@ -792,9 +862,10 @@ def run_production_orchestrator(*, live_trading: bool, spawn_command_center: boo
     - Runs dry-run validation/monitoring by default; enable live execution explicitly.
     """
     print_banner()
+    _start_circulation_quietly()
 
     if not live_trading:
-        print("\n🔒 PRODUCTION SAFE MODE: DRY-RUN (no real orders)")
+        print("\n🔒 DRY-RUN (no real orders)")
         print("   Set `AUREON_LIVE_TRADING=1` or pass `--live` to enable execution.\n")
 
     managed: list[_ManagedProcess] = []
@@ -802,14 +873,29 @@ def run_production_orchestrator(*, live_trading: bool, spawn_command_center: boo
     total_steps = 6
     step = 0
 
-    # 1) Dashboard first so /health comes up immediately.
+    ui_port = os.getenv("AUREON_UI_PORT") or "8080"
+    dash_port = os.getenv("AUREON_DASHBOARD_PORT", "18080")
+    cc_port = os.getenv("AUREON_COMMAND_CENTER_PORT", "18800")
+    try:
+        from aureon.autonomous.master_launcher_ui import start_master_ui
+
+        ui = start_master_ui(
+            int(ui_port),
+            dashboard_url=f"http://127.0.0.1:{dash_port}/",
+            command_center_url=f"http://127.0.0.1:{cc_port}/",
+        )
+        print(f"Aureon UI: {ui['url']}  (Dashboard and Command Center tabs)")
+    except Exception as exc:
+        print(f"Master launcher UI degraded: {exc}")
+
+    # 1) Dashboard is a tab. It listens on an internal port, not a second app.
     step += 1
-    dash_port = os.getenv("PORT", "8080")
     _print_progress(f"Starting Aureon Pro Dashboard ({dash_port})", step, total_steps)
     dash = _ManagedProcess(
         name="aureon-pro-dashboard",
-        cmd=[sys.executable, "-u", "aureon_pro_dashboard.py"],
-        env={"PORT": dash_port},
+        cmd=[sys.executable, "-u", child_script("dashboard")],
+        env={"PORT": dash_port, "AUREON_LIVE_TRADING": "0" if not live_trading else "1"},
+        scrub_secrets=not live_trading,
     )
     dash.start()
     managed.append(dash)
@@ -823,11 +909,15 @@ def run_production_orchestrator(*, live_trading: bool, spawn_command_center: boo
     if spawn_market_feeds:
         step += 1
         _print_progress("Starting Binance WS market cache", step, total_steps)
-        cache_env = {"MARKET_CACHE_DIR": os.getenv("MARKET_CACHE_DIR", "ws_cache")}
+        cache_env = {
+            "MARKET_CACHE_DIR": os.getenv("MARKET_CACHE_DIR", "ws_cache"),
+            "AUREON_LIVE_TRADING": "0" if not live_trading else "1",
+        }
         mkt = _ManagedProcess(
             name="unified-market-cache",
-            cmd=[sys.executable, "-u", "unified_market_cache.py", "--write-interval", "1.0"],
+            cmd=[sys.executable, "-u", child_script("market_cache"), "--write-interval", "1.0"],
             env=cache_env,
+            scrub_secrets=not live_trading,
         )
         mkt.start()
         managed.append(mkt)
@@ -836,7 +926,9 @@ def run_production_orchestrator(*, live_trading: bool, spawn_command_center: boo
         _print_progress("Starting Kraken cache (backup)", step, total_steps)
         krk = _ManagedProcess(
             name="kraken-cache",
-            cmd=[sys.executable, "-u", "kraken_cache_feeder.py", "--interval-s", "120"],
+            cmd=[sys.executable, "-u", child_script("kraken_cache"), "--interval-s", "120"],
+            env={"AUREON_LIVE_TRADING": "0" if not live_trading else "1"},
+            scrub_secrets=not live_trading,
         )
         krk.start()
         managed.append(krk)
@@ -844,15 +936,15 @@ def run_production_orchestrator(*, live_trading: bool, spawn_command_center: boo
         step += 2
         _print_progress("Skipping external market feeds", step, total_steps)
 
-    # 3) Optional command center.
+    # 3) Command center is the second tab, on its internal port.
     if spawn_command_center:
         step += 1
-        cc_port = os.getenv("COMMAND_CENTER_PORT", "8800")
         _print_progress(f"Starting Command Center ({cc_port})", step, total_steps)
         cc = _ManagedProcess(
             name="command-center",
-            cmd=[sys.executable, "-u", "aureon_command_center_ui.py"],
-            env={"PORT": cc_port},
+            cmd=[sys.executable, "-u", child_script("command_center")],
+            env={"PORT": cc_port, "AUREON_LIVE_TRADING": "0" if not live_trading else "1"},
+            scrub_secrets=not live_trading,
         )
         cc.start()
         managed.append(cc)
@@ -1166,42 +1258,108 @@ def main_legacy():
     run_autonomous_trading(engine=engine, hub=hub)
 
 
+def run_preflight() -> None:
+    """UI, thought bus, and public prices. Live trading stays off. No orders."""
+    os.environ["AUREON_LIVE_TRADING"] = "0"
+    os.environ["AUREON_SIMULATED_BOOT"] = "0"
+    print_banner()
+    print("\nPreflight boot. Live trading is off. No orders will be placed.\n")
+    _start_circulation_quietly()
+
+    ui_port = int(os.getenv("AUREON_UI_PORT") or "8080")
+    dash_port = os.getenv("AUREON_DASHBOARD_PORT", "18080")
+    cc_port = os.getenv("AUREON_COMMAND_CENTER_PORT", "18800")
+    from aureon.autonomous.master_launcher_ui import start_master_ui
+
+    ui = start_master_ui(
+        ui_port,
+        dashboard_url=f"http://127.0.0.1:{dash_port}/",
+        command_center_url=f"http://127.0.0.1:{cc_port}/",
+    )
+    print(f"Aureon UI: {ui['url']}")
+
+    try:
+        from aureon.data_feeds.unified_market_cache import ensure_public_prices, get_market_cache
+
+        cache = get_market_cache()
+        ensure_public_prices(cache)
+        cache.write_cache()
+        prices = cache.get_all_prices(max_age=10**9)
+        print(f"Market cache public prices: {len(prices)}")
+    except Exception as exc:
+        print(f"Market cache seed degraded: {exc}")
+
+    managed = [
+        _ManagedProcess(
+            name="aureon-pro-dashboard",
+            cmd=[sys.executable, "-u", child_script("dashboard")],
+            env={"PORT": dash_port, "AUREON_LIVE_TRADING": "0"},
+            scrub_secrets=True,
+        ),
+        _ManagedProcess(
+            name="unified-market-cache",
+            cmd=[sys.executable, "-u", child_script("market_cache"), "--write-interval", "1.0"],
+            env={"MARKET_CACHE_DIR": os.getenv("MARKET_CACHE_DIR", "ws_cache"), "AUREON_LIVE_TRADING": "0"},
+            scrub_secrets=True,
+        ),
+        _ManagedProcess(
+            name="kraken-cache",
+            cmd=[sys.executable, "-u", child_script("kraken_cache"), "--interval-s", "120"],
+            env={"AUREON_LIVE_TRADING": "0"},
+            scrub_secrets=True,
+        ),
+        _ManagedProcess(
+            name="command-center",
+            cmd=[sys.executable, "-u", child_script("command_center")],
+            env={"PORT": cc_port, "AUREON_LIVE_TRADING": "0"},
+            scrub_secrets=True,
+        ),
+    ]
+    for process in managed:
+        process.start()
+
+    shutting_down = {"value": False}
+
+    def _shutdown(signum, frame):  # noqa: ARG001
+        if shutting_down["value"]:
+            return
+        shutting_down["value"] = True
+        print("\nShutdown requested - terminating managed processes...")
+        for process in reversed(managed):
+            try:
+                process.terminate()
+            except Exception:
+                pass
+
+    signal.signal(signal.SIGTERM, _shutdown)
+    signal.signal(signal.SIGINT, _shutdown)
+    while not shutting_down["value"]:
+        for process in managed:
+            if not process.alive():
+                print(f"\n{process.name} exited - restarting")
+                try:
+                    process.start()
+                except Exception as exc:
+                    print(f"   restart failed: {exc}")
+        time.sleep(2.0)
+
+
 def main():
-    """Main launcher function"""
-    # Parse arguments
-    parser = argparse.ArgumentParser(description='Aureon Master Launcher')
-    parser.add_argument('--test', action='store_true', help='Run force trade test in dry-run mode')
-    parser.add_argument('--production', action='store_true', help='Unified production orchestrator (spawns UI/data heads)')
-    parser.add_argument('--live', action='store_true', help='Enable live execution (use with --production)')
-    parser.add_argument('--legacy', action='store_true', help='Use legacy sequential boot (skip Queen Layer)')
-    parser.add_argument('--no-command-center', action='store_true', help='Do not spawn the command center in production mode')
-    parser.add_argument('--no-market-feeds', action='store_true', help='Do not spawn market feed processes in production mode')
-    args = parser.parse_args()
+    """Preflight stays here. Every other invocation is the canonical launcher.
 
-    if args.test:
-        test_force_trade()
+    ``wire_queen_systems`` and the older boot functions stay importable.
+    ``--preflight`` checks the UI, the thought bus, and public prices with
+    live trading forced off. Anything else goes to ``aureon.launch.master``,
+    which does not place an order by itself. Gary's key switch stays outside
+    this entry point.
+    """
+
+    if "--preflight" in sys.argv[1:]:
+        run_preflight()
         return
+    from aureon.launch.master import main as canonical
 
-    if args.production:
-        # Production defaults to dry-run unless explicitly enabled.
-        env_live = os.getenv("AUREON_LIVE_TRADING", "0") in ("1", "true", "TRUE", "yes", "YES")
-        live_trading = bool(args.live) or env_live
-        run_production_orchestrator(
-            live_trading=live_trading,
-            spawn_command_center=not args.no_command_center,
-            spawn_market_feeds=not args.no_market_feeds,
-        )
-        return
-
-    # Default: Queen Layer boot (all systems active)
-    # Use --legacy to fall back to the old sequential boot
-    env_live = os.getenv("AUREON_LIVE_TRADING", "0") in ("1", "true", "TRUE", "yes", "YES")
-    live_trading = bool(args.live) or env_live
-
-    if args.legacy or not QUEEN_LAYER_AVAILABLE:
-        main_legacy()
-    else:
-        main_queen_layer(live_trading=live_trading)
+    raise SystemExit(canonical())
 
 
 if __name__ == "__main__":

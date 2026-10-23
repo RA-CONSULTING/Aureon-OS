@@ -588,8 +588,20 @@ class StatusHandler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self) -> None:
-        if self.path in {"/", "/health", "/api/terminal-state", "/api/flight-test", "/api/reboot-advice", "/api/env-credentials"}:
-            if self.path == "/api/env-credentials":
+        path = self.path.split("?", 1)[0]
+        if path == "/healthz":
+            self._json(
+                200,
+                {
+                    "ok": True,
+                    "service": "unified-market-status-server",
+                    "live_trading": False,
+                    "orders": 0,
+                },
+            )
+            return
+        if path in {"/", "/health", "/api/terminal-state", "/api/flight-test", "/api/reboot-advice", "/api/env-credentials"}:
+            if path == "/api/env-credentials":
                 # Credential presence, key names, master-key state and local
                 # filesystem paths are security-sensitive even without values.
                 # Hold the public read before inspecting any credential source.
@@ -598,11 +610,11 @@ class StatusHandler(BaseHTTPRequestHandler):
                     {"ok": False, "error": CREDENTIAL_STATUS_READ_HOLD},
                 )
                 return
-            if self.path in {"/api/flight-test", "/api/reboot-advice"}:
+            if path in {"/api/flight-test", "/api/reboot-advice"}:
                 self._json(200, _flight_test())
                 return
             payload = _read_status()
-            if self.path == "/health":
+            if path == "/health":
                 payload = {
                     "ok": True,
                     "service": "unified-market-status-server",
@@ -684,7 +696,7 @@ class StatusHandler(BaseHTTPRequestHandler):
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Read-only unified market status server")
-    parser.add_argument("--port", type=int, default=8790)
+    parser.add_argument("--port", type=int, default=8791)
     args = parser.parse_args()
 
     server = ThreadingHTTPServer((HOST, int(args.port)), StatusHandler)

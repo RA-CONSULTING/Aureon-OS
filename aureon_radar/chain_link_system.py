@@ -25,7 +25,7 @@ from datetime import datetime, timezone
 from typing import Dict, List, Optional
 from dataclasses import dataclass, field, asdict
 
-RADAR_DIR = Path("C:/Users/user/.kimi_openclaw/workspace/aureon_radar")
+RADAR_DIR = Path(__file__).resolve().parent
 
 logging.basicConfig(
     level=logging.INFO,

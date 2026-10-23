@@ -65,6 +65,14 @@ def _isolate(tmp_path, monkeypatch):
     monkeypatch.setattr(mm, "_monitor", None, raising=False)
     monkeypatch.setattr(soulmod, "_soul", None, raising=False)
     monkeypatch.setattr(scmod, "_company", None, raising=False)
+    # test_armed_soul_routes_through_guarded_bridge builds LocalActionBridge.
+    # join_organism calls get_mycelium() and the mesh stays up for the rest of
+    # the module: the leaky-singleton restore in conftest runs only at module
+    # end. Affect then reports goal_progress, and a later blind soul treats
+    # that as self-perception and resolves. Drop the mesh before every test.
+    import aureon.core.aureon_mycelium as myc
+
+    monkeypatch.setattr(myc, "_mycelium_instance", None, raising=False)
     import aureon.core.approval_queue as aqmod
 
     monkeypatch.setattr(aqmod, "_queue", None, raising=False)

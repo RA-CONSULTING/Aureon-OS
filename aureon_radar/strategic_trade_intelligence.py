@@ -8,6 +8,7 @@ and capital-allocation suggestion for a target trade.
 Outputs are written to aureon_radar/strategic_analysis.jsonl and are designed to
 be consumed by the organism's metacognitive loop (queen_mind / phi-radar).
 """
+import os
 
 import json
 import math
@@ -26,7 +27,7 @@ except ImportError:
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
     from aureon_fusion.api_communion import get_json as _communion_get_json
 
-WORKSPACE = Path("C:/Users/user/.kimi_openclaw/workspace")
+WORKSPACE = Path(os.environ.get("SERO_WORKSPACE") or Path(__file__).resolve().parents[1])
 RADAR_DIR = WORKSPACE / "aureon_radar"
 ANALYSIS_LOG = RADAR_DIR / "strategic_analysis.jsonl"
 

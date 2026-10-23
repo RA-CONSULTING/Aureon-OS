@@ -26,7 +26,7 @@ os.environ["AUREON_AUDIT_MODE"] = "1"
 # Probe sizing: £1000 balance vs GOLD £2500 notional needs a wider test cap
 os.environ["RADAR_MAX_NOTIONAL_PCT"] = "1000"
 
-RADAR = Path("C:/Users/user/.kimi_openclaw/workspace/aureon_radar")
+RADAR = Path(__file__).resolve().parent
 sys.path.insert(0, str(RADAR))
 
 import aureon_phi_radar as apr

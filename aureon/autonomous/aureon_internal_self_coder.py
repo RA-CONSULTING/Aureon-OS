@@ -657,14 +657,18 @@ def _apply_approved_patch(
     patch_text: str,
     test_commands: Sequence[Sequence[str]],
 ) -> dict[str, Any]:
-    """Apply an approved, validated unified diff and run bounded offline checks.
+    """Apply an approved unified diff and run the patch's own tests.
 
-    AUREON_CODE_AUTO_APPROVE does not cover protected paths. The denylist is
-    checked before git apply, and a refused patch is flagged for human review.
+    Guarded mode refuses live flags, evidence gates, position sizing, and
+    credential files before git apply. Full autonomy mode allows the first
+    three and still refuses credentials. A patch whose tests fail stays
+    applied. In full mode a patch whose tests pass is committed on the
+    current branch. Nothing is pushed.
     """
 
     repo_root = Path(root).resolve()
     _repo_relative(target_path)
+    from aureon.autonomous.autonomy_mode import autonomy_mode
     from aureon.autonomous.self_repair_guard import append_review, block_reason_for_patch
 
     protected = block_reason_for_patch(repo_root, patch_text, [target_path])
@@ -689,6 +693,8 @@ def _apply_approved_patch(
             "tests_executed": False,
             "test_results": [],
             "all_tests_ok": False,
+            "rolled_back": False,
+            "auto_merged": False,
         }
     # Ensure the patch ends with exactly one newline so git apply accepts it.
     normalized_patch = patch_text.rstrip("\n") + "\n" if patch_text else patch_text
@@ -754,6 +760,63 @@ def _apply_approved_patch(
                     }
                 )
         all_tests_ok = all(r.get("ok") for r in test_results)
+        if test_commands and not all_tests_ok:
+            append_review(
+                repo_root,
+                "self_patch_kept",
+                path=target_path,
+                reason="tests_failed",
+                rolled_back=False,
+            )
+            return {
+                "ok": False,
+                "applied": True,
+                "target_path": target_path,
+                "git_apply_check_ok": True,
+                "git_apply_ok": True,
+                "tests_executed": tests_executed,
+                "test_results": test_results,
+                "all_tests_ok": False,
+                "rolled_back": False,
+                "auto_merged": False,
+                "reason": "tests_failed",
+                "stage": "tests",
+            }
+        auto_merged = False
+        commit = ""
+        if test_commands and all_tests_ok and autonomy_mode(repo_root) == "full":
+            add = subprocess.run(
+                ["git", "add", "--", target_path],
+                cwd=repo_root,
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+            committed = subprocess.run(
+                ["git", "commit", "-m", "self-patch: tests passed"],
+                cwd=repo_root,
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+            auto_merged = add.returncode == 0 and committed.returncode == 0
+            if auto_merged:
+                head = subprocess.run(
+                    ["git", "rev-parse", "--short", "HEAD"],
+                    cwd=repo_root,
+                    capture_output=True,
+                    text=True,
+                    timeout=30,
+                )
+                commit = (head.stdout or "").strip()
+            append_review(
+                repo_root,
+                "self_patch_auto_merged" if auto_merged else "self_patch_merge_failed",
+                path=target_path,
+                reason="tests_passed",
+                commit=commit,
+                auto_merged=auto_merged,
+            )
         return {
             "ok": True,
             "target_path": target_path,
@@ -762,6 +825,9 @@ def _apply_approved_patch(
             "tests_executed": tests_executed,
             "test_results": test_results,
             "all_tests_ok": all_tests_ok,
+            "rolled_back": False,
+            "auto_merged": auto_merged,
+            "commit": commit,
         }
     finally:
         try:

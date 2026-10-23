@@ -1,16 +1,16 @@
-"""P3 direction proof: predicted volatility can only TIGHTEN the field (b46).
+"""P3 direction proof: predicted volatility can lower the canonical field (b46).
 
 The sentinel enters Λ(t) as SAFETY = 1 − risk. Γ = 1 − |σ/μ| over reading
 VALUES, so a low-safety reading among otherwise-agreeing sources strictly
-lowers Γ — and every reconcile_gamma order-path gate takes the lower figure.
-This file proves each link in that chain with the REAL engine and the REAL
-field reader:
+lowers Γ. reconcile_gamma returns the caller's figure and does not impose
+that lower gamma as an order floor.
+This file proves each link with the REAL engine and the REAL field reader:
 
   1. LambdaEngine.step — Γ strictly lower with the low-SAFETY reading present;
   2. the mapper — no_data → None, never a neutral placeholder (Γ ignores
      confidence, so a substituted 0.5 would move the canonical field);
-  3. end-to-end — a canonical trace row carrying the tightened Γ makes
-     reconcile_gamma return it at the gate seam (min, never loosening).
+  3. end-to-end — a canonical trace row does not replace the local figure
+     at reconcile_gamma.
 """
 
 from __future__ import annotations
@@ -129,10 +129,8 @@ def test_map_ok_assessment_is_safety_inverted():
 # ── 3. end-to-end: tightened Γ reaches the gate seam ────────────────────────
 
 
-def test_reconcile_gamma_takes_the_tightened_canonical_gamma(isolated):
-    """A daemon trace row carrying the sentinel-tightened Γ must win over a
-    looser local coherence at reconcile_gamma — and must never LOOSEN a
-    tighter local one (min, both directions proven)."""
+def test_reconcile_gamma_keeps_the_local_figure(isolated):
+    """A canonical gamma does not replace the local figure, lower or higher."""
     from aureon.core.hnc_field import reconcile_gamma
 
     trace = isolated / "hnc_live_trace.jsonl"
@@ -152,8 +150,8 @@ def test_reconcile_gamma_takes_the_tightened_canonical_gamma(isolated):
     )
     trace.write_text(json.dumps(row) + "\n", encoding="utf-8")
 
-    assert reconcile_gamma(0.93) == pytest.approx(0.42), "canonical Γ must tighten"
-    assert reconcile_gamma(0.30) == pytest.approx(0.30), "canonical Γ must never loosen"
+    assert reconcile_gamma(0.93) == pytest.approx(0.93)
+    assert reconcile_gamma(0.30) == pytest.approx(0.30)
 
 
 def test_reconcile_gamma_passes_through_when_field_dark(isolated):

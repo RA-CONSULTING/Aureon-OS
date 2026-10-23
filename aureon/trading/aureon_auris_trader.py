@@ -235,9 +235,8 @@ class AurisEngine:
             coherence *= 1.1
 
         coherence = min(1.0, coherence)
-        # P5 Pattern C: reconcile with the canonical HNC field — the shared Γ
-        # can only TIGHTEN this trading coherence (b46 min); with no field
-        # flowing the node blend passes unchanged.
+        # The node blend is the trading coherence. reconcile_gamma returns
+        # that figure and does not substitute a canonical gamma.
         try:
             from aureon.core.hnc_field import reconcile_gamma
             coherence = reconcile_gamma(coherence)

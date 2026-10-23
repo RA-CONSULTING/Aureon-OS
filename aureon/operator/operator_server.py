@@ -16,7 +16,7 @@ Routes:
   GET  /healthz                liveness + active provider line-up
 
 Run:
-  python -m aureon.operator.operator_server          # binds 127.0.0.1:8080
+  python -m aureon.operator.operator_server          # binds 127.0.0.1:8790
   AUREON_OPERATOR_PORT=8899 python -m aureon.operator.operator_server
 
 Reaching it from a phone: this repo usually runs in a remote container, so open
@@ -33,6 +33,7 @@ import json
 import logging
 import os
 import struct
+import sys
 import threading
 from types import SimpleNamespace
 from typing import Any, Dict, Final
@@ -1549,7 +1550,7 @@ def build_boot_app():
 def main() -> None:
     logging.basicConfig(level=logging.INFO)
     _load_env_file()  # deploy-time .env (Ollama base URL / model / key, etc.)
-    port = int(os.environ.get("AUREON_OPERATOR_PORT", "8080"))
+    port = int(os.environ.get("AUREON_OPERATOR_PORT", "8790"))
     host = os.environ.get("AUREON_OPERATOR_HOST", "127.0.0.1")
     from aureon.operator.security import SecurityConfig
 
@@ -1570,11 +1571,29 @@ def main() -> None:
 
         threads = int(os.environ.get("AUREON_OPERATOR_THREADS", "8"))
         logger.info("Serving under waitress (%d threads)", threads)
-        serve(app, host=host, port=port, threads=threads)
+        try:
+            serve(app, host=host, port=port, threads=threads)
+        except OSError as exc:
+            print(
+                f"operator gateway failed to bind {host}:{port} ({exc}); "
+                "console expects http://127.0.0.1:8790/healthz",
+                file=sys.stderr,
+                flush=True,
+            )
+            raise SystemExit(1) from exc
     except ImportError:
         logger.warning("waitress not installed — falling back to the Flask dev server. "
                        "Install `.[operator]` for production serving.")
-        app.run(host=host, port=port, threaded=True)
+        try:
+            app.run(host=host, port=port, threaded=True)
+        except OSError as exc:
+            print(
+                f"operator gateway failed to bind {host}:{port} ({exc}); "
+                "console expects http://127.0.0.1:8790/healthz",
+                file=sys.stderr,
+                flush=True,
+            )
+            raise SystemExit(1) from exc
 
 
 if __name__ == "__main__":

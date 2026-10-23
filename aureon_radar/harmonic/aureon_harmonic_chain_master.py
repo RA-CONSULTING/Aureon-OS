@@ -206,11 +206,16 @@ except ImportError:
     HARMONIC_UNDERLAY_AVAILABLE = False
     HarmonicUnderlay = None
 
-# LAYER 0: Harmonic Wave Simulation
+# LAYER 0: Harmonic Wave Simulation — simulated solfeggio visual.
+# The import and the LOADED line run only when AUREON_SIMULATED_BOOT is on.
+WAVE_SIMULATION_AVAILABLE = False
+HarmonicWaveSimulation = None
 try:
-    from aureon.strategies.harmonic_wave_simulation import HarmonicWaveSimulator as HarmonicWaveSimulation
-    WAVE_SIMULATION_AVAILABLE = True
-    print("🌊📈 Layer 0: Harmonic Wave Simulation LOADED!")
+    from aureon.core.simulated_boot import simulated_boot_enabled as _wave_sim_enabled
+    if _wave_sim_enabled():
+        from aureon.strategies.harmonic_wave_simulation import HarmonicWaveSimulator as HarmonicWaveSimulation
+        WAVE_SIMULATION_AVAILABLE = True
+        print("🌊📈 Layer 0: Harmonic Wave Simulation LOADED!")
 except ImportError as e:
     WAVE_SIMULATION_AVAILABLE = False
     HarmonicWaveSimulation = None
@@ -540,17 +545,18 @@ class HarmonicChainMaster:
         else:
             print("   🌱 Layer 1: Seed/Fusion/Underlay - ⚠️ Not Available")
         
-        # Layer 0: Wave Simulation
-        if WAVE_SIMULATION_AVAILABLE:
+        # Layer 0: Wave Simulation — simulated solfeggio visual, off the default boot.
+        from aureon.core.simulated_boot import HARMONIC_WAVE_SIMULATION, simulated_boot_enabled, take_simulated
+        if take_simulated(HARMONIC_WAVE_SIMULATION, "solfeggio visualization, not a live price feed") and WAVE_SIMULATION_AVAILABLE:
             try:
                 self.wave_sim = HarmonicWaveSimulation()
                 self.state.layers[HarmonicLayer.WAVE_SIMULATION].active = True
                 self.state.layers[HarmonicLayer.WAVE_SIMULATION].instance = self.wave_sim
                 active_count += 1
-                print("   🌊 Layer 0: Wave Simulation - ✅ ACTIVE")
+                print("   🌊 Layer 0: Wave Simulation - ✅ ACTIVE (SIMULATED)")
             except Exception as e:
                 print(f"   🌊 Layer 0: Wave Simulation - ❌ Error: {e}")
-        else:
+        elif not WAVE_SIMULATION_AVAILABLE and simulated_boot_enabled():
             print("   🌊 Layer 0: Wave Simulation - ⚠️ Not Available")
         
         # Layer 8: HFT Harmonic Mycelium (Speed Layer)

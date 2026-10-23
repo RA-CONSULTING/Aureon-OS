@@ -139,6 +139,13 @@ export const NAV_SECTIONS: NavSection[] = [
         Component: lazy(() => import("./pages/CompanyPage")),
       },
       {
+        path: "/console/local",
+        label: "Local console",
+        description: "Dashboard and Command Center. Live mode follows exchange keys in .env. The launcher leaves port 8080 alone.",
+        icon: TerminalSquare,
+        Component: lazy(() => import("./pages/LauncherPage")),
+      },
+      {
         path: "/platform/console",
         label: "Legacy Console",
         description: "The original nine-tab operational console (superseded by the shell)",

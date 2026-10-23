@@ -6366,6 +6366,7 @@ class UnifiedMarketTrader:
                     offset_type="percent",
                 )
                 order_type = "trailing_stop"
+                self._note_order_attempt("place_trailing_stop_order", "kraken", symbol, "sell", result)
             elif hasattr(client, "place_take_profit_order"):
                 price = float(decision.get("current_price", 0.0) or 0.0)
                 if price <= 0:
@@ -6374,9 +6375,18 @@ class UnifiedMarketTrader:
                     symbol, "sell", quantity=quantity, take_profit_price=price
                 )
                 order_type = "take_profit"
+                self._note_order_attempt("place_take_profit_order", "kraken", symbol, "sell", result)
             else:
                 return {"ok": False, "reason": "kraken_deadman_order_api_missing"}
         except Exception as e:
+            self._note_order_attempt(
+                "kraken_deadman_order",
+                "kraken",
+                symbol,
+                "sell",
+                status="error",
+                reason="kraken_deadman_order_failed",
+            )
             return {"ok": False, "reason": "kraken_deadman_order_failed", "error": str(e)}
         receipt_state = self._submission_receipt_state(result)
         return {
@@ -6454,6 +6464,7 @@ class UnifiedMarketTrader:
                 )
             except Exception as e:
                 result = {"error": str(e)}
+            self._note_order_attempt("place_market_order", "kraken", symbol, "sell", result)
             receipt_state = self._submission_receipt_state(result)
             if receipt_state.get("status") == "pending_reconciliation" and hasattr(client, "get_order_status"):
                 order_id = receipt_state.get("order_id")
@@ -6578,6 +6589,34 @@ class UnifiedMarketTrader:
             "quote_usd": quote_value,
         }
 
+    def _note_order_attempt(
+        self,
+        operation: str,
+        exchange: str,
+        symbol: str,
+        side: str,
+        result: Any = None,
+        *,
+        status: str = "",
+        reason: str = "",
+    ) -> None:
+        """Append the attempt to the autonomy audit and the circulation bus."""
+
+        try:
+            from aureon.autonomous.autonomy_mode import note_order_attempt
+
+            note_order_attempt(
+                operation=operation,
+                exchange=exchange,
+                symbol=str(symbol or ""),
+                side=str(side or ""),
+                result=result,
+                status=status,
+                reason=reason,
+            )
+        except Exception:
+            return
+
     def _provider_submission_exception(
         self,
         *,
@@ -6587,6 +6626,14 @@ class UnifiedMarketTrader:
         side: str,
         error: Exception,
     ) -> Dict[str, Any]:
+        self._note_order_attempt(
+            "order",
+            venue,
+            symbol,
+            side,
+            status="pending_reconciliation",
+            reason="provider_order_submission_exception_requires_reconciliation",
+        )
         return {
             "ok": False,
             "submitted": False,
@@ -6700,6 +6747,7 @@ class UnifiedMarketTrader:
                 result = self._governed_client_for("kraken").place_market_order(
                     execution_symbol, side_norm, quote_qty=quote_qty
                 )
+                self._note_order_attempt("place_market_order", "kraken", execution_symbol, side_norm, result)
             except Exception as error:
                 return self._provider_submission_exception(
                     venue="kraken", market_type="spot", symbol=execution_symbol, side=side_norm, error=error
@@ -6724,6 +6772,7 @@ class UnifiedMarketTrader:
                 result = self._governed_client_for("kraken").place_market_order(
                     symbol, side_norm, quantity=quantity
                 )
+                self._note_order_attempt("place_market_order", "kraken", symbol, side_norm, result)
             except Exception as error:
                 return self._provider_submission_exception(
                     venue="kraken", market_type="spot", symbol=symbol, side=side_norm, error=error
@@ -6771,6 +6820,7 @@ class UnifiedMarketTrader:
                 result = self._governed_client_for("alpaca").place_market_order(
                     symbol, side_norm, quote_qty=quote_usd
                 )
+                self._note_order_attempt("place_market_order", "alpaca", symbol, side_norm, result)
             except Exception as error:
                 return self._provider_submission_exception(
                     venue="alpaca", market_type="spot", symbol=symbol, side=side_norm, error=error
@@ -6783,6 +6833,7 @@ class UnifiedMarketTrader:
                 result = self._governed_client_for("alpaca").place_market_order(
                     symbol, side_norm, quantity=quantity
                 )
+                self._note_order_attempt("place_market_order", "alpaca", symbol, side_norm, result)
             except Exception as error:
                 return self._provider_submission_exception(
                     venue="alpaca", market_type="spot", symbol=symbol, side=side_norm, error=error
@@ -6823,6 +6874,7 @@ class UnifiedMarketTrader:
                 result = self._governed_client_for("binance").place_market_order(
                     symbol, side_norm, quote_qty=quote_usd
                 )
+                self._note_order_attempt("place_market_order", "binance", symbol, side_norm, result)
             except Exception as error:
                 return self._provider_submission_exception(
                     venue="binance", market_type="spot", symbol=symbol, side=side_norm, error=error
@@ -6835,6 +6887,7 @@ class UnifiedMarketTrader:
                 result = self._governed_client_for("binance").place_market_order(
                     symbol, side_norm, quantity=quantity
                 )
+                self._note_order_attempt("place_market_order", "binance", symbol, side_norm, result)
             except Exception as error:
                 return self._provider_submission_exception(
                     venue="binance", market_type="spot", symbol=symbol, side=side_norm, error=error
@@ -6908,6 +6961,7 @@ class UnifiedMarketTrader:
                 quantity=quantity,
                 leverage=leverage,
             )
+            self._note_order_attempt("place_margin_order", "kraken", symbol, side_norm, result)
         except Exception as error:
             return self._provider_submission_exception(
                 venue="kraken", market_type="margin", symbol=symbol, side=side_norm, error=error
@@ -6959,6 +7013,7 @@ class UnifiedMarketTrader:
                 quantity=quantity,
                 leverage=BINANCE_MARGIN_LEVERAGE,
             )
+            self._note_order_attempt("place_margin_order", "binance", symbol, side_norm, result)
         except Exception as error:
             return self._provider_submission_exception(
                 venue="binance", market_type="margin", symbol=symbol, side=side_norm, error=error

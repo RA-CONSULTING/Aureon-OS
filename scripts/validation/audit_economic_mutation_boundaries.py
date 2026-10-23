@@ -1,16 +1,31 @@
 #!/usr/bin/env python3
 """Static, fail-closed census of provider economic mutation call sites.
 
-The auditor reads source text only. It never imports repository modules,
-opens sockets, reads environment variables, or invokes a provider client.
-Parsed source scope is Python, TypeScript/TSX, and executable JavaScript
-(JS/MJS/CJS). Shell, PowerShell, and CMD are not parsed; a bounded repository
-token audit found no provider order/mutation candidates in those languages.
+The auditor reads source text only. Discovery never imports repository
+modules, opens sockets, or invokes a provider client. Parsed source scope
+is Python, TypeScript/TSX, and executable JavaScript (JS/MJS/CJS). Shell,
+PowerShell, and CMD are not parsed; a bounded repository token audit found
+no provider order/mutation candidates in those languages.
+
+Python fingerprints are taken from the source slice of each call. They do
+not use ast.unparse, so quote and f-string printing differences between
+CPython versions do not move a count.
 
 Default CLI use is a certification gate: it exits non-zero while any
 live-capable unguarded blocker exists. The --report-only option is deliberately
 available for producing the truthful inventory while migration is incomplete;
 inventory drift still fails in either mode.
+
+Every live-capable-unguarded-blocker entry is an inventory classification,
+not a guard. In the public default, guarded mode, these entries are safe
+only while live trading is off. Each one must get a structural guard before
+live trading can ever be armed in that mode. The live-arming gate reads
+AUREON_LIVE_TRADING, AUREON_FUSION_ARM_LIVE, and
+aureon_fusion/state/capital_release.flag, and fails closed while any
+unguarded blocker remains. AUREON_AUTONOMY_MODE=full is the owner's local
+acceptance of that inventory, so the gate stays quiet there. The gate does
+not import repository modules. The kill switch is separate and still stops
+dispatch.
 """
 
 from __future__ import annotations
@@ -28,6 +43,14 @@ from typing import Any, Iterable
 
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_ALLOWLIST = Path(__file__).with_name("economic_mutation_allowlist.json")
+ALLOWLIST_WARNING = (
+    "Every live-capable-unguarded-blocker entry is an inventory classification, "
+    "not a guard. These entries are safe only while live trading is off. "
+    "Each one must get a structural guard before live trading can ever be armed."
+)
+LIVE_ARMING_REFUSAL = "unguarded_economic_mutations_block_live_trading"
+_LIVE_ARMING_ENV = ("AUREON_LIVE_TRADING", "AUREON_FUSION_ARM_LIVE")
+_TRUTHY_ENV = {"1", "true", "yes", "on"}
 SOURCE_SUFFIXES = {".cjs", ".js", ".mjs", ".py", ".ts", ".tsx"}
 SKIP_PARTS = {
     ".git",
@@ -330,6 +353,44 @@ def source_paths(root: Path = ROOT) -> list[Path]:
 
 def _canonical_text(value: str) -> str:
     return re.sub(r"\s+", " ", value).strip()
+
+
+def _call_source_text(source: str, node: ast.AST) -> str:
+    """Call text from the file, not from ``ast.unparse``.
+
+    CPython 3.12 and 3.13 print f-strings differently (quote style and
+    escaped inner quotes). A fingerprint of that printer moves between
+    interpreters even when the file did not. The source slice is the same
+    text on both, so the census counts stay put.
+    """
+
+    segment = ast.get_source_segment(source, node)
+    if segment is not None and segment.strip():
+        return _canonical_text(segment)
+    lineno = getattr(node, "lineno", None)
+    end_lineno = getattr(node, "end_lineno", None)
+    col = getattr(node, "col_offset", None)
+    end_col = getattr(node, "end_col_offset", None)
+    if (
+        isinstance(lineno, int)
+        and isinstance(end_lineno, int)
+        and isinstance(col, int)
+        and isinstance(end_col, int)
+        and lineno >= 1
+        and end_lineno >= lineno
+    ):
+        lines = source.splitlines()
+        selected = lines[lineno - 1 : end_lineno]
+        if selected:
+            if len(selected) == 1:
+                sliced = selected[0][col:end_col]
+            else:
+                sliced = "\n".join(
+                    [selected[0][col:], *selected[1:-1], selected[-1][:end_col]]
+                )
+            if sliced.strip():
+                return _canonical_text(sliced)
+    return _canonical_text(f"<unlocated:{type(node).__name__}:{lineno}:{col}>")
 
 
 def _fingerprint(
@@ -1108,7 +1169,7 @@ def _python_findings(path: Path, source: str | None = None) -> tuple[list[Findin
     findings: list[Finding] = []
     duplicate_counts: dict[str, int] = {}
     for node, _callee, operation, transport, scope in visitor.raw:
-        canonical = _canonical_text(ast.unparse(node))
+        canonical = _call_source_text(source, node)
         base = json.dumps(
             [rel_path, operation.provider, operation.operation, transport, scope, canonical],
             separators=(",", ":"),
@@ -1488,10 +1549,74 @@ def _migration_batches(blockers: list[dict[str, Any]]) -> list[dict[str, Any]]:
     ]
 
 
+def live_trading_is_armed(root: Path | None = None) -> bool:
+    """True when this process has asked to arm live trading.
+
+    Armed means ``AUREON_LIVE_TRADING`` or ``AUREON_FUSION_ARM_LIVE`` is a
+    truthy value, or ``aureon_fusion/state/capital_release.flag`` exists.
+    This reads those three surfaces directly and does not import the fleet.
+    """
+
+    base = ROOT if root is None else root
+    for name in _LIVE_ARMING_ENV:
+        if os.environ.get(name, "").strip().lower() in _TRUTHY_ENV:
+            return True
+    return (base / "aureon_fusion" / "state" / "capital_release.flag").is_file()
+
+
+def autonomy_mode_is_full(root: Path | None = None) -> bool:
+    """True when the owner opened full autonomy. This does not import the fleet.
+
+    The environment wins. Otherwise ``state/autonomy_mode.json`` in the given
+    root may say ``{"mode": "full"}``. The public default is guarded.
+    """
+
+    raw = os.environ.get("AUREON_AUTONOMY_MODE", "").strip().lower()
+    if raw == "full":
+        return True
+    if raw:
+        return False
+    base = ROOT if root is None else root
+    path = base / "state" / "autonomy_mode.json"
+    if not path.is_file():
+        return False
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError, UnicodeError):
+        return False
+    return isinstance(payload, dict) and str(payload.get("mode", "")).strip().lower() == "full"
+
+
+def live_arming_refusal(
+    report: dict[str, Any],
+    root: Path | None = None,
+) -> str | None:
+    """Refusal while live trading is armed and an unguarded mutation remains.
+
+    Unguarded means a classified live-capable blocker, or a discovered call
+    the allowlist does not name. A clean inventory with zero blockers does
+    not trip this gate. Full autonomy mode is the owner's explicit acceptance
+    of that inventory, so the refusal stays quiet there. Guarded mode still
+    refuses. The kill switch is a separate off switch and is not this gate.
+    """
+
+    if autonomy_mode_is_full(root):
+        return None
+    if not live_trading_is_armed(root):
+        return None
+    blockers = int(report.get("blocker_count") or 0)
+    unallowlisted = report.get("unallowlisted") or []
+    if blockers or unallowlisted:
+        return LIVE_ARMING_REFUSAL
+    return None
+
+
 def load_allowlist(path: Path = DEFAULT_ALLOWLIST) -> dict[tuple[str, str], dict[str, str]]:
     payload = json.loads(path.read_text(encoding="utf-8"))
     if payload.get("schema") != "aureon.economic-mutation-allowlist.v1":
         raise ValueError("unexpected allowlist schema")
+    if payload.get("warning") != ALLOWLIST_WARNING:
+        raise ValueError("allowlist is missing the live-trading-off warning")
     entries: dict[tuple[str, str], dict[str, str]] = {}
     for raw in payload.get("entries", []):
         required = {"file", "fingerprint", "classification", "rationale", "owner"}
@@ -1595,6 +1720,9 @@ def main(argv: list[str] | None = None) -> int:
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         print(json.dumps({"schema": "aureon.economic-mutation-census.v1", "error": str(exc)}))
         return 2
+    refusal = live_arming_refusal(result)
+    if refusal:
+        result = {**result, "live_arming_refusal": refusal}
     print(
         json.dumps(
             result,
@@ -1603,7 +1731,7 @@ def main(argv: list[str] | None = None) -> int:
             separators=(",", ":") if args.compact else None,
         )
     )
-    if not result["inventory_aligned"]:
+    if refusal or not result["inventory_aligned"]:
         return 2
     if result["blocker_count"] and not args.report_only:
         return 1

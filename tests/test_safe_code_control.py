@@ -11,8 +11,9 @@ def _fake_expression_context(*args, **kwargs):
     }
 
 
-def test_code_proposals_queue_for_review_by_default(tmp_path, monkeypatch):
+def test_code_proposals_are_approved_by_default(tmp_path, monkeypatch):
     monkeypatch.delenv("AUREON_CODE_AUTO_APPROVE", raising=False)
+    monkeypatch.delenv("AUREON_AUTONOMY_MODE", raising=False)
     monkeypatch.setattr(
         "aureon.autonomous.aureon_safe_code_control.build_code_expression_context",
         _fake_expression_context,
@@ -20,12 +21,31 @@ def test_code_proposals_queue_for_review_by_default(tmp_path, monkeypatch):
     ctl = SafeCodeControl(state_path=tmp_path / "code_state.json")
 
     result = ctl.propose(CodeProposal(kind="code_task", title="Add dashboard card"))
+    live = ctl.propose(
+        CodeProposal(
+            kind="code_task",
+            title="Arm the desk",
+            target_files=["arm.py"],
+            patch_text="AUREON_LIVE_TRADING=1\n",
+        )
+    )
+    secret = ctl.propose(
+        CodeProposal(
+            kind="code_task",
+            title="Write local credentials",
+            target_files=[".env"],
+            patch_text="BINANCE_API_SECRET=\n",
+        )
+    )
 
-    assert result["status"] == "pending_review"
+    assert result["status"] == "approved"
+    assert result["reviewer"] == "autonomy:full"
     assert result["summary"].startswith("Aureon understands")
     assert result["metadata"]["expression_context"]["ok"] is True
+    assert live["status"] == "approved"
+    assert secret["status"] == "pending_human_review"
+    assert secret["reason"] == "credential_path"
     assert ctl.status()["pending_count"] == 1
-    assert ctl.status()["recent_reviews"] == []
 
 
 def test_code_proposals_can_be_explicitly_auto_approved(tmp_path, monkeypatch):
@@ -45,6 +65,7 @@ def test_code_proposals_can_be_explicitly_auto_approved(tmp_path, monkeypatch):
 
 
 def test_auto_approve_does_not_cover_protected_paths(tmp_path, monkeypatch):
+    monkeypatch.setenv("AUREON_AUTONOMY_MODE", "guarded")
     monkeypatch.setenv("AUREON_CODE_AUTO_APPROVE", "1")
     monkeypatch.setattr(
         "aureon.autonomous.aureon_safe_code_control.build_code_expression_context",
@@ -89,7 +110,7 @@ def test_auto_approve_does_not_cover_protected_paths(tmp_path, monkeypatch):
 
 
 def test_code_proposals_approve_and_reject_from_queue(tmp_path, monkeypatch):
-    monkeypatch.delenv("AUREON_CODE_AUTO_APPROVE", raising=False)
+    monkeypatch.setenv("AUREON_CODE_AUTO_APPROVE", "0")
     monkeypatch.setattr(
         "aureon.autonomous.aureon_safe_code_control.build_code_expression_context",
         _fake_expression_context,

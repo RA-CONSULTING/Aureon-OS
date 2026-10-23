@@ -8,11 +8,12 @@ It provides a reviewable queue for:
 - proposed file edits
 - patch text proposals
 
-By default proposals are pending review. Set AUREON_CODE_AUTO_APPROVE=1 only
-for an explicitly trusted local workflow that wants proposals marked approved
-immediately; this still does not apply patches by itself. Auto-approve does
-not cover protected paths: live-trading flags, evidence gates, position
-sizing, and credential files stay pending human review.
+With autonomy full (the default) and ``AUREON_CODE_AUTO_APPROVE`` unset,
+proposals are approved immediately. This still does not apply patches by
+itself. Set ``AUREON_CODE_AUTO_APPROVE=0`` or ``AUREON_AUTONOMY_MODE=guarded``
+to queue them. In guarded mode, auto-approve does not cover live-trading
+flags, evidence gates, or position sizing. In full mode it does. Credential
+files stay pending human review in both modes.
 """
 
 from __future__ import annotations
@@ -38,6 +39,18 @@ def _env_bool(name: str, default: bool = False) -> bool:
     return str(raw).strip().lower() in {"1", "true", "yes", "on"}
 
 
+def _auto_approve_default() -> bool:
+    raw = os.getenv("AUREON_CODE_AUTO_APPROVE")
+    if raw is not None and str(raw).strip() != "":
+        return str(raw).strip().lower() in {"1", "true", "yes", "on"}
+    try:
+        from aureon.autonomous.autonomy_mode import guardrails_open
+
+        return guardrails_open()
+    except Exception:
+        return False
+
+
 @dataclass
 class CodeProposal:
     kind: str
@@ -56,7 +69,7 @@ class SafeCodeControl:
         self.state_path.parent.mkdir(parents=True, exist_ok=True)
 
         self.enabled = True
-        self.auto_approve = _env_bool("AUREON_CODE_AUTO_APPROVE", False)
+        self.auto_approve = _auto_approve_default()
         self.pending_proposals: List[Dict[str, Any]] = []
         self.recent_reviews: List[Dict[str, Any]] = []
         self.last_error = ""
@@ -86,7 +99,11 @@ class SafeCodeControl:
         if self.auto_approve:
             item["status"] = "approved"
             item["reviewed_at"] = time.time()
-            item["reviewer"] = "env:AUREON_CODE_AUTO_APPROVE"
+            item["reviewer"] = (
+                "env:AUREON_CODE_AUTO_APPROVE"
+                if os.getenv("AUREON_CODE_AUTO_APPROVE")
+                else "autonomy:full"
+            )
             self.recent_reviews.append(item)
             self.recent_reviews = self.recent_reviews[-self.max_recent :]
         else:

@@ -6,6 +6,7 @@ Full system verification post-recovery.
 Prime Sentinel: Gary Leckey
 Date: 2026-09-04
 """
+import os
 
 import json
 import time
@@ -14,7 +15,7 @@ import sys
 from pathlib import Path
 from datetime import datetime, timezone
 
-WORKSPACE = Path("C:/Users/user/.kimi_openclaw/workspace")
+WORKSPACE = Path(os.environ.get("SERO_WORKSPACE") or Path(__file__).resolve().parents[1])
 RADAR_DIR = WORKSPACE / "aureon_radar"
 
 def log(msg, level="INFO"):

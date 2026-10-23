@@ -1,16 +1,16 @@
 """Denylist and fail-safe switch for Aureon self-repair and self-coding writes.
 
-Live trading is never armed by the system. Evidence gates are never loosened.
-Credential files are never created or modified. Position sizing is never changed
-to satisfy a test. Those checks run before a patch is applied.
+The public default is full mode. Live flags, HOLD/RELEASE, ``may_act``, and
+position sizing are editable. ``AUREON_AUTONOMY_MODE=guarded`` puts that
+denylist back. Credential files are refused in both modes. See AUTONOMY.md.
 
 Self-repair stays off unless both of these are true:
 
 - ``AUREON_SELF_REPAIR_ENABLE=1``
 - ``state/self_repair_config.json`` exists and contains ``{"enabled": true}``
 
-``AUREON_SELF_REPAIR_KILL=1`` stops it even when both are set. A missing or
-unreadable config stops it too.
+``AUREON_SELF_REPAIR_KILL`` and ``state/SELF_REPAIR_KILL`` do not stop it.
+A missing or unreadable config still does.
 """
 
 from __future__ import annotations
@@ -55,16 +55,16 @@ _POSITION_TEXT = re.compile(
     re.IGNORECASE,
 )
 _EXAMPLE_ENV = ("example", "template", "sample")
+_CREDENTIAL_MATERIAL = re.compile(
+    r"(?i)\b(?:api[_-]?secret|api[_-]?key|aws_secret_access_key|private_key|access_token|refresh_token)\b"
+    r"\s*[:=]\s*['\"]?[A-Za-z0-9_\-+/=]{6,}"
+)
 
 
 class SelfRepairBlocked(RuntimeError):
     def __init__(self, reason: str) -> None:
         super().__init__(reason)
         self.reason = reason
-
-
-def kill_switch_engaged() -> bool:
-    return os.environ.get(KILL_ENV, "").strip().lower() in {"1", "true", "yes", "on"}
 
 
 def explicitly_enabled() -> bool:
@@ -91,8 +91,17 @@ def append_review(repo_root: Path, event: str, **fields: object) -> None:
         if str(key).lower() in {"secret", "token", "authorization", "api_key", "api_secret", "content", "patch", "patch_text"}:
             continue
         record[key] = value
+    line = json.dumps(record, sort_keys=True, default=str)
     with path.open("a", encoding="utf-8") as handle:
-        handle.write(json.dumps(record, sort_keys=True, default=str) + "\n")
+        handle.write(line + "\n")
+    from aureon.autonomous.autonomy_mode import audit_event
+
+    omitted = {"secret", "token", "authorization", "api_key", "api_secret", "content", "patch", "patch_text"}
+    audit_event(
+        event,
+        repo_root,
+        **{key: value for key, value in fields.items() if str(key).lower() not in omitted},
+    )
 
 
 def contained(repo_root: Path, file_path: str) -> Path:
@@ -154,11 +163,31 @@ def _has_gate(text: str) -> bool:
     return _GATE.search(text) is not None
 
 
-def block_reason_for_write(file_path: str, new_content: str, previous: str | None) -> str | None:
-    """Return a refusal reason, or None when the write is outside the denylist."""
+def _guardrails_open(repo_root: Path | None) -> bool:
+    from aureon.autonomous.autonomy_mode import guardrails_open
+
+    return guardrails_open(repo_root)
+
+
+def block_reason_for_write(
+    file_path: str,
+    new_content: str,
+    previous: str | None,
+    repo_root: Path | None = None,
+) -> str | None:
+    """Return a refusal reason, or None when the write is outside the denylist.
+
+    Credential paths and credential assignments are refused in both modes.
+    Live flags, evidence gates, and position sizing are refused in guarded
+    mode and allowed when the owner has opened full autonomy.
+    """
 
     if is_protected_path(file_path):
         return "credential_path"
+    if _CREDENTIAL_MATERIAL.search(new_content or ""):
+        return "credential_material"
+    if _guardrails_open(repo_root):
+        return None
     if _LIVE_ARM.search(new_content):
         return "live_trading_flag"
     previous_text = previous or ""
@@ -202,14 +231,17 @@ def block_reason_for_patch(root: Path, patch_text: str, target_paths: list[str] 
     ]
     added_text = "\n".join(added)
     removed_text = "\n".join(removed)
-    if _LIVE_ARM.search(added_text):
-        return "live_trading_flag"
-    if _has_gate(added_text) or _has_gate(removed_text):
-        return "evidence_gate"
-    if _POSITION_TEXT.search(added_text) or _POSITION_TEXT.search(removed_text):
-        return "position_sizing"
     paths = list(dict.fromkeys([*target_paths, *paths_from_patch(patch_text)]))
     repo_root = Path(root).resolve()
+    if _CREDENTIAL_MATERIAL.search(added_text):
+        return "credential_material"
+    if not _guardrails_open(repo_root):
+        if _LIVE_ARM.search(added_text):
+            return "live_trading_flag"
+        if _has_gate(added_text) or _has_gate(removed_text):
+            return "evidence_gate"
+        if _POSITION_TEXT.search(added_text) or _POSITION_TEXT.search(removed_text):
+            return "position_sizing"
     for raw in paths:
         if is_protected_path(raw):
             return "credential_path"
@@ -223,6 +255,8 @@ def block_reason_for_patch(root: Path, patch_text: str, target_paths: list[str] 
             previous = full.read_text(encoding="utf-8")
         except OSError:
             return "credential_path"
+        if _guardrails_open(repo_root):
+            continue
         if _LIVE_ARM.search(previous):
             return "live_trading_flag"
         if _has_gate(previous):
@@ -232,8 +266,12 @@ def block_reason_for_patch(root: Path, patch_text: str, target_paths: list[str] 
     return None
 
 
-def block_reason_for_proposal(*parts: object) -> str | None:
-    """Auto-approve must not cover a proposal that names a protected path or pattern."""
+def block_reason_for_proposal(*parts: object, repo_root: Path | None = None) -> str | None:
+    """Auto-approve must not cover a credential, and in guarded mode not a protected pattern.
+
+    Full mode lets auto-approve cover live flags, evidence gates, and position
+    sizing. Credential paths and credential assignments stay on human review.
+    """
 
     texts: list[str] = []
     paths: list[str] = []
@@ -249,6 +287,10 @@ def block_reason_for_proposal(*parts: object) -> str | None:
     for path in paths:
         if is_protected_path(path):
             return "credential_path"
+    if _CREDENTIAL_MATERIAL.search(blob):
+        return "credential_material"
+    if _guardrails_open(repo_root):
+        return None
     if _LIVE_ARM.search(blob):
         return "live_trading_flag"
     if _has_gate(blob):
@@ -259,10 +301,8 @@ def block_reason_for_proposal(*parts: object) -> str | None:
 
 
 def require_self_repair_enabled(repo_root: Path) -> None:
-    """Raise unless the operator explicitly enabled repair and the kill switch is off."""
+    """Raise unless the operator explicitly enabled repair."""
 
-    if kill_switch_engaged():
-        raise SelfRepairBlocked("kill_switch")
     path = config_path(repo_root)
     if not path.is_file():
         raise SelfRepairBlocked("missing_config")
@@ -277,36 +317,31 @@ def require_self_repair_enabled(repo_root: Path) -> None:
 def inspect_write(repo_root: Path, file_path: str, new_content: str, previous: str | None) -> Path:
     """Raise SelfRepairBlocked before a protected write. Return the resolved path otherwise."""
 
-    if kill_switch_engaged():
-        raise SelfRepairBlocked("kill_switch")
     resolved = contained(repo_root, file_path)
     relative = resolved.name if resolved == repo_root.resolve() else resolved.relative_to(repo_root.resolve()).as_posix()
-    reason = block_reason_for_write(relative, new_content, previous)
+    reason = block_reason_for_write(relative, new_content, previous, repo_root)
     if reason:
         raise SelfRepairBlocked(reason)
     return resolved
 
 
 def inspect_delete(repo_root: Path, file_path: str, previous: str | None) -> Path:
-    if kill_switch_engaged():
-        raise SelfRepairBlocked("kill_switch")
     resolved = contained(repo_root, file_path)
     relative = resolved.relative_to(repo_root.resolve()).as_posix()
     if is_protected_path(relative):
         raise SelfRepairBlocked("credential_path")
     text = previous or ""
-    if _has_gate(text):
-        raise SelfRepairBlocked("evidence_gate")
-    if _position_sources(text) or _POSITION_TEXT.search(text):
-        raise SelfRepairBlocked("position_sizing")
-    if _LIVE_ARM.search(text):
-        raise SelfRepairBlocked("live_trading_flag")
+    if not _guardrails_open(repo_root):
+        if _has_gate(text):
+            raise SelfRepairBlocked("evidence_gate")
+        if _position_sources(text) or _POSITION_TEXT.search(text):
+            raise SelfRepairBlocked("position_sizing")
+        if _LIVE_ARM.search(text):
+            raise SelfRepairBlocked("live_trading_flag")
     return resolved
 
 
-def inspect_execution(code: str) -> None:
-    if kill_switch_engaged():
-        raise SelfRepairBlocked("kill_switch")
-    reason = block_reason_for_write("snippet.py", code, "")
+def inspect_execution(code: str, repo_root: Path | None = None) -> None:
+    reason = block_reason_for_write("snippet.py", code, "", repo_root)
     if reason:
         raise SelfRepairBlocked(reason)

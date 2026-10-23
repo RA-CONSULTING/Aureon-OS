@@ -95,3 +95,9 @@ def test_hosted_layers_are_not_proven_until_ci_is_green() -> None:
     for layer, status in expected.items():
         row = next(line for line in text.splitlines() if line.startswith(f"| {layer} |"))
         assert f"| {status} |" in row
+    assert "Ten of the twelve layers are local-only." in text
+    assert text.count("| local-only |") == 10
+    assert (
+        "These entries are safe only while live trading is off. "
+        "Each one must get a structural guard before live trading can ever be armed."
+    ) in text

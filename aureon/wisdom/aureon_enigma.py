@@ -418,9 +418,8 @@ class RotorGamma(EnigmaRotor):
 
     @staticmethod
     def _reconcile(coherence: float) -> float:
-        """P5 Pattern C: the enigma's 9-node sweep is reconciled with the
-        canonical HNC field — the shared Γ can only TIGHTEN it (b46 min);
-        with no field flowing the node sweep passes unchanged."""
+        """The node sweep is the enigma coherence. reconcile_gamma returns
+        that figure and does not substitute a canonical gamma."""
         try:
             from aureon.core.hnc_field import reconcile_gamma
             return reconcile_gamma(coherence)

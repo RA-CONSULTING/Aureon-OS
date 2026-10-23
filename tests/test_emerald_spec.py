@@ -717,8 +717,11 @@ class TestEarthEPASSimulation(unittest.TestCase):
                 self.assertIn(k, a, f'Missing key: {k}')
 
     def test_positive_negative_sum_equals_total(self):
+        # An aspect exactly at its orb has tightness 0, so the rounded score is
+        # 0. It is still active, and it is neither supportive nor tense.
+        neutral = sum(1 for aspect in self.sim.active_aspects if aspect["score"] == 0)
         self.assertEqual(
-            self.sim.positive_aspects + self.sim.negative_aspects,
+            self.sim.positive_aspects + self.sim.negative_aspects + neutral,
             self.sim.total_aspects,
         )
 

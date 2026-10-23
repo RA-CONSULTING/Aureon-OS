@@ -36,7 +36,8 @@ def service_environment(organ: str, env: dict | None = None, required: bool = Fa
         base.setdefault("AUREON_FRONTEND_ROOT", str(DEFAULT_FRONTEND))
     elif organ == "operator_gateway":
         base.setdefault("AUREON_OPERATOR_BIND", "127.0.0.1")
-        base.setdefault("AUREON_OPERATOR_PORT", "8080")
+        base.setdefault("AUREON_OPERATOR_HOST", "127.0.0.1")
+        base.setdefault("AUREON_OPERATOR_PORT", "8790")
     if required and base.get("AUREON_HTTP_PROFILE") != "local":
         raise RuntimeError("local HTTP profile missing")
     return base

@@ -31,6 +31,7 @@ def _repo(tmp_path: Path) -> Path:
 
 
 def test_auto_approve_cannot_apply_a_protected_patch(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("AUREON_AUTONOMY_MODE", "guarded")
     monkeypatch.setenv("AUREON_CODE_AUTO_APPROVE", "1")
     root = _repo(tmp_path)
     gate_before = (root / "gate.py").read_text(encoding="utf-8")

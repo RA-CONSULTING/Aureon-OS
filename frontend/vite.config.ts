@@ -9,7 +9,9 @@ export default defineConfig(({ mode }) => {
   // `/api/...` paths (see src/services/apiClient.ts). In dev the operator runs
   // as a separate process, so proxy `/api` to it. Target + optional bearer are
   // env-configurable so the client code never carries a token.
-  const operatorUrl = process.env.VITE_OPERATOR_URL || "http://localhost:8080";
+  const operatorUrl = process.env.VITE_OPERATOR_URL
+    || process.env.AUREON_OPERATOR_URL
+    || "http://127.0.0.1:8790";
   const operatorToken =
     process.env.VITE_OPERATOR_TOKEN || process.env.AUREON_OPERATOR_API_KEY || "";
   const apiProxy: ProxyOptions = {
@@ -28,8 +30,8 @@ export default defineConfig(({ mode }) => {
   return {
   server: {
     host: "0.0.0.0",
-    // Dev server runs on 8088 so the operator can keep its default 8080 (the
-    // proxy target below). Playwright uses 8081; nothing else pins 8080 here.
+    // Dev server runs on 8088. The operator gateway the console calls is 8790.
+    // Playwright uses 8081. This config does not bind 8080.
     port: 8088,
     proxy: {
       "/api": apiProxy,

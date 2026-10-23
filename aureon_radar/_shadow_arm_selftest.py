@@ -8,11 +8,12 @@ Verifies:
  4. Every venue call individually exception-proof.
  5. mark_all called once per cycle and exception-proof.
 """
+import os
 import sys
 import types
 import logging
 
-sys.path.insert(0, r"C:/Users/user/.kimi_openclaw/workspace/aureon_radar")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import unified_hub  # noqa: E402  (top-level guards run; fine in this subprocess)
 from unified_hub import ShadowArm, UnifiedSignal
 

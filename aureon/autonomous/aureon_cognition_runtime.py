@@ -39,11 +39,8 @@ class MinerModule:
 
     def compute_signal(self, symbol: str, market: Json) -> Optional[Json]:
         momentum = float(market.get("momentum", 0.0))
-        # P5: the bare per-snapshot ``gamma`` was an audit-invisible silo — a
-        # private coherence number gating a live signal. It is now named
-        # coherence_gamma and reconciled with the canonical HNC field: the
-        # shared Γ can only TIGHTEN this gate (b46 min), and with no field
-        # flowing the snapshot's own figure passes unchanged.
+        # The snapshot's own coherence gates the signal. reconcile_gamma
+        # returns that figure and does not substitute a canonical gamma.
         coherence_gamma = float(market.get("coherence_gamma", market.get("gamma", 0.0)))
         try:
             from aureon.core.hnc_field import reconcile_gamma

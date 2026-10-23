@@ -18,8 +18,8 @@ from typing import Any, Dict, Iterable, List, Optional
 REPO_ROOT = Path(__file__).resolve().parents[2]
 IMPORTS_DIR = REPO_ROOT / "imports"
 SOURCE_ZIP_CANDIDATES = [
-    Path(r"C:\Users\user\aureon-trading\AUREON MURGE REQUIRED.zip"),
     REPO_ROOT / "AUREON MURGE REQUIRED.zip",
+    REPO_ROOT / "imports" / "AUREON MURGE REQUIRED.zip",
 ]
 
 OUTPUT_FILES = [

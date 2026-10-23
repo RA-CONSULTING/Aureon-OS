@@ -19,7 +19,8 @@ def check_state_file():
     print("📊 MARGIN TRADING STATE FILE CHECK")
     print("="*80)
 
-    state_file = Path('/home/user/aureon-trading/kraken_margin_army_state.json')
+    repo = Path(__file__).resolve().parents[2]
+    state_file = repo / "kraken_margin_army_state.json"
 
     if not state_file.exists():
         print("❌ State file not found!")
@@ -147,7 +148,12 @@ def check_orca_integration():
     print("="*80)
 
     try:
-        orca_file = Path('/home/user/aureon-trading/orca_complete_kill_cycle.py')
+        repo = Path(__file__).resolve().parents[2]
+        orca_candidates = (
+            repo / "aureon_radar" / "bots" / "orca_complete_kill_cycle.py",
+            repo / "aureon" / "bots" / "orca_complete_kill_cycle.py",
+        )
+        orca_file = next((path for path in orca_candidates if path.is_file()), orca_candidates[0])
         if not orca_file.exists():
             print("❌ Orca file not found")
             return False

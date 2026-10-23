@@ -5249,8 +5249,8 @@ def b64_core_field_contract(tmp_root: Path) -> Dict[str, Any]:
     """The foundational wheel itself, pinned: aureon/core's canonical field +
     thought bus contract that every other benchmark rides on. A dark field is
     HONEST (unavailable, and reconcile_gamma passes the local figure through
-    unchanged — dark restricts nothing, invents nothing); a live field can
-    only TIGHTEN (min(local, Γ), never a loosening); freshness fails CLOSED
+    unchanged — dark restricts nothing, invents nothing); a live field does
+    not replace that local figure with a lower canonical gamma; freshness fails CLOSED
     (a stale or unstamped trace row is refused, never presented as the live
     organism); a published sub-field round-trips to the whole-body view; and
     the bus delivers thoughts to exact and wildcard subscribers and remembers
@@ -5276,7 +5276,7 @@ def b64_core_field_contract(tmp_root: Path) -> Dict[str, Any]:
         dark = read_canonical_field(dark_bus)
         dark_gamma = reconcile_gamma(0.7, dark_bus)
 
-        # 2) live field tightens only: min(local, Γ), never loosened
+        # 2) live field does not impose a gamma floor on the local figure
         live_bus = ThoughtBus()
         live_bus.publish(Thought(source="b64", topic="symbolic.life.pulse",
                                  payload={"symbolic_life_score": 0.5,
@@ -5316,8 +5316,8 @@ def b64_core_field_contract(tmp_root: Path) -> Dict[str, Any]:
             "dark_field_is_honest_and_restricts_nothing": (
                 dark.available is False and dark.coherence_gamma is None
                 and dark_gamma == 0.7),
-            "live_field_tightens_only": (
-                tightened == 0.3 and not_loosened == 0.2),
+            "live_field_does_not_impose_a_gamma_floor": (
+                tightened == 0.7 and not_loosened == 0.2),
             "freshness_fails_closed": (
                 stale.available is False
                 and fresh.available is True
@@ -5346,9 +5346,8 @@ def b64_core_field_contract(tmp_root: Path) -> Dict[str, Any]:
             },
             "evidence": (
                 "a dark field read honest-unavailable and reconcile_gamma "
-                "passed 0.7 through unchanged; a live Γ=0.3 pulse tightened "
-                "local 0.7 to 0.3 and left local 0.2 untouched (min, never "
-                "loosened); a stale trace row was refused while a fresh one "
+                "passed 0.7 through unchanged; a live Γ=0.3 pulse left local "
+                "0.7 and local 0.2 untouched; a stale trace row was refused while a fresh one "
                 "served Γ=0.9 (freshness fails closed); a published sub-field "
                 "round-tripped into the whole-body view with its measured "
                 "values; the bus delivered one thought to exact + wildcard "

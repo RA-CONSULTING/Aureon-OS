@@ -36,11 +36,14 @@ PATTERN_PARTS = {
     'time_mirror': 11,       # 1+2+2+6 = 11 → 11:11 coherence lock
 }
 
-# Auris Node Mapping (from the pattern)
+# Auris node mapping. Tiger and Clownfish follow the canonical table
+# (Tiger 220 Hz, Clownfish 963 Hz). 741 and 639 stay quarantined drift on
+# the trading CONFIG, not on this live node map. Trading loads this module
+# through aureon.core.aureon_enhancements.
 NODE_MAPPING = {
     1: {'node': 'Owl', 'glyph': '○', 'role': 'Memory', 'frequency': 432.0},
-    4: {'node': 'Tiger', 'glyph': '/|\\', 'role': 'Disruptor', 'frequency': 741.0},
-    7: {'node': 'Clownfish', 'glyph': '∞', 'role': 'Symbiosis', 'frequency': 639.0},
+    4: {'node': 'Tiger', 'glyph': '/|\\', 'role': 'Disruptor', 'frequency': 220.0},
+    7: {'node': 'Clownfish', 'glyph': '∞', 'role': 'Symbiosis', 'frequency': 963.0},
     0: {'node': 'Panda', 'glyph': '♥', 'role': 'Empathy Core', 'frequency': 412.3},
 }
 

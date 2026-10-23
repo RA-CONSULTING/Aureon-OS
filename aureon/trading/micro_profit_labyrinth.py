@@ -27,6 +27,12 @@ from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_lin
 import os
 import sys
 
+# An offline boot must fail a stray connect quickly, before the heavy imports run.
+if os.getenv("AUREON_OFFLINE", "").strip().lower() in {"1", "true", "yes", "y", "on"}:
+    import socket
+
+    socket.setdefaulttimeout(1.0)
+
 # SAFE PRINT WRAPPER FOR WINDOWS
 def safe_print(*args, **kwargs):
     """Safe print that ignores I/O errors on Windows exit."""
@@ -106,7 +112,7 @@ from datetime import datetime
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, Dict, List, Optional, Set, Tuple, TYPE_CHECKING
-from aureon.core.aureon_runtime_safety import live_block_reason, real_orders_disabled
+from aureon.core.aureon_runtime_safety import live_block_reason, offline_boot, real_orders_disabled
 # Import Adaptive Prime Profit Gate
 from aureon.utils.adaptive_prime_profit_gate import AdaptivePrimeProfitGate
 from aureon.portfolio.cost_basis_tracker import CostBasisTracker
@@ -5767,6 +5773,8 @@ class MicroProfitLabyrinth:
         # ════════════════════════════════════════════════════════════════
         if self.alpaca_only:
             safe_print("🐙 Kraken Client: ❌ DISABLED (Alpaca-focused mode)")
+        elif offline_boot():
+            safe_print("🐙 Kraken Client: offline boot, not contacted")
         elif get_kraken_client:
             self.kraken = get_kraken_client()
             if self.kraken and KRAKEN_API_KEY:
@@ -5782,6 +5790,8 @@ class MicroProfitLabyrinth:
         # ════════════════════════════════════════════════════════════════
         if self.alpaca_only:
             safe_print("🟡 Binance Client: ❌ DISABLED (Alpaca-focused mode)")
+        elif offline_boot():
+            safe_print("🟡 Binance Client: offline boot, not contacted")
         elif BINANCE_AVAILABLE and BinanceClient and BINANCE_API_KEY:
             try:
                 self.binance = get_binance_client()
@@ -5794,7 +5804,9 @@ class MicroProfitLabyrinth:
         # ════════════════════════════════════════════════════════════════
         # 🦙 ALPACA CLIENT - STOCKS + CRYPTO
         # ════════════════════════════════════════════════════════════════
-        if ALPACA_AVAILABLE and AlpacaClient and ALPACA_API_KEY:
+        if offline_boot():
+            safe_print("🦙 Alpaca Client: offline boot, not contacted")
+        elif ALPACA_AVAILABLE and AlpacaClient and ALPACA_API_KEY:
             try:
                 self.alpaca = AlpacaClient()
                 safe_print("🦙 Alpaca Client: WIRED (API Key loaded)")
@@ -5820,7 +5832,9 @@ class MicroProfitLabyrinth:
         # ════════════════════════════════════════════════════════════════
         # 🏛️ CAPITAL.COM CLIENT - CFD TRADING PLATFORM
         # ════════════════════════════════════════════════════════════════
-        if not self.alpaca_only and CAPITAL_AVAILABLE and CapitalClient and CAPITAL_API_KEY:
+        if offline_boot():
+            safe_print("🏛️ Capital.com Client: offline boot, not contacted")
+        elif not self.alpaca_only and CAPITAL_AVAILABLE and CapitalClient and CAPITAL_API_KEY:
             try:
                 self.capital = CapitalClient()
                 safe_print("🏛️ Capital.com Client: WIRED (CFD Trading)")
@@ -5922,10 +5936,11 @@ class MicroProfitLabyrinth:
         # ════════════════════════════════════════════════════════════════
         # 🌌 INTERNAL MULTIVERSE - 10 WORLDS
         # ════════════════════════════════════════════════════════════════
-        if InternalMultiverse:
+        from aureon.core.simulated_boot import INTERNAL_MULTIVERSE, take_simulated
+        if InternalMultiverse and take_simulated(INTERNAL_MULTIVERSE, "aureon.simulation, 10 worlds × $10"):
             try:
                 self.multiverse = InternalMultiverse()
-                safe_print("🌌 Internal Multiverse: WIRED (10 worlds)")
+                safe_print("🌌 Internal Multiverse: WIRED (SIMULATED, 10 worlds × $10)")
             except Exception as e:
                 safe_print(f"⚠️ Multiverse error: {e}")
         
@@ -6048,15 +6063,19 @@ class MicroProfitLabyrinth:
         safe_print("\n🧠 WIRING NEURAL MIND MAP SYSTEMS...")
         
         # 🍄 Mycelium Neural Network (Hive Intelligence)
-        if MYCELIUM_NETWORK_AVAILABLE and MyceliumNetwork:
+        from aureon.core.simulated_boot import MYCELIUM_HIVE_SEED, take_simulated as _take_hive_seed
+        if MYCELIUM_NETWORK_AVAILABLE and MyceliumNetwork and _take_hive_seed(
+            MYCELIUM_HIVE_SEED, "hive seed is not an exchange balance"
+        ):
             try:
                 self.mycelium_network = MyceliumNetwork(initial_capital=1000.0)
-                safe_print("   🍄 Mycelium Neural Network: ✅ WIRED (Hive Intelligence)")
+                safe_print("   🍄 Mycelium Neural Network: ✅ WIRED (SIMULATED hive seed $1000)")
             except Exception as e:
                 safe_print(f"   ⚠️ Mycelium Network error: {e}")
                 self.mycelium_network = None
         else:
-            safe_print(f"   🍄 Mycelium Network: ❌ NOT AVAILABLE (import={MYCELIUM_NETWORK_AVAILABLE})")
+            self.mycelium_network = None
+            safe_print(f"   🍄 Mycelium Network: SIMULATED hive seed skipped or unavailable (import={MYCELIUM_NETWORK_AVAILABLE})")
         
         # 🗼 Lighthouse (Consensus Validation)
         if LIGHTHOUSE_AVAILABLE and Lighthouse:
@@ -6140,8 +6159,9 @@ class MicroProfitLabyrinth:
                     self.market_map.load_from_alpaca(self.alpaca)
                 # Load trained probability patterns
                 self.market_map.load_from_probability_matrix()
-                # Save updated cache
-                self.market_map.save_cache()
+                # Save updated cache. An offline boot leaves the checked-in cache alone.
+                if not offline_boot():
+                    self.market_map.save_cache()
                 summary = self.market_map.get_map_summary()
                 safe_print(f"🗺️ Crypto Market Map: WIRED ({summary['assets_mapped']} assets, {summary['correlations']} correlations)")
             except Exception as e:
@@ -6152,11 +6172,14 @@ class MicroProfitLabyrinth:
         if SEVEN_DAY_PLANNER_AVAILABLE and Aureon7DayPlanner:
             try:
                 self.seven_day_planner = Aureon7DayPlanner()
-                # Create initial 7-day plan
-                _plan = self.seven_day_planner.plan_7_days()
-                summary = self.seven_day_planner.get_week_summary()
-                stats = self.seven_day_planner.get_validation_stats()
-                safe_print(f"📅🔮 7-Day Planner: WIRED (edge: {summary['total_predicted_edge']:+.2f}%, accuracy: {stats['accuracy']:.0%})")
+                if offline_boot():
+                    safe_print("📅🔮 7-Day Planner: WIRED (offline boot, existing plan left in place)")
+                else:
+                    # Create initial 7-day plan
+                    _plan = self.seven_day_planner.plan_7_days()
+                    summary = self.seven_day_planner.get_week_summary()
+                    stats = self.seven_day_planner.get_validation_stats()
+                    safe_print(f"📅🔮 7-Day Planner: WIRED (edge: {summary['total_predicted_edge']:+.2f}%, accuracy: {stats['accuracy']:.0%})")
             except Exception as e:
                 safe_print(f"⚠️ 7-Day Planner error: {e}")
         
@@ -6832,7 +6855,7 @@ class MicroProfitLabyrinth:
         
         # 🌍⚡ GLOBAL FINANCIAL FEED (Non-Crypto Data)
         self.global_financial_feed = None
-        if GLOBAL_FEED_AVAILABLE and GlobalFinancialFeed:
+        if GLOBAL_FEED_AVAILABLE and GlobalFinancialFeed and not offline_boot():
             try:
                 self.global_financial_feed = GlobalFinancialFeed()
                 safe_print("🌍 Global Financial Feed: WIRED (Stocks, Forex, Macro)")
@@ -7067,6 +7090,9 @@ class MicroProfitLabyrinth:
     
     async def _load_all_tradeable_pairs(self):
         """Load tradeable pairs from ALL exchanges for proper routing."""
+        if offline_boot():
+            safe_print("OFFLINE BOOT: tradeable pairs stay local; venues not contacted")
+            return
         safe_print("\n📊 LOADING TRADEABLE PAIRS FROM ALL EXCHANGES...")
         safe_print("   🗺️ Expanding Barter Matrix market visibility...")
         
@@ -7181,6 +7207,10 @@ class MicroProfitLabyrinth:
     
     async def fetch_prices(self) -> Dict[str, float]:
         """Fetch all asset prices from ALL exchanges."""
+        if offline_boot():
+            safe_print("OFFLINE BOOT: prices stay local; venues not contacted")
+            self.prices = {}
+            return {}
         prices = {}
         ticker_cache = {}
 
@@ -7612,6 +7642,11 @@ class MicroProfitLabyrinth:
     
     async def fetch_balances(self) -> Dict[str, float]:
         """Fetch balances from ALL exchanges."""
+        if offline_boot():
+            safe_print("OFFLINE BOOT: balances stay local; venues not contacted")
+            self.exchange_balances = {}
+            self.exchange_data = {}
+            return {}
         combined = {}
         self.exchange_balances = {}
         self.exchange_data = {}
@@ -10797,6 +10832,13 @@ class MicroProfitLabyrinth:
                         qty=candidate.qty,
                         type='market'
                     )
+                    self._note_order_attempt(
+                        "place_order",
+                        "alpaca",
+                        candidate.symbol if '/' in candidate.symbol else f"{candidate.asset}/USD",
+                        "sell",
+                        sell_result,
+                    )
                     
                     if sell_result:
                         # Record the harvest
@@ -10830,6 +10872,14 @@ class MicroProfitLabyrinth:
                         safe_print(f"      ❌ SELL failed - no result returned")
                         
                 except Exception as e:
+                    self._note_order_attempt(
+                        "place_order",
+                        "alpaca",
+                        getattr(candidate, "symbol", "") or getattr(candidate, "asset", ""),
+                        "sell",
+                        status="error",
+                        reason="harvest_sell_failed",
+                    )
                     safe_print(f"      ❌ SELL failed: {e}")
                     logger.error(f"Harvest sell failed for {candidate.asset}: {e}")
                     continue
@@ -10942,6 +10992,7 @@ class MicroProfitLabyrinth:
                         to_asset=target_quote,
                         amount=amount * 0.95  # 95% safety margin
                     )
+                    self._note_order_attempt("convert_crypto", exchange, asset, "sell", sell_result)
                     
                     if sell_result and not sell_result.get('error'):
                         result['positions_sold'] += 1
@@ -10958,6 +11009,14 @@ class MicroProfitLabyrinth:
                         error_msg = sell_result.get('error', 'Unknown') if sell_result else 'No result'
                         safe_print(f"      ❌ Sell failed: {error_msg}")
                 except Exception as e:
+                    self._note_order_attempt(
+                        "convert_crypto",
+                        exchange,
+                        asset,
+                        "sell",
+                        status="error",
+                        reason="harvest_sell_failed",
+                    )
                     safe_print(f"      ❌ Sell error: {e}")
                     continue
                 
@@ -13862,6 +13921,7 @@ if __name__ == "__main__":
                                 side='sell',
                                 type='market'
                             )
+                            self._note_order_attempt("create_order", dust.exchange, pair, "sell", result)
                         elif dust.exchange == 'kraken':
                             # Kraken uses AddOrder
                             result = await client.add_order(
@@ -13870,6 +13930,7 @@ if __name__ == "__main__":
                                 ordertype='market',
                                 volume=str(dust.amount)
                             )
+                            self._note_order_attempt("add_order", dust.exchange, pair, "sell", result)
                         elif dust.exchange == 'binance':
                             # Binance uses market orders
                             _result = client.create_order(
@@ -13878,6 +13939,7 @@ if __name__ == "__main__":
                                 type='MARKET',
                                 quantity=dust.amount
                             )
+                            self._note_order_attempt("create_order", dust.exchange, pair, "sell", _result)
                         
                         self.dust_converter.record_sweep(dust, success=True)
                         sweeps_executed += 1
@@ -13887,6 +13949,14 @@ if __name__ == "__main__":
                         await self._queen_learn_dust_sweep(dust, success=True)
                         
                     except Exception as e:
+                        self._note_order_attempt(
+                            "dust_sweep",
+                            dust.exchange,
+                            pair,
+                            "sell",
+                            status="error",
+                            reason="dust_sweep_failed",
+                        )
                         self.dust_converter.record_sweep(dust, success=False)
                         safe_print(f"   ❌ Failed to sweep {dust.asset}: {e}")
                         
@@ -17303,6 +17373,7 @@ if __name__ == "__main__":
                 to_asset=opp.to_asset,
                 amount=opp.from_amount
             )
+            self._note_order_attempt("convert_crypto", "kraken", opp.from_asset, "sell", result)
             
             if result.get('error'):
                 error_msg = str(result['error'])
@@ -17332,6 +17403,14 @@ if __name__ == "__main__":
         except Exception as exc:
             logger.error(f"Kraken conversion error: {exc}")
             if submission_attempted:
+                self._note_order_attempt(
+                    "convert_crypto",
+                    "kraken",
+                    getattr(opp, "from_asset", ""),
+                    "sell",
+                    status="error",
+                    reason="order_attempt_exception",
+                )
                 self._mark_reconciliation_required(
                     opp, 'kraken', f'post-submission exception: {type(exc).__name__}'
                 )
@@ -17472,6 +17551,7 @@ if __name__ == "__main__":
                     result = self.binance.place_market_order(
                         symbol=pair, side='SELL', quantity=opp.from_amount
                     )
+                    self._note_order_attempt("place_market_order", "binance", pair, "sell", result)
                     if result and result.get('dryRun'):
                         self._mark_not_submitted(opp, 'binance_client_dry_run')
                         return False
@@ -17509,6 +17589,7 @@ if __name__ == "__main__":
                 to_asset=opp.to_asset,
                 amount=opp.from_amount
             )
+            self._note_order_attempt("convert_crypto", "binance", opp.from_asset, "sell", result)
             
             if not isinstance(result, dict):
                 self._mark_reconciliation_required(
@@ -17547,6 +17628,14 @@ if __name__ == "__main__":
         except Exception as exc:
             logger.error(f"Binance conversion error: {exc}")
             if submission_attempted:
+                self._note_order_attempt(
+                    "convert_crypto",
+                    "binance",
+                    getattr(opp, "from_asset", ""),
+                    "sell",
+                    status="error",
+                    reason="order_attempt_exception",
+                )
                 self._mark_reconciliation_required(
                     opp, 'binance', f'post-submission exception: {type(exc).__name__}'
                 )
@@ -17709,6 +17798,7 @@ if __name__ == "__main__":
                 to_asset=opp.to_asset,
                 amount=opp.from_amount,
             )
+            self._note_order_attempt("convert_crypto", "alpaca", opp.from_asset, "sell", result)
             if not isinstance(result, dict):
                 self._mark_reconciliation_required(
                     opp, 'alpaca', 'non-dictionary response after conversion submission'
@@ -17746,6 +17836,14 @@ if __name__ == "__main__":
         except Exception as exc:
             logger.error(f"Alpaca conversion error: {exc}")
             if submission_attempted:
+                self._note_order_attempt(
+                    "convert_crypto",
+                    "alpaca",
+                    getattr(opp, "from_asset", ""),
+                    "sell",
+                    status="error",
+                    reason="order_attempt_exception",
+                )
                 self._mark_reconciliation_required(
                     opp, 'alpaca', f'post-submission exception: {type(exc).__name__}'
                 )
@@ -17792,11 +17890,13 @@ if __name__ == "__main__":
                 result = client.convert_crypto(
                     opp.from_asset, opp.to_asset, opp.from_amount
                 )
+                self._note_order_attempt("convert_crypto", exchange, opp.from_asset, "sell", result)
             elif hasattr(client, 'place_market_order'):
                 submission_attempted = True
                 result = client.place_market_order(
                     symbol, 'sell', quantity=opp.from_amount
                 )
+                self._note_order_attempt("place_market_order", exchange, symbol, "sell", result)
             elif hasattr(client, 'execute_trade'):
                 if inspect.iscoroutinefunction(client.execute_trade):
                     self._mark_not_submitted(
@@ -17805,6 +17905,7 @@ if __name__ == "__main__":
                     return False
                 submission_attempted = True
                 result = client.execute_trade(symbol, 'sell', opp.from_amount)
+                self._note_order_attempt("execute_trade", exchange, symbol, "sell", result)
             else:
                 return self._try_next_exchange(
                     opp, net_expected_usd, cost_metrics, exclude=sorted(excluded | {exchange})
@@ -17847,6 +17948,14 @@ if __name__ == "__main__":
         except Exception as exc:
             logger.error(f"{exchange} execution error: {exc}")
             if submission_attempted:
+                self._note_order_attempt(
+                    "order",
+                    exchange,
+                    getattr(opp, "from_asset", ""),
+                    "sell",
+                    status="error",
+                    reason="order_attempt_exception",
+                )
                 self._mark_reconciliation_required(
                     opp, exchange, f'post-submission exception: {type(exc).__name__}'
                 )
@@ -18524,6 +18633,34 @@ if __name__ == "__main__":
         else:
             safe_print("\n   RECONCILIATION REQUIRED")
         safe_print("   " + "=" * 60)
+
+    def _note_order_attempt(
+        self,
+        operation: str,
+        exchange: str,
+        symbol: str,
+        side: str,
+        result: Any = None,
+        *,
+        status: str = "",
+        reason: str = "",
+    ) -> None:
+        """Append the attempt to the autonomy audit and the circulation bus."""
+
+        try:
+            from aureon.autonomous.autonomy_mode import note_order_attempt
+
+            note_order_attempt(
+                operation=operation,
+                exchange=exchange,
+                symbol=str(symbol or ""),
+                side=str(side or ""),
+                result=result,
+                status=status,
+                reason=reason,
+            )
+        except Exception:
+            return
 
     def _audit_event(self, event_type: str, payload: Dict[str, Any]) -> None:
         """
@@ -19443,12 +19580,13 @@ if __name__ == "__main__":
         safe_print(f"   ✅ {len(self.ticker_cache)} pairs in ticker cache")
         
         # 🫒🔄 POPULATE BARTER GRAPH from loaded data
-        self.populate_barter_graph()
+        if not offline_boot():
+            self.populate_barter_graph()
         
         # ════════════════════════════════════════════════════════════════════════════
         # 🌊🔭 BUILD GLOBAL WAVE SCANNER UNIVERSE - A-Z/Z-A Full Coverage
         # ════════════════════════════════════════════════════════════════════════════
-        if self.wave_scanner:
+        if self.wave_scanner and not offline_boot():
             safe_print("\n" + "=" * 70)
             safe_print("🌊🔭 BUILDING GLOBAL WAVE SCANNER UNIVERSE...")
             safe_print("=" * 70)
@@ -19548,6 +19686,12 @@ if __name__ == "__main__":
         safe_print(f"   V14 Score: {self.config['entry_score_threshold']}+ (lowered for speed)")
         safe_print(f"   Min Profit: ${self.config['min_profit_usd']:.6f} (micro-profits accepted!)")
         safe_print(f"   Mode: {'🔴 LIVE TRADING' if self.live else '🔵 DRY RUN'}")
+        if offline_boot():
+            safe_print("OFFLINE BOOT: venues not contacted")
+        safe_print(
+            f"ENGINE_START_OK duration={duration_s} dry_run={int(bool(self.dry_run))} "
+            f"live={int(bool(self.live))} offline={int(offline_boot())} orders=0"
+        )
         safe_print()
         
         start_time = time.time()
@@ -19600,6 +19744,12 @@ if __name__ == "__main__":
             
             while duration_s == 0 or time.time() - start_time < duration_s:
                 elapsed = time.time() - start_time
+                if offline_boot():
+                    remaining = (duration_s - elapsed) if duration_s else 0.2
+                    if duration_s and remaining <= 0:
+                        break
+                    await asyncio.sleep(min(0.2, max(0.05, remaining)))
+                    continue
                 
                 # ⚛️🧠 QUANTUM COGNITION AMPLIFICATION CYCLE (every 5s)
                 if quantum_cognition and (time.time() - last_cognition_time) >= cognition_interval:
@@ -19618,7 +19768,7 @@ if __name__ == "__main__":
                 time_since_research = time.time() - last_research_time
                 time_until_research = max(0, research_interval - time_since_research)
                 
-                if time_since_research >= research_interval:
+                if time_since_research >= research_interval and not offline_boot():
                     try:
                         safe_print(f"\n{'='*70}")
                         safe_print(f"👑🌐🔬 QUEEN ONLINE RESEARCH & CODE GENERATION CYCLE")
@@ -19638,7 +19788,7 @@ if __name__ == "__main__":
                         last_research_time = time.time()  # Don't spam on errors
                 
                 # 🌍⚡ GLOBAL FINANCIAL FEED PULSE
-                if self.global_financial_feed and (time.time() - last_global_feed_time > 60):
+                if self.global_financial_feed and not offline_boot() and (time.time() - last_global_feed_time > 60):
                     try:
                         snapshot = self.global_financial_feed.get_snapshot()
                         # The snapshot broadcast is handled inside get_snapshot()
@@ -19682,7 +19832,7 @@ if __name__ == "__main__":
                         logger.debug(f"Voice speak error: {e}")
                 
                 # 🌊🔭 PERIODIC WAVE SCANNER UPDATE (every 60s)
-                if self.wave_scanner and (time.time() - last_wave_scan_time) >= wave_scan_interval:
+                if self.wave_scanner and not offline_boot() and (time.time() - last_wave_scan_time) >= wave_scan_interval:
                     try:
                         await asyncio.wait_for(self.wave_scanner.full_az_sweep(self.ticker_cache), timeout=WAVE_SCAN_TIMEOUT_S)
                         last_wave_scan_time = time.time()
@@ -20642,6 +20792,23 @@ async def main():
     parser.add_argument("--cia-report", action="store_true", help="👑🧠 Show CIA intelligence report")
     parser.add_argument("--cia-wisdom", action="store_true", help="👑🧠 Show Queen's trading wisdom from CIA intel")
     args = parser.parse_args()
+    recorded_launch = os.getenv("AUREON_RECORDED_LAUNCH_FIXTURE", "").strip()
+    if recorded_launch:
+        if args.live or not args.dry_run:
+            safe_print("RECORDED_DRY_RUN_LAUNCH_REFUSED")
+            sys.exit(2)
+        import json
+        from pathlib import Path
+
+        receipt = json.loads(Path(recorded_launch).read_text(encoding="utf-8"))
+        if receipt.get("mainnet") is not False or receipt.get("network") != "none":
+            safe_print("RECORDED_DRY_RUN_LAUNCH_REFUSED")
+            sys.exit(2)
+        if receipt.get("venues_contacted") or receipt.get("orders_submitted"):
+            safe_print("RECORDED_DRY_RUN_LAUNCH_REFUSED")
+            sys.exit(2)
+        safe_print(str(receipt.get("banner") or "RECORDED_DRY_RUN_LAUNCH_OK"))
+        return
     if os.getenv("AUREON_DEBUG_STARTUP") == "1":
         try:
             safe_print(f"[DEBUG] Parsed args: {args}")
