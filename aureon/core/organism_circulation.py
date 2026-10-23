@@ -82,7 +82,7 @@ _SECRET_PATH_MARKERS = (".env", "secret", "credential", "id_rsa", "password")
 _BATON_STAGES = ("intent", "plan", "execute", "confirm")
 _SUBSCRIBED = False
 _AUDIT_WIRED = False
-_AUDIT_BUS_ID: int | None = None
+_AUDIT_BUS: Any = None
 _AUDIT_CAP = 50
 _FAILURE_REPEAT = 2
 _CONFIDENCE_BASE = 1.0
@@ -397,14 +397,15 @@ def ensure_audit_subscribers() -> None:
 
     A later test or importer can replace the process bus. Subscriptions do not
     move with it, so a publish on the new bus would be stored and never consumed.
+    The previous bus object is held until this comparison. A freed bus can be
+    allocated again at the same id, and that new object would look already wired.
     """
 
-    global _SUBSCRIBED, _AUDIT_WIRED, _AUDIT_BUS_ID
+    global _SUBSCRIBED, _AUDIT_WIRED, _AUDIT_BUS
     bus = get_thought_bus()
-    current = id(bus)
-    if _AUDIT_WIRED and _SUBSCRIBED and _AUDIT_BUS_ID == current:
+    if _AUDIT_WIRED and _SUBSCRIBED and _AUDIT_BUS is bus:
         return
-    if _AUDIT_BUS_ID != current:
+    if _AUDIT_BUS is not bus:
         _SUBSCRIBED = False
         _AUDIT_WIRED = False
     if not _SUBSCRIBED:
@@ -414,7 +415,7 @@ def ensure_audit_subscribers() -> None:
         bus.subscribe(_CIRCULATION, _on_audit_metacognition)
         bus.subscribe(_CIRCULATION, _on_audit_self_repair)
         _AUDIT_WIRED = True
-    _AUDIT_BUS_ID = current
+    _AUDIT_BUS = bus
 
 
 def _metacognition_loop(stop: threading.Event) -> None:

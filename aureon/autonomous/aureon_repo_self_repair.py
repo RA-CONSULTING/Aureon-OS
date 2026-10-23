@@ -132,25 +132,40 @@ def _existing_paths(root: Path, paths: Sequence[str]) -> list[str]:
     return [path for path in paths if (root / path).exists()]
 
 
+def _rank_repair_paths(paths: list[str]) -> list[str]:
+    """A path that keeps failing goes last. Every path stays in the list."""
+
+    from aureon.core.organism_circulation import repair_priority
+
+    ranked = repair_priority(list(paths))
+    if len(ranked) != len(paths) or set(ranked) != set(paths):
+        return list(paths)
+    return ranked
+
+
 def default_check_commands(root: Path) -> list[tuple[str, list[str]]]:
     py = _python_exe()
     commands: list[tuple[str, list[str]]] = []
 
-    compile_targets = _existing_paths(root, ["aureon", "Kings_Accounting_Suite", "tests"])
+    compile_targets = _rank_repair_paths(
+        _existing_paths(root, ["aureon", "Kings_Accounting_Suite", "tests"])
+    )
     if compile_targets:
         commands.append(("python_compile_repo", [py, "-m", "compileall", "-q", *compile_targets]))
 
-    focused_tests = _existing_paths(
-        root,
-        [
-            "tests/test_aureon_unified_ui_builder.py",
-            "tests/test_frontend_work_order_executor.py",
-            "tests/test_goal_execution_engine_self_ui.py",
-            "tests/test_aureon_repo_self_repair.py",
-            "tests/test_safe_code_control.py",
-            "tests/test_code_expression_context.py",
-            "tests/test_aureon_organism_runtime_observer.py",
-        ],
+    focused_tests = _rank_repair_paths(
+        _existing_paths(
+            root,
+            [
+                "tests/test_aureon_unified_ui_builder.py",
+                "tests/test_frontend_work_order_executor.py",
+                "tests/test_goal_execution_engine_self_ui.py",
+                "tests/test_aureon_repo_self_repair.py",
+                "tests/test_safe_code_control.py",
+                "tests/test_code_expression_context.py",
+                "tests/test_aureon_organism_runtime_observer.py",
+            ],
+        )
     )
     if focused_tests:
         commands.append(("focused_self_repair_tests", [py, "-m", "pytest", *focused_tests, "-q"]))

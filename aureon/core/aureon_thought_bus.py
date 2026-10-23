@@ -567,14 +567,27 @@ class ThoughtBus:
 _thought_bus_instance: Optional[ThoughtBus] = None
 
 def get_thought_bus(persist_path: Optional[str] = None) -> ThoughtBus:
-    """Get or create the global ThoughtBus instance."""
+    """Get or create the global ThoughtBus instance.
+
+    The circulation loop and a test can both observe an empty slot. The lock
+    makes that one replacement, so a caller that just built the bus still holds
+    the same object after the other caller returns.
+    """
     global _thought_bus_instance
-    if _thought_bus_instance is None:
-        default_path = os.getenv("AUREON_THOUGHT_BUS_PATH") or "thoughts.jsonl"
-        _thought_bus_instance = ThoughtBus(
-            persist_path=persist_path or default_path
-        )
-    return _thought_bus_instance
+    with _bus_lock:
+        if _thought_bus_instance is None:
+            default_path = os.getenv("AUREON_THOUGHT_BUS_PATH") or "thoughts.jsonl"
+            _thought_bus_instance = ThoughtBus(
+                persist_path=persist_path or default_path
+            )
+        return _thought_bus_instance
+
+
+def clear_thought_bus() -> None:
+    """Drop the process bus under the same lock that builds the next one."""
+    global _thought_bus_instance
+    with _bus_lock:
+        _thought_bus_instance = None
 
 # Alias for compatibility - ThoughtSignal is just Thought
 ThoughtSignal = Thought

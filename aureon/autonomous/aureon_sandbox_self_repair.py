@@ -267,6 +267,17 @@ def _distance_one(left: str, right: str) -> bool:
     return False
 
 
+def _rank_repair_paths(paths: list[str]) -> list[str]:
+    """A path that keeps failing goes last. Every path stays in the list."""
+
+    from aureon.core.organism_circulation import repair_priority
+
+    ranked = repair_priority(list(paths))
+    if len(ranked) != len(paths) or set(ranked) != set(paths):
+        return list(paths)
+    return ranked
+
+
 def _name_error_edit(root: Path, output: str) -> tuple[str, str, str] | None:
     match = re.search(r"NameError: name '([A-Za-z_][A-Za-z0-9_]*)' is not defined", output)
     if not match:
@@ -287,6 +298,9 @@ def _name_error_edit(root: Path, output: str) -> tuple[str, str, str] | None:
         if resolved.name.startswith("test_") or resolved in seen:
             continue
         seen.append(resolved)
+    order = _rank_repair_paths([path.relative_to(root_resolved).as_posix() for path in seen])
+    rank = {path: index for index, path in enumerate(order)}
+    seen.sort(key=lambda path: rank.get(path.relative_to(root_resolved).as_posix(), len(order)))
     for path in seen:
         try:
             source = path.read_text(encoding="utf-8")
@@ -338,6 +352,7 @@ def _attempt(root: Path, output: str, architect: Any) -> dict[str, Any] | None:
     by_function: dict[str, list[dict[str, Any]]] = {}
     for item in assertions:
         by_function.setdefault(item["function"], []).append(item)
+    candidates: list[tuple[str, str, str]] = []
     for function_name, group in by_function.items():
         located = _function(root, function_name)
         if located is None:
@@ -348,6 +363,11 @@ def _attempt(root: Path, output: str, architect: Any) -> dict[str, Any] | None:
         if edit is None:
             continue
         old, new = edit
+        candidates.append((relative, old, new))
+    order = _rank_repair_paths([relative for relative, _old, _new in candidates])
+    rank = {path: index for index, path in enumerate(order)}
+    candidates.sort(key=lambda item: rank.get(item[0], len(order)))
+    for relative, old, new in candidates:
         refused = _refuse_edit(root, relative, old, new)
         if refused:
             return {
