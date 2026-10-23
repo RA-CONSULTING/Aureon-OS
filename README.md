@@ -114,8 +114,10 @@ The local installer is the path that brings a clone up. Linux and macOS:
 `bash production/install.sh`. Windows: `production\Install-AUREON.ps1` (or
 `production\install-windows.bat`). `bash scripts/linux/aureon-up.sh` calls that
 installer when the virtualenv is missing, then starts the same preflight.
-Live trading stays off. The UI is `http://127.0.0.1:8080/` with Dashboard and
-Command Center as tabs. The thought bus is `http://127.0.0.1:8765/health`.
+Live trading stays off. The shell is `http://127.0.0.1:5173/`. Dashboard and
+Command Center are tabs of the local console at `http://127.0.0.1:5173/console/local`.
+The launcher does not bind port 8080. The thought bus is `http://127.0.0.1:8799/health`.
+The fusion seat keeps `http://127.0.0.1:8765/healthz`.
 No order is placed.
 A HOLD receipt proves only that the fail-closed preflight ran; it is not proof
 that the whole system is protected or production-ready.

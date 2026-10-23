@@ -1,6 +1,7 @@
 """Organism circulation — one thought bus, every named seat publishing and listening.
 
-The HTTP seat listens on 127.0.0.1:8765 (override with AUREON_ORGANISM_HTTP_PORT).
+The HTTP seat listens on 127.0.0.1:8799 (override with AUREON_ORGANISM_HTTP_PORT).
+The fusion seat keeps 127.0.0.1:8765. A taken circulation port is a failed boot.
 metacognition, queen reasoning, logic, neural, lighthouse, QGITA, mycelium,
 baton relay, and council each subscribe to ``organism.circulation`` and
 publish their own pulse. Connectors switch on at boot. Self-code records a
@@ -11,6 +12,7 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 import threading
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -23,7 +25,7 @@ from aureon.core.aureon_thought_bus import Thought, get_thought_bus
 from aureon.core.deterministic_systems import list_systems
 
 _HOST = "127.0.0.1"
-_DEFAULT_PORT = 8765
+_DEFAULT_PORT = 8799
 _CIRCULATION = "organism.circulation"
 _RECEIPT = "organism.receipt"
 _LOCK = threading.Lock()
@@ -219,26 +221,32 @@ def _metacognition_loop(stop: threading.Event) -> None:
         stop.wait(5.0)
 
 
-def _loop(stop: threading.Event) -> None:
+def _publish_tick(tick: int) -> None:
+    """Publish one circulation pulse for every connector that is switched on."""
     bus = get_thought_bus()
+    connectors = connector_state()
+    if not connectors.get("thought_bus", True):
+        return
+    running: dict[str, str] = {}
+    for organ in ORGANS:
+        if not connectors.get(organ["name"], True):
+            continue
+        bus.publish(
+            Thought(
+                source=organ["name"],
+                topic=_CIRCULATION,
+                payload=_payload_for(organ, tick),
+            )
+        )
+        running[organ["name"]] = "running"
+    with _LOCK:
+        _STATE["loops"] = running
+
+
+def _loop(stop: threading.Event) -> None:
     tick = 0
     while not stop.is_set():
-        connectors = connector_state()
-        if connectors.get("thought_bus", True):
-            for organ in ORGANS:
-                if not connectors.get(organ["name"], True):
-                    continue
-                bus.publish(
-                    Thought(
-                        source=organ["name"],
-                        topic=_CIRCULATION,
-                        payload=_payload_for(organ, tick),
-                    )
-                )
-            with _LOCK:
-                _STATE["loops"] = {
-                    organ["name"]: "running" for organ in ORGANS if connectors.get(organ["name"], True)
-                }
+        _publish_tick(tick)
         tick += 1
         stop.wait(1.0)
 
@@ -378,10 +386,20 @@ def start_organism_circulation(port: int | None = None) -> dict[str, Any]:
         http_thread.start()
         bound = int(server.server_address[1])
     except OSError as exc:
-        bound = None
+        detail = exc.strerror or str(exc)
+        message = (
+            f"organism circulation failed to bind {_HOST}:{chosen} ({detail}); "
+            "the fusion seat keeps 8765"
+        )
+        print(message, file=sys.stderr, flush=True)
         with _LOCK:
-            _STATE["error"] = f"thought bus port unavailable: {exc}"
+            _STATE["error"] = message
+            _STATE["started"] = False
+            _STATE["port"] = None
+            _STATE["server"] = None
+        return circulation_status()
 
+    _publish_tick(0)
     meta = threading.Thread(target=_metacognition_loop, args=(stop,), name="metacognition-loop", daemon=True)
     meta.start()
     thread = threading.Thread(target=_loop, args=(stop,), name="organism-circulation", daemon=True)
@@ -393,6 +411,7 @@ def start_organism_circulation(port: int | None = None) -> dict[str, Any]:
             thread=thread,
             http_thread=http_thread,
             port=bound,
+            error=None,
         )
     return circulation_status()
 
@@ -414,3 +433,27 @@ def stop_organism_circulation() -> None:
         _STATE["server"] = None
         _STATE["thread"] = None
         _STATE["http_thread"] = None
+
+
+def main() -> int:
+    """Bind the circulation seat and stay up. Exit 1 when the port is taken."""
+    status = start_organism_circulation()
+    if not status.get("started") or status.get("port") is None:
+        if not status.get("error"):
+            print(
+                "organism circulation failed to bind 127.0.0.1:8799; the fusion seat keeps 8765",
+                file=sys.stderr,
+                flush=True,
+            )
+        return 1
+    print(f"organism circulation listening on {status['url']}", flush=True)
+    try:
+        while True:
+            time.sleep(3600)
+    except KeyboardInterrupt:
+        stop_organism_circulation()
+        return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

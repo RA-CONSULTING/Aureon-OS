@@ -55,3 +55,10 @@ yfinance>=0.2.36,<0.2.59
 fredapi>=0.5.2
 pyperclip>=1.8.2
 SpeechRecognition>=3.10.0
+# The installer on Linux uses this file. The suite, including
+# tests/test_preflight_snags.py, needs pytest in that venv.
+pytest>=8.0
+pytest-timeout>=2.3
+pytest-socket>=0.7
+pytest-xdist>=3.6
+pytest-randomly>=3.15

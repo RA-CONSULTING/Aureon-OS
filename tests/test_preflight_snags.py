@@ -18,6 +18,7 @@ from aureon.autonomous.master_launcher_ui import page_html, start_master_ui, sto
 from aureon.core.algorithmic_nodes import list_nodes
 from aureon.core.deterministic_systems import list_systems
 from aureon.core.organism_circulation import (
+    _DEFAULT_PORT,
     propose_self_code,
     start_organism_circulation,
     stop_organism_circulation,
@@ -109,6 +110,27 @@ def test_thought_bus_organs_publish_and_subscribe(monkeypatch: pytest.MonkeyPatc
         refused = propose_self_code(".env", "no")
         assert refused["accepted"] is False
     finally:
+        stop_organism_circulation()
+
+
+def test_circulation_owns_8799_and_fails_loud_when_taken(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    import socket
+
+    assert _DEFAULT_PORT == 8799
+    monkeypatch.setenv("AUREON_ORGANISM_STATE", str(tmp_path / "state"))
+    monkeypatch.setenv("AUREON_THOUGHT_BUS_PATH", str(tmp_path / "thoughts.jsonl"))
+    held = socket.socket()
+    held.bind(("127.0.0.1", 0))
+    held.listen(1)
+    port = held.getsockname()[1]
+    try:
+        status = start_organism_circulation(port=port)
+        assert status["started"] is False
+        assert status["port"] is None
+        assert "failed to bind" in str(status["error"])
+        assert "8765" in str(status["error"])
+    finally:
+        held.close()
         stop_organism_circulation()
 
 

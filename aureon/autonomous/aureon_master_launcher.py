@@ -116,12 +116,19 @@ def _start_circulation_quietly() -> None:
         from aureon.core.organism_circulation import start_organism_circulation
 
         status = start_organism_circulation()
-        if status.get("url"):
-            print(f"Thought bus: {status['url']}")
-        elif status.get("error"):
-            print(f"Thought bus: {status['error']}")
+        if status.get("url") and status.get("started"):
+            print(f"Thought bus: {status['url']}", flush=True)
+        else:
+            message = status.get("error") or (
+                "organism circulation failed to bind 127.0.0.1:8799; the fusion seat keeps 8765"
+            )
+            print(message, file=sys.stderr, flush=True)
     except Exception as exc:
-        print(f"Thought bus circulation degraded: {exc}")
+        print(
+            f"organism circulation failed to bind 127.0.0.1:8799 ({exc}); the fusion seat keeps 8765",
+            file=sys.stderr,
+            flush=True,
+        )
 
 
 def wire_queen_systems(queen: Any, labyrinth: Any) -> Dict[str, Any]:

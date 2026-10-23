@@ -302,7 +302,7 @@ class Runner:
     def http_ok(self, url: str, timeout: float = 1.5) -> bool:
         try:
             with urllib.request.urlopen(url, timeout=timeout) as response:
-                return 200 <= getattr(response, "status", 0) < 500
+                return 200 <= getattr(response, "status", 0) < 300
         except (OSError, urllib.error.URLError, TimeoutError):
             return False
 
@@ -1313,24 +1313,12 @@ def launch_compose_service(
         )
         return Row(name, status, health, f"{docker_note}; host frontend {reason}")
     if service == "nginx":
-        if runner.http_ok("http://127.0.0.1:8080/healthz"):
-            return Row(name, "started", "ok", "127.0.0.1:8080/healthz already answered; launcher did not bind it and will not stop it")
-        binary = shutil.which("nginx")
-        if not binary:
-            return Row(name, "blocked", "down", f"{docker_note}; nginx not installed")
+        # The self-host page is a tab of the shell. This launcher does not bind 8080
+        # and does not stop a listener that was already there.
+        note = "dashboard folded into the shell tab /console/local; launcher does not bind 8080"
         if runner.port_busy(8080):
-            return Row(name, "blocked", "down", f"{docker_note}; port 8080 is taken and did not answer /healthz")
-        conf = _write_nginx_conf(repo)
-        status, health, reason = spawn_owned(
-            repo,
-            state,
-            runner,
-            name,
-            [binary, "-c", str(conf), "-g", "daemon off;"],
-            repo,
-            paper_env(None, repo),
-        )
-        return Row(name, status, health, f"{docker_note}; host nginx {reason}")
+            note += "; an existing listener was left in place and was not stopped"
+        return Row(name, "skipped", "skipped", note)
     if service == "api_a":
         return Row(name, "blocked", "down", f"{docker_note}; host seat is seat/trading_world_v5b on 127.0.0.1:8765")
     if service == "hnc_core":
@@ -1403,6 +1391,9 @@ def launch_trading_world(repo: Path, state: dict, runner: Runner) -> Row:
 
 def launch_organ(repo: Path, state: dict, runner: Runner, name: str, spec: dict) -> Row:
     organ = name.split("/", 1)[1]
+    prior = existing_pid(state, name, runner)
+    if prior:
+        return Row(name, "started", "ok", f"already running as pid {prior}")
     reason = organ_block_reason(repo, organ, spec, runner)
     if reason:
         return Row(name, "blocked", "down", reason)
@@ -1418,13 +1409,62 @@ def launch_organ(repo: Path, state: dict, runner: Runner, name: str, spec: dict)
     return Row(name, status, health, detail + note)
 
 
+def _faculty_producer(faculty: dict) -> str:
+    source = str(faculty.get("source_id") or faculty.get("name") or "unregistered")
+    organ = FACULTY_ORGAN_ALIAS.get(source, source)
+    return f"organ/{organ}" if organ else "no producer registered"
+
+
 def launch_faculty(repo: Path, faculty: dict) -> Row:
     name = f"faculty/{faculty.get('name')}"
     path = Path(str(faculty.get("path") or ""))
     if path.is_file():
         return Row(name, "started", "ok", f"state file present: {path.name}")
     shown = path.name or "missing"
-    return Row(name, "blocked", "down", f"faculty state file absent: {shown}")
+    producer = _faculty_producer(faculty)
+    return Row(
+        name,
+        "skipped",
+        "skipped",
+        f"no sample yet: {shown} is written by {producer}; launcher does not invent measurements",
+    )
+
+
+def _settle_faculties(rows: list[Row], faculties: list[dict]) -> list[Row]:
+    """Give a producer a moment to write a real sample. Still no invented files."""
+
+    by_name = {f"faculty/{item.get('name')}": item for item in faculties}
+    deadline = time.time() + 8.0
+
+    def waiting(row: Row) -> bool:
+        faculty = by_name.get(row.name)
+        if faculty is None or row.status != "skipped":
+            return False
+        return not Path(str(faculty.get("path") or "")).is_file()
+
+    while time.time() < deadline and any(waiting(row) for row in rows):
+        time.sleep(0.25)
+    settled: list[Row] = []
+    for row in rows:
+        faculty = by_name.get(row.name)
+        if faculty is None or row.status != "skipped":
+            settled.append(row)
+            continue
+        path = Path(str(faculty.get("path") or ""))
+        if path.is_file():
+            settled.append(Row(row.name, "started", "ok", f"state file present: {path.name}"))
+            continue
+        shown = path.name or "missing"
+        producer = _faculty_producer(faculty)
+        settled.append(
+            Row(
+                row.name,
+                "skipped",
+                "skipped",
+                f"no sample yet: {shown} is written by {producer}; launcher does not invent measurements",
+            )
+        )
+    return settled
 
 
 def _self_repair_reason(repo: Path) -> tuple[str, str]:
@@ -1483,20 +1523,23 @@ def _refresh_http(repo: Path, runner: Runner, rows: list[Row]) -> list[Row]:
         "compose/error_sink": "http://127.0.0.1:8088/healthz",
         "compose/api_b": "http://127.0.0.1:8766/healthz",
         "compose/frontend": "http://127.0.0.1:5173/",
-        "compose/nginx": "http://127.0.0.1:8080/healthz",
         "seat/trading_world_v5b": "http://127.0.0.1:8765/healthz",
         "organ/frontend_vite": "http://127.0.0.1:5173/",
-        "organ/unified_market_status": "http://127.0.0.1:8791/",
+        "organ/organism_circulation": "http://127.0.0.1:8799/health",
+        "organ/operator_gateway": "http://127.0.0.1:8790/healthz",
+        "organ/unified_market_status": "http://127.0.0.1:8791/healthz",
         "organ/mind_thought_action_hub": "http://127.0.0.1:13002/",
         "organ/mind_neural_canvas": "http://127.0.0.1:13012/",
-        "organ/orca_command_center": "http://127.0.0.1:8888/",
+        "organ/orca_command_center": "http://127.0.0.1:8888/health",
     }
-    deadline = time.time() + max(0.0, runner.http_wait)
     pending = {
         row.name: urls[row.name]
         for row in rows
-        if row.name in urls and row.status == "started" and "already" not in row.reason
+        if row.name in urls and row.status == "started" and urls[row.name] not in row.reason
     }
+    # The operator gateway imports the whole seat before it binds 8790.
+    extra_wait = 20.0 if "organ/operator_gateway" in pending else 0.0
+    deadline = time.time() + max(0.0, runner.http_wait) + extra_wait
     ready: set[str] = set()
     while pending and time.time() < deadline:
         for name, url in list(pending.items()):
@@ -1651,7 +1694,9 @@ def start_rows(repo: Path, runner: Runner, components: list[Component]) -> list[
     selected_compose = [
         component.name.split("/", 1)[1]
         for component in components
-        if component.kind == "compose" and component.name.split("/", 1)[1] in compose
+        if component.kind == "compose"
+        and component.name.split("/", 1)[1] in compose
+        and component.name != "compose/nginx"
     ]
     docker_note = compose_error or "compose file missing"
     docker_up = False
@@ -1693,6 +1738,7 @@ def start_rows(repo: Path, runner: Runner, components: list[Component]) -> list[
         elif component.kind == "dashboards":
             rows.append(launch_dashboards(rows))
     runner.settle(0.4)
+    rows = _settle_faculties(rows, faculties)
     rows = _refresh_http(repo, runner, rows)
     # Dashboards were computed before HTTP refresh. Recompute from the final rows.
     final: list[Row] = []

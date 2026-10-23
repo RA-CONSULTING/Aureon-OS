@@ -139,6 +139,13 @@ export const NAV_SECTIONS: NavSection[] = [
         Component: lazy(() => import("./pages/CompanyPage")),
       },
       {
+        path: "/console/local",
+        label: "Local console",
+        description: "Dashboard and Command Center. Live trading stays off. The launcher does not bind port 8080.",
+        icon: TerminalSquare,
+        Component: lazy(() => import("./pages/LauncherPage")),
+      },
+      {
         path: "/platform/console",
         label: "Legacy Console",
         description: "The original nine-tab operational console (superseded by the shell)",
