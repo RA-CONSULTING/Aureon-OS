@@ -5,8 +5,10 @@ GET /healthz and GET /health report that seat. The fusion seat keeps
 127.0.0.1:8765. A taken circulation port is a failed boot.
 metacognition, queen reasoning, logic, neural, lighthouse, QGITA, mycelium,
 baton relay, and council each subscribe to ``organism.circulation`` and
-publish their own pulse. Connectors switch on at boot. Self-code records a
-proposal; it does not edit the repo and it does not arm live trading.
+publish their own pulse. Autonomy audit records on that same topic are
+consumed by the metacognition and self-repair loops. Connectors switch on
+at boot. Self-code records a proposal; it does not edit the repo and it
+does not arm live trading.
 """
 
 from __future__ import annotations
@@ -40,6 +42,7 @@ _STATE: dict[str, Any] = {
     "inbox": {},
     "loops": {},
     "error": None,
+    "audit_consumed": {"metacognition": [], "self_repair": []},
 }
 
 ORGANS: tuple[dict[str, str], ...] = (
@@ -76,6 +79,8 @@ _DEFAULT_CONNECTORS = {
 _SECRET_PATH_MARKERS = (".env", "secret", "credential", "id_rsa", "password")
 _BATON_STAGES = ("intent", "plan", "execute", "confirm")
 _SUBSCRIBED = False
+_AUDIT_WIRED = False
+_AUDIT_CAP = 50
 _META: dict[str, Any] = {"truth_status": "loop_running", "loop": "running"}
 
 
@@ -213,12 +218,71 @@ def _on_circulation(thought: Thought) -> None:
             del heard[:-50]
 
 
+def _audit_record(thought: Thought) -> dict[str, Any] | None:
+    source = str(getattr(thought, "source", "") or "")
+    payload = getattr(thought, "payload", None)
+    if not isinstance(payload, dict):
+        return None
+    if payload.get("kind") != "autonomy_audit" and source != "autonomy_audit":
+        return None
+    return {
+        "event": str(payload.get("event") or ""),
+        "ts": payload.get("ts"),
+        "loop": "",
+    }
+
+
+def _remember_audit(loop: str, thought: Thought) -> None:
+    record = _audit_record(thought)
+    if record is None:
+        return
+    record["loop"] = loop
+    with _LOCK:
+        box = _STATE.setdefault("audit_consumed", {})
+        heard = box.setdefault(loop, [])
+        heard.append(record)
+        del heard[:-_AUDIT_CAP]
+
+
+def _on_audit_metacognition(thought: Thought) -> None:
+    _remember_audit("metacognition", thought)
+
+
+def _on_audit_self_repair(thought: Thought) -> None:
+    _remember_audit("self_repair", thought)
+
+
+def consumed_audits(loop: str) -> list[dict[str, Any]]:
+    """Audit events this loop has taken from the circulation bus."""
+
+    with _LOCK:
+        box = _STATE.get("audit_consumed") or {}
+        return [dict(item) for item in box.get(loop, [])]
+
+
 def _metacognition_loop(stop: threading.Event) -> None:
     while not stop.is_set():
         reading = _metacognition_reading()
         reading["loop"] = "running"
         with _LOCK:
+            heard = list((_STATE.get("audit_consumed") or {}).get("metacognition") or [])
+            if heard:
+                reading["last_audit_event"] = heard[-1].get("event")
             _META.update(reading)
+        stop.wait(5.0)
+
+
+def _self_repair_loop(stop: threading.Event) -> None:
+    """Keep the self-repair seat awake and name the last audit it consumed."""
+
+    while not stop.is_set():
+        with _LOCK:
+            heard = list((_STATE.get("audit_consumed") or {}).get("self_repair") or [])
+            loops = dict(_STATE.get("loops") or {})
+            loops["self_repair"] = "running"
+            if heard:
+                loops["self_repair_last_audit"] = str(heard[-1].get("event") or "")
+            _STATE["loops"] = loops
         stop.wait(5.0)
 
 
@@ -241,6 +305,11 @@ def _publish_tick(tick: int) -> None:
         )
         running[organ["name"]] = "running"
     with _LOCK:
+        previous = _STATE.get("loops") or {}
+        if previous.get("self_repair"):
+            running["self_repair"] = previous["self_repair"]
+        if previous.get("self_repair_last_audit"):
+            running["self_repair_last_audit"] = previous["self_repair_last_audit"]
         _STATE["loops"] = running
 
 
@@ -363,6 +432,7 @@ def start_organism_circulation(port: int | None = None) -> dict[str, Any]:
         if _STATE.get("started") and _STATE.get("thread") and _STATE["thread"].is_alive():
             return circulation_status()
         _STATE["inbox"] = {}
+        _STATE["audit_consumed"] = {"metacognition": [], "self_repair": []}
         _STATE["error"] = None
         stop = threading.Event()
         _STATE["stop"] = stop
@@ -370,11 +440,15 @@ def start_organism_circulation(port: int | None = None) -> dict[str, Any]:
     for name in _DEFAULT_CONNECTORS:
         switch_connector(name, True)
 
-    global _SUBSCRIBED
+    global _SUBSCRIBED, _AUDIT_WIRED
     bus = get_thought_bus()
     if not _SUBSCRIBED:
         bus.subscribe(_CIRCULATION, _on_circulation)
         _SUBSCRIBED = True
+    if not _AUDIT_WIRED:
+        bus.subscribe(_CIRCULATION, _on_audit_metacognition)
+        bus.subscribe(_CIRCULATION, _on_audit_self_repair)
+        _AUDIT_WIRED = True
 
     chosen = port
     if chosen is None:
@@ -403,6 +477,8 @@ def start_organism_circulation(port: int | None = None) -> dict[str, Any]:
     _publish_tick(0)
     meta = threading.Thread(target=_metacognition_loop, args=(stop,), name="metacognition-loop", daemon=True)
     meta.start()
+    repair = threading.Thread(target=_self_repair_loop, args=(stop,), name="self-repair-loop", daemon=True)
+    repair.start()
     thread = threading.Thread(target=_loop, args=(stop,), name="organism-circulation", daemon=True)
     thread.start()
     with _LOCK:

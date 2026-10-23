@@ -94,6 +94,14 @@ def append_review(repo_root: Path, event: str, **fields: object) -> None:
     line = json.dumps(record, sort_keys=True, default=str)
     with path.open("a", encoding="utf-8") as handle:
         handle.write(line + "\n")
+    from aureon.autonomous.autonomy_mode import audit_event
+
+    omitted = {"secret", "token", "authorization", "api_key", "api_secret", "content", "patch", "patch_text"}
+    audit_event(
+        event,
+        repo_root,
+        **{key: value for key, value in fields.items() if str(key).lower() not in omitted},
+    )
 
 
 def contained(repo_root: Path, file_path: str) -> Path:

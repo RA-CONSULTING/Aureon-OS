@@ -108,7 +108,10 @@ def test_full_mode_allows_protected_edits_and_still_refuses_credentials(
     assert not (tmp_path / "notes.py").exists()
     log = review_log_path(tmp_path).read_text(encoding="utf-8")
     assert secret not in log
-    assert not (tmp_path / "state" / "autonomy_audit.jsonl").exists()
+    audit = (tmp_path / "state" / "autonomy_audit.jsonl").read_text(encoding="utf-8")
+    assert secret not in audit
+    assert "write_allowed" in audit
+    assert "credential_path" in audit or "write_refused" in audit
     assert "credential_path" in log
     assert "credential_material" in log
 
@@ -253,7 +256,14 @@ def test_full_mode_can_arm_live_without_placing_an_order(
     report = status_report()
     assert report["live_trading"] is True
     assert report["may_act"] is True
-    assert not (tmp_path / "state" / "autonomy_audit.jsonl").exists()
+    audit_rows = [
+        json.loads(line)
+        for line in (tmp_path / "state" / "autonomy_audit.jsonl").read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    assert [row["event"] for row in audit_rows] == ["runtime_authority_refused", "runtime_authority_set"]
+    assert all(row["order_placed"] is False for row in audit_rows)
+    assert not (tmp_path / ".env").exists()
 
 
 def test_kill_file_does_not_stop_writes_arming_or_orders(
@@ -279,8 +289,20 @@ def test_kill_file_does_not_stop_writes_arming_or_orders(
     # Split the name so the economic census does not see a new order call.
     receipt = getattr(brain, "place_" + "market_order")("BTC/USD", "buy", quantity=1)
     assert receipt["reason"] != "kill_switch"
-    assert not (tmp_path / "orders.jsonl").exists()
-    assert not (tmp_path / "state" / "autonomy_audit.jsonl").exists()
+    order_rows = [
+        json.loads(line)
+        for line in (tmp_path / "orders.jsonl").read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    assert order_rows[-1]["event"] == "order"
+    assert order_rows[-1]["order_placed_by_audit"] is False
+    assert order_rows[-1]["reason"] != "kill_switch"
+    authority = [
+        json.loads(line)
+        for line in (tmp_path / "state" / "autonomy_audit.jsonl").read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    assert any(row["event"] == "runtime_authority_set" and row["order_placed"] is False for row in authority)
 
 
 def test_guarded_census_still_refuses_live_arming_and_full_mode_does_not(
@@ -295,3 +317,69 @@ def test_guarded_census_still_refuses_live_arming_and_full_mode_does_not(
     assert auditor.live_arming_refusal(report) is None
     recorded = json.dumps(report)
     assert "AUREON_LIVE_TRADING=1" not in recorded
+
+
+def test_audit_entries_are_written_and_reach_the_bus(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from aureon.autonomous.autonomy_mode import audit_event, record_order
+    from aureon.core.aureon_thought_bus import get_thought_bus
+    from aureon.core.organism_circulation import (
+        consumed_audits,
+        start_organism_circulation,
+        stop_organism_circulation,
+    )
+
+    monkeypatch.setenv("AUREON_ORGANISM_STATE", str(tmp_path / "organism-state"))
+    monkeypatch.setenv("AUREON_ORGANISM_HTTP_PORT", "0")
+    stop_organism_circulation()
+    started = start_organism_circulation(port=0)
+    try:
+        assert started["started"] is True
+        secret = "super-secret-value"
+        token = "sk-abcdefghij123456"
+        audit_event(
+            "self_change",
+            tmp_path,
+            path="arm.py",
+            api_secret=secret,
+            note=token,
+        )
+        record_order(
+            operation="place_market_order",
+            exchange="kraken",
+            symbol="BTC/USD",
+            side="buy",
+            status="held",
+            decision="hold",
+            reason="audit_probe",
+            repo_root=tmp_path,
+        )
+        text = (tmp_path / "state" / "autonomy_audit.jsonl").read_text(encoding="utf-8")
+        assert secret not in text
+        assert token not in text
+        assert "api_secret" not in text
+        events = [json.loads(line) for line in text.splitlines() if line.strip()]
+        change = next(row for row in events if row["event"] == "self_change")
+        order = next(row for row in events if row["event"] == "order")
+        assert change["path"] == "arm.py"
+        assert change["note"] == "[redacted]"
+        assert order["order_placed_by_audit"] is False
+        assert order["reason"] == "audit_probe"
+
+        thoughts = get_thought_bus().recall(topic_prefix="organism.circulation", limit=400)
+        payloads = [
+            item["payload"]
+            for item in thoughts
+            if isinstance(item.get("payload"), dict) and item["payload"].get("kind") == "autonomy_audit"
+        ]
+        bus_events = {item.get("event") for item in payloads}
+        assert {"self_change", "order"} <= bus_events
+        blob = json.dumps(payloads)
+        assert secret not in blob
+        assert token not in blob
+        assert "api_secret" not in blob
+
+        for loop in ("metacognition", "self_repair"):
+            consumed = {item["event"] for item in consumed_audits(loop)}
+            assert {"self_change", "order"} <= consumed
+    finally:
+        stop_organism_circulation()

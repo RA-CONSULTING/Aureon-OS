@@ -16,21 +16,38 @@ whether a key group is present. It does not read a value into a log and it
 does not place an order.
 
 ``AUREON_SELF_REPAIR_KILL`` and ``state/SELF_REPAIR_KILL`` do not stop a run.
-This module does not write ``state/autonomy_audit.jsonl``. A self-patch whose
-tests fail is left in place. Credential material is read from ``.env`` or the
-OS keychain and is never written into the repo or into a log.
+``state/autonomy_audit.jsonl`` is append-only. Self-changes and order attempts
+are recorded there, secret values are redacted, and the same records are
+published on the circulation thought bus. A self-patch whose tests fail is
+left in place. Credential material is read from ``.env`` or the OS keychain
+and is never written into the repo or into a log.
 """
 
 from __future__ import annotations
 
 import json
 import os
+import re
 from collections.abc import Mapping
+from datetime import datetime, timezone
 from pathlib import Path
 
 MODE_ENV = "AUREON_AUTONOMY_MODE"
 MODE_RELATIVE = Path("state/autonomy_mode.json")
 RUNTIME_RELATIVE = Path("state/autonomy_runtime.json")
+AUDIT_RELATIVE = Path("state/autonomy_audit.jsonl")
+AUDIT_ENV = "AUREON_AUTONOMY_AUDIT_PATH"
+_CIRCULATION = "organism.circulation"
+
+_SECRET_KEY = re.compile(
+    r"key|token|secret|password|credential|passwd|private|cookie|authorization|auth",
+    re.IGNORECASE,
+)
+_SECRET_VALUE = re.compile(
+    r"(?i)(?:\b(?:api[_-]?key|api[_-]?secret|secret|password|authorization|access_token)\b\s*[:=]\s*)\S+"
+    r"|(?:sk-[A-Za-z0-9_\-]{8,}|ghp_[A-Za-z0-9]{8,}|github_pat_\S+|AKIA[0-9A-Z]{8,}|Bearer\s+\S+)"
+    r"|-----BEGIN [A-Z ]*PRIVATE KEY-----"
+)
 
 # Presence only. Values are never logged. Same groups as the master launcher.
 _EXCHANGE_GROUPS = (
@@ -59,6 +76,10 @@ def _roots(repo_root: Path | None) -> list[Path]:
         seen.add(resolved)
         found.append(resolved)
     return found
+
+
+def _utc() -> str:
+    return datetime.now(timezone.utc).isoformat()
 
 
 def kill_switch_engaged(repo_root: Path | None = None) -> bool:
@@ -148,10 +169,76 @@ def guardrails_open(repo_root: Path | None = None) -> bool:
     return autonomy_mode(repo_root) == "full"
 
 
-def audit_event(event: str, repo_root: Path | None = None, **fields: object) -> None:
-    """Retired. This does not create an autonomy audit log."""
+def _redact_text(value: str) -> str:
+    return _SECRET_VALUE.sub("[redacted]", value)
 
-    del event, repo_root, fields
+
+def _redact(value: object) -> object:
+    if isinstance(value, str):
+        return _redact_text(value)
+    if isinstance(value, dict):
+        cleaned: dict[str, object] = {}
+        for key, item in value.items():
+            if _SECRET_KEY.search(str(key)):
+                continue
+            cleaned[str(key)] = _redact(item)
+        return cleaned
+    if isinstance(value, (list, tuple)):
+        return [_redact(item) for item in value]
+    return value
+
+
+def audit_log_path(repo_root: Path | None = None) -> Path:
+    """Where the append-only audit is written.
+
+    An explicit repo root wins, so a test can keep the log in its tmp dir.
+    Otherwise ``AUREON_AUTONOMY_AUDIT_PATH`` redirects the log, and the
+    default is ``state/autonomy_audit.jsonl`` under the cwd.
+    """
+
+    if repo_root is not None:
+        return Path(repo_root) / AUDIT_RELATIVE
+    override = os.environ.get(AUDIT_ENV, "").strip()
+    if override:
+        return Path(override)
+    return Path.cwd() / AUDIT_RELATIVE
+
+
+def _publish_audit(record: dict[str, object]) -> None:
+    """Hand the redacted record to the circulation bus. A quiet bus changes nothing."""
+
+    try:
+        from aureon.core.aureon_thought_bus import Thought, get_thought_bus
+
+        payload = dict(record)
+        payload["kind"] = "autonomy_audit"
+        get_thought_bus().publish(
+            Thought(source="autonomy_audit", topic=_CIRCULATION, payload=payload)
+        )
+    except Exception:
+        return
+
+
+def audit_event(event: str, repo_root: Path | None = None, **fields: object) -> None:
+    """Append one redacted record and publish it on the circulation bus.
+
+    Earlier lines are never rewritten. Secret-named fields are dropped and
+    secret-looking text becomes ``[redacted]``. A missing bus does not change
+    the caller. This does not place an order.
+    """
+
+    path = audit_log_path(repo_root)
+    record: dict[str, object] = {"ts": _utc(), "event": str(event)}
+    redacted = _redact(fields)
+    if isinstance(redacted, dict):
+        record.update(redacted)
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(record, sort_keys=True, default=str) + "\n")
+    except OSError:
+        return
+    _publish_audit(record)
 
 
 def record_order(
@@ -165,9 +252,20 @@ def record_order(
     reason: str = "",
     repo_root: Path | None = None,
 ) -> None:
-    """Retired. This does not place an order and does not write a log."""
+    """Append an order attempt. This does not place the order."""
 
-    del operation, exchange, symbol, side, status, decision, reason, repo_root
+    audit_event(
+        "order",
+        repo_root,
+        operation=operation,
+        exchange=exchange,
+        symbol=symbol,
+        side=side,
+        status=status,
+        decision=decision,
+        reason=reason,
+        order_placed_by_audit=False,
+    )
 
 
 def runtime_authority(repo_root: Path | None = None) -> dict[str, object]:
@@ -234,11 +332,13 @@ def set_runtime_authority(
 
     Full mode only. Writes the untracked runtime file and the process
     environment. Does not write ``.env``, does not write a credential, and
-    does not place an order. Guarded mode refuses.
+    does not place an order. Guarded mode refuses. The refusal and the set
+    are both appended to the autonomy audit.
     """
 
     root = Path(repo_root)
     if autonomy_mode(root) != "full":
+        audit_event("runtime_authority_refused", root, reason="autonomy_guarded", order_placed=False)
         return {"ok": False, "reason": "autonomy_guarded", "armed": False, "may_act": False, "order_placed": False}
     payload = {
         "mode": "full",
@@ -251,6 +351,13 @@ def set_runtime_authority(
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     os.environ["AUREON_LIVE_TRADING"] = "1" if live_trading else "0"
     os.environ["AUREON_MAY_ACT"] = "1" if may_act else "0"
+    audit_event(
+        "runtime_authority_set",
+        root,
+        live_trading=bool(live_trading),
+        may_act=bool(may_act),
+        order_placed=False,
+    )
     return {
         "ok": True,
         "reason": "runtime_authority_set",

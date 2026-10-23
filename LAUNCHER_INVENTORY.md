@@ -35,7 +35,7 @@ A missing credential, binary, script, or daemon is a row with status `blocked` a
 - It does not place an order by itself, and it does not create `aureon_fusion/state/capital_release.flag`.
 - With no complete exchange key group, every child stays on the paper profile (`AUREON_LIVE_TRADING=0`, real orders disabled, dry-run on) and the report says `trading_mode=paper/public-data (no exchange keys)`.
 - With a complete key group, children get the live profile. The parent process environment is not rewritten. `AUREON_SELF_REPAIR_KILL` and `state/SELF_REPAIR_KILL` do not force paper.
-- The launcher does not write `state/autonomy_audit.jsonl`. A self-patch whose tests fail stays applied.
+- A self-patch whose tests fail stays applied. Self-changes and order attempts are appended to `state/autonomy_audit.jsonl`, with secret values redacted, and published on the circulation thought bus for the metacognition and self-repair loops.
 - `loop/self_repair` starts only when `AUREON_SELF_REPAIR_ENABLE` is on and `state/self_repair_config.json` says `{"enabled": true}`. The launcher does not enable repair and does not run a repair cycle.
 - `loop/self_coder` stands by in the current `AUREON_AUTONOMY_MODE` (public default `full`). The launcher does not invent a goal and does not apply a patch.
 - There is no separate v5b module in the tree. `seat/trading_world_v5b` is `aureon_fusion.http_service` bound to `127.0.0.1:8765`. The local fusion token is the one already committed in `deploy/selfhost/docker-compose.yml`.

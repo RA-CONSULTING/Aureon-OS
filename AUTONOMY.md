@@ -25,17 +25,18 @@ Explicit `AUREON_AUTONOMY_MODE=guarded` puts the self-coding denylist back and k
 
 Credentials are read from `.env` or the OS keychain. They are never written into the repo, into a patch, or into a log. `.env`, key files, and assignments such as `API_SECRET=<value>` are refused in full mode too.
 
-`AUREON_SELF_REPAIR_KILL` and `state/SELF_REPAIR_KILL` do not stop self-writes or order dispatch. The launcher does not write `state/autonomy_audit.jsonl`. A self-patch whose tests fail stays applied. A patch whose tests pass still commits on the current branch. Nothing is pushed.
+`AUREON_SELF_REPAIR_KILL` and `state/SELF_REPAIR_KILL` do not stop self-writes or order dispatch. Changes and order attempts are appended to `state/autonomy_audit.jsonl`, with secret values redacted, and published on the circulation thought bus for the metacognition and self-repair loops. A self-patch whose tests fail stays applied. A patch whose tests pass still commits on the current branch. Nothing is pushed.
 
 `--stop` and `--status` on the master launcher are process control. They are not a trading or self-coding stop.
 
 ## Risks
 
-Full mode means Aureon can change the code that decides whether money moves, can approve those edits itself, and can commit them when the tests it ran came back clean. A patch whose tests fail stays in the working tree. A bad patch that still passes its own tests stays committed. When exchange keys are in `.env`, a venue can lose money. There is no kill switch and no autonomy audit of the fill.
+Full mode means Aureon can change the code that decides whether money moves, can approve those edits itself, and can commit them when the tests it ran came back clean. A patch whose tests fail stays in the working tree. A bad patch that still passes its own tests stays committed. When exchange keys are in `.env`, a venue can lose money. There is no kill switch. Order attempts are written to the autonomy audit, and secret values stay redacted.
 
 ## Where it lives
 
-- `aureon/autonomous/autonomy_mode.py` — mode, runtime authority, key presence
+- `aureon/autonomous/autonomy_mode.py` — mode, runtime authority, key presence, and the append-only audit
+- `aureon/core/organism_circulation.py` — metacognition and self-repair consume audit events on the thought bus
 - `aureon/launch/master.py` — boot profile, paper without keys, live with keys, `--stop` and `--status`
 - `aureon/autonomous/self_repair_guard.py` — denylist, open when the mode is full
 - `aureon/autonomous/aureon_internal_self_coder.py` — a failed patch stays applied; full mode commits after tests pass
