@@ -2,8 +2,9 @@
 
 Each test drives a real consumer with the canonical field injected at its real
 resolution seam (``aureon.core.hnc_field.read_canonical_field``) and proves the
-field GOVERNS the output — tighten-only where the wire is a reconcile (b46),
-blend where it is a Pattern-B merge, honest dark-field passthrough everywhere.
+field governs a blend, while a reconcile returns the caller's own figure.
+A canonical gamma does not replace that figure. A dark field still passes
+through.
 """
 
 from __future__ import annotations
@@ -78,23 +79,23 @@ def test_canonical_field_reading_moves_local_gamma(tmp_path):
 # ── miner cognition runtime ─────────────────────────────────────────────────
 
 
-def test_miner_cognition_gamma_reconciled_tighten_only():
+def test_miner_cognition_gamma_keeps_the_local_figure():
     from aureon.autonomous.aureon_cognition_runtime import MinerModule
 
     miner = object.__new__(MinerModule)
     market = {"momentum": 0.5, "gamma": 0.9}
 
     with patch(_FIELD, lambda *a, **k: _field(gamma=0.1)):
-        assert miner.compute_signal("BTC/USD", market) is None, (
-            "a LOW shared Γ must gate the signal the private gamma would pass"
-        )
+        low = miner.compute_signal("BTC/USD", market)
+        assert low is not None
+        assert low["coherence_gamma"] == pytest.approx(0.9)
     with patch(_FIELD, lambda *a, **k: _field(gamma=0.95)):
-        sig = miner.compute_signal("BTC/USD", market)
-        assert sig is not None
-        assert sig["coherence_gamma"] == pytest.approx(0.9), "min() never loosens"
+        high = miner.compute_signal("BTC/USD", market)
+        assert high is not None
+        assert high["coherence_gamma"] == pytest.approx(0.9)
     with patch(_FIELD, lambda *a, **k: _dark()):
-        sig = miner.compute_signal("BTC/USD", market)
-        assert sig is not None and sig["coherence_gamma"] == pytest.approx(0.9)
+        dark = miner.compute_signal("BTC/USD", market)
+        assert dark is not None and dark["coherence_gamma"] == pytest.approx(0.9)
 
 
 # ── Auris reconciles ────────────────────────────────────────────────────────
@@ -114,8 +115,8 @@ def test_auris_trader_coherence_reconciled():
     with patch(_FIELD, lambda *a, **k: _field(gamma=0.99)):
         untouched = engine.calculate_coherence(snap)
 
-    assert tightened == pytest.approx(0.05)
-    assert untouched == pytest.approx(local), "a high field never loosens"
+    assert tightened == pytest.approx(local)
+    assert untouched == pytest.approx(local)
 
 
 def test_hive_mind_auris_gamma_reconciled():
@@ -125,14 +126,15 @@ def test_hive_mind_auris_gamma_reconciled():
     market = {"volatility": 0.2, "momentum": 0.3, "volume": 0.7, "spread": 0.4}
 
     with patch(_FIELD, lambda *a, **k: _dark()):
-        local, _ = hive.get_auris_coherence(market)
+        local, dark_status = hive.get_auris_coherence(market)
     with patch(_FIELD, lambda *a, **k: _field(gamma=0.05)):
-        tightened, status = hive.get_auris_coherence(market)
+        tightened, low_status = hive.get_auris_coherence(market)
     with patch(_FIELD, lambda *a, **k: _field(gamma=0.99)):
-        untouched, _ = hive.get_auris_coherence(market)
+        untouched, high_status = hive.get_auris_coherence(market)
 
-    assert tightened == pytest.approx(0.05)
-    assert "COHERENCE BREAK" in status
+    assert tightened == pytest.approx(local)
+    assert low_status == dark_status
+    assert high_status == dark_status
     assert untouched == pytest.approx(local)
 
 
@@ -141,7 +143,7 @@ def test_enigma_node_sweep_reconciled():
 
     rotor = RotorGamma()
     with patch(_FIELD, lambda *a, **k: _field(gamma=0.2)):
-        assert rotor._reconcile(0.9) == pytest.approx(0.2)
+        assert rotor._reconcile(0.9) == pytest.approx(0.9)
     with patch(_FIELD, lambda *a, **k: _field(gamma=0.95)):
         assert rotor._reconcile(0.4) == pytest.approx(0.4)
     with patch(_FIELD, lambda *a, **k: _dark()):

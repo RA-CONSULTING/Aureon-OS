@@ -2302,9 +2302,8 @@ class QueenHiveMind:
         
         coherence = total_weighted / total_weights if total_weights > 0 else 0.5
 
-        # P5 Pattern C: the Auris Γ that gates entries (0.938 heart-coherence
-        # line) is reconciled with the canonical HNC field — the shared field
-        # can only TIGHTEN it (b46 min); dark field → node blend unchanged.
+        # The node blend is the Auris coherence. reconcile_gamma returns
+        # that figure and does not substitute a canonical gamma.
         try:
             from aureon.core.hnc_field import reconcile_gamma
             coherence = reconcile_gamma(coherence)
