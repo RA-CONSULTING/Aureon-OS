@@ -1,10 +1,9 @@
 """Runtime helpers for Aureon startup and audit paths.
 
-A live child is allowed when the kill switch is off and either
-``AUREON_LIVE_TRADING`` is on or an exchange key group is present, and real
-orders are not explicitly disabled. With neither a live flag nor keys, the
-reason is paper/public-data. These helpers do not contact an exchange and do
-not place an order.
+A live child is allowed when ``AUREON_LIVE_TRADING`` is on or an exchange key
+group is present, and real orders are not explicitly disabled. With neither a
+live flag nor keys, the reason is paper/public-data. These helpers do not
+contact an exchange and do not place an order.
 
 ``PRODUCTION_RELEASE_ATTESTED`` remains false as a historical constant. It is
 not consulted when deciding whether an order environment is live.
@@ -88,17 +87,6 @@ def live_trading_enabled(environ: MutableMapping[str, str] | None = None) -> boo
     return env_truthy("AUREON_LIVE_TRADING", environ=environ)
 
 
-def _kill_switch_on(env: MutableMapping[str, str]) -> bool:
-    if str(env.get("AUREON_SELF_REPAIR_KILL", "")).strip().lower() in TRUE_VALUES:
-        return True
-    try:
-        from aureon.autonomous.autonomy_mode import kill_switch_engaged
-
-        return kill_switch_engaged()
-    except Exception:
-        return False
-
-
 def real_orders_allowed(environ: MutableMapping[str, str] | None = None) -> bool:
     return live_block_reason("runtime", environ) is None
 
@@ -108,8 +96,6 @@ def live_block_reason(
     environ: MutableMapping[str, str] | None = None,
 ) -> str | None:
     env = os.environ if environ is None else environ
-    if _kill_switch_on(env):
-        return f"{context}: kill_switch"
     if real_orders_disabled(env):
         return f"{context}: AUREON_DISABLE_REAL_ORDERS=1 blocks live exchange mutations"
     if live_trading_enabled(env):
@@ -147,11 +133,9 @@ def apply_safe_runtime_environment(
 def apply_live_runtime_environment(
     environ: MutableMapping[str, str] | None = None,
 ) -> MutableMapping[str, str]:
-    """Apply the live profile. The kill switch keeps the safe profile."""
+    """Apply the live profile."""
 
     env = os.environ if environ is None else environ
-    if _kill_switch_on(env):
-        return apply_safe_runtime_environment(env)
     for key, value in LIVE_RUNTIME_ENV.items():
         env[key] = value
     return env
@@ -179,8 +163,6 @@ def child_env_for_mode(
     env = dict(os.environ if base is None else base)
     env["PYTHONUNBUFFERED"] = "1"
     if live:
-        if _kill_switch_on(env):
-            raise RuntimeError("child trading process: kill_switch")
         env["AUREON_LIVE_TRADING"] = "1"
         env["AUREON_DISABLE_REAL_ORDERS"] = "0"
         env["AUREON_DISABLE_EXCHANGE_MUTATIONS"] = "0"

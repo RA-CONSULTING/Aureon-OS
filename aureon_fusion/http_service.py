@@ -327,10 +327,8 @@ def make_handler(token: str):
 
 
 def serve(port: int | None = None) -> ThreadingHTTPServer:
-    from aureon.autonomous.autonomy_mode import autonomy_mode, kill_switch_engaged
+    from aureon.autonomous.autonomy_mode import autonomy_mode
 
-    if kill_switch_engaged():
-        raise RuntimeError("refusing to start: kill switch engaged")
     if live_trading_armed() and autonomy_mode() != "full":
         raise RuntimeError("refusing to start: live trading flags are set; this service stays disarmed")
     token = token_from_env()

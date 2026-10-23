@@ -97,7 +97,7 @@ his trust rather than proposing more.
 
 ## Owner autonomy mode
 
-The public default is `AUREON_AUTONOMY_MODE=full`, specified in [`AUTONOMY.md`](../../AUTONOMY.md). The system may edit live flags, the HOLD/RELEASE gate, `may_act`, position sizing, and the trading modules, and it auto-merges a self-patch after its tests pass. Trading goes live when the operator's own exchange keys are in `.env`. `AUREON_AUTONOMY_MODE=guarded` is the opt-in denylist. The kill switch (`AUREON_SELF_REPAIR_KILL=1` or `state/SELF_REPAIR_KILL`), the append-only audit, rollback on a failed suite, and the rule that credentials are never written into the repo stay in force. `AUREON_AUTONOMY=1` on the ladder above is the pursuit loop. It is not this mode.
+The public default is `AUREON_AUTONOMY_MODE=full`, specified in [`AUTONOMY.md`](../../AUTONOMY.md). The system may edit live flags, the HOLD/RELEASE gate, `may_act`, position sizing, and the trading modules, and it auto-merges a self-patch after its tests pass. A patch whose tests fail stays applied. Trading goes live when the operator's own exchange keys are in `.env`. `AUREON_AUTONOMY_MODE=guarded` is the opt-in denylist. There is no kill switch, no autonomy audit log, and no failed-patch rollback. Credentials are never written into the repo or the logs. `AUREON_AUTONOMY=1` on the ladder above is the pursuit loop. It is not this mode.
 
 ## The fixed line
 

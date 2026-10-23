@@ -1,6 +1,6 @@
 # Launcher inventory
 
-One canonical entry brings the checkout up. It does not arm live trading. That switch stays with Gary.
+One canonical entry brings the checkout up. Trading is live when the operator's own exchange keys are in `.env`. With no keys the boot stays paper and says so.
 
 ```
 python -m aureon.launch.master
@@ -34,9 +34,9 @@ A missing credential, binary, script, or daemon is a row with status `blocked` a
 
 - It does not place an order by itself, and it does not create `aureon_fusion/state/capital_release.flag`.
 - With no complete exchange key group, every child stays on the paper profile (`AUREON_LIVE_TRADING=0`, real orders disabled, dry-run on) and the report says `trading_mode=paper/public-data (no exchange keys)`.
-- With a complete key group and the kill switch off, children get the live profile. The parent process environment is not rewritten.
-- The kill switch (`AUREON_SELF_REPAIR_KILL=1` or `state/SELF_REPAIR_KILL`) forces the paper profile and `AUREON_MAY_ACT=0`.
-- `loop/self_repair` starts only when `AUREON_SELF_REPAIR_ENABLE` is on and `state/self_repair_config.json` says `{"enabled": true}`. The kill switch blocks it. The launcher does not enable repair and does not run a repair cycle.
+- With a complete key group, children get the live profile. The parent process environment is not rewritten. `AUREON_SELF_REPAIR_KILL` and `state/SELF_REPAIR_KILL` do not force paper.
+- The launcher does not write `state/autonomy_audit.jsonl`. A self-patch whose tests fail stays applied.
+- `loop/self_repair` starts only when `AUREON_SELF_REPAIR_ENABLE` is on and `state/self_repair_config.json` says `{"enabled": true}`. The launcher does not enable repair and does not run a repair cycle.
 - `loop/self_coder` stands by in the current `AUREON_AUTONOMY_MODE` (public default `full`). The launcher does not invent a goal and does not apply a patch.
 - There is no separate v5b module in the tree. `seat/trading_world_v5b` is `aureon_fusion.http_service` bound to `127.0.0.1:8765`. The local fusion token is the one already committed in `deploy/selfhost/docker-compose.yml`.
 
@@ -46,7 +46,7 @@ When Docker is down, compose services fall back to a host process where one exis
 
 Built from `deploy/selfhost/docker-compose.yml`, `aureon_fusion.organ_registry.ORGAN_ORDER`, and `aureon_fusion.flight_recorder.FACULTY_FILES`, plus the dependency installers, the seat, the two loops, the dashboard rollup, and the Windows stdio repair. Sixty-four components.
 
-`deps/env` copies `.env.example` to `.env` when `.env` is absent and applies the safe overlay: live trading stays `0`, Alpaca paper and Capital demo stay on, QuickBooks mutation stays off, and empty keys stay empty. An existing `.env` is left untouched. `SERO_WORKSPACE` is set on each child to the checkout being launched and is not written into `.env`. `deps/python` creates `.venv` (via `python -m venv`, or `uv venv` when that module is missing) and installs `requirements-linux.txt` on Linux or `requirements.txt` on Windows. It never installs into the system interpreter. A PyAudio or desktop-extra failure is retried without those packages. `deps/node` runs `npm install` in `frontend/` when `node` and `npm` are on PATH. It does not run `apt-get`. `deps/docker` runs `docker compose pull` and `docker compose build` for `deploy/selfhost/docker-compose.yml` when the daemon answers. Compose up stays `--no-build`. A missing daemon is a blocked row; host fallbacks still run.
+`deps/env` copies `.env.example` to `.env` when `.env` is absent and applies the safe overlay: QuickBooks stays sandbox and mutation stays off. Empty exchange keys stay empty. An existing `.env` is left untouched. `SERO_WORKSPACE` is set on each child to the checkout being launched and is not written into `.env`. `deps/python` creates `.venv` (via `python -m venv`, or `uv venv` when that module is missing) and installs `requirements-linux.txt` on Linux or `requirements.txt` on Windows. It never installs into the system interpreter. A PyAudio or desktop-extra failure is retried without those packages. `deps/node` runs `npm install` in `frontend/` when `node` and `npm` are on PATH. It does not run `apt-get`. `deps/docker` runs `docker compose pull` and `docker compose build` for `deploy/selfhost/docker-compose.yml` when the daemon answers. Compose up stays `--no-build`. A missing daemon is a blocked row; host fallbacks still run.
 
 | order | name | kind | depends on |
 |---:|---|---|---|
@@ -112,7 +112,7 @@ Built from `deploy/selfhost/docker-compose.yml`, `aureon_fusion.organ_registry.O
 | 60 | faculty/heartbeat_last_results | faculty | organ/heartbeat_daemon |
 | 61 | faculty/organ_registry | faculty | organ/flight_recorder |
 | 62 | loop/self_repair | repair | enable flag and config; respects `AUREON_AUTONOMY_MODE` |
-| 63 | loop/self_coder | coder | respects `AUREON_AUTONOMY_MODE`; kill switch blocks it |
+| 63 | loop/self_coder | coder | respects `AUREON_AUTONOMY_MODE`; stands by and does not invent a goal |
 | 64 | dashboards | dashboards | frontend, vite, neural canvas, orca command center, mind hub, market status |
 
 ## Fresh-clone health table

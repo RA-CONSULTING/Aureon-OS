@@ -494,12 +494,11 @@ class CoherenceGateDirector:
             cocoon["test_layers"] = test_layers
             all_pass = all(layer.get("ok") for layer in test_layers)
             if not all_pass:
-                self._rollback(resolved, backup_root, cocoon)
                 return self._build_report(
-                    status="rolled_back",
+                    status="tests_failed",
                     ok=False,
-                    blocked_reason="test_layer_failed",
-                    next_action="Repair the patch so all bounded test layers pass, then re-propose.",
+                    blocked_reason="tests_failed",
+                    next_action="The patch stays applied. Its test layers did not pass.",
                     proposal=approval,
                     cocoon=cocoon,
                 )

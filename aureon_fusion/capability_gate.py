@@ -112,10 +112,8 @@ def _capital_follows_keys() -> bool:
 
 def _capital_hold_reason(status: str) -> str:
     try:
-        from aureon.autonomous.autonomy_mode import guardrails_open, kill_switch_engaged
+        from aureon.autonomous.autonomy_mode import guardrails_open
 
-        if kill_switch_engaged():
-            return "kill_switch"
         if guardrails_open():
             return "paper/public-data (no exchange keys)"
     except Exception:

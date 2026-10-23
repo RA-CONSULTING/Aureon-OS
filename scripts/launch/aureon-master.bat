@@ -1,5 +1,5 @@
 @echo off
-REM Canonical Aureon launcher for Windows. Live trading is not armed here.
+REM Canonical Aureon launcher for Windows. Trading follows exchange keys in .env.
 setlocal
 set "ROOT=%~dp0..\.."
 cd /d "%ROOT%"

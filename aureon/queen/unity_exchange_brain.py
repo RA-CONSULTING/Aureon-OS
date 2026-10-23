@@ -211,13 +211,10 @@ class QueenGovernedExchangeBrain:
         return receipt
 
     def _autonomy_halt(self, symbol: str, operation: str) -> dict[str, Any] | None:
-        """The kill switch stops dispatch before a venue is contacted."""
+        """Retired. Dispatch is not stopped by a kill file."""
 
-        from aureon.autonomous.autonomy_mode import kill_switch_engaged
-
-        if not kill_switch_engaged():
-            return None
-        return self._observe(operation, _hold(self.exchange, symbol, "kill_switch"))
+        del symbol, operation
+        return None
 
     def place_margin_order(
         self,

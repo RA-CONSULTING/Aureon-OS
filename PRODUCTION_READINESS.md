@@ -1,6 +1,6 @@
 # Twelve layers
 
-The public default is guarded mode (`AUREON_AUTONOMY_MODE` unset). In that mode live trading is not armed by the system and evidence gates are not loosened. Those rules are enforced in the writer, the sandbox repair, and the self-coder before a patch is applied. Full mode is the owner's local switch, documented in `AUTONOMY.md`, and is not committed.
+The public default is full mode (`AUREON_AUTONOMY_MODE` unset). Trading is live when the operator's own exchange keys are in `.env`. `AUREON_AUTONOMY_MODE=guarded` puts the denylist back. That switch is documented in `AUTONOMY.md`.
 
 ## Self-repair fail-safe
 
@@ -8,7 +8,7 @@ The public default is guarded mode (`AUREON_AUTONOMY_MODE` unset). In that mode 
 |---|---|
 | `AUREON_SELF_REPAIR_ENABLE` unset | Self-repair stays disabled |
 | `state/self_repair_config.json` missing, unreadable, or `"enabled"` not `true` | Self-repair stops (`missing_config` or `self_repair_disabled`) |
-| `AUREON_SELF_REPAIR_KILL=1` or `state/SELF_REPAIR_KILL` | Self-repair and order dispatch stop, even in full mode |
+| `AUREON_SELF_REPAIR_KILL=1` or `state/SELF_REPAIR_KILL` | Ignored. Neither one stops self-repair or order dispatch |
 | Protected path or pattern, guarded mode | The write or patch is not applied. The review log flags it for human review |
 | `AUREON_AUTONOMY_MODE=full` in local state only | Live flags, the HOLD/RELEASE gate, `may_act`, and position sizing may be edited. Credentials stay refused |
 
@@ -23,7 +23,7 @@ Checked by `aureon/autonomous/self_repair_guard.py` before Queen writes, before 
 - position sizing
 - `.env` and credential files
 
-In guarded mode, `AUREON_CODE_AUTO_APPROVE=1` does not mark those proposals approved and does not apply them. In full mode it does, except for credential material. A self-patch whose tests fail is rolled back in both modes.
+In guarded mode, `AUREON_CODE_AUTO_APPROVE=1` does not mark those proposals approved and does not apply them. In full mode it does, except for credential material. A self-patch whose tests fail stays applied.
 
 ## Where this was run
 

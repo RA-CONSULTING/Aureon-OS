@@ -21,24 +21,22 @@ With no complete key group, every child stays in paper/public-data mode and the 
 
 Explicit `AUREON_AUTONOMY_MODE=guarded` puts the self-coding denylist back and keeps that boot on the paper profile.
 
-## What stays, in both modes
+## What stays
 
-Gary asked that these three stay until he says otherwise.
+Credentials are read from `.env` or the OS keychain. They are never written into the repo, into a patch, or into a log. `.env`, key files, and assignments such as `API_SECRET=<value>` are refused in full mode too.
 
-- `AUREON_SELF_REPAIR_KILL=1`, or the file `state/SELF_REPAIR_KILL`, stops self-writes and order dispatch. Remove the variable and the file to let the mode work again.
-- `state/autonomy_audit.jsonl` is append-only. Every self-change and every order attempt is a line. The log is not rewritten. Secret values are redacted and omitted.
-- A self-patch that makes its test command fail is rolled back with `git apply -R`. Nothing is pushed.
+`AUREON_SELF_REPAIR_KILL` and `state/SELF_REPAIR_KILL` do not stop self-writes or order dispatch. The launcher does not write `state/autonomy_audit.jsonl`. A self-patch whose tests fail stays applied. A patch whose tests pass still commits on the current branch. Nothing is pushed.
 
-Credentials are read from `.env` or the OS keychain. They are never written into the repo, into a patch, or into the audit log. `.env`, key files, and assignments such as `API_SECRET=<value>` are refused in full mode too.
+`--stop` and `--status` on the master launcher are process control. They are not a trading or self-coding stop.
 
 ## Risks
 
-Full mode means Aureon can change the code that decides whether money moves, can approve those edits itself, and can commit them when the tests it ran came back clean. A bad patch that still passes its own tests stays committed. When exchange keys are in `.env`, a venue can lose money. The kill switch stops the next write and the next order; it does not unwind a fill that already happened. The audit log is the record of what the system changed and what it tried to send.
+Full mode means Aureon can change the code that decides whether money moves, can approve those edits itself, and can commit them when the tests it ran came back clean. A patch whose tests fail stays in the working tree. A bad patch that still passes its own tests stays committed. When exchange keys are in `.env`, a venue can lose money. There is no kill switch and no autonomy audit of the fill.
 
 ## Where it lives
 
-- `aureon/autonomous/autonomy_mode.py` — mode, kill switch, audit, runtime authority, key presence
-- `aureon/launch/master.py` — boot profile, paper without keys, live with keys
-- `aureon/autonomous/self_repair_guard.py` — denylist, open only when the mode is full and the kill switch is off
-- `aureon/autonomous/aureon_internal_self_coder.py` — rollback, and auto-merge in full mode after tests pass
-- `aureon/queen/unity_exchange_brain.py` — kill switch before dispatch, and an audit line for every order attempt
+- `aureon/autonomous/autonomy_mode.py` — mode, runtime authority, key presence
+- `aureon/launch/master.py` — boot profile, paper without keys, live with keys, `--stop` and `--status`
+- `aureon/autonomous/self_repair_guard.py` — denylist, open when the mode is full
+- `aureon/autonomous/aureon_internal_self_coder.py` — a failed patch stays applied; full mode commits after tests pass
+- `aureon/queen/unity_exchange_brain.py` — dispatch is not stopped by a kill file

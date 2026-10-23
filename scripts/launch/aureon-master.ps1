@@ -1,4 +1,4 @@
-# Canonical Aureon launcher for Windows. Live trading is not armed here.
+# Canonical Aureon launcher for Windows. Trading follows exchange keys in .env.
 $ErrorActionPreference = "Stop"
 $Root = Resolve-Path (Join-Path $PSScriptRoot "..\..")
 Set-Location $Root

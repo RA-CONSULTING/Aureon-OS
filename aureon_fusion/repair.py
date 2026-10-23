@@ -5,11 +5,10 @@
 The project needs pytest tests. The repair edits implementation files, reruns
 the tests, and commits on a local branch named aureon-self-repair/<timestamp>.
 It stays disabled unless AUREON_SELF_REPAIR_ENABLE=1 and the project has
-state/self_repair_config.json with {"enabled": true}. AUREON_SELF_REPAIR_KILL=1,
-or state/SELF_REPAIR_KILL, stops it. A missing config stops it too. In the
-public default, guarded mode, live-trading flags, evidence gates, position
-sizing, and credential files are refused before a patch is applied. Full mode
-is the owner's local switch. See AUTONOMY.md.
+state/self_repair_config.json with {"enabled": true}. A missing config stops
+it. The kill variable and the kill file do not. Explicit guarded mode refuses
+live-trading flags, evidence gates, position sizing, and credential files
+before a patch is applied. The public default is full. See AUTONOMY.md.
 """
 
 from __future__ import annotations

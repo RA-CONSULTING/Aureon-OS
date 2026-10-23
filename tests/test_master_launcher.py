@@ -370,8 +370,9 @@ def test_exchange_keys_arm_the_child_without_placing_an_order(
     assert "local-test-key" not in text
 
 
-def test_kill_switch_keeps_a_keyed_child_on_paper(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_kill_file_does_not_force_a_keyed_child_onto_paper(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     _clear_trading_env(monkeypatch)
+    monkeypatch.setenv("AUREON_SELF_REPAIR_KILL", "1")
     (tmp_path / ".env").write_text(
         "KRAKEN_API_KEY=local-test-key\nKRAKEN_API_SECRET=local-test-secret\n",
         encoding="utf-8",
@@ -380,9 +381,9 @@ def test_kill_switch_keeps_a_keyed_child_on_paper(tmp_path: Path, monkeypatch: p
     kill.parent.mkdir()
     kill.write_text("stop\n", encoding="utf-8")
     env = paper_env({"PYTHONPATH": ""}, tmp_path)
-    assert env["AUREON_LIVE_TRADING"] == "0"
-    assert env["AUREON_MAY_ACT"] == "0"
-    assert env["AUREON_DISABLE_REAL_ORDERS"] == "1"
+    assert env["AUREON_LIVE_TRADING"] == "1"
+    assert env["AUREON_MAY_ACT"] == "1"
+    assert env["AUREON_DISABLE_REAL_ORDERS"] == "0"
 
 
 def test_self_repair_respects_enable_gate(launcher_state: Path, monkeypatch: pytest.MonkeyPatch) -> None:

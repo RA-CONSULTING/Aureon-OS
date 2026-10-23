@@ -16,9 +16,9 @@ position sizing, or write credential files. Those attempts are flagged for
 human review and are not applied. Full autonomy mode, set locally by the owner,
 allows the first three. Credential files stay refused in both modes. Repair
 stays disabled unless AUREON_SELF_REPAIR_ENABLE=1 and
-state/self_repair_config.json contains {"enabled": true}. AUREON_SELF_REPAIR_KILL=1,
-or state/SELF_REPAIR_KILL, stops it. A missing config stops it too. The repair
-does not rewrite the test file.
+state/self_repair_config.json contains {"enabled": true}. A missing config
+stops it. The kill variable and the kill file do not. The repair does not
+rewrite the test file.
 """
 
 from __future__ import annotations

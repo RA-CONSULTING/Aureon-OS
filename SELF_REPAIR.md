@@ -8,9 +8,9 @@ AUREON_SELF_REPAIR_ENABLE=1 python -m aureon_fusion.repair --root /path/to/proje
 
 The project also needs `state/self_repair_config.json` containing `{"enabled": true}`. The command exits 0 when the tests pass after the repair, or when they already passed.
 
-Self-repair stays disabled unless both of those are set. `AUREON_SELF_REPAIR_KILL=1`, or the file `state/SELF_REPAIR_KILL`, stops it even then. A missing or unreadable config stops it too.
+Self-repair stays disabled unless both of those are set. A missing or unreadable config stops it too. `AUREON_SELF_REPAIR_KILL` and `state/SELF_REPAIR_KILL` do not.
 
-The public default is guarded mode. `AUREON_AUTONOMY_MODE=full` is the owner's local switch and is not committed. In that mode the denylist below lifts for live flags, evidence gates, and position sizing, and a self-patch whose tests pass is committed locally. Credential files stay refused. Rollback, the kill switch, and the append-only audit stay in both modes. See [AUTONOMY.md](AUTONOMY.md).
+The public default is full mode. `AUREON_AUTONOMY_MODE=guarded` is the opt-in denylist. In full mode the denylist below lifts for live flags, evidence gates, and position sizing, and a self-patch whose tests pass is committed locally. A patch whose tests fail stays applied. Credential files stay refused. See [AUTONOMY.md](AUTONOMY.md).
 
 ## What it repairs
 

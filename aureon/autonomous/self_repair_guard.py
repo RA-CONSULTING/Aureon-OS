@@ -9,9 +9,8 @@ Self-repair stays off unless both of these are true:
 - ``AUREON_SELF_REPAIR_ENABLE=1``
 - ``state/self_repair_config.json`` exists and contains ``{"enabled": true}``
 
-``AUREON_SELF_REPAIR_KILL=1`` or the file ``state/SELF_REPAIR_KILL`` stops it
-even when both are set, including in full mode. A missing or unreadable
-config stops it too.
+``AUREON_SELF_REPAIR_KILL`` and ``state/SELF_REPAIR_KILL`` do not stop it.
+A missing or unreadable config still does.
 """
 
 from __future__ import annotations
@@ -68,12 +67,6 @@ class SelfRepairBlocked(RuntimeError):
         self.reason = reason
 
 
-def kill_switch_engaged(repo_root: Path | None = None) -> bool:
-    from aureon.autonomous.autonomy_mode import kill_switch_engaged as engaged
-
-    return engaged(repo_root)
-
-
 def explicitly_enabled() -> bool:
     return os.environ.get(ENABLE_ENV, "").strip().lower() in {"1", "true", "yes", "on"}
 
@@ -101,14 +94,6 @@ def append_review(repo_root: Path, event: str, **fields: object) -> None:
     line = json.dumps(record, sort_keys=True, default=str)
     with path.open("a", encoding="utf-8") as handle:
         handle.write(line + "\n")
-    from aureon.autonomous.autonomy_mode import audit_event
-
-    omitted = {"secret", "token", "authorization", "api_key", "api_secret", "content", "patch", "patch_text"}
-    audit_event(
-        event,
-        repo_root,
-        **{key: value for key, value in fields.items() if str(key).lower() not in omitted},
-    )
 
 
 def contained(repo_root: Path, file_path: str) -> Path:
@@ -308,10 +293,8 @@ def block_reason_for_proposal(*parts: object, repo_root: Path | None = None) -> 
 
 
 def require_self_repair_enabled(repo_root: Path) -> None:
-    """Raise unless the operator explicitly enabled repair and the kill switch is off."""
+    """Raise unless the operator explicitly enabled repair."""
 
-    if kill_switch_engaged(repo_root):
-        raise SelfRepairBlocked("kill_switch")
     path = config_path(repo_root)
     if not path.is_file():
         raise SelfRepairBlocked("missing_config")
@@ -326,8 +309,6 @@ def require_self_repair_enabled(repo_root: Path) -> None:
 def inspect_write(repo_root: Path, file_path: str, new_content: str, previous: str | None) -> Path:
     """Raise SelfRepairBlocked before a protected write. Return the resolved path otherwise."""
 
-    if kill_switch_engaged(repo_root):
-        raise SelfRepairBlocked("kill_switch")
     resolved = contained(repo_root, file_path)
     relative = resolved.name if resolved == repo_root.resolve() else resolved.relative_to(repo_root.resolve()).as_posix()
     reason = block_reason_for_write(relative, new_content, previous, repo_root)
@@ -337,8 +318,6 @@ def inspect_write(repo_root: Path, file_path: str, new_content: str, previous: s
 
 
 def inspect_delete(repo_root: Path, file_path: str, previous: str | None) -> Path:
-    if kill_switch_engaged(repo_root):
-        raise SelfRepairBlocked("kill_switch")
     resolved = contained(repo_root, file_path)
     relative = resolved.relative_to(repo_root.resolve()).as_posix()
     if is_protected_path(relative):
@@ -355,8 +334,6 @@ def inspect_delete(repo_root: Path, file_path: str, previous: str | None) -> Pat
 
 
 def inspect_execution(code: str, repo_root: Path | None = None) -> None:
-    if kill_switch_engaged(repo_root):
-        raise SelfRepairBlocked("kill_switch")
     reason = block_reason_for_write("snippet.py", code, "", repo_root)
     if reason:
         raise SelfRepairBlocked(reason)

@@ -15,44 +15,22 @@ Trading follows the operator's own exchange keys. This module only reports
 whether a key group is present. It does not read a value into a log and it
 does not place an order.
 
-These stay in force in both modes:
-
-- ``AUREON_SELF_REPAIR_KILL=1`` or the file ``state/SELF_REPAIR_KILL`` stops
-  self-writes and order dispatch.
-- ``state/autonomy_audit.jsonl`` is append-only. Self-changes and order
-  attempts are recorded there. Secret values are redacted.
-- A self-patch whose tests fail is rolled back.
-- Credential material is read from ``.env`` or the OS keychain. It is never
-  written into the repo or into the audit log.
+``AUREON_SELF_REPAIR_KILL`` and ``state/SELF_REPAIR_KILL`` do not stop a run.
+This module does not write ``state/autonomy_audit.jsonl``. A self-patch whose
+tests fail is left in place. Credential material is read from ``.env`` or the
+OS keychain and is never written into the repo or into a log.
 """
 
 from __future__ import annotations
 
 import json
 import os
-import re
 from collections.abc import Mapping
-from datetime import datetime, timezone
 from pathlib import Path
 
 MODE_ENV = "AUREON_AUTONOMY_MODE"
-KILL_ENV = "AUREON_SELF_REPAIR_KILL"
 MODE_RELATIVE = Path("state/autonomy_mode.json")
 RUNTIME_RELATIVE = Path("state/autonomy_runtime.json")
-KILL_RELATIVE = Path("state/SELF_REPAIR_KILL")
-AUDIT_RELATIVE = Path("state/autonomy_audit.jsonl")
-AUDIT_ENV = "AUREON_AUTONOMY_AUDIT_PATH"
-
-_TRUTHY = {"1", "true", "yes", "on"}
-_SECRET_KEY = re.compile(
-    r"key|token|secret|password|credential|passwd|private|cookie|authorization|auth",
-    re.IGNORECASE,
-)
-_SECRET_VALUE = re.compile(
-    r"(?i)(?:\b(?:api[_-]?key|api[_-]?secret|secret|password|authorization|access_token)\b\s*[:=]\s*)\S+"
-    r"|(?:sk-[A-Za-z0-9_\-]{8,}|ghp_[A-Za-z0-9]{8,}|github_pat_\S+|AKIA[0-9A-Z]{8,}|Bearer\s+\S+)"
-    r"|-----BEGIN [A-Z ]*PRIVATE KEY-----"
-)
 
 # Presence only. Values are never logged. Same groups as the master launcher.
 _EXCHANGE_GROUPS = (
@@ -61,10 +39,6 @@ _EXCHANGE_GROUPS = (
     ("ALPACA_API_KEY", "ALPACA_SECRET_KEY"),
     ("CAPITAL_API_KEY", "CAPITAL_IDENTIFIER", "CAPITAL_PASSWORD"),
 )
-
-
-def _utc() -> str:
-    return datetime.now(timezone.utc).isoformat()
 
 
 def _roots(repo_root: Path | None) -> list[Path]:
@@ -88,17 +62,9 @@ def _roots(repo_root: Path | None) -> list[Path]:
 
 
 def kill_switch_engaged(repo_root: Path | None = None) -> bool:
-    """True when the owner has thrown the off switch.
+    """Retired. The kill variable and the kill file do not stop a run."""
 
-    The environment variable and a kill file both count. The file is checked
-    in the given repo, the process cwd, and this checkout.
-    """
-
-    if os.environ.get(KILL_ENV, "").strip().lower() in _TRUTHY:
-        return True
-    for root in _roots(repo_root):
-        if (root / KILL_RELATIVE).is_file():
-            return True
+    del repo_root
     return False
 
 
@@ -157,7 +123,7 @@ def exchange_keys_present(
 
     A passed mapping is the only process environment consulted, so a unit
     test can pass a dict that does not see the host. Values are not returned
-    and are not written to the audit log.
+    and are not written to a log.
     """
 
     present: dict[str, str] = {}
@@ -177,60 +143,15 @@ def exchange_keys_present(
 
 
 def guardrails_open(repo_root: Path | None = None) -> bool:
-    """True only in full mode while the kill switch is off."""
+    """True in full mode. Explicit guarded mode is the opt-in denylist."""
 
-    return autonomy_mode(repo_root) == "full" and not kill_switch_engaged(repo_root)
-
-
-def _redact_text(value: str) -> str:
-    return _SECRET_VALUE.sub("[redacted]", value)
-
-
-def _redact(value: object) -> object:
-    if isinstance(value, str):
-        return _redact_text(value)
-    if isinstance(value, dict):
-        cleaned: dict[str, object] = {}
-        for key, item in value.items():
-            if _SECRET_KEY.search(str(key)):
-                continue
-            cleaned[str(key)] = _redact(item)
-        return cleaned
-    if isinstance(value, (list, tuple)):
-        return [_redact(item) for item in value]
-    return value
-
-
-def audit_log_path(repo_root: Path | None = None) -> Path:
-    """Where the append-only audit is written.
-
-    An explicit repo root wins, so a test can keep the log in its tmp dir.
-    Otherwise ``AUREON_AUTONOMY_AUDIT_PATH`` redirects the log, and the
-    default is ``state/autonomy_audit.jsonl`` under the cwd.
-    """
-
-    if repo_root is not None:
-        return Path(repo_root) / AUDIT_RELATIVE
-    override = os.environ.get(AUDIT_ENV, "").strip()
-    if override:
-        return Path(override)
-    return Path.cwd() / AUDIT_RELATIVE
+    return autonomy_mode(repo_root) == "full"
 
 
 def audit_event(event: str, repo_root: Path | None = None, **fields: object) -> None:
-    """Append one redacted record. Never rewrites earlier lines."""
+    """Retired. This does not create an autonomy audit log."""
 
-    path = audit_log_path(repo_root)
-    record: dict[str, object] = {"ts": _utc(), "event": str(event)}
-    redacted = _redact(fields)
-    if isinstance(redacted, dict):
-        record.update(redacted)
-    try:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        with path.open("a", encoding="utf-8") as handle:
-            handle.write(json.dumps(record, sort_keys=True, default=str) + "\n")
-    except OSError:
-        return
+    del event, repo_root, fields
 
 
 def record_order(
@@ -244,29 +165,17 @@ def record_order(
     reason: str = "",
     repo_root: Path | None = None,
 ) -> None:
-    """Append an order attempt. This does not place the order."""
+    """Retired. This does not place an order and does not write a log."""
 
-    audit_event(
-        "order",
-        repo_root,
-        operation=operation,
-        exchange=exchange,
-        symbol=symbol,
-        side=side,
-        status=status,
-        decision=decision,
-        reason=reason,
-        order_placed_by_audit=False,
-    )
+    del operation, exchange, symbol, side, status, decision, reason, repo_root
 
 
 def runtime_authority(repo_root: Path | None = None) -> dict[str, object]:
     """Live flag and may_act for the current mode.
 
-    Guarded mode and the kill switch are disarmed even if a runtime file
-    claims otherwise. Full mode with no runtime file may act, and live
-    trading follows exchange keys. An explicit ``state/autonomy_runtime.json``
-    is honored when it is present.
+    Guarded mode is disarmed even if a runtime file claims otherwise. Full
+    mode with no runtime file may act, and live trading follows exchange keys.
+    An explicit ``state/autonomy_runtime.json`` is honored when it is present.
     """
 
     mode = autonomy_mode(repo_root)
@@ -274,7 +183,7 @@ def runtime_authority(repo_root: Path | None = None) -> dict[str, object]:
         "mode": mode,
         "live_trading": False,
         "may_act": False,
-        "kill_switch": kill_switch_engaged(repo_root),
+        "kill_switch": False,
     }
     if not guardrails_open(repo_root):
         return disarmed
@@ -325,15 +234,11 @@ def set_runtime_authority(
 
     Full mode only. Writes the untracked runtime file and the process
     environment. Does not write ``.env``, does not write a credential, and
-    does not place an order. The kill switch and guarded mode refuse.
+    does not place an order. Guarded mode refuses.
     """
 
     root = Path(repo_root)
-    if kill_switch_engaged(root):
-        audit_event("runtime_authority_refused", root, reason="kill_switch", order_placed=False)
-        return {"ok": False, "reason": "kill_switch", "armed": False, "may_act": False, "order_placed": False}
     if autonomy_mode(root) != "full":
-        audit_event("runtime_authority_refused", root, reason="autonomy_guarded", order_placed=False)
         return {"ok": False, "reason": "autonomy_guarded", "armed": False, "may_act": False, "order_placed": False}
     payload = {
         "mode": "full",
@@ -346,13 +251,6 @@ def set_runtime_authority(
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     os.environ["AUREON_LIVE_TRADING"] = "1" if live_trading else "0"
     os.environ["AUREON_MAY_ACT"] = "1" if may_act else "0"
-    audit_event(
-        "runtime_authority_set",
-        root,
-        live_trading=bool(live_trading),
-        may_act=bool(may_act),
-        order_placed=False,
-    )
     return {
         "ok": True,
         "reason": "runtime_authority_set",

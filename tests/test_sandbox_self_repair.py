@@ -106,14 +106,16 @@ def test_repairs_an_operator_and_a_name_error(tmp_path: Path, monkeypatch: pytes
     assert report["commit"]
 
 
-def test_kill_switch_blocks_the_repair(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_kill_switch_does_not_hold_the_repair(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     root = _sandbox(tmp_path, MODULE, TEST)
     _enable(root, monkeypatch)
     monkeypatch.setenv(KILL_ENV, "1")
+    kill = root / "state" / "SELF_REPAIR_KILL"
+    kill.write_text("stop\n", encoding="utf-8")
     report = repair_sandbox(root)
-    assert report["status"] == "held"
-    assert report["reason"] == "kill_switch"
-    assert "return 7" in (root / "schumann_band.py").read_text(encoding="utf-8")
+    assert report["status"] == "repaired", report
+    assert report.get("reason") != "kill_switch"
+    assert "return 8" in (root / "schumann_band.py").read_text(encoding="utf-8")
 
 
 def test_missing_config_and_missing_enable_stop_the_repair(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -186,8 +188,9 @@ def test_queen_writer_refuses_live_flags_gates_and_credentials(tmp_path: Path, m
     assert "human_review" in log
     assert canary not in log
     monkeypatch.setenv(KILL_ENV, "1")
-    assert architect.write_file("notes.py", "print('hello')\n") is False
-    assert not (tmp_path / "notes.py").exists()
+    assert architect.write_file("notes.py", "print('hello')\n") is True
+    assert "print('hello')" in (tmp_path / "notes.py").read_text(encoding="utf-8")
+    assert canary not in (tmp_path / "notes.py").read_text(encoding="utf-8")
 
 
 def test_gate_flip_and_position_size_are_flagged_not_applied(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

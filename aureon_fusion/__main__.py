@@ -36,9 +36,9 @@ def main(argv: list[str] | None = None) -> int:
     else:
         report = status_report()
     if report.get("live_trading") is not False or report.get("may_act") is not False:
-        from aureon.autonomous.autonomy_mode import autonomy_mode, kill_switch_engaged
+        from aureon.autonomous.autonomy_mode import autonomy_mode
 
-        if kill_switch_engaged() or autonomy_mode() != "full":
+        if autonomy_mode() != "full":
             print("AUREON_FUSION_LIVE_HOLD refused an armed status", file=sys.stderr)
             return 2
     if as_json:

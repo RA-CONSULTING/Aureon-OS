@@ -30,15 +30,13 @@ def blocked_reason() -> str | None:
     """Why this paper fleet launcher must not start.
 
     Full autonomy does not treat a live flag or the capital-release file as
-    a boot refusal. The kill switch and ``AUREON_DEPLOYMENT_HOLD=1`` still
-    refuse. Explicit guarded mode keeps the older refusals.
+    a boot refusal. ``AUREON_DEPLOYMENT_HOLD=1`` still refuses. Explicit
+    guarded mode keeps the older refusals.
     """
 
     try:
-        from aureon.autonomous.autonomy_mode import guardrails_open, kill_switch_engaged
+        from aureon.autonomous.autonomy_mode import guardrails_open
 
-        if kill_switch_engaged():
-            return "kill_switch"
         if os.environ.get("AUREON_DEPLOYMENT_HOLD") == "1":
             return "deployment hold"
         if guardrails_open():

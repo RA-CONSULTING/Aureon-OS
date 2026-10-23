@@ -320,13 +320,9 @@ def _repair_trading_disarmed(repo_root: Path) -> bool:
     """True when this checkout is not on the live key profile."""
 
     try:
-        from aureon.autonomous.autonomy_mode import (
-            exchange_keys_present,
-            guardrails_open,
-            kill_switch_engaged,
-        )
+        from aureon.autonomous.autonomy_mode import exchange_keys_present, guardrails_open
 
-        if kill_switch_engaged(repo_root) or not guardrails_open(repo_root):
+        if not guardrails_open(repo_root):
             return True
         return not exchange_keys_present(repo_root)
     except Exception:

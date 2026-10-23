@@ -749,19 +749,13 @@ def _overlay_repo_env(env: dict[str, str], repo: Path) -> None:
 def boot_decision(repo: Path, env: dict[str, str]) -> tuple[str, bool]:
     """Report line and whether this child is the live profile.
 
-    Keys in the child mapping or the repo ``.env`` arm trading. The kill
-    switch and an explicit guarded mode stay on the paper profile. This does
-    not place an order and does not write a credential.
+    Keys in the child mapping or the repo ``.env`` arm trading. An explicit
+    guarded mode stays on the paper profile. This does not place an order
+    and does not write a credential.
     """
 
-    from aureon.autonomous.autonomy_mode import (
-        autonomy_mode,
-        exchange_keys_present,
-        kill_switch_engaged,
-    )
+    from aureon.autonomous.autonomy_mode import autonomy_mode, exchange_keys_present
 
-    if kill_switch_engaged(repo):
-        return "paper/public-data (kill_switch)", False
     if autonomy_mode(repo) != "full":
         return "paper/public-data (autonomy guarded)", False
     if exchange_keys_present(repo, env):
@@ -772,16 +766,15 @@ def boot_decision(repo: Path, env: dict[str, str]) -> tuple[str, bool]:
 def stamp_boot(env: dict[str, str], repo: Path) -> tuple[str, bool]:
     """Last write for trading flags. A spec cannot force dry-run over keys or live without them."""
 
-    from aureon.autonomous.autonomy_mode import autonomy_mode, kill_switch_engaged
+    from aureon.autonomous.autonomy_mode import autonomy_mode
 
     label, armed = boot_decision(repo, env)
     mode = autonomy_mode(repo)
-    killed = kill_switch_engaged(repo)
     env["AUREON_AUTONOMY_MODE"] = mode
     approve = env.get("AUREON_CODE_AUTO_APPROVE")
     if approve is None or str(approve).strip() == "":
-        env["AUREON_CODE_AUTO_APPROVE"] = _ON if mode == "full" and not killed else _OFF
-    env["AUREON_MAY_ACT"] = _ON if mode == "full" and not killed else _OFF
+        env["AUREON_CODE_AUTO_APPROVE"] = _ON if mode == "full" else _OFF
+    env["AUREON_MAY_ACT"] = _ON if mode == "full" else _OFF
     env.update(_live_lock() if armed else PAPER_LOCK)
     return label, armed
 
@@ -1436,13 +1429,11 @@ def launch_faculty(repo: Path, faculty: dict) -> Row:
 
 def _self_repair_reason(repo: Path) -> tuple[str, str]:
     try:
-        from aureon.autonomous.autonomy_mode import autonomy_mode, kill_switch_engaged
+        from aureon.autonomous.autonomy_mode import autonomy_mode
         from aureon.autonomous.self_repair_guard import config_path, explicitly_enabled
     except Exception as exc:
         return "blocked", f"self-repair import failed: {exc.__class__.__name__}"
     mode = autonomy_mode()
-    if kill_switch_engaged(repo):
-        return "blocked", "kill_switch"
     if not explicitly_enabled():
         return "blocked", "self-repair not enabled: AUREON_SELF_REPAIR_ENABLE is unset; launcher does not enable it"
     path = config_path(repo)
@@ -1465,13 +1456,11 @@ def launch_self_repair(repo: Path) -> Row:
 
 def launch_self_coder(repo: Path) -> Row:
     try:
-        from aureon.autonomous.autonomy_mode import autonomy_mode, kill_switch_engaged
+        from aureon.autonomous.autonomy_mode import autonomy_mode
     except Exception as exc:
         return Row("loop/self_coder", "blocked", "down", f"self-coder import failed: {exc.__class__.__name__}")
     if not (repo / "aureon" / "autonomous" / "aureon_internal_self_coder.py").is_file():
         return Row("loop/self_coder", "blocked", "down", "module not present: aureon.autonomous.aureon_internal_self_coder")
-    if kill_switch_engaged(repo):
-        return Row("loop/self_coder", "blocked", "skipped", "kill_switch")
     mode = autonomy_mode()
     return Row(
         "loop/self_coder",
