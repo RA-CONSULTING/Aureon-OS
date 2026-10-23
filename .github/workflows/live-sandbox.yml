@@ -1,0 +1,57 @@
+name: Live sandbox
+
+# Opt-in venue tests. Sandbox and testnet only. Never mainnet.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: aureon-live-sandbox-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  live:
+    name: pytest -m live
+    runs-on: ubuntu-latest
+    env:
+      AUREON_LIVE_TRADING: "0"
+      AUREON_FUSION_ARM_LIVE: ""
+      AUREON_DISABLE_REAL_ORDERS: "1"
+      BINANCE_TESTNET: "true"
+      KRAKEN_SANDBOX: "true"
+      ALPACA_PAPER: "true"
+      CAPITAL_DEMO: "true"
+      PAPER_MODE: "true"
+      OANDA_ENVIRONMENT: "practice"
+      PYTHONPATH: .
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Refuse mainnet endpoints
+        run: |
+          python - <<'PY'
+          import os
+          forbidden = (
+              "api.kraken.com",
+              "api.binance.com",
+              "api.alpaca.markets",
+              "live.capital.com",
+          )
+          blob = "\n".join(f"{key}={value}" for key, value in os.environ.items()).lower()
+          hits = [host for host in forbidden if host in blob]
+          if hits:
+              raise SystemExit("mainnet endpoint in the live job environment: " + ", ".join(hits))
+          if os.environ.get("BINANCE_TESTNET", "").lower() not in {"1", "true", "yes", "on"}:
+              raise SystemExit("BINANCE_TESTNET must stay on")
+          if os.environ.get("AUREON_LIVE_TRADING", "0") not in {"0", "false", "no", "off", ""}:
+              raise SystemExit("the live job must not arm AUREON_LIVE_TRADING against mainnet")
+          PY
+      - name: Install the test runner
+        run: python -m pip install --upgrade pip pytest pytest-timeout
+      - name: Sandbox and testnet marker
+        run: python -m pytest -m live --tb=line -q

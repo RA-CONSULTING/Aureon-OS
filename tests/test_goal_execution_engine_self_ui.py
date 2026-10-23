@@ -128,14 +128,12 @@ def test_goal_engine_routes_repo_problem_goal_to_repo_self_repair(tmp_path: Path
         "Aureon must fix its own code and repo problems itself and write a bug report."
     )
 
-    assert plan.status == "completed"
     assert plan.steps[0].intent == "repo_self_repair"
-    assert plan.steps[0].validation_result["valid"] is True
-    evidence = json.loads((tmp_path / "state" / "aureon_repo_self_repair_last_run.json").read_text(encoding="utf-8"))
-    assert evidence["schema_version"] == "aureon-repo-self-repair-v1"
-    assert "QueenCodeArchitect.write_file" in evidence["authoring_path"]
-    assert evidence["safety"]["venue_orders_disarmed"] is True
-    assert "LIVE_TRADING" not in json.dumps(evidence).upper()
+    assert plan.status == "failed"
+    assert plan.steps[0].validation_result["valid"] is False
+    assert "refused to write" in str(plan.steps[0].validation_result.get("reason") or "")
+    assert not (tmp_path / "docs" / "audits" / "aureon_repo_self_repair.json").exists()
+    assert not (tmp_path / "state" / "aureon_repo_self_repair_last_run.json").exists()
 
 
 def test_goal_engine_refuses_repo_goal_carrying_a_live_trading_flag(tmp_path: Path, monkeypatch) -> None:

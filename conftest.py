@@ -14,6 +14,7 @@ import asyncio
 import inspect
 import os
 import sys
+import tempfile
 import threading
 from pathlib import Path
 
@@ -210,17 +211,28 @@ def _apply_environ_snapshot() -> None:
 
 
 @pytest.fixture(autouse=True)
-def _restore_os_environ():
+def _restore_os_environ(tmp_path):
     """Put os.environ back to the pre-collection process environment.
 
     monkeypatch only undoes keys it changed. Direct writes such as
     ``os.environ['LIVE'] = '0'`` and ``os.environ.update(...)`` leak into every
     later test unless the whole mapping is snapshotted and restored. Setup runs
     before other function fixtures; teardown runs after them.
+
+    The snapshot used to drop ``AUREON_THOUGHT_BUS_PATH`` back to unset, and
+    ``get_thought_bus()`` then appended the checkout's ``thoughts.jsonl``.
+    After the restore, this test's journal is ``tmp_path``; teardown puts the
+    session journal back and retargets any bus still aimed at the checkout.
     """
     _apply_environ_snapshot()
+    journal = tmp_path / "thoughts.jsonl"
+    os.environ["AUREON_THOUGHT_BUS_PATH"] = str(journal)
+    os.environ["AUREON_BUS_TRACE_DIR"] = str(tmp_path / "bus-traces")
+    os.environ["AUREON_HNC_TRACE_PATH"] = str(tmp_path / "hnc-live-trace.jsonl")
+    _retarget_checkout_journals(journal)
     yield
     _apply_environ_snapshot()
+    _retarget_checkout_journals(_PYTEST_JOURNAL)
 
 
 @pytest.fixture(autouse=True)
@@ -313,24 +325,85 @@ def _restore_process_singletons():
             setattr(mod, attr, None)
 
 
-def _pin_xdist_thought_journal() -> None:
-    """Give each xdist worker its own thought journal.
+_CHECKOUT_ROOT = Path(__file__).resolve().parent
+_JOURNAL_NAMES = frozenset(
+    {"thoughts.jsonl", "capital_thoughts.jsonl", "aureon_thought_bus.jsonl"}
+)
+_PYTEST_JOURNAL_DIR = Path(tempfile.mkdtemp(prefix="aureon-pytest-journal-"))
+_PYTEST_JOURNAL = _PYTEST_JOURNAL_DIR / "thoughts.jsonl"
+_THOUGHT_BUS_INIT_PATCHED = False
 
-    ``get_thought_bus()`` otherwise appends to the checkout's ``thoughts.jsonl``.
-    Workers share that file, so a test that proves it did not touch the
-    checkout sees another worker's append and fails at teardown. The pin is
-    taken before the environment snapshot, so the per-test restore keeps it.
-    A single-process run leaves the checkout path alone.
+
+def _is_checkout_journal(path: str) -> bool:
+    """True when a persist path would create or append a checkout journal."""
+
+    candidate = Path(path)
+    if not candidate.is_absolute():
+        candidate = Path.cwd() / candidate
+    try:
+        resolved = candidate.resolve()
+        root = _CHECKOUT_ROOT.resolve()
+        resolved.relative_to(root)
+    except (OSError, ValueError):
+        return False
+    return resolved.name in _JOURNAL_NAMES
+
+
+def _install_checkout_journal_redirect() -> None:
+    """Send ThoughtBus writes that target the checkout into the pytest journal."""
+
+    global _THOUGHT_BUS_INIT_PATCHED
+    if _THOUGHT_BUS_INIT_PATCHED:
+        return
+    import aureon.core.aureon_thought_bus as thought_bus_module
+
+    original = thought_bus_module.ThoughtBus.__init__
+
+    def redirected(self, max_memory: int = 5000, persist_path: str | None = None):
+        if isinstance(persist_path, str) and _is_checkout_journal(persist_path):
+            persist_path = os.environ.get("AUREON_THOUGHT_BUS_PATH") or str(_PYTEST_JOURNAL)
+        original(self, max_memory=max_memory, persist_path=persist_path)
+
+    thought_bus_module.ThoughtBus.__init__ = redirected
+    _THOUGHT_BUS_INIT_PATCHED = True
+
+
+def _retarget_checkout_journals(journal: Path) -> None:
+    """Point an already-built bus off the checkout before the next publish."""
+
+    for mod_name, attr in (
+        ("aureon.core.aureon_thought_bus", "_thought_bus_instance"),
+        ("aureon_thought_bus", "_thought_bus_instance"),
+    ):
+        mod = sys.modules.get(mod_name)
+        if mod is None:
+            continue
+        bus = getattr(mod, attr, None)
+        persist = getattr(bus, "_persist_path", None)
+        if isinstance(persist, str) and _is_checkout_journal(persist):
+            bus._persist_path = str(journal)
+        state_file = getattr(bus, "state_file", None)
+        if isinstance(state_file, str) and _is_checkout_journal(state_file):
+            bus.state_file = str(journal)
+
+
+def _pin_pytest_journals() -> None:
+    """Keep the pre-collection snapshot from restoring a checkout journal.
+
+    ``_restore_os_environ`` puts this mapping back around every test. Without
+    a journal pin, that restore drops ``AUREON_THOUGHT_BUS_PATH`` and the next
+    ``get_thought_bus()`` appends ``thoughts.jsonl`` in the checkout. Each
+    pytest process, including each xdist worker, gets its own directory.
+    The per-test fixture then narrows the path to that test's ``tmp_path``.
     """
 
-    worker = os.environ.get("PYTEST_XDIST_WORKER")
-    if not worker or os.environ.get("AUREON_THOUGHT_BUS_PATH"):
-        return
-    journal = Path(os.environ.get("TMPDIR") or "/tmp") / f"aureon-thoughts-{worker}.jsonl"
-    os.environ["AUREON_THOUGHT_BUS_PATH"] = str(journal)
+    os.environ["AUREON_THOUGHT_BUS_PATH"] = str(_PYTEST_JOURNAL)
+    os.environ["AUREON_BUS_TRACE_DIR"] = str(_PYTEST_JOURNAL_DIR / "bus-traces")
+    os.environ["AUREON_HNC_TRACE_PATH"] = str(_PYTEST_JOURNAL_DIR / "hnc-live-trace.jsonl")
+    _install_checkout_journal_redirect()
 
 
-_pin_xdist_thought_journal()
+_pin_pytest_journals()
 
 # Freeze the snapshot after this module's own imports, still before collection.
 _OS_ENVIRON_BEFORE_COLLECTION.update(os.environ)

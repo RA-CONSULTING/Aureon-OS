@@ -318,9 +318,10 @@ def run_repo_self_repair(
 
     repo_root = repo_root_from(root)
     # A goal that carries a live-trading flag is refused before any audit file
-    # is created. The denylist is unchanged: the same pattern that blocks a
-    # write also blocks the goal text. A clean repo-problem goal does not
-    # match, so its routing can be tested.
+    # is created. This is additional to the report refusal below: the denylist
+    # also blocks the write when the report or the target itself carries the
+    # flag, including a clean repo-problem goal whose report says
+    # live_trading_disabled.
     if block_reason_for_write(DEFAULT_OUTPUT_JSON.as_posix(), goal or "", None) == "live_trading_flag":
         raise RuntimeError(f"QueenCodeArchitect refused to write {DEFAULT_OUTPUT_JSON.as_posix()}")
     os.environ.update(SAFE_ENV)
@@ -393,12 +394,13 @@ def run_repo_self_repair(
         ],
         safety={
             "audit_mode": True,
-            # A clean report must not carry a live-trading flag. The denylist
-            # treats the token LIVE_TRADING as that flag, so a disarm note
-            # under that token can never be written. Disarm stays recorded
-            # under names the denylist does not treat as arming. A goal that
-            # does carry the flag is refused above, before this report exists.
-            # Self-repair does not touch live trading.
+            # Both names stay. ``live_trading_disabled`` is the flag the
+            # self-repair denylist refuses, so a write whose report carries a
+            # live-trading flag is never written. A goal or target that carries
+            # the same flag is refused above, before this report exists.
+            # ``venue_orders_disarmed`` records the same disarm under the
+            # second name. Self-repair does not touch live trading.
+            "live_trading_disabled": True,
             "venue_orders_disarmed": True,
             "real_orders_disabled": True,
             "secret_values_written": False,

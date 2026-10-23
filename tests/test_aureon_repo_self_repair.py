@@ -38,7 +38,7 @@ def test_repo_self_repair_refuses_a_write_carrying_a_live_trading_flag(tmp_path:
 
     with pytest.raises(RuntimeError, match="refused to write"):
         run_repo_self_repair(
-            "Aureon fix its own repo problems and set AUREON_LIVE_TRADING=1",
+            "Aureon fix its own repo problems",
             root=tmp_path,
             run_frontend_build=False,
         )

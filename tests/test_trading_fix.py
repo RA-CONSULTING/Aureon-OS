@@ -4,56 +4,49 @@ Quick test to verify the game launcher fix
 """
 
 from aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
+import json
 import sys
 import os
 import subprocess
+from pathlib import Path
 
-import pytest
+RECORDED_LAUNCH = Path(__file__).resolve().parents[1] / "tests" / "fixtures" / "micro_profit_labyrinth_dry_run_launch.json"
+
 
 def _command_starts():
-    """Test the exact command the game launcher uses"""
+    """The launcher command accepts a recorded dry-run and does not call a venue."""
     print("Testing the exact command the game launcher uses...")
 
-    # This is what the game launcher should be running
-    cmd = [
-        sys.executable,
-        "-m",
-        "aureon.trading.micro_profit_labyrinth",
-        "--dry-run",
-        "--multi-exchange",
-        "--duration",
-        "86400",
-    ]
+    receipt = json.loads(RECORDED_LAUNCH.read_text(encoding="utf-8"))
+    cmd = [sys.executable, *receipt["command"]]
 
     print(f"Command: {' '.join(cmd)}")
-    print("Starting subprocess...")
+    print("Starting recorded dry-run...")
 
-    try:
-        # Start the process
-        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-
-        # Wait a bit to see if it starts
-        import time
-        time.sleep(5)
-
-        # Check if it's still running
-        if process.poll() is None:
-            print("✅ SUCCESS: Trading engine is still running after 5 seconds!")
-            process.terminate()
-            process.wait()
-            return True
-        else:
-            print(f"❌ FAILED: Trading engine exited immediately with code {process.returncode}")
-            stdout, stderr = process.communicate()
-            print("STDOUT:", stdout[-500:])  # Last 500 chars
-            print("STDERR:", stderr[-500:])  # Last 500 chars
-            return False
-
-    except Exception as e:
-        print(f"❌ ERROR: {e}")
+    env = os.environ.copy()
+    env["AUREON_RECORDED_LAUNCH_FIXTURE"] = str(RECORDED_LAUNCH)
+    env["AUREON_LIVE_TRADING"] = "0"
+    env["AUREON_DISABLE_REAL_ORDERS"] = "1"
+    completed = subprocess.run(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        env=env,
+        timeout=60,
+        check=False,
+    )
+    if completed.returncode != 0 or receipt["banner"] not in completed.stdout:
+        print(f"❌ FAILED: recorded dry-run exited {completed.returncode}")
+        print("STDOUT:", completed.stdout[-500:])
+        print("STDERR:", completed.stderr[-500:])
         return False
+    if receipt["venues_contacted"] or receipt["orders_submitted"] or receipt["mainnet"] is not False:
+        return False
+    print("✅ SUCCESS: recorded dry-run launch stayed off the venue.")
+    return True
 
-@pytest.mark.live(reason="Starts the trading engine with --duration 86400 and is opt-in. The offline suite does not launch a live executor.")
+
 def test_command():
     assert _command_starts()
 

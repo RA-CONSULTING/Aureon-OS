@@ -39,8 +39,8 @@ PATTERN_PARTS = {
 # Auris Node Mapping (from the pattern)
 NODE_MAPPING = {
     1: {'node': 'Owl', 'glyph': '○', 'role': 'Memory', 'frequency': 432.0},
-    4: {'node': 'Tiger', 'glyph': '/|\\', 'role': 'Disruptor', 'frequency': 741.0},
-    7: {'node': 'Clownfish', 'glyph': '∞', 'role': 'Symbiosis', 'frequency': 639.0},
+    4: {'node': 'Tiger', 'glyph': '/|\\', 'role': 'Disruptor', 'frequency': 220.0},
+    7: {'node': 'Clownfish', 'glyph': '∞', 'role': 'Symbiosis', 'frequency': 963.0},
     0: {'node': 'Panda', 'glyph': '♥', 'role': 'Empathy Core', 'frequency': 412.3},
 }
 

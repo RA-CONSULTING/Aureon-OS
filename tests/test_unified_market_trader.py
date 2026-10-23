@@ -45,6 +45,38 @@ def _complete_fill(order_id, *, quantity, price, fee=0.0):
     )
 
 
+class RecordedKrakenDispatch:
+    """Replay a recorded venue client. No socket and no mainnet order."""
+
+    def __init__(self, venue):
+        self.venue = venue
+        self.dry_run = False
+
+    def place_market_order(self, symbol, side, quantity=None, quote_qty=None, **kwargs):
+        return self.venue.place_market_order(symbol, side, quantity=quantity, quote_qty=quote_qty)
+
+    def place_margin_order(self, symbol, side, quantity, leverage=2, **kwargs):
+        return self.venue.place_margin_order(symbol, side, quantity, leverage=leverage)
+
+    def place_trailing_stop_order(self, symbol, side, quantity, trailing_offset, offset_type="percent", **kwargs):
+        return self.venue.place_trailing_stop_order(
+            symbol, side, quantity, trailing_offset, offset_type=offset_type
+        )
+
+
+def _bind_recorded_kraken_dispatch(trader):
+    venue = trader._kraken_spot_client()
+    seat = RecordedKrakenDispatch(venue)
+    original = trader._governed_client_for
+
+    def governed(exchange):
+        if str(exchange).lower() == "kraken":
+            return seat
+        return original(exchange)
+
+    trader._governed_client_for = governed
+
+
 class FeedTarget:
     def __init__(self):
         self._hive_boosts = {}
@@ -1391,7 +1423,6 @@ class UnifiedMarketTraderTests(unittest.TestCase):
         finally:
             self._restore_env(old_env)
 
-    @pytest.mark.live(reason="Quarantined from the default suite: drives a live venue path. Opt in with -m live. Offline CI does not call an exchange.")
     def test_kraken_spot_buy_records_fee_aware_fast_profit_position(self):
         old_env = self._with_live_executor_env()
 
@@ -1424,6 +1455,7 @@ class UnifiedMarketTraderTests(unittest.TestCase):
             try:
                 trader = self._make_trader()
                 trader.kraken = KrakenTrader()
+                _bind_recorded_kraken_dispatch(trader)
                 result = trader._execute_kraken_spot_route("BUY", "XBTUSD", 65.0)
 
                 self.assertTrue(result["ok"], result)
@@ -1437,7 +1469,6 @@ class UnifiedMarketTraderTests(unittest.TestCase):
                 trader_mod.KRAKEN_SPOT_POSITION_PUBLIC_PATH = old_public
                 self._restore_env(old_env)
 
-    @pytest.mark.live(reason="Quarantined from the default suite: drives a live venue path. Opt in with -m live. Offline CI does not call an exchange.")
     def test_kraken_spot_buy_can_use_gbp_quote_balance(self):
         old_env = self._with_live_executor_env()
 
@@ -1474,6 +1505,7 @@ class UnifiedMarketTraderTests(unittest.TestCase):
             try:
                 trader = self._make_trader()
                 trader.kraken = KrakenTrader()
+                _bind_recorded_kraken_dispatch(trader)
                 result = trader._execute_kraken_spot_route("BUY", "XBTUSD", 65.0)
 
                 self.assertTrue(result["ok"], result)
@@ -1485,7 +1517,6 @@ class UnifiedMarketTraderTests(unittest.TestCase):
                 trader_mod.KRAKEN_SPOT_POSITION_PUBLIC_PATH = old_public
                 self._restore_env(old_env)
 
-    @pytest.mark.live(reason="Quarantined from the default suite: drives a live venue path. Opt in with -m live. Offline CI does not call an exchange.")
     def test_kraken_margin_route_submits_through_unified_executor(self):
         old_env = self._with_live_executor_env()
 
@@ -1510,6 +1541,7 @@ class UnifiedMarketTraderTests(unittest.TestCase):
         try:
             trader = self._make_trader()
             trader.kraken = KrakenTrader()
+            _bind_recorded_kraken_dispatch(trader)
             result = trader._execute_kraken_margin_route("BUY", "XBTUSD", 5.0)
 
             self.assertTrue(result["ok"], result)
@@ -1620,7 +1652,6 @@ class UnifiedMarketTraderTests(unittest.TestCase):
         finally:
             self._restore_env(old_env)
 
-    @pytest.mark.live(reason="Quarantined from the default suite: drives a live venue path. Opt in with -m live. Offline CI does not call an exchange.")
     def test_kraken_spot_fast_profit_monitor_sells_only_true_net_profit(self):
         old_env = self._with_live_executor_env()
 
@@ -1649,6 +1680,7 @@ class UnifiedMarketTraderTests(unittest.TestCase):
             try:
                 trader = self._make_trader()
                 trader.kraken = KrakenTrader()
+                _bind_recorded_kraken_dispatch(trader)
                 trader.kraken_ready = True
                 trader._kraken_spot_fast_profit_state = {
                     "schema_version": 1,
@@ -1681,7 +1713,6 @@ class UnifiedMarketTraderTests(unittest.TestCase):
                 trader_mod.KRAKEN_SPOT_FAST_PROFIT_MIN_HOLD_SEC = old_min
                 self._restore_env(old_env)
 
-    @pytest.mark.live(reason="Quarantined from the default suite: drives a live venue path. Opt in with -m live. Offline CI does not call an exchange.")
     def test_kraken_spot_fast_profit_monitor_adopts_profitable_live_inventory(self):
         old_env = self._with_live_executor_env()
 
@@ -1728,6 +1759,7 @@ class UnifiedMarketTraderTests(unittest.TestCase):
             try:
                 trader = self._make_trader()
                 trader.kraken = KrakenTrader()
+                _bind_recorded_kraken_dispatch(trader)
 
                 closed = trader._monitor_kraken_spot_fast_profit()
 
@@ -1742,7 +1774,6 @@ class UnifiedMarketTraderTests(unittest.TestCase):
                 trader_mod.KRAKEN_SPOT_FAST_PROFIT_MIN_HOLD_SEC = old_min
                 self._restore_env(old_env)
 
-    @pytest.mark.live(reason="Quarantined from the default suite: drives a live venue path. Opt in with -m live. Offline CI does not call an exchange.")
     def test_kraken_spot_fast_profit_arms_deadman_when_market_sell_fails(self):
         old_env = self._with_live_executor_env()
 
@@ -1774,6 +1805,7 @@ class UnifiedMarketTraderTests(unittest.TestCase):
             try:
                 trader = self._make_trader()
                 trader.kraken = KrakenTrader()
+                _bind_recorded_kraken_dispatch(trader)
                 trader._kraken_spot_fast_profit_state = {
                     "schema_version": 1,
                     "open_positions": [{

@@ -436,7 +436,6 @@ def test_failed_new_source_is_removed_without_recursive_cleanup(tmp_path, monkey
     assert not target.exists() and runtime.exists()
 
 
-@_requires_root_chown
 def test_manifest_tampering_is_refused_before_service_operations(tmp_path, monkeypatch):
     workspace, units, bundle, releases, target, runtime, services = fixture(tmp_path, monkeypatch)
     (bundle / "files/aureon_fusion/reader.py").write_bytes(b"VALUE = 99\n")
@@ -446,7 +445,6 @@ def test_manifest_tampering_is_refused_before_service_operations(tmp_path, monke
 
 
 @pytest.mark.parametrize("which", ["target", "staged"])
-@_requires_root_chown
 def test_change_after_prepare_refuses_before_stopping(tmp_path, monkeypatch, which):
     staged, target, runtime, services = prepared(tmp_path, monkeypatch)
     changed = target if which == "target" else staged / "staged/0"
@@ -532,7 +530,6 @@ def test_source_subdirectories_are_not_confused_with_runtime_state():
         assert release.source_path(path) == path
 
 
-@_requires_root_chown
 def test_invalid_python_is_not_imported_or_installed(tmp_path, monkeypatch):
     workspace, units, bundle, releases, target, runtime, services = fixture(tmp_path, monkeypatch)
     bad = b"def broken(:\n"
@@ -754,7 +751,6 @@ def test_terminal_receipt_collector_is_a_distinct_held_service():
     release.validate_service_names([unit])
 
 
-@_requires_root_chown
 def test_collector_release_manifest_requires_the_intent_bridge_dependency(tmp_path, monkeypatch):
     workspace, units, bundle, releases, _target, _runtime, services = fixture(tmp_path, monkeypatch)
     with pytest.raises(release.ReleaseError, match="trade_receipt_and_intent_bridge_sources_required"):
@@ -764,7 +760,6 @@ def test_collector_release_manifest_requires_the_intent_bridge_dependency(tmp_pa
         )
 
 
-@_requires_root_chown
 def test_operator_release_requires_the_complete_operator_runtime(
     tmp_path, monkeypatch
 ):
@@ -930,7 +925,6 @@ def test_operator_apply_removes_stale_python_and_cache_transactionally(
     assert release.check(staged)["phase"] == "rolled_back"
 
 
-@_requires_root_chown
 def test_collector_and_intent_bridge_can_only_be_prepared_together(tmp_path, monkeypatch):
     workspace = tmp_path / "workspace"
     units = tmp_path / "units"
@@ -1456,7 +1450,6 @@ def test_apply_accepts_quiesced_inventory_after_only_volatile_snapshot_changes(
     assert committed["phase"] == "committed"
 
 
-@_requires_root_chown
 def test_prepare_records_old_bridge_state_and_only_stages_contract_migration(
     tmp_path, monkeypatch
 ):
