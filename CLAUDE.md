@@ -151,6 +151,7 @@ HNC Framework · EPAS / Project Druid / Alfie · Lumina / LuminaCell · Symbolic
 | License? | MIT (maximum-transmission, by design) |
 | How many modules? | 715 Python modules across 24 domains in `aureon/` |
 | How many papers? | 54 in `docs/research/whitepapers/`, curated 13-paper canon in [`READING_PATHS.md`](docs/research/READING_PATHS.md) |
+| Autonomy mode? | Public default `guarded`. `AUREON_AUTONOMY_MODE=full` is owner-local and uncommitted. Kill switch, audit, and rollback stay. See [`AUTONOMY.md`](AUTONOMY.md) |
 
 ---
 

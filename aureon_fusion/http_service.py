@@ -38,6 +38,21 @@ def live_trading_armed() -> bool:
     return os.environ.get("AUREON_LIVE_TRADING", "0") == "1" or os.environ.get("AUREON_FUSION_ARM_LIVE") == "1"
 
 
+def authority_flags() -> dict[str, bool]:
+    """Live flag and may_act. Guarded mode and the kill switch stay disarmed."""
+
+    try:
+        from aureon.autonomous.autonomy_mode import runtime_authority
+
+        auth = runtime_authority()
+        return {
+            "live_trading": auth.get("live_trading") is True,
+            "may_act": auth.get("may_act") is True,
+        }
+    except Exception:
+        return {"live_trading": False, "may_act": False}
+
+
 def rate_limit() -> int:
     raw = os.environ.get("AUREON_FUSION_RATE_LIMIT", "60")
     try:
@@ -120,16 +135,18 @@ def cached_status() -> dict[str, Any]:
                     body = dict(saved["body"])
                     body["cache"] = "hit"
                     body["cache_layer"] = "redis"
-                    body["live_trading"] = False
-                    body["may_act"] = False
+                    flags = authority_flags()
+                    body["live_trading"] = flags["live_trading"]
+                    body["may_act"] = flags["may_act"]
                     return body
             except (TypeError, ValueError, json.JSONDecodeError):
                 pass
         body = status_report()
         body["cache"] = "miss"
         body["cache_layer"] = "redis"
-        body["live_trading"] = False
-        body["may_act"] = False
+        flags = authority_flags()
+        body["live_trading"] = flags["live_trading"]
+        body["may_act"] = flags["may_act"]
         try:
             client.set(
                 "aureon:fusion:status",
@@ -146,7 +163,9 @@ def cached_status() -> dict[str, Any]:
         return body
     body = status_report()
     body["cache"] = "miss"
-    body["live_trading"] = False
+    flags = authority_flags()
+    body["live_trading"] = flags["live_trading"]
+    body["may_act"] = flags["may_act"]
     _CACHE["at"] = now
     _CACHE["body"] = body
     return body
@@ -167,6 +186,13 @@ def render_page(report: dict[str, Any]) -> bytes:
         "<li><code>{}</code> — {}</li>".format(html.escape(item["repo"]), html.escape(item["reason"]))
         for item in report["unavailable_sources"]
     )
+    armed = bool(report.get("live_trading")) or bool(report.get("may_act"))
+    banner = "OWNER AUTONOMY · LIVE AUTHORITY SET" if armed else "DRY RUN · LIVE TRADING OFF · PAPER DEFAULT"
+    gate_line = (
+        "may_act = true · action gate = RELEASE"
+        if report.get("may_act")
+        else "may_act = false · action gate = HOLD"
+    )
     page = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -184,12 +210,12 @@ def render_page(report: dict[str, Any]) -> bytes:
 </head>
 <body>
 <header>
-  <div class="hold">DRY RUN · LIVE TRADING OFF · PAPER DEFAULT</div>
+  <div class="hold">{banner}</div>
   <h1>Aureon Fusion</h1>
   <p>Authenticated status page. This process does not place orders.</p>
 </header>
 <main>
-  <p>may_act = false · action gate = HOLD</p>
+  <p>{gate_line}</p>
   <table>
     <thead><tr><th>Capability</th><th>State</th><th>Path</th></tr></thead>
     <tbody>{''.join(rows)}</tbody>
@@ -240,13 +266,14 @@ def make_handler(token: str):
                 self.wfile.write(body)
                 return 429
             if path == "/healthz":
+                flags = authority_flags()
                 return self._send(
                     200,
                     {
                         "status": "ok",
-                        "live_trading": False,
-                        "paper_default": True,
-                        "may_act": False,
+                        "live_trading": flags["live_trading"],
+                        "paper_default": not flags["live_trading"],
+                        "may_act": flags["may_act"],
                         "hosting": "self-hosted",
                         "replica": os.environ.get("AUREON_REPLICA_ID", "single"),
                     },
@@ -254,7 +281,10 @@ def make_handler(token: str):
             if path == "/readyz":
                 report = cached_status()
                 ready = all(item["present"] for item in report["capabilities"].values())
-                return self._send(200 if ready else 503, {"ready": ready, "live_trading": False})
+                return self._send(
+                    200 if ready else 503,
+                    {"ready": ready, "live_trading": authority_flags()["live_trading"]},
+                )
             if not authorized(self.headers.get("Authorization", ""), token):
                 return self._send(401, {"error": "unauthorized", "live_trading": False})
             if path == "/api/status":
@@ -286,7 +316,11 @@ def make_handler(token: str):
 
 
 def serve(port: int | None = None) -> ThreadingHTTPServer:
-    if live_trading_armed():
+    from aureon.autonomous.autonomy_mode import autonomy_mode, kill_switch_engaged
+
+    if kill_switch_engaged():
+        raise RuntimeError("refusing to start: kill switch engaged")
+    if live_trading_armed() and autonomy_mode() != "full":
         raise RuntimeError("refusing to start: live trading flags are set; this service stays disarmed")
     token = token_from_env()
     bind = os.environ.get("AUREON_FUSION_BIND", "127.0.0.1")

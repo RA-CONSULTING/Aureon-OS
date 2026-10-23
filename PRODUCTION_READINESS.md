@@ -1,6 +1,6 @@
 # Twelve layers
 
-Live trading is never armed by the system. Evidence gates are never loosened. Those rules are enforced in the writer, the sandbox repair, and the self-coder before a patch is applied.
+The public default is guarded mode (`AUREON_AUTONOMY_MODE` unset). In that mode live trading is not armed by the system and evidence gates are not loosened. Those rules are enforced in the writer, the sandbox repair, and the self-coder before a patch is applied. Full mode is the owner's local switch, documented in `AUTONOMY.md`, and is not committed.
 
 ## Self-repair fail-safe
 
@@ -8,8 +8,9 @@ Live trading is never armed by the system. Evidence gates are never loosened. Th
 |---|---|
 | `AUREON_SELF_REPAIR_ENABLE` unset | Self-repair stays disabled |
 | `state/self_repair_config.json` missing, unreadable, or `"enabled"` not `true` | Self-repair stops (`missing_config` or `self_repair_disabled`) |
-| `AUREON_SELF_REPAIR_KILL=1` | Self-repair stops, even when enable and the config are set |
-| Protected path or pattern | The write or patch is not applied. The review log flags it for human review |
+| `AUREON_SELF_REPAIR_KILL=1` or `state/SELF_REPAIR_KILL` | Self-repair and order dispatch stop, even in full mode |
+| Protected path or pattern, guarded mode | The write or patch is not applied. The review log flags it for human review |
+| `AUREON_AUTONOMY_MODE=full` in local state only | Live flags, the HOLD/RELEASE gate, `may_act`, and position sizing may be edited. Credentials stay refused |
 
 Both the enable flag and the config file are required. Either one on its own does not start a repair.
 
@@ -22,7 +23,7 @@ Checked by `aureon/autonomous/self_repair_guard.py` before Queen writes, before 
 - position sizing
 - `.env` and credential files
 
-`AUREON_CODE_AUTO_APPROVE=1` does not mark those proposals approved and does not apply them.
+In guarded mode, `AUREON_CODE_AUTO_APPROVE=1` does not mark those proposals approved and does not apply them. In full mode it does, except for credential material. A self-patch whose tests fail is rolled back in both modes.
 
 ## Where this was run
 
@@ -51,7 +52,7 @@ Green hosted run IDs:
 
 Secret rotation is not a merge blocker. `ROTATE_KEYS.md` is still the inventory (provider, type, file, commit, never the value). Gitleaks still guards new commits, in the pre-commit hook and in the tree scan. History is not rewritten from this branch.
 
-Hosting is the end user's choice: any machine that can run `make up` or `make compose`. No cloud project and no provider credential is required. Live trading stays off. `may_act` stays false. The HOLD gate and the self-repair denylist were not changed.
+Hosting is the end user's choice: any machine that can run `make up` or `make compose`. No cloud project and no provider credential is required. The public default stays guarded: live trading stays off and `may_act` stays false until the owner sets `AUREON_AUTONOMY_MODE=full` in local state. See `AUTONOMY.md`.
 
 Deploy:
 

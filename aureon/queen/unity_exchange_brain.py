@@ -131,6 +131,9 @@ class QueenGovernedExchangeBrain:
         **provider_kwargs: Any,
     ) -> dict[str, Any]:
         symbol_text = str(symbol or "").strip().upper()
+        halted = self._autonomy_halt(symbol_text, "place_market_order")
+        if halted is not None:
+            return halted
         if unity_invocation is not None or unity_plan is not None:
             return self._observe(
                 "place_market_order",
@@ -190,7 +193,31 @@ class QueenGovernedExchangeBrain:
                 # Observation is feedback-only. It can never alter or retry a
                 # provider outcome that may already have happened.
                 pass
+        try:
+            from aureon.autonomous.autonomy_mode import record_order
+
+            record_order(
+                operation=operation,
+                exchange=self.exchange,
+                symbol=str(receipt.get("symbol") or ""),
+                side=str(receipt.get("side") or ""),
+                status=str(receipt.get("status") or ""),
+                decision=str(receipt.get("decision") or ""),
+                reason=str(receipt.get("reason") or ""),
+            )
+        except Exception:
+            # The audit must not change an order outcome or retry a dispatch.
+            pass
         return receipt
+
+    def _autonomy_halt(self, symbol: str, operation: str) -> dict[str, Any] | None:
+        """The kill switch stops dispatch before a venue is contacted."""
+
+        from aureon.autonomous.autonomy_mode import kill_switch_engaged
+
+        if not kill_switch_engaged():
+            return None
+        return self._observe(operation, _hold(self.exchange, symbol, "kill_switch"))
 
     def place_margin_order(
         self,
@@ -211,6 +238,9 @@ class QueenGovernedExchangeBrain:
         **provider_kwargs: Any,
     ) -> dict[str, Any]:
         symbol_text = str(symbol or "").strip().upper()
+        halted = self._autonomy_halt(symbol_text, "place_margin_order")
+        if halted is not None:
+            return halted
         if unity_invocation is not None or unity_plan is not None:
             return self._observe(
                 "place_margin_order",
@@ -274,6 +304,9 @@ class QueenGovernedExchangeBrain:
         **provider_kwargs: Any,
     ) -> dict[str, Any]:
         symbol_text = str(symbol or "").strip().upper()
+        halted = self._autonomy_halt(symbol_text, "close_margin_position")
+        if halted is not None:
+            return halted
         if unity_invocation is not None or unity_plan is not None:
             return self._observe(
                 "close_margin_position",
@@ -331,6 +364,9 @@ class QueenGovernedExchangeBrain:
         **provider_kwargs: Any,
     ) -> dict[str, Any]:
         symbol_text = str(symbol or "").strip().upper()
+        halted = self._autonomy_halt(symbol_text, "place_take_profit_order")
+        if halted is not None:
+            return halted
         if unity_invocation is not None or unity_plan is not None:
             return self._observe(
                 "place_take_profit_order",
@@ -387,6 +423,9 @@ class QueenGovernedExchangeBrain:
         **provider_kwargs: Any,
     ) -> dict[str, Any]:
         symbol_text = str(symbol or "").strip().upper()
+        halted = self._autonomy_halt(symbol_text, "place_trailing_stop_order")
+        if halted is not None:
+            return halted
         if unity_invocation is not None or unity_plan is not None:
             return self._observe(
                 "place_trailing_stop_order",

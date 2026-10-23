@@ -11,11 +11,14 @@ From the fusion tree the same command is:
     python -m aureon_fusion.repair --root /path/to/project
 
 It repairs a proved implementation bug, such as an off-by-one in a pure utility.
-It does not arm live trading, change an evidence gate, change position sizing,
-or write credential files. Those attempts are flagged for human review and are
-not applied. Repair stays disabled unless AUREON_SELF_REPAIR_ENABLE=1 and
-state/self_repair_config.json contains {"enabled": true}. AUREON_SELF_REPAIR_KILL=1
-or a missing config stops it. The repair does not rewrite the test file.
+In guarded mode it does not arm live trading, change an evidence gate, change
+position sizing, or write credential files. Those attempts are flagged for
+human review and are not applied. Full autonomy mode, set locally by the owner,
+allows the first three. Credential files stay refused in both modes. Repair
+stays disabled unless AUREON_SELF_REPAIR_ENABLE=1 and
+state/self_repair_config.json contains {"enabled": true}. AUREON_SELF_REPAIR_KILL=1,
+or state/SELF_REPAIR_KILL, stops it. A missing config stops it too. The repair
+does not rewrite the test file.
 """
 
 from __future__ import annotations
@@ -310,7 +313,7 @@ def _refuse_edit(root: Path, relative: str, old: str, new: str) -> str | None:
     if old not in previous:
         return None
     updated = previous.replace(old, new, 1)
-    return block_reason_for_write(relative, updated, previous)
+    return block_reason_for_write(relative, updated, previous, root)
 
 
 def _attempt(root: Path, output: str, architect: Any) -> dict[str, Any] | None:

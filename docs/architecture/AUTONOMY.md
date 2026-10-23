@@ -95,6 +95,10 @@ his trust rather than proposing more.
 | **Email loop** | `AUREON_APPROVAL_EMAIL=1 + AUREON_OWNER_EMAIL + creds` | notify the owner + read his reply as the decision |
 | **Live money / filing** | runtime-gated + manual | **never automatic** — Gary's deliberate act, the hard boundary in force |
 
+## Owner autonomy mode
+
+The desk above is the public default: `AUREON_AUTONOMY_MODE=guarded`. Gary can open a second switch, locally, that is not committed: `AUREON_AUTONOMY_MODE=full`, or `state/autonomy_mode.json` with `{"mode": "full"}`. That mode is specified in [`AUTONOMY.md`](../../AUTONOMY.md). It lets the system edit live flags, the HOLD/RELEASE gate, `may_act`, position sizing, and the trading modules, auto-merge a self-patch after its tests pass, and set the live flag itself. The kill switch (`AUREON_SELF_REPAIR_KILL=1` or `state/SELF_REPAIR_KILL`), the append-only audit, rollback on a failed suite, and the rule that credentials are never written into the repo stay in force. `AUREON_AUTONOMY=1` on the ladder below is the pursuit loop. It is not this mode.
+
 ## The fixed line
 
 No internal score (coherence, ascent, ego-dissolution) ever authorizes an irreversible or

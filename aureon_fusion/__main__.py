@@ -36,17 +36,22 @@ def main(argv: list[str] | None = None) -> int:
     else:
         report = status_report()
     if report.get("live_trading") is not False or report.get("may_act") is not False:
-        print("AUREON_FUSION_LIVE_HOLD refused an armed status", file=sys.stderr)
-        return 2
+        from aureon.autonomous.autonomy_mode import autonomy_mode, kill_switch_engaged
+
+        if kill_switch_engaged() or autonomy_mode() != "full":
+            print("AUREON_FUSION_LIVE_HOLD refused an armed status", file=sys.stderr)
+            return 2
     if as_json:
         print(json.dumps(report, indent=2, sort_keys=True))
     else:
+        live = bool(report.get("live_trading"))
+        may_act = bool(report.get("may_act"))
         print("Aureon Fusion")
-        print("live_trading: false")
-        print("paper_default: true")
-        print("dry_run_default: true")
-        print("may_act: false")
-        print("action gate: HOLD")
+        print(f"live_trading: {str(live).lower()}")
+        print(f"paper_default: {str(not live).lower()}")
+        print(f"dry_run_default: {str(not live).lower()}")
+        print(f"may_act: {str(may_act).lower()}")
+        print("action gate: " + ("RELEASE" if may_act else "HOLD"))
         print("publication: staging in this private repo; not pushed to Aureon-OS")
         print("")
         print("capabilities:")

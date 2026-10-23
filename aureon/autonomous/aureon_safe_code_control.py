@@ -10,9 +10,10 @@ It provides a reviewable queue for:
 
 By default proposals are pending review. Set AUREON_CODE_AUTO_APPROVE=1 only
 for an explicitly trusted local workflow that wants proposals marked approved
-immediately; this still does not apply patches by itself. Auto-approve does
-not cover protected paths: live-trading flags, evidence gates, position
-sizing, and credential files stay pending human review.
+immediately; this still does not apply patches by itself. In guarded mode,
+auto-approve does not cover live-trading flags, evidence gates, or position
+sizing. In AUREON_AUTONOMY_MODE=full it does. Credential files stay pending
+human review in both modes.
 """
 
 from __future__ import annotations
