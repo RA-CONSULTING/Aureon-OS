@@ -427,6 +427,16 @@ def _requirements_file(repo: Path) -> tuple[Path | None, str]:
     return None, "requirements.txt missing"
 
 
+def _uv_binary() -> str | None:
+    found = shutil.which("uv")
+    if found:
+        return found
+    candidate = Path.home() / ".local" / "bin" / "uv"
+    if candidate.is_file() and os.access(candidate, os.X_OK):
+        return str(candidate)
+    return None
+
+
 def _ensure_venv(repo: Path) -> tuple[Path | None, str]:
     existing = venv_python(repo)
     if existing:
@@ -436,7 +446,7 @@ def _ensure_venv(repo: Path) -> tuple[Path | None, str]:
     created = venv_python(repo)
     if ok and created:
         return created, "venv created"
-    uv = shutil.which("uv")
+    uv = _uv_binary()
     if not uv:
         reason = detail if not ok else "venv python missing"
         return None, (
@@ -451,7 +461,7 @@ def _ensure_venv(repo: Path) -> tuple[Path | None, str]:
 
 
 def _pip_install(repo: Path, python: Path, requirements: Path) -> tuple[bool, str]:
-    uv = shutil.which("uv")
+    uv = _uv_binary()
     if uv:
         cmd = [uv, "pip", "install", "--python", str(python), "-r", str(requirements)]
     else:
@@ -1522,8 +1532,8 @@ def start_rows(repo: Path, runner: Runner, components: list[Component]) -> list[
         elif component.kind == "compose":
             if selected_compose and compose_error is None and not compose_attempted:
                 compose_attempted = True
-                _ready, docker_note = runner.docker_ready()
-                if docker_ok:
+                ready, docker_note = runner.docker_ready()
+                if ready:
                     docker_up, up_note = runner.compose_up(compose_file(repo), selected_compose)
                     if docker_up:
                         state["compose_started"] = True
