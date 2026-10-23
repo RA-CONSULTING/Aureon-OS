@@ -664,6 +664,12 @@ class HarmonicSeedLoader:
         Returns:
             GlobalHarmonicState ready for live growth
         """
+        from aureon.core.aureon_runtime_safety import offline_boot
+
+        if offline_boot():
+            logger.info("OFFLINE BOOT: harmonic seed stays local; venues not contacted")
+            return self.state
+
         cache_file = self.cache_dir / "harmonic_seed.json"
         legacy_pickle = self.cache_dir / "harmonic_seed.pkl"
         cache_meta = self.cache_dir / "harmonic_seed_meta.json"

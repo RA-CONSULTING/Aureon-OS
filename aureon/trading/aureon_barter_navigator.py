@@ -199,6 +199,11 @@ class BarterNavigator:
     
     def load_all_exchanges(self):
         """Load tradeable pairs from all exchanges."""
+        from aureon.core.aureon_runtime_safety import offline_boot
+
+        if offline_boot():
+            print("OFFLINE BOOT: barter graph stays local; venues not contacted")
+            return
         print("\n" + "=" * 70)
         print("🫒🔄 LOADING BARTER GRAPH FROM ALL EXCHANGES")
         print("=" * 70)

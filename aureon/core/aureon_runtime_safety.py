@@ -75,6 +75,11 @@ def audit_mode_enabled(environ: MutableMapping[str, str] | None = None) -> bool:
     return env_truthy("AUREON_AUDIT_MODE", environ=environ)
 
 
+def offline_boot(environ: MutableMapping[str, str] | None = None) -> bool:
+    """An explicit offline boot constructs the engine and does not contact a venue."""
+    return env_truthy("AUREON_OFFLINE", environ=environ)
+
+
 def real_orders_disabled(environ: MutableMapping[str, str] | None = None) -> bool:
     env = os.environ if environ is None else environ
     return (
