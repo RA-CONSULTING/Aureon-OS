@@ -123,7 +123,7 @@ Command, from a clean `git clone` of this commit, with `AUREON_LIVE_TRADING=0` a
 python -m aureon.launch.master
 ```
 
-Exit 0. Docker's socket was not reachable, Ollama was absent, `node_modules` is not in the clone, and the faculty state files are not tracked. Postgres and Redis were already answering on the host, so those rows are `started` and `--stop` does not touch them. The exact table:
+Exit 0. Python requirements landed in `.venv` from `requirements-linux.txt` (`python -m venv` has no ensurepip here, so uv finished the install). `npm install` put `vite.js` in the clone. Docker's socket was not reachable, so image pull and build did not run and the compose rows use the host fallbacks. Ollama was absent. The faculty state files are not tracked. Postgres and Redis were already answering on the host, so those rows are `started` and `--stop` does not touch them. The exact table:
 
 ```
 AUREON MASTER LAUNCHER
@@ -134,66 +134,69 @@ parent_AUREON_LIVE_TRADING=0
 
 order  name                                status    health   reason
 -----  ----------------------------------  -------   ------   ------
-1      stdio/windows                       started   ok       posix streams usable; CONOUT$ repair is the Windows path
-2      compose/postgres                    started   ok       pg_isready accepted database aureon; launcher did not start postgres and will not stop it
-3      compose/redis                       started   ok       redis answered PONG; launcher did not start redis and will not stop it
-4      compose/error_sink                  started   ok       docker daemon not reachable: permission denied while trying to connect to the docker API at unix:///var/run/docker.sock; host error_sink pid 1140837; http://127.0.0.1:8088/healthz answered
-5      compose/api_a                       blocked   down     docker daemon not reachable: permission denied while trying to connect to the docker API at unix:///var/run/docker.sock; host seat is seat/trading_world_v5b on 127.0.0.1:8765
-6      compose/api_b                       started   ok       docker daemon not reachable: permission denied while trying to connect to the docker API at unix:///var/run/docker.sock; host api_b pid 1140838; http://127.0.0.1:8766/healthz answered
-7      compose/frontend                    started   ok       docker daemon not reachable: permission denied while trying to connect to the docker API at unix:///var/run/docker.sock; host frontend pid 1140839; http://127.0.0.1:5173/ answered
-8      compose/hnc_core                    blocked   down     docker daemon not reachable: permission denied while trying to connect to the docker API at unix:///var/run/docker.sock; local Master-Equation seat is organ/hnc_core
-9      compose/nginx                       started   ok       127.0.0.1:8080/healthz already answered; launcher did not bind it and will not stop it
-10     seat/trading_world_v5b              started   ok       v5b seat is the fusion API on 127.0.0.1:8765; pid 1140841; http://127.0.0.1:8765/healthz answered
-11     organ/unified_market_trader         blocked   down     missing credential: KRAKEN_API_KEY+KRAKEN_API_SECRET or BINANCE_API_KEY+BINANCE_API_SECRET or ALPACA_API_KEY+ALPACA_SECRET_KEY or CAPITAL_API_KEY+CAPITAL_IDENTIFIER+CAPITAL_PASSWORD
-12     organ/operator_gateway              started   ok       pid 1140842
-13     organ/frontend_vite                 blocked   down     script not present: vite.js
-14     organ/unified_market_status         started   ok       pid 1140843; http://127.0.0.1:8791/ answered
-15     organ/market_stream_feeder          started   ok       pid 1140844
-16     organ/real_time_data_feeder         blocked   down     script not present: real_time_data_feeder.py
-17     organ/schumann_real_daemon          blocked   down     script not present: schumann_real_daemon.py
-18     organ/planetary_monitor_daemon      blocked   down     script not present: planetary_monitor_daemon.py
-19     organ/solar_system_collector        blocked   down     script not present: solar_system_collector.py
-20     organ/sero_space_weather            blocked   down     script not present: sero_space_weather.py
-21     organ/sero_autonomous_expansion     blocked   down     script not present: sero_autonomous_expansion.py
-22     organ/aureon_radar_bridge           started   ok       pid 1140845
-23     organ/aureon_radar_suite            blocked   down     launcher does not arm live trading and does not create capital_release.flag
-24     organ/mind_thought_action_hub       started   ok       pid 1140846; http://127.0.0.1:13002/ answered
-25     organ/self_questioning_ai           blocked   down     ollama not answering http://127.0.0.1:11434/api/tags
-26     organ/hnc_core                      started   ok       pid 1140847
-27     organ/soul_protection_daemon        blocked   down     script not present: soul_protection_daemon.py
-28     organ/mind_neural_canvas            started   ok       pid 1140848; http://127.0.0.1:13012/ answered
-29     organ/queen_mind                    started   ok       pid 1140849
-30     organ/heartbeat_daemon              started   ok       pid 1140852
-31     organ/grand_wheel                   started   ok       pid 1140853
-32     organ/knowledge_pulse_feeder        started   ok       pid 1140854
-33     organ/trading_progress_monitor      started   ok       pid 1140855
-34     organ/_portfolio_writer_loop        started   ok       pid 1140856
-35     organ/_temporal_refresh_loop        started   ok       pid 1140857
-36     organ/_world_digest_loop            started   ok       pid 1140858
-37     organ/_harmonic_seed_loop           started   ok       pid 1140859
-38     organ/global_energy_aggregator      started   ok       pid 1140860
-39     organ/orca_unified_kill_chain       blocked   down     order loop does not read the live-trading switch; launcher will not start it
-40     organ/orca_command_center           started   down     pid 1140861; process alive; http://127.0.0.1:8888/ did not answer yet
-41     organ/unity_supervisor              started   ok       pid 1140862; dry-run so the supervisor cannot bypass credential or live-trading gates
-42     organ/flight_recorder               started   ok       pid 1140863
-43     organ/bus_bridge                    started   ok       pid 1140864
-44     organ/assessment_snapshot_producer  blocked   down     module not present: aureon.autonomous.aureon_assessment_snapshot_producer
-45     organ/harmonic_affect_producer      started   ok       pid 1140865
-46     organ/hnc_live_daemon               started   ok       pid 1140866
-47     faculty/hnc_core                    blocked   down     faculty state file absent: hnc_core_state.json
-48     faculty/real_time_data              blocked   down     faculty state file absent: real_time_data.json
-49     faculty/schumann                    blocked   down     faculty state file absent: schumann_state.json
-50     faculty/knowledge_pulse             blocked   down     faculty state file absent: knowledge_pulse.json
-51     faculty/trading_progress            blocked   down     faculty state file absent: trading_progress_state.json
-52     faculty/real_portfolio              blocked   down     faculty state file absent: real_portfolio_state.json
-53     faculty/temporal_outlook            blocked   down     faculty state file absent: temporal_outlook.json
-54     faculty/prophecy_summary            blocked   down     faculty state file absent: prophecy_summary.json
-55     faculty/news_geo_digest             blocked   down     faculty state file absent: news_geo_digest.json
-56     faculty/heartbeat_last_results      blocked   down     faculty state file absent: heartbeat_last_results.json
-57     faculty/organ_registry              blocked   down     faculty state file absent: organ_registry.json
-58     loop/self_repair                    blocked   skipped  self-repair not enabled: AUREON_SELF_REPAIR_ENABLE is unset; launcher does not enable it
-59     loop/self_coder                     started   ok       standing by; autonomy=guarded; launcher does not invent a goal or run a patch
-60     dashboards                          started   ok       up: compose/frontend, organ/unified_market_status, organ/mind_thought_action_hub, organ/mind_neural_canvas, organ/orca_command_center
+1      deps/python                         started   ok       installed requirements-linux.txt into .venv; desktop-only packages in requirements.txt are omitted on this platform; venv created without ensurepip
+2      deps/node                           started   ok       npm install finished; vite.js present
+3      deps/docker                         blocked   down     docker daemon not reachable: permission denied while trying to connect to the docker API at unix:///var/run/docker.sock
+4      stdio/windows                       started   ok       posix streams usable; CONOUT$ repair is the Windows path
+5      compose/postgres                    started   ok       pg_isready accepted database aureon; launcher did not start postgres and will not stop it
+6      compose/redis                       started   ok       redis answered PONG; launcher did not start redis and will not stop it
+7      compose/error_sink                  started   ok       docker daemon not reachable: permission denied while trying to connect to the docker API at unix:///var/run/docker.sock; host error_sink pid 1182843; http://127.0.0.1:8088/healthz answered
+8      compose/api_a                       blocked   down     docker daemon not reachable: permission denied while trying to connect to the docker API at unix:///var/run/docker.sock; host seat is seat/trading_world_v5b on 127.0.0.1:8765
+9      compose/api_b                       started   ok       docker daemon not reachable: permission denied while trying to connect to the docker API at unix:///var/run/docker.sock; host api_b pid 1182844; http://127.0.0.1:8766/healthz answered
+10     compose/frontend                    blocked   down     docker daemon not reachable: permission denied while trying to connect to the docker API at unix:///var/run/docker.sock; organ/frontend_vite owns port 5173
+11     compose/hnc_core                    blocked   down     docker daemon not reachable: permission denied while trying to connect to the docker API at unix:///var/run/docker.sock; local Master-Equation seat is organ/hnc_core
+12     compose/nginx                       started   ok       127.0.0.1:8080/healthz already answered; launcher did not bind it and will not stop it
+13     seat/trading_world_v5b              started   ok       v5b seat is the fusion API on 127.0.0.1:8765; pid 1182846; http://127.0.0.1:8765/healthz answered
+14     organ/unified_market_trader         blocked   down     missing credential: KRAKEN_API_KEY+KRAKEN_API_SECRET or BINANCE_API_KEY+BINANCE_API_SECRET or ALPACA_API_KEY+ALPACA_SECRET_KEY or CAPITAL_API_KEY+CAPITAL_IDENTIFIER+CAPITAL_PASSWORD
+15     organ/operator_gateway              started   ok       pid 1182847
+16     organ/frontend_vite                 started   ok       pid 1182848; http://127.0.0.1:5173/ answered
+17     organ/unified_market_status         started   ok       pid 1182849; http://127.0.0.1:8791/ answered
+18     organ/market_stream_feeder          started   ok       pid 1182855
+19     organ/real_time_data_feeder         blocked   down     script not present: real_time_data_feeder.py
+20     organ/schumann_real_daemon          blocked   down     script not present: schumann_real_daemon.py
+21     organ/planetary_monitor_daemon      blocked   down     script not present: planetary_monitor_daemon.py
+22     organ/solar_system_collector        blocked   down     script not present: solar_system_collector.py
+23     organ/sero_space_weather            blocked   down     script not present: sero_space_weather.py
+24     organ/sero_autonomous_expansion     blocked   down     script not present: sero_autonomous_expansion.py
+25     organ/aureon_radar_bridge           started   ok       pid 1182856
+26     organ/aureon_radar_suite            blocked   down     launcher does not arm live trading and does not create capital_release.flag
+27     organ/mind_thought_action_hub       started   ok       pid 1182857; http://127.0.0.1:13002/ answered
+28     organ/self_questioning_ai           blocked   down     ollama not answering http://127.0.0.1:11434/api/tags
+29     organ/hnc_core                      started   ok       pid 1182859
+30     organ/soul_protection_daemon        blocked   down     script not present: soul_protection_daemon.py
+31     organ/mind_neural_canvas            started   ok       pid 1182862; http://127.0.0.1:13012/ answered
+32     organ/queen_mind                    started   ok       pid 1182863
+33     organ/heartbeat_daemon              started   ok       pid 1182864
+34     organ/grand_wheel                   started   ok       pid 1182865
+35     organ/knowledge_pulse_feeder        started   ok       pid 1182866
+36     organ/trading_progress_monitor      started   ok       pid 1182867
+37     organ/_portfolio_writer_loop        started   ok       pid 1182868
+38     organ/_temporal_refresh_loop        started   ok       pid 1182869
+39     organ/_world_digest_loop            started   ok       pid 1182870
+40     organ/_harmonic_seed_loop           started   ok       pid 1182871
+41     organ/global_energy_aggregator      started   ok       pid 1182872
+42     organ/orca_unified_kill_chain       blocked   down     order loop does not read the live-trading switch; launcher will not start it
+43     organ/orca_command_center           started   down     pid 1182873; process alive; http://127.0.0.1:8888/ did not answer yet
+44     organ/unity_supervisor              started   ok       pid 1182874; dry-run so the supervisor cannot bypass credential or live-trading gates
+45     organ/flight_recorder               started   ok       pid 1182875
+46     organ/bus_bridge                    started   ok       pid 1182876
+47     organ/assessment_snapshot_producer  blocked   down     module not present: aureon.autonomous.aureon_assessment_snapshot_producer
+48     organ/harmonic_affect_producer      started   ok       pid 1182878
+49     organ/hnc_live_daemon               started   ok       pid 1182879
+50     faculty/hnc_core                    blocked   down     faculty state file absent: hnc_core_state.json
+51     faculty/real_time_data              blocked   down     faculty state file absent: real_time_data.json
+52     faculty/schumann                    blocked   down     faculty state file absent: schumann_state.json
+53     faculty/knowledge_pulse             blocked   down     faculty state file absent: knowledge_pulse.json
+54     faculty/trading_progress            blocked   down     faculty state file absent: trading_progress_state.json
+55     faculty/real_portfolio              blocked   down     faculty state file absent: real_portfolio_state.json
+56     faculty/temporal_outlook            blocked   down     faculty state file absent: temporal_outlook.json
+57     faculty/prophecy_summary            blocked   down     faculty state file absent: prophecy_summary.json
+58     faculty/news_geo_digest             blocked   down     faculty state file absent: news_geo_digest.json
+59     faculty/heartbeat_last_results      blocked   down     faculty state file absent: heartbeat_last_results.json
+60     faculty/organ_registry              blocked   down     faculty state file absent: organ_registry.json
+61     loop/self_repair                    blocked   skipped  self-repair not enabled: AUREON_SELF_REPAIR_ENABLE is unset; launcher does not enable it
+62     loop/self_coder                     started   ok       standing by; autonomy=guarded; launcher does not invent a goal or run a patch
+63     dashboards                          started   ok       up: organ/frontend_vite, organ/unified_market_status, organ/mind_thought_action_hub, organ/mind_neural_canvas, organ/orca_command_center
 
-started=33 blocked=27 total=60
+started=35 blocked=28 total=63
 ```
