@@ -8,8 +8,9 @@ watching the system OPEN a position, then CLOSE it for revenue.
 import sys
 import time
 import threading
+from pathlib import Path
 
-sys.path.insert(0, r"C:\Users\user\aureon-trading")
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 # Import module first, then suppress real client init
 from aureon.exchanges import capital_cfd_trader as cfd_mod

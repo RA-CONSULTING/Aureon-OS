@@ -68,7 +68,7 @@ os.environ.setdefault("PYTHONDEFAULTSOCKETAFFINITY", "")
 # ═══════════════════════════════════════════════════════════════════════════════
 # CONFIG
 # ═══════════════════════════════════════════════════════════════════════════════
-RADAR_DIR = "C:/Users/user/.kimi_openclaw/workspace/aureon_radar"
+RADAR_DIR = os.path.join(os.environ.get("SERO_WORKSPACE") or os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "aureon_radar")
 SHUTDOWN_GRACE_SEC = 5
 
 # ═══════════════════════════════════════════════════════════════════════════════

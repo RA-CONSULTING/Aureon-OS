@@ -65,7 +65,7 @@ PHI_INTERVALS = {
 # ═══════════════════════════════════════════════════════════════════════════════
 # PATHS
 # ═══════════════════════════════════════════════════════════════════════════════
-WORKSPACE = Path("C:/Users/user/.kimi_openclaw/workspace")
+WORKSPACE = Path(os.environ.get("SERO_WORKSPACE") or Path(__file__).resolve().parents[1])
 RADAR_DIR = WORKSPACE / "aureon_radar"
 RADAR_DIR.mkdir(parents=True, exist_ok=True)
 

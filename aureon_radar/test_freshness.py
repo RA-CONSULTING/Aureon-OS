@@ -21,12 +21,12 @@ from pathlib import Path
 from datetime import datetime, timezone, timedelta
 
 RADAR_DIR = Path(__file__).resolve().parent
-AUREON_DIR = Path("C:/Users/user/Aureon-OS")
+AUREON_DIR = Path(os.environ.get("SERO_WORKSPACE") or Path(__file__).resolve().parents[1])
 
 # Load .env files from repo root and radar directory if available.
 try:
     from dotenv import load_dotenv
-    repo_root = RADAR_DIR.parents[1]
+    repo_root = AUREON_DIR
     for env_path in (repo_root / ".env", RADAR_DIR / ".env", Path.cwd() / ".env"):
         if env_path.exists():
             load_dotenv(dotenv_path=str(env_path), override=False)

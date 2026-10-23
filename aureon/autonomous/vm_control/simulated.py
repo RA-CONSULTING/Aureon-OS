@@ -191,8 +191,8 @@ class SimulatedVMController(VMController):
         "ver": "Microsoft Windows [Version 10.0.19045.3693]",
         "echo hello": "hello",
         "dir": "Volume in drive C is Windows\n Directory of C:\\\n<DIR>  Users",
-        "pwd": "C:\\Users\\user",
-        "cd": "C:\\Users\\user",
+        "pwd": ".",
+        "cd": ".",
     }
 
     def _do_execute_shell(self, command: str, timeout: int = 30, **kwargs) -> Dict[str, Any]:

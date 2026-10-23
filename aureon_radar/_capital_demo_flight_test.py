@@ -27,7 +27,7 @@ from pathlib import Path
 os.environ["AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS"] = "1"
 os.environ["AUREON_AUDIT_MODE"] = "1"
 
-WORKSPACE = Path("C:/Users/user/.kimi_openclaw/workspace")
+WORKSPACE = Path(os.environ.get("SERO_WORKSPACE") or Path(__file__).resolve().parents[1])
 RADAR = WORKSPACE / "aureon_radar"
 sys.path.insert(0, str(RADAR))
 sys.path.insert(0, str(WORKSPACE))

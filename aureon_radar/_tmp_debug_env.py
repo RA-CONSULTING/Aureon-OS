@@ -8,7 +8,9 @@ except ImportError:
     print('python-dotenv: NOT INSTALLED')
     exit()
 
-load_dotenv(r'C:\Users\user\.kimi_openclaw\workspace\aureon_radar\.env')
+from pathlib import Path
+_radar = Path(__file__).resolve().parent
+load_dotenv(_radar / ".env")
 
 vars_to_check = ['CAPITAL_API_KEY', 'CAPITAL_IDENTIFIER', 'CAPITAL_PASSWORD', 'CAPITAL_DEMO']
 for v in vars_to_check:
@@ -18,7 +20,7 @@ for v in vars_to_check:
     else:
         print(f'{v}={val[:4]}... (len={len(val)})')
 
-sys.path.insert(0, r'C:\Users\user\.kimi_openclaw\workspace\aureon_radar')
+sys.path.insert(0, str(_radar))
 from capital_client import CapitalClient
 
 client = CapitalClient(

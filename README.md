@@ -120,7 +120,7 @@ The terminal-HOLD bootstraps stay holds. The organism launcher is a separate ent
 scripts/launch/aureon-master.sh
 ```
 
-Windows uses `scripts/launch/aureon-master.ps1` and `scripts/launch/aureon-master.bat`. It installs Python requirements into `.venv`, Node packages for `frontend/`, and the self-host Docker images, then starts the gated stack and prints a health table. A missing credential, binary, or daemon is a blocked row. The module name and the table are in [`LAUNCHER_INVENTORY.md`](LAUNCHER_INVENTORY.md).
+Windows uses `scripts/launch/aureon-master.ps1` and `scripts/launch/aureon-master.bat`. On a fresh clone it writes `.env` from `.env.example` when `.env` is absent, installs Python requirements into `.venv`, Node packages for `frontend/`, and the self-host Docker images, then starts the gated stack and prints a health table. Paths follow the checkout. A missing credential, binary, or daemon is a blocked row. The module name and the table are in [`LAUNCHER_INVENTORY.md`](LAUNCHER_INVENTORY.md). What still names a machine is in [`PORTABILITY.md`](PORTABILITY.md).
 
 ### Archive of unreferenced root files
 

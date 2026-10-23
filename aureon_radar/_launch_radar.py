@@ -14,8 +14,10 @@ import time
 import subprocess
 from pathlib import Path
 
-RADAR_DIR = Path("C:/Users/user/.kimi_openclaw/workspace/aureon_radar")
-PYTHON = Path("C:/Users/user/AppData/Local/Programs/Python/Python312/python.exe")
+RADAR_DIR = Path(__file__).resolve().parent
+_repo = Path(os.environ.get("SERO_WORKSPACE") or RADAR_DIR.parent)
+_venv_python = _repo / ".venv" / ("Scripts" / "python.exe" if os.name == "nt" else "bin" / "python")
+PYTHON = _venv_python if _venv_python.is_file() else Path(sys.executable)
 
 # Environment
 env = os.environ.copy()

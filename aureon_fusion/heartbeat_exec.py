@@ -15,7 +15,7 @@ One run performs:
      signal freshness: fused_signals.jsonl older than 30 min is reported
      STALE with one chirp-6 per stale episode
   6. progress tracking in the runtime heartbeat-state file
-     (~/.kimi_openclaw/memory/heartbeat-state.json, {"lastChecks": {...}})
+     (.aureon_runtime/memory/heartbeat-state.json, {"lastChecks": {...}})
 
 Every check is independently guarded: one failure never aborts the run.
 Import-safe; network operations are one-shot with tight timeouts.

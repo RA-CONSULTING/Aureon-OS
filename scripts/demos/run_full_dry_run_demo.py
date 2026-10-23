@@ -19,7 +19,9 @@ logging.basicConfig(level=logging.WARNING)
 for name in list(logging.root.manager.loggerDict):
     logging.getLogger(name).setLevel(logging.WARNING)
 
-sys.path.insert(0, r"C:\Users\user\aureon-trading")
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from aureon.exchanges import capital_cfd_trader as cfd_mod
 from aureon.exchanges.capital_cfd_trader import CapitalCFDTrader

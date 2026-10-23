@@ -2,10 +2,11 @@ import os
 import requests
 import json
 from datetime import datetime, timedelta
+from pathlib import Path
 from dotenv import load_dotenv
 
-# Load Aureon-OS .env
-load_dotenv(r'C:\.kimi_openclaw\Aureon-OS\.env')
+# Load the checkout .env when the operator has created one.
+load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
 key = os.environ.get('NASA_API_KEY', '')
 print(f'NASA_API_KEY present: {bool(key)}')

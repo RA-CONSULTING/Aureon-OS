@@ -45,6 +45,10 @@ class FakeRunner(Runner):
         self.installs: list[str] = []
         self._next = 4000
 
+    def install_env(self) -> tuple[bool, str]:
+        self.installs.append("env")
+        return True, "fake env left unwritten"
+
     def install_python(self) -> tuple[bool, str]:
         self.installs.append("python")
         return True, "fake python requirements satisfied"
@@ -150,6 +154,7 @@ def test_inventory_covers_compose_organs_and_faculties() -> None:
     for faculty in FACULTY_FILES:
         assert f"faculty/{faculty['name']}" in names
     for extra in (
+        "deps/env",
         "deps/python",
         "deps/node",
         "deps/docker",
@@ -165,7 +170,13 @@ def test_inventory_covers_compose_organs_and_faculties() -> None:
     assert "deps/python" in by_name["seat/trading_world_v5b"].depends_on
     assert "deps/node" in by_name["organ/frontend_vite"].depends_on
     assert "deps/python" in by_name["organ/hnc_core"].depends_on
-    assert [component.name for component in components[:3]] == ["deps/python", "deps/node", "deps/docker"]
+    assert "deps/env" in by_name["deps/python"].depends_on
+    assert [component.name for component in components[:4]] == [
+        "deps/env",
+        "deps/python",
+        "deps/node",
+        "deps/docker",
+    ]
     assert all(isinstance(component, Component) for component in components)
 
 
@@ -223,9 +234,10 @@ def test_child_env_stays_paper_when_the_parent_switch_is_on(launcher_state: Path
     assert code == 0
     assert os.environ["AUREON_LIVE_TRADING"] == "1"
     assert "live_trading_armed_by_launcher=false" in output
-    assert runner.installs == ["python"]
+    assert runner.installs == ["env", "python"]
     assert len(runner.spawned) == 1
     child = runner.spawned[0]
+    assert child.env["SERO_WORKSPACE"] == str(ROOT.resolve())
     assert child.env["AUREON_LIVE_TRADING"] == "0"
     assert child.env["AUREON_FUSION_ARM_LIVE"] == ""
     assert child.env["AUREON_DISABLE_REAL_ORDERS"] == "1"
@@ -295,8 +307,12 @@ def test_organ_command_is_a_list_and_supervisor_stays_dry_run() -> None:
     assert command == [project_python(ROOT), "-u", "-m", "aureon_fusion.hnc_core", "run"]
     supervisor = organ_command(ROOT, "unity_supervisor", {"module": "aureon_fusion.unity_supervisor", "args": []})
     assert supervisor[-1] == "--dry-run"
-    env = paper_env({"AUREON_LIVE_TRADING": "1", "PYTHONPATH": ""}, ROOT)
+    env = paper_env(
+        {"AUREON_LIVE_TRADING": "1", "PYTHONPATH": "", "SERO_WORKSPACE": "/tmp/other-checkout"},
+        ROOT,
+    )
     assert env["AUREON_LIVE_TRADING"] == "0"
+    assert env["SERO_WORKSPACE"] == str(ROOT.resolve())
     assert PAPER_LOCK["AUREON_LIVE_TRADING"] == "0"
 
 
@@ -354,7 +370,7 @@ def test_report_table_has_the_health_columns() -> None:
 def test_fresh_clone_smoke_prints_the_health_table(tmp_path: Path) -> None:
     clone = tmp_path / "clone"
     cloned = subprocess.run(
-        ["git", "clone", "--local", "--shared", str(ROOT), str(clone)],
+        ["git", "clone", "--no-hardlinks", "--shared", str(ROOT), str(clone)],
         capture_output=True,
         text=True,
         timeout=180,

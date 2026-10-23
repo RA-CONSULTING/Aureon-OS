@@ -1,7 +1,9 @@
 """Canonical Aureon master launcher.
 
-One entry point for Linux and Windows. It installs Python requirements, Node
-packages, and the self-host Docker images, then walks the compose stack,
+One entry point for Linux and Windows. On a fresh clone it writes ``.env``
+from ``.env.example`` when ``.env`` is absent (empty keys stay empty; live
+trading stays off), installs Python requirements, Node packages, and the
+self-host Docker images, then walks the compose stack,
 every organ in ``aureon_fusion.organ_registry``, the flight-recorder faculties,
 the queen, the unity supervisor, the temporal refresh loop, self-repair and
 the self-coder, the trading-world seat on 127.0.0.1:8765, the dashboards, and
@@ -41,6 +43,21 @@ PAPER_LOCK = {
     "AUREON_UNIFIED_ORDER_EXECUTOR": "0",
     "PYTHONUTF8": "1",
     "PYTHONIOENCODING": "utf-8",
+}
+
+# Applied only when this launcher creates ``.env``. An existing file is never
+# rewritten. Empty exchange keys stay empty so credentialed organs skip.
+SAFE_ENV_OVERLAY = {
+    "AUREON_LIVE_TRADING": "0",
+    "AUREON_FUSION_ARM_LIVE": "",
+    "AUREON_DISABLE_REAL_ORDERS": "1",
+    "AUREON_DISABLE_EXCHANGE_MUTATIONS": "1",
+    "AUREON_ORDER_INTENT_PUBLISH": "0",
+    "AUREON_UNIFIED_ORDER_EXECUTOR": "0",
+    "ALPACA_PAPER": "true",
+    "CAPITAL_DEMO_MODE": "true",
+    "QUICKBOOKS_ALLOW_MUTATION": "false",
+    "QUICKBOOKS_ENVIRONMENT": "sandbox",
 }
 
 # Same local token committed in deploy/selfhost/docker-compose.yml. It is not
@@ -334,6 +351,9 @@ class Runner:
     def settle(self, seconds: float) -> None:
         if seconds > 0:
             time.sleep(seconds)
+
+    def install_env(self) -> tuple[bool, str]:
+        return _ensure_local_env(self.repo)
 
     def install_python(self) -> tuple[bool, str]:
         return _install_python(self.repo)
@@ -660,9 +680,58 @@ def missing_exchange_credential(repo: Path) -> str | None:
     return f"missing credential: {rendered}"
 
 
+def _apply_safe_overlay(text: str) -> str:
+    """Rewrite known keys. Comments and unknown keys stay as the example wrote them."""
+
+    seen: set[str] = set()
+    out: list[str] = []
+    for line in text.splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#") or "=" not in stripped:
+            out.append(line)
+            continue
+        key = stripped.split("=", 1)[0].strip()
+        if key in SAFE_ENV_OVERLAY:
+            out.append(f"{key}={SAFE_ENV_OVERLAY[key]}")
+            seen.add(key)
+        else:
+            out.append(line)
+    for key, value in SAFE_ENV_OVERLAY.items():
+        if key not in seen:
+            out.append(f"{key}={value}")
+    return "\n".join(out) + "\n"
+
+
+def _ensure_local_env(repo: Path) -> tuple[bool, str]:
+    """Create ``.env`` from the example once. Never clobber a file the operator wrote."""
+
+    target = repo / ".env"
+    if target.is_file():
+        return True, ".env already present; launcher left it unchanged"
+    example = repo / ".env.example"
+    if not example.is_file():
+        return False, ".env.example missing; credentialed organs skip until keys are set"
+    try:
+        text = example.read_text(encoding="utf-8")
+    except OSError as exc:
+        return False, f".env.example unreadable: {exc.__class__.__name__}"
+    rendered = _apply_safe_overlay(text)
+    # A checkout that moves must not keep chasing an absolute workspace path.
+    rendered = "\n".join(
+        line
+        for line in rendered.splitlines()
+        if not line.startswith("SERO_WORKSPACE=")
+    ) + "\n"
+    try:
+        target.write_text(rendered, encoding="utf-8")
+    except OSError as exc:
+        return False, f".env not written: {exc.__class__.__name__}"
+    return True, "wrote .env from .env.example; live trading left off; empty keys left empty"
+
+
 def paper_env(base: dict[str, str] | None, repo: Path) -> dict[str, str]:
     env = dict(os.environ if base is None else base)
-    root = str(repo)
+    root = str(repo.resolve())
     current = env.get("PYTHONPATH") or ""
     parts = [part for part in current.split(os.pathsep) if part]
     if root not in parts:
@@ -671,6 +740,8 @@ def paper_env(base: dict[str, str] | None, repo: Path) -> dict[str, str]:
     # The lock is the last write. A caller cannot smuggle a live arm through.
     env["AUREON_LIVE_TRADING"] = "0"
     env["AUREON_FUSION_ARM_LIVE"] = ""
+    # Children follow this checkout, not a workspace path inherited from another machine.
+    env["SERO_WORKSPACE"] = root
     return env
 
 
@@ -781,7 +852,8 @@ def build_inventory(repo: Path) -> tuple[list[Component], str | None]:
     notes = "; ".join(item for item in (compose_error, organ_error, faculty_error) if item)
 
     components: list[Component] = [
-        Component("deps/python", "python_deps"),
+        Component("deps/env", "env_deps"),
+        Component("deps/python", "python_deps", depends_on=("deps/env",)),
         Component("deps/node", "node_deps"),
         Component("deps/docker", "docker_deps"),
         Component("stdio/windows", "stdio"),
@@ -1430,6 +1502,10 @@ def _refresh_http(repo: Path, runner: Runner, rows: list[Row]) -> list[Row]:
 def _dependency_status(repo: Path, runner: Runner, component: Component) -> Row:
     """Report an install row without installing. ``--status`` stays read-only."""
 
+    if component.kind == "env_deps":
+        if (repo / ".env").is_file():
+            return Row(component.name, "started", "ok", ".env present; launcher does not overwrite it")
+        return Row(component.name, "blocked", "down", ".env absent; start copies .env.example")
     if component.kind == "python_deps":
         python = venv_python(repo)
         stamp = repo / ".venv" / ".aureon-requirements-stamp"
@@ -1448,7 +1524,9 @@ def _dependency_status(repo: Path, runner: Runner, component: Component) -> Row:
 
 
 def _dependency_start(repo: Path, runner: Runner, component: Component) -> Row:
-    if component.kind == "python_deps":
+    if component.kind == "env_deps":
+        ok, detail = runner.install_env()
+    elif component.kind == "python_deps":
         ok, detail = runner.install_python()
     elif component.kind == "node_deps":
         ok, detail = runner.install_node()
@@ -1469,7 +1547,7 @@ def status_rows(repo: Path, runner: Runner, components: list[Component]) -> list
     docker_ok, docker_note = runner.docker_ready()
     rows: list[Row] = []
     for component in components:
-        if component.kind in {"python_deps", "node_deps", "docker_deps"}:
+        if component.kind in {"env_deps", "python_deps", "node_deps", "docker_deps"}:
             rows.append(_dependency_status(repo, runner, component))
             continue
         if component.kind == "stdio":
@@ -1540,7 +1618,7 @@ def start_rows(repo: Path, runner: Runner, components: list[Component]) -> list[
     compose_attempted = False
     rows: list[Row] = []
     for component in components:
-        if component.kind in {"python_deps", "node_deps", "docker_deps"}:
+        if component.kind in {"env_deps", "python_deps", "node_deps", "docker_deps"}:
             rows.append(_dependency_start(repo, runner, component))
             continue
         if component.kind == "stdio":

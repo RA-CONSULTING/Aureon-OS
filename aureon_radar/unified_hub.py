@@ -29,7 +29,7 @@ from dataclasses import dataclass, asdict
 # ═══════════════════════════════════════════════════════════════════════════════
 # PATHS
 # ═══════════════════════════════════════════════════════════════════════════════
-RADAR_DIR = Path("C:/Users/user/.kimi_openclaw/workspace/aureon_radar")
+RADAR_DIR = Path(__file__).resolve().parent
 SCANNERS_DIR = RADAR_DIR / "scanners"
 BOTS_DIR = RADAR_DIR / "bots"
 ANALYZERS_DIR = RADAR_DIR / "analyzers"
