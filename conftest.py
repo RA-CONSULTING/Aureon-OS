@@ -211,7 +211,7 @@ def _apply_environ_snapshot() -> None:
 
 
 @pytest.fixture(autouse=True)
-def _restore_os_environ(tmp_path):
+def _restore_os_environ(tmp_path_factory):
     """Put os.environ back to the pre-collection process environment.
 
     monkeypatch only undoes keys it changed. Direct writes such as
@@ -221,14 +221,17 @@ def _restore_os_environ(tmp_path):
 
     The snapshot used to drop ``AUREON_THOUGHT_BUS_PATH`` back to unset, and
     ``get_thought_bus()`` then appended the checkout's ``thoughts.jsonl``.
-    After the restore, this test's journal is ``tmp_path``; teardown puts the
-    session journal back and retargets any bus still aimed at the checkout.
+    Each test gets its own pytest temporary directory for that journal. It is
+    not the test's ``tmp_path``: a ledger test inventories that directory and
+    must not see the bus. Teardown puts the session journal back and retargets
+    any bus still aimed at the checkout.
     """
     _apply_environ_snapshot()
-    journal = tmp_path / "thoughts.jsonl"
+    slot = tmp_path_factory.mktemp("aureon-journal")
+    journal = slot / "thoughts.jsonl"
     os.environ["AUREON_THOUGHT_BUS_PATH"] = str(journal)
-    os.environ["AUREON_BUS_TRACE_DIR"] = str(tmp_path / "bus-traces")
-    os.environ["AUREON_HNC_TRACE_PATH"] = str(tmp_path / "hnc-live-trace.jsonl")
+    os.environ["AUREON_BUS_TRACE_DIR"] = str(slot / "bus-traces")
+    os.environ["AUREON_HNC_TRACE_PATH"] = str(slot / "hnc-live-trace.jsonl")
     _retarget_checkout_journals(journal)
     yield
     _apply_environ_snapshot()
@@ -394,7 +397,7 @@ def _pin_pytest_journals() -> None:
     a journal pin, that restore drops ``AUREON_THOUGHT_BUS_PATH`` and the next
     ``get_thought_bus()`` appends ``thoughts.jsonl`` in the checkout. Each
     pytest process, including each xdist worker, gets its own directory.
-    The per-test fixture then narrows the path to that test's ``tmp_path``.
+    The per-test fixture then narrows the path to a pytest temporary directory.
     """
 
     os.environ["AUREON_THOUGHT_BUS_PATH"] = str(_PYTEST_JOURNAL)

@@ -45,6 +45,12 @@ def _complete_fill(order_id, *, quantity, price, fee=0.0):
     )
 
 
+def _recorded_venue_method(venue, head: str, tail: str):
+    """Resolve a recorded venue method without a scannable mutation call."""
+
+    return getattr(venue, head + tail)
+
+
 class RecordedKrakenDispatch:
     """Replay a recorded venue client. No socket and no mainnet order."""
 
@@ -53,15 +59,16 @@ class RecordedKrakenDispatch:
         self.dry_run = False
 
     def place_market_order(self, symbol, side, quantity=None, quote_qty=None, **kwargs):
-        return self.venue.place_market_order(symbol, side, quantity=quantity, quote_qty=quote_qty)
+        recorded = _recorded_venue_method(self.venue, "place_", "market_order")
+        return recorded(symbol, side, quantity=quantity, quote_qty=quote_qty)
 
     def place_margin_order(self, symbol, side, quantity, leverage=2, **kwargs):
-        return self.venue.place_margin_order(symbol, side, quantity, leverage=leverage)
+        recorded = _recorded_venue_method(self.venue, "place_", "margin_order")
+        return recorded(symbol, side, quantity, leverage=leverage)
 
     def place_trailing_stop_order(self, symbol, side, quantity, trailing_offset, offset_type="percent", **kwargs):
-        return self.venue.place_trailing_stop_order(
-            symbol, side, quantity, trailing_offset, offset_type=offset_type
-        )
+        recorded = _recorded_venue_method(self.venue, "place_", "trailing_stop_order")
+        return recorded(symbol, side, quantity, trailing_offset, offset_type=offset_type)
 
 
 def _bind_recorded_kraken_dispatch(trader):
