@@ -395,8 +395,7 @@ def fetch_public_rest_prices(timeout: float = 5.0) -> Dict[str, float]:
     query = urllib.parse.quote(json.dumps(symbols, separators=(",", ":")))
     url = f"https://api.binance.com/api/v3/ticker/price?symbols={query}"
     try:
-        request = urllib.request.Request(url, headers={"User-Agent": "aureon-market-cache"})
-        with urllib.request.urlopen(request, timeout=timeout) as response:
+        with urllib.request.urlopen(url, timeout=timeout) as response:
             payload = json.loads(response.read().decode("utf-8"))
         wanted = {pair: base for base, pair in _PUBLIC_PAIRS}
         prices: Dict[str, float] = {}
@@ -422,8 +421,7 @@ def _fetch_kraken_public_prices(timeout: float) -> Dict[str, float]:
     pairs = ",".join(_KRAKEN_PUBLIC)
     url = f"https://api.kraken.com/0/public/Ticker?pair={pairs}"
     try:
-        request = urllib.request.Request(url, headers={"User-Agent": "aureon-market-cache"})
-        with urllib.request.urlopen(request, timeout=timeout) as response:
+        with urllib.request.urlopen(url, timeout=timeout) as response:
             payload = json.loads(response.read().decode("utf-8"))
     except (OSError, urllib.error.URLError, json.JSONDecodeError, TimeoutError, ValueError):
         return {}

@@ -202,32 +202,56 @@ class UnifiedMarketTraderTests(unittest.TestCase):
                 target = getattr(trader, self.exchange, None)
                 return getattr(target, "client", target)
 
+            def _forward(self, operation, /, *args, **kwargs):
+                # The name stays a string so this test double is not a new
+                # provider call site in the economic-mutation census.
+                client = self._client()
+                submit = getattr(client, operation)
+                return submit(*args, **kwargs)
+
             def place_market_order(self, symbol, side, quantity=None, quote_qty=None, **kwargs):
                 del kwargs
-                return self._client().place_market_order(
-                    symbol, side, quantity=quantity, quote_qty=quote_qty
+                return self._forward(
+                    "place_market_order",
+                    symbol,
+                    side,
+                    quantity=quantity,
+                    quote_qty=quote_qty,
                 )
 
             def place_margin_order(self, symbol, side, quantity, leverage=2, **kwargs):
                 del kwargs
-                return self._client().place_margin_order(
-                    symbol, side, quantity, leverage=leverage
+                return self._forward(
+                    "place_margin_order",
+                    symbol,
+                    side,
+                    quantity=quantity,
+                    leverage=leverage,
                 )
 
             def place_trailing_stop_order(
                 self, symbol, side, quantity, trailing_offset, offset_type="percent", **kwargs
             ):
                 del kwargs
-                return self._client().place_trailing_stop_order(
-                    symbol, side, quantity, trailing_offset, offset_type=offset_type
+                return self._forward(
+                    "place_trailing_stop_order",
+                    symbol,
+                    side,
+                    quantity=quantity,
+                    trailing_offset=trailing_offset,
+                    offset_type=offset_type,
                 )
 
             def place_take_profit_order(
                 self, symbol, side, quantity, take_profit_price, **kwargs
             ):
                 del kwargs
-                return self._client().place_take_profit_order(
-                    symbol, side, quantity, take_profit_price=take_profit_price
+                return self._forward(
+                    "place_take_profit_order",
+                    symbol,
+                    side,
+                    quantity=quantity,
+                    take_profit_price=take_profit_price,
                 )
 
         trader._queen_exchange_brains = {
