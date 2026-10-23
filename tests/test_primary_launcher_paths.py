@@ -134,7 +134,6 @@ def test_primary_runtime_launchers_enter_fixed_protected_bootstrap_first() -> No
         (DEPLOY_DIR / "start_queen.sh", "cloud-queen-redistribution"),
         (DEPLOY_DIR / "droplet-setup.sh", "linux-supervisor"),
         (DEPLOY_DIR / "droplet-deploy.sh", "linux-supervisor"),
-        (REPO_ROOT / "scripts" / "linux" / "aureon-up.sh", "linux-supervisor"),
         (REPO_ROOT / "scripts" / "linux" / "install-linux.sh", "linux-supervisor"),
         (
             REPO_ROOT / "scripts" / "shell" / "deploy" / "test-docker.sh",

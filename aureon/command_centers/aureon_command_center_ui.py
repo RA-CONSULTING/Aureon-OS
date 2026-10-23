@@ -4637,10 +4637,11 @@ class AureonCommandCenter:
                 except Exception as e:
                     logger.error(f"ThoughtBus error: {e}")
 
-            if MyceliumNetwork:
+            from aureon.core.simulated_boot import MYCELIUM_HIVE_SEED, take_simulated
+            if MyceliumNetwork and take_simulated(MYCELIUM_HIVE_SEED, "hive seed is not an exchange balance"):
                 try:
                     self.mycelium = MyceliumNetwork(initial_capital=1000.0)
-                    print("   🍄 Mycelium Network: WIRED")
+                    print("   🍄 Mycelium Network: WIRED (SIMULATED hive seed $1000)")
                     time.sleep(0.1) # Yield GIL
                 except Exception as e:
                     logger.error(f"Mycelium error: {e}")

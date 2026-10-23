@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import sys
 from pathlib import Path
 from typing import Any
@@ -754,6 +755,50 @@ def test_cli_exit_semantics_are_distinct_without_rescanning(
     assert AUDITOR.main(["--report-only", "--compact"]) == 2
 
 
+def test_live_arming_fails_while_unguarded_blockers_remain(
+    census: dict[str, Any],
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    allowlist = json.loads(AUDITOR.DEFAULT_ALLOWLIST.read_text(encoding="utf-8"))
+    assert allowlist["warning"] == AUDITOR.ALLOWLIST_WARNING
+    assert "safe only while live trading is off" in allowlist["warning"]
+    assert census["blocker_count"] > 0
+    assert (
+        census["counts_by_classification"]["live-capable-unguarded-blocker"]
+        == census["blocker_count"]
+    )
+    # This process is the suite. Live trading is off here, so the census
+    # may report the blockers. Arming any of the three switches must fail.
+    assert AUDITOR.live_trading_is_armed() is False
+    assert AUDITOR.live_arming_refusal(census) is None
+
+    monkeypatch.setenv("AUREON_LIVE_TRADING", "1")
+    assert AUDITOR.live_arming_refusal(census) == AUDITOR.LIVE_ARMING_REFUSAL
+    monkeypatch.setattr(AUDITOR, "audit", lambda **_kwargs: census)
+    assert AUDITOR.main(["--compact"]) == 2
+    captured = capsys.readouterr()
+    assert AUDITOR.LIVE_ARMING_REFUSAL in captured.out
+
+    monkeypatch.setenv("AUREON_LIVE_TRADING", "0")
+    monkeypatch.setenv("AUREON_FUSION_ARM_LIVE", "on")
+    assert AUDITOR.live_arming_refusal(census) == AUDITOR.LIVE_ARMING_REFUSAL
+
+    monkeypatch.delenv("AUREON_FUSION_ARM_LIVE", raising=False)
+    flag = tmp_path / "aureon_fusion" / "state" / "capital_release.flag"
+    flag.parent.mkdir(parents=True)
+    flag.write_text("armed\n", encoding="utf-8")
+    assert (
+        AUDITOR.live_arming_refusal(census, root=tmp_path)
+        == AUDITOR.LIVE_ARMING_REFUSAL
+    )
+
+    cleared = {**census, "blocker_count": 0, "unallowlisted": []}
+    monkeypatch.setenv("AUREON_LIVE_TRADING", "1")
+    assert AUDITOR.live_arming_refusal(cleared) is None
+
+
 def _python_fixture_findings(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -768,6 +813,39 @@ def _python_fixture_findings(
     findings, error = AUDITOR._python_findings(path, source)
     assert error is None
     return findings
+
+
+def test_python_fingerprint_follows_the_source_slice(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source = (
+        "def rotate(self, trade, _next):\n"
+        "    return self.close_position("
+        "reason=f\"ROTATION_DUE (1h limit | next→{_next or '?'})\", trade=trade)\n"
+    )
+    findings = _python_fixture_findings(
+        tmp_path,
+        monkeypatch,
+        source,
+        name="kraken_rotate.py",
+    )
+    assert len(findings) == 1
+    call = next(
+        node
+        for node in AUDITOR.ast.walk(AUDITOR.ast.parse(source))
+        if isinstance(node, AUDITOR.ast.Call)
+    )
+    segment = AUDITOR.ast.get_source_segment(source, call)
+    assert segment is not None
+    assert findings[0].canonical_call == AUDITOR._canonical_text(segment)
+    assert not findings[0].canonical_call.startswith("<unlocated:")
+    printed = AUDITOR._canonical_text(AUDITOR.ast.unparse(call))
+    # The fingerprint input is the file text. When the printer rewrites
+    # the f-string, the census must keep the slice anyway.
+    if printed != findings[0].canonical_call:
+        assert "ROTATION_DUE" in findings[0].canonical_call
+        assert findings[0].canonical_call != printed
 
 
 def _typescript_fixture_findings(

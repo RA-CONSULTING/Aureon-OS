@@ -108,6 +108,24 @@ def conscience(monkeypatch, tmp_path):
     # test in the same run, a validator) makes the field live and the
     # divided-field veto fires before the paths these tests assert.
     monkeypatch.setenv("AUREON_HNC_TRACE_PATH", str(tmp_path / "hnc.jsonl"))
+    # blend_field() reads the process-wide thought bus and the on-disk
+    # subfield trace, not the stub bus this fixture installs on the
+    # conscience. Under xdist another test in the same worker can leave
+    # contributors whose divergence crosses FIELD_DIVERGENCE_CAUTION, and
+    # the drift-zone path then VETOs. Pin both inputs to this test's tmp
+    # dir and a bus that recalls nothing, so SLS 0.30 stays CONCERNED.
+    monkeypatch.setenv("AUREON_BUS_TRACE_DIR", str(tmp_path / "bus-trace"))
+    import aureon.core.aureon_thought_bus as thought_bus
+
+    class _QuietBus:
+        def recall(self, *_args, **_kwargs):
+            return []
+
+    monkeypatch.setattr(
+        thought_bus,
+        "get_thought_bus",
+        lambda *_args, **_kwargs: _QuietBus(),
+    )
     bus = _StubBus()
     # Patch the module-level get_thought_bus the constructor would use.
     import aureon.queen.queen_conscience as qc_mod

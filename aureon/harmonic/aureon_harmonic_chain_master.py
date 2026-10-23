@@ -552,17 +552,18 @@ class HarmonicChainMaster:
         else:
             print("   🌱 Layer 1: Seed/Fusion/Underlay - ⚠️ Not Available")
         
-        # Layer 0: Wave Simulation
-        if WAVE_SIMULATION_AVAILABLE:
+        # Layer 0: Wave Simulation — simulated solfeggio visual, off the default boot.
+        from aureon.core.simulated_boot import HARMONIC_WAVE_SIMULATION, take_simulated
+        if take_simulated(HARMONIC_WAVE_SIMULATION, "solfeggio visualization, not a live price feed") and WAVE_SIMULATION_AVAILABLE:
             try:
                 self.wave_sim = HarmonicWaveSimulation()
                 self.state.layers[HarmonicLayer.WAVE_SIMULATION].active = True
                 self.state.layers[HarmonicLayer.WAVE_SIMULATION].instance = self.wave_sim
                 active_count += 1
-                print("   🌊 Layer 0: Wave Simulation - ✅ ACTIVE")
+                print("   🌊 Layer 0: Wave Simulation - ✅ ACTIVE (SIMULATED)")
             except Exception as e:
                 print(f"   🌊 Layer 0: Wave Simulation - ❌ Error: {e}")
-        else:
+        elif not WAVE_SIMULATION_AVAILABLE:
             print("   🌊 Layer 0: Wave Simulation - ⚠️ Not Available")
         
         # Layer 8: HFT Harmonic Mycelium (Speed Layer)

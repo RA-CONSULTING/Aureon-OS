@@ -27,6 +27,9 @@ import json
 import time
 import threading
 import logging
+import urllib.error
+import urllib.parse
+import urllib.request
 from pathlib import Path
 from typing import Dict, Any, Optional, List
 from dataclasses import dataclass, asdict
@@ -300,9 +303,26 @@ class UnifiedMarketCache:
             self._tickers[ticker.symbol] = ticker
     
     def write_cache(self) -> None:
-        """Write current cache to unified file"""
+        """Write current cache to unified file.
+
+        An empty memory cache is filled from a public REST ticker before the
+        write, so the file is not stuck at an empty price map while a socket
+        is still connecting. A failed fetch does not replace a cache that
+        already holds prices.
+        """
         with self._cache_lock:
             tickers = dict(self._tickers)
+        if not tickers:
+            ensure_public_prices(self)
+            with self._cache_lock:
+                tickers = dict(self._tickers)
+        if not tickers and os.path.exists(UNIFIED_CACHE_PATH):
+            try:
+                existing = json.loads(Path(UNIFIED_CACHE_PATH).read_text(encoding="utf-8") or "{}")
+            except (OSError, json.JSONDecodeError):
+                existing = {}
+            if int(existing.get("count") or 0) > 0:
+                return
         
         # Build cache structure
         ticker_cache = {}
@@ -351,6 +371,107 @@ def _atomic_write_json(path: str, data: Dict[str, Any]) -> None:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 _cache_instance: Optional[UnifiedMarketCache] = None
+
+_PUBLIC_PAIRS = (
+    ("BTC", "BTCUSDT"),
+    ("ETH", "ETHUSDT"),
+    ("SOL", "SOLUSDT"),
+    ("XRP", "XRPUSDT"),
+    ("DOGE", "DOGEUSDT"),
+)
+_KRAKEN_PUBLIC = {
+    "XXBTZUSD": "BTC",
+    "XETHZUSD": "ETH",
+    "SOLUSD": "SOL",
+    "XXRPZUSD": "XRP",
+    "XDGUSD": "DOGE",
+}
+_last_public_seed = 0.0
+
+
+def fetch_public_rest_prices(timeout: float = 5.0) -> Dict[str, float]:
+    """Last prices from a public ticker. No key, no order."""
+    symbols = [pair for _base, pair in _PUBLIC_PAIRS]
+    query = urllib.parse.quote(json.dumps(symbols, separators=(",", ":")))
+    url = f"https://api.binance.com/api/v3/ticker/price?symbols={query}"
+    try:
+        with urllib.request.urlopen(url, timeout=timeout) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+        wanted = {pair: base for base, pair in _PUBLIC_PAIRS}
+        prices: Dict[str, float] = {}
+        if isinstance(payload, list):
+            for row in payload:
+                if not isinstance(row, dict):
+                    continue
+                base = wanted.get(str(row.get("symbol") or ""))
+                try:
+                    price = float(row.get("price") or 0)
+                except (TypeError, ValueError):
+                    price = 0.0
+                if base and price > 0:
+                    prices[base] = price
+        if prices:
+            return prices
+    except (OSError, urllib.error.URLError, json.JSONDecodeError, TimeoutError, ValueError):
+        pass
+    return _fetch_kraken_public_prices(timeout)
+
+
+def _fetch_kraken_public_prices(timeout: float) -> Dict[str, float]:
+    pairs = ",".join(_KRAKEN_PUBLIC)
+    url = f"https://api.kraken.com/0/public/Ticker?pair={pairs}"
+    try:
+        with urllib.request.urlopen(url, timeout=timeout) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+    except (OSError, urllib.error.URLError, json.JSONDecodeError, TimeoutError, ValueError):
+        return {}
+    result = payload.get("result") if isinstance(payload, dict) else None
+    if not isinstance(result, dict):
+        return {}
+    prices: Dict[str, float] = {}
+    for pair, row in result.items():
+        base = _KRAKEN_PUBLIC.get(str(pair))
+        if not base or not isinstance(row, dict):
+            continue
+        close = row.get("c")
+        try:
+            price = float(close[0] if isinstance(close, list) and close else 0)
+        except (TypeError, ValueError):
+            price = 0.0
+        if price > 0:
+            prices[base] = price
+    return prices
+
+
+def ensure_public_prices(cache: Any, *, min_interval: float = 30.0) -> int:
+    """Fill an empty cache from the public ticker. Returns the number of prices added."""
+    global _last_public_seed
+    try:
+        if cache.get_all_prices(max_age=10**9):
+            return 0
+    except Exception:
+        return 0
+    now = time.time()
+    if _last_public_seed and (now - _last_public_seed) < min_interval:
+        return 0
+    _last_public_seed = now
+    fetched = fetch_public_rest_prices()
+    for symbol, price in fetched.items():
+        cache.update_ticker(
+            CachedTicker(
+                symbol=symbol,
+                price=float(price),
+                bid=float(price),
+                ask=float(price),
+                change_24h=0.0,
+                volume_24h=0.0,
+                source="public_rest",
+                timestamp=now,
+                pair=f"{symbol}USDT",
+            )
+        )
+    return len(fetched)
+
 
 def get_market_cache() -> UnifiedMarketCache:
     """Get the singleton market cache instance"""

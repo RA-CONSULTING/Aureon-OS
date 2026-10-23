@@ -1,16 +1,14 @@
-# Aureon production release status
+# Aureon installer
 
-Production installation, desktop packaging, container launch, release upload,
-port exposure, and live-trading setup are on terminal **HOLD**.
+`install.sh` (Linux and macOS) and `Install-AUREON.ps1` (Windows; the `.bat`
+wrappers call it) install Python tooling when the host can, write `.env` from
+`.env.example` only when `.env` is absent, and start the master-launcher
+preflight. Live trading stays off. When the UI answers, the installer prints
+`Aureon UI: http://127.0.0.1:8080/`. Dashboard and Command Center are tabs of
+that page. The thought bus listens on `http://127.0.0.1:8765/health`.
 
-The four checked-in installer entrypoints now execute only the isolated,
-fixed-target bootstrap for `production-supervisor`. They do not download an
-executable, build or start a container, create a shortcut, expose a port, read
-exchange credentials, or claim a dashboard is running. The Windows release
-workflow likewise performs only a HOLD-receipt audit and has no artifact or
-release upload permission.
+`entrypoint.sh`, `Dockerfile`, `docker-compose.yml`, and `supervisord.conf` in
+this directory stay on the isolated hold. They do not start the UI.
 
-Expected result: non-zero exit with a registered receipt containing
-`process_start_authorized: false`. A production release requires a reviewed
-artifact identity, signed provenance, native process containment, external HNC
-head anchoring, and provider-side deployment read-back; none is asserted here.
+The hold entrypoints above still stop before a process start. The installer
+does not. It does not arm live trading and it does not place an order.

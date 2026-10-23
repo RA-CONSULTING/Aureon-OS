@@ -5922,10 +5922,11 @@ class MicroProfitLabyrinth:
         # ════════════════════════════════════════════════════════════════
         # 🌌 INTERNAL MULTIVERSE - 10 WORLDS
         # ════════════════════════════════════════════════════════════════
-        if InternalMultiverse:
+        from aureon.core.simulated_boot import INTERNAL_MULTIVERSE, take_simulated
+        if InternalMultiverse and take_simulated(INTERNAL_MULTIVERSE, "aureon.simulation, 10 worlds × $10"):
             try:
                 self.multiverse = InternalMultiverse()
-                safe_print("🌌 Internal Multiverse: WIRED (10 worlds)")
+                safe_print("🌌 Internal Multiverse: WIRED (SIMULATED, 10 worlds × $10)")
             except Exception as e:
                 safe_print(f"⚠️ Multiverse error: {e}")
         
@@ -6048,15 +6049,19 @@ class MicroProfitLabyrinth:
         safe_print("\n🧠 WIRING NEURAL MIND MAP SYSTEMS...")
         
         # 🍄 Mycelium Neural Network (Hive Intelligence)
-        if MYCELIUM_NETWORK_AVAILABLE and MyceliumNetwork:
+        from aureon.core.simulated_boot import MYCELIUM_HIVE_SEED, take_simulated as _take_hive_seed
+        if MYCELIUM_NETWORK_AVAILABLE and MyceliumNetwork and _take_hive_seed(
+            MYCELIUM_HIVE_SEED, "hive seed is not an exchange balance"
+        ):
             try:
                 self.mycelium_network = MyceliumNetwork(initial_capital=1000.0)
-                safe_print("   🍄 Mycelium Neural Network: ✅ WIRED (Hive Intelligence)")
+                safe_print("   🍄 Mycelium Neural Network: ✅ WIRED (SIMULATED hive seed $1000)")
             except Exception as e:
                 safe_print(f"   ⚠️ Mycelium Network error: {e}")
                 self.mycelium_network = None
         else:
-            safe_print(f"   🍄 Mycelium Network: ❌ NOT AVAILABLE (import={MYCELIUM_NETWORK_AVAILABLE})")
+            self.mycelium_network = None
+            safe_print(f"   🍄 Mycelium Network: SIMULATED hive seed skipped or unavailable (import={MYCELIUM_NETWORK_AVAILABLE})")
         
         # 🗼 Lighthouse (Consensus Validation)
         if LIGHTHOUSE_AVAILABLE and Lighthouse:
