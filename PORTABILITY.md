@@ -12,7 +12,7 @@ What that entry does on a machine that has never seen this tree:
 
 1. If `.env` is absent, it copies `.env.example` and applies a safe overlay. Live trading stays `0`. `ALPACA_PAPER` and `CAPITAL_DEMO_MODE` are `true`. QuickBooks mutation stays `false` and the environment stays `sandbox`. Empty keys stay empty. An existing `.env` is not rewritten and is not committed.
 2. `SERO_WORKSPACE` for every child is the checkout being launched. It is not written into `.env`, so moving the checkout does not leave a stale absolute path behind.
-3. Python requirements go into `.venv` (`requirements-linux.txt` on Linux, `requirements.txt` on Windows). Node packages go into `frontend/`. Docker images are pulled only when `docker info` answers. The launcher does not install the Python, Node, or Docker *binaries*; those are the base toolchain, the same way a C compiler is.
+3. Python requirements go into `.venv` (`requirements-linux.txt` on Linux, `requirements.txt` on Windows). Node packages go into `frontend/`. Docker images are pulled only when `docker info` answers. The launcher does not install the Python, Node, or Docker *binaries*. `production/install.sh` (Windows: `production/Install-AUREON.ps1`) does that toolchain step when apt, dnf, Homebrew, or winget can, builds the frontend, then calls this launcher.
 4. Organs that need an exchange key pair and do not have one are a `blocked` row beginning `missing credential:`. The names of the missing variables are printed. The values are not.
 
 `--status` does not write `.env` and does not install. `--stop` stops only processes this launcher recorded.

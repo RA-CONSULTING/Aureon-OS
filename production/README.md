@@ -1,14 +1,26 @@
-# Aureon installer
+# Installer
 
-`install.sh` (Linux and macOS) and `Install-AUREON.ps1` (Windows; the `.bat`
-wrappers call it) install Python tooling when the host can, write `.env` from
-`.env.example` only when `.env` is absent, and start the master-launcher
-preflight. Live trading stays off. When the UI answers, the installer prints
-`Aureon UI: http://127.0.0.1:8080/`. Dashboard and Command Center are tabs of
-that page. The thought bus listens on `http://127.0.0.1:8765/health`.
+`install.sh` is the Linux and macOS installer. `Install-AUREON.ps1` is the Windows installer. `install-windows.bat` and `Install-AUREON-Windows.bat` call that PowerShell script. Re-running any of them is safe.
 
-`entrypoint.sh`, `Dockerfile`, `docker-compose.yml`, and `supervisord.conf` in
-this directory stay on the isolated hold. They do not start the UI.
+From a fresh clone:
 
-The hold entrypoints above still stop before a process start. The installer
-does not. It does not arm live trading and it does not place an order.
+```bash
+bash production/install.sh
+```
+
+Windows:
+
+```bat
+production\Install-AUREON.ps1
+```
+
+The installer adds the system toolchain when apt, dnf, Homebrew, or winget can (Python 3, venv, Node, npm, git, curl). It writes `.env` from `.env.example` when `.env` is absent and does not rewrite an existing file. It installs the frontend packages, runs `npm run build`, and notes whether Docker is answering. It then starts the organism with `scripts/launch/aureon-master.sh` (Windows: `scripts\launch\aureon-master.ps1`). That launcher installs Python requirements into `.venv`, Node packages if they are still missing, and Docker images when the daemon answers. With no daemon it uses the native fallbacks. When the UI answers, the installer prints:
+
+```
+Aureon UI: http://127.0.0.1:5173/
+Aureon UI is reachable: http://127.0.0.1:5173/ (HTTP 200)
+```
+
+An existing `.env` is left alone. Credentials are not written into the repo. The installer does not place an order.
+
+`entrypoint.sh`, `Dockerfile`, `docker-compose.yml`, and `supervisord.conf` in this directory stay on the isolated hold. They are not this installer. `scripts/linux/install-linux.sh` stays on that hold as well.

@@ -161,6 +161,14 @@ scripts/launch/aureon-master.sh --stop
 
 `--status` prints that table and starts nothing. `--stop` stops the processes this launcher recorded. Postgres, Redis, or nginx it did not start are left alone. On Windows, pass the same flags to `aureon-master.ps1` or `aureon-master.bat`. Those two flags are ordinary process control.
 
+The existing installer is the one step that also brings up the toolchain and the UI. Linux and macOS:
+
+```bash
+bash production/install.sh
+```
+
+Windows: `production\Install-AUREON.ps1`, or `production\install-windows.bat`. Running it again is safe. It installs Python, venv, Node, npm, git, and curl when apt, dnf, Homebrew, or winget can, writes `.env` from `.env.example` only when `.env` is absent, installs and builds the frontend, then calls the master launcher above. Docker images are used when the daemon answers. With no daemon the launcher uses its native fallbacks. When the UI answers, the installer prints `Aureon UI: http://127.0.0.1:5173/`.
+
 ### Archive of unreferenced root files
 
 `archive/workspace-root/` holds notes, one-off scripts, and captured ledgers that the running fleet does not import. Live organ paths stay where [`aureon_fusion/paths.py`](aureon_fusion/paths.py) and [`aureon_fusion/organ_registry.py`](aureon_fusion/organ_registry.py) name them. Fleet output stays untracked.
