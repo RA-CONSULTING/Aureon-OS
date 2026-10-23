@@ -16,6 +16,7 @@ for vendored / generated / binary trees. It writes its own compact cache
 from __future__ import annotations
 
 import logging
+import os
 import threading
 from pathlib import Path
 from typing import List
@@ -60,6 +61,15 @@ _instance: ResearchCorpusIndex | None = None
 _lock = threading.Lock()
 
 
+def _cache_path() -> str:
+    """Cache location. ``AUREON_OPERATOR_REPO_INDEX_PATH`` keeps a test off the checkout."""
+
+    override = os.environ.get("AUREON_OPERATOR_REPO_INDEX_PATH", "").strip()
+    if override:
+        return override
+    return str(REPO_ROOT / "state" / "operator_repo_index_v6.json")
+
+
 def get_operator_repo_index() -> ResearchCorpusIndex:
     """Process-wide singleton repo-wide index (docs + code)."""
     global _instance
@@ -69,7 +79,7 @@ def get_operator_repo_index() -> ResearchCorpusIndex:
         if _instance is None:
             _instance = ResearchCorpusIndex(
                 root=str(REPO_ROOT),
-                cache_path=str(REPO_ROOT / "state" / "operator_repo_index_v6.json"),
+                cache_path=_cache_path(),
                 exclude=_EXCLUDE,
                 ingest_exts=_INGEST,
             )

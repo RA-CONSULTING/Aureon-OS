@@ -405,6 +405,12 @@ def _pin_pytest_journals() -> None:
     os.environ["AUREON_BUS_TRACE_DIR"] = str(_PYTEST_JOURNAL_DIR / "bus-traces")
     os.environ["AUREON_HNC_TRACE_PATH"] = str(_PYTEST_JOURNAL_DIR / "hnc-live-trace.jsonl")
     os.environ["AUREON_AUTONOMY_AUDIT_PATH"] = str(_PYTEST_JOURNAL_DIR / "autonomy_audit.jsonl")
+    # repo_search writes operator_repo_index_v6.json.tmp beside its cache.
+    # Under xdist that file lands in the checkout while another worker
+    # fingerprints state/. Keep the cache in this process's journal.
+    os.environ["AUREON_OPERATOR_REPO_INDEX_PATH"] = str(
+        _PYTEST_JOURNAL_DIR / "operator_repo_index_v6.json"
+    )
     # The launcher default, with this variable unset, is full. The suite pins
     # guarded so denylist assertions stay put and a local state file cannot
     # flip them. A test that wants the launcher default deletes this pin.
