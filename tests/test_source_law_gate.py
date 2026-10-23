@@ -326,6 +326,10 @@ def test_canonical_auris_table_tiger_220_clownfish_963():
     live = {node.name: node.freq for node in engine.nodes}
     assert live == CANONICAL_AURIS_HZ
     assert live["Tiger"] == 220.0 and live["Clownfish"] == 963.0
+    from aureon.wisdom.synchronicity_decoder import NODE_MAPPING
+
+    assert NODE_MAPPING[4]["frequency"] == 220.0
+    assert NODE_MAPPING[7]["frequency"] == 963.0
     kings = {node.name: node.freq for node in HNCAurisEngine().nodes}
     assert kings["Tiger"] == 220.0 and kings["Clownfish"] == 963.0
     import importlib.util

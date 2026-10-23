@@ -74,14 +74,7 @@ def test_thought_bus_organs_publish_and_subscribe(monkeypatch: pytest.MonkeyPatc
         import time
         import urllib.request
 
-        deadline = time.time() + 5
-        sources: set[str] = set()
-        while time.time() < deadline and len(sources) < 9:
-            with urllib.request.urlopen(f"http://127.0.0.1:{started['port']}/health", timeout=2) as resp:
-                body = json.loads(resp.read().decode("utf-8"))
-            sources = set(body.get("sources") or [])
-            time.sleep(0.3)
-        for name in (
+        required = {
             "metacognition",
             "queen",
             "logic",
@@ -93,7 +86,16 @@ def test_thought_bus_organs_publish_and_subscribe(monkeypatch: pytest.MonkeyPatc
             "council",
             "deterministic_systems",
             "algorithmic_nodes",
-        ):
+        }
+        deadline = time.time() + 5
+        sources: set[str] = set()
+        body = {}
+        while time.time() < deadline and not required <= sources:
+            with urllib.request.urlopen(f"http://127.0.0.1:{started['port']}/health", timeout=2) as resp:
+                body = json.loads(resp.read().decode("utf-8"))
+            sources = set(body.get("sources") or [])
+            time.sleep(0.05)
+        for name in sorted(required):
             assert name in sources
         assert body["listening"] is True
         assert body["loops"]["council"] == "running"

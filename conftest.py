@@ -209,18 +209,41 @@ def _apply_environ_snapshot() -> None:
     os.environ.update(preserved)
 
 
-@pytest.fixture(autouse=True)
-def _restore_os_environ():
-    """Put os.environ back to the pre-collection process environment.
+@pytest.fixture(autouse=True, scope="module")
+def _restore_module_environment():
+    """Clear collection-time environment leaks once per module.
 
-    monkeypatch only undoes keys it changed. Direct writes such as
-    ``os.environ['LIVE'] = '0'`` and ``os.environ.update(...)`` leak into every
-    later test unless the whole mapping is snapshotted and restored. Setup runs
-    before other function fixtures; teardown runs after them.
+    Test modules write ``LIVE`` and ``PYTHON_DOTENV_DISABLED`` at import.
+    Restoring the pre-collection snapshot here, before the module's own
+    fixtures, drops those leaks. It must not run again at function scope:
+    a module fixture that isolates journals would be wiped before the test
+    body, and the test would append to the checkout's ``thoughts.jsonl``.
     """
     _apply_environ_snapshot()
     yield
     _apply_environ_snapshot()
+
+
+@pytest.fixture(autouse=True)
+def _restore_os_environ():
+    """Undo one test's direct environment writes without dropping module isolation.
+
+    monkeypatch only undoes keys it changed. Direct writes such as
+    ``os.environ['LIVE'] = '0'`` and ``os.environ.update(...)`` leak into every
+    later test unless the mapping is restored. The saved mapping is the
+    environment after module fixtures, so a module-scoped journal pin survives
+    the whole module. ``PYTEST_*`` keys pytest adds during the test stay.
+    """
+    saved = dict(os.environ)
+    yield
+    preserved = {
+        key: value
+        for key, value in os.environ.items()
+        if key.startswith("PYTEST_") and key not in saved
+    }
+    os.environ.clear()
+    os.environ.update(saved)
+    os.environ.update(preserved)
 
 
 @pytest.fixture(autouse=True)
@@ -313,24 +336,30 @@ def _restore_process_singletons():
             setattr(mod, attr, None)
 
 
-def _pin_xdist_thought_journal() -> None:
-    """Give each xdist worker its own thought journal.
+def _pin_pytest_thought_journal() -> None:
+    """Keep pytest thought-bus appends out of the checkout.
 
     ``get_thought_bus()`` otherwise appends to the checkout's ``thoughts.jsonl``.
-    Workers share that file, so a test that proves it did not touch the
-    checkout sees another worker's append and fails at teardown. The pin is
-    taken before the environment snapshot, so the per-test restore keeps it.
-    A single-process run leaves the checkout path alone.
+    An earlier test, or a module fixture whose environment the function
+    snapshot used to wipe, then shows up as an order-dependent teardown error
+    on the next fingerprint. The pin is taken before the environment snapshot,
+    so every restore keeps the temporary journal. xdist workers each get their
+    own file.
     """
 
-    worker = os.environ.get("PYTEST_XDIST_WORKER")
-    if not worker or os.environ.get("AUREON_THOUGHT_BUS_PATH"):
+    if os.environ.get("AUREON_THOUGHT_BUS_PATH"):
         return
-    journal = Path(os.environ.get("TMPDIR") or "/tmp") / f"aureon-thoughts-{worker}.jsonl"
-    os.environ["AUREON_THOUGHT_BUS_PATH"] = str(journal)
+    worker = os.environ.get("PYTEST_XDIST_WORKER") or f"pid-{os.getpid()}"
+    root = Path(os.environ.get("TMPDIR") or "/tmp")
+    os.environ["AUREON_THOUGHT_BUS_PATH"] = str(root / f"aureon-thoughts-{worker}.jsonl")
+    os.environ.setdefault("AUREON_BUS_TRACE_DIR", str(root / f"aureon-bus-traces-{worker}"))
+    os.environ.setdefault(
+        "AUREON_HNC_TRACE_PATH",
+        str(root / f"aureon-hnc-trace-{worker}.jsonl"),
+    )
 
 
-_pin_xdist_thought_journal()
+_pin_pytest_thought_journal()
 
 # Freeze the snapshot after this module's own imports, still before collection.
 _OS_ENVIRON_BEFORE_COLLECTION.update(os.environ)

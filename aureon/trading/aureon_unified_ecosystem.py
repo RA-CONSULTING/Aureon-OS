@@ -86,7 +86,9 @@ except ImportError:
 # 🧠 THOUGHT BUS - UNITY CONSCIOUSNESS 🧠
 try:
     from aureon.core.aureon_thought_bus import ThoughtBus, Thought
-    THOUGHT_BUS = ThoughtBus(persist_path="thoughts.jsonl")
+    THOUGHT_BUS = ThoughtBus(
+        persist_path=os.getenv("AUREON_THOUGHT_BUS_PATH") or "thoughts.jsonl"
+    )
     THOUGHT_BUS_AVAILABLE = True
 except ImportError:
     THOUGHT_BUS = None
