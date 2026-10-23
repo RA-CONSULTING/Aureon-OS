@@ -199,12 +199,15 @@ try:
         InternalMultiverse, World, OmegaConverter, ConsensusEngine
     )
     INTERNAL_MULTIVERSE_AVAILABLE = True
-    _internal_multiverse = get_multiverse(initial_equity=100.0)
-    print("🌌✨ Internal Multiverse ONLINE! (10-9-1-10 many worlds)")
-    print("   └─ 10 Mycelium-mapped ecosystem worlds")
-    print("   └─ 9 Processing worlds (cascade adaptation)")
-    print("   └─ 1 Fixed Omega Converter (instant profit sweep)")
-    print("   └─ 10 All together (unified consensus)")
+    from aureon.core.simulated_boot import INTERNAL_MULTIVERSE, take_simulated
+    _internal_multiverse = None
+    if take_simulated(INTERNAL_MULTIVERSE, "aureon.simulation, 10 worlds × $10"):
+        _internal_multiverse = get_multiverse(initial_equity=100.0)
+        print("🌌✨ Internal Multiverse ONLINE! (SIMULATED 10-9-1-10, 10 worlds × $10)")
+        print("   └─ 10 Mycelium-mapped ecosystem worlds")
+        print("   └─ 9 Processing worlds (cascade adaptation)")
+        print("   └─ 1 Fixed Omega Converter (instant profit sweep)")
+        print("   └─ 10 All together (unified consensus)")
 except ImportError as e:
     INTERNAL_MULTIVERSE_AVAILABLE = False
     _internal_multiverse = None

@@ -159,6 +159,38 @@ def main() -> int:
             tickers = client.get_24h_tickers() if hasattr(client, 'get_24h_tickers') else []
             
             if not tickers:
+                public_prices: Dict[str, float] = {}
+                try:
+                    from aureon.data_feeds.unified_market_cache import fetch_public_rest_prices
+                    public_prices = fetch_public_rest_prices()
+                except Exception as public_error:
+                    print(f"   ⚠️  Public ticker fallback failed: {public_error}")
+                if public_prices:
+                    payload = {
+                        'generated_at': time.time(),
+                        'source': 'public_rest',
+                        'count': len(public_prices),
+                        'ticker_count': len(public_prices),
+                        'prices': public_prices,
+                        'ticker_cache': {
+                            f"{symbol}USDT": {
+                                'price': price,
+                                'base': symbol,
+                                'quote': 'USDT',
+                                'exchange': 'public_rest',
+                            }
+                            for symbol, price in public_prices.items()
+                        },
+                        'note': 'Public REST ticker. No key. No order.',
+                    }
+                    _atomic_write_json(args.out, payload)
+                    print(f"   🐙 Wrote {len(public_prices)} public prices")
+                    consecutive_errors = 0
+                    if args.once:
+                        return 0
+                    sleep_for = max(1.0, args.interval_s - (time.time() - started))
+                    time.sleep(sleep_for)
+                    continue
                 # Fallback: Use state file when rate limited
                 print(f"   ⚠️  No tickers from API (rate limited) - using state file fallback")
                 try:

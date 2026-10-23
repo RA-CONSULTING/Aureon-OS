@@ -107,8 +107,16 @@ AUREON_LLM_OFFLINE=1 pytest tests/test_operator_*.py tests/test_saas_*.py tests/
 
 Everything needed to inspect source and run offline tests is in this repo. Do not
 inject exchange, model, hosting, or deployment credentials while validating the
-current release: every supported entrypoint intentionally returns **HOLD** and
-starts no operator, frontend, supervisor, network listener, or trading process.
+current release: the isolated operator bootstrap, containers, and supervisor
+entrypoints stay on **HOLD**.
+
+The local installer is the path that brings a clone up. Linux and macOS:
+`bash production/install.sh`. Windows: `production\Install-AUREON.ps1` (or
+`production\install-windows.bat`). `bash scripts/linux/aureon-up.sh` calls that
+installer when the virtualenv is missing, then starts the same preflight.
+Live trading stays off. The UI is `http://127.0.0.1:8080/` with Dashboard and
+Command Center as tabs. The thought bus is `http://127.0.0.1:8765/health`.
+No order is placed.
 A HOLD receipt proves only that the fail-closed preflight ran; it is not proof
 that the whole system is protected or production-ready.
 
