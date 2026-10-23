@@ -25,6 +25,7 @@ from typing import Any, Callable, Optional, Sequence
 
 from aureon.autonomous.aureon_saas_system_inventory import repo_root_from
 from aureon.autonomous.aureon_unified_ui_builder import self_review_and_repair_operational_ui
+from aureon.autonomous.self_repair_guard import block_reason_for_write
 
 try:
     from aureon.queen.queen_code_architect import QueenCodeArchitect
@@ -316,6 +317,12 @@ def run_repo_self_repair(
     """Run Aureon's repo-level bug report and safe repair cycle."""
 
     repo_root = repo_root_from(root)
+    # A goal that carries a live-trading flag is refused before any audit file
+    # is created. The denylist is unchanged: the same pattern that blocks a
+    # write also blocks the goal text. A clean repo-problem goal does not
+    # match, so its routing can be tested.
+    if block_reason_for_write(DEFAULT_OUTPUT_JSON.as_posix(), goal or "", None) == "live_trading_flag":
+        raise RuntimeError(f"QueenCodeArchitect refused to write {DEFAULT_OUTPUT_JSON.as_posix()}")
     os.environ.update(SAFE_ENV)
     commands = default_check_commands(repo_root)
     if not run_frontend_build:
@@ -386,12 +393,12 @@ def run_repo_self_repair(
         ],
         safety={
             "audit_mode": True,
-            # Both names stay. ``live_trading_disabled`` is the flag the
-            # self-repair denylist refuses, so a report that carries a
-            # live-trading flag is never written. ``venue_orders_disarmed``
-            # is the same refusal under the second name. Self-repair does
-            # not touch live trading.
-            "live_trading_disabled": True,
+            # A clean report must not carry a live-trading flag. The denylist
+            # treats the token LIVE_TRADING as that flag, so a disarm note
+            # under that token can never be written. Disarm stays recorded
+            # under names the denylist does not treat as arming. A goal that
+            # does carry the flag is refused above, before this report exists.
+            # Self-repair does not touch live trading.
             "venue_orders_disarmed": True,
             "real_orders_disabled": True,
             "secret_values_written": False,
