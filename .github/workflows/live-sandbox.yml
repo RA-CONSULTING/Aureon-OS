@@ -20,6 +20,8 @@ jobs:
       AUREON_LIVE_TRADING: "0"
       AUREON_FUSION_ARM_LIVE: ""
       AUREON_DISABLE_REAL_ORDERS: "1"
+      AUREON_LLM_OFFLINE: "1"
+      AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS: "1"
       BINANCE_TESTNET: "true"
       KRAKEN_SANDBOX: "true"
       ALPACA_PAPER: "true"
@@ -51,7 +53,21 @@ jobs:
           if os.environ.get("AUREON_LIVE_TRADING", "0") not in {"0", "false", "no", "off", ""}:
               raise SystemExit("the live job must not arm AUREON_LIVE_TRADING against mainnet")
           PY
-      - name: Install the test runner
-        run: python -m pip install --upgrade pip pytest pytest-timeout
+      - name: Install the suite the live marker collects
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          # PyAudio needs a system portaudio and no remaining live test imports it.
+          skip = {"pyaudio"}
+          kept = []
+          for line in Path("requirements.txt").read_text().splitlines():
+              name = line.split(">=")[0].split("==")[0].split("[")[0].strip().lower()
+              if name in skip:
+                  continue
+              kept.append(line)
+          Path("/tmp/requirements-live.txt").write_text("\n".join(kept) + "\n")
+          PY
+          python -m pip install --upgrade pip
+          python -m pip install -r /tmp/requirements-live.txt
       - name: Sandbox and testnet marker
-        run: python -m pytest -m live --tb=line -q
+        run: python -m pytest -m live --tb=line -q -p no:randomly
