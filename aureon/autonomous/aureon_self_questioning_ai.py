@@ -717,7 +717,10 @@ class SelfQuestioningAI:
         saas_product = context.get("saas_product_inventory") or {}
         if saas_product.get("available"):
             questions.append("Which SaaS frontend/API/dashboard surface should be migrated into the unified observation shell next?")
-        if real_orders_allowed():
+        # Keys without an explicit live flag still name the stop. An
+        # intentional live boot leaves the question out: the flag is the
+        # owner's say-so, and this loop must not rewrite that env.
+        if real_orders_allowed() and not live_trading_enabled():
             questions.append("Why must I stop before any exchange mutation?")
         return questions
 

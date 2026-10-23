@@ -202,9 +202,14 @@ def test_installer_and_aureon_up_do_not_refuse() -> None:
     for text in (installer, up, windows):
         assert "refusing installation" not in text
         assert "refusing startup" not in text
-        assert "AUREON_LIVE_TRADING=0" in text or 'AUREON_LIVE_TRADING = "0"' in text
-        assert "--preflight" in text
         assert "--live" not in text
+        assert "--production" not in text
+    for text in (installer, windows):
+        assert "aureon-master" in text
+        assert "http://127.0.0.1:5173/" in text
+        assert "--preflight" not in text
+    assert "AUREON_LIVE_TRADING=0" in up
+    assert "--preflight" in up
     assert "protected_bootstrap" not in installer
     assert "protected_bootstrap" not in up
     bash = subprocess.run(["bash", "-n", str(REPO / "production/install.sh")], capture_output=True, text=True)

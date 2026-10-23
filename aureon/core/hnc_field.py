@@ -723,18 +723,27 @@ def blend_field(bus: Any = None) -> BlendedField:
 
 
 def reconcile_gamma(local_coherence: float, bus: Any = None) -> float:
-    """Return the caller's coherence figure.
+    """Conservatively reconcile a locally computed coherence with the canonical Γ.
 
-    A lower canonical gamma is not substituted in, so this seam does not
-    tighten a live order path. ``bus`` stays in the signature for existing
-    call sites. A value that is not a finite number is returned unchanged.
+    The LOWER of the two wins, so the organism's shared field can only TIGHTEN
+    a live trading gate, never loosen it. Offline-safe: when the canonical
+    field is unavailable (or carries no Γ) the local figure passes through
+    unchanged — never a substituted or invented value. This is the one seam
+    every live-order-path module uses to stay on the same field as the rest
+    of the organism (b46 logic-train burn-down).
     """
-
-    del bus
     try:
-        return float(local_coherence)
+        local = float(local_coherence)
     except (TypeError, ValueError):
         return local_coherence
+    try:
+        field = read_canonical_field(bus)
+        if getattr(field, "available", False) and field.coherence_gamma is not None:
+            gamma = max(0.0, min(1.0, float(field.coherence_gamma)))
+            return min(local, gamma)
+    except Exception:  # noqa: BLE001 — the shared field must never break a live order path
+        pass
+    return local
 
 
 __all__ = [

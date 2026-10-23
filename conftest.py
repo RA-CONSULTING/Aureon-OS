@@ -413,7 +413,27 @@ def _pin_pytest_journals() -> None:
     _install_checkout_journal_redirect()
 
 
+def _fixture_commits_skip_operator_signing() -> None:
+    """Fixture repos call ``git commit``. A machine-wide ``commit.gpgsign``
+    fails those commits when the signing agent has no key. The suite does
+    not check signatures, so the pytest process turns signing off. The
+    operator's git config stays as it is.
+    """
+
+    try:
+        count = int(os.environ.get("GIT_CONFIG_COUNT", "0") or "0")
+    except ValueError:
+        count = 0
+    for index in range(count):
+        if os.environ.get(f"GIT_CONFIG_KEY_{index}") == "commit.gpgsign":
+            return
+    os.environ["GIT_CONFIG_COUNT"] = str(count + 1)
+    os.environ[f"GIT_CONFIG_KEY_{count}"] = "commit.gpgsign"
+    os.environ[f"GIT_CONFIG_VALUE_{count}"] = "false"
+
+
 _pin_pytest_journals()
+_fixture_commits_skip_operator_signing()
 
 # Freeze the snapshot after this module's own imports, still before collection.
 _OS_ENVIRON_BEFORE_COLLECTION.update(os.environ)

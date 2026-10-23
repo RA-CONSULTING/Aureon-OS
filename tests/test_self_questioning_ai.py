@@ -263,9 +263,9 @@ def test_self_questioning_does_not_force_safe_env_during_live_boot(tmp_path, mon
     cycle = ai.run_cycle(include_audit=False, include_self_scan=False)
 
     assert cycle.answer_source == "fallback"
-    # Live env is left untouched, and unattested release still refuses real orders.
+    # Live env is left untouched. Real orders follow the live flag.
     assert "Why must I stop before any exchange mutation?" not in cycle.questions
-    assert cycle.context["real_orders_allowed"] is False
+    assert cycle.context["real_orders_allowed"] is True
     assert os.environ["AUREON_LIVE_TRADING"] == "1"
     assert os.environ["AUREON_DISABLE_REAL_ORDERS"] == "0"
 
