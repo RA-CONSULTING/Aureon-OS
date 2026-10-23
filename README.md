@@ -115,8 +115,17 @@ The local installer is the path that brings a clone up. Linux and macOS:
 `production\install-windows.bat`). `bash scripts/linux/aureon-up.sh` calls that
 installer when the virtualenv is missing, then starts the same preflight.
 The shell is `http://127.0.0.1:5173/`. Dashboard and Command Center are tabs of
-the local console at `http://127.0.0.1:5173/console/local`. The launcher leaves
-port 8080 alone. Live mode turns on when a complete exchange key group is in
+the local console at `http://127.0.0.1:5173/console/local`. Every other
+dashboard and status page — the 8080 console, Orca on 8888, market status on
+8791, the gateway on 8790, the fusion seat on 8765, the circulation bus on
+8799, the neural canvas, the thought-action hub, the error sink, and API B —
+is a tab at `http://127.0.0.1:5173/console/seats`, with the other status
+pages (queen unified, pro dashboard, master hub, Earth shield, queen web,
+system hub, bot hunter, the dashboard API, queen power, trader telemetry,
+Kraken telemetry, and the legacy command center) on that same tab row. Those
+tabs read the live buses through the gateway. A source that is down, or a
+page that draws invented readings, shows the reason and no invented number.
+`AUREON_SIMULATED_BOOT` stays unset, so those generators do not load. The launcher leaves port 8080 alone. Live mode turns on when a complete exchange key group is in
 `.env`. With no complete group the boot stays paper/public-data and the health
 report says `trading_mode=paper/public-data (no exchange keys)`. With keys it
 says `trading_mode=live (exchange keys present)`. The launcher does not place

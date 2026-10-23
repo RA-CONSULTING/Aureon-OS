@@ -1453,10 +1453,19 @@ def _faculty_producer(faculty: dict) -> str:
 def launch_faculty(repo: Path, faculty: dict) -> Row:
     name = f"faculty/{faculty.get('name')}"
     path = Path(str(faculty.get("path") or ""))
-    if path.is_file():
-        return Row(name, "started", "ok", f"state file present: {path.name}")
-    shown = path.name or "missing"
     producer = _faculty_producer(faculty)
+    if not path.is_file():
+        from aureon.launch.faculty_files import record_absence
+
+        record_absence(faculty, producer)
+    if path.is_file():
+        return Row(
+            name,
+            "started",
+            "ok",
+            f"state file present: {path.name}; a missing sample is recorded as no_data and no measurement is invented",
+        )
+    shown = path.name or "missing"
     return Row(
         name,
         "skipped",

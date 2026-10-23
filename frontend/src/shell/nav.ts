@@ -146,6 +146,14 @@ export const NAV_SECTIONS: NavSection[] = [
         Component: lazy(() => import("./pages/LauncherPage")),
       },
       {
+        path: "/console/seats",
+        label: "Live seats",
+        description: "8080, Orca 8888, market status 8791, gateway 8790, fusion 8765, circulation 8799, and the other status pages, as tabs of this UI.",
+        icon: Radio,
+        Component: lazy(() => import("./pages/LiveSeatsPage")),
+        live: true,
+      },
+      {
         path: "/platform/console",
         label: "Legacy Console",
         description: "The original nine-tab operational console (superseded by the shell)",

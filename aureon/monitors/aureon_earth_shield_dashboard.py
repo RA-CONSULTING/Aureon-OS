@@ -1039,6 +1039,10 @@ def create_app():
 
 
 def main():
+    from aureon.core.simulated_boot import random_dashboard_allowed
+
+    if not random_dashboard_allowed():
+        return
     print()
     print("=" * 70)
     print(r"""

@@ -6022,6 +6022,10 @@ class AureonProDashboard:
 
 
 async def main():
+    from aureon.core.simulated_boot import random_dashboard_allowed
+
+    if not random_dashboard_allowed():
+        return
     # Port auto-configured: ENV['PORT'] for production, 14000 for local dev
     dashboard = AureonProDashboard()
     await dashboard.start()

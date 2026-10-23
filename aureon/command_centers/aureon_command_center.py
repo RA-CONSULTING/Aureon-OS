@@ -6647,6 +6647,10 @@ if os.getenv("AUREON_DEBUG_STARTUP") == "1":
         pass
 
 if __name__ == '__main__':
+    from aureon.core.simulated_boot import random_dashboard_allowed
+
+    if not random_dashboard_allowed():
+        raise SystemExit(0)
     # Stop import-debug tracing now that module import completed
     if os.getenv("AUREON_DEBUG_STARTUP") == "1":
         try:

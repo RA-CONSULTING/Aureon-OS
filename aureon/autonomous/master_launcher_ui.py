@@ -48,7 +48,7 @@ def page_html(dashboard_url: str, command_center_url: str) -> str:
 <body>
 <header>
   <h1>Aureon</h1>
-  <p class="note">Live trading is off. Dashboard and Command Center are tabs of this launcher.</p>
+  <p class="note">Live trading is off. The live tabs are http://127.0.0.1:5173/console/seats. Dashboard and Command Center stay tabs of the unified frontend. This page does not invent a reading.</p>
 </header>
 <nav>
   <button type="button" data-tab="dashboard" class="active">Dashboard</button>
