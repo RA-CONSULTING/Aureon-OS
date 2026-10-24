@@ -1,7 +1,9 @@
 // Heartbeat + Latency Hook for Nexus Live Dashboard
 import { useEffect, useState, useRef } from "react";
 
-export function useLatency(wsUrl = "ws://localhost:8787"){
+import { bridgeWsUrl } from "@/config/serviceEndpoints";
+
+export function useLatency(wsUrl = bridgeWsUrl){
   const [latencyMs, setLatency] = useState<number | null>(null);
   const wsRef = useRef<WebSocket|null>(null);
 

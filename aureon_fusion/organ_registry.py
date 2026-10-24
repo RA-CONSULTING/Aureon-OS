@@ -336,9 +336,10 @@ ORGANS = {
         "cwd": str(AUREON_UPSTREAM / "frontend"),
         "mode": "continuous (local frontend on port 5173)",
         "log": str(LOGS / "organ_frontend_vite.log"),
-        "env": _launch_env({"AUREON_TERMINAL_STATE_URL": "http://127.0.0.1:8791",
-                            "AUREON_OPERATOR_URL": "http://127.0.0.1:8790",
-                            "VITE_OPERATOR_URL": "http://127.0.0.1:8790"}),
+        "env": _launch_env({
+            "AUREON_SEAT_GATEWAY_PORT": os.environ.get("AUREON_SEAT_GATEWAY_PORT") or os.environ.get("AUREON_OPERATOR_PORT") or "8790",
+            "AUREON_SEAT_MARKET_PORT": os.environ.get("AUREON_SEAT_MARKET_PORT") or "8791",
+        }),
     },
     "unified_market_status": {
         "module": "aureon.exchanges.unified_market_status_server",

@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Eye, EyeOff, Key, CheckCircle2, XCircle, RefreshCw, Save, Zap, Loader2, ExternalLink } from 'lucide-react';
+import { envCredentialUrls, terminalStateUrls } from '@/config/serviceEndpoints';
 
 interface ExchangeStatus {
   binance: boolean;
@@ -115,8 +116,8 @@ async function runtimeCredentialEndpoints(): Promise<string[]> {
   } catch {
     // Fall through to the standard local ports.
   }
-  endpoints.add('http://127.0.0.1:8791/api/env-credentials');
-  endpoints.add('http://127.0.0.1:8790/api/env-credentials');
+  endpoints.add(envCredentialUrls[0]);
+  endpoints.add(envCredentialUrls[1]);
   return Array.from(endpoints);
 }
 
@@ -167,8 +168,8 @@ async function runtimeTerminalEndpoints(): Promise<string[]> {
   } catch {
     // Fall through to the standard local ports.
   }
-  endpoints.add('http://127.0.0.1:8791/api/terminal-state');
-  endpoints.add('http://127.0.0.1:8790/api/terminal-state');
+  endpoints.add(terminalStateUrls[0]);
+  endpoints.add(terminalStateUrls[1]);
   return Array.from(endpoints);
 }
 

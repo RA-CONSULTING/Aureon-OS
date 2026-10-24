@@ -98,17 +98,16 @@ def register_legacy_runtime_routes(app: Any) -> int:
             return jsonify(_unavailable("reboot advice unavailable", exc))
 
     def _env_credentials() -> Any:
-        # Operator-only: this enumerates the INSTANCE's exchange-credential posture — which of the
-        # operator's keys are configured and their masked tails. Masked or not, it is the instance's
-        # security state, not the user's, and it tells a tenant exactly which live venues to target.
+        # Operator-only. Names of configured keys, with no lengths, paths, or packet flags.
         from flask import g
 
         if not getattr(g, "is_admin", True):
             return jsonify({"ok": False, "reason": "the instance credential posture is operator-only",
                             "plane": "admin"}), 403
         try:
-            _read, _flight, env_credentials_status = _status_handlers()
-            return jsonify(env_credentials_status())  # masked; metadata_only_no_values_returned
+            from aureon.exchanges.unified_market_status_server import _names_only_credential_status
+
+            return jsonify(_names_only_credential_status())
         except Exception as exc:  # noqa: BLE001
             logger.debug("env-credentials unavailable: %s", exc)
             return jsonify(_unavailable("env credentials unavailable", exc))

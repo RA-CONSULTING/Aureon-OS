@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { bridgeHttpBase } from '@/config/serviceEndpoints';
 
 type TradeMap = Record<string, Array<{ id?: number | string; orderId?: number; price: string; qty?: string; qtyInQuote?: string; time: number }>>;
 
@@ -7,7 +8,7 @@ type ApiResp = { trades: TradeMap; mock?: boolean };
 const API_BASES = [
   '',
   typeof window !== 'undefined' ? `${window.location.origin}` : '',
-  'http://localhost:8787',
+  bridgeHttpBase,
 ];
 
 async function fetchJson(path: string) {

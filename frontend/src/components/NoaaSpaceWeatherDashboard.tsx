@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, supabaseConfigured } from "@/integrations/supabase/client";
 import { Activity, Wind, Magnet, Zap, AlertTriangle } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from "recharts";
 
@@ -57,6 +57,10 @@ export const NoaaSpaceWeatherDashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchSpaceWeather = async () => {
+    if (!supabaseConfigured) {
+      setIsLoading(false);
+      return;
+    }
     try {
       const { data: weatherData, error } = await supabase.functions.invoke('fetch-noaa-space-weather');
       
@@ -74,6 +78,15 @@ export const NoaaSpaceWeatherDashboard = () => {
     const interval = setInterval(fetchSpaceWeather, 5 * 60 * 1000); // Update every 5 minutes
     return () => clearInterval(interval);
   }, []);
+
+  if (!supabaseConfigured) {
+    return (
+      <Card className="p-6">
+        <p className="font-medium">backend not configured</p>
+        <p className="text-sm text-muted-foreground">Space weather needs a Supabase key or a local NOAA feed.</p>
+      </Card>
+    );
+  }
 
   if (isLoading) {
     return (

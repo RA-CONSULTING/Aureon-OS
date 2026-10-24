@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useExchangeDataVerification } from '@/hooks/useExchangeDataVerification';
+import { supabaseConfigured } from '@/integrations/supabase/client';
 import { useDataStreamMonitor } from '@/hooks/useDataStreamMonitor';
 import { useBackendHealth } from '@/hooks/useBackendHealth';
 import { usePrimeSeal } from '@/hooks/usePrimeSeal';
@@ -182,7 +183,7 @@ export function SystemHealthPanel({ userId, tradingMode = 'paper' }: SystemHealt
             </Badge>
           )}
           <Badge variant={isLiveData ? "default" : "secondary"} className={isLiveData ? "bg-success" : ""}>
-            {isLiveData ? '🟢 LIVE DATA' : '🔴 SIMULATED'}
+            {isLiveData ? '🟢 LIVE DATA' : supabaseConfigured ? '🔴 SIMULATED' : 'LOCAL'}
           </Badge>
         </div>
       </CardHeader>
@@ -312,7 +313,7 @@ export function SystemHealthPanel({ userId, tradingMode = 'paper' }: SystemHealt
             <div className="flex flex-col items-center gap-2 text-destructive">
               <div className="flex items-center gap-2">
                 <WifiOff className="h-5 w-5" />
-                <span className="font-bold">OFFLINE - SIMULATED MODE</span>
+                <span className="font-bold">{supabaseConfigured ? 'OFFLINE - SIMULATED MODE' : 'LOCAL MARKET STATUS'}</span>
               </div>
               <p className="text-sm text-muted-foreground">
                 Connect at least one exchange to enable live trading

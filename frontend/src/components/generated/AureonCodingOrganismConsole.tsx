@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
+import { marketStatusPort } from "@/config/serviceEndpoints";
 import {
   AUREON_EVOLUTION_RUNTIME_PATCH_SUMMARY,
   AUREON_EVOLUTION_RUNTIME_PATCHES,
@@ -39,7 +40,7 @@ type ArtifactItem = {
 
 const HUB_BASE = "http://127.0.0.1:13002";
 const LIVE_REFRESH_FALLBACK_MS = 1000;
-const FULL_ORGANISM_COMMAND = ".\\AUREON_PRODUCTION_LIVE.cmd -WaitForRefresh -MarketStatusPort 8791";
+const FULL_ORGANISM_COMMAND = `.\\AUREON_PRODUCTION_LIVE.cmd -WaitForRefresh -MarketStatusPort ${marketStatusPort}`;
 const TERMINAL_PROMPT_COMMAND =
   "Invoke-RestMethod http://127.0.0.1:13002/api/coding/prompt -Method Post -ContentType \"application/json\" -Body $body";
 
@@ -1054,7 +1055,7 @@ export function AureonCodingOrganismConsole() {
                 {evolutionQueueCertification.status || "certification waiting"}
               </Badge>
               <Badge variant={Number(evolutionQueueCertificationSummary.fake_pass_count || 0) ? "warning" : "success"}>
-                fake passes {evolutionQueueCertificationSummary.fake_pass_count || 0}
+                certification counter {evolutionQueueCertificationSummary.fake_pass_count || 0}
               </Badge>
               <Badge variant="outline">
                 processed {evolutionQueueCertificationSummary.processed_count || 0}/{evolutionQueueCertificationSummary.queue_count || 0}
@@ -1395,7 +1396,7 @@ export function AureonCodingOrganismConsole() {
                 {stressAudit.status || "audit waiting"}
               </Badge>
               <Badge variant={Number(stressSummary.fake_pass_count || 0) ? "warning" : "success"}>
-                fake passes {stressSummary.fake_pass_count || 0}
+                certification counter {stressSummary.fake_pass_count || 0}
               </Badge>
               <Badge variant="outline">cases {stressSummary.passed_count || 0}/{stressSummary.case_count || 0}</Badge>
             </div>
@@ -1435,7 +1436,7 @@ export function AureonCodingOrganismConsole() {
                 {complexStress.status || "certification waiting"}
               </Badge>
               <Badge variant={Number(complexSummary.fake_pass_count || 0) ? "warning" : "success"}>
-                fake passes {complexSummary.fake_pass_count || 0}
+                certification counter {complexSummary.fake_pass_count || 0}
               </Badge>
               <Badge variant="outline">cases {complexSummary.passed_count || 0}/{complexSummary.case_count || 0}</Badge>
               <Badge variant={Number(complexSummary.repair_attempt_count || 0) ? "warning" : "outline"}>

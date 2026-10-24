@@ -1,4 +1,4 @@
-import os, time, json, hmac, hashlib, base64, threading, logging, math
+import os, time, json, hmac, hashlib, base64, threading, logging, math, re
 from pathlib import Path
 from typing import Dict, Any, List, Tuple
 from decimal import Decimal
@@ -261,7 +261,7 @@ _nonce_offset_counter = 0
 
 
 def _next_nonce_offset() -> int:
-    """Small deterministic offset used only to separate same-microsecond nonces."""
+    """Small deterministic offset so two calls in one nanosecond stay distinct."""
     global _nonce_offset_counter
     _nonce_offset_counter = (_nonce_offset_counter % 999) + 1
     return _nonce_offset_counter
@@ -313,63 +313,116 @@ def _read_nonce_text(text: str) -> int:
     except Exception:
         return 0
 
-def _get_next_nonce() -> int:
-    """Get next nonce that's guaranteed higher than any previous nonce.
-    
-    Uses file-based atomic counter with locking to ensure:
-    1. Nonces always increase (even across process restarts)
-    2. Multiple parallel processes don't collide
-    3. Recovers gracefully if nonce file is corrupted
+def _nonce_clock_ns() -> int:
+    """Nanosecond clock.
+
+    Unverified assumption, not a live Kraken reading: this key's high-water
+    is about 1.78e18 if earlier clients sent ``time.time_ns()``. No live
+    call was made to confirm that provider high-water. A microsecond clock
+    starts near 1.78e15 and stays under that assumed mark. A missing
+    counter file is seeded from the nanosecond clock and any sibling
+    counter, never from microseconds.
     """
+
+    return time.time_ns()
+
+
+def _sibling_nonce_files() -> list[str]:
+    """Older counters on this host. A test that points NONCE_FILE elsewhere stays isolated."""
+
+    if os.getenv("KRAKEN_NONCE_PATH"):
+        return []
+    default = os.path.join(os.path.dirname(__file__) or ".", ".kraken_nonce")
+    state = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "state", "kraken_nonce"))
+    if os.path.abspath(NONCE_FILE) not in {os.path.abspath(default), state}:
+        return []
+    found: list[str] = []
+    for path in (default, state):
+        if os.path.abspath(path) != os.path.abspath(NONCE_FILE):
+            found.append(path)
+    return found
+
+
+def _locked_nonce_update(choose) -> int:
+    """Persist one nonce under an exclusive file lock, then return it.
+
+    The value is not returned until the file has it. An unlocked fallback
+    would send a nonce Kraken remembers and the next process would not.
+    """
+
+    parent = os.path.dirname(os.path.abspath(NONCE_FILE))
+    if parent:
+        os.makedirs(parent, exist_ok=True)
     with _nonce_lock:
-        # Kraken remembers the highest nonce ever observed for an API key.
-        # This key has historically been used by Aureon clients with
-        # nanosecond nonces, so falling back to microseconds permanently
-        # strands every authenticated request below that provider high-water.
-        current_ns = time.time_ns()
-        
-        try:
-            # Try to read existing nonce from file (with locking)
-            if os.path.exists(NONCE_FILE):
-                with open(NONCE_FILE, 'r+') as f:
-                    _lock_file(f)
+        with open(NONCE_FILE, "a+", encoding="utf-8") as handle:
+            _lock_file(handle)
+            try:
+                handle.seek(0)
+                last_nonce = _read_nonce_text(handle.read())
+                for extra in _sibling_nonce_files():
                     try:
-                        last_nonce = _read_nonce_text(f.read())
-                    except Exception:
-                        last_nonce = 0
-                    
-                    # New nonce = max(current_time, last_nonce + 1) plus a
-                    # deterministic offset for same-nanosecond calls.
-                    new_nonce = max(current_ns, last_nonce + 1) + _next_nonce_offset()
-                    
-                    # Write back atomically
-                    f.seek(0)
-                    f.truncate()
-                    f.write(str(new_nonce))
-                    f.flush()
-                    try:
-                        os.fsync(f.fileno())
-                    except Exception:
-                        pass
-                    _unlock_file(f)
-                    return new_nonce
-            else:
-                # Create new nonce file
-                new_nonce = current_ns + _next_nonce_offset()
-                with open(NONCE_FILE, 'w+') as f:
-                    _lock_file(f)
-                    f.write(str(new_nonce))
-                    f.flush()
-                    try:
-                        os.fsync(f.fileno())
-                    except Exception:
-                        pass
-                    _unlock_file(f)
+                        if os.path.exists(extra):
+                            with open(extra, "r", encoding="utf-8") as sibling:
+                                last_nonce = max(last_nonce, _read_nonce_text(sibling.read()))
+                    except OSError:
+                        continue
+                new_nonce = int(choose(last_nonce))
+                if new_nonce <= last_nonce:
+                    new_nonce = last_nonce + 1
+                handle.seek(0)
+                handle.truncate()
+                handle.write(str(new_nonce))
+                handle.flush()
+                try:
+                    os.fsync(handle.fileno())
+                except OSError:
+                    pass
                 return new_nonce
-                
-        except Exception:
-            # Fallback: use time + PID + deterministic offset.
-            return current_ns + (os.getpid() % 10000) * 1000 + _next_nonce_offset()
+            finally:
+                _unlock_file(handle)
+
+
+def _get_next_nonce() -> int:
+    """Next nonce is above the file, any sibling counter, and the nanosecond clock.
+
+    ``last_nonce`` already includes sibling files. When the counter file is
+    missing that value is 0, or the sibling high-water, and the seed is
+    ``max(file, siblings, time.time_ns())``. The offset keeps two calls in
+    the same nanosecond distinct. Nothing is returned until the file lock
+    has persisted it.
+    """
+
+    clock = _nonce_clock_ns()
+
+    def choose(last_nonce: int) -> int:
+        return max(clock, int(last_nonce) + 1) + _next_nonce_offset()
+
+    return _locked_nonce_update(choose)
+
+
+def _persist_nonce_floor(sent: int, error_text: str = "") -> int:
+    """Remember a rejected nonce and persist one strictly above it.
+
+    Kraken keeps the highest nonce it has seen for the key. The stored value
+    stays on disk under the same file lock as every later call. The floor
+    climbs by at least one billion, so a rejected nonce cannot pin the next
+    call one step above a value Kraken has already seen. A higher value
+    already in the file, or the nanosecond clock, is kept.
+    """
+
+    mentioned: list[int] = []
+    for token in re.findall(r"\d{6,}", error_text or ""):
+        try:
+            mentioned.append(int(token))
+        except ValueError:
+            continue
+    floor = max([int(sent or 0), *mentioned, 0])
+    target = floor + 1_000_000_000
+
+    def choose(last_nonce: int) -> int:
+        return max(_nonce_clock_ns(), int(last_nonce) + 1, target)
+
+    return _locked_nonce_update(choose)
 
 class KrakenClient:
     """
@@ -720,12 +773,20 @@ class KrakenClient:
                         else:
                             raise RuntimeError(f"Kraken error: {errors}")
                     
-                    # Handle invalid nonce (retry with fresh nonce)
-                    if "EAPI:Invalid nonce" in error_str and attempt < max_retries - 1:
-                        logger.warning(f"Kraken invalid nonce on {path}, retrying...")
-                        time.sleep(0.5)
-                        continue
+                    # Handle invalid nonce: persist a higher nonce, then retry.
+                    if "EAPI:Invalid nonce" in error_str:
+                        self.last_error = error_str
+                        try:
+                            sent_nonce = int(wire_data.get("nonce") or 0)
+                        except (TypeError, ValueError):
+                            sent_nonce = 0
+                        _persist_nonce_floor(sent_nonce, error_str)
+                        logger.warning(f"Kraken invalid nonce on {path}, nonce advanced, retrying...")
+                        if attempt < max_retries - 1:
+                            time.sleep(0.5)
+                            continue
                     
+                    self.last_error = error_str
                     raise RuntimeError(f"Kraken error: {errors}")
                 
                 # Success — reset backoff state
@@ -1397,7 +1458,8 @@ class KrakenClient:
         """Return balances as a simple asset -> amount map (free+locked)."""
         try:
             acct = self.account()
-        except Exception:
+        except Exception as exc:
+            self.last_error = str(exc)
             return {}
 
         out: Dict[str, float] = {}

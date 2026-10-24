@@ -177,8 +177,12 @@ export function AureonLiveDashboard() {
                     <span className={`text-lg font-semibold ${EXCHANGE_COLORS[name] || 'text-gray-400'}`}>
                       {EXCHANGE_ICONS[name] || ''} {name.toUpperCase()}
                     </span>
-                    <Badge variant={data.connected ? 'default' : 'destructive'} className="text-xs">
-                      {data.connected ? 'LIVE' : 'OFF'}
+                    <Badge variant={data.connected && Number(data.total_value) > 0 && !data.error ? 'default' : 'destructive'} className="text-xs">
+                      {String(data.error || '').toLowerCase().includes('region')
+                        ? 'REGION BLOCKED'
+                        : data.connected && Number(data.total_value) > 0 && !data.error
+                          ? 'LIVE'
+                          : 'OFF'}
                     </Badge>
                   </div>
                   <div className="text-xs space-y-1">

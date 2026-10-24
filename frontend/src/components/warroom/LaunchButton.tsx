@@ -91,7 +91,7 @@ export function LaunchButton({ onLaunch, onStop, status }: LaunchButtonProps) {
         title: ' AUREON Launched!',
         description: isLiveMode 
           ? 'Live trading is now active. Monitor your positions closely.'
-          : 'Evidence analysis started. No orders or simulated trades will be created.',
+          : 'Evidence analysis started. No orders will be created.',
       });
     } catch (err) {
       console.error('Launch validation failed:', err);

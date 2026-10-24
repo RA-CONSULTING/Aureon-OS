@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, supabaseConfigured } from '@/integrations/supabase/client';
+import { terminalStateUrls } from '@/config/serviceEndpoints';
 import { TrendingUp, TrendingDown, Target, Calendar, Award, AlertTriangle } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
@@ -46,6 +47,8 @@ export const TradingAnalytics = () => {
   });
   const [timeSeriesData, setTimeSeriesData] = useState<TimeSeriesData[]>([]);
   const [symbolPerformance, setSymbolPerformance] = useState<any[]>([]);
+  const [signInRequired, setSignInRequired] = useState(false);
+  const [localNote, setLocalNote] = useState('');
 
   useEffect(() => {
     loadAnalytics();
@@ -66,15 +69,51 @@ export const TradingAnalytics = () => {
   };
 
   const loadAnalytics = async () => {
+    if (!supabaseConfigured) {
+      setSignInRequired(false);
+      for (const url of terminalStateUrls) {
+        try {
+          const response = await fetch(url, { cache: 'no-store' });
+          if (!response.ok) continue;
+          const payload = await response.json();
+          const combined = payload.combined || {};
+          const binance = payload.exchanges?.binance_status || payload.exchange_boot_init?.states?.binance?.error || '';
+          const binanceLine = String(binance).toLowerCase().includes('region') ? 'Binance is region-blocked.' : '';
+          const equityText = (value: unknown) =>
+            value === null || value === undefined || value === '' ? 'unavailable' : String(value);
+          setLocalNote(
+            `Local market status. Capital equity ${equityText(combined.capital_equity_gbp)}. Alpaca equity ${equityText(combined.alpaca_equity)}. ${combined.kraken_equity_reason || ''} ${binanceLine}`.trim(),
+          );
+          return;
+        } catch {
+          continue;
+        }
+      }
+      setLocalNote('backend not configured');
+      return;
+    }
     const timeFilter = getTimeRangeFilter();
 
     // Load closed positions
-    const { data: closedPositions } = await supabase
+    const { data: closedPositions, error } = await supabase
       .from('trading_positions')
       .select('*')
       .eq('status', 'closed')
       .gte('closed_at', timeFilter)
       .order('closed_at', { ascending: true });
+
+    const status = (error as { status?: number; code?: string; message?: string } | null);
+    const message = String(status?.message || "");
+    if (
+      status
+      && (status.status === 401 || status.code === "401" || /jwt|unauthorized|not authorized/i.test(message))
+    ) {
+      setSignInRequired(true);
+      setTimeSeriesData([]);
+      setSymbolPerformance([]);
+      return;
+    }
+    setSignInRequired(false);
 
     if (!closedPositions || closedPositions.length === 0) {
       setMetrics({
@@ -176,6 +215,20 @@ export const TradingAnalytics = () => {
 
   return (
     <div className="space-y-6">
+      {localNote && (
+        <Card className="p-4">
+          <p className="text-sm font-medium">Local operator</p>
+          <p className="text-sm text-muted-foreground">{localNote}</p>
+        </Card>
+      )}
+      {signInRequired && (
+        <Card className="p-4">
+          <p className="text-sm font-medium">Sign-in required</p>
+          <p className="text-sm text-muted-foreground">
+            Supabase refused this analytics read. No trade totals are shown until a session is signed in.
+          </p>
+        </Card>
+      )}
       {/* Time Range Selector */}
       <div className="flex gap-2">
         {(['24h', '7d', '30d', 'all'] as const).map((range) => (

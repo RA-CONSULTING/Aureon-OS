@@ -3614,6 +3614,10 @@ class AureonUnifiedMasterHub:
         asyncio.create_task(self.unified_data_stream())
 
 async def main():
+    from aureon.core.simulated_boot import random_dashboard_allowed
+
+    if not random_dashboard_allowed():
+        return
     hub = AureonUnifiedMasterHub(port=13333)
     await hub.start()
     await asyncio.Event().wait()

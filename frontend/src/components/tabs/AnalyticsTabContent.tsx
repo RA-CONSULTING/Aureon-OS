@@ -94,7 +94,7 @@ export function AnalyticsTabContent({ globalState }: AnalyticsTabContentProps) {
             <CardTitle className="text-sm font-medium">Observed account state</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-xs">
-            <Row label="Total equity" value={moneyText(totalEquity)} />
+            <Row label="Total equity" value={globalState.equityNote || moneyText(totalEquity)} />
             <Row label="Gas tank" value={moneyText(gasTankBalance, '£')} />
             <Row label="Current coherence" value={numberText(coherence, 3)} />
             <div className="flex justify-between items-center">

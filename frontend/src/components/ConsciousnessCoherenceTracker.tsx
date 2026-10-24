@@ -8,6 +8,7 @@ import { useBiometricSensors } from "@/hooks/useBiometricSensors";
 import { useConsciousnessHistory } from "@/hooks/useConsciousnessHistory";
 import { useSentinelConfig } from "@/hooks/useSentinelConfig";
 import { useEffect, useRef } from "react";
+import { bridgeWsUrl } from "@/config/serviceEndpoints";
 
 interface ConsciousnessCoherenceTrackerProps {
   currentCoherence: number;
@@ -187,7 +188,7 @@ export function ConsciousnessCoherenceTracker({ currentCoherence }: Consciousnes
         {!schumannConnected && (
           <div className="p-4 bg-destructive/10 border border-destructive/30 rounded-lg">
             <p className="text-sm text-destructive font-medium">
-              ⚠️ Schumann Resonance sensor offline. Connect to Earth Live Data server at ws://localhost:8787/schumann
+              ⚠️ Schumann Resonance sensor offline. Connect to Earth Live Data server at {bridgeWsUrl}/schumann
             </p>
           </div>
         )}

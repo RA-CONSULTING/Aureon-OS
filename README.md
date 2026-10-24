@@ -115,8 +115,17 @@ The local installer is the path that brings a clone up. Linux and macOS:
 `production\install-windows.bat`). `bash scripts/linux/aureon-up.sh` calls that
 installer when the virtualenv is missing, then starts the same preflight.
 The shell is `http://127.0.0.1:5173/`. Dashboard and Command Center are tabs of
-the local console at `http://127.0.0.1:5173/console/local`. The launcher leaves
-port 8080 alone. Live mode turns on when a complete exchange key group is in
+the local console at `http://127.0.0.1:5173/console/local`. Every other
+dashboard and status page — the 8080 console, Orca on 8888, market status on
+8791, the gateway on 8790, the fusion seat on 8765, the circulation bus on
+8799, the neural canvas, the thought-action hub, the error sink, and API B —
+is a tab at `http://127.0.0.1:5173/console/seats`, with the other status
+pages (queen unified, pro dashboard, master hub, Earth shield, queen web,
+system hub, bot hunter, the dashboard API, queen power, trader telemetry,
+Kraken telemetry, and the legacy command center) on that same tab row. Those
+tabs read the live buses through the gateway. A source that is down, or a
+page that draws invented readings, shows the reason and no invented number.
+`AUREON_SIMULATED_BOOT` stays unset, so those generators do not load. The launcher leaves port 8080 alone. Live mode turns on when a complete exchange key group is in
 `.env`. With no complete group the boot stays paper/public-data and the health
 report says `trading_mode=paper/public-data (no exchange keys)`. With keys it
 says `trading_mode=live (exchange keys present)`. The launcher does not place
@@ -175,7 +184,7 @@ bash production/install.sh
 
 Windows: `production\Install-AUREON.ps1`, or `production\install-windows.bat`. Running it again is safe. It installs Python, venv, Node, npm, git, and curl when apt, dnf, Homebrew, or winget can, writes `.env` from `.env.example` only when `.env` is absent, installs and builds the frontend, then calls the master launcher above. Docker images are used when the daemon answers. With no daemon the launcher uses its native fallbacks. When the UI answers, the installer prints `Aureon UI: http://127.0.0.1:5173/`.
 
-`PyAudio` in `requirements.txt` needs the system audio headers (`portaudio`) before pip can build it. The Linux installer uses `requirements-linux.txt`, which leaves that package out and includes pytest, so `tests/test_preflight_snags.py` can run in the installer environment. Build the test virtualenv with `python -m venv --copies .venv`. A symlinked interpreter fails 32 evidence tests. The installer creates `.venv` with `--copies`.
+`PyAudio` in `requirements.txt` needs the system audio headers (`portaudio`) before pip can build it. The Linux installer uses `requirements-linux.txt`, which leaves that package out and includes pytest, so `tests/test_preflight_snags.py` can run in the installer environment. Build the test virtualenv with `python -m venv --copies .venv`. A symlinked interpreter fails 32 evidence tests: `sys.executable` must be a real file inside the venv, which `--copies` provides and a symlink into another prefix does not. The installer creates `.venv` with `--copies`. Pytest prints a header note when the interpreter it is running is itself a symlink.
 
 ### Archive of unreferenced root files
 

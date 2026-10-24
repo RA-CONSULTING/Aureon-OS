@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, supabaseConfigured } from "@/integrations/supabase/client";
 import { useSchumannResonance } from "@/hooks/useSchumannResonance";
 import { Activity, Radio, Waves, TrendingUp, AlertTriangle, CheckCircle2, XCircle } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend } from "recharts";
@@ -43,6 +43,10 @@ export const EarthResonanceDashboard = () => {
   const { schumannData, isConnected } = useSchumannResonance();
 
   const fetchSeismicData = async () => {
+    if (!supabaseConfigured) {
+      setIsLoadingSeismic(false);
+      return;
+    }
     try {
       const { data, error } = await supabase.functions.invoke('fetch-usgs-seismic-data');
       if (error) throw error;
@@ -59,6 +63,15 @@ export const EarthResonanceDashboard = () => {
     const interval = setInterval(fetchSeismicData, 15 * 60 * 1000); // Update every 15 minutes
     return () => clearInterval(interval);
   }, []);
+
+  if (!supabaseConfigured) {
+    return (
+      <Card className="p-6">
+        <p className="font-medium">backend not configured</p>
+        <p className="text-sm text-muted-foreground">Earth resonance needs a Supabase key or a local research feed.</p>
+      </Card>
+    );
+  }
 
   if (isLoadingSeismic || !schumannData) {
     return (

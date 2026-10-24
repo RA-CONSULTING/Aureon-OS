@@ -113,6 +113,17 @@ function ModuleCard({ mod }: { mod: DefenseModule }) {
   );
 }
 
+function reportAge(generatedAt: string | null | undefined): { label: string; stale: boolean } {
+  if (!generatedAt) return { label: "age unknown", stale: true };
+  const then = Date.parse(generatedAt);
+  if (!Number.isFinite(then)) return { label: "age unknown", stale: true };
+  const ageMs = Date.now() - then;
+  const hours = ageMs / 3_600_000;
+  if (hours >= 24) return { label: `data is ${Math.floor(hours / 24)}d old`, stale: true };
+  if (hours >= 1) return { label: `data is ${Math.floor(hours)}h old`, stale: false };
+  return { label: `data is ${Math.max(0, Math.floor(ageMs / 60_000))}m old`, stale: false };
+}
+
 export default function DefensePage() {
   const [data, setData] = useState<DefensePayload | null | undefined>(undefined);
 
@@ -160,9 +171,15 @@ export default function DefensePage() {
                   <Badge variant={data.counts.passing === data.counts.total ? "success" : "secondary"}>
                     {data.counts.passing}/{data.counts.total}
                   </Badge>
-                  {data.generated_at && (
-                    <Badge variant="outline" className="text-[10px]">report {data.generated_at}</Badge>
-                  )}
+                  {(() => {
+                    const age = reportAge(data.generated_at);
+                    return (
+                      <Badge variant={age.stale ? "destructive" : "outline"} className="text-[10px]">
+                        {data.generated_at ? `report ${data.generated_at}` : "report time unknown"} · {age.label}
+                        {age.stale ? " · older than a day" : ""}
+                      </Badge>
+                    );
+                  })()}
                 </div>
               </div>
             </CardHeader>

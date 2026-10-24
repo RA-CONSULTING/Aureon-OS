@@ -1149,6 +1149,26 @@ def _parse_test_command(value: str) -> tuple[str, ...]:
     return tuple(payload)
 
 
+def ensure_hnc_master_key_preflight(root: Path) -> dict[str, Any]:
+    """Make the HNC proposal key available on a fresh box.
+
+    The environment write lives beside this module so this file keeps its
+    no-environ contract. The key is not printed and is not written into ``.env``.
+    """
+
+    from aureon.autonomous.self_coder_preflight import ensure_hnc_master_key_preflight as prepare
+
+    return prepare(root)
+
+
+def openai_compatible_model_endpoint() -> dict[str, Any]:
+    """OpenAI-compatible chat endpoint for the self-coder and the benchmark harness."""
+
+    from aureon.autonomous.self_coder_preflight import openai_compatible_model_endpoint as endpoint
+
+    return endpoint()
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Run one held Aureon transient HNC seal-and-burn experiment."
@@ -1164,6 +1184,15 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     parser.add_argument("--root", type=Path, default=Path.cwd())
     args = parser.parse_args(argv)
+    prepared = ensure_hnc_master_key_preflight(args.root)
+    if prepared.get("ready") is not True:
+        print(json.dumps({
+            "ok": False,
+            "status": "hold",
+            "reason": "hnc_proposal_master_key_unavailable",
+            "key_material_returned": False,
+        }, sort_keys=True))
+        return 2
     try:
         result = run_autonomous_self_coding(
             root=args.root,
@@ -1226,6 +1255,8 @@ __all__ = [
     "derive_test_commands",
     "discover_clean_python_candidates",
     "read_self_coding_evidence",
+    "ensure_hnc_master_key_preflight",
+    "openai_compatible_model_endpoint",
     "run_autonomous_self_coding",
     "record_senior_proposal_review",
     "record_senior_release_review",

@@ -89,6 +89,85 @@ class UnifiedMarketStatusServerFlightTestTests(unittest.TestCase):
         payload = {"status": "pending", "surface": "market", "reason": "test"}
         status_server.MARKET_INTENT_PATH.write_text(json.dumps(payload), encoding="utf-8")
 
+    def test_capital_equity_gbp_is_null_for_mixed_or_non_gbp_balances(self):
+        import aureon.exchanges.capital_client as capital_client
+
+        os.environ["CAPITAL_API_KEY"] = "desk-key"
+        os.environ["CAPITAL_IDENTIFIER"] = "desk-id"
+        os.environ["CAPITAL_PASSWORD"] = "desk-password"
+        status_server._PROBE_CACHE["payload"] = None
+        status_server._PROBE_CACHE["at"] = 0.0
+
+        class _Observation:
+            def __init__(self, balances):
+                self.balances = balances
+                self.truth_status = "real_derived"
+                self.reason = ""
+
+        class _Client:
+            balances = {"GBP": 10.0, "USD": 5.0}
+            init_error = ""
+
+            def get_account_balance(self):
+                return _Observation(type(self).balances)
+
+        original = capital_client.CapitalClient
+        capital_client.CapitalClient = _Client
+        try:
+            mixed = status_server._probe_exchange_balances()
+            self.assertIsNone(mixed["capital"]["equity"])
+            self.assertIsNone(mixed["capital"]["currency"])
+            self.assertIn("more than one currency", mixed["capital"]["error"])
+            mixed_payload = status_server._apply_exchange_probes({"combined": {}, "exchanges": {}})
+            self.assertIsNone(mixed_payload["combined"]["capital_equity_gbp"])
+
+            status_server._PROBE_CACHE["payload"] = None
+            status_server._PROBE_CACHE["at"] = 0.0
+            _Client.balances = {"USD": 9.0}
+            foreign = status_server._probe_exchange_balances()
+            self.assertIsNone(foreign["capital"]["equity"])
+            self.assertIn("USD", foreign["capital"]["error"])
+
+            status_server._PROBE_CACHE["payload"] = None
+            status_server._PROBE_CACHE["at"] = 0.0
+            _Client.balances = {"GBP": 12.5}
+            sterling = status_server._probe_exchange_balances()
+            self.assertEqual(sterling["capital"]["equity"], 12.5)
+            self.assertEqual(sterling["capital"]["currency"], "GBP")
+            sterling_payload = status_server._apply_exchange_probes({"combined": {}, "exchanges": {}})
+            self.assertEqual(sterling_payload["combined"]["capital_equity_gbp"], 12.5)
+        finally:
+            capital_client.CapitalClient = original
+            status_server._PROBE_CACHE["payload"] = None
+            status_server._PROBE_CACHE["at"] = 0.0
+
+    def test_flight_test_does_not_call_exchanges(self):
+        called = {"n": 0}
+
+        def boom():
+            called["n"] += 1
+            raise AssertionError("flight test called an exchange probe")
+
+        status_server._PROBE_CACHE["payload"] = None
+        status_server._PROBE_CACHE["at"] = 0.0
+        original = status_server._probe_exchange_balances
+        status_server._probe_exchange_balances = boom
+        try:
+            missing = status_server._flight_test()
+            self._write_status(open_positions=0)
+            present = status_server._flight_test()
+        finally:
+            status_server._probe_exchange_balances = original
+            status_server._PROBE_CACHE["payload"] = None
+            status_server._PROBE_CACHE["at"] = 0.0
+
+        self.assertEqual(called["n"], 0)
+        self.assertEqual(
+            missing["description"],
+            "Reads the local status file. Does not call an exchange.",
+        )
+        self.assertEqual(present["description"], missing["description"])
+
     def test_flight_test_holds_restart_when_open_positions_exist(self):
         self._write_status(open_positions=2)
         self._write_pending_intent()
@@ -157,7 +236,7 @@ class UnifiedMarketStatusServerFlightTestTests(unittest.TestCase):
         self.assertFalse(status_server.MARKET_INTENT_PATH.exists())
         self.assertFalse(status_server.HNC_PACKET_EVIDENCE_PATH.exists())
 
-    def test_public_credential_status_holds_before_reading_sources(self):
+    def test_public_credential_status_is_names_only(self):
         captured = {}
 
         class FakeHandler:
@@ -166,20 +245,52 @@ class UnifiedMarketStatusServerFlightTestTests(unittest.TestCase):
             def _json(self, status, payload):
                 captured.update({"status": status, "payload": payload})
 
-        original = status_server._env_credentials_status
-        status_server._env_credentials_status = lambda: self.fail(
-            "public credential status inspected a credential source"
-        )
-        try:
-            status_server.StatusHandler.do_GET(FakeHandler())
-        finally:
-            status_server._env_credentials_status = original
+        status_server.StatusHandler.do_GET(FakeHandler())
+        payload = captured["payload"]
+        self.assertEqual(captured["status"], 200)
+        self.assertEqual(payload["secret_policy"], "names_only")
+        self.assertNotIn("release_hold", json.dumps(payload))
+        rendered = json.dumps(payload)
+        self.assertNotIn("length", rendered)
+        for row in payload["exchanges"].values():
+            self.assertIn("missing_keys", row)
+            self.assertIn("set_keys", row)
 
-        self.assertEqual(captured["status"], 403)
-        self.assertEqual(
-            captured["payload"],
-            {"ok": False, "error": status_server.CREDENTIAL_STATUS_READ_HOLD},
-        )
+    def test_failed_balance_probe_is_null_not_zero(self):
+        payload = {
+            "combined": {
+                "capital_equity_gbp": 0.0,
+                "alpaca_equity": 0.0,
+                "kraken_equity": 0.0,
+            },
+            "exchanges": {},
+        }
+
+        def fake_probes():
+            return {
+                "capital": {"alive": False, "error": "capital down", "equity": 0.0},
+                "alpaca": {"alive": False, "error": "alpaca down", "equity": None},
+                "kraken": {
+                    "alive": False,
+                    "error": "EAPI:Invalid nonce",
+                    "equity": None,
+                    "balances": {"XXBT": 0.01, "ZUSD": 10.0},
+                },
+            }
+
+        original = status_server._probe_exchange_balances
+        status_server._probe_exchange_balances = fake_probes
+        try:
+            published = status_server._apply_exchange_probes(payload)
+        finally:
+            status_server._probe_exchange_balances = original
+        combined = published["combined"]
+        self.assertIsNone(combined["capital_equity_gbp"])
+        self.assertIsNone(combined["alpaca_equity"])
+        self.assertIsNone(combined["kraken_equity"])
+        self.assertIsNone(published["exchange_boot_init"]["states"]["capital"]["equity"])
+        self.assertEqual(combined["kraken_equity_reason"], "EAPI:Invalid nonce")
+        self.assertNotIn("balances", json.dumps(combined))
 
     def test_cors_never_grants_nonlocal_or_prefix_confusion_origin(self):
         class FakeHandler:

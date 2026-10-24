@@ -33,6 +33,7 @@ import json
 import logging
 import os
 import struct
+import socket
 import sys
 import threading
 from types import SimpleNamespace
@@ -1471,6 +1472,13 @@ def create_app(
     except Exception as exc:  # noqa: BLE001 — legacy surface is optional; the operator must serve
         logger.warning("legacy runtime routes not registered: %s", exc)
 
+    try:
+        from aureon.operator.seat_proxy import register_seat_routes
+
+        register_seat_routes(app)
+    except Exception as exc:  # noqa: BLE001 — the seat proxy must not stop the operator
+        logger.warning("seat proxy routes not registered: %s", exc)
+
     return app
 
 
@@ -1557,14 +1565,64 @@ def main() -> None:
     security = SecurityConfig.from_env()
     if not _is_loopback_host(host) and not security.auth_enabled:
         raise RuntimeError("non_loopback_operator_requires_AUREON_OPERATOR_API_KEY")
-    logger.info("Aureon Operator server on %s:%s — lines: %s", host, port,
-                describe_provider_set(build_provider_set()))
-    app = build_boot_app()
+    # Bind the proxy before the heavy operator import. A slow cognition boot
+    # must not leave 8790 silent.
+    from aureon.operator.seat_proxy import GatewaySwitch, build_early_app
+
+    from aureon.operator import seat_proxy as seat_proxy_module
+
+    switch = GatewaySwitch(build_early_app())
+    seat_proxy_module.ACTIVE_GATEWAY = switch
+    switch._app = build_early_app(switch)
+
+    def _load_full() -> None:
+        try:
+            full = build_boot_app()
+            switch.swap(full)
+            logger.info(
+                "Aureon Operator full app ready on %s:%s — lines: %s",
+                host,
+                port,
+                describe_provider_set(build_provider_set()),
+            )
+        except Exception as exc:  # noqa: BLE001 — the proxy stays up
+            switch.fail(exc)
+            logger.warning("operator full app stayed unloaded: %s", exc)
+
+    threading.Thread(target=_load_full, name="operator-full-load", daemon=True).start()
+    app = switch
+    bound = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        bound.bind((host, port))
+        bound.listen(128)
+    except OSError as exc:
+        bound.close()
+        print(
+            f"operator gateway failed to bind {host}:{port} ({exc.strerror or exc}); "
+            f"console expects http://127.0.0.1:{port}/healthz",
+            file=sys.stderr,
+            flush=True,
+        )
+        raise SystemExit(1) from exc
+    logger.info("Aureon Operator gateway listening on %s:%s and proxying seats", host, port)
 
     dev = str(os.environ.get("AUREON_OPERATOR_DEV", "")).strip().lower() in {"1", "true", "yes", "on"}
     if dev:
-        logger.warning("AUREON_OPERATOR_DEV set — using the Flask dev server (not for production)")
-        app.run(host=host, port=port, threaded=True)
+        from werkzeug.serving import make_server
+
+        logger.warning("AUREON_OPERATOR_DEV set — using the Werkzeug server")
+        try:
+            server = make_server(host, port, app, fd=bound.fileno())
+            bound.detach()
+            server.serve_forever()
+        except OSError as exc:
+            print(
+                f"operator gateway failed to bind {host}:{port} ({exc}); "
+                f"console expects http://127.0.0.1:{port}/healthz",
+                file=sys.stderr,
+                flush=True,
+            )
+            raise SystemExit(1) from exc
         return
     try:
         from waitress import serve  # type: ignore[import-untyped]
@@ -1572,24 +1630,28 @@ def main() -> None:
         threads = int(os.environ.get("AUREON_OPERATOR_THREADS", "8"))
         logger.info("Serving under waitress (%d threads)", threads)
         try:
-            serve(app, host=host, port=port, threads=threads)
+            serve(app, sockets=[bound], threads=threads)
         except OSError as exc:
             print(
                 f"operator gateway failed to bind {host}:{port} ({exc}); "
-                "console expects http://127.0.0.1:8790/healthz",
+                f"console expects http://127.0.0.1:{port}/healthz",
                 file=sys.stderr,
                 flush=True,
             )
             raise SystemExit(1) from exc
     except ImportError:
-        logger.warning("waitress not installed — falling back to the Flask dev server. "
-                       "Install `.[operator]` for production serving.")
+        from werkzeug.serving import make_server
+
+        logger.warning("waitress not installed — falling back to the Werkzeug server. "
+                       "Install `.[operator]` for the waitress server.")
         try:
-            app.run(host=host, port=port, threaded=True)
+            server = make_server(host, port, app, fd=bound.fileno())
+            bound.detach()
+            server.serve_forever()
         except OSError as exc:
             print(
                 f"operator gateway failed to bind {host}:{port} ({exc}); "
-                "console expects http://127.0.0.1:8790/healthz",
+                f"console expects http://127.0.0.1:{port}/healthz",
                 file=sys.stderr,
                 flush=True,
             )

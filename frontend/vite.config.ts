@@ -30,9 +30,9 @@ export default defineConfig(({ mode }) => {
   return {
   server: {
     host: "0.0.0.0",
-    // Dev server runs on 8088. The operator gateway the console calls is 8790.
-    // Playwright uses 8081. This config does not bind 8080.
-    port: 8088,
+    // The unified UI is http://127.0.0.1:5173/. The operator gateway is 8790.
+    // The error sink keeps 8088. This config does not bind 8080.
+    port: 5173,
     proxy: {
       "/api": apiProxy,
       "/healthz": apiProxy,

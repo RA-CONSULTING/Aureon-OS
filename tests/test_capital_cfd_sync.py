@@ -613,6 +613,62 @@ class TestCapitalCFDSync(unittest.TestCase):
         self.assertEqual(second["free_gbp"], 129.07)
         self.assertEqual(second.get("stale", 0.0), 1.0)
 
+    def _prepare_dashboard_surface(self, trader):
+        trader._latest_status_lines = []
+        trader._mind_map_snapshot = {}
+        trader._mycelium_snapshot = {}
+        trader._live_system_activity_snapshot = {}
+        trader._probability_feed_snapshot = {}
+
+    def test_capital_snapshot_equity_is_gbp_only(self):
+        mixed = [
+            {"accountId": "A1", "balance": 100, "available": 90, "currency": "GBP"},
+            {"accountId": "A2", "balance": 50, "available": 40, "currency": "USD"},
+            {"accountId": "A3", "balance": 20, "available": 10, "currency": "EUR"},
+        ]
+        client = ClientStub(accounts=mixed)
+        trader = self._build_trader(client)
+        self._prepare_dashboard_surface(trader)
+
+        snapshot = trader.get_capital_snapshot()
+        payload = trader.get_dashboard_payload()
+
+        self.assertIsNone(snapshot["equity_gbp"])
+        self.assertIsNone(snapshot["free_gbp"])
+        self.assertIsNone(payload["equity_gbp"])
+        self.assertNotEqual(payload["equity_gbp"], 170.0)
+        self.assertIn("Equity=n/a", "\n".join(trader.status_lines()))
+
+        client._accounts = []
+        trader._capital_snapshot_cache = {}
+        client.get_account_balance = lambda: {}
+        self.assertIsNone(trader.get_capital_snapshot()["equity_gbp"])
+
+        client.get_account_balance = lambda: {"GBP": 100, "USD": 50, "EUR": 20}
+        fallback = trader.get_capital_snapshot()
+        self.assertIsNone(fallback["equity_gbp"])
+
+        client.get_account_balance = lambda: {"GBP": 100, "gbp": 50}
+        self.assertIsNone(trader.get_capital_snapshot()["equity_gbp"])
+
+        client.get_account_balance = lambda: {"GBP": "55.5"}
+        self.assertIsNone(trader.get_capital_snapshot()["equity_gbp"])
+
+        client.get_account_balance = lambda: {"GBP": 42.5}
+        sterling_fallback = trader.get_capital_snapshot()
+        self.assertEqual(sterling_fallback["equity_gbp"], 42.5)
+        self.assertEqual(sterling_fallback["free_gbp"], 42.5)
+
+        trader._capital_snapshot_cache = {}
+        client._accounts = [
+            {"accountId": "A1", "balance": 60, "available": 50, "currency": "GBP"},
+            {"accountId": "A2", "balance": 40, "available": 30, "currency": "gbp"},
+        ]
+        both = trader.get_capital_snapshot()
+        self.assertEqual(both["equity_gbp"], 100.0)
+        self.assertEqual(both["free_gbp"], 80.0)
+        self.assertEqual(trader.get_dashboard_payload()["equity_gbp"], 100.0)
+
     def test_status_lines_include_tick_and_stale_capital_feed(self):
         trader = self._build_trader(ClientStub())
         trader._latest_tick_line = "CAPITAL TICK sync=0.01s prices=0.02s"

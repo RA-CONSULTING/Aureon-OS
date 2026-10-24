@@ -11,6 +11,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { bridgeWsUrl } from '@/config/serviceEndpoints';
 
 // ════════════════════════════════════════════════════════════════════════════
 // TYPES
@@ -92,7 +93,7 @@ export interface UseLiveDataResult {
 // CONFIG
 // ════════════════════════════════════════════════════════════════════════════
 
-const BRIDGE_WS_URL = import.meta.env.VITE_BRIDGE_WS_URL || 'ws://localhost:8790';
+const BRIDGE_WS_URL = bridgeWsUrl;
 const RECONNECT_DELAY = 3000;
 const MAX_RECONNECT_ATTEMPTS = 10;
 

@@ -179,8 +179,21 @@ except Exception:
         return {}
 
 LOCAL_HOST = "127.0.0.1"
-LOCAL_PORT = 8790
 REPO_ROOT = Path(__file__).resolve().parents[2]
+
+
+def _equity_reading(value: Any) -> float | None:
+    """A finite equity number. Missing and failed reads stay None."""
+
+    if value is None or isinstance(value, bool):
+        return None
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    if number != number or number in (float("inf"), float("-inf")):
+        return None
+    return number
 RUNTIME_STATUS_PATH = REPO_ROOT / "state" / "unified_runtime_status.json"
 RUNTIME_STATUS_LOCK_PATH = RUNTIME_STATUS_PATH.with_name("unified_market_trader.writer.lock.json")
 ORDER_INTENT_LOG_PATH = RUNTIME_STATUS_PATH.with_name("unified_exchange_order_intents.jsonl")
@@ -2028,7 +2041,9 @@ class UnifiedMarketTrader:
                 "binance_spot_margin_execution_route",
                 self.binance is not None and binance_network_ok,
                 "warning" if self.binance is not None else "warning",
-                self.binance_error or ("ready" if binance_network_ok else "network_unavailable"),
+                self.binance_error
+                or str((binance_diag.get("init_error") if isinstance(binance_diag, dict) else "") or "")
+                or ("ready" if binance_network_ok else "network_unavailable"),
                 meta={
                     "market_type": "spot_crypto_and_margin",
                     "intent_route": True,
@@ -2117,24 +2132,125 @@ class UnifiedMarketTrader:
             threads[name] = thread
         self._exchange_init_threads = threads
 
+    def _remember_boot_balance(self, name: str, *, alive: bool, error: str, equity: float | None, detail: Any = None) -> None:
+        balances = getattr(self, "_boot_balances", None)
+        if not isinstance(balances, dict):
+            balances = {}
+            self._boot_balances = balances
+        balances[name] = {
+            "alive": bool(alive) and not error,
+            "error": str(error or ""),
+            "equity": None if equity is None else float(equity),
+            "detail": detail if isinstance(detail, dict) else {},
+        }
+
+    def _probe_capital_balance(self) -> None:
+        client = getattr(self.capital, "client", None) if self.capital is not None else None
+        if client is None and self.capital is not None and hasattr(self.capital, "get_account_balance"):
+            client = self.capital
+        if client is None:
+            self._remember_boot_balance("capital", alive=False, error=self.capital_error or "not_ready", equity=None)
+            return
+        try:
+            observation = client.get_account_balance()
+            raw = getattr(observation, "balances", None) or {}
+            reason = "" if getattr(observation, "truth_status", "") in {"real_derived", "real_observed"} else str(getattr(observation, "reason", "") or "")
+            equity = None
+            if not reason:
+                from aureon.exchanges.single_currency_equity import gbp_equity_from_balances
+
+                equity, currency_reason = gbp_equity_from_balances(raw)
+                reason = currency_reason
+            self.capital_ready = self.capital_ready or (equity is not None and not reason)
+            if reason and not self.capital_error:
+                self.capital_error = reason
+            self._remember_boot_balance(
+                "capital",
+                alive=equity is not None and not reason,
+                error=reason,
+                equity=None if reason else equity,
+                detail={"balances": raw} if isinstance(raw, dict) else {},
+            )
+        except Exception as exc:
+            self.capital_error = self.capital_error or str(exc)
+            self._remember_boot_balance("capital", alive=False, error=str(exc), equity=None)
+
+    def _probe_alpaca_balance(self) -> None:
+        client = self.alpaca
+        if client is None:
+            self._remember_boot_balance("alpaca", alive=False, error=self.alpaca_error or "not_ready", equity=None)
+            return
+        try:
+            account = client.get_account() if hasattr(client, "get_account") else {}
+            if not isinstance(account, dict):
+                account = {}
+            equity = account.get("equity", account.get("portfolio_value"))
+            error = str(getattr(client, "init_error", "") or self.alpaca_error or "")
+            if equity is None and not account:
+                error = error or "alpaca account read returned nothing"
+            parsed = float(equity) if equity is not None else None
+            self._remember_boot_balance("alpaca", alive=parsed is not None and not error, error=error, equity=parsed, detail={"currency": "USD"})
+        except Exception as exc:
+            self.alpaca_error = self.alpaca_error or str(exc)
+            self._remember_boot_balance("alpaca", alive=False, error=str(exc), equity=None)
+
+    def _flat_exchange_equity(self, name: str, payload_value: Any = None, *, payload_ok: bool = False) -> float | None:
+        """Equity for the flat combined fields. A down source is None, not 0.
+
+        When the exchange payload is ok, its equity field is the reading.
+        Null stays null. It is not replaced by the boot probe.
+        """
+
+        if payload_ok:
+            # An ok payload is the reading, including an explicit null.
+            # A mixed-currency null must not fall through to an older boot figure.
+            return _equity_reading(payload_value)
+        row = (getattr(self, "_boot_balances", {}) or {}).get(name) or {}
+        if isinstance(row, dict) and row.get("alive") and not row.get("error"):
+            return _equity_reading(row.get("equity"))
+        return None
+
     def _exchange_boot_init_snapshot(self) -> Dict[str, Any]:
         threads = getattr(self, "_exchange_init_threads", {}) or {}
         started_at = float(getattr(self, "_exchange_init_started_at", 0.0) or 0.0)
         now = time.time()
         errors = getattr(self, "_exchange_init_errors", {}) or {}
-        states = {
-            name: {
-                "alive": bool(thread.is_alive()),
-                "error": str(errors.get(name, "")),
+        balances = getattr(self, "_boot_balances", {}) or {}
+        names = list(dict.fromkeys([*threads.keys(), *balances.keys(), "capital", "alpaca", "kraken", "binance"]))
+        states: Dict[str, Any] = {}
+        for name in names:
+            thread = threads.get(name)
+            recorded = balances.get(name) if isinstance(balances.get(name), dict) else {}
+            error = str(
+                recorded.get("error")
+                or errors.get(name)
+                or getattr(self, f"{name}_error", "")
+                or ""
+            )
+            if name == "kraken" and not error:
+                error = str(getattr(self.kraken, "last_error", "") or "")
+            if name == "binance" and not error:
+                error = str((getattr(self, "_binance_diag", {}) or {}).get("init_error") or "")
+            alive = bool(recorded.get("alive")) if recorded else False
+            if not recorded:
+                alive = {
+                    "kraken": bool(self.kraken_ready) and not error,
+                    "capital": bool(self.capital_ready) and not error,
+                    "alpaca": self.alpaca is not None and not error,
+                    "binance": self.binance is not None and not error and "region" not in error.lower(),
+                }.get(name, False)
+            states[name] = {
+                "alive": bool(alive) and not error,
+                "error": error,
+                "thread_running": bool(thread.is_alive()) if thread is not None else False,
+                "equity": recorded.get("equity"),
             }
-            for name, thread in threads.items()
-        }
         return {
             "async_enabled": bool(EXCHANGE_BOOT_ASYNC_ENABLED),
             "sync_retry_enabled": bool(EXCHANGE_SYNC_RETRY_ENABLED),
             "started_at": datetime.fromtimestamp(started_at).isoformat() if started_at > 0 else None,
             "age_sec": round(max(0.0, now - started_at), 3) if started_at > 0 else 0.0,
-            "inflight": any(state.get("alive") for state in states.values()),
+            "inflight": any(state.get("thread_running") for state in states.values()),
             "states": states,
         }
 
@@ -2146,7 +2262,8 @@ class UnifiedMarketTrader:
         _repair_stdio()
         try:
             self.kraken = KrakenMarginArmyTrader(dry_run=self.dry_run)
-            self.kraken_error = ""
+            self.kraken_error = str(getattr(getattr(self.kraken, "client", None), "last_error", "") or "")
+            self._remember_boot_balance("kraken", alive=not self.kraken_error, error=self.kraken_error, equity=None)
         except Exception as e:
             if _is_closed_stream_error(e):
                 _repair_stdio()
@@ -2172,10 +2289,12 @@ class UnifiedMarketTrader:
             self.capital_error = ""
             if not self.capital_ready:
                 self.capital_error = str(getattr(self.capital, "init_error", "") or "client_disabled_or_blocked")
+            self._probe_capital_balance()
         except Exception as e:
             self.capital = None
             self.capital_ready = False
             self.capital_error = str(e)
+            self._remember_boot_balance("capital", alive=False, error=str(e), equity=None)
             logger.error("Capital init failed: %s", e)
 
     def _init_alpaca(self, force: bool = False) -> None:
@@ -2187,6 +2306,7 @@ class UnifiedMarketTrader:
         try:
             self.alpaca = AlpacaClient()
             self.alpaca_error = str(getattr(self.alpaca, "init_error", "") or "")
+            self._probe_alpaca_balance()
         except Exception as e:
             self.alpaca = None
             self.alpaca_error = str(e)
@@ -2212,6 +2332,12 @@ class UnifiedMarketTrader:
                 self._binance_diag.get("init_error")
                 or self._binance_diag.get("last_error")
                 or ""
+            )
+            self._remember_boot_balance(
+                "binance",
+                alive=self.binance is not None and not self.binance_error,
+                error=self.binance_error,
+                equity=None,
             )
         except Exception as e:
             if _is_closed_stream_error(e):
@@ -2397,8 +2523,10 @@ class UnifiedMarketTrader:
             ],
             "combined": {
                 "open_positions": 0,
-                "kraken_equity": 0.0,
-                "capital_equity_gbp": 0.0,
+                "kraken_equity": None,
+                "kraken_equity_reason": self._runtime_writer_lock_reason or "duplicate runtime suppressed; equity is not a reading",
+                "capital_equity_gbp": None,
+                "alpaca_equity": None,
                 "kraken_ready": False,
                 "capital_ready": False,
             },
@@ -2412,16 +2540,27 @@ class UnifiedMarketTrader:
         }
 
     def _start_local_dashboard_server(self) -> None:
+        # The operator gateway owns 8790. This process binds a dashboard only when
+        # AUREON_UNIFIED_DASHBOARD_PORT names a different port.
+        raw = str(os.environ.get("AUREON_UNIFIED_DASHBOARD_PORT") or "").strip()
+        if not raw or raw == "8790":
+            logger.info("UNIFIED DASHBOARD stays down; the operator gateway owns 8790")
+            return
         try:
-            server = ThreadingHTTPServer((LOCAL_HOST, LOCAL_PORT), _UnifiedDashboardHandler)
+            port = int(raw)
+        except ValueError:
+            logger.warning("UNIFIED DASHBOARD port %s is not an integer", raw)
+            return
+        try:
+            server = ThreadingHTTPServer((LOCAL_HOST, port), _UnifiedDashboardHandler)
             server.trader_ref = self  # type: ignore[attr-defined]
             thread = threading.Thread(target=server.serve_forever, daemon=True)
             thread.start()
             self._local_dashboard_server = server
             self._local_dashboard_thread = thread
-            logger.info("UNIFIED DASHBOARD: http://%s:%s/api/terminal-state", LOCAL_HOST, LOCAL_PORT)
+            logger.info("UNIFIED DASHBOARD: http://%s:%s/api/terminal-state", LOCAL_HOST, port)
         except OSError as e:
-            logger.warning("UNIFIED DASHBOARD unavailable on %s:%s (%s)", LOCAL_HOST, LOCAL_PORT, e)
+            logger.warning("UNIFIED DASHBOARD unavailable on %s:%s (%s)", LOCAL_HOST, port, e)
 
     def _start_runtime_heartbeat(self) -> None:
         if self._runtime_heartbeat_thread is not None:
@@ -2805,10 +2944,17 @@ class UnifiedMarketTrader:
                 "lines": ["Awaiting the first unified trading cycle."],
                 "sources": {"kraken_decision": {}, "capital_target": {}},
             },
+            "exchange_boot_init": self._exchange_boot_init_snapshot(),
             "combined": {
                 "open_positions": 0,
-                "kraken_equity": 0.0,
-                "capital_equity_gbp": 0.0,
+                "kraken_equity": self._flat_exchange_equity("kraken"),
+                "kraken_equity_reason": (
+                    str(getattr(self.kraken, "last_error", "") or kraken_error)
+                    if self._flat_exchange_equity("kraken") is None
+                    else ""
+                ),
+                "capital_equity_gbp": self._flat_exchange_equity("capital"),
+                "alpaca_equity": self._flat_exchange_equity("alpaca"),
                 "kraken_session_pnl": 0.0,
                 "capital_session_pnl_gbp": 0.0,
                 "kraken_ready": self.kraken_ready,
@@ -2945,6 +3091,7 @@ class UnifiedMarketTrader:
             "order_lifecycle": order_lifecycle,
             "kraken_spot_fast_profit": self._load_kraken_spot_fast_profit_state(),
             "kraken_asset_registry": self._load_kraken_asset_registry_summary(),
+            "exchange_boot_init": self._exchange_boot_init_snapshot(),
             "preflight": self._build_preflight_report(),
             "api_governor": self._api_governor_snapshot(),
             "dynamic_intelligence_budget": getattr(self, "_dynamic_intelligence_budget", {}) or {},
@@ -2952,7 +3099,21 @@ class UnifiedMarketTrader:
             "combined": {
                 "open_positions": len(kraken_payload.get("positions", [])) + len(capital_payload.get("positions", [])),
                 "kraken_equity": kraken_equity,
-                "capital_equity_gbp": float(capital_payload.get("equity_gbp", 0.0) or 0.0),
+                "kraken_equity_reason": (
+                    str(kraken_payload.get("error") or getattr(self.kraken, "last_error", "") or self.kraken_error or "")
+                    if kraken_equity is None
+                    else ""
+                ),
+                "capital_equity_gbp": self._flat_exchange_equity(
+                    "capital",
+                    capital_payload.get("equity_gbp") if isinstance(capital_payload, dict) and "equity_gbp" in capital_payload else None,
+                    payload_ok=bool(
+                        isinstance(capital_payload, dict)
+                        and capital_payload.get("ok")
+                        and "equity_gbp" in capital_payload
+                    ),
+                ),
+                "alpaca_equity": self._flat_exchange_equity("alpaca"),
                 "kraken_session_pnl": float(kraken_payload.get("session_profit", 0.0) or 0.0),
                 "capital_session_pnl_gbp": float(capital_payload.get("stats", {}).get("total_pnl_gbp", 0.0) or 0.0),
                 "kraken_ready": self.kraken_ready,
@@ -3013,16 +3174,17 @@ class UnifiedMarketTrader:
             "next_action": "Run python -m aureon.exchanges.kraken_asset_registry --max-tickers 100",
         }
 
-    def _kraken_equity_from_payload(self, payload: Dict[str, Any]) -> float:
+    def _kraken_equity_from_payload(self, payload: Dict[str, Any]) -> float | None:
+        """USD equity only. Asset amounts in mixed units are not added together."""
+
         for key in ("equity_usd", "portfolio_value_usd"):
             value = self._finite_number(payload.get(key), positive=True)
             if value is not None:
                 return value
         balance_snapshot = payload.get("balance_snapshot") or payload.get("portfolio_balances")
         if isinstance(balance_snapshot, dict):
-            value = self._finite_number(balance_snapshot.get("total_usd_estimate"), positive=True)
-            return value if value is not None else 0.0
-        return 0.0
+            return self._finite_number(balance_snapshot.get("total_usd_estimate"), positive=True)
+        return None
 
     def _api_governor_snapshot(self) -> Dict[str, Any]:
         snapshot = self._governor().snapshot()
@@ -11503,8 +11665,9 @@ class UnifiedMarketTrader:
             },
             "combined": {
                 "open_positions": int(combined.get("open_positions", 0) or 0),
-                "kraken_equity": float(combined.get("kraken_equity", 0.0) or 0.0),
-                "capital_equity_gbp": float(combined.get("capital_equity_gbp", 0.0) or 0.0),
+                "kraken_equity": combined.get("kraken_equity") if isinstance(combined, dict) and "kraken_equity" in combined else None,
+                "capital_equity_gbp": combined.get("capital_equity_gbp") if isinstance(combined, dict) and "capital_equity_gbp" in combined else None,
+                "alpaca_equity": combined.get("alpaca_equity") if isinstance(combined, dict) and "alpaca_equity" in combined else None,
                 "portfolio_balances": combined.get("portfolio_balances", {}) if isinstance(combined, dict) else {},
             },
             "api_governor": payload.get("api_governor") or self._api_governor_snapshot(),

@@ -84,6 +84,56 @@ def test_repairs_the_implementation_and_leaves_the_test_file_unchanged(
     assert "return 9" in (root / "schumann_band.py").read_text(encoding="utf-8")
 
 
+def test_a_repeatedly_failing_path_is_repaired_last_and_not_skipped(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from aureon.autonomous.autonomy_mode import audit_event
+    from aureon.core.organism_circulation import (
+        deprioritised_targets,
+        start_organism_circulation,
+        stop_organism_circulation,
+    )
+
+    root = tmp_path / "app"
+    root.mkdir()
+    (root / "alpha.py").write_text("def alpha_value():\n    return 1\n", encoding="utf-8")
+    (root / "beta.py").write_text("def beta_value():\n    return 1\n", encoding="utf-8")
+    (root / "test_values.py").write_text(
+        "from alpha import alpha_value\nfrom beta import beta_value\n\n"
+        "def test_alpha():\n    assert alpha_value() == 2\n\n"
+        "def test_beta():\n    assert beta_value() == 2\n",
+        encoding="utf-8",
+    )
+    _enable(root, monkeypatch)
+    monkeypatch.setenv("AUREON_ORGANISM_STATE", str(tmp_path / "organism-state"))
+    monkeypatch.setenv("AUREON_ORGANISM_HTTP_PORT", "0")
+    monkeypatch.setenv("AUREON_AUTONOMY_AUDIT_PATH", str(tmp_path / "audit.jsonl"))
+    stop_organism_circulation()
+    try:
+        started = start_organism_circulation(port=0)
+        assert started["started"] is True
+        for _ in range(2):
+            audit_event(
+                "self_patch_kept",
+                tmp_path,
+                path="alpha.py",
+                reason="tests_failed",
+                rolled_back=False,
+            )
+        assert deprioritised_targets() == ["alpha.py"]
+        report = repair_sandbox(root)
+        repaired = [item["path"] for item in report["repairs"]]
+        assert report["status"] == "repaired", report
+        assert repaired == ["beta.py", "alpha.py"]
+        assert "alpha.py" in repaired
+        assert "return 2" in (root / "alpha.py").read_text(encoding="utf-8")
+        assert "return 2" in (root / "beta.py").read_text(encoding="utf-8")
+    finally:
+        stop_organism_circulation()
+        start_organism_circulation(port=0)
+        stop_organism_circulation()
+
+
 def test_repairs_an_operator_and_a_name_error(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     root = tmp_path / "app"
     root.mkdir()
@@ -222,3 +272,37 @@ def test_review_log_is_json(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> 
     for line in review_log_path(root).read_text(encoding="utf-8").splitlines():
         json.loads(line)
     assert os.environ.get("AUREON_LIVE_TRADING", "0") != "1"
+
+
+def test_repairs_denominator_parity_and_literal_in_one_sandbox(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    root = tmp_path / "planted"
+    root.mkdir()
+    (root / "bands.py").write_text(
+        "def third(n):\n"
+        "    return n // 2\n\n"
+        "def is_even(n):\n"
+        "    return n % 2 == 1\n\n"
+        "def band_offset():\n"
+        "    return 1\n",
+        encoding="utf-8",
+    )
+    (root / "test_bands.py").write_text(
+        "from bands import band_offset, is_even, third\n\n"
+        "def test_third():\n"
+        "    assert third(9) == 3\n\n"
+        "def test_even():\n"
+        "    assert is_even(4) == True\n\n"
+        "def test_offset():\n"
+        "    assert band_offset() == 0\n",
+        encoding="utf-8",
+    )
+    _enable(root, monkeypatch)
+    report = repair_sandbox(root)
+    text = (root / "bands.py").read_text(encoding="utf-8")
+    assert report["status"] == "repaired", report
+    assert "return n // 3" in text
+    assert "return n % 2 == 0" in text
+    assert "return 0" in text
+    assert "return n // 2" not in text
+    assert "return n % 2 == 1" not in text
+    assert "assert third(9) == 3" in (root / "test_bands.py").read_text(encoding="utf-8")

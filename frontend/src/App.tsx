@@ -51,14 +51,14 @@ import {
   surfacesForScreen,
   UnifiedFrontendState,
 } from "@/services/aureonAutonomousFrontend";
+import { terminalStateUrls } from "@/config/serviceEndpoints";
 
 const queryClient = new QueryClient();
 const ENV_LOCAL_TERMINAL_ENDPOINT = import.meta.env.VITE_LOCAL_TERMINAL_URL as string | undefined;
 const DEFAULT_RUNTIME_ENDPOINTS = [
   ENV_LOCAL_TERMINAL_ENDPOINT,
   "/api/terminal-state", // production: nginx proxies /api to the gateway
-  "http://127.0.0.1:8791/api/terminal-state",
-  "http://127.0.0.1:8790/api/terminal-state",
+  ...terminalStateUrls,
 ].filter((value): value is string => Boolean(value));
 const MANIFEST_REFRESH_MS = 15000;
 const RUNTIME_REFRESH_MS = 2500;
@@ -1808,6 +1808,17 @@ function formatCompact(value: unknown): string {
   return asNumber(value).toLocaleString();
 }
 
+function finiteReading(value: unknown): number | null {
+  if (typeof value === "boolean" || value === null || value === undefined || value === "") return null;
+  const numeric = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(numeric) ? numeric : null;
+}
+
+function formatKnownCompact(value: unknown): string {
+  const numeric = finiteReading(value);
+  return numeric === null ? "unavailable" : numeric.toLocaleString();
+}
+
 function readinessPercent(summary: SaaSInventoryManifest["summary"]): number {
   const total = Math.max(1, asNumber(summary?.surface_count));
   const blockers = asNumber(summary?.security_blocker_count);
@@ -2097,7 +2108,7 @@ async function loadRuntimeObservation(): Promise<RuntimeObservation> {
         staleReason: String(data?.stale_reason || data?.runtime_watchdog?.tick_stale_reason || ""),
         statusLines: runtimeStatusLines(data, flight),
         metrics: [
-          { label: "portfolio", value: formatCompact(data?.portfolio_value || data?.combined?.equity || data?.combined?.capital_equity_gbp || 0) },
+          { label: "portfolio", value: formatKnownCompact([data?.portfolio_value, data?.combined?.equity, data?.combined?.capital_equity_gbp].find((item) => finiteReading(item) !== null)) },
           { label: "open positions", value: formatCompact(data?.combined?.open_positions || data?.positions?.length || 0) },
           { label: "trades", value: formatCompact(data?.total_trades || 0) },
           { label: "mode", value: runtimeModeLabel(data) },

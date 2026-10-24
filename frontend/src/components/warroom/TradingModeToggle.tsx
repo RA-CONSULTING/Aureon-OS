@@ -79,7 +79,7 @@ export function TradingModeToggle({ userId }: TradingModeToggleProps) {
       title: toLive ? ' LIVE TRADING ENABLED' : ' Live execution disabled',
       description: toLive 
         ? 'Real orders will be executed on your exchange account!' 
-        : 'No orders or simulated trades will be created.',
+        : 'No orders will be created.',
       variant: toLive ? 'destructive' : 'default',
       duration: 5000,
     });

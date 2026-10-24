@@ -146,11 +146,16 @@ class AlpacaClient:
     Client for Alpaca Markets API (Stocks & Crypto).
     """
     def __init__(self):
-        self.api_key = os.getenv('ALPACA_API_KEY')
+        self.api_key = (
+            os.getenv('ALPACA_API_KEY')
+            or os.getenv('APCA_API_KEY_ID')
+            or os.getenv('ALPACA_KEY')
+        )
         self.secret_key = (
             os.getenv('ALPACA_SECRET_KEY')
             or os.getenv('ALPACA_API_SECRET')
             or os.getenv('ALPACA_SECRET')
+            or os.getenv('APCA_API_SECRET_KEY')
         )
         # Default to LIVE trading
         self.use_paper = os.getenv('ALPACA_PAPER', 'false').lower() == 'true'

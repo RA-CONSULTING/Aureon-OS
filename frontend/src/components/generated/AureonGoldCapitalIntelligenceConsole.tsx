@@ -676,7 +676,7 @@ export function AureonGoldCapitalIntelligenceConsole({
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
             <Metric label="Flow Correct" value={goldProcessLogicFlowGuard.flow_correct ? "yes" : "attention"} hint={String(goldProcessLogicFlowGuard.flow_state || "flow")} />
             <Metric label="Ready Gates" value={`${fmtNumber(goldProcessLogicFlowGuard.ready_gate_count, 0)}/${fmtNumber(goldProcessLogicFlowGuard.gate_count, 0)}`} hint="ordered chain" />
-            <Metric label="Fake Passes" value={fmtNumber(goldProcessLogicFlowGuard.fake_pass_count, 0)} hint="must stay zero" />
+            <Metric label="Fake Passes" value={fmtNumber(goldProcessLogicFlowGuard.fake_pass_count, 0)} hint="certification counter; must stay zero; not a market price" />
             <Metric label="First Blocked" value={String(processFirstBlockedGate.id || "none").replace(/_/g, " ")} hint={String(processFirstBlockedGate.state || "state")} />
             <Metric label="All Gates" value={goldProcessLogicFlowGuard.all_gates_ready ? "ready" : "held"} hint="before shadow intent" />
             <Metric label="Next Check" value={String(goldProcessLogicFlowGuard.next_validation_action || "inspect").replace(/_/g, " ")} hint="validation action" />

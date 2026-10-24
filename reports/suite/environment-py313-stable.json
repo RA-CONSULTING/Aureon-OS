@@ -5,11 +5,10 @@
     "AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS": "1",
     "LANG": "en_US.UTF-8",
     "LC_ALL": "en_US.UTF-8",
-    "PATH": "/home/ubuntu/.local/bin:/usr/local/cargo/bin:/home/ubuntu/.local/bin:/home/ubuntu/.local/bin:/home/ubuntu/.local/bin:/home/ubuntu/.local/bin:/home/ubuntu/.local/bin:/usr/local/cargo/bin:/exec-daemon:/exec-daemon/tools:/usr/local/cargo/bin:/home/ubuntu/.nvm/versions/node/v22.23.4/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
-    "PYTHONDONTWRITEBYTECODE": "1",
+    "PATH": "/home/ubuntu/.local/bin:/home/ubuntu/.local/bin:/home/ubuntu/.local/bin:/home/ubuntu/.local/bin:/home/ubuntu/.local/bin:/usr/local/cargo/bin:/exec-daemon:/exec-daemon/tools:/usr/local/cargo/bin:/home/ubuntu/.nvm/versions/node/v22.23.4/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
     "PYTHONPATH": "."
   },
-  "git_sha": "d895f41d51b1a0ab0bf1753dc1a828f44fc79319",
+  "git_sha": "fa1d26f4586e6e72d3907f474ab1529664ec02e6",
   "os": {
     "machine": "x86_64",
     "platform": "Linux-6.12.94+-x86_64-with-glibc2.39",

@@ -781,6 +781,34 @@ def _overlay_repo_env(env: dict[str, str], repo: Path) -> None:
                 env[key] = value
 
 
+_EXCHANGE_KEY_PREFIXES = ("ALPACA_", "APCA_", "KRAKEN_", "BINANCE_", "CAPITAL_", "COINAPI_")
+
+
+def _is_exchange_credential(key: str) -> bool:
+    return key.startswith(_EXCHANGE_KEY_PREFIXES)
+
+
+def restore_exchange_credentials(env: dict[str, str], repo: Path) -> None:
+    """Put the keys the probe can see back onto a child an import-time spec emptied.
+
+    A launch spec may snapshot ``os.environ`` before ``.env`` is overlaid and then
+    write empty strings over the canonical names. This fills only blank exchange
+    keys. It does not log a value and it does not place an order.
+    """
+
+    for key, value in credential_sources(repo).items():
+        if not value or not _is_exchange_credential(key):
+            continue
+        if not str(env.get(key, "")).strip():
+            env[key] = value
+    try:
+        from aureon.core.aureon_env import apply_env_aliases
+
+        apply_env_aliases(env, override=False)
+    except Exception:
+        return
+
+
 def boot_decision(repo: Path, env: dict[str, str]) -> tuple[str, bool]:
     """Report line and whether this child is the live profile.
 
@@ -1180,6 +1208,10 @@ def child_env(repo: Path, spec: dict, extra: dict[str, str] | None = None) -> di
     if extra:
         for key, value in extra.items():
             env[str(key)] = str(value)
+    # An import-time spec can stamp empty exchange keys over the repo .env.
+    # Restore the non-empty keys the probe already sees, then let the boot
+    # stamp decide paper or live. This does not place an order.
+    restore_exchange_credentials(env, repo)
     # Spec and extra are applied first. The boot stamp is the last write, so a
     # spec cannot force dry-run while keys are present or force live without them.
     stamp_boot(env, repo)
@@ -1453,10 +1485,19 @@ def _faculty_producer(faculty: dict) -> str:
 def launch_faculty(repo: Path, faculty: dict) -> Row:
     name = f"faculty/{faculty.get('name')}"
     path = Path(str(faculty.get("path") or ""))
-    if path.is_file():
-        return Row(name, "started", "ok", f"state file present: {path.name}")
-    shown = path.name or "missing"
     producer = _faculty_producer(faculty)
+    if not path.is_file():
+        from aureon.launch.faculty_files import record_absence
+
+        record_absence(faculty, producer)
+    if path.is_file():
+        return Row(
+            name,
+            "started",
+            "ok",
+            f"state file present: {path.name}; a missing sample is recorded as no_data and no measurement is invented",
+        )
+    shown = path.name or "missing"
     return Row(
         name,
         "skipped",

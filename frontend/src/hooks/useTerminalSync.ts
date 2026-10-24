@@ -11,6 +11,7 @@
 import { useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { globalSystemsManager } from '@/core/globalSystemsManager';
+import { terminalStateUrls } from '@/config/serviceEndpoints';
 
 // Public live feed user ID - data pushed from Python terminal
 const LIVE_FEED_USER_ID = '69e5567f-7ad1-42af-860f-3709ef1f5935';
@@ -18,8 +19,7 @@ const ENV_LOCAL_TERMINAL_ENDPOINT = import.meta.env.VITE_LOCAL_TERMINAL_URL as s
 const DEFAULT_LOCAL_TERMINAL_ENDPOINTS = [
   ENV_LOCAL_TERMINAL_ENDPOINT,
   '/api/terminal-state', // production: nginx proxies /api to the gateway
-  'http://127.0.0.1:8791/api/terminal-state',
-  'http://127.0.0.1:8790/api/terminal-state',
+  ...terminalStateUrls,
 ].filter((value): value is string => Boolean(value));
 const TERMINAL_SYNC_DEBUG = (import.meta.env.VITE_TERMINAL_SYNC_DEBUG as string | undefined) === '1';
 
@@ -448,9 +448,13 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
         })) : [];
 
         const recentTrades = [...capitalTrades, ...krakenTrades].slice(0, 8);
+        const krakenReason = String(
+          kraken.equity_reason || kraken.error || combined.kraken_equity_reason || ''
+        );
         const krakenEquity = toNumber(kraken.portfolio_value || kraken.equity || combined.kraken_equity || 0);
         const capitalEquity = toNumber(capital.equity_gbp || combined.capital_equity_gbp || 0);
-        const totalEquity = krakenEquity > 0 ? krakenEquity : capitalEquity;
+        const equityNote = krakenReason && krakenEquity <= 0 ? krakenReason : '';
+        const totalEquity = equityNote ? 0 : (krakenEquity > 0 ? krakenEquity : capitalEquity);
         const krakenFree = toNumber(kraken.pool_available || kraken.free_margin || 0);
         const capitalFree = toNumber(capital.free_gbp || 0);
         const availableBalance = krakenFree > 0 ? krakenFree : capitalFree;
@@ -471,6 +475,7 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
 
         globalSystemsManager.setPartialState({
           totalEquity,
+          equityNote,
           availableBalance,
           peakEquity: toNumber(kraken.peak_equity || totalEquity || 0),
           currentDrawdownPercent: toNumber(kraken.current_drawdown || 0),
@@ -525,7 +530,8 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
             lines: Array.isArray(localState.queen_voice.lines) ? localState.queen_voice.lines.map((line) => String(line || '')) : [],
           } : buildFallbackQueenVoice(localState),
           unifiedMarketSummary: {
-            krakenEquity: toNumber(combined.kraken_equity || krakenEquity || 0),
+            krakenEquity: equityNote ? 0 : toNumber(combined.kraken_equity || krakenEquity || 0),
+            krakenEquityReason: equityNote,
             capitalEquityGbp: toNumber(combined.capital_equity_gbp || capitalEquity || 0),
             krakenSessionPnl: toNumber(combined.kraken_session_pnl || krakenPnl || 0),
             capitalSessionPnlGbp: toNumber(combined.capital_session_pnl_gbp || capitalPnl || 0),

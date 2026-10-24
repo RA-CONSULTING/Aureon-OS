@@ -208,6 +208,36 @@ def _apply_environ_snapshot() -> None:
     os.environ.clear()
     os.environ.update(_OS_ENVIRON_BEFORE_COLLECTION)
     os.environ.update(preserved)
+    _isolate_leaked_credentials()
+
+
+_JOURNAL_ENV_KEYS = {
+    "AUREON_THOUGHT_BUS_PATH",
+    "AUREON_BUS_TRACE_DIR",
+    "AUREON_HNC_TRACE_PATH",
+    "AUREON_AUTONOMY_AUDIT_PATH",
+    "AUREON_OPERATOR_REPO_INDEX_PATH",
+}
+_EXCHANGE_ENV_PREFIXES = ("ALPACA_", "APCA_", "KRAKEN_", "BINANCE_", "CAPITAL_", "COINAPI_")
+
+
+def _isolate_leaked_credentials() -> None:
+    """Drop parent AUREON_* flags and exchange keys so a live shell cannot leak in.
+
+    Journal pins stay. Live trading is forced off for the suite. A test that
+    needs a key or a mode sets it after this fixture.
+    """
+
+    for key in list(os.environ):
+        if key.startswith("AUREON_") and key not in _JOURNAL_ENV_KEYS:
+            os.environ.pop(key, None)
+            continue
+        if key.startswith(_EXCHANGE_ENV_PREFIXES):
+            os.environ.pop(key, None)
+    # Clearing is the isolation. Forcing order-disable flags here made the
+    # queen answer AUDIT_SAFE and made a live self-questioning cycle look blocked.
+    os.environ["AUREON_LIVE_TRADING"] = "0"
+    os.environ["AUREON_AUTONOMY_MODE"] = "guarded"
 
 
 @pytest.fixture(autouse=True)
@@ -412,10 +442,11 @@ def _pin_pytest_journals() -> None:
         _PYTEST_JOURNAL_DIR / "operator_repo_index_v6.json"
     )
     # The launcher default, with this variable unset, is full. The suite pins
-    # guarded so denylist assertions stay put and a local state file cannot
-    # flip them. A test that wants the launcher default deletes this pin.
-    # An export of full mode is left as exported.
-    os.environ.setdefault("AUREON_AUTONOMY_MODE", "guarded")
+    # guarded so denylist assertions stay put and a parent export cannot leak
+    # full mode or live trading into the run. A test that wants another mode
+    # sets it itself.
+    _isolate_leaked_credentials()
+    os.environ["AUREON_AUTONOMY_MODE"] = "guarded"
     _install_checkout_journal_redirect()
 
 
@@ -443,6 +474,17 @@ _fixture_commits_skip_operator_signing()
 
 # Freeze the snapshot after this module's own imports, still before collection.
 _OS_ENVIRON_BEFORE_COLLECTION.update(os.environ)
+
+
+def pytest_report_header(config: pytest.Config) -> str | None:
+    """A copied venv is required. A symlinked interpreter fails the evidence tests."""
+
+    if Path(sys.executable).is_symlink():
+        return (
+            "Aureon: this interpreter is a symlink. "
+            "Build the suite venv with python -m venv --copies so evidence tests can pass."
+        )
+    return None
 
 
 def pytest_pyfunc_call(pyfuncitem):

@@ -10,6 +10,8 @@ const configuredKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? '';
 // paint. This string is not a credential. A real key comes only from the env.
 const SUPABASE_PUBLISHABLE_KEY = configuredKey || 'local-preview-no-credential';
 
+export const supabaseConfigured = Boolean(configuredKey);
+
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 

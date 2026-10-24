@@ -35,3 +35,11 @@ def take_simulated(name: str, detail: str) -> bool:
         return True
     print(f"{notice} — skipped on the default boot")
     return False
+
+
+RANDOM_DASHBOARD = "random dashboard generator"
+
+
+def random_dashboard_allowed() -> bool:
+    """Pages that draw invented readings stay off unless the operator opted in."""
+    return take_simulated(RANDOM_DASHBOARD, "invented readings are not a live bus")

@@ -34,6 +34,29 @@ def service_environment(organ: str, env: dict | None = None, required: bool = Fa
         base.setdefault("AUREON_FRONTEND_HOST", "127.0.0.1")
         base.setdefault("AUREON_FRONTEND_PORT", "5173")
         base.setdefault("AUREON_FRONTEND_ROOT", str(DEFAULT_FRONTEND))
+        gateway = (
+            os.environ.get("AUREON_SEAT_GATEWAY_PORT")
+            or base.get("AUREON_SEAT_GATEWAY_PORT")
+            or os.environ.get("AUREON_OPERATOR_PORT")
+            or base.get("AUREON_OPERATOR_PORT")
+            or "8790"
+        )
+        market = (
+            os.environ.get("AUREON_SEAT_MARKET_PORT")
+            or base.get("AUREON_SEAT_MARKET_PORT")
+            or "8791"
+        )
+        gateway = str(gateway)
+        market = str(market)
+        base["AUREON_SEAT_GATEWAY_PORT"] = gateway
+        base["AUREON_SEAT_MARKET_PORT"] = market
+        base["AUREON_OPERATOR_PORT"] = gateway
+        base["VITE_OPERATOR_PORT"] = gateway
+        base["VITE_MARKET_STATUS_PORT"] = market
+        base["AUREON_OPERATOR_URL"] = f"http://127.0.0.1:{gateway}"
+        base["VITE_OPERATOR_URL"] = f"http://127.0.0.1:{gateway}"
+        base["VITE_MARKET_STATUS_URL"] = f"http://127.0.0.1:{market}"
+        base["AUREON_TERMINAL_STATE_URL"] = f"http://127.0.0.1:{market}"
     elif organ == "operator_gateway":
         base.setdefault("AUREON_OPERATOR_BIND", "127.0.0.1")
         base.setdefault("AUREON_OPERATOR_HOST", "127.0.0.1")

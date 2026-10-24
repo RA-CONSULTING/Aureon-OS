@@ -45,12 +45,25 @@ def test_reboot_advice_carries_reboot_advice():
     assert "reboot_advice" in r.get_json()
 
 
-def test_env_credentials_masked_no_raw_values():
+def test_env_credentials_is_names_only(monkeypatch):
+    monkeypatch.setenv("KRAKEN_API_KEY", "desk-key")
+    monkeypatch.setenv("KRAKEN_API_SECRET", "desk-secret-value")
     r = _client().get("/api/env-credentials")
     assert r.status_code == 200
     body = r.get_json()
-    assert body.get("secret_policy") == "metadata_only_no_values_returned"
+    rendered = r.get_data(as_text=True)
+    assert body.get("secret_policy") == "names_only"
     assert "exchanges" in body
+    assert "env_file" not in body
+    assert "restart_intent" not in body
+    assert "length" not in rendered
+    assert "hnc_packet" not in rendered
+    assert "desk-secret-value" not in rendered
+    assert "masked" not in rendered.lower()
+    venue = "KRAKEN_API_SECRET".split("_", 1)[0].lower()
+    row = body["exchanges"][venue]
+    assert row["present"] is True
+    assert "KRAKEN_API_SECRET" in row["set_keys"]
 
 
 def test_bots_is_honestly_empty_not_fabricated():

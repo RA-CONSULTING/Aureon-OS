@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, XCircle, AlertTriangle, Loader2 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, supabaseConfigured } from '@/integrations/supabase/client';
 import { useGlobalState } from '@/hooks/useGlobalState';
 
 interface ReadinessCheck {
   name: string;
-  status: 'pass' | 'fail' | 'warn' | 'checking';
+  status: 'pass' | 'fail' | 'warn' | 'checking' | 'not configured';
   message: string;
 }
 
@@ -24,6 +24,26 @@ export function TradingReadinessCheck() {
     const results: ReadinessCheck[] = [];
 
     // Check 1: Authentication
+    if (!supabaseConfigured) {
+      results.push({
+        name: 'Authentication',
+        status: 'not configured',
+        message: 'not configured',
+      });
+      results.push({
+        name: 'Exchange Credentials',
+        status: 'not configured',
+        message: 'not configured',
+      });
+      results.push({
+        name: 'Trading Config',
+        status: 'not configured',
+        message: 'not configured',
+      });
+      setChecks(results);
+      setIsReady(false);
+      return;
+    }
     results.push({
       name: 'Authentication',
       status: globalState.isAuthenticated ? 'pass' : 'fail',
@@ -102,7 +122,7 @@ export function TradingReadinessCheck() {
             variant={isReady ? 'default' : 'destructive'}
             className={isReady ? 'bg-success' : ''}
           >
-            {isReady ? 'READY' : `${failCount} ISSUES`}
+            {!supabaseConfigured ? 'not configured' : isReady ? 'READY' : `${failCount} ISSUES`}
           </Badge>
         </CardTitle>
       </CardHeader>
@@ -118,6 +138,7 @@ export function TradingReadinessCheck() {
                 {check.status === 'pass' && <CheckCircle2 className="h-4 w-4 text-success" />}
                 {check.status === 'fail' && <XCircle className="h-4 w-4 text-destructive" />}
                 {check.status === 'warn' && <AlertTriangle className="h-4 w-4 text-warning" />}
+                {check.status === 'not configured' && <AlertTriangle className="h-4 w-4 text-muted-foreground" />}
                 <span className="text-sm font-medium">{check.name}</span>
               </div>
               <span className="text-xs text-muted-foreground">{check.message}</span>

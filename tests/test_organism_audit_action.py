@@ -91,14 +91,22 @@ def test_credential_path_is_not_a_repair_target(circulation, tmp_path) -> None:
 
 
 def test_audit_subscribers_follow_a_replaced_thought_bus(circulation, tmp_path) -> None:
-    import aureon.core.aureon_thought_bus as thought_bus
     from aureon.autonomous.autonomy_mode import audit_event
-    from aureon.core.aureon_thought_bus import get_thought_bus
-    from aureon.core.organism_circulation import consumed_audits, start_organism_circulation
+    from aureon.core.aureon_thought_bus import clear_thought_bus, get_thought_bus
+    from aureon.core.organism_circulation import (
+        consumed_audits,
+        start_organism_circulation,
+        stop_organism_circulation,
+    )
 
-    thought_bus._thought_bus_instance = None
+    # The circulation publisher and this test share ``_thought_bus_instance``.
+    # Stop the publisher, then drop the bus under the same lock that builds the
+    # next one, so the object this test holds is the object later publishes use.
+    stop_organism_circulation()
+    clear_thought_bus()
     replacement = get_thought_bus()
-    start_organism_circulation(port=0)
+    started = start_organism_circulation(port=0)
+    assert started["started"] is True
     audit_event(
         "repair_reverted",
         tmp_path,

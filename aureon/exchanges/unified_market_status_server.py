@@ -169,7 +169,196 @@ def _runtime_watchdog(payload: dict[str, Any], status_file_age_sec: float | None
     return watchdog
 
 
-def _read_status() -> dict[str, Any]:
+_PROBE_CACHE: dict[str, Any] = {"at": 0.0, "payload": None}
+
+
+def _credential_groups_present() -> dict[str, bool]:
+    def has(*names: str) -> bool:
+        return all(str(os.environ.get(name) or "").strip() for name in names)
+
+    return {
+        "kraken": has("KRAKEN_API_KEY", "KRAKEN_API_SECRET"),
+        "capital": has("CAPITAL_API_KEY")
+        and bool(str(os.environ.get("CAPITAL_IDENTIFIER") or os.environ.get("CAPITAL_EMAIL") or "").strip())
+        and bool(str(os.environ.get("CAPITAL_PASSWORD") or os.environ.get("CAPITAL_API_PASSWORD") or "").strip()),
+        "alpaca": bool(str(os.environ.get("ALPACA_API_KEY") or os.environ.get("APCA_API_KEY_ID") or "").strip())
+        and bool(str(os.environ.get("ALPACA_SECRET_KEY") or os.environ.get("APCA_API_SECRET_KEY") or "").strip()),
+        "binance": has("BINANCE_API_KEY", "BINANCE_API_SECRET"),
+    }
+
+
+def _probe_exchange_balances() -> dict[str, Any]:
+    """Read-only account probes. No order endpoint is called."""
+
+    now = time.time()
+    cached = _PROBE_CACHE.get("payload")
+    if isinstance(cached, dict) and now - float(_PROBE_CACHE.get("at") or 0.0) < 20.0:
+        return cached
+    present = _credential_groups_present()
+    probes: dict[str, Any] = {}
+    if present["capital"]:
+        try:
+            from aureon.exchanges.capital_client import CapitalClient
+
+            client = CapitalClient()
+            observation = client.get_account_balance()
+            raw = getattr(observation, "balances", None) or {}
+            reason = "" if getattr(observation, "truth_status", "") in {"real_derived", "real_observed"} else str(
+                getattr(observation, "reason", "") or getattr(client, "init_error", "") or ""
+            )
+            equity = None
+            currency = None
+            if not reason:
+                from aureon.exchanges.single_currency_equity import gbp_equity_from_balances
+
+                equity, currency_reason = gbp_equity_from_balances(raw)
+                reason = currency_reason
+                if equity is not None and not reason:
+                    currency = "GBP"
+            probes["capital"] = {
+                "alive": equity is not None and not reason,
+                "error": reason,
+                "equity": None if reason else equity,
+                "currency": currency,
+            }
+        except Exception as exc:
+            probes["capital"] = {"alive": False, "error": str(exc), "equity": None}
+    if present["alpaca"]:
+        try:
+            from aureon.exchanges.alpaca_client import AlpacaClient
+
+            client = AlpacaClient()
+            account = client.get_account() if hasattr(client, "get_account") else {}
+            account = account if isinstance(account, dict) else {}
+            equity = account.get("equity", account.get("portfolio_value"))
+            error = str(getattr(client, "init_error", "") or "")
+            if equity is None and not account:
+                error = error or "alpaca account read returned nothing"
+            probes["alpaca"] = {
+                "alive": equity is not None and not error,
+                "error": error,
+                "equity": None if equity is None else float(equity),
+            }
+        except Exception as exc:
+            probes["alpaca"] = {"alive": False, "error": str(exc), "equity": None}
+    if present["kraken"]:
+        try:
+            from aureon.exchanges.kraken_client import KrakenClient
+
+            client = KrakenClient()
+            balances = client.get_account_balance()
+            error = str(getattr(client, "last_error", "") or "")
+            probes["kraken"] = {
+                "alive": isinstance(balances, dict) and not error,
+                "error": error,
+                "equity": None,
+            }
+        except Exception as exc:
+            probes["kraken"] = {"alive": False, "error": str(exc), "equity": None}
+    if present["binance"]:
+        try:
+            from aureon.exchanges.binance_client import BinanceClient
+
+            client = BinanceClient()
+            diag = client.diagnose_ready() if hasattr(client, "diagnose_ready") else {}
+            error = str((diag or {}).get("init_error") or getattr(client, "init_error", "") or "")
+            probes["binance"] = {"alive": not error, "error": error, "equity": None}
+        except Exception as exc:
+            probes["binance"] = {"alive": False, "error": str(exc), "equity": None}
+    _PROBE_CACHE["at"] = now
+    _PROBE_CACHE["payload"] = probes
+    return probes
+
+
+def _apply_exchange_probes(payload: dict[str, Any]) -> dict[str, Any]:
+    """Fill boot state and balances from probes that already returned a reading."""
+
+    probes = _probe_exchange_balances()
+    if not probes:
+        return payload
+    boot = payload.get("exchange_boot_init")
+    if not isinstance(boot, dict):
+        boot = {"states": {}}
+        payload["exchange_boot_init"] = boot
+    states = boot.get("states")
+    if not isinstance(states, dict):
+        states = {}
+        boot["states"] = states
+    combined = payload.get("combined")
+    if not isinstance(combined, dict):
+        combined = {}
+        payload["combined"] = combined
+    exchanges = payload.get("exchanges")
+    if not isinstance(exchanges, dict):
+        exchanges = {}
+        payload["exchanges"] = exchanges
+    for name, probe in probes.items():
+        if not isinstance(probe, dict):
+            continue
+        state = states.get(name)
+        if not isinstance(state, dict):
+            state = {}
+            states[name] = state
+        error = str(probe.get("error") or "")
+        if probe.get("alive"):
+            state["alive"] = True
+            if not state.get("error"):
+                state["error"] = ""
+        elif error:
+            state["alive"] = False
+            state["error"] = error
+        equity = probe.get("equity")
+        reading = float(equity) if probe.get("alive") and isinstance(equity, (int, float)) and not isinstance(equity, bool) else None
+        if name == "capital":
+            combined["capital_equity_gbp"] = reading
+            exchanges["capital_ready"] = reading is not None
+        if name == "alpaca":
+            combined["alpaca_equity"] = reading
+            exchanges["alpaca_ready"] = reading is not None
+        if name == "kraken":
+            # Do not add XXBT to ZUSD. A failed read is null. A USD total already
+            # on the payload is left as it is.
+            if error or not probe.get("alive"):
+                combined["kraken_equity"] = None
+                if error:
+                    combined["kraken_equity_reason"] = error
+                exchanges["kraken_ready"] = False
+        if name == "binance":
+            if "region" in error.lower():
+                exchanges["binance_status"] = "region blocked"
+                exchanges["binance_ready"] = False
+            elif error:
+                exchanges["binance_status"] = error
+                exchanges["binance_ready"] = False
+        if reading is not None:
+            state["equity"] = reading
+        elif error or not probe.get("alive"):
+            state["equity"] = None
+    return payload
+
+
+def _names_only_credential_status() -> dict[str, Any]:
+    full = _env_credentials_status()
+    exchanges: dict[str, Any] = {}
+    for name, row in (full.get("exchanges") or {}).items():
+        if not isinstance(row, dict):
+            continue
+        keys = row.get("keys") if isinstance(row.get("keys"), dict) else {}
+        exchanges[name] = {
+            "present": bool(row.get("present")),
+            "missing_keys": list(row.get("missing_keys") or []),
+            "set_keys": [key for key, meta in keys.items() if isinstance(meta, dict) and meta.get("set")],
+        }
+    return {
+        "ok": True,
+        "service": "unified-market-status-server",
+        "generated_at": full.get("generated_at"),
+        "exchanges": exchanges,
+        "secret_policy": "names_only",
+    }
+
+
+def _read_status(*, exchange_probes: bool = True) -> dict[str, Any]:
     if STATUS_PATH.exists():
         try:
             with STATUS_PATH.open("r", encoding="utf-8") as handle:
@@ -207,6 +396,9 @@ def _read_status() -> dict[str, Any]:
                     payload.setdefault("warnings", [])
                     if isinstance(payload["warnings"], list):
                         payload["warnings"].append("runtime_status_file_stale")
+                if exchange_probes:
+                    return _apply_exchange_probes(payload)
+                payload["exchange_probe"] = "not run"
                 return payload
         except Exception as exc:
             return {
@@ -217,7 +409,7 @@ def _read_status() -> dict[str, Any]:
                 "generated_at": datetime.now().isoformat(),
             }
 
-    return {
+    payload = {
         "ok": True,
         "source": "unified-market-status-server",
         "generated_at": datetime.now().isoformat(),
@@ -234,8 +426,10 @@ def _read_status() -> dict[str, Any]:
         "status_file": str(STATUS_PATH),
         "combined": {
             "open_positions": 0,
-            "kraken_equity": 0.0,
-            "capital_equity_gbp": 0.0,
+            "kraken_equity": None,
+            "kraken_equity_reason": "trader is still booting; equity is not a reading yet",
+            "capital_equity_gbp": None,
+            "alpaca_equity": None,
         },
         "exchanges": {
             "kraken_ready": False,
@@ -244,6 +438,10 @@ def _read_status() -> dict[str, Any]:
             "binance_ready": False,
         },
     }
+    if exchange_probes:
+        return _apply_exchange_probes(payload)
+    payload["exchange_probe"] = "not run"
+    return payload
 
 
 def _day_allowed(day_name: str, allowed_days: str | None) -> bool:
@@ -409,6 +607,9 @@ def _write_env_updates(updates: dict[str, str]) -> dict[str, Any]:
 
 def _env_credentials_status() -> dict[str, Any]:
     env_values = _parse_env_values()
+    for key, value in os.environ.items():
+        if str(value).strip() and not str(env_values.get(key, "")).strip():
+            env_values[key] = value
     apply_env_aliases(env_values, override=False)
     master_key = _env_packet_master_key(env_values)
     master_key_status = _env_packet_master_key_status(master_key)
@@ -515,7 +716,8 @@ def _has_open_positions(payload: dict[str, Any]) -> bool:
 
 
 def _flight_test() -> dict[str, Any]:
-    status = _read_status()
+    # No exchange probe. Terminal state is the route that reads balances when keys are set.
+    status = _read_status(exchange_probes=False)
     intent = _read_market_intent()
     env_intent = _read_env_update_intent()
     pending_restart = bool(intent and intent.get("status") == "pending") or bool(env_intent and env_intent.get("status") == "pending")
@@ -541,6 +743,7 @@ def _flight_test() -> dict[str, Any]:
     return {
         "ok": bool(status.get("ok")) and not stale,
         "service": "unified-market-status-server",
+        "description": "Reads the local status file. Does not call an exchange.",
         "generated_at": datetime.now().isoformat(),
         "checks": {
             "status_file_exists": STATUS_PATH.exists(),
@@ -602,13 +805,7 @@ class StatusHandler(BaseHTTPRequestHandler):
             return
         if path in {"/", "/health", "/api/terminal-state", "/api/flight-test", "/api/reboot-advice", "/api/env-credentials"}:
             if path == "/api/env-credentials":
-                # Credential presence, key names, master-key state and local
-                # filesystem paths are security-sensitive even without values.
-                # Hold the public read before inspecting any credential source.
-                self._json(
-                    403,
-                    {"ok": False, "error": CREDENTIAL_STATUS_READ_HOLD},
-                )
+                self._json(200, _names_only_credential_status())
                 return
             if path in {"/api/flight-test", "/api/reboot-advice"}:
                 self._json(200, _flight_test())

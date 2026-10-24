@@ -24,7 +24,7 @@ DATA SOURCES:
     - Omega (high confidence signals)
 
 FRONTEND OUTPUT:
-  - ws://localhost:8790/command-stream (real-time data)
+  - ws://127.0.0.1:8787/command-stream (real-time data)
   - Supabase tables (persistent storage)
 
 Gary Leckey | January 2026 | ALL PLATFORMS → FRONTEND
@@ -32,6 +32,7 @@ Gary Leckey | January 2026 | ALL PLATFORMS → FRONTEND
 
 from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
 import asyncio
+from http import HTTPStatus
 import json
 import os
 import sys
@@ -66,8 +67,19 @@ logger = logging.getLogger(__name__)
 # ════════════════════════════════════════════════════════════════════════════
 # CONFIGURATION
 # ════════════════════════════════════════════════════════════════════════════
-WS_HOST = os.getenv("NEXUS_WS_HOST", "0.0.0.0")
-WS_PORT = int(os.getenv("NEXUS_COMMAND_PORT", "8790"))
+def bridge_bind() -> tuple[str, int]:
+    """Match the UI sockets. Bind the loopback interface unless the operator overrides it."""
+
+    host = os.getenv("NEXUS_WS_HOST", "127.0.0.1") or "127.0.0.1"
+    raw = os.getenv("AUREON_FRONTEND_BRIDGE_PORT") or os.getenv("NEXUS_COMMAND_PORT") or "8787"
+    try:
+        port = int(raw)
+    except (TypeError, ValueError):
+        port = 8787
+    return host, port
+
+
+WS_HOST, WS_PORT = bridge_bind()
 UPDATE_INTERVAL = float(os.getenv("NEXUS_UPDATE_INTERVAL", "1.0"))  # seconds
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -450,13 +462,14 @@ class AureonFrontendBridge:
                 data.balances.get(asset, 0) * self.prices.get(asset, 0)
                 for asset in data.balances
             )
-            
-            data.connected = True
+            kraken_error = str(getattr(self.kraken, "last_error", "") or "")
+            data.error = kraken_error or None
+            data.connected = bool(data.total_value_usd) and not data.error
             data.last_update = time.time()
-            data.error = None
             
         except Exception as e:
             data.error = str(e)
+            data.connected = False
             logger.error(f"Kraken fetch error: {e}")
         
         return data
@@ -467,6 +480,11 @@ class AureonFrontendBridge:
         
         if not self.binance:
             data.error = "Client not available"
+            return data
+        region = str(getattr(self.binance, "init_error", "") or getattr(self.binance, "last_error", "") or "")
+        if "region" in region.lower() or "451" in region:
+            data.error = "region blocked"
+            data.connected = False
             return data
         
         try:
@@ -492,12 +510,14 @@ class AureonFrontendBridge:
                 for asset in data.balances
             )
             
-            data.connected = True
-            data.last_update = time.time()
             data.error = None
+            data.connected = bool(data.total_value_usd)
+            data.last_update = time.time()
             
         except Exception as e:
-            data.error = str(e)
+            text = str(e)
+            data.error = "region blocked" if "451" in text or "restricted location" in text.lower() else text
+            data.connected = False
             logger.error(f"Binance fetch error: {e}")
         
         return data
@@ -859,20 +879,37 @@ class AureonFrontendBridge:
     
     async def run(self):
         """Run the frontend bridge server."""
-        await self.initialize()
-        
         self.running = True
         
         print(f"\n🌉 AUREON FRONTEND BRIDGE STARTING...")
         print(f"   WebSocket: ws://{WS_HOST}:{WS_PORT}/command-stream")
         print(f"   Update Interval: {UPDATE_INTERVAL}s")
         print()
-        
-        # Start WebSocket server
-        async with serve(self.handle_client, WS_HOST, WS_PORT):
+
+        def _http_health(path, _request_headers):
+            if str(path).split("?", 1)[0] not in {"/health", "/healthz"}:
+                return None
+            body = json.dumps(
+                {
+                    "ok": True,
+                    "service": "aureon-frontend-bridge",
+                    "listening": True,
+                    "live_trading": False,
+                    "orders": 0,
+                    "bind": WS_HOST,
+                    "port": WS_PORT,
+                }
+            ).encode("utf-8")
+            return (
+                HTTPStatus.OK,
+                [("Content-Type", "application/json"), ("Content-Length", str(len(body)))],
+                body,
+            )
+
+        # Start WebSocket server. GET /health answers the seat tab.
+        async with serve(self.handle_client, WS_HOST, WS_PORT, process_request=_http_health):
             print(f"✅ WebSocket server running on ws://{WS_HOST}:{WS_PORT}")
-            
-            # Run stream loop
+            await self.initialize()
             await self.stream_loop()
 
 

@@ -94,7 +94,7 @@ export default function WarRoomDashboard() {
           <TradingReadinessCheck />
           <CredentialStatusPanel userId={globalState.userId} />
           <GasTankDisplay 
-            userId={globalState.userId || 'demo-user'} 
+            userId={globalState.userId} 
             onEmpty={emergencyStop}
           />
         </div>

@@ -7,6 +7,8 @@ import { Button } from "./ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { LiveDataPuller } from "./LiveDataPuller";
 import { useHarmonicAuth } from "@/hooks/useHarmonicAuth";
+import { useLatency } from "./LatencyHook";
+import { bridgeWsUrl } from "@/config/serviceEndpoints";
 import { fmt } from "@/utils/number";
 
 function clamp01(x: number): number { return Math.max(0, Math.min(1, x)); }
@@ -91,10 +93,9 @@ function ToneBadge({tone, children}:{tone:string; children:React.ReactNode}){
 // ---------- Main Dashboard ----------
 // ---------- Main Dashboard ----------
 import { useAurisWS, HarmonicControls } from "./NexusWebSocket";
-import { useLatency } from "./LatencyHook";
 export default function NexusLiveDashboard(){
   const {connected, auris, aura, wsCtl} = useAurisWS();
-  const latency = useLatency("ws://localhost:8787");
+  const latency = useLatency(bridgeWsUrl);
   const [name, setName] = useState("");
   const [dob, setDob] = useState("");
   const [t0, setT0] = useState<string>("");

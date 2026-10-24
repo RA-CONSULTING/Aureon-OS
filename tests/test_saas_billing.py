@@ -274,13 +274,19 @@ def test_billing_status_bare():
 
 def test_billing_balance_guards():
     c = _app(AUREON_LLM_OFFLINE="1")
-    assert c.get("/api/billing/balance").status_code == 503     # bridge off
+    bare = c.get("/api/billing/balance")
+    assert bare.status_code == 200
+    assert bare.get_json()["configured"] is False
+    assert bare.get_json()["status"] == "not configured"
     c = _app(AUREON_LLM_OFFLINE="1", AUREON_SUPABASE_JWT_SECRET="sekret")
     assert c.get("/api/billing/balance").status_code == 401     # bridge on, no token
     good = _mk_jwt({"sub": "u1", "exp": time.time() + 3600}, "sekret")
     r = c.get("/api/billing/balance", headers={"Authorization": f"Bearer {good}"})
-    assert r.status_code == 503                                  # authed but no Supabase env
-    assert "missing" in r.get_json()["error"]
+    body = r.get_json()
+    assert r.status_code == 200
+    assert body["configured"] is False
+    assert body["status"] == "not configured"
+    assert "missing" in body
 
 
 def test_charge_fee_disabled_by_default():

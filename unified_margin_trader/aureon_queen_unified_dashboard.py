@@ -986,6 +986,10 @@ class QueenUnifiedDashboard:
             await asyncio.sleep(15)
 
 async def main():
+    from aureon.core.simulated_boot import random_dashboard_allowed
+
+    if not random_dashboard_allowed():
+        return
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s | %(message)s',
