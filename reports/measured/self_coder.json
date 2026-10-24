@@ -1,0 +1,5059 @@
+{
+  "child_isolation": "child was not launched",
+  "dataset_solution_smoke": {
+    "counts_as_model_score": false,
+    "dataset": "/workspace/data/research/open_benchmarks/humaneval.jsonl",
+    "limit": 5,
+    "passed": 5,
+    "reason": "the dataset's own solutions ran in the harness; this is not a model score",
+    "results": [
+      {
+        "dataset_solution_passed": true,
+        "task_id": "HumanEval/0"
+      },
+      {
+        "dataset_solution_passed": true,
+        "task_id": "HumanEval/1"
+      },
+      {
+        "dataset_solution_passed": true,
+        "task_id": "HumanEval/2"
+      },
+      {
+        "dataset_solution_passed": true,
+        "task_id": "HumanEval/3"
+      },
+      {
+        "dataset_solution_passed": true,
+        "task_id": "HumanEval/4"
+      }
+    ],
+    "total": 5,
+    "verdict": "measured"
+  },
+  "endpoint": {
+    "api_key_configured": false,
+    "api_key_returned": false,
+    "base_url": "http://127.0.0.1:8000/v1",
+    "model": "kimi-k2.5",
+    "ollama_openai_compatible": true,
+    "wire_api": "openai-chat-completions"
+  },
+  "external_provider": {
+    "api_key_configured": false,
+    "api_key_required": false,
+    "api_key_returned": false,
+    "base_url": "http://127.0.0.1:8000/v1",
+    "called": false,
+    "counts_as_aureon_brain": false,
+    "default": "off",
+    "enabled": false,
+    "humaneval_pct": null,
+    "livecodebench_pct": null,
+    "model": "kimi-k2.5",
+    "note": "An outside provider is not Aureon's brain. The call stays off unless AUREON_SELF_CODER_ALLOW_EXTERNAL=1.",
+    "opt_in": "AUREON_SELF_CODER_ALLOW_EXTERNAL=1",
+    "swe_bench_pct": null
+  },
+  "flagship_comparison": {
+    "published_references": [
+      {
+        "livecodebench_v6_pct": 85.0,
+        "model": "Kimi K2.5",
+        "source": "published score named by the operator; not a measurement from this harness",
+        "swe_bench_verified_pct": 76.8
+      }
+    ],
+    "published_references_are_not_this_run": true,
+    "reason": "this run's HumanEval figure is the internal path; published figures are an external reference",
+    "status": "measured",
+    "this_run_humaneval_pct": 0.0,
+    "this_run_livecodebench_pct": null,
+    "this_run_swe_bench_pct": null
+  },
+  "harness": "The system under test is Aureon's internal cognition: Auris nodes, the QGITA FTCP detector, and run_self_coding_task with its default lane off. No outside LLM is called unless AUREON_SELF_CODER_ALLOW_EXTERNAL=1. That opt-in is not Aureon's brain and is labelled in the report. An API key is not required. Python the internal path actually emits is executed against each row's tests field. This is not the official SWE-bench or LiveCodeBench evaluation. This is not a kernel sandbox. The child runs only inside unshare (user, pid, and net namespace) from an environment that never held the keys. Inside that namespace, home and the workspace are covered with a tmpfs when that mount works. The opt-in path does not mount over the parent. If unshare is missing or the probe fails, model code is not run unless AUREON_BENCH_ALLOW_UNSANDBOXED=1. That opt-in is unsandboxed: a same-user child can read /proc/PID/environ and can open a raw socket. Run this only on a machine with no secrets.",
+  "humaneval": {
+    "attempted": 0,
+    "authoring_note": "InternalCodingWorkforce.decide calls an adapter prompt. That step is not reached while the self-coder lane is disabled and AUREON_SELF_CODER_ALLOW_EXTERNAL is off.",
+    "counts_as_aureon_score": true,
+    "counts_as_model_score": false,
+    "dataset": "/workspace/data/research/open_benchmarks/humaneval.jsonl",
+    "executed": true,
+    "external_provider_called": false,
+    "measured_pct": 0.0,
+    "not_attempted": 164,
+    "passed": 0,
+    "reason": "the internal path emitted no Python program, so the sandbox was not given a candidate",
+    "results": [
+      {
+        "auris": {
+          "coherence": 0.4595792567446599,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.08813792332182013,
+            "Clownfish": 0.5,
+            "Deer": 0.7216461053964273,
+            "Dolphin": 0.5636132523402713,
+            "Falcon": 0.6980161197588467,
+            "Hummingbird": 0.006651196738792065,
+            "Owl": 0.6,
+            "Panda": 0.5539533511310875,
+            "Tiger": 0.08632536180974003
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/0"
+      },
+      {
+        "auris": {
+          "coherence": 0.5813042334115112,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.9022762577347376,
+            "Clownfish": 0.5,
+            "Deer": 0.6194868261395872,
+            "Dolphin": 0.2751990661648256,
+            "Falcon": 0.866778987628542,
+            "Hummingbird": 0.02116249294017472,
+            "Owl": 0.6,
+            "Panda": 0.8632397636950975,
+            "Tiger": 0.581183621912156
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/1"
+      },
+      {
+        "auris": {
+          "coherence": 0.34204649739142745,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.19127606483792448,
+            "Clownfish": 0.5,
+            "Deer": 0.43699779067707145,
+            "Dolphin": 0.0013106738875053314,
+            "Falcon": 0.4235197303826844,
+            "Hummingbird": 0.00813882569269414,
+            "Owl": 0.6,
+            "Panda": 0.6363964553027637,
+            "Tiger": 0.21823432848442198
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/2"
+      },
+      {
+        "auris": {
+          "coherence": 0.5880725518810611,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.8343458800254946,
+            "Clownfish": 0.5,
+            "Deer": 0.2540206355727155,
+            "Dolphin": 0.9626398701315309,
+            "Falcon": 0.5136226679347633,
+            "Hummingbird": 0.015185191134886979,
+            "Owl": 0.6,
+            "Panda": 0.8074391017965064,
+            "Tiger": 0.49190256287441025
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/3"
+      },
+      {
+        "auris": {
+          "coherence": 0.6528062469764674,
+          "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+          "nodes": {
+            "CargoShip": 0.38215112319065414,
+            "Clownfish": 0.5,
+            "Deer": 0.7249538083020374,
+            "Dolphin": 0.9636139491879747,
+            "Falcon": 0.5501746913341158,
+            "Hummingbird": 0.059556239356223624,
+            "Owl": 0.6,
+            "Panda": 0.9546274440356097,
+            "Tiger": 0.7274039104569755
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/4"
+      },
+      {
+        "auris": {
+          "coherence": 0.5819116004407473,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.8089796442266173,
+            "Clownfish": 0.5,
+            "Deer": 0.13792056354523607,
+            "Dolphin": 0.7008294954201502,
+            "Falcon": 0.8505974947481694,
+            "Hummingbird": 0.016665152973719323,
+            "Owl": 0.6,
+            "Panda": 0.8249836506312933,
+            "Tiger": 0.5199738410100693
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/5"
+      },
+      {
+        "auris": {
+          "coherence": 0.5634729991019701,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.8780324543919322,
+            "Clownfish": 0.5,
+            "Deer": 0.7753837508612496,
+            "Dolphin": 0.4876696707168663,
+            "Falcon": 0.26890510540829204,
+            "Hummingbird": 0.028012533728444294,
+            "Owl": 0.6,
+            "Panda": 0.8979050820935287,
+            "Tiger": 0.6366481313496459
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/6"
+      },
+      {
+        "auris": {
+          "coherence": 0.5941027960687936,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.7415449755751139,
+            "Clownfish": 0.5,
+            "Deer": 0.11548539775103317,
+            "Dolphin": 0.6824031194741729,
+            "Falcon": 0.8392581528678457,
+            "Hummingbird": 0.028345017087931176,
+            "Owl": 0.6,
+            "Panda": 0.8991612915351761,
+            "Tiger": 0.6386580664562818
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/7"
+      },
+      {
+        "auris": {
+          "coherence": 0.5142609128777899,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.8820097845698694,
+            "Clownfish": 0.5,
+            "Deer": 0.9482127775765848,
+            "Dolphin": 0.11127568412192196,
+            "Falcon": 0.46304346387299644,
+            "Hummingbird": 0.014643985815069432,
+            "Owl": 0.6,
+            "Panda": 0.8001377420133224,
+            "Tiger": 0.480220387221316
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/8"
+      },
+      {
+        "auris": {
+          "coherence": 0.5513776157911009,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.7657050456209411,
+            "Clownfish": 0.5,
+            "Deer": 0.23014473042540218,
+            "Dolphin": 0.9395828246514817,
+            "Falcon": 0.4690410447555522,
+            "Hummingbird": 0.011433724533306587,
+            "Owl": 0.6,
+            "Panda": 0.7426183070301404,
+            "Tiger": 0.3881892912482247
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/9"
+      },
+      {
+        "auris": {
+          "coherence": 0.29179458445737905,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.15388522724897558,
+            "Clownfish": 0.5,
+            "Deer": 0.39348163993935525,
+            "Dolphin": 0.03408234165692886,
+            "Falcon": 0.31342066355512926,
+            "Hummingbird": 0.006229785777074089,
+            "Owl": 0.6,
+            "Panda": 0.5234425103283415,
+            "Tiger": 0.03750801652534648
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/10"
+      },
+      {
+        "auris": {
+          "coherence": 0.5244544191971134,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.10760479976869963,
+            "Clownfish": 0.5,
+            "Deer": 0.34189165559552237,
+            "Dolphin": 0.7164562979270253,
+            "Falcon": 0.6325215492932981,
+            "Hummingbird": 0.01665880892093377,
+            "Owl": 0.6,
+            "Panda": 0.8249150963169916,
+            "Tiger": 0.5198641541071866
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/11"
+      },
+      {
+        "auris": {
+          "coherence": 0.6172986537011341,
+          "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+          "nodes": {
+            "CargoShip": 0.7627052486365312,
+            "Clownfish": 0.5,
+            "Deer": 0.6274258213011097,
+            "Dolphin": 0.7940358032987332,
+            "Falcon": 0.36889045153954253,
+            "Hummingbird": 0.04808492416243338,
+            "Owl": 0.6,
+            "Panda": 0.9426103830409331,
+            "Tiger": 0.7081766128654929
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/12"
+      },
+      {
+        "auris": {
+          "coherence": 0.5807692109354571,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.531812303797673,
+            "Clownfish": 0.5,
+            "Deer": 0.9792894185331869,
+            "Dolphin": 0.7527532000967523,
+            "Falcon": 0.2776297015548007,
+            "Hummingbird": 0.017850282178669793,
+            "Owl": 0.6,
+            "Panda": 0.8369354299292338,
+            "Tiger": 0.5390966878867739
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/13"
+      },
+      {
+        "auris": {
+          "coherence": 0.5838986010789072,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.9032001653237646,
+            "Clownfish": 0.5,
+            "Deer": 0.857394773423776,
+            "Dolphin": 0.8839005398350128,
+            "Falcon": 0.775905686262792,
+            "Hummingbird": 0.006244205720689223,
+            "Owl": 0.6,
+            "Panda": 0.5245545864128152,
+            "Tiger": 0.03928733826050417
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/14"
+      },
+      {
+        "auris": {
+          "coherence": 0.4849666376090772,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.1896740139986085,
+            "Clownfish": 0.5,
+            "Deer": 0.2900367948378637,
+            "Dolphin": 0.5630713480177939,
+            "Falcon": 0.7287203993630975,
+            "Hummingbird": 0.011026413332401648,
+            "Owl": 0.6,
+            "Panda": 0.7329260345533797,
+            "Tiger": 0.37268165528540753
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/15"
+      },
+      {
+        "auris": {
+          "coherence": 0.5196656805543577,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.9941983555508005,
+            "Clownfish": 0.5,
+            "Deer": 0.01822194545219058,
+            "Dolphin": 0.9429120550278488,
+            "Falcon": 0.5407438147001935,
+            "Hummingbird": 0.007771379256049223,
+            "Owl": 0.6,
+            "Panda": 0.6189681385817315,
+            "Tiger": 0.1903490217307704
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/16"
+      },
+      {
+        "auris": {
+          "coherence": 0.49332399071931254,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.2332756529075498,
+            "Clownfish": 0.5,
+            "Deer": 0.7527326569850317,
+            "Dolphin": 0.7698072806554114,
+            "Falcon": 0.642981679463242,
+            "Hummingbird": 0.006396679179814843,
+            "Owl": 0.6,
+            "Panda": 0.5360066495961366,
+            "Tiger": 0.057610639353818716
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/17"
+      },
+      {
+        "auris": {
+          "coherence": 0.47789491462102945,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.6376989870493698,
+            "Clownfish": 0.5,
+            "Deer": 0.036739064924282805,
+            "Dolphin": 0.9956389154181886,
+            "Falcon": 0.5707601226874418,
+            "Hummingbird": 0.006226274404129209,
+            "Owl": 0.6,
+            "Panda": 0.5231709309165,
+            "Tiger": 0.03707348946640004
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/18"
+      },
+      {
+        "auris": {
+          "coherence": 0.4429469109705571,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.265694504280539,
+            "Clownfish": 0.5,
+            "Deer": 0.6733544264293158,
+            "Dolphin": 0.1176072768933315,
+            "Falcon": 0.2737168829269837,
+            "Hummingbird": 0.02279762168754049,
+            "Owl": 0.6,
+            "Panda": 0.8734073259431452,
+            "Tiger": 0.5974517215090324
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/19"
+      },
+      {
+        "auris": {
+          "coherence": 0.4987945011465706,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.27402822932260473,
+            "Clownfish": 0.5,
+            "Deer": 0.17534188170173048,
+            "Dolphin": 0.7029119565948976,
+            "Falcon": 0.1753192335852541,
+            "Hummingbird": 0.04641018409372311,
+            "Owl": 0.6,
+            "Panda": 0.9403590152984171,
+            "Tiger": 0.7045744244774674
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/20"
+      },
+      {
+        "auris": {
+          "coherence": 0.5469077396067048,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.07148264230632995,
+            "Clownfish": 0.5,
+            "Deer": 0.47936831018019876,
+            "Dolphin": 0.9706731111061431,
+            "Falcon": 0.44813803764155485,
+            "Hummingbird": 0.015359923973531977,
+            "Owl": 0.6,
+            "Panda": 0.8096865332686828,
+            "Tiger": 0.4954984532298925
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/21"
+      },
+      {
+        "auris": {
+          "coherence": 0.4769396472933364,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.892787998589249,
+            "Clownfish": 0.5,
+            "Deer": 0.43089665427084245,
+            "Dolphin": 0.0575770151219786,
+            "Falcon": 0.7258208408493229,
+            "Hummingbird": 0.012028121458654754,
+            "Owl": 0.6,
+            "Panda": 0.755584493986684,
+            "Tiger": 0.40893519037869447
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/22"
+      },
+      {
+        "auris": {
+          "coherence": 0.6309732801722974,
+          "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+          "nodes": {
+            "CargoShip": 0.85564085158909,
+            "Clownfish": 0.5,
+            "Deer": 0.8371980115322717,
+            "Dolphin": 0.3767564106380896,
+            "Falcon": 0.9011988283212751,
+            "Hummingbird": 0.02878136284943602,
+            "Owl": 0.6,
+            "Panda": 0.9007658810080015,
+            "Tiger": 0.6412254096128024
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/23"
+      },
+      {
+        "auris": {
+          "coherence": 0.5852053060195651,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.5357176304322135,
+            "Clownfish": 0.5,
+            "Deer": 0.5106889741410683,
+            "Dolphin": 0.3128511979677273,
+            "Falcon": 0.7752339835971798,
+            "Hummingbird": 0.14073558333455757,
+            "Owl": 0.6,
+            "Panda": 0.9836834293863808,
+            "Tiger": 0.7738934870182091
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/24"
+      },
+      {
+        "auris": {
+          "coherence": 0.5373796700556258,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.6362841249371682,
+            "Clownfish": 0.5,
+            "Deer": 0.5997386615615861,
+            "Dolphin": 0.9809254680574995,
+            "Falcon": 0.4791411285056857,
+            "Hummingbird": 0.0072098516113603415,
+            "Owl": 0.6,
+            "Panda": 0.5889026707189102,
+            "Tiger": 0.14224427315025628
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/25"
+      },
+      {
+        "auris": {
+          "coherence": 0.4378576426632071,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.8110222758125137,
+            "Clownfish": 0.5,
+            "Deer": 0.34849513347869754,
+            "Dolphin": 0.010434395554704712,
+            "Falcon": 0.5477061428914247,
+            "Hummingbird": 0.012806216770133232,
+            "Owl": 0.6,
+            "Panda": 0.7707387772010368,
+            "Tiger": 0.4331820435216589
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/26"
+      },
+      {
+        "auris": {
+          "coherence": 0.49882397636642534,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.7700964340117964,
+            "Clownfish": 0.5,
+            "Deer": 0.4416671637057412,
+            "Dolphin": 0.1097711392826734,
+            "Falcon": 0.4305386643582789,
+            "Hummingbird": 0.0457541670165668,
+            "Owl": 0.6,
+            "Panda": 0.9394322015760062,
+            "Tiger": 0.7030915225216099
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/27"
+      },
+      {
+        "auris": {
+          "coherence": 0.3834050835138885,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.44772114813643094,
+            "Clownfish": 0.5,
+            "Deer": 0.19917911517050668,
+            "Dolphin": 0.6542192935287523,
+            "Falcon": 0.2041808464850319,
+            "Hummingbird": 0.00641453231191814,
+            "Owl": 0.6,
+            "Panda": 0.5373119669338904,
+            "Tiger": 0.059699147094224615
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/28"
+      },
+      {
+        "auris": {
+          "coherence": 0.5603875390742024,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.6675227332642033,
+            "Clownfish": 0.5,
+            "Deer": 0.24325889098158293,
+            "Dolphin": 0.9629110252658484,
+            "Falcon": 0.4638948699443733,
+            "Hummingbird": 0.01340967261861148,
+            "Owl": 0.6,
+            "Panda": 0.7812808917619468,
+            "Tiger": 0.4500494268191149
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/29"
+      },
+      {
+        "auris": {
+          "coherence": 0.5360564939897019,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.11654167399395643,
+            "Clownfish": 0.5,
+            "Deer": 0.5668466653402935,
+            "Dolphin": 0.8105901953075891,
+            "Falcon": 0.5856198970576305,
+            "Hummingbird": 0.0123888435579974,
+            "Owl": 0.6,
+            "Panda": 0.7628466475942056,
+            "Tiger": 0.420554636150729
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/30"
+      },
+      {
+        "auris": {
+          "coherence": 0.6331777603041933,
+          "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+          "nodes": {
+            "CargoShip": 0.7158165658696723,
+            "Clownfish": 0.5,
+            "Deer": 0.29224688845862,
+            "Dolphin": 0.9132511473200371,
+            "Falcon": 0.43151590565427056,
+            "Hummingbird": 0.17372340800636066,
+            "Owl": 0.6,
+            "Panda": 0.9877311699993235,
+            "Tiger": 0.7803698719989177
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/31"
+      },
+      {
+        "auris": {
+          "coherence": 0.33368808529776706,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.1402941204214725,
+            "Clownfish": 0.5,
+            "Deer": 0.366870390397645,
+            "Dolphin": 0.0040920537479868235,
+            "Falcon": 0.4206145374818994,
+            "Hummingbird": 0.00828291949833355,
+            "Owl": 0.6,
+            "Panda": 0.6428088667161895,
+            "Tiger": 0.22849418674590316
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/32"
+      },
+      {
+        "auris": {
+          "coherence": 0.5795314809270952,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.47005870065629796,
+            "Clownfish": 0.5,
+            "Deer": 0.9419427413965386,
+            "Dolphin": 0.8820771644902999,
+            "Falcon": 0.3348080055351911,
+            "Hummingbird": 0.012778175322217769,
+            "Owl": 0.6,
+            "Panda": 0.7702246956743647,
+            "Tiger": 0.4323595130789835
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/33"
+      },
+      {
+        "auris": {
+          "coherence": 0.44777210348069624,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.32191382456514916,
+            "Clownfish": 0.5,
+            "Deer": 0.3875487881631148,
+            "Dolphin": 0.6566239997905677,
+            "Falcon": 0.7255821716060277,
+            "Hummingbird": 0.0059784938970238646,
+            "Owl": 0.6,
+            "Panda": 0.5032013778598284,
+            "Tiger": 0.005122204575725498
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/34"
+      },
+      {
+        "auris": {
+          "coherence": 0.4973805384847695,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.8962235535758811,
+            "Clownfish": 0.5,
+            "Deer": 0.37266903033694676,
+            "Dolphin": 0.17113427908930307,
+            "Falcon": 0.8089283894124792,
+            "Hummingbird": 0.01161776438830512,
+            "Owl": 0.6,
+            "Panda": 0.746774759779092,
+            "Tiger": 0.39483961564654724
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/35"
+      },
+      {
+        "auris": {
+          "coherence": 0.5488756101014562,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.7315810985355061,
+            "Clownfish": 0.5,
+            "Deer": 0.583807982689439,
+            "Dolphin": 0.9697941482368139,
+            "Falcon": 0.6473200433669353,
+            "Hummingbird": 0.006519751276606279,
+            "Owl": 0.6,
+            "Panda": 0.5448597472936747,
+            "Tiger": 0.07177559566987961
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/36"
+      },
+      {
+        "auris": {
+          "coherence": 0.5321375438006134,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.06519414113861122,
+            "Clownfish": 0.5,
+            "Deer": 0.8155613732139508,
+            "Dolphin": 0.39296780491279293,
+            "Falcon": 0.6714890753881358,
+            "Hummingbird": 0.021167518510917322,
+            "Owl": 0.6,
+            "Panda": 0.863273420266399,
+            "Tiger": 0.5812374724262384
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/37"
+      },
+      {
+        "auris": {
+          "coherence": 0.36406928123754456,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.19622904126388618,
+            "Clownfish": 0.5,
+            "Deer": 0.3232726019652381,
+            "Dolphin": 0.007685891371359055,
+            "Falcon": 0.36975012334403573,
+            "Hummingbird": 0.012267507980394124,
+            "Owl": 0.6,
+            "Panda": 0.7604515550513937,
+            "Tiger": 0.41672248808223006
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/38"
+      },
+      {
+        "auris": {
+          "coherence": 0.43241863005052994,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.3274239082684596,
+            "Clownfish": 0.5,
+            "Deer": 0.17249947461991533,
+            "Dolphin": 0.5419932872957737,
+            "Falcon": 0.7794914722591312,
+            "Hummingbird": 0.006668283396637646,
+            "Owl": 0.6,
+            "Panda": 0.5551091028145726,
+            "Tiger": 0.08817456450331616
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/39"
+      },
+      {
+        "auris": {
+          "coherence": 0.3021121128136017,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.07948022345975891,
+            "Clownfish": 0.5,
+            "Deer": 0.5704619330169441,
+            "Dolphin": 0.03733786863918026,
+            "Falcon": 0.28718913010110364,
+            "Hummingbird": 0.006308155083126104,
+            "Owl": 0.6,
+            "Panda": 0.529425135326048,
+            "Tiger": 0.04708021652167674
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/40"
+      },
+      {
+        "auris": {
+          "coherence": 0.5436503129044105,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.882353508919558,
+            "Clownfish": 0.5,
+            "Deer": 0.4851859729847475,
+            "Dolphin": 0.501677275979829,
+            "Falcon": 0.2654535050144545,
+            "Hummingbird": 0.033233530411551714,
+            "Owl": 0.6,
+            "Panda": 0.9147297228777951,
+            "Tiger": 0.6635675566044721
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/41"
+      },
+      {
+        "auris": {
+          "coherence": 0.4776483674771416,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.6290501676880245,
+            "Clownfish": 0.5,
+            "Deer": 0.4494533708372097,
+            "Dolphin": 0.49969292657184494,
+            "Falcon": 0.18885189262616217,
+            "Hummingbird": 0.015261693943094568,
+            "Owl": 0.6,
+            "Panda": 0.8084294219772763,
+            "Tiger": 0.4934870751636422
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/42"
+      },
+      {
+        "auris": {
+          "coherence": 0.3890861199829666,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.6958618929331366,
+            "Clownfish": 0.5,
+            "Deer": 0.3873566291321622,
+            "Dolphin": 0.054980257004860145,
+            "Falcon": 0.664232199186306,
+            "Hummingbird": 0.0066984191686811035,
+            "Owl": 0.6,
+            "Panda": 0.5571331340345651,
+            "Tiger": 0.09141301445530417
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/43"
+      },
+      {
+        "auris": {
+          "coherence": 0.581668108545918,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.468370802711651,
+            "Clownfish": 0.5,
+            "Deer": 0.7680654384770763,
+            "Dolphin": 0.4478812384313925,
+            "Falcon": 0.8172430899447185,
+            "Hummingbird": 0.019943172109434765,
+            "Owl": 0.6,
+            "Panda": 0.8545725763415163,
+            "Tiger": 0.5673161221464261
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/44"
+      },
+      {
+        "auris": {
+          "coherence": 0.40630278136878684,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.8228698421348282,
+            "Clownfish": 0.5,
+            "Deer": 0.22227237036312808,
+            "Dolphin": 0.3254610654074244,
+            "Falcon": 0.32631454539293536,
+            "Hummingbird": 0.008078672598808295,
+            "Owl": 0.6,
+            "Panda": 0.6336518653519221,
+            "Tiger": 0.21384298456307535
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/45"
+      },
+      {
+        "auris": {
+          "coherence": 0.6291306920671489,
+          "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+          "nodes": {
+            "CargoShip": 0.8593061369855771,
+            "Clownfish": 0.5,
+            "Deer": 0.33247352441608635,
+            "Dolphin": 0.9951778985987034,
+            "Falcon": 0.6387621820414024,
+            "Hummingbird": 0.018412300928453793,
+            "Owl": 0.6,
+            "Panda": 0.8420654481665627,
+            "Tiger": 0.5473047170665003
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/46"
+      },
+      {
+        "auris": {
+          "coherence": 0.3786973937959876,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.2703933003109299,
+            "Clownfish": 0.5,
+            "Deer": 0.8033155992342333,
+            "Dolphin": 0.07341030108693941,
+            "Falcon": 0.5533878426526764,
+            "Hummingbird": 0.006357784549493027,
+            "Owl": 0.6,
+            "Panda": 0.5331375176138642,
+            "Tiger": 0.05302002818218261
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/47"
+      },
+      {
+        "auris": {
+          "coherence": 0.5094934394215949,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.26360474783799603,
+            "Clownfish": 0.5,
+            "Deer": 0.061415415486867464,
+            "Dolphin": 0.6365392433818094,
+            "Falcon": 0.1407107356551277,
+            "Hummingbird": 0.290253198856814,
+            "Owl": 0.6,
+            "Panda": 0.9946641965986396,
+            "Tiger": 0.7914627145578234
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/48"
+      },
+      {
+        "auris": {
+          "coherence": 0.46332163070913934,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.5376174960328048,
+            "Clownfish": 0.5,
+            "Deer": 0.04908960864386125,
+            "Dolphin": 0.4283105740134404,
+            "Falcon": 0.8292275302274964,
+            "Hummingbird": 0.00927097054937569,
+            "Owl": 0.6,
+            "Panda": 0.6814092837936994,
+            "Tiger": 0.2902548540699191
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/49"
+      },
+      {
+        "auris": {
+          "coherence": 0.5442306633776685,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.9869842499891085,
+            "Clownfish": 0.5,
+            "Deer": 0.2474345401438225,
+            "Dolphin": 0.9951530488986187,
+            "Falcon": 0.6771454420705763,
+            "Hummingbird": 0.006549073796508267,
+            "Owl": 0.6,
+            "Panda": 0.5469199579642097,
+            "Tiger": 0.07507193274273556
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/50"
+      },
+      {
+        "auris": {
+          "coherence": 0.5254208811714701,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.7322414209069393,
+            "Clownfish": 0.5,
+            "Deer": 0.2322372134721583,
+            "Dolphin": 0.00732743624737292,
+            "Falcon": 0.6078656217403394,
+            "Hummingbird": 0.3498199047383073,
+            "Owl": 0.6,
+            "Panda": 0.9964241586617427,
+            "Tiger": 0.7942786538587884
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/51"
+      },
+      {
+        "auris": {
+          "coherence": 0.654004834889113,
+          "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+          "nodes": {
+            "CargoShip": 0.7724319386996659,
+            "Clownfish": 0.5,
+            "Deer": 0.9927382036943476,
+            "Dolphin": 0.49880485688303916,
+            "Falcon": 0.9311969848853902,
+            "Hummingbird": 0.022918886971933356,
+            "Owl": 0.6,
+            "Panda": 0.8741035911266624,
+            "Tiger": 0.5985657458026598
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": 0.009123190748275008,
+          "points": 1,
+          "valid_points": 1
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/52"
+      },
+      {
+        "auris": {
+          "coherence": 0.5618573159920319,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.030505561897841926,
+            "Clownfish": 0.5,
+            "Deer": 0.8633148590644699,
+            "Dolphin": 0.8464857550923638,
+            "Falcon": 0.1797408611982526,
+            "Hummingbird": 0.03499506493000342,
+            "Owl": 0.6,
+            "Panda": 0.9192736266956341,
+            "Tiger": 0.6708378027130144
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/53"
+      },
+      {
+        "auris": {
+          "coherence": 0.48060521318133853,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.1817412047351893,
+            "Clownfish": 0.5,
+            "Deer": 0.4122410013796227,
+            "Dolphin": 0.8664612428243977,
+            "Falcon": 0.23781331364340696,
+            "Hummingbird": 0.010864869117488265,
+            "Owl": 0.6,
+            "Panda": 0.7288807050909474,
+            "Tiger": 0.3662091281455159
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/54"
+      },
+      {
+        "auris": {
+          "coherence": 0.48515439204457406,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.8422073259570511,
+            "Clownfish": 0.5,
+            "Deer": 0.5226089764627323,
+            "Dolphin": 0.595571893408343,
+            "Falcon": 0.2955159714961584,
+            "Hummingbird": 0.008873006828266678,
+            "Owl": 0.6,
+            "Panda": 0.6668958986436345,
+            "Tiger": 0.26703343782981526
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/55"
+      },
+      {
+        "auris": {
+          "coherence": 0.5082287328034203,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.649465405644233,
+            "Clownfish": 0.5,
+            "Deer": 0.9966469929092465,
+            "Dolphin": 0.2653403678543515,
+            "Falcon": 0.7859891644462824,
+            "Hummingbird": 0.007596858954797487,
+            "Owl": 0.6,
+            "Panda": 0.6100999475111393,
+            "Tiger": 0.17615991601782277
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/56"
+      },
+      {
+        "auris": {
+          "coherence": 0.3900324533157215,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.5935739421379094,
+            "Clownfish": 0.5,
+            "Deer": 0.6735830014366647,
+            "Dolphin": 0.024929067035745267,
+            "Falcon": 0.5987287160144377,
+            "Hummingbird": 0.006435223518128496,
+            "Owl": 0.6,
+            "Panda": 0.5388157265946116,
+            "Tiger": 0.062105162551378705
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/57"
+      },
+      {
+        "auris": {
+          "coherence": 0.5247818925830241,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.34308566441035326,
+            "Clownfish": 0.5,
+            "Deer": 0.8207471756230146,
+            "Dolphin": 0.6642425472918705,
+            "Falcon": 0.17750234859716296,
+            "Hummingbird": 0.017703302717638685,
+            "Owl": 0.6,
+            "Panda": 0.835540094814571,
+            "Tiger": 0.5368641517033136
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/58"
+      },
+      {
+        "auris": {
+          "coherence": 0.3890035056455112,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.5297782793067957,
+            "Clownfish": 0.5,
+            "Deer": 0.6429767950095938,
+            "Dolphin": 0.32742805428776095,
+            "Falcon": 0.23745240476658092,
+            "Hummingbird": 0.006641784141765404,
+            "Owl": 0.6,
+            "Panda": 0.5533141372910394,
+            "Tiger": 0.08530261966566305
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/59"
+      },
+      {
+        "auris": {
+          "coherence": 0.5860674845262185,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.912720516380553,
+            "Clownfish": 0.5,
+            "Deer": 0.6025150461017043,
+            "Dolphin": 0.9975026465399035,
+            "Falcon": 0.6015369801493299,
+            "Hummingbird": 0.007821054352434473,
+            "Owl": 0.6,
+            "Panda": 0.6214200036448814,
+            "Tiger": 0.19427200583181028
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": 0.010339510942745746,
+          "points": 1,
+          "valid_points": 1
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/60"
+      },
+      {
+        "auris": {
+          "coherence": 0.6957185317353176,
+          "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+          "nodes": {
+            "CargoShip": 0.9348902198849065,
+            "Clownfish": 0.5,
+            "Deer": 0.423943768914976,
+            "Dolphin": 0.5210499973538141,
+            "Falcon": 0.9710837015448235,
+            "Hummingbird": 0.4634384822412929,
+            "Owl": 0.6,
+            "Panda": 0.9985266489189863,
+            "Tiger": 0.7976426382703782
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/61"
+      },
+      {
+        "auris": {
+          "coherence": 0.5526220069098329,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.9676483270438316,
+            "Clownfish": 0.5,
+            "Deer": 0.6723265758293113,
+            "Dolphin": 0.3924148979850439,
+            "Falcon": 0.9419730587101429,
+            "Hummingbird": 0.008423964617010683,
+            "Owl": 0.6,
+            "Panda": 0.6488731480493117,
+            "Tiger": 0.2381970368788988
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/62"
+      },
+      {
+        "auris": {
+          "coherence": 0.5524379676356891,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.3307073316251775,
+            "Clownfish": 0.5,
+            "Deer": 0.46926968598134167,
+            "Dolphin": 0.9710566432042842,
+            "Falcon": 0.5253973266843408,
+            "Hummingbird": 0.011208370419246046,
+            "Owl": 0.6,
+            "Panda": 0.7373428930535113,
+            "Tiger": 0.379748628885618
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/63"
+      },
+      {
+        "auris": {
+          "coherence": 0.3980175634942965,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.03433410037001916,
+            "Clownfish": 0.5,
+            "Deer": 0.3665405210327507,
+            "Dolphin": 0.021223562351575298,
+            "Falcon": 0.29514705080410214,
+            "Hummingbird": 0.03345751080414472,
+            "Owl": 0.6,
+            "Panda": 0.915334034783354,
+            "Tiger": 0.6645344556533663
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/64"
+      },
+      {
+        "auris": {
+          "coherence": 0.4210048667204298,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.9812588365414456,
+            "Clownfish": 0.5,
+            "Deer": 0.753050968934813,
+            "Dolphin": 0.0022919792523301563,
+            "Falcon": 0.6230349419834286,
+            "Hummingbird": 0.006233665043178327,
+            "Owl": 0.6,
+            "Panda": 0.5237421879070991,
+            "Tiger": 0.037987500651358634
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/65"
+      },
+      {
+        "auris": {
+          "coherence": 0.6516947812531688,
+          "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+          "nodes": {
+            "CargoShip": 0.5916367653267615,
+            "Clownfish": 0.5,
+            "Deer": 0.6573624412958519,
+            "Dolphin": 0.905150315329756,
+            "Falcon": 0.6670036964029658,
+            "Hummingbird": 0.03188993311592778,
+            "Owl": 0.6,
+            "Panda": 0.9109264254617826,
+            "Tiger": 0.6574822807388522
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/66"
+      },
+      {
+        "auris": {
+          "coherence": 0.6457741506538874,
+          "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+          "nodes": {
+            "CargoShip": 0.19028378214411468,
+            "Clownfish": 0.5,
+            "Deer": 0.6415801168786266,
+            "Dolphin": 0.9391187350146819,
+            "Falcon": 0.518188839328272,
+            "Hummingbird": 0.20268966259598026,
+            "Owl": 0.6,
+            "Panda": 0.9901990478370875,
+            "Tiger": 0.7843184765393398
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/67"
+      },
+      {
+        "auris": {
+          "coherence": 0.5515375021623833,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.0694022010504759,
+            "Clownfish": 0.5,
+            "Deer": 0.9642552496042387,
+            "Dolphin": 0.8515087406175101,
+            "Falcon": 0.5471055449851182,
+            "Hummingbird": 0.009743644972661291,
+            "Owl": 0.6,
+            "Panda": 0.6971070083713644,
+            "Tiger": 0.31537121339418317
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/68"
+      },
+      {
+        "auris": {
+          "coherence": 0.44961892567219097,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.2486176933754749,
+            "Clownfish": 0.5,
+            "Deer": 0.06501133814775595,
+            "Dolphin": 0.5802550924052085,
+            "Falcon": 0.7386655453356635,
+            "Hummingbird": 0.008705151620657926,
+            "Owl": 0.6,
+            "Panda": 0.660376479269954,
+            "Tiger": 0.25660236683192644
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/69"
+      },
+      {
+        "auris": {
+          "coherence": 0.6932710443803423,
+          "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+          "nodes": {
+            "CargoShip": 0.9242782433832093,
+            "Clownfish": 0.5,
+            "Deer": 0.3327553729618916,
+            "Dolphin": 0.9524325716558658,
+            "Falcon": 0.7252635375882085,
+            "Hummingbird": 0.15351089405336873,
+            "Owl": 0.6,
+            "Panda": 0.9854574130161926,
+            "Tiger": 0.7767318608259082
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/70"
+      },
+      {
+        "auris": {
+          "coherence": 0.5732470458462731,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.7274555178355762,
+            "Clownfish": 0.5,
+            "Deer": 0.8139485121729889,
+            "Dolphin": 0.7272173731987963,
+            "Falcon": 0.3233477636873548,
+            "Hummingbird": 0.015489776441671642,
+            "Owl": 0.6,
+            "Panda": 0.811323867145739,
+            "Tiger": 0.49811818743318237
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/71"
+      },
+      {
+        "auris": {
+          "coherence": 0.6390791928709973,
+          "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+          "nodes": {
+            "CargoShip": 0.9502083799057209,
+            "Clownfish": 0.5,
+            "Deer": 0.0240522613230576,
+            "Dolphin": 0.9715618740678293,
+            "Falcon": 0.559551747890074,
+            "Hummingbird": 0.09316790221507575,
+            "Owl": 0.6,
+            "Panda": 0.9728000692440775,
+            "Tiger": 0.756480110790524
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/72"
+      },
+      {
+        "auris": {
+          "coherence": 0.6038819009706703,
+          "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+          "nodes": {
+            "CargoShip": 0.43249309264175284,
+            "Clownfish": 0.5,
+            "Deer": 0.03903988788142698,
+            "Dolphin": 0.9836735225815364,
+            "Falcon": 0.5368449287777772,
+            "Hummingbird": 0.10730892136945473,
+            "Owl": 0.6,
+            "Panda": 0.9770433309578122,
+            "Tiger": 0.7632693295324996
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": 0.005145489915036582,
+          "points": 1,
+          "valid_points": 1
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/73"
+      },
+      {
+        "auris": {
+          "coherence": 0.5674624352606938,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.26162984203452855,
+            "Clownfish": 0.5,
+            "Deer": 0.9292007197314069,
+            "Dolphin": 0.8932838078222556,
+            "Falcon": 0.28018966271663864,
+            "Hummingbird": 0.01472182919570329,
+            "Owl": 0.6,
+            "Panda": 0.8012209749807735,
+            "Tiger": 0.4819535599692376
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": 0.011300865488645444,
+          "points": 1,
+          "valid_points": 1
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/74"
+      },
+      {
+        "auris": {
+          "coherence": 0.5202055921420824,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.5468301859420545,
+            "Clownfish": 0.5,
+            "Deer": 0.24296743354421257,
+            "Dolphin": 0.9999803267719065,
+            "Falcon": 0.5120724621108128,
+            "Hummingbird": 0.008246031516339038,
+            "Owl": 0.6,
+            "Panda": 0.641188632791947,
+            "Tiger": 0.22590181246711527
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/75"
+      },
+      {
+        "auris": {
+          "coherence": 0.49424706454947054,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.30930530205820483,
+            "Clownfish": 0.5,
+            "Deer": 0.9441007438478084,
+            "Dolphin": 0.10085007215807662,
+            "Falcon": 0.2987784744899421,
+            "Hummingbird": 0.04542857771106232,
+            "Owl": 0.6,
+            "Panda": 0.9389622732835532,
+            "Tiger": 0.7023396372536852
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/76"
+      },
+      {
+        "auris": {
+          "coherence": 0.5034509018702396,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.8432815601181672,
+            "Clownfish": 0.5,
+            "Deer": 0.8904884743579039,
+            "Dolphin": 0.23414275506557664,
+            "Falcon": 0.37790090441044555,
+            "Hummingbird": 0.012462076076348349,
+            "Owl": 0.6,
+            "Panda": 0.7642696448311954,
+            "Tiger": 0.4228314317299128
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/77"
+      },
+      {
+        "auris": {
+          "coherence": 0.5383196590023348,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.8162715678400204,
+            "Clownfish": 0.5,
+            "Deer": 0.7096607657298413,
+            "Dolphin": 0.3099194112050301,
+            "Falcon": 0.8579894330922175,
+            "Hummingbird": 0.009965783123520679,
+            "Owl": 0.6,
+            "Panda": 0.7039699692621677,
+            "Tiger": 0.32635195081946833
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/78"
+      },
+      {
+        "auris": {
+          "coherence": 0.559060391443007,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.08758478712502593,
+            "Clownfish": 0.5,
+            "Deer": 0.2622571209223993,
+            "Dolphin": 0.8460314128155186,
+            "Falcon": 0.555966906043646,
+            "Hummingbird": 0.03823170660233769,
+            "Owl": 0.6,
+            "Panda": 0.9265310990115057,
+            "Tiger": 0.6824497584184092
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/79"
+      },
+      {
+        "auris": {
+          "coherence": 0.5079123723057706,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.7621466295661696,
+            "Clownfish": 0.5,
+            "Deer": 0.1636810081643607,
+            "Dolphin": 0.9853081289571559,
+            "Falcon": 0.5244955518314889,
+            "Hummingbird": 0.006998611306002303,
+            "Owl": 0.6,
+            "Panda": 0.5763435324766395,
+            "Tiger": 0.12214965196262312
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": 0.013168610251046107,
+          "points": 1,
+          "valid_points": 1
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/80"
+      },
+      {
+        "auris": {
+          "coherence": 0.5910137102632272,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.9076617176943946,
+            "Clownfish": 0.5,
+            "Deer": 0.9733445437533723,
+            "Dolphin": 0.020488241215318392,
+            "Falcon": 0.6863051153972153,
+            "Hummingbird": 0.08953455465812608,
+            "Owl": 0.6,
+            "Panda": 0.9714933833484174,
+            "Tiger": 0.7543894133574679
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/81"
+      },
+      {
+        "auris": {
+          "coherence": 0.4418796166487507,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.0849614162980934,
+            "Clownfish": 0.5,
+            "Deer": 0.32279117205238483,
+            "Dolphin": 0.5096901153563234,
+            "Falcon": 0.7211699112038383,
+            "Hummingbird": 0.008183501909634206,
+            "Owl": 0.6,
+            "Panda": 0.6384087737588007,
+            "Tiger": 0.221454038014081
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/82"
+      },
+      {
+        "auris": {
+          "coherence": 0.4298849654216226,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.09842896032092152,
+            "Clownfish": 0.5,
+            "Deer": 0.25894295306425297,
+            "Dolphin": 0.7202006021467167,
+            "Falcon": 0.627914034520779,
+            "Hummingbird": 0.0065336582582461245,
+            "Owl": 0.6,
+            "Panda": 0.5458391621625294,
+            "Tiger": 0.07334265946004691
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/83"
+      },
+      {
+        "auris": {
+          "coherence": 0.5234548574636201,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.5709513168971831,
+            "Clownfish": 0.5,
+            "Deer": 0.9263274466376892,
+            "Dolphin": 0.06722041402838458,
+            "Falcon": 0.6381596629413376,
+            "Hummingbird": 0.020798447500188208,
+            "Owl": 0.6,
+            "Panda": 0.8607584646655548,
+            "Tiger": 0.5772135434648877
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/84"
+      },
+      {
+        "auris": {
+          "coherence": 0.44201913247256985,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.0702842956401577,
+            "Clownfish": 0.5,
+            "Deer": 0.13417614217628426,
+            "Dolphin": 0.35646182181844915,
+            "Falcon": 0.6562069458652472,
+            "Hummingbird": 0.015014790181133018,
+            "Owl": 0.6,
+            "Panda": 0.8051970081626796,
+            "Tiger": 0.48831521306028725
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/85"
+      },
+      {
+        "auris": {
+          "coherence": 0.6747439247333366,
+          "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+          "nodes": {
+            "CargoShip": 0.2889991544911319,
+            "Clownfish": 0.5,
+            "Deer": 0.8029318213226005,
+            "Dolphin": 0.8233553541969285,
+            "Falcon": 0.6300006240855572,
+            "Hummingbird": 0.3096182233582408,
+            "Owl": 0.6,
+            "Panda": 0.9953106478441067,
+            "Tiger": 0.7924970365505709
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/86"
+      },
+      {
+        "auris": {
+          "coherence": 0.35874856389356286,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.2855712918573843,
+            "Clownfish": 0.5,
+            "Deer": 0.0013306048654668778,
+            "Dolphin": 0.43478317621494045,
+            "Falcon": 0.1148172559041525,
+            "Hummingbird": 0.010052186880236857,
+            "Owl": 0.6,
+            "Panda": 0.7065574784131639,
+            "Tiger": 0.3304919654610621
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/87"
+      },
+      {
+        "auris": {
+          "coherence": 0.3648543698420898,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.047574494654680555,
+            "Clownfish": 0.5,
+            "Deer": 0.9541436204025137,
+            "Dolphin": 0.12785705379227696,
+            "Falcon": 0.2013193449474459,
+            "Hummingbird": 0.007632318475334969,
+            "Owl": 0.6,
+            "Panda": 0.6119346411978261,
+            "Tiger": 0.17909542591652183
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/88"
+      },
+      {
+        "auris": {
+          "coherence": 0.4358706122006711,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.5555221842757145,
+            "Clownfish": 0.5,
+            "Deer": 0.6496499028268381,
+            "Dolphin": 0.22276258570884577,
+            "Falcon": 0.7357000723572148,
+            "Hummingbird": 0.006543820122601142,
+            "Owl": 0.6,
+            "Panda": 0.5465521906480045,
+            "Tiger": 0.07448350503680726
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/89"
+      },
+      {
+        "auris": {
+          "coherence": 0.41796734028093663,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.6316406038305448,
+            "Clownfish": 0.5,
+            "Deer": 0.2825166736148643,
+            "Dolphin": 0.24299008703711744,
+            "Falcon": 0.3097831416347142,
+            "Hummingbird": 0.011665621547325497,
+            "Owl": 0.6,
+            "Panda": 0.7478341055099811,
+            "Tiger": 0.39653456881596977
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/90"
+      },
+      {
+        "auris": {
+          "coherence": 0.45069443965276035,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.6655342917031117,
+            "Clownfish": 0.5,
+            "Deer": 0.6850589627169107,
+            "Dolphin": 0.5268748579745032,
+            "Falcon": 0.211642407871684,
+            "Hummingbird": 0.0077278697900060814,
+            "Owl": 0.6,
+            "Panda": 0.6167947013186361,
+            "Tiger": 0.1868715221098178
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/91"
+      },
+      {
+        "auris": {
+          "coherence": 0.3389933944597268,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.1162146187315598,
+            "Clownfish": 0.5,
+            "Deer": 0.26635358941303056,
+            "Dolphin": 0.581492380123024,
+            "Falcon": 0.07134288304784146,
+            "Hummingbird": 0.006501356204096619,
+            "Owl": 0.6,
+            "Panda": 0.5435578168890904,
+            "Tiger": 0.0696925070225447
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/92"
+      },
+      {
+        "auris": {
+          "coherence": 0.44701246213296986,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.29579592465242477,
+            "Clownfish": 0.5,
+            "Deer": 0.1426841397213351,
+            "Dolphin": 0.8030134649827996,
+            "Falcon": 0.6436724292396967,
+            "Hummingbird": 0.006466216106949885,
+            "Owl": 0.6,
+            "Panda": 0.5410501488999723,
+            "Tiger": 0.06568023823995564
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/93"
+      },
+      {
+        "auris": {
+          "coherence": 0.7116420414899841,
+          "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+          "nodes": {
+            "CargoShip": 0.9245485729217037,
+            "Clownfish": 0.5,
+            "Deer": 0.9654411519185331,
+            "Dolphin": 0.9836780303965416,
+            "Falcon": 0.6844536465345178,
+            "Hummingbird": 0.025078830445583192,
+            "Owl": 0.6,
+            "Panda": 0.8853771967552677,
+            "Tiger": 0.6166035148084283
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/94"
+      },
+      {
+        "auris": {
+          "coherence": 0.57065944833026,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.8827055277372756,
+            "Clownfish": 0.5,
+            "Deer": 0.9025402145604837,
+            "Dolphin": 0.7271589570119659,
+            "Falcon": 0.3698935435522204,
+            "Hummingbird": 0.010526983479830934,
+            "Owl": 0.6,
+            "Panda": 0.7200180765698152,
+            "Tiger": 0.35202892251170426
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/95"
+      },
+      {
+        "auris": {
+          "coherence": 0.5890926339369665,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.31637164840894005,
+            "Clownfish": 0.5,
+            "Deer": 0.4975451777129287,
+            "Dolphin": 0.48535989459868456,
+            "Falcon": 0.7883864355428749,
+            "Hummingbird": 0.09172193398275741,
+            "Owl": 0.6,
+            "Panda": 0.9722924471853813,
+            "Tiger": 0.7556679154966103
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/96"
+      },
+      {
+        "auris": {
+          "coherence": 0.6494235691540801,
+          "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+          "nodes": {
+            "CargoShip": 0.5969720431554424,
+            "Clownfish": 0.5,
+            "Deer": 0.8171899107989032,
+            "Dolphin": 0.5864120627063345,
+            "Falcon": 0.8403891556357268,
+            "Hummingbird": 0.0472317937564331,
+            "Owl": 0.6,
+            "Panda": 0.9414834624856612,
+            "Tiger": 0.7063735399770579
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": 0.00063834738650021,
+          "points": 1,
+          "valid_points": 1
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/97"
+      },
+      {
+        "auris": {
+          "coherence": 0.5293365459767048,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.35274557556062436,
+            "Clownfish": 0.5,
+            "Deer": 0.7821513107623583,
+            "Dolphin": 0.27563816364025184,
+            "Falcon": 0.7021387954785075,
+            "Hummingbird": 0.018606833156533897,
+            "Owl": 0.6,
+            "Panda": 0.8437689095311454,
+            "Tiger": 0.5500302552498327
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/98"
+      },
+      {
+        "auris": {
+          "coherence": 0.4030783874343472,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.6084031339453778,
+            "Clownfish": 0.5,
+            "Deer": 0.27778528798568203,
+            "Dolphin": 0.00019287678235430095,
+            "Falcon": 0.5263317746118488,
+            "Hummingbird": 0.011414871865080842,
+            "Owl": 0.6,
+            "Panda": 0.7421849605095192,
+            "Tiger": 0.38749593681523065
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/99"
+      },
+      {
+        "auris": {
+          "coherence": 0.5185416644340438,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.2676860797695929,
+            "Clownfish": 0.5,
+            "Deer": 0.8419136856408739,
+            "Dolphin": 0.29878957606782625,
+            "Falcon": 0.6880240272690299,
+            "Hummingbird": 0.015018520070594878,
+            "Owl": 0.6,
+            "Panda": 0.8052466297678842,
+            "Tiger": 0.4883946076286148
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/100"
+      },
+      {
+        "auris": {
+          "coherence": 0.43344659071233044,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.2393399904799569,
+            "Clownfish": 0.5,
+            "Deer": 0.3756386299778489,
+            "Dolphin": 0.32093261805190654,
+            "Falcon": 0.6901909820491133,
+            "Hummingbird": 0.00888564989134774,
+            "Owl": 0.6,
+            "Panda": 0.667376974483183,
+            "Tiger": 0.26780315917309283
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": 0.007156867296627297,
+          "points": 1,
+          "valid_points": 1
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/101"
+      },
+      {
+        "auris": {
+          "coherence": 0.42718603255781046,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.8220295325421293,
+            "Clownfish": 0.5,
+            "Deer": 0.1615980742504015,
+            "Dolphin": 0.6670617201795526,
+            "Falcon": 0.32251702942396243,
+            "Hummingbird": 0.0065416584674353895,
+            "Owl": 0.6,
+            "Panda": 0.5464006990835569,
+            "Tiger": 0.07424111853369109
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": 0.01115717560798267,
+          "points": 1,
+          "valid_points": 1
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/102"
+      },
+      {
+        "auris": {
+          "coherence": 0.49766874710869363,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.7742486772694802,
+            "Clownfish": 0.5,
+            "Deer": 0.4172325439886371,
+            "Dolphin": 0.6274730723317439,
+            "Falcon": 0.28971502426779205,
+            "Hummingbird": 0.011415372309863446,
+            "Owl": 0.6,
+            "Panda": 0.7421964822025251,
+            "Tiger": 0.38751437152404017
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/103"
+      },
+      {
+        "auris": {
+          "coherence": 0.4514038501724654,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.5913381233691568,
+            "Clownfish": 0.5,
+            "Deer": 0.595514484397434,
+            "Dolphin": 0.4994442204514696,
+            "Falcon": 0.17764911123652033,
+            "Hummingbird": 0.009601697654707777,
+            "Owl": 0.6,
+            "Panda": 0.6925552524267331,
+            "Tiger": 0.3080884038827731
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/104"
+      },
+      {
+        "auris": {
+          "coherence": 0.3868158141337098,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.5176831155146459,
+            "Clownfish": 0.5,
+            "Deer": 0.07302650673907085,
+            "Dolphin": 0.11247650950307442,
+            "Falcon": 0.6577132426615434,
+            "Hummingbird": 0.008762805633942305,
+            "Owl": 0.6,
+            "Panda": 0.6626438956514515,
+            "Tiger": 0.26023023304232257
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/105"
+      },
+      {
+        "auris": {
+          "coherence": 0.4298010810843649,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.9224338218777824,
+            "Clownfish": 0.5,
+            "Deer": 0.0022054375827703643,
+            "Dolphin": 0.10382245090586223,
+            "Falcon": 0.48053182924307164,
+            "Hummingbird": 0.01491307652352019,
+            "Owl": 0.6,
+            "Panda": 0.8038342649976654,
+            "Tiger": 0.4861348239962647
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/106"
+      },
+      {
+        "auris": {
+          "coherence": 0.5312273606781049,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.8139868320486913,
+            "Clownfish": 0.5,
+            "Deer": 0.8249711934138338,
+            "Dolphin": 0.46674337056628623,
+            "Falcon": 0.9293648207810199,
+            "Hummingbird": 0.006394363497526286,
+            "Owl": 0.6,
+            "Panda": 0.535836806327858,
+            "Tiger": 0.05733889012457292
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/107"
+      },
+      {
+        "auris": {
+          "coherence": 0.3592386323572151,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.5575874592082123,
+            "Clownfish": 0.5,
+            "Deer": 0.5328554175460484,
+            "Dolphin": 0.06384221150944741,
+            "Falcon": 0.4034439866662045,
+            "Hummingbird": 0.006606947210626817,
+            "Owl": 0.6,
+            "Panda": 0.5509325003876666,
+            "Tiger": 0.0814920006202665
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/108"
+      },
+      {
+        "auris": {
+          "coherence": 0.386311131505987,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.6867317732372827,
+            "Clownfish": 0.5,
+            "Deer": 0.6587181386185083,
+            "Dolphin": 0.05005621490526713,
+            "Falcon": 0.4554656705344339,
+            "Hummingbird": 0.00666626334806139,
+            "Owl": 0.6,
+            "Panda": 0.554972774347052,
+            "Tiger": 0.08795643895528311
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/109"
+      },
+      {
+        "auris": {
+          "coherence": 0.5086127785442396,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.21046452265617366,
+            "Clownfish": 0.5,
+            "Deer": 0.5964292605561051,
+            "Dolphin": 0.7590553151215402,
+            "Falcon": 0.6417842401166874,
+            "Hummingbird": 0.008347786882502303,
+            "Owl": 0.6,
+            "Panda": 0.6456233122352149,
+            "Tiger": 0.23299729957634369
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/110"
+      },
+      {
+        "auris": {
+          "coherence": 0.39554463546980323,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.6390211003709135,
+            "Clownfish": 0.5,
+            "Deer": 0.1698883440889294,
+            "Dolphin": 0.10428622570071161,
+            "Falcon": 0.6882430897257169,
+            "Hummingbird": 0.007868630457315702,
+            "Owl": 0.6,
+            "Panda": 0.6237392435985083,
+            "Tiger": 0.19798278975761338
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": 0.007211405982959562,
+          "points": 1,
+          "valid_points": 1
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/111"
+      },
+      {
+        "auris": {
+          "coherence": 0.5930020455267714,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.6170947448182182,
+            "Clownfish": 0.5,
+            "Deer": 0.016447202673025574,
+            "Dolphin": 0.999927022324605,
+            "Falcon": 0.5389353847116388,
+            "Hummingbird": 0.03332996943723373,
+            "Owl": 0.6,
+            "Panda": 0.914990916563859,
+            "Tiger": 0.6639854665021745
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": 0.010990484518820811,
+          "points": 1,
+          "valid_points": 1
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/112"
+      },
+      {
+        "auris": {
+          "coherence": 0.39286145477863876,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.07966006755967237,
+            "Clownfish": 0.5,
+            "Deer": 0.44320604345029224,
+            "Dolphin": 0.283991536841415,
+            "Falcon": 0.12343657207459739,
+            "Hummingbird": 0.014922484251138724,
+            "Owl": 0.6,
+            "Panda": 0.8039610878784428,
+            "Tiger": 0.4863377406055085
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/113"
+      },
+      {
+        "auris": {
+          "coherence": 0.6015065632619051,
+          "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+          "nodes": {
+            "CargoShip": 0.2629931865738341,
+            "Clownfish": 0.5,
+            "Deer": 0.48311290330830303,
+            "Dolphin": 0.9980864289175921,
+            "Falcon": 0.4483981561160708,
+            "Hummingbird": 0.035811183208966174,
+            "Owl": 0.6,
+            "Panda": 0.9212272862503779,
+            "Tiger": 0.6739636580006045
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/114"
+      },
+      {
+        "auris": {
+          "coherence": 0.4681779563786435,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.6287797867594327,
+            "Clownfish": 0.5,
+            "Deer": 0.1746023634352073,
+            "Dolphin": 0.2815720466601822,
+            "Falcon": 0.7878983087169933,
+            "Hummingbird": 0.01086648850394785,
+            "Owl": 0.6,
+            "Panda": 0.7289218539724139,
+            "Tiger": 0.3662749663558623
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/115"
+      },
+      {
+        "auris": {
+          "coherence": 0.5696836772707216,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.2851853733343429,
+            "Clownfish": 0.5,
+            "Deer": 0.04796806094553607,
+            "Dolphin": 0.9998934444514216,
+            "Falcon": 0.4401557823104636,
+            "Hummingbird": 0.050156192785982864,
+            "Owl": 0.6,
+            "Panda": 0.945186847658054,
+            "Tiger": 0.7122989562528866
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/116"
+      },
+      {
+        "auris": {
+          "coherence": 0.4604069107765293,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.1474305345310556,
+            "Clownfish": 0.5,
+            "Deer": 0.5728582917030766,
+            "Dolphin": 0.06529720689808921,
+            "Falcon": 0.5093805677734453,
+            "Hummingbird": 0.03400861082918809,
+            "Owl": 0.6,
+            "Panda": 0.9167870466668626,
+            "Tiger": 0.6668592746669803
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/117"
+      },
+      {
+        "auris": {
+          "coherence": 0.39224158358871203,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.7860047852735736,
+            "Clownfish": 0.5,
+            "Deer": 0.09401158815409294,
+            "Dolphin": 0.03305656248135047,
+            "Falcon": 0.5043255174271087,
+            "Hummingbird": 0.010283433334212848,
+            "Owl": 0.6,
+            "Panda": 0.7132686392278114,
+            "Tiger": 0.3412298227644981
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/118"
+      },
+      {
+        "auris": {
+          "coherence": 0.403917483936689,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.42876200347650506,
+            "Clownfish": 0.5,
+            "Deer": 0.07261071703674193,
+            "Dolphin": 0.664516724299703,
+            "Falcon": 0.20333462428542554,
+            "Hummingbird": 0.008284364505804345,
+            "Owl": 0.6,
+            "Panda": 0.6428720422190399,
+            "Tiger": 0.228595267550464
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/119"
+      },
+      {
+        "auris": {
+          "coherence": 0.4781531734485541,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.46626388145537767,
+            "Clownfish": 0.5,
+            "Deer": 0.4004232164289263,
+            "Dolphin": 0.07921649457266738,
+            "Falcon": 0.6170226381505691,
+            "Hummingbird": 0.028887139551473904,
+            "Owl": 0.6,
+            "Panda": 0.9011475574743457,
+            "Tiger": 0.6418360919589531
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/120"
+      },
+      {
+        "auris": {
+          "coherence": 0.4659312736767932,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.4905506507678462,
+            "Clownfish": 0.5,
+            "Deer": 0.5167076057668326,
+            "Dolphin": 0.3512469886172246,
+            "Falcon": 0.7798568100250783,
+            "Hummingbird": 0.007730186255918751,
+            "Owl": 0.6,
+            "Panda": 0.6169110328418028,
+            "Tiger": 0.18705765254688445
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/121"
+      },
+      {
+        "auris": {
+          "coherence": 0.6300236614124028,
+          "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+          "nodes": {
+            "CargoShip": 0.7147591754533028,
+            "Clownfish": 0.5,
+            "Deer": 0.9576895587685094,
+            "Dolphin": 0.6295002961198619,
+            "Falcon": 0.2728029657822448,
+            "Hummingbird": 0.16285190625890353,
+            "Owl": 0.6,
+            "Panda": 0.9865783550287058,
+            "Tiger": 0.7785253680459294
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/122"
+      },
+      {
+        "auris": {
+          "coherence": 0.39730965780623717,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.605125428374265,
+            "Clownfish": 0.5,
+            "Deer": 0.36690459694276956,
+            "Dolphin": 0.01918167785360375,
+            "Falcon": 0.46961922568323156,
+            "Hummingbird": 0.010183507016911375,
+            "Owl": 0.6,
+            "Panda": 0.7104060064948146,
+            "Tiger": 0.3366496103917033
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/123"
+      },
+      {
+        "auris": {
+          "coherence": 0.45339663530946545,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.4260294366640368,
+            "Clownfish": 0.5,
+            "Deer": 0.20560200286636243,
+            "Dolphin": 0.0816921261482847,
+            "Falcon": 0.34863727736143013,
+            "Hummingbird": 0.10979847389451515,
+            "Owl": 0.6,
+            "Panda": 0.9776772158702121,
+            "Tiger": 0.7642835453923392
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/124"
+      },
+      {
+        "auris": {
+          "coherence": 0.4205688939573392,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.09766056222104469,
+            "Clownfish": 0.5,
+            "Deer": 0.9458413502695855,
+            "Dolphin": 0.24170764621229812,
+            "Falcon": 0.60834035426632,
+            "Hummingbird": 0.006709583953305727,
+            "Owl": 0.6,
+            "Panda": 0.5578783869643753,
+            "Tiger": 0.09260541914300058
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/125"
+      },
+      {
+        "auris": {
+          "coherence": 0.40746857122532243,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.6233163036117528,
+            "Clownfish": 0.5,
+            "Deer": 0.6481985640292046,
+            "Dolphin": 0.44324815480246516,
+            "Falcon": 0.21234005445684528,
+            "Hummingbird": 0.006453566230222719,
+            "Owl": 0.6,
+            "Panda": 0.5401407434310213,
+            "Tiger": 0.064225189489634
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/126"
+      },
+      {
+        "auris": {
+          "coherence": 0.48082725162259526,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.02523608374902009,
+            "Clownfish": 0.5,
+            "Deer": 0.12623775628577139,
+            "Dolphin": 0.9264226676753666,
+            "Falcon": 0.2351583473308308,
+            "Hummingbird": 0.016633180084329215,
+            "Owl": 0.6,
+            "Panda": 0.8246376168122884,
+            "Tiger": 0.5194201868996614
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/127"
+      },
+      {
+        "auris": {
+          "coherence": 0.39181874763860686,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.8557341527324098,
+            "Clownfish": 0.5,
+            "Deer": 0.3418387458380229,
+            "Dolphin": 0.15525331787960517,
+            "Falcon": 0.42623698103996577,
+            "Hummingbird": 0.007195959559139489,
+            "Owl": 0.6,
+            "Panda": 0.5880993802362686,
+            "Tiger": 0.14095900837802988
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/128"
+      },
+      {
+        "auris": {
+          "coherence": 0.39269096169170387,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.05899675251485581,
+            "Clownfish": 0.5,
+            "Deer": 0.06822014810823018,
+            "Dolphin": 0.9183260958077655,
+            "Falcon": 0.2385422966480675,
+            "Hummingbird": 0.006612641953288301,
+            "Owl": 0.6,
+            "Panda": 0.5513235388832485,
+            "Tiger": 0.08211766221319756
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/129"
+      },
+      {
+        "auris": {
+          "coherence": 0.44248302381145604,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.3609746765070524,
+            "Clownfish": 0.5,
+            "Deer": 0.15454397611589354,
+            "Dolphin": 0.9024132863935999,
+            "Falcon": 0.3167116078547386,
+            "Hummingbird": 0.007237053947650271,
+            "Owl": 0.6,
+            "Panda": 0.5904666799915121,
+            "Tiger": 0.14474668798641943
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/130"
+      },
+      {
+        "auris": {
+          "coherence": 0.6513760973599556,
+          "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+          "nodes": {
+            "CargoShip": 0.4114215311499889,
+            "Clownfish": 0.5,
+            "Deer": 0.7196950108130158,
+            "Dolphin": 0.9957433264881855,
+            "Falcon": 0.5025216979939711,
+            "Hummingbird": 0.0537688387078643,
+            "Owl": 0.6,
+            "Panda": 0.9492056017557021,
+            "Tiger": 0.7187289628091235
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/131"
+      },
+      {
+        "auris": {
+          "coherence": 0.47015914822796445,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.4535683900573477,
+            "Clownfish": 0.5,
+            "Deer": 0.01884104123556929,
+            "Dolphin": 0.7660250532625889,
+            "Falcon": 0.7110657723575541,
+            "Hummingbird": 0.007559910092610481,
+            "Owl": 0.6,
+            "Panda": 0.6081698838677482,
+            "Tiger": 0.1730718141883971
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/132"
+      },
+      {
+        "auris": {
+          "coherence": 0.2904402269548169,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.14385902147194707,
+            "Clownfish": 0.5,
+            "Deer": 0.012118455175922693,
+            "Dolphin": 0.37010894866760025,
+            "Falcon": 0.10171322477210734,
+            "Hummingbird": 0.006643958946310725,
+            "Owl": 0.6,
+            "Panda": 0.5534619901714102,
+            "Tiger": 0.0855391842742562
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/133"
+      },
+      {
+        "auris": {
+          "coherence": 0.4500688121341449,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.35676988613064253,
+            "Clownfish": 0.5,
+            "Deer": 0.31941081371215885,
+            "Dolphin": 0.5346144633607974,
+            "Falcon": 0.12246869012867771,
+            "Hummingbird": 0.01743871286670061,
+            "Owl": 0.6,
+            "Panda": 0.8329689548803496,
+            "Tiger": 0.5327503278085595
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/134"
+      },
+      {
+        "auris": {
+          "coherence": 0.40980469796577285,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.19112890893034573,
+            "Clownfish": 0.5,
+            "Deer": 0.14968293646600517,
+            "Dolphin": 0.08110095842891663,
+            "Falcon": 0.536028508685982,
+            "Hummingbird": 0.020190383559662264,
+            "Owl": 0.6,
+            "Panda": 0.8564144126516939,
+            "Tiger": 0.5702630602427103
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/135"
+      },
+      {
+        "auris": {
+          "coherence": 0.5046491051599054,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.7769561303701874,
+            "Clownfish": 0.5,
+            "Deer": 0.4737422004753872,
+            "Dolphin": 0.006621070251617567,
+            "Falcon": 0.6193881808818598,
+            "Hummingbird": 0.03724842323559393,
+            "Owl": 0.6,
+            "Panda": 0.9244596780372369,
+            "Tiger": 0.6791354848595792
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/136"
+      },
+      {
+        "auris": {
+          "coherence": 0.4830741287274217,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.0331913273753176,
+            "Clownfish": 0.5,
+            "Deer": 0.5268228468198207,
+            "Dolphin": 0.9130404866423272,
+            "Falcon": 0.4933531357147396,
+            "Hummingbird": 0.00756320933502852,
+            "Owl": 0.6,
+            "Panda": 0.6083429901106013,
+            "Tiger": 0.17334878417696215
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/137"
+      },
+      {
+        "auris": {
+          "coherence": 0.34856633182551433,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.014553148784497871,
+            "Clownfish": 0.5,
+            "Deer": 0.27651590118513014,
+            "Dolphin": 0.05365145886211503,
+            "Falcon": 0.2501987207644016,
+            "Hummingbird": 0.014164340800087369,
+            "Owl": 0.6,
+            "Panda": 0.7932005211296882,
+            "Tiger": 0.46912083380750125
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/138"
+      },
+      {
+        "auris": {
+          "coherence": 0.46387364583944,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.45371502988844403,
+            "Clownfish": 0.5,
+            "Deer": 0.008386031975480712,
+            "Dolphin": 0.06365365970488784,
+            "Falcon": 0.5997747913194604,
+            "Hummingbird": 0.09936822825803598,
+            "Owl": 0.6,
+            "Panda": 0.9748092634578358,
+            "Tiger": 0.7596948215325373
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/139"
+      },
+      {
+        "auris": {
+          "coherence": 0.4434497588480616,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.5853143973883641,
+            "Clownfish": 0.5,
+            "Deer": 0.1549650403313514,
+            "Dolphin": 0.078335097528544,
+            "Falcon": 0.39917987030079544,
+            "Hummingbird": 0.03673623691354739,
+            "Owl": 0.6,
+            "Panda": 0.9233367635868639,
+            "Tiger": 0.6773388217389822
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/140"
+      },
+      {
+        "auris": {
+          "coherence": 0.6779325116585984,
+          "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+          "nodes": {
+            "CargoShip": 0.8555583920584339,
+            "Clownfish": 0.5,
+            "Deer": 0.6048423120726234,
+            "Dolphin": 0.5790805524060558,
+            "Falcon": 0.9212779432820756,
+            "Hummingbird": 0.13887644635815202,
+            "Owl": 0.6,
+            "Panda": 0.9833980647642493,
+            "Tiger": 0.773436903622799
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/141"
+      },
+      {
+        "auris": {
+          "coherence": 0.515230808743118,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.8705938706678391,
+            "Clownfish": 0.5,
+            "Deer": 0.13366905442161037,
+            "Dolphin": 0.6165753130157603,
+            "Falcon": 0.9087456974173895,
+            "Hummingbird": 0.007692058576570369,
+            "Owl": 0.6,
+            "Panda": 0.6149873694230759,
+            "Tiger": 0.18397979107692147
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/142"
+      },
+      {
+        "auris": {
+          "coherence": 0.6236919490647173,
+          "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+          "nodes": {
+            "CargoShip": 0.31128801383510774,
+            "Clownfish": 0.5,
+            "Deer": 0.9346779677189961,
+            "Dolphin": 0.4203182476392574,
+            "Falcon": 0.7577254730900219,
+            "Hummingbird": 0.14149829509387393,
+            "Owl": 0.6,
+            "Panda": 0.9837983311176314,
+            "Tiger": 0.7740773297882102
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": 0.004495996338713543,
+          "points": 1,
+          "valid_points": 1
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/143"
+      },
+      {
+        "auris": {
+          "coherence": 0.4353671368456385,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.9360105035571682,
+            "Clownfish": 0.5,
+            "Deer": 0.30756958889263497,
+            "Dolphin": 0.07540856652410427,
+            "Falcon": 0.7547696338977649,
+            "Hummingbird": 0.007939980484215443,
+            "Owl": 0.6,
+            "Panda": 0.6271653181687344,
+            "Tiger": 0.20346450906997512
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": 0.010414240448793119,
+          "points": 1,
+          "valid_points": 1
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/144"
+      },
+      {
+        "auris": {
+          "coherence": 0.5920263200384277,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.4292854947493834,
+            "Clownfish": 0.5,
+            "Deer": 0.13499244589800208,
+            "Dolphin": 0.8010093290403184,
+            "Falcon": 0.6848399405397324,
+            "Hummingbird": 0.06044863749955981,
+            "Owl": 0.6,
+            "Panda": 0.9553710898360307,
+            "Tiger": 0.7285937437376492
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": 0.00897673376590141,
+          "points": 1,
+          "valid_points": 1
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/145"
+      },
+      {
+        "auris": {
+          "coherence": 0.4801496013489302,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.2182566178623604,
+            "Clownfish": 0.5,
+            "Deer": 0.033943935707696715,
+            "Dolphin": 0.9714383385652456,
+            "Falcon": 0.49115317492224847,
+            "Hummingbird": 0.009155259112461839,
+            "Owl": 0.6,
+            "Panda": 0.677319487286111,
+            "Tiger": 0.28371117965777765
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/146"
+      },
+      {
+        "auris": {
+          "coherence": 0.37213682402111065,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.29802552569342167,
+            "Clownfish": 0.5,
+            "Deer": 0.894811602598927,
+            "Dolphin": 0.06875363401512702,
+            "Falcon": 0.32117621672091756,
+            "Hummingbird": 0.006975230679822263,
+            "Owl": 0.6,
+            "Panda": 0.57490669732568,
+            "Tiger": 0.11985071572108792
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/147"
+      },
+      {
+        "auris": {
+          "coherence": 0.4696344242516599,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.2273170851603935,
+            "Clownfish": 0.5,
+            "Deer": 0.4786291037599163,
+            "Dolphin": 0.8331127620981497,
+            "Falcon": 0.6057312968780926,
+            "Hummingbird": 0.006284151369134284,
+            "Owl": 0.6,
+            "Panda": 0.5276085713442504,
+            "Tiger": 0.044173714150800784
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/148"
+      },
+      {
+        "auris": {
+          "coherence": 0.6077572549921334,
+          "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+          "nodes": {
+            "CargoShip": 0.07354381375528851,
+            "Clownfish": 0.5,
+            "Deer": 0.8897758870531822,
+            "Dolphin": 0.7903582955135167,
+            "Falcon": 0.5840038566715404,
+            "Hummingbird": 0.03275243952360786,
+            "Owl": 0.6,
+            "Panda": 0.9134037695012731,
+            "Tiger": 0.6614460312020369
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/149"
+      },
+      {
+        "auris": {
+          "coherence": 0.3541872729393642,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.5064294991748085,
+            "Clownfish": 0.5,
+            "Deer": 0.6563193113657105,
+            "Dolphin": 0.0058957850041904125,
+            "Falcon": 0.46767758137183646,
+            "Hummingbird": 0.006084624913737742,
+            "Owl": 0.6,
+            "Panda": 0.5119539959272328,
+            "Tiger": 0.01912639348357246
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/150"
+      },
+      {
+        "auris": {
+          "coherence": 0.512108679035136,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.3184571129870507,
+            "Clownfish": 0.5,
+            "Deer": 0.1312395117987677,
+            "Dolphin": 0.9937035129615133,
+            "Falcon": 0.4101386932906521,
+            "Hummingbird": 0.011715636464841627,
+            "Owl": 0.6,
+            "Panda": 0.7489319657107033,
+            "Tiger": 0.3982911451371253
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/151"
+      },
+      {
+        "auris": {
+          "coherence": 0.532139463787401,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.4144130772228337,
+            "Clownfish": 0.5,
+            "Deer": 0.7341455530744841,
+            "Dolphin": 0.6824363601657519,
+            "Falcon": 0.7411026735270844,
+            "Hummingbird": 0.00798632553981434,
+            "Owl": 0.6,
+            "Panda": 0.62935791215321,
+            "Tiger": 0.20697265944513613
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/152"
+      },
+      {
+        "auris": {
+          "coherence": 0.3669091152579864,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.01733090382325042,
+            "Clownfish": 0.5,
+            "Deer": 0.5787790029983525,
+            "Dolphin": 0.44053825422480175,
+            "Falcon": 0.03176029787428284,
+            "Hummingbird": 0.008466419816160637,
+            "Owl": 0.6,
+            "Panda": 0.6506589603230373,
+            "Tiger": 0.24105433651685965
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/153"
+      },
+      {
+        "auris": {
+          "coherence": 0.5070533201097248,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.9414820513726346,
+            "Clownfish": 0.5,
+            "Deer": 0.19628679393902837,
+            "Dolphin": 0.4190162584516229,
+            "Falcon": 0.3186933938714246,
+            "Hummingbird": 0.026725956511922354,
+            "Owl": 0.6,
+            "Panda": 0.8927495741392188,
+            "Tiger": 0.6283993186227503
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/154"
+      },
+      {
+        "auris": {
+          "coherence": 0.4720902477974562,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.7750906398425597,
+            "Clownfish": 0.5,
+            "Deer": 0.4945486826592612,
+            "Dolphin": 0.03447559052717436,
+            "Falcon": 0.4993006970735935,
+            "Hummingbird": 0.019600998928346026,
+            "Owl": 0.6,
+            "Panda": 0.8519465759899847,
+            "Tiger": 0.5631145215839756
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/155"
+      },
+      {
+        "auris": {
+          "coherence": 0.510594475113164,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.8214099136192279,
+            "Clownfish": 0.5,
+            "Deer": 0.3026319506391485,
+            "Dolphin": 0.4154323148850328,
+            "Falcon": 0.9085547183672769,
+            "Hummingbird": 0.008773336450442972,
+            "Owl": 0.6,
+            "Panda": 0.6630548327371479,
+            "Tiger": 0.26088773237943663
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/156"
+      },
+      {
+        "auris": {
+          "coherence": 0.5553532824867117,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.20269864218690048,
+            "Clownfish": 0.5,
+            "Deer": 0.531280506993803,
+            "Dolphin": 0.9997418076336615,
+            "Falcon": 0.4179705082098448,
+            "Hummingbird": 0.013789942152393212,
+            "Owl": 0.6,
+            "Panda": 0.7874501388876851,
+            "Tiger": 0.4599202222202962
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/157"
+      },
+      {
+        "auris": {
+          "coherence": 0.367388357414879,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.9123403209015786,
+            "Clownfish": 0.5,
+            "Deer": 0.26458710360243254,
+            "Dolphin": 0.0629767835640479,
+            "Falcon": 0.5106611238773796,
+            "Hummingbird": 0.006334628041886548,
+            "Owl": 0.6,
+            "Panda": 0.531412603839869,
+            "Tiger": 0.0502601661437903
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/158"
+      },
+      {
+        "auris": {
+          "coherence": 0.4960168751584094,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.36084393419041483,
+            "Clownfish": 0.5,
+            "Deer": 0.17988940256338926,
+            "Dolphin": 0.280233284455897,
+            "Falcon": 0.7068538402649428,
+            "Hummingbird": 0.032093791169983184,
+            "Owl": 0.6,
+            "Panda": 0.9115239758023399,
+            "Tiger": 0.6584383612837438
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/159"
+      },
+      {
+        "auris": {
+          "coherence": 0.4371970725944834,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.2745973467475733,
+            "Clownfish": 0.5,
+            "Deer": 0.26435340745993674,
+            "Dolphin": 0.2203605758628031,
+            "Falcon": 0.6501338819731484,
+            "Hummingbird": 0.012940309091085005,
+            "Owl": 0.6,
+            "Panda": 0.7731662795777579,
+            "Tiger": 0.4370660473244125
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/160"
+      },
+      {
+        "auris": {
+          "coherence": 0.6482690688364542,
+          "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+          "nodes": {
+            "CargoShip": 0.9541617530184459,
+            "Clownfish": 0.5,
+            "Deer": 0.14139243297594262,
+            "Dolphin": 0.9749769538249446,
+            "Falcon": 0.5654578055940349,
+            "Hummingbird": 0.07667538043377739,
+            "Owl": 0.6,
+            "Panda": 0.9658740121923357,
+            "Tiger": 0.7453984195077371
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/161"
+      },
+      {
+        "auris": {
+          "coherence": 0.3797944432036153,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.16891535589997342,
+            "Clownfish": 0.5,
+            "Deer": 0.42558589826692783,
+            "Dolphin": 0.45990804676971747,
+            "Falcon": 0.06856013861229074,
+            "Hummingbird": 0.009184936804743445,
+            "Owl": 0.6,
+            "Panda": 0.6783782644589685,
+            "Tiger": 0.2854052231343497
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/162"
+      },
+      {
+        "auris": {
+          "coherence": 0.3661892638801008,
+          "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "nodes": {
+            "CargoShip": 0.30060922666658785,
+            "Clownfish": 0.5,
+            "Deer": 0.5185409657121656,
+            "Dolphin": 0.047388443356137955,
+            "Falcon": 0.5379752979223306,
+            "Hummingbird": 0.007278561120031838,
+            "Owl": 0.6,
+            "Panda": 0.592830623315989,
+            "Tiger": 0.14852899730558233
+          }
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/163"
+      }
+    ],
+    "rows": 164,
+    "seed": 20261024,
+    "self_coder_lane": "disabled; run_self_coding_task defaults to enabled=False and does not call a model",
+    "status": "measured",
+    "suite": "HumanEval",
+    "system_under_test": "Auris read_auris_nodes, QGITA FTCPDetector, aureon.autonomous.aureon_self_run_coding_task.run_self_coding_task",
+    "total": 164
+  },
+  "live_trading": false,
+  "livecodebench": {
+    "counts_as_aureon_score": false,
+    "executed": false,
+    "external_provider_called": false,
+    "measured_pct": null,
+    "reason": "outside provider is off by default; this suite has no internal runner",
+    "suite": "LiveCodeBench"
+  },
+  "model_call": {
+    "attempted": false,
+    "error": "",
+    "external_provider": false,
+    "ok": false
+  },
+  "model_python_task_pass_pct": {
+    "humaneval_rows": 0.0,
+    "livecode_rows": null,
+    "swe_rows": null
+  },
+  "offline_fixture": {
+    "counts_as_result": false,
+    "executed": false,
+    "reason": "a fixture is not a benchmark result",
+    "suite": "offline-fixture"
+  },
+  "published_reference": {
+    "livecodebench_v6_pct": 85.0,
+    "model": "Kimi K2.5",
+    "source": "published score named by the operator; not a measurement from this harness",
+    "swe_bench_verified_pct": 76.8
+  },
+  "schema": "aureon.self-coder-benchmark.v2",
+  "swe_bench": {
+    "counts_as_aureon_score": false,
+    "executed": false,
+    "external_provider_called": false,
+    "measured_pct": null,
+    "reason": "outside provider is off by default; this suite has no internal runner",
+    "suite": "SWE-bench Lite or Verified"
+  },
+  "system_under_test": "internal"
+}

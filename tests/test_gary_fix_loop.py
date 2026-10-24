@@ -163,6 +163,7 @@ def test_fresh_box_preflight_and_offline_benchmark(tmp_path: Path, monkeypatch: 
     monkeypatch.delenv("HNC_PACKET_MASTER_KEY", raising=False)
     monkeypatch.delenv("AUREON_SELF_CODER_OPENAI_BASE_URL", raising=False)
     monkeypatch.delenv("AUREON_SELF_CODER_API_KEY", raising=False)
+    monkeypatch.delenv("AUREON_SELF_CODER_ALLOW_EXTERNAL", raising=False)
     prepared = ensure_hnc_master_key_preflight(tmp_path)
     assert prepared["ready"] is True
     assert prepared["source"] == "generated"
@@ -183,11 +184,14 @@ def test_fresh_box_preflight_and_offline_benchmark(tmp_path: Path, monkeypatch: 
     report = run_harness(tmp_path)
     assert report["offline_fixture"]["counts_as_result"] is False
     assert report["offline_fixture"]["executed"] is False
-    assert report["model_call"]["attempted"] is True
+    assert report["external_provider"]["called"] is False
+    assert report["external_provider"]["enabled"] is False
+    assert report["model_call"]["attempted"] is False
     assert report["model_call"]["ok"] is False
+    assert report["humaneval"]["status"] == "not_attempted"
     assert report["swe_bench"]["executed"] is False
     assert report["livecodebench"]["executed"] is False
-    assert report["harness"].startswith("model-written Python")
+    assert report["harness"].startswith("The system under test is Aureon's internal cognition")
     assert "not the official SWE-bench" in report["harness"]
     assert "not a kernel sandbox" in report["harness"]
     assert "machine with no secrets" in report["harness"]
@@ -240,19 +244,26 @@ def test_benchmark_scores_a_configured_model_and_dataset(tmp_path: Path, monkeyp
     )
     monkeypatch.setenv("AUREON_SELF_CODER_OPENAI_BASE_URL", f"http://127.0.0.1:{port}/v1")
     monkeypatch.setenv("AUREON_SELF_CODER_MODEL", "local-test")
+    monkeypatch.setenv("AUREON_SELF_CODER_ALLOW_EXTERNAL", "1")
     try:
         report = run_harness(tmp_path)
     finally:
         server.shutdown()
     assert report["model_call"]["ok"] is True
+    assert report["external_provider"]["called"] is True
+    assert report["external_provider"]["counts_as_aureon_brain"] is False
     assert report["offline_fixture"]["counts_as_result"] is False
     assert "not the official SWE-bench" in report["harness"]
     assert "not a kernel sandbox" in report["harness"]
     assert "machine with no secrets" in report["harness"]
-    assert report["model_python_task_pass_pct"]["livecode_rows"] == 100.0
-    assert report["model_python_task_pass_pct"]["swe_rows"] == 100.0
-    assert report["livecodebench"]["executed"] is True
-    assert report["swe_bench"]["executed"] is True
+    assert report["model_python_task_pass_pct"]["livecode_rows"] is None
+    assert report["model_python_task_pass_pct"]["swe_rows"] is None
+    assert report["external_provider"]["livecodebench_pct"] == 100.0
+    assert report["external_provider"]["swe_bench_pct"] == 100.0
+    assert report["livecodebench"]["executed"] is False
+    assert report["swe_bench"]["executed"] is False
+    assert report["external_provider"]["livecodebench"]["executed"] is True
+    assert report["external_provider"]["swe_bench"]["executed"] is True
 
 
 def test_benchmark_child_cannot_see_parent_exchange_key(monkeypatch: pytest.MonkeyPatch) -> None:

@@ -1,0 +1,119 @@
+{
+  "on_hnc_series": {
+    "buffer_note": "QGITAMarketAnalyzer keeps a 1000-sample buffer; analyze sees that tail",
+    "coherence": {
+      "c_linear": 0.7292957394946138,
+      "c_nonlinear": 0.7290833566372417,
+      "c_phi": 0.6960989967718437,
+      "global_R": 0.7475569218975662,
+      "q_anomaly": 0.19159861444421625
+    },
+    "detection_rate": null,
+    "detection_threshold": 0.2,
+    "detector": {
+      "adaptive_threshold": true,
+      "alpha": 1.0,
+      "epsilon": 0.05,
+      "theta": 0.1
+    },
+    "false_alarm_rate": null,
+    "ftcp_count": 0,
+    "lhe_count": 0,
+    "lighthouse_events": [],
+    "lighthouse_intensity": 0.03716625878831031,
+    "lighthouse_threshold_sigma": 2.0,
+    "max_g_eff": 0.0,
+    "orders_placed": false,
+    "rates_reason": "this series has no signal-in-noise labels in the repo, so the analyzer counts are not a detection rate or a false-alarm rate",
+    "rates_verdict": "HOLD",
+    "regime": {
+      "description": "Market in ordered, stable regime",
+      "stability": 0.7475569218975662,
+      "state": "coherent"
+    },
+    "samples_analyzed": 100,
+    "samples_fed": 100,
+    "series": "hnc_lambda_series",
+    "signal_note": "the direction is the analyzer's return. It is not an order and it has no outcome label",
+    "signals": {
+      "confidence": 0.7052607725619787,
+      "direction": "BEARISH",
+      "event_type": null,
+      "risk_description": "Coherent regime - stable conditions",
+      "risk_level": "LOW",
+      "strength": 0.1858312939415515,
+      "structural_event": false
+    },
+    "source": "aureon.wisdom.aureon_qgita_framework.QGITAMarketAnalyzer.analyze",
+    "statistics": {
+      "lighthouse_mean": 0.0,
+      "lighthouse_std": 0.1,
+      "price_mean": 1.0651840869169222,
+      "price_std": 0.3891764963101128,
+      "total_samples": 100
+    },
+    "status": "complete",
+    "timestamps": "step index times HarmonicRealityField.dt",
+    "valid_ftcps": [],
+    "verdict": "measured_counts_rates_hold"
+  },
+  "public_series": {
+    "buffer_note": "QGITAMarketAnalyzer keeps a 1000-sample buffer; analyze sees that tail",
+    "coherence": {
+      "c_linear": 0.9397845342411165,
+      "c_nonlinear": 0.939211576612552,
+      "c_phi": 0.9981536453722771,
+      "global_R": 0.9088637891117479,
+      "q_anomaly": 0.08971889898070065
+    },
+    "column": "Lambda",
+    "detection_rate": null,
+    "detection_threshold": 0.2,
+    "detector": {
+      "adaptive_threshold": true,
+      "alpha": 1.0,
+      "epsilon": 0.05,
+      "theta": 0.1
+    },
+    "false_alarm_rate": null,
+    "ftcp_count": 0,
+    "lhe_count": 0,
+    "lighthouse_events": [],
+    "lighthouse_intensity": 0.037981718670486324,
+    "lighthouse_threshold_sigma": 2.0,
+    "max_g_eff": 0.0,
+    "orders_placed": false,
+    "rates_reason": "this series has no signal-in-noise labels in the repo, so the analyzer counts are not a detection rate or a false-alarm rate",
+    "rates_verdict": "HOLD",
+    "regime": {
+      "description": "Market in ordered, stable regime",
+      "stability": 0.9088637891117479,
+      "state": "coherent"
+    },
+    "samples_analyzed": 1000,
+    "samples_fed": 2921,
+    "series": "data/de440_timeseries.csv",
+    "signal_note": "the direction is the analyzer's return. It is not an order and it has no outcome label",
+    "signals": {
+      "confidence": 0.7387453358280791,
+      "direction": "BEARISH",
+      "event_type": null,
+      "risk_description": "Coherent regime - stable conditions",
+      "risk_level": "LOW",
+      "strength": 0.1899085933524316,
+      "structural_event": false
+    },
+    "source": "aureon.wisdom.aureon_qgita_framework.QGITAMarketAnalyzer.analyze",
+    "statistics": {
+      "lighthouse_mean": 0.0,
+      "lighthouse_std": 0.1,
+      "price_mean": 0.8137931961978909,
+      "price_std": 0.08265540469064792,
+      "total_samples": 1000
+    },
+    "status": "complete",
+    "timestamps": "sample index. analyze_price_stream uses range(len(prices)) when no timestamps are passed",
+    "valid_ftcps": [],
+    "verdict": "measured_counts_rates_hold"
+  }
+}

@@ -37,6 +37,8 @@ It is organized in three independently reviewable layers:
 > This is the formal front door. The original long-form README is preserved unchanged at
 > [`docs/archive/README_legacy_20260712.md`](docs/archive/README_legacy_20260712.md) — nothing was removed, only formalized.
 
+The shared rules for everyone working in this repo are [`docs/AUREON_RULES.md`](docs/AUREON_RULES.md).
+
 ### How it fits together
 
 ```mermaid
@@ -281,6 +283,7 @@ Open-source repository traffic to date (verifiable in the repo's GitHub **Insigh
 
 | You are… | Start here |
 |---|---|
+| **Working on Aureon OS** | [`docs/AUREON_RULES.md`](docs/AUREON_RULES.md) — the shared rulebook |
 | **An investor or funder** | [`docs/investor/README.md`](docs/investor/README.md) — diligence path, capability categories, and claim discipline |
 | **A developer** | [`docs/INDEX.md`](docs/INDEX.md) · [`CAPABILITIES.md`](CAPABILITIES.md) · [`docs/SAAS_PLATFORM.md`](docs/SAAS_PLATFORM.md) |
 | **A researcher** | [`docs/THE_SYNTHESIS.md`](docs/THE_SYNTHESIS.md) · [`docs/CLAIMS_AND_EVIDENCE.md`](docs/CLAIMS_AND_EVIDENCE.md) · [`docs/research/READING_PATHS.md`](docs/research/READING_PATHS.md) |

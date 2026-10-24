@@ -35,6 +35,8 @@ _FS_TO_PRODUCT: Dict[str, str] = {
     "accounting": "accounting",  # the King's Court — the commercial accounting body
     "harmonic": "research", "wisdom": "research", "decoders": "research",
     "simulation": "research", "atn": "research", "intelligence": "research",
+    # Measured Auris / QGITA / harness runs. A figure here is a run, or it is HOLD.
+    "evaluation": "research",
     "operator": "cognition", "cognition": "cognition", "queen": "cognition",
     "bots_intelligence": "cognition",
     "utils": "security", "bridges": "security", "data_feeds": "security",
