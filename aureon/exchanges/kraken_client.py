@@ -316,10 +316,12 @@ def _read_nonce_text(text: str) -> int:
 def _nonce_clock_ns() -> int:
     """Nanosecond clock.
 
-    This key's Kraken high-water is about 1.78e18 because earlier clients
-    sent ``time.time_ns()``. A microsecond clock starts near 1.78e15 and
-    stays under that mark. A missing counter file is seeded from the
-    nanosecond clock and any sibling counter, never from microseconds.
+    Unverified assumption, not a live Kraken reading: this key's high-water
+    is about 1.78e18 if earlier clients sent ``time.time_ns()``. No live
+    call was made to confirm that provider high-water. A microsecond clock
+    starts near 1.78e15 and stays under that assumed mark. A missing
+    counter file is seeded from the nanosecond clock and any sibling
+    counter, never from microseconds.
     """
 
     return time.time_ns()

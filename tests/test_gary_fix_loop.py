@@ -189,6 +189,8 @@ def test_fresh_box_preflight_and_offline_benchmark(tmp_path: Path, monkeypatch: 
     assert report["livecodebench"]["executed"] is False
     assert report["harness"].startswith("model-written Python")
     assert "not the official SWE-bench" in report["harness"]
+    assert "not a kernel sandbox" in report["harness"]
+    assert "machine with no secrets" in report["harness"]
     assert "measured_swe_bench_verified_pct" not in report
     assert "measured_livecodebench_v6_pct" not in report
     assert report["model_python_task_pass_pct"]["swe_rows"] is None
@@ -245,6 +247,8 @@ def test_benchmark_scores_a_configured_model_and_dataset(tmp_path: Path, monkeyp
     assert report["model_call"]["ok"] is True
     assert report["offline_fixture"]["counts_as_result"] is False
     assert "not the official SWE-bench" in report["harness"]
+    assert "not a kernel sandbox" in report["harness"]
+    assert "machine with no secrets" in report["harness"]
     assert report["model_python_task_pass_pct"]["livecode_rows"] == 100.0
     assert report["model_python_task_pass_pct"]["swe_rows"] == 100.0
     assert report["livecodebench"]["executed"] is True
@@ -272,3 +276,35 @@ def test_benchmark_child_cannot_see_parent_exchange_key(monkeypatch: pytest.Monk
         "    raise SystemExit('network opened')\n"
     )
     assert _run_python(code, tests) is True
+
+
+def test_benchmark_namespace_hides_parent_environ(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    from aureon.autonomous import self_coder_benchmark as bench
+
+    bench._NAMESPACE_READY = None
+    if bench._namespace_command(tmp_path / "runner.py") is None:
+        pytest.skip("unshare user namespace is not available")
+    monkeypatch.setenv("KRAKEN_API_SECRET", "super-secret-kraken")
+    code = (
+        "import os, socket, importlib\n"
+        "secret = 'super-secret-kraken'\n"
+        "assert secret not in os.environ.values()\n"
+        "for pid in os.listdir('/proc'):\n"
+        "    if not pid.isdigit():\n"
+        "        continue\n"
+        "    try:\n"
+        "        data = open(f'/proc/{pid}/environ', 'rb').read().decode('latin1')\n"
+        "    except OSError:\n"
+        "        continue\n"
+        "    assert secret not in data\n"
+        "importlib.reload(socket)\n"
+        "sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\n"
+        "sock.settimeout(0.3)\n"
+        "try:\n"
+        "    sock.connect(('1.1.1.1', 80))\n"
+        "except OSError:\n"
+        "    pass\n"
+        "else:\n"
+        "    raise SystemExit('network opened')\n"
+    )
+    assert bench._run_python(code, "") is True

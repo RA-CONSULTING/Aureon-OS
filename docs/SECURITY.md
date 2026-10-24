@@ -22,6 +22,17 @@ We will acknowledge your report within 48 hours and provide an estimated timelin
 - Use `.env` files (which are git-ignored) for local development.
 - If you accidentally commit a key, revoke it immediately.
 
+## Model-written benchmark code
+
+`aureon.autonomous.self_coder_benchmark` runs model-written Python. That
+child is not a kernel sandbox. On Linux it is started with `unshare` in a
+new user, pid, and net namespace, from an environment that never held the
+keys, when that command works. The host filesystem is still visible to the
+same user. Without `unshare`, the child only gets a scrubbed environment
+and a Python socket stub. That stub can be bypassed, and a same-user child
+can read `/proc/<pid>/environ`. Run this harness only on a machine with no
+secrets.
+
 ## Trading Risks
 
 This software executes financial transactions.

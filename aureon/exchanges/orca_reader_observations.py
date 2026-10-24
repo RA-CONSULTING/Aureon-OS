@@ -2,8 +2,10 @@
 
 ``build_orca_reader_observations`` calls ``get_account_balance`` on the
 clients the dashboard already holds. That call is an authenticated read.
-It does not place an order. Kraken amounts are different units, so they
-are not added together into an equity figure.
+It does not place an order. Balance maps are not summed into equity.
+Kraken equity is one USD total, or none. Any other client uses
+``get_account().equity``, or none, so USD cash is not added to a
+position quantity.
 """
 
 from __future__ import annotations
@@ -27,11 +29,41 @@ def _kraken_usd_equity(balances: dict[str, Any], client: Any) -> float | None:
     return None
 
 
+def _account_equity(client: Any) -> float | None:
+    """Equity from ``get_account()``. A balance map is not summed.
+
+    ``get_account`` is an authenticated read. It does not place an order.
+    Missing equity stays null, including when the account object has no
+    ``equity`` or ``portfolio_value``.
+    """
+
+    if not hasattr(client, "get_account"):
+        return None
+    try:
+        account = client.get_account()
+    except Exception:
+        return None
+    if isinstance(account, dict):
+        equity = account.get("equity", account.get("portfolio_value"))
+    else:
+        equity = getattr(account, "equity", None)
+        if equity is None:
+            equity = getattr(account, "portfolio_value", None)
+    if equity is None or equity == "":
+        return None
+    try:
+        return float(equity)
+    except (TypeError, ValueError):
+        return None
+
+
 def build_orca_reader_observations(alpaca: Any, kraken: Any, systems_status: Any) -> dict[str, Any]:
     """Read account balances from the clients this dashboard holds.
 
-    ``get_account_balance`` is an authenticated read. This function does not
-    place an order. Kraken equity stays null unless one USD total is present.
+    ``get_account_balance`` and ``get_account`` are authenticated reads.
+    This function does not place an order. No balance map is summed.
+    Kraken equity stays null unless one USD total is present. Alpaca and
+    any other client use ``get_account().equity``, or null.
     """
 
     def one(name: str, client: Any) -> dict[str, Any]:
@@ -47,15 +79,10 @@ def build_orca_reader_observations(alpaca: Any, kraken: Any, systems_status: Any
                 balances = dict(raw.balances)
         except Exception as exc:
             error = error or str(exc)
-        equity = None
         if name == "kraken":
             equity = _kraken_usd_equity(balances, client)
         else:
-            try:
-                if balances:
-                    equity = float(sum(float(value) for value in balances.values()))
-            except (TypeError, ValueError):
-                equity = None
+            equity = _account_equity(client)
         if name == "binance" and "region" in error.lower():
             error = "region blocked"
         live = bool(equity) and not error

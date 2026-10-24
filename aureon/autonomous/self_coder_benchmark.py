@@ -19,8 +19,17 @@ from aureon.autonomous.aureon_internal_self_coder import openai_compatible_model
 
 HARNESS_NOTE = (
     "model-written Python is executed against each row's tests field. "
-    "This is not the official SWE-bench or LiveCodeBench evaluation."
+    "This is not the official SWE-bench or LiveCodeBench evaluation. "
+    "This is not a kernel sandbox. On Linux the child is started with "
+    "unshare in a new user, pid, and net namespace, from an environment "
+    "that never held the keys, when that command works. The host filesystem "
+    "stays visible to the same user. Without unshare, the child only gets a "
+    "scrubbed environment and a Python socket stub, which model code can "
+    "bypass, and a same-user child can read /proc/<pid>/environ. Run this "
+    "only on a machine with no secrets."
 )
+
+_NAMESPACE_READY: bool | None = None
 
 PUBLISHED_KIMI_K2_5 = {
     "model": "Kimi K2.5",
@@ -118,13 +127,65 @@ def _scrubbed_child_env(home: Path) -> dict[str, str]:
     }
 
 
-def _run_python(code: str, tests: str, timeout: int = 20) -> bool:
-    """Run model Python in a temp directory with a scrubbed environment.
+def _namespace_command(runner: Path) -> list[str] | None:
+    """Launch command whose own environment never held the parent keys.
 
-    The child does not inherit ``AUREON_*`` or exchange and API keys. Stdlib
-    sockets are blocked before the model code runs. The timeout is enforced
-    by the process. A same-user child can still read ``/proc``; this is not
-    a kernel sandbox.
+    ``unshare`` is pid 1 inside a new user, pid, and net namespace, so the
+    model process cannot read the parent ``/proc/<ppid>/environ`` and new
+    sockets have no network. The host files are still mounted.
+    """
+
+    import shutil
+    import subprocess
+
+    global _NAMESPACE_READY
+    if _NAMESPACE_READY is False:
+        return None
+    unshare = shutil.which("unshare")
+    if not unshare:
+        _NAMESPACE_READY = False
+        return None
+    command = [
+        unshare,
+        "--user",
+        "--map-root-user",
+        "--net",
+        "--pid",
+        "--mount",
+        "--fork",
+        "--mount-proc",
+        sys.executable,
+        "-I",
+        str(runner),
+    ]
+    if _NAMESPACE_READY is True:
+        return command
+    try:
+        probe = subprocess.run(
+            command[:-1] + ["-c", "import socket; raise SystemExit(0)"],
+            cwd=runner.parent,
+            env=_scrubbed_child_env(runner.parent),
+            capture_output=True,
+            timeout=15,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        _NAMESPACE_READY = False
+        return None
+    _NAMESPACE_READY = probe.returncode == 0
+    return command if _NAMESPACE_READY else None
+
+
+def _run_python(code: str, tests: str, timeout: int = 20) -> bool:
+    """Run model Python from a process whose environment never held the keys.
+
+    The spawn uses a fresh environment, not a filtered copy of the parent.
+    On Linux that process is ``unshare`` in a new user, pid, and net
+    namespace when the command works, so ``/proc/<ppid>/environ`` is not the
+    key-holding parent and a restored socket still has no network. Without
+    ``unshare``, stdlib sockets are only stubbed in Python. That stub can be
+    bypassed, and a same-user child can read another process's environ.
+    This is not a kernel sandbox. Run it only on a machine with no secrets.
     """
 
     import subprocess
@@ -143,9 +204,11 @@ def _run_python(code: str, tests: str, timeout: int = 20) -> bool:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             (root / "solution.py").write_text(code + "\n\n" + tests + "\n", encoding="utf-8")
-            (root / "runner.py").write_text(runner, encoding="utf-8")
+            script = root / "runner.py"
+            script.write_text(runner, encoding="utf-8")
+            command = _namespace_command(script) or [sys.executable, "-I", str(script)]
             completed = subprocess.run(
-                [sys.executable, "-I", str(root / "runner.py")],
+                command,
                 cwd=directory,
                 env=_scrubbed_child_env(root),
                 capture_output=True,
@@ -279,6 +342,13 @@ def run_harness(root: Path | None = None) -> dict[str, Any]:
         "livecodebench": live,
         "published_reference": PUBLISHED_KIMI_K2_5,
         "harness": HARNESS_NOTE,
+        "child_isolation": (
+            "unshare user, pid, and net namespace; spawn environment never held keys"
+            if _NAMESPACE_READY
+            else "scrubbed environment only; not a kernel sandbox"
+            if _NAMESPACE_READY is False
+            else "child was not launched"
+        ),
         "model_python_task_pass_pct": {
             "swe_rows": swe_pct,
             "livecode_rows": live_pct,
