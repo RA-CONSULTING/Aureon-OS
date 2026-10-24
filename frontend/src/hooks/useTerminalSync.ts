@@ -434,12 +434,15 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
           time: String(trade?.time || trade?.closed_at || ''),
           side: String(trade?.side || 'BUY'),
           symbol: String(trade?.symbol || trade?.pair || ''),
-          quantity: Number(trade?.quantity || trade?.volume || 0),
-          pnl: Number(trade?.pnl || trade?.net_pnl || 0),
-          success: Number(trade?.pnl || trade?.net_pnl || 0) >= 0,
+          quantity: firstFinite(trade?.quantity, trade?.volume),
+          pnl: firstFinite(trade?.pnl, trade?.net_pnl),
+          success: (() => {
+            const pnl = firstFinite(trade?.pnl, trade?.net_pnl);
+            return pnl != null && pnl >= 0;
+          })(),
           exchange: 'kraken',
           tradeId: String(trade?.trade_id || trade?.transaction_id || ''),
-          holdSeconds: Number(trade?.hold_seconds || 0),
+          holdSeconds: firstFinite(trade?.hold_seconds),
           reason: String(trade?.reason || ''),
         })) : [];
 
@@ -447,12 +450,15 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
           time: String(trade?.closed_at || ''),
           side: String(trade?.direction || 'BUY'),
           symbol: String(trade?.symbol || ''),
-          quantity: Number(trade?.size || 0),
-          pnl: Number(trade?.net_pnl || 0),
-          success: Number(trade?.net_pnl || 0) >= 0,
+          quantity: firstFinite(trade?.size),
+          pnl: firstFinite(trade?.net_pnl),
+          success: (() => {
+            const pnl = firstFinite(trade?.net_pnl);
+            return pnl != null && pnl >= 0;
+          })(),
           exchange: 'capital',
           tradeId: String(trade?.deal_id || ''),
-          holdSeconds: Number(trade?.age_secs || 0),
+          holdSeconds: firstFinite(trade?.age_secs),
           reason: String(trade?.reason || ''),
         })) : [];
 
@@ -545,11 +551,11 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
             lines: Array.isArray(localState.queen_voice.lines) ? localState.queen_voice.lines.map((line) => String(line || '')) : [],
           } : buildFallbackQueenVoice(localState),
           unifiedMarketSummary: {
-            krakenEquity: equityNote ? 0 : toNumber(combined.kraken_equity || krakenEquity || 0),
+            krakenEquity: equityNote ? null : firstFinite(combined.kraken_equity, krakenEquity),
             krakenEquityReason: equityNote,
             capitalEquityGbp: firstFinite(combined.capital_equity_gbp, capitalEquity),
-            krakenSessionPnl: toNumber(combined.kraken_session_pnl || krakenPnl || 0),
-            capitalSessionPnlGbp: toNumber(combined.capital_session_pnl_gbp || capitalPnl || 0),
+            krakenSessionPnl: firstFinite(combined.kraken_session_pnl, krakenPnl),
+            capitalSessionPnlGbp: firstFinite(combined.capital_session_pnl_gbp, capitalPnl),
             openPositions: toNumber(combined.open_positions || activePositions.length),
             capitalOpenPositions: capitalPositions.length,
             krakenOpenPositions: krakenPositions.length,

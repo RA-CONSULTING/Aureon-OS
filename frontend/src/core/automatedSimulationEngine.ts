@@ -1,8 +1,10 @@
 /**
  * Automated Simulation Engine (Browser-Safe)
+ * Dormant simulator. These numbers are not telemetry and are not a market reading.
  * Runs continuous simulations using sampled market data
  * Feeds data through complete light path and tracks accuracy
  */
+export const SIMULATION_ONLY = true;
 
 import { temporalProbabilityEcho, ProbabilitySnapshot } from './temporalProbabilityEcho';
 import { lightPathTracer, LightPathTrace } from './lightPathTracer';

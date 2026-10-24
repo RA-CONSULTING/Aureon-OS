@@ -12,7 +12,7 @@ export interface PrimeSealHookState {
   packet: PrimeSealPacket | null;
   isLocked: boolean;
   primeCoherence: number;
-  latticePhase: number;
+  latticePhase: number | null;
   unityCoherence: number;
   flowCoherence: number;
   anchorCoherence: number;
@@ -28,7 +28,7 @@ export function usePrimeSeal(): PrimeSealHookState {
     packet: null,
     isLocked: false,
     primeCoherence: 0,
-    latticePhase: 0,
+    latticePhase: null,
     unityCoherence: 0,
     flowCoherence: 0,
     anchorCoherence: 0,

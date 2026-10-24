@@ -35,7 +35,7 @@ export interface PrimeSealPacket {
   packet_value: number;
   seal_lock: boolean;
   prime_coherence: number;
-  lattice_phase: number;
+  lattice_phase: number | null;
   systems_contributing: string[];
   consensus_signal: SignalType;
 }
@@ -115,10 +115,8 @@ class PrimeSealComputer {
       ? `🔒 SEALED: Γ=${primeCoherence.toFixed(4)} ≥ ${SEAL_LOCK_THRESHOLD}`
       : `🔓 UNLOCKED: Γ=${primeCoherence.toFixed(4)} < ${SEAL_LOCK_THRESHOLD}`;
 
-    // Compute lattice phase (0-360 degrees based on time and coherence)
-    const phi = 1.618033988749895;
-    const timePhase = (Date.now() / 1000) % (2 * Math.PI);
-    const latticePhase = ((timePhase * phi * primeCoherence) % (2 * Math.PI)) * (180 / Math.PI);
+    // A clock phase is not a measured lattice. Leave it unavailable.
+    const latticePhase = null;
 
     // Compute amplitude gain from system readiness
     const amplitudeGain = 1 + (systemsContributing.length / 10) * 0.5;

@@ -64,13 +64,13 @@ export interface PlanetaryPosition {
 
 export interface PlatypusState {
   // Core process tree values
-  S_t: number;            // Spherical signal
-  Q_t: number;            // Quality metric
-  H_t: number;            // Harmonic resonance
-  E_t: number;            // Energy flow
-  O_t: number;            // Observer effect
-  Lambda_t: number;       // Memory-smoothed coherence
-  Gamma_t: number;        // Final coherence Γ(t)
+  S_t: number | null;            // Spherical signal
+  Q_t: number | null;            // Quality metric
+  H_t: number | null;            // Harmonic resonance
+  E_t: number | null;            // Energy flow
+  O_t: number | null;            // Observer effect
+  Lambda_t: number | null;       // Memory-smoothed coherence
+  Gamma_t: number | null;        // Final coherence Γ(t)
   L_t: boolean;           // Lighthouse event flag
   
   // Planetary details
@@ -113,13 +113,13 @@ class PlatypusCoherenceEngine {
     this.startTime = Date.now();
     
     this.state = {
-      S_t: 0.5,
-      Q_t: 0.5,
-      H_t: 0.5,
-      E_t: 0.5,
-      O_t: 0.5,
-      Lambda_t: 0.5,
-      Gamma_t: 0.5,
+      S_t: null,
+      Q_t: null,
+      H_t: null,
+      E_t: null,
+      O_t: null,
+      Lambda_t: null,
+      Gamma_t: null,
       L_t: false,
       planets: [],
       topAligned: [],
@@ -198,8 +198,10 @@ class PlatypusCoherenceEngine {
                      WEIGHTS.W_E * E_t + 
                      WEIGHTS.W_O * O_t;
     
-    const Lambda_t = this.config.memoryAlpha * rawGamma + 
-                     (1 - this.config.memoryAlpha) * this.state.Lambda_t;
+    const previousLambda = this.state.Lambda_t;
+    const Lambda_t = previousLambda == null
+      ? rawGamma
+      : this.config.memoryAlpha * rawGamma + (1 - this.config.memoryAlpha) * previousLambda;
     
     // Final coherence with observer feedback
     const Gamma_t = Math.min(1.0, Math.max(0, Lambda_t + this.config.observerBeta * (O_t - 0.5)));
@@ -426,13 +428,15 @@ class PlatypusCoherenceEngine {
     const sourceIcon = ephemerisSource === 'DE440' ? '📡' : '🔮';
     const lighthouseIcon = L_t ? '🔦' : '';
     
-    return `${sourceIcon} Platypus | Γ=${Gamma_t.toFixed(3)} Q=${Q_t.toFixed(2)} ${lighthouseIcon} | Top: ${topAligned.join(', ')}`;
+    const gammaText = Gamma_t == null ? 'unavailable' : Gamma_t.toFixed(3);
+    const qualityText = Q_t == null ? 'unavailable' : Q_t.toFixed(2);
+    return `${sourceIcon} Platypus | Γ=${gammaText} Q=${qualityText} ${lighthouseIcon} | Top: ${topAligned.join(', ')}`;
   }
   
   /**
    * Get coherence as simple 0-1 value for integration
    */
-  getCoherence(): number {
+  getCoherence(): number | null {
     return this.state.Gamma_t;
   }
   

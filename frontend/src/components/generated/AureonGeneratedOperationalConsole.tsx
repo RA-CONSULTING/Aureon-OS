@@ -86,7 +86,9 @@ function compact(value: unknown): string {
 }
 
 function percent(value: unknown): string {
-  const numeric = asNumber(value);
+  if (typeof value === "boolean" || value === null || value === undefined || value === "") return "unavailable";
+  const numeric = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(numeric)) return "unavailable";
   if (numeric <= 1) return `${Math.round(numeric * 100)}%`;
   return `${Math.round(numeric)}%`;
 }

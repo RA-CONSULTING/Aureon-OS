@@ -9,7 +9,9 @@ const safeNumber = (value: unknown, fallback = 0): number => {
 };
 
 const formatSigned = (value: unknown, digits = 2, prefix = '') => {
-  const num = safeNumber(value);
+  if (value == null || value === '') return 'unavailable';
+  const num = typeof value === 'number' ? value : Number(value);
+  if (!Number.isFinite(num)) return 'unavailable';
   const sign = num >= 0 ? '+' : '';
   return `${prefix}${sign}${num.toFixed(digits)}`;
 };
@@ -20,7 +22,10 @@ const formatClock = (value: Date | number | string | null | undefined) => {
 };
 
 const formatAge = (seconds: unknown) => {
-  const total = Math.max(0, Math.floor(safeNumber(seconds)));
+  if (seconds == null || seconds === '') return 'unavailable';
+  const parsed = typeof seconds === 'number' ? seconds : Number(seconds);
+  if (!Number.isFinite(parsed)) return 'unavailable';
+  const total = Math.max(0, Math.floor(parsed));
   const mins = Math.floor(total / 60);
   const secs = total % 60;
   return `${mins}m ${secs}s`;
@@ -276,13 +281,13 @@ export function LiveTerminalStats() {
   const totalEquity = state.totalEquity;
   const available = safeNumber(state.availableBalance);
   const totalPnl = safeNumber(state.totalPnl);
-  const krakenEquity = safeNumber(summary?.krakenEquity);
+  const krakenEquity = summary?.krakenEquity;
   const capitalEquity = summary?.capitalEquityGbp;
   const money = (value: number | null | undefined, prefix: string) => (
     value == null || !Number.isFinite(value) ? 'unavailable' : `${prefix}${value.toFixed(2)}`
   );
-  const krakenPnl = safeNumber(summary?.krakenSessionPnl);
-  const capitalPnl = safeNumber(summary?.capitalSessionPnlGbp);
+  const krakenPnl = summary?.krakenSessionPnl;
+  const capitalPnl = summary?.capitalSessionPnlGbp;
   const krakenOpen = safeNumber(summary?.krakenOpenPositions, krakenPositions.length);
   const capitalOpen = safeNumber(summary?.capitalOpenPositions, capitalPositions.length);
   const capitalRisk = summary?.capitalRiskEnvelope || {};
@@ -351,8 +356,8 @@ export function LiveTerminalStats() {
         <div className="rounded border border-border/40 bg-muted/20 p-3">
           <div className="mb-2 font-mono text-xs font-semibold text-foreground">KRAKEN</div>
           <div className="space-y-1.5">
-            <ExchangeMetric label="Equity" value={`$${krakenEquity.toFixed(2)}`} />
-            <ExchangeMetric label="Session P&L" value={formatSigned(krakenPnl, 2, '$')} className={krakenPnl >= 0 ? 'text-success' : 'text-destructive'} />
+            <ExchangeMetric label="Equity" value={money(krakenEquity, '$')} />
+            <ExchangeMetric label="Session P&L" value={formatSigned(krakenPnl, 2, '$')} className={typeof krakenPnl === 'number' && krakenPnl < 0 ? 'text-destructive' : 'text-success'} />
             <ExchangeMetric label="Open Positions" value={`${krakenOpen}`} />
             <ExchangeMetric label="Shadows" value={`${safeNumber(summary?.krakenShadows, krakenShadows.length)}`} />
           </div>
@@ -401,7 +406,7 @@ export function LiveTerminalStats() {
           <div className="mb-2 font-mono text-xs font-semibold text-foreground">CAPITAL</div>
           <div className="space-y-1.5">
             <ExchangeMetric label="Equity" value={money(capitalEquity, '£')} />
-            <ExchangeMetric label="Session P&L" value={formatSigned(capitalPnl, 2, '£')} className={capitalPnl >= 0 ? 'text-success' : 'text-destructive'} />
+            <ExchangeMetric label="Session P&L" value={formatSigned(capitalPnl, 2, '£')} className={typeof capitalPnl === 'number' && capitalPnl < 0 ? 'text-destructive' : 'text-success'} />
             <ExchangeMetric label="Open Positions" value={`${capitalOpen}`} />
             <ExchangeMetric label="Shadows" value={`${safeNumber(summary?.capitalShadows, capitalShadows.length)}`} />
           </div>

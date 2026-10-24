@@ -159,7 +159,7 @@ export function ExchangeGateways({
       color: '#f0b90b',
       position: [10.4, 0, -6] as [number, number, number],
       connected: binanceConnected,
-      equity: 0,
+      equity: null,
     },
     {
       name: 'Capital',

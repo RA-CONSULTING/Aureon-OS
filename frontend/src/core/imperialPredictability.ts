@@ -48,7 +48,7 @@ export interface CosmicState {
   lunarInfluence: number;
   planetaryAlignment: number;
   imperialYield: number;
-  schumannResonance: number;
+  schumannResonance: number | null;
   frequencyRatio: number;
   positionMultiplier: number;
   shouldTrade: boolean;
@@ -215,8 +215,8 @@ class CosmicStateEngine {
     // Should trade decision
     const shouldTrade = phase !== CosmicPhase.DISTORTION && coherence >= 0.5;
     
-    // Schumann resonance with variation
-    const schumannResonance = SCHUMANN_BASE * (1 + Math.sin(now.getTime() / 100000) * 0.02);
+    // No live Schumann reading is wired here.
+    const schumannResonance = null;
     
     const state: CosmicState = {
       timestamp: now.getTime(),

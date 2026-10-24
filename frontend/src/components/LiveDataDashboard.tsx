@@ -127,9 +127,9 @@ export default function LiveDataDashboard() {
         />
         <StatCard 
           title="🪐 Planetary Γ" 
-          value={platypusState.planetaryCoherence.toFixed(3)}
+          value={platypusState.planetaryCoherence == null ? 'unavailable' : platypusState.planetaryCoherence.toFixed(3)}
           icon={<Orbit className="w-4 h-4" />}
-          status={platypusState.lighthouseActive ? 'success' : platypusState.planetaryCoherence >= 0.5 ? 'warning' : 'neutral'}
+          status={platypusState.lighthouseActive ? 'success' : platypusState.planetaryCoherence != null && platypusState.planetaryCoherence >= 0.5 ? 'warning' : 'neutral'}
           extra={platypusState.lighthouseActive ? '🔦' : undefined}
         />
       </div>
