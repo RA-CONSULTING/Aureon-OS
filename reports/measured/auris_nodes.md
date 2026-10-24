@@ -1,7 +1,7 @@
 # Auris coherence
 
-Source `aureon.utils.aureon_queen_hive_mind.QueenHiveMind.get_auris_coherence`. the argument was omitted, so the method used its own default
-Coherence `0.44993808049535605`. Status `⛔ COHERENCE BREAK - Do not trade`.
-Nodes that did not move when one input crossed the clamp: Clownfish, Owl.
-Trade readiness: **HOLD**. no trade-outcome labels; the status string is the method's own words, not a fill
+Source `aureon.utils.aureon_queen_hive_mind.QueenHiveMind.get_auris_coherence`. no market series was supplied, so the omitted call is no_data
+Coherence `None`. Status `no_data`.
+Nodes without a reading when the four market fields are present as 0: Clownfish, Owl.
+Trade readiness: **HOLD**. no market series and no trade-outcome labels
 This is the method's coherence, not a hit rate and not a trade result.

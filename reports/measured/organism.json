@@ -14,7 +14,7 @@
         "consumed": 104,
         "consumes": true,
         "isolated": false,
-        "last_loop": "running",
+        "last_loop": "heard",
         "last_tick": 7,
         "module": "aureon.core.algorithmic_nodes",
         "published": 8,
@@ -25,7 +25,7 @@
         "consumed": 104,
         "consumes": true,
         "isolated": false,
-        "last_loop": "running",
+        "last_loop": "heard",
         "last_tick": 7,
         "module": "aureon.core.baton_relay_monitor",
         "published": 8,
@@ -36,7 +36,7 @@
         "consumed": 104,
         "consumes": true,
         "isolated": false,
-        "last_loop": "running",
+        "last_loop": "heard",
         "last_tick": 7,
         "module": "aureon.swarm.druidic_council",
         "published": 8,
@@ -47,7 +47,7 @@
         "consumed": 104,
         "consumes": true,
         "isolated": false,
-        "last_loop": "running",
+        "last_loop": "heard",
         "last_tick": 7,
         "module": "aureon.core.deterministic_systems",
         "published": 8,
@@ -58,7 +58,7 @@
         "consumed": 104,
         "consumes": true,
         "isolated": false,
-        "last_loop": "running",
+        "last_loop": "unbound",
         "last_tick": 7,
         "module": "aureon.core.organism_circulation",
         "published": 8,
@@ -69,7 +69,7 @@
         "consumed": 104,
         "consumes": true,
         "isolated": false,
-        "last_loop": "running",
+        "last_loop": "heard",
         "last_tick": 7,
         "module": "aureon.analytics.lighthouse_metrics",
         "published": 8,
@@ -80,7 +80,7 @@
         "consumed": 104,
         "consumes": true,
         "isolated": false,
-        "last_loop": "running",
+        "last_loop": "heard",
         "last_tick": 7,
         "module": "aureon.core.deterministic_systems",
         "published": 8,
@@ -91,7 +91,7 @@
         "consumed": 104,
         "consumes": true,
         "isolated": false,
-        "last_loop": "running",
+        "last_loop": "heard",
         "last_tick": 7,
         "module": "aureon.core.metacognition_monitor",
         "published": 8,
@@ -102,7 +102,7 @@
         "consumed": 104,
         "consumes": true,
         "isolated": false,
-        "last_loop": "running",
+        "last_loop": "heard",
         "last_tick": 7,
         "module": "aureon.core.aureon_mycelium",
         "published": 8,
@@ -113,7 +113,7 @@
         "consumed": 104,
         "consumes": true,
         "isolated": false,
-        "last_loop": "running",
+        "last_loop": "heard",
         "last_tick": 7,
         "module": "aureon.utils.aureon_queen_unified_neural_chain",
         "published": 8,
@@ -124,7 +124,7 @@
         "consumed": 104,
         "consumes": true,
         "isolated": false,
-        "last_loop": "running",
+        "last_loop": "heard",
         "last_tick": 7,
         "module": "aureon.wisdom.aureon_qgita",
         "published": 8,
@@ -135,7 +135,7 @@
         "consumed": 104,
         "consumes": true,
         "isolated": false,
-        "last_loop": "running",
+        "last_loop": "heard",
         "last_tick": 7,
         "module": "aureon.queen.queen_layer",
         "published": 8,
@@ -146,7 +146,7 @@
         "consumed": 104,
         "consumes": true,
         "isolated": false,
-        "last_loop": "running",
+        "last_loop": "heard",
         "last_tick": 7,
         "module": "aureon.core.organism_circulation",
         "published": 8,
@@ -157,7 +157,7 @@
         "consumed": 104,
         "consumes": true,
         "isolated": false,
-        "last_loop": "running",
+        "last_loop": "heard",
         "last_tick": 7,
         "module": "aureon.core.organism_circulation",
         "published": 8,
@@ -168,14 +168,14 @@
     "self_model_messages": 8,
     "ticks": 8,
     "timing": {
-      "elapsed_s": 0.13470332100405358,
+      "elapsed_s": 0.08546116799698211,
       "latency_s": {
         "count": 1456,
-        "max": 0.002314329147338867,
-        "mean": 0.0009258325610842023,
-        "min": 0.00017118453979492188
+        "max": 0.0019576549530029297,
+        "mean": 0.00043831127030508857,
+        "min": 0.0001430511474609375
       },
-      "messages_per_second": 831.4568576719028
+      "messages_per_second": 1310.5367341101055
     },
     "verdict": "pass"
   },
@@ -289,7 +289,22 @@
       "baseline_false_alarm_rate": 0.0,
       "baseline_rule": "missing pulse only",
       "detection_rate": 1.0,
-      "expected_loop": "running",
+      "expected_loop_by_seat": {
+        "algorithmic_nodes": "heard",
+        "baton_relay": "heard",
+        "council": "heard",
+        "deterministic_systems": "heard",
+        "http_seat": "unbound",
+        "lighthouse": "heard",
+        "logic": "heard",
+        "metacognition": "heard",
+        "mycelium": "heard",
+        "neural": "heard",
+        "qgita": "heard",
+        "queen": "heard",
+        "self_code": "heard",
+        "self_repair": "heard"
+      },
       "false_alarm_rate": 0.0,
       "modes": [
         "clean",
@@ -308,6 +323,7 @@
         "tp": 30
       },
       "self_model_rule": "missing pulse, loop other than the loop observed on healthy pulses, or an error field",
+      "synthetic_faults": true,
       "trials": 48,
       "trials_raw": [
         {
@@ -733,13 +749,13 @@
           "seat": "algorithmic_nodes"
         },
         {
-          "actual": "running",
-          "baseline": "running",
+          "actual": "heard",
+          "baseline": "heard",
           "baseline_correct": true,
           "correct": true,
           "field": "loop",
           "held_out_tick": 7,
-          "predicted": "running",
+          "predicted": "heard",
           "seat": "algorithmic_nodes"
         },
         {
@@ -753,13 +769,13 @@
           "seat": "baton_relay"
         },
         {
-          "actual": "running",
-          "baseline": "running",
+          "actual": "heard",
+          "baseline": "heard",
           "baseline_correct": true,
           "correct": true,
           "field": "loop",
           "held_out_tick": 7,
-          "predicted": "running",
+          "predicted": "heard",
           "seat": "baton_relay"
         },
         {
@@ -783,13 +799,13 @@
           "seat": "council"
         },
         {
-          "actual": "running",
-          "baseline": "running",
+          "actual": "heard",
+          "baseline": "heard",
           "baseline_correct": true,
           "correct": true,
           "field": "loop",
           "held_out_tick": 7,
-          "predicted": "running",
+          "predicted": "heard",
           "seat": "council"
         },
         {
@@ -803,13 +819,13 @@
           "seat": "deterministic_systems"
         },
         {
-          "actual": "running",
-          "baseline": "running",
+          "actual": "heard",
+          "baseline": "heard",
           "baseline_correct": true,
           "correct": true,
           "field": "loop",
           "held_out_tick": 7,
-          "predicted": "running",
+          "predicted": "heard",
           "seat": "deterministic_systems"
         },
         {
@@ -823,13 +839,13 @@
           "seat": "http_seat"
         },
         {
-          "actual": "running",
-          "baseline": "running",
+          "actual": "unbound",
+          "baseline": "unbound",
           "baseline_correct": true,
           "correct": true,
           "field": "loop",
           "held_out_tick": 7,
-          "predicted": "running",
+          "predicted": "unbound",
           "seat": "http_seat"
         },
         {
@@ -843,13 +859,13 @@
           "seat": "lighthouse"
         },
         {
-          "actual": "running",
-          "baseline": "running",
+          "actual": "heard",
+          "baseline": "heard",
           "baseline_correct": true,
           "correct": true,
           "field": "loop",
           "held_out_tick": 7,
-          "predicted": "running",
+          "predicted": "heard",
           "seat": "lighthouse"
         },
         {
@@ -863,13 +879,13 @@
           "seat": "logic"
         },
         {
-          "actual": "running",
-          "baseline": "running",
+          "actual": "heard",
+          "baseline": "heard",
           "baseline_correct": true,
           "correct": true,
           "field": "loop",
           "held_out_tick": 7,
-          "predicted": "running",
+          "predicted": "heard",
           "seat": "logic"
         },
         {
@@ -883,13 +899,13 @@
           "seat": "metacognition"
         },
         {
-          "actual": "running",
-          "baseline": "running",
+          "actual": "heard",
+          "baseline": "heard",
           "baseline_correct": true,
           "correct": true,
           "field": "loop",
           "held_out_tick": 7,
-          "predicted": "running",
+          "predicted": "heard",
           "seat": "metacognition"
         },
         {
@@ -903,13 +919,13 @@
           "seat": "mycelium"
         },
         {
-          "actual": "running",
-          "baseline": "running",
+          "actual": "heard",
+          "baseline": "heard",
           "baseline_correct": true,
           "correct": true,
           "field": "loop",
           "held_out_tick": 7,
-          "predicted": "running",
+          "predicted": "heard",
           "seat": "mycelium"
         },
         {
@@ -923,13 +939,13 @@
           "seat": "neural"
         },
         {
-          "actual": "running",
-          "baseline": "running",
+          "actual": "heard",
+          "baseline": "heard",
           "baseline_correct": true,
           "correct": true,
           "field": "loop",
           "held_out_tick": 7,
-          "predicted": "running",
+          "predicted": "heard",
           "seat": "neural"
         },
         {
@@ -943,13 +959,13 @@
           "seat": "qgita"
         },
         {
-          "actual": "running",
-          "baseline": "running",
+          "actual": "heard",
+          "baseline": "heard",
           "baseline_correct": true,
           "correct": true,
           "field": "loop",
           "held_out_tick": 7,
-          "predicted": "running",
+          "predicted": "heard",
           "seat": "qgita"
         },
         {
@@ -963,13 +979,13 @@
           "seat": "queen"
         },
         {
-          "actual": "running",
-          "baseline": "running",
+          "actual": "heard",
+          "baseline": "heard",
           "baseline_correct": true,
           "correct": true,
           "field": "loop",
           "held_out_tick": 7,
-          "predicted": "running",
+          "predicted": "heard",
           "seat": "queen"
         },
         {
@@ -983,13 +999,13 @@
           "seat": "self_code"
         },
         {
-          "actual": "running",
-          "baseline": "running",
+          "actual": "heard",
+          "baseline": "heard",
           "baseline_correct": true,
           "correct": true,
           "field": "loop",
           "held_out_tick": 7,
-          "predicted": "running",
+          "predicted": "heard",
           "seat": "self_code"
         },
         {
@@ -1003,13 +1019,13 @@
           "seat": "self_repair"
         },
         {
-          "actual": "running",
-          "baseline": "running",
+          "actual": "heard",
+          "baseline": "heard",
           "baseline_correct": true,
           "correct": true,
           "field": "loop",
           "held_out_tick": 7,
-          "predicted": "running",
+          "predicted": "heard",
           "seat": "self_repair"
         }
       ],
@@ -1018,85 +1034,85 @@
     },
     "recent_actions": [
       {
-        "loop": "running",
+        "loop": "heard",
         "seat": "metacognition",
         "stage": null,
         "tick": 7
       },
       {
-        "loop": "running",
+        "loop": "heard",
         "seat": "queen",
         "stage": null,
         "tick": 7
       },
       {
-        "loop": "running",
+        "loop": "heard",
         "seat": "logic",
         "stage": null,
         "tick": 7
       },
       {
-        "loop": "running",
+        "loop": "heard",
         "seat": "neural",
         "stage": null,
         "tick": 7
       },
       {
-        "loop": "running",
+        "loop": "heard",
         "seat": "lighthouse",
         "stage": null,
         "tick": 7
       },
       {
-        "loop": "running",
+        "loop": "heard",
         "seat": "qgita",
         "stage": null,
         "tick": 7
       },
       {
-        "loop": "running",
+        "loop": "heard",
         "seat": "mycelium",
         "stage": null,
         "tick": 7
       },
       {
-        "loop": "running",
+        "loop": "heard",
         "seat": "baton_relay",
         "stage": "confirm",
         "tick": 7
       },
       {
-        "loop": "running",
+        "loop": "heard",
         "seat": "council",
         "stage": null,
         "tick": 7
       },
       {
-        "loop": "running",
+        "loop": "heard",
         "seat": "deterministic_systems",
         "stage": null,
         "tick": 7
       },
       {
-        "loop": "running",
+        "loop": "heard",
         "seat": "algorithmic_nodes",
         "stage": null,
         "tick": 7
       },
       {
-        "loop": "running",
+        "loop": "heard",
         "seat": "self_repair",
         "stage": null,
         "tick": 7
       },
       {
-        "loop": "running",
+        "loop": "unbound",
         "seat": "http_seat",
         "stage": null,
         "tick": 7
       },
       {
-        "loop": "running",
+        "loop": "heard",
         "seat": "self_code",
         "stage": null,
         "tick": 7

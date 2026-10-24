@@ -1,210 +1,31 @@
 {
-  "coherence": 0.44993808049535605,
-  "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+  "coherence": null,
+  "coherence_status": "no_data",
   "hold_nodes": [
     "Clownfish",
     "Owl"
   ],
-  "hold_reason": "these nodes do not change when one documented input moves between the clamp bounds",
+  "hold_reason": "these nodes have no value when volatility, momentum, volume, and spread are all present as 0; memory and symbiosis have no market input in read_auris_nodes",
   "market_data": null,
-  "market_data_note": "the argument was omitted, so the method used its own default",
-  "nodes": {
-    "CargoShip": {
-      "freq": 936.0,
-      "value": 0.5,
-      "weight": 0.7,
-      "weighted_value": 0.35
-    },
-    "Clownfish": {
-      "freq": 963.0,
-      "value": 0.5,
-      "weight": 1.0,
-      "weighted_value": 0.5
-    },
-    "Deer": {
-      "freq": 639.0,
-      "value": 0.5,
-      "weight": 0.9,
-      "weighted_value": 0.45
-    },
-    "Dolphin": {
-      "freq": 528.0,
-      "value": 0.5,
-      "weight": 1.5,
-      "weighted_value": 0.75
-    },
-    "Falcon": {
-      "freq": 285.0,
-      "value": 0.15,
-      "weight": 1.2,
-      "weighted_value": 0.18
-    },
-    "Hummingbird": {
-      "freq": 396.0,
-      "value": 0.011764705882352941,
-      "weight": 0.8,
-      "weighted_value": 0.009411764705882354
-    },
-    "Owl": {
-      "freq": 741.0,
-      "value": 0.6,
-      "weight": 1.1,
-      "weighted_value": 0.66
-    },
-    "Panda": {
-      "freq": 852.0,
-      "value": 0.75,
-      "weight": 1.3,
-      "weighted_value": 0.9750000000000001
-    },
-    "Tiger": {
-      "freq": 220.0,
-      "value": 0.4,
-      "weight": 1.0,
-      "weighted_value": 0.4
-    }
-  },
-  "sensitivity": {
-    "clamp_bounds": [
-      0.0,
-      1.0
-    ],
-    "clamp_source": "read_auris_nodes clamps each node value to the unit interval",
-    "inputs": [
-      "volatility",
-      "momentum",
-      "volume",
-      "spread"
-    ],
-    "inputs_that_move_each_node": {
-      "CargoShip": [
-        "volume"
-      ],
-      "Clownfish": [],
-      "Deer": [
-        "spread"
-      ],
-      "Dolphin": [
-        "momentum"
-      ],
-      "Falcon": [
-        "momentum",
-        "volume"
-      ],
-      "Hummingbird": [
-        "volatility"
-      ],
-      "Owl": [],
-      "Panda": [
-        "volatility"
-      ],
-      "Tiger": [
-        "volatility"
-      ]
-    },
-    "probes": {
-      "momentum": {
-        "0.0": {
-          "CargoShip": 0.5,
-          "Clownfish": 0.5,
-          "Deer": 0.5,
-          "Dolphin": 0.5,
-          "Falcon": 0.15,
-          "Hummingbird": 0.011764705882352941,
-          "Owl": 0.6,
-          "Panda": 0.75,
-          "Tiger": 0.4
-        },
-        "1.0": {
-          "CargoShip": 0.5,
-          "Clownfish": 0.5,
-          "Deer": 0.5,
-          "Dolphin": 0.5000000000000001,
-          "Falcon": 0.85,
-          "Hummingbird": 0.011764705882352941,
-          "Owl": 0.6,
-          "Panda": 0.75,
-          "Tiger": 0.4
-        }
-      },
-      "spread": {
-        "0.0": {
-          "CargoShip": 0.5,
-          "Clownfish": 0.5,
-          "Deer": 0.0,
-          "Dolphin": 0.5,
-          "Falcon": 0.15,
-          "Hummingbird": 0.011764705882352941,
-          "Owl": 0.6,
-          "Panda": 0.75,
-          "Tiger": 0.4
-        },
-        "1.0": {
-          "CargoShip": 0.5,
-          "Clownfish": 0.5,
-          "Deer": 1.0,
-          "Dolphin": 0.5,
-          "Falcon": 0.15,
-          "Hummingbird": 0.011764705882352941,
-          "Owl": 0.6,
-          "Panda": 0.75,
-          "Tiger": 0.4
-        }
-      },
-      "volatility": {
-        "0.0": {
-          "CargoShip": 0.5,
-          "Clownfish": 0.5,
-          "Deer": 0.5,
-          "Dolphin": 0.5,
-          "Falcon": 0.15,
-          "Hummingbird": 0.6,
-          "Owl": 0.6,
-          "Panda": 1.0,
-          "Tiger": 0.8
-        },
-        "1.0": {
-          "CargoShip": 0.5,
-          "Clownfish": 0.5,
-          "Deer": 0.5,
-          "Dolphin": 0.5,
-          "Falcon": 0.15,
-          "Hummingbird": 0.005940594059405941,
-          "Owl": 0.6,
-          "Panda": 0.5,
-          "Tiger": 0.0
-        }
-      },
-      "volume": {
-        "0.0": {
-          "CargoShip": 0.0,
-          "Clownfish": 0.5,
-          "Deer": 0.5,
-          "Dolphin": 0.5,
-          "Falcon": 0.0,
-          "Hummingbird": 0.011764705882352941,
-          "Owl": 0.6,
-          "Panda": 0.75,
-          "Tiger": 0.4
-        },
-        "1.0": {
-          "CargoShip": 1.0,
-          "Clownfish": 0.5,
-          "Deer": 0.5,
-          "Dolphin": 0.5,
-          "Falcon": 0.3,
-          "Hummingbird": 0.011764705882352941,
-          "Owl": 0.6,
-          "Panda": 0.75,
-          "Tiger": 0.4
-        }
-      }
-    }
-  },
+  "market_data_note": "no market series was supplied, so the omitted call is no_data",
+  "nodes": null,
   "source": "aureon.utils.aureon_queen_hive_mind.QueenHiveMind.get_auris_coherence",
+  "status": "no_data",
   "trade_readiness": {
-    "reason": "no trade-outcome labels; the status string is the method's own words, not a fill",
+    "reason": "no market series and no trade-outcome labels",
     "verdict": "HOLD"
   },
-  "weighted_mean_of_returned_nodes": 0.44993808049535605
+  "zero_input_probe": {
+    "inputs": {
+      "momentum": 0.0,
+      "spread": 0.0,
+      "volatility": 0.0,
+      "volume": 0.0
+    },
+    "nodes_without_reading": [
+      "Clownfish",
+      "Owl"
+    ],
+    "note": "clamp-bound probe of the existing formulas, not a market reading; node values are not published"
+  }
 }
