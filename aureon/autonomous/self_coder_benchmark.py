@@ -12,10 +12,8 @@ A fixture is not a result.
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import os
-import random
 import sys
 from pathlib import Path
 from typing import Any
@@ -458,52 +456,6 @@ def _dataset_label(root: Path, path: Path) -> str:
         return path.as_posix()
 
 
-def _prompt_draw(task_id: str, prompt: str) -> tuple[dict[str, float], list[float]]:
-    """Seeded synthetic draw. The numbers are not read from the task or a market."""
-
-    digest = hashlib.sha256(f"{INTERNAL_SEED}\n{task_id}\n{prompt}".encode("utf-8")).digest()
-    rng = random.Random(int.from_bytes(digest[:8], "big"))
-    momentum = rng.uniform(-1.0, 1.0)
-    features = {
-        "volatility": rng.random(),
-        "momentum": momentum,
-        "volume": rng.random(),
-        "spread": rng.random(),
-    }
-    series = [rng.uniform(-1.0, 1.0) for _ in range(16)]
-    return features, series
-
-
-def _auris_on_features(features: dict[str, float]) -> dict[str, Any]:
-    from aureon.utils.aureon_queen_hive_mind import QueenHiveMind
-
-    queen = QueenHiveMind.__new__(QueenHiveMind)
-    reading = queen.read_auris_nodes(features)
-    coherence, status = queen.get_auris_coherence(features)
-    nodes = {name: float(item["value"]) for name, item in reading.items()}
-    return {
-        "nodes": nodes,
-        "coherence": float(coherence),
-        "coherence_status": status,
-    }
-
-
-def _qgita_on_series(series: list[float]) -> dict[str, Any]:
-    import numpy as np
-
-    from aureon.wisdom.aureon_qgita_framework import FTCPDetector
-
-    detector = FTCPDetector()
-    times = np.arange(len(series), dtype=float)
-    found = detector.detect_ftcps(times, np.array(series, dtype=float))
-    valid = [item for item in found if item.is_valid]
-    return {
-        "points": len(found),
-        "valid_points": len(valid),
-        "max_g_eff": max((float(item.g_eff) for item in valid), default=None),
-    }
-
-
 def _score_internal_humaneval(root: Path, rows: list[dict[str, Any]]) -> dict[str, Any]:
     """Run the internal path on HumanEval. A hold receipt is not a program."""
 
@@ -512,19 +464,20 @@ def _score_internal_humaneval(root: Path, rows: list[dict[str, Any]]) -> dict[st
     passed = 0
     attempted = 0
     results: list[dict[str, Any]] = []
-    pipeline_error = ""
     for row in rows:
         task_id = str(row.get("task_id") or "missing-fields")
         prompt = str(row.get("prompt") or "")
         tests = humaneval_tests(row)
-        features, series = _prompt_draw(task_id, prompt)
-        auris: dict[str, Any] | None = None
-        qgita: dict[str, Any] | None = None
-        try:
-            auris = _auris_on_features(features)
-            qgita = _qgita_on_series(series)
-        except Exception as exc:
-            pipeline_error = f"{exc.__class__.__name__}: {exc}"
+        auris = {
+            "status": "no_data",
+            "coherence": None,
+            "reason": "a coding task has no market texture",
+        }
+        qgita = {
+            "status": "no_data",
+            "points": None,
+            "reason": "a coding task has no canonical price series",
+        }
         coder = run_self_coding_task(root, prompt, enabled=False)
         summary = coder.get("summary") if isinstance(coder.get("summary"), dict) else {}
         raw_program = coder.get("program")
@@ -574,17 +527,14 @@ def _score_internal_humaneval(root: Path, rows: list[dict[str, Any]]) -> dict[st
         )
     total = len(rows)
     not_attempted = total - attempted
-    ftcp_rows = sum(1 for item in results if int((item.get("qgita") or {}).get("points") or 0) > 0)
     per_row_inputs = {
-        "source": "aureon.autonomous.self_coder_benchmark._prompt_draw",
-        "kind": "synthetic",
-        "seed": "sha256 of INTERNAL_SEED, task_id, and the prompt text, then random.Random",
+        "source": None,
+        "kind": "no_data",
         "note": (
-            "The Auris features and the QGITA series on each row are a seeded random draw. "
-            "They are not derived from the task and they are not a market. "
-            "The FTCP count on these rows is not a coding score."
+            "Coding tasks are not a market. Auris and QGITA are not fed a drawn series. "
+            "There is no FTCP count on these rows, and it is not a coding score."
         ),
-        "ftcp_rows": ftcp_rows,
+        "ftcp_rows": None,
         "ftcp_rows_are": "not a coding score",
     }
     if total == 0 or attempted == 0:
@@ -601,12 +551,9 @@ def _score_internal_humaneval(root: Path, rows: list[dict[str, Any]]) -> dict[st
         measured = round(100.0 * passed / total, 2)
         counts_as_score = True
         reason = ""
-    if pipeline_error and attempted == 0:
-        reason = f"{reason}; pipeline error: {pipeline_error}"
     return {
         "suite": "HumanEval",
         "system_under_test": (
-            "Auris read_auris_nodes, QGITA FTCPDetector, "
             "aureon.autonomous.aureon_self_run_coding_task.run_self_coding_task"
         ),
         "seed": INTERNAL_SEED,

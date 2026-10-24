@@ -144,9 +144,6 @@ class BitcoinDataFetcher:
 
         if requests is None:
             print("requests not available.")
-            if self._synthetic_allowed():
-                print("AUREON_ALLOW_SYNTHETIC=1 — using tagged synthetic dataset.")
-                return self._generate_synthetic_data(days)
             return self._empty_frame()
 
         try:
@@ -179,9 +176,6 @@ class BitcoinDataFetcher:
             if binance_df is not None and not binance_df.empty:
                 print("Falling back to Binance public klines (BTCUSDT 1h).")
                 return binance_df
-            if self._synthetic_allowed():
-                print("AUREON_ALLOW_SYNTHETIC=1 — using tagged synthetic dataset.")
-                return self._generate_synthetic_data(days)
             return self._empty_frame()
 
     def _fetch_binance_hourly(self, limit: int = 1000) -> Optional[pd.DataFrame]:
@@ -603,6 +597,7 @@ def run_analysis(days: int = 90, simulations: int = 5_000, horizon_hours: int = 
             "signature": None,
             "critical_events": None,
             "projection": None,
+            "status": "no_data",
             "error": "no_real_market_data",
         }
 
@@ -657,10 +652,8 @@ def run_complete_lighthouse_analysis(
     fetcher = BitcoinDataFetcher()
     df = fetcher.fetch_historical_data(days=days)
     if df.empty:
-        print("✗ No real market data available and synthetic fallback is gated "
-              "(AUREON_ALLOW_SYNTHETIC not set). Skipping analysis — no synthetic "
-              "data will enter the pipeline.")
-        return None, None
+        print("✗ No real market data available. Returning no_data.")
+        return {"status": "no_data", "reason": "bitcoin market data was not fetched"}, None
     print(f"✓ Retrieved {len(df)} hourly observations")
     print(f"  Date range: {df.index[0]} to {df.index[-1]}")
     print(f"  Price range: ${df['price'].min():,.0f} - ${df['price'].max():,.0f}")

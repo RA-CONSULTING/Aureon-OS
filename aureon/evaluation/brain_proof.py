@@ -6,11 +6,11 @@ The class default turns the extension on. ``project_to_3d`` uses 0 when no
 residual is supplied, and three constructions of that default match, so the
 extension is measured beside the formula branch.
 
-Auris coherence is ``QueenHiveMind.get_auris_coherence`` with the market
-argument omitted, so the method uses its own default. A second set of calls
-changes one input at a time between the clamp bounds already in
-``read_auris_nodes``. Nodes that do not move are HOLD for a sensing claim.
-There is no trade-outcome label.
+Auris coherence is ``QueenHiveMind.get_auris_coherence``. This harness has
+no market series, so it does not supply a stand-in texture. The coherence
+figure is no_data. A zero-input probe names the nodes that stay without a
+value when the four market fields are present. There is no trade-outcome
+label.
 
 QGITA is ``QGITAMarketAnalyzer`` constructed with its own defaults, then
 ``analyze``. Detection rate and false-alarm rate stay HOLD: neither the
@@ -34,8 +34,28 @@ _NOTE = (
     "These figures are the HNC master-formula path, Auris coherence, and the QGITA analyzer. "
     "They are not a claim that the system is conscious or alive."
 )
-_CLAMP = (0.0, 1.0)
 _INPUTS = ("volatility", "momentum", "volume", "spread")
+
+
+def _optional_count(value: Any) -> int | None:
+    if value is None or isinstance(value, bool):
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _optional_float(value: Any) -> float | None:
+    if value is None or isinstance(value, bool):
+        return None
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    if number != number or number in (float("inf"), float("-inf")):
+        return None
+    return number
 
 
 def _one_default_field() -> dict[str, Any]:
@@ -104,18 +124,6 @@ def _reader():
     return QueenHiveMind.__new__(QueenHiveMind)
 
 
-def _node_values(reading: dict[str, Any]) -> dict[str, dict[str, float]]:
-    out: dict[str, dict[str, float]] = {}
-    for name, item in reading.items():
-        out[str(name)] = {
-            "value": float(item["value"]),
-            "freq": float(item["freq"]),
-            "weight": float(item["weight"]),
-            "weighted_value": float(item["weighted_value"]),
-        }
-    return out
-
-
 def _run_hnc() -> dict[str, Any]:
     from aureon.harmonic.aureon_harmonic_reality import HarmonicRealityField
 
@@ -158,41 +166,31 @@ def _run_hnc() -> dict[str, Any]:
 
 def _run_auris() -> dict[str, Any]:
     queen = _reader()
-    reading = _node_values(queen.read_auris_nodes(None))
     coherence, status = queen.get_auris_coherence(None)
-    weights = sum(item["weight"] for item in reading.values())
-    weighted = sum(item["weighted_value"] for item in reading.values())
-    changed: dict[str, list[str]] = {name: [] for name in reading}
-    probes: dict[str, dict[str, dict[str, float]]] = {}
-    for key in _INPUTS:
-        probes[key] = {}
-        for bound in _CLAMP:
-            probed = _node_values(queen.read_auris_nodes({key: bound}))
-            probes[key][str(bound)] = {name: item["value"] for name, item in probed.items()}
-            for name, item in probed.items():
-                if item["value"] != reading[name]["value"] and key not in changed[name]:
-                    changed[name].append(key)
-    hold = sorted(name for name, keys in changed.items() if not keys)
+    zeros = {key: 0.0 for key in _INPUTS}
+    probed = queen.read_auris_nodes(zeros)
+    hold = sorted(name for name, item in probed.items() if item.get("value") is None)
     return {
         "source": "aureon.utils.aureon_queen_hive_mind.QueenHiveMind.get_auris_coherence",
         "market_data": None,
-        "market_data_note": "the argument was omitted, so the method used its own default",
-        "nodes": reading,
-        "coherence": float(coherence),
+        "market_data_note": "no market series was supplied, so the omitted call is no_data",
+        "status": status,
+        "nodes": None,
+        "coherence": None if coherence is None else float(coherence),
         "coherence_status": status,
-        "weighted_mean_of_returned_nodes": (weighted / weights) if weights else None,
-        "sensitivity": {
-            "clamp_bounds": list(_CLAMP),
-            "clamp_source": "read_auris_nodes clamps each node value to the unit interval",
-            "inputs": list(_INPUTS),
-            "probes": probes,
-            "inputs_that_move_each_node": changed,
+        "zero_input_probe": {
+            "inputs": zeros,
+            "note": "clamp-bound probe of the existing formulas, not a market reading; node values are not published",
+            "nodes_without_reading": hold,
         },
         "hold_nodes": hold,
-        "hold_reason": "these nodes do not change when one documented input moves between the clamp bounds",
+        "hold_reason": (
+            "these nodes have no value when volatility, momentum, volume, and spread are all present as 0; "
+            "memory and symbiosis have no market input in read_auris_nodes"
+        ),
         "trade_readiness": {
             "verdict": "HOLD",
-            "reason": "no trade-outcome labels; the status string is the method's own words, not a fill",
+            "reason": "no market series and no trade-outcome labels",
         },
     }
 
@@ -248,14 +246,14 @@ def _run_qgita(values: list[float], times: list[float], series_name: str) -> dic
     for stamp, value in zip(times, values):
         analyzer.feed_price(float(value), timestamp=float(stamp))
     raw = analyzer.analyze()
-    stage1 = raw.get("stage1") or {}
-    stage2 = raw.get("stage2") or {}
+    stage1 = raw.get("stage1") if isinstance(raw.get("stage1"), dict) else {}
+    stage2 = raw.get("stage2") if isinstance(raw.get("stage2"), dict) else {}
     valid = list(stage1.get("valid_ftcps") or [])
     events = list(stage2.get("lighthouse_events") or [])
-    coherence = _plain(raw.get("coherence") or {})
-    statistics = _plain(raw.get("statistics") or {})
-    plain_signals = _plain(raw.get("signals") or {})
-    regime = _plain(raw.get("regime") or {})
+    coherence = None if raw.get("coherence") is None else _plain(raw.get("coherence"))
+    statistics = None if raw.get("statistics") is None else _plain(raw.get("statistics"))
+    plain_signals = None if raw.get("signals") is None else _plain(raw.get("signals"))
+    regime = None if raw.get("regime") is None else _plain(raw.get("regime"))
     return {
         "source": "aureon.wisdom.aureon_qgita_framework.QGITAMarketAnalyzer.analyze",
         "series": series_name,
@@ -267,14 +265,14 @@ def _run_qgita(values: list[float], times: list[float], series_name: str) -> dic
         },
         "lighthouse_threshold_sigma": float(analyzer.lighthouse.threshold_sigma),
         "samples_fed": len(values),
-        "samples_analyzed": statistics.get("total_samples"),
+        "samples_analyzed": None if not isinstance(statistics, dict) else statistics.get("total_samples"),
         "signal_note": "the direction is the analyzer's return. It is not an order and it has no outcome label",
         "buffer_note": "QGITAMarketAnalyzer keeps a 1000-sample buffer; analyze sees that tail",
         "status": raw.get("status"),
-        "ftcp_count": int(stage1.get("ftcp_count") or 0),
+        "ftcp_count": _optional_count(stage1.get("ftcp_count")),
         "valid_ftcps": [_ftcp_record(item) for item in valid],
-        "max_g_eff": float(stage1.get("max_g_eff") or 0.0),
-        "lhe_count": int(stage2.get("lhe_count") or 0),
+        "max_g_eff": _optional_float(stage1.get("max_g_eff")),
+        "lhe_count": _optional_count(stage2.get("lhe_count")),
         "lighthouse_events": [_lhe_record(item) for item in events],
         "lighthouse_intensity": _plain(stage2.get("current_lighthouse_intensity")),
         "detection_threshold": _plain(stage2.get("detection_threshold")),
@@ -434,7 +432,7 @@ def render_brain_markdown(report: dict[str, Any]) -> str:
         f"Multiverse extension: **{hnc['multiverse_extension']['verdict']}**. {hnc['multiverse_extension']['reason']}",
         (
             f"Auris coherence `{auris['coherence']}` with status `{auris['coherence_status']}`. "
-            f"Nodes that did not move: {', '.join(auris['hold_nodes']) or 'none'}."
+            f"Nodes without a reading: {', '.join(auris['hold_nodes']) or 'none'}."
         ),
         f"Trade readiness: **{auris['trade_readiness']['verdict']}**. {auris['trade_readiness']['reason']}",
         (

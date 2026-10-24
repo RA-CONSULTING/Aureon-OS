@@ -188,9 +188,11 @@ class MultiversalRealityDetector:
         # Trading multiplier depends on consciousness
         trading_multiplier = 0.5 + (consciousness_level * 1.5)  # 0.5x-2.0x
         
-        # Frequency signature (variant-specific)
-        freq_base = hash(f"{timeline_label}{variant_id}") % 1000 + 100
-        freq_sig = freq_base + (variant_id % 10)
+        # Frequency signature from the Auris node table. hash() is not stable across runs.
+        from aureon.utils.aureon_queen_hive_mind import AURIS_NODES
+
+        freqs = [int(node["freq"]) for node in AURIS_NODES.values()]
+        freq_sig = freqs[variant_id % len(freqs)] if freqs else None
         
         # Reality-specific parameters (with variation)
         kp_variation = (variant_id % 7)  # 0-6 Kp variation

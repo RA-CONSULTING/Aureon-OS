@@ -2386,7 +2386,11 @@ UNIFIED_MASTER_HTML = """
                 const spectroDisplay = document.getElementById('spectrogram-display');
                 const labels = ['HFT (1kHz+)', 'Market Maker', 'Scalper', 'Iceberg', 'Institutional', 'Grid Bot', 'Momentum', 'Wash Trade'];
                 spectroDisplay.innerHTML = labels.map((label, i) => {
-                    const intensity = surv.spectrogram[i] || Math.random() * 100;
+                    const raw = surv.spectrogram[i];
+                    const intensity = (typeof raw === 'number' && Number.isFinite(raw)) ? raw : null;
+                    if (intensity == null) {
+                        return `<div class="spectrogram-row"><span class="spec-label">${label}</span><div class="spec-bar"><span>n/a</span></div></div>`;
+                    }
                     return `<div class="spectrogram-row"><span class="spec-label">${label}</span><div class="spec-bar"><div class="spec-fill" style="width: ${100 - intensity}%"></div></div></div>`;
                 }).join('');
             }

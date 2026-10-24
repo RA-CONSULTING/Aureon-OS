@@ -24,7 +24,7 @@ def render_auris_markdown(report: dict[str, Any]) -> str:
         "",
         f"Source `{report.get('source')}`. {report.get('market_data_note', '')}",
         f"Coherence `{report.get('coherence')}`. Status `{report.get('coherence_status')}`.",
-        f"Nodes that did not move when one input crossed the clamp: {held}.",
+        f"Nodes without a reading when the four market fields are present as 0: {held}.",
         f"Trade readiness: **{trade.get('verdict')}**. {trade.get('reason', '')}",
         "This is the method's coherence, not a hit rate and not a trade result.",
         "",

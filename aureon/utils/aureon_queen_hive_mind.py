@@ -2218,6 +2218,64 @@ class QueenHiveMind:
     # 🦉🐬🐅 AURIS NODES - The 9 Sensory Organs 🐅🐬🦉
     # ═══════════════════════════════════════════════════════════════════════════════
     
+    def _auris_input(self, market_data: Optional[Dict[str, float]], key: str) -> Optional[float]:
+        """A market field, or None when that field was not supplied."""
+        if not isinstance(market_data, dict) or key not in market_data:
+            return None
+        raw = market_data[key]
+        if isinstance(raw, bool) or raw is None:
+            return None
+        try:
+            value = float(raw)
+        except (TypeError, ValueError):
+            return None
+        if value != value or value in (float("inf"), float("-inf")):
+            return None
+        return value
+
+    def _auris_role_value(self, role: str, market_data: Optional[Dict[str, float]]) -> Optional[float]:
+        """Existing node formula when its inputs are present. No stand-in."""
+        if role == "volatility":
+            volatility = self._auris_input(market_data, "volatility")
+            if volatility is None:
+                return None
+            value = (1.0 - volatility) * 0.8
+        elif role == "momentum":
+            momentum = self._auris_input(market_data, "momentum")
+            volume = self._auris_input(market_data, "volume")
+            if momentum is None or volume is None:
+                return None
+            value = abs(momentum) * 0.7 + volume * 0.3
+        elif role == "stability":
+            volatility = self._auris_input(market_data, "volatility")
+            if volatility is None:
+                return None
+            value = (1.0 / (volatility + 0.01)) * 0.01 * 0.6
+        elif role == "emotion":
+            momentum = self._auris_input(market_data, "momentum")
+            if momentum is None:
+                return None
+            value = (math.sin(momentum * math.pi) + 1) * 0.5
+        elif role == "sensing":
+            spread = self._auris_input(market_data, "spread")
+            if spread is None:
+                return None
+            value = spread
+        elif role == "love":
+            volatility = self._auris_input(market_data, "volatility")
+            if volatility is None:
+                return None
+            value = 1.0 - volatility * 0.5
+        elif role == "infrastructure":
+            volume = self._auris_input(market_data, "volume")
+            if volume is None:
+                return None
+            value = volume
+        else:
+            # memory (Owl) and symbiosis (Clownfish) have no market input here.
+            return None
+        return max(0.0, min(1.0, value))
+
     def read_auris_nodes(self, market_data: Dict[str, float] = None) -> Dict[str, Dict]:
         """
         🦉🐬🐅 Read the 9 Auris Nodes to sense market texture.
@@ -2229,63 +2287,25 @@ class QueenHiveMind:
         - Owl: Memory (pattern recognition)
         - etc.
         
-        Returns dict with each node's reading.
+        Returns dict with each node's reading. A missing field is no_data.
         """
-        if not market_data:
-            market_data = {'volatility': 0.5, 'momentum': 0.0, 'volume': 0.5, 'spread': 0.5}
-        
         results = {}
         
         for name, node in AURIS_NODES.items():
-            # Calculate node value based on role
-            if node['role'] == 'volatility':
-                # Tiger: Likes calm before storm (inverse volatility)
-                value = (1.0 - market_data.get('volatility', 0.5)) * 0.8
-            elif node['role'] == 'momentum':
-                # Falcon: Speed & attack
-                value = abs(market_data.get('momentum', 0.0)) * 0.7 + market_data.get('volume', 0.5) * 0.3
-            elif node['role'] == 'stability':
-                # Hummingbird: High-freq stability lock
-                vol = market_data.get('volatility', 0.5)
-                value = (1.0 / (vol + 0.01)) * 0.01 * 0.6
-            elif node['role'] == 'emotion':
-                # Dolphin: Waveform carrier - THE HEART OF SERO!
-                # Uses sine wave modulation
-                mom = market_data.get('momentum', 0.0)
-                value = (math.sin(mom * math.pi) + 1) * 0.5
-            elif node['role'] == 'sensing':
-                # Deer: Micro-shifts detection
-                value = market_data.get('spread', 0.5)
-            elif node['role'] == 'memory':
-                # Owl: Pattern recognition (we'd need historical data)
-                value = 0.6  # Default to cautiously optimistic
-            elif node['role'] == 'love':
-                # Panda: Grounding safety
-                value = 1.0 - market_data.get('volatility', 0.5) * 0.5
-            elif node['role'] == 'infrastructure':
-                # CargoShip: Liquidity buffer
-                value = market_data.get('volume', 0.5)
-            elif node['role'] == 'symbiosis':
-                # Clownfish: Connection/correlation
-                value = 0.5  # Neutral by default
-            else:
-                value = 0.5
-            
-            # Clamp to 0-1
-            value = max(0.0, min(1.0, value))
-            
+            value = self._auris_role_value(node['role'], market_data)
             results[name] = {
                 'value': value,
                 'freq': node['freq'],
                 'weight': node['weight'],
-                'weighted_value': value * node['weight'],
+                'weighted_value': None if value is None else value * node['weight'],
                 'emoji': node['emoji'],
-                'domain': node['domain']
+                'domain': node['domain'],
+                'data_status': 'no_data' if value is None else 'reading',
             }
         
         return results
     
-    def get_auris_coherence(self, market_data: Dict[str, float] = None) -> Tuple[float, str]:
+    def get_auris_coherence(self, market_data: Dict[str, float] = None) -> Tuple[Optional[float], str]:
         """
         🦉 Calculate total Auris coherence from all 9 nodes.
         
@@ -2293,14 +2313,18 @@ class QueenHiveMind:
           - Entry threshold: Γ > 0.938 (Heart Coherence)
           - Exit threshold: Γ < 0.934 (Coherence Break)
         
-        Returns: (coherence, status)
+        Returns: (coherence, status). Missing inputs return (None, "no_data").
         """
         nodes = self.read_auris_nodes(market_data)
+        if not nodes or any(node.get('value') is None for node in nodes.values()):
+            return None, "no_data"
         
         total_weighted = sum(n['weighted_value'] for n in nodes.values())
         total_weights = sum(n['weight'] for n in nodes.values())
         
-        coherence = total_weighted / total_weights if total_weights > 0 else 0.5
+        if total_weights <= 0:
+            return None, "no_data"
+        coherence = total_weighted / total_weights
 
         # The node blend is the Auris coherence. reconcile_gamma returns
         # that figure and does not substitute a canonical gamma.
@@ -2365,15 +2389,33 @@ class QueenHiveMind:
         nodes = self.read_auris_nodes(market_data)
         coherence, auris_status = self.get_auris_coherence(market_data)
         
-        # Get emotional state
-        emotion, freq, emoji = self.get_emotional_state(coherence)
-        is_love, love_dist = self.is_love_aligned(coherence)
-        
         # Get Gaia's blessing
         gaia_alignment, gaia_message = self.get_gaia_blessing()
         
         # Dolphin node is the emotional carrier - highlight it!
         dolphin = nodes.get('Dolphin', {})
+        dolphin_value = dolphin.get('value')
+        if coherence is None:
+            return {
+                'coherence': None,
+                'auris_status': 'no_data',
+                'emotion': None,
+                'emotion_freq': None,
+                'emotion_emoji': None,
+                'is_love_aligned': None,
+                'love_distance': None,
+                'gaia_alignment': gaia_alignment,
+                'gaia_message': gaia_message,
+                'dolphin_carrier': dolphin_value,
+                'nodes': nodes,
+                'should_trade': False,
+                'confidence': None,
+                'summary': 'no_data',
+            }
+
+        # Get emotional state
+        emotion, freq, emoji = self.get_emotional_state(coherence)
+        is_love, love_dist = self.is_love_aligned(coherence)
         
         return {
             'coherence': coherence,
@@ -2385,7 +2427,7 @@ class QueenHiveMind:
             'love_distance': love_dist,
             'gaia_alignment': gaia_alignment,
             'gaia_message': gaia_message,
-            'dolphin_carrier': dolphin.get('value', 0.5),  # The emotional waveform
+            'dolphin_carrier': dolphin_value,
             'nodes': nodes,
             # Trading guidance
             'should_trade': coherence >= 0.60 and gaia_alignment >= 0.40,
@@ -6941,25 +6983,26 @@ I will NOT sell at a loss when the market is down. 👑
         # ════════════════════════════════════════════════════════════════════
         # 🦉 SIGNAL 2: Auris Coherence (9 Sensory Nodes)
         # ════════════════════════════════════════════════════════════════════
-        auris_coherence = 0.5
-        auris_status = "Unknown"
-        if hasattr(self, 'get_auris_coherence'):
+        auris_coherence = None
+        auris_status = "no_data"
+        market_data = opportunity.get('market_data') if isinstance(opportunity, dict) else None
+        if market_data and hasattr(self, 'get_auris_coherence'):
             try:
-                market_data = opportunity.get('market_data', {}) if opportunity else {}
                 auris_coherence, auris_status = self.get_auris_coherence(market_data)
-                dream_vision['signals'].append({
-                    'source': '🦉 Auris Coherence',
-                    'value': auris_coherence,
-                    'detail': auris_status
-                })
-                total_signals += 1
-                if auris_coherence >= 0.6:
-                    positive_signals += 1
-                weight = 0.12
-                signal_weights += weight
-                weighted_sum += auris_coherence * weight
             except Exception:
-                pass
+                auris_coherence, auris_status = None, "no_data"
+        if isinstance(auris_coherence, (int, float)) and not isinstance(auris_coherence, bool):
+            dream_vision['signals'].append({
+                'source': '🦉 Auris Coherence',
+                'value': auris_coherence,
+                'detail': auris_status
+            })
+            total_signals += 1
+            if auris_coherence >= 0.6:
+                positive_signals += 1
+            weight = 0.12
+            signal_weights += weight
+            weighted_sum += auris_coherence * weight
         dream_vision['metrics']['auris_coherence'] = auris_coherence
         
         # ════════════════════════════════════════════════════════════════════
@@ -7588,21 +7631,28 @@ I will NOT sell at a loss when the market is down. 👑
             'milestones_hit': len(self.metrics.get('milestones_hit', [])),
         }
         
-        # Add Auris reading
+        # Add Auris reading. No market texture is attached here, so this is no_data.
         try:
             coherence, status = self.get_auris_coherence()
             metrics['auris_coherence'] = coherence
             metrics['auris_status'] = status
-        except:
-            metrics['auris_coherence'] = 0.5
+        except Exception:
+            metrics['auris_coherence'] = None
+            metrics['auris_status'] = 'no_data'
         
         # Add emotional state
-        try:
-            is_love, dist = self.is_love_aligned(metrics.get('auris_coherence', 0.5))
-            metrics['is_love_aligned'] = is_love
-            metrics['love_distance'] = dist
-        except:
-            metrics['is_love_aligned'] = False
+        coherence_value = metrics.get('auris_coherence')
+        if isinstance(coherence_value, (int, float)) and not isinstance(coherence_value, bool):
+            try:
+                is_love, dist = self.is_love_aligned(coherence_value)
+                metrics['is_love_aligned'] = is_love
+                metrics['love_distance'] = dist
+            except Exception:
+                metrics['is_love_aligned'] = None
+                metrics['love_distance'] = None
+        else:
+            metrics['is_love_aligned'] = None
+            metrics['love_distance'] = None
         
         # Add Gaia blessing
         try:
@@ -10320,6 +10370,8 @@ into my trading harmonics. Let's use this to WIN! 🐝💰
             "deeper_reflection": thoughts["reflection"],
             "action_desire": thoughts["action"],
             "emotion": thoughts["emotion"],
+            "origin": "canned",
+            "note": "canned hive text chosen at random; not a market reading and not a measurement",
             "timestamp": time.time()
         }
     
@@ -10510,7 +10562,8 @@ into my trading harmonics. Let's use this to WIN! 🐝💰
             "main_thought": random.choice(data["thoughts"]),
             "reflection": random.choice(data["reflections"]),
             "action": random.choice(data["actions"]),
-            "emotion": data["emotion"]
+            "emotion": data["emotion"],
+            "origin": "canned",
         }
     
     def share_my_dreams(self, voice_enabled: bool = True) -> str:

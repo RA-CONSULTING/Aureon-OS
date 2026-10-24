@@ -2929,8 +2929,8 @@ class UnifiedMarketTrader:
                 "passed": False,
                 "flow": [],
                 "systems": {},
-                "auris_nodes": {"node_count": 0, "coherence": 0.0},
-                "master_formula": {"score": 0.0, "evaluated": False},
+                "auris_nodes": {"node_count": None, "coherence": None, "status": "no_data"},
+                "master_formula": {"score": None, "evaluated": False, "status": "no_data"},
                 "real_data": {"passed": False, "source_count": 0, "price_count": 0},
             },
             "intelligence_mesh": self._build_intelligence_mesh(),
@@ -8696,7 +8696,7 @@ class UnifiedMarketTrader:
                 "pillar": "ModelAlignmentAgent",
                 "signal": side_signal if model_aligned else "NEUTRAL",
                 "confidence": model_score,
-                "coherence": 0.86 if model_aligned else 0.34,
+                "coherence": self._auris_or_canonical_coherence(item),
                 "frequency_hz": 528.0 if model_aligned else 432.0,
             },
             {
@@ -8731,7 +8731,13 @@ class UnifiedMarketTrader:
         try:
             from aureon.alignment.harmonic_resonance import full_harmonic_analysis
 
-            analysis = full_harmonic_analysis(pillar_results=synthetic_signals)
+            analysable = [
+                row for row in synthetic_signals
+                if isinstance(row.get("coherence"), (int, float)) and not isinstance(row.get("coherence"), bool)
+            ]
+            analysis = full_harmonic_analysis(pillar_results=analysable) if analysable else None
+            if analysis is None:
+                raise ValueError("no_data")
             hnc_alignment = {
                 "available": True,
                 "alignment_score": round(float(getattr(analysis, "alignment_score", 0.0) or 0.0), 6),
@@ -10324,106 +10330,95 @@ class UnifiedMarketTrader:
             "confidence": avg_confidence,
         }
 
-    def _build_auris_node_proof(self, market_data: Dict[str, float]) -> Dict[str, Any]:
-        node_defs = {
-            "Tiger": {"freq": 220.0, "role": "volatility", "weight": 1.0, "domain": "cuts noise"},
-            "Falcon": {"freq": 285.0, "role": "momentum", "weight": 1.2, "domain": "speed and attack"},
-            "Hummingbird": {"freq": 396.0, "role": "stability", "weight": 0.8, "domain": "high frequency lock"},
-            "Dolphin": {"freq": 528.0, "role": "emotion", "weight": 1.5, "domain": "waveform carrier"},
-            "Deer": {"freq": 639.0, "role": "sensing", "weight": 0.9, "domain": "micro shifts"},
-            "Owl": {"freq": 741.0, "role": "memory", "weight": 1.1, "domain": "pattern memory"},
-            "Panda": {"freq": 852.0, "role": "love", "weight": 1.3, "domain": "grounding safety"},
-            "CargoShip": {"freq": 936.0, "role": "infrastructure", "weight": 0.7, "domain": "liquidity buffer"},
-            "Clownfish": {"freq": 963.0, "role": "symbiosis", "weight": 1.0, "domain": "connection"},
-        }
+    def _auris_or_canonical_coherence(self, market_data: Optional[Dict[str, Any]] = None) -> Optional[float]:
+        """Auris coherence when the market texture is complete, else canonical Γ, else None."""
 
-        required_fields = ("volatility", "momentum", "volume", "spread", "route_unity", "model_alignment", "confidence")
-        parsed = {key: self._finite_number(market_data.get(key)) for key in required_fields}
+        texture = market_data if isinstance(market_data, dict) else {}
+        required = ("volatility", "momentum", "volume", "spread")
+        parsed = {key: self._finite_number(texture.get(key)) for key in required}
+        auris_value: Optional[float] = None
+        if all(value is not None for value in parsed.values()):
+            try:
+                from aureon.utils.aureon_queen_hive_mind import QueenHiveMind
+
+                queen = QueenHiveMind.__new__(QueenHiveMind)
+                coherence, _status = queen.get_auris_coherence({key: float(parsed[key]) for key in required})
+                if isinstance(coherence, (int, float)) and not isinstance(coherence, bool):
+                    auris_value = float(coherence)
+            except Exception:
+                auris_value = None
+        if auris_value is not None:
+            return auris_value
+        try:
+            from aureon.core.hnc_field import read_canonical_field
+
+            field = read_canonical_field()
+            gamma = getattr(field, "coherence_gamma", None) if getattr(field, "available", False) else None
+            if isinstance(gamma, (int, float)) and not isinstance(gamma, bool):
+                return float(gamma)
+        except Exception:
+            return None
+        return None
+
+    def _build_auris_node_proof(self, market_data: Dict[str, float]) -> Dict[str, Any]:
+        required_fields = ("volatility", "momentum", "volume", "spread")
+        parsed = {key: self._finite_number((market_data or {}).get(key)) for key in required_fields}
+        canonical_gamma = None
+        try:
+            from aureon.core.hnc_field import read_canonical_field
+
+            field = read_canonical_field()
+            if getattr(field, "available", False):
+                gamma = field.coherence_gamma
+                if isinstance(gamma, (int, float)) and not isinstance(gamma, bool):
+                    canonical_gamma = float(gamma)
+        except Exception:
+            canonical_gamma = None
         if any(value is None for value in parsed.values()):
             return {
-                "source": "aureon/utils/aureon_queen_hive_mind.py::AURIS_NODES",
+                "source": "QueenHiveMind.read_auris_nodes",
                 "evaluated": False,
                 "passed": False,
                 "status": "no_data",
                 "data_status": "no_data",
                 "reason": "complete_finite_market_texture_required",
                 "node_count": 0,
-                "coherence": 0.0,
+                "coherence": None,
+                "canonical_gamma": canonical_gamma,
                 "nodes": {},
             }
-        volatility = self._clamp01(parsed["volatility"])
-        momentum = max(-1.0, min(1.0, float(parsed["momentum"])))
-        volume = self._clamp01(parsed["volume"])
-        spread = self._clamp01(parsed["spread"])
-        route_unity = self._clamp01(parsed["route_unity"])
-        model_alignment = self._clamp01(parsed["model_alignment"])
+        from aureon.utils.aureon_queen_hive_mind import QueenHiveMind
 
+        queen = QueenHiveMind.__new__(QueenHiveMind)
+        texture = {key: float(parsed[key]) for key in required_fields}
+        raw_nodes = queen.read_auris_nodes(texture)
+        coherence, status = queen.get_auris_coherence(texture)
         nodes: Dict[str, Any] = {}
-        for name, node in node_defs.items():
-            role = str(node["role"])
-            if role == "volatility":
-                value = (1.0 - volatility) * 0.8
-            elif role == "momentum":
-                value = abs(momentum) * 0.7 + volume * 0.3
-            elif role == "stability":
-                value = (1.0 / (volatility + 0.01)) * 0.01 * 0.6
-            elif role == "emotion":
-                value = (math.sin(momentum * math.pi) + 1.0) * 0.5
-            elif role == "sensing":
-                value = spread
-            elif role == "memory":
-                value = 0.6 + model_alignment * 0.25
-            elif role == "love":
-                value = 1.0 - volatility * 0.5
-            elif role == "infrastructure":
-                value = max(volume, route_unity)
-            elif role == "symbiosis":
-                value = 0.5 + (route_unity * 0.25) + (model_alignment * 0.25)
-            else:
-                return {
-                    "source": "aureon/utils/aureon_queen_hive_mind.py::AURIS_NODES",
-                    "evaluated": False,
-                    "passed": False,
-                    "status": "no_data",
-                    "data_status": "no_data",
-                    "reason": "unknown_auris_node_role",
-                    "node_count": 0,
-                    "coherence": 0.0,
-                    "nodes": {},
-                }
-            value = self._clamp01(value)
-            weight = float(node["weight"])
+        for name, item in raw_nodes.items():
+            value = item.get("value")
+            weight = item.get("weight")
+            weighted = item.get("weighted_value")
             nodes[name] = {
-                "value": round(value, 6),
-                "freq": float(node["freq"]),
-                "role": role,
-                "weight": weight,
-                "weighted_value": round(value * weight, 6),
-                "domain": node["domain"],
-                "timestamp": datetime.now().isoformat(),
+                "value": None if value is None else round(float(value), 6),
+                "freq": float(item.get("freq")),
+                "weight": None if weight is None else float(weight),
+                "weighted_value": None if weighted is None else round(float(weighted), 6),
+                "domain": item.get("domain"),
+                "data_status": item.get("data_status"),
             }
-
-        total_weighted = sum(float(node.get("weighted_value", 0.0) or 0.0) for node in nodes.values())
-        total_weights = sum(float(node.get("weight", 0.0) or 0.0) for node in nodes.values())
-        coherence = total_weighted / total_weights if total_weights > 0 else 0.0
-        if coherence >= 0.938:
-            status = "heart_coherence"
-        elif coherence >= 0.8:
-            status = "high_coherence"
-        elif coherence >= 0.6:
-            status = "moderate_coherence"
-        else:
-            status = "low_coherence"
-
+        measured = sum(1 for item in nodes.values() if item["value"] is not None)
+        published = None if coherence is None else round(float(coherence), 6)
         return {
-            "source": "aureon/utils/aureon_queen_hive_mind.py::AURIS_NODES",
-            "evaluated": True,
-            "passed": len(nodes) == 9,
-            "data_status": "live",
+            "source": "QueenHiveMind.read_auris_nodes",
+            "evaluated": measured > 0,
+            "passed": published is not None and measured == len(nodes),
+            "data_status": "reading" if published is not None else "no_data",
             "node_count": len(nodes),
-            "coherence": round(coherence, 6),
-            "status": status,
-            "market_texture": {key: round(float(value), 6) for key, value in market_data.items()},
+            "nodes_with_reading": measured,
+            "coherence": published,
+            "canonical_gamma": canonical_gamma,
+            "status": status if published is not None else "no_data",
+            "market_texture": {key: round(float(value), 6) for key, value in texture.items()},
             "nodes": nodes,
         }
 

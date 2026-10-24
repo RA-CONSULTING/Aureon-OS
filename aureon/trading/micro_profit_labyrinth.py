@@ -11893,17 +11893,21 @@ class MicroProfitLabyrinth:
                 logger.debug(f"Gaia blessing error: {e}")
         
         # 8. 🦉🐬🐅 AURIS NODES - The 9 Sensory Organs
-        # Read the Auris nodes for market texture sensing
-        if self.queen and hasattr(self.queen, 'get_auris_coherence'):
+        # A reading needs the opportunity's market texture. No stand-in is appended.
+        market_data = getattr(opportunity, "market_data", None) if opportunity is not None else None
+        if self.queen and isinstance(market_data, dict) and market_data and hasattr(self.queen, 'get_auris_coherence'):
             try:
-                auris_coherence, auris_status = self.queen.get_auris_coherence()
-                signals.append(auris_coherence)
-                if auris_coherence >= 0.80:
-                    reasons.append(f"🦉 Auris high ({auris_coherence:.0%})")
-                elif auris_coherence >= 0.60:
-                    reasons.append(f"🦉 Auris moderate ({auris_coherence:.0%})")
+                auris_coherence, auris_status = self.queen.get_auris_coherence(market_data)
+                if isinstance(auris_coherence, (int, float)) and not isinstance(auris_coherence, bool):
+                    signals.append(auris_coherence)
+                    if auris_coherence >= 0.80:
+                        reasons.append(f"🦉 Auris high ({auris_coherence:.0%})")
+                    elif auris_coherence >= 0.60:
+                        reasons.append(f"🦉 Auris moderate ({auris_coherence:.0%})")
+                    else:
+                        reasons.append(f"🦉 Auris low ({auris_coherence:.0%})")
                 else:
-                    reasons.append(f"🦉 Auris low ({auris_coherence:.0%})")
+                    reasons.append(f"🦉 Auris {auris_status or 'no_data'}")
             except Exception as e:
                 logger.debug(f"Auris coherence error: {e}")
         

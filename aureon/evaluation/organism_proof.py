@@ -243,7 +243,14 @@ def _self_flags(payload: dict[str, Any] | None, expected_loop: str | None) -> bo
     return False
 
 
-def _fault_trials(circ: Any, bus: Any, seats: list[dict[str, str]], expected_loop: str | None, seed: int, trials: int) -> dict[str, Any]:
+def _fault_trials(
+    circ: Any,
+    bus: Any,
+    seats: list[dict[str, str]],
+    expected_by_seat: dict[str, str | None],
+    seed: int,
+    trials: int,
+) -> dict[str, Any]:
     rng = random.Random(seed)
     rows: list[dict[str, Any]] = []
     self_called: list[bool] = []
@@ -253,6 +260,7 @@ def _fault_trials(circ: Any, bus: Any, seats: list[dict[str, str]], expected_loo
         seat = rng.choice(seats)
         mode = rng.choice(_MODES)
         label = 0 if mode == "clean" else 1
+        expected_loop = expected_by_seat.get(seat["name"])
         payload = None
         if mode != "silent":
             payload = circ._payload_for(seat, index)
@@ -286,6 +294,7 @@ def _fault_trials(circ: Any, bus: Any, seats: list[dict[str, str]], expected_loo
         "seed": seed,
         "trials": trials,
         "origin": "synthetic",
+        "synthetic_faults": True,
         "note": (
             "These faults are injected by the harness. A trial withholds a pulse, "
             "or publishes that seat's payload with loop set to fault and error set to injected. "
@@ -294,7 +303,7 @@ def _fault_trials(circ: Any, bus: Any, seats: list[dict[str, str]], expected_loo
         "modes": list(_MODES),
         "self_model_rule": "missing pulse, loop other than the loop observed on healthy pulses, or an error field",
         "baseline_rule": "missing pulse only",
-        "expected_loop": expected_loop,
+        "expected_loop_by_seat": expected_by_seat,
         "self_model": self_rates,
         "baseline": baseline_rates,
         "detection_rate": self_rates["detection_rate"],
@@ -382,9 +391,11 @@ def evaluate_organism(
         connected = len(roster) - len(isolated)
         score = (connected / len(roster)) if roster else None
         prediction = _score_prediction({name: rows for name, rows in by_seat.items() if rows})
-        observed_loops = [pulse.get("loop") for rows in by_seat.values() for pulse in rows if isinstance(pulse.get("loop"), str)]
-        expected_loop = _mode([loop for loop in observed_loops if isinstance(loop, str)])
-        faults = _fault_trials(circ, bus, roster, expected_loop, seed, fault_trials)
+        expected_by_seat = {
+            name: _mode([loop for loop in (pulse.get("loop") for pulse in rows) if isinstance(loop, str)])
+            for name, rows in by_seat.items()
+        }
+        faults = _fault_trials(circ, bus, roster, expected_by_seat, seed, fault_trials)
         errors = [
             {"seat": name, "tick": pulse.get("tick"), "error": pulse.get("error")}
             for name, rows in by_seat.items()

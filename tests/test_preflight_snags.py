@@ -103,9 +103,10 @@ def test_thought_bus_organs_publish_and_subscribe(monkeypatch: pytest.MonkeyPatc
         with urllib.request.urlopen(f"http://127.0.0.1:{started['port']}/health", timeout=2) as resp:
             assert resp.status == 200
         assert body["listening"] is True
-        assert body["loops"]["council"] == "running"
-        assert body["loops"]["baton_relay"] == "running"
-        assert body["loops"]["metacognition"] == "running"
+        assert body["loops"]["council"] == "heard"
+        assert body["loops"]["baton_relay"] == "heard"
+        assert body["loops"]["metacognition"] in {"heard", "no_data"}
+        assert "running" not in body["loops"].values()
         switched = switch_connector("self_code", True)
         assert switched["self_code"] is True
         proposal = propose_self_code("aureon/core/notes_probe.py", "record only")

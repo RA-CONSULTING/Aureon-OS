@@ -79,7 +79,7 @@ def test_self_coder_offline_hold_matches_the_committed_run(monkeypatch: pytest.M
     assert fresh["humaneval"]["not_attempted"] == fresh["humaneval"]["rows"]
     assert fresh["humaneval"]["measured_pct"] is None
     assert fresh["humaneval"]["dataset"] == "data/research/open_benchmarks/humaneval.jsonl"
-    assert fresh["humaneval"]["per_row_auris_qgita"]["kind"] == "synthetic"
+    assert fresh["humaneval"]["per_row_auris_qgita"]["kind"] == "no_data"
     assert "not a market" in fresh["humaneval"]["per_row_auris_qgita"]["note"]
     assert "not a coding score" in fresh["humaneval"]["per_row_auris_qgita"]["note"]
     assert fresh["flagship_comparison"]["status"] == "HOLD"
@@ -128,6 +128,7 @@ def test_organism_connectivity_and_self_model_match_the_committed_run():
     assert fresh["live_trading"] is False
     assert fresh["orders_placed"] is False
     assert fresh["self_model"]["fault"]["origin"] == "synthetic"
+    assert fresh["self_model"]["fault"]["synthetic_faults"] is True
     assert "injected by the harness" in fresh["self_model"]["fault"]["note"]
     assert fresh["self_model"]["external_llm"] is False
     prediction = fresh["self_model"]["prediction"]

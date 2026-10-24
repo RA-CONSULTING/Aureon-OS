@@ -142,8 +142,8 @@ _FAILURE_COUNTS: dict[str, int] = {}
 _DEPRIORITISED: list[str] = []
 _SEEN_FAILURE_IDS: set[str] = set()
 _META: dict[str, Any] = {
-    "truth_status": "loop_running",
-    "loop": "running",
+    "truth_status": "no_data",
+    "loop": None,
     "audit_concern": None,
     "audit_confidence": _CONFIDENCE_BASE,
 }
@@ -215,6 +215,60 @@ def propose_self_code(path: str, reason: str) -> dict[str, Any]:
     return {"accepted": True, "applied": False, "record": record}
 
 
+def _pulse_field() -> dict[str, Any]:
+    """Canonical Γ and Λ when the live field is present, otherwise no_data.
+
+    Circulation has no market texture, so the Auris reading is no_data and
+    ``read_auris_nodes`` is not called with a stand-in.
+    """
+
+    gamma = None
+    lambda_t = None
+    field_status = "no_data"
+    try:
+        from aureon.core.hnc_field import read_canonical_field
+
+        field = read_canonical_field()
+        if getattr(field, "available", False):
+            gamma = field.coherence_gamma
+            lambda_t = field.lambda_t
+            if gamma is not None or lambda_t is not None:
+                field_status = "reading"
+    except Exception:
+        gamma = None
+        lambda_t = None
+        field_status = "no_data"
+    return {
+        "gamma": gamma,
+        "lambda_t": lambda_t,
+        "field_status": field_status,
+        "auris": {
+            "status": "no_data",
+            "coherence": None,
+            "reason": "this pulse has no market texture, so read_auris_nodes is not called",
+        },
+    }
+
+
+def _observed_loop(name: str, payload: dict[str, Any]) -> str | None:
+    """Name the loop from something this tick observed."""
+
+    if name == "http_seat":
+        bound = bool(payload.get("http_seat_bound") or payload.get("listening"))
+        return "bound" if bound else "unbound"
+    if name == "self_repair" and payload.get("last_audit_event"):
+        return "audit"
+    with _LOCK:
+        heard = int((_STATE.get("consume_count") or {}).get(name, 0))
+    if heard > 0:
+        return "heard"
+    if name == "metacognition":
+        status = payload.get("truth_status")
+        if isinstance(status, str) and status and status != "loop_running":
+            return status
+    return None
+
+
 def _payload_for(organ: dict[str, str], tick: int) -> dict[str, Any]:
     name = organ["name"]
     payload: dict[str, Any] = {
@@ -222,12 +276,11 @@ def _payload_for(organ: dict[str, str], tick: int) -> dict[str, Any]:
         "role": organ["role"],
         "module": organ["module"],
         "tick": tick,
-        "loop": "running",
+        "loop": None,
         "listening": True,
     }
     if name == "metacognition":
         payload.update(dict(_META))
-        payload["loop"] = "running"
     elif name == "baton_relay":
         payload["stage"] = _BATON_STAGES[tick % len(_BATON_STAGES)]
         payload["stages"] = list(_BATON_STAGES)
@@ -247,12 +300,13 @@ def _payload_for(organ: dict[str, str], tick: int) -> dict[str, Any]:
     elif name == "self_repair":
         with _LOCK:
             heard = list((_STATE.get("audit_consumed") or {}).get("self_repair") or [])
-        payload["loop"] = "running"
         if heard:
             payload["last_audit_event"] = str(heard[-1].get("event") or "")
     elif name == "self_code":
         payload["applied"] = False
         payload["live_trading"] = False
+    payload["loop"] = _observed_loop(name, payload)
+    payload.update(_pulse_field())
     return payload
 
 
@@ -525,7 +579,8 @@ def ensure_audit_subscribers() -> None:
 def _metacognition_loop(stop: threading.Event) -> None:
     while not stop.is_set():
         reading = _metacognition_reading()
-        reading["loop"] = "running"
+        reading["loop"] = _observed_loop("metacognition", reading)
+        reading.update(_pulse_field())
         reading["ollama"] = False
         reading.setdefault("reason", "no model is called")
         with _LOCK:
@@ -551,7 +606,7 @@ def _self_repair_loop(stop: threading.Event) -> None:
         with _LOCK:
             heard = list((_STATE.get("audit_consumed") or {}).get("self_repair") or [])
             loops = dict(_STATE.get("loops") or {})
-            loops["self_repair"] = "running"
+            loops["self_repair"] = "audit" if heard else None
             if heard:
                 loops["self_repair_last_audit"] = str(heard[-1].get("event") or "")
             if _DEPRIORITISED:
@@ -604,14 +659,17 @@ def _publish_tick(tick: int) -> None:
     for organ in circulation_seats():
         if not connectors.get(organ["name"], True):
             continue
+        payload = _payload_for(organ, tick)
         bus.publish(
             Thought(
                 source=organ["name"],
                 topic=_CIRCULATION,
-                payload=_payload_for(organ, tick),
+                payload=payload,
             )
         )
-        running[organ["name"]] = "running"
+        loop = payload.get("loop")
+        if isinstance(loop, str):
+            running[organ["name"]] = loop
     bus.publish(
         Thought(
             source="self_model",

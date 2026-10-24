@@ -137,13 +137,12 @@ class BitcoinDataFetcher:
     def __init__(self):
         self.base_url = "https://api.coingecko.com/api/v3"
 
-    def fetch_historical_data(self, days: int = 90) -> pd.DataFrame:
+    def fetch_historical_data(self, days: int = 90):
         endpoint = f"{self.base_url}/coins/bitcoin/market_chart"
         params = {"vs_currency": "usd", "days": days, "interval": "hourly"}
 
         if requests is None:
-            print("requests not available. Using synthetic dataset.")
-            return self._generate_synthetic_data(days)
+            return None
 
         try:
             response = requests.get(endpoint, params=params, timeout=20)
@@ -169,38 +168,8 @@ class BitcoinDataFetcher:
             df["datetime"] = pd.to_datetime(df["timestamp"], unit="ms")
             return df.set_index("datetime").sort_index()
 
-        except Exception as exc:  # network/rate-limit fallback
-            print(f"Error fetching data: {exc}")
-            print("Generating synthetic data for demonstration...")
-            return self._generate_synthetic_data(days)
-
-    def _generate_synthetic_data(self, days: int) -> pd.DataFrame:
-        hours = days * 24
-        timestamps = pd.date_range(end=datetime.now(), periods=hours, freq="h")
-
-        rng = np.random.default_rng(42)
-        price = [95000.0]
-        drift = 0.0001
-
-        for i in range(1, hours):
-            if i % 500 == 0:
-                drift = float(rng.choice([-0.001, 0.0005]))
-            volatility = max(0.003, 0.015 * (1 + 0.3 * rng.standard_normal()))
-            ret = drift + volatility * rng.standard_normal()
-            price.append(max(1000.0, price[-1] * (1 + ret)))
-
-        price_arr = np.array(price)
-        df = pd.DataFrame(
-            {
-                "timestamp": timestamps.astype("int64") // 10**6,
-                "price": price_arr,
-                "volume": rng.uniform(20e9, 40e9, hours),
-                "market_cap": price_arr * 19.5e6,
-            },
-            index=timestamps,
-        )
-        df.index.name = "datetime"
-        return df
+        except Exception:
+            return None
 
 
 class BitcoinLighthouseForensics:
@@ -538,6 +507,8 @@ def run_complete_lighthouse_analysis(
     print("\n[1/4] Fetching Bitcoin data...")
     fetcher = BitcoinDataFetcher()
     df = fetcher.fetch_historical_data(days=days)
+    if df is None or getattr(df, "empty", True):
+        return {"status": "no_data", "reason": "bitcoin market data was not fetched"}
     print(f"✓ Retrieved {len(df)} hourly observations")
     print(f"  Date range: {df.index[0]} to {df.index[-1]}")
     print(f"  Price range: ${df['price'].min():,.0f} - ${df['price'].max():,.0f}")

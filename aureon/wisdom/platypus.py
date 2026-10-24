@@ -63,6 +63,7 @@ class PlatypusConfig:
     # Validation parameters
     max_lag_hours: int = 72              # ±3 days for lag correlation
     n_permutations: int = 2000           # Block shuffle permutations
+    permutation_seed: int = 0            # Generator seed for the epoch null
     block_hours: int = 24                # Block size for shuffle
     epoch_window_hours: int = 72         # ±3 days around events
     coherence_nperseg: int = 256         # FFT segment length
@@ -693,10 +694,11 @@ class Platypus:
             if mean_epoch is not None:
                 obs_peak = float(np.max(np.abs(mean_epoch)))
                 
-                # Permutation for epoch
+                # Permutation for epoch. Seeded so the null is the same run to run.
                 null_peaks = []
+                rng = np.random.default_rng(self.config.permutation_seed)
                 for _ in range(1000):
-                    rand_idx = np.random.choice(
+                    rand_idx = rng.choice(
                         np.arange(window_steps, len(y) - window_steps),
                         size=len(event_idx),
                         replace=False
@@ -709,6 +711,8 @@ class Platypus:
                 
                 epoch_result['obs_peak'] = obs_peak
                 epoch_result['p_value'] = p_epoch
+                epoch_result['permutation_seed'] = int(self.config.permutation_seed)
+                epoch_result['permutation_draws'] = 1000
                 
                 print(f"\n[TEST 3] Superposed Epoch (Lighthouse)")
                 print(f"  Events: {len(event_idx)}")
