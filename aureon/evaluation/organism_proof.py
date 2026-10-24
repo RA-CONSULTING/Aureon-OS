@@ -120,11 +120,29 @@ def _isolated_circulation() -> Iterator[Any]:
         previous_seen = circ._STATE.get("self_model_seen")
         previous_counts = circ._STATE.get("consume_count")
         previous_samples = circ._STATE.get("latency_samples")
+        previous_audits = circ._STATE.get("audit_consumed")
+        previous_meta = dict(circ._META)
+        previous_failures = dict(circ._FAILURE_COUNTS)
+        previous_deprioritised = list(circ._DEPRIORITISED)
+        previous_seen_ids = set(circ._SEEN_FAILURE_IDS)
         circ._STATE["inbox"] = {}
         circ._STATE["loops"] = {}
         circ._STATE["self_model_seen"] = {}
         circ._STATE["consume_count"] = {}
         circ._STATE["latency_samples"] = []
+        circ._STATE["audit_consumed"] = {"metacognition": [], "self_repair": []}
+    circ._FAILURE_COUNTS.clear()
+    circ._DEPRIORITISED.clear()
+    circ._SEEN_FAILURE_IDS.clear()
+    circ._META.clear()
+    circ._META.update(
+        {
+            "truth_status": "no_data",
+            "loop": None,
+            "audit_concern": None,
+            "audit_confidence": circ._CONFIDENCE_BASE,
+        }
+    )
     os.environ["AUREON_THOUGHT_BUS_PATH"] = str(Path(tmp.name) / "thoughts.jsonl")
     os.environ["AUREON_ORGANISM_STATE"] = str(Path(tmp.name) / "state")
     with busmod._bus_lock:
@@ -155,6 +173,17 @@ def _isolated_circulation() -> Iterator[Any]:
                 circ._STATE.pop("latency_samples", None)
             else:
                 circ._STATE["latency_samples"] = previous_samples
+            if previous_audits is None:
+                circ._STATE.pop("audit_consumed", None)
+            else:
+                circ._STATE["audit_consumed"] = previous_audits
+        circ._FAILURE_COUNTS.clear()
+        circ._FAILURE_COUNTS.update(previous_failures)
+        circ._DEPRIORITISED[:] = previous_deprioritised
+        circ._SEEN_FAILURE_IDS.clear()
+        circ._SEEN_FAILURE_IDS.update(previous_seen_ids)
+        circ._META.clear()
+        circ._META.update(previous_meta)
         if previous_bus_path is None:
             os.environ.pop("AUREON_THOUGHT_BUS_PATH", None)
         else:

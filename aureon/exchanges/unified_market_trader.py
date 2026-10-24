@@ -10161,6 +10161,19 @@ class UnifiedMarketTrader:
         except Exception:
             return max(0.0, min(1.0, float(default)))
 
+    def _optional_unit(self, value: Any) -> Optional[float]:
+        """A finite unit interval. Missing stays missing. A real zero stays zero."""
+
+        if value is None or isinstance(value, bool):
+            return None
+        try:
+            number = float(value)
+        except (TypeError, ValueError):
+            return None
+        if number != number or number in (float("inf"), float("-inf")):
+            return None
+        return max(0.0, min(1.0, number))
+
     def _repo_logic_contract(self, name: str, rel_path: str, markers: List[str], role: str) -> Dict[str, Any]:
         path = REPO_ROOT / rel_path
         found: List[str] = []
@@ -10557,13 +10570,13 @@ class UnifiedMarketTrader:
             {
                 "step": "how",
                 "question": "How was the choice reasoned through HNC and Auris?",
-                "answer": f"HNC score={master_formula.get('score', 0.0)} coherence={auris.get('coherence', 0.0)} status={auris.get('status')}",
+                "answer": f"HNC score={master_formula.get('score')} coherence={auris.get('coherence')} status={auris.get('status')}",
                 "auris_node_focus": "formula_and_resonance",
                 "cognitive_systems": ["HNCMasterProtocol", "HNCProbabilityMatrix", "Lyra", "AurisNodes"],
                 "evidence_source": "state/unified_runtime_status.json#hnc_cognitive_proof.master_formula",
                 "evidence": {
                     "master_formula": master_formula,
-                    "auris_coherence": auris.get("coherence", 0.0),
+                    "auris_coherence": auris.get("coherence"),
                     "auris_status": auris.get("status"),
                     "shadow_average_score": (
                         shadow_trade_report.get("self_measurement", {}).get("agent_average_score")
@@ -10610,9 +10623,9 @@ class UnifiedMarketTrader:
             "cycle_order": ["who", "what", "where", "when", "how", "act"],
             "questions": question_rows,
             "fed_to_decision_logic": fed_to_decision_logic,
-            "auris_node_count": int(auris.get("node_count", 0) or 0),
-            "auris_coherence": float(auris.get("coherence", 0.0) or 0.0),
-            "master_formula_score": float(master_formula.get("score", 0.0) or 0.0),
+            "auris_node_count": auris.get("node_count") if isinstance(auris.get("node_count"), int) and not isinstance(auris.get("node_count"), bool) else None,
+            "auris_coherence": self._optional_unit(auris.get("coherence")),
+            "master_formula_score": self._optional_unit(master_formula.get("score")) if master_formula.get("score") is not None else None,
             "decision_output": {
                 "symbol": top_symbol,
                 "side": top_side,
@@ -10703,15 +10716,18 @@ class UnifiedMarketTrader:
         real_data_score = 1.0 if metrics.get("passed") else 0.0
         source_unity = self._clamp01(float(metrics.get("source_count", 0) or 0) / 4.0)
         model_alignment = self._clamp01(metrics.get("model_alignment_rate", 0.0))
-        auris_coherence = self._clamp01(auris.get("coherence", 0.0))
-        master_score = self._clamp01(
-            (real_data_score * 0.22)
-            + (source_unity * 0.16)
-            + (auris_coherence * 0.22)
-            + (model_alignment * 0.14)
-            + (shadow_score * 0.12)
-            + (route_unity * 0.14)
-        )
+        auris_coherence = self._optional_unit(auris.get("coherence"))
+        if auris_coherence is None:
+            master_score = None
+        else:
+            master_score = self._clamp01(
+                (real_data_score * 0.22)
+                + (source_unity * 0.16)
+                + (auris_coherence * 0.22)
+                + (model_alignment * 0.14)
+                + (shadow_score * 0.12)
+                + (route_unity * 0.14)
+            )
 
         top_confidence = self._clamp01(top.get("confidence", metrics.get("avg_confidence", 0.0)))
         top_symbol = str(top.get("symbol") or top.get("route_symbol") or "")
@@ -10724,14 +10740,23 @@ class UnifiedMarketTrader:
             "vision_grade": "clear" if top_confidence >= 0.7 else "forming" if top_confidence >= 0.35 else "quiet",
             "timestamp": generated_at,
         }
-        lyra_frequency = 396.0 + auris_coherence * (963.0 - 396.0)
-        lyra_runtime = {
-            "evaluated": bool(auris.get("evaluated")),
-            "resonance_score": round((auris_coherence * 0.65) + (model_alignment * 0.2) + (source_unity * 0.15), 6),
-            "resonance_frequency_hz": round(lyra_frequency, 3),
-            "resonance_grade": auris.get("status"),
-            "timestamp": generated_at,
-        }
+        if auris_coherence is None:
+            lyra_runtime = {
+                "evaluated": False,
+                "resonance_score": None,
+                "resonance_frequency_hz": None,
+                "resonance_grade": auris.get("status") or "no_data",
+                "timestamp": generated_at,
+            }
+        else:
+            lyra_frequency = 396.0 + auris_coherence * (963.0 - 396.0)
+            lyra_runtime = {
+                "evaluated": bool(auris.get("evaluated")),
+                "resonance_score": round((auris_coherence * 0.65) + (model_alignment * 0.2) + (source_unity * 0.15), 6),
+                "resonance_frequency_hz": round(lyra_frequency, 3),
+                "resonance_grade": auris.get("status"),
+                "timestamp": generated_at,
+            }
         king_runtime = {
             "evaluated": bool(metrics.get("passed") and top_symbol),
             "executor_quote_usd": ORDER_EXECUTOR_QUOTE_USD,
@@ -10749,18 +10774,19 @@ class UnifiedMarketTrader:
 
         master_formula = {
             "source": "unified runtime blend over HNC/Auris/Seer/Lyra/King contracts",
-            "evaluated": bool(metrics.get("passed") and auris.get("evaluated")),
+            "evaluated": bool(metrics.get("passed") and auris.get("evaluated") and master_score is not None),
             "formula": "HNC = 0.22*real_data + 0.16*source_unity + 0.22*auris + 0.14*model_alignment + 0.12*shadow + 0.14*route_unity",
             "inputs": {
                 "real_data": real_data_score,
                 "source_unity": round(source_unity, 6),
-                "auris": round(auris_coherence, 6),
+                "auris": None if auris_coherence is None else round(auris_coherence, 6),
                 "model_alignment": round(model_alignment, 6),
                 "shadow": round(shadow_score, 6),
                 "route_unity": round(route_unity, 6),
             },
-            "score": round(master_score, 6),
-            "passed": bool(master_score > 0 and metrics.get("passed")),
+            "score": None if master_score is None else round(master_score, 6),
+            "passed": bool(master_score is not None and master_score > 0 and metrics.get("passed")),
+            "status": "reading" if master_score is not None else "no_data",
             "timestamp": generated_at,
         }
         operating_cycle = self._build_hnc_operating_cycle(
@@ -10791,7 +10817,7 @@ class UnifiedMarketTrader:
             {
                 "step": "auris_nodes",
                 "passed": bool(auris.get("passed") and systems["auris_nodes"].get("passed")),
-                "evidence": f"{auris.get('node_count', 0)} nodes coherence={auris.get('coherence', 0.0)}",
+                "evidence": f"{auris.get('node_count')} nodes coherence={auris.get('coherence')} status={auris.get('status')}",
                 "timestamp": generated_at,
             },
             {
