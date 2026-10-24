@@ -99,10 +99,30 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest().upper()
 
 
-def _write_private_snapshot(text: str) -> tuple[Path, str]:
-    path = REPO_ROOT / "docs/research" / f"_stakeholder-private-test-{uuid4().hex}.md"
+def _isolated_repo(tmp_path: Path) -> Path:
+    """A throwaway checkout so a private snapshot never lands in docs/research."""
+
+    (tmp_path / "pyproject.toml").write_text(
+        "[project]\nname = 'aureon-stakeholder-test'\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "aureon").mkdir()
+    operator = tmp_path / "data" / "website_operator"
+    operator.mkdir(parents=True)
+    for name in (
+        "design_stakeholder_feedback.v1.json",
+        "public_claim_evidence_register.v1.json",
+    ):
+        source = REPO_ROOT / "data" / "website_operator" / name
+        (operator / name).write_bytes(source.read_bytes())
+    (tmp_path / "docs" / "research").mkdir(parents=True)
+    return tmp_path
+
+
+def _write_private_snapshot(root: Path, text: str) -> tuple[Path, str]:
+    path = root / "docs" / "research" / f"_stakeholder-private-test-{uuid4().hex}.md"
     path.write_text(text, encoding="utf-8")
-    return path, path.relative_to(REPO_ROOT).as_posix()
+    return path, path.relative_to(root).as_posix()
 
 
 def test_canonical_feedback_is_current_source_bound_and_non_authoritative() -> None:
@@ -194,35 +214,36 @@ def test_unknown_and_private_fields_fail_closed() -> None:
     ],
 )
 def test_private_snapshot_material_is_rejected_without_emission(
+    tmp_path: Path,
     text: str,
     code: str,
 ) -> None:
+    root = _isolated_repo(tmp_path)
     path, relative = _write_private_snapshot(
-        "# Human-created redacted evidence snapshot\n\n" + text + "\n"
+        root,
+        "# Human-created redacted evidence snapshot\n\n" + text + "\n",
     )
-    try:
-        feedback = _feedback()
-        feedback["evidence_snapshot"]["path"] = relative
-        feedback["evidence_snapshot"]["sha256"] = _sha256(path)
+    feedback = _feedback()
+    feedback["evidence_snapshot"]["path"] = relative
+    feedback["evidence_snapshot"]["sha256"] = _sha256(path)
 
-        result = audit_design_stakeholder_feedback(
-            feedback,
-            feedback_path=FEEDBACK_PATH,
-            repo_root=REPO_ROOT,
-            as_of=AS_OF,
-        )
+    result = audit_design_stakeholder_feedback(
+        feedback,
+        feedback_path=root / DEFAULT_FEEDBACK_PATH,
+        repo_root=root,
+        as_of=AS_OF,
+    )
 
-        snapshot_check = next(
-            item
-            for item in result["checks"]
-            if item["id"] == "evidence-snapshot-integrity"
-        )
-        assert result["passed"] is False
-        assert result["signal_capsules"] == []
-        assert result["evidence_snapshot"]["privacy_safe"] is False
-        assert code in snapshot_check["evidence"]["privacy_violation_codes"]
-    finally:
-        path.unlink(missing_ok=True)
+    snapshot_check = next(
+        item
+        for item in result["checks"]
+        if item["id"] == "evidence-snapshot-integrity"
+    )
+    assert result["passed"] is False
+    assert result["signal_capsules"] == []
+    assert result["evidence_snapshot"]["privacy_safe"] is False
+    assert code in snapshot_check["evidence"]["privacy_violation_codes"]
+    assert not (REPO_ROOT / relative).exists()
 
 
 def test_unknown_claim_and_route_are_rejected() -> None:
