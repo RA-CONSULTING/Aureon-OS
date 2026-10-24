@@ -33,6 +33,7 @@ import json
 import logging
 import os
 import struct
+import socket
 import sys
 import threading
 from types import SimpleNamespace
@@ -1589,20 +1590,35 @@ def main() -> None:
             logger.warning("operator full app stayed unloaded: %s", exc)
 
     threading.Thread(target=_load_full, name="operator-full-load", daemon=True).start()
-    logger.info("Aureon Operator gateway listening on %s:%s and proxying seats", host, port)
     app = switch
+    bound = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        bound.bind((host, port))
+        bound.listen(128)
+    except OSError as exc:
+        bound.close()
+        print(
+            f"operator gateway failed to bind {host}:{port} ({exc.strerror or exc}); "
+            f"console expects http://127.0.0.1:{port}/healthz",
+            file=sys.stderr,
+            flush=True,
+        )
+        raise SystemExit(1) from exc
+    logger.info("Aureon Operator gateway listening on %s:%s and proxying seats", host, port)
 
     dev = str(os.environ.get("AUREON_OPERATOR_DEV", "")).strip().lower() in {"1", "true", "yes", "on"}
     if dev:
-        from werkzeug.serving import run_simple
+        from werkzeug.serving import make_server
 
         logger.warning("AUREON_OPERATOR_DEV set — using the Werkzeug server")
         try:
-            run_simple(host, port, app, threaded=True)
+            server = make_server(host, port, app, fd=bound.fileno())
+            bound.detach()
+            server.serve_forever()
         except OSError as exc:
             print(
                 f"operator gateway failed to bind {host}:{port} ({exc}); "
-                "console expects http://127.0.0.1:8790/healthz",
+                f"console expects http://127.0.0.1:{port}/healthz",
                 file=sys.stderr,
                 flush=True,
             )
@@ -1614,26 +1630,28 @@ def main() -> None:
         threads = int(os.environ.get("AUREON_OPERATOR_THREADS", "8"))
         logger.info("Serving under waitress (%d threads)", threads)
         try:
-            serve(app, host=host, port=port, threads=threads)
+            serve(app, sockets=[bound], threads=threads)
         except OSError as exc:
             print(
                 f"operator gateway failed to bind {host}:{port} ({exc}); "
-                "console expects http://127.0.0.1:8790/healthz",
+                f"console expects http://127.0.0.1:{port}/healthz",
                 file=sys.stderr,
                 flush=True,
             )
             raise SystemExit(1) from exc
     except ImportError:
-        from werkzeug.serving import run_simple
+        from werkzeug.serving import make_server
 
         logger.warning("waitress not installed — falling back to the Werkzeug server. "
                        "Install `.[operator]` for the waitress server.")
         try:
-            run_simple(host, port, app, threaded=True)
+            server = make_server(host, port, app, fd=bound.fileno())
+            bound.detach()
+            server.serve_forever()
         except OSError as exc:
             print(
                 f"operator gateway failed to bind {host}:{port} ({exc}); "
-                "console expects http://127.0.0.1:8790/healthz",
+                f"console expects http://127.0.0.1:{port}/healthz",
                 file=sys.stderr,
                 flush=True,
             )

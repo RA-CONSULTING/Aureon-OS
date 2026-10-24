@@ -2119,24 +2119,98 @@ class UnifiedMarketTrader:
             threads[name] = thread
         self._exchange_init_threads = threads
 
+    def _remember_boot_balance(self, name: str, *, alive: bool, error: str, equity: float | None, detail: Any = None) -> None:
+        balances = getattr(self, "_boot_balances", None)
+        if not isinstance(balances, dict):
+            balances = {}
+            self._boot_balances = balances
+        balances[name] = {
+            "alive": bool(alive) and not error,
+            "error": str(error or ""),
+            "equity": None if equity is None else float(equity),
+            "detail": detail if isinstance(detail, dict) else {},
+        }
+
+    def _probe_capital_balance(self) -> None:
+        client = getattr(self.capital, "client", None) if self.capital is not None else None
+        if client is None and self.capital is not None and hasattr(self.capital, "get_account_balance"):
+            client = self.capital
+        if client is None:
+            self._remember_boot_balance("capital", alive=False, error=self.capital_error or "not_ready", equity=None)
+            return
+        try:
+            observation = client.get_account_balance()
+            raw = getattr(observation, "balances", None) or {}
+            equity = float(sum(float(value) for value in raw.values())) if isinstance(raw, dict) else 0.0
+            reason = "" if getattr(observation, "truth_status", "") in {"real_derived", "real_observed"} else str(getattr(observation, "reason", "") or "")
+            self.capital_ready = self.capital_ready or not reason
+            if reason and not self.capital_error:
+                self.capital_error = reason
+            self._remember_boot_balance("capital", alive=not reason, error=reason, equity=equity, detail={"balances": raw} if isinstance(raw, dict) else {})
+        except Exception as exc:
+            self.capital_error = self.capital_error or str(exc)
+            self._remember_boot_balance("capital", alive=False, error=str(exc), equity=None)
+
+    def _probe_alpaca_balance(self) -> None:
+        client = self.alpaca
+        if client is None:
+            self._remember_boot_balance("alpaca", alive=False, error=self.alpaca_error or "not_ready", equity=None)
+            return
+        try:
+            account = client.get_account() if hasattr(client, "get_account") else {}
+            if not isinstance(account, dict):
+                account = {}
+            equity = account.get("equity", account.get("portfolio_value"))
+            error = str(getattr(client, "init_error", "") or self.alpaca_error or "")
+            if equity is None and not account:
+                error = error or "alpaca account read returned nothing"
+            parsed = float(equity) if equity is not None else None
+            self._remember_boot_balance("alpaca", alive=parsed is not None and not error, error=error, equity=parsed, detail={"currency": "USD"})
+        except Exception as exc:
+            self.alpaca_error = self.alpaca_error or str(exc)
+            self._remember_boot_balance("alpaca", alive=False, error=str(exc), equity=None)
+
     def _exchange_boot_init_snapshot(self) -> Dict[str, Any]:
         threads = getattr(self, "_exchange_init_threads", {}) or {}
         started_at = float(getattr(self, "_exchange_init_started_at", 0.0) or 0.0)
         now = time.time()
         errors = getattr(self, "_exchange_init_errors", {}) or {}
-        states = {
-            name: {
-                "alive": bool(thread.is_alive()),
-                "error": str(errors.get(name, "")),
+        balances = getattr(self, "_boot_balances", {}) or {}
+        names = list(dict.fromkeys([*threads.keys(), *balances.keys(), "capital", "alpaca", "kraken", "binance"]))
+        states: Dict[str, Any] = {}
+        for name in names:
+            thread = threads.get(name)
+            recorded = balances.get(name) if isinstance(balances.get(name), dict) else {}
+            error = str(
+                recorded.get("error")
+                or errors.get(name)
+                or getattr(self, f"{name}_error", "")
+                or ""
+            )
+            if name == "kraken" and not error:
+                error = str(getattr(self.kraken, "last_error", "") or "")
+            if name == "binance" and not error:
+                error = str((getattr(self, "_binance_diag", {}) or {}).get("init_error") or "")
+            alive = bool(recorded.get("alive")) if recorded else False
+            if not recorded:
+                alive = {
+                    "kraken": bool(self.kraken_ready) and not error,
+                    "capital": bool(self.capital_ready) and not error,
+                    "alpaca": self.alpaca is not None and not error,
+                    "binance": self.binance is not None and not error and "region" not in error.lower(),
+                }.get(name, False)
+            states[name] = {
+                "alive": bool(alive) and not error,
+                "error": error,
+                "thread_running": bool(thread.is_alive()) if thread is not None else False,
+                "equity": recorded.get("equity"),
             }
-            for name, thread in threads.items()
-        }
         return {
             "async_enabled": bool(EXCHANGE_BOOT_ASYNC_ENABLED),
             "sync_retry_enabled": bool(EXCHANGE_SYNC_RETRY_ENABLED),
             "started_at": datetime.fromtimestamp(started_at).isoformat() if started_at > 0 else None,
             "age_sec": round(max(0.0, now - started_at), 3) if started_at > 0 else 0.0,
-            "inflight": any(state.get("alive") for state in states.values()),
+            "inflight": any(state.get("thread_running") for state in states.values()),
             "states": states,
         }
 
@@ -2148,7 +2222,8 @@ class UnifiedMarketTrader:
         _repair_stdio()
         try:
             self.kraken = KrakenMarginArmyTrader(dry_run=self.dry_run)
-            self.kraken_error = ""
+            self.kraken_error = str(getattr(getattr(self.kraken, "client", None), "last_error", "") or "")
+            self._remember_boot_balance("kraken", alive=not self.kraken_error, error=self.kraken_error, equity=None)
         except Exception as e:
             if _is_closed_stream_error(e):
                 _repair_stdio()
@@ -2174,10 +2249,12 @@ class UnifiedMarketTrader:
             self.capital_error = ""
             if not self.capital_ready:
                 self.capital_error = str(getattr(self.capital, "init_error", "") or "client_disabled_or_blocked")
+            self._probe_capital_balance()
         except Exception as e:
             self.capital = None
             self.capital_ready = False
             self.capital_error = str(e)
+            self._remember_boot_balance("capital", alive=False, error=str(e), equity=None)
             logger.error("Capital init failed: %s", e)
 
     def _init_alpaca(self, force: bool = False) -> None:
@@ -2189,6 +2266,7 @@ class UnifiedMarketTrader:
         try:
             self.alpaca = AlpacaClient()
             self.alpaca_error = str(getattr(self.alpaca, "init_error", "") or "")
+            self._probe_alpaca_balance()
         except Exception as e:
             self.alpaca = None
             self.alpaca_error = str(e)
@@ -2214,6 +2292,12 @@ class UnifiedMarketTrader:
                 self._binance_diag.get("init_error")
                 or self._binance_diag.get("last_error")
                 or ""
+            )
+            self._remember_boot_balance(
+                "binance",
+                alive=self.binance is not None and not self.binance_error,
+                error=self.binance_error,
+                equity=None,
             )
         except Exception as e:
             if _is_closed_stream_error(e):
@@ -2808,11 +2892,17 @@ class UnifiedMarketTrader:
                 "lines": ["Awaiting the first unified trading cycle."],
                 "sources": {"kraken_decision": {}, "capital_target": {}},
             },
+            "exchange_boot_init": self._exchange_boot_init_snapshot(),
             "combined": {
                 "open_positions": 0,
                 "kraken_equity": 0.0,
-                "kraken_equity_reason": kraken_error if not self.kraken_ready else "",
-                "capital_equity_gbp": 0.0,
+                "kraken_equity_reason": (
+                    str(getattr(self.kraken, "last_error", "") or kraken_error)
+                    if not self.kraken_ready or not float((getattr(self, "_boot_balances", {}) or {}).get("kraken", {}).get("equity") or 0)
+                    else ""
+                ),
+                "capital_equity_gbp": float(((getattr(self, "_boot_balances", {}) or {}).get("capital") or {}).get("equity") or 0.0),
+                "alpaca_equity": float(((getattr(self, "_boot_balances", {}) or {}).get("alpaca") or {}).get("equity") or 0.0),
                 "kraken_session_pnl": 0.0,
                 "capital_session_pnl_gbp": 0.0,
                 "kraken_ready": self.kraken_ready,
@@ -2949,6 +3039,7 @@ class UnifiedMarketTrader:
             "order_lifecycle": order_lifecycle,
             "kraken_spot_fast_profit": self._load_kraken_spot_fast_profit_state(),
             "kraken_asset_registry": self._load_kraken_asset_registry_summary(),
+            "exchange_boot_init": self._exchange_boot_init_snapshot(),
             "preflight": self._build_preflight_report(),
             "api_governor": self._api_governor_snapshot(),
             "dynamic_intelligence_budget": getattr(self, "_dynamic_intelligence_budget", {}) or {},
@@ -2957,11 +3048,13 @@ class UnifiedMarketTrader:
                 "open_positions": len(kraken_payload.get("positions", [])) + len(capital_payload.get("positions", [])),
                 "kraken_equity": kraken_equity,
                 "kraken_equity_reason": (
-                    str(kraken_payload.get("error") or self.kraken_error or "")
+                    str(kraken_payload.get("error") or getattr(self.kraken, "last_error", "") or self.kraken_error or "")
                     if not kraken_equity
                     else ""
                 ),
-                "capital_equity_gbp": float(capital_payload.get("equity_gbp", 0.0) or 0.0),
+                "capital_equity_gbp": float(capital_payload.get("equity_gbp", 0.0) or 0.0)
+                or float(((getattr(self, "_boot_balances", {}) or {}).get("capital") or {}).get("equity") or 0.0),
+                "alpaca_equity": float(((getattr(self, "_boot_balances", {}) or {}).get("alpaca") or {}).get("equity") or 0.0),
                 "kraken_session_pnl": float(kraken_payload.get("session_profit", 0.0) or 0.0),
                 "capital_session_pnl_gbp": float(capital_payload.get("stats", {}).get("total_pnl_gbp", 0.0) or 0.0),
                 "kraken_ready": self.kraken_ready,

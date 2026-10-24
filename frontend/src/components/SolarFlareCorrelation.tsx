@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, supabaseConfigured } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -28,6 +28,7 @@ export function SolarFlareCorrelation() {
 
   const { data: correlations, isLoading, refetch } = useQuery({
     queryKey: ['solar-flare-correlations'],
+    enabled: supabaseConfigured,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('solar_flare_correlations')
@@ -71,6 +72,15 @@ export function SolarFlareCorrelation() {
     if (flareClass.startsWith('M')) return 'bg-warning';
     return 'bg-warning';
   };
+
+  if (!supabaseConfigured) {
+    return (
+      <Card className="p-6">
+        <p className="font-medium">backend not configured</p>
+        <p className="text-sm text-muted-foreground">Solar correlation needs a Supabase key or a local research feed.</p>
+      </Card>
+    );
+  }
 
   return (
     <Card className="bg-card/50 backdrop-blur border-border/50">

@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, supabaseConfigured } from '@/integrations/supabase/client';
+import { terminalStateUrls } from '@/config/serviceEndpoints';
 import { TrendingUp, TrendingDown, Target, Calendar, Award, AlertTriangle } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
@@ -47,6 +48,7 @@ export const TradingAnalytics = () => {
   const [timeSeriesData, setTimeSeriesData] = useState<TimeSeriesData[]>([]);
   const [symbolPerformance, setSymbolPerformance] = useState<any[]>([]);
   const [signInRequired, setSignInRequired] = useState(false);
+  const [localNote, setLocalNote] = useState('');
 
   useEffect(() => {
     loadAnalytics();
@@ -67,6 +69,27 @@ export const TradingAnalytics = () => {
   };
 
   const loadAnalytics = async () => {
+    if (!supabaseConfigured) {
+      setSignInRequired(false);
+      for (const url of terminalStateUrls) {
+        try {
+          const response = await fetch(url, { cache: 'no-store' });
+          if (!response.ok) continue;
+          const payload = await response.json();
+          const combined = payload.combined || {};
+          const binance = payload.exchanges?.binance_status || payload.exchange_boot_init?.states?.binance?.error || '';
+          const binanceLine = String(binance).toLowerCase().includes('region') ? 'Binance is region-blocked.' : '';
+          setLocalNote(
+            `Local market status. Capital equity ${combined.capital_equity_gbp ?? 0}. Alpaca equity ${combined.alpaca_equity ?? 0}. ${combined.kraken_equity_reason || ''} ${binanceLine}`.trim(),
+          );
+          return;
+        } catch {
+          continue;
+        }
+      }
+      setLocalNote('backend not configured');
+      return;
+    }
     const timeFilter = getTimeRangeFilter();
 
     // Load closed positions
@@ -190,6 +213,12 @@ export const TradingAnalytics = () => {
 
   return (
     <div className="space-y-6">
+      {localNote && (
+        <Card className="p-4">
+          <p className="text-sm font-medium">Local operator</p>
+          <p className="text-sm text-muted-foreground">{localNote}</p>
+        </Card>
+      )}
       {signInRequired && (
         <Card className="p-4">
           <p className="text-sm font-medium">Sign-in required</p>

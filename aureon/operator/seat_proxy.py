@@ -22,6 +22,10 @@ _FETCH_TIMEOUT_S = 1.5
 _MAX_BYTES = 200_000
 
 
+class UpstreamBodyTooLarge(Exception):
+    """The upstream body is over the read cap."""
+
+
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
@@ -75,7 +79,7 @@ SEATS: tuple[dict[str, str | None], ...] = (
         "id": "thought-hub",
         "label": "Thought-action hub",
         "was": "port 13002",
-        "upstream": "http://127.0.0.1:13002/",
+        "upstream": "http://127.0.0.1:13002/health",
     },
     {
         "id": "error-sink",
@@ -243,7 +247,7 @@ def _read_upstream(url: str) -> tuple[int, str, bytes]:
     if parsed.query:
         path = f"{path}?{parsed.query}"
     message = (
-        f"GET {path} HTTP/1.0\r\n"
+        f"GET {path} HTTP/1.1\r\n"
         f"Host: {host}\r\n"
         "User-Agent: aureon-seat-proxy\r\n"
         "Connection: close\r\n\r\n"
@@ -265,11 +269,27 @@ def _read_upstream(url: str) -> tuple[int, str, bytes]:
     parts = status_line.split()
     status = int(parts[1]) if len(parts) > 1 and parts[1].isdigit() else 0
     content_type = ""
+    announced = 0
     for line in head.split(b"\r\n")[1:]:
-        if line.lower().startswith(b"content-type:"):
+        lowered = line.lower()
+        if lowered.startswith(b"content-type:"):
             content_type = line.split(b":", 1)[1].decode("ascii", "replace").strip()
-            break
-    return status, content_type, body[:_MAX_BYTES]
+        elif lowered.startswith(b"content-length:"):
+            raw_length = line.split(b":", 1)[1].strip()
+            if raw_length.isdigit():
+                announced = int(raw_length)
+    if announced > _MAX_BYTES or len(body) > _MAX_BYTES:
+        raise UpstreamBodyTooLarge("body too large")
+    return status, content_type, body
+
+
+def _with_health_path(url: str) -> str:
+    """A bare base URL reads /health. An explicit path is left alone."""
+
+    parsed = urlparse(url.strip())
+    if parsed.scheme and parsed.netloc and parsed.path in {"", "/"}:
+        return url.strip().rstrip("/") + "/health"
+    return url.strip()
 
 
 def _resolved_upstream(seat: dict[str, str | None]) -> str | None:
@@ -279,7 +299,7 @@ def _resolved_upstream(seat: dict[str, str | None]) -> str | None:
     if seat_id == "market-status":
         override = os.environ.get("AUREON_MARKET_STATUS_URL", "").strip()
         if override:
-            return override
+            return _with_health_path(override)
     if seat_id == "live-bridge":
         override = os.environ.get("AUREON_FRONTEND_BRIDGE_URL", "").strip()
         if override:
@@ -312,6 +332,8 @@ def read_seat(seat_id: str, gateway: "GatewaySwitch | None" = None) -> dict[str,
         return _reading(seat, available=True, reason=None, payload=_local_payload(seat_id, gateway))
     try:
         status, content_type, raw = _read_upstream(str(upstream))
+    except UpstreamBodyTooLarge:
+        return _reading(seat, available=False, reason="body too large", payload=None)
     except Exception as exc:
         return _reading(
             seat,

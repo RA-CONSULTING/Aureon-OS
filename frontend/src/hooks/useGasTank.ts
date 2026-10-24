@@ -25,7 +25,7 @@ export const useGasTank = (userId: string | null) => {
     membershipType: 'standard',
     feesPaidToday: 0,
     totalFeesPaid: 0,
-    status: 'EMPTY',
+    status: 'PAUSED',
     canTrade: false,
     isLoading: true,
   });

@@ -254,33 +254,14 @@ class KrakenAdapter:
 
     # ── private signing (identical to upstream kraken_client._kraken_sign) ─
     def _next_nonce(self) -> str:
-        # Nanosecond-scale nonce SHARED with upstream's persisted nonce file.
-        # Bug-hunt 2026-09-06: hive modules using aureon.exchanges.kraken_client
-        # (ns nonces, persisted to NONCE_FILE) pushed Kraken's server-side
-        # last-nonce to ~1.78e18; this adapter's µs nonces (~1.78e15) were then
-        # permanently below it -> EAPI:Invalid nonce on every order. All
-        # processes on this host must climb the SAME nonce ladder.
-        with self._nonce_lock:
-            try:
-                from aureon.exchanges.kraken_client import NONCE_FILE
-            except Exception:
-                NONCE_FILE = os.path.join(os.path.dirname(__file__), ".kraken_nonce")
-            current_ns = time.time_ns()
-            last = 0
-            try:
-                if os.path.exists(NONCE_FILE):
-                    with open(NONCE_FILE, "r", encoding="utf-8") as fh:
-                        last = int(fh.read().strip() or 0)
-            except Exception:
-                last = 0
-            floor = max(current_ns, self._last_nonce + 1, last + 1)
-            self._last_nonce = floor
-            try:
-                with open(NONCE_FILE, "w", encoding="utf-8") as fh:
-                    fh.write(str(floor))
-            except Exception:
-                pass
-            return str(floor)
+        # One locked counter, shared with aureon.exchanges.kraken_client.
+        # A second writer without the lock can store a lower nonce after
+        # Kraken has already seen the higher one.
+        from aureon.exchanges.kraken_client import _get_next_nonce
+
+        value = int(_get_next_nonce())
+        self._last_nonce = value
+        return str(value)
 
     def _sign(self, url_path: str, data: Dict[str, Any], api_secret: str) -> str:
         """Kraken signature: HMAC-SHA512(url_path + SHA256(nonce+postdata))

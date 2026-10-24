@@ -180,8 +180,10 @@ def test_fresh_box_preflight_and_offline_benchmark(tmp_path: Path, monkeypatch: 
     moved = openai_compatible_model_endpoint()
     assert moved["base_url"] == "http://127.0.0.1:9/v1"
     report = run_harness(tmp_path)
-    assert report["offline_fixture"]["ok"] is True
-    assert report["offline_fixture"]["executed"] is True
+    assert report["offline_fixture"]["counts_as_result"] is False
+    assert report["offline_fixture"]["executed"] is False
+    assert report["model_call"]["attempted"] is True
+    assert report["model_call"]["ok"] is False
     assert report["swe_bench"]["executed"] is False
     assert report["livecodebench"]["executed"] is False
     assert report["measured_swe_bench_verified_pct"] is None
@@ -189,3 +191,55 @@ def test_fresh_box_preflight_and_offline_benchmark(tmp_path: Path, monkeypatch: 
     assert report["published_reference"]["swe_bench_verified_pct"] == 76.8
     assert report["published_reference"]["livecodebench_v6_pct"] == 85.0
     assert report["published_reference"]["source"].startswith("published score")
+
+
+def test_benchmark_scores_a_configured_model_and_dataset(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    import json
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+    from aureon.autonomous.self_coder_benchmark import run_harness
+
+    class Handler(BaseHTTPRequestHandler):
+        def do_POST(self):  # noqa: N802
+            length = int(self.headers.get("Content-Length", "0") or 0)
+            self.rfile.read(length)
+            body = json.dumps(
+                {"choices": [{"message": {"content": "def add(a, b):\n    return a + b\n"}}]}
+            ).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, fmt, *args):  # noqa: A003
+            return
+
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    port = server.server_address[1]
+    import threading
+
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    dataset = tmp_path / "data" / "benchmarks" / "livecodebench"
+    dataset.mkdir(parents=True)
+    (dataset / "problems.jsonl").write_text(
+        json.dumps({"question_id": "add", "prompt": "def add(a, b)", "tests": "assert add(1, 2) == 3"}) + "\n",
+        encoding="utf-8",
+    )
+    swe = tmp_path / "data" / "benchmarks" / "swebench"
+    swe.mkdir(parents=True)
+    (swe / "instances.jsonl").write_text(
+        json.dumps({"instance_id": "add", "problem_statement": "def add(a, b)", "tests": "assert add(2, 2) == 4"}) + "\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("AUREON_SELF_CODER_OPENAI_BASE_URL", f"http://127.0.0.1:{port}/v1")
+    monkeypatch.setenv("AUREON_SELF_CODER_MODEL", "local-test")
+    try:
+        report = run_harness(tmp_path)
+    finally:
+        server.shutdown()
+    assert report["model_call"]["ok"] is True
+    assert report["offline_fixture"]["counts_as_result"] is False
+    assert report["measured_livecodebench_v6_pct"] == 100.0
+    assert report["measured_swe_bench_verified_pct"] == 100.0
+    assert report["livecodebench"]["executed"] is True
+    assert report["swe_bench"]["executed"] is True

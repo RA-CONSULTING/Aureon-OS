@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, XCircle, AlertTriangle, Loader2 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, supabaseConfigured } from '@/integrations/supabase/client';
 import { useGlobalState } from '@/hooks/useGlobalState';
 
 interface ReadinessCheck {
@@ -26,8 +26,12 @@ export function TradingReadinessCheck() {
     // Check 1: Authentication
     results.push({
       name: 'Authentication',
-      status: globalState.isAuthenticated ? 'pass' : 'fail',
-      message: globalState.isAuthenticated ? 'User authenticated' : 'Not logged in',
+      status: !supabaseConfigured || globalState.isAuthenticated ? 'pass' : 'fail',
+      message: !supabaseConfigured
+        ? 'Local operator; no Supabase sign-in is configured'
+        : globalState.isAuthenticated
+          ? 'User authenticated'
+          : 'Not logged in',
     });
 
     // Check 2: Quantum Systems

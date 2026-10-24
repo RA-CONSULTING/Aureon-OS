@@ -267,7 +267,7 @@ def make_handler(token: str):
 
         def _dispatch(self) -> int:
             path = self.path.split("?", 1)[0]
-            if path not in {"/healthz", "/readyz"} and not allow(self.client_address[0]):
+            if path not in {"/health", "/healthz", "/status", "/readyz"} and not allow(self.client_address[0]):
                 self.send_response(429)
                 self.send_header("Content-Type", "application/json")
                 self.send_header("Retry-After", "1")
@@ -276,7 +276,7 @@ def make_handler(token: str):
                 self.end_headers()
                 self.wfile.write(body)
                 return 429
-            if path == "/healthz":
+            if path in {"/health", "/healthz", "/status"}:
                 flags = authority_flags()
                 return self._send(
                     200,

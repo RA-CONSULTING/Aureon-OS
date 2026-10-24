@@ -129,6 +129,13 @@ def start_processes() -> list[tuple[str, str]]:
             REPO,
             {},
         ),
+        (
+            "thought-hub",
+            13002,
+            [python, "-m", "aureon.launch.thought_hub_status", "--port", "13002"],
+            REPO,
+            {},
+        ),
     ]
     vite = REPO / "frontend" / "node_modules" / "vite" / "bin" / "vite.js"
     node = os.environ.get("AUREON_NODE") or "node"
@@ -148,6 +155,9 @@ def start_processes() -> list[tuple[str, str]]:
         if name == "error-sink" and not (REPO / "deploy" / "selfhost" / "error_sink.py").is_file():
             notes.append((name, "error_sink.py is absent"))
             continue
+        if name == "gateway" and _port_open(port):
+            notes.append((name, f"operator gateway already owns {port}; this boot does not bind it again"))
+            continue
         if _port_open(port):
             notes.append((name, f"already listening on {port}"))
             continue
@@ -155,7 +165,6 @@ def start_processes() -> list[tuple[str, str]]:
         env.update(overlay)
         _spawn(name, cmd, env, cwd)
         notes.append((name, f"started for {port}"))
-    notes.append(("thought-hub", "not started; its goal loop can pursue trading"))
     notes.append(("system-hub", "retired; held so the tab does not show a refused connection"))
     notes.append(("bot-hunter", "retired; held so the tab does not show a refused connection"))
     notes.append(("dashboard-api", "retired; command routes stay down and no order is placed"))
@@ -185,9 +194,16 @@ def main() -> int:
         print(f"seat {note[0]}: {note[1]}", flush=True)
     gateway = os.environ.get("AUREON_SEAT_GATEWAY_PORT") or "8790"
     if not wait_for_gateway():
-        print(f"gateway http://127.0.0.1:{gateway}/healthz did not answer", flush=True)
+        log = REPO / "state" / "seat_tabs" / "gateway.log"
+        tail = ""
+        if log.is_file():
+            tail = log.read_text(encoding="utf-8", errors="replace")[-500:]
+        print(
+            f"operator gateway failed to bind http://127.0.0.1:{gateway}/healthz\n{tail}",
+            flush=True,
+        )
         return 1
-    print(f"gateway listening on http://127.0.0.1:{gateway}/healthz", flush=True)
+    print(f"operator gateway owns http://127.0.0.1:{gateway}/healthz", flush=True)
     print("tabs at http://127.0.0.1:5173/console/seats", flush=True)
     try:
         while True:

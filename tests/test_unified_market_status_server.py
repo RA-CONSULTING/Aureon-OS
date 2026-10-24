@@ -157,7 +157,7 @@ class UnifiedMarketStatusServerFlightTestTests(unittest.TestCase):
         self.assertFalse(status_server.MARKET_INTENT_PATH.exists())
         self.assertFalse(status_server.HNC_PACKET_EVIDENCE_PATH.exists())
 
-    def test_public_credential_status_holds_before_reading_sources(self):
+    def test_public_credential_status_is_names_only(self):
         captured = {}
 
         class FakeHandler:
@@ -166,20 +166,16 @@ class UnifiedMarketStatusServerFlightTestTests(unittest.TestCase):
             def _json(self, status, payload):
                 captured.update({"status": status, "payload": payload})
 
-        original = status_server._env_credentials_status
-        status_server._env_credentials_status = lambda: self.fail(
-            "public credential status inspected a credential source"
-        )
-        try:
-            status_server.StatusHandler.do_GET(FakeHandler())
-        finally:
-            status_server._env_credentials_status = original
-
-        self.assertEqual(captured["status"], 403)
-        self.assertEqual(
-            captured["payload"],
-            {"ok": False, "error": status_server.CREDENTIAL_STATUS_READ_HOLD},
-        )
+        status_server.StatusHandler.do_GET(FakeHandler())
+        payload = captured["payload"]
+        self.assertEqual(captured["status"], 200)
+        self.assertEqual(payload["secret_policy"], "names_only")
+        self.assertNotIn("release_hold", json.dumps(payload))
+        rendered = json.dumps(payload)
+        self.assertNotIn("length", rendered)
+        for row in payload["exchanges"].values():
+            self.assertIn("missing_keys", row)
+            self.assertIn("set_keys", row)
 
     def test_cors_never_grants_nonlocal_or_prefix_confusion_origin(self):
         class FakeHandler:

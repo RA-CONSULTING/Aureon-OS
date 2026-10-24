@@ -313,72 +313,84 @@ def _read_nonce_text(text: str) -> int:
     except Exception:
         return 0
 
-def _get_next_nonce() -> int:
-    """Get next nonce that's guaranteed higher than any previous nonce.
-    
-    Uses file-based atomic counter with locking to ensure:
-    1. Nonces always increase (even across process restarts)
-    2. Multiple parallel processes don't collide
-    3. Recovers gracefully if nonce file is corrupted
+def _nonce_clock_us() -> int:
+    """Microsecond clock. Kraken's nonce is an integer, not a timestamp unit."""
+
+    return time.time_ns() // 1_000
+
+
+def _sibling_nonce_files() -> list[str]:
+    """Older counters on this host. A test that points NONCE_FILE elsewhere stays isolated."""
+
+    if os.getenv("KRAKEN_NONCE_PATH"):
+        return []
+    default = os.path.join(os.path.dirname(__file__) or ".", ".kraken_nonce")
+    state = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "state", "kraken_nonce"))
+    if os.path.abspath(NONCE_FILE) not in {os.path.abspath(default), state}:
+        return []
+    found: list[str] = []
+    for path in (default, state):
+        if os.path.abspath(path) != os.path.abspath(NONCE_FILE):
+            found.append(path)
+    return found
+
+
+def _locked_nonce_update(choose) -> int:
+    """Persist one nonce under an exclusive file lock, then return it.
+
+    The value is not returned until the file has it. An unlocked fallback
+    would send a nonce Kraken remembers and the next process would not.
     """
+
+    parent = os.path.dirname(os.path.abspath(NONCE_FILE))
+    if parent:
+        os.makedirs(parent, exist_ok=True)
     with _nonce_lock:
-        # Kraken remembers the highest nonce ever observed for an API key.
-        # This key has historically been used by Aureon clients with
-        # nanosecond nonces, so falling back to microseconds permanently
-        # strands every authenticated request below that provider high-water.
-        current_ns = time.time_ns()
-        
-        try:
-            # Try to read existing nonce from file (with locking)
-            if os.path.exists(NONCE_FILE):
-                with open(NONCE_FILE, 'r+') as f:
-                    _lock_file(f)
+        with open(NONCE_FILE, "a+", encoding="utf-8") as handle:
+            _lock_file(handle)
+            try:
+                handle.seek(0)
+                last_nonce = _read_nonce_text(handle.read())
+                for extra in _sibling_nonce_files():
                     try:
-                        last_nonce = _read_nonce_text(f.read())
-                    except Exception:
-                        last_nonce = 0
-                    
-                    # New nonce = max(current_time, last_nonce + 1) plus a
-                    # deterministic offset for same-nanosecond calls.
-                    new_nonce = max(current_ns, last_nonce + 1) + _next_nonce_offset()
-                    
-                    # Write back atomically
-                    f.seek(0)
-                    f.truncate()
-                    f.write(str(new_nonce))
-                    f.flush()
-                    try:
-                        os.fsync(f.fileno())
-                    except Exception:
-                        pass
-                    _unlock_file(f)
-                    return new_nonce
-            else:
-                # Create new nonce file
-                new_nonce = current_ns + _next_nonce_offset()
-                with open(NONCE_FILE, 'w+') as f:
-                    _lock_file(f)
-                    f.write(str(new_nonce))
-                    f.flush()
-                    try:
-                        os.fsync(f.fileno())
-                    except Exception:
-                        pass
-                    _unlock_file(f)
+                        if os.path.exists(extra):
+                            with open(extra, "r", encoding="utf-8") as sibling:
+                                last_nonce = max(last_nonce, _read_nonce_text(sibling.read()))
+                    except OSError:
+                        continue
+                new_nonce = int(choose(last_nonce))
+                if new_nonce <= last_nonce:
+                    new_nonce = last_nonce + 1
+                handle.seek(0)
+                handle.truncate()
+                handle.write(str(new_nonce))
+                handle.flush()
+                try:
+                    os.fsync(handle.fileno())
+                except OSError:
+                    pass
                 return new_nonce
-                
-        except Exception:
-            # Fallback: use time + PID + deterministic offset.
-            return current_ns + (os.getpid() % 10000) * 1000 + _next_nonce_offset()
+            finally:
+                _unlock_file(handle)
+
+
+def _get_next_nonce() -> int:
+    """Next monotonic nonce in microseconds, never below the file."""
+
+    clock = _nonce_clock_us()
+
+    def choose(last_nonce: int) -> int:
+        return max(clock, int(last_nonce) + 1)
+
+    return _locked_nonce_update(choose)
 
 
 def _persist_nonce_floor(sent: int, error_text: str = "") -> int:
     """Remember a rejected nonce and persist one strictly above it.
 
-    Kraken keeps the highest nonce it has seen for the key. A lost counter
-    file, or a retry that only re-reads the clock, stays under that high-water
-    and every later call returns EAPI:Invalid nonce. The stored value climbs
-    by at least one billion so the next call is monotonic across processes.
+    Kraken keeps the highest nonce it has seen for the key. The stored value
+    stays on disk under the same file lock as every later call. The clock is
+    microseconds. A higher value already in the file is kept.
     """
 
     mentioned: list[int] = []
@@ -388,41 +400,11 @@ def _persist_nonce_floor(sent: int, error_text: str = "") -> int:
         except ValueError:
             continue
     floor = max([int(sent or 0), *mentioned, 0])
-    target = floor + 1_000_000_000
-    with _nonce_lock:
-        current_ns = time.time_ns()
-        try:
-            if os.path.exists(NONCE_FILE):
-                with open(NONCE_FILE, "r+") as handle:
-                    _lock_file(handle)
-                    try:
-                        last_nonce = _read_nonce_text(handle.read())
-                    except Exception:
-                        last_nonce = 0
-                    new_nonce = max(current_ns, last_nonce + 1, target)
-                    handle.seek(0)
-                    handle.truncate()
-                    handle.write(str(new_nonce))
-                    handle.flush()
-                    try:
-                        os.fsync(handle.fileno())
-                    except Exception:
-                        pass
-                    _unlock_file(handle)
-                    return new_nonce
-            new_nonce = max(current_ns, target)
-            with open(NONCE_FILE, "w+") as handle:
-                _lock_file(handle)
-                handle.write(str(new_nonce))
-                handle.flush()
-                try:
-                    os.fsync(handle.fileno())
-                except Exception:
-                    pass
-                _unlock_file(handle)
-            return new_nonce
-        except Exception:
-            return max(current_ns, target)
+
+    def choose(last_nonce: int) -> int:
+        return max(_nonce_clock_us(), int(last_nonce) + 1, floor + 1)
+
+    return _locked_nonce_update(choose)
 
 class KrakenClient:
     """
@@ -786,6 +768,7 @@ class KrakenClient:
                             time.sleep(0.5)
                             continue
                     
+                    self.last_error = error_str
                     raise RuntimeError(f"Kraken error: {errors}")
                 
                 # Success — reset backoff state
@@ -1457,7 +1440,8 @@ class KrakenClient:
         """Return balances as a simple asset -> amount map (free+locked)."""
         try:
             acct = self.account()
-        except Exception:
+        except Exception as exc:
+            self.last_error = str(exc)
             return {}
 
         out: Dict[str, float] = {}

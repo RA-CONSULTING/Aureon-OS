@@ -62,11 +62,12 @@ def test_nonce_preserves_nanosecond_provider_high_water(
     )
 
     first = kraken_module._get_next_nonce()
-    assert first > 1_790_000_000_000_000_000
+    # The clock is microseconds. A nanosecond value already stored stays the floor.
+    assert first == 1_780_000_000_000_000_001
 
     nonce_path.write_text("1800000000000000000", encoding="utf-8")
     second = kraken_module._get_next_nonce()
-    assert second > 1_800_000_000_000_000_000
+    assert second == 1_800_000_000_000_000_001
 
 
 class _Clock:

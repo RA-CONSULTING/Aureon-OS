@@ -144,7 +144,7 @@ export const GasTankDisplay = ({ userId, onEmpty }: GasTankDisplayProps) => {
             </Button>
 
             {/* Empty Overlay */}
-            {gasTank.status === 'EMPTY' && (
+            {userId && gasTank.status === 'EMPTY' && (
               <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center rounded-lg">
                 <div className="text-center p-4">
                   <p className="text-2xl mb-2"></p>

@@ -6,7 +6,7 @@ import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { CasimirVacuumField } from '@/components/CasimirVacuumField';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, supabaseConfigured } from '@/integrations/supabase/client';
 import type { HarmonicNexusState } from '@/core/harmonicNexusCore';
 import quantumPhaseLocks from '@/assets/research/quantum-phase-locked-echoes.png';
 import * as THREE from 'three';
@@ -366,6 +366,7 @@ export function HarmonicNexusPhaseField3D() {
   // Fetch historical harmonic nexus states from database
   useEffect(() => {
     const fetchHistoricalNodes = async () => {
+      if (!supabaseConfigured) return;
       try {
         const { data, error } = await supabase
           .from('harmonic_nexus_states')
@@ -554,7 +555,9 @@ export function HarmonicNexusPhaseField3D() {
               🌀 Harmonic Nexus Phase Field (Tandem View)
             </h3>
             <p className="text-sm text-muted-foreground">
-              Interactive 3D visualization with Casimir entanglement • {historicalNodes.length} historical nodes loaded
+              {supabaseConfigured
+                ? `Interactive 3D visualization with Casimir entanglement • ${historicalNodes.length} historical nodes loaded`
+                : 'backend not configured'}
             </p>
           </div>
           {phaseLocks.length > 0 && (

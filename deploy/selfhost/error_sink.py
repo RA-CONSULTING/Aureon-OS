@@ -19,7 +19,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:  # noqa: N802
         path = self.path.split("?", 1)[0]
-        if path == "/healthz":
+        if path in {"/", "/health", "/healthz", "/status"}:
             self._send(200, {"status": "ok", "live_trading": False, "may_act": False})
             return
         if path == "/events":

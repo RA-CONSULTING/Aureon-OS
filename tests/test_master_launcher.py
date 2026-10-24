@@ -40,6 +40,47 @@ _EXCHANGE_KEYS = (
 )
 
 
+@pytest.fixture(autouse=True)
+def isolate_private_env_files(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Paper-mode tests must not read the operator's home or checkout env files."""
+
+    home = tmp_path / "home"
+    home.mkdir()
+    monkeypatch.setenv("HOME", str(home))
+    monkeypatch.setenv("USERPROFILE", str(home))
+    monkeypatch.delenv("AUREON_ENV_FILE", raising=False)
+    monkeypatch.delenv("DOTENV_PATH", raising=False)
+    checkout = Path(__file__).resolve().parents[1]
+    hidden = {
+        (checkout / ".env").resolve(),
+        (checkout / "aureon_radar" / ".env").resolve(),
+    }
+    import aureon.autonomous.autonomy_mode as autonomy
+    import aureon.launch.master as master
+
+    original_master = master.dotenv_values
+    original_autonomy = autonomy._dotenv_values
+
+    def hidden_master(path: Path) -> dict[str, str]:
+        try:
+            if Path(path).resolve() in hidden:
+                return {}
+        except OSError:
+            return {}
+        return original_master(path)
+
+    def hidden_autonomy(path: Path) -> dict[str, str]:
+        try:
+            if Path(path).resolve() in hidden:
+                return {}
+        except OSError:
+            return {}
+        return original_autonomy(path)
+
+    monkeypatch.setattr(master, "dotenv_values", hidden_master)
+    monkeypatch.setattr(autonomy, "_dotenv_values", hidden_autonomy)
+
+
 def _clear_trading_env(monkeypatch: pytest.MonkeyPatch) -> None:
     for key in _EXCHANGE_KEYS:
         monkeypatch.delenv(key, raising=False)
