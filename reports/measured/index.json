@@ -1,15 +1,22 @@
 {
+  "auris_coherence": 0.44993808049535605,
   "auris_hold_nodes": [
     "Clownfish",
     "Owl"
   ],
+  "auris_trade_readiness": "HOLD",
   "dataset_solution_smoke": "measured",
   "files": [
     "auris_nodes.json",
+    "brain.json",
     "organism.json",
     "qgita_snr.json",
     "self_coder.json"
   ],
+  "hnc_coherence": 0.9331334813083556,
+  "hnc_lambda_last": 1.409626852655939,
+  "hnc_multiverse_extension": "HOLD",
+  "hnc_state": "unified",
   "live_trading": false,
   "organism_connectivity_score": 1.0,
   "organism_connectivity_verdict": "pass",
@@ -20,8 +27,10 @@
   "organism_isolated": [],
   "organism_self_prediction_accuracy": 1.0,
   "organism_self_prediction_baseline_accuracy": 0.4827586206896552,
-  "qgita_eval_baseline_auc": 0.62109375,
-  "qgita_eval_ftcp_auc": 0.6690625,
+  "qgita_on_hnc_detection_rate": null,
+  "qgita_on_hnc_ftcp_count": 0,
+  "qgita_public_detection_rate": null,
+  "qgita_public_ftcp_count": 0,
   "qgita_public_series": "HOLD",
   "schema": "aureon.measured-proof.v1",
   "self_coder_comparison": "measured",

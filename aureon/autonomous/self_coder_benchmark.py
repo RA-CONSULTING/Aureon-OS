@@ -484,7 +484,7 @@ def _qgita_on_series(series: list[float]) -> dict[str, Any]:
 
     from aureon.wisdom.aureon_qgita_framework import FTCPDetector
 
-    detector = FTCPDetector(epsilon=0.05, theta=0.1, alpha=1.0, adaptive_threshold=False)
+    detector = FTCPDetector()
     times = np.arange(len(series), dtype=float)
     found = detector.detect_ftcps(times, np.array(series, dtype=float))
     valid = [item for item in found if item.is_valid]

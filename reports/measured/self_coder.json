@@ -255,9 +255,9 @@
         "passed": false,
         "program_emitted": false,
         "qgita": {
-          "max_g_eff": 4.129376276387528e-05,
-          "points": 1,
-          "valid_points": 1
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
         },
         "reason": "internal_self_coder_not_enabled",
         "sandbox": "not run",
@@ -465,9 +465,9 @@
         "passed": false,
         "program_emitted": false,
         "qgita": {
-          "max_g_eff": 6.922158791883094e-05,
-          "points": 1,
-          "valid_points": 1
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
         },
         "reason": "internal_self_coder_not_enabled",
         "sandbox": "not run",
@@ -675,9 +675,9 @@
         "passed": false,
         "program_emitted": false,
         "qgita": {
-          "max_g_eff": 0.0016980900847773537,
-          "points": 1,
-          "valid_points": 1
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
         },
         "reason": "internal_self_coder_not_enabled",
         "sandbox": "not run",
@@ -885,9 +885,9 @@
         "passed": false,
         "program_emitted": false,
         "qgita": {
-          "max_g_eff": 0.003326093057944028,
-          "points": 1,
-          "valid_points": 1
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
         },
         "reason": "internal_self_coder_not_enabled",
         "sandbox": "not run",
@@ -945,9 +945,9 @@
         "passed": false,
         "program_emitted": false,
         "qgita": {
-          "max_g_eff": 0.004159562528687036,
-          "points": 1,
-          "valid_points": 1
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
         },
         "reason": "internal_self_coder_not_enabled",
         "sandbox": "not run",
@@ -1575,9 +1575,9 @@
         "passed": false,
         "program_emitted": false,
         "qgita": {
-          "max_g_eff": 0.006687418550328755,
-          "points": 1,
-          "valid_points": 1
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
         },
         "reason": "internal_self_coder_not_enabled",
         "sandbox": "not run",
@@ -1785,9 +1785,9 @@
         "passed": false,
         "program_emitted": false,
         "qgita": {
-          "max_g_eff": 0.0015045069153881519,
-          "points": 1,
-          "valid_points": 1
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
         },
         "reason": "internal_self_coder_not_enabled",
         "sandbox": "not run",
@@ -2145,9 +2145,9 @@
         "passed": false,
         "program_emitted": false,
         "qgita": {
-          "max_g_eff": 0.000476676863650182,
-          "points": 1,
-          "valid_points": 1
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
         },
         "reason": "internal_self_coder_not_enabled",
         "sandbox": "not run",
@@ -2265,9 +2265,9 @@
         "passed": false,
         "program_emitted": false,
         "qgita": {
-          "max_g_eff": 0.010481790864607042,
-          "points": 1,
-          "valid_points": 1
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
         },
         "reason": "internal_self_coder_not_enabled",
         "sandbox": "not run",
@@ -2415,9 +2415,9 @@
         "passed": false,
         "program_emitted": false,
         "qgita": {
-          "max_g_eff": 0.0010182526355717696,
-          "points": 1,
-          "valid_points": 1
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
         },
         "reason": "internal_self_coder_not_enabled",
         "sandbox": "not run",
@@ -2475,9 +2475,9 @@
         "passed": false,
         "program_emitted": false,
         "qgita": {
-          "max_g_eff": 0.0020197036954899966,
-          "points": 1,
-          "valid_points": 1
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
         },
         "reason": "internal_self_coder_not_enabled",
         "sandbox": "not run",
@@ -2595,9 +2595,9 @@
         "passed": false,
         "program_emitted": false,
         "qgita": {
-          "max_g_eff": 0.002147121835420793,
-          "points": 1,
-          "valid_points": 1
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
         },
         "reason": "internal_self_coder_not_enabled",
         "sandbox": "not run",
@@ -2715,9 +2715,9 @@
         "passed": false,
         "program_emitted": false,
         "qgita": {
-          "max_g_eff": 0.012215643955617432,
-          "points": 1,
-          "valid_points": 1
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
         },
         "reason": "internal_self_coder_not_enabled",
         "sandbox": "not run",
@@ -2775,9 +2775,9 @@
         "passed": false,
         "program_emitted": false,
         "qgita": {
-          "max_g_eff": 0.00430900591835779,
-          "points": 1,
-          "valid_points": 1
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
         },
         "reason": "internal_self_coder_not_enabled",
         "sandbox": "not run",
@@ -2895,9 +2895,9 @@
         "passed": false,
         "program_emitted": false,
         "qgita": {
-          "max_g_eff": 1.690653023636408e-05,
-          "points": 1,
-          "valid_points": 1
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
         },
         "reason": "internal_self_coder_not_enabled",
         "sandbox": "not run",
@@ -3045,9 +3045,9 @@
         "passed": false,
         "program_emitted": false,
         "qgita": {
-          "max_g_eff": 0.005352406435430674,
-          "points": 1,
-          "valid_points": 1
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
         },
         "reason": "internal_self_coder_not_enabled",
         "sandbox": "not run",
@@ -3375,9 +3375,9 @@
         "passed": false,
         "program_emitted": false,
         "qgita": {
-          "max_g_eff": 0.007201319096060116,
-          "points": 1,
-          "valid_points": 1
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
         },
         "reason": "internal_self_coder_not_enabled",
         "sandbox": "not run",
@@ -3495,9 +3495,9 @@
         "passed": false,
         "program_emitted": false,
         "qgita": {
-          "max_g_eff": 0.001917317083020173,
-          "points": 1,
-          "valid_points": 1
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
         },
         "reason": "internal_self_coder_not_enabled",
         "sandbox": "not run",
@@ -3585,9 +3585,9 @@
         "passed": false,
         "program_emitted": false,
         "qgita": {
-          "max_g_eff": 0.0009652695750514014,
-          "points": 1,
-          "valid_points": 1
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
         },
         "reason": "internal_self_coder_not_enabled",
         "sandbox": "not run",
@@ -3615,9 +3615,9 @@
         "passed": false,
         "program_emitted": false,
         "qgita": {
-          "max_g_eff": 0.0016264527555587853,
-          "points": 1,
-          "valid_points": 1
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
         },
         "reason": "internal_self_coder_not_enabled",
         "sandbox": "not run",
@@ -3735,9 +3735,9 @@
         "passed": false,
         "program_emitted": false,
         "qgita": {
-          "max_g_eff": 0.0005372032592593521,
-          "points": 1,
-          "valid_points": 1
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
         },
         "reason": "internal_self_coder_not_enabled",
         "sandbox": "not run",
@@ -4065,9 +4065,9 @@
         "passed": false,
         "program_emitted": false,
         "qgita": {
-          "max_g_eff": 0.0031587758624928033,
-          "points": 1,
-          "valid_points": 1
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
         },
         "reason": "internal_self_coder_not_enabled",
         "sandbox": "not run",
@@ -4155,9 +4155,9 @@
         "passed": false,
         "program_emitted": false,
         "qgita": {
-          "max_g_eff": 1.678616257536779e-05,
-          "points": 1,
-          "valid_points": 1
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
         },
         "reason": "internal_self_coder_not_enabled",
         "sandbox": "not run",
@@ -4245,9 +4245,9 @@
         "passed": false,
         "program_emitted": false,
         "qgita": {
-          "max_g_eff": 0.0024120324537813317,
-          "points": 1,
-          "valid_points": 1
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
         },
         "reason": "internal_self_coder_not_enabled",
         "sandbox": "not run",
@@ -4275,9 +4275,9 @@
         "passed": false,
         "program_emitted": false,
         "qgita": {
-          "max_g_eff": 0.01304525225801198,
-          "points": 1,
-          "valid_points": 1
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
         },
         "reason": "internal_self_coder_not_enabled",
         "sandbox": "not run",
@@ -4335,9 +4335,9 @@
         "passed": false,
         "program_emitted": false,
         "qgita": {
-          "max_g_eff": 0.000464564628028873,
-          "points": 1,
-          "valid_points": 1
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
         },
         "reason": "internal_self_coder_not_enabled",
         "sandbox": "not run",
@@ -4365,9 +4365,9 @@
         "passed": false,
         "program_emitted": false,
         "qgita": {
-          "max_g_eff": 0.0023430417324923226,
-          "points": 1,
-          "valid_points": 1
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
         },
         "reason": "internal_self_coder_not_enabled",
         "sandbox": "not run",
@@ -4575,9 +4575,9 @@
         "passed": false,
         "program_emitted": false,
         "qgita": {
-          "max_g_eff": 0.0013417473561751498,
-          "points": 1,
-          "valid_points": 1
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
         },
         "reason": "internal_self_coder_not_enabled",
         "sandbox": "not run",
@@ -4755,9 +4755,9 @@
         "passed": false,
         "program_emitted": false,
         "qgita": {
-          "max_g_eff": 0.0027835574667662223,
-          "points": 1,
-          "valid_points": 1
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
         },
         "reason": "internal_self_coder_not_enabled",
         "sandbox": "not run",
@@ -4905,9 +4905,9 @@
         "passed": false,
         "program_emitted": false,
         "qgita": {
-          "max_g_eff": 0.003069720100384713,
-          "points": 1,
-          "valid_points": 1
+          "max_g_eff": null,
+          "points": 0,
+          "valid_points": 0
         },
         "reason": "internal_self_coder_not_enabled",
         "sandbox": "not run",

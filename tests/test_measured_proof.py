@@ -15,36 +15,42 @@ def _load(name: str) -> dict:
     return json.loads((MEASURED / name).read_text(encoding="utf-8"))
 
 
-def test_auris_nodes_match_the_committed_run_and_hold_without_evidence():
-    from aureon.evaluation.auris_node_eval import evaluate_auris_nodes
+def test_brain_proof_matches_the_committed_run_and_holds_without_labels():
+    from aureon.evaluation.brain_proof import evaluate_brain
+    from aureon.harmonic.aureon_harmonic_reality import (
+        DEFAULT_ALPHA,
+        DEFAULT_BETA,
+        DEFAULT_DELTA_T,
+        DEFAULT_G,
+        DEFAULT_TAU,
+    )
 
-    fresh = json.loads(json.dumps(evaluate_auris_nodes(), sort_keys=True))
-    committed = _load("auris_nodes.json")
-    assert fresh == committed
-    assert committed["nodes"]["Owl"]["verdict"] == "HOLD"
-    assert committed["nodes"]["Clownfish"]["verdict"] == "HOLD"
-    assert committed["nodes"]["Owl"]["hit_rate"] is None
-    assert committed["nodes"]["Tiger"]["verdict"] == "measured"
-    assert committed["trade_readiness"]["verdict"] == "HOLD"
-    assert committed["live_trading"] is False
-
-
-def test_qgita_snr_matches_the_committed_run():
-    from aureon.evaluation.qgita_snr_benchmark import evaluate_qgita_snr
-
-    fresh = json.loads(json.dumps(evaluate_qgita_snr(ROOT), sort_keys=True))
-    committed = _load("qgita_snr.json")
-    assert fresh == committed
-    evaluation = committed["evaluation"]
-    assert evaluation["ftcp"]["auc"] is not None
-    assert evaluation["baseline"]["auc"] is not None
-    assert "detection_rate" in evaluation["ftcp"]
-    assert "false_alarm_rate" in evaluation["ftcp"]
-    assert evaluation["ftcp"]["roc"]
-    assert committed["public_series"]["verdict"] == "HOLD"
-    assert committed["public_series"]["detection_rate"] is None
-    assert committed["seeds"] == {"calibration": 20261024, "evaluation": 777}
-    assert committed["live_trading"] is False
+    fresh = json.loads(json.dumps(evaluate_brain(ROOT), sort_keys=True))
+    assert fresh == _load("brain.json")
+    assert _load("auris_nodes.json") == fresh["auris"]
+    assert _load("qgita_snr.json") == fresh["qgita"]
+    hnc = fresh["hnc"]
+    assert hnc["parameters"]["alpha"] == DEFAULT_ALPHA
+    assert hnc["parameters"]["beta"] == DEFAULT_BETA
+    assert hnc["parameters"]["tau"] == DEFAULT_TAU
+    assert hnc["parameters"]["g"] == DEFAULT_G
+    assert hnc["parameters"]["delta_t"] == DEFAULT_DELTA_T
+    assert hnc["enable_multiverse"] is False
+    assert hnc["multiverse_extension"]["verdict"] == "HOLD"
+    assert fresh["auris"]["trade_readiness"]["verdict"] == "HOLD"
+    assert "Owl" in fresh["auris"]["hold_nodes"]
+    assert "Clownfish" in fresh["auris"]["hold_nodes"]
+    assert "hit_rate" not in fresh["auris"]
+    assert fresh["qgita"]["public_series"]["detection_rate"] is None
+    assert fresh["qgita"]["public_series"]["false_alarm_rate"] is None
+    assert fresh["qgita"]["public_series"]["rates_verdict"] == "HOLD"
+    assert fresh["qgita"]["on_hnc_series"]["detection_rate"] is None
+    assert fresh["together"]["auris_joined_to_lambda"]["verdict"] == "HOLD"
+    assert fresh["external_llm"] is False
+    assert fresh["live_trading"] is False
+    assert fresh["orders_placed"] is False
+    assert "conscious" in fresh["note"]
+    assert "alive" in fresh["note"]
 
 
 def test_self_coder_offline_hold_matches_the_committed_run(monkeypatch: pytest.MonkeyPatch):

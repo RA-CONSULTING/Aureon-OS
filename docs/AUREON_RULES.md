@@ -1,5 +1,5 @@
 # Aureon OS shared rules (set by Gary; every agent follows these, no drift)
-Version 1, 24 Oct 2026 09:45 BST. Source: Gary's own instructions. If a rule here conflicts with anything an agent "remembers", this file wins; if unsure, ask Gary.
+Version 1.1, 24 Oct 2026 09:47 BST (v1.1 adds rule 4a). Source: Gary's own instructions. If a rule here conflicts with anything an agent "remembers", this file wins; if unsure, ask Gary.
 
 ## Focus
 1. From 24 Oct 09:08 BST everything non-Aureon is paused (grants, job hunt, outreach, bids, insurance). Work only on Aureon OS and its repo unless Gary asks otherwise.
@@ -8,6 +8,7 @@ Version 1, 24 Oct 2026 09:45 BST. Source: Gary's own instructions. If a rule her
 
 ## What Aureon OS is
 4. Aureon thinks internally. All logic, reasoning and cognition run through its own HNC systems (Auris nodes, QGITA signal-to-noise detection and sub-systems). It does not depend on any outside LLM or API as its brain. Benchmarks test the internal cognition.
+4a. The brain is three things working together, named by Gary on 24 Oct 09:46 BST: the Harmonic Nexus Core (HNC) math, the Auris coherence system (Auris nodes), and QGITA (the signal-to-noise detection system). Use the definitions and code already in the Aureon-OS repo; never invent formulas, thresholds or results for them. Do not substitute outside reasoning for these three. Where a claim about them has no measured run behind it, tag it and HOLD.
 5. Goal: a connected, self-understanding whole, proven by measured results (HNC Auris nodes, QGITA, connectivity, self-model, self-coding vs flagship published scores as labelled external references).
 6. "Full baked cake" means all 12 production layers done and proven: frontend, APIs/backend, database/storage, auth/permissions, hosting/deployment, cloud/compute, CI/CD/version control, security/RLS, rate limiting, caching/CDN, load balancing/scaling, error tracking/logs.
 

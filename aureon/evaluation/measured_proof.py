@@ -7,9 +7,10 @@ import json
 from pathlib import Path
 from typing import Any
 
-from aureon.evaluation.auris_node_eval import evaluate_auris_nodes, render_auris_markdown
+from aureon.evaluation.auris_node_eval import render_auris_markdown
+from aureon.evaluation.brain_proof import evaluate_brain, render_brain_markdown
 from aureon.evaluation.organism_proof import evaluate_organism, render_organism_markdown
-from aureon.evaluation.qgita_snr_benchmark import evaluate_qgita_snr, render_qgita_markdown
+from aureon.evaluation.qgita_snr_benchmark import render_qgita_markdown
 
 
 def _dump(payload: dict[str, Any]) -> str:
@@ -110,10 +111,13 @@ def render_self_coder_markdown(report: dict[str, Any]) -> str:
 
 def write_bundle(root: Path, out: Path) -> dict[str, Any]:
     out.mkdir(parents=True, exist_ok=True)
-    auris = evaluate_auris_nodes()
-    qgita = evaluate_qgita_snr(root)
+    brain = evaluate_brain(root)
+    auris = brain["auris"]
+    qgita = brain["qgita"]
     coder = self_coder_report(root)
     organism = evaluate_organism()
+    (out / "brain.json").write_text(_dump(brain), encoding="utf-8")
+    (out / "brain.md").write_text(render_brain_markdown(brain), encoding="utf-8")
     (out / "auris_nodes.json").write_text(_dump(auris), encoding="utf-8")
     (out / "auris_nodes.md").write_text(render_auris_markdown(auris), encoding="utf-8")
     (out / "qgita_snr.json").write_text(_dump(qgita), encoding="utf-8")
@@ -129,16 +133,23 @@ def write_bundle(root: Path, out: Path) -> dict[str, Any]:
         "live_trading": False,
         "files": [
             "auris_nodes.json",
+            "brain.json",
             "organism.json",
             "qgita_snr.json",
             "self_coder.json",
         ],
-        "auris_hold_nodes": sorted(
-            name for name, node in auris["nodes"].items() if node["verdict"] == "HOLD"
-        ),
-        "qgita_eval_ftcp_auc": qgita["evaluation"]["ftcp"]["auc"],
-        "qgita_eval_baseline_auc": qgita["evaluation"]["baseline"]["auc"],
-        "qgita_public_series": qgita["public_series"]["verdict"],
+        "auris_coherence": auris["coherence"],
+        "auris_hold_nodes": auris["hold_nodes"],
+        "auris_trade_readiness": auris["trade_readiness"]["verdict"],
+        "hnc_coherence": brain["hnc"]["coherence"],
+        "hnc_lambda_last": brain["hnc"]["lambda_last"],
+        "hnc_multiverse_extension": brain["hnc"]["multiverse_extension"]["verdict"],
+        "hnc_state": brain["hnc"]["state"],
+        "qgita_on_hnc_detection_rate": qgita["on_hnc_series"]["detection_rate"],
+        "qgita_on_hnc_ftcp_count": qgita["on_hnc_series"]["ftcp_count"],
+        "qgita_public_detection_rate": qgita["public_series"]["detection_rate"],
+        "qgita_public_ftcp_count": qgita["public_series"].get("ftcp_count"),
+        "qgita_public_series": qgita["public_series"]["rates_verdict"],
         "self_coder_comparison": coder["flagship_comparison"]["status"],
         "self_coder_humaneval_pct": coder["flagship_comparison"]["this_run_humaneval_pct"],
         "dataset_solution_smoke": coder["dataset_solution_smoke"]["verdict"],

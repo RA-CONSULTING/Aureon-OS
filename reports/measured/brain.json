@@ -1,0 +1,495 @@
+{
+  "auris": {
+    "coherence": 0.44993808049535605,
+    "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+    "hold_nodes": [
+      "Clownfish",
+      "Owl"
+    ],
+    "hold_reason": "these nodes do not change when one documented input moves between the clamp bounds",
+    "market_data": null,
+    "market_data_note": "the argument was omitted, so the method used its own default",
+    "nodes": {
+      "CargoShip": {
+        "freq": 936.0,
+        "value": 0.5,
+        "weight": 0.7,
+        "weighted_value": 0.35
+      },
+      "Clownfish": {
+        "freq": 963.0,
+        "value": 0.5,
+        "weight": 1.0,
+        "weighted_value": 0.5
+      },
+      "Deer": {
+        "freq": 639.0,
+        "value": 0.5,
+        "weight": 0.9,
+        "weighted_value": 0.45
+      },
+      "Dolphin": {
+        "freq": 528.0,
+        "value": 0.5,
+        "weight": 1.5,
+        "weighted_value": 0.75
+      },
+      "Falcon": {
+        "freq": 285.0,
+        "value": 0.15,
+        "weight": 1.2,
+        "weighted_value": 0.18
+      },
+      "Hummingbird": {
+        "freq": 396.0,
+        "value": 0.011764705882352941,
+        "weight": 0.8,
+        "weighted_value": 0.009411764705882354
+      },
+      "Owl": {
+        "freq": 741.0,
+        "value": 0.6,
+        "weight": 1.1,
+        "weighted_value": 0.66
+      },
+      "Panda": {
+        "freq": 852.0,
+        "value": 0.75,
+        "weight": 1.3,
+        "weighted_value": 0.9750000000000001
+      },
+      "Tiger": {
+        "freq": 220.0,
+        "value": 0.4,
+        "weight": 1.0,
+        "weighted_value": 0.4
+      }
+    },
+    "sensitivity": {
+      "clamp_bounds": [
+        0.0,
+        1.0
+      ],
+      "clamp_source": "read_auris_nodes clamps each node value to the unit interval",
+      "inputs": [
+        "volatility",
+        "momentum",
+        "volume",
+        "spread"
+      ],
+      "inputs_that_move_each_node": {
+        "CargoShip": [
+          "volume"
+        ],
+        "Clownfish": [],
+        "Deer": [
+          "spread"
+        ],
+        "Dolphin": [
+          "momentum"
+        ],
+        "Falcon": [
+          "momentum",
+          "volume"
+        ],
+        "Hummingbird": [
+          "volatility"
+        ],
+        "Owl": [],
+        "Panda": [
+          "volatility"
+        ],
+        "Tiger": [
+          "volatility"
+        ]
+      },
+      "probes": {
+        "momentum": {
+          "0.0": {
+            "CargoShip": 0.5,
+            "Clownfish": 0.5,
+            "Deer": 0.5,
+            "Dolphin": 0.5,
+            "Falcon": 0.15,
+            "Hummingbird": 0.011764705882352941,
+            "Owl": 0.6,
+            "Panda": 0.75,
+            "Tiger": 0.4
+          },
+          "1.0": {
+            "CargoShip": 0.5,
+            "Clownfish": 0.5,
+            "Deer": 0.5,
+            "Dolphin": 0.5000000000000001,
+            "Falcon": 0.85,
+            "Hummingbird": 0.011764705882352941,
+            "Owl": 0.6,
+            "Panda": 0.75,
+            "Tiger": 0.4
+          }
+        },
+        "spread": {
+          "0.0": {
+            "CargoShip": 0.5,
+            "Clownfish": 0.5,
+            "Deer": 0.0,
+            "Dolphin": 0.5,
+            "Falcon": 0.15,
+            "Hummingbird": 0.011764705882352941,
+            "Owl": 0.6,
+            "Panda": 0.75,
+            "Tiger": 0.4
+          },
+          "1.0": {
+            "CargoShip": 0.5,
+            "Clownfish": 0.5,
+            "Deer": 1.0,
+            "Dolphin": 0.5,
+            "Falcon": 0.15,
+            "Hummingbird": 0.011764705882352941,
+            "Owl": 0.6,
+            "Panda": 0.75,
+            "Tiger": 0.4
+          }
+        },
+        "volatility": {
+          "0.0": {
+            "CargoShip": 0.5,
+            "Clownfish": 0.5,
+            "Deer": 0.5,
+            "Dolphin": 0.5,
+            "Falcon": 0.15,
+            "Hummingbird": 0.6,
+            "Owl": 0.6,
+            "Panda": 1.0,
+            "Tiger": 0.8
+          },
+          "1.0": {
+            "CargoShip": 0.5,
+            "Clownfish": 0.5,
+            "Deer": 0.5,
+            "Dolphin": 0.5,
+            "Falcon": 0.15,
+            "Hummingbird": 0.005940594059405941,
+            "Owl": 0.6,
+            "Panda": 0.5,
+            "Tiger": 0.0
+          }
+        },
+        "volume": {
+          "0.0": {
+            "CargoShip": 0.0,
+            "Clownfish": 0.5,
+            "Deer": 0.5,
+            "Dolphin": 0.5,
+            "Falcon": 0.0,
+            "Hummingbird": 0.011764705882352941,
+            "Owl": 0.6,
+            "Panda": 0.75,
+            "Tiger": 0.4
+          },
+          "1.0": {
+            "CargoShip": 1.0,
+            "Clownfish": 0.5,
+            "Deer": 0.5,
+            "Dolphin": 0.5,
+            "Falcon": 0.3,
+            "Hummingbird": 0.011764705882352941,
+            "Owl": 0.6,
+            "Panda": 0.75,
+            "Tiger": 0.4
+          }
+        }
+      }
+    },
+    "source": "aureon.utils.aureon_queen_hive_mind.QueenHiveMind.get_auris_coherence",
+    "trade_readiness": {
+      "reason": "no trade-outcome labels; the status string is the method's own words, not a fill",
+      "verdict": "HOLD"
+    },
+    "weighted_mean_of_returned_nodes": 0.44993808049535605
+  },
+  "cognition": "internal",
+  "external_llm": false,
+  "hnc": {
+    "boundedness": 0.6270482093919689,
+    "coherence": 0.9331334813083556,
+    "dt": 0.001,
+    "echo_strength": 0.9999999999078167,
+    "enable_multiverse": false,
+    "formula": "F_sub(t) + F_observer(t) + F_feedback(t)",
+    "lambda_last": 1.409626852655939,
+    "lambda_max": 1.808557403402478,
+    "lambda_mean": 1.0651840869169225,
+    "lambda_min": 0.1992387112134208,
+    "multiverse_extension": {
+      "reason": "the default extension draws unseeded noise, so it has no committed number",
+      "verdict": "HOLD"
+    },
+    "parameters": {
+      "alpha": 0.85,
+      "beta": 0.9,
+      "delta_t": 0.01,
+      "g": 1.5,
+      "sample_rate": 1000.0,
+      "substrate_frequencies": [
+        7.83,
+        14.3,
+        20.8,
+        27.3,
+        33.8,
+        39.0,
+        45.0,
+        111.0,
+        174.0,
+        188.0,
+        285.0,
+        396.0,
+        417.0,
+        528.0,
+        639.0,
+        741.0,
+        852.0,
+        963.0
+      ],
+      "tau": 0.05
+    },
+    "series": [
+      0.1992387112134208,
+      0.2892291028444785,
+      0.33451943372236115,
+      0.3785721879169513,
+      0.5062239334010339,
+      0.4987187110596326,
+      0.551645888552706,
+      0.5287094705587239,
+      0.4231521942667791,
+      0.7081924690605852,
+      0.7360787685108777,
+      0.6204280589165023,
+      0.5769686224841382,
+      0.6116771752924345,
+      0.7027358462404732,
+      0.7022659351519209,
+      0.8762138050746862,
+      0.8239865139164938,
+      0.8962514100434182,
+      0.8016611360656909,
+      0.8970164426126679,
+      0.8791227158963806,
+      0.8637147016797346,
+      0.8791091797488066,
+      0.9828138193363917,
+      0.9554773551660395,
+      1.009064512636294,
+      0.9579262892667495,
+      0.7987332566727942,
+      0.8194041719232676,
+      0.8413644578541308,
+      0.7602276621588048,
+      0.8072319433061124,
+      0.8059561515910855,
+      0.7983477796243308,
+      0.8539086738721915,
+      0.6374237642286024,
+      0.9146607059907736,
+      0.7284308938380826,
+      0.7000035546771988,
+      0.8067241343556658,
+      0.8028355363824928,
+      0.7986871626063377,
+      0.757659660420779,
+      0.8900603265969759,
+      0.9959372619826903,
+      0.8174697551248913,
+      0.7888966597645809,
+      0.7169428153672085,
+      0.7287421180239221,
+      0.727378108172752,
+      0.8081013959303865,
+      1.1680976201059503,
+      0.9096197783071898,
+      1.0357525002785954,
+      0.9859533853948141,
+      1.1868207624178109,
+      1.2306593013033233,
+      1.180913678061574,
+      1.1956213778837919,
+      1.122611495106894,
+      1.3680295078708258,
+      1.5969193560961688,
+      1.403932914582422,
+      1.2977527371367898,
+      1.332879723472753,
+      1.3568957122720529,
+      1.4321222684545685,
+      1.6581652086784184,
+      1.592886693630892,
+      1.5296879290178538,
+      1.5501287025815413,
+      1.6413899711357074,
+      1.7467461847347625,
+      1.4848994399292008,
+      1.4954672094869186,
+      1.5757925679221858,
+      1.563656341688001,
+      1.6918103525715282,
+      1.808557403402478,
+      1.6276176021785556,
+      1.400923829518164,
+      1.4350655320509473,
+      1.4712243595736956,
+      1.49744192060389,
+      1.515437866875946,
+      1.4368552275154602,
+      1.5434187809975821,
+      1.35301660807916,
+      1.43580278701711,
+      1.5991390063340938,
+      1.3114717589414226,
+      1.4017278815789385,
+      1.366150223361105,
+      1.3325030515263725,
+      1.3922607666744473,
+      1.443029812119721,
+      1.592997124286467,
+      1.5130852351757864,
+      1.409626852655939
+    ],
+    "source": "aureon.harmonic.aureon_harmonic_reality.HarmonicRealityField.step",
+    "state": "unified",
+    "steps": 100,
+    "steps_are": "the history length HarmonicRealityField._update_metrics requires before it computes coherence",
+    "why_multiverse_is_off": "The class default enables the multiverse extension. That path applies TranslationMap noise that is not seeded, so this run does not publish a number for it. enable_multiverse=False is the master-formula branch already in step()."
+  },
+  "live_trading": false,
+  "note": "These figures are the HNC master-formula path, Auris coherence, and the QGITA analyzer. They are not a claim that the system is conscious or alive.",
+  "orders_placed": false,
+  "qgita": {
+    "on_hnc_series": {
+      "buffer_note": "QGITAMarketAnalyzer keeps a 1000-sample buffer; analyze sees that tail",
+      "coherence": {
+        "c_linear": 0.7292957394946138,
+        "c_nonlinear": 0.7290833566372417,
+        "c_phi": 0.6960989967718437,
+        "global_R": 0.7475569218975662,
+        "q_anomaly": 0.19159861444421625
+      },
+      "detection_rate": null,
+      "detection_threshold": 0.2,
+      "detector": {
+        "adaptive_threshold": true,
+        "alpha": 1.0,
+        "epsilon": 0.05,
+        "theta": 0.1
+      },
+      "false_alarm_rate": null,
+      "ftcp_count": 0,
+      "lhe_count": 0,
+      "lighthouse_events": [],
+      "lighthouse_intensity": 0.03716625878831031,
+      "lighthouse_threshold_sigma": 2.0,
+      "max_g_eff": 0.0,
+      "orders_placed": false,
+      "rates_reason": "this series has no signal-in-noise labels in the repo, so the analyzer counts are not a detection rate or a false-alarm rate",
+      "rates_verdict": "HOLD",
+      "regime": {
+        "description": "Market in ordered, stable regime",
+        "stability": 0.7475569218975662,
+        "state": "coherent"
+      },
+      "samples_analyzed": 100,
+      "samples_fed": 100,
+      "series": "hnc_lambda_series",
+      "signal_note": "the direction is the analyzer's return. It is not an order and it has no outcome label",
+      "signals": {
+        "confidence": 0.7052607725619787,
+        "direction": "BEARISH",
+        "event_type": null,
+        "risk_description": "Coherent regime - stable conditions",
+        "risk_level": "LOW",
+        "strength": 0.1858312939415515,
+        "structural_event": false
+      },
+      "source": "aureon.wisdom.aureon_qgita_framework.QGITAMarketAnalyzer.analyze",
+      "statistics": {
+        "lighthouse_mean": 0.0,
+        "lighthouse_std": 0.1,
+        "price_mean": 1.0651840869169222,
+        "price_std": 0.3891764963101128,
+        "total_samples": 100
+      },
+      "status": "complete",
+      "timestamps": "step index times HarmonicRealityField.dt",
+      "valid_ftcps": [],
+      "verdict": "measured_counts_rates_hold"
+    },
+    "public_series": {
+      "buffer_note": "QGITAMarketAnalyzer keeps a 1000-sample buffer; analyze sees that tail",
+      "coherence": {
+        "c_linear": 0.9397845342411165,
+        "c_nonlinear": 0.939211576612552,
+        "c_phi": 0.9981536453722771,
+        "global_R": 0.9088637891117479,
+        "q_anomaly": 0.08971889898070065
+      },
+      "column": "Lambda",
+      "detection_rate": null,
+      "detection_threshold": 0.2,
+      "detector": {
+        "adaptive_threshold": true,
+        "alpha": 1.0,
+        "epsilon": 0.05,
+        "theta": 0.1
+      },
+      "false_alarm_rate": null,
+      "ftcp_count": 0,
+      "lhe_count": 0,
+      "lighthouse_events": [],
+      "lighthouse_intensity": 0.037981718670486324,
+      "lighthouse_threshold_sigma": 2.0,
+      "max_g_eff": 0.0,
+      "orders_placed": false,
+      "rates_reason": "this series has no signal-in-noise labels in the repo, so the analyzer counts are not a detection rate or a false-alarm rate",
+      "rates_verdict": "HOLD",
+      "regime": {
+        "description": "Market in ordered, stable regime",
+        "stability": 0.9088637891117479,
+        "state": "coherent"
+      },
+      "samples_analyzed": 1000,
+      "samples_fed": 2921,
+      "series": "data/de440_timeseries.csv",
+      "signal_note": "the direction is the analyzer's return. It is not an order and it has no outcome label",
+      "signals": {
+        "confidence": 0.7387453358280791,
+        "direction": "BEARISH",
+        "event_type": null,
+        "risk_description": "Coherent regime - stable conditions",
+        "risk_level": "LOW",
+        "strength": 0.1899085933524316,
+        "structural_event": false
+      },
+      "source": "aureon.wisdom.aureon_qgita_framework.QGITAMarketAnalyzer.analyze",
+      "statistics": {
+        "lighthouse_mean": 0.0,
+        "lighthouse_std": 0.1,
+        "price_mean": 0.8137931961978909,
+        "price_std": 0.08265540469064792,
+        "total_samples": 1000
+      },
+      "status": "complete",
+      "timestamps": "sample index. analyze_price_stream uses range(len(prices)) when no timestamps are passed",
+      "valid_ftcps": [],
+      "verdict": "measured_counts_rates_hold"
+    }
+  },
+  "schema": "aureon.brain-proof.v1",
+  "together": {
+    "auris_joined_to_lambda": {
+      "reason": "no function in the repo passes \u039b(t) into get_auris_coherence",
+      "verdict": "HOLD"
+    },
+    "qgita_on_the_formula_series": "measured_counts_rates_hold"
+  }
+}
