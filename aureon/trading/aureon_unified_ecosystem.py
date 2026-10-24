@@ -12572,8 +12572,15 @@ class AurisEngine:
         
         anomalies = []
         
-        # Scan a sample of symbols (not all, to save API calls)
-        sample_symbols = random.sample(symbols, min(5, len(symbols))) if symbols else []
+        # Rotate through the caller's list. The window is deterministic.
+        ordered = list(symbols or [])
+        count = min(5, len(ordered))
+        cursor = int(getattr(self, "_anomaly_scan_cursor", 0) or 0)
+        if ordered and count:
+            sample_symbols = [ordered[(cursor + offset) % len(ordered)] for offset in range(count)]
+            self._anomaly_scan_cursor = (cursor + count) % len(ordered)
+        else:
+            sample_symbols = []
         
         for symbol in sample_symbols:
             try:
@@ -12850,7 +12857,9 @@ class MyceliumNetwork:
             targets = list(self.activations.keys())
             if symbol in targets: targets.remove(symbol)
             if targets:
-                target = random.choice(targets)
+                cursor = int(getattr(self, "_synapse_cursor", 0) or 0)
+                target = targets[cursor % len(targets)]
+                self._synapse_cursor = cursor + 1
                 # Check if connection exists
                 if not any(s.target == target for s in self.synapses[symbol]):
                     self.synapses[symbol].append(Synapse(source=symbol, target=target))

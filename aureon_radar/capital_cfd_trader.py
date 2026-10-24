@@ -35,6 +35,27 @@ from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
+
+def _published_amount(value: Any) -> float | None:
+    """A finite published amount. Missing, bool, NaN, and inf stay None. Zero stays zero."""
+
+    if isinstance(value, bool) or value is None:
+        return None
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    if number != number or number in (float("inf"), float("-inf")):
+        return None
+    return number
+
+
+def _format_published(value: Any, digits: int = 2) -> str:
+    amount = _published_amount(value)
+    if amount is None:
+        return "n/a"
+    return f"{amount:.{digits}f}"
+
 # Module-level Lambda Engine reference — set by ICS before any instance is created.
 # Each CapitalCFDTrader.__init__ picks this up automatically.
 _MODULE_LAMBDA_ENGINE: Any = None
@@ -2051,8 +2072,8 @@ class CapitalCFDTrader:
 
         snapshot: Dict[str, Any] = {
             "ok": False,
-            "coherence": 0.0,
-            "queen_signal": 0.0,
+            "coherence": None,
+            "queen_signal": None,
             "total_hives": 0,
             "total_agents": 0,
             "generation": 0,
@@ -2116,8 +2137,8 @@ class CapitalCFDTrader:
                 ]
                 snapshot = {
                     "ok": True,
-                    "coherence": float(mesh.get("coherence", 0.0) or 0.0),
-                    "queen_signal": float(mesh.get("queen_signal", 0.0) or 0.0),
+                    "coherence": _published_amount(mesh.get("coherence")),
+                    "queen_signal": _published_amount(mesh.get("queen_signal")),
                     "total_hives": int(state.get("total_hives", 0) or 0),
                     "total_agents": int(state.get("total_agents", 0) or 0),
                     "generation": int(state.get("generation", 0) or 0),
@@ -2190,7 +2211,7 @@ class CapitalCFDTrader:
             (
                 f"hives={int(mycelium_snapshot.get('total_hives', 0) or 0)} "
                 f"agents={int(mycelium_snapshot.get('total_agents', 0) or 0)} "
-                f"coh={float(mycelium_snapshot.get('coherence', 0.0) or 0.0):.2f}"
+                f"coh={_format_published(mycelium_snapshot.get('coherence'))}"
             ),
             ["coherence", "queen_signal", "unified_signal", "external_signals", "connected_count"],
         )
@@ -2225,7 +2246,7 @@ class CapitalCFDTrader:
             "harmonic_fusion",
             self.harmonic_fusion is not None,
             "Harmonic coherence and symbol phase scoring",
-            f"global_coh={float(target.get('fusion_global_coherence', 0.0) or 0.0):.2f}",
+            f"global_coh={_format_published(target.get('fusion_global_coherence'))}",
             ["fusion_global_coherence", "fusion_symbol_phase"],
         )
         add_system(
@@ -2262,8 +2283,8 @@ class CapitalCFDTrader:
                 "spread_pct": float(candidate.get("spread_pct", 0.0) or 0.0),
                 "expected_net_profit": float(candidate.get("expected_net_profit", 0.0) or 0.0),
                 "timeline_confidence": float(candidate.get("timeline_confidence", 0.0) or 0.0),
-                "fusion_global_coherence": float(candidate.get("fusion_global_coherence", 0.0) or 0.0),
-                "brain_coherence": float(candidate.get("brain_coherence", 0.0) or 0.0),
+                "fusion_global_coherence": _published_amount(candidate.get("fusion_global_coherence")),
+                "brain_coherence": _published_amount(candidate.get("brain_coherence")),
             })
 
         live_confirmed = bool(
@@ -2282,17 +2303,17 @@ class CapitalCFDTrader:
                 "neural_systems": int(mind_map_snapshot.get("neural_systems", 0) or 0),
             },
             "mycelium": {
-                "coherence": float(mycelium_snapshot.get("coherence", 0.0) or 0.0),
-                "queen_signal": float(mycelium_snapshot.get("queen_signal", 0.0) or 0.0),
+                "coherence": _published_amount(mycelium_snapshot.get("coherence")),
+                "queen_signal": _published_amount(mycelium_snapshot.get("queen_signal")),
                 "connected_count": int(mycelium_snapshot.get("connected_count", 0) or 0),
                 "external_signals": int(mycelium_snapshot.get("external_signals", 0) or 0),
                 "unified_signal": dict(mycelium_snapshot.get("unified_signal", {}) or {}),
             },
             "capital": {
-                "equity_gbp": float(capital.get("equity_gbp", 0.0) or 0.0),
-                "free_gbp": float(capital.get("free_gbp", 0.0) or 0.0),
-                "used_gbp": float(capital.get("used_gbp", 0.0) or 0.0),
-                "budget_gbp": float(capital.get("budget_gbp", 0.0) or 0.0),
+                "equity_gbp": _published_amount(capital.get("equity_gbp")),
+                "free_gbp": _published_amount(capital.get("free_gbp")),
+                "used_gbp": _published_amount(capital.get("used_gbp")),
+                "budget_gbp": _published_amount(capital.get("budget_gbp")),
                 "positions": len(self.positions),
                 "shadows": len(self.shadow_trades),
             },
@@ -2304,8 +2325,8 @@ class CapitalCFDTrader:
                 "change_pct": float(target.get("change_pct", 0.0) or 0.0),
                 "expected_net_profit": float(target.get("expected_net_profit", 0.0) or 0.0),
                 "timeline_confidence": float(target.get("timeline_confidence", 0.0) or 0.0),
-                "fusion_global_coherence": float(target.get("fusion_global_coherence", 0.0) or 0.0),
-                "brain_coherence": float(target.get("brain_coherence", 0.0) or 0.0),
+                "fusion_global_coherence": _published_amount(target.get("fusion_global_coherence")),
+                "brain_coherence": _published_amount(target.get("brain_coherence")),
             },
             "candidates": candidates,
             "systems": list(live_system_activity_snapshot.get("systems", []) or []),
@@ -6793,12 +6814,12 @@ class CapitalCFDTrader:
                 lines.append(
                     f"    HFT: net=£{float(target.get('expected_net_profit', 0.0) or 0.0):+.4f} "
                     f"cost=£{float(target.get('round_trip_cost', 0.0) or 0.0):.4f} "
-                    f"coh={float(target.get('brain_coherence', 0.0) or 0.0):.3f}"
+                    f"coh={_format_published(target.get('brain_coherence'), 3)}"
                 )
             if "timeline_confidence" in target or "fusion_global_coherence" in target or "orchestrator_reason" in target:
                 lines.append(
                     f"    Intel: timeline={float(target.get('timeline_confidence', 0.0) or 0.0):.2f} "
-                    f"fusion={float(target.get('fusion_global_coherence', 0.0) or 0.0):.2f} "
+                    f"fusion={_format_published(target.get('fusion_global_coherence'))} "
                     f"orch={target.get('orchestrator_reason', 'n/a')}"
                 )
         if self._latest_candidate_snapshot:
@@ -6841,8 +6862,8 @@ class CapitalCFDTrader:
                 lines.append(
                     f"  Mycelium: hives={int(mycelium_snapshot.get('total_hives', 0) or 0)} "
                     f"agents={int(mycelium_snapshot.get('total_agents', 0) or 0)} "
-                    f"coh={float(mycelium_snapshot.get('coherence', 0.0) or 0.0):.2f} "
-                    f"queen={float(mycelium_snapshot.get('queen_signal', 0.0) or 0.0):.2f}"
+                    f"coh={_format_published(mycelium_snapshot.get('coherence'))} "
+                    f"queen={_format_published(mycelium_snapshot.get('queen_signal'))}"
                 )
             else:
                 lines.append(f"  Mycelium: {mycelium_snapshot.get('reason', 'unavailable')}")

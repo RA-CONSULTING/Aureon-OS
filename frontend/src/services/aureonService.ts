@@ -2,6 +2,9 @@
 import { HistoricalDataPoint, AureonDataPoint, PrismStatus, OHLCV } from '@/types';
 import { executeAurisLoop, analyzeResonance, AurisResonance } from '@/core/aurisSymbolicTaxonomy';
 
+/** Dormant simulator. These series are not telemetry and are not a market reading. */
+export const AUREON_SERVICE_SIMULATION_ONLY = true;
+
 // --- NEXUS (COGNITIVE) SIMULATION ---
 
 // This part of the simulation remains unchanged, modeling the historical cognitive trajectory.

@@ -2043,15 +2043,17 @@ function runtimeDetails(data: any, flight: any): Array<{ label: string; value: s
     });
   }
   if (hncProof?.auris_nodes?.node_count !== undefined || hncProof?.auris_nodes?.coherence !== undefined) {
+    const coherence = finiteReading(hncProof?.auris_nodes?.coherence);
     details.push({
       label: "Auris nodes",
-      value: `${formatCompact(hncProof?.auris_nodes?.node_count || 0)} nodes / ${Math.round(asNumber(hncProof?.auris_nodes?.coherence) * 100)}% coherence`,
+      value: `${formatKnownCompact(hncProof?.auris_nodes?.node_count)} nodes / ${coherence === null ? "unavailable" : `${Math.round(coherence * 100)}%`} coherence`,
     });
   }
   if (hncProof?.master_formula?.score !== undefined) {
+    const score = finiteReading(hncProof?.master_formula?.score);
     details.push({
       label: "master formula",
-      value: `${Math.round(asNumber(hncProof?.master_formula?.score) * 100)}% ${hncProof?.master_formula?.passed ? "passing" : "attention"}`,
+      value: score === null ? "unavailable" : `${Math.round(score * 100)}% ${hncProof?.master_formula?.passed ? "passing" : "attention"}`,
     });
   }
   for (const name of ["kraken", "capital", "alpaca", "binance"]) {

@@ -154,7 +154,7 @@ export function CosmicPhaseIndicator({ cosmicState }: CosmicPhaseIndicatorProps)
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Schumann Resonance</span>
-            <span className="font-mono">{cosmicState.schumannResonance.toFixed(2)} Hz</span>
+            <span className="font-mono">{cosmicState.schumannResonance == null ? 'unavailable' : `${cosmicState.schumannResonance.toFixed(2)} Hz`}</span>
           </div>
         </div>
 

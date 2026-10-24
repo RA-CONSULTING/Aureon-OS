@@ -45,14 +45,17 @@ export default function PlatypusCoherencePanel({ compact = false }: PlatypusCohe
     };
   }, []);
   
-  const getCoherenceColor = (gamma: number) => {
+  const getCoherenceColor = (gamma: number | null) => {
+    if (gamma == null) return 'bg-muted text-muted-foreground';
     if (gamma >= 0.75) return 'text-success bg-success/20';
     if (gamma >= 0.5) return 'text-warning bg-warning/20';
     if (gamma >= 0.25) return 'text-warning bg-warning/20';
     return 'text-destructive bg-destructive/20';
   };
   
-  const getCoherenceLabel = (gamma: number) => {
+  const gammaText = (gamma: number | null) => (gamma == null ? 'unavailable' : gamma.toFixed(3));
+  const getCoherenceLabel = (gamma: number | null) => {
+    if (gamma == null) return 'UNAVAILABLE';
     if (gamma >= 0.75) return 'EXCELLENT';
     if (gamma >= 0.5) return 'GOOD';
     if (gamma >= 0.25) return 'MODERATE';
@@ -65,8 +68,8 @@ export default function PlatypusCoherencePanel({ compact = false }: PlatypusCohe
       <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30 border border-border/30">
         <Orbit className="w-4 h-4 text-primary" />
         <span className="text-sm font-medium">Γ</span>
-        <span className={`font-mono text-sm ${state.Gamma_t >= 0.75 ? 'text-success' : 'text-foreground'}`}>
-          {state.Gamma_t.toFixed(3)}
+        <span className={`font-mono text-sm ${state.Gamma_t != null && state.Gamma_t >= 0.75 ? 'text-success' : 'text-foreground'}`}>
+          {gammaText(state.Gamma_t)}
         </span>
         {state.L_t && (
           <Badge className="bg-warning/30 text-warning text-xs animate-pulse">
@@ -99,8 +102,8 @@ export default function PlatypusCoherencePanel({ compact = false }: PlatypusCohe
             <div className="text-xs text-muted-foreground uppercase tracking-wide">
               Planetary Coherence Γ(t)
             </div>
-            <div className={`text-4xl font-mono font-bold ${state.Gamma_t >= 0.75 ? 'text-success' : state.Gamma_t >= 0.5 ? 'text-warning' : 'text-foreground'}`}>
-              {state.Gamma_t.toFixed(3)}
+            <div className={`text-4xl font-mono font-bold ${state.Gamma_t != null && state.Gamma_t >= 0.75 ? 'text-success' : state.Gamma_t != null && state.Gamma_t >= 0.5 ? 'text-warning' : 'text-foreground'}`}>
+              {gammaText(state.Gamma_t)}
             </div>
             <Badge className={getCoherenceColor(state.Gamma_t)}>
               {getCoherenceLabel(state.Gamma_t)}
@@ -194,7 +197,7 @@ function ProcessBar({
   color 
 }: { 
   label: string; 
-  value: number; 
+  value: number | null; 
   icon: React.ReactNode; 
   color: string;
 }) {
@@ -203,9 +206,9 @@ function ProcessBar({
       <div className={`${color}`}>{icon}</div>
       <span className="text-xs w-24 text-muted-foreground">{label}</span>
       <div className="flex-1">
-        <Progress value={value * 100} className="h-2" />
+        <Progress value={value == null ? 0 : value * 100} className="h-2" />
       </div>
-      <span className="text-xs font-mono w-12 text-right">{value.toFixed(2)}</span>
+      <span className="text-xs font-mono w-12 text-right">{value == null ? 'n/a' : value.toFixed(2)}</span>
     </div>
   );
 }

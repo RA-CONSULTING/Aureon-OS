@@ -6,7 +6,7 @@
 import { useState, useEffect, useRef } from 'react';
 
 interface HUDTopBarProps {
-  totalEquity: number;
+  totalEquity: number | null;
   totalPnl: number;
   cyclePnlPercent: number;
   winRate: number;
@@ -69,7 +69,7 @@ function StatusDot({ connected, label }: { connected: boolean; label: string }) 
 }
 
 export function HUDTopBar({
-  totalEquity = 0,
+  totalEquity = null,
   totalPnl = 0,
   cyclePnlPercent = 0,
   winRate = 0,
@@ -88,7 +88,7 @@ export function HUDTopBar({
           <div className="text-center">
             <div className="text-[10px] text-white/30 uppercase tracking-widest mb-0.5">Equity</div>
             <div className="text-lg font-light tracking-wide">
-              <AnimatedNumber value={totalEquity} prefix="$" />
+              {totalEquity == null ? 'unavailable' : <AnimatedNumber value={totalEquity} prefix="$" />}
             </div>
           </div>
 

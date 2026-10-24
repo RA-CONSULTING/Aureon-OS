@@ -1,0 +1,1122 @@
+{
+  "cognition": "internal",
+  "connectivity": {
+    "circulation_messages": 112,
+    "connected": 14,
+    "disabled": [],
+    "http_seat_bound": false,
+    "isolated": [],
+    "latency_samples": 1456,
+    "roster": 14,
+    "score": 1.0,
+    "seats": {
+      "algorithmic_nodes": {
+        "consumed": 104,
+        "consumes": true,
+        "isolated": false,
+        "last_loop": "heard",
+        "last_tick": 7,
+        "module": "aureon.core.algorithmic_nodes",
+        "published": 8,
+        "publishes": true,
+        "role": "algorithmic_nodes"
+      },
+      "baton_relay": {
+        "consumed": 104,
+        "consumes": true,
+        "isolated": false,
+        "last_loop": "heard",
+        "last_tick": 7,
+        "module": "aureon.core.baton_relay_monitor",
+        "published": 8,
+        "publishes": true,
+        "role": "baton_relay"
+      },
+      "council": {
+        "consumed": 104,
+        "consumes": true,
+        "isolated": false,
+        "last_loop": "heard",
+        "last_tick": 7,
+        "module": "aureon.swarm.druidic_council",
+        "published": 8,
+        "publishes": true,
+        "role": "council"
+      },
+      "deterministic_systems": {
+        "consumed": 104,
+        "consumes": true,
+        "isolated": false,
+        "last_loop": "heard",
+        "last_tick": 7,
+        "module": "aureon.core.deterministic_systems",
+        "published": 8,
+        "publishes": true,
+        "role": "deterministic_systems"
+      },
+      "http_seat": {
+        "consumed": 104,
+        "consumes": true,
+        "isolated": false,
+        "last_loop": "unbound",
+        "last_tick": 7,
+        "module": "aureon.core.organism_circulation",
+        "published": 8,
+        "publishes": true,
+        "role": "http_seat"
+      },
+      "lighthouse": {
+        "consumed": 104,
+        "consumes": true,
+        "isolated": false,
+        "last_loop": "heard",
+        "last_tick": 7,
+        "module": "aureon.analytics.lighthouse_metrics",
+        "published": 8,
+        "publishes": true,
+        "role": "lighthouse"
+      },
+      "logic": {
+        "consumed": 104,
+        "consumes": true,
+        "isolated": false,
+        "last_loop": "heard",
+        "last_tick": 7,
+        "module": "aureon.core.deterministic_systems",
+        "published": 8,
+        "publishes": true,
+        "role": "logic"
+      },
+      "metacognition": {
+        "consumed": 104,
+        "consumes": true,
+        "isolated": false,
+        "last_loop": "heard",
+        "last_tick": 7,
+        "module": "aureon.core.metacognition_monitor",
+        "published": 8,
+        "publishes": true,
+        "role": "metacognition"
+      },
+      "mycelium": {
+        "consumed": 104,
+        "consumes": true,
+        "isolated": false,
+        "last_loop": "heard",
+        "last_tick": 7,
+        "module": "aureon.core.aureon_mycelium",
+        "published": 8,
+        "publishes": true,
+        "role": "mycelium"
+      },
+      "neural": {
+        "consumed": 104,
+        "consumes": true,
+        "isolated": false,
+        "last_loop": "heard",
+        "last_tick": 7,
+        "module": "aureon.utils.aureon_queen_unified_neural_chain",
+        "published": 8,
+        "publishes": true,
+        "role": "neural"
+      },
+      "qgita": {
+        "consumed": 104,
+        "consumes": true,
+        "isolated": false,
+        "last_loop": "heard",
+        "last_tick": 7,
+        "module": "aureon.wisdom.aureon_qgita",
+        "published": 8,
+        "publishes": true,
+        "role": "qgita"
+      },
+      "queen": {
+        "consumed": 104,
+        "consumes": true,
+        "isolated": false,
+        "last_loop": "heard",
+        "last_tick": 7,
+        "module": "aureon.queen.queen_layer",
+        "published": 8,
+        "publishes": true,
+        "role": "reasoning"
+      },
+      "self_code": {
+        "consumed": 104,
+        "consumes": true,
+        "isolated": false,
+        "last_loop": "heard",
+        "last_tick": 7,
+        "module": "aureon.core.organism_circulation",
+        "published": 8,
+        "publishes": true,
+        "role": "self_code"
+      },
+      "self_repair": {
+        "consumed": 104,
+        "consumes": true,
+        "isolated": false,
+        "last_loop": "heard",
+        "last_tick": 7,
+        "module": "aureon.core.organism_circulation",
+        "published": 8,
+        "publishes": true,
+        "role": "self_repair"
+      }
+    },
+    "self_model_messages": 8,
+    "ticks": 8,
+    "timing": {
+      "elapsed_s": 0.08546116799698211,
+      "latency_s": {
+        "count": 1456,
+        "max": 0.0019576549530029297,
+        "mean": 0.00043831127030508857,
+        "min": 0.0001430511474609375
+      },
+      "messages_per_second": 1310.5367341101055
+    },
+    "verdict": "pass"
+  },
+  "external_llm": false,
+  "live_trading": false,
+  "note": "These figures are connectivity, self-prediction accuracy, and fault-detection rate. The fault trials are synthetic injections by this harness. They are not a claim that the system is conscious or alive.",
+  "ollama": false,
+  "orders_placed": false,
+  "schema": "aureon.organism-proof.v1",
+  "scope": {
+    "bus": "aureon.core.aureon_thought_bus.ThoughtBus",
+    "http_listener_started": false,
+    "process_seats_not_started": [
+      "market-status",
+      "orca",
+      "fusion",
+      "gateway",
+      "live-bridge",
+      "error-sink"
+    ],
+    "self_model_topic": "organism.self_model",
+    "topic": "organism.circulation"
+  },
+  "seed": 20261024,
+  "self_model": {
+    "capabilities": [
+      {
+        "module": "aureon.core.metacognition_monitor",
+        "name": "metacognition",
+        "role": "metacognition"
+      },
+      {
+        "module": "aureon.queen.queen_layer",
+        "name": "queen",
+        "role": "reasoning"
+      },
+      {
+        "module": "aureon.core.deterministic_systems",
+        "name": "logic",
+        "role": "logic"
+      },
+      {
+        "module": "aureon.utils.aureon_queen_unified_neural_chain",
+        "name": "neural",
+        "role": "neural"
+      },
+      {
+        "module": "aureon.analytics.lighthouse_metrics",
+        "name": "lighthouse",
+        "role": "lighthouse"
+      },
+      {
+        "module": "aureon.wisdom.aureon_qgita",
+        "name": "qgita",
+        "role": "qgita"
+      },
+      {
+        "module": "aureon.core.aureon_mycelium",
+        "name": "mycelium",
+        "role": "mycelium"
+      },
+      {
+        "module": "aureon.core.baton_relay_monitor",
+        "name": "baton_relay",
+        "role": "baton_relay"
+      },
+      {
+        "module": "aureon.swarm.druidic_council",
+        "name": "council",
+        "role": "council"
+      },
+      {
+        "module": "aureon.core.deterministic_systems",
+        "name": "deterministic_systems",
+        "role": "deterministic_systems"
+      },
+      {
+        "module": "aureon.core.algorithmic_nodes",
+        "name": "algorithmic_nodes",
+        "role": "algorithmic_nodes"
+      },
+      {
+        "module": "aureon.core.organism_circulation",
+        "name": "self_repair",
+        "role": "self_repair"
+      },
+      {
+        "module": "aureon.core.organism_circulation",
+        "name": "http_seat",
+        "role": "http_seat"
+      },
+      {
+        "module": "aureon.core.organism_circulation",
+        "name": "self_code",
+        "role": "self_code"
+      }
+    ],
+    "cognition": "internal",
+    "errors": [],
+    "external_llm": false,
+    "fault": {
+      "baseline": {
+        "detection_rate": 0.4,
+        "false_alarm_rate": 0.0,
+        "fn": 18,
+        "fp": 0,
+        "tn": 18,
+        "tp": 12
+      },
+      "baseline_detection_rate": 0.4,
+      "baseline_false_alarm_rate": 0.0,
+      "baseline_rule": "missing pulse only",
+      "detection_rate": 1.0,
+      "expected_loop_by_seat": {
+        "algorithmic_nodes": "heard",
+        "baton_relay": "heard",
+        "council": "heard",
+        "deterministic_systems": "heard",
+        "http_seat": "unbound",
+        "lighthouse": "heard",
+        "logic": "heard",
+        "metacognition": "heard",
+        "mycelium": "heard",
+        "neural": "heard",
+        "qgita": "heard",
+        "queen": "heard",
+        "self_code": "heard",
+        "self_repair": "heard"
+      },
+      "false_alarm_rate": 0.0,
+      "modes": [
+        "clean",
+        "silent",
+        "error"
+      ],
+      "note": "These faults are injected by the harness. A trial withholds a pulse, or publishes that seat's payload with loop set to fault and error set to injected. They are not observed faults from a market or a live seat.",
+      "origin": "synthetic",
+      "seed": 20261024,
+      "self_model": {
+        "detection_rate": 1.0,
+        "false_alarm_rate": 0.0,
+        "fn": 0,
+        "fp": 0,
+        "tn": 18,
+        "tp": 30
+      },
+      "self_model_rule": "missing pulse, loop other than the loop observed on healthy pulses, or an error field",
+      "synthetic_faults": true,
+      "trials": 48,
+      "trials_raw": [
+        {
+          "baseline_flagged": false,
+          "label": 0,
+          "mode": "clean",
+          "seat": "deterministic_systems",
+          "self_model_flagged": false,
+          "trial": 0
+        },
+        {
+          "baseline_flagged": false,
+          "label": 0,
+          "mode": "clean",
+          "seat": "self_repair",
+          "self_model_flagged": false,
+          "trial": 1
+        },
+        {
+          "baseline_flagged": false,
+          "label": 1,
+          "mode": "error",
+          "seat": "lighthouse",
+          "self_model_flagged": true,
+          "trial": 2
+        },
+        {
+          "baseline_flagged": false,
+          "label": 0,
+          "mode": "clean",
+          "seat": "metacognition",
+          "self_model_flagged": false,
+          "trial": 3
+        },
+        {
+          "baseline_flagged": false,
+          "label": 0,
+          "mode": "clean",
+          "seat": "council",
+          "self_model_flagged": false,
+          "trial": 4
+        },
+        {
+          "baseline_flagged": false,
+          "label": 1,
+          "mode": "error",
+          "seat": "self_repair",
+          "self_model_flagged": true,
+          "trial": 5
+        },
+        {
+          "baseline_flagged": false,
+          "label": 0,
+          "mode": "clean",
+          "seat": "council",
+          "self_model_flagged": false,
+          "trial": 6
+        },
+        {
+          "baseline_flagged": false,
+          "label": 1,
+          "mode": "error",
+          "seat": "qgita",
+          "self_model_flagged": true,
+          "trial": 7
+        },
+        {
+          "baseline_flagged": false,
+          "label": 1,
+          "mode": "error",
+          "seat": "self_code",
+          "self_model_flagged": true,
+          "trial": 8
+        },
+        {
+          "baseline_flagged": false,
+          "label": 1,
+          "mode": "error",
+          "seat": "council",
+          "self_model_flagged": true,
+          "trial": 9
+        },
+        {
+          "baseline_flagged": true,
+          "label": 1,
+          "mode": "silent",
+          "seat": "qgita",
+          "self_model_flagged": true,
+          "trial": 10
+        },
+        {
+          "baseline_flagged": false,
+          "label": 0,
+          "mode": "clean",
+          "seat": "council",
+          "self_model_flagged": false,
+          "trial": 11
+        },
+        {
+          "baseline_flagged": false,
+          "label": 0,
+          "mode": "clean",
+          "seat": "http_seat",
+          "self_model_flagged": false,
+          "trial": 12
+        },
+        {
+          "baseline_flagged": true,
+          "label": 1,
+          "mode": "silent",
+          "seat": "baton_relay",
+          "self_model_flagged": true,
+          "trial": 13
+        },
+        {
+          "baseline_flagged": false,
+          "label": 1,
+          "mode": "error",
+          "seat": "baton_relay",
+          "self_model_flagged": true,
+          "trial": 14
+        },
+        {
+          "baseline_flagged": true,
+          "label": 1,
+          "mode": "silent",
+          "seat": "self_code",
+          "self_model_flagged": true,
+          "trial": 15
+        },
+        {
+          "baseline_flagged": true,
+          "label": 1,
+          "mode": "silent",
+          "seat": "lighthouse",
+          "self_model_flagged": true,
+          "trial": 16
+        },
+        {
+          "baseline_flagged": true,
+          "label": 1,
+          "mode": "silent",
+          "seat": "qgita",
+          "self_model_flagged": true,
+          "trial": 17
+        },
+        {
+          "baseline_flagged": false,
+          "label": 0,
+          "mode": "clean",
+          "seat": "queen",
+          "self_model_flagged": false,
+          "trial": 18
+        },
+        {
+          "baseline_flagged": true,
+          "label": 1,
+          "mode": "silent",
+          "seat": "self_code",
+          "self_model_flagged": true,
+          "trial": 19
+        },
+        {
+          "baseline_flagged": false,
+          "label": 0,
+          "mode": "clean",
+          "seat": "self_code",
+          "self_model_flagged": false,
+          "trial": 20
+        },
+        {
+          "baseline_flagged": true,
+          "label": 1,
+          "mode": "silent",
+          "seat": "logic",
+          "self_model_flagged": true,
+          "trial": 21
+        },
+        {
+          "baseline_flagged": false,
+          "label": 1,
+          "mode": "error",
+          "seat": "self_repair",
+          "self_model_flagged": true,
+          "trial": 22
+        },
+        {
+          "baseline_flagged": false,
+          "label": 0,
+          "mode": "clean",
+          "seat": "logic",
+          "self_model_flagged": false,
+          "trial": 23
+        },
+        {
+          "baseline_flagged": false,
+          "label": 0,
+          "mode": "clean",
+          "seat": "lighthouse",
+          "self_model_flagged": false,
+          "trial": 24
+        },
+        {
+          "baseline_flagged": false,
+          "label": 0,
+          "mode": "clean",
+          "seat": "qgita",
+          "self_model_flagged": false,
+          "trial": 25
+        },
+        {
+          "baseline_flagged": false,
+          "label": 1,
+          "mode": "error",
+          "seat": "algorithmic_nodes",
+          "self_model_flagged": true,
+          "trial": 26
+        },
+        {
+          "baseline_flagged": false,
+          "label": 1,
+          "mode": "error",
+          "seat": "metacognition",
+          "self_model_flagged": true,
+          "trial": 27
+        },
+        {
+          "baseline_flagged": true,
+          "label": 1,
+          "mode": "silent",
+          "seat": "lighthouse",
+          "self_model_flagged": true,
+          "trial": 28
+        },
+        {
+          "baseline_flagged": false,
+          "label": 0,
+          "mode": "clean",
+          "seat": "baton_relay",
+          "self_model_flagged": false,
+          "trial": 29
+        },
+        {
+          "baseline_flagged": false,
+          "label": 0,
+          "mode": "clean",
+          "seat": "self_code",
+          "self_model_flagged": false,
+          "trial": 30
+        },
+        {
+          "baseline_flagged": false,
+          "label": 0,
+          "mode": "clean",
+          "seat": "mycelium",
+          "self_model_flagged": false,
+          "trial": 31
+        },
+        {
+          "baseline_flagged": true,
+          "label": 1,
+          "mode": "silent",
+          "seat": "queen",
+          "self_model_flagged": true,
+          "trial": 32
+        },
+        {
+          "baseline_flagged": false,
+          "label": 1,
+          "mode": "error",
+          "seat": "baton_relay",
+          "self_model_flagged": true,
+          "trial": 33
+        },
+        {
+          "baseline_flagged": false,
+          "label": 1,
+          "mode": "error",
+          "seat": "http_seat",
+          "self_model_flagged": true,
+          "trial": 34
+        },
+        {
+          "baseline_flagged": false,
+          "label": 1,
+          "mode": "error",
+          "seat": "queen",
+          "self_model_flagged": true,
+          "trial": 35
+        },
+        {
+          "baseline_flagged": false,
+          "label": 1,
+          "mode": "error",
+          "seat": "metacognition",
+          "self_model_flagged": true,
+          "trial": 36
+        },
+        {
+          "baseline_flagged": false,
+          "label": 0,
+          "mode": "clean",
+          "seat": "baton_relay",
+          "self_model_flagged": false,
+          "trial": 37
+        },
+        {
+          "baseline_flagged": false,
+          "label": 1,
+          "mode": "error",
+          "seat": "qgita",
+          "self_model_flagged": true,
+          "trial": 38
+        },
+        {
+          "baseline_flagged": false,
+          "label": 1,
+          "mode": "error",
+          "seat": "self_repair",
+          "self_model_flagged": true,
+          "trial": 39
+        },
+        {
+          "baseline_flagged": false,
+          "label": 0,
+          "mode": "clean",
+          "seat": "neural",
+          "self_model_flagged": false,
+          "trial": 40
+        },
+        {
+          "baseline_flagged": false,
+          "label": 1,
+          "mode": "error",
+          "seat": "metacognition",
+          "self_model_flagged": true,
+          "trial": 41
+        },
+        {
+          "baseline_flagged": true,
+          "label": 1,
+          "mode": "silent",
+          "seat": "metacognition",
+          "self_model_flagged": true,
+          "trial": 42
+        },
+        {
+          "baseline_flagged": true,
+          "label": 1,
+          "mode": "silent",
+          "seat": "queen",
+          "self_model_flagged": true,
+          "trial": 43
+        },
+        {
+          "baseline_flagged": false,
+          "label": 1,
+          "mode": "error",
+          "seat": "self_code",
+          "self_model_flagged": true,
+          "trial": 44
+        },
+        {
+          "baseline_flagged": false,
+          "label": 0,
+          "mode": "clean",
+          "seat": "logic",
+          "self_model_flagged": false,
+          "trial": 45
+        },
+        {
+          "baseline_flagged": true,
+          "label": 1,
+          "mode": "silent",
+          "seat": "metacognition",
+          "self_model_flagged": true,
+          "trial": 46
+        },
+        {
+          "baseline_flagged": false,
+          "label": 1,
+          "mode": "error",
+          "seat": "self_repair",
+          "self_model_flagged": true,
+          "trial": 47
+        }
+      ]
+    },
+    "health": {
+      "algorithmic_nodes": true,
+      "baton_relay": true,
+      "council": true,
+      "deterministic_systems": true,
+      "http_seat": true,
+      "lighthouse": true,
+      "logic": true,
+      "metacognition": true,
+      "mycelium": true,
+      "neural": true,
+      "qgita": true,
+      "queen": true,
+      "self_code": true,
+      "self_repair": true
+    },
+    "ollama": false,
+    "prediction": {
+      "accuracy": 1.0,
+      "baseline": "persistence",
+      "baseline_accuracy": 0.4827586206896552,
+      "baseline_correct": 14,
+      "correct": 29,
+      "held_out": "last pulse of each seat",
+      "held_out_tick": 7,
+      "per_question": [
+        {
+          "actual": 7,
+          "baseline": 6,
+          "baseline_correct": false,
+          "correct": true,
+          "field": "tick",
+          "held_out_tick": 7,
+          "predicted": 7,
+          "seat": "algorithmic_nodes"
+        },
+        {
+          "actual": "heard",
+          "baseline": "heard",
+          "baseline_correct": true,
+          "correct": true,
+          "field": "loop",
+          "held_out_tick": 7,
+          "predicted": "heard",
+          "seat": "algorithmic_nodes"
+        },
+        {
+          "actual": 7,
+          "baseline": 6,
+          "baseline_correct": false,
+          "correct": true,
+          "field": "tick",
+          "held_out_tick": 7,
+          "predicted": 7,
+          "seat": "baton_relay"
+        },
+        {
+          "actual": "heard",
+          "baseline": "heard",
+          "baseline_correct": true,
+          "correct": true,
+          "field": "loop",
+          "held_out_tick": 7,
+          "predicted": "heard",
+          "seat": "baton_relay"
+        },
+        {
+          "actual": "confirm",
+          "baseline": "execute",
+          "baseline_correct": false,
+          "correct": true,
+          "field": "stage",
+          "held_out_tick": 7,
+          "predicted": "confirm",
+          "seat": "baton_relay"
+        },
+        {
+          "actual": 7,
+          "baseline": 6,
+          "baseline_correct": false,
+          "correct": true,
+          "field": "tick",
+          "held_out_tick": 7,
+          "predicted": 7,
+          "seat": "council"
+        },
+        {
+          "actual": "heard",
+          "baseline": "heard",
+          "baseline_correct": true,
+          "correct": true,
+          "field": "loop",
+          "held_out_tick": 7,
+          "predicted": "heard",
+          "seat": "council"
+        },
+        {
+          "actual": 7,
+          "baseline": 6,
+          "baseline_correct": false,
+          "correct": true,
+          "field": "tick",
+          "held_out_tick": 7,
+          "predicted": 7,
+          "seat": "deterministic_systems"
+        },
+        {
+          "actual": "heard",
+          "baseline": "heard",
+          "baseline_correct": true,
+          "correct": true,
+          "field": "loop",
+          "held_out_tick": 7,
+          "predicted": "heard",
+          "seat": "deterministic_systems"
+        },
+        {
+          "actual": 7,
+          "baseline": 6,
+          "baseline_correct": false,
+          "correct": true,
+          "field": "tick",
+          "held_out_tick": 7,
+          "predicted": 7,
+          "seat": "http_seat"
+        },
+        {
+          "actual": "unbound",
+          "baseline": "unbound",
+          "baseline_correct": true,
+          "correct": true,
+          "field": "loop",
+          "held_out_tick": 7,
+          "predicted": "unbound",
+          "seat": "http_seat"
+        },
+        {
+          "actual": 7,
+          "baseline": 6,
+          "baseline_correct": false,
+          "correct": true,
+          "field": "tick",
+          "held_out_tick": 7,
+          "predicted": 7,
+          "seat": "lighthouse"
+        },
+        {
+          "actual": "heard",
+          "baseline": "heard",
+          "baseline_correct": true,
+          "correct": true,
+          "field": "loop",
+          "held_out_tick": 7,
+          "predicted": "heard",
+          "seat": "lighthouse"
+        },
+        {
+          "actual": 7,
+          "baseline": 6,
+          "baseline_correct": false,
+          "correct": true,
+          "field": "tick",
+          "held_out_tick": 7,
+          "predicted": 7,
+          "seat": "logic"
+        },
+        {
+          "actual": "heard",
+          "baseline": "heard",
+          "baseline_correct": true,
+          "correct": true,
+          "field": "loop",
+          "held_out_tick": 7,
+          "predicted": "heard",
+          "seat": "logic"
+        },
+        {
+          "actual": 7,
+          "baseline": 6,
+          "baseline_correct": false,
+          "correct": true,
+          "field": "tick",
+          "held_out_tick": 7,
+          "predicted": 7,
+          "seat": "metacognition"
+        },
+        {
+          "actual": "heard",
+          "baseline": "heard",
+          "baseline_correct": true,
+          "correct": true,
+          "field": "loop",
+          "held_out_tick": 7,
+          "predicted": "heard",
+          "seat": "metacognition"
+        },
+        {
+          "actual": 7,
+          "baseline": 6,
+          "baseline_correct": false,
+          "correct": true,
+          "field": "tick",
+          "held_out_tick": 7,
+          "predicted": 7,
+          "seat": "mycelium"
+        },
+        {
+          "actual": "heard",
+          "baseline": "heard",
+          "baseline_correct": true,
+          "correct": true,
+          "field": "loop",
+          "held_out_tick": 7,
+          "predicted": "heard",
+          "seat": "mycelium"
+        },
+        {
+          "actual": 7,
+          "baseline": 6,
+          "baseline_correct": false,
+          "correct": true,
+          "field": "tick",
+          "held_out_tick": 7,
+          "predicted": 7,
+          "seat": "neural"
+        },
+        {
+          "actual": "heard",
+          "baseline": "heard",
+          "baseline_correct": true,
+          "correct": true,
+          "field": "loop",
+          "held_out_tick": 7,
+          "predicted": "heard",
+          "seat": "neural"
+        },
+        {
+          "actual": 7,
+          "baseline": 6,
+          "baseline_correct": false,
+          "correct": true,
+          "field": "tick",
+          "held_out_tick": 7,
+          "predicted": 7,
+          "seat": "qgita"
+        },
+        {
+          "actual": "heard",
+          "baseline": "heard",
+          "baseline_correct": true,
+          "correct": true,
+          "field": "loop",
+          "held_out_tick": 7,
+          "predicted": "heard",
+          "seat": "qgita"
+        },
+        {
+          "actual": 7,
+          "baseline": 6,
+          "baseline_correct": false,
+          "correct": true,
+          "field": "tick",
+          "held_out_tick": 7,
+          "predicted": 7,
+          "seat": "queen"
+        },
+        {
+          "actual": "heard",
+          "baseline": "heard",
+          "baseline_correct": true,
+          "correct": true,
+          "field": "loop",
+          "held_out_tick": 7,
+          "predicted": "heard",
+          "seat": "queen"
+        },
+        {
+          "actual": 7,
+          "baseline": 6,
+          "baseline_correct": false,
+          "correct": true,
+          "field": "tick",
+          "held_out_tick": 7,
+          "predicted": 7,
+          "seat": "self_code"
+        },
+        {
+          "actual": "heard",
+          "baseline": "heard",
+          "baseline_correct": true,
+          "correct": true,
+          "field": "loop",
+          "held_out_tick": 7,
+          "predicted": "heard",
+          "seat": "self_code"
+        },
+        {
+          "actual": 7,
+          "baseline": 6,
+          "baseline_correct": false,
+          "correct": true,
+          "field": "tick",
+          "held_out_tick": 7,
+          "predicted": 7,
+          "seat": "self_repair"
+        },
+        {
+          "actual": "heard",
+          "baseline": "heard",
+          "baseline_correct": true,
+          "correct": true,
+          "field": "loop",
+          "held_out_tick": 7,
+          "predicted": "heard",
+          "seat": "self_repair"
+        }
+      ],
+      "questions": 29,
+      "rule": "constant numeric step, else smallest repeating period, else persistence"
+    },
+    "recent_actions": [
+      {
+        "loop": "heard",
+        "seat": "metacognition",
+        "stage": null,
+        "tick": 7
+      },
+      {
+        "loop": "heard",
+        "seat": "queen",
+        "stage": null,
+        "tick": 7
+      },
+      {
+        "loop": "heard",
+        "seat": "logic",
+        "stage": null,
+        "tick": 7
+      },
+      {
+        "loop": "heard",
+        "seat": "neural",
+        "stage": null,
+        "tick": 7
+      },
+      {
+        "loop": "heard",
+        "seat": "lighthouse",
+        "stage": null,
+        "tick": 7
+      },
+      {
+        "loop": "heard",
+        "seat": "qgita",
+        "stage": null,
+        "tick": 7
+      },
+      {
+        "loop": "heard",
+        "seat": "mycelium",
+        "stage": null,
+        "tick": 7
+      },
+      {
+        "loop": "heard",
+        "seat": "baton_relay",
+        "stage": "confirm",
+        "tick": 7
+      },
+      {
+        "loop": "heard",
+        "seat": "council",
+        "stage": null,
+        "tick": 7
+      },
+      {
+        "loop": "heard",
+        "seat": "deterministic_systems",
+        "stage": null,
+        "tick": 7
+      },
+      {
+        "loop": "heard",
+        "seat": "algorithmic_nodes",
+        "stage": null,
+        "tick": 7
+      },
+      {
+        "loop": "heard",
+        "seat": "self_repair",
+        "stage": null,
+        "tick": 7
+      },
+      {
+        "loop": "unbound",
+        "seat": "http_seat",
+        "stage": null,
+        "tick": 7
+      },
+      {
+        "loop": "heard",
+        "seat": "self_code",
+        "stage": null,
+        "tick": 7
+      }
+    ]
+  }
+}

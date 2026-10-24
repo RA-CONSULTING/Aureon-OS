@@ -96,8 +96,8 @@ function SceneContent({ state, hiveMood, activeEvent }: CinematicSceneProps) {
 
       {/* Exchange portals */}
       <ExchangeGateways
-        krakenEquity={state.unifiedMarketSummary?.krakenEquity || 0}
-        capitalEquity={state.unifiedMarketSummary?.capitalEquityGbp || 0}
+        krakenEquity={state.unifiedMarketSummary?.krakenEquity ?? null}
+        capitalEquity={state.unifiedMarketSummary?.capitalEquityGbp ?? null}
         krakenConnected={state.ecosystemHealth === 'connected'}
         capitalConnected={state.ecosystemHealth === 'connected'}
         binanceConnected={false}
@@ -105,7 +105,7 @@ function SceneContent({ state, hiveMood, activeEvent }: CinematicSceneProps) {
 
       {/* Orbital metric rings */}
       <MetricRings
-        totalEquity={state.totalEquity}
+        totalEquity={state.totalEquity ?? 0}
         coherence={effectiveCoherence}
         totalTrades={state.totalTrades}
         winRate={winRate}

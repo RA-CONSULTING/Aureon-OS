@@ -113,7 +113,7 @@ export function PrimeSealPanel() {
             <Activity className="h-4 w-4 text-primary" />
             <span className="text-sm">Lattice Phase</span>
           </div>
-          <span className="font-mono text-sm">{latticePhase.toFixed(1)}°</span>
+          <span className="font-mono text-sm">{latticePhase == null ? 'unavailable' : `${latticePhase.toFixed(1)}°`}</span>
         </div>
 
         {/* Lock Status Message */}

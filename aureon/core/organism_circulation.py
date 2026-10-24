@@ -4,8 +4,12 @@ The HTTP seat listens on 127.0.0.1:8799 (override with AUREON_ORGANISM_HTTP_PORT
 GET /healthz and GET /health report that seat. The fusion seat keeps
 127.0.0.1:8765. A taken circulation port is a failed boot.
 metacognition, queen reasoning, logic, neural, lighthouse, QGITA, mycelium,
-baton relay, and council each subscribe to ``organism.circulation`` and
-publish their own pulse. Autonomy audit records on that same topic are
+baton relay, council, deterministic systems, algorithmic nodes, self-repair,
+the HTTP seat, and self-code each subscribe to ``organism.circulation`` and
+publish their own pulse. The HTTP seat's pulse reports ``listening`` false
+when this process has not bound the socket. A self-model reading is published
+on ``organism.self_model`` from the pulses just heard. No model is called.
+Autonomy audit records on the circulation topic are
 consumed by the metacognition and self-repair loops. After repeated failed
 self-changes, metacognition raises a concern and lowers its confidence, and
 self-repair deprioritises a target that keeps failing. Connectors switch on
@@ -44,6 +48,9 @@ _STATE: dict[str, Any] = {
     "inbox": {},
     "loops": {},
     "error": None,
+    "self_model_seen": {},
+    "consume_count": {},
+    "latency_samples": [],
     "audit_consumed": {"metacognition": [], "self_repair": []},
 }
 
@@ -61,9 +68,34 @@ ORGANS: tuple[dict[str, str], ...] = (
     {"name": "algorithmic_nodes", "role": "algorithmic_nodes", "module": "aureon.core.algorithmic_nodes"},
 )
 
+# Seats that already had a connector or a loop, and did not publish a circulation
+# pulse. They stay out of ORGANS so existing organ lists keep their names.
+BUS_SEATS: tuple[dict[str, str], ...] = (
+    {"name": "self_repair", "role": "self_repair", "module": "aureon.core.organism_circulation"},
+    {"name": "http_seat", "role": "http_seat", "module": "aureon.core.organism_circulation"},
+    {"name": "self_code", "role": "self_code", "module": "aureon.core.organism_circulation"},
+)
+_SELF_MODEL = "organism.self_model"
+
+
+def circulation_seats() -> tuple[dict[str, str], ...]:
+    """Every seat that must publish and consume on the circulation bus."""
+
+    return ORGANS + BUS_SEATS
+
+
+def _http_listening() -> bool:
+    """True only while this process is serving the circulation HTTP socket."""
+
+    with _LOCK:
+        server = _STATE.get("server")
+        thread = _STATE.get("http_thread")
+    return server is not None and thread is not None and thread.is_alive()
+
 _DEFAULT_CONNECTORS = {
     "thought_bus": True,
     "http_seat": True,
+    "self_repair": True,
     "metacognition": True,
     "queen": True,
     "logic": True,
@@ -84,6 +116,7 @@ _SUBSCRIBED = False
 _AUDIT_WIRED = False
 _AUDIT_BUS: Any = None
 _AUDIT_CAP = 50
+_LATENCY_CAP = 5000
 _FAILURE_REPEAT = 2
 _CONFIDENCE_BASE = 1.0
 _CONFIDENCE_FLOOR = 0.2
@@ -109,8 +142,8 @@ _FAILURE_COUNTS: dict[str, int] = {}
 _DEPRIORITISED: list[str] = []
 _SEEN_FAILURE_IDS: set[str] = set()
 _META: dict[str, Any] = {
-    "truth_status": "loop_running",
-    "loop": "running",
+    "truth_status": "no_data",
+    "loop": None,
     "audit_concern": None,
     "audit_confidence": _CONFIDENCE_BASE,
 }
@@ -182,6 +215,60 @@ def propose_self_code(path: str, reason: str) -> dict[str, Any]:
     return {"accepted": True, "applied": False, "record": record}
 
 
+def _pulse_field() -> dict[str, Any]:
+    """Canonical Γ and Λ when the live field is present, otherwise no_data.
+
+    Circulation has no market texture, so the Auris reading is no_data and
+    ``read_auris_nodes`` is not called with a stand-in.
+    """
+
+    gamma = None
+    lambda_t = None
+    field_status = "no_data"
+    try:
+        from aureon.core.hnc_field import read_canonical_field
+
+        field = read_canonical_field()
+        if getattr(field, "available", False):
+            gamma = field.coherence_gamma
+            lambda_t = field.lambda_t
+            if gamma is not None or lambda_t is not None:
+                field_status = "reading"
+    except Exception:
+        gamma = None
+        lambda_t = None
+        field_status = "no_data"
+    return {
+        "gamma": gamma,
+        "lambda_t": lambda_t,
+        "field_status": field_status,
+        "auris": {
+            "status": "no_data",
+            "coherence": None,
+            "reason": "this pulse has no market texture, so read_auris_nodes is not called",
+        },
+    }
+
+
+def _observed_loop(name: str, payload: dict[str, Any]) -> str | None:
+    """Name the loop from something this tick observed."""
+
+    if name == "http_seat":
+        bound = bool(payload.get("http_seat_bound") or payload.get("listening"))
+        return "bound" if bound else "unbound"
+    if name == "self_repair" and payload.get("last_audit_event"):
+        return "audit"
+    with _LOCK:
+        heard = int((_STATE.get("consume_count") or {}).get(name, 0))
+    if heard > 0:
+        return "heard"
+    if name == "metacognition":
+        status = payload.get("truth_status")
+        if isinstance(status, str) and status and status != "loop_running":
+            return status
+    return None
+
+
 def _payload_for(organ: dict[str, str], tick: int) -> dict[str, Any]:
     name = organ["name"]
     payload: dict[str, Any] = {
@@ -189,12 +276,11 @@ def _payload_for(organ: dict[str, str], tick: int) -> dict[str, Any]:
         "role": organ["role"],
         "module": organ["module"],
         "tick": tick,
-        "loop": "running",
+        "loop": None,
         "listening": True,
     }
     if name == "metacognition":
         payload.update(dict(_META))
-        payload["loop"] = "running"
     elif name == "baton_relay":
         payload["stage"] = _BATON_STAGES[tick % len(_BATON_STAGES)]
         payload["stages"] = list(_BATON_STAGES)
@@ -207,6 +293,20 @@ def _payload_for(organ: dict[str, str], tick: int) -> dict[str, Any]:
         payload["nodes"] = list_nodes()
     elif name == "queen":
         payload["reasoning"] = "queen"
+    elif name == "http_seat":
+        bound = _http_listening()
+        payload["listening"] = bound
+        payload["http_seat_bound"] = bound
+    elif name == "self_repair":
+        with _LOCK:
+            heard = list((_STATE.get("audit_consumed") or {}).get("self_repair") or [])
+        if heard:
+            payload["last_audit_event"] = str(heard[-1].get("event") or "")
+    elif name == "self_code":
+        payload["applied"] = False
+        payload["live_trading"] = False
+    payload["loop"] = _observed_loop(name, payload)
+    payload.update(_pulse_field())
     return payload
 
 
@@ -254,7 +354,10 @@ def _on_circulation(thought: Thought) -> None:
     topic = str(getattr(thought, "topic", "") or "")
     if topic != _CIRCULATION:
         return
-    for organ in ORGANS:
+    published_ts = float(getattr(thought, "ts", 0.0) or 0.0)
+    received_ts = time.time()
+    latency_s = received_ts - published_ts if published_ts > 0 else None
+    for organ in circulation_seats():
         name = organ["name"]
         if source == name or not connector_state_enabled(name):
             continue
@@ -266,10 +369,42 @@ def _on_circulation(thought: Thought) -> None:
                     "topic": topic,
                     "role": organ["role"],
                     "kind": "receipt",
-                    "ts": time.time(),
+                    "ts": received_ts,
+                    "published_ts": published_ts,
+                    "received_ts": received_ts,
+                    "latency_s": latency_s,
                 }
             )
             del heard[:-50]
+            counts = _STATE.setdefault("consume_count", {})
+            counts[name] = int(counts.get(name, 0)) + 1
+            if latency_s is not None:
+                samples = _STATE.setdefault("latency_samples", [])
+                samples.append(latency_s)
+                del samples[:-_LATENCY_CAP]
+
+
+def _on_self_model(thought: Thought) -> None:
+    """Remember the last pulse from each seat. No model is called."""
+
+    if str(getattr(thought, "topic", "") or "") != _CIRCULATION:
+        return
+    payload = getattr(thought, "payload", None)
+    if not isinstance(payload, dict) or payload.get("kind") != "pulse":
+        return
+    source = str(getattr(thought, "source", "") or "")
+    kept = {
+        "tick": payload.get("tick"),
+        "loop": payload.get("loop"),
+        "role": payload.get("role"),
+        "error": payload.get("error"),
+        "stage": payload.get("stage"),
+        "listening": payload.get("listening"),
+        "http_seat_bound": payload.get("http_seat_bound"),
+    }
+    with _LOCK:
+        seen = _STATE.setdefault("self_model_seen", {})
+        seen[source] = kept
 
 
 def _audit_payload(thought: Thought) -> dict[str, Any] | None:
@@ -432,6 +567,7 @@ def ensure_audit_subscribers() -> None:
         _AUDIT_WIRED = False
     if not _SUBSCRIBED:
         bus.subscribe(_CIRCULATION, _on_circulation)
+        bus.subscribe(_CIRCULATION, _on_self_model)
         _SUBSCRIBED = True
     if not _AUDIT_WIRED:
         bus.subscribe(_CIRCULATION, _on_audit_metacognition)
@@ -443,7 +579,8 @@ def ensure_audit_subscribers() -> None:
 def _metacognition_loop(stop: threading.Event) -> None:
     while not stop.is_set():
         reading = _metacognition_reading()
-        reading["loop"] = "running"
+        reading["loop"] = _observed_loop("metacognition", reading)
+        reading.update(_pulse_field())
         reading["ollama"] = False
         reading.setdefault("reason", "no model is called")
         with _LOCK:
@@ -469,13 +606,47 @@ def _self_repair_loop(stop: threading.Event) -> None:
         with _LOCK:
             heard = list((_STATE.get("audit_consumed") or {}).get("self_repair") or [])
             loops = dict(_STATE.get("loops") or {})
-            loops["self_repair"] = "running"
+            loops["self_repair"] = "audit" if heard else None
             if heard:
                 loops["self_repair_last_audit"] = str(heard[-1].get("event") or "")
             if _DEPRIORITISED:
                 loops["self_repair_deprioritised"] = list(_DEPRIORITISED)
             _STATE["loops"] = loops
         stop.wait(5.0)
+
+
+def _self_model_pulse(tick: int) -> dict[str, Any]:
+    """A reading of seats just heard. Internal state only; no model is called."""
+
+    with _LOCK:
+        seen = dict(_STATE.get("self_model_seen") or {})
+        error = _STATE.get("error")
+        inbox_counts = {name: len(items) for name, items in (_STATE.get("inbox") or {}).items()}
+    seats = []
+    for seat in circulation_seats():
+        name = seat["name"]
+        last = seen.get(name) if isinstance(seen.get(name), dict) else {}
+        seats.append(
+            {
+                "name": name,
+                "role": seat["role"],
+                "module": seat["module"],
+                "last_tick": None if last is None else last.get("tick"),
+                "loop": None if last is None else last.get("loop"),
+                "error": None if last is None else last.get("error"),
+                "inbox": inbox_counts.get(name, 0),
+            }
+        )
+    return {
+        "kind": "self_model",
+        "tick": tick,
+        "ollama": False,
+        "external_llm": False,
+        "live_trading": False,
+        "http_seat_bound": _http_listening(),
+        "process_error": bool(error),
+        "seats": seats,
+    }
 
 
 def _publish_tick(tick: int) -> None:
@@ -485,17 +656,27 @@ def _publish_tick(tick: int) -> None:
     if not connectors.get("thought_bus", True):
         return
     running: dict[str, str] = {}
-    for organ in ORGANS:
+    for organ in circulation_seats():
         if not connectors.get(organ["name"], True):
             continue
+        payload = _payload_for(organ, tick)
         bus.publish(
             Thought(
                 source=organ["name"],
                 topic=_CIRCULATION,
-                payload=_payload_for(organ, tick),
+                payload=payload,
             )
         )
-        running[organ["name"]] = "running"
+        loop = payload.get("loop")
+        if isinstance(loop, str):
+            running[organ["name"]] = loop
+    bus.publish(
+        Thought(
+            source="self_model",
+            topic=_SELF_MODEL,
+            payload=_self_model_pulse(tick),
+        )
+    )
     with _LOCK:
         previous = _STATE.get("loops") or {}
         if previous.get("self_repair"):
@@ -626,6 +807,9 @@ def start_organism_circulation(port: int | None = None) -> dict[str, Any]:
         already = bool(_STATE.get("started") and _STATE.get("thread") and _STATE["thread"].is_alive())
         if not already:
             _STATE["inbox"] = {}
+            _STATE["self_model_seen"] = {}
+            _STATE["consume_count"] = {}
+            _STATE["latency_samples"] = []
             _STATE["audit_consumed"] = {"metacognition": [], "self_repair": []}
             _reset_audit_effects()
             _STATE["error"] = None

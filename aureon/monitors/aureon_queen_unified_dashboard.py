@@ -403,10 +403,10 @@ UNIFIED_DASHBOARD_HTML = """
                     bots.bots_detected.slice(0, 10).forEach(b => {
                         if (b.symbol) {
                             handleBotDiscovered({
-                                bot_id: 'HUB-' + Math.random().toString(36).substr(2,6),
+                                bot_id: b.bot_id || ('HUB-' + (b.symbol || 'na')),
                                 symbol: b.symbol,
                                 pattern: b.type || 'UNKNOWN',
-                                volume: Math.random() * 100000,
+                                volume: (typeof b.volume === 'number' && Number.isFinite(b.volume)) ? b.volume : null,
                                 size_class: b.confidence > 0.7 ? 'whale' : 'fish',
                                 is_leader: b.confidence > 0.8
                             });
@@ -690,6 +690,7 @@ UNIFIED_DASHBOARD_HTML = """
         }
         
         function formatNumber(num) {
+            if (typeof num !== 'number' || !Number.isFinite(num)) return 'n/a';
             if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
             if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
             return num.toFixed(0);

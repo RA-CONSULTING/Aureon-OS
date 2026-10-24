@@ -636,6 +636,14 @@ class TestCapitalCFDSync(unittest.TestCase):
         self.assertIsNone(snapshot["equity_gbp"])
         self.assertIsNone(snapshot["free_gbp"])
         self.assertIsNone(payload["equity_gbp"])
+        from aureon.exchanges.capital_cfd_trader import _finite_amount
+        self.assertEqual(_finite_amount(0.0), 0.0)
+        self.assertIsNone(_finite_amount(None))
+        mixed_feed = trader._refresh_probability_feed_snapshot()
+        self.assertIsNone(mixed_feed["capital"]["equity_gbp"])
+        self.assertIsNone(mixed_feed["capital"]["free_gbp"])
+        self.assertIsNone(mixed_feed["capital"]["used_gbp"])
+        self.assertIsNone(mixed_feed["capital"]["budget_gbp"])
         self.assertNotEqual(payload["equity_gbp"], 170.0)
         self.assertIn("Equity=n/a", "\n".join(trader.status_lines()))
 
@@ -668,6 +676,9 @@ class TestCapitalCFDSync(unittest.TestCase):
         self.assertEqual(both["equity_gbp"], 100.0)
         self.assertEqual(both["free_gbp"], 80.0)
         self.assertEqual(trader.get_dashboard_payload()["equity_gbp"], 100.0)
+        sterling_feed = trader._refresh_probability_feed_snapshot()
+        self.assertEqual(sterling_feed["capital"]["equity_gbp"], 100.0)
+        self.assertEqual(sterling_feed["capital"]["free_gbp"], 80.0)
 
     def test_status_lines_include_tick_and_stale_capital_feed(self):
         trader = self._build_trader(ClientStub())

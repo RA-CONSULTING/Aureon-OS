@@ -1,0 +1,31 @@
+{
+  "coherence": null,
+  "coherence_status": "no_data",
+  "hold_nodes": [
+    "Clownfish",
+    "Owl"
+  ],
+  "hold_reason": "these nodes have no value when volatility, momentum, volume, and spread are all present as 0; memory and symbiosis have no market input in read_auris_nodes",
+  "market_data": null,
+  "market_data_note": "no market series was supplied, so the omitted call is no_data",
+  "nodes": null,
+  "source": "aureon.utils.aureon_queen_hive_mind.QueenHiveMind.get_auris_coherence",
+  "status": "no_data",
+  "trade_readiness": {
+    "reason": "no market series and no trade-outcome labels",
+    "verdict": "HOLD"
+  },
+  "zero_input_probe": {
+    "inputs": {
+      "momentum": 0.0,
+      "spread": 0.0,
+      "volatility": 0.0,
+      "volume": 0.0
+    },
+    "nodes_without_reading": [
+      "Clownfish",
+      "Owl"
+    ],
+    "note": "clamp-bound probe of the existing formulas, not a market reading; node values are not published"
+  }
+}

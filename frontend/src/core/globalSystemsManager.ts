@@ -44,7 +44,7 @@ export interface GlobalState {
   
   // Trading state
   isActive: boolean;
-  totalEquity: number;
+  totalEquity: number | null;
   equityNote: string | null;
   availableBalance: number;
   totalTrades: number;
@@ -106,7 +106,7 @@ export interface GlobalState {
   
   // 🦆🪐 Platypus Planetary Coherence State
   platypusState: PlatypusState | null;
-  planetaryCoherence: number;       // Γ(t) value
+  planetaryCoherence: number | null;       // Γ(t) value
   planetaryCascade: number;         // Cascade multiplier
   lighthouseActive: boolean;        // Lighthouse event flag
   topAlignedPlanets: string[];      // Top 3 aligned planets
@@ -201,11 +201,11 @@ export interface GlobalState {
   }>;
 
   unifiedMarketSummary?: {
-    krakenEquity: number;
+    krakenEquity: number | null;
     krakenEquityReason?: string;
-    capitalEquityGbp: number;
-    krakenSessionPnl: number;
-    capitalSessionPnlGbp: number;
+    capitalEquityGbp: number | null;
+    krakenSessionPnl: number | null;
+    capitalSessionPnlGbp: number | null;
     openPositions: number;
     capitalOpenPositions: number;
     krakenOpenPositions: number;

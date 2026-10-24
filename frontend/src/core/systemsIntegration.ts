@@ -122,42 +122,16 @@ export class SystemsIntegrationManager {
    * Get current Zero Point Field state
    */
   public getZeroPointState(): ZeroPointFieldState | null {
-    try {
-      // Generate state based on current time and simulated market data
-      const now = Date.now();
-      const marketFrequency = 528 + Math.sin(now / 10000) * 50; // Simulate market frequency
-      const coherence = 0.7 + Math.sin(now / 5000) * 0.2;
-      const phaseAlignment = Math.cos(now / 8000) * Math.PI;
-      const schumannFrequency = 7.83;
-
-      return this.zeroPointDetector.detectFieldHarmonics(
-        marketFrequency,
-        coherence,
-        phaseAlignment,
-        schumannFrequency,
-        now
-      );
-    } catch (error) {
-      console.error('Zero Point state error:', error);
-      return null;
-    }
+    // No live field is wired here. A clock sine is not coherence.
+    return null;
   }
 
   /**
    * Get current Dimensional Dialler state
    */
   public getDimensionalState(): DimensionalDiallerState | null {
-    try {
-      const now = Date.now();
-      const coherence = 0.7 + Math.sin(now / 5000) * 0.2;
-      const phaseAlignment = Math.cos(now / 8000);
-      const frequency = 7.83;
-
-      return this.dimensionalDialler.dial(coherence, frequency, phaseAlignment, Date.now());
-    } catch (error) {
-      console.error('Dimensional Dialler state error:', error);
-      return null;
-    }
+    // No live field is wired here. A clock sine is not coherence.
+    return null;
   }
 
   /**

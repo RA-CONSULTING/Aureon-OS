@@ -64,7 +64,7 @@ interface StateSnapshot {
   coherence: number;
   gamma: number;
   totalPnl: number;
-  totalEquity: number;
+  totalEquity: number | null;
   queenState: string;
 }
 
@@ -317,7 +317,7 @@ export class NarratorEngine {
           'Stillness. The Queen watches. Waits. The market breathes.',
           `In the quiet between trades, coherence holds at ${(curr.psi * 100).toFixed(0)}%.`,
           'She observes without acting. Sometimes the wisest move is patience.',
-          `The cosmos turns. Equity at $${curr.totalEquity.toFixed(2)}. The system endures.`,
+          `The cosmos turns. Equity at ${curr.totalEquity == null ? 'unavailable' : `$${curr.totalEquity.toFixed(2)}`}. The system endures.`,
           'No signal strong enough. She holds her fire. Discipline over impulse.',
         ]),
         timestamp: now,
