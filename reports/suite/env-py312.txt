@@ -1,7 +1,7 @@
 python_version=3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]
 python_executable=/tmp/venv-copy-312/bin/python
 platform=Linux-6.12.94+-x86_64-with-glibc2.39
-git_sha=c2437f57b628991eab0fec39e34b1c9fa7154d84
+git_sha=fc1b9e1880756af82641b065def1bbd866f0dd4a
 pip_freeze:
   aiohappyeyeballs==2.7.1
   aiohttp==3.14.5
@@ -169,4 +169,4 @@ test_affecting_environment:
   LC_ALL=en_US.UTF-8
   PATH=/home/ubuntu/.local/bin:/usr/local/cargo/bin:/home/ubuntu/.local/bin:/home/ubuntu/.local/bin:/home/ubuntu/.local/bin:/home/ubuntu/.local/bin:/home/ubuntu/.local/bin:/usr/local/cargo/bin:/exec-daemon:/exec-daemon/tools:/usr/local/cargo/bin:/home/ubuntu/.nvm/versions/node/v22.23.4/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
   PYTHONPATH=.
-note=Copied interpreter. AUREON_LIVE_TRADING=0. Fresh clone /tmp/aureon-fresh at this sha. Secret-like environment values are redacted in the matching environment json. Random junit is seed 20261023; seed 777 also exited 0 with the same totals.
+note=Copied interpreter. AUREON_LIVE_TRADING=0. Fresh clone /tmp/aureon-fresh at this sha. Secret-like environment values are redacted in the matching environment json. Random junit is seed 20261023. Seed 777 also exited 0 with the same 9200 total. On 3.12, seed 777 reported 14 warnings; the stable run and seed 20261023 reported 22.
