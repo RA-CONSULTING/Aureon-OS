@@ -7,7 +7,7 @@ import { useGlobalState } from '@/hooks/useGlobalState';
 
 interface ReadinessCheck {
   name: string;
-  status: 'pass' | 'fail' | 'warn' | 'checking';
+  status: 'pass' | 'fail' | 'warn' | 'checking' | 'not configured';
   message: string;
 }
 
@@ -24,14 +24,30 @@ export function TradingReadinessCheck() {
     const results: ReadinessCheck[] = [];
 
     // Check 1: Authentication
+    if (!supabaseConfigured) {
+      results.push({
+        name: 'Authentication',
+        status: 'not configured',
+        message: 'not configured',
+      });
+      results.push({
+        name: 'Exchange Credentials',
+        status: 'not configured',
+        message: 'not configured',
+      });
+      results.push({
+        name: 'Trading Config',
+        status: 'not configured',
+        message: 'not configured',
+      });
+      setChecks(results);
+      setIsReady(false);
+      return;
+    }
     results.push({
       name: 'Authentication',
-      status: !supabaseConfigured || globalState.isAuthenticated ? 'pass' : 'fail',
-      message: !supabaseConfigured
-        ? 'Local operator; no Supabase sign-in is configured'
-        : globalState.isAuthenticated
-          ? 'User authenticated'
-          : 'Not logged in',
+      status: globalState.isAuthenticated ? 'pass' : 'fail',
+      message: globalState.isAuthenticated ? 'User authenticated' : 'Not logged in',
     });
 
     // Check 2: Quantum Systems
@@ -106,7 +122,7 @@ export function TradingReadinessCheck() {
             variant={isReady ? 'default' : 'destructive'}
             className={isReady ? 'bg-success' : ''}
           >
-            {isReady ? 'READY' : `${failCount} ISSUES`}
+            {!supabaseConfigured ? 'not configured' : isReady ? 'READY' : `${failCount} ISSUES`}
           </Badge>
         </CardTitle>
       </CardHeader>
@@ -122,6 +138,7 @@ export function TradingReadinessCheck() {
                 {check.status === 'pass' && <CheckCircle2 className="h-4 w-4 text-success" />}
                 {check.status === 'fail' && <XCircle className="h-4 w-4 text-destructive" />}
                 {check.status === 'warn' && <AlertTriangle className="h-4 w-4 text-warning" />}
+                {check.status === 'not configured' && <AlertTriangle className="h-4 w-4 text-muted-foreground" />}
                 <span className="text-sm font-medium">{check.name}</span>
               </div>
               <span className="text-xs text-muted-foreground">{check.message}</span>

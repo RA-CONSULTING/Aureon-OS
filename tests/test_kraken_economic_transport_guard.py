@@ -62,12 +62,12 @@ def test_nonce_preserves_nanosecond_provider_high_water(
     )
 
     first = kraken_module._get_next_nonce()
-    # The seed is max(file + 1, time_ns()). The mocked clock is above the file.
-    assert first == 1_790_000_000_000_000_000
+    assert first > 1_790_000_000_000_000_000
 
     nonce_path.write_text("1800000000000000000", encoding="utf-8")
     second = kraken_module._get_next_nonce()
-    assert second == 1_800_000_000_000_000_001
+    assert second > 1_800_000_000_000_000_000
+    assert second != first
 
 
 def test_nonce_lost_file_seeds_from_nanosecond_clock(
@@ -75,7 +75,31 @@ def test_nonce_lost_file_seeds_from_nanosecond_clock(
     tmp_path,
 ) -> None:
     nonce_path = tmp_path / ".kraken_nonce"
+    sibling = tmp_path / "sibling-nonce"
+    sibling.write_text("1780000000000000000", encoding="utf-8")
     monkeypatch.setattr(kraken_module, "NONCE_FILE", str(nonce_path))
+    monkeypatch.setattr(kraken_module, "_sibling_nonce_files", lambda: [str(sibling)])
+    monkeypatch.setattr(kraken_module, "_nonce_offset_counter", 0)
+    monkeypatch.setattr(
+        kraken_module.time,
+        "time_ns",
+        lambda: 1_700_000_000_000_000_000,
+    )
+
+    nonce = kraken_module._get_next_nonce()
+
+    # The clock is below the sibling high-water. Microseconds would be ~1.7e15.
+    assert nonce > 1_780_000_000_000_000_000
+    assert int(nonce_path.read_text(encoding="utf-8")) == nonce
+
+
+def test_same_nanosecond_nonces_are_unique(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path,
+) -> None:
+    nonce_path = tmp_path / ".kraken_nonce"
+    monkeypatch.setattr(kraken_module, "NONCE_FILE", str(nonce_path))
+    monkeypatch.setattr(kraken_module, "_sibling_nonce_files", lambda: [])
     monkeypatch.setattr(kraken_module, "_nonce_offset_counter", 0)
     monkeypatch.setattr(
         kraken_module.time,
@@ -83,11 +107,12 @@ def test_nonce_lost_file_seeds_from_nanosecond_clock(
         lambda: 1_780_000_000_000_000_000,
     )
 
-    nonce = kraken_module._get_next_nonce()
+    first = kraken_module._get_next_nonce()
+    second = kraken_module._get_next_nonce()
 
-    # A microsecond clock would be 1_780_000_000_000_000, below Kraken's ns high-water.
-    assert nonce == 1_780_000_000_000_000_000
-    assert nonce_path.read_text(encoding="utf-8") == "1780000000000000000"
+    assert first > 1_780_000_000_000_000_000
+    assert second > first
+    assert int(nonce_path.read_text(encoding="utf-8")) == second
 
 
 class _Clock:

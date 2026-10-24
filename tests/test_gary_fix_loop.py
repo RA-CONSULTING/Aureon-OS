@@ -68,11 +68,12 @@ def test_invalid_nonce_persists_a_higher_floor(tmp_path: Path, monkeypatch: pyte
 
     nonce_file = tmp_path / "nonce"
     monkeypatch.setattr(kraken, "NONCE_FILE", str(nonce_file))
+    monkeypatch.setattr(kraken.time, "time_ns", lambda: 1_000)
     stored = kraken._persist_nonce_floor(100, "EAPI:Invalid nonce")
     assert stored >= 100 + 1_000_000_000
     assert int(nonce_file.read_text(encoding="utf-8")) == stored
     climbed = kraken._persist_nonce_floor(stored, "EAPI:Invalid nonce")
-    assert climbed > stored
+    assert climbed >= stored + 1_000_000_000
 
 
 def test_binance_http_451_is_region_blocked() -> None:

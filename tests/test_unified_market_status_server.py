@@ -89,6 +89,33 @@ class UnifiedMarketStatusServerFlightTestTests(unittest.TestCase):
         payload = {"status": "pending", "surface": "market", "reason": "test"}
         status_server.MARKET_INTENT_PATH.write_text(json.dumps(payload), encoding="utf-8")
 
+    def test_flight_test_does_not_call_exchanges(self):
+        called = {"n": 0}
+
+        def boom():
+            called["n"] += 1
+            raise AssertionError("flight test called an exchange probe")
+
+        status_server._PROBE_CACHE["payload"] = None
+        status_server._PROBE_CACHE["at"] = 0.0
+        original = status_server._probe_exchange_balances
+        status_server._probe_exchange_balances = boom
+        try:
+            missing = status_server._flight_test()
+            self._write_status(open_positions=0)
+            present = status_server._flight_test()
+        finally:
+            status_server._probe_exchange_balances = original
+            status_server._PROBE_CACHE["payload"] = None
+            status_server._PROBE_CACHE["at"] = 0.0
+
+        self.assertEqual(called["n"], 0)
+        self.assertEqual(
+            missing["description"],
+            "Reads the local status file. Does not call an exchange.",
+        )
+        self.assertEqual(present["description"], missing["description"])
+
     def test_flight_test_holds_restart_when_open_positions_exist(self):
         self._write_status(open_positions=2)
         self._write_pending_intent()

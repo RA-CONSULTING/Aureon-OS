@@ -261,7 +261,7 @@ _nonce_offset_counter = 0
 
 
 def _next_nonce_offset() -> int:
-    """Small deterministic offset used only to separate same-microsecond nonces."""
+    """Small deterministic offset so two calls in one nanosecond stay distinct."""
     global _nonce_offset_counter
     _nonce_offset_counter = (_nonce_offset_counter % 999) + 1
     return _nonce_offset_counter
@@ -316,13 +316,10 @@ def _read_nonce_text(text: str) -> int:
 def _nonce_clock_ns() -> int:
     """Nanosecond clock.
 
-    Kraken remembers the highest nonce it has seen for the key. An earlier
-    client sent ``time.time_ns()``. If the counter file is lost, a microsecond
-    clock is below that high-water mark and every later call is rejected.
-    Seeding from ``time.time_ns()`` stays above those earlier wall-clock
-    nonces. A counter that was stored above the clock is recovered only from
-    the file. Losing the file cannot reconstruct a high-water mark that is
-    ahead of the current nanosecond clock.
+    This key's Kraken high-water is about 1.78e18 because earlier clients
+    sent ``time.time_ns()``. A microsecond clock starts near 1.78e15 and
+    stays under that mark. A missing counter file is seeded from the
+    nanosecond clock and any sibling counter, never from microseconds.
     """
 
     return time.time_ns()
@@ -384,12 +381,19 @@ def _locked_nonce_update(choose) -> int:
 
 
 def _get_next_nonce() -> int:
-    """Next nonce is max(stored file + 1, time.time_ns())."""
+    """Next nonce is above the file, any sibling counter, and the nanosecond clock.
+
+    ``last_nonce`` already includes sibling files. When the counter file is
+    missing that value is 0, or the sibling high-water, and the seed is
+    ``max(file, siblings, time.time_ns())``. The offset keeps two calls in
+    the same nanosecond distinct. Nothing is returned until the file lock
+    has persisted it.
+    """
 
     clock = _nonce_clock_ns()
 
     def choose(last_nonce: int) -> int:
-        return max(clock, int(last_nonce) + 1)
+        return max(clock, int(last_nonce) + 1) + _next_nonce_offset()
 
     return _locked_nonce_update(choose)
 
@@ -398,9 +402,10 @@ def _persist_nonce_floor(sent: int, error_text: str = "") -> int:
     """Remember a rejected nonce and persist one strictly above it.
 
     Kraken keeps the highest nonce it has seen for the key. The stored value
-    stays on disk under the same file lock as every later call. The seed is
-    ``time.time_ns()``, so a lost counter file does not fall back to
-    microseconds. A higher value already in the file is kept.
+    stays on disk under the same file lock as every later call. The floor
+    climbs by at least one billion, so a rejected nonce cannot pin the next
+    call one step above a value Kraken has already seen. A higher value
+    already in the file, or the nanosecond clock, is kept.
     """
 
     mentioned: list[int] = []
@@ -410,9 +415,10 @@ def _persist_nonce_floor(sent: int, error_text: str = "") -> int:
         except ValueError:
             continue
     floor = max([int(sent or 0), *mentioned, 0])
+    target = floor + 1_000_000_000
 
     def choose(last_nonce: int) -> int:
-        return max(_nonce_clock_ns(), int(last_nonce) + 1, floor + 1)
+        return max(_nonce_clock_ns(), int(last_nonce) + 1, target)
 
     return _locked_nonce_update(choose)
 

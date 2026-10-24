@@ -351,7 +351,7 @@ def _names_only_credential_status() -> dict[str, Any]:
     }
 
 
-def _read_status() -> dict[str, Any]:
+def _read_status(*, exchange_probes: bool = True) -> dict[str, Any]:
     if STATUS_PATH.exists():
         try:
             with STATUS_PATH.open("r", encoding="utf-8") as handle:
@@ -389,7 +389,10 @@ def _read_status() -> dict[str, Any]:
                     payload.setdefault("warnings", [])
                     if isinstance(payload["warnings"], list):
                         payload["warnings"].append("runtime_status_file_stale")
-                return _apply_exchange_probes(payload)
+                if exchange_probes:
+                    return _apply_exchange_probes(payload)
+                payload["exchange_probe"] = "not run"
+                return payload
         except Exception as exc:
             return {
                 "ok": False,
@@ -428,7 +431,10 @@ def _read_status() -> dict[str, Any]:
             "binance_ready": False,
         },
     }
-    return _apply_exchange_probes(payload)
+    if exchange_probes:
+        return _apply_exchange_probes(payload)
+    payload["exchange_probe"] = "not run"
+    return payload
 
 
 def _day_allowed(day_name: str, allowed_days: str | None) -> bool:
@@ -703,7 +709,8 @@ def _has_open_positions(payload: dict[str, Any]) -> bool:
 
 
 def _flight_test() -> dict[str, Any]:
-    status = _read_status()
+    # No exchange probe. Terminal state is the route that reads balances when keys are set.
+    status = _read_status(exchange_probes=False)
     intent = _read_market_intent()
     env_intent = _read_env_update_intent()
     pending_restart = bool(intent and intent.get("status") == "pending") or bool(env_intent and env_intent.get("status") == "pending")
@@ -729,6 +736,7 @@ def _flight_test() -> dict[str, Any]:
     return {
         "ok": bool(status.get("ok")) and not stale,
         "service": "unified-market-status-server",
+        "description": "Reads the local status file. Does not call an exchange.",
         "generated_at": datetime.now().isoformat(),
         "checks": {
             "status_file_exists": STATUS_PATH.exists(),
