@@ -285,6 +285,8 @@ def test_benchmark_namespace_hides_parent_environ(monkeypatch: pytest.MonkeyPatc
     if bench._namespace_command(tmp_path / "runner.py") is None:
         pytest.skip("unshare user namespace is not available")
     monkeypatch.setenv("KRAKEN_API_SECRET", "super-secret-kraken")
+    home_secret = Path.home() / ".bench-secret-probe"
+    home_secret.write_text("home-secret", encoding="utf-8")
     code = (
         "import os, socket, importlib\n"
         "secret = 'super-secret-kraken'\n"
@@ -298,6 +300,12 @@ def test_benchmark_namespace_hides_parent_environ(monkeypatch: pytest.MonkeyPatc
         "        continue\n"
         "    assert secret not in data\n"
         "assert not os.path.exists('/workspace/docs/SECURITY.md')\n"
+        f"probe = {str(home_secret)!r}\n"
+        "try:\n"
+        "    seen = open(probe, encoding='utf-8').read()\n"
+        "except OSError:\n"
+        "    seen = ''\n"
+        "assert 'home-secret' not in seen\n"
         "importlib.reload(socket)\n"
         "sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\n"
         "sock.settimeout(0.3)\n"
@@ -308,7 +316,10 @@ def test_benchmark_namespace_hides_parent_environ(monkeypatch: pytest.MonkeyPatc
         "else:\n"
         "    raise SystemExit('network opened')\n"
     )
-    assert bench._run_python(code, "") is True
+    try:
+        assert bench._run_python(code, "") is True
+    finally:
+        home_secret.unlink(missing_ok=True)
 
 
 def test_benchmark_refuses_unsandboxed_without_opt_in(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
