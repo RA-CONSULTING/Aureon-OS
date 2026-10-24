@@ -26,9 +26,11 @@ We will acknowledge your report within 48 hours and provide an estimated timelin
 
 `aureon.autonomous.self_coder_benchmark` runs model-written Python. That
 child is not a kernel sandbox. It starts only inside `unshare` (a new user,
-pid, and net namespace) from an environment that never held the keys. Home
-and the workspace are covered with a tmpfs when that mount works. If
-`unshare` is missing or the probe fails, the harness does not run the
+pid, and net namespace) from an environment that never held the keys. Inside
+that namespace, home and the workspace are covered with a tmpfs when that
+mount works. The opt-in path does not mount over the parent namespace. If
+`unshare` is missing, the probe fails, or a remembered `unshare` later
+disappears, the harness does not claim a namespace and does not run the
 model code unless `AUREON_BENCH_ALLOW_UNSANDBOXED=1`. That opt-in is
 unsandboxed: a same-user child can read `/proc/PID/environ` and can open a
 raw socket. A failed probe is not cached. Run this harness only on a

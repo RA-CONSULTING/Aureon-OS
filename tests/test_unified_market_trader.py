@@ -2103,6 +2103,120 @@ class UnifiedMarketTraderTests(unittest.TestCase):
         self.assertIn("not GBP", trader.capital_error)
         self.assertIsNone(trader._flat_exchange_equity("capital"))
 
+    def test_combined_capital_equity_gbp_follows_single_currency_snapshot(self):
+        from aureon.exchanges.capital_cfd_trader import CapitalCFDTrader
+
+        class _Accounts:
+            def __init__(self, accounts, balances):
+                self._accounts = accounts
+                self._balances = balances
+                self.enabled = True
+                self.init_error = ""
+
+            def get_accounts(self):
+                return list(self._accounts)
+
+            def get_account_balance(self):
+                return dict(self._balances)
+
+        def capital_trader(accounts, balances):
+            desk = CapitalCFDTrader.__new__(CapitalCFDTrader)
+            desk.client = _Accounts(accounts, balances)
+            desk.positions = []
+            desk.shadow_trades = []
+            desk.stats = {"total_pnl_gbp": 0.0, "trades_closed": 0, "winning_trades": 0, "losing_trades": 0}
+            desk._capital_snapshot_cache = {}
+            desk._capital_snapshot_error = ""
+            desk.start_time = time.time()
+            desk.starting_equity_gbp = 0.0
+            desk._recent_closed_trades = []
+            desk._latest_monitor_line = ""
+            desk._latest_status_lines = []
+            desk._latest_candidate_snapshot = []
+            desk._latest_target_snapshot = {}
+            desk._swarm_snapshot = {}
+            desk._lane_snapshot = {}
+            desk._registry_snapshot = {}
+            desk._mind_map_snapshot = {}
+            desk._decision_snapshot = {}
+            desk._orchestrator_snapshot = {}
+            desk._timeline_snapshot = {}
+            desk._fusion_snapshot = {}
+            desk._harmonic_wiring_audit = {}
+            desk._thought_bus_snapshot = {}
+            desk._cognition_snapshot = {}
+            desk._mycelium_snapshot = {}
+            desk._last_fast_profit_capture = {}
+            desk._live_system_activity_snapshot = {}
+            desk._probability_feed_snapshot = {}
+            desk._shadow_validated_count = 0
+            desk._shadow_failed_count = 0
+            desk._capital_trade_evidence = {}
+            desk._capital_confidence_ratchet = {}
+            desk._capital_unified_waveform_check = {}
+            desk._capital_no_loss_hold_queue = {}
+            desk._capital_pending_order_envelope = {}
+            desk._capital_last_working_order_submit = {}
+            return desk
+
+        def combined_equity(desk):
+            trader = self._make_trader()
+            trader.capital_ready = True
+            trader.kraken_ready = False
+            trader.capital = desk
+            trader._boot_balances = {"capital": {"alive": True, "error": "", "equity": 999.0}}
+            trader._write_runtime_status_file = lambda *args, **kwargs: None
+            trader._build_dynamic_intelligence_budget = lambda *args, **kwargs: {}
+            trader._build_central_beat_feed = lambda *args, **kwargs: {}
+            trader._sync_shared_market_feed = lambda *args, **kwargs: {}
+            trader._apply_gold_priority_candidate = lambda *args, **kwargs: None
+            trader._build_global_order_flow_feed = lambda *args, **kwargs: {}
+            trader._record_order_flow_lifecycle_candidates = lambda *args, **kwargs: None
+            trader._build_exchange_action_plan = lambda *args, **kwargs: {}
+            trader._build_gold_runtime_trade_proof = lambda *args, **kwargs: {}
+            trader._order_lifecycle_snapshot = lambda *args, **kwargs: {}
+            trader._feed_shared_order_flow_to_decision_logic = lambda *args, **kwargs: None
+            trader._feed_auris_throne = lambda *args, **kwargs: None
+            trader._build_shadow_trade_report = lambda *args, **kwargs: {}
+            trader._build_hnc_cognitive_proof = lambda *args, **kwargs: {}
+            trader._build_intelligence_mesh = lambda *args, **kwargs: {}
+            trader._publish_order_intents = lambda *args, **kwargs: None
+            trader.get_status_lines = lambda *args, **kwargs: []
+            trader._build_queen_voice_payload = lambda *args, **kwargs: {}
+            trader._latest_monitor_line = lambda *args, **kwargs: ""
+            trader._load_kraken_spot_fast_profit_state = lambda *args, **kwargs: {}
+            trader._load_kraken_asset_registry_summary = lambda *args, **kwargs: {}
+            trader._exchange_boot_init_snapshot = lambda *args, **kwargs: {}
+            trader._build_preflight_report = lambda *args, **kwargs: {}
+            trader._api_governor_snapshot = lambda *args, **kwargs: {}
+            payload = trader._build_combined_payload()
+            return payload["combined"]["capital_equity_gbp"]
+
+        mixed_accounts = [
+            {"balance": 100, "available": 100, "currency": "GBP"},
+            {"balance": 50, "available": 50, "currency": "USD"},
+            {"balance": 20, "available": 20, "currency": "EUR"},
+        ]
+        mixed = capital_trader(mixed_accounts, {})
+        self.assertIsNone(mixed.get_capital_snapshot()["equity_gbp"])
+        self.assertIsNone(mixed.get_dashboard_payload()["equity_gbp"])
+        self.assertIsNone(combined_equity(mixed))
+
+        empty = capital_trader([], {})
+        self.assertIsNone(empty.get_capital_snapshot()["equity_gbp"])
+        self.assertIsNone(combined_equity(empty))
+
+        fallback = capital_trader([], {"USD": 50, "EUR": 20})
+        self.assertIsNone(fallback.get_capital_snapshot()["equity_gbp"])
+        self.assertIsNone(combined_equity(fallback))
+
+        sterling = capital_trader(
+            [{"balance": 100, "available": 80, "currency": "GBP"}],
+            {},
+        )
+        self.assertEqual(sterling.get_dashboard_payload()["equity_gbp"], 100.0)
+        self.assertEqual(combined_equity(sterling), 100.0)
+
     def test_kraken_tick_timeout_does_not_block_unified_runtime(self):
         trader = self._make_trader()
         old_timeout = trader_mod.KRAKEN_TICK_TIMEOUT_SEC

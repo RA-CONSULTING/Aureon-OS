@@ -26,3 +26,24 @@ def test_empty_balance_is_not_zero():
     amount, reason = gbp_equity_from_balances({})
     assert amount is None
     assert reason
+
+
+def test_duplicate_case_keys_are_not_collapsed():
+    amount, reason = gbp_equity_from_balances({"GBP": 100, "gbp": 50})
+    assert amount is None
+    assert amount != 50.0
+    assert reason
+
+
+def test_non_finite_and_non_numeric_values_are_not_amounts():
+    for raw in (
+        {"GBP": float("nan")},
+        {"GBP": float("inf")},
+        {"GBP": float("-inf")},
+        {"GBP": True},
+        {"GBP": False},
+        {"GBP": "55.5"},
+    ):
+        amount, reason = gbp_equity_from_balances(raw)
+        assert amount is None
+        assert "not a number" in reason

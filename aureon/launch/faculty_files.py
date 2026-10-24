@@ -7,6 +7,8 @@ No measurement is written. An existing file is left as the producer wrote it.
 from __future__ import annotations
 
 import json
+import os
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -35,7 +37,7 @@ def record_absence(faculty: dict[str, Any], producer: str) -> Path | None:
         "timestamp": _now(),
         "live_trading": False,
     }
-    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary = path.with_name(f".{path.name}.{os.getpid()}.{uuid.uuid4().hex}.tmp")
     temporary.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     temporary.replace(path)
     return path

@@ -35,6 +35,50 @@ from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
+
+def _finite_amount(value: Any) -> float | None:
+    """A finite number. Booleans, strings, NaN, and infinities are not amounts."""
+
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    if not math.isfinite(number):
+        return None
+    return number
+
+
+def _format_gbp_amount(value: Any) -> str:
+    amount = _finite_amount(value)
+    if amount is None:
+        return "n/a"
+    return f"{amount:.2f}"
+
+
+def _currency_amount_map(accounts: Any, field: str) -> Dict[str, Any]:
+    """Sum one field per currency. A row with no currency cannot be a GBP book."""
+
+    totals: Dict[str, Any] = {}
+    for account in list(accounts or []):
+        if not isinstance(account, dict):
+            return {"_unreadable": True}
+        currency = str(account.get("currency") or "").strip().upper()
+        if not currency:
+            return {"_unreadable": True}
+        amount = account.get(field, 0.0)
+        if currency not in totals:
+            totals[currency] = amount
+            continue
+        left = _finite_amount(totals[currency])
+        right = _finite_amount(amount)
+        if left is None or right is None:
+            totals[currency] = amount if right is None else totals[currency]
+            continue
+        totals[currency] = left + right
+    return totals
+
 # Module-level Lambda Engine reference — set by ICS before any instance is created.
 # Each CapitalCFDTrader.__init__ picks this up automatically.
 _MODULE_LAMBDA_ENGINE: Any = None
@@ -2533,8 +2577,16 @@ class CapitalCFDTrader:
         except Exception as _e:
             logger.debug(f"Capital promotion event write failed: {_e}")
 
-    def get_capital_snapshot(self) -> Dict[str, float]:
-        """Expose Capital.com account state in the same style as the Kraken trader."""
+    def get_capital_snapshot(self) -> Dict[str, Any]:
+        """Expose Capital.com account state in the same style as the Kraken trader.
+
+        ``equity_gbp`` is a sterling figure only when every account is GBP.
+        Mixed currencies, a non-GBP book, or a balance that is not a finite
+        number stay null. They are not added together and not cached over
+        a later honest null.
+        """
+        from aureon.exchanges.single_currency_equity import gbp_equity_from_balances
+
         cached = dict(getattr(self, "_capital_snapshot_cache", {}) or {})
         if not self.client:
             return cached or {
@@ -2549,30 +2601,48 @@ class CapitalCFDTrader:
         except Exception as e:
             accounts = []
             self._capital_snapshot_error = f"accounts_error:{e}"
+        definitive_null = False
         if not accounts:
             try:
                 balances = self.client.get_account_balance()
             except Exception as e:
                 balances = {}
                 self._capital_snapshot_error = f"balance_error:{e}"
-            equity = float(sum(float(v or 0.0) for v in balances.values()))
+            raw = balances if isinstance(balances, dict) else getattr(balances, "balances", None)
+            if not isinstance(raw, dict):
+                raw = {}
+            equity, _reason = gbp_equity_from_balances(raw)
             free = equity
+            if raw and equity is None:
+                definitive_null = True
         else:
-            equity = sum(float(acc.get("balance", 0.0) or 0.0) for acc in accounts)
-            free = sum(float(acc.get("available", 0.0) or 0.0) for acc in accounts)
-        used = max(0.0, equity - free)
-        budget = free * 0.70
-        target_pct = (CAPITAL_MIN_PROFIT_GBP / equity * 100.0) if equity > 0 else 0.0
+            equity, _reason = gbp_equity_from_balances(_currency_amount_map(accounts, "balance"))
+            free, _free_reason = gbp_equity_from_balances(_currency_amount_map(accounts, "available"))
+            if equity is None:
+                definitive_null = True
+        equity_amount = _finite_amount(equity)
+        free_amount = _finite_amount(free)
+        if equity_amount is None or free_amount is None:
+            used: float | None = None
+            budget: float | None = None
+            target_pct = 0.0
+        else:
+            used = max(0.0, equity_amount - free_amount)
+            budget = free_amount * 0.70
+            target_pct = (CAPITAL_MIN_PROFIT_GBP / equity_amount * 100.0) if equity_amount > 0 else 0.0
         snapshot = {
-            "equity_gbp": equity,
-            "free_gbp": free,
+            "equity_gbp": equity_amount,
+            "free_gbp": free_amount,
             "used_gbp": used,
             "budget_gbp": budget,
             "target_pct_equity": target_pct,
         }
-        if equity > 0 or free > 0:
+        if (equity_amount is not None and equity_amount > 0) or (free_amount is not None and free_amount > 0):
             self._capital_snapshot_cache = dict(snapshot)
             self._capital_snapshot_error = ""
+            return snapshot
+        if definitive_null:
+            self._capital_snapshot_error = self._capital_snapshot_error or "capital equity is not a single GBP figure"
             return snapshot
         if cached:
             cached["stale"] = 1.0
@@ -6741,14 +6811,15 @@ class CapitalCFDTrader:
         gate = "ARMED" if HAS_QUAD_GATES else "open"
         capital = self.get_capital_snapshot()
         risk_envelope = self._build_capital_risk_envelope()
-        eq_delta = capital["equity_gbp"] - self.starting_equity_gbp if self.starting_equity_gbp > 0 else 0.0
+        equity_now = _finite_amount(capital.get("equity_gbp"))
+        eq_delta = equity_now - self.starting_equity_gbp if equity_now is not None and self.starting_equity_gbp > 0 else 0.0
         runtime_m = (time.time() - self.start_time) / 60.0
 
         lines: List[str] = [
             f"  CAPITAL STATUS | runtime={runtime_m:.1f}m",
             (
-                f"  Equity={capital['equity_gbp']:.2f} GBP | Free={capital['free_gbp']:.2f} GBP | "
-                f"Used={capital['used_gbp']:.2f} GBP | Budget={capital['budget_gbp']:.2f} GBP | "
+                f"  Equity={_format_gbp_amount(capital.get('equity_gbp'))} GBP | Free={_format_gbp_amount(capital.get('free_gbp'))} GBP | "
+                f"Used={_format_gbp_amount(capital.get('used_gbp'))} GBP | Budget={_format_gbp_amount(capital.get('budget_gbp'))} GBP | "
                 f"EqDelta={eq_delta:+.2f} GBP"
             ),
             (

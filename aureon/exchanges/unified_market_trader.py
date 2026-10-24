@@ -2195,12 +2195,16 @@ class UnifiedMarketTrader:
             self._remember_boot_balance("alpaca", alive=False, error=str(exc), equity=None)
 
     def _flat_exchange_equity(self, name: str, payload_value: Any = None, *, payload_ok: bool = False) -> float | None:
-        """Equity for the flat combined fields. A down source is None, not 0."""
+        """Equity for the flat combined fields. A down source is None, not 0.
+
+        When the exchange payload is ok, its equity field is the reading.
+        Null stays null. It is not replaced by the boot probe.
+        """
 
         if payload_ok:
-            reading = _equity_reading(payload_value)
-            if reading is not None:
-                return reading
+            # An ok payload is the reading, including an explicit null.
+            # A mixed-currency null must not fall through to an older boot figure.
+            return _equity_reading(payload_value)
         row = (getattr(self, "_boot_balances", {}) or {}).get(name) or {}
         if isinstance(row, dict) and row.get("alive") and not row.get("error"):
             return _equity_reading(row.get("equity"))

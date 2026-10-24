@@ -523,7 +523,7 @@ def test_fresh_clone_smoke_prints_the_health_table(tmp_path: Path) -> None:
         assert "started=" in proc.stdout
         report = tmp_path / "health-table.txt"
         report.write_text(proc.stdout, encoding="utf-8")
-        mirror = Path("/tmp/aureon-launcher-smoke.txt")
+        mirror = tmp_path / "aureon-launcher-smoke.txt"
         mirror.write_text(proc.stdout, encoding="utf-8")
     finally:
         subprocess.run(

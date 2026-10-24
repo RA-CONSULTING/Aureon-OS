@@ -373,3 +373,68 @@ def test_namespace_probe_failure_is_not_cached(monkeypatch: pytest.MonkeyPatch, 
     assert second is not None
     assert bench._NAMESPACE_READY is True
     assert calls["n"] >= 2
+
+
+def test_namespace_command_refuses_when_unshare_is_missing(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    import shutil
+
+    from aureon.autonomous import self_coder_benchmark as bench
+
+    bench._NAMESPACE_READY = None
+    monkeypatch.delenv("AUREON_BENCH_ALLOW_UNSANDBOXED", raising=False)
+    monkeypatch.setattr(shutil, "which", lambda _name, *_args, **_kwargs: None)
+    assert bench._namespace_command(tmp_path / "runner.py") is None
+    assert bench._NAMESPACE_READY is None
+    with pytest.raises(bench.BenchmarkChildRefused):
+        bench._run_python("marker = 1\n", "assert True\n")
+    assert bench._LAST_CHILD_MODE == "refused"
+
+
+def test_namespace_probe_nonzero_is_not_a_sandbox(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    import shutil
+    import subprocess
+
+    from aureon.autonomous import self_coder_benchmark as bench
+
+    bench._NAMESPACE_READY = None
+
+    def which(name, *_args, **_kwargs):
+        return "/usr/bin/unshare" if name == "unshare" else None
+
+    def failed_probe(*_args, **_kwargs):
+        return subprocess.CompletedProcess(args=["unshare"], returncode=1)
+
+    monkeypatch.setattr(shutil, "which", which)
+    monkeypatch.setattr(subprocess, "run", failed_probe)
+    assert bench._namespace_command(tmp_path / "runner.py") is None
+    assert bench._NAMESPACE_READY is None
+
+
+def test_cached_namespace_does_not_claim_namespace_after_unshare_disappears(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import shutil
+
+    from aureon.autonomous import self_coder_benchmark as bench
+
+    bench._NAMESPACE_READY = True
+    monkeypatch.delenv("AUREON_BENCH_ALLOW_UNSANDBOXED", raising=False)
+    monkeypatch.setattr(shutil, "which", lambda _name, *_args, **_kwargs: None)
+    with pytest.raises(bench.BenchmarkChildRefused):
+        bench._run_python("marker = 1\n", "assert True\n")
+    assert bench._LAST_CHILD_MODE == "refused"
+    assert bench._LAST_CHILD_MODE != "namespace"
+    assert bench._NAMESPACE_READY is None
+
+
+def test_unsandboxed_opt_in_does_not_mount_host_dirs(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    from aureon.autonomous import self_coder_benchmark as bench
+
+    monkeypatch.setenv("AUREON_BENCH_ALLOW_UNSANDBOXED", "1")
+    monkeypatch.setattr(bench, "_namespace_command", lambda _runner: None)
+    code = (
+        "import os\n"
+        "assert os.environ.get('BENCH_CHILD_MOUNT_NS') != '1'\n"
+    )
+    assert bench._run_python(code, "assert True\n") is True
+    assert bench._LAST_CHILD_MODE == "unsandboxed-opt-in"

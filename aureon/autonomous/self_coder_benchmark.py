@@ -22,9 +22,10 @@ HARNESS_NOTE = (
     "This is not the official SWE-bench or LiveCodeBench evaluation. "
     "This is not a kernel sandbox. The child runs only inside unshare "
     "(user, pid, and net namespace) from an environment that never held "
-    "the keys. Home and the workspace are covered with a tmpfs when that "
-    "mount works. If unshare is missing or the probe fails, model code is "
-    "not run unless AUREON_BENCH_ALLOW_UNSANDBOXED=1. That opt-in is "
+    "the keys. Inside that namespace, home and the workspace are covered "
+    "with a tmpfs when that mount works. The opt-in path does not mount "
+    "over the parent. If unshare is missing or the probe fails, model code "
+    "is not run unless AUREON_BENCH_ALLOW_UNSANDBOXED=1. That opt-in is "
     "unsandboxed: a same-user child can read /proc/PID/environ and can "
     "open a raw socket. Run this only on a machine with no secrets."
 )
@@ -149,12 +150,17 @@ def _namespace_command(runner: Path) -> list[str] | None:
 
     global _NAMESPACE_READY
     if _NAMESPACE_READY is True:
-        return _unshare_argv(runner)
+        command = _unshare_argv(runner)
+        if command is None:
+            _NAMESPACE_READY = None
+        return command
     _NAMESPACE_READY = None
     unshare = shutil.which("unshare")
     if not unshare:
         return None
     command = _unshare_argv(runner)
+    if command is None:
+        return None
     try:
         probe = subprocess.run(
             command[:-1] + ["-c", "import socket; raise SystemExit(0)"],
@@ -172,10 +178,12 @@ def _namespace_command(runner: Path) -> list[str] | None:
     return command
 
 
-def _unshare_argv(runner: Path) -> list[str]:
+def _unshare_argv(runner: Path) -> list[str] | None:
     import shutil
 
-    unshare = shutil.which("unshare") or "unshare"
+    unshare = shutil.which("unshare")
+    if not unshare:
+        return None
     return [
         unshare,
         "--user",
@@ -207,10 +215,12 @@ def _run_python(code: str, tests: str, timeout: int = 20) -> bool:
     import subprocess
     import tempfile
 
-    global _LAST_CHILD_MODE
+    global _LAST_CHILD_MODE, _NAMESPACE_READY
     runner = (
         "import os, subprocess, sys\n"
         "def _hide_host_dirs():\n"
+        "    if os.environ.get('BENCH_CHILD_MOUNT_NS') != '1':\n"
+        "        return\n"
         "    if os.geteuid() != 0:\n"
         "        return\n"
         "    try:\n"
@@ -287,10 +297,13 @@ def _run_python(code: str, tests: str, timeout: int = 20) -> bool:
                 command = [sys.executable, "-I", str(script)]
             else:
                 _LAST_CHILD_MODE = "namespace"
+            child_env = _scrubbed_child_env(root)
+            if _LAST_CHILD_MODE == "namespace":
+                child_env["BENCH_CHILD_MOUNT_NS"] = "1"
             completed = subprocess.run(
                 command,
                 cwd=directory,
-                env=_scrubbed_child_env(root),
+                env=child_env,
                 capture_output=True,
                 timeout=timeout,
                 check=False,
@@ -301,6 +314,9 @@ def _run_python(code: str, tests: str, timeout: int = 20) -> bool:
     except subprocess.TimeoutExpired:
         return False
     except OSError:
+        if _LAST_CHILD_MODE == "namespace":
+            _LAST_CHILD_MODE = "refused"
+            _NAMESPACE_READY = None
         return False
 
 
