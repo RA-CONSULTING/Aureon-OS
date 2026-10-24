@@ -65,9 +65,9 @@
       }
     ],
     "published_references_are_not_this_run": true,
-    "reason": "this run's HumanEval figure is the internal path; published figures are an external reference",
-    "status": "measured",
-    "this_run_humaneval_pct": 0.0,
+    "reason": "this run has no internal HumanEval score to set beside a published figure",
+    "status": "HOLD",
+    "this_run_humaneval_pct": null,
     "this_run_livecodebench_pct": null,
     "this_run_swe_bench_pct": null
   },
@@ -75,15 +75,23 @@
   "humaneval": {
     "attempted": 0,
     "authoring_note": "InternalCodingWorkforce.decide calls an adapter prompt. That step is not reached while the self-coder lane is disabled and AUREON_SELF_CODER_ALLOW_EXTERNAL is off.",
-    "counts_as_aureon_score": true,
+    "counts_as_aureon_score": false,
     "counts_as_model_score": false,
-    "dataset": "/workspace/data/research/open_benchmarks/humaneval.jsonl",
-    "executed": true,
+    "dataset": "data/research/open_benchmarks/humaneval.jsonl",
+    "executed": false,
     "external_provider_called": false,
-    "measured_pct": 0.0,
+    "measured_pct": null,
     "not_attempted": 164,
     "passed": 0,
-    "reason": "the internal path emitted no Python program, so the sandbox was not given a candidate",
+    "per_row_auris_qgita": {
+      "ftcp_rows": 13,
+      "ftcp_rows_are": "not a coding score",
+      "kind": "synthetic",
+      "note": "The Auris features and the QGITA series on each row are a seeded random draw. They are not derived from the task and they are not a market. The FTCP count on these rows is not a coding score.",
+      "seed": "sha256 of INTERNAL_SEED, task_id, and the prompt text, then random.Random",
+      "source": "aureon.autonomous.self_coder_benchmark._prompt_draw"
+    },
+    "reason": "the internal path emitted no Python program, so no row was attempted",
     "results": [
       {
         "auris": {
@@ -5009,7 +5017,7 @@
     "rows": 164,
     "seed": 20261024,
     "self_coder_lane": "disabled; run_self_coding_task defaults to enabled=False and does not call a model",
-    "status": "measured",
+    "status": "not_attempted",
     "suite": "HumanEval",
     "system_under_test": "Auris read_auris_nodes, QGITA FTCPDetector, aureon.autonomous.aureon_self_run_coding_task.run_self_coding_task",
     "total": 164
@@ -5030,7 +5038,7 @@
     "ok": false
   },
   "model_python_task_pass_pct": {
-    "humaneval_rows": 0.0,
+    "humaneval_rows": null,
     "livecode_rows": null,
     "swe_rows": null
   },

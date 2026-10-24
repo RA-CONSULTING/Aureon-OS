@@ -15,7 +15,7 @@
   ],
   "hnc_coherence": 0.9331334813083556,
   "hnc_lambda_last": 1.409626852655939,
-  "hnc_multiverse_extension": "HOLD",
+  "hnc_multiverse_extension": "measured",
   "hnc_state": "unified",
   "live_trading": false,
   "organism_connectivity_score": 1.0,
@@ -27,12 +27,13 @@
   "organism_isolated": [],
   "organism_self_prediction_accuracy": 1.0,
   "organism_self_prediction_baseline_accuracy": 0.4827586206896552,
+  "qgita_derived_detection_rate": null,
+  "qgita_derived_evidence_tag": "cited-unverified",
+  "qgita_derived_ftcp_count": 0,
+  "qgita_derived_series": "HOLD",
   "qgita_on_hnc_detection_rate": null,
   "qgita_on_hnc_ftcp_count": 0,
-  "qgita_public_detection_rate": null,
-  "qgita_public_ftcp_count": 0,
-  "qgita_public_series": "HOLD",
   "schema": "aureon.measured-proof.v1",
-  "self_coder_comparison": "measured",
-  "self_coder_humaneval_pct": 0.0
+  "self_coder_comparison": "HOLD",
+  "self_coder_humaneval_pct": null
 }

@@ -19,8 +19,9 @@ its own healthy pulses, or an error field. The baseline flags a missing
 pulse only. The label is the injection.
 
 Figures from this module are connectivity, self-prediction accuracy, and
-fault-detection rate. They are not a claim that the system is conscious or
-alive.
+fault-detection rate. The fault trials are synthetic injections by this
+harness, not faults observed from a market or a live seat. They are not a
+claim that the system is conscious or alive.
 """
 
 from __future__ import annotations
@@ -38,6 +39,7 @@ TICKS = 8
 FAULT_TRIALS = 48
 _NOTE = (
     "These figures are connectivity, self-prediction accuracy, and fault-detection rate. "
+    "The fault trials are synthetic injections by this harness. "
     "They are not a claim that the system is conscious or alive."
 )
 _MODES = ("clean", "silent", "error")
@@ -283,6 +285,12 @@ def _fault_trials(circ: Any, bus: Any, seats: list[dict[str, str]], expected_loo
     return {
         "seed": seed,
         "trials": trials,
+        "origin": "synthetic",
+        "note": (
+            "These faults are injected by the harness. A trial withholds a pulse, "
+            "or publishes that seat's payload with loop set to fault and error set to injected. "
+            "They are not observed faults from a market or a live seat."
+        ),
         "modes": list(_MODES),
         "self_model_rule": "missing pulse, loop other than the loop observed on healthy pulses, or an error field",
         "baseline_rule": "missing pulse only",
@@ -484,7 +492,7 @@ def render_organism_markdown(report: dict[str, Any]) -> str:
             f"Baseline detection `{fault['baseline_detection_rate']}`, "
             f"baseline false-alarm `{fault['baseline_false_alarm_rate']}`."
         ),
-        f"Fault trials `{fault['trials']}`, seed `{fault['seed']}`.",
+        f"Fault trials `{fault['trials']}`, seed `{fault['seed']}`. {fault.get('note', '')}",
         "",
     ]
     return "\n".join(lines)

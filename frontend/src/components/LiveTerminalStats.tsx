@@ -273,11 +273,14 @@ export function LiveTerminalStats() {
     .sort((a, b) => safeNumber(b.pnl) - safeNumber(a.pnl))
     .slice(0, 5);
 
-  const totalEquity = safeNumber(state.totalEquity);
+  const totalEquity = state.totalEquity;
   const available = safeNumber(state.availableBalance);
   const totalPnl = safeNumber(state.totalPnl);
   const krakenEquity = safeNumber(summary?.krakenEquity);
-  const capitalEquity = safeNumber(summary?.capitalEquityGbp);
+  const capitalEquity = summary?.capitalEquityGbp;
+  const money = (value: number | null | undefined, prefix: string) => (
+    value == null || !Number.isFinite(value) ? 'unavailable' : `${prefix}${value.toFixed(2)}`
+  );
   const krakenPnl = safeNumber(summary?.krakenSessionPnl);
   const capitalPnl = safeNumber(summary?.capitalSessionPnlGbp);
   const krakenOpen = safeNumber(summary?.krakenOpenPositions, krakenPositions.length);
@@ -397,7 +400,7 @@ export function LiveTerminalStats() {
         <div className="rounded border border-border/40 bg-muted/20 p-3">
           <div className="mb-2 font-mono text-xs font-semibold text-foreground">CAPITAL</div>
           <div className="space-y-1.5">
-            <ExchangeMetric label="Equity" value={`£${capitalEquity.toFixed(2)}`} />
+            <ExchangeMetric label="Equity" value={money(capitalEquity, '£')} />
             <ExchangeMetric label="Session P&L" value={formatSigned(capitalPnl, 2, '£')} className={capitalPnl >= 0 ? 'text-success' : 'text-destructive'} />
             <ExchangeMetric label="Open Positions" value={`${capitalOpen}`} />
             <ExchangeMetric label="Shadows" value={`${safeNumber(summary?.capitalShadows, capitalShadows.length)}`} />
@@ -514,7 +517,7 @@ export function LiveTerminalStats() {
         <div className="grid gap-1.5 md:grid-cols-3">
           <ExchangeMetric
             label="Portfolio"
-            value={state.equityNote ? state.equityNote : `€${totalEquity.toFixed(2)}`}
+            value={state.equityNote ? state.equityNote : money(totalEquity, '€')}
           />
           <ExchangeMetric label="Available" value={`€${available.toFixed(2)}`} />
           <ExchangeMetric

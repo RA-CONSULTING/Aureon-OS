@@ -17,14 +17,14 @@ def evaluate_qgita_snr(root: Path | None = None) -> dict[str, Any]:
 
 
 def render_qgita_markdown(report: dict[str, Any]) -> str:
-    public = report.get("public_series") or {}
+    public = report.get("derived_series") or {}
     on_lambda = report.get("on_hnc_series") or {}
     lines = [
         "# QGITA analyzer",
         "",
         f"Source `{public.get('source')}`. Detector defaults are the ones the analyzer constructed.",
         (
-            f"Ephemeris series: FTCP count `{public.get('ftcp_count')}`, "
+            f"Derived series ({public.get('evidence_tag')}): FTCP count `{public.get('ftcp_count')}`, "
             f"lighthouse events `{public.get('lhe_count')}`. "
             f"Detection rate **{public.get('rates_verdict')}**. {public.get('rates_reason', public.get('reason', ''))} "
             f"Clock: {public.get('timestamps', '')}"

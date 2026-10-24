@@ -44,7 +44,7 @@ export interface GlobalState {
   
   // Trading state
   isActive: boolean;
-  totalEquity: number;
+  totalEquity: number | null;
   equityNote: string | null;
   availableBalance: number;
   totalTrades: number;
@@ -203,7 +203,7 @@ export interface GlobalState {
   unifiedMarketSummary?: {
     krakenEquity: number;
     krakenEquityReason?: string;
-    capitalEquityGbp: number;
+    capitalEquityGbp: number | null;
     krakenSessionPnl: number;
     capitalSessionPnlGbp: number;
     openPositions: number;

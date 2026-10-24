@@ -449,8 +449,17 @@ def _external_allowed() -> bool:
     return os.environ.get("AUREON_SELF_CODER_ALLOW_EXTERNAL", "").strip() == "1"
 
 
+def _dataset_label(root: Path, path: Path) -> str:
+    """Repo-relative path when the file sits inside the checkout."""
+
+    try:
+        return path.resolve().relative_to(root.resolve()).as_posix()
+    except ValueError:
+        return path.as_posix()
+
+
 def _prompt_draw(task_id: str, prompt: str) -> tuple[dict[str, float], list[float]]:
-    """Fixed draw from the public row. The seed is the task, not the clock."""
+    """Seeded synthetic draw. The numbers are not read from the task or a market."""
 
     digest = hashlib.sha256(f"{INTERNAL_SEED}\n{task_id}\n{prompt}".encode("utf-8")).digest()
     rng = random.Random(int.from_bytes(digest[:8], "big"))
@@ -565,18 +574,33 @@ def _score_internal_humaneval(root: Path, rows: list[dict[str, Any]]) -> dict[st
         )
     total = len(rows)
     not_attempted = total - attempted
-    if total == 0:
+    ftcp_rows = sum(1 for item in results if int((item.get("qgita") or {}).get("points") or 0) > 0)
+    per_row_inputs = {
+        "source": "aureon.autonomous.self_coder_benchmark._prompt_draw",
+        "kind": "synthetic",
+        "seed": "sha256 of INTERNAL_SEED, task_id, and the prompt text, then random.Random",
+        "note": (
+            "The Auris features and the QGITA series on each row are a seeded random draw. "
+            "They are not derived from the task and they are not a market. "
+            "The FTCP count on these rows is not a coding score."
+        ),
+        "ftcp_rows": ftcp_rows,
+        "ftcp_rows_are": "not a coding score",
+    }
+    if total == 0 or attempted == 0:
         status = "not_attempted"
         measured = None
-        reason = "no HumanEval rows were loaded"
+        counts_as_score = False
+        reason = (
+            "no HumanEval rows were loaded"
+            if total == 0
+            else "the internal path emitted no Python program, so no row was attempted"
+        )
     else:
         status = "measured"
         measured = round(100.0 * passed / total, 2)
-        reason = (
-            "the internal path emitted no Python program, so the sandbox was not given a candidate"
-            if attempted == 0
-            else ""
-        )
+        counts_as_score = True
+        reason = ""
     if pipeline_error and attempted == 0:
         reason = f"{reason}; pipeline error: {pipeline_error}"
     return {
@@ -586,17 +610,18 @@ def _score_internal_humaneval(root: Path, rows: list[dict[str, Any]]) -> dict[st
             "aureon.autonomous.aureon_self_run_coding_task.run_self_coding_task"
         ),
         "seed": INTERNAL_SEED,
-        "executed": total > 0,
+        "executed": attempted > 0,
         "passed": passed,
         "attempted": attempted,
         "not_attempted": not_attempted,
         "total": total,
         "rows": total,
         "status": status,
-        "counts_as_aureon_score": total > 0,
+        "counts_as_aureon_score": counts_as_score,
         "counts_as_model_score": False,
         "external_provider_called": False,
         "measured_pct": measured,
+        "per_row_auris_qgita": per_row_inputs,
         "self_coder_lane": "disabled; run_self_coding_task defaults to enabled=False and does not call a model",
         "authoring_note": (
             "InternalCodingWorkforce.decide calls an adapter prompt. "
@@ -707,7 +732,7 @@ def run_harness(root: Path | None = None) -> dict[str, Any]:
         humaneval["counts_as_aureon_score"] = False
     else:
         humaneval = _score_internal_humaneval(root, _load_jsonl(humaneval_file))
-        humaneval["dataset"] = str(humaneval_file)
+        humaneval["dataset"] = _dataset_label(root, humaneval_file)
     aureon_pct = humaneval.get("measured_pct") if humaneval.get("counts_as_aureon_score") else None
     external: dict[str, Any] = {
         "enabled": allowed,

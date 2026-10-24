@@ -168,20 +168,20 @@
     "self_model_messages": 8,
     "ticks": 8,
     "timing": {
-      "elapsed_s": 0.11995219301024918,
+      "elapsed_s": 0.13470332100405358,
       "latency_s": {
         "count": 1456,
-        "max": 0.0021674633026123047,
-        "mean": 0.0007829240390232631,
-        "min": 0.0001304149627685547
+        "max": 0.002314329147338867,
+        "mean": 0.0009258325610842023,
+        "min": 0.00017118453979492188
       },
-      "messages_per_second": 933.7053136696742
+      "messages_per_second": 831.4568576719028
     },
     "verdict": "pass"
   },
   "external_llm": false,
   "live_trading": false,
-  "note": "These figures are connectivity, self-prediction accuracy, and fault-detection rate. They are not a claim that the system is conscious or alive.",
+  "note": "These figures are connectivity, self-prediction accuracy, and fault-detection rate. The fault trials are synthetic injections by this harness. They are not a claim that the system is conscious or alive.",
   "ollama": false,
   "orders_placed": false,
   "schema": "aureon.organism-proof.v1",
@@ -296,6 +296,8 @@
         "silent",
         "error"
       ],
+      "note": "These faults are injected by the harness. A trial withholds a pulse, or publishes that seat's payload with loop set to fault and error set to injected. They are not observed faults from a market or a live seat.",
+      "origin": "synthetic",
       "seed": 20261024,
       "self_model": {
         "detection_rate": 1.0,

@@ -13,12 +13,12 @@ interface ExchangeInfo {
   color: string;
   position: [number, number, number];
   connected: boolean;
-  equity: number;
+  equity: number | null;
 }
 
 interface ExchangeGatewaysProps {
-  krakenEquity: number;
-  capitalEquity: number;
+  krakenEquity: number | null;
+  capitalEquity: number | null;
   binanceConnected: boolean;
   krakenConnected: boolean;
   capitalConnected: boolean;
@@ -121,11 +121,11 @@ function Gateway({ exchange }: { exchange: ExchangeInfo }) {
           <div style={{ fontWeight: 600, letterSpacing: '1px' }}>
             {exchange.name.toUpperCase()}
           </div>
-          {exchange.equity > 0 && (
-            <div style={{ fontSize: '10px', opacity: 0.7, marginTop: '2px' }}>
-              ${exchange.equity.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </div>
-          )}
+          <div style={{ fontSize: '10px', opacity: 0.7, marginTop: '2px' }}>
+            {exchange.equity == null
+              ? 'unavailable'
+              : `$${exchange.equity.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          </div>
           <div style={{
             fontSize: '8px',
             marginTop: '2px',
@@ -140,8 +140,8 @@ function Gateway({ exchange }: { exchange: ExchangeInfo }) {
 }
 
 export function ExchangeGateways({
-  krakenEquity = 0,
-  capitalEquity = 0,
+  krakenEquity = null,
+  capitalEquity = null,
   binanceConnected = false,
   krakenConnected = true,
   capitalConnected = true,

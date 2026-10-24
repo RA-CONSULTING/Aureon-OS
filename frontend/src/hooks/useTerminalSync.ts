@@ -148,6 +148,15 @@ const toNumber = (value: unknown, fallback = 0): number => {
   return Number.isFinite(num) ? num : fallback;
 };
 
+const firstFinite = (...values: unknown[]): number | null => {
+  for (const value of values) {
+    if (value === null || value === undefined || value === '') continue;
+    const num = Number(value);
+    if (Number.isFinite(num)) return num;
+  }
+  return null;
+};
+
 const toStringList = (value: unknown): string[] =>
   Array.isArray(value) ? value.map((item) => String(item ?? '')).filter(Boolean) : [];
 
@@ -451,10 +460,16 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
         const krakenReason = String(
           kraken.equity_reason || kraken.error || combined.kraken_equity_reason || ''
         );
-        const krakenEquity = toNumber(kraken.portfolio_value || kraken.equity || combined.kraken_equity || 0);
-        const capitalEquity = toNumber(capital.equity_gbp || combined.capital_equity_gbp || 0);
-        const equityNote = krakenReason && krakenEquity <= 0 ? krakenReason : '';
-        const totalEquity = equityNote ? 0 : (krakenEquity > 0 ? krakenEquity : capitalEquity);
+        const krakenEquity = firstFinite(kraken.portfolio_value, kraken.equity, combined.kraken_equity);
+        const capitalEquity = firstFinite(capital.equity_gbp, combined.capital_equity_gbp);
+        const equityNote = krakenReason && (krakenEquity == null || krakenEquity <= 0) ? krakenReason : '';
+        const totalEquity: number | null = equityNote
+          ? null
+          : krakenEquity != null && krakenEquity > 0
+            ? krakenEquity
+            : capitalEquity != null
+              ? capitalEquity
+              : krakenEquity;
         const krakenFree = toNumber(kraken.pool_available || kraken.free_margin || 0);
         const capitalFree = toNumber(capital.free_gbp || 0);
         const availableBalance = krakenFree > 0 ? krakenFree : capitalFree;
@@ -484,7 +499,7 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
           winningTrades,
           totalPnl,
           cyclePnl: totalPnl,
-          cyclePnlPercent: totalEquity > 0 ? (totalPnl / totalEquity) * 100 : 0,
+          cyclePnlPercent: (totalEquity ?? 0) > 0 ? (totalPnl / (totalEquity ?? 0)) * 100 : 0,
           avgHoldTimeMinutes: toNumber(kraken.avg_hold_time || 0),
           activePositions,
           shadowTrades,
@@ -532,7 +547,7 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
           unifiedMarketSummary: {
             krakenEquity: equityNote ? 0 : toNumber(combined.kraken_equity || krakenEquity || 0),
             krakenEquityReason: equityNote,
-            capitalEquityGbp: toNumber(combined.capital_equity_gbp || capitalEquity || 0),
+            capitalEquityGbp: firstFinite(combined.capital_equity_gbp, capitalEquity),
             krakenSessionPnl: toNumber(combined.kraken_session_pnl || krakenPnl || 0),
             capitalSessionPnlGbp: toNumber(combined.capital_session_pnl_gbp || capitalPnl || 0),
             openPositions: toNumber(combined.open_positions || activePositions.length),

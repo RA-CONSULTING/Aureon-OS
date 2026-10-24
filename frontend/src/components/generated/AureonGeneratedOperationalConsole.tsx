@@ -268,7 +268,7 @@ export function AureonGeneratedOperationalConsole() {
     ready: exchangeReady(runtime, name),
     error: exchangeError(runtime, name),
     governor: runtime?.api_governor?.exchanges?.[name] || {},
-    equity: runtime?.[name]?.equity || runtime?.combined?.[`${name}_equity`] || runtime?.combined?.[`${name}_equity_gbp`] || runtime?.exchanges?.[name]?.equity,
+    equity: runtime?.[name]?.equity ?? runtime?.combined?.[`${name}_equity`] ?? runtime?.combined?.[`${name}_equity_gbp`] ?? runtime?.exchanges?.[name]?.equity ?? null,
   })), [runtime]);
 
   return (
@@ -382,7 +382,7 @@ export function AureonGeneratedOperationalConsole() {
                           <Pill label={row.ready ? "ready" : "attention"} kind={row.ready ? "good" : "warn"} />
                         </div>
                         <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-                          <Datum label="equity" value={row.equity !== undefined ? compact(row.equity) : "unknown"} />
+                          <Datum label="equity" value={row.equity == null || row.equity === '' ? 'unavailable' : compact(row.equity)} />
                           <Datum label="api use" value={row.governor?.utilization !== undefined ? percent(row.governor.utilization) : "unknown"} />
                         </div>
                         {row.error ? <div className="mt-2 text-xs text-destructive">{row.error}</div> : null}

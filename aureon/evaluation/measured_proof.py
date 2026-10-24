@@ -89,15 +89,18 @@ def render_self_coder_markdown(report: dict[str, Any]) -> str:
         "An outside model is off unless `AUREON_SELF_CODER_ALLOW_EXTERNAL=1`, and that opt-in is not Aureon's brain.",
         f"Outside provider called: `{report.get('external_provider', {}).get('called')}`.",
         f"Flagship comparison: **{comparison.get('status', 'HOLD')}**. {comparison.get('reason', '')}",
-        f"This run HumanEval: `{comparison.get('this_run_humaneval_pct')}`.",
+        f"This run HumanEval score: `{comparison.get('this_run_humaneval_pct')}`.",
         (
-            f"HumanEval passed `{humaneval.get('passed')}` of `{humaneval.get('rows')}`; "
+            f"HumanEval status `{humaneval.get('status')}`; "
+            f"passed `{humaneval.get('passed')}` of `{humaneval.get('rows')}`; "
             f"attempted `{humaneval.get('attempted')}`; not attempted `{humaneval.get('not_attempted')}`. "
             f"{humaneval.get('reason', '')}"
         ),
+        str((humaneval.get("per_row_auris_qgita") or {}).get("note") or ""),
         f"This run SWE-bench: `{comparison.get('this_run_swe_bench_pct')}`.",
         f"This run LiveCodeBench: `{comparison.get('this_run_livecodebench_pct')}`.",
-        "Published Kimi figures in `published_reference` are not this run.",
+        "Published Kimi figures in `published_reference` are not this run. "
+        "An unattempted HumanEval has no percent beside them.",
         f"HumanEval rows on disk: `{humaneval.get('rows')}`. Status `{humaneval.get('status')}`.",
         (
             "Dataset-solution smoke "
@@ -145,11 +148,12 @@ def write_bundle(root: Path, out: Path) -> dict[str, Any]:
         "hnc_lambda_last": brain["hnc"]["lambda_last"],
         "hnc_multiverse_extension": brain["hnc"]["multiverse_extension"]["verdict"],
         "hnc_state": brain["hnc"]["state"],
+        "qgita_derived_evidence_tag": qgita["derived_series"].get("evidence_tag"),
+        "qgita_derived_detection_rate": qgita["derived_series"]["detection_rate"],
+        "qgita_derived_ftcp_count": qgita["derived_series"].get("ftcp_count"),
+        "qgita_derived_series": qgita["derived_series"]["rates_verdict"],
         "qgita_on_hnc_detection_rate": qgita["on_hnc_series"]["detection_rate"],
         "qgita_on_hnc_ftcp_count": qgita["on_hnc_series"]["ftcp_count"],
-        "qgita_public_detection_rate": qgita["public_series"]["detection_rate"],
-        "qgita_public_ftcp_count": qgita["public_series"].get("ftcp_count"),
-        "qgita_public_series": qgita["public_series"]["rates_verdict"],
         "self_coder_comparison": coder["flagship_comparison"]["status"],
         "self_coder_humaneval_pct": coder["flagship_comparison"]["this_run_humaneval_pct"],
         "dataset_solution_smoke": coder["dataset_solution_smoke"]["verdict"],
