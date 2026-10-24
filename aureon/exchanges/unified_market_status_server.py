@@ -207,13 +207,20 @@ def _probe_exchange_balances() -> dict[str, Any]:
                 getattr(observation, "reason", "") or getattr(client, "init_error", "") or ""
             )
             equity = None
-            if not reason and isinstance(raw, dict):
-                try:
-                    equity = float(sum(float(value) for value in raw.values())) if raw else 0.0
-                except (TypeError, ValueError):
-                    equity = None
-                    reason = reason or "capital balance was not a number"
-            probes["capital"] = {"alive": equity is not None and not reason, "error": reason, "equity": None if reason else equity}
+            currency = None
+            if not reason:
+                from aureon.exchanges.single_currency_equity import gbp_equity_from_balances
+
+                equity, currency_reason = gbp_equity_from_balances(raw)
+                reason = currency_reason
+                if equity is not None and not reason:
+                    currency = "GBP"
+            probes["capital"] = {
+                "alive": equity is not None and not reason,
+                "error": reason,
+                "equity": None if reason else equity,
+                "currency": currency,
+            }
         except Exception as exc:
             probes["capital"] = {"alive": False, "error": str(exc), "equity": None}
     if present["alpaca"]:

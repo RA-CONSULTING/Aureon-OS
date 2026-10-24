@@ -25,13 +25,14 @@ We will acknowledge your report within 48 hours and provide an estimated timelin
 ## Model-written benchmark code
 
 `aureon.autonomous.self_coder_benchmark` runs model-written Python. That
-child is not a kernel sandbox. On Linux it is started with `unshare` in a
-new user, pid, and net namespace, from an environment that never held the
-keys, when that command works. The host filesystem is still visible to the
-same user. Without `unshare`, the child only gets a scrubbed environment
-and a Python socket stub. That stub can be bypassed, and a same-user child
-can read `/proc/<pid>/environ`. Run this harness only on a machine with no
-secrets.
+child is not a kernel sandbox. It starts only inside `unshare` (a new user,
+pid, and net namespace) from an environment that never held the keys. Home
+and the workspace are covered with a tmpfs when that mount works. If
+`unshare` is missing or the probe fails, the harness does not run the
+model code unless `AUREON_BENCH_ALLOW_UNSANDBOXED=1`. That opt-in is
+unsandboxed: a same-user child can read `/proc/PID/environ` and can open a
+raw socket. A failed probe is not cached. Run this harness only on a
+machine with no secrets.
 
 ## Trading Risks
 

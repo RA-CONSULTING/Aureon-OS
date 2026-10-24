@@ -20,16 +20,21 @@ from aureon.autonomous.aureon_internal_self_coder import openai_compatible_model
 HARNESS_NOTE = (
     "model-written Python is executed against each row's tests field. "
     "This is not the official SWE-bench or LiveCodeBench evaluation. "
-    "This is not a kernel sandbox. On Linux the child is started with "
-    "unshare in a new user, pid, and net namespace, from an environment "
-    "that never held the keys, when that command works. The host filesystem "
-    "stays visible to the same user. Without unshare, the child only gets a "
-    "scrubbed environment and a Python socket stub, which model code can "
-    "bypass, and a same-user child can read /proc/<pid>/environ. Run this "
-    "only on a machine with no secrets."
+    "This is not a kernel sandbox. The child runs only inside unshare "
+    "(user, pid, and net namespace) from an environment that never held "
+    "the keys. Home and the workspace are covered with a tmpfs when that "
+    "mount works. If unshare is missing or the probe fails, model code is "
+    "not run unless AUREON_BENCH_ALLOW_UNSANDBOXED=1. That opt-in is "
+    "unsandboxed: a same-user child can read /proc/PID/environ and can "
+    "open a raw socket. Run this only on a machine with no secrets."
 )
 
 _NAMESPACE_READY: bool | None = None
+_LAST_CHILD_MODE: str | None = None
+
+
+class BenchmarkChildRefused(RuntimeError):
+    """Model code was not started. The sandbox was unavailable and unsandboxed mode was not opted in."""
 
 PUBLISHED_KIMI_K2_5 = {
     "model": "Kimi K2.5",
@@ -127,39 +132,29 @@ def _scrubbed_child_env(home: Path) -> dict[str, str]:
     }
 
 
+def _unsandboxed_allowed() -> bool:
+    return os.environ.get("AUREON_BENCH_ALLOW_UNSANDBOXED", "").strip() == "1"
+
+
 def _namespace_command(runner: Path) -> list[str] | None:
     """Launch command whose own environment never held the parent keys.
 
-    ``unshare`` is pid 1 inside a new user, pid, and net namespace, so the
-    model process cannot read the parent ``/proc/<ppid>/environ`` and new
-    sockets have no network. The host files are still mounted.
+    A successful probe is remembered. A missing ``unshare``, a failed probe,
+    or a timeout is not remembered, so the next call tries again. ``unshare``
+    is pid 1 inside a new user, pid, and net namespace.
     """
 
     import shutil
     import subprocess
 
     global _NAMESPACE_READY
-    if _NAMESPACE_READY is False:
-        return None
+    if _NAMESPACE_READY is True:
+        return _unshare_argv(runner)
+    _NAMESPACE_READY = None
     unshare = shutil.which("unshare")
     if not unshare:
-        _NAMESPACE_READY = False
         return None
-    command = [
-        unshare,
-        "--user",
-        "--map-root-user",
-        "--net",
-        "--pid",
-        "--mount",
-        "--fork",
-        "--mount-proc",
-        sys.executable,
-        "-I",
-        str(runner),
-    ]
-    if _NAMESPACE_READY is True:
-        return command
+    command = _unshare_argv(runner)
     try:
         probe = subprocess.run(
             command[:-1] + ["-c", "import socket; raise SystemExit(0)"],
@@ -170,28 +165,65 @@ def _namespace_command(runner: Path) -> list[str] | None:
             check=False,
         )
     except (OSError, subprocess.TimeoutExpired):
-        _NAMESPACE_READY = False
         return None
-    _NAMESPACE_READY = probe.returncode == 0
-    return command if _NAMESPACE_READY else None
+    if probe.returncode != 0:
+        return None
+    _NAMESPACE_READY = True
+    return command
+
+
+def _unshare_argv(runner: Path) -> list[str]:
+    import shutil
+
+    unshare = shutil.which("unshare") or "unshare"
+    return [
+        unshare,
+        "--user",
+        "--map-root-user",
+        "--mount",
+        "--propagation",
+        "private",
+        "--net",
+        "--pid",
+        "--fork",
+        "--mount-proc",
+        sys.executable,
+        "-I",
+        str(runner),
+    ]
 
 
 def _run_python(code: str, tests: str, timeout: int = 20) -> bool:
-    """Run model Python from a process whose environment never held the keys.
+    """Run model Python only from a sandboxed spawn, unless the operator opts in.
 
     The spawn uses a fresh environment, not a filtered copy of the parent.
-    On Linux that process is ``unshare`` in a new user, pid, and net
-    namespace when the command works, so ``/proc/<ppid>/environ`` is not the
-    key-holding parent and a restored socket still has no network. Without
-    ``unshare``, stdlib sockets are only stubbed in Python. That stub can be
-    bypassed, and a same-user child can read another process's environ.
-    This is not a kernel sandbox. Run it only on a machine with no secrets.
+    Without a working ``unshare`` probe the child is not started, so a
+    same-user read of ``/proc/PID/environ`` and a raw socket connect do not
+    happen. ``AUREON_BENCH_ALLOW_UNSANDBOXED=1`` is the explicit opt-in for
+    that unsandboxed path. This is not a kernel sandbox. Run it only on a
+    machine with no secrets.
     """
 
     import subprocess
     import tempfile
 
+    global _LAST_CHILD_MODE
     runner = (
+        "import os, subprocess\n"
+        "def _hide_host_dirs():\n"
+        "    if os.geteuid() != 0:\n"
+        "        return\n"
+        "    try:\n"
+        "        subprocess.check_call(['mount', '--make-rprivate', '/'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)\n"
+        "    except Exception:\n"
+        "        return\n"
+        "    for path in ('/home', '/root', '/workspace'):\n"
+        "        if os.path.isdir(path):\n"
+        "            try:\n"
+        "                subprocess.check_call(['mount', '-t', 'tmpfs', '-o', 'nosuid,nodev,noexec', 'tmpfs', path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)\n"
+        "            except Exception:\n"
+        "                continue\n"
+        "_hide_host_dirs()\n"
         "import socket\n"
         "def _blocked(*_args, **_kwargs):\n"
         "    raise OSError('network is disabled for the benchmark child')\n"
@@ -206,7 +238,18 @@ def _run_python(code: str, tests: str, timeout: int = 20) -> bool:
             (root / "solution.py").write_text(code + "\n\n" + tests + "\n", encoding="utf-8")
             script = root / "runner.py"
             script.write_text(runner, encoding="utf-8")
-            command = _namespace_command(script) or [sys.executable, "-I", str(script)]
+            command = _namespace_command(script)
+            if command is None:
+                if not _unsandboxed_allowed():
+                    _LAST_CHILD_MODE = "refused"
+                    raise BenchmarkChildRefused(
+                        "model code was not run: sandbox is unavailable and "
+                        "AUREON_BENCH_ALLOW_UNSANDBOXED=1 is not set"
+                    )
+                _LAST_CHILD_MODE = "unsandboxed-opt-in"
+                command = [sys.executable, "-I", str(script)]
+            else:
+                _LAST_CHILD_MODE = "namespace"
             completed = subprocess.run(
                 command,
                 cwd=directory,
@@ -216,6 +259,8 @@ def _run_python(code: str, tests: str, timeout: int = 20) -> bool:
                 check=False,
             )
             return completed.returncode == 0
+    except BenchmarkChildRefused:
+        raise
     except subprocess.TimeoutExpired:
         return False
     except OSError:
@@ -240,7 +285,17 @@ def _score_livecode(rows: list[dict[str, Any]], endpoint: dict[str, Any]) -> dic
                 "total": len(rows),
                 "reason": reply["error"],
             }
-        if _run_python(reply["text"], tests):
+        try:
+            ok = _run_python(reply["text"], tests)
+        except BenchmarkChildRefused as exc:
+            return {
+                "suite": "LiveCodeBench",
+                "executed": False,
+                "passed": passed,
+                "total": len(rows),
+                "reason": str(exc),
+            }
+        if ok:
             passed += 1
         else:
             failures.append(str(row.get("question_id") or "failed"))
@@ -273,7 +328,17 @@ def _score_swe(rows: list[dict[str, Any]], endpoint: dict[str, Any]) -> dict[str
                 "total": len(rows),
                 "reason": reply["error"],
             }
-        if _run_python(reply["text"], tests):
+        try:
+            ok = _run_python(reply["text"], tests)
+        except BenchmarkChildRefused as exc:
+            return {
+                "suite": "SWE-bench Lite or Verified",
+                "executed": False,
+                "passed": passed,
+                "total": len(rows),
+                "reason": str(exc),
+            }
+        if ok:
             passed += 1
         else:
             failures.append(str(row.get("instance_id") or "failed"))
@@ -342,13 +407,11 @@ def run_harness(root: Path | None = None) -> dict[str, Any]:
         "livecodebench": live,
         "published_reference": PUBLISHED_KIMI_K2_5,
         "harness": HARNESS_NOTE,
-        "child_isolation": (
-            "unshare user, pid, and net namespace; spawn environment never held keys"
-            if _NAMESPACE_READY
-            else "scrubbed environment only; not a kernel sandbox"
-            if _NAMESPACE_READY is False
-            else "child was not launched"
-        ),
+        "child_isolation": {
+            "namespace": "unshare user, pid, and net namespace; home and workspace on tmpfs when the mount works",
+            "unsandboxed-opt-in": "AUREON_BENCH_ALLOW_UNSANDBOXED=1; not a kernel sandbox",
+            "refused": "refused; sandbox unavailable and AUREON_BENCH_ALLOW_UNSANDBOXED is not 1",
+        }.get(_LAST_CHILD_MODE or "", "child was not launched"),
         "model_python_task_pass_pct": {
             "swe_rows": swe_pct,
             "livecode_rows": live_pct,

@@ -297,6 +297,7 @@ def test_benchmark_namespace_hides_parent_environ(monkeypatch: pytest.MonkeyPatc
         "    except OSError:\n"
         "        continue\n"
         "    assert secret not in data\n"
+        "assert not os.path.exists('/workspace/docs/SECURITY.md')\n"
         "importlib.reload(socket)\n"
         "sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\n"
         "sock.settimeout(0.3)\n"
@@ -308,3 +309,56 @@ def test_benchmark_namespace_hides_parent_environ(monkeypatch: pytest.MonkeyPatc
         "    raise SystemExit('network opened')\n"
     )
     assert bench._run_python(code, "") is True
+
+
+def test_benchmark_refuses_unsandboxed_without_opt_in(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    from aureon.autonomous import self_coder_benchmark as bench
+
+    monkeypatch.delenv("AUREON_BENCH_ALLOW_UNSANDBOXED", raising=False)
+    monkeypatch.setattr(bench, "_namespace_command", lambda _runner: None)
+    marker = tmp_path / "ran"
+    code = f"open({str(marker)!r}, 'w').write('ran')\n"
+    with pytest.raises(bench.BenchmarkChildRefused):
+        bench._run_python(code, "")
+    assert not marker.exists()
+    assert bench._LAST_CHILD_MODE == "refused"
+
+
+def test_benchmark_unsandboxed_opt_in_runs(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    from aureon.autonomous import self_coder_benchmark as bench
+
+    monkeypatch.setenv("AUREON_BENCH_ALLOW_UNSANDBOXED", "1")
+    monkeypatch.setattr(bench, "_namespace_command", lambda _runner: None)
+    marker = tmp_path / "ran"
+    code = f"open({str(marker)!r}, 'w').write('ran')\n"
+    assert bench._run_python(code, "assert True\n") is True
+    assert marker.read_text(encoding="utf-8") == "ran"
+    assert bench._LAST_CHILD_MODE == "unsandboxed-opt-in"
+
+
+def test_namespace_probe_failure_is_not_cached(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    import shutil
+    import subprocess
+
+    from aureon.autonomous import self_coder_benchmark as bench
+
+    if shutil.which("unshare") is None:
+        pytest.skip("unshare is not available")
+    bench._NAMESPACE_READY = False
+    calls = {"n": 0}
+    real_run = subprocess.run
+
+    def flaky_run(*args, **kwargs):
+        calls["n"] += 1
+        if calls["n"] == 1:
+            raise subprocess.TimeoutExpired(cmd="unshare", timeout=15)
+        return real_run(*args, **kwargs)
+
+    monkeypatch.setattr(subprocess, "run", flaky_run)
+    first = bench._namespace_command(tmp_path / "runner.py")
+    assert first is None
+    assert bench._NAMESPACE_READY is None
+    second = bench._namespace_command(tmp_path / "runner.py")
+    assert second is not None
+    assert bench._NAMESPACE_READY is True
+    assert calls["n"] >= 2

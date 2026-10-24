@@ -2156,12 +2156,11 @@ class UnifiedMarketTrader:
             raw = getattr(observation, "balances", None) or {}
             reason = "" if getattr(observation, "truth_status", "") in {"real_derived", "real_observed"} else str(getattr(observation, "reason", "") or "")
             equity = None
-            if not reason and isinstance(raw, dict):
-                try:
-                    equity = float(sum(float(value) for value in raw.values())) if raw else 0.0
-                except (TypeError, ValueError):
-                    equity = None
-                    reason = reason or "capital balance was not a number"
+            if not reason:
+                from aureon.exchanges.single_currency_equity import gbp_equity_from_balances
+
+                equity, currency_reason = gbp_equity_from_balances(raw)
+                reason = currency_reason
             self.capital_ready = self.capital_ready or (equity is not None and not reason)
             if reason and not self.capital_error:
                 self.capital_error = reason

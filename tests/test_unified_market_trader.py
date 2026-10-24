@@ -2068,6 +2068,41 @@ class UnifiedMarketTraderTests(unittest.TestCase):
             77.7,
         )
 
+    def test_capital_boot_equity_is_single_currency_gbp(self):
+        trader = self._make_trader()
+
+        class _Observation:
+            def __init__(self, balances):
+                self.balances = balances
+                self.truth_status = "real_derived"
+                self.reason = ""
+
+        class _Client:
+            def __init__(self, balances):
+                self._balances = balances
+
+            def get_account_balance(self):
+                return _Observation(self._balances)
+
+        trader.capital = trader_mod.SimpleNamespace(client=_Client({"GBP": 4.0, "EUR": 1.0}))
+        trader._probe_capital_balance()
+        self.assertIsNone(trader._boot_balances["capital"]["equity"])
+        self.assertIn("more than one currency", trader._boot_balances["capital"]["error"])
+        self.assertIsNone(trader._flat_exchange_equity("capital"))
+
+        trader.capital_error = ""
+        trader.capital = trader_mod.SimpleNamespace(client=_Client({"gbp": 8.0}))
+        trader._probe_capital_balance()
+        self.assertEqual(trader._boot_balances["capital"]["equity"], 8.0)
+        self.assertEqual(trader._flat_exchange_equity("capital"), 8.0)
+
+        trader.capital_error = ""
+        trader.capital = trader_mod.SimpleNamespace(client=_Client({"USD": 3.0}))
+        trader._probe_capital_balance()
+        self.assertIsNone(trader._boot_balances["capital"]["equity"])
+        self.assertIn("not GBP", trader.capital_error)
+        self.assertIsNone(trader._flat_exchange_equity("capital"))
+
     def test_kraken_tick_timeout_does_not_block_unified_runtime(self):
         trader = self._make_trader()
         old_timeout = trader_mod.KRAKEN_TICK_TIMEOUT_SEC

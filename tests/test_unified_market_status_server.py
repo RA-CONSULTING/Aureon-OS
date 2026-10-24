@@ -89,6 +89,58 @@ class UnifiedMarketStatusServerFlightTestTests(unittest.TestCase):
         payload = {"status": "pending", "surface": "market", "reason": "test"}
         status_server.MARKET_INTENT_PATH.write_text(json.dumps(payload), encoding="utf-8")
 
+    def test_capital_equity_gbp_is_null_for_mixed_or_non_gbp_balances(self):
+        import aureon.exchanges.capital_client as capital_client
+
+        os.environ["CAPITAL_API_KEY"] = "desk-key"
+        os.environ["CAPITAL_IDENTIFIER"] = "desk-id"
+        os.environ["CAPITAL_PASSWORD"] = "desk-password"
+        status_server._PROBE_CACHE["payload"] = None
+        status_server._PROBE_CACHE["at"] = 0.0
+
+        class _Observation:
+            def __init__(self, balances):
+                self.balances = balances
+                self.truth_status = "real_derived"
+                self.reason = ""
+
+        class _Client:
+            balances = {"GBP": 10.0, "USD": 5.0}
+            init_error = ""
+
+            def get_account_balance(self):
+                return _Observation(type(self).balances)
+
+        original = capital_client.CapitalClient
+        capital_client.CapitalClient = _Client
+        try:
+            mixed = status_server._probe_exchange_balances()
+            self.assertIsNone(mixed["capital"]["equity"])
+            self.assertIsNone(mixed["capital"]["currency"])
+            self.assertIn("more than one currency", mixed["capital"]["error"])
+            mixed_payload = status_server._apply_exchange_probes({"combined": {}, "exchanges": {}})
+            self.assertIsNone(mixed_payload["combined"]["capital_equity_gbp"])
+
+            status_server._PROBE_CACHE["payload"] = None
+            status_server._PROBE_CACHE["at"] = 0.0
+            _Client.balances = {"USD": 9.0}
+            foreign = status_server._probe_exchange_balances()
+            self.assertIsNone(foreign["capital"]["equity"])
+            self.assertIn("USD", foreign["capital"]["error"])
+
+            status_server._PROBE_CACHE["payload"] = None
+            status_server._PROBE_CACHE["at"] = 0.0
+            _Client.balances = {"GBP": 12.5}
+            sterling = status_server._probe_exchange_balances()
+            self.assertEqual(sterling["capital"]["equity"], 12.5)
+            self.assertEqual(sterling["capital"]["currency"], "GBP")
+            sterling_payload = status_server._apply_exchange_probes({"combined": {}, "exchanges": {}})
+            self.assertEqual(sterling_payload["combined"]["capital_equity_gbp"], 12.5)
+        finally:
+            capital_client.CapitalClient = original
+            status_server._PROBE_CACHE["payload"] = None
+            status_server._PROBE_CACHE["at"] = 0.0
+
     def test_flight_test_does_not_call_exchanges(self):
         called = {"n": 0}
 
