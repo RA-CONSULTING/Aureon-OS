@@ -381,7 +381,7 @@ class OrcaCommandCenter:
         return ws
     
     async def _handle_api_observations(self, request):
-        """Passive projection: never fetch providers, renew clocks or invoke controls."""
+        """Authenticated account-balance read. Does not place an order."""
         return web.json_response(build_orca_reader_observations(
             self.alpaca, self.kraken, SYSTEMS_STATUS),
             headers={'Cache-Control': 'no-store'})

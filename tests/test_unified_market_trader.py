@@ -2049,7 +2049,20 @@ class UnifiedMarketTraderTests(unittest.TestCase):
         trader = self._make_trader()
 
         self.assertEqual(trader._kraken_equity_from_payload({"portfolio_value_usd": 123.45}), 123.45)
-        self.assertEqual(trader._kraken_equity_from_payload({"portfolio_value": 123.45}), 0.0)
+        self.assertIsNone(trader._kraken_equity_from_payload({"portfolio_value": 123.45}))
+        self.assertIsNone(
+            trader._kraken_equity_from_payload({"balances": {"XXBT": 0.5, "ZUSD": 10.0}})
+        )
+        trader._boot_balances = {
+            "capital": {"alive": False, "error": "down", "equity": 0.0},
+            "alpaca": {"alive": True, "error": "", "equity": 12.5},
+        }
+        self.assertIsNone(trader._flat_exchange_equity("capital"))
+        self.assertEqual(trader._flat_exchange_equity("alpaca"), 12.5)
+        self.assertEqual(
+            trader._flat_exchange_equity("capital", 40.0, payload_ok=True),
+            40.0,
+        )
         self.assertEqual(
             trader._kraken_equity_from_payload({"balance_snapshot": {"total_usd_estimate": 77.7}}),
             77.7,

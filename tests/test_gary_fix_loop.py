@@ -186,8 +186,12 @@ def test_fresh_box_preflight_and_offline_benchmark(tmp_path: Path, monkeypatch: 
     assert report["model_call"]["ok"] is False
     assert report["swe_bench"]["executed"] is False
     assert report["livecodebench"]["executed"] is False
-    assert report["measured_swe_bench_verified_pct"] is None
-    assert report["measured_livecodebench_v6_pct"] is None
+    assert report["harness"].startswith("model-written Python")
+    assert "not the official SWE-bench" in report["harness"]
+    assert "measured_swe_bench_verified_pct" not in report
+    assert "measured_livecodebench_v6_pct" not in report
+    assert report["model_python_task_pass_pct"]["swe_rows"] is None
+    assert report["model_python_task_pass_pct"]["livecode_rows"] is None
     assert report["published_reference"]["swe_bench_verified_pct"] == 76.8
     assert report["published_reference"]["livecodebench_v6_pct"] == 85.0
     assert report["published_reference"]["source"].startswith("published score")
@@ -239,7 +243,31 @@ def test_benchmark_scores_a_configured_model_and_dataset(tmp_path: Path, monkeyp
         server.shutdown()
     assert report["model_call"]["ok"] is True
     assert report["offline_fixture"]["counts_as_result"] is False
-    assert report["measured_livecodebench_v6_pct"] == 100.0
-    assert report["measured_swe_bench_verified_pct"] == 100.0
+    assert "not the official SWE-bench" in report["harness"]
+    assert report["model_python_task_pass_pct"]["livecode_rows"] == 100.0
+    assert report["model_python_task_pass_pct"]["swe_rows"] == 100.0
     assert report["livecodebench"]["executed"] is True
     assert report["swe_bench"]["executed"] is True
+
+
+def test_benchmark_child_cannot_see_parent_exchange_key(monkeypatch: pytest.MonkeyPatch) -> None:
+    from aureon.autonomous.self_coder_benchmark import _run_python
+
+    monkeypatch.setenv("KRAKEN_API_SECRET", "super-secret-kraken")
+    monkeypatch.setenv("AUREON_LIVE_TRADING", "1")
+    monkeypatch.setenv("BINANCE_API_KEY", "binance-secret")
+    code = "import os, socket\n"
+    tests = (
+        "assert 'KRAKEN_API_SECRET' not in os.environ\n"
+        "assert 'BINANCE_API_KEY' not in os.environ\n"
+        "assert 'AUREON_LIVE_TRADING' not in os.environ\n"
+        "assert not any(name.startswith('AUREON_') for name in os.environ)\n"
+        "assert 'super-secret-kraken' not in os.environ.values()\n"
+        "try:\n"
+        "    socket.create_connection(('127.0.0.1', 9), timeout=0.2)\n"
+        "except OSError:\n"
+        "    pass\n"
+        "else:\n"
+        "    raise SystemExit('network opened')\n"
+    )
+    assert _run_python(code, tests) is True

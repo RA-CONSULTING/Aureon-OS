@@ -203,11 +203,17 @@ def _probe_exchange_balances() -> dict[str, Any]:
             client = CapitalClient()
             observation = client.get_account_balance()
             raw = getattr(observation, "balances", None) or {}
-            equity = float(sum(float(value) for value in raw.values())) if isinstance(raw, dict) else None
             reason = "" if getattr(observation, "truth_status", "") in {"real_derived", "real_observed"} else str(
                 getattr(observation, "reason", "") or getattr(client, "init_error", "") or ""
             )
-            probes["capital"] = {"alive": not reason, "error": reason, "equity": equity}
+            equity = None
+            if not reason and isinstance(raw, dict):
+                try:
+                    equity = float(sum(float(value) for value in raw.values())) if raw else 0.0
+                except (TypeError, ValueError):
+                    equity = None
+                    reason = reason or "capital balance was not a number"
+            probes["capital"] = {"alive": equity is not None and not reason, "error": reason, "equity": None if reason else equity}
         except Exception as exc:
             probes["capital"] = {"alive": False, "error": str(exc), "equity": None}
     if present["alpaca"]:
@@ -239,7 +245,6 @@ def _probe_exchange_balances() -> dict[str, Any]:
                 "alive": isinstance(balances, dict) and not error,
                 "error": error,
                 "equity": None,
-                "balances": balances if isinstance(balances, dict) else {},
             }
         except Exception as exc:
             probes["kraken"] = {"alive": False, "error": str(exc), "equity": None}
@@ -296,16 +301,21 @@ def _apply_exchange_probes(payload: dict[str, Any]) -> dict[str, Any]:
             state["alive"] = False
             state["error"] = error
         equity = probe.get("equity")
-        if name == "capital" and isinstance(equity, (int, float)) and not float(combined.get("capital_equity_gbp") or 0):
-            combined["capital_equity_gbp"] = float(equity)
-            exchanges["capital_ready"] = True
-        if name == "alpaca" and isinstance(equity, (int, float)):
-            if not float(combined.get("alpaca_equity") or 0):
-                combined["alpaca_equity"] = float(equity)
-            exchanges["alpaca_ready"] = bool(probe.get("alive"))
-        if name == "kraken" and error:
-            combined["kraken_equity_reason"] = error
-            exchanges["kraken_ready"] = False
+        reading = float(equity) if probe.get("alive") and isinstance(equity, (int, float)) and not isinstance(equity, bool) else None
+        if name == "capital":
+            combined["capital_equity_gbp"] = reading
+            exchanges["capital_ready"] = reading is not None
+        if name == "alpaca":
+            combined["alpaca_equity"] = reading
+            exchanges["alpaca_ready"] = reading is not None
+        if name == "kraken":
+            # Do not add XXBT to ZUSD. A failed read is null. A USD total already
+            # on the payload is left as it is.
+            if error or not probe.get("alive"):
+                combined["kraken_equity"] = None
+                if error:
+                    combined["kraken_equity_reason"] = error
+                exchanges["kraken_ready"] = False
         if name == "binance":
             if "region" in error.lower():
                 exchanges["binance_status"] = "region blocked"
@@ -313,8 +323,10 @@ def _apply_exchange_probes(payload: dict[str, Any]) -> dict[str, Any]:
             elif error:
                 exchanges["binance_status"] = error
                 exchanges["binance_ready"] = False
-        if equity is not None:
-            state["equity"] = equity
+        if reading is not None:
+            state["equity"] = reading
+        elif error or not probe.get("alive"):
+            state["equity"] = None
     return payload
 
 
@@ -404,9 +416,10 @@ def _read_status() -> dict[str, Any]:
         "status_file": str(STATUS_PATH),
         "combined": {
             "open_positions": 0,
-            "kraken_equity": 0.0,
+            "kraken_equity": None,
             "kraken_equity_reason": "trader is still booting; equity is not a reading yet",
-            "capital_equity_gbp": 0.0,
+            "capital_equity_gbp": None,
+            "alpaca_equity": None,
         },
         "exchanges": {
             "kraken_ready": False,

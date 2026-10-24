@@ -177,6 +177,42 @@ class UnifiedMarketStatusServerFlightTestTests(unittest.TestCase):
             self.assertIn("missing_keys", row)
             self.assertIn("set_keys", row)
 
+    def test_failed_balance_probe_is_null_not_zero(self):
+        payload = {
+            "combined": {
+                "capital_equity_gbp": 0.0,
+                "alpaca_equity": 0.0,
+                "kraken_equity": 0.0,
+            },
+            "exchanges": {},
+        }
+
+        def fake_probes():
+            return {
+                "capital": {"alive": False, "error": "capital down", "equity": 0.0},
+                "alpaca": {"alive": False, "error": "alpaca down", "equity": None},
+                "kraken": {
+                    "alive": False,
+                    "error": "EAPI:Invalid nonce",
+                    "equity": None,
+                    "balances": {"XXBT": 0.01, "ZUSD": 10.0},
+                },
+            }
+
+        original = status_server._probe_exchange_balances
+        status_server._probe_exchange_balances = fake_probes
+        try:
+            published = status_server._apply_exchange_probes(payload)
+        finally:
+            status_server._probe_exchange_balances = original
+        combined = published["combined"]
+        self.assertIsNone(combined["capital_equity_gbp"])
+        self.assertIsNone(combined["alpaca_equity"])
+        self.assertIsNone(combined["kraken_equity"])
+        self.assertIsNone(published["exchange_boot_init"]["states"]["capital"]["equity"])
+        self.assertEqual(combined["kraken_equity_reason"], "EAPI:Invalid nonce")
+        self.assertNotIn("balances", json.dumps(combined))
+
     def test_cors_never_grants_nonlocal_or_prefix_confusion_origin(self):
         class FakeHandler:
             def __init__(self, origin):

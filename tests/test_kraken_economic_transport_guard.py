@@ -62,12 +62,32 @@ def test_nonce_preserves_nanosecond_provider_high_water(
     )
 
     first = kraken_module._get_next_nonce()
-    # The clock is microseconds. A nanosecond value already stored stays the floor.
-    assert first == 1_780_000_000_000_000_001
+    # The seed is max(file + 1, time_ns()). The mocked clock is above the file.
+    assert first == 1_790_000_000_000_000_000
 
     nonce_path.write_text("1800000000000000000", encoding="utf-8")
     second = kraken_module._get_next_nonce()
     assert second == 1_800_000_000_000_000_001
+
+
+def test_nonce_lost_file_seeds_from_nanosecond_clock(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path,
+) -> None:
+    nonce_path = tmp_path / ".kraken_nonce"
+    monkeypatch.setattr(kraken_module, "NONCE_FILE", str(nonce_path))
+    monkeypatch.setattr(kraken_module, "_nonce_offset_counter", 0)
+    monkeypatch.setattr(
+        kraken_module.time,
+        "time_ns",
+        lambda: 1_780_000_000_000_000_000,
+    )
+
+    nonce = kraken_module._get_next_nonce()
+
+    # A microsecond clock would be 1_780_000_000_000_000, below Kraken's ns high-water.
+    assert nonce == 1_780_000_000_000_000_000
+    assert nonce_path.read_text(encoding="utf-8") == "1780000000000000000"
 
 
 class _Clock:

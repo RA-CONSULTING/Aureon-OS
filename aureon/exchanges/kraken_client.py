@@ -313,10 +313,19 @@ def _read_nonce_text(text: str) -> int:
     except Exception:
         return 0
 
-def _nonce_clock_us() -> int:
-    """Microsecond clock. Kraken's nonce is an integer, not a timestamp unit."""
+def _nonce_clock_ns() -> int:
+    """Nanosecond clock.
 
-    return time.time_ns() // 1_000
+    Kraken remembers the highest nonce it has seen for the key. An earlier
+    client sent ``time.time_ns()``. If the counter file is lost, a microsecond
+    clock is below that high-water mark and every later call is rejected.
+    Seeding from ``time.time_ns()`` stays above those earlier wall-clock
+    nonces. A counter that was stored above the clock is recovered only from
+    the file. Losing the file cannot reconstruct a high-water mark that is
+    ahead of the current nanosecond clock.
+    """
+
+    return time.time_ns()
 
 
 def _sibling_nonce_files() -> list[str]:
@@ -375,9 +384,9 @@ def _locked_nonce_update(choose) -> int:
 
 
 def _get_next_nonce() -> int:
-    """Next monotonic nonce in microseconds, never below the file."""
+    """Next nonce is max(stored file + 1, time.time_ns())."""
 
-    clock = _nonce_clock_us()
+    clock = _nonce_clock_ns()
 
     def choose(last_nonce: int) -> int:
         return max(clock, int(last_nonce) + 1)
@@ -389,7 +398,8 @@ def _persist_nonce_floor(sent: int, error_text: str = "") -> int:
     """Remember a rejected nonce and persist one strictly above it.
 
     Kraken keeps the highest nonce it has seen for the key. The stored value
-    stays on disk under the same file lock as every later call. The clock is
+    stays on disk under the same file lock as every later call. The seed is
+    ``time.time_ns()``, so a lost counter file does not fall back to
     microseconds. A higher value already in the file is kept.
     """
 
@@ -402,7 +412,7 @@ def _persist_nonce_floor(sent: int, error_text: str = "") -> int:
     floor = max([int(sent or 0), *mentioned, 0])
 
     def choose(last_nonce: int) -> int:
-        return max(_nonce_clock_us(), int(last_nonce) + 1, floor + 1)
+        return max(_nonce_clock_ns(), int(last_nonce) + 1, floor + 1)
 
     return _locked_nonce_update(choose)
 

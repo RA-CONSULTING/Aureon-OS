@@ -1,9 +1,9 @@
 """Reproducible self-coder benchmark harness.
 
-The offline fixture always runs. SWE-bench and LiveCodeBench are recorded as
-not executed unless their datasets are present on disk and the operator sets
-``AUREON_SELF_CODER_BENCH_RUN=1`` with an API key. Published Kimi K2.5 figures
-are a reference named by the operator. They are not this process's score.
+The model is called, and its Python is run against each row's ``tests``
+field. That is not the official SWE-bench or LiveCodeBench evaluation.
+Published Kimi K2.5 figures are a reference named by the operator. They
+are not this process's score. A fixture is not a result.
 """
 
 from __future__ import annotations
@@ -11,10 +11,16 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import sys
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 from aureon.autonomous.aureon_internal_self_coder import openai_compatible_model_endpoint
+
+HARNESS_NOTE = (
+    "model-written Python is executed against each row's tests field. "
+    "This is not the official SWE-bench or LiveCodeBench evaluation."
+)
 
 PUBLISHED_KIMI_K2_5 = {
     "model": "Kimi K2.5",
@@ -22,55 +28,6 @@ PUBLISHED_KIMI_K2_5 = {
     "livecodebench_v6_pct": 85.0,
     "source": "published score named by the operator; not a measurement from this harness",
 }
-
-FixtureFn = Callable[..., int]
-
-
-def _add(a: int, b: int) -> int:
-    return a + b
-
-
-def _third(n: int) -> int:
-    return n // 3
-
-
-def _even(n: int) -> int:
-    return int(n % 2 == 0)
-
-
-_OFFLINE_FIXTURE: tuple[dict[str, Any], ...] = (
-    {"id": "add", "fn": _add, "cases": [((1, 2), 3), ((0, 0), 0)]},
-    {"id": "third", "fn": _third, "cases": [((9,), 3), ((2,), 0)]},
-    {"id": "even", "fn": _even, "cases": [((4,), 1), ((5,), 0)]},
-)
-
-
-def _score_fixture() -> dict[str, Any]:
-    passed = 0
-    total = 0
-    failures: list[str] = []
-    for item in _OFFLINE_FIXTURE:
-        function = item["fn"]
-        for args, expected in item["cases"]:
-            total += 1
-            try:
-                got = function(*args)
-            except Exception as exc:
-                failures.append(f"{item['id']}: {exc.__class__.__name__}")
-                continue
-            if got == expected:
-                passed += 1
-            else:
-                failures.append(item["id"])
-    return {
-        "suite": "offline-fixture",
-        "executed": True,
-        "passed": passed,
-        "total": total,
-        "ok": passed == total and total > 0,
-        "failures": failures,
-        "model_attempted": False,
-    }
 
 
 def _dataset_present(root: Path, name: str) -> bool:
@@ -141,21 +98,65 @@ def _chat(endpoint: dict[str, Any], prompt: str) -> dict[str, Any]:
     return {"ok": True, "error": "", "text": text}
 
 
+def _scrubbed_child_env(home: Path) -> dict[str, str]:
+    """Environment for model-written code. No parent secrets and no AUREON_*."""
+
+    path = os.environ.get("PATH") or "/usr/bin:/bin"
+    return {
+        "PATH": path,
+        "HOME": str(home),
+        "USERPROFILE": str(home),
+        "TMPDIR": str(home),
+        "TEMP": str(home),
+        "TMP": str(home),
+        "LANG": "C",
+        "LC_ALL": "C",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONNOUSERSITE": "1",
+        "PYTHONSAFEPATH": "1",
+        "PYTHONUNBUFFERED": "1",
+    }
+
+
 def _run_python(code: str, tests: str, timeout: int = 20) -> bool:
+    """Run model Python in a temp directory with a scrubbed environment.
+
+    The child does not inherit ``AUREON_*`` or exchange and API keys. Stdlib
+    sockets are blocked before the model code runs. The timeout is enforced
+    by the process. A same-user child can still read ``/proc``; this is not
+    a kernel sandbox.
+    """
+
     import subprocess
     import tempfile
 
-    with tempfile.TemporaryDirectory() as directory:
-        root = Path(directory)
-        (root / "solution.py").write_text(code + "\n\n" + tests + "\n", encoding="utf-8")
-        completed = subprocess.run(
-            ["python3", str(root / "solution.py")],
-            cwd=directory,
-            capture_output=True,
-            timeout=timeout,
-            check=False,
-        )
-        return completed.returncode == 0
+    runner = (
+        "import socket\n"
+        "def _blocked(*_args, **_kwargs):\n"
+        "    raise OSError('network is disabled for the benchmark child')\n"
+        "socket.socket = _blocked\n"
+        "socket.create_connection = _blocked\n"
+        "import runpy\n"
+        "runpy.run_path('solution.py', run_name='__main__')\n"
+    )
+    try:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "solution.py").write_text(code + "\n\n" + tests + "\n", encoding="utf-8")
+            (root / "runner.py").write_text(runner, encoding="utf-8")
+            completed = subprocess.run(
+                [sys.executable, "-I", str(root / "runner.py")],
+                cwd=directory,
+                env=_scrubbed_child_env(root),
+                capture_output=True,
+                timeout=timeout,
+                check=False,
+            )
+            return completed.returncode == 0
+    except subprocess.TimeoutExpired:
+        return False
+    except OSError:
+        return False
 
 
 def _score_livecode(rows: list[dict[str, Any]], endpoint: dict[str, Any]) -> dict[str, Any]:
@@ -277,8 +278,11 @@ def run_harness(root: Path | None = None) -> dict[str, Any]:
         "swe_bench": swe,
         "livecodebench": live,
         "published_reference": PUBLISHED_KIMI_K2_5,
-        "measured_swe_bench_verified_pct": swe_pct,
-        "measured_livecodebench_v6_pct": live_pct,
+        "harness": HARNESS_NOTE,
+        "model_python_task_pass_pct": {
+            "swe_rows": swe_pct,
+            "livecode_rows": live_pct,
+        },
         "live_trading": False,
     }
 
@@ -292,7 +296,8 @@ def main(argv: list[str] | None = None) -> int:
         os.environ["AUREON_SELF_CODER_BENCH_FETCH"] = "1"
     report = run_harness(args.root)
     print(json.dumps(report, indent=2, sort_keys=True))
-    measured = report["measured_swe_bench_verified_pct"] is not None or report["measured_livecodebench_v6_pct"] is not None
+    scores = report["model_python_task_pass_pct"]
+    measured = scores.get("swe_rows") is not None or scores.get("livecode_rows") is not None
     return 0 if measured or report["model_call"]["attempted"] else 1
 
 

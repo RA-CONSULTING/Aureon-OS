@@ -79,8 +79,10 @@ export const TradingAnalytics = () => {
           const combined = payload.combined || {};
           const binance = payload.exchanges?.binance_status || payload.exchange_boot_init?.states?.binance?.error || '';
           const binanceLine = String(binance).toLowerCase().includes('region') ? 'Binance is region-blocked.' : '';
+          const equityText = (value: unknown) =>
+            value === null || value === undefined || value === '' ? 'unavailable' : String(value);
           setLocalNote(
-            `Local market status. Capital equity ${combined.capital_equity_gbp ?? 0}. Alpaca equity ${combined.alpaca_equity ?? 0}. ${combined.kraken_equity_reason || ''} ${binanceLine}`.trim(),
+            `Local market status. Capital equity ${equityText(combined.capital_equity_gbp)}. Alpaca equity ${equityText(combined.alpaca_equity)}. ${combined.kraken_equity_reason || ''} ${binanceLine}`.trim(),
           );
           return;
         } catch {
