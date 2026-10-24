@@ -1,7 +1,7 @@
 python_version=3.13.17 (main, Oct 21 2026, 17:49:22) [Clang 23.1.3 ]
 python_executable=/tmp/venv-copy-313/bin/python
 platform=Linux-6.12.94+-x86_64-with-glibc2.39
-git_sha=d895f41d51b1a0ab0bf1753dc1a828f44fc79319
+git_sha=93e6539c9e3b655eee748b7bdfe3952d1b2d8b01
 pip_freeze:
   aiohappyeyeballs==2.7.1
   aiohttp==3.14.5
@@ -170,7 +170,6 @@ test_affecting_environment:
   AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS=1
   LANG=en_US.UTF-8
   LC_ALL=en_US.UTF-8
-  PATH=/home/ubuntu/.local/bin:/usr/local/cargo/bin:/home/ubuntu/.local/bin:/home/ubuntu/.local/bin:/home/ubuntu/.local/bin:/home/ubuntu/.local/bin:/home/ubuntu/.local/bin:/usr/local/cargo/bin:/exec-daemon:/exec-daemon/tools:/usr/local/cargo/bin:/home/ubuntu/.nvm/versions/node/v22.23.4/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-  PYTHONDONTWRITEBYTECODE=1
+  PATH=/home/ubuntu/.local/bin:/home/ubuntu/.local/bin:/home/ubuntu/.local/bin:/home/ubuntu/.local/bin:/home/ubuntu/.local/bin:/usr/local/cargo/bin:/exec-daemon:/exec-daemon/tools:/usr/local/cargo/bin:/home/ubuntu/.nvm/versions/node/v22.23.4/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
   PYTHONPATH=.
-note=Copied interpreter. AUREON_LIVE_TRADING=0. Secret-like environment values are redacted in the matching environment json.
+note=Copied interpreter. AUREON_LIVE_TRADING=0. Python 3.13.17 matches this interpreter. Fresh clone /tmp/aureon-fresh at this sha. Secret-like environment values are redacted in the matching environment json. Random junit is seed 20261023; seed 777 also exited 0 with the same totals.
