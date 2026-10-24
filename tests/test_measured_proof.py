@@ -1,0 +1,136 @@
+"""The committed measured-proof files match a fresh run. HOLD stays HOLD."""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+import pytest
+
+ROOT = Path(__file__).resolve().parents[1]
+MEASURED = ROOT / "reports" / "measured"
+
+
+def _load(name: str) -> dict:
+    return json.loads((MEASURED / name).read_text(encoding="utf-8"))
+
+
+def test_auris_nodes_match_the_committed_run_and_hold_without_evidence():
+    from aureon.evaluation.auris_node_eval import evaluate_auris_nodes
+
+    fresh = json.loads(json.dumps(evaluate_auris_nodes(), sort_keys=True))
+    committed = _load("auris_nodes.json")
+    assert fresh == committed
+    assert committed["nodes"]["Owl"]["verdict"] == "HOLD"
+    assert committed["nodes"]["Clownfish"]["verdict"] == "HOLD"
+    assert committed["nodes"]["Owl"]["hit_rate"] is None
+    assert committed["nodes"]["Tiger"]["verdict"] == "measured"
+    assert committed["trade_readiness"]["verdict"] == "HOLD"
+    assert committed["live_trading"] is False
+
+
+def test_qgita_snr_matches_the_committed_run():
+    from aureon.evaluation.qgita_snr_benchmark import evaluate_qgita_snr
+
+    fresh = json.loads(json.dumps(evaluate_qgita_snr(ROOT), sort_keys=True))
+    committed = _load("qgita_snr.json")
+    assert fresh == committed
+    evaluation = committed["evaluation"]
+    assert evaluation["ftcp"]["auc"] is not None
+    assert evaluation["baseline"]["auc"] is not None
+    assert "detection_rate" in evaluation["ftcp"]
+    assert "false_alarm_rate" in evaluation["ftcp"]
+    assert evaluation["ftcp"]["roc"]
+    assert committed["public_series"]["verdict"] == "HOLD"
+    assert committed["public_series"]["detection_rate"] is None
+    assert committed["seeds"] == {"calibration": 20261024, "evaluation": 777}
+    assert committed["live_trading"] is False
+
+
+def test_self_coder_offline_hold_matches_the_committed_run(monkeypatch: pytest.MonkeyPatch):
+    from aureon.autonomous.self_coder_benchmark import run_harness
+
+    monkeypatch.delenv("AUREON_SELF_CODER_OPENAI_BASE_URL", raising=False)
+    monkeypatch.delenv("AUREON_SELF_CODER_API_KEY", raising=False)
+    fresh = run_harness(ROOT)
+    committed = _load("self_coder.json")
+    assert fresh["model_call"]["ok"] is False
+    assert fresh["humaneval"]["status"] == "HOLD"
+    assert fresh["humaneval"]["measured_pct"] is None
+    assert fresh["humaneval"]["counts_as_model_score"] is False
+    assert fresh["flagship_comparison"]["status"] == "HOLD"
+    assert fresh["flagship_comparison"]["this_run_humaneval_pct"] is None
+    assert fresh["flagship_comparison"]["published_references_are_not_this_run"] is True
+    assert fresh["model_python_task_pass_pct"]["humaneval_rows"] is None
+    assert fresh["endpoint"]["api_key_returned"] is False
+    assert fresh["endpoint"]["api_key_configured"] is False
+    assert committed["humaneval"]["status"] == "HOLD"
+    assert committed["humaneval"]["rows"] == fresh["humaneval"]["rows"]
+    assert committed["humaneval"]["rows"] > 0
+    assert committed["flagship_comparison"]["this_run_humaneval_pct"] is None
+    assert committed["dataset_solution_smoke"]["counts_as_model_score"] is False
+    assert committed["live_trading"] is False
+
+
+def test_humaneval_reference_solution_runs_in_the_harness():
+    from aureon.autonomous.self_coder_benchmark import (
+        _load_jsonl,
+        _run_python,
+        humaneval_reference_program,
+        humaneval_tests,
+    )
+
+    rows = _load_jsonl(ROOT / "data" / "research" / "open_benchmarks" / "humaneval.jsonl")
+    row = next(item for item in rows if item["task_id"] == "HumanEval/2")
+    assert _run_python(humaneval_reference_program(row), humaneval_tests(row)) is True
+
+
+def test_configured_endpoint_can_score_a_humaneval_row(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    import json
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+    import threading
+
+    from aureon.autonomous.self_coder_benchmark import run_harness
+
+    row = {
+        "task_id": "HumanEval/add",
+        "prompt": "def add(a, b):\n",
+        "entry_point": "add",
+        "canonical_solution": "    return a + b\n",
+        "test": "def check(candidate):\n    assert candidate(1, 2) == 3\n",
+    }
+    path = tmp_path / "humaneval.jsonl"
+    path.write_text(json.dumps(row) + "\n", encoding="utf-8")
+
+    class Handler(BaseHTTPRequestHandler):
+        def do_POST(self):  # noqa: N802
+            length = int(self.headers.get("Content-Length", "0") or 0)
+            self.rfile.read(length)
+            body = json.dumps(
+                {"choices": [{"message": {"content": "def add(a, b):\n    return a + b\n"}}]}
+            ).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, fmt, *args):  # noqa: A003
+            return
+
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    port = server.server_address[1]
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    monkeypatch.setenv("AUREON_SELF_CODER_OPENAI_BASE_URL", f"http://127.0.0.1:{port}/v1")
+    monkeypatch.setenv("AUREON_SELF_CODER_MODEL", "local-test")
+    monkeypatch.setenv("AUREON_SELF_CODER_HUMANEVAL_PATH", str(path))
+    try:
+        report = run_harness(tmp_path)
+    finally:
+        server.shutdown()
+    assert report["model_call"]["ok"] is True
+    assert report["humaneval"]["status"] == "measured"
+    assert report["humaneval"]["counts_as_model_score"] is True
+    assert report["model_python_task_pass_pct"]["humaneval_rows"] == 100.0
+    assert report["flagship_comparison"]["status"] == "measured"
+    assert report["flagship_comparison"]["published_references_are_not_this_run"] is True

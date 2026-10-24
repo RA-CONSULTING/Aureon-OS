@@ -1,0 +1,5869 @@
+{
+  "live_trading": false,
+  "nodes": {
+    "CargoShip": {
+      "baseline": {
+        "feature": "volume",
+        "name": "threshold on the same input feature",
+        "positive_when": "ge",
+        "threshold": 0.5
+      },
+      "baseline_hit_rate": 0.9296875,
+      "baseline_hits": 238,
+      "decision_at": 0.5,
+      "decision_positive_rate": 0.51171875,
+      "hit_rate": 0.9296875,
+      "hits": 238,
+      "label": {
+        "feature": "volume",
+        "positive_when": "ge",
+        "threshold": 0.55
+      },
+      "max": 0.9875980963762637,
+      "mean": 0.5027133422398179,
+      "min": 0.01324982709835787,
+      "n": 256,
+      "output_varies": true,
+      "positive_labels": 113,
+      "reason": "hit rate is agreement with the pre-registered feature threshold",
+      "verdict": "measured"
+    },
+    "Clownfish": {
+      "baseline_hit_rate": null,
+      "baseline_hits": null,
+      "decision_at": 0.5,
+      "decision_positive_rate": 1.0,
+      "hit_rate": null,
+      "hits": null,
+      "max": 0.5,
+      "mean": 0.5,
+      "min": 0.5,
+      "n": 256,
+      "output_varies": false,
+      "reason": "output does not change with the labelled inputs",
+      "verdict": "HOLD"
+    },
+    "Deer": {
+      "baseline": {
+        "feature": "spread",
+        "name": "threshold on the same input feature",
+        "positive_when": "ge",
+        "threshold": 0.5
+      },
+      "baseline_hit_rate": 0.95703125,
+      "baseline_hits": 245,
+      "decision_at": 0.5,
+      "decision_positive_rate": 0.484375,
+      "hit_rate": 0.95703125,
+      "hits": 245,
+      "label": {
+        "feature": "spread",
+        "positive_when": "ge",
+        "threshold": 0.55
+      },
+      "max": 0.9888485142904064,
+      "mean": 0.4766354975256065,
+      "min": 0.0007694237514007662,
+      "n": 256,
+      "output_varies": true,
+      "positive_labels": 113,
+      "reason": "hit rate is agreement with the pre-registered feature threshold",
+      "verdict": "measured"
+    },
+    "Dolphin": {
+      "baseline": {
+        "feature": "momentum",
+        "name": "threshold on the same input feature",
+        "positive_when": "ge",
+        "threshold": 0.0
+      },
+      "baseline_hit_rate": 1.0,
+      "baseline_hits": 256,
+      "decision_at": 0.5,
+      "decision_positive_rate": 0.5078125,
+      "hit_rate": 1.0,
+      "hits": 256,
+      "label": {
+        "feature": "momentum",
+        "positive_when": "gt",
+        "threshold": 0.0
+      },
+      "max": 0.999984583175755,
+      "mean": 0.49647606756440404,
+      "min": 1.6621227809321404e-05,
+      "n": 256,
+      "output_varies": true,
+      "positive_labels": 130,
+      "reason": "hit rate is agreement with the pre-registered feature threshold",
+      "verdict": "measured"
+    },
+    "Falcon": {
+      "baseline": {
+        "feature": "abs_momentum",
+        "name": "threshold on the same input feature",
+        "positive_when": "ge",
+        "threshold": 0.5
+      },
+      "baseline_hit_rate": 0.9765625,
+      "baseline_hits": 250,
+      "decision_at": 0.5,
+      "decision_positive_rate": 0.46484375,
+      "hit_rate": 0.87890625,
+      "hits": 225,
+      "label": {
+        "feature": "abs_momentum",
+        "positive_when": "ge",
+        "threshold": 0.45
+      },
+      "max": 0.9576351800802508,
+      "mean": 0.48519292078926735,
+      "min": 0.03921639301142081,
+      "n": 256,
+      "output_varies": true,
+      "positive_labels": 130,
+      "reason": "hit rate is agreement with the pre-registered feature threshold",
+      "verdict": "measured"
+    },
+    "Hummingbird": {
+      "baseline": {
+        "feature": "volatility",
+        "name": "threshold on the same input feature",
+        "positive_when": "le",
+        "threshold": 0.5
+      },
+      "baseline_hit_rate": 0.83984375,
+      "baseline_hits": 215,
+      "decision_at": 0.5,
+      "decision_positive_rate": 0.0,
+      "hit_rate": 0.65625,
+      "hits": 168,
+      "label": {
+        "feature": "volatility",
+        "positive_when": "le",
+        "threshold": 0.35
+      },
+      "max": 0.33358677932561664,
+      "mean": 0.02433592425020147,
+      "min": 0.005970616833310491,
+      "n": 256,
+      "output_varies": true,
+      "positive_labels": 88,
+      "reason": "hit rate is agreement with the pre-registered feature threshold",
+      "verdict": "measured"
+    },
+    "Owl": {
+      "baseline_hit_rate": null,
+      "baseline_hits": null,
+      "decision_at": 0.5,
+      "decision_positive_rate": 1.0,
+      "hit_rate": null,
+      "hits": null,
+      "max": 0.6,
+      "mean": 0.6,
+      "min": 0.6,
+      "n": 256,
+      "output_varies": false,
+      "reason": "output does not change with the labelled inputs",
+      "verdict": "HOLD"
+    },
+    "Panda": {
+      "baseline": {
+        "feature": "volatility",
+        "name": "threshold on the same input feature",
+        "positive_when": "le",
+        "threshold": 0.5
+      },
+      "baseline_hit_rate": 1.0,
+      "baseline_hits": 256,
+      "decision_at": 0.5,
+      "decision_positive_rate": 1.0,
+      "hit_rate": 0.50390625,
+      "hits": 129,
+      "label": {
+        "feature": "volatility",
+        "positive_when": "le",
+        "threshold": 0.5
+      },
+      "max": 0.9960068378427201,
+      "mean": 0.7471854737516754,
+      "min": 0.5025393525066306,
+      "n": 256,
+      "output_varies": true,
+      "positive_labels": 129,
+      "reason": "hit rate is agreement with the pre-registered feature threshold",
+      "verdict": "measured"
+    },
+    "Tiger": {
+      "baseline": {
+        "feature": "volatility",
+        "name": "threshold on the same input feature",
+        "positive_when": "le",
+        "threshold": 0.5
+      },
+      "baseline_hit_rate": 0.83984375,
+      "baseline_hits": 215,
+      "decision_at": 0.5,
+      "decision_positive_rate": 0.37890625,
+      "hit_rate": 0.96484375,
+      "hits": 247,
+      "label": {
+        "feature": "volatility",
+        "positive_when": "le",
+        "threshold": 0.35
+      },
+      "max": 0.7936109405483522,
+      "mean": 0.39549675800268075,
+      "min": 0.004062964010608905,
+      "n": 256,
+      "output_varies": true,
+      "positive_labels": 88,
+      "reason": "hit rate is agreement with the pre-registered feature threshold",
+      "verdict": "measured"
+    }
+  },
+  "rows": 256,
+  "samples": [
+    {
+      "coherence": 0.4056127098857914,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.17748649681218343,
+        "momentum": 0.17748649681218343,
+        "spread": 0.018778981204688794,
+        "volatility": 0.7260625069904161,
+        "volume": 0.308248301215834
+      },
+      "nodes": {
+        "CargoShip": 0.308248301215834,
+        "Clownfish": 0.5,
+        "Deer": 0.018778981204688794,
+        "Dolphin": 0.7645715027043454,
+        "Falcon": 0.21671503813327858,
+        "Hummingbird": 0.008151481624206846,
+        "Owl": 0.6,
+        "Panda": 0.636968746504792,
+        "Tiger": 0.21914999440766714
+      }
+    },
+    {
+      "coherence": 0.4587966445093558,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.052231548226645774,
+        "momentum": 0.052231548226645774,
+        "spread": 0.5586492500223453,
+        "volatility": 0.767999813419182,
+        "volume": 0.7422860462543879
+      },
+      "nodes": {
+        "CargoShip": 0.7422860462543879,
+        "Clownfish": 0.5,
+        "Deer": 0.5586492500223453,
+        "Dolphin": 0.581677433631443,
+        "Falcon": 0.2592478976349684,
+        "Hummingbird": 0.0077120841117313136,
+        "Owl": 0.6,
+        "Panda": 0.6160000932904091,
+        "Tiger": 0.1856001492646544
+      }
+    },
+    {
+      "coherence": 0.45782011921520843,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.3229440468926337,
+        "momentum": -0.3229440468926337,
+        "spread": 0.5031690717732714,
+        "volatility": 0.5122655842610545,
+        "volume": 0.9299019251113562
+      },
+      "nodes": {
+        "CargoShip": 0.9299019251113562,
+        "Clownfish": 0.5,
+        "Deer": 0.5031690717732714,
+        "Dolphin": 0.07537619926495848,
+        "Falcon": 0.5050314103582504,
+        "Hummingbird": 0.011488407777221826,
+        "Owl": 0.6,
+        "Panda": 0.7438672078694728,
+        "Tiger": 0.3901875325911564
+      }
+    },
+    {
+      "coherence": 0.5110955499377675,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.82470472673975,
+        "momentum": 0.82470472673975,
+        "spread": 0.17423724735400603,
+        "volatility": 0.39845166729938897,
+        "volume": 0.15979103563371688
+      },
+      "nodes": {
+        "CargoShip": 0.15979103563371688,
+        "Clownfish": 0.5,
+        "Deer": 0.17423724735400603,
+        "Dolphin": 0.7616446364748146,
+        "Falcon": 0.6252306194079401,
+        "Hummingbird": 0.014689620536184736,
+        "Owl": 0.6,
+        "Panda": 0.8007741663503055,
+        "Tiger": 0.4812386661604888
+      }
+    },
+    {
+      "coherence": 0.45931612654054343,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.1304891869848983,
+        "momentum": -0.1304891869848983,
+        "spread": 0.26717987845896873,
+        "volatility": 0.48672029065399436,
+        "volume": 0.9419149222256756
+      },
+      "nodes": {
+        "CargoShip": 0.9419149222256756,
+        "Clownfish": 0.5,
+        "Deer": 0.26717987845896873,
+        "Dolphin": 0.30072107476520626,
+        "Falcon": 0.3739169075571315,
+        "Hummingbird": 0.012079232745053054,
+        "Owl": 0.6,
+        "Panda": 0.7566398546730029,
+        "Tiger": 0.4106237674768045
+      }
+    },
+    {
+      "coherence": 0.5182446883691242,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.26176267362661765,
+        "momentum": -0.26176267362661765,
+        "spread": 0.8423842446462453,
+        "volatility": 0.2854881739367129,
+        "volume": 0.8326158079747907
+      },
+      "nodes": {
+        "CargoShip": 0.8326158079747907,
+        "Clownfish": 0.5,
+        "Deer": 0.8423842446462453,
+        "Dolphin": 0.1336259095372072,
+        "Falcon": 0.43301861393106955,
+        "Hummingbird": 0.02030538115980597,
+        "Owl": 0.6,
+        "Panda": 0.8572559130316435,
+        "Tiger": 0.5716094608506297
+      }
+    },
+    {
+      "coherence": 0.611400269857584,
+      "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+      "features": {
+        "abs_momentum": 0.7098517873961543,
+        "momentum": 0.7098517873961543,
+        "spread": 0.5024562788174917,
+        "volatility": 0.14070027963499754,
+        "volume": 0.31051913444922696
+      },
+      "nodes": {
+        "CargoShip": 0.31051913444922696,
+        "Clownfish": 0.5,
+        "Deer": 0.5024562788174917,
+        "Dolphin": 0.8952201553580228,
+        "Falcon": 0.5900519915120761,
+        "Hummingbird": 0.03981412652008512,
+        "Owl": 0.6,
+        "Panda": 0.9296498601825012,
+        "Tiger": 0.687439776292002
+      }
+    },
+    {
+      "coherence": 0.32017441214051384,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.7341001440583141,
+        "momentum": -0.7341001440583141,
+        "spread": 0.24008761850433857,
+        "volatility": 0.9259240100641476,
+        "volume": 0.08730488544707005
+      },
+      "nodes": {
+        "CargoShip": 0.08730488544707005,
+        "Clownfish": 0.5,
+        "Deer": 0.24008761850433857,
+        "Dolphin": 0.1292346347943465,
+        "Falcon": 0.5400615664749409,
+        "Hummingbird": 0.006410776874490873,
+        "Owl": 0.6,
+        "Panda": 0.5370379949679263,
+        "Tiger": 0.059260791948681925
+      }
+    },
+    {
+      "coherence": 0.4122685062993112,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.157626718780018,
+        "momentum": 0.157626718780018,
+        "spread": 0.31711872263006047,
+        "volatility": 0.8298918571699819,
+        "volume": 0.31128364042336265
+      },
+      "nodes": {
+        "CargoShip": 0.31128364042336265,
+        "Clownfish": 0.5,
+        "Deer": 0.31711872263006047,
+        "Dolphin": 0.7376033521829184,
+        "Falcon": 0.20372379527302137,
+        "Hummingbird": 0.007143776843148613,
+        "Owl": 0.6,
+        "Panda": 0.585054071415009,
+        "Tiger": 0.13608651426401447
+      }
+    },
+    {
+      "coherence": 0.39072609762775956,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.8873189706434463,
+        "momentum": -0.8873189706434463,
+        "spread": 0.08087572826703482,
+        "volatility": 0.8888938876733091,
+        "volume": 0.4031188726017555
+      },
+      "nodes": {
+        "CargoShip": 0.4031188726017555,
+        "Clownfish": 0.5,
+        "Deer": 0.08087572826703482,
+        "Dolphin": 0.326674715141668,
+        "Falcon": 0.742058941230939,
+        "Hummingbird": 0.006674870173531116,
+        "Owl": 0.6,
+        "Panda": 0.5555530561633455,
+        "Tiger": 0.0888848898613527
+      }
+    },
+    {
+      "coherence": 0.31958848722481165,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.016862427738938646,
+        "momentum": -0.016862427738938646,
+        "spread": 0.048123640281802826,
+        "volatility": 0.7735095810943818,
+        "volume": 0.1167831162743529
+      },
+      "nodes": {
+        "CargoShip": 0.1167831162743529,
+        "Clownfish": 0.5,
+        "Deer": 0.048123640281802826,
+        "Dolphin": 0.47352494749247065,
+        "Falcon": 0.04683863429956291,
+        "Hummingbird": 0.00765785147339154,
+        "Owl": 0.6,
+        "Panda": 0.6132452094528091,
+        "Tiger": 0.18119233512449454
+      }
+    },
+    {
+      "coherence": 0.5660290866402755,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.010479867512194208,
+        "momentum": -0.010479867512194208,
+        "spread": 0.9846585595793731,
+        "volatility": 0.18583579624359692,
+        "volume": 0.6999247647618003
+      },
+      "nodes": {
+        "CargoShip": 0.6999247647618003,
+        "Clownfish": 0.5,
+        "Deer": 0.9846585595793731,
+        "Dolphin": 0.4835412364096564,
+        "Falcon": 0.21731333668707603,
+        "Hummingbird": 0.030637912552701544,
+        "Owl": 0.6,
+        "Panda": 0.9070821018782016,
+        "Tiger": 0.6513313630051225
+      }
+    },
+    {
+      "coherence": 0.5058180012726223,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.510819033152313,
+        "momentum": -0.510819033152313,
+        "spread": 0.40983051118931013,
+        "volatility": 0.012934752232922953,
+        "volume": 0.5248758495065278
+      },
+      "nodes": {
+        "CargoShip": 0.5248758495065278,
+        "Clownfish": 0.5,
+        "Deer": 0.40983051118931013,
+        "Dolphin": 0.00028878514323604776,
+        "Falcon": 0.5150360780585774,
+        "Hummingbird": 0.26161172089694384,
+        "Owl": 0.6,
+        "Panda": 0.9935326238835385,
+        "Tiger": 0.7896521982136617
+      }
+    },
+    {
+      "coherence": 0.32464678508138106,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.4237115404294278,
+        "momentum": -0.4237115404294278,
+        "spread": 0.17013947706808485,
+        "volatility": 0.8730294837322138,
+        "volume": 0.5227555794610367
+      },
+      "nodes": {
+        "CargoShip": 0.5227555794610367,
+        "Clownfish": 0.5,
+        "Deer": 0.17013947706808485,
+        "Dolphin": 0.014291493365842955,
+        "Falcon": 0.4534247521389105,
+        "Hummingbird": 0.006794790106713528,
+        "Owl": 0.6,
+        "Panda": 0.5634852581338932,
+        "Tiger": 0.10157641301422898
+      }
+    },
+    {
+      "coherence": 0.46741620651445465,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.06510706657628318,
+        "momentum": -0.06510706657628318,
+        "spread": 0.6895848543045617,
+        "volatility": 0.5229442579527928,
+        "volume": 0.6195639168035846
+      },
+      "nodes": {
+        "CargoShip": 0.6195639168035846,
+        "Clownfish": 0.5,
+        "Deer": 0.6895848543045617,
+        "Dolphin": 0.3984416725790633,
+        "Falcon": 0.2314441216444736,
+        "Hummingbird": 0.011258213050362705,
+        "Owl": 0.6,
+        "Panda": 0.7385278710236036,
+        "Tiger": 0.3816445936377658
+      }
+    },
+    {
+      "coherence": 0.41772098462368035,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.1245284841677905,
+        "momentum": 0.1245284841677905,
+        "spread": 0.18553282814408745,
+        "volatility": 0.63689811702334,
+        "volume": 0.29892668074769946
+      },
+      "nodes": {
+        "CargoShip": 0.29892668074769946,
+        "Clownfish": 0.5,
+        "Deer": 0.18553282814408745,
+        "Dolphin": 0.6906572301973161,
+        "Falcon": 0.17684794314176316,
+        "Hummingbird": 0.009275030862060031,
+        "Owl": 0.6,
+        "Panda": 0.6815509414883301,
+        "Tiger": 0.290481506381328
+      }
+    },
+    {
+      "coherence": 0.3959019561048294,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.5226484380097223,
+        "momentum": -0.5226484380097223,
+        "spread": 0.7680492228484544,
+        "volatility": 0.5476661067130455,
+        "volume": 0.1456702477059797
+      },
+      "nodes": {
+        "CargoShip": 0.1456702477059797,
+        "Clownfish": 0.5,
+        "Deer": 0.7680492228484544,
+        "Dolphin": 0.001265123825187786,
+        "Falcon": 0.4095549809185995,
+        "Hummingbird": 0.010759126164874459,
+        "Owl": 0.6,
+        "Panda": 0.7261669466434773,
+        "Tiger": 0.3618671146295636
+      }
+    },
+    {
+      "coherence": 0.3890616209551088,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.10104850468359161,
+        "momentum": -0.10104850468359161,
+        "spread": 0.5567972482351393,
+        "volatility": 0.7651579228995042,
+        "volume": 0.4127215892071605
+      },
+      "nodes": {
+        "CargoShip": 0.4127215892071605,
+        "Clownfish": 0.5,
+        "Deer": 0.5567972482351393,
+        "Dolphin": 0.3439259658644705,
+        "Falcon": 0.19455043004066225,
+        "Hummingbird": 0.007740358219595819,
+        "Owl": 0.6,
+        "Panda": 0.6174210385502479,
+        "Tiger": 0.18787366168039663
+      }
+    },
+    {
+      "coherence": 0.4411297173375063,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.4768913942358577,
+        "momentum": -0.4768913942358577,
+        "spread": 0.8416022266957743,
+        "volatility": 0.8025134364153368,
+        "volume": 0.8759083763915889
+      },
+      "nodes": {
+        "CargoShip": 0.8759083763915889,
+        "Clownfish": 0.5,
+        "Deer": 0.8416022266957743,
+        "Dolphin": 0.0013170324907292863,
+        "Falcon": 0.596596488882577,
+        "Hummingbird": 0.007384493266315596,
+        "Owl": 0.6,
+        "Panda": 0.5987432817923316,
+        "Tiger": 0.15798925086773058
+      }
+    },
+    {
+      "coherence": 0.5260429265023295,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.5418658873203397,
+        "momentum": 0.5418658873203397,
+        "spread": 0.6662337300309431,
+        "volatility": 0.9427061354959771,
+        "volume": 0.5198051746060067
+      },
+      "nodes": {
+        "CargoShip": 0.5198051746060067,
+        "Clownfish": 0.5,
+        "Deer": 0.6662337300309431,
+        "Dolphin": 0.9956814873757758,
+        "Falcon": 0.5352476735060399,
+        "Hummingbird": 0.00629784964791521,
+        "Owl": 0.6,
+        "Panda": 0.5286469322520114,
+        "Tiger": 0.04583509160321828
+      }
+    },
+    {
+      "coherence": 0.4647982339052211,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.23777531504481586,
+        "momentum": -0.23777531504481586,
+        "spread": 0.23581164628654117,
+        "volatility": 0.06937882436101139,
+        "volume": 0.5125735511729742
+      },
+      "nodes": {
+        "CargoShip": 0.5125735511729742,
+        "Clownfish": 0.5,
+        "Deer": 0.23581164628654117,
+        "Dolphin": 0.16028218627809093,
+        "Falcon": 0.32021478588326335,
+        "Hummingbird": 0.07558690933380753,
+        "Owl": 0.6,
+        "Panda": 0.9653105878194943,
+        "Tiger": 0.744496940511191
+      }
+    },
+    {
+      "coherence": 0.3138570361525542,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.3542667101556347,
+        "momentum": -0.3542667101556347,
+        "spread": 0.13344190037936476,
+        "volatility": 0.865952437526476,
+        "volume": 0.4498775108257098
+      },
+      "nodes": {
+        "CargoShip": 0.4498775108257098,
+        "Clownfish": 0.5,
+        "Deer": 0.13344190037936476,
+        "Dolphin": 0.05149414662473922,
+        "Falcon": 0.38294995035665724,
+        "Hummingbird": 0.00684968697266585,
+        "Owl": 0.6,
+        "Panda": 0.567023781236762,
+        "Tiger": 0.10723804997881921
+      }
+    },
+    {
+      "coherence": 0.3625581893947905,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.252299096324045,
+        "momentum": -0.252299096324045,
+        "spread": 0.8448868237259457,
+        "volatility": 0.9597923560664696,
+        "volume": 0.36119766064845205
+      },
+      "nodes": {
+        "CargoShip": 0.36119766064845205,
+        "Clownfish": 0.5,
+        "Deer": 0.8448868237259457,
+        "Dolphin": 0.1439021999091325,
+        "Falcon": 0.28496866562136713,
+        "Hummingbird": 0.006186891412854938,
+        "Owl": 0.6,
+        "Panda": 0.5201038219667652,
+        "Tiger": 0.032166115146824305
+      }
+    },
+    {
+      "coherence": 0.573661653300306,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.6388678942433812,
+        "momentum": 0.6388678942433812,
+        "spread": 0.2824873410119907,
+        "volatility": 0.2799148599863994,
+        "volume": 0.3381757412074986
+      },
+      "nodes": {
+        "CargoShip": 0.3381757412074986,
+        "Clownfish": 0.5,
+        "Deer": 0.2824873410119907,
+        "Dolphin": 0.9531678297695545,
+        "Falcon": 0.5486602483326164,
+        "Hummingbird": 0.020695731154593017,
+        "Owl": 0.6,
+        "Panda": 0.8600425700068003,
+        "Tiger": 0.5760681120108805
+      }
+    },
+    {
+      "coherence": 0.41295158625801126,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.5982766042818088,
+        "momentum": -0.5982766042818088,
+        "spread": 0.5149144733429614,
+        "volatility": 0.7860182914405688,
+        "volume": 0.7502810795471532
+      },
+      "nodes": {
+        "CargoShip": 0.7502810795471532,
+        "Clownfish": 0.5,
+        "Deer": 0.5149144733429614,
+        "Dolphin": 0.023642174617087952,
+        "Falcon": 0.6438779468614122,
+        "Hummingbird": 0.007537515236165856,
+        "Owl": 0.6,
+        "Panda": 0.6069908542797156,
+        "Tiger": 0.17118536684754498
+      }
+    },
+    {
+      "coherence": 0.5199421354377705,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.1148190749004252,
+        "momentum": 0.1148190749004252,
+        "spread": 0.7418558677499497,
+        "volatility": 0.7088822873745676,
+        "volume": 0.8696480682396216
+      },
+      "nodes": {
+        "CargoShip": 0.8696480682396216,
+        "Clownfish": 0.5,
+        "Deer": 0.7418558677499497,
+        "Dolphin": 0.6764715434520976,
+        "Falcon": 0.34126777290218413,
+        "Hummingbird": 0.008346289935606314,
+        "Owl": 0.6,
+        "Panda": 0.6455588563127161,
+        "Tiger": 0.23289417010034594
+      }
+    },
+    {
+      "coherence": 0.48455853531990983,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.6217876095746793,
+        "momentum": -0.6217876095746793,
+        "spread": 0.6965039521649382,
+        "volatility": 0.4929239704998606,
+        "volume": 0.7972805276779168
+      },
+      "nodes": {
+        "CargoShip": 0.7972805276779168,
+        "Clownfish": 0.5,
+        "Deer": 0.6965039521649382,
+        "Dolphin": 0.036152765514495144,
+        "Falcon": 0.6744354850056504,
+        "Hummingbird": 0.011930232703039681,
+        "Owl": 0.6,
+        "Panda": 0.7535380147500697,
+        "Tiger": 0.4056608236001116
+      }
+    },
+    {
+      "coherence": 0.5097233325051643,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.6014943943989901,
+        "momentum": 0.6014943943989901,
+        "spread": 0.0007694237514007662,
+        "volatility": 0.44706206837199847,
+        "volume": 0.23770337137377862
+      },
+      "nodes": {
+        "CargoShip": 0.23770337137377862,
+        "Clownfish": 0.5,
+        "Deer": 0.0007694237514007662,
+        "Dolphin": 0.9747976371105119,
+        "Falcon": 0.49235708749142665,
+        "Hummingbird": 0.013127319931341704,
+        "Owl": 0.6,
+        "Panda": 0.7764689658140007,
+        "Tiger": 0.44235034530240125
+      }
+    },
+    {
+      "coherence": 0.617124368782575,
+      "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+      "features": {
+        "abs_momentum": 0.865355393451593,
+        "momentum": 0.865355393451593,
+        "spread": 0.019371343498790883,
+        "volatility": 0.10650889093268956,
+        "volume": 0.8619959373807635
+      },
+      "nodes": {
+        "CargoShip": 0.8619959373807635,
+        "Clownfish": 0.5,
+        "Deer": 0.019371343498790883,
+        "Dolphin": 0.7052482596193627,
+        "Falcon": 0.864347556630344,
+        "Hummingbird": 0.051498215732448845,
+        "Owl": 0.6,
+        "Panda": 0.9467455545336552,
+        "Tiger": 0.7147928872538484
+      }
+    },
+    {
+      "coherence": 0.5060868251468359,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.8003924980150792,
+        "momentum": -0.8003924980150792,
+        "spread": 0.10013717520305432,
+        "volatility": 0.22469593560158285,
+        "volume": 0.736621904664632
+      },
+      "nodes": {
+        "CargoShip": 0.736621904664632,
+        "Clownfish": 0.5,
+        "Deer": 0.10013717520305432,
+        "Dolphin": 0.2066063839930311,
+        "Falcon": 0.781261320009945,
+        "Hummingbird": 0.02556499320970573,
+        "Owl": 0.6,
+        "Panda": 0.8876520321992085,
+        "Tiger": 0.6202432515187337
+      }
+    },
+    {
+      "coherence": 0.5732855581184604,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.9335419901155446,
+        "momentum": -0.9335419901155446,
+        "spread": 0.40273874753967664,
+        "volatility": 0.053408667753196526,
+        "volume": 0.4214798472539115
+      },
+      "nodes": {
+        "CargoShip": 0.4214798472539115,
+        "Clownfish": 0.5,
+        "Deer": 0.40273874753967664,
+        "Dolphin": 0.39636477192656444,
+        "Falcon": 0.7799233472570547,
+        "Hummingbird": 0.09462428738218573,
+        "Owl": 0.6,
+        "Panda": 0.9732956661234018,
+        "Tiger": 0.7572730657974428
+      }
+    },
+    {
+      "coherence": 0.5878588525267839,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.43643624252233093,
+        "momentum": 0.43643624252233093,
+        "spread": 0.4317122947130806,
+        "volatility": 0.5485088628806613,
+        "volume": 0.8218483516778923
+      },
+      "nodes": {
+        "CargoShip": 0.8218483516778923,
+        "Clownfish": 0.5,
+        "Deer": 0.4317122947130806,
+        "Dolphin": 0.9900639169387061,
+        "Falcon": 0.5520598752689994,
+        "Hummingbird": 0.010742891292813814,
+        "Owl": 0.6,
+        "Panda": 0.7257455685596694,
+        "Tiger": 0.361192909695471
+      }
+    },
+    {
+      "coherence": 0.4461480898283476,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.049344387124070854,
+        "momentum": 0.049344387124070854,
+        "spread": 0.3528588507296051,
+        "volatility": 0.4319636541908838,
+        "volume": 0.34818057690663395
+      },
+      "nodes": {
+        "CargoShip": 0.34818057690663395,
+        "Clownfish": 0.5,
+        "Deer": 0.3528588507296051,
+        "Dolphin": 0.5771999120032157,
+        "Falcon": 0.13899524405883978,
+        "Hummingbird": 0.01357577697420477,
+        "Owl": 0.6,
+        "Panda": 0.7840181729045581,
+        "Tiger": 0.454429076647293
+      }
+    },
+    {
+      "coherence": 0.6713729380677463,
+      "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+      "features": {
+        "abs_momentum": 0.6622441757681534,
+        "momentum": 0.6622441757681534,
+        "spread": 0.36617394135842063,
+        "volatility": 0.11030461321630614,
+        "volume": 0.8939414203947307
+      },
+      "nodes": {
+        "CargoShip": 0.8939414203947307,
+        "Clownfish": 0.5,
+        "Deer": 0.36617394135842063,
+        "Dolphin": 0.9364442139763818,
+        "Falcon": 0.7317533491561266,
+        "Hummingbird": 0.049873399195524436,
+        "Owl": 0.6,
+        "Panda": 0.9448476933918469,
+        "Tiger": 0.7117563094269551
+      }
+    },
+    {
+      "coherence": 0.43346517627902964,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.24213081348615373,
+        "momentum": 0.24213081348615373,
+        "spread": 0.47014589616501623,
+        "volatility": 0.8267596565629015,
+        "volume": 0.14849472252181717
+      },
+      "nodes": {
+        "CargoShip": 0.14849472252181717,
+        "Clownfish": 0.5,
+        "Deer": 0.47014589616501623,
+        "Dolphin": 0.8447057777921139,
+        "Falcon": 0.21403998619685274,
+        "Hummingbird": 0.007170517786010114,
+        "Owl": 0.6,
+        "Panda": 0.5866201717185493,
+        "Tiger": 0.1385922747496788
+      }
+    },
+    {
+      "coherence": 0.481985473079495,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.35472437242455057,
+        "momentum": 0.35472437242455057,
+        "spread": 0.17879625934865706,
+        "volatility": 0.6039110897486855,
+        "volume": 0.28735332799279223
+      },
+      "nodes": {
+        "CargoShip": 0.28735332799279223,
+        "Clownfish": 0.5,
+        "Deer": 0.17879625934865706,
+        "Dolphin": 0.9488231458011389,
+        "Falcon": 0.33451305909502305,
+        "Hummingbird": 0.009773402207893325,
+        "Owl": 0.6,
+        "Panda": 0.6980444551256573,
+        "Tiger": 0.3168711282010517
+      }
+    },
+    {
+      "coherence": 0.4951961993462021,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.7313715911329575,
+        "momentum": 0.7313715911329575,
+        "spread": 0.006539144821336329,
+        "volatility": 0.5181221916482193,
+        "volume": 0.24139056420652616
+      },
+      "nodes": {
+        "CargoShip": 0.24139056420652616,
+        "Clownfish": 0.5,
+        "Deer": 0.006539144821336329,
+        "Dolphin": 0.8736272673346993,
+        "Falcon": 0.584377283055028,
+        "Hummingbird": 0.011361007158730764,
+        "Owl": 0.6,
+        "Panda": 0.7409389041758904,
+        "Tiger": 0.38550224668142463
+      }
+    },
+    {
+      "coherence": 0.5089918377906115,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.7570338866191535,
+        "momentum": -0.7570338866191535,
+        "spread": 0.6638950282424104,
+        "volatility": 0.641977795168207,
+        "volume": 0.9754684867978176
+      },
+      "nodes": {
+        "CargoShip": 0.9754684867978176,
+        "Clownfish": 0.5,
+        "Deer": 0.6638950282424104,
+        "Dolphin": 0.15434497459960794,
+        "Falcon": 0.8225642666727526,
+        "Hummingbird": 0.009202767401690468,
+        "Owl": 0.6,
+        "Panda": 0.6790111024158965,
+        "Tiger": 0.28641776386543444
+      }
+    },
+    {
+      "coherence": 0.49457312897570627,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.3919799592213853,
+        "momentum": 0.3919799592213853,
+        "spread": 0.20334084276249964,
+        "volatility": 0.8649572747317585,
+        "volume": 0.6770280023110224
+      },
+      "nodes": {
+        "CargoShip": 0.6770280023110224,
+        "Clownfish": 0.5,
+        "Deer": 0.20334084276249964,
+        "Dolphin": 0.9714847898588632,
+        "Falcon": 0.4774943721482764,
+        "Hummingbird": 0.0068574777000847955,
+        "Owl": 0.6,
+        "Panda": 0.5675213626341207,
+        "Tiger": 0.10803418021459317
+      }
+    },
+    {
+      "coherence": 0.7188748196652552,
+      "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+      "features": {
+        "abs_momentum": 0.5387838682667949,
+        "momentum": 0.5387838682667949,
+        "spread": 0.9664547762779274,
+        "volatility": 0.010599525534770393,
+        "volume": 0.5045637222445822
+      },
+      "nodes": {
+        "CargoShip": 0.5045637222445822,
+        "Clownfish": 0.5,
+        "Deer": 0.9664547762779274,
+        "Dolphin": 0.9962931531083692,
+        "Falcon": 0.5285178244601311,
+        "Hummingbird": 0.29126884451161106,
+        "Owl": 0.6,
+        "Panda": 0.9947002372326148,
+        "Tiger": 0.7915203795721837
+      }
+    },
+    {
+      "coherence": 0.335730622168082,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.3906118686648714,
+        "momentum": -0.3906118686648714,
+        "spread": 0.026429839056411053,
+        "volatility": 0.9308464551317752,
+        "volume": 0.8285974355955757
+      },
+      "nodes": {
+        "CargoShip": 0.8285974355955757,
+        "Clownfish": 0.5,
+        "Deer": 0.026429839056411053,
+        "Dolphin": 0.029234916719176274,
+        "Falcon": 0.5220075387440827,
+        "Hummingbird": 0.006377236123145766,
+        "Owl": 0.6,
+        "Panda": 0.5345767724341124,
+        "Tiger": 0.05532283589457983
+      }
+    },
+    {
+      "coherence": 0.6093851049097366,
+      "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+      "features": {
+        "abs_momentum": 0.2197800674480075,
+        "momentum": 0.2197800674480075,
+        "spread": 0.873501073874593,
+        "volatility": 0.3706297080774691,
+        "volume": 0.8071000693126394
+      },
+      "nodes": {
+        "CargoShip": 0.8071000693126394,
+        "Clownfish": 0.5,
+        "Deer": 0.873501073874593,
+        "Dolphin": 0.8184457301915125,
+        "Falcon": 0.39597606800739704,
+        "Hummingbird": 0.015763351815877773,
+        "Owl": 0.6,
+        "Panda": 0.8146851459612654,
+        "Tiger": 0.5034962335380248
+      }
+    },
+    {
+      "coherence": 0.5012327506985687,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.995198965804629,
+        "momentum": 0.995198965804629,
+        "spread": 0.2805537392244132,
+        "volatility": 0.6595894294565443,
+        "volume": 0.5671415041586724
+      },
+      "nodes": {
+        "CargoShip": 0.5671415041586724,
+        "Clownfish": 0.5,
+        "Deer": 0.2805537392244132,
+        "Dolphin": 0.5075411609435689,
+        "Falcon": 0.866781727310842,
+        "Hummingbird": 0.008960714933731483,
+        "Owl": 0.6,
+        "Panda": 0.6702052852717278,
+        "Tiger": 0.27232845643476455
+      }
+    },
+    {
+      "coherence": 0.4937007595898661,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.9239472371884185,
+        "momentum": -0.9239472371884185,
+        "spread": 0.009226944914222268,
+        "volatility": 0.0743725049603775,
+        "volume": 0.11715272216366879
+      },
+      "nodes": {
+        "CargoShip": 0.11715272216366879,
+        "Clownfish": 0.5,
+        "Deer": 0.009226944914222268,
+        "Dolphin": 0.3816699746338998,
+        "Falcon": 0.6819088826809936,
+        "Hummingbird": 0.07111321398858175,
+        "Owl": 0.6,
+        "Panda": 0.9628137475198113,
+        "Tiger": 0.7405019960316981
+      }
+    },
+    {
+      "coherence": 0.3843891048307049,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.13049093206348283,
+        "momentum": 0.13049093206348283,
+        "spread": 0.6824558810418787,
+        "volatility": 0.985400982865032,
+        "volume": 0.040529159427196926
+      },
+      "nodes": {
+        "CargoShip": 0.040529159427196926,
+        "Clownfish": 0.5,
+        "Deer": 0.6824558810418787,
+        "Dolphin": 0.6992814392708184,
+        "Falcon": 0.10350240027259706,
+        "Hummingbird": 0.006027721594899761,
+        "Owl": 0.6,
+        "Panda": 0.5072995085674841,
+        "Tiger": 0.011679213707974423
+      }
+    },
+    {
+      "coherence": 0.5829519472981589,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.2744938479500807,
+        "momentum": 0.2744938479500807,
+        "spread": 0.9457826810644647,
+        "volatility": 0.21187645582311543,
+        "volume": 0.1531341770122474
+      },
+      "nodes": {
+        "CargoShip": 0.1531341770122474,
+        "Clownfish": 0.5,
+        "Deer": 0.9457826810644647,
+        "Dolphin": 0.8796861510255851,
+        "Falcon": 0.2380859466687307,
+        "Hummingbird": 0.0270420760857264,
+        "Owl": 0.6,
+        "Panda": 0.8940617720884423,
+        "Tiger": 0.6304988353415077
+      }
+    },
+    {
+      "coherence": 0.5080006175422106,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.901445086329755,
+        "momentum": 0.901445086329755,
+        "spread": 0.5659529087952564,
+        "volatility": 0.8829540820134163,
+        "volume": 0.5620945912988804
+      },
+      "nodes": {
+        "CargoShip": 0.5620945912988804,
+        "Clownfish": 0.5,
+        "Deer": 0.5659529087952564,
+        "Dolphin": 0.6523480746532301,
+        "Falcon": 0.7996399378204925,
+        "Hummingbird": 0.00671927047633996,
+        "Owl": 0.6,
+        "Panda": 0.5585229589932919,
+        "Tiger": 0.09363673438926697
+      }
+    },
+    {
+      "coherence": 0.3953353994153418,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.09292714758831955,
+        "momentum": 0.09292714758831955,
+        "spread": 0.09409060396432622,
+        "volatility": 0.9859955449390074,
+        "volume": 0.7471346434562135
+      },
+      "nodes": {
+        "CargoShip": 0.7471346434562135,
+        "Clownfish": 0.5,
+        "Deer": 0.09409060396432622,
+        "Dolphin": 0.6439049775578068,
+        "Falcon": 0.28918939634868773,
+        "Hummingbird": 0.006024123331161512,
+        "Owl": 0.6,
+        "Panda": 0.5070022275304963,
+        "Tiger": 0.011203564048794058
+      }
+    },
+    {
+      "coherence": 0.40002199363719343,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.8926657259413098,
+        "momentum": -0.8926657259413098,
+        "spread": 0.3164913747954121,
+        "volatility": 0.8991546701627045,
+        "volume": 0.28505386049827064
+      },
+      "nodes": {
+        "CargoShip": 0.28505386049827064,
+        "Clownfish": 0.5,
+        "Deer": 0.3164913747954121,
+        "Dolphin": 0.3345766949019027,
+        "Falcon": 0.710382166308398,
+        "Hummingbird": 0.006599537127083366,
+        "Owl": 0.6,
+        "Panda": 0.5504226649186478,
+        "Tiger": 0.08067626386983645
+      }
+    },
+    {
+      "coherence": 0.599461279847978,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.4134931360206091,
+        "momentum": 0.4134931360206091,
+        "spread": 0.6491960547812103,
+        "volatility": 0.18450771369321484,
+        "volume": 0.258166873475294
+      },
+      "nodes": {
+        "CargoShip": 0.258166873475294,
+        "Clownfish": 0.5,
+        "Deer": 0.6491960547812103,
+        "Dolphin": 0.9816487262814697,
+        "Falcon": 0.36689525725701455,
+        "Hummingbird": 0.030847105680669472,
+        "Owl": 0.6,
+        "Panda": 0.9077461431533926,
+        "Tiger": 0.6523938290454282
+      }
+    },
+    {
+      "coherence": 0.570696375054806,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.7413075193761391,
+        "momentum": 0.7413075193761391,
+        "spread": 0.03814384736184473,
+        "volatility": 0.4274664079428879,
+        "volume": 0.7724800686233722
+      },
+      "nodes": {
+        "CargoShip": 0.7724800686233722,
+        "Clownfish": 0.5,
+        "Deer": 0.03814384736184473,
+        "Dolphin": 0.8630752879018744,
+        "Falcon": 0.750659284150309,
+        "Hummingbird": 0.013715338803301466,
+        "Owl": 0.6,
+        "Panda": 0.7862667960285561,
+        "Tiger": 0.45802687364568967
+      }
+    },
+    {
+      "coherence": 0.5309119012081907,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.8917276354341341,
+        "momentum": 0.8917276354341341,
+        "spread": 0.7538036821498504,
+        "volatility": 0.5383919638081538,
+        "volume": 0.12064555891711837
+      },
+      "nodes": {
+        "CargoShip": 0.12064555891711837,
+        "Clownfish": 0.5,
+        "Deer": 0.7538036821498504,
+        "Dolphin": 0.6668131502364765,
+        "Falcon": 0.6604030124790294,
+        "Hummingbird": 0.010941079366544119,
+        "Owl": 0.6,
+        "Panda": 0.7308040180959231,
+        "Tiger": 0.36928642895347696
+      }
+    },
+    {
+      "coherence": 0.43951162055380094,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.6511571179614175,
+        "momentum": -0.6511571179614175,
+        "spread": 0.6676332894855271,
+        "volatility": 0.6336988874610957,
+        "volume": 0.5622053422644332
+      },
+      "nodes": {
+        "CargoShip": 0.5622053422644332,
+        "Clownfish": 0.5,
+        "Deer": 0.6676332894855271,
+        "Dolphin": 0.05532485127411496,
+        "Falcon": 0.6244715852523222,
+        "Hummingbird": 0.009321128429575904,
+        "Owl": 0.6,
+        "Panda": 0.6831505562694522,
+        "Tiger": 0.29304089003112344
+      }
+    },
+    {
+      "coherence": 0.5851809661236377,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.6960344661564837,
+        "momentum": 0.6960344661564837,
+        "spread": 0.745199697789943,
+        "volatility": 0.9196176971423866,
+        "volume": 0.9527785058426081
+      },
+      "nodes": {
+        "CargoShip": 0.9527785058426081,
+        "Clownfish": 0.5,
+        "Deer": 0.745199697789943,
+        "Dolphin": 0.9081383535771145,
+        "Falcon": 0.773057678062321,
+        "Hummingbird": 0.0064542661122349515,
+        "Owl": 0.6,
+        "Panda": 0.5401911514288067,
+        "Tiger": 0.06430584228609071
+      }
+    },
+    {
+      "coherence": 0.6549237884929354,
+      "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+      "features": {
+        "abs_momentum": 0.6020162230278341,
+        "momentum": 0.6020162230278341,
+        "spread": 0.5388936151851328,
+        "volatility": 0.2463989421652042,
+        "volume": 0.7998355492111694
+      },
+      "nodes": {
+        "CargoShip": 0.7998355492111694,
+        "Clownfish": 0.5,
+        "Deer": 0.5388936151851328,
+        "Dolphin": 0.9745400450544933,
+        "Falcon": 0.6613620208828346,
+        "Hummingbird": 0.023401032583566787,
+        "Owl": 0.6,
+        "Panda": 0.8768005289173979,
+        "Tiger": 0.6028808462678367
+      }
+    },
+    {
+      "coherence": 0.4534275036596185,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.04536197104005635,
+        "momentum": 0.04536197104005635,
+        "spread": 0.056894754251851976,
+        "volatility": 0.27632818789434554,
+        "volume": 0.458154360110098
+      },
+      "nodes": {
+        "CargoShip": 0.458154360110098,
+        "Clownfish": 0.5,
+        "Deer": 0.056894754251851976,
+        "Dolphin": 0.5710134806997221,
+        "Falcon": 0.16919968776106883,
+        "Hummingbird": 0.020954974933218892,
+        "Owl": 0.6,
+        "Panda": 0.8618359060528272,
+        "Tiger": 0.5789374496845235
+      }
+    },
+    {
+      "coherence": 0.386114827974604,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.5518895520025797,
+        "momentum": -0.5518895520025797,
+        "spread": 0.2621113183079047,
+        "volatility": 0.2912005552982829,
+        "volume": 0.09902337074667977
+      },
+      "nodes": {
+        "CargoShip": 0.09902337074667977,
+        "Clownfish": 0.5,
+        "Deer": 0.2621113183079047,
+        "Dolphin": 0.006628841460498414,
+        "Falcon": 0.4160296976258097,
+        "Hummingbird": 0.019920281999673342,
+        "Owl": 0.6,
+        "Panda": 0.8543997223508586,
+        "Tiger": 0.5670395557613737
+      }
+    },
+    {
+      "coherence": 0.4877211519989649,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.7437053513891552,
+        "momentum": -0.7437053513891552,
+        "spread": 0.5092543303437638,
+        "volatility": 0.5093305503895226,
+        "volume": 0.7644427234614178
+      },
+      "nodes": {
+        "CargoShip": 0.7644427234614178,
+        "Clownfish": 0.5,
+        "Deer": 0.5092543303437638,
+        "Dolphin": 0.13952459629271152,
+        "Falcon": 0.7499265630108339,
+        "Hummingbird": 0.011553335338157392,
+        "Owl": 0.6,
+        "Panda": 0.7453347248052387,
+        "Tiger": 0.39253555968838194
+      }
+    },
+    {
+      "coherence": 0.6889802747134323,
+      "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+      "features": {
+        "abs_momentum": 0.47439133907824793,
+        "momentum": 0.47439133907824793,
+        "spread": 0.8742929871192697,
+        "volatility": 0.1544390676443571,
+        "volume": 0.7520118750895847
+      },
+      "nodes": {
+        "CargoShip": 0.7520118750895847,
+        "Clownfish": 0.5,
+        "Deer": 0.8742929871192697,
+        "Dolphin": 0.9983827422811087,
+        "Falcon": 0.5576774998816489,
+        "Hummingbird": 0.03648767951528759,
+        "Owl": 0.6,
+        "Panda": 0.9227804661778214,
+        "Tiger": 0.6764487458845143
+      }
+    },
+    {
+      "coherence": 0.5897824095967747,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.5174088116168991,
+        "momentum": 0.5174088116168991,
+        "spread": 0.25544512835943156,
+        "volatility": 0.25841034293360776,
+        "volume": 0.5059832130808604
+      },
+      "nodes": {
+        "CargoShip": 0.5059832130808604,
+        "Clownfish": 0.5,
+        "Deer": 0.25544512835943156,
+        "Dolphin": 0.9992523992135269,
+        "Falcon": 0.5139811320560874,
+        "Hummingbird": 0.022353833069257395,
+        "Owl": 0.6,
+        "Panda": 0.8707948285331961,
+        "Tiger": 0.5932717256531138
+      }
+    },
+    {
+      "coherence": 0.42424491671911246,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.36438854616383365,
+        "momentum": -0.36438854616383365,
+        "spread": 0.11252146621907055,
+        "volatility": 0.45175055763331085,
+        "volume": 0.8873324738667745
+      },
+      "nodes": {
+        "CargoShip": 0.8873324738667745,
+        "Clownfish": 0.5,
+        "Deer": 0.11252146621907055,
+        "Dolphin": 0.04469444917537396,
+        "Falcon": 0.5212717244747158,
+        "Hummingbird": 0.012994028704053605,
+        "Owl": 0.6,
+        "Panda": 0.7741247211833446,
+        "Tiger": 0.43859955389335137
+      }
+    },
+    {
+      "coherence": 0.5430396957039022,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.9272640003815782,
+        "momentum": -0.9272640003815782,
+        "spread": 0.8321738312752334,
+        "volatility": 0.5619729352965649,
+        "volume": 0.563566278128881
+      },
+      "nodes": {
+        "CargoShip": 0.563566278128881,
+        "Clownfish": 0.5,
+        "Deer": 0.8321738312752334,
+        "Dolphin": 0.3867382644101431,
+        "Falcon": 0.8181546837057689,
+        "Hummingbird": 0.010490006833783197,
+        "Owl": 0.6,
+        "Panda": 0.7190135323517175,
+        "Tiger": 0.3504216517627481
+      }
+    },
+    {
+      "coherence": 0.40639703080081374,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.5992762426211142,
+        "momentum": -0.5992762426211142,
+        "spread": 0.8026310313843442,
+        "volatility": 0.9182422327831912,
+        "volume": 0.6274617997731996
+      },
+      "nodes": {
+        "CargoShip": 0.6274617997731996,
+        "Clownfish": 0.5,
+        "Deer": 0.8026310313843442,
+        "Dolphin": 0.02412165755254797,
+        "Falcon": 0.6077319097667397,
+        "Hummingbird": 0.006463830009123723,
+        "Owl": 0.6,
+        "Panda": 0.5408788836084044,
+        "Tiger": 0.06540621377344706
+      }
+    },
+    {
+      "coherence": 0.6135143591188772,
+      "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+      "features": {
+        "abs_momentum": 0.6154473465751462,
+        "momentum": 0.6154473465751462,
+        "spread": 0.6099443857741362,
+        "volatility": 0.44435745782269975,
+        "volume": 0.646231021182137
+      },
+      "nodes": {
+        "CargoShip": 0.646231021182137,
+        "Clownfish": 0.5,
+        "Deer": 0.6099443857741362,
+        "Dolphin": 0.9674731702348962,
+        "Falcon": 0.6246824489572435,
+        "Hummingbird": 0.013205461683741815,
+        "Owl": 0.6,
+        "Panda": 0.7778212710886501,
+        "Tiger": 0.44451403374184023
+      }
+    },
+    {
+      "coherence": 0.4245799528776995,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.7239829842409189,
+        "momentum": -0.7239829842409189,
+        "spread": 0.5930355465353974,
+        "volatility": 0.6824348641877218,
+        "volume": 0.4114039351831372
+      },
+      "nodes": {
+        "CargoShip": 0.4114039351831372,
+        "Clownfish": 0.5,
+        "Deer": 0.5930355465353974,
+        "Dolphin": 0.11876145033838242,
+        "Falcon": 0.6302092695235844,
+        "Hummingbird": 0.008665074955517226,
+        "Owl": 0.6,
+        "Panda": 0.6587825679061391,
+        "Tiger": 0.2540521086498226
+      }
+    },
+    {
+      "coherence": 0.5476911425920288,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.35111314430495866,
+        "momentum": 0.35111314430495866,
+        "spread": 0.06885612157302257,
+        "volatility": 0.29368197052371947,
+        "volume": 0.5441053097340562
+      },
+      "nodes": {
+        "CargoShip": 0.5441053097340562,
+        "Clownfish": 0.5,
+        "Deer": 0.06885612157302257,
+        "Dolphin": 0.9462943491996318,
+        "Falcon": 0.4090107939336879,
+        "Hummingbird": 0.01975751141779213,
+        "Owl": 0.6,
+        "Panda": 0.8531590147381403,
+        "Tiger": 0.5650544235810244
+      }
+    },
+    {
+      "coherence": 0.4251229215343933,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.5796708216624384,
+        "momentum": -0.5796708216624384,
+        "spread": 0.5870732543756271,
+        "volatility": 0.36142084748479764,
+        "volume": 0.2369293272703068
+      },
+      "nodes": {
+        "CargoShip": 0.2369293272703068,
+        "Clownfish": 0.5,
+        "Deer": 0.5870732543756271,
+        "Dolphin": 0.015580087814394183,
+        "Falcon": 0.4768483733447989,
+        "Hummingbird": 0.01615418208383034,
+        "Owl": 0.6,
+        "Panda": 0.8192895762576011,
+        "Tiger": 0.5108633220121619
+      }
+    },
+    {
+      "coherence": 0.4960972168678518,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.11785923463239101,
+        "momentum": 0.11785923463239101,
+        "spread": 0.49075580969416577,
+        "volatility": 0.6526429559912594,
+        "volume": 0.7829554554391442
+      },
+      "nodes": {
+        "CargoShip": 0.7829554554391442,
+        "Clownfish": 0.5,
+        "Deer": 0.49075580969416577,
+        "Dolphin": 0.6809315719336861,
+        "Falcon": 0.31738810087441693,
+        "Hummingbird": 0.009054649937422925,
+        "Owl": 0.6,
+        "Panda": 0.6736785220043703,
+        "Tiger": 0.27788563520699244
+      }
+    },
+    {
+      "coherence": 0.49890568777357724,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.4822389258076474,
+        "momentum": 0.4822389258076474,
+        "spread": 0.7106133232683652,
+        "volatility": 0.7618487874529196,
+        "volume": 0.03264196537583475
+      },
+      "nodes": {
+        "CargoShip": 0.03264196537583475,
+        "Clownfish": 0.5,
+        "Deer": 0.7106133232683652,
+        "Dolphin": 0.99922184604441,
+        "Falcon": 0.3473598376781036,
+        "Hummingbird": 0.007773543338456019,
+        "Owl": 0.6,
+        "Panda": 0.6190756062735402,
+        "Tiger": 0.19052097003766433
+      }
+    },
+    {
+      "coherence": 0.6191022127756327,
+      "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+      "features": {
+        "abs_momentum": 0.7152398848348711,
+        "momentum": 0.7152398848348711,
+        "spread": 0.1694317897954336,
+        "volatility": 0.24826914696055058,
+        "volume": 0.8251100612033867
+      },
+      "nodes": {
+        "CargoShip": 0.8251100612033867,
+        "Clownfish": 0.5,
+        "Deer": 0.1694317897954336,
+        "Dolphin": 0.8899794950600213,
+        "Falcon": 0.7482009377454257,
+        "Hummingbird": 0.02323157864813203,
+        "Owl": 0.6,
+        "Panda": 0.8758654265197248,
+        "Tiger": 0.6013846824315596
+      }
+    },
+    {
+      "coherence": 0.4427624163352594,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.4804530483663674,
+        "momentum": -0.4804530483663674,
+        "spread": 0.18712845390326105,
+        "volatility": 0.37401441023445425,
+        "volume": 0.8515608161187648
+      },
+      "nodes": {
+        "CargoShip": 0.8515608161187648,
+        "Clownfish": 0.5,
+        "Deer": 0.18712845390326105,
+        "Dolphin": 0.0009424565759328929,
+        "Falcon": 0.5917853786920866,
+        "Hummingbird": 0.015624413668062062,
+        "Owl": 0.6,
+        "Panda": 0.8129927948827729,
+        "Tiger": 0.5007884718124366
+      }
+    },
+    {
+      "coherence": 0.3542142876049945,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.4142930035851793,
+        "momentum": -0.4142930035851793,
+        "spread": 0.06284321427100159,
+        "volatility": 0.609982284286048,
+        "volume": 0.5190373456770307
+      },
+      "nodes": {
+        "CargoShip": 0.5190373456770307,
+        "Clownfish": 0.5,
+        "Deer": 0.06284321427100159,
+        "Dolphin": 0.01801552365528647,
+        "Falcon": 0.4457163062127347,
+        "Hummingbird": 0.009677695882728989,
+        "Owl": 0.6,
+        "Panda": 0.695008857856976,
+        "Tiger": 0.31201417257116165
+      }
+    },
+    {
+      "coherence": 0.4416157575629139,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.14265939592510746,
+        "momentum": -0.14265939592510746,
+        "spread": 0.2287127039684611,
+        "volatility": 0.16191768085152702,
+        "volume": 0.3693656806229998
+      },
+      "nodes": {
+        "CargoShip": 0.3693656806229998,
+        "Clownfish": 0.5,
+        "Deer": 0.2287127039684611,
+        "Dolphin": 0.28333803137536484,
+        "Falcon": 0.21067128133447516,
+        "Hummingbird": 0.034900424262829424,
+        "Owl": 0.6,
+        "Panda": 0.9190411595742365,
+        "Tiger": 0.6704658553187784
+      }
+    },
+    {
+      "coherence": 0.6103194439362518,
+      "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+      "features": {
+        "abs_momentum": 0.8538580031568963,
+        "momentum": 0.8538580031568963,
+        "spread": 0.9041186316837191,
+        "volatility": 0.5410211685432833,
+        "volume": 0.660837915236717
+      },
+      "nodes": {
+        "CargoShip": 0.660837915236717,
+        "Clownfish": 0.5,
+        "Deer": 0.9041186316837191,
+        "Dolphin": 0.7215790875825693,
+        "Falcon": 0.7959519767808424,
+        "Hummingbird": 0.010888873862799143,
+        "Owl": 0.6,
+        "Panda": 0.7294894157283583,
+        "Tiger": 0.36718306516537336
+      }
+    },
+    {
+      "coherence": 0.5570197386563138,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.29961296703565954,
+        "momentum": 0.29961296703565954,
+        "spread": 0.47718293392614786,
+        "volatility": 0.605014082583985,
+        "volume": 0.8148937957026432
+      },
+      "nodes": {
+        "CargoShip": 0.8148937957026432,
+        "Clownfish": 0.5,
+        "Deer": 0.47718293392614786,
+        "Dolphin": 0.9041508542404535,
+        "Falcon": 0.45419721563575466,
+        "Hummingbird": 0.009755874165988146,
+        "Owl": 0.6,
+        "Panda": 0.6974929587080074,
+        "Tiger": 0.315988733932812
+      }
+    },
+    {
+      "coherence": 0.39558072413225587,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.08219306499669488,
+        "momentum": -0.08219306499669488,
+        "spread": 0.6636956180898964,
+        "volatility": 0.6111463384971348,
+        "volume": 0.1430198947252217
+      },
+      "nodes": {
+        "CargoShip": 0.1430198947252217,
+        "Clownfish": 0.5,
+        "Deer": 0.6636956180898964,
+        "Dolphin": 0.3723214021397514,
+        "Falcon": 0.10044111391525291,
+        "Hummingbird": 0.00965955947597955,
+        "Owl": 0.6,
+        "Panda": 0.6944268307514325,
+        "Tiger": 0.31108292920229214
+      }
+    },
+    {
+      "coherence": 0.5819575404056561,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.4393096049462293,
+        "momentum": 0.4393096049462293,
+        "spread": 0.36584375181183404,
+        "volatility": 0.10019796472873066,
+        "volume": 0.17512959752678203
+      },
+      "nodes": {
+        "CargoShip": 0.17512959752678203,
+        "Clownfish": 0.5,
+        "Deer": 0.36584375181183404,
+        "Dolphin": 0.9909392608634906,
+        "Falcon": 0.3600556027203951,
+        "Hummingbird": 0.054447466564105144,
+        "Owl": 0.6,
+        "Panda": 0.9499010176356346,
+        "Tiger": 0.7198416282170155
+      }
+    },
+    {
+      "coherence": 0.4678095938700918,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.027296368389001957,
+        "momentum": 0.027296368389001957,
+        "spread": 0.9506357611825798,
+        "volatility": 0.4076491169630223,
+        "volume": 0.06702978379706481
+      },
+      "nodes": {
+        "CargoShip": 0.06702978379706481,
+        "Clownfish": 0.5,
+        "Deer": 0.9506357611825798,
+        "Dolphin": 0.5428245032774172,
+        "Falcon": 0.03921639301142081,
+        "Hummingbird": 0.014366126387695022,
+        "Owl": 0.6,
+        "Panda": 0.7961754415184888,
+        "Tiger": 0.4738807064295822
+      }
+    },
+    {
+      "coherence": 0.5378972036944661,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.08501893410433392,
+        "momentum": -0.08501893410433392,
+        "spread": 0.8305819276338617,
+        "volatility": 0.23799083584582903,
+        "volume": 0.7592101622561709
+      },
+      "nodes": {
+        "CargoShip": 0.7592101622561709,
+        "Clownfish": 0.5,
+        "Deer": 0.8305819276338617,
+        "Dolphin": 0.3680347877490508,
+        "Falcon": 0.287276302549885,
+        "Hummingbird": 0.024194442425808347,
+        "Owl": 0.6,
+        "Panda": 0.8810045820770855,
+        "Tiger": 0.6096073313233368
+      }
+    },
+    {
+      "coherence": 0.4798224809212239,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.7925849830185927,
+        "momentum": -0.7925849830185927,
+        "spread": 0.16699072947847493,
+        "volatility": 0.23653427993863008,
+        "volume": 0.48170555992939545
+      },
+      "nodes": {
+        "CargoShip": 0.48170555992939545,
+        "Clownfish": 0.5,
+        "Deer": 0.16699072947847493,
+        "Dolphin": 0.19676495323609472,
+        "Falcon": 0.6993211560918335,
+        "Hummingbird": 0.024337386271367955,
+        "Owl": 0.6,
+        "Panda": 0.881732860030685,
+        "Tiger": 0.610772576049096
+      }
+    },
+    {
+      "coherence": 0.6455111521756531,
+      "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+      "features": {
+        "abs_momentum": 0.5888517491683289,
+        "momentum": 0.5888517491683289,
+        "spread": 0.40912532966312853,
+        "volatility": 0.09100932969909359,
+        "volume": 0.5877174124887099
+      },
+      "nodes": {
+        "CargoShip": 0.5877174124887099,
+        "Clownfish": 0.5,
+        "Deer": 0.40912532966312853,
+        "Dolphin": 0.9806469250877695,
+        "Falcon": 0.5885114481644431,
+        "Hummingbird": 0.05940045358061456,
+        "Owl": 0.6,
+        "Panda": 0.9544953351504533,
+        "Tiger": 0.7271925362407252
+      }
+    },
+    {
+      "coherence": 0.5081738720841348,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.0880889629683328,
+        "momentum": 0.0880889629683328,
+        "spread": 0.0036930251198472597,
+        "volatility": 0.0605913954935311,
+        "volume": 0.5238474554629114
+      },
+      "nodes": {
+        "CargoShip": 0.5238474554629114,
+        "Clownfish": 0.5,
+        "Deer": 0.0036930251198472597,
+        "Dolphin": 0.6366103987747336,
+        "Falcon": 0.21881651071670638,
+        "Hummingbird": 0.0849961947635648,
+        "Owl": 0.6,
+        "Panda": 0.9697043022532345,
+        "Tiger": 0.7515268836051752
+      }
+    },
+    {
+      "coherence": 0.6423834463499835,
+      "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+      "features": {
+        "abs_momentum": 0.5583854693683226,
+        "momentum": 0.5583854693683226,
+        "spread": 0.6832136310868702,
+        "volatility": 0.08565411815259061,
+        "volume": 0.3257599685944481
+      },
+      "nodes": {
+        "CargoShip": 0.3257599685944481,
+        "Clownfish": 0.5,
+        "Deer": 0.6832136310868702,
+        "Dolphin": 0.9916125229923718,
+        "Falcon": 0.4885978191361602,
+        "Hummingbird": 0.06272599774981567,
+        "Owl": 0.6,
+        "Panda": 0.9571729409237046,
+        "Tiger": 0.7314767054779275
+      }
+    },
+    {
+      "coherence": 0.43419003355354396,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.10427729304188849,
+        "momentum": -0.10427729304188849,
+        "spread": 0.9219539762217152,
+        "volatility": 0.9737724441312855,
+        "volume": 0.797991593864932
+      },
+      "nodes": {
+        "CargoShip": 0.797991593864932,
+        "Clownfish": 0.5,
+        "Deer": 0.9219539762217152,
+        "Dolphin": 0.33911572758545133,
+        "Falcon": 0.3123915832888015,
+        "Hummingbird": 0.006098971399120926,
+        "Owl": 0.6,
+        "Panda": 0.5131137779343573,
+        "Tiger": 0.020982044694971603
+      }
+    },
+    {
+      "coherence": 0.47086547543586316,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.6488176958647314,
+        "momentum": -0.6488176958647314,
+        "spread": 0.11079633299283675,
+        "volatility": 0.10018845220974282,
+        "volume": 0.556344296137705
+      },
+      "nodes": {
+        "CargoShip": 0.556344296137705,
+        "Clownfish": 0.5,
+        "Deer": 0.11079633299283675,
+        "Dolphin": 0.05365668041841254,
+        "Falcon": 0.6210756759466234,
+        "Hummingbird": 0.054452166989141924,
+        "Owl": 0.6,
+        "Panda": 0.9499057738951286,
+        "Tiger": 0.7198492382322058
+      }
+    },
+    {
+      "coherence": 0.540617311937754,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.8595854209388105,
+        "momentum": -0.8595854209388105,
+        "spread": 0.6509485506717894,
+        "volatility": 0.5832941377973456,
+        "volume": 0.9206256138829264
+      },
+      "nodes": {
+        "CargoShip": 0.9206256138829264,
+        "Clownfish": 0.5,
+        "Deer": 0.6509485506717894,
+        "Dolphin": 0.28652129414189387,
+        "Falcon": 0.8778974788220453,
+        "Hummingbird": 0.010113027616075063,
+        "Owl": 0.6,
+        "Panda": 0.7083529311013272,
+        "Tiger": 0.3333646897621235
+      }
+    },
+    {
+      "coherence": 0.4245897330633668,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.8535431719626869,
+        "momentum": 0.8535431719626869,
+        "spread": 0.28097973157772516,
+        "volatility": 0.9470662803267581,
+        "volume": 0.08390732781702626
+      },
+      "nodes": {
+        "CargoShip": 0.08390732781702626,
+        "Clownfish": 0.5,
+        "Deer": 0.28097973157772516,
+        "Dolphin": 0.7220223023957547,
+        "Falcon": 0.6226524187189887,
+        "Hummingbird": 0.006269158284368248,
+        "Owl": 0.6,
+        "Panda": 0.5264668598366209,
+        "Tiger": 0.04234697573859352
+      }
+    },
+    {
+      "coherence": 0.6007301687400501,
+      "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+      "features": {
+        "abs_momentum": 0.834112522919221,
+        "momentum": 0.834112522919221,
+        "spread": 0.9325925303018372,
+        "volatility": 0.6373910277095836,
+        "volume": 0.6607004704493493
+      },
+      "nodes": {
+        "CargoShip": 0.6607004704493493,
+        "Clownfish": 0.5,
+        "Deer": 0.9325925303018372,
+        "Dolphin": 0.7489392818528156,
+        "Falcon": 0.7820889071782595,
+        "Hummingbird": 0.009267969037549853,
+        "Owl": 0.6,
+        "Panda": 0.6813044861452082,
+        "Tiger": 0.2900871778323332
+      }
+    },
+    {
+      "coherence": 0.5533916653077993,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.34003308815303024,
+        "momentum": 0.34003308815303024,
+        "spread": 0.26063109848339183,
+        "volatility": 0.20894031559440895,
+        "volume": 0.3309407048956633
+      },
+      "nodes": {
+        "CargoShip": 0.3309407048956633,
+        "Clownfish": 0.5,
+        "Deer": 0.26063109848339183,
+        "Dolphin": 0.9381783766810612,
+        "Falcon": 0.33730537317582016,
+        "Hummingbird": 0.027404728926741444,
+        "Owl": 0.6,
+        "Panda": 0.8955298422027955,
+        "Tiger": 0.6328477475244729
+      }
+    },
+    {
+      "coherence": 0.4632567917843152,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.33797354981236416,
+        "momentum": -0.33797354981236416,
+        "spread": 0.4598308836562591,
+        "volatility": 0.37493983815836096,
+        "volume": 0.8295317940477505
+      },
+      "nodes": {
+        "CargoShip": 0.8295317940477505,
+        "Clownfish": 0.5,
+        "Deer": 0.4598308836562591,
+        "Dolphin": 0.06338901830129379,
+        "Falcon": 0.48544102308298004,
+        "Hummingbird": 0.01558685125630372,
+        "Owl": 0.6,
+        "Panda": 0.8125300809208196,
+        "Tiger": 0.5000481294733112
+      }
+    },
+    {
+      "coherence": 0.4523741682012621,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.5034139372882864,
+        "momentum": -0.5034139372882864,
+        "spread": 0.4498720576381061,
+        "volatility": 0.2552239411864021,
+        "volume": 0.5299393433245908
+      },
+      "nodes": {
+        "CargoShip": 0.5299393433245908,
+        "Clownfish": 0.5,
+        "Deer": 0.4498720576381061,
+        "Dolphin": 2.8757204730778252e-05,
+        "Falcon": 0.5113715590991776,
+        "Hummingbird": 0.022622392130818757,
+        "Owl": 0.6,
+        "Panda": 0.8723880294067989,
+        "Tiger": 0.5958208470508783
+      }
+    },
+    {
+      "coherence": 0.48358871536367304,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.6435819541866452,
+        "momentum": 0.6435819541866452,
+        "spread": 0.6903111835246459,
+        "volatility": 0.8774026799499701,
+        "volume": 0.01324982709835787
+      },
+      "nodes": {
+        "CargoShip": 0.01324982709835787,
+        "Clownfish": 0.5,
+        "Deer": 0.6903111835246459,
+        "Dolphin": 0.9499892764191052,
+        "Falcon": 0.454482316060159,
+        "Hummingbird": 0.006761304800587562,
+        "Owl": 0.6,
+        "Panda": 0.5612986600250149,
+        "Tiger": 0.0980778560400239
+      }
+    },
+    {
+      "coherence": 0.46200495885432463,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.43131741908819543,
+        "momentum": -0.43131741908819543,
+        "spread": 0.286132733121098,
+        "volatility": 0.24439957616103114,
+        "volume": 0.7805102687202014
+      },
+      "nodes": {
+        "CargoShip": 0.7805102687202014,
+        "Clownfish": 0.5,
+        "Deer": 0.286132733121098,
+        "Dolphin": 0.011594374600094326,
+        "Falcon": 0.5360752739777972,
+        "Hummingbird": 0.02358494495369005,
+        "Owl": 0.6,
+        "Panda": 0.8778002119194844,
+        "Tiger": 0.6044803390711752
+      }
+    },
+    {
+      "coherence": 0.5031068580746674,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.9164118107975097,
+        "momentum": -0.9164118107975097,
+        "spread": 0.86283941424331,
+        "volatility": 0.9128927859979483,
+        "volume": 0.6946806701378613
+      },
+      "nodes": {
+        "CargoShip": 0.6946806701378613,
+        "Clownfish": 0.5,
+        "Deer": 0.86283941424331,
+        "Dolphin": 0.3702038331058902,
+        "Falcon": 0.8498924685996151,
+        "Hummingbird": 0.006501296890637239,
+        "Owl": 0.6,
+        "Panda": 0.5435536070010258,
+        "Tiger": 0.06968577120164135
+      }
+    },
+    {
+      "coherence": 0.5352940721936658,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.424654908025794,
+        "momentum": 0.424654908025794,
+        "spread": 0.6785524842134357,
+        "volatility": 0.6401427664622135,
+        "volume": 0.28266334760083844
+      },
+      "nodes": {
+        "CargoShip": 0.28266334760083844,
+        "Clownfish": 0.5,
+        "Deer": 0.6785524842134357,
+        "Dolphin": 0.9860581309605168,
+        "Falcon": 0.3820574398983073,
+        "Hummingbird": 0.009228742223264776,
+        "Owl": 0.6,
+        "Panda": 0.6799286167688933,
+        "Tiger": 0.28788578683022925
+      }
+    },
+    {
+      "coherence": 0.6027967503451332,
+      "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+      "features": {
+        "abs_momentum": 0.6848401668684545,
+        "momentum": 0.6848401668684545,
+        "spread": 0.511333841626055,
+        "volatility": 0.15500586904128555,
+        "volume": 0.2355748712587613
+      },
+      "nodes": {
+        "CargoShip": 0.2355748712587613,
+        "Clownfish": 0.5,
+        "Deer": 0.511333841626055,
+        "Dolphin": 0.9180414685705183,
+        "Falcon": 0.5500605781855465,
+        "Hummingbird": 0.03636234295701785,
+        "Owl": 0.6,
+        "Panda": 0.9224970654793572,
+        "Tiger": 0.6759953047669716
+      }
+    },
+    {
+      "coherence": 0.399601406434025,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.5405194537085773,
+        "momentum": -0.5405194537085773,
+        "spread": 0.20447814555889376,
+        "volatility": 0.3605645505898293,
+        "volume": 0.3791921832123991
+      },
+      "nodes": {
+        "CargoShip": 0.3791921832123991,
+        "Clownfish": 0.5,
+        "Deer": 0.20447814555889376,
+        "Dolphin": 0.004045576232563297,
+        "Falcon": 0.4921212725597238,
+        "Hummingbird": 0.016191511007865627,
+        "Owl": 0.6,
+        "Panda": 0.8197177247050853,
+        "Tiger": 0.5115483595281366
+      }
+    },
+    {
+      "coherence": 0.36987749148737165,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.7170703616986274,
+        "momentum": -0.7170703616986274,
+        "spread": 0.17266206880048562,
+        "volatility": 0.670374649891963,
+        "volume": 0.27674520015604487
+      },
+      "nodes": {
+        "CargoShip": 0.27674520015604487,
+        "Clownfish": 0.5,
+        "Deer": 0.17266206880048562,
+        "Dolphin": 0.11182639799263755,
+        "Falcon": 0.5849728132358526,
+        "Hummingbird": 0.00881867071466102,
+        "Owl": 0.6,
+        "Panda": 0.6648126750540184,
+        "Tiger": 0.2637002800864296
+      }
+    },
+    {
+      "coherence": 0.5141008741062723,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.15358651214814234,
+        "momentum": 0.15358651214814234,
+        "spread": 0.8513428667233901,
+        "volatility": 0.9552876779187,
+        "volume": 0.9537084952024982
+      },
+      "nodes": {
+        "CargoShip": 0.9537084952024982,
+        "Clownfish": 0.5,
+        "Deer": 0.8513428667233901,
+        "Dolphin": 0.7320003806343031,
+        "Falcon": 0.3936231070644491,
+        "Hummingbird": 0.0062157635876352105,
+        "Owl": 0.6,
+        "Panda": 0.52235616104065,
+        "Tiger": 0.03576985766504004
+      }
+    },
+    {
+      "coherence": 0.4585448526167914,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.3423852992923093,
+        "momentum": -0.3423852992923093,
+        "spread": 0.557910232715722,
+        "volatility": 0.1851643371852315,
+        "volume": 0.4342131774531276
+      },
+      "nodes": {
+        "CargoShip": 0.4342131774531276,
+        "Clownfish": 0.5,
+        "Deer": 0.557910232715722,
+        "Dolphin": 0.0600539349854356,
+        "Falcon": 0.3699336627405548,
+        "Hummingbird": 0.030743321687431897,
+        "Owl": 0.6,
+        "Panda": 0.9074178314073842,
+        "Tiger": 0.6518685302518148
+      }
+    },
+    {
+      "coherence": 0.5871237986853689,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.6522181690541422,
+        "momentum": 0.6522181690541422,
+        "spread": 0.8638402872019955,
+        "volatility": 0.5515537471014659,
+        "volume": 0.3468828811897898
+      },
+      "nodes": {
+        "CargoShip": 0.3468828811897898,
+        "Clownfish": 0.5,
+        "Deer": 0.8638402872019955,
+        "Dolphin": 0.9439106224868878,
+        "Falcon": 0.5606175826948364,
+        "Hummingbird": 0.010684640661681621,
+        "Owl": 0.6,
+        "Panda": 0.7242231264492671,
+        "Tiger": 0.35875700231882734
+      }
+    },
+    {
+      "coherence": 0.5693982153623404,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.14811443015650805,
+        "momentum": 0.14811443015650805,
+        "spread": 0.5918908345859771,
+        "volatility": 0.08906177751754307,
+        "volume": 0.4587941049310843
+      },
+      "nodes": {
+        "CargoShip": 0.4587941049310843,
+        "Clownfish": 0.5,
+        "Deer": 0.5918908345859771,
+        "Dolphin": 0.7243522583951346,
+        "Falcon": 0.2413183325888809,
+        "Hummingbird": 0.060568265080216704,
+        "Owl": 0.6,
+        "Panda": 0.9554691112412285,
+        "Tiger": 0.7287505779859655
+      }
+    },
+    {
+      "coherence": 0.45910422797960954,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.03636465307212844,
+        "momentum": -0.03636465307212844,
+        "spread": 0.2698584053131601,
+        "volatility": 0.13167740128028116,
+        "volume": 0.30247139237997756
+      },
+      "nodes": {
+        "CargoShip": 0.30247139237997756,
+        "Clownfish": 0.5,
+        "Deer": 0.2698584053131601,
+        "Dolphin": 0.4430027084229978,
+        "Falcon": 0.11619667486448317,
+        "Hummingbird": 0.04234973217874153,
+        "Owl": 0.6,
+        "Panda": 0.9341612993598594,
+        "Tiger": 0.6946580789757751
+      }
+    },
+    {
+      "coherence": 0.3830718512997045,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.7484611558550474,
+        "momentum": -0.7484611558550474,
+        "spread": 0.8958578656883086,
+        "volatility": 0.9779005322363743,
+        "volume": 0.1322526773758942
+      },
+      "nodes": {
+        "CargoShip": 0.1322526773758942,
+        "Clownfish": 0.5,
+        "Deer": 0.8958578656883086,
+        "Dolphin": 0.14474152151721537,
+        "Falcon": 0.5635986123113015,
+        "Hummingbird": 0.0060734859474338085,
+        "Owl": 0.6,
+        "Panda": 0.5110497338818129,
+        "Tiger": 0.01767957421090056
+      }
+    },
+    {
+      "coherence": 0.4955336158842705,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.20465789293010483,
+        "momentum": -0.20465789293010483,
+        "spread": 0.38255051114933547,
+        "volatility": 0.16933811655896802,
+        "volume": 0.8017044821073324
+      },
+      "nodes": {
+        "CargoShip": 0.8017044821073324,
+        "Clownfish": 0.5,
+        "Deer": 0.38255051114933547,
+        "Dolphin": 0.20021979560698128,
+        "Falcon": 0.38377186968327304,
+        "Hummingbird": 0.03345635671392336,
+        "Owl": 0.6,
+        "Panda": 0.915330941720516,
+        "Tiger": 0.6645295067528256
+      }
+    },
+    {
+      "coherence": 0.6597762253313812,
+      "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+      "features": {
+        "abs_momentum": 0.4755642479375477,
+        "momentum": 0.4755642479375477,
+        "spread": 0.9653899088032418,
+        "volatility": 0.20500535511941198,
+        "volume": 0.4874442064880865
+      },
+      "nodes": {
+        "CargoShip": 0.4874442064880865,
+        "Clownfish": 0.5,
+        "Deer": 0.9653899088032418,
+        "Dolphin": 0.9985274234462509,
+        "Falcon": 0.47912823550270933,
+        "Hummingbird": 0.027906281667578258,
+        "Owl": 0.6,
+        "Panda": 0.897497322440294,
+        "Tiger": 0.6359957159044705
+      }
+    },
+    {
+      "coherence": 0.48453822115682676,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.004999718378243756,
+        "momentum": 0.004999718378243756,
+        "spread": 0.27859555426862503,
+        "volatility": 0.26374354304383363,
+        "volume": 0.6521613126863268
+      },
+      "nodes": {
+        "CargoShip": 0.6521613126863268,
+        "Clownfish": 0.5,
+        "Deer": 0.27859555426862503,
+        "Dolphin": 0.5078532163400612,
+        "Falcon": 0.1991481966706687,
+        "Hummingbird": 0.021918325207909067,
+        "Owl": 0.6,
+        "Panda": 0.8681282284780831,
+        "Tiger": 0.5890051655649331
+      }
+    },
+    {
+      "coherence": 0.4167525625010064,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.08226258738790748,
+        "momentum": 0.08226258738790748,
+        "spread": 0.1624937781158312,
+        "volatility": 0.8127173714717257,
+        "volume": 0.674277325094946
+      },
+      "nodes": {
+        "CargoShip": 0.674277325094946,
+        "Clownfish": 0.5,
+        "Deer": 0.1624937781158312,
+        "Dolphin": 0.6277841798166564,
+        "Falcon": 0.259867008700019,
+        "Hummingbird": 0.007292905447306701,
+        "Owl": 0.6,
+        "Panda": 0.5936413142641371,
+        "Tiger": 0.1498261028226194
+      }
+    },
+    {
+      "coherence": 0.38406893965767097,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.284491988758254,
+        "momentum": 0.284491988758254,
+        "spread": 0.060119746671217,
+        "volatility": 0.8865024780481537,
+        "volume": 0.038749693853192824
+      },
+      "nodes": {
+        "CargoShip": 0.038749693853192824,
+        "Clownfish": 0.5,
+        "Deer": 0.060119746671217,
+        "Dolphin": 0.8897157744163002,
+        "Falcon": 0.21076930028673563,
+        "Hummingbird": 0.006692675309791752,
+        "Owl": 0.6,
+        "Panda": 0.5567487609759232,
+        "Tiger": 0.09079801756147701
+      }
+    },
+    {
+      "coherence": 0.5335723398312067,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.7916554829254983,
+        "momentum": 0.7916554829254983,
+        "spread": 0.3306162719535538,
+        "volatility": 0.41605946649092995,
+        "volume": 0.21869829644460248
+      },
+      "nodes": {
+        "CargoShip": 0.21869829644460248,
+        "Clownfish": 0.5,
+        "Deer": 0.3306162719535538,
+        "Dolphin": 0.8043946514557299,
+        "Falcon": 0.6197683269812294,
+        "Hummingbird": 0.014082541222277312,
+        "Owl": 0.6,
+        "Panda": 0.791970266754535,
+        "Tiger": 0.46715242680725605
+      }
+    },
+    {
+      "coherence": 0.5219694389573276,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.13230070452770581,
+        "momentum": 0.13230070452770581,
+        "spread": 0.627637848082449,
+        "volatility": 0.4659497133992796,
+        "volume": 0.5994498522496248
+      },
+      "nodes": {
+        "CargoShip": 0.5994498522496248,
+        "Clownfish": 0.5,
+        "Deer": 0.627637848082449,
+        "Dolphin": 0.701885438011092,
+        "Falcon": 0.27244544884428146,
+        "Hummingbird": 0.01260637380606327,
+        "Owl": 0.6,
+        "Panda": 0.7670251433003602,
+        "Tiger": 0.42724022928057637
+      }
+    },
+    {
+      "coherence": 0.38744908294586855,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.29054249198251814,
+        "momentum": -0.29054249198251814,
+        "spread": 0.5478416060362012,
+        "volatility": 0.5681562266985223,
+        "volume": 0.3231851414740543
+      },
+      "nodes": {
+        "CargoShip": 0.3231851414740543,
+        "Clownfish": 0.5,
+        "Deer": 0.5478416060362012,
+        "Dolphin": 0.10440078251425894,
+        "Falcon": 0.30033528682997895,
+        "Hummingbird": 0.010377817833532876,
+        "Owl": 0.6,
+        "Panda": 0.7159218866507389,
+        "Tiger": 0.3454750186411822
+      }
+    },
+    {
+      "coherence": 0.5588683753253342,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.8637651356352256,
+        "momentum": -0.8637651356352256,
+        "spread": 0.6604461960824447,
+        "volatility": 0.3597185732561612,
+        "volume": 0.7539430185152004
+      },
+      "nodes": {
+        "CargoShip": 0.7539430185152004,
+        "Clownfish": 0.5,
+        "Deer": 0.6604461960824447,
+        "Dolphin": 0.29247650592311353,
+        "Falcon": 0.830818500499218,
+        "Hummingbird": 0.01622855986692038,
+        "Owl": 0.6,
+        "Panda": 0.8201407133719194,
+        "Tiger": 0.512225141395071
+      }
+    },
+    {
+      "coherence": 0.4456033013143039,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.10799583738758378,
+        "momentum": 0.10799583738758378,
+        "spread": 0.6485125205110663,
+        "volatility": 0.9949212949867389,
+        "volume": 0.6953844955599128
+      },
+      "nodes": {
+        "CargoShip": 0.6953844955599128,
+        "Clownfish": 0.5,
+        "Deer": 0.6485125205110663,
+        "Dolphin": 0.6664036063939819,
+        "Falcon": 0.2842124348392825,
+        "Hummingbird": 0.005970616833310491,
+        "Owl": 0.6,
+        "Panda": 0.5025393525066306,
+        "Tiger": 0.004062964010608905
+      }
+    },
+    {
+      "coherence": 0.7274877513853621,
+      "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+      "features": {
+        "abs_momentum": 0.5869342273336748,
+        "momentum": 0.5869342273336748,
+        "spread": 0.7684856396430296,
+        "volatility": 0.020834836598989104,
+        "volume": 0.8196340587663468
+      },
+      "nodes": {
+        "CargoShip": 0.8196340587663468,
+        "Clownfish": 0.5,
+        "Deer": 0.7684856396430296,
+        "Dolphin": 0.9814680907678571,
+        "Falcon": 0.6567441767634764,
+        "Hummingbird": 0.194585107682935,
+        "Owl": 0.6,
+        "Panda": 0.9895825817005055,
+        "Tiger": 0.7833321307208088
+      }
+    },
+    {
+      "coherence": 0.3669804439799405,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.2865653355571123,
+        "momentum": -0.2865653355571123,
+        "spread": 0.6695486786883937,
+        "volatility": 0.7612388250389295,
+        "volume": 0.3001885178704776
+      },
+      "nodes": {
+        "CargoShip": 0.3001885178704776,
+        "Clownfish": 0.5,
+        "Deer": 0.6695486786883937,
+        "Dolphin": 0.10825215961478785,
+        "Falcon": 0.2906522902511219,
+        "Hummingbird": 0.007779691329332572,
+        "Owl": 0.6,
+        "Panda": 0.6193805874805353,
+        "Tiger": 0.19100893996885643
+      }
+    },
+    {
+      "coherence": 0.4840718606236655,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.3534009528765327,
+        "momentum": 0.3534009528765327,
+        "spread": 0.22314537661660339,
+        "volatility": 0.5205076774444738,
+        "volume": 0.1554986655663695
+      },
+      "nodes": {
+        "CargoShip": 0.1554986655663695,
+        "Clownfish": 0.5,
+        "Deer": 0.22314537661660339,
+        "Dolphin": 0.9479030976198581,
+        "Falcon": 0.29403026668348375,
+        "Hummingbird": 0.011309921147423916,
+        "Owl": 0.6,
+        "Panda": 0.7397461612777632,
+        "Tiger": 0.383593858044421
+      }
+    },
+    {
+      "coherence": 0.43873191856649063,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.9701697686284565,
+        "momentum": 0.9701697686284565,
+        "spread": 0.2319220743361936,
+        "volatility": 0.8657973149604417,
+        "volume": 0.29624825287981504
+      },
+      "nodes": {
+        "CargoShip": 0.29624825287981504,
+        "Clownfish": 0.5,
+        "Deer": 0.2319220743361936,
+        "Dolphin": 0.5467886615409483,
+        "Falcon": 0.7679933139038639,
+        "Hummingbird": 0.00685090019974657,
+        "Owl": 0.6,
+        "Panda": 0.5671013425197792,
+        "Tiger": 0.10736214803164668
+      }
+    },
+    {
+      "coherence": 0.4168894883112097,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.09413577157666819,
+        "momentum": -0.09413577157666819,
+        "spread": 0.32971612784346016,
+        "volatility": 0.8296194905467538,
+        "volume": 0.9343831350726811
+      },
+      "nodes": {
+        "CargoShip": 0.9343831350726811,
+        "Clownfish": 0.5,
+        "Deer": 0.32971612784346016,
+        "Dolphin": 0.3542778923344471,
+        "Falcon": 0.34620998062547204,
+        "Hummingbird": 0.00714609423382114,
+        "Owl": 0.6,
+        "Panda": 0.5851902547266231,
+        "Tiger": 0.13630440756259699
+      }
+    },
+    {
+      "coherence": 0.49473765671913167,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.08393425374548547,
+        "momentum": 0.08393425374548547,
+        "spread": 0.6365410883884909,
+        "volatility": 0.37803233265192027,
+        "volume": 0.3650105546549878
+      },
+      "nodes": {
+        "CargoShip": 0.3650105546549878,
+        "Clownfish": 0.5,
+        "Deer": 0.6365410883884909,
+        "Dolphin": 0.6303210515643256,
+        "Falcon": 0.16825714401833616,
+        "Hummingbird": 0.015462629000512252,
+        "Owl": 0.6,
+        "Panda": 0.8109838336740398,
+        "Tiger": 0.49757413387846383
+      }
+    },
+    {
+      "coherence": 0.5111032989558736,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.4322482586609817,
+        "momentum": -0.4322482586609817,
+        "spread": 0.5615763482687396,
+        "volatility": 0.0799324923408613,
+        "volume": 0.7288469035309615
+      },
+      "nodes": {
+        "CargoShip": 0.7288469035309615,
+        "Clownfish": 0.5,
+        "Deer": 0.5615763482687396,
+        "Dolphin": 0.011283411742482263,
+        "Falcon": 0.5212278521219756,
+        "Hummingbird": 0.06671670987676907,
+        "Owl": 0.6,
+        "Panda": 0.9600337538295693,
+        "Tiger": 0.736054006127311
+      }
+    },
+    {
+      "coherence": 0.3011401454172356,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.39879910137157326,
+        "momentum": -0.39879910137157326,
+        "spread": 0.09998122984370938,
+        "volatility": 0.9407668568761055,
+        "volume": 0.4691824050329485
+      },
+      "nodes": {
+        "CargoShip": 0.4691824050329485,
+        "Clownfish": 0.5,
+        "Deer": 0.09998122984370938,
+        "Dolphin": 0.025058044195389484,
+        "Falcon": 0.4199140924699858,
+        "Hummingbird": 0.0063106953682777155,
+        "Owl": 0.6,
+        "Panda": 0.5296165715619472,
+        "Tiger": 0.0473865144991156
+      }
+    },
+    {
+      "coherence": 0.41978387460794914,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.019144806322100916,
+        "momentum": -0.019144806322100916,
+        "spread": 0.36699913155501707,
+        "volatility": 0.7849071286782385,
+        "volume": 0.7629476830307135
+      },
+      "nodes": {
+        "CargoShip": 0.7629476830307135,
+        "Clownfish": 0.5,
+        "Deer": 0.36699913155501707,
+        "Dolphin": 0.4699455362539695,
+        "Falcon": 0.24228566933468465,
+        "Hummingbird": 0.007548051569215039,
+        "Owl": 0.6,
+        "Panda": 0.6075464356608807,
+        "Tiger": 0.17207429705740918
+      }
+    },
+    {
+      "coherence": 0.4886809972920846,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.8288157710979986,
+        "momentum": -0.8288157710979986,
+        "spread": 0.11955724608317697,
+        "volatility": 0.31469458301340125,
+        "volume": 0.6173272143606433
+      },
+      "nodes": {
+        "CargoShip": 0.6173272143606433,
+        "Clownfish": 0.5,
+        "Deer": 0.11955724608317697,
+        "Dolphin": 0.24387992006386328,
+        "Falcon": 0.765369204076792,
+        "Hummingbird": 0.018478903911225274,
+        "Owl": 0.6,
+        "Panda": 0.8426527084932993,
+        "Tiger": 0.548244333589279
+      }
+    },
+    {
+      "coherence": 0.4838085756150687,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.24937349317772517,
+        "momentum": 0.24937349317772517,
+        "spread": 0.25456205783887653,
+        "volatility": 0.6206023651646194,
+        "volume": 0.4816776354827982
+      },
+      "nodes": {
+        "CargoShip": 0.4816776354827982,
+        "Clownfish": 0.5,
+        "Deer": 0.25456205783887653,
+        "Dolphin": 0.852856832105068,
+        "Falcon": 0.31906473586924705,
+        "Hummingbird": 0.00951471217275516,
+        "Owl": 0.6,
+        "Panda": 0.6896988174176903,
+        "Tiger": 0.30351810786830447
+      }
+    },
+    {
+      "coherence": 0.6048827568696648,
+      "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+      "features": {
+        "abs_momentum": 0.7629874350050434,
+        "momentum": 0.7629874350050434,
+        "spread": 0.5313463993021205,
+        "volatility": 0.10300130407187846,
+        "volume": 0.20366310491269224
+      },
+      "nodes": {
+        "CargoShip": 0.20366310491269224,
+        "Clownfish": 0.5,
+        "Deer": 0.5313463993021205,
+        "Dolphin": 0.8388377328565204,
+        "Falcon": 0.5951901359773379,
+        "Hummingbird": 0.053096732372074996,
+        "Owl": 0.6,
+        "Panda": 0.9484993479640608,
+        "Tiger": 0.7175989567424973
+      }
+    },
+    {
+      "coherence": 0.48549369015701527,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.26617412055876266,
+        "momentum": 0.26617412055876266,
+        "spread": 0.39979443120451674,
+        "volatility": 0.783947334043862,
+        "volume": 0.5593257522534151
+      },
+      "nodes": {
+        "CargoShip": 0.5593257522534151,
+        "Clownfish": 0.5,
+        "Deer": 0.39979443120451674,
+        "Dolphin": 0.8710542686995353,
+        "Falcon": 0.35411961006715836,
+        "Hummingbird": 0.007557176329870423,
+        "Owl": 0.6,
+        "Panda": 0.6080263329780691,
+        "Tiger": 0.17284213276491045
+      }
+    },
+    {
+      "coherence": 0.5038718808603709,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.09630428014395398,
+        "momentum": -0.09630428014395398,
+        "spread": 0.38117824409658363,
+        "volatility": 0.039032014061341935,
+        "volume": 0.5047110542267994
+      },
+      "nodes": {
+        "CargoShip": 0.5047110542267994,
+        "Clownfish": 0.5,
+        "Deer": 0.38117824409658363,
+        "Dolphin": 0.3510228880454826,
+        "Falcon": 0.2188263123688076,
+        "Hummingbird": 0.12236903000748953,
+        "Owl": 0.6,
+        "Panda": 0.980483992969329,
+        "Tiger": 0.7687743887509265
+      }
+    },
+    {
+      "coherence": 0.642259580245339,
+      "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+      "features": {
+        "abs_momentum": 0.8404929029906412,
+        "momentum": 0.8404929029906412,
+        "spread": 0.6052339339735268,
+        "volatility": 0.25263770342953384,
+        "volume": 0.7815970513703561
+      },
+      "nodes": {
+        "CargoShip": 0.7815970513703561,
+        "Clownfish": 0.5,
+        "Deer": 0.6052339339735268,
+        "Dolphin": 0.7401980678998131,
+        "Falcon": 0.8228241475045556,
+        "Hummingbird": 0.02284515864116901,
+        "Owl": 0.6,
+        "Panda": 0.8736811482852331,
+        "Tiger": 0.5978898372563729
+      }
+    },
+    {
+      "coherence": 0.5822007336149392,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.576999220956727,
+        "momentum": 0.576999220956727,
+        "spread": 0.55404125070348,
+        "volatility": 0.32305300141884896,
+        "volume": 0.24853002175042982
+      },
+      "nodes": {
+        "CargoShip": 0.24853002175042982,
+        "Clownfish": 0.5,
+        "Deer": 0.55404125070348,
+        "Dolphin": 0.9854422710499955,
+        "Falcon": 0.47845846119483776,
+        "Hummingbird": 0.018015150665026954,
+        "Owl": 0.6,
+        "Panda": 0.8384734992905756,
+        "Tiger": 0.5415575988649208
+      }
+    },
+    {
+      "coherence": 0.4940020230488024,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.18367263640185927,
+        "momentum": -0.18367263640185927,
+        "spread": 0.6557482864917816,
+        "volatility": 0.38002500394923877,
+        "volume": 0.8362638018880089
+      },
+      "nodes": {
+        "CargoShip": 0.8362638018880089,
+        "Clownfish": 0.5,
+        "Deer": 0.6557482864917816,
+        "Dolphin": 0.22723364599303397,
+        "Falcon": 0.37944998604770414,
+        "Hummingbird": 0.015383629098766425,
+        "Owl": 0.6,
+        "Panda": 0.8099874980253806,
+        "Tiger": 0.495979996840609
+      }
+    },
+    {
+      "coherence": 0.45462537726184504,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.017077041565169093,
+        "momentum": 0.017077041565169093,
+        "spread": 0.6957609153815444,
+        "volatility": 0.7687945509757399,
+        "volume": 0.6950780571598288
+      },
+      "nodes": {
+        "CargoShip": 0.6950780571598288,
+        "Clownfish": 0.5,
+        "Deer": 0.6957609153815444,
+        "Dolphin": 0.5268116881562387,
+        "Falcon": 0.22047734624356702,
+        "Hummingbird": 0.007704214150551889,
+        "Owl": 0.6,
+        "Panda": 0.61560272451213,
+        "Tiger": 0.1849643592194081
+      }
+    },
+    {
+      "coherence": 0.5462404504336119,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.4417363768519136,
+        "momentum": 0.4417363768519136,
+        "spread": 0.6063769337026244,
+        "volatility": 0.5265025665099682,
+        "volume": 0.26367667287490426
+      },
+      "nodes": {
+        "CargoShip": 0.26367667287490426,
+        "Clownfish": 0.5,
+        "Deer": 0.6063769337026244,
+        "Dolphin": 0.9916473968739298,
+        "Falcon": 0.38831846565881073,
+        "Hummingbird": 0.011183543890630242,
+        "Owl": 0.6,
+        "Panda": 0.736748716745016,
+        "Tiger": 0.3787979467920255
+      }
+    },
+    {
+      "coherence": 0.46414064483073025,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.39978791611308906,
+        "momentum": 0.39978791611308906,
+        "spread": 0.7635375713720346,
+        "volatility": 0.9381659073878887,
+        "volume": 0.017425295193415846
+      },
+      "nodes": {
+        "CargoShip": 0.017425295193415846,
+        "Clownfish": 0.5,
+        "Deer": 0.7635375713720346,
+        "Dolphin": 0.9754252065004316,
+        "Falcon": 0.2850791298371871,
+        "Hummingbird": 0.006328006473602766,
+        "Owl": 0.6,
+        "Panda": 0.5309170463060556,
+        "Tiger": 0.04946727408968901
+      }
+    },
+    {
+      "coherence": 0.5719097945728316,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.8700897855630758,
+        "momentum": -0.8700897855630758,
+        "spread": 0.15547724336798852,
+        "volatility": 0.04886702919281227,
+        "volume": 0.7918135407993897
+      },
+      "nodes": {
+        "CargoShip": 0.7918135407993897,
+        "Clownfish": 0.5,
+        "Deer": 0.15547724336798852,
+        "Dolphin": 0.30155549795056547,
+        "Falcon": 0.8466069121339699,
+        "Hummingbird": 0.10192462711762948,
+        "Owl": 0.6,
+        "Panda": 0.9755664854035939,
+        "Tiger": 0.7609063766457502
+      }
+    },
+    {
+      "coherence": 0.4175982722705963,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.1639746318534585,
+        "momentum": 0.1639746318534585,
+        "spread": 0.1170021021350045,
+        "volatility": 0.9485779150328622,
+        "volume": 0.6746038404667981
+      },
+      "nodes": {
+        "CargoShip": 0.6746038404667981,
+        "Clownfish": 0.5,
+        "Deer": 0.1170021021350045,
+        "Dolphin": 0.7463289947429779,
+        "Falcon": 0.3171633944374604,
+        "Hummingbird": 0.0062592721007914175,
+        "Owl": 0.6,
+        "Panda": 0.5257110424835689,
+        "Tiger": 0.04113766797371028
+      }
+    },
+    {
+      "coherence": 0.5240419637670622,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.1532673145221648,
+        "momentum": -0.1532673145221648,
+        "spread": 0.6697805810671454,
+        "volatility": 0.14764306824162654,
+        "volume": 0.7243581818204878
+      },
+      "nodes": {
+        "CargoShip": 0.7243581818204878,
+        "Clownfish": 0.5,
+        "Deer": 0.6697805810671454,
+        "Dolphin": 0.26844388859933904,
+        "Falcon": 0.3245945747116617,
+        "Hummingbird": 0.03806066493709405,
+        "Owl": 0.6,
+        "Panda": 0.9261784658791867,
+        "Tiger": 0.6818855454066988
+      }
+    },
+    {
+      "coherence": 0.526324662025729,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.9243347639416566,
+        "momentum": -0.9243347639416566,
+        "spread": 0.9301293183288959,
+        "volatility": 0.4402328362892406,
+        "volume": 0.17057633970574848
+      },
+      "nodes": {
+        "CargoShip": 0.17057633970574848,
+        "Clownfish": 0.5,
+        "Deer": 0.9301293183288959,
+        "Dolphin": 0.38226149542020316,
+        "Falcon": 0.6982072366708841,
+        "Hummingbird": 0.013326438048035778,
+        "Owl": 0.6,
+        "Panda": 0.7798835818553798,
+        "Tiger": 0.44781373096860755
+      }
+    },
+    {
+      "coherence": 0.5074737251828392,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.4278054836319074,
+        "momentum": -0.4278054836319074,
+        "spread": 0.7396650861681712,
+        "volatility": 0.3493049827587831,
+        "volume": 0.9527080534349925
+      },
+      "nodes": {
+        "CargoShip": 0.9527080534349925,
+        "Clownfish": 0.5,
+        "Deer": 0.7396650861681712,
+        "Dolphin": 0.012805179525864296,
+        "Falcon": 0.5852762545728329,
+        "Hummingbird": 0.01669890563145365,
+        "Owl": 0.6,
+        "Panda": 0.8253475086206085,
+        "Tiger": 0.5205560137929736
+      }
+    },
+    {
+      "coherence": 0.6277796801047127,
+      "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+      "features": {
+        "abs_momentum": 0.33671303166955213,
+        "momentum": 0.33671303166955213,
+        "spread": 0.9529445416101254,
+        "volatility": 0.36141520336377686,
+        "volume": 0.6330966505620717
+      },
+      "nodes": {
+        "CargoShip": 0.6330966505620717,
+        "Clownfish": 0.5,
+        "Deer": 0.9529445416101254,
+        "Dolphin": 0.9356426534475755,
+        "Falcon": 0.425628117337308,
+        "Hummingbird": 0.01615442756693886,
+        "Owl": 0.6,
+        "Panda": 0.8192923983181115,
+        "Tiger": 0.5108678373089786
+      }
+    },
+    {
+      "coherence": 0.3690619552391622,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.31194810948005647,
+        "momentum": -0.31194810948005647,
+        "spread": 0.8309454489231661,
+        "volatility": 0.8753768775109604,
+        "volume": 0.3518444728871932
+      },
+      "nodes": {
+        "CargoShip": 0.3518444728871932,
+        "Clownfish": 0.5,
+        "Deer": 0.8309454489231661,
+        "Dolphin": 0.08474744653880034,
+        "Falcon": 0.32391701850219745,
+        "Hummingbird": 0.006776775125263787,
+        "Owl": 0.6,
+        "Panda": 0.5623115612445198,
+        "Tiger": 0.0996984979912317
+      }
+    },
+    {
+      "coherence": 0.4583226843362846,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.18964932433999615,
+        "momentum": 0.18964932433999615,
+        "spread": 0.5250087493416346,
+        "volatility": 0.7293674264428159,
+        "volume": 0.3230792759967511
+      },
+      "nodes": {
+        "CargoShip": 0.3230792759967511,
+        "Clownfish": 0.5,
+        "Deer": 0.5250087493416346,
+        "Dolphin": 0.7805859293727493,
+        "Falcon": 0.22967830983702262,
+        "Hummingbird": 0.008115045085048862,
+        "Owl": 0.6,
+        "Panda": 0.635316286778592,
+        "Tiger": 0.21650605884574725
+      }
+    },
+    {
+      "coherence": 0.5213728976051092,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.5315293208975387,
+        "momentum": 0.5315293208975387,
+        "spread": 0.23366633976062157,
+        "volatility": 0.7251860883209699,
+        "volume": 0.5518163316481802
+      },
+      "nodes": {
+        "CargoShip": 0.5518163316481802,
+        "Clownfish": 0.5,
+        "Deer": 0.23366633976062157,
+        "Dolphin": 0.9975491661296341,
+        "Falcon": 0.5376154241227311,
+        "Hummingbird": 0.008161199042412377,
+        "Owl": 0.6,
+        "Panda": 0.637406955839515,
+        "Tiger": 0.21985112934322412
+      }
+    },
+    {
+      "coherence": 0.44704095988616627,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.8390535629224891,
+        "momentum": -0.8390535629224891,
+        "spread": 0.11844291597846202,
+        "volatility": 0.2371411252538479,
+        "volume": 0.10677909663492091
+      },
+      "nodes": {
+        "CargoShip": 0.10677909663492091,
+        "Clownfish": 0.5,
+        "Deer": 0.11844291597846202,
+        "Dolphin": 0.25782145963137093,
+        "Falcon": 0.6193712230362186,
+        "Hummingbird": 0.024277626776349644,
+        "Owl": 0.6,
+        "Panda": 0.881429437373076,
+        "Tiger": 0.6102870997969218
+      }
+    },
+    {
+      "coherence": 0.4384117749996067,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.02449766643728757,
+        "momentum": -0.02449766643728757,
+        "spread": 0.01632604226432688,
+        "volatility": 0.13929388040687696,
+        "volume": 0.3274806245105656
+      },
+      "nodes": {
+        "CargoShip": 0.3274806245105656,
+        "Clownfish": 0.5,
+        "Deer": 0.01632604226432688,
+        "Dolphin": 0.46155713195491266,
+        "Falcon": 0.11539255385927097,
+        "Hummingbird": 0.04018918915931413,
+        "Owl": 0.6,
+        "Panda": 0.9303530597965615,
+        "Tiger": 0.6885648956744985
+      }
+    },
+    {
+      "coherence": 0.5198332133406204,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.24386986195481009,
+        "momentum": 0.24386986195481009,
+        "spread": 0.512306098646252,
+        "volatility": 0.45287694641925513,
+        "volume": 0.3667659739569735
+      },
+      "nodes": {
+        "CargoShip": 0.3667659739569735,
+        "Clownfish": 0.5,
+        "Deer": 0.512306098646252,
+        "Dolphin": 0.8466793780917397,
+        "Falcon": 0.2807386955554591,
+        "Hummingbird": 0.012962408360180987,
+        "Owl": 0.6,
+        "Panda": 0.7735615267903724,
+        "Tiger": 0.4376984428645959
+      }
+    },
+    {
+      "coherence": 0.3831111107224654,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.23529619348461162,
+        "momentum": -0.23529619348461162,
+        "spread": 0.4036319131401449,
+        "volatility": 0.9764380993973939,
+        "volume": 0.9291345535933239
+      },
+      "nodes": {
+        "CargoShip": 0.9291345535933239,
+        "Clownfish": 0.5,
+        "Deer": 0.4036319131401449,
+        "Dolphin": 0.1631497684842036,
+        "Falcon": 0.44344770151722523,
+        "Hummingbird": 0.006082490126512089,
+        "Owl": 0.6,
+        "Panda": 0.5117809503013031,
+        "Tiger": 0.01884952048208488
+      }
+    },
+    {
+      "coherence": 0.5343062260576469,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.7967434029405869,
+        "momentum": 0.7967434029405869,
+        "spread": 0.6596508053790288,
+        "volatility": 0.4658037676244663,
+        "volume": 0.02005919381530019
+      },
+      "nodes": {
+        "CargoShip": 0.02005919381530019,
+        "Clownfish": 0.5,
+        "Deer": 0.6596508053790288,
+        "Dolphin": 0.7980156595651525,
+        "Falcon": 0.5637381402030008,
+        "Hummingbird": 0.012610240624945137,
+        "Owl": 0.6,
+        "Panda": 0.7670981161877668,
+        "Tiger": 0.427356985900427
+      }
+    },
+    {
+      "coherence": 0.451315672473145,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.07918228991054987,
+        "momentum": -0.07918228991054987,
+        "spread": 0.22245356781189274,
+        "volatility": 0.4168710624679389,
+        "volume": 0.7440062543178183
+      },
+      "nodes": {
+        "CargoShip": 0.7440062543178183,
+        "Clownfish": 0.5,
+        "Deer": 0.22245356781189274,
+        "Dolphin": 0.37689956780187367,
+        "Falcon": 0.2786294792327304,
+        "Hummingbird": 0.014055766547657802,
+        "Owl": 0.6,
+        "Panda": 0.7915644687660306,
+        "Tiger": 0.4665031500256489
+      }
+    },
+    {
+      "coherence": 0.600922266625066,
+      "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+      "features": {
+        "abs_momentum": 0.35881286595145,
+        "momentum": 0.35881286595145,
+        "spread": 0.25067378937837936,
+        "volatility": 0.07354610203095135,
+        "volume": 0.512751166827695
+      },
+      "nodes": {
+        "CargoShip": 0.512751166827695,
+        "Clownfish": 0.5,
+        "Deer": 0.25067378937837936,
+        "Dolphin": 0.951616411596111,
+        "Falcon": 0.40499435621432345,
+        "Hummingbird": 0.07181663601465425,
+        "Owl": 0.6,
+        "Panda": 0.9632269489845243,
+        "Tiger": 0.741163118375239
+      }
+    },
+    {
+      "coherence": 0.6651068467689197,
+      "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+      "features": {
+        "abs_momentum": 0.7533127061207627,
+        "momentum": 0.7533127061207627,
+        "spread": 0.911831797797244,
+        "volatility": 0.33815790092775444,
+        "volume": 0.7611732384679218
+      },
+      "nodes": {
+        "CargoShip": 0.7611732384679218,
+        "Clownfish": 0.5,
+        "Deer": 0.911831797797244,
+        "Dolphin": 0.8498548192584123,
+        "Falcon": 0.7556708658249104,
+        "Hummingbird": 0.017233559784257335,
+        "Owl": 0.6,
+        "Panda": 0.8309210495361228,
+        "Tiger": 0.5294736792577964
+      }
+    },
+    {
+      "coherence": 0.43570028299125846,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.22052712821076637,
+        "momentum": -0.22052712821076637,
+        "spread": 0.21759027346117732,
+        "volatility": 0.24421049074191203,
+        "volume": 0.5304964174839744
+      },
+      "nodes": {
+        "CargoShip": 0.5304964174839744,
+        "Clownfish": 0.5,
+        "Deer": 0.21759027346117732,
+        "Dolphin": 0.18065044895176802,
+        "Falcon": 0.31351791499272874,
+        "Hummingbird": 0.023602487774949926,
+        "Owl": 0.6,
+        "Panda": 0.877894754629044,
+        "Tiger": 0.6046316074064704
+      }
+    },
+    {
+      "coherence": 0.3684103173809619,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.0456279614741526,
+        "momentum": -0.0456279614741526,
+        "spread": 0.13091515852922342,
+        "volatility": 0.89671152287535,
+        "volume": 0.6941748046891677
+      },
+      "nodes": {
+        "CargoShip": 0.6941748046891677,
+        "Clownfish": 0.5,
+        "Deer": 0.13091515852922342,
+        "Dolphin": 0.4285729628421173,
+        "Falcon": 0.24019201443865712,
+        "Hummingbird": 0.0066173196751408755,
+        "Owl": 0.6,
+        "Panda": 0.551644238562325,
+        "Tiger": 0.08263078169971996
+      }
+    },
+    {
+      "coherence": 0.5456172368077703,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.644142017614834,
+        "momentum": 0.644142017614834,
+        "spread": 0.18862244706327957,
+        "volatility": 0.3947119230414442,
+        "volume": 0.3288572164803285
+      },
+      "nodes": {
+        "CargoShip": 0.3288572164803285,
+        "Clownfish": 0.5,
+        "Deer": 0.18862244706327957,
+        "Dolphin": 0.9496050689154358,
+        "Falcon": 0.5495565772744824,
+        "Hummingbird": 0.014825360110247047,
+        "Owl": 0.6,
+        "Panda": 0.8026440384792779,
+        "Tiger": 0.4842304615668447
+      }
+    },
+    {
+      "coherence": 0.4619179399672225,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.18926686657752922,
+        "momentum": -0.18926686657752922,
+        "spread": 0.940536746903244,
+        "volatility": 0.4475063733838677,
+        "volume": 0.4068664974370251
+      },
+      "nodes": {
+        "CargoShip": 0.4068664974370251,
+        "Clownfish": 0.5,
+        "Deer": 0.940536746903244,
+        "Dolphin": 0.21991152436893513,
+        "Falcon": 0.254546755835378,
+        "Hummingbird": 0.013114571400660555,
+        "Owl": 0.6,
+        "Panda": 0.7762468133080662,
+        "Tiger": 0.44199490129290586
+      }
+    },
+    {
+      "coherence": 0.6196679929072605,
+      "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+      "features": {
+        "abs_momentum": 0.1745984385119559,
+        "momentum": 0.1745984385119559,
+        "spread": 0.9736042900387173,
+        "volatility": 0.16054739790315098,
+        "volume": 0.6297373217671671
+      },
+      "nodes": {
+        "CargoShip": 0.6297373217671671,
+        "Clownfish": 0.5,
+        "Deer": 0.9736042900387173,
+        "Dolphin": 0.7607112536591052,
+        "Falcon": 0.3111401034885192,
+        "Hummingbird": 0.035180835789750536,
+        "Owl": 0.6,
+        "Panda": 0.9197263010484245,
+        "Tiger": 0.6715620816774792
+      }
+    },
+    {
+      "coherence": 0.4194491815884897,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.5199086129725123,
+        "momentum": -0.5199086129725123,
+        "spread": 0.45157578212382543,
+        "volatility": 0.5267890532871338,
+        "volume": 0.599114518190494
+      },
+      "nodes": {
+        "CargoShip": 0.599114518190494,
+        "Clownfish": 0.5,
+        "Deer": 0.45157578212382543,
+        "Dolphin": 0.000977642747404528,
+        "Falcon": 0.5436703845379068,
+        "Hummingbird": 0.011177575182015755,
+        "Owl": 0.6,
+        "Panda": 0.7366054733564331,
+        "Tiger": 0.378568757370293
+      }
+    },
+    {
+      "coherence": 0.33045501704030456,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.5176575030120798,
+        "momentum": -0.5176575030120798,
+        "spread": 0.5726145893061081,
+        "volatility": 0.8518927709669203,
+        "volume": 0.14873485623036764
+      },
+      "nodes": {
+        "CargoShip": 0.14873485623036764,
+        "Clownfish": 0.5,
+        "Deer": 0.5726145893061081,
+        "Dolphin": 0.0007691073486628675,
+        "Falcon": 0.40698070897756616,
+        "Hummingbird": 0.006961422815124507,
+        "Owl": 0.6,
+        "Panda": 0.5740536145165398,
+        "Tiger": 0.11848578322646378
+      }
+    },
+    {
+      "coherence": 0.5002919106611138,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.9172397863837249,
+        "momentum": -0.9172397863837249,
+        "spread": 0.09220676657890481,
+        "volatility": 0.23564270695932688,
+        "volume": 0.3813741427619103
+      },
+      "nodes": {
+        "CargoShip": 0.3813741427619103,
+        "Clownfish": 0.5,
+        "Deer": 0.09220676657890481,
+        "Dolphin": 0.37146026566416834,
+        "Falcon": 0.7564800932971805,
+        "Hummingbird": 0.02442572008048043,
+        "Owl": 0.6,
+        "Panda": 0.8821786465203365,
+        "Tiger": 0.6114858344325386
+      }
+    },
+    {
+      "coherence": 0.4892557387994954,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.6033046931716408,
+        "momentum": -0.6033046931716408,
+        "spread": 0.856922407701678,
+        "volatility": 0.5923792788320523,
+        "volume": 0.8695781044308718
+      },
+      "nodes": {
+        "CargoShip": 0.8695781044308718,
+        "Clownfish": 0.5,
+        "Deer": 0.856922407701678,
+        "Dolphin": 0.026101447616419304,
+        "Falcon": 0.6831867165494101,
+        "Hummingbird": 0.009960501980800774,
+        "Owl": 0.6,
+        "Panda": 0.7038103605839738,
+        "Tiger": 0.3260965769343582
+      }
+    },
+    {
+      "coherence": 0.5992156284234927,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.5476711219715027,
+        "momentum": 0.5476711219715027,
+        "spread": 0.21638822728240836,
+        "volatility": 0.39032469729316854,
+        "volume": 0.7925764570240705
+      },
+      "nodes": {
+        "CargoShip": 0.7925764570240705,
+        "Clownfish": 0.5,
+        "Deer": 0.21638822728240836,
+        "Dolphin": 0.9944032151070761,
+        "Falcon": 0.621142722487273,
+        "Hummingbird": 0.014987833727395636,
+        "Owl": 0.6,
+        "Panda": 0.8048376513534157,
+        "Tiger": 0.4877402421654652
+      }
+    },
+    {
+      "coherence": 0.5230678499150123,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.05222086100665391,
+        "momentum": -0.05222086100665391,
+        "spread": 0.8892533839132966,
+        "volatility": 0.47302491620301124,
+        "volume": 0.861689684728253
+      },
+      "nodes": {
+        "CargoShip": 0.861689684728253,
+        "Clownfish": 0.5,
+        "Deer": 0.8892533839132966,
+        "Dolphin": 0.41833912836104803,
+        "Falcon": 0.2950615081231336,
+        "Hummingbird": 0.012421719457383544,
+        "Owl": 0.6,
+        "Panda": 0.7634875418984943,
+        "Tiger": 0.42158006703759104
+      }
+    },
+    {
+      "coherence": 0.5285239794584842,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.360121016104886,
+        "momentum": 0.360121016104886,
+        "spread": 0.7592284643960575,
+        "volatility": 0.9402205903469247,
+        "volume": 0.6648087592534969
+      },
+      "nodes": {
+        "CargoShip": 0.6648087592534969,
+        "Clownfish": 0.5,
+        "Deer": 0.7592284643960575,
+        "Dolphin": 0.9524944306246457,
+        "Falcon": 0.4515273390494693,
+        "Hummingbird": 0.0063143232855114246,
+        "Owl": 0.6,
+        "Panda": 0.5298897048265376,
+        "Tiger": 0.047823527722460214
+      }
+    },
+    {
+      "coherence": 0.5506462024032291,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.04863909986334014,
+        "momentum": 0.04863909986334014,
+        "spread": 0.30145881274521613,
+        "volatility": 0.03418136713733522,
+        "volume": 0.6940861573346048
+      },
+      "nodes": {
+        "CargoShip": 0.6940861573346048,
+        "Clownfish": 0.5,
+        "Deer": 0.30145881274521613,
+        "Dolphin": 0.5761051457481811,
+        "Falcon": 0.24227321710471952,
+        "Hummingbird": 0.13580385553369925,
+        "Owl": 0.6,
+        "Panda": 0.9829093164313324,
+        "Tiger": 0.7726549062901319
+      }
+    },
+    {
+      "coherence": 0.4459511821403657,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.8009873668977363,
+        "momentum": -0.8009873668977363,
+        "spread": 0.12703473996285564,
+        "volatility": 0.25886221843293533,
+        "volume": 0.22247875819814478
+      },
+      "nodes": {
+        "CargoShip": 0.22247875819814478,
+        "Clownfish": 0.5,
+        "Deer": 0.12703473996285564,
+        "Dolphin": 0.20736353249534828,
+        "Falcon": 0.6274347842878588,
+        "Hummingbird": 0.02231626308438213,
+        "Owl": 0.6,
+        "Panda": 0.8705688907835323,
+        "Tiger": 0.5929102252536518
+      }
+    },
+    {
+      "coherence": 0.38549547166456694,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.21346812008853022,
+        "momentum": -0.21346812008853022,
+        "spread": 0.8256939978344732,
+        "volatility": 0.8946518804642023,
+        "volume": 0.4602058131731015
+      },
+      "nodes": {
+        "CargoShip": 0.4602058131731015,
+        "Clownfish": 0.5,
+        "Deer": 0.8256939978344732,
+        "Dolphin": 0.1892602121403048,
+        "Falcon": 0.2874894280139016,
+        "Hummingbird": 0.006632385483929168,
+        "Owl": 0.6,
+        "Panda": 0.5526740597678989,
+        "Tiger": 0.08427849562863816
+      }
+    },
+    {
+      "coherence": 0.541779063134582,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.554482990225099,
+        "momentum": 0.554482990225099,
+        "spread": 0.7165729152540512,
+        "volatility": 0.6174223686300768,
+        "volume": 0.16489753786053596
+      },
+      "nodes": {
+        "CargoShip": 0.16489753786053596,
+        "Clownfish": 0.5,
+        "Deer": 0.7165729152540512,
+        "Dolphin": 0.9926936398575781,
+        "Falcon": 0.43760735451573,
+        "Hummingbird": 0.009562936069844765,
+        "Owl": 0.6,
+        "Panda": 0.6912888156849616,
+        "Tiger": 0.30606210509593856
+      }
+    },
+    {
+      "coherence": 0.5031735287527374,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.18118965347298577,
+        "momentum": 0.18118965347298577,
+        "spread": 0.455773888455302,
+        "volatility": 0.8138786011384183,
+        "volume": 0.9224684939632235
+      },
+      "nodes": {
+        "CargoShip": 0.9224684939632235,
+        "Clownfish": 0.5,
+        "Deer": 0.455773888455302,
+        "Dolphin": 0.7694893210687874,
+        "Falcon": 0.4035733056200571,
+        "Hummingbird": 0.007282626338042188,
+        "Owl": 0.6,
+        "Panda": 0.5930606994307909,
+        "Tiger": 0.1488971190892654
+      }
+    },
+    {
+      "coherence": 0.4612867876605917,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.09191237396217189,
+        "momentum": 0.09191237396217189,
+        "spread": 0.17291720165099822,
+        "volatility": 0.13517432126895745,
+        "volume": 0.0837406942423562
+      },
+      "nodes": {
+        "CargoShip": 0.0837406942423562,
+        "Clownfish": 0.5,
+        "Deer": 0.17291720165099822,
+        "Dolphin": 0.642377692349693,
+        "Falcon": 0.08946087004622719,
+        "Hummingbird": 0.041329623225061195,
+        "Owl": 0.6,
+        "Panda": 0.9324128393655213,
+        "Tiger": 0.6918605429848341
+      }
+    },
+    {
+      "coherence": 0.5015536073713316,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.6498270591076418,
+        "momentum": 0.6498270591076418,
+        "spread": 0.5334308762222071,
+        "volatility": 0.9939788142032645,
+        "volume": 0.468740818265866
+      },
+      "nodes": {
+        "CargoShip": 0.468740818265866,
+        "Clownfish": 0.5,
+        "Deer": 0.5334308762222071,
+        "Dolphin": 0.9456265250872413,
+        "Falcon": 0.595501186855109,
+        "Hummingbird": 0.005976221724122205,
+        "Owl": 0.6,
+        "Panda": 0.5030105928983677,
+        "Tiger": 0.004816948637388397
+      }
+    },
+    {
+      "coherence": 0.47276267745738937,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.43399193489923293,
+        "momentum": 0.43399193489923293,
+        "spread": 0.7010326315606216,
+        "volatility": 0.9069867941349374,
+        "volume": 0.058233388706392164
+      },
+      "nodes": {
+        "CargoShip": 0.058233388706392164,
+        "Clownfish": 0.5,
+        "Deer": 0.7010326315606216,
+        "Dolphin": 0.9892878440083226,
+        "Falcon": 0.32126437104138067,
+        "Hummingbird": 0.006543169474605413,
+        "Owl": 0.6,
+        "Panda": 0.5465066029325313,
+        "Tiger": 0.07441056469205005
+      }
+    },
+    {
+      "coherence": 0.4474318404818919,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.5460342834109027,
+        "momentum": -0.5460342834109027,
+        "spread": 0.761692155907825,
+        "volatility": 0.2852168387097562,
+        "volume": 0.22253431968555104
+      },
+      "nodes": {
+        "CargoShip": 0.22253431968555104,
+        "Clownfish": 0.5,
+        "Deer": 0.761692155907825,
+        "Dolphin": 0.005219698874011691,
+        "Falcon": 0.4489842942932971,
+        "Hummingbird": 0.020324043934021416,
+        "Owl": 0.6,
+        "Panda": 0.8573915806451219,
+        "Tiger": 0.571826529032195
+      }
+    },
+    {
+      "coherence": 0.4174613418897019,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.34350306564737143,
+        "momentum": 0.34350306564737143,
+        "spread": 0.03866436275593055,
+        "volatility": 0.7600208094158016,
+        "volume": 0.06337013540733871
+      },
+      "nodes": {
+        "CargoShip": 0.06337013540733871,
+        "Clownfish": 0.5,
+        "Deer": 0.03866436275593055,
+        "Dolphin": 0.9407776524531517,
+        "Falcon": 0.2594631865753616,
+        "Hummingbird": 0.0077919972118053165,
+        "Owl": 0.6,
+        "Panda": 0.6199895952920992,
+        "Tiger": 0.1919833524673587
+      }
+    },
+    {
+      "coherence": 0.40093680482841065,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.7299243333723899,
+        "momentum": -0.7299243333723899,
+        "spread": 0.3173433772088198,
+        "volatility": 0.600771692034056,
+        "volume": 0.30765603576195166
+      },
+      "nodes": {
+        "CargoShip": 0.30765603576195166,
+        "Clownfish": 0.5,
+        "Deer": 0.3173433772088198,
+        "Dolphin": 0.12486587433003121,
+        "Falcon": 0.6032438440892585,
+        "Hummingbird": 0.009823637994777019,
+        "Owl": 0.6,
+        "Panda": 0.699614153982972,
+        "Tiger": 0.3193826463727552
+      }
+    },
+    {
+      "coherence": 0.5139506312047738,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.8645182242127343,
+        "momentum": 0.8645182242127343,
+        "spread": 0.8569544433312829,
+        "volatility": 0.9937016272017367,
+        "volume": 0.4731054241174413
+      },
+      "nodes": {
+        "CargoShip": 0.4731054241174413,
+        "Clownfish": 0.5,
+        "Deer": 0.8569544433312829,
+        "Dolphin": 0.7064466675132303,
+        "Falcon": 0.7470943841841463,
+        "Hummingbird": 0.005977872145856394,
+        "Owl": 0.6,
+        "Panda": 0.5031491863991316,
+        "Tiger": 0.005038698238610629
+      }
+    },
+    {
+      "coherence": 0.5923651790725745,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.7207532212841004,
+        "momentum": 0.7207532212841004,
+        "spread": 0.5828078721216022,
+        "volatility": 0.20753684299415243,
+        "volume": 0.17888731028385452
+      },
+      "nodes": {
+        "CargoShip": 0.17888731028385452,
+        "Clownfish": 0.5,
+        "Deer": 0.5828078721216022,
+        "Dolphin": 0.8845013706810605,
+        "Falcon": 0.5581934479840265,
+        "Hummingbird": 0.02758153477551977,
+        "Owl": 0.6,
+        "Panda": 0.8962315785029238,
+        "Tiger": 0.6339705256046781
+      }
+    },
+    {
+      "coherence": 0.49955610044509574,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.3403754611402239,
+        "momentum": 0.3403754611402239,
+        "spread": 0.30574601690472647,
+        "volatility": 0.9896603170142989,
+        "volume": 0.8936285279454236
+      },
+      "nodes": {
+        "CargoShip": 0.8936285279454236,
+        "Clownfish": 0.5,
+        "Deer": 0.30574601690472647,
+        "Dolphin": 0.938437160448391,
+        "Falcon": 0.5063513811817837,
+        "Hummingbird": 0.006002038790456636,
+        "Owl": 0.6,
+        "Panda": 0.5051698414928505,
+        "Tiger": 0.008271746388560874
+      }
+    },
+    {
+      "coherence": 0.42318265357440277,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.6723822747852268,
+        "momentum": -0.6723822747852268,
+        "spread": 0.900908292369235,
+        "volatility": 0.9332073894823246,
+        "volume": 0.589961789433594
+      },
+      "nodes": {
+        "CargoShip": 0.589961789433594,
+        "Clownfish": 0.5,
+        "Deer": 0.900908292369235,
+        "Dolphin": 0.07154588953355445,
+        "Falcon": 0.6476561291797369,
+        "Hummingbird": 0.006361273317942383,
+        "Owl": 0.6,
+        "Panda": 0.5333963052588377,
+        "Tiger": 0.0534340884141403
+      }
+    },
+    {
+      "coherence": 0.6125313483814175,
+      "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+      "features": {
+        "abs_momentum": 0.9528958106882004,
+        "momentum": 0.9528958106882004,
+        "spread": 0.936261140944901,
+        "volatility": 0.5162574493164432,
+        "volume": 0.7498590521254481
+      },
+      "nodes": {
+        "CargoShip": 0.7498590521254481,
+        "Clownfish": 0.5,
+        "Deer": 0.936261140944901,
+        "Dolphin": 0.5737213313470143,
+        "Falcon": 0.8919847831193747,
+        "Hummingbird": 0.011401263787892049,
+        "Owl": 0.6,
+        "Panda": 0.7418712753417784,
+        "Tiger": 0.38699404054684544
+      }
+    },
+    {
+      "coherence": 0.4346526679702232,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.20335740552949955,
+        "momentum": -0.20335740552949955,
+        "spread": 0.41275325751828307,
+        "volatility": 0.38809217418635755,
+        "volume": 0.542257100545723
+      },
+      "nodes": {
+        "CargoShip": 0.542257100545723,
+        "Clownfish": 0.5,
+        "Deer": 0.41275325751828307,
+        "Dolphin": 0.20185720682001324,
+        "Falcon": 0.30502731403436656,
+        "Hummingbird": 0.015071886334523221,
+        "Owl": 0.6,
+        "Panda": 0.8059539129068212,
+        "Tiger": 0.489526260650914
+      }
+    },
+    {
+      "coherence": 0.47764002102144604,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.8907302258885013,
+        "momentum": -0.8907302258885013,
+        "spread": 0.6582055662102364,
+        "volatility": 0.6841567086842725,
+        "volume": 0.40049820714889295
+      },
+      "nodes": {
+        "CargoShip": 0.40049820714889295,
+        "Clownfish": 0.5,
+        "Deer": 0.6582055662102364,
+        "Dolphin": 0.33171070885389353,
+        "Falcon": 0.7436606202666187,
+        "Hummingbird": 0.008643581377139749,
+        "Owl": 0.6,
+        "Panda": 0.6579216456578638,
+        "Tiger": 0.25267463305258203
+      }
+    },
+    {
+      "coherence": 0.31319611921495555,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.7023787509140791,
+        "momentum": -0.7023787509140791,
+        "spread": 0.18136059998496645,
+        "volatility": 0.9302719774777691,
+        "volume": 0.15035973415056947
+      },
+      "nodes": {
+        "CargoShip": 0.15035973415056947,
+        "Clownfish": 0.5,
+        "Deer": 0.18136059998496645,
+        "Dolphin": 0.09769905666278522,
+        "Falcon": 0.5367730458850262,
+        "Hummingbird": 0.006381132420956211,
+        "Owl": 0.6,
+        "Panda": 0.5348640112611154,
+        "Tiger": 0.0557824180177847
+      }
+    },
+    {
+      "coherence": 0.5351383509647121,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.028312014152013454,
+        "momentum": 0.028312014152013454,
+        "spread": 0.22631740666854028,
+        "volatility": 0.15195036448807597,
+        "volume": 0.9154860423204273
+      },
+      "nodes": {
+        "CargoShip": 0.9154860423204273,
+        "Clownfish": 0.5,
+        "Deer": 0.22631740666854028,
+        "Dolphin": 0.544413792819012,
+        "Falcon": 0.29446422260253763,
+        "Hummingbird": 0.03704838836865826,
+        "Owl": 0.6,
+        "Panda": 0.924024817755962,
+        "Tiger": 0.6784397084095393
+      }
+    },
+    {
+      "coherence": 0.5138791312257085,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.36049476694765703,
+        "momentum": 0.36049476694765703,
+        "spread": 0.7858173002823104,
+        "volatility": 0.777086276375049,
+        "volume": 0.2861900019079783
+      },
+      "nodes": {
+        "CargoShip": 0.2861900019079783,
+        "Clownfish": 0.5,
+        "Deer": 0.7858173002823104,
+        "Dolphin": 0.9527438859216217,
+        "Falcon": 0.33820333743575337,
+        "Hummingbird": 0.007623052491314156,
+        "Owl": 0.6,
+        "Panda": 0.6114568618124755,
+        "Tiger": 0.1783309788999608
+      }
+    },
+    {
+      "coherence": 0.5447509958005942,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.3039516542045677,
+        "momentum": 0.3039516542045677,
+        "spread": 0.008520091438690591,
+        "volatility": 0.40505420519100244,
+        "volume": 0.8167190498269787
+      },
+      "nodes": {
+        "CargoShip": 0.8167190498269787,
+        "Clownfish": 0.5,
+        "Deer": 0.008520091438690591,
+        "Dolphin": 0.908125758972378,
+        "Falcon": 0.457781872891291,
+        "Hummingbird": 0.014455943163469164,
+        "Owl": 0.6,
+        "Panda": 0.7974728974044988,
+        "Tiger": 0.47595663584719805
+      }
+    },
+    {
+      "coherence": 0.3842093635455492,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.16079757392146488,
+        "momentum": -0.16079757392146488,
+        "spread": 0.20509870548604248,
+        "volatility": 0.9269632050120047,
+        "volume": 0.9644007360269973
+      },
+      "nodes": {
+        "CargoShip": 0.9644007360269973,
+        "Clownfish": 0.5,
+        "Deer": 0.20509870548604248,
+        "Dolphin": 0.258026060289418,
+        "Falcon": 0.40187852255312456,
+        "Hummingbird": 0.00640366661988944,
+        "Owl": 0.6,
+        "Panda": 0.5365183974939977,
+        "Tiger": 0.05842943599039625
+      }
+    },
+    {
+      "coherence": 0.6095882208125923,
+      "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+      "features": {
+        "abs_momentum": 0.9736540495893091,
+        "momentum": -0.9736540495893091,
+        "spread": 0.8143353813101203,
+        "volatility": 0.08181573033153022,
+        "volume": 0.3383739334662893
+      },
+      "nodes": {
+        "CargoShip": 0.3383739334662893,
+        "Clownfish": 0.5,
+        "Deer": 0.8143353813101203,
+        "Dolphin": 0.45866311257560793,
+        "Falcon": 0.7830700147524031,
+        "Hummingbird": 0.06534827941067474,
+        "Owl": 0.6,
+        "Panda": 0.9590921348342349,
+        "Tiger": 0.7345474157347759
+      }
+    },
+    {
+      "coherence": 0.3923866122269322,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.2695459151764772,
+        "momentum": -0.2695459151764772,
+        "spread": 0.8237417911745736,
+        "volatility": 0.7409483301311467,
+        "volume": 0.358249981749714
+      },
+      "nodes": {
+        "CargoShip": 0.358249981749714,
+        "Clownfish": 0.5,
+        "Deer": 0.8237417911745736,
+        "Dolphin": 0.12541654372241934,
+        "Falcon": 0.2961571351484482,
+        "Hummingbird": 0.007989897252920385,
+        "Owl": 0.6,
+        "Panda": 0.6295258349344266,
+        "Tiger": 0.20724133589508265
+      }
+    },
+    {
+      "coherence": 0.4532063532690921,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.8214387999773343,
+        "momentum": -0.8214387999773343,
+        "spread": 0.05151291174760608,
+        "volatility": 0.6843065428236869,
+        "volume": 0.8900234985819966
+      },
+      "nodes": {
+        "CargoShip": 0.8900234985819966,
+        "Clownfish": 0.5,
+        "Deer": 0.05151291174760608,
+        "Dolphin": 0.23399756616929113,
+        "Falcon": 0.842014209558733,
+        "Hummingbird": 0.008641716057576672,
+        "Owl": 0.6,
+        "Panda": 0.6578467285881566,
+        "Tiger": 0.2525547657410505
+      }
+    },
+    {
+      "coherence": 0.4925442775075992,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.722226480873533,
+        "momentum": -0.722226480873533,
+        "spread": 0.46828769779307355,
+        "volatility": 0.43941914881313027,
+        "volume": 0.7943826979143553
+      },
+      "nodes": {
+        "CargoShip": 0.7943826979143553,
+        "Clownfish": 0.5,
+        "Deer": 0.46828769779307355,
+        "Dolphin": 0.1169820783856877,
+        "Falcon": 0.7438733459857797,
+        "Hummingbird": 0.01335056598243618,
+        "Owl": 0.6,
+        "Panda": 0.7802904255934349,
+        "Tiger": 0.4484646809494958
+      }
+    },
+    {
+      "coherence": 0.6071917315105351,
+      "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+      "features": {
+        "abs_momentum": 0.5479069449966245,
+        "momentum": 0.5479069449966245,
+        "spread": 0.790628767485467,
+        "volatility": 0.14608388166294994,
+        "volume": 0.024585795840368574
+      },
+      "nodes": {
+        "CargoShip": 0.024585795840368574,
+        "Clownfish": 0.5,
+        "Deer": 0.790628767485467,
+        "Dolphin": 0.9943478097883951,
+        "Falcon": 0.3909106002497477,
+        "Hummingbird": 0.03844086869236438,
+        "Owl": 0.6,
+        "Panda": 0.926958059168525,
+        "Tiger": 0.6831328946696401
+      }
+    },
+    {
+      "coherence": 0.43893528179294516,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.5667802188873958,
+        "momentum": -0.5667802188873958,
+        "spread": 0.5780355899458325,
+        "volatility": 0.19055689530091913,
+        "volume": 0.14102540485182302
+      },
+      "nodes": {
+        "CargoShip": 0.14102540485182302,
+        "Clownfish": 0.5,
+        "Deer": 0.5780355899458325,
+        "Dolphin": 0.010963315422064746,
+        "Falcon": 0.43905377467672396,
+        "Hummingbird": 0.029916697658275437,
+        "Owl": 0.6,
+        "Panda": 0.9047215523495404,
+        "Tiger": 0.6475544837592647
+      }
+    },
+    {
+      "coherence": 0.556702668418664,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.9633601305960513,
+        "momentum": 0.9633601305960513,
+        "spread": 0.32949928019559627,
+        "volatility": 0.526358387093697,
+        "volume": 0.7934280828469014
+      },
+      "nodes": {
+        "CargoShip": 0.7934280828469014,
+        "Clownfish": 0.5,
+        "Deer": 0.32949928019559627,
+        "Dolphin": 0.5574267609614437,
+        "Falcon": 0.9123805162713062,
+        "Hummingbird": 0.01118655015820952,
+        "Owl": 0.6,
+        "Panda": 0.7368208064531515,
+        "Tiger": 0.37891329032504245
+      }
+    },
+    {
+      "coherence": 0.4375439523885969,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.5542442282171844,
+        "momentum": -0.5542442282171844,
+        "spread": 0.551621765191076,
+        "volatility": 0.4222981915442644,
+        "volume": 0.49529038858736596
+      },
+      "nodes": {
+        "CargoShip": 0.49529038858736596,
+        "Clownfish": 0.5,
+        "Deer": 0.551621765191076,
+        "Dolphin": 0.007242617525351325,
+        "Falcon": 0.5365580763282389,
+        "Hummingbird": 0.013879308582269748,
+        "Owl": 0.6,
+        "Panda": 0.7888509042278677,
+        "Tiger": 0.4621614467645885
+      }
+    },
+    {
+      "coherence": 0.5102141903226658,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.787784168454293,
+        "momentum": -0.787784168454293,
+        "spread": 0.6828642786057144,
+        "volatility": 0.11989349502739621,
+        "volume": 0.15226880678736732
+      },
+      "nodes": {
+        "CargoShip": 0.15226880678736732,
+        "Clownfish": 0.5,
+        "Deer": 0.6828642786057144,
+        "Dolphin": 0.19080369116960882,
+        "Falcon": 0.5971295599542152,
+        "Hummingbird": 0.04619168957409701,
+        "Owl": 0.6,
+        "Panda": 0.9400532524863019,
+        "Tiger": 0.704085203978083
+      }
+    },
+    {
+      "coherence": 0.530962597332528,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.9863298418764028,
+        "momentum": 0.9863298418764028,
+        "spread": 0.14270096859000514,
+        "volatility": 0.37148734748730616,
+        "volume": 0.5387466110160866
+      },
+      "nodes": {
+        "CargoShip": 0.5387466110160866,
+        "Clownfish": 0.5,
+        "Deer": 0.14270096859000514,
+        "Dolphin": 0.521466434091253,
+        "Falcon": 0.8520548726183079,
+        "Hummingbird": 0.015727913493119576,
+        "Owl": 0.6,
+        "Panda": 0.8142563262563469,
+        "Tiger": 0.5028101220101551
+      }
+    },
+    {
+      "coherence": 0.4519252311216671,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.4429760861356884,
+        "momentum": 0.4429760861356884,
+        "spread": 0.42964826388590527,
+        "volatility": 0.9423176848201941,
+        "volume": 0.13946176682777645
+      },
+      "nodes": {
+        "CargoShip": 0.13946176682777645,
+        "Clownfish": 0.5,
+        "Deer": 0.42964826388590527,
+        "Dolphin": 0.9919981207481385,
+        "Falcon": 0.3519217903433148,
+        "Hummingbird": 0.006300418542718602,
+        "Owl": 0.6,
+        "Panda": 0.528841157589903,
+        "Tiger": 0.04614585214384475
+      }
+    },
+    {
+      "coherence": 0.5496269605743588,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.1125195171966753,
+        "momentum": 0.1125195171966753,
+        "spread": 0.6506098400424495,
+        "volatility": 0.0079863243145597,
+        "volume": 0.01553838253743689
+      },
+      "nodes": {
+        "CargoShip": 0.01553838253743689,
+        "Clownfish": 0.5,
+        "Deer": 0.6506098400424495,
+        "Dolphin": 0.6730872908526215,
+        "Falcon": 0.08342517679890378,
+        "Hummingbird": 0.33358677932561664,
+        "Owl": 0.6,
+        "Panda": 0.9960068378427201,
+        "Tiger": 0.7936109405483522
+      }
+    },
+    {
+      "coherence": 0.5017968157737105,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.213329974611834,
+        "momentum": 0.213329974611834,
+        "spread": 0.9000509606456855,
+        "volatility": 0.6765092033082726,
+        "volume": 0.260300493953857
+      },
+      "nodes": {
+        "CargoShip": 0.260300493953857,
+        "Clownfish": 0.5,
+        "Deer": 0.9000509606456855,
+        "Dolphin": 0.8105697554591074,
+        "Falcon": 0.2274211304144409,
+        "Hummingbird": 0.008739868265547108,
+        "Owl": 0.6,
+        "Panda": 0.6617453983458637,
+        "Tiger": 0.2587926373533819
+      }
+    },
+    {
+      "coherence": 0.5794366325879521,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.8205438636282021,
+        "momentum": -0.8205438636282021,
+        "spread": 0.5963154812997414,
+        "volatility": 0.09474602718531211,
+        "volume": 0.7179730101905809
+      },
+      "nodes": {
+        "CargoShip": 0.7179730101905809,
+        "Clownfish": 0.5,
+        "Deer": 0.5963154812997414,
+        "Dolphin": 0.23280830171371542,
+        "Falcon": 0.7897726075969157,
+        "Hummingbird": 0.0572814087677527,
+        "Owl": 0.6,
+        "Panda": 0.952626986407344,
+        "Tiger": 0.7242031782517504
+      }
+    },
+    {
+      "coherence": 0.3601316599076516,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.13545893882594795,
+        "momentum": -0.13545893882594795,
+        "spread": 0.10059621287170284,
+        "volatility": 0.5956365396006653,
+        "volume": 0.35122367804383203
+      },
+      "nodes": {
+        "CargoShip": 0.35122367804383203,
+        "Clownfish": 0.5,
+        "Deer": 0.10059621287170284,
+        "Dolphin": 0.2935860046920463,
+        "Falcon": 0.20018836059131317,
+        "Hummingbird": 0.00990693197599369,
+        "Owl": 0.6,
+        "Panda": 0.7021817301996673,
+        "Tiger": 0.32349076831946777
+      }
+    },
+    {
+      "coherence": 0.5761865746984391,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.8696145887484084,
+        "momentum": 0.8696145887484084,
+        "spread": 0.4699498624326781,
+        "volatility": 0.6426172975089796,
+        "volume": 0.8831012213858758
+      },
+      "nodes": {
+        "CargoShip": 0.8831012213858758,
+        "Clownfish": 0.5,
+        "Deer": 0.4699498624326781,
+        "Dolphin": 0.6991294106387106,
+        "Falcon": 0.8736605785396485,
+        "Hummingbird": 0.00919374957253174,
+        "Owl": 0.6,
+        "Panda": 0.6786913512455102,
+        "Tiger": 0.2859061619928164
+      }
+    },
+    {
+      "coherence": 0.33951620624084056,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.5979402602889792,
+        "momentum": -0.5979402602889792,
+        "spread": 0.030395639255433315,
+        "volatility": 0.49873917831010495,
+        "volume": 0.10782257739451284
+      },
+      "nodes": {
+        "CargoShip": 0.10782257739451284,
+        "Clownfish": 0.5,
+        "Deer": 0.030395639255433315,
+        "Dolphin": 0.02348190113123766,
+        "Falcon": 0.45090495542063924,
+        "Hummingbird": 0.011793862662455818,
+        "Owl": 0.6,
+        "Panda": 0.7506304108449475,
+        "Tiger": 0.40100865735191604
+      }
+    },
+    {
+      "coherence": 0.5143055982586714,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.0038233713992128493,
+        "momentum": 0.0038233713992128493,
+        "spread": 0.6797966302714764,
+        "volatility": 0.22414777946651487,
+        "volume": 0.5248873588278055
+      },
+      "nodes": {
+        "CargoShip": 0.5248873588278055,
+        "Clownfish": 0.5,
+        "Deer": 0.6797966302714764,
+        "Dolphin": 0.5060055933373848,
+        "Falcon": 0.1601425676277906,
+        "Hummingbird": 0.02562484262575743,
+        "Owl": 0.6,
+        "Panda": 0.8879261102667426,
+        "Tiger": 0.6206817764267881
+      }
+    },
+    {
+      "coherence": 0.538167057848918,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.890735329445965,
+        "momentum": 0.890735329445965,
+        "spread": 0.04721994666438922,
+        "volatility": 0.6594313859281083,
+        "volume": 0.9513717479005589
+      },
+      "nodes": {
+        "CargoShip": 0.9513717479005589,
+        "Clownfish": 0.5,
+        "Deer": 0.04721994666438922,
+        "Dolphin": 0.6682817422035028,
+        "Falcon": 0.9089262549823431,
+        "Hummingbird": 0.00896283043508861,
+        "Owl": 0.6,
+        "Panda": 0.6702843070359459,
+        "Tiger": 0.2724548912575133
+      }
+    },
+    {
+      "coherence": 0.318779746995793,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.42855250464309846,
+        "momentum": -0.42855250464309846,
+        "spread": 0.24437659755240215,
+        "volatility": 0.6819984012771837,
+        "volume": 0.14304888243755554
+      },
+      "nodes": {
+        "CargoShip": 0.14304888243755554,
+        "Clownfish": 0.5,
+        "Deer": 0.24437659755240215,
+        "Dolphin": 0.012542659347075824,
+        "Falcon": 0.34290141798143553,
+        "Hummingbird": 0.008670540262703103,
+        "Owl": 0.6,
+        "Panda": 0.6590007993614082,
+        "Tiger": 0.25440127897825304
+      }
+    },
+    {
+      "coherence": 0.5711009510394652,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.8867665565698577,
+        "momentum": 0.8867665565698577,
+        "spread": 0.40642408273194197,
+        "volatility": 0.04977439692979746,
+        "volume": 0.03344902372473613
+      },
+      "nodes": {
+        "CargoShip": 0.03344902372473613,
+        "Clownfish": 0.5,
+        "Deer": 0.40642408273194197,
+        "Dolphin": 0.6741389492641836,
+        "Falcon": 0.6307712967163212,
+        "Hummingbird": 0.10037742425150269,
+        "Owl": 0.6,
+        "Panda": 0.9751128015351013,
+        "Tiger": 0.7601804824561621
+      }
+    },
+    {
+      "coherence": 0.43969801477326503,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.36825522885090556,
+        "momentum": -0.36825522885090556,
+        "spread": 0.7350474054951365,
+        "volatility": 0.24193484545961352,
+        "volume": 0.20252831900622537
+      },
+      "nodes": {
+        "CargoShip": 0.20252831900622537,
+        "Clownfish": 0.5,
+        "Deer": 0.7350474054951365,
+        "Dolphin": 0.04221803057122164,
+        "Falcon": 0.3185371558975015,
+        "Hummingbird": 0.023815681348302534,
+        "Owl": 0.6,
+        "Panda": 0.8790325772701932,
+        "Tiger": 0.6064521236323093
+      }
+    },
+    {
+      "coherence": 0.483727580645981,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.10797665106309862,
+        "momentum": 0.10797665106309862,
+        "spread": 0.24234642145839058,
+        "volatility": 0.08018290022410424,
+        "volume": 0.08497840375948862
+      },
+      "nodes": {
+        "CargoShip": 0.08497840375948862,
+        "Clownfish": 0.5,
+        "Deer": 0.24234642145839058,
+        "Dolphin": 0.6663751862928053,
+        "Falcon": 0.10107717687201562,
+        "Hummingbird": 0.0665314597899382,
+        "Owl": 0.6,
+        "Panda": 0.9599085498879478,
+        "Tiger": 0.7358536798207167
+      }
+    },
+    {
+      "coherence": 0.5833685090540107,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.6558834466576324,
+        "momentum": 0.6558834466576324,
+        "spread": 0.3530449900740815,
+        "volatility": 0.31658631409310756,
+        "volume": 0.4205879916121835
+      },
+      "nodes": {
+        "CargoShip": 0.4205879916121835,
+        "Clownfish": 0.5,
+        "Deer": 0.3530449900740815,
+        "Dolphin": 0.9412317608533283,
+        "Falcon": 0.5852948101439976,
+        "Hummingbird": 0.018371866000145495,
+        "Owl": 0.6,
+        "Panda": 0.8417068429534462,
+        "Tiger": 0.546730948725514
+      }
+    },
+    {
+      "coherence": 0.3499659000204671,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.3784234633437422,
+        "momentum": -0.3784234633437422,
+        "spread": 0.8219588121913352,
+        "volatility": 0.965867637471146,
+        "volume": 0.3288520340957065
+      },
+      "nodes": {
+        "CargoShip": 0.3288520340957065,
+        "Clownfish": 0.5,
+        "Deer": 0.8219588121913352,
+        "Dolphin": 0.036029085571536834,
+        "Falcon": 0.3635520345693315,
+        "Hummingbird": 0.0061483748098751815,
+        "Owl": 0.6,
+        "Panda": 0.517066181264427,
+        "Tiger": 0.02730589002308319
+      }
+    },
+    {
+      "coherence": 0.437349054359993,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.38418461712806806,
+        "momentum": 0.38418461712806806,
+        "spread": 0.061010913079775464,
+        "volatility": 0.7071671729149334,
+        "volume": 0.08017819894446476
+      },
+      "nodes": {
+        "CargoShip": 0.08017819894446476,
+        "Clownfish": 0.5,
+        "Deer": 0.061010913079775464,
+        "Dolphin": 0.9672677506335697,
+        "Falcon": 0.2929826916729871,
+        "Hummingbird": 0.008366250194655367,
+        "Owl": 0.6,
+        "Panda": 0.6464164135425333,
+        "Tiger": 0.2342662616680533
+      }
+    },
+    {
+      "coherence": 0.5403226871522291,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.33300331236380254,
+        "momentum": 0.33300331236380254,
+        "spread": 0.7193806170035625,
+        "volatility": 0.7213561614621319,
+        "volume": 0.5529939317185374
+      },
+      "nodes": {
+        "CargoShip": 0.5529939317185374,
+        "Clownfish": 0.5,
+        "Deer": 0.7193806170035625,
+        "Dolphin": 0.932753271344742,
+        "Falcon": 0.399000498170223,
+        "Hummingbird": 0.008203937173380424,
+        "Owl": 0.6,
+        "Panda": 0.6393219192689341,
+        "Tiger": 0.2229150708302945
+      }
+    },
+    {
+      "coherence": 0.5991254924614401,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.16791916863061895,
+        "momentum": 0.16791916863061895,
+        "spread": 0.7176771008979898,
+        "volatility": 0.18199983586589907,
+        "volume": 0.7132807316501968
+      },
+      "nodes": {
+        "CargoShip": 0.7132807316501968,
+        "Clownfish": 0.5,
+        "Deer": 0.7176771008979898,
+        "Dolphin": 0.7517019006736464,
+        "Falcon": 0.3315276375364923,
+        "Hummingbird": 0.03125002671455749,
+        "Owl": 0.6,
+        "Panda": 0.9090000820670505,
+        "Tiger": 0.6544001313072808
+      }
+    },
+    {
+      "coherence": 0.49432920893044946,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.9436700165623126,
+        "momentum": 0.9436700165623126,
+        "spread": 0.6591012272218572,
+        "volatility": 0.917598040853821,
+        "volume": 0.46562579536443394
+      },
+      "nodes": {
+        "CargoShip": 0.46562579536443394,
+        "Clownfish": 0.5,
+        "Deer": 0.6591012272218572,
+        "Dolphin": 0.5880218182710729,
+        "Falcon": 0.800256750202949,
+        "Hummingbird": 0.006468318965483381,
+        "Owl": 0.6,
+        "Panda": 0.5412009795730894,
+        "Tiger": 0.0659215673169432
+      }
+    },
+    {
+      "coherence": 0.46778271137014815,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.7865337874435081,
+        "momentum": -0.7865337874435081,
+        "spread": 0.09133568097965739,
+        "volatility": 0.5331350772222473,
+        "volume": 0.8692072695610905
+      },
+      "nodes": {
+        "CargoShip": 0.8692072695610905,
+        "Clownfish": 0.5,
+        "Deer": 0.09133568097965739,
+        "Dolphin": 0.18926255957300836,
+        "Falcon": 0.8113358320787828,
+        "Hummingbird": 0.011046975700199234,
+        "Owl": 0.6,
+        "Panda": 0.7334324613888763,
+        "Tiger": 0.37349193822220217
+      }
+    },
+    {
+      "coherence": 0.6072027101047889,
+      "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+      "features": {
+        "abs_momentum": 0.8865846393651002,
+        "momentum": 0.8865846393651002,
+        "spread": 0.17042883517619212,
+        "volatility": 0.21973074974340845,
+        "volume": 0.8456736623486161
+      },
+      "nodes": {
+        "CargoShip": 0.8456736623486161,
+        "Clownfish": 0.5,
+        "Deer": 0.17042883517619212,
+        "Dolphin": 0.6744067849548682,
+        "Falcon": 0.8743113462601549,
+        "Hummingbird": 0.026117531095430354,
+        "Owl": 0.6,
+        "Panda": 0.8901346251282958,
+        "Tiger": 0.6242154002052733
+      }
+    },
+    {
+      "coherence": 0.5556666528929729,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.5964701311119696,
+        "momentum": 0.5964701311119696,
+        "spread": 0.82653933511597,
+        "volatility": 0.8856497407844104,
+        "volume": 0.5537048947645896
+      },
+      "nodes": {
+        "CargoShip": 0.5537048947645896,
+        "Clownfish": 0.5,
+        "Deer": 0.82653933511597,
+        "Dolphin": 0.9772123923812461,
+        "Falcon": 0.5836405602077556,
+        "Hummingbird": 0.006699047324845087,
+        "Owl": 0.6,
+        "Panda": 0.5571751296077948,
+        "Tiger": 0.0914802073724717
+      }
+    },
+    {
+      "coherence": 0.5020491847542319,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.30141953227690976,
+        "momentum": -0.30141953227690976,
+        "spread": 0.8524715811682838,
+        "volatility": 0.3579711985262023,
+        "volume": 0.8054592747144597
+      },
+      "nodes": {
+        "CargoShip": 0.8054592747144597,
+        "Clownfish": 0.5,
+        "Deer": 0.8524715811682838,
+        "Dolphin": 0.09418488831989846,
+        "Falcon": 0.4526314550081747,
+        "Hummingbird": 0.016305623983700872,
+        "Owl": 0.6,
+        "Panda": 0.8210144007368989,
+        "Tiger": 0.5136230411790382
+      }
+    },
+    {
+      "coherence": 0.5651934084984768,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.9921291019492597,
+        "momentum": -0.9921291019492597,
+        "spread": 0.4444549048310613,
+        "volatility": 0.2951203735489176,
+        "volume": 0.5251660782940905
+      },
+      "nodes": {
+        "CargoShip": 0.5251660782940905,
+        "Clownfish": 0.5,
+        "Deer": 0.4444549048310613,
+        "Dolphin": 0.4876376821297652,
+        "Falcon": 0.8520401948527089,
+        "Hummingbird": 0.019664370262178068,
+        "Owl": 0.6,
+        "Panda": 0.8524398132255412,
+        "Tiger": 0.563903701160866
+      }
+    },
+    {
+      "coherence": 0.6400765826699724,
+      "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+      "features": {
+        "abs_momentum": 0.22245628622420988,
+        "momentum": 0.22245628622420988,
+        "spread": 0.29398581072749397,
+        "volatility": 0.013022369913272103,
+        "volume": 0.8935410755056791
+      },
+      "nodes": {
+        "CargoShip": 0.8935410755056791,
+        "Clownfish": 0.5,
+        "Deer": 0.29398581072749397,
+        "Dolphin": 0.8216753670927233,
+        "Falcon": 0.4237817230086506,
+        "Hummingbird": 0.26061608872599495,
+        "Owl": 0.6,
+        "Panda": 0.993488815043364,
+        "Tiger": 0.7895821040693823
+      }
+    },
+    {
+      "coherence": 0.3854952576448438,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.3852472530769593,
+        "momentum": -0.3852472530769593,
+        "spread": 0.4243602246227318,
+        "volatility": 0.8739998029434572,
+        "volume": 0.8588034332169463
+      },
+      "nodes": {
+        "CargoShip": 0.8588034332169463,
+        "Clownfish": 0.5,
+        "Deer": 0.4243602246227318,
+        "Dolphin": 0.03214084165011455,
+        "Falcon": 0.5273141071189553,
+        "Hummingbird": 0.00678733182973772,
+        "Owl": 0.6,
+        "Panda": 0.5630000985282714,
+        "Tiger": 0.1008001576452342
+      }
+    },
+    {
+      "coherence": 0.4825902679976018,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.831815192080009,
+        "momentum": -0.831815192080009,
+        "spread": 0.9641997347173518,
+        "volatility": 0.5530152120498335,
+        "volume": 0.16938026757093927
+      },
+      "nodes": {
+        "CargoShip": 0.16938026757093927,
+        "Clownfish": 0.5,
+        "Deer": 0.9641997347173518,
+        "Dolphin": 0.24793764846893313,
+        "Falcon": 0.633084714727288,
+        "Hummingbird": 0.010656905660071098,
+        "Owl": 0.6,
+        "Panda": 0.7234923939750832,
+        "Tiger": 0.3575878303601332
+      }
+    },
+    {
+      "coherence": 0.32588486701086844,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.03624872647920552,
+        "momentum": 0.03624872647920552,
+        "spread": 0.07914398776944387,
+        "volatility": 0.8022041265431898,
+        "volume": 0.053103103613244884
+      },
+      "nodes": {
+        "CargoShip": 0.053103103613244884,
+        "Clownfish": 0.5,
+        "Deer": 0.07914398776944387,
+        "Dolphin": 0.5568163777578478,
+        "Falcon": 0.041305039619417325,
+        "Hummingbird": 0.007387305486290143,
+        "Owl": 0.6,
+        "Panda": 0.5988979367284051,
+        "Tiger": 0.15823669876544813
+      }
+    },
+    {
+      "coherence": 0.637592841500166,
+      "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+      "features": {
+        "abs_momentum": 0.5024996471013847,
+        "momentum": 0.5024996471013847,
+        "spread": 0.8942944122733654,
+        "volatility": 0.18164204763700897,
+        "volume": 0.29106105520176473
+      },
+      "nodes": {
+        "CargoShip": 0.29106105520176473,
+        "Clownfish": 0.5,
+        "Deer": 0.8942944122733654,
+        "Dolphin": 0.999984583175755,
+        "Falcon": 0.4390680695314987,
+        "Hummingbird": 0.03130836929568117,
+        "Owl": 0.6,
+        "Panda": 0.9091789761814955,
+        "Tiger": 0.6546863618903929
+      }
+    },
+    {
+      "coherence": 0.4305248580004838,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.2143740434122825,
+        "momentum": -0.2143740434122825,
+        "spread": 0.16384543992788536,
+        "volatility": 0.5505252614167917,
+        "volume": 0.9527635282019047
+      },
+      "nodes": {
+        "CargoShip": 0.9527635282019047,
+        "Clownfish": 0.5,
+        "Deer": 0.16384543992788536,
+        "Dolphin": 0.1881466342491505,
+        "Falcon": 0.43589088884916916,
+        "Hummingbird": 0.01070424548723159,
+        "Owl": 0.6,
+        "Panda": 0.7247373692916041,
+        "Tiger": 0.35957979086656666
+      }
+    },
+    {
+      "coherence": 0.38111947962995074,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.16547042090000508,
+        "momentum": -0.16547042090000508,
+        "spread": 0.42611212352317673,
+        "volatility": 0.5882632011693918,
+        "volume": 0.2883526395983683
+      },
+      "nodes": {
+        "CargoShip": 0.2883526395983683,
+        "Clownfish": 0.5,
+        "Deer": 0.42611212352317673,
+        "Dolphin": 0.25162907395600265,
+        "Falcon": 0.20233508650951404,
+        "Hummingbird": 0.010029030681265592,
+        "Owl": 0.6,
+        "Panda": 0.7058683994153041,
+        "Tiger": 0.3293894390644866
+      }
+    },
+    {
+      "coherence": 0.4603312639918685,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.05793462958771056,
+        "momentum": -0.05793462958771056,
+        "spread": 0.7407977374802646,
+        "volatility": 0.8382451273532963,
+        "volume": 0.9370882006561941
+      },
+      "nodes": {
+        "CargoShip": 0.9370882006561941,
+        "Clownfish": 0.5,
+        "Deer": 0.7407977374802646,
+        "Dolphin": 0.40949810379383994,
+        "Falcon": 0.3216807009082556,
+        "Hummingbird": 0.007073427015986835,
+        "Owl": 0.6,
+        "Panda": 0.5808774363233519,
+        "Tiger": 0.129403898117363
+      }
+    },
+    {
+      "coherence": 0.45764505345157774,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.6652776856988978,
+        "momentum": -0.6652776856988978,
+        "spread": 0.17297466668594463,
+        "volatility": 0.4419893953455677,
+        "volume": 0.8533317692246208
+      },
+      "nodes": {
+        "CargoShip": 0.8533317692246208,
+        "Clownfish": 0.5,
+        "Deer": 0.17297466668594463,
+        "Dolphin": 0.06590052098409799,
+        "Falcon": 0.7216939107566147,
+        "Hummingbird": 0.013274647727990852,
+        "Owl": 0.6,
+        "Panda": 0.7790053023272161,
+        "Tiger": 0.44640848372354586
+      }
+    },
+    {
+      "coherence": 0.4242304490226189,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.5714475019996417,
+        "momentum": -0.5714475019996417,
+        "spread": 0.7962879965413617,
+        "volatility": 0.9376536893254966,
+        "volume": 0.8577668704685419
+      },
+      "nodes": {
+        "CargoShip": 0.8577668704685419,
+        "Clownfish": 0.5,
+        "Deer": 0.7962879965413617,
+        "Dolphin": 0.012542661669551314,
+        "Falcon": 0.6573433125403116,
+        "Hummingbird": 0.0063314268361795425,
+        "Owl": 0.6,
+        "Panda": 0.5311731553372516,
+        "Tiger": 0.04987704853960269
+      }
+    },
+    {
+      "coherence": 0.6106374906197563,
+      "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+      "features": {
+        "abs_momentum": 0.8194575025427799,
+        "momentum": 0.8194575025427799,
+        "spread": 0.5609998548003317,
+        "volatility": 0.593068991737816,
+        "volume": 0.9875980963762637
+      },
+      "nodes": {
+        "CargoShip": 0.9875980963762637,
+        "Clownfish": 0.5,
+        "Deer": 0.5609998548003317,
+        "Dolphin": 0.7686325046285009,
+        "Falcon": 0.869899680692825,
+        "Hummingbird": 0.00994911043711645,
+        "Owl": 0.6,
+        "Panda": 0.703465504131092,
+        "Tiger": 0.3255448066097472
+      }
+    },
+    {
+      "coherence": 0.5304949709710816,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.9690149934376568,
+        "momentum": -0.9690149934376568,
+        "spread": 0.4543389952380731,
+        "volatility": 0.767863430254805,
+        "volume": 0.9310822822463035
+      },
+      "nodes": {
+        "CargoShip": 0.9310822822463035,
+        "Clownfish": 0.5,
+        "Deer": 0.4543389952380731,
+        "Dolphin": 0.4514056931277894,
+        "Falcon": 0.9576351800802508,
+        "Hummingbird": 0.007713436275098545,
+        "Owl": 0.6,
+        "Panda": 0.6160682848725976,
+        "Tiger": 0.18570925579615605
+      }
+    },
+    {
+      "coherence": 0.400855871070659,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.5072472126166063,
+        "momentum": -0.5072472126166063,
+        "spread": 0.7297618323174567,
+        "volatility": 0.9719378037432588,
+        "volume": 0.8202684984929882
+      },
+      "nodes": {
+        "CargoShip": 0.8202684984929882,
+        "Clownfish": 0.5,
+        "Deer": 0.7297618323174567,
+        "Dolphin": 0.0001295874663831409,
+        "Falcon": 0.6011535983795209,
+        "Hummingbird": 0.00611036664147904,
+        "Owl": 0.6,
+        "Panda": 0.5140310981283707,
+        "Tiger": 0.02244975700539298
+      }
+    },
+    {
+      "coherence": 0.45516714198653163,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.07545659594382581,
+        "momentum": 0.07545659594382581,
+        "spread": 0.33902977234680465,
+        "volatility": 0.27248115723929756,
+        "volume": 0.1392009069053456
+      },
+      "nodes": {
+        "CargoShip": 0.1392009069053456,
+        "Clownfish": 0.5,
+        "Deer": 0.33902977234680465,
+        "Dolphin": 0.6174199640106497,
+        "Falcon": 0.09457988923228175,
+        "Hummingbird": 0.021240354785566226,
+        "Owl": 0.6,
+        "Panda": 0.8637594213803512,
+        "Tiger": 0.582015074208562
+      }
+    },
+    {
+      "coherence": 0.6121842993725182,
+      "coherence_status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+      "features": {
+        "abs_momentum": 0.7089483039939015,
+        "momentum": 0.7089483039939015,
+        "spread": 0.9735915818471509,
+        "volatility": 0.8903293099563102,
+        "volume": 0.9674680717882763
+      },
+      "nodes": {
+        "CargoShip": 0.9674680717882763,
+        "Clownfish": 0.5,
+        "Deer": 0.9735915818471509,
+        "Dolphin": 0.8960878705213206,
+        "Falcon": 0.786504234332214,
+        "Hummingbird": 0.006664228225882326,
+        "Owl": 0.6,
+        "Panda": 0.5548353450218448,
+        "Tiger": 0.08773655203495184
+      }
+    },
+    {
+      "coherence": 0.4774746826753153,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.6862881935654155,
+        "momentum": -0.6862881935654155,
+        "spread": 0.9341868376323886,
+        "volatility": 0.49025551459034267,
+        "volume": 0.4105836110259401
+      },
+      "nodes": {
+        "CargoShip": 0.4105836110259401,
+        "Clownfish": 0.5,
+        "Deer": 0.9341868376323886,
+        "Dolphin": 0.0832106805295092,
+        "Falcon": 0.6035768188035728,
+        "Hummingbird": 0.011993870782041007,
+        "Owl": 0.6,
+        "Panda": 0.7548722427048287,
+        "Tiger": 0.4077955883277259
+      }
+    },
+    {
+      "coherence": 0.5567273937262742,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.7760684532012934,
+        "momentum": -0.7760684532012934,
+        "spread": 0.6741812864389618,
+        "volatility": 0.2905060523089805,
+        "volume": 0.8591314038616429
+      },
+      "nodes": {
+        "CargoShip": 0.8591314038616429,
+        "Clownfish": 0.5,
+        "Deer": 0.6741812864389618,
+        "Dolphin": 0.1765540091175719,
+        "Falcon": 0.8009873383993982,
+        "Hummingbird": 0.01996631999222031,
+        "Owl": 0.6,
+        "Panda": 0.8547469738455098,
+        "Tiger": 0.5675951581528156
+      }
+    },
+    {
+      "coherence": 0.4425210671629671,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.4465587857761577,
+        "momentum": -0.4465587857761577,
+        "spread": 0.41131821266057744,
+        "volatility": 0.44189738857829386,
+        "volume": 0.771922919179856
+      },
+      "nodes": {
+        "CargoShip": 0.771922919179856,
+        "Clownfish": 0.5,
+        "Deer": 0.41131821266057744,
+        "Dolphin": 0.007030270227848967,
+        "Falcon": 0.5441680257972672,
+        "Hummingbird": 0.013277350459750365,
+        "Owl": 0.6,
+        "Panda": 0.779051305710853,
+        "Tiger": 0.4464820891373649
+      }
+    },
+    {
+      "coherence": 0.44241602155231013,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.2556035065917206,
+        "momentum": -0.2556035065917206,
+        "spread": 0.9145340690774073,
+        "volatility": 0.7393162566671545,
+        "volume": 0.7173119408256541
+      },
+      "nodes": {
+        "CargoShip": 0.7173119408256541,
+        "Clownfish": 0.5,
+        "Deer": 0.9145340690774073,
+        "Dolphin": 0.14027778133241342,
+        "Falcon": 0.39411603686190066,
+        "Hummingbird": 0.008007299917243346,
+        "Owl": 0.6,
+        "Panda": 0.6303418716664227,
+        "Tiger": 0.2085469946662764
+      }
+    },
+    {
+      "coherence": 0.3771166524833538,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.4727733163811889,
+        "momentum": -0.4727733163811889,
+        "spread": 0.16209396270708754,
+        "volatility": 0.18815183830635207,
+        "volume": 0.024007960541896134
+      },
+      "nodes": {
+        "CargoShip": 0.024007960541896134,
+        "Clownfish": 0.5,
+        "Deer": 0.16209396270708754,
+        "Dolphin": 0.0018279505506099691,
+        "Falcon": 0.33814370962940105,
+        "Hummingbird": 0.030279809923962037,
+        "Owl": 0.6,
+        "Panda": 0.905924080846824,
+        "Tiger": 0.6494785293549183
+      }
+    },
+    {
+      "coherence": 0.5746166013208484,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.3297665951099924,
+        "momentum": 0.3297665951099924,
+        "spread": 0.8181034412862886,
+        "volatility": 0.45488027290033606,
+        "volume": 0.4146560672378181
+      },
+      "nodes": {
+        "CargoShip": 0.4146560672378181,
+        "Clownfish": 0.5,
+        "Deer": 0.8181034412862886,
+        "Dolphin": 0.9301842671787313,
+        "Falcon": 0.35523343674834007,
+        "Hummingbird": 0.012906548954135373,
+        "Owl": 0.6,
+        "Panda": 0.772559863549832,
+        "Tiger": 0.4360957816797312
+      }
+    },
+    {
+      "coherence": 0.41122050571500635,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.37551068405249377,
+        "momentum": -0.37551068405249377,
+        "spread": 0.16154864396402002,
+        "volatility": 0.2525790245450865,
+        "volume": 0.4500949564956359
+      },
+      "nodes": {
+        "CargoShip": 0.4500949564956359,
+        "Clownfish": 0.5,
+        "Deer": 0.16154864396402002,
+        "Dolphin": 0.03775384714832225,
+        "Falcon": 0.39788596578543634,
+        "Hummingbird": 0.022850263879207005,
+        "Owl": 0.6,
+        "Panda": 0.8737104877274567,
+        "Tiger": 0.5979367803639308
+      }
+    },
+    {
+      "coherence": 0.5499438674931664,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.963443313917963,
+        "momentum": 0.963443313917963,
+        "spread": 0.7337329624807649,
+        "volatility": 0.3418645308482592,
+        "volume": 0.13295396968847462
+      },
+      "nodes": {
+        "CargoShip": 0.13295396968847462,
+        "Clownfish": 0.5,
+        "Deer": 0.7337329624807649,
+        "Dolphin": 0.5572969596229769,
+        "Falcon": 0.7142965106491164,
+        "Hummingbird": 0.017052017108787492,
+        "Owl": 0.6,
+        "Panda": 0.8290677345758704,
+        "Tiger": 0.5265083753213927
+      }
+    },
+    {
+      "coherence": 0.4589169562607623,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.7215133660224855,
+        "momentum": -0.7215133660224855,
+        "spread": 0.16407189291253088,
+        "volatility": 0.248532851471439,
+        "volume": 0.4843273347339543
+      },
+      "nodes": {
+        "CargoShip": 0.4843273347339543,
+        "Clownfish": 0.5,
+        "Deer": 0.16407189291253088,
+        "Dolphin": 0.11626300488960128,
+        "Falcon": 0.6503575566359261,
+        "Hummingbird": 0.0232078823478371,
+        "Owl": 0.6,
+        "Panda": 0.8757335742642804,
+        "Tiger": 0.6011737188228489
+      }
+    },
+    {
+      "coherence": 0.5465189054564915,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.9762356659671072,
+        "momentum": 0.9762356659671072,
+        "spread": 0.7465896405186815,
+        "volatility": 0.6481402874283654,
+        "volume": 0.534461993771802
+      },
+      "nodes": {
+        "CargoShip": 0.534461993771802,
+        "Clownfish": 0.5,
+        "Deer": 0.7465896405186815,
+        "Dolphin": 0.5372942609672448,
+        "Falcon": 0.8437035643085156,
+        "Hummingbird": 0.009116597349547704,
+        "Owl": 0.6,
+        "Panda": 0.6759298562858174,
+        "Tiger": 0.2814877700573077
+      }
+    },
+    {
+      "coherence": 0.35640638621756215,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.5694260311239583,
+        "momentum": -0.5694260311239583,
+        "spread": 0.001279592293771059,
+        "volatility": 0.40874047997005236,
+        "volume": 0.19795595572720137
+      },
+      "nodes": {
+        "CargoShip": 0.19795595572720137,
+        "Clownfish": 0.5,
+        "Deer": 0.001279592293771059,
+        "Dolphin": 0.011845737049117011,
+        "Falcon": 0.4579850085049312,
+        "Hummingbird": 0.01432868396298612,
+        "Owl": 0.6,
+        "Panda": 0.7956297600149738,
+        "Tiger": 0.47300761602395813
+      }
+    },
+    {
+      "coherence": 0.4801678878996736,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.991406949684148,
+        "momentum": 0.991406949684148,
+        "spread": 0.29386550017040514,
+        "volatility": 0.5816954680175535,
+        "volume": 0.2541847697801878
+      },
+      "nodes": {
+        "CargoShip": 0.2541847697801878,
+        "Clownfish": 0.5,
+        "Deer": 0.29386550017040514,
+        "Dolphin": 0.5134962924355615,
+        "Falcon": 0.7702402957129598,
+        "Hummingbird": 0.010140351454951489,
+        "Owl": 0.6,
+        "Panda": 0.7091522659912233,
+        "Tiger": 0.3346436255859573
+      }
+    },
+    {
+      "coherence": 0.5930400423554815,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.9080182833402011,
+        "momentum": 0.9080182833402011,
+        "spread": 0.9888485142904064,
+        "volatility": 0.5772806682045359,
+        "volume": 0.553152766105062
+      },
+      "nodes": {
+        "CargoShip": 0.553152766105062,
+        "Clownfish": 0.5,
+        "Deer": 0.9888485142904064,
+        "Dolphin": 0.6424821028257719,
+        "Falcon": 0.8015586281696593,
+        "Hummingbird": 0.010216580120615076,
+        "Owl": 0.6,
+        "Panda": 0.711359665897732,
+        "Tiger": 0.3381754654363713
+      }
+    },
+    {
+      "coherence": 0.4303172583787402,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.006744966801603303,
+        "momentum": 0.006744966801603303,
+        "spread": 0.45927548697362675,
+        "volatility": 0.43528072803518425,
+        "volume": 0.24857199911721872
+      },
+      "nodes": {
+        "CargoShip": 0.24857199911721872,
+        "Clownfish": 0.5,
+        "Deer": 0.45927548697362675,
+        "Dolphin": 0.5105941762134585,
+        "Falcon": 0.07929307649628792,
+        "Hummingbird": 0.013474645593747557,
+        "Owl": 0.6,
+        "Panda": 0.7823596359824079,
+        "Tiger": 0.45177541757185263
+      }
+    },
+    {
+      "coherence": 0.4899073890124176,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.9888963388642646,
+        "momentum": -0.9888963388642646,
+        "spread": 0.26623552300638664,
+        "volatility": 0.9155990670190147,
+        "volume": 0.8702124494604048
+      },
+      "nodes": {
+        "CargoShip": 0.8702124494604048,
+        "Clownfish": 0.5,
+        "Deer": 0.26623552300638664,
+        "Dolphin": 0.48256194691870047,
+        "Falcon": 0.9532911720431066,
+        "Hummingbird": 0.006482288297160461,
+        "Owl": 0.6,
+        "Panda": 0.5422004664904927,
+        "Tiger": 0.06752074638478822
+      }
+    },
+    {
+      "coherence": 0.4275601312759704,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.5025954512561943,
+        "momentum": -0.5025954512561943,
+        "spread": 0.17092262683439374,
+        "volatility": 0.17300346729048344,
+        "volume": 0.42491678151688284
+      },
+      "nodes": {
+        "CargoShip": 0.42491678151688284,
+        "Clownfish": 0.5,
+        "Deer": 0.17092262683439374,
+        "Dolphin": 1.6621227809321404e-05,
+        "Falcon": 0.4792918503344008,
+        "Hummingbird": 0.0327862640464409,
+        "Owl": 0.6,
+        "Panda": 0.9134982663547583,
+        "Tiger": 0.6615972261676133
+      }
+    },
+    {
+      "coherence": 0.4519606426135335,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.6766489419248982,
+        "momentum": -0.6766489419248982,
+        "spread": 0.4706865396091101,
+        "volatility": 0.10829539201741178,
+        "volume": 0.04294015286749919
+      },
+      "nodes": {
+        "CargoShip": 0.04294015286749919,
+        "Clownfish": 0.5,
+        "Deer": 0.4706865396091101,
+        "Dolphin": 0.0750389826835991,
+        "Falcon": 0.4865363052076785,
+        "Hummingbird": 0.05072048790469257,
+        "Owl": 0.6,
+        "Panda": 0.945852303991294,
+        "Tiger": 0.7133636863860706
+      }
+    },
+    {
+      "coherence": 0.4153448615914279,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.33838079737820337,
+        "momentum": -0.33838079737820337,
+        "spread": 0.020954761161721125,
+        "volatility": 0.17803718273135316,
+        "volume": 0.4912147435220682
+      },
+      "nodes": {
+        "CargoShip": 0.4912147435220682,
+        "Clownfish": 0.5,
+        "Deer": 0.020954761161721125,
+        "Dolphin": 0.06307763394984983,
+        "Falcon": 0.3842309812213628,
+        "Hummingbird": 0.031908582722025465,
+        "Owl": 0.6,
+        "Panda": 0.9109814086343234,
+        "Tiger": 0.6575702538149175
+      }
+    },
+    {
+      "coherence": 0.4892353929044228,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.0809788827490916,
+        "momentum": -0.0809788827490916,
+        "spread": 0.965685852683142,
+        "volatility": 0.1351950236666788,
+        "volume": 0.04935944412551674
+      },
+      "nodes": {
+        "CargoShip": 0.04935944412551674,
+        "Clownfish": 0.5,
+        "Deer": 0.965685852683142,
+        "Dolphin": 0.3741663286436994,
+        "Falcon": 0.07149305116201914,
+        "Hummingbird": 0.0413237303075488,
+        "Owl": 0.6,
+        "Panda": 0.9324024881666606,
+        "Tiger": 0.691843981066657
+      }
+    },
+    {
+      "coherence": 0.4960638466661843,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.6747649662502879,
+        "momentum": 0.6747649662502879,
+        "spread": 0.4686344243343762,
+        "volatility": 0.8549421628378877,
+        "volume": 0.2909248311157753
+      },
+      "nodes": {
+        "CargoShip": 0.2909248311157753,
+        "Clownfish": 0.5,
+        "Deer": 0.4686344243343762,
+        "Dolphin": 0.9265128672673615,
+        "Falcon": 0.559612925709934,
+        "Hummingbird": 0.006936880010929185,
+        "Owl": 0.6,
+        "Panda": 0.5725289185810561,
+        "Tiger": 0.11604626972968984
+      }
+    },
+    {
+      "coherence": 0.3950626095785615,
+      "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+      "features": {
+        "abs_momentum": 0.724550615888832,
+        "momentum": -0.724550615888832,
+        "spread": 0.02468961452055407,
+        "volatility": 0.6704423185880277,
+        "volume": 0.6116323701894667
+      },
+      "nodes": {
+        "CargoShip": 0.6116323701894667,
+        "Clownfish": 0.5,
+        "Deer": 0.02468961452055407,
+        "Dolphin": 0.1193389567742229,
+        "Falcon": 0.6906751421790224,
+        "Hummingbird": 0.008817793714609756,
+        "Owl": 0.6,
+        "Panda": 0.6647788407059861,
+        "Tiger": 0.26364614512957785
+      }
+    }
+  ],
+  "schema": "aureon.auris-node-eval.v1",
+  "seed": 20261024,
+  "source": "aureon.utils.aureon_queen_hive_mind.QueenHiveMind.read_auris_nodes",
+  "trade_readiness": {
+    "coherence_max": 0.7274877513853621,
+    "coherence_mean": 0.48990773756996475,
+    "coherence_min": 0.3011401454172356,
+    "reason": "no independent trade-outcome labels; coherence is not evidence of a fill",
+    "verdict": "HOLD"
+  }
+}

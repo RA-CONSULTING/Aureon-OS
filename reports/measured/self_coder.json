@@ -1,0 +1,107 @@
+{
+  "child_isolation": "child was not launched",
+  "dataset_solution_smoke": {
+    "counts_as_model_score": false,
+    "dataset": "/workspace/data/research/open_benchmarks/humaneval.jsonl",
+    "limit": 5,
+    "passed": 5,
+    "reason": "the dataset's own solutions ran in the harness; this is not a model score",
+    "results": [
+      {
+        "dataset_solution_passed": true,
+        "task_id": "HumanEval/0"
+      },
+      {
+        "dataset_solution_passed": true,
+        "task_id": "HumanEval/1"
+      },
+      {
+        "dataset_solution_passed": true,
+        "task_id": "HumanEval/2"
+      },
+      {
+        "dataset_solution_passed": true,
+        "task_id": "HumanEval/3"
+      },
+      {
+        "dataset_solution_passed": true,
+        "task_id": "HumanEval/4"
+      }
+    ],
+    "total": 5,
+    "verdict": "measured"
+  },
+  "endpoint": {
+    "api_key_configured": false,
+    "api_key_returned": false,
+    "base_url": "http://127.0.0.1:8000/v1",
+    "model": "kimi-k2.5",
+    "ollama_openai_compatible": true,
+    "wire_api": "openai-chat-completions"
+  },
+  "flagship_comparison": {
+    "published_references": [
+      {
+        "livecodebench_v6_pct": 85.0,
+        "model": "Kimi K2.5",
+        "source": "published score named by the operator; not a measurement from this harness",
+        "swe_bench_verified_pct": 76.8
+      }
+    ],
+    "published_references_are_not_this_run": true,
+    "reason": "this run has no model score to set beside a published figure",
+    "status": "HOLD",
+    "this_run_humaneval_pct": null,
+    "this_run_livecodebench_pct": null,
+    "this_run_swe_bench_pct": null
+  },
+  "harness": "model-written Python is executed against each row's tests field. This is not the official SWE-bench or LiveCodeBench evaluation. This is not a kernel sandbox. The child runs only inside unshare (user, pid, and net namespace) from an environment that never held the keys. Inside that namespace, home and the workspace are covered with a tmpfs when that mount works. The opt-in path does not mount over the parent. If unshare is missing or the probe fails, model code is not run unless AUREON_BENCH_ALLOW_UNSANDBOXED=1. That opt-in is unsandboxed: a same-user child can read /proc/PID/environ and can open a raw socket. Run this only on a machine with no secrets.",
+  "humaneval": {
+    "counts_as_model_score": false,
+    "dataset": "/workspace/data/research/open_benchmarks/humaneval.jsonl",
+    "executed": false,
+    "measured_pct": null,
+    "passed": null,
+    "reason": "[Errno 111] Connection refused",
+    "rows": 164,
+    "status": "HOLD",
+    "suite": "HumanEval",
+    "total": 164
+  },
+  "live_trading": false,
+  "livecodebench": {
+    "dataset": "",
+    "executed": false,
+    "reason": "[Errno 111] Connection refused",
+    "suite": "LiveCodeBench"
+  },
+  "model_call": {
+    "attempted": true,
+    "error": "[Errno 111] Connection refused",
+    "ok": false
+  },
+  "model_python_task_pass_pct": {
+    "humaneval_rows": null,
+    "livecode_rows": null,
+    "swe_rows": null
+  },
+  "offline_fixture": {
+    "counts_as_result": false,
+    "executed": false,
+    "reason": "a fixture is not a benchmark result",
+    "suite": "offline-fixture"
+  },
+  "published_reference": {
+    "livecodebench_v6_pct": 85.0,
+    "model": "Kimi K2.5",
+    "source": "published score named by the operator; not a measurement from this harness",
+    "swe_bench_verified_pct": 76.8
+  },
+  "schema": "aureon.self-coder-benchmark.v1",
+  "swe_bench": {
+    "dataset": "",
+    "executed": false,
+    "reason": "[Errno 111] Connection refused",
+    "suite": "SWE-bench Lite or Verified"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "auris_hold_nodes": [
+    "Clownfish",
+    "Owl"
+  ],
+  "dataset_solution_smoke": "measured",
+  "files": [
+    "auris_nodes.json",
+    "qgita_snr.json",
+    "self_coder.json"
+  ],
+  "live_trading": false,
+  "qgita_eval_baseline_auc": 0.62109375,
+  "qgita_eval_ftcp_auc": 0.6690625,
+  "qgita_public_series": "HOLD",
+  "schema": "aureon.measured-proof.v1",
+  "self_coder_comparison": "HOLD",
+  "self_coder_humaneval_pct": null
+}

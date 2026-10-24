@@ -59,6 +59,33 @@ def _load_jsonl(path: Path) -> list[dict[str, Any]]:
     return rows
 
 
+def _humaneval_path(root: Path) -> Path | None:
+    """Public HumanEval jsonl, if this checkout already has it. No download."""
+
+    override = (os.environ.get("AUREON_SELF_CODER_HUMANEVAL_PATH") or "").strip()
+    if override:
+        path = Path(override)
+        return path if path.is_file() else None
+    path = root / "data" / "research" / "open_benchmarks" / "humaneval.jsonl"
+    return path if path.is_file() else None
+
+
+def humaneval_tests(row: dict[str, Any]) -> str:
+    """Turn one HumanEval row into the check the harness appends."""
+
+    entry = str(row.get("entry_point") or "").strip()
+    body = str(row.get("test") or "")
+    if not entry or not body:
+        return ""
+    return body + f"\ncheck({entry})\n"
+
+
+def humaneval_reference_program(row: dict[str, Any]) -> str:
+    """The dataset's own solution. This is not a model reply."""
+
+    return str(row.get("prompt") or "") + str(row.get("canonical_solution") or "")
+
+
 def _dataset_file(root: Path, folder: str, env_name: str) -> Path | None:
     override = (os.environ.get(env_name) or "").strip()
     if override:
@@ -406,6 +433,77 @@ def _score_swe(rows: list[dict[str, Any]], endpoint: dict[str, Any]) -> dict[str
     }
 
 
+def _score_humaneval(rows: list[dict[str, Any]], endpoint: dict[str, Any]) -> dict[str, Any]:
+    """Score model replies on HumanEval. The dataset solution is not the reply."""
+
+    passed = 0
+    failures: list[str] = []
+    for row in rows:
+        prompt = str(row.get("prompt") or "")
+        tests = humaneval_tests(row)
+        task_id = str(row.get("task_id") or "missing-fields")
+        if not prompt or not tests:
+            failures.append(task_id)
+            continue
+        reply = _chat(endpoint, prompt + "\nReply with Python only. Include the function.")
+        if not reply["ok"]:
+            return {
+                "suite": "HumanEval",
+                "executed": False,
+                "passed": passed,
+                "total": len(rows),
+                "status": "HOLD",
+                "counts_as_model_score": False,
+                "reason": reply["error"],
+            }
+        try:
+            ok = _run_python(reply["text"], tests)
+        except BenchmarkChildRefused as exc:
+            return {
+                "suite": "HumanEval",
+                "executed": False,
+                "passed": passed,
+                "total": len(rows),
+                "status": "HOLD",
+                "counts_as_model_score": False,
+                "reason": str(exc),
+            }
+        if ok:
+            passed += 1
+        else:
+            failures.append(task_id)
+    total = len(rows)
+    return {
+        "suite": "HumanEval",
+        "executed": total > 0,
+        "passed": passed,
+        "total": total,
+        "failures": failures,
+        "status": "measured" if total else "HOLD",
+        "counts_as_model_score": total > 0,
+        "measured_pct": round(100.0 * passed / total, 2) if total else None,
+        "reason": "",
+    }
+
+
+def _hold_humaneval(path: Path | None, reason: str) -> dict[str, Any]:
+    rows = 0
+    if path is not None and path.is_file():
+        rows = sum(1 for line in path.read_text(encoding="utf-8").splitlines() if line.strip())
+    return {
+        "suite": "HumanEval",
+        "dataset": str(path or ""),
+        "executed": False,
+        "passed": None,
+        "total": rows,
+        "rows": rows,
+        "status": "HOLD",
+        "counts_as_model_score": False,
+        "measured_pct": None,
+        "reason": reason,
+    }
+
+
 def run_harness(root: Path | None = None) -> dict[str, Any]:
     """Call the configured model and score the datasets. A fixture is not a result."""
 
@@ -428,11 +526,14 @@ def run_harness(root: Path | None = None) -> dict[str, Any]:
     probe = _chat(endpoint, "Reply with the single word ready.")
     swe_rows = _load_jsonl(swe_path) if swe_path else []
     live_rows = _load_jsonl(live_path) if live_path else []
+    humaneval_file = _humaneval_path(root)
     if not probe["ok"]:
         swe = {"suite": "SWE-bench Lite or Verified", "executed": False, "reason": probe["error"], "dataset": str(swe_path or "")}
         live = {"suite": "LiveCodeBench", "executed": False, "reason": probe["error"], "dataset": str(live_path or "")}
+        humaneval = _hold_humaneval(humaneval_file, probe["error"] or "model endpoint did not answer")
         swe_pct = None
         live_pct = None
+        humaneval_pct = None
     else:
         swe = _score_swe(swe_rows, endpoint) if swe_rows else {
             "suite": "SWE-bench Lite or Verified",
@@ -444,8 +545,16 @@ def run_harness(root: Path | None = None) -> dict[str, Any]:
             "executed": False,
             "reason": "dataset path was not provided and no fetch URL was set",
         }
+        if humaneval_file is None:
+            humaneval = _hold_humaneval(None, "dataset path was not provided and no fetch URL was set")
+        else:
+            humaneval = _score_humaneval(_load_jsonl(humaneval_file), endpoint)
+            humaneval["dataset"] = str(humaneval_file)
+            humaneval["rows"] = humaneval.get("total")
         swe_pct = swe.get("measured_pct")
         live_pct = live.get("measured_pct")
+        humaneval_pct = humaneval.get("measured_pct") if humaneval.get("counts_as_model_score") else None
+    measured_any = swe_pct is not None or live_pct is not None or humaneval_pct is not None
     return {
         "schema": "aureon.self-coder-benchmark.v1",
         "endpoint": endpoint,
@@ -458,7 +567,17 @@ def run_harness(root: Path | None = None) -> dict[str, Any]:
         "model_call": {"attempted": True, "ok": probe["ok"], "error": probe["error"]},
         "swe_bench": swe,
         "livecodebench": live,
+        "humaneval": humaneval,
         "published_reference": PUBLISHED_KIMI_K2_5,
+        "flagship_comparison": {
+            "status": "measured" if measured_any else "HOLD",
+            "this_run_swe_bench_pct": swe_pct,
+            "this_run_livecodebench_pct": live_pct,
+            "this_run_humaneval_pct": humaneval_pct,
+            "published_references_are_not_this_run": True,
+            "published_references": [PUBLISHED_KIMI_K2_5],
+            "reason": "" if measured_any else "this run has no model score to set beside a published figure",
+        },
         "harness": HARNESS_NOTE,
         "child_isolation": {
             "namespace": "unshare user, pid, and net namespace; home and workspace on tmpfs when the mount works",
@@ -468,6 +587,7 @@ def run_harness(root: Path | None = None) -> dict[str, Any]:
         "model_python_task_pass_pct": {
             "swe_rows": swe_pct,
             "livecode_rows": live_pct,
+            "humaneval_rows": humaneval_pct,
         },
         "live_trading": False,
     }
