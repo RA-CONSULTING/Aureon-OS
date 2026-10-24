@@ -83,11 +83,16 @@ def render_self_coder_markdown(report: dict[str, Any]) -> str:
     lines = [
         "# Self-coding benchmark",
         "",
-        "The harness posts to whatever OpenAI-compatible `/v1` base "
-        "`AUREON_SELF_CODER_OPENAI_BASE_URL` names. The API key is not written into this report.",
-        f"Model call ok: `{report.get('model_call', {}).get('ok')}`.",
+        "The system under test is the internal Auris, QGITA, and self-coder path. "
+        "An outside model is off unless `AUREON_SELF_CODER_ALLOW_EXTERNAL=1`, and that opt-in is not Aureon's brain.",
+        f"Outside provider called: `{report.get('external_provider', {}).get('called')}`.",
         f"Flagship comparison: **{comparison.get('status', 'HOLD')}**. {comparison.get('reason', '')}",
         f"This run HumanEval: `{comparison.get('this_run_humaneval_pct')}`.",
+        (
+            f"HumanEval passed `{humaneval.get('passed')}` of `{humaneval.get('rows')}`; "
+            f"attempted `{humaneval.get('attempted')}`; not attempted `{humaneval.get('not_attempted')}`. "
+            f"{humaneval.get('reason', '')}"
+        ),
         f"This run SWE-bench: `{comparison.get('this_run_swe_bench_pct')}`.",
         f"This run LiveCodeBench: `{comparison.get('this_run_livecodebench_pct')}`.",
         "Published Kimi figures in `published_reference` are not this run.",

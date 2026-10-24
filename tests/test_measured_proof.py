@@ -54,20 +54,35 @@ def test_self_coder_offline_hold_matches_the_committed_run(monkeypatch: pytest.M
     monkeypatch.delenv("AUREON_SELF_CODER_API_KEY", raising=False)
     fresh = run_harness(ROOT)
     committed = _load("self_coder.json")
-    assert fresh["model_call"]["ok"] is False
-    assert fresh["humaneval"]["status"] == "HOLD"
-    assert fresh["humaneval"]["measured_pct"] is None
+    assert fresh["external_provider"]["called"] is False
+    assert fresh["external_provider"]["enabled"] is False
+    assert fresh["external_provider"]["counts_as_aureon_brain"] is False
+    assert fresh["model_call"]["attempted"] is False
+    assert fresh["humaneval"]["status"] == "measured"
+    assert fresh["humaneval"]["counts_as_aureon_score"] is True
     assert fresh["humaneval"]["counts_as_model_score"] is False
-    assert fresh["flagship_comparison"]["status"] == "HOLD"
-    assert fresh["flagship_comparison"]["this_run_humaneval_pct"] is None
+    assert fresh["humaneval"]["external_provider_called"] is False
+    assert fresh["humaneval"]["attempted"] == 0
+    assert fresh["humaneval"]["passed"] == 0
+    assert fresh["humaneval"]["not_attempted"] == fresh["humaneval"]["rows"]
+    assert fresh["humaneval"]["measured_pct"] == 0.0
+    assert fresh["flagship_comparison"]["status"] == "measured"
+    assert fresh["flagship_comparison"]["this_run_humaneval_pct"] == 0.0
+    assert fresh["flagship_comparison"]["this_run_swe_bench_pct"] is None
     assert fresh["flagship_comparison"]["published_references_are_not_this_run"] is True
-    assert fresh["model_python_task_pass_pct"]["humaneval_rows"] is None
+    assert fresh["model_python_task_pass_pct"]["humaneval_rows"] == 0.0
+    assert fresh["model_python_task_pass_pct"]["swe_rows"] is None
     assert fresh["endpoint"]["api_key_returned"] is False
     assert fresh["endpoint"]["api_key_configured"] is False
-    assert committed["humaneval"]["status"] == "HOLD"
+    assert fresh["humaneval"]["results"][0]["self_coder_status"] == "internal_self_coder_disabled"
+    assert fresh["humaneval"]["results"][0]["program_emitted"] is False
+    assert committed["humaneval"]["status"] == fresh["humaneval"]["status"]
     assert committed["humaneval"]["rows"] == fresh["humaneval"]["rows"]
-    assert committed["humaneval"]["rows"] > 0
-    assert committed["flagship_comparison"]["this_run_humaneval_pct"] is None
+    assert committed["humaneval"]["measured_pct"] == fresh["humaneval"]["measured_pct"]
+    assert committed["humaneval"]["not_attempted"] == fresh["humaneval"]["not_attempted"]
+    assert committed["humaneval"]["results"] == fresh["humaneval"]["results"]
+    assert committed["external_provider"]["called"] is False
+    assert committed["flagship_comparison"]["this_run_humaneval_pct"] == 0.0
     assert committed["dataset_solution_smoke"]["counts_as_model_score"] is False
     assert committed["live_trading"] is False
 
@@ -124,13 +139,32 @@ def test_configured_endpoint_can_score_a_humaneval_row(tmp_path: Path, monkeypat
     monkeypatch.setenv("AUREON_SELF_CODER_OPENAI_BASE_URL", f"http://127.0.0.1:{port}/v1")
     monkeypatch.setenv("AUREON_SELF_CODER_MODEL", "local-test")
     monkeypatch.setenv("AUREON_SELF_CODER_HUMANEVAL_PATH", str(path))
+    monkeypatch.delenv("AUREON_SELF_CODER_ALLOW_EXTERNAL", raising=False)
+    calls = {"n": 0}
+    original = Handler.do_POST
+
+    def counting_post(self):  # noqa: N802
+        calls["n"] += 1
+        original(self)
+
+    Handler.do_POST = counting_post
     try:
+        quiet = run_harness(tmp_path)
+        assert calls["n"] == 0
+        assert quiet["external_provider"]["called"] is False
+        assert quiet["humaneval"]["measured_pct"] == 0.0
+        assert quiet["humaneval"]["not_attempted"] == 1
+        assert quiet["model_python_task_pass_pct"]["humaneval_rows"] == 0.0
+        monkeypatch.setenv("AUREON_SELF_CODER_ALLOW_EXTERNAL", "1")
         report = run_harness(tmp_path)
     finally:
         server.shutdown()
-    assert report["model_call"]["ok"] is True
-    assert report["humaneval"]["status"] == "measured"
-    assert report["humaneval"]["counts_as_model_score"] is True
-    assert report["model_python_task_pass_pct"]["humaneval_rows"] == 100.0
+    assert calls["n"] > 0
+    assert report["external_provider"]["called"] is True
+    assert report["external_provider"]["counts_as_aureon_brain"] is False
+    assert report["external_provider"]["humaneval_pct"] == 100.0
+    assert report["humaneval"]["measured_pct"] == 0.0
+    assert report["humaneval"]["counts_as_aureon_score"] is True
+    assert report["model_python_task_pass_pct"]["humaneval_rows"] == 0.0
     assert report["flagship_comparison"]["status"] == "measured"
     assert report["flagship_comparison"]["published_references_are_not_this_run"] is True
