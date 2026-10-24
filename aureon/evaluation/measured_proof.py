@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from aureon.evaluation.auris_node_eval import evaluate_auris_nodes, render_auris_markdown
+from aureon.evaluation.organism_proof import evaluate_organism, render_organism_markdown
 from aureon.evaluation.qgita_snr_benchmark import evaluate_qgita_snr, render_qgita_markdown
 
 
@@ -112,17 +113,23 @@ def write_bundle(root: Path, out: Path) -> dict[str, Any]:
     auris = evaluate_auris_nodes()
     qgita = evaluate_qgita_snr(root)
     coder = self_coder_report(root)
+    organism = evaluate_organism()
     (out / "auris_nodes.json").write_text(_dump(auris), encoding="utf-8")
     (out / "auris_nodes.md").write_text(render_auris_markdown(auris), encoding="utf-8")
     (out / "qgita_snr.json").write_text(_dump(qgita), encoding="utf-8")
     (out / "qgita_snr.md").write_text(render_qgita_markdown(qgita), encoding="utf-8")
     (out / "self_coder.json").write_text(_dump(coder), encoding="utf-8")
     (out / "self_coder.md").write_text(render_self_coder_markdown(coder), encoding="utf-8")
+    (out / "organism.json").write_text(_dump(organism), encoding="utf-8")
+    (out / "organism.md").write_text(render_organism_markdown(organism), encoding="utf-8")
+    fault = organism["self_model"]["fault"]
+    prediction = organism["self_model"]["prediction"]
     index = {
         "schema": "aureon.measured-proof.v1",
         "live_trading": False,
         "files": [
             "auris_nodes.json",
+            "organism.json",
             "qgita_snr.json",
             "self_coder.json",
         ],
@@ -135,6 +142,15 @@ def write_bundle(root: Path, out: Path) -> dict[str, Any]:
         "self_coder_comparison": coder["flagship_comparison"]["status"],
         "self_coder_humaneval_pct": coder["flagship_comparison"]["this_run_humaneval_pct"],
         "dataset_solution_smoke": coder["dataset_solution_smoke"]["verdict"],
+        "organism_connectivity_verdict": organism["connectivity"]["verdict"],
+        "organism_connectivity_score": organism["connectivity"]["score"],
+        "organism_isolated": organism["connectivity"]["isolated"],
+        "organism_self_prediction_accuracy": prediction["accuracy"],
+        "organism_self_prediction_baseline_accuracy": prediction["baseline_accuracy"],
+        "organism_fault_detection_rate": fault["detection_rate"],
+        "organism_fault_false_alarm_rate": fault["false_alarm_rate"],
+        "organism_fault_baseline_detection_rate": fault["baseline_detection_rate"],
+        "organism_fault_baseline_false_alarm_rate": fault["baseline_false_alarm_rate"],
     }
     (out / "index.json").write_text(_dump(index), encoding="utf-8")
     return index

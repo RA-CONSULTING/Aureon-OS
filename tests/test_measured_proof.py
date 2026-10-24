@@ -87,6 +87,56 @@ def test_self_coder_offline_hold_matches_the_committed_run(monkeypatch: pytest.M
     assert committed["live_trading"] is False
 
 
+def _without_timing(report: dict) -> dict:
+    body = json.loads(json.dumps(report))
+    body.get("connectivity", {}).pop("timing", None)
+    return body
+
+
+def test_organism_connectivity_and_self_model_match_the_committed_run():
+    from aureon.evaluation.organism_proof import evaluate_organism
+
+    fresh = evaluate_organism()
+    committed = _load("organism.json")
+    assert _without_timing(fresh) == _without_timing(committed)
+    connectivity = fresh["connectivity"]
+    assert connectivity["timing"]["elapsed_s"] > 0
+    assert connectivity["timing"]["messages_per_second"] > 0
+    latency = connectivity["timing"]["latency_s"]
+    assert latency["count"] == connectivity["latency_samples"]
+    assert latency["min"] >= 0
+    assert latency["max"] >= latency["min"]
+    assert fresh["external_llm"] is False
+    assert fresh["ollama"] is False
+    assert fresh["cognition"] == "internal"
+    assert fresh["live_trading"] is False
+    assert fresh["orders_placed"] is False
+    assert fresh["self_model"]["external_llm"] is False
+    prediction = fresh["self_model"]["prediction"]
+    fault = fresh["self_model"]["fault"]
+    assert prediction["accuracy"] > prediction["baseline_accuracy"]
+    assert fault["detection_rate"] > fault["baseline_detection_rate"]
+    assert "conscious" in fresh["note"]
+    assert "alive" in fresh["note"]
+    assert connectivity["http_seat_bound"] is False
+    assert committed["live_trading"] is False
+
+
+def test_a_disconnected_circulation_seat_fails_the_connectivity_audit():
+    from aureon.evaluation.organism_proof import evaluate_organism
+
+    fresh = evaluate_organism(disabled=("queen",))
+    connectivity = fresh["connectivity"]
+    assert "queen" in connectivity["isolated"]
+    assert connectivity["verdict"] == "fail"
+    assert connectivity["seats"]["queen"]["published"] == 0
+    assert connectivity["seats"]["queen"]["consumed"] == 0
+    assert connectivity["score"] < 1
+    assert connectivity["score"] == connectivity["connected"] / connectivity["roster"]
+    assert fresh["external_llm"] is False
+    assert fresh["live_trading"] is False
+
+
 def test_humaneval_reference_solution_runs_in_the_harness():
     from aureon.autonomous.self_coder_benchmark import (
         _load_jsonl,
