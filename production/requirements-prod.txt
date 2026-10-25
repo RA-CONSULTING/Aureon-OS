@@ -8,9 +8,9 @@
 flask==3.0.3 \
     --hash=sha256:34e815dfaa43340d1d15a5c3a02b8476004037eb4840b34910c6e21679d288f3 \
     --hash=sha256:ceb27b0af3823ea2737928a4f31d1e10b8d9cfa0d7a6f4d6c3c5c8eed9b0b3f0
-flask-cors==4.0.0 \
-    --hash=sha256:bc3492bfd6368d27cfe79c7821df5a8a319e1a6d5eab277a3794be19bdc51783 \
-    --hash=sha256:f268522fcb2f73e2ecdde1ef45e2fd5c71cc48fe03cffb4b441c6d1b40a98c2c
+flask-cors==6.0.0 \
+    --hash=sha256:4592c1570246bf7beee96b74bc0adbbfcb1b0318f6ba05c412e8909eceec3393 \
+    --hash=sha256:6332073356452343a8ccddbfec7befdc3fdd040141fe776ec9b94c262f058657
 flask-socketio==5.3.6 \
     --hash=sha256:8b5d8a08900dbdeec5b35fb1c7c21e9fb6b0d74b9a8b7f2c9d1e3e3a3a3a3a3a \
     --hash=sha256:8fe7e2c4a02e97e9e79c92e8c5a9b0d29d29d2a2a2a2a2a2a2a2a2a2a2a2a2a2
