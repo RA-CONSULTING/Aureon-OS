@@ -110,18 +110,18 @@ def queen_profit_gate(potential_move_pct: float, fee_rate: float = 0.0026) -> tu
 try:
     from aureon.harmonic.aureon_hft_harmonic_mycelium import get_hft_engine, HFTHarmonicEngine
     HFT_ENGINE_AVAILABLE = True
-    print("⚡🧬 Layer 8: HFT Harmonic Mycelium LOADED!")
+    logger.debug("⚡🧬 Layer 8: HFT Harmonic Mycelium LOADED!")
 except ImportError as e:
     HFT_ENGINE_AVAILABLE = False
     get_hft_engine = None
     HFTHarmonicEngine = None
-    print(f"⚠️ Layer 8 HFT Engine not available: {e}")
+    logger.debug("Layer 8 HFT Engine not available: %s", e)
 
 # LAYER 7: Queen Harmonic Voice
 try:
     from aureon.queen.queen_harmonic_voice import QueenHarmonicVoice
     QUEEN_VOICE_AVAILABLE = True
-    print("👑🎵 Layer 7: Queen Harmonic Voice LOADED!")
+    logger.debug("👑🎵 Layer 7: Queen Harmonic Voice LOADED!")
 except ImportError:
     QUEEN_VOICE_AVAILABLE = False
     QueenHarmonicVoice = None
@@ -134,7 +134,7 @@ try:
         INTENT_FREQUENCIES, AURIS_NODES, BRAINWAVE_STATES
     )
     HARMONIC_ALPHABET_AVAILABLE = True
-    print("🎵📖 Layer 6: Harmonic Alphabet (7-Mode) LOADED!")
+    logger.debug("🎵📖 Layer 6: Harmonic Alphabet (7-Mode) LOADED!")
 except ImportError:
     HARMONIC_ALPHABET_AVAILABLE = False
     HarmonicAlphabet = Any
@@ -147,7 +147,7 @@ try:
         CHAIN_FREQUENCIES, CHAIN_ORDER_DOWN, CHAIN_ORDER_UP
     )
     SIGNAL_CHAIN_AVAILABLE = True
-    print("🔗⚡ Layer 5: Harmonic Signal Chain LOADED!")
+    logger.debug("🔗⚡ Layer 5: Harmonic Signal Chain LOADED!")
 except ImportError:
     SIGNAL_CHAIN_AVAILABLE = False
     HarmonicSignalChain = None
@@ -160,7 +160,7 @@ try:
         SUBSTRATE_FREQUENCIES
     )
     HARMONIC_REALITY_AVAILABLE = True
-    print("🌊🔮 Layer 4: Harmonic Reality Framework LOADED!")
+    logger.debug("🌊🔮 Layer 4: Harmonic Reality Framework LOADED!")
 except ImportError:
     HARMONIC_REALITY_AVAILABLE = False
     HarmonicReality = None
@@ -184,7 +184,7 @@ try:
         SixDimensionalHarmonicEngine, WaveState, MarketPhase, Dimension
     )
     WAVEFORM_6D_AVAILABLE = True
-    print("🌌📊 Layer 2: 6D Harmonic Waveform LOADED!")
+    logger.debug("🌌📊 Layer 2: 6D Harmonic Waveform LOADED!")
 except ImportError:
     WAVEFORM_6D_AVAILABLE = False
     SixDimensionalHarmonicEngine = None
@@ -195,7 +195,7 @@ try:
         HarmonicSeedLoader, HarmonicGrowthEngine, GlobalHarmonicState, SymbolWaveState
     )
     HARMONIC_SEED_AVAILABLE = True
-    print("🌱🌊 Layer 1a: Harmonic Seed LOADED!")
+    logger.debug("🌱🌊 Layer 1a: Harmonic Seed LOADED!")
 except ImportError:
     HARMONIC_SEED_AVAILABLE = False
     HarmonicSeedLoader = None
@@ -205,7 +205,7 @@ try:
         HarmonicWaveFusion, HarmonicFusionConfig, SchumannState
     )
     HARMONIC_FUSION_AVAILABLE = True
-    print("🌊🔄 Layer 1b: Harmonic Fusion LOADED!")
+    logger.debug("🌊🔄 Layer 1b: Harmonic Fusion LOADED!")
 except ImportError:
     HARMONIC_FUSION_AVAILABLE = False
     HarmonicWaveFusion = None
@@ -213,7 +213,7 @@ except ImportError:
 try:
     from aureon.harmonic.aureon_harmonic_underlay import HarmonicUnderlay
     HARMONIC_UNDERLAY_AVAILABLE = True
-    print("🌌👁️ Layer 1c: Harmonic Underlay LOADED!")
+    logger.debug("🌌👁️ Layer 1c: Harmonic Underlay LOADED!")
 except ImportError:
     HARMONIC_UNDERLAY_AVAILABLE = False
     HarmonicUnderlay = None
@@ -228,15 +228,15 @@ try:
     if _wave_sim_enabled():
         from aureon.strategies.harmonic_wave_simulation import HarmonicWaveSimulator as HarmonicWaveSimulation
         WAVE_SIMULATION_AVAILABLE = True
-        print("🌊📈 Layer 0: Harmonic Wave Simulation LOADED!")
+        logger.debug("🌊📈 Layer 0: Harmonic Wave Simulation LOADED!")
 except ImportError as e:
     WAVE_SIMULATION_AVAILABLE = False
     HarmonicWaveSimulation = None
-    print(f"⚠️ Layer 0 Wave Simulation not available: {e}")
+    logger.debug("Layer 0 Wave Simulation not available: %s", e)
 except Exception as e:
     WAVE_SIMULATION_AVAILABLE = False
     HarmonicWaveSimulation = None
-    print(f"⚠️ Layer 0 Wave Simulation failed to load: {e}")
+    logger.debug("Layer 0 Wave Simulation failed to load: %s", e)
 
 # Support Systems
 try:

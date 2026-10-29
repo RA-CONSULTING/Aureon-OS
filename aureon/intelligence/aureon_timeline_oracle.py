@@ -100,10 +100,7 @@ logger = logging.getLogger(__name__)
 
 
 def _safe_import_print(message: str) -> None:
-    try:
-        print(message)
-    except (ValueError, OSError):
-        logger.info(message)
+    logger.debug(message)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SYSTEM INTEGRATIONS

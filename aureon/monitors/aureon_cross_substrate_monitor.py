@@ -228,10 +228,10 @@ class CrossSubstrateMonitor:
         self.data_dir = data_dir
         self._collection_count = 0
 
-        logger.info("Cross-Substrate Monitor initialized")
-        logger.info(f"  Baseline period: {BASELINE_DAYS} days")
-        logger.info(f"  Collection interval: {COLLECTION_INTERVAL_SECONDS}s")
-        logger.info(f"  Flare threshold: M5.0 ({FLARE_THRESHOLD_FLUX} W/m^2)")
+        logger.debug("Cross-Substrate Monitor initialized")
+        logger.debug("  Baseline period: %s days", BASELINE_DAYS)
+        logger.debug("  Collection interval: %ss", COLLECTION_INTERVAL_SECONDS)
+        logger.debug("  Flare threshold: M5.0 (%s W/m^2)", FLARE_THRESHOLD_FLUX)
 
     def collect_snapshot(self) -> Dict[str, Any]:
         """

@@ -24,6 +24,7 @@ Pattern dimensions:
 
 from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
 import json
+import logging
 import time
 import os
 import sys
@@ -40,6 +41,8 @@ def safe_print(*args, **kwargs):
             sys.stdout.flush()
     except (ValueError, OSError, IOError):
         pass  # Ignore I/O errors on closed file
+logger = logging.getLogger(__name__)
+
 from aureon.strategies.probability_intelligence_matrix import (
     get_probability_matrix,
     ProbabilityIntelligence
@@ -181,9 +184,9 @@ class ProbabilityUltimateIntelligence:
         if CLOWNFISH_AVAILABLE and ClownfishNode is not None:
             try:
                 self.clownfish = ClownfishNode()
-                safe_print("🐠 ClownfishNode v2.0 initialized for pattern learning")
+                logger.debug("🐠 ClownfishNode v2.0 initialized for pattern learning")
             except Exception as e:
-                safe_print(f"⚠️ ClownfishNode init failed: {e}")
+                logger.debug("ClownfishNode init failed: %s", e)
         
         # 🔗 Initialize Communication Buses
         self.thought_bus = get_thought_bus() if THOUGHT_BUS_AVAILABLE else None
@@ -191,11 +194,11 @@ class ProbabilityUltimateIntelligence:
         self.queen = _lazy_load_queen()
         
         if self.thought_bus:
-            safe_print("📡 Ultimate Intelligence: Wired to ThoughtBus")
+            logger.debug("📡 Ultimate Intelligence: Wired to ThoughtBus")
         if self.chirp_bus:
-            safe_print("🐦 Ultimate Intelligence: Wired to ChirpBus")
+            logger.debug("🐦 Ultimate Intelligence: Wired to ChirpBus")
         if self.queen:
-            safe_print("👑 Ultimate Intelligence: Connected to Queen Hive")
+            logger.debug("👑 Ultimate Intelligence: Connected to Queen Hive")
         
         self._load_state()
     
@@ -221,7 +224,7 @@ class ProbabilityUltimateIntelligence:
                 self.total_predictions = data.get("total_predictions", 0)
                 self.correct_predictions = data.get("correct_predictions", 0)
                 
-                safe_print(f"💎 Loaded {len(self.patterns)} learned patterns")
+                logger.debug("💎 Loaded %s learned patterns", len(self.patterns))
             except Exception as e:
                 safe_print(f"⚠️ Could not load state: {e}")
     

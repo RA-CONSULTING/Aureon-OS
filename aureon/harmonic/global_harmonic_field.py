@@ -193,7 +193,7 @@ class GlobalHarmonicField:
         # Initialize engines lazily
         self._init_engines()
         
-        logger.info("🌐⚡ Global Harmonic Field initialized")
+        logger.debug("🌐⚡ Global Harmonic Field initialized")
     
     def _init_engines(self):
         """Lazily initialize connected engines."""

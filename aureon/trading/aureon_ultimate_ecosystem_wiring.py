@@ -79,9 +79,9 @@ try:
     )
     ULTIMATE_INTELLIGENCE_AVAILABLE = True
     ULTIMATE_INTEL = get_ultimate_intelligence()
-    logger.info("💎 Probability Ultimate Intelligence WIRED! (95% accuracy)")
-    logger.info(f"   Patterns learned: {len(ULTIMATE_INTEL.patterns)}")
-    logger.info(f"   Accuracy: {ULTIMATE_INTEL.accuracy*100:.1f}%")
+    logger.debug("💎 Probability Ultimate Intelligence WIRED!")
+    logger.debug("   Patterns learned: %s", len(ULTIMATE_INTEL.patterns))
+    logger.debug("   Accuracy: %.1f%%", ULTIMATE_INTEL.accuracy * 100)
 except ImportError as e:
     ULTIMATE_INTELLIGENCE_AVAILABLE = False
     ULTIMATE_INTEL = None
@@ -100,7 +100,7 @@ try:
     )
     PROB_MATRIX_AVAILABLE = True
     PROB_MATRIX = get_probability_matrix()
-    logger.info("🧠 Probability Intelligence Matrix WIRED! (prevents mistakes)")
+    logger.debug("🧠 Probability Intelligence Matrix WIRED! (prevents mistakes)")
 except ImportError as e:
     PROB_MATRIX_AVAILABLE = False
     PROB_MATRIX = None
@@ -121,7 +121,7 @@ try:
     )
     ETA_VERIFIER_AVAILABLE = True
     ETA_VERIFIER = get_eta_verifier()
-    logger.info("🎯 ETA Verification System WIRED! (tracks predictions)")
+    logger.debug("🎯 ETA Verification System WIRED! (tracks predictions)")
 except ImportError as e:
     ETA_VERIFIER_AVAILABLE = False
     ETA_VERIFIER = None
@@ -135,7 +135,7 @@ try:
     from aureon.analytics.improved_eta_calculator import ImprovedETACalculator, ImprovedETA
     IMPROVED_ETA_AVAILABLE = True
     IMPROVED_ETA_CALC = ImprovedETACalculator()
-    logger.info("🔬 Improved ETA Calculator WIRED! (velocity decay model)")
+    logger.debug("🔬 Improved ETA Calculator WIRED! (velocity decay model)")
 except ImportError as e:
     IMPROVED_ETA_AVAILABLE = False
     IMPROVED_ETA_CALC = None
@@ -156,7 +156,7 @@ def _get_patriot_scouts():
             from aureon.wisdom.irish_patriot_scouts import PatriotScoutNetwork as _PSN, PatriotScout, PATRIOT_CONFIG
             PatriotScoutNetwork = _PSN
             PATRIOTS_AVAILABLE = True
-            logger.info("☘️ Irish Patriot Scouts WIRED! (Celtic warfare)")
+            logger.debug("☘️ Irish Patriot Scouts WIRED! (Celtic warfare)")
         except ImportError as e:
             PATRIOTS_AVAILABLE = False
             logger.warning(f"⚠️ Irish Patriots not available: {e}")
@@ -177,7 +177,7 @@ try:
         register_to_mycelium
     )
     SNIPER_MODE_AVAILABLE = True
-    logger.info("🇮🇪 IRA Sniper Mode WIRED! (zero loss)")
+    logger.debug("🇮🇪 IRA Sniper Mode WIRED! (zero loss)")
 except ImportError as e:
     SNIPER_MODE_AVAILABLE = False
     logger.warning(f"⚠️ Sniper Mode not available: {e}")
@@ -189,7 +189,7 @@ except ImportError as e:
 try:
     from aureon.core.aureon_mycelium import MyceliumNetwork, Synapse, Neuron
     MYCELIUM_AVAILABLE = True
-    logger.info("🍄 Mycelium Neural Network WIRED! (distributed intelligence)")
+    logger.debug("🍄 Mycelium Neural Network WIRED! (distributed intelligence)")
 except ImportError as e:
     MYCELIUM_AVAILABLE = False
     MyceliumNetwork = None

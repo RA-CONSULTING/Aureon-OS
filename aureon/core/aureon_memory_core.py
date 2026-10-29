@@ -66,12 +66,12 @@ class AureonMemoryCore:
                     data = json.load(f)
                     self.positions = data.get('positions', {})
                     self.history = data.get('history', [])
-                logger.info(f"Loaded memory: {len(self.positions)} active stepping stones.")
+                logger.debug("Loaded memory: %s active stepping stones.", len(self.positions))
             except Exception as e:
                 logger.error(f"Failed to load memory: {e}")
                 self.positions = {}
         else:
-            logger.info("No existing memory found. Starting fresh spiral.")
+            logger.debug("No existing memory found. Starting fresh spiral.")
             self.positions = {}
 
     def save_memory(self):
