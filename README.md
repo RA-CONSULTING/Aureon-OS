@@ -30,7 +30,7 @@ python3 -m venv .venv
 . .venv/bin/activate
 python -m pip install -U pip
 python -m pip install -e '.[operator]' 'pytest>=8' 'pytest-timeout>=2.3' 'numpy>=1.26' 'cryptography>=46'
-AUREON_LLM_OFFLINE=1 AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS=1 pytest tests/test_operator_server.py tests/test_connectome.py -q --timeout=60
+AUREON_LLM_OFFLINE=1 AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS=1 pytest tests/test_operator_server.py tests/test_connectome.py --timeout=60
 ```
 
 Windows, from the checkout:
@@ -42,7 +42,7 @@ python -m pip install -U pip
 python -m pip install -e ".[operator]" "pytest>=8" "pytest-timeout>=2.3" "numpy>=1.26" "cryptography>=46"
 set AUREON_LLM_OFFLINE=1
 set AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS=1
-pytest tests/test_operator_server.py tests/test_connectome.py -q --timeout=60
+pytest tests/test_operator_server.py tests/test_connectome.py --timeout=60
 ```
 
 A passing run prints the passed count and exits 0. It does not ask for a key. The longer operator preflight, containers, and the full offline suite are further down.
