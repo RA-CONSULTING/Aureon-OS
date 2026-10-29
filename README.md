@@ -19,6 +19,36 @@ Trading research · autonomous operator · planetary/HNC research · a coding or
 
 ---
 
+## Five-minute quickstart
+
+A fresh clone, Python 3.11 or newer, and no API keys. This path does not start Docker, does not read exchange keys, and does not place an order. It installs the operator extra, then runs the offline operator server tests and the connectome test.
+
+Linux and macOS, from the checkout:
+
+```bash
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install -U pip
+python -m pip install -e '.[operator]' 'pytest>=8' 'pytest-timeout>=2.3' 'numpy>=1.26' 'cryptography>=46'
+AUREON_LLM_OFFLINE=1 AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS=1 pytest tests/test_operator_server.py tests/test_connectome.py -q --timeout=60
+```
+
+Windows, from the checkout:
+
+```bat
+py -3 -m venv .venv
+.venv\Scripts\activate
+python -m pip install -U pip
+python -m pip install -e ".[operator]" "pytest>=8" "pytest-timeout>=2.3" "numpy>=1.26" "cryptography>=46"
+set AUREON_LLM_OFFLINE=1
+set AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS=1
+pytest tests/test_operator_server.py tests/test_connectome.py -q --timeout=60
+```
+
+A passing run ends in `passed` and does not ask for a key. The longer operator preflight, containers, and the full offline suite are further down.
+
+---
+
 ## What Aureon OS is
 
 Aureon OS is a **local-first operating layer** — powered by the Harmonic Nexus Core — that
@@ -91,7 +121,7 @@ flowchart TB
 <img src="public/harmonic_wave_analysis.png" alt="Harmonic wave analysis" width="48%" />
 </div>
 
-### Quickstart
+### Operator preflight, containers, and the strict suite
 
 ```bash
 # 1 · evaluate the isolated operator protection preflight
