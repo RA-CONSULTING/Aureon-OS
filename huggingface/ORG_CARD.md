@@ -4,7 +4,7 @@ Licence: **MIT**, the same licence as the Aureon OS repository `LICENSE`.
 
 Developer entry for three repo modules: the Harmonic Nexus Core field, the Auris coherence evaluator (kept apart from the conjecture, the nine nodes, and the Queen persona), and the QGITA adapter.
 
-The brain runs are fixed-seed reproducible runs at commit `a00f744d2e686e916e45b81dd4222408c368e305`.
+The brain runs are deterministic runs at commit `a00f744d2e686e916e45b81dd4222408c368e305`.
 
 Trade readiness: **HOLD**.
 Auris joined to Lambda: **HOLD**.

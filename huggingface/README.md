@@ -12,7 +12,7 @@ Licence: **MIT**, the same licence as the repository [`LICENSE`](../LICENSE).
 | `ORG_CARD.md` | Draft organisation card |
 | `PUBLISH.md` | Upload commands. They read `HF_TOKEN` from the environment |
 
-The brain runs are fixed-seed reproducible at commit `a00f744d`. Trade readiness, the Auris-to-Lambda link, and the QGITA detection rates are HOLD. Schumann f0 is null. HumanEval is not run.
+The brain runs are deterministic at commit `a00f744d`. Trade readiness, the Auris-to-Lambda link, and the QGITA detection rates are HOLD. Schumann f0 is null. HumanEval is not run.
 
 Install the modules from this repo:
 
