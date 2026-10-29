@@ -12,7 +12,9 @@ The operator process is separate: `python -m aureon_operator`. It stays off unle
 
 `repo_root()` and `aureon_source()` raise `FileNotFoundError` when the process is not inside a checkout that contains `huggingface/hnc-field/guard.py` and `aureon/core/hnc_field.py`. This server needs that checkout. It does not invent a 'no checkout' status.
 
-The extra package tools are helpers. A helper call is not that layer's cognition. A layer is at full depth only where its real entry points are called. Depth is the count of real entry points exposed out of that package's public entry points. The helpers are not full depth.
+The extra package tools are helpers. A helper call is not that layer's cognition. A layer is at full depth only where a measured run calls that entry point. Listing it in `docs/mcp/FULL_BODY_PLAN.md` is not depth.
+
+`body_call` runs one inventoried function or method. `body_surface` reads a module or class and does not construct it. `body_depth` counts calls recorded in `measured/body_stageN.json`. `body_registry` names the servers. The operator tool is `body_call_operator`. Live orders stay refused. A checkout file is imported only when its git blob matches pin `a00f744d`. The plan and the call rules are in `docs/mcp/REGISTRY.md`.
 
 Licence: MIT, the same licence as the repository `LICENSE`.
 

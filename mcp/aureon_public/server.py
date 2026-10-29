@@ -69,6 +69,7 @@ def build_server(host: str = "127.0.0.1", port: int = 8077) -> FastMCP:
         body.body_call,
         body.body_surface,
         body.body_depth,
+        body.body_registry,
     ):
         server.tool()(fn)
     server.resource("aureon://packages", mime_type="application/json")(layers.packages_resource)
@@ -93,6 +94,7 @@ def build_server(host: str = "127.0.0.1", port: int = 8077) -> FastMCP:
     server.resource("aureon://organism/nodes", mime_type="application/json")(surfaces.organism_nodes_resource)
     server.resource("aureon://organism/systems", mime_type="application/json")(surfaces.organism_systems_resource)
     server.resource("aureon://body/depth", mime_type="application/json")(body.body_depth)
+    server.resource("aureon://body/registry", mime_type="application/json")(body.body_registry)
     server.resource("aureon://holds", mime_type="application/json")(surfaces.holds_resource)
     server.resource("aureon://replay/brain", mime_type="application/json")(surfaces.replay_brain_resource)
     server.resource("aureon://replay/qgita", mime_type="application/json")(surfaces.replay_qgita_resource)

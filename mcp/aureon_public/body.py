@@ -559,6 +559,42 @@ def depth_report() -> dict[str, Any]:
 
 
 @quiet
+def body_registry() -> str:
+    """Name the public and operator servers and the inventory they address. Provenance: cited.
+
+    This is the registry. It does not call package entry points. Live orders stay refused.
+    A checkout file is still blob-checked before a later call imports it.
+
+    Args:
+        none: This tool takes no inputs. Label: cited, the registry.
+    """
+
+    return _result(
+        {
+            "blocked_imports": sorted(_BLOCKED),
+            "enabled_through": ENABLED_THROUGH,
+            "inventory": "docs/mcp/FULL_BODY_PLAN.md",
+            "label": "cited. Registry only. No package entry point ran.",
+            "live_orders": "refused",
+            "operator": {
+                "flag": "AUREON_OPERATOR_MCP=1",
+                "tool": "body_call_operator",
+                "transport": "stdio",
+            },
+            "pin": PINNED_COMMIT,
+            "public_tools": ["body_call", "body_depth", "body_registry", "body_surface"],
+            "spaces": [
+                "huggingface/hnc-field/app.py",
+                "huggingface/auris-coherence/app.py",
+                "huggingface/qgita-snr/app.py",
+                "huggingface/organism-replay/app.py",
+            ],
+            "status": "cited",
+        }
+    )
+
+
+@quiet
 def body_depth() -> str:
     """Per-package depth for the stages that are open. Provenance: cited.
 

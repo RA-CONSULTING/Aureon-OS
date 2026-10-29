@@ -11,7 +11,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "mcp"))
 
-from aureon_public.body import body_call, body_call_operator, body_surface, enabled_stage  # noqa: E402
+from aureon_public.body import body_call, body_call_operator, body_registry, body_surface, enabled_stage  # noqa: E402
 from aureon_public.pin_blob import checkout_blob_refusal  # noqa: E402
 from aureon_public.guard_loader import PINNED_COMMIT  # noqa: E402
 from aureon_public.paths import repo_root  # noqa: E402
@@ -93,6 +93,23 @@ def test_surface_does_not_call_and_a_changed_blob_is_refused(tmp_path: Path, mon
     refused = _load(body_call("harmonic/rainbow_reference.py", "solfeggio_ladder"))
     assert refused["status"] == "unavailable"
     assert "differs from pin" in refused["reason"]
+
+
+def test_stage7_registry_names_servers_spaces_and_the_pin() -> None:
+    body = _load(body_registry())
+    assert body["status"] == "cited"
+    assert body.get("called") is not True
+    assert body["live_orders"] == "refused"
+    assert body["enabled_through"] == enabled_stage()
+    assert body["pin"].startswith("a00f744d")
+    assert "huggingface/hnc-field/app.py" in body["spaces"]
+    assert "trading" in body["blocked_imports"]
+    registry = (ROOT / "docs" / "mcp" / "REGISTRY.md").read_text(encoding="utf-8")
+    assert "body_call" in registry
+    assert "enforce_public_pin" in registry
+    readme = (ROOT / "mcp" / "aureon_public" / "README.md").read_text(encoding="utf-8")
+    assert "body_call" in readme
+    assert "helper" in readme
 
 
 def test_stage6_calls_the_remaining_public_readers() -> None:

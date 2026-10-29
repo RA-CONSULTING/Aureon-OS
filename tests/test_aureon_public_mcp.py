@@ -311,6 +311,7 @@ def test_registered_names() -> None:
         *(fn.__name__ for fn in public_layer_tools()),
         "body_call",
         "body_depth",
+        "body_registry",
         "body_surface",
     }
     assert set(names) == expected
@@ -324,7 +325,8 @@ def test_registered_names() -> None:
     assert "aureon://replay/auris" in uris
     assert "aureon://packages" in uris
     assert "aureon://body/depth" in uris
-    assert len(uris) == 14
+    assert "aureon://body/registry" in uris
+    assert len(uris) == 15
     prompts = asyncio.run(server.list_prompts())
     prompt_names = sorted(item.name for item in prompts)
     assert "explain_auris_four_meanings" in prompt_names
