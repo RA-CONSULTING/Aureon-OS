@@ -59,7 +59,7 @@ def run() -> str:
         f"Link: {LINK}",
         HOLD,
         "This Space makes no track-record, return, or performance claim.",
-        "No order path is reachable. Trading modules are hard-disabled.",
+        guard.REFUSAL,
     ]
     record = _load()
     if record is None:
@@ -105,23 +105,31 @@ def run() -> str:
         "Persistence baseline on the same pulses: "
         f"{guard.show(prediction.get('baseline_accuracy'))} (cited)."
     )
-    fault = self_model.get("fault") if isinstance(self_model.get("fault"), dict) else {}
-    lines.append(
-        "Seeded synthetic block, not telemetry: "
-        f"origin {guard.show(fault.get('origin'))}, "
-        f"seed {guard.show(fault.get('seed'))}. "
-        "These faults were injected by the harness. "
-        "A claim that they are recorded seat faults is HOLD."
-    )
-    lines.append(
-        "Synthetic detection rate in the file, not a telemetry figure: "
-        f"{guard.show(fault.get('detection_rate'))}."
-    )
     lines.extend(_dashboard_topics())
     lines.append(
         "The cognitive dashboard has no ics.* rows in this replay, so those panels stay unavailable."
     )
-    return "\n".join(f"- {line}" if not line.startswith("  ") else line for line in lines)
+    fault = self_model.get("fault") if isinstance(self_model.get("fault"), dict) else {}
+    measured = "\n".join(f"- {line}" if not line.startswith("  ") else line for line in lines)
+    synthetic = "\n".join(
+        [
+            "## Seeded synthetic input, seed 20261024, not telemetry",
+            "",
+            f"- Origin: {guard.show(fault.get('origin'))}.",
+            f"- Seed: {guard.show(fault.get('seed'))}.",
+            (
+                "- Detection rate in the file, not a telemetry figure: "
+                f"{guard.show(fault.get('detection_rate'))}."
+            ),
+            (
+                "- False-alarm rate in the file, not a telemetry figure: "
+                f"{guard.show(fault.get('false_alarm_rate'))}."
+            ),
+            "- These faults were injected by the harness.",
+            "- A claim that they are recorded seat faults is HOLD.",
+        ]
+    )
+    return measured + "\n\n" + synthetic
 
 
 def example() -> str:
@@ -136,7 +144,10 @@ Licence: **{guard.LICENCE}** (same as the Aureon OS `LICENSE`).
 
 Dashboard of the committed circulation replay only.
 The cognitive-dashboard topics that are absent from the file stay unavailable.
-The fault block is seeded synthetic input and is not telemetry.
+
+## Seeded synthetic input, seed 20261024, not telemetry
+
+That block is below the measured figures. It is not part of the cited list.
 
 {HOLD}
 

@@ -1,3 +1,4 @@
+# The git+ install brings the whole repo, trading modules included, and only the Spaces switch them off.
 gradio==5.49.1
 numpy>=1.26
 aureon @ git+https://github.com/RA-CONSULTING/Aureon-OS.git

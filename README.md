@@ -320,29 +320,6 @@ AUREON_LLM_OFFLINE=1 AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS=1 \
   python -I -S -B scripts/bootstrap/protected_bootstrap_v05.py --target-id capability-demo -- --report docs/reports/CAPABILITY_DEMO.md
 ```
 
-## Install the HNC, Auris, and QGITA modules
-
-The package licence is MIT, the same licence as [`LICENSE`](LICENSE).
-
-```bash
-pip install "git+https://github.com/RA-CONSULTING/Aureon-OS.git"
-```
-
-```python
-from aureon.core.hnc_field import blend_field, read_canonical_field
-from aureon.harmonic.aureon_harmonic_reality import HarmonicRealityField
-from aureon.utils.aureon_queen_hive_mind import QueenHiveMind
-from aureon.wisdom.aureon_qgita_framework import QGITAMarketAnalyzer
-field = HarmonicRealityField(enable_multiverse=False)
-print([field.step() for _ in range(100)][-1], field.coherence)
-print(read_canonical_field().available, blend_field().available)
-queen = QueenHiveMind.__new__(QueenHiveMind)
-print(queen.get_auris_coherence(None))
-print(QGITAMarketAnalyzer().analyze()["status"])
-```
-
-A canonical field with nothing fresh to read has `available` false. The Spaces print that case as unavailable. Trade readiness, the Auris-to-Lambda link, and QGITA detection rates stay HOLD. Schumann f0 stays null unless a committed run measured it. This install makes no track-record, return, or performance claim.
-
 ## Operating boundaries
 
 Aureon is designed for **controlled local operation with a human in the loop**. Live trading,

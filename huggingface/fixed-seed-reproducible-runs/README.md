@@ -19,12 +19,14 @@ Every claim below links to that commit.
 
 Source: [reports/measured/brain.json](https://github.com/RA-CONSULTING/Aureon-OS/blob/a00f744d2e686e916e45b81dd4222408c368e305/reports/measured/brain.json)
 
-| Figure | Value | Label |
-| --- | --- | --- |
-| Formula coherence, multiverse off | 0.9331334813083556 | cited |
-| Last Lambda | 1.409626852655939 | cited |
-| State | unified | cited |
-| Multiverse extension file verdict | measured | cited |
+The class default `HarmonicRealityField()` is the multiverse-on path. The other row is the multiverse-off path (`enable_multiverse=False`).
+
+| Path | Coherence | Last Lambda | State | Label |
+| --- | --- | --- | --- | --- |
+| Class default HarmonicRealityField() (multiverse on) | 0.857719007627168 | 0.002306037019850606 | LOCKED | cited |
+| enable_multiverse=False (multiverse off) | 0.9331334813083556 | 1.409626852655939 | UNIFIED | cited |
+
+The file stores those states as `locked` and `unified`. The multiverse-extension verdict in the file is measured.
 
 ## HOLD in every card
 

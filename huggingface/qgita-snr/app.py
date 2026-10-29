@@ -121,7 +121,7 @@ def run(mode: str, user_text: str) -> str:
         HOLD,
         "This Space makes no track-record, return, or performance claim.",
         "The analyzer's signals object is not shown.",
-        "No order path is reachable. Trading modules are hard-disabled.",
+        guard.REFUSAL,
         f"Committed file: {LINK}",
     ]
     if mode == "bundled replay":

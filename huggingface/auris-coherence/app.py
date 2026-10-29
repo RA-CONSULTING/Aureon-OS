@@ -45,6 +45,17 @@ def _load() -> dict | None:
     return loaded if isinstance(loaded, dict) else None
 
 
+def _blocked_parts() -> list[str]:
+    return [
+        "Glassnode client: unavailable. No keys are present.",
+        "Unusual Whales client: unavailable. No keys are present.",
+        "aureon.bridges: unavailable.",
+        "aureon.bots: unavailable.",
+        "aureon.bots_intelligence: unavailable.",
+        "aureon.scanners: unavailable.",
+    ]
+
+
 def _queen():
     from aureon.utils.aureon_queen_hive_mind import QueenHiveMind
 
@@ -76,6 +87,7 @@ def _evaluate(market: dict | None, label: str) -> list[str]:
         "4. Coherence evaluator: QueenHiveMind.get_auris_coherence.",
         label,
     ]
+    lines.extend(_blocked_parts())
     if market is None:
         lines.append("Nine nodes: unavailable")
         lines.append("Coherence evaluator: unavailable")
@@ -86,9 +98,14 @@ def _evaluate(market: dict | None, label: str) -> list[str]:
         lines.append("Nine nodes: unavailable")
         lines.append("Coherence evaluator: unavailable")
         return lines
-    queen = _queen()
-    nodes = queen.read_auris_nodes(supplied)
-    coherence, status = queen.get_auris_coherence(supplied)
+    try:
+        queen = _queen()
+        nodes = queen.read_auris_nodes(supplied)
+        coherence, status = queen.get_auris_coherence(supplied)
+    except Exception:
+        lines.append("Nine nodes: unavailable")
+        lines.append("Coherence evaluator: unavailable")
+        return lines
     lines.append(
         "Nine nodes (inferred, this call). A missing field is not filled. "
         "A node value is the function return, including its own clamp:"
@@ -115,11 +132,27 @@ def _evaluate(market: dict | None, label: str) -> list[str]:
 
 
 def run(mode: str, index_text: str, volatility: str, momentum: str, volume: str, spread: str) -> str:
+    try:
+        return _run(mode, index_text, volatility, momentum, volume, spread)
+    except Exception:
+        return "\n".join(
+            [
+                "- Result: unavailable",
+                f"- {guard.REFUSAL}",
+                "- Glassnode client: unavailable. No keys are present.",
+                "- Unusual Whales client: unavailable. No keys are present.",
+                "- Nine nodes: unavailable",
+                "- Coherence evaluator: unavailable",
+            ]
+        )
+
+
+def _run(mode: str, index_text: str, volatility: str, momentum: str, volume: str, spread: str) -> str:
     lines = [
         f"Licence: {guard.LICENCE}",
         HOLD,
         "This Space makes no track-record, return, or performance claim.",
-        "No order path is reachable. Trading modules are hard-disabled.",
+        guard.REFUSAL,
         "Replay label: public historical candles, recorded, not a performance series.",
     ]
     if mode == "bundled replay":

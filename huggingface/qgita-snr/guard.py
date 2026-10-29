@@ -26,6 +26,15 @@ _BLOCKED = (
     "aureon.exchanges",
     "aureon.trading",
     "unified_margin_trader",
+    "aureon.bots",
+    "aureon.bots_intelligence",
+    "aureon.bridges",
+    "aureon.scanners",
+)
+REFUSAL = (
+    "Refused imports: aureon.exchanges, aureon.trading, unified_margin_trader, "
+    "aureon.bots, aureon.bots_intelligence, aureon.bridges, aureon.scanners. "
+    "No keys are present."
 )
 
 
@@ -33,7 +42,7 @@ class _BlockTrading:
     def find_spec(self, fullname, path, target=None):
         for prefix in _BLOCKED:
             if fullname == prefix or fullname.startswith(prefix + "."):
-                raise ImportError(f"trading module hard-disabled in this Space: {fullname}")
+                raise ImportError(f"{REFUSAL} Refused: {fullname}")
         return None
 
 

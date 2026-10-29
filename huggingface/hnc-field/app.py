@@ -45,6 +45,80 @@ def _load_replay() -> dict | None:
     return loaded if isinstance(loaded, dict) else None
 
 
+def _same(fresh: object, committed: object) -> bool:
+    return json.loads(json.dumps(fresh)) == committed
+
+
+def _brain_table() -> str:
+    """Both committed paths. The class default is multiverse on."""
+
+    loaded = _load_replay()
+    hnc = loaded.get("hnc") if isinstance(loaded, dict) else None
+    if not isinstance(hnc, dict):
+        return "Both brain paths: unavailable. replay/brain.json is missing."
+    steps = hnc.get("steps")
+    if isinstance(steps, bool) or not isinstance(steps, int) or steps < 1:
+        return "Both brain paths: unavailable. The committed step count is missing."
+    from aureon.harmonic.aureon_harmonic_reality import HarmonicRealityField
+
+    def measure(factory):
+        field = factory()
+        series = [float(field.step()) for _ in range(steps)]
+        return {
+            "on": bool(field.enable_multiverse),
+            "coherence": float(field.coherence),
+            "lambda_last": series[-1],
+            "state_name": field.state.name,
+            "state_value": field.state.value,
+            "series": series,
+        }
+
+    default = measure(HarmonicRealityField)
+    off = measure(lambda: HarmonicRealityField(enable_multiverse=False))
+    extension = hnc.get("multiverse_extension") if isinstance(hnc.get("multiverse_extension"), dict) else {}
+    default_match = (
+        default["on"] is True
+        and _same(default["coherence"], extension.get("coherence"))
+        and _same(default["lambda_last"], extension.get("lambda_last"))
+        and default["state_value"] == extension.get("state")
+    )
+    off_match = (
+        off["on"] is False
+        and _same(off["coherence"], hnc.get("coherence"))
+        and _same(off["lambda_last"], hnc.get("lambda_last"))
+        and off["state_value"] == hnc.get("state")
+        and _same(off["series"], hnc.get("series"))
+    )
+    return "\n".join(
+        [
+            "The class default `HarmonicRealityField()` is the multiverse-on path.",
+            "The figures on the `enable_multiverse=False` row are the multiverse-off path.",
+            "",
+            "| Path | Coherence | Last Lambda | State |",
+            "| --- | --- | --- | --- |",
+            (
+                "| Class default HarmonicRealityField() (multiverse on) | "
+                f"{default['coherence']} | {default['lambda_last']} | {default['state_name']} |"
+            ),
+            (
+                "| enable_multiverse=False (multiverse off) | "
+                f"{off['coherence']} | {off['lambda_last']} | {off['state_name']} |"
+            ),
+            "",
+            (
+                "Class default rerun matches brain.json multiverse_extension: "
+                + ("yes" if default_match else "no")
+                + ". Label: cited."
+            ),
+            (
+                "Multiverse-off rerun matches brain.json: "
+                + ("yes" if off_match else "no")
+                + ". Label: cited."
+            ),
+        ]
+    )
+
+
 def _formula(record: dict | None, params: dict | None, steps: int | None) -> list[str]:
     if steps is None or steps < 1:
         return ["Formula Gamma: unavailable", "Formula Lambda: unavailable"]
@@ -219,25 +293,11 @@ def run(
         f"Link: {LINK}",
         HOLD,
         "This Space makes no track-record, return, or performance claim.",
-        "No order path is reachable. Trading modules are hard-disabled.",
+        guard.REFUSAL,
     ]
-    record = None
     params = None
     steps = None
-    if mode == "committed replay":
-        loaded = _load_replay()
-        hnc = loaded.get("hnc") if isinstance(loaded, dict) else None
-        if not isinstance(hnc, dict):
-            lines.append("Committed replay: unavailable. replay/brain.json is missing.")
-        else:
-            record = hnc
-            if hnc.get("enable_multiverse") is not False:
-                lines.append("Formula rerun: unavailable. The committed run did not set multiverse off.")
-            else:
-                raw_steps = hnc.get("steps")
-                steps = raw_steps if isinstance(raw_steps, int) and not isinstance(raw_steps, bool) else None
-            lines.append(f"Committed state: {guard.show(hnc.get('state'))} (cited).")
-    else:
+    if mode == "user inputs":
         boxes = {
             "alpha": _float_box(alpha),
             "beta": _float_box(beta),
@@ -247,23 +307,24 @@ def run(
         }
         step_number = _float_box(steps_text)
         if any(value is None for value in boxes.values()) or step_number is None:
-            lines.append("Formula path: unavailable. A user input is missing.")
+            lines.append("User parameter path: unavailable. A user input is missing.")
         elif not step_number.is_integer() or step_number < 1:
-            lines.append("Formula path: unavailable. steps is missing.")
+            lines.append("User parameter path: unavailable. steps is missing.")
         else:
             params = boxes
             steps = int(step_number)
-    if record is not None or params is not None:
-        lines.extend(_formula(record, params, steps))
-    elif mode == "committed replay" and record is None:
-        lines.append("Formula Gamma: unavailable")
-        lines.append("Formula Lambda: unavailable")
-    lines.extend(_canonical("" if mode == "committed replay" and _blank(trace_text) else trace_text))
-    if mode == "user inputs":
+            lines.append("User parameter path, separate from the two committed brain paths:")
+            lines.extend(_formula(None, params, steps))
         lines.extend(_lambda_engine(readings_text))
     else:
         lines.append("LambdaEngine path: unavailable on the committed replay. No readings ship with it.")
-    return "\n".join(f"- {line}" for line in lines)
+    try:
+        table = _brain_table()
+    except Exception:
+        table = "Both brain paths: unavailable."
+    lines.extend(_canonical("" if mode == "committed replay" and _blank(trace_text) else trace_text))
+    bullet = "\n".join(f"- {line}" for line in lines)
+    return bullet + "\n\n" + table
 
 
 def example() -> str:
@@ -277,11 +338,20 @@ with gr.Blocks(title="HNC field") as demo:
 Licence: **{guard.LICENCE}** (same as the Aureon OS `LICENSE`).
 
 Runs `HarmonicRealityField.step`, `read_canonical_field`, and `blend_field`.
-The committed brain replay is a fixed-seed reproducible run. A missing input stays unavailable.
+The class default `HarmonicRealityField()` is the multiverse-on path.
+The other row is the multiverse-off path, `enable_multiverse=False`.
+
+| Path | Coherence | Last Lambda | State |
+| --- | --- | --- | --- |
+| Class default HarmonicRealityField() (multiverse on) | 0.857719007627168 | 0.002306037019850606 | LOCKED |
+| enable_multiverse=False (multiverse off) | 0.9331334813083556 | 1.409626852655939 | UNIFIED |
+
+Both rows are cited from `reports/measured/brain.json`. A missing input stays unavailable.
 
 {HOLD}
 
 This Space makes no track-record, return, or performance claim.
+{guard.REFUSAL}
 """
     )
     mode = gr.Radio(["committed replay", "user inputs"], value="committed replay", label="Source")

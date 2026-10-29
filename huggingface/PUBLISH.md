@@ -85,4 +85,6 @@ The Space `requirements.txt` installs the package with:
 pip install "git+https://github.com/RA-CONSULTING/Aureon-OS.git"
 ```
 
+The git+ install brings the whole repo, trading modules included, and only the Spaces switch them off.
+
 Merge this change to the default branch before expecting that install to include the packaging note from this branch. The field, evaluator, and adapter modules are already on the default branch.

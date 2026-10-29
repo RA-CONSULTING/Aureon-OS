@@ -29,4 +29,4 @@ A count from a fresh adapter call in this process is labelled inferred. Schumann
 
 Trade readiness: **HOLD**. Auris joined to Lambda: **HOLD**.
 
-This Space makes no track-record, return, or performance claim. Trading modules are hard-disabled. No exchange is contacted.
+This Space makes no track-record, return, or performance claim. Refused imports: aureon.exchanges, aureon.trading, unified_margin_trader, aureon.bots, aureon.bots_intelligence, aureon.bridges, aureon.scanners. No keys are present.

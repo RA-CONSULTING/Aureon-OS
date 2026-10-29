@@ -20,6 +20,8 @@ Install the modules from this repo:
 pip install "git+https://github.com/RA-CONSULTING/Aureon-OS.git"
 ```
 
+The git+ install brings the whole repo, trading modules included, and only the Spaces switch them off.
+
 ```python
 from aureon.core.hnc_field import blend_field, read_canonical_field
 from aureon.harmonic.aureon_harmonic_reality import HarmonicRealityField
