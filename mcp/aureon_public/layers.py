@@ -382,6 +382,16 @@ def membrane_screen(text: str = "") -> str:
 
     from dataclasses import asdict
 
+    missing = _load_phenolic_fingerprint()
+    if missing:
+        return _dumps(
+            {
+                "label": "cited-unverified. phenolic_fingerprint was not loaded, so screen_ingress did not run.",
+                "provenance": "cited-unverified",
+                "reason": missing,
+                "status": "unavailable",
+            }
+        )
     try:
         from aureon.bio.mcp_membrane import screen_ingress
     except Exception as exc:
@@ -526,7 +536,37 @@ def source_names(package: str) -> str:
     )
 
 
+def _load_phenolic_fingerprint() -> str | None:
+    """Register the checkout's phenolic_fingerprint without putting the repo root on sys.path.
+
+    The pinned aureon install imports that module by name. Adding the checkout
+    root would also shadow the pin. Loading the file into sys.modules does not.
+    """
+
+    import importlib.util
+    import sys
+
+    if "phenolic_fingerprint" in sys.modules:
+        return None
+    path = paths.repo_root() / "phenolic_fingerprint.py"
+    if not path.is_file():
+        return "phenolic_fingerprint.py is not in this checkout"
+    spec = importlib.util.spec_from_file_location("phenolic_fingerprint", path)
+    if spec is None or spec.loader is None:
+        return "phenolic_fingerprint.py could not be loaded"
+    module = importlib.util.module_from_spec(spec)
+    sys.modules["phenolic_fingerprint"] = module
+    try:
+        spec.loader.exec_module(module)
+    except Exception as exc:
+        sys.modules.pop("phenolic_fingerprint", None)
+        return f"{type(exc).__name__}: {exc}"[:240]
+    return None
+
+
 def public_layer_tools() -> list[Any]:
+    from aureon_public.more_layers import TOOLS
+
     return [
         package_dispositions,
         hnc_substrate_eval,
@@ -540,6 +580,7 @@ def public_layer_tools() -> list[Any]:
         repository_layers_hold,
         evidence_predict_next,
         source_names,
+        *TOOLS,
     ]
 
 

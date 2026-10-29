@@ -295,30 +295,22 @@ def test_tool_output_and_server_info_name_the_aureon_that_ran() -> None:
 def test_registered_names() -> None:
     server = build_server()
     tools_listed = asyncio.run(server.list_tools())
+    from aureon_public.layers import public_layer_tools
+
     names = sorted(item.name for item in tools_listed)
-    assert names == [
+    expected = {
         "auris_coherence",
         "auris_nodes",
-        "evidence_predict_next",
         "hnc_blend_read",
         "hnc_canonical_read",
-        "hnc_echo_eval",
-        "hnc_observer_eval",
-        "hnc_potential_eval",
         "hnc_reality_step",
-        "hnc_substrate_eval",
-        "hnc_translate_project",
         "lambda_engine_step",
-        "membrane_screen",
         "organism_catalog",
         "organism_replay_read",
-        "package_dispositions",
         "qgita_analyze",
-        "qgita_ftcp_detect",
-        "qgita_lighthouse_coherence",
-        "repository_layers_hold",
-        "source_names",
-    ]
+        *(fn.__name__ for fn in public_layer_tools()),
+    }
+    assert set(names) == expected
     hnc = next(item for item in tools_listed if item.name == "hnc_reality_step")
     assert hnc.description is not None
     assert "multiverse on" in hnc.description
@@ -423,6 +415,37 @@ def test_operator_server_stays_off_without_the_flag_and_is_stdio_only(monkeypatc
     body = _load(refuse_live_order("BTCUSDT"))
     assert body["live_orders"] == "refused"
     assert body["status"] == "unavailable"
+
+
+def test_new_package_tools_and_membrane_paths(monkeypatch: pytest.MonkeyPatch) -> None:
+    import sys
+
+    from aureon_public import layers
+    from aureon_public.more_layers import TOOLS
+
+    for fn in TOOLS:
+        body = _load(fn())
+        assert body.get("provenance") in {"cited", "inferred", "cited-unverified"}, fn.__name__
+        assert "consciousness_" not in json.dumps(body)
+        assert body.get("status") in {"cited", "inferred", "unavailable"}
+    live = _load(layers.membrane_screen("hello"))
+    assert live["status"] == "cited"
+    assert live["provenance"] == "cited"
+    monkeypatch.setattr(layers, "_load_phenolic_fingerprint", lambda: "phenolic_fingerprint.py is not in this checkout")
+    sys.modules.pop("aureon.bio.mcp_membrane", None)
+    blocked = _load(layers.membrane_screen("hello"))
+    assert blocked["status"] == "unavailable"
+    assert blocked["provenance"] == "cited-unverified"
+    assert "phenolic_fingerprint" in blocked["reason"]
+    rows = _load(layers.package_dispositions())["packages"]
+    kinds = {row["package"]: row["kind"] for row in rows}
+    assert kinds["cognition"] == "cognition_logic_flow"
+    assert kinds["queen"] == "queen_zpe_ground"
+    assert kinds["swarm"] == "swarm_voice_for_gamma"
+    assert kinds["observer"] == "observer_kp_sample"
+    assert kinds["gates"] == "gates_reading"
+    assert kinds["atn"] == "excluded"
+    assert kinds["identity"] == "excluded"
 
 
 def test_space_entry_points_call_enforce_public_pin() -> None:
